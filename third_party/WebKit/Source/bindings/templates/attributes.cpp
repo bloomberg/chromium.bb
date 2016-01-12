@@ -2,7 +2,6 @@
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
-{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetter{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 const v8::PropertyCallbackInfo<v8::Value>& info
@@ -125,7 +124,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {{attribute.v8_set_return_value}};
     {% endif %}
 }
-{% endfilter %}
 {% endmacro %}
 
 
@@ -165,7 +163,6 @@ if ({{cpp_value}}.isEmpty()) {
 
 {##############################################################################}
 {% macro attribute_getter_callback(attribute, world_suffix) %}
-{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeGetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, const v8::PropertyCallbackInfo<v8::Value>& info
@@ -200,13 +197,11 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-{% endfilter %}
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro constructor_getter_callback(attribute, world_suffix) %}
-{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Local<v8::Name> property, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
@@ -222,13 +217,11 @@ static void {{attribute.name}}ConstructorGetterCallback{{world_suffix}}(v8::Loca
     v8ConstructorAttributeGetter(property, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-{% endfilter %}
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro attribute_setter(attribute, world_suffix) %}
-{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetter{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
@@ -357,13 +350,11 @@ v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
     V8HiddenValue::deleteHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "{{attribute.name}}")); // Invalidate the cached value.
     {% endif %}
 }
-{% endfilter %}
 {% endmacro %}
 
 
 {##############################################################################}
 {% macro attribute_setter_callback(attribute, world_suffix) %}
-{% filter conditional(attribute.conditional_string) %}
 static void {{attribute.name}}AttributeSetterCallback{{world_suffix}}(
 {%- if attribute.is_data_type_property %}
 v8::Local<v8::Name>, v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
@@ -402,7 +393,6 @@ const v8::FunctionCallbackInfo<v8::Value>& info
     {% endif %}
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-{% endfilter %}
 {% endmacro %}
 
 

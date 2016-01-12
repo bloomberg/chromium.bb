@@ -46,7 +46,7 @@ import v8_methods
 import v8_types
 from v8_types import cpp_ptr_type, cpp_template_type
 import v8_utilities
-from v8_utilities import (api_experiment_enabled_function, cpp_name_or_partial, capitalize, conditional_string, cpp_name, gc_type,
+from v8_utilities import (api_experiment_enabled_function, cpp_name_or_partial, capitalize, cpp_name, gc_type,
                           has_extended_attribute_value, runtime_enabled_function_name,
                           extended_attribute_value_as_list, is_legacy_interface_type_checking)
 
@@ -168,7 +168,6 @@ def interface_context(interface):
 
     context = {
         'api_experiment_name': v8_utilities.api_experiment_name(interface),
-        'conditional_string': conditional_string(interface),  # [Conditional]
         'cpp_class': cpp_class_name,
         'cpp_class_or_partial': cpp_class_name_or_partial,
         'event_target_inheritance': 'InheritFromEventTarget' if is_event_target else 'NotInheritFromEventTarget',

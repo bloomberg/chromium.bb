@@ -115,10 +115,6 @@ def method_context(interface, method, is_visible=True):
         includes.add('core/dom/MessagePort.h')
         includes.add('core/frame/ImageBitmap.h')
 
-    conditional_string = v8_utilities.conditional_string(method)
-    if conditional_string:
-        includes.add('wtf/build_config.h')
-
     if 'LenientThis' in extended_attributes:
         raise Exception('[LenientThis] is not supported for operations.')
 
@@ -137,7 +133,6 @@ def method_context(interface, method, is_visible=True):
         'arguments': argument_contexts,
         'argument_declarations_for_private_script':
             argument_declarations_for_private_script(interface, method),
-        'conditional_string': conditional_string,
         'cpp_type': (v8_types.cpp_template_type('Nullable', idl_type.cpp_type)
                      if idl_type.is_explicit_nullable else idl_type.cpp_type),
         'cpp_value': this_cpp_value,

@@ -13,20 +13,14 @@ class {{v8_class_or_partial}} {
 public:
     static void initialize();
     {% for method in methods if method.is_custom %}
-    {% filter conditional(method.conditional_string) %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-    {% endfilter %}
     {% endfor %}
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
-    {% filter conditional(attribute.conditional_string) %}
     static void {{attribute.name}}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    {% endfilter %}
     {% endif %}
     {% if attribute.has_custom_setter %}{# FIXME: and not attribute.implemented_by #}
-    {% filter conditional(attribute.conditional_string) %}
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
-    {% endfilter %}
     {% endif %}
     {% endfor %}
     {# Custom internal fields #}

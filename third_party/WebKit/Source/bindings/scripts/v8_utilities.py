@@ -211,20 +211,6 @@ def call_with_arguments(call_with_values):
             if extended_attribute_value_contains(call_with_values, value)]
 
 
-# [Conditional]
-DELIMITER_TO_OPERATOR = {
-    '|': '||',
-    ',': '&&',
-}
-
-
-def conditional_string(definition_or_member):
-    extended_attributes = definition_or_member.extended_attributes
-    if 'Conditional' not in extended_attributes:
-        return None
-    return 'ENABLE(%s)' % extended_attributes['Conditional']
-
-
 # [Constructor], [NamedConstructor]
 def is_constructor_attribute(member):
     # TODO(yukishiino): replace this with [Constructor] and [NamedConstructor] extended attribute

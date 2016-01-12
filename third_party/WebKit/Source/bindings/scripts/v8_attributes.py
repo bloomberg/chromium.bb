@@ -89,10 +89,6 @@ def attribute_context(interface, attribute):
         attribute.name == 'onerror'):
         includes.add('bindings/core/v8/V8ErrorHandler.h')
 
-    conditional_string = v8_utilities.conditional_string(attribute)
-    if conditional_string:
-        includes.add('wtf/build_config.h')
-
     cached_attribute_validation_method = extended_attributes.get('CachedAttribute')
     keep_alive_for_gc = is_keep_alive_for_gc(interface, attribute)
     if cached_attribute_validation_method or keep_alive_for_gc:
@@ -112,7 +108,6 @@ def attribute_context(interface, attribute):
         'api_experiment_name': extended_attributes.get('APIExperimentEnabled'),  # [APIExperimentEnabled]
         'argument_cpp_type': idl_type.cpp_type_args(used_as_rvalue_type=True),
         'cached_attribute_validation_method': cached_attribute_validation_method,
-        'conditional_string': conditional_string,
         'constructor_type': constructor_type,
         'cpp_name': cpp_name(attribute),
         'cpp_type': idl_type.cpp_type,

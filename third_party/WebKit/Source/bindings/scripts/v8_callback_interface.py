@@ -75,7 +75,6 @@ def callback_interface_context(callback_interface):
     includes.clear()
     includes.update(CALLBACK_INTERFACE_CPP_INCLUDES)
     return {
-        'conditional_string': v8_utilities.conditional_string(callback_interface),
         'cpp_class': callback_interface.name,
         'v8_class': v8_utilities.v8_class_name(callback_interface),
         'header_includes': set(CALLBACK_INTERFACE_H_INCLUDES),

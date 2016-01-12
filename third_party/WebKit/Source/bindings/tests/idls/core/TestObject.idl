@@ -183,7 +183,6 @@ interface TestObject {
     [CallWith=ScriptState] attribute any callWithScriptStateAnyAttribute;
     [CallWith=(ExecutionContext,ScriptState)] attribute any callWithExecutionContextAndScriptStateAnyAttribute;
     [CheckSecurity=ReturnValue] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute; // All uses are read only
-    [Conditional=CONDITION] attribute long conditionalLongAttribute;
     // Constructors: FIXME: replace suffix with [ConstructorAttribute]
     attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
     [DeprecateAs=deprecatedTestInterfaceEmptyConstructorAttribute] attribute TestInterfaceEmptyConstructor testInterfaceEmptyConstructorAttribute;
@@ -192,12 +191,10 @@ interface TestObject {
     [Custom=Getter] attribute long customGetterLongAttribute;
     [Custom=Getter] readonly attribute object customGetterReadonlyObjectAttribute;
     [Custom=Setter] attribute long customSetterLongAttribute;
-    [Conditional=CONDITION, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [APIExperimentEnabled=FeatureName, RuntimeEnabled=FeatureName] attribute long experimentRuntimeEnabledLongAttribute;
-    [APIExperimentEnabled=FeatureName, Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long experimentConditionalRuntimeEnabledLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
     [Custom=Getter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
@@ -249,7 +246,6 @@ interface TestObject {
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [PutForwards=href] readonly attribute TestNode locationPutForwards;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
-    [Conditional=CONDITION, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=(ActiveWindow,FirstWindow)] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterCallWith=ExecutionContext] attribute DOMString setterCallWithExecutionContextStringAttribute;
     [TreatNullAs=EmptyString] attribute DOMString treatNullAsEmptyStringStringAttribute;
@@ -527,12 +523,9 @@ interface TestObject {
     [CallWith=(ActiveWindow,FirstWindow)] void callWithActiveWindowScriptWindow();
     [CallWith=ThisValue] void callWithThisValue();
     [CheckSecurity=ReturnValue] void checkSecurityForNodeVoidMethod();
-    [Conditional=CONDITION] void conditionalConditionVoidMethod();
-    [Conditional=CONDITION] static void conditionalConditionStaticVoidMethod();
     [Custom] void customVoidMethod();
     [Custom=CallPrologue] void customCallPrologueVoidMethod();
     [Custom=CallEpilogue] void customCallEpilogueVoidMethod();
-    [Conditional=CONDITION, Custom] void conditionalConditionCustomVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();

@@ -33,7 +33,6 @@
 
 [
     ActiveDOMObject,
-    Conditional=CONDITION,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     APIExperimentEnabled=ExperimentName,

@@ -48,7 +48,6 @@ import sys
 from utilities import get_file_contents, read_file_to_list, write_file, get_interface_extended_attributes_from_idl
 
 EXPORTED_EXTENDED_ATTRIBUTES = (
-    'Conditional',
     'ImplementedAs',
     'RuntimeEnabled',
 )

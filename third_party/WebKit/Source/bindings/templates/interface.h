@@ -2,13 +2,6 @@
 #ifndef {{v8_class}}_h
 #define {{v8_class}}_h
 
-{% if conditional_string %}
-#include "wtf/build_config.h"
-{% endif %}
-{% filter conditional(conditional_string) %}
-{% if conditional_string %}
-
-{% endif %}
 {% for filename in header_includes %}
 #include "{{filename}}"
 {% endfor %}
@@ -87,9 +80,7 @@ public:
     {% endif %}
     {% for method in methods %}
     {% if method.is_custom %}
-    {% filter conditional(method.conditional_string) %}
     static void {{method.name}}MethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-    {% endfilter %}
     {% endif %}
     {% if method.is_custom_call_prologue %}
     static void {{method.name}}MethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, {{cpp_class}}*);
@@ -106,22 +97,18 @@ public:
     {% endif %}
     {% for attribute in attributes %}
     {% if attribute.has_custom_getter %}{# FIXME: and not attribute.implemented_by #}
-    {% filter conditional(attribute.conditional_string) %}
     {% if attribute.is_data_type_property %}
     static void {{attribute.name}}AttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     {% else %}
     static void {{attribute.name}}AttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
-    {% endfilter %}
     {% endif %}
     {% if attribute.has_custom_setter %}{# FIXME: and not attribute.implemented_by #}
-    {% filter conditional(attribute.conditional_string) %}
     {% if attribute.is_data_type_property %}
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     {% else %}
     static void {{attribute.name}}AttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
     {% endif %}
-    {% endfilter %}
     {% endif %}
     {% endfor %}
     {# Custom special operations #}
@@ -202,6 +189,5 @@ struct V8TypeOf<{{cpp_class}}> {
 };
 
 } // namespace blink
-{% endfilter %}
 
 #endif // {{v8_class}}_h

@@ -79,7 +79,7 @@ from v8_globals import includes, interfaces
 import v8_interface
 import v8_types
 import v8_union
-from v8_utilities import capitalize, cpp_name, conditional_string, v8_class_name
+from v8_utilities import capitalize, cpp_name, v8_class_name
 from utilities import KNOWN_COMPONENTS, idl_filename_to_component, is_valid_component_dependency, is_testing_target
 
 
@@ -408,7 +408,6 @@ def initialize_jinja_env(cache_dir):
         trim_blocks=True)
     jinja_env.filters.update({
         'blink_capitalize': capitalize,
-        'conditional': conditional_if_endif,
         'exposed': exposed_if,
         'runtime_enabled': runtime_enabled_if,
         })
@@ -423,29 +422,18 @@ def generate_indented_conditional(code, conditional):
             '%s}\n' % indent)
 
 
-# [Conditional]
-def conditional_if_endif(code, conditional_string):
-    # Jinja2 filter to generate if/endif directive blocks
-    if not conditional_string:
-        return code
-    return ('#if %s\n' % conditional_string +
-            code +
-            '#endif // %s\n' % conditional_string)
-
-
-def maybe_add_conditional(code, test, conditional):
-    if not test:
-        return code
-    return generate_indented_conditional(code, conditional)
-
 # [Exposed]
 def exposed_if(code, exposed_test):
-    return maybe_add_conditional(code, exposed_test, 'executionContext && (%s)' % exposed_test)
+    if not exposed_test:
+        return code
+    return generate_indented_conditional(code, 'executionContext && (%s)' % exposed_test)
 
 
 # [RuntimeEnabled]
 def runtime_enabled_if(code, runtime_enabled_function_name):
-    return maybe_add_conditional(code, runtime_enabled_function_name, '%s()' % runtime_enabled_function_name)
+    if not runtime_enabled_function_name:
+        return code
+    return generate_indented_conditional(code, '%s()' % runtime_enabled_function_name)
 
 
 ################################################################################

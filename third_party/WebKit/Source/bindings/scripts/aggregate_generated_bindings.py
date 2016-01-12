@@ -55,20 +55,6 @@ import sys
 
 from utilities import should_generate_impl_file_from_idl, get_file_contents, idl_filename_to_component, idl_filename_to_interface_name, read_idl_files_list_from_file
 
-# A regexp for finding Conditional attributes in interface definitions.
-CONDITIONAL_PATTERN = re.compile(
-    r'\['
-    r'[^\]]*'
-    r'Conditional=([\_0-9a-zA-Z]*)'
-    r'[^\]]*'
-    r'\]\s*'
-    r'((callback|partial)\s+)?'
-    r'interface\s+'
-    r'\w+\s*'
-    r'(:\s*\w+\s*)?'
-    r'{',
-    re.MULTILINE)
-
 COPYRIGHT_TEMPLATE = """/*
  * THIS FILE WAS AUTOMATICALLY GENERATED, DO NOT EDIT.
  *
@@ -100,17 +86,8 @@ COPYRIGHT_TEMPLATE = """/*
 """
 
 
-def extract_conditional(idl_contents):
-    """Find [Conditional] interface extended attribute."""
-
-    match = CONDITIONAL_PATTERN.search(idl_contents)
-    if not match:
-        return None
-    return match.group(1)
-
-
 def extract_meta_data(file_paths):
-    """Extracts conditional and interface name from each IDL file."""
+    """Extracts interface name from each IDL file."""
     meta_data_list = []
 
     for file_path in file_paths:
@@ -129,7 +106,6 @@ def extract_meta_data(file_paths):
         interface_name = idl_filename_to_interface_name(file_path)
 
         meta_data = {
-            'conditional': extract_conditional(idl_file_contents),
             'name': interface_name,
         }
         meta_data_list.append(meta_data)
@@ -142,18 +118,9 @@ def generate_content(component_dir, aggregate_partial_interfaces, files_meta_dat
     output = [COPYRIGHT_TEMPLATE,
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
-    # List all includes segmented by if and endif.
-    prev_conditional = None
-    files_meta_data_this_partition.sort(key=lambda e: e['conditional'])
+    # List all includes.
+    files_meta_data_this_partition.sort()
     for meta_data in files_meta_data_this_partition:
-        conditional = meta_data['conditional']
-        if prev_conditional != conditional:
-            if prev_conditional:
-                output.append('#endif\n')
-            if conditional:
-                output.append('\n#if ENABLE(%s)\n' % conditional)
-        prev_conditional = conditional
-
         if aggregate_partial_interfaces:
             cpp_filename = 'V8%sPartial.cpp' % meta_data['name']
         else:
@@ -161,9 +128,6 @@ def generate_content(component_dir, aggregate_partial_interfaces, files_meta_dat
 
         output.append('#include "bindings/%s/v8/%s"\n' %
                       (component_dir, cpp_filename))
-
-    if prev_conditional:
-        output.append('#endif\n')
 
     return ''.join(output)
 

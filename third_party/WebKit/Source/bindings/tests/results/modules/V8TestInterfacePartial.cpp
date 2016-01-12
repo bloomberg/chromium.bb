@@ -6,7 +6,6 @@
 
 #include "V8TestInterfacePartial.h"
 
-#if ENABLE(CONDITION)
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/PrivateScriptRunner.h"
 #include "bindings/core/v8/ScriptPromise.h"
@@ -26,7 +25,6 @@
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/build_config.h"
 
 namespace blink {
 
@@ -365,4 +363,3 @@ void V8TestInterfacePartial::initialize()
 }
 
 } // namespace blink
-#endif // ENABLE(CONDITION)

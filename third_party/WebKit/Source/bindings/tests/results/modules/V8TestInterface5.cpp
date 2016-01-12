@@ -6,7 +6,6 @@
 
 #include "V8TestInterface5.h"
 
-#if ENABLE(CONDITION)
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
@@ -1058,4 +1057,3 @@ void V8TestInterface5::derefObject(ScriptWrappable* scriptWrappable)
 }
 
 } // namespace blink
-#endif // ENABLE(CONDITION)

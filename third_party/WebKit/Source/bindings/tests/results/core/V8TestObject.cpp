@@ -75,7 +75,6 @@
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/build_config.h"
 
 namespace blink {
 
@@ -2672,47 +2671,6 @@ static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-#if ENABLE(CONDITION)
-static void conditionalLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueInt(info, impl->conditionalLongAttribute());
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::conditionalLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    impl->setConditionalLongAttribute(cppValue);
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::conditionalLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
 static void testInterfaceEmptyConstructorAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info)
 {
     v8::Local<v8::String> propertyName = v8AtomicString(info.GetIsolate(), "testInterfaceEmptyConstructorAttribute");
@@ -2823,25 +2781,6 @@ static void customSetterLongAttributeAttributeSetterCallback(const v8::FunctionC
     V8TestObject::customSetterLongAttributeAttributeSetterCustom(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-
-#if ENABLE(CONDITION)
-static void customLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    V8TestObject::customLongAttributeAttributeGetterCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void customLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    V8TestObject::customLongAttributeAttributeSetterCustom(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
 
 static void customElementsCallbacksReadonlyLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -2971,61 +2910,6 @@ static void experimentRuntimeEnabledLongAttributeAttributeSetterCallback(const v
     TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-
-#if ENABLE(CONDITION)
-static void experimentConditionalRuntimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
-         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
-         return;
-    }
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueInt(info, impl->experimentConditionalRuntimeEnabledLongAttribute());
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void experimentConditionalRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    ExecutionContext* executionContext = currentExecutionContext(info.GetIsolate());
-    String memberErrorMessage;
-    if (!ExperimentalFeatures::featureNameEnabled(executionContext, memberErrorMessage)) {
-         v8SetReturnValue(info, v8::Undefined(info.GetIsolate()));
-         toDocument(executionContext)->addConsoleMessage(ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, memberErrorMessage));
-         return;
-    }
-    TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void experimentConditionalRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "experimentConditionalRuntimeEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    impl->setExperimentConditionalRuntimeEnabledLongAttribute(cppValue);
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void experimentConditionalRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
 
 static void implementedAsLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -4867,47 +4751,6 @@ static void runtimeEnabledLongAttributeAttributeSetterCallback(const v8::Functio
     TestObjectV8Internal::runtimeEnabledLongAttributeAttributeSetter(v8Value, info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-
-#if ENABLE(CONDITION)
-static void conditionalRuntimeEnabledLongAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    TestObject* impl = V8TestObject::toImpl(holder);
-    v8SetReturnValueInt(info, impl->conditionalRuntimeEnabledLongAttribute());
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalRuntimeEnabledLongAttributeAttributeGetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMGetter");
-    TestObjectV8Internal::conditionalRuntimeEnabledLongAttributeAttributeGetter(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Object> holder = info.Holder();
-    ExceptionState exceptionState(ExceptionState::SetterContext, "conditionalRuntimeEnabledLongAttribute", "TestObject", holder, info.GetIsolate());
-    TestObject* impl = V8TestObject::toImpl(holder);
-    int cppValue = toInt32(info.GetIsolate(), v8Value, NormalConversion, exceptionState);
-    if (exceptionState.throwIfNeeded())
-        return;
-    impl->setConditionalRuntimeEnabledLongAttribute(cppValue);
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalRuntimeEnabledLongAttributeAttributeSetterCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    v8::Local<v8::Value> v8Value = info[0];
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMSetter");
-    TestObjectV8Internal::conditionalRuntimeEnabledLongAttributeAttributeSetter(v8Value, info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
 
 static void setterCallWithActiveWindowAndFirstWindowStringAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -10811,39 +10654,6 @@ static void checkSecurityForNodeVoidMethodMethodCallback(const v8::FunctionCallb
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
 
-#if ENABLE(CONDITION)
-static void conditionalConditionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject* impl = V8TestObject::toImpl(info.Holder());
-    impl->conditionalConditionVoidMethod();
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalConditionVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::conditionalConditionVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalConditionStaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObject::conditionalConditionStaticVoidMethod();
-}
-#endif // ENABLE(CONDITION)
-
-#if ENABLE(CONDITION)
-static void conditionalConditionStaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestObjectV8Internal::conditionalConditionStaticVoidMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
-
 static void customVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
@@ -10878,15 +10688,6 @@ static void customCallEpilogueVoidMethodMethodCallback(const v8::FunctionCallbac
     TestObjectV8Internal::customCallEpilogueVoidMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-
-#if ENABLE(CONDITION)
-static void conditionalConditionCustomVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    V8TestObject::conditionalConditionCustomVoidMethodMethodCustom(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(CONDITION)
 
 static void customElementCallbacksVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -13367,23 +13168,14 @@ const V8DOMConfiguration::AccessorConfiguration V8TestObjectAccessors[] = {
     {"callWithScriptStateAnyAttribute", TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"callWithExecutionContextAndScriptStateAnyAttribute", TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeGetterCallback, TestObjectV8Internal::callWithExecutionContextAndScriptStateAnyAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"checkSecurityForNodeReadonlyDocumentAttribute", TestObjectV8Internal::checkSecurityForNodeReadonlyDocumentAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#if ENABLE(CONDITION)
-    {"conditionalLongAttribute", TestObjectV8Internal::conditionalLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#endif // ENABLE(CONDITION)
     {"customObjectAttribute", TestObjectV8Internal::customObjectAttributeAttributeGetterCallback, TestObjectV8Internal::customObjectAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customGetterLongAttribute", TestObjectV8Internal::customGetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customGetterReadonlyObjectAttribute", TestObjectV8Internal::customGetterReadonlyObjectAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customSetterLongAttribute", TestObjectV8Internal::customSetterLongAttributeAttributeGetterCallback, TestObjectV8Internal::customSetterLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#if ENABLE(CONDITION)
-    {"customLongAttribute", TestObjectV8Internal::customLongAttributeAttributeGetterCallback, TestObjectV8Internal::customLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#endif // ENABLE(CONDITION)
     {"customElementsCallbacksReadonlyLongAttribute", TestObjectV8Internal::customElementsCallbacksReadonlyLongAttributeAttributeGetterCallback, 0, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"deprecatedLongAttribute", TestObjectV8Internal::deprecatedLongAttributeAttributeGetterCallback, TestObjectV8Internal::deprecatedLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"enforceRangeLongAttribute", TestObjectV8Internal::enforceRangeLongAttributeAttributeGetterCallback, TestObjectV8Internal::enforceRangeLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"experimentRuntimeEnabledLongAttribute", TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::experimentRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#if ENABLE(CONDITION)
-    {"experimentConditionalRuntimeEnabledLongAttribute", TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::experimentConditionalRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
-#endif // ENABLE(CONDITION)
     {"implementedAsLongAttribute", TestObjectV8Internal::implementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::implementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customImplementedAsLongAttribute", TestObjectV8Internal::customImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
     {"customGetterImplementedAsLongAttribute", TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeGetterCallback, TestObjectV8Internal::customGetterImplementedAsLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
@@ -13645,18 +13437,9 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"callWithActiveWindowScriptWindow", TestObjectV8Internal::callWithActiveWindowScriptWindowMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"callWithThisValue", TestObjectV8Internal::callWithThisValueMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"checkSecurityForNodeVoidMethod", TestObjectV8Internal::checkSecurityForNodeVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-#if ENABLE(CONDITION)
-    {"conditionalConditionVoidMethod", TestObjectV8Internal::conditionalConditionVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-#endif // ENABLE(CONDITION)
-#if ENABLE(CONDITION)
-    {"conditionalConditionStaticVoidMethod", TestObjectV8Internal::conditionalConditionStaticVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-#endif // ENABLE(CONDITION)
     {"customVoidMethod", TestObjectV8Internal::customVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"customCallPrologueVoidMethod", TestObjectV8Internal::customCallPrologueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"customCallEpilogueVoidMethod", TestObjectV8Internal::customCallEpilogueVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-#if ENABLE(CONDITION)
-    {"conditionalConditionCustomVoidMethod", TestObjectV8Internal::conditionalConditionCustomVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-#endif // ENABLE(CONDITION)
     {"customElementCallbacksVoidMethod", TestObjectV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"deprecatedVoidMethod", TestObjectV8Internal::deprecatedVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
     {"experimentEnabledVoidMethod", TestObjectV8Internal::experimentEnabledVoidMethodMethodCallback, 0, 0, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
@@ -13748,11 +13531,6 @@ static void installV8TestObjectTemplate(v8::Local<v8::FunctionTemplate> function
         const V8DOMConfiguration::AccessorConfiguration accessorunscopeableRuntimeEnabledLongAttributeConfiguration = \
         {"unscopeableRuntimeEnabledLongAttribute", TestObjectV8Internal::unscopeableRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::unscopeableRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
         V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorunscopeableRuntimeEnabledLongAttributeConfiguration);
-#if ENABLE(CONDITION)
-        const V8DOMConfiguration::AccessorConfiguration accessorconditionalRuntimeEnabledLongAttributeConfiguration = \
-        {"conditionalRuntimeEnabledLongAttribute", TestObjectV8Internal::conditionalRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectV8Internal::conditionalRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, v8::DEFAULT, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder};
-        V8DOMConfiguration::installAccessor(isolate, instanceTemplate, prototypeTemplate, functionTemplate, defaultSignature, accessorconditionalRuntimeEnabledLongAttributeConfiguration);
-#endif // ENABLE(CONDITION)
     }
     const V8DOMConfiguration::ConstantConfiguration V8TestObjectConstants[] = {
         {"CONST_VALUE_0", 0, 0, V8DOMConfiguration::ConstantTypeUnsignedShort},

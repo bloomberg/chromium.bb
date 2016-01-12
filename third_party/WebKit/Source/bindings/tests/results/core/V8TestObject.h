@@ -62,20 +62,11 @@ public:
     static void customVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customCallPrologueVoidMethodMethodPrologueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
     static void customCallEpilogueVoidMethodMethodEpilogueCustom(const v8::FunctionCallbackInfo<v8::Value>&, TestObject*);
-#if ENABLE(CONDITION)
-    static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(CONDITION)
     static void customObjectAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customObjectAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
     static void customGetterLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customGetterReadonlyObjectAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customSetterLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
-#if ENABLE(CONDITION)
-    static void customLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(CONDITION)
-#if ENABLE(CONDITION)
-    static void customLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
-#endif // ENABLE(CONDITION)
     static void customImplementedAsLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);
     static void customImplementedAsLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::FunctionCallbackInfo<v8::Value>&);
     static void customGetterImplementedAsLongAttributeAttributeGetterCustom(const v8::FunctionCallbackInfo<v8::Value>&);

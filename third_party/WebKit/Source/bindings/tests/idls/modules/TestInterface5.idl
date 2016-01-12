@@ -35,7 +35,6 @@ enum TestEnumModules { "EnumModulesValue1", "EnumModulesValue2" };
 
 [
     ActiveDOMObject,
-    Conditional=CONDITION,
     Custom=LegacyCallAsFunction,
     DoNotCheckConstants,
     ImplementedAs=TestInterface5Implementation,

@@ -14,14 +14,12 @@
 #include "bindings/core/v8/V8Iterator.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
-#include "bindings/tests/idls/core/TestPartialInterface4.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/GetPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/build_config.h"
 
 namespace blink {
 
@@ -87,41 +85,6 @@ static void keysMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
     TestInterface3V8Internal::keysMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
 }
-
-#if ENABLE(BAR)
-static void voidMethodDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    ExceptionState exceptionState(ExceptionState::ExecutionContext, "voidMethodDocument", "TestInterface3", info.Holder(), info.GetIsolate());
-    if (UNLIKELY(info.Length() < 2)) {
-        setMinimumArityTypeError(exceptionState, 2, info.Length());
-        exceptionState.throwIfNeeded();
-        return;
-    }
-    Document* document;
-    double d;
-    {
-        document = V8Document::toImplWithTypeCheck(info.GetIsolate(), info[0]);
-        if (!document) {
-            exceptionState.throwTypeError("parameter 1 is not of type 'Document'.");
-            exceptionState.throwIfNeeded();
-            return;
-        }
-        d = toRestrictedDouble(info.GetIsolate(), info[1], exceptionState);
-        if (exceptionState.throwIfNeeded())
-            return;
-    }
-    TestPartialInterface4::voidMethodDocument(document, d);
-}
-#endif // ENABLE(BAR)
-
-#if ENABLE(BAR)
-static void voidMethodDocumentMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("blink", "DOMMethod");
-    TestInterface3V8Internal::voidMethodDocumentMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("v8", "V8Execution");
-}
-#endif // ENABLE(BAR)
 
 static void valuesMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
@@ -278,9 +241,6 @@ static void namedPropertyEnumeratorCallback(const v8::PropertyCallbackInfo<v8::A
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface3Methods[] = {
     {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 1, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnPrototype},
-#if ENABLE(BAR)
-    {"voidMethodDocument", TestInterface3V8Internal::voidMethodDocumentMethodCallback, 0, 2, v8::None, V8DOMConfiguration::ExposedToAllScripts, V8DOMConfiguration::OnInterface},
-#endif // ENABLE(BAR)
 };
 
 static void installV8TestInterface3Template(v8::Local<v8::FunctionTemplate> functionTemplate, v8::Isolate* isolate)
