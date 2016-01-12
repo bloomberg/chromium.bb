@@ -91,7 +91,8 @@ static const int kSbMaxUpdateWaitSec = 30;
 // Maximum back off multiplier.
 static const size_t kSbMaxBackOff = 8;
 
-const char kUmaHashResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
+const char kGetHashUmaResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
+const char kGetChunkUmaResponseMetricName[] = "SB2.GetChunkResponseOrErrorCode";
 
 // The V4 URL prefix where browser fetches hashes from the V4 server.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
@@ -317,10 +318,11 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
   HashRequests::iterator it = hash_requests_.find(source);
   int response_code = source->GetResponseCode();
   net::URLRequestStatus status = source->GetStatus();
-  RecordHttpResponseOrErrorCode(kUmaHashResponseMetricName, status,
-                                response_code);
+
   if (it != hash_requests_.end()) {
     // GetHash response.
+    RecordHttpResponseOrErrorCode(kGetHashUmaResponseMetricName, status,
+                                  response_code);
     fetcher.reset(it->first);
     const FullHashDetails& details = it->second;
     std::vector<SBFullHashResult> full_hashes;
@@ -366,6 +368,8 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     hash_requests_.erase(it);
   } else {
     // Update or chunk response.
+    RecordHttpResponseOrErrorCode(kGetChunkUmaResponseMetricName, status,
+                                  response_code);
     fetcher.reset(request_.release());
 
     if (request_type_ == UPDATE_REQUEST ||

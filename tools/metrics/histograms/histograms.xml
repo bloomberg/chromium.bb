@@ -40740,6 +40740,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SB2.GetChunkResponseOrErrorCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>vakh@google.com</owner>
+  <summary>
+    Response or error codes from the SafeBrowsing service. Logged after a
+    GetChunk request finishes to capture the response code or error code for
+    that call. Split out from SB2.GetHashErrorResponseOrErrorCode in M49.
+  </summary>
+</histogram>
+
 <histogram name="SB2.GetHash200">
   <obsolete>
     Deprecated in favor of SB2.GetHashResult STATUS_200.
@@ -40760,13 +40770,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SB2.GetHashErrorResponseOrErrorCode"
+<histogram name="SB2.GetHashResponseOrErrorCode"
     enum="CombinedHttpResponseAndNetErrorCode">
   <owner>vakh@google.com</owner>
   <summary>
     Response or error codes from the SafeBrowsing service. Logged after a
     GetHash request finishes to capture the response code or error code for that
-    call.
+    call. Split out from SB2.GetHashErrorResponseOrErrorCode in M49.
   </summary>
 </histogram>
 
