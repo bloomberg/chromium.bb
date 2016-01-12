@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/extensions/extension_toolbar_icon_surfacing_bubble_delegate.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -23,6 +24,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
+#include "ui/base/test/material_design_controller_test_api.h"
 
 namespace {
 
@@ -113,6 +115,11 @@ void ToolbarActionsBarUnitTest::SetUp() {
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
 
+  // Any call by a previous test to MaterialDesignController::GetMode() will
+  // initialize and cache the mode. This ensures that these tests will run from
+  // a non-initialized state.
+  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
+  ui::test::MaterialDesignControllerTestAPI::SetMode(GetParam());
   ToolbarActionsBar::disable_animations_for_testing_ = true;
   browser_action_test_util_.reset(new BrowserActionTestUtil(browser(), false));
 
@@ -129,6 +136,7 @@ void ToolbarActionsBarUnitTest::TearDown() {
   overflow_browser_action_test_util_.reset();
   ToolbarActionsBar::disable_animations_for_testing_ = false;
   redesign_switch_.reset();
+  ui::test::MaterialDesignControllerTestAPI::UninitializeMode();
   BrowserWithTestWindowTest::TearDown();
 }
 
@@ -190,7 +198,16 @@ ToolbarActionsBarRedesignUnitTest::ToolbarActionsBarRedesignUnitTest()
 
 ToolbarActionsBarRedesignUnitTest::~ToolbarActionsBarRedesignUnitTest() {}
 
-TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
+// Note: First argument is optional and intentionally left blank.
+// (it's a prefix for the generated test cases)
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ToolbarActionsBarUnitTest,
+    testing::Values(ui::MaterialDesignController::NON_MATERIAL,
+                    ui::MaterialDesignController::MATERIAL_NORMAL,
+                    ui::MaterialDesignController::MATERIAL_HYBRID));
+
+TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // Add three extensions to the profile; this is the easiest way to have
   // toolbar actions.
   for (int i = 0; i < 3; ++i) {
@@ -302,7 +319,7 @@ TEST_F(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
 }
 
-TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
+TEST_P(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
   for (int i = 0; i < 3; ++i) {
     CreateAndAddExtension(
         base::StringPrintf("extension %d", i),
@@ -334,7 +351,7 @@ TEST_F(ToolbarActionsBarUnitTest, ToolbarActionsReorderOnPrefChange) {
   }
 }
 
-TEST_F(ToolbarActionsBarUnitTest, TestHighlightMode) {
+TEST_P(ToolbarActionsBarUnitTest, TestHighlightMode) {
   std::vector<std::string> ids;
   for (int i = 0; i < 3; ++i) {
     ids.push_back(CreateAndAddExtension(
@@ -402,7 +419,16 @@ TEST_F(ToolbarActionsBarUnitTest, TestHighlightMode) {
   }
 }
 
-TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
+// Note: First argument is optional and intentionally left blank.
+// (it's a prefix for the generated test cases)
+INSTANTIATE_TEST_CASE_P(
+    ,
+    ToolbarActionsBarRedesignUnitTest,
+    testing::Values(ui::MaterialDesignController::NON_MATERIAL,
+                    ui::MaterialDesignController::MATERIAL_NORMAL,
+                    ui::MaterialDesignController::MATERIAL_HYBRID));
+
+TEST_P(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
   // Without showing anything new, we shouldn't show the bubble, and should
   // auto-acknowledge it.
   EXPECT_FALSE(
@@ -453,10 +479,11 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, IconSurfacingBubbleAppearance) {
 }
 
 // Test the bounds calculation for different indices.
-TEST_F(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {
+TEST_P(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {
   const int kIconWidth = ToolbarActionsBar::IconWidth(false);
   const int kIconHeight = ToolbarActionsBar::IconHeight();
   const int kIconWidthWithPadding = ToolbarActionsBar::IconWidth(true);
+  const int kIconSpacing = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
   const int kIconsPerOverflowRow = 3;
   const int kNumExtensions = 7;
   const int kSpacing =
@@ -471,7 +498,7 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {
   }
   toolbar_model()->SetVisibleIconCount(kNumExtensions);
   overflow_bar()->SetOverflowRowWidth(
-      kIconWidthWithPadding * kIconsPerOverflowRow + 3);
+      kIconWidthWithPadding * kIconsPerOverflowRow + kIconSpacing);
   EXPECT_EQ(kIconsPerOverflowRow,
             overflow_bar()->platform_settings().icons_per_overflow_menu_row);
 
@@ -517,7 +544,10 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, TestActionFrameBounds) {
             overflow_bar()->GetFrameForIndex(6));
 }
 
-TEST_F(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
+TEST_P(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
+  const int kIconWidthWithPadding = ToolbarActionsBar::IconWidth(true);
+  const int kIconSpacing = GetLayoutConstant(TOOLBAR_STANDARD_SPACING);
+
   for (int i = 0; i < 3; ++i) {
     CreateAndAddExtension(
         base::StringPrintf("extension %d", i),
@@ -533,7 +563,8 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
   EXPECT_FALSE(toolbar_actions_bar()->NeedsOverflow());
 
   // Shrink the width of the view to be a little over enough for one icon.
-  browser_action_test_util()->SetWidth(ToolbarActionsBar::IconWidth(true) + 5);
+  browser_action_test_util()->SetWidth(kIconWidthWithPadding +
+                                       kIconSpacing + 2);
   // Tricky: GetIconCount() is what we use to determine our preferred size,
   // stored pref size, etc, and should not be affected by a minimum size that is
   // too small to show everything. It should remain constant.
@@ -548,7 +579,7 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, TestStartAndEndIndexes) {
 
   // Shrink the container again to be too small to display even one icon.
   // The overflow container should be displaying everything.
-  browser_action_test_util()->SetWidth(ToolbarActionsBar::IconWidth(true) - 10);
+  browser_action_test_util()->SetWidth(kIconWidthWithPadding - 10);
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetStartIndexInBounds());
   EXPECT_EQ(0u, toolbar_actions_bar()->GetEndIndexInBounds());

@@ -15,7 +15,7 @@
 // Tests the icon appearance of extension actions without the toolbar redesign.
 // In this case, the action should never be grayscaled or decorated to indicate
 // whether or not it wants to run.
-TEST_F(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
+TEST_P(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::BROWSER_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
@@ -53,7 +53,7 @@ TEST_F(ToolbarActionsBarUnitTest, ExtensionActionNormalAppearance) {
 // Tests the icon appearance of extension actions with the toolbar redesign.
 // Extensions that don't want to run should have their icons grayscaled.
 // Overflowed extensions that want to run should have an additional decoration.
-TEST_F(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
+TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::PAGE_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
@@ -94,7 +94,7 @@ TEST_F(ToolbarActionsBarRedesignUnitTest, ExtensionActionWantsToRunAppearance) {
   EXPECT_FALSE(image_source->paint_decoration());
 }
 
-TEST_F(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {
+TEST_P(ToolbarActionsBarRedesignUnitTest, ExtensionActionContextMenu) {
   CreateAndAddExtension("extension",
                         extensions::extension_action_test_util::BROWSER_ACTION);
   EXPECT_EQ(1u, toolbar_actions_bar()->GetIconCount());
