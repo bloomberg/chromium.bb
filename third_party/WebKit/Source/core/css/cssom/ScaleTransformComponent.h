@@ -10,18 +10,18 @@
 
 namespace blink {
 
-class CORE_EXPORT ScaleTransformComponent : public TransformComponent {
+class CORE_EXPORT ScaleTransformComponent final : public TransformComponent {
+    WTF_MAKE_NONCOPYABLE(ScaleTransformComponent);
     DEFINE_WRAPPERTYPEINFO();
-
 public:
-    static PassRefPtrWillBeRawPtr<ScaleTransformComponent> create(double x, double y)
+    static ScaleTransformComponent* create(double x, double y)
     {
-        return adoptRefWillBeNoop(new ScaleTransformComponent(x, y));
+        return new ScaleTransformComponent(x, y);
     }
 
-    static PassRefPtrWillBeRawPtr<ScaleTransformComponent> create(double x, double y, double z)
+    static ScaleTransformComponent* create(double x, double y, double z)
     {
-        return adoptRefWillBeNoop(new ScaleTransformComponent(x, y, z));
+        return new ScaleTransformComponent(x, y, z);
     }
 
     double x() const { return m_x; }

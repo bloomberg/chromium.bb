@@ -4,7 +4,7 @@
 
 [
     RuntimeEnabled=CSSTypedOM,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface TransformComponent {
     readonly attribute DOMString cssString;
     boolean is2DComponent();

@@ -11,9 +11,9 @@
 
 namespace blink {
 
-class CORE_EXPORT TransformComponent : public RefCountedWillBeGarbageCollectedFinalized<TransformComponent>, public ScriptWrappable {
+class CORE_EXPORT TransformComponent : public GarbageCollectedFinalized<TransformComponent>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(TransformComponent);
     DEFINE_WRAPPERTYPEINFO();
-
 public:
     enum TransformComponentType {
         MatrixType, PerspectiveType, RotateType, ScaleType, SkewType, TranslateType,
