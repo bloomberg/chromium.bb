@@ -751,9 +751,7 @@ group("gn_mojo_targets") {
       "//mojo:tests",
 
       # TODO(use-new-edk):
-      #"//mojo/edk/js/test:js_integration_tests",
       #"//mojo/edk/js/tests:js_to_cpp_bindings_python",
-      "//third_party/mojo/src/mojo/edk/js/test:js_integration_tests",
     ]
   }
 }

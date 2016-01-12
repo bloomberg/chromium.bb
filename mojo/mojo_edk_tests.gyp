@@ -19,7 +19,7 @@
         'mojo_message_pipe_perftests2',
         'mojo_system_unittests2',
         'mojo_js_unittests',
-        'mojo_js_integration_tests2',
+        'mojo_js_integration_tests',
       ],
     },
     {
@@ -93,6 +93,7 @@
         'edk/system/test_utils.h',
       ],
     },
+    # TODO(yzshen): fix the following two targets.
     {
       # GN version: //mojo/edk/js/test:js_unittests
       'target_name': 'mojo_js_unittests',
@@ -113,7 +114,7 @@
     },
     {
       # GN version: //mojo/edk/js/test:js_integration_tests
-      'target_name': 'mojo_js_integration_tests2',
+      'target_name': 'mojo_js_integration_tests',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',

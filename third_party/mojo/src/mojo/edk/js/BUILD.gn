@@ -2,19 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# TODO(hansmuller): The organization of tests in this directory is weird:
-#   * Really, js_unittests tests public stuff, so that should live in public
-#     and be reworked as some sort of apptest.
-#   * Both js_unittests and js_integration_tests should auto-generate their
-#     tests somehow. The .cc files are just test runner stubs, including
-#     explicit lists of .js files.
-group("tests") {
-  testonly = true
-  deps = [
-    "test:js_integration_tests",
-  ]
-}
-
 source_set("js") {
   sources = [
     "core.cc",
@@ -43,19 +30,5 @@ source_set("js") {
   deps = [
     "//mojo/public/cpp/environment",
     "//mojo/public/cpp/system",
-  ]
-}
-
-source_set("js_unittests") {
-  testonly = true
-  sources = [
-    "handle_unittest.cc",
-  ]
-
-  deps = [
-    "//mojo/public/cpp/system",
-    "//testing/gtest",
-    "//third_party/mojo/src/mojo/edk/js",
-    "//third_party/mojo/src/mojo/edk/test:test_support",
   ]
 }

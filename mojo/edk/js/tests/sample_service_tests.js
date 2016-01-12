@@ -3,93 +3,27 @@
 // found in the LICENSE file.
 
 define([
-    "console",
-    "mojo/edk/js/test/hexdump",
     "gin/test/expect",
     "mojo/public/interfaces/bindings/tests/sample_service.mojom",
     "mojo/public/interfaces/bindings/tests/sample_import.mojom",
     "mojo/public/interfaces/bindings/tests/sample_import2.mojom",
+    "mojo/public/js/connection",
     "mojo/public/js/core",
-  ], function(console, hexdump, expect, sample, imported, imported2, core) {
+    "mojo/public/js/threading",
+  ], function(expect, sample, imported, imported2, connection, core,
+              threading) {
+  testDefaultValues()
+      .then(testSampleService)
+      .then(function() {
+    this.result = "PASS";
+    threading.quit();
+  }.bind(this)).catch(function(e) {
+    this.result = "FAIL: " + (e.stack || e);
+    threading.quit();
+  }.bind(this));
 
-  var global = this;
-
-  // Set this variable to true to print the binary message in hex.
-  var dumpMessageAsHex = false;
-
-  function makeFoo() {
-    var bar = new sample.Bar();
-    bar.alpha = 20;
-    bar.beta = 40;
-    bar.gamma = 60;
-    bar.type = sample.Bar.Type.VERTICAL;
-
-    var extra_bars = new Array(3);
-    for (var i = 0; i < extra_bars.length; ++i) {
-      var base = i * 100;
-      var type = i % 2 ?
-          sample.Bar.Type.VERTICAL : sample.Bar.Type.HORIZONTAL;
-      extra_bars[i] = new sample.Bar();
-      extra_bars[i].alpha = base;
-      extra_bars[i].beta = base + 20;
-      extra_bars[i].gamma = base + 40;
-      extra_bars[i].type = type;
-    }
-
-    var data = new Array(10);
-    for (var i = 0; i < data.length; ++i) {
-      data[i] = data.length - i;
-    }
-
-    var source = 0xFFFF;  // Invent a dummy handle.
-
-    var foo = new sample.Foo();
-    foo.name = "foopy";
-    foo.x = 1;
-    foo.y = 2;
-    foo.a = false;
-    foo.b = true;
-    foo.c = false;
-    foo.bar = bar;
-    foo.extra_bars = extra_bars;
-    foo.data = data;
-    foo.source = source;
-    return foo;
-  }
-
-  // Check that the given |Foo| is identical to the one made by |MakeFoo()|.
-  function checkFoo(foo) {
-    expect(foo.name).toBe("foopy");
-    expect(foo.x).toBe(1);
-    expect(foo.y).toBe(2);
-    expect(foo.a).toBeFalsy();
-    expect(foo.b).toBeTruthy();
-    expect(foo.c).toBeFalsy();
-    expect(foo.bar.alpha).toBe(20);
-    expect(foo.bar.beta).toBe(40);
-    expect(foo.bar.gamma).toBe(60);
-    expect(foo.bar.type).toBe(sample.Bar.Type.VERTICAL);
-
-    expect(foo.extra_bars.length).toBe(3);
-    for (var i = 0; i < foo.extra_bars.length; ++i) {
-      var base = i * 100;
-      var type = i % 2 ?
-          sample.Bar.Type.VERTICAL : sample.Bar.Type.HORIZONTAL;
-      expect(foo.extra_bars[i].alpha).toBe(base);
-      expect(foo.extra_bars[i].beta).toBe(base + 20);
-      expect(foo.extra_bars[i].gamma).toBe(base + 40);
-      expect(foo.extra_bars[i].type).toBe(type);
-    }
-
-    expect(foo.data.length).toBe(10);
-    for (var i = 0; i < foo.data.length; ++i)
-      expect(foo.data[i]).toBe(foo.data.length - i);
-
-    expect(foo.source).toBe(0xFFFF);
-  }
-
-  // Check that values are set to the defaults if we don't override them.
-  function checkDefaultValues() {
+  // Checks that values are set to the defaults if we don't override them.
+  function testDefaultValues() {
     var bar = new sample.Bar();
     expect(bar.alpha).toBe(255);
     expect(bar.type).toBe(sample.Bar.Type.VERTICAL);
@@ -129,43 +63,114 @@ define([
     expect(defaults.a23).toBe(0xFFFFFFFFFFFFFFFF);
     expect(defaults.a24).toBe(0x123456789);
     expect(defaults.a25).toBe(-0x123456789);
+
+    return Promise.resolve();
   }
 
-  function ServiceImpl() {
-  }
-
-  ServiceImpl.prototype = Object.create(sample.Service.stubClass.prototype);
-
-  ServiceImpl.prototype.frobinate = function(foo, baz, port) {
-    checkFoo(foo);
-    expect(baz).toBe(sample.Service.BazOptions.EXTRA);
-    expect(core.isHandle(port)).toBeTruthy();
-    global.result = "PASS";
-  };
-
-  function SimpleMessageReceiver() {
-  }
-
-  SimpleMessageReceiver.prototype.acceptAndExpectResponse = function(message) {
-    if (dumpMessageAsHex) {
-      var uint8Array = new Uint8Array(message.buffer.arrayBuffer);
-      console.log(hexdump.dumpArray(uint8Array));
+  function testSampleService() {
+    function ServiceImpl() {
     }
-    // Imagine some IPC happened here.
-    var serviceImpl = new ServiceImpl();
-    return serviceImpl.acceptWithResponder(message, { accept: function() {} });
-  };
 
-  var serviceProxy = new sample.Service.proxyClass;
-  serviceProxy.receiver_ = new SimpleMessageReceiver;
+    ServiceImpl.prototype = Object.create(sample.Service.stubClass.prototype);
 
-  checkDefaultValues();
+    ServiceImpl.prototype.frobinate = function(foo, baz, port) {
+      checkFoo(foo);
+      expect(baz).toBe(sample.Service.BazOptions.EXTRA);
+      expect(core.isHandle(port)).toBeTruthy();
+      return Promise.resolve({result: 1234});
+    };
 
-  var foo = makeFoo();
-  checkFoo(foo);
+    var foo = makeFoo();
+    checkFoo(foo);
 
-  var pipe = core.createMessagePipe();
-  serviceProxy.frobinate(foo, sample.Service.BazOptions.EXTRA, pipe.handle0);
-  expect(core.close(pipe.handle0)).toBe(core.RESULT_OK);
-  expect(core.close(pipe.handle1)).toBe(core.RESULT_OK);
+    var sampleServicePipe = core.createMessagePipe();
+    var connection0 = new connection.Connection(sampleServicePipe.handle0,
+                                                ServiceImpl);
+    var connection1 = new connection.Connection(
+        sampleServicePipe.handle1, undefined, sample.Service.proxyClass);
+
+    var pipe = core.createMessagePipe();
+    var promise = connection1.remote.frobinate(
+        foo, sample.Service.BazOptions.EXTRA, pipe.handle0)
+            .then(function(response) {
+      expect(response.result).toBe(1234);
+
+      return Promise.resolve();
+    });
+
+    return promise;
+  }
+
+  function makeFoo() {
+    var bar = new sample.Bar();
+    bar.alpha = 20;
+    bar.beta = 40;
+    bar.gamma = 60;
+    bar.type = sample.Bar.Type.VERTICAL;
+
+    var extra_bars = new Array(3);
+    for (var i = 0; i < extra_bars.length; ++i) {
+      var base = i * 100;
+      var type = i % 2 ?
+          sample.Bar.Type.VERTICAL : sample.Bar.Type.HORIZONTAL;
+      extra_bars[i] = new sample.Bar();
+      extra_bars[i].alpha = base;
+      extra_bars[i].beta = base + 20;
+      extra_bars[i].gamma = base + 40;
+      extra_bars[i].type = type;
+    }
+
+    var data = new Array(10);
+    for (var i = 0; i < data.length; ++i) {
+      data[i] = data.length - i;
+    }
+
+    var foo = new sample.Foo();
+    foo.name = "foopy";
+    foo.x = 1;
+    foo.y = 2;
+    foo.a = false;
+    foo.b = true;
+    foo.c = false;
+    foo.bar = bar;
+    foo.extra_bars = extra_bars;
+    foo.data = data;
+
+    // TODO(yzshen): currently setting it to null will cause connection error,
+    // even if the field is defined as nullable. crbug.com/575753
+    foo.source = core.createMessagePipe().handle0;
+
+    return foo;
+  }
+
+  // Checks that the given |Foo| is identical to the one made by |makeFoo()|.
+  function checkFoo(foo) {
+    expect(foo.name).toBe("foopy");
+    expect(foo.x).toBe(1);
+    expect(foo.y).toBe(2);
+    expect(foo.a).toBeFalsy();
+    expect(foo.b).toBeTruthy();
+    expect(foo.c).toBeFalsy();
+    expect(foo.bar.alpha).toBe(20);
+    expect(foo.bar.beta).toBe(40);
+    expect(foo.bar.gamma).toBe(60);
+    expect(foo.bar.type).toBe(sample.Bar.Type.VERTICAL);
+
+    expect(foo.extra_bars.length).toBe(3);
+    for (var i = 0; i < foo.extra_bars.length; ++i) {
+      var base = i * 100;
+      var type = i % 2 ?
+          sample.Bar.Type.VERTICAL : sample.Bar.Type.HORIZONTAL;
+      expect(foo.extra_bars[i].alpha).toBe(base);
+      expect(foo.extra_bars[i].beta).toBe(base + 20);
+      expect(foo.extra_bars[i].gamma).toBe(base + 40);
+      expect(foo.extra_bars[i].type).toBe(type);
+    }
+
+    expect(foo.data.length).toBe(10);
+    for (var i = 0; i < foo.data.length; ++i)
+      expect(foo.data[i]).toBe(foo.data.length - i);
+
+    expect(core.isHandle(foo.source)).toBeTruthy();
+  }
 });

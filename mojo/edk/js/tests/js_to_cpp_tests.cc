@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
 #include <utility>
 
 #include "base/at_exit.h"
@@ -16,6 +17,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "gin/array_buffer.h"
 #include "gin/public/isolate_holder.h"
+#include "gin/v8_initializer.h"
+#include "mojo/common/data_pipe_utils.h"
 #include "mojo/edk/js/mojo_runner_delegate.h"
 #include "mojo/edk/js/tests/js_to_cpp.mojom.h"
 #include "mojo/edk/test/test_utils.h"
@@ -58,22 +61,25 @@ const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
 // NaN has the property that it is not equal to itself.
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
-void CheckDataPipe(MojoHandle data_pipe_handle) {
-  unsigned char buffer[100];
-  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  MojoResult result = MojoReadData(
-      data_pipe_handle, buffer, &buffer_size, MOJO_READ_DATA_FLAG_NONE);
-  EXPECT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(64u, buffer_size);
+void CheckDataPipe(ScopedDataPipeConsumerHandle data_pipe_handle) {
+  std::string buffer;
+  bool result = common::BlockingCopyToString(std::move(data_pipe_handle),
+                                             &buffer);
+  EXPECT_TRUE(result);
+  EXPECT_EQ(64u, buffer.size());
   for (int i = 0; i < 64; ++i) {
     EXPECT_EQ(i, buffer[i]);
   }
 }
 
-void CheckMessagePipe(MojoHandle message_pipe_handle) {
+void CheckMessagePipe(MessagePipeHandle message_pipe_handle) {
   unsigned char buffer[100];
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  MojoResult result = MojoReadMessage(
+  MojoResult result = Wait(
+      message_pipe_handle, MOJO_HANDLE_SIGNAL_READABLE,
+      MOJO_DEADLINE_INDEFINITE, nullptr);
+  EXPECT_EQ(MOJO_RESULT_OK, result);
+  result = ReadMessageRaw(
       message_pipe_handle, buffer, &buffer_size, 0, 0, 0);
   EXPECT_EQ(MOJO_RESULT_OK, result);
   EXPECT_EQ(64u, buffer_size);
@@ -107,33 +113,33 @@ js_to_cpp::EchoArgsPtr BuildSampleEchoArgs() {
   return args;
 }
 
-void CheckSampleEchoArgs(const js_to_cpp::EchoArgs& arg) {
-  EXPECT_EQ(kExpectedInt64Value, arg.si64);
-  EXPECT_EQ(kExpectedInt32Value, arg.si32);
-  EXPECT_EQ(kExpectedInt16Value, arg.si16);
-  EXPECT_EQ(kExpectedInt8Value, arg.si8);
-  EXPECT_EQ(kExpectedUInt64Value, arg.ui64);
-  EXPECT_EQ(kExpectedUInt32Value, arg.ui32);
-  EXPECT_EQ(kExpectedUInt16Value, arg.ui16);
-  EXPECT_EQ(kExpectedUInt8Value, arg.ui8);
-  EXPECT_EQ(kExpectedFloatVal, arg.float_val);
-  EXPECT_EQ(kExpectedFloatInf, arg.float_inf);
-  EXPECT_NAN(arg.float_nan);
-  EXPECT_EQ(kExpectedDoubleVal, arg.double_val);
-  EXPECT_EQ(kExpectedDoubleInf, arg.double_inf);
-  EXPECT_NAN(arg.double_nan);
-  EXPECT_EQ(std::string("coming"), arg.name.get());
-  EXPECT_EQ(std::string("one"), arg.string_array[0].get());
-  EXPECT_EQ(std::string("two"), arg.string_array[1].get());
-  EXPECT_EQ(std::string("three"), arg.string_array[2].get());
-  CheckDataPipe(arg.data_handle.get().value());
-  CheckMessagePipe(arg.message_handle.get().value());
+void CheckSampleEchoArgs(js_to_cpp::EchoArgsPtr arg) {
+  EXPECT_EQ(kExpectedInt64Value, arg->si64);
+  EXPECT_EQ(kExpectedInt32Value, arg->si32);
+  EXPECT_EQ(kExpectedInt16Value, arg->si16);
+  EXPECT_EQ(kExpectedInt8Value, arg->si8);
+  EXPECT_EQ(kExpectedUInt64Value, arg->ui64);
+  EXPECT_EQ(kExpectedUInt32Value, arg->ui32);
+  EXPECT_EQ(kExpectedUInt16Value, arg->ui16);
+  EXPECT_EQ(kExpectedUInt8Value, arg->ui8);
+  EXPECT_EQ(kExpectedFloatVal, arg->float_val);
+  EXPECT_EQ(kExpectedFloatInf, arg->float_inf);
+  EXPECT_NAN(arg->float_nan);
+  EXPECT_EQ(kExpectedDoubleVal, arg->double_val);
+  EXPECT_EQ(kExpectedDoubleInf, arg->double_inf);
+  EXPECT_NAN(arg->double_nan);
+  EXPECT_EQ(std::string("coming"), arg->name.get());
+  EXPECT_EQ(std::string("one"), arg->string_array[0].get());
+  EXPECT_EQ(std::string("two"), arg->string_array[1].get());
+  EXPECT_EQ(std::string("three"), arg->string_array[2].get());
+  CheckDataPipe(std::move(arg->data_handle));
+  CheckMessagePipe(arg->message_handle.get());
 }
 
 void CheckSampleEchoArgsList(const js_to_cpp::EchoArgsListPtr& list) {
   if (list.is_null())
     return;
-  CheckSampleEchoArgs(*list->item);
+  CheckSampleEchoArgs(std::move(list->item));
   CheckSampleEchoArgsList(list->next);
 }
 
@@ -384,6 +390,11 @@ class JsToCppTest : public testing::Test {
     cpp_side->Bind(GetProxy(&cpp_side_ptr));
 
     js_side->SetCppSide(std::move(cpp_side_ptr));
+
+#ifdef V8_USE_EXTERNAL_STARTUP_DATA
+    gin::V8Initializer::LoadV8Snapshot();
+    gin::V8Initializer::LoadV8Natives();
+#endif
 
     gin::IsolateHolder::Initialize(gin::IsolateHolder::kStrictMode,
                                    gin::IsolateHolder::kStableV8Extras,

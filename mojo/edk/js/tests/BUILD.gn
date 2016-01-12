@@ -10,6 +10,7 @@ source_set("js_to_cpp_tests") {
   deps = [
     ":js_to_cpp_bindings",
     "//gin:gin_test",
+    "//mojo/common",
     "//mojo/edk/js",
     "//mojo/edk/test:test_support",
     "//mojo/public/cpp/bindings",
@@ -21,6 +22,8 @@ source_set("js_to_cpp_tests") {
   sources = [
     "js_to_cpp_tests.cc",
   ]
+
+  configs += [ "//v8:external_startup_data" ]
 }
 
 mojom("js_to_cpp_bindings") {
