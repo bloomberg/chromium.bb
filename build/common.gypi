@@ -4087,6 +4087,10 @@
                       # We want to statically link libstdc++/libgcc.
                       '-static-libstdc++',
                       '-static-libgcc',
+                      # Don't allow visible symbols from libraries that contain
+                      # assembly code with symbols that aren't hidden properly.
+                      # http://b/26390825
+                      '-Wl,--exclude-libs=libffmpeg.a',
                     ],
                     'cflags!': [
                       # Some components in Chromium (e.g. v8, skia, ffmpeg)
