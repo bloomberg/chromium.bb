@@ -21,6 +21,7 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/public/browser/background_sync_controller.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -119,6 +120,18 @@ scoped_ptr<BackgroundSyncParameters> GetControllerParameters(
 
   background_sync_controller->GetParameterOverrides(parameters.get());
   return parameters;
+}
+
+void OnSyncEventFinished(
+    const scoped_refptr<ServiceWorkerVersion>& active_version,
+    int request_id,
+    const ServiceWorkerVersion::StatusCallback& callback,
+    ServiceWorkerEventStatus status) {
+  TRACE_EVENT1("ServiceWorker", "BackgroundSyncManager::OnSyncEventFinished",
+               "Request id", request_id);
+  if (!active_version->FinishRequest(request_id))
+    return;
+  callback.Run(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
 }
 
 }  // namespace
@@ -779,12 +792,29 @@ void BackgroundSyncManager::FireOneShotSync(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(active_version);
 
+  if (active_version->running_status() != ServiceWorkerVersion::RUNNING) {
+    active_version->RunAfterStartWorker(
+        callback, base::Bind(&BackgroundSyncManager::FireOneShotSync,
+                             weak_ptr_factory_.GetWeakPtr(), handle_id,
+                             active_version, last_chance, callback));
+    return;
+  }
+
+  int request_id = active_version->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::SYNC, callback,
+      parameters_->max_sync_event_duration,
+      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+  base::WeakPtr<BackgroundSyncServiceClient> client =
+      active_version->GetMojoServiceForRequest<BackgroundSyncServiceClient>(
+          request_id);
+
   // The ServiceWorkerVersion doesn't know when the client (javascript) is done
   // with the registration so don't give it a BackgroundSyncRegistrationHandle.
   // Once the render process gets the handle_id it can create its own handle
   // (with a new unique handle id).
-  active_version->DispatchSyncEvent(
-      handle_id, last_chance, parameters_->max_sync_event_duration, callback);
+  client->Sync(
+      handle_id, last_chance,
+      base::Bind(&OnSyncEventFinished, active_version, request_id, callback));
 }
 
 void BackgroundSyncManager::ScheduleDelayedTask(const base::Closure& callback,

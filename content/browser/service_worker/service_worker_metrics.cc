@@ -182,6 +182,40 @@ void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {
                             static_cast<int>(EventType::NUM_TYPES));
 }
 
+void ServiceWorkerMetrics::RecordEventDuration(EventType event,
+                                               const base::TimeDelta& time) {
+  switch (event) {
+    case EventType::ACTIVATE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.ActivateEvent.Time", time);
+      break;
+    case EventType::INSTALL:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.InstallEvent.Time", time);
+      break;
+    case EventType::SYNC:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.BackgroundSyncEvent.Time",
+                                 time);
+      break;
+    case EventType::NOTIFICATION_CLICK:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.NotificationClickEvent.Time",
+                                 time);
+      break;
+    case EventType::PUSH:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.PushEvent.Time", time);
+      break;
+
+    // Event duration for fetch is recorded separately.
+    case EventType::FETCH:
+    // For now event duration for these events is not recorded.
+    case EventType::GEOFENCING:
+    case EventType::SERVICE_PORT_CONNECT:
+      break;
+
+    case EventType::NUM_TYPES:
+      NOTREACHED() << "Invalid event type";
+      break;
+  }
+}
+
 void ServiceWorkerMetrics::RecordFetchEventStatus(
     bool is_main_resource,
     ServiceWorkerStatusCode status) {

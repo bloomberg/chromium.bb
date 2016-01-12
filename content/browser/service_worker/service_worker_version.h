@@ -22,11 +22,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
-#include "content/browser/background_sync/background_sync_registration_handle.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
-#include "content/common/background_sync_service.mojom.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -93,6 +91,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
     ACTIVATED,   // Activation is finished and can run as activated.
     REDUNDANT,   // The version is no longer running as activated, due to
                  // unregistration or replace.
+  };
+
+  // Behavior when a request times out.
+  enum TimeoutBehavior {
+    KILL_ON_TIMEOUT,     // Kill the worker if this request times out.
+    CONTINUE_ON_TIMEOUT  // Keep the worker alive, only abandon the request that
+                         // timed out.
   };
 
   class Listener {
@@ -189,6 +194,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   int StartRequest(ServiceWorkerMetrics::EventType event_type,
                    const StatusCallback& error_callback);
 
+  // Same as StartRequest, but allows the caller to specify a custom timeout for
+  // the event, as well as the behavior for when the request times out.
+  int StartRequestWithCustomTimeout(ServiceWorkerMetrics::EventType event_type,
+                                    const StatusCallback& error_callback,
+                                    const base::TimeDelta& timeout,
+                                    TimeoutBehavior timeout_behavior);
+
   // Informs ServiceWorkerVersion that an event has finished being dispatched.
   // Returns false if no pending requests with the provided id exist, for
   // example if the request has already timed out.
@@ -238,17 +250,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void DispatchFetchEvent(const ServiceWorkerFetchRequest& request,
                           const base::Closure& prepare_callback,
                           const FetchCallback& fetch_callback);
-
-  // Sends sync event to the associated embedded worker and asynchronously calls
-  // |callback| when it errors out or it gets a response from the worker to
-  // notify completion. |max_duration| is how long the event is allowed to run
-  // for before it times out.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchSyncEvent(BackgroundSyncRegistrationHandle::HandleId handle_id,
-                         BackgroundSyncEventLastChance last_chance,
-                         base::TimeDelta max_duration,
-                         const StatusCallback& callback);
 
   // Sends notificationclick event to the associated embedded worker and
   // asynchronously calls |callback| when it errors out or it gets a response
@@ -393,6 +394,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
                            RegisterForeignFetchScopes);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest, RequestCustomizedTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTest,
+                           RequestCustomizedTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerWaitForeverInFetchTest,
                            MixedRequestTimeouts);
 
@@ -403,7 +406,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_ACTIVATE,
     REQUEST_INSTALL,
     REQUEST_FETCH,
-    REQUEST_SYNC,
     REQUEST_NOTIFICATION_CLICK,
     REQUEST_PUSH,
     REQUEST_GEOFENCING,
@@ -415,22 +417,27 @@ class CONTENT_EXPORT ServiceWorkerVersion
     RequestInfo(int id,
                 RequestType type,
                 ServiceWorkerMetrics::EventType event_type,
-                const base::TimeTicks& expiration);
+                const base::TimeTicks& expiration,
+                TimeoutBehavior timeout_behavior);
     ~RequestInfo();
     bool operator>(const RequestInfo& other) const;
     int id;
     RequestType type;
     ServiceWorkerMetrics::EventType event_type;
     base::TimeTicks expiration;
+    TimeoutBehavior timeout_behavior;
   };
 
   template <typename CallbackType>
   struct PendingRequest {
-    PendingRequest(const CallbackType& callback, const base::TimeTicks& time);
+    PendingRequest(const CallbackType& callback,
+                   const base::TimeTicks& time,
+                   ServiceWorkerMetrics::EventType event_type);
     ~PendingRequest();
 
     CallbackType callback;
     base::TimeTicks start_time;
+    ServiceWorkerMetrics::EventType event_type;
     // Name of the mojo service this request is associated with. Used to call
     // the callback when a connection closes with outstanding requests.
     // Compared as pointer, so should only contain static strings. Typically
@@ -537,7 +544,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnFetchEventFinished(int request_id,
                             ServiceWorkerFetchEventResult result,
                             const ServiceWorkerResponse& response);
-  void OnSyncEventFinished(int request_id, ServiceWorkerEventStatus status);
   void OnNotificationClickEventFinished(int request_id);
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
@@ -621,10 +627,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
       IDMap<PendingRequest<CallbackType>, IDMapOwnPointer>* callback_map,
       RequestType request_type,
       ServiceWorkerMetrics::EventType event_type,
-      base::TimeTicks expiration);
+      base::TimeTicks expiration,
+      TimeoutBehavior timeout_behavior);
 
   bool MaybeTimeOutRequest(const RequestInfo& info);
-  bool ShouldStopIfRequestTimesOut(const RequestInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
 
   // Returns the reason the embedded worker failed to start, using information
@@ -642,11 +648,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       const scoped_refptr<ServiceWorkerRegistration>& registration);
 
   void OnStoppedInternal(EmbeddedWorkerInstance::Status old_status);
-
-  // Called when a connection to a mojo event Dispatcher drops or fails.
-  // Calls callbacks for any outstanding requests to the dispatcher as well
-  // as cleans up the dispatcher.
-  void OnBackgroundSyncDispatcherConnectionError();
 
   // Called when the remote side of a connection to a mojo service is lost.
   void OnMojoConnectionError(const char* service_name);
@@ -673,14 +674,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> activate_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> install_requests_;
   IDMap<PendingRequest<FetchCallback>, IDMapOwnPointer> fetch_requests_;
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> sync_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>
       notification_click_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> geofencing_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
-
-  BackgroundSyncServiceClientPtr background_sync_dispatcher_;
 
   // Stores all open connections to mojo services. Maps the service name to
   // the actual interface pointer. When a connection is closed it is removed

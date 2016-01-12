@@ -142,6 +142,9 @@ class ServiceWorkerMetrics {
   // Records how often a dispatched event times out.
   static void RecordEventTimeout(EventType event);
 
+  // Records the amount of time spent handling an event.
+  static void RecordEventDuration(EventType event, const base::TimeDelta& time);
+
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
                                      ServiceWorkerStatusCode status);
