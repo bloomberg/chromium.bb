@@ -50,6 +50,9 @@ enum TestCase {
   kTestCaseHTTP2PriorityDependencies
 };
 
+const char kHttpURLFromAnotherOrigin[] = "http://www.example2.org/a.dat";
+const char kHttpsURLFromAnotherOrigin[] = "https://www.example2.org/b.dat";
+
 const char kBodyData[] = "Body data";
 const size_t kBodyDataSize = arraysize(kBodyData);
 const base::StringPiece kBodyDataStringPiece(kBodyData, kBodyDataSize);
@@ -4835,6 +4838,156 @@ TEST_P(SpdySessionTest, RejectPushedStreamExceedingConcurrencyLimit) {
   EXPECT_EQ(0u, session_->num_created_streams());
   EXPECT_EQ(1u, session_->num_pushed_streams());
   EXPECT_EQ(1u, session_->num_active_pushed_streams());
+
+  // Read EOF.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(session_);
+}
+
+// Tests that HTTP SPDY push streams that advertise an origin different from the
+// associated stream are accepted from a trusted SPDY proxy.
+TEST_P(SpdySessionTest, TrustedSpdyProxy) {
+  // Origin of kDefaultURL should be different from the origin of
+  // kHttpURLFromAnotherOrigin and kHttpsURLFromAnotherOrigin.
+  ASSERT_NE(GURL(kDefaultURL).host(), GURL(kHttpURLFromAnotherOrigin).host());
+  ASSERT_NE(GURL(kDefaultURL).host(), GURL(kHttpsURLFromAnotherOrigin).host());
+
+  // cross_origin_push contains HTTP resource for an origin different from the
+  // origin of kDefaultURL, and should be accepted.
+  scoped_ptr<SpdyFrame> cross_origin_push(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, kHttpURLFromAnotherOrigin));
+  // cross_origin_https_push contains HTTPS resource, and should be refused.
+  scoped_ptr<SpdyFrame> cross_origin_https_push(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 4, 1, kHttpsURLFromAnotherOrigin));
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 1),
+      CreateMockRead(*cross_origin_push, 2),
+      MockRead(ASYNC, ERR_IO_PENDING, 3),
+      CreateMockRead(*cross_origin_https_push, 4),
+      MockRead(ASYNC, ERR_IO_PENDING, 6),
+      MockRead(ASYNC, 0, 7),
+  };
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(4, RST_STREAM_REFUSED_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 5),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+  session_deps_.trusted_spdy_proxy =
+      HostPortPair::FromURL(GURL(kDefaultURL)).ToString();
+
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  EXPECT_EQ(0u, session_->num_active_streams());
+  EXPECT_EQ(1u, session_->num_created_streams());
+  EXPECT_EQ(0u, session_->num_pushed_streams());
+  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
+
+  // Run until 1st stream is activated.
+  EXPECT_EQ(0u, delegate.stream_id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, delegate.stream_id());
+  EXPECT_EQ(1u, session_->num_active_streams());
+  EXPECT_EQ(0u, session_->num_created_streams());
+  EXPECT_EQ(0u, session_->num_pushed_streams());
+  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+
+  // Run until pushed stream is created.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, session_->num_active_streams());
+  EXPECT_EQ(0u, session_->num_created_streams());
+  EXPECT_EQ(1u, session_->num_pushed_streams());
+  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+
+  // Reset incoming pushed stream.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, session_->num_active_streams());
+  EXPECT_EQ(0u, session_->num_created_streams());
+  EXPECT_EQ(1u, session_->num_pushed_streams());
+  EXPECT_EQ(1u, session_->num_active_pushed_streams());
+
+  // Read EOF.
+  data.Resume();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(session_);
+}
+
+// Tests that if the SPDY trusted proxy is not set, then push streams that
+// advertise an origin different from the associated stream are refused.
+TEST_P(SpdySessionTest, TrustedSpdyProxyNotSet) {
+  // Origin of kDefaultURL should be different from the origin of
+  // kHttpURLFromAnotherOrigin.
+  ASSERT_NE(GURL(kDefaultURL).host(), GURL(kHttpURLFromAnotherOrigin).host());
+
+  // cross_origin_push contains resource for an origin different from the
+  // origin of kDefaultURL, and should be refused.
+  scoped_ptr<SpdyFrame> cross_origin_push(spdy_util_.ConstructSpdyPush(
+      nullptr, 0, 2, 1, kHttpURLFromAnotherOrigin));
+  MockRead reads[] = {
+      MockRead(ASYNC, ERR_IO_PENDING, 1), CreateMockRead(*cross_origin_push, 2),
+      MockRead(ASYNC, 0, 4),
+  };
+
+  scoped_ptr<SpdyFrame> req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, false, 1, LOWEST, true));
+  scoped_ptr<SpdyFrame> rst(
+      spdy_util_.ConstructSpdyRstStream(2, RST_STREAM_REFUSED_STREAM));
+  MockWrite writes[] = {
+      CreateMockWrite(*req, 0), CreateMockWrite(*rst, 3),
+  };
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  CreateNetworkSession();
+  CreateInsecureSpdySession();
+
+  base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
+      SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
+  ASSERT_TRUE(spdy_stream.get() != nullptr);
+  EXPECT_EQ(0u, spdy_stream->stream_id());
+  test::StreamDelegateDoNothing delegate(spdy_stream);
+  spdy_stream->SetDelegate(&delegate);
+
+  EXPECT_EQ(0u, session_->num_active_streams());
+  EXPECT_EQ(1u, session_->num_created_streams());
+  EXPECT_EQ(0u, session_->num_pushed_streams());
+  EXPECT_EQ(0u, session_->num_active_pushed_streams());
+
+  scoped_ptr<SpdyHeaderBlock> headers(
+      spdy_util_.ConstructGetHeaderBlock(kDefaultURL));
+  spdy_stream->SendRequestHeaders(std::move(headers), NO_MORE_DATA_TO_SEND);
+  EXPECT_TRUE(spdy_stream->HasUrlFromHeaders());
+
+  // Run until 1st stream is activated.
+  EXPECT_EQ(0u, delegate.stream_id());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, delegate.stream_id());
+  EXPECT_EQ(1u, session_->num_active_streams());
+  EXPECT_EQ(0u, session_->num_created_streams());
+  EXPECT_EQ(0u, session_->num_pushed_streams());
+  EXPECT_EQ(0u, session_->num_active_pushed_streams());
 
   // Read EOF.
   data.Resume();

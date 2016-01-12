@@ -2722,6 +2722,7 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
           RST_STREAM_REFUSED_STREAM,
           base::StringPrintf("Rejected push of Cross Origin HTTPS content %d",
                              associated_stream_id));
+      return false;
     }
   } else {
     GURL associated_url(associated_it->second.stream->GetUrlFromHeaders());
