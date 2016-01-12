@@ -4,6 +4,8 @@
 
 #include "net/cert/ct_log_verifier.h"
 
+#include <string.h>
+
 #include "base/logging.h"
 #include "net/cert/ct_log_verifier_util.h"
 #include "net/cert/ct_serialization.h"
@@ -11,6 +13,16 @@
 #include "net/cert/signed_tree_head.h"
 
 namespace net {
+
+namespace {
+
+// The SHA-256 hash of the empty string.
+const unsigned char kSHA256EmptyStringHash[ct::kSthRootHashLength] = {
+    0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4,
+    0xc8, 0x99, 0x6f, 0xb9, 0x24, 0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b,
+    0x93, 0x4c, 0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55};
+
+}  // namespace
 
 // static
 scoped_refptr<const CTLogVerifier> CTLogVerifier::Create(
@@ -70,6 +82,11 @@ bool CTLogVerifier::VerifySignedTreeHead(
   ct::EncodeTreeHeadSignature(signed_tree_head, &serialized_data);
   if (VerifySignature(serialized_data,
                       signed_tree_head.signature.signature_data)) {
+    if (signed_tree_head.tree_size == 0) {
+      // Root hash must equate SHA256 hash of the empty string.
+      return (memcmp(signed_tree_head.sha256_root_hash, kSHA256EmptyStringHash,
+                     ct::kSthRootHashLength) == 0);
+    }
     return true;
   }
   return false;

@@ -5,7 +5,7 @@
 #include "net/test/ct_test_util.h"
 
 #include <stdint.h>
-#include <string>
+#include <string.h>
 #include <vector>
 
 #include "base/base64.h"
@@ -166,7 +166,7 @@ const char kSampleSTHTreeHeadSignature[] =
     "6c7a20022100e38464f3c0fd066257b982074f7ac87655e0c8f714768a050b4be9a7b441cb"
     "d3";
 size_t kSampleSTHTreeSize = 21u;
-int64_t kSampleSTHTimestamp = 1396877277237u;
+int64_t kSampleSTHTimestamp = INT64_C(1396877277237);
 
 }  // namespace
 
@@ -264,6 +264,40 @@ void GetSampleSignedTreeHead(SignedTreeHead* sth) {
   memcpy(sth->sha256_root_hash, sha256_root_hash.c_str(), kSthRootHashLength);
 
   GetSampleSTHTreeHeadDecodedSignature(&(sth->signature));
+}
+
+void GetSampleEmptySignedTreeHead(SignedTreeHead* sth) {
+  sth->version = SignedTreeHead::V1;
+  sth->timestamp = base::Time::UnixEpoch() +
+                   base::TimeDelta::FromMilliseconds(INT64_C(1450443594920));
+  sth->tree_size = 0;
+  std::string empty_root_hash = HexToBytes(
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
+  memcpy(sth->sha256_root_hash, empty_root_hash.c_str(), kSthRootHashLength);
+
+  std::string tree_head_signature = HexToBytes(
+      "040300463044022046c26401de9416403da54762dc1f1687c38eafd791b15e484ab4c5f7"
+      "f52721fe02201bf537a3bbea47109fc76c2273fe0f3349f493a07de9335c266330105fb0"
+      "2a4a");
+  base::StringPiece sp(tree_head_signature);
+  CHECK(DecodeDigitallySigned(&sp, &(sth->signature)));
+  CHECK(sp.empty());
+}
+
+void GetBadEmptySignedTreeHead(SignedTreeHead* sth) {
+  sth->version = SignedTreeHead::V1;
+  sth->timestamp = base::Time::UnixEpoch() +
+                   base::TimeDelta::FromMilliseconds(INT64_C(1450870952897));
+  sth->tree_size = 0;
+  memset(sth->sha256_root_hash, 'f', kSthRootHashLength);
+
+  std::string tree_head_signature = HexToBytes(
+      "04030046304402207cab04c62dee5d1cbc95fec30cd8417313f71587b75f133ad2e6f324"
+      "74f164d702205e2f3a9bce46f87d7e20e951a4e955da3cb502f8717a22fabd7c5d7e1bef"
+      "46ea");
+  base::StringPiece sp(tree_head_signature);
+  CHECK(DecodeDigitallySigned(&sp, &(sth->signature)));
+  CHECK(sp.empty());
 }
 
 std::string GetSampleSTHSHA256RootHash() {

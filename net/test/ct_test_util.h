@@ -71,6 +71,14 @@ std::string GetDerEncodedFakeOCSPResponseIssuerCert();
 // A sample, valid STH.
 void GetSampleSignedTreeHead(SignedTreeHead* sth);
 
+// A valid STH for the empty tree.
+void GetSampleEmptySignedTreeHead(SignedTreeHead* sth);
+
+// An STH for an empty tree where the root hash is not the hash of the empty
+// string, but the signature over the STH is valid. Such an STH is not valid
+// according to RFC6962.
+void GetBadEmptySignedTreeHead(SignedTreeHead* sth);
+
 // The SHA256 root hash for the sample STH.
 std::string GetSampleSTHSHA256RootHash();
 

@@ -274,16 +274,28 @@ TEST_F(CTLogVerifierTest, FailsInvalidLogID) {
   EXPECT_FALSE(log_->Verify(cert_entry, *cert_sct.get()));
 }
 
-TEST_F(CTLogVerifierTest, SetsValidSTH) {
+TEST_F(CTLogVerifierTest, VerifiesValidSTH) {
   ct::SignedTreeHead sth;
   ct::GetSampleSignedTreeHead(&sth);
   ASSERT_TRUE(log_->VerifySignedTreeHead(sth));
 }
 
-TEST_F(CTLogVerifierTest, DoesNotSetInvalidSTH) {
+TEST_F(CTLogVerifierTest, DoesNotVerifyInvalidSTH) {
   ct::SignedTreeHead sth;
   ct::GetSampleSignedTreeHead(&sth);
   sth.sha256_root_hash[0] = '\x0';
+  ASSERT_FALSE(log_->VerifySignedTreeHead(sth));
+}
+
+TEST_F(CTLogVerifierTest, VerifiesValidEmptySTH) {
+  ct::SignedTreeHead sth;
+  ct::GetSampleEmptySignedTreeHead(&sth);
+  ASSERT_TRUE(log_->VerifySignedTreeHead(sth));
+}
+
+TEST_F(CTLogVerifierTest, DoesNotVerifyInvalidEmptySTH) {
+  ct::SignedTreeHead sth;
+  ct::GetBadEmptySignedTreeHead(&sth);
   ASSERT_FALSE(log_->VerifySignedTreeHead(sth));
 }
 
