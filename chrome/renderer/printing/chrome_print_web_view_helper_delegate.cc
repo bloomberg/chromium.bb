@@ -7,8 +7,10 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -41,8 +43,11 @@ blink::WebElement ChromePrintWebViewHelperDelegate::GetPdfElement(
         blink::WebLocalFrame* frame) {
 #if defined(ENABLE_EXTENSIONS)
   GURL url = frame->document().url();
-  if (url.SchemeIs(extensions::kExtensionScheme) &&
-      url.host() == extension_misc::kPdfExtensionId) {
+  bool inside_print_preview =
+      url.GetOrigin() == GURL(chrome::kChromeUIPrintURL);
+  bool inside_pdf_extension = url.SchemeIs(extensions::kExtensionScheme) &&
+                              url.host() == extension_misc::kPdfExtensionId;
+  if (inside_print_preview || inside_pdf_extension) {
     // <object> with id="plugin" is created in
     // chrome/browser/resources/pdf/pdf.js.
     auto plugin_element = frame->document().getElementById("plugin");
