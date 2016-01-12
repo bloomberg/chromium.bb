@@ -36,6 +36,10 @@ public:
 
     void setFrameRect(const IntRect&) override;
 
+    void hide() override;
+    void show() override;
+    void setParentVisible(bool) override;
+
     DECLARE_VIRTUAL_TRACE();
 
 private:

@@ -198,4 +198,9 @@ void RemoteFrameClientImpl::advanceFocus(WebFocusType type, LocalFrame* source)
     m_webFrame->client()->advanceFocus(type, WebLocalFrameImpl::fromFrame(source));
 }
 
+void RemoteFrameClientImpl::visibilityChanged(bool visible)
+{
+    m_webFrame->client()->visibilityChanged(visible);
+}
+
 } // namespace blink

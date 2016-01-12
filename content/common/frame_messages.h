@@ -1178,6 +1178,9 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ForwardInputEvent,
 // position of a child's ancestor has changed).
 IPC_MESSAGE_ROUTED1(FrameHostMsg_FrameRectChanged, gfx::Rect /* frame_rect */)
 
+// Informs the child that the frame has changed visibility.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_VisibilityChanged, bool /* visible */)
+
 // Used to tell the parent that the user right clicked on an area of the
 // content area, and a context menu should be shown for it. The params
 // object contains information about the node(s) that were selected when the

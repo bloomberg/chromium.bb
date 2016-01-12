@@ -38,6 +38,7 @@ public:
     void forwardInputEvent(Event*) override;
     void frameRectsChanged(const IntRect& frameRect) override;
     void advanceFocus(WebFocusType, LocalFrame*) override;
+    void visibilityChanged(bool visible) override;
 
     WebRemoteFrameImpl* webFrame() const { return m_webFrame; }
 

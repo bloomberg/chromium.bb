@@ -145,6 +145,12 @@ void RemoteFrame::frameRectsChanged(const IntRect& frameRect)
     remoteFrameClient()->frameRectsChanged(frameRect);
 }
 
+void RemoteFrame::visibilityChanged(bool visible)
+{
+    if (remoteFrameClient())
+        remoteFrameClient()->visibilityChanged(visible);
+}
+
 void RemoteFrame::setView(PassRefPtrWillBeRawPtr<RemoteFrameView> view)
 {
     // Oilpan: as RemoteFrameView performs no finalization actions,

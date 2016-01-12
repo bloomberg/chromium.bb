@@ -31,6 +31,8 @@ public:
     virtual void frameRectsChanged(const IntRect& frameRect) = 0;
 
     virtual void advanceFocus(WebFocusType, LocalFrame* source) = 0;
+
+    virtual void visibilityChanged(bool visible) = 0;
 };
 
 } // namespace blink

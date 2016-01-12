@@ -449,6 +449,10 @@ void RenderFrameProxy::frameRectsChanged(const blink::WebRect& frame_rect) {
   Send(new FrameHostMsg_FrameRectChanged(routing_id_, frame_rect));
 }
 
+void RenderFrameProxy::visibilityChanged(bool visible) {
+  Send(new FrameHostMsg_VisibilityChanged(routing_id_, visible));
+}
+
 void RenderFrameProxy::didChangeOpener(blink::WebFrame* opener) {
   // A proxy shouldn't normally be disowning its opener.  It is possible to get
   // here when a proxy that is being detached clears its opener, in which case

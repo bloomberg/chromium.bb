@@ -8359,4 +8359,73 @@ TEST_F(WebFrameTest, CallbackOrdering)
     webViewHelper.initializeAndLoad(m_baseURL + "foo.html", true, &client);
 }
 
+class TestWebRemoteFrameClientForVisibility : public FrameTestHelpers::TestWebRemoteFrameClient {
+public:
+    TestWebRemoteFrameClientForVisibility()
+        : m_visible(true)
+    {
+    }
+    void visibilityChanged(bool visible) override { m_visible = visible; }
+
+    bool isVisible() const { return m_visible; }
+
+private:
+    bool m_visible;
+};
+
+class WebFrameVisibilityChangeTest : public WebFrameTest {
+public:
+    WebFrameVisibilityChangeTest()
+    {
+        registerMockedHttpURLLoad("visible_iframe.html");
+        registerMockedHttpURLLoad("single_iframe.html");
+        m_frame = m_webViewHelper.initializeAndLoad(m_baseURL + "single_iframe.html", true)->mainFrame();
+        m_webRemoteFrame = remoteFrameClient()->frame();
+    }
+
+    ~WebFrameVisibilityChangeTest()
+    {
+    }
+
+    void executeScriptOnMainFrame(const WebScriptSource& script)
+    {
+        mainFrame()->executeScript(script);
+        mainFrame()->view()->updateAllLifecyclePhases();
+        runPendingTasks();
+    }
+
+    void swapLocalFrameToRemoteFrame()
+    {
+        mainFrame()->lastChild()->swap(remoteFrame());
+        remoteFrame()->setReplicatedOrigin(SecurityOrigin::createUnique());
+    }
+
+    WebFrame* mainFrame() { return m_frame; }
+    WebRemoteFrameImpl* remoteFrame() { return m_webRemoteFrame; }
+    TestWebRemoteFrameClientForVisibility* remoteFrameClient() { return &m_remoteFrameClient; }
+
+private:
+    TestWebRemoteFrameClientForVisibility m_remoteFrameClient;
+    FrameTestHelpers::WebViewHelper m_webViewHelper;
+    WebFrame* m_frame;
+    WebRemoteFrameImpl* m_webRemoteFrame;
+};
+
+TEST_F(WebFrameVisibilityChangeTest, RemoteFrameVisibilityChange)
+{
+    swapLocalFrameToRemoteFrame();
+    executeScriptOnMainFrame(WebScriptSource("document.querySelector('iframe').style.display = 'none';"));
+    EXPECT_FALSE(remoteFrameClient()->isVisible());
+
+    executeScriptOnMainFrame(WebScriptSource("document.querySelector('iframe').style.display = 'block';"));
+    EXPECT_TRUE(remoteFrameClient()->isVisible());
+}
+
+TEST_F(WebFrameVisibilityChangeTest, RemoteFrameParentVisibilityChange)
+{
+    swapLocalFrameToRemoteFrame();
+    executeScriptOnMainFrame(WebScriptSource("document.querySelector('iframe').parentElement.style.display = 'none';"));
+    EXPECT_FALSE(remoteFrameClient()->isVisible());
+}
+
 } // namespace blink

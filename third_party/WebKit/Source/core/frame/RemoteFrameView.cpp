@@ -66,6 +66,36 @@ void RemoteFrameView::frameRectsChanged()
     m_remoteFrame->frameRectsChanged(frameRect());
 }
 
+void RemoteFrameView::hide()
+{
+    setSelfVisible(false);
+
+    Widget::hide();
+
+    m_remoteFrame->visibilityChanged(false);
+}
+
+void RemoteFrameView::show()
+{
+    setSelfVisible(true);
+
+    Widget::show();
+
+    m_remoteFrame->visibilityChanged(true);
+}
+
+void RemoteFrameView::setParentVisible(bool visible)
+{
+    if (isParentVisible() == visible)
+        return;
+
+    Widget::setParentVisible(visible);
+    if (!isSelfVisible())
+        return;
+
+    m_remoteFrame->visibilityChanged(isVisible());
+}
+
 DEFINE_TRACE(RemoteFrameView)
 {
     visitor->trace(m_remoteFrame);

@@ -513,6 +513,49 @@ class SwapoutACKMessageFilter : public BrowserMessageFilter {
   DISALLOW_COPY_AND_ASSIGN(SwapoutACKMessageFilter);
 };
 
+class RenderWidgetHostVisibilityObserver : public NotificationObserver {
+ public:
+  explicit RenderWidgetHostVisibilityObserver(RenderWidgetHostImpl* rwhi,
+                                              bool expected_visibility_state)
+      : expected_visibility_state_(expected_visibility_state),
+        was_observed_(false),
+        did_fail_(false),
+        source_(rwhi) {
+    registrar_.Add(this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+                   source_);
+    message_loop_runner_ = new MessageLoopRunner;
+  }
+
+  bool WaitUntilSatisfied() {
+    if (!was_observed_)
+      message_loop_runner_->Run();
+    registrar_.Remove(this, NOTIFICATION_RENDER_WIDGET_VISIBILITY_CHANGED,
+                      source_);
+    return !did_fail_;
+  }
+
+ private:
+  void Observe(int type,
+               const NotificationSource& source,
+               const NotificationDetails& details) override {
+    was_observed_ = true;
+    did_fail_ = expected_visibility_state_ !=
+                (*static_cast<const Details<bool>&>(details).ptr());
+    if (message_loop_runner_->loop_running())
+      message_loop_runner_->Quit();
+  }
+
+  RenderWidgetHostImpl* render_widget_host_;
+  bool expected_visibility_state_;
+  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  NotificationRegistrar registrar_;
+  bool was_observed_;
+  bool did_fail_;
+  Source<RenderWidgetHost> source_;
+
+  DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostVisibilityObserver);
+};
+
 }  // namespace
 
 //
@@ -4659,6 +4702,47 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, ParentDetachRemoteChild) {
       embedded_test_server()->GetURL("d.com", "/title3.html"));
   watcher.Wait();
   EXPECT_TRUE(watcher.did_exit_normally());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChanged) {
+  GURL main_url(
+      embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  EXPECT_EQ(shell()->web_contents()->GetLastCommittedURL(), main_url);
+
+  GURL cross_site_url =
+      embedded_test_server()->GetURL("oopif.com", "/title1.html");
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  TestNavigationObserver observer(shell()->web_contents());
+
+  NavigateFrameToURL(root->child_at(0), cross_site_url);
+  EXPECT_EQ(cross_site_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  RenderWidgetHostImpl* render_widget_host =
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost();
+  EXPECT_FALSE(render_widget_host->is_hidden());
+
+  std::string show_script =
+      "document.querySelector('iframe').style.visibility = 'visible';";
+  std::string hide_script =
+      "document.querySelector('iframe').style.visibility = 'hidden';";
+
+  // Verify that hiding leads to a notification from RenderWidgetHost.
+  RenderWidgetHostVisibilityObserver hide_observer(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), false);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), hide_script));
+  EXPECT_TRUE(hide_observer.WaitUntilSatisfied());
+
+  // Verify showing leads to a notification as well.
+  RenderWidgetHostVisibilityObserver show_observer(
+      root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), true);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), show_script));
+  EXPECT_TRUE(show_observer.WaitUntilSatisfied());
 }
 
 }  // namespace content

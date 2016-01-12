@@ -49,6 +49,8 @@ public:
 
     void frameRectsChanged(const IntRect& frameRect);
 
+    void visibilityChanged(bool visible);
+
     void setRemotePlatformLayer(WebLayer*);
     WebLayer* remotePlatformLayer() const { return m_remotePlatformLayer; }
 
