@@ -807,6 +807,7 @@ void GpuProcessHost::CreateArcVideoAcceleratorChannel(
 void GpuProcessHost::OnInitialized(bool result, const gpu::GPUInfo& gpu_info) {
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessInitialized", result);
   initialized_ = result;
+  gpu_info_ = gpu_info;
 
   if (!initialized_)
     GpuDataManagerImpl::GetInstance()->OnGpuProcessInitFailure();
@@ -842,8 +843,7 @@ void GpuProcessHost::OnChannelEstablished(
     return;
   }
 
-  callback.Run(channel_handle,
-               GpuDataManagerImpl::GetInstance()->GetGPUInfo());
+  callback.Run(channel_handle, gpu_info_);
 }
 
 void GpuProcessHost::OnCommandBufferCreated(CreateCommandBufferResult result) {

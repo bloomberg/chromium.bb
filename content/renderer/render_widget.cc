@@ -958,6 +958,7 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
 }
 
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
+  DCHECK(webwidget_);
   // For widgets that are never visible, we don't start the compositor, so we
   // never get a request for a cc::OutputSurface.
   DCHECK(!compositor_never_visible_);
@@ -976,15 +977,29 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   }
 #endif
 
+  scoped_refptr<GpuChannelHost> gpu_channel_host;
+  if (!use_software) {
+    CauseForGpuLaunch cause =
+        CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+    gpu_channel_host =
+        RenderThreadImpl::current()->EstablishGpuChannelSync(cause);
+    if (!gpu_channel_host.get()) {
+      // Cause the compositor to wait and try again.
+      return nullptr;
+    }
+    // We may get a valid channel, but with a software renderer. In that case,
+    // disable GPU compositing.
+    if (gpu_channel_host->gpu_info().software_rendering)
+      use_software = true;
+  }
+
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
   scoped_refptr<ContextProviderCommandBuffer> worker_context_provider;
   if (!use_software) {
     context_provider = ContextProviderCommandBuffer::Create(
-        CreateGraphicsContext3D(true), RENDER_COMPOSITOR_CONTEXT);
-    if (!context_provider.get()) {
-      // Cause the compositor to wait and try again.
-      return nullptr;
-    }
+        CreateGraphicsContext3D(gpu_channel_host.get()),
+        RENDER_COMPOSITOR_CONTEXT);
+    DCHECK(context_provider);
     worker_context_provider =
         RenderThreadImpl::current()->SharedWorkerContextProvider();
     if (!worker_context_provider) {
@@ -2097,21 +2112,7 @@ void RenderWidget::didUpdateTextOfFocusedElementByNonUserInput() {
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-RenderWidget::CreateGraphicsContext3D(bool compositor) {
-  if (!webwidget_)
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuCompositing))
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  if (!RenderThreadImpl::current())
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-  CauseForGpuLaunch cause =
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
-  scoped_refptr<GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
-  if (!gpu_channel_host.get())
-    return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
-
+RenderWidget::CreateGraphicsContext3D(GpuChannelHost* gpu_channel_host) {
   // Explicitly disable antialiasing for the compositor. As of the time of
   // this writing, the only platform that supported antialiasing for the
   // compositor was Mac OS X, because the on-screen OpenGL context creation
@@ -2159,17 +2160,13 @@ RenderWidget::CreateGraphicsContext3D(bool compositor) {
   limits.mapped_memory_reclaim_limit =
       max_transfer_buffer_usage_mb * kBytesPerMegabyte;
 #endif
-  if (compositor) {
-    limits.command_buffer_size = 64 * 1024;
-    limits.start_transfer_buffer_size = 64 * 1024;
-    limits.min_transfer_buffer_size = 64 * 1024;
-  }
+  limits.command_buffer_size = 64 * 1024;
+  limits.start_transfer_buffer_size = 64 * 1024;
+  limits.min_transfer_buffer_size = 64 * 1024;
 
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context(
-      new WebGraphicsContext3DCommandBufferImpl(
-          0, GetURLForGraphicsContext3D(), gpu_channel_host.get(), attributes,
+  return make_scoped_ptr(new WebGraphicsContext3DCommandBufferImpl(
+          0, GetURLForGraphicsContext3D(), gpu_channel_host, attributes,
           lose_context_when_out_of_memory, limits, NULL));
-  return context;
 }
 
 void RenderWidget::RegisterRenderFrameProxy(RenderFrameProxy* proxy) {

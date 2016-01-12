@@ -44,12 +44,6 @@ void GpuMessageFilter::OnEstablishGpuChannel(
     IPC::Message* reply_ptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_ptr<IPC::Message> reply(reply_ptr);
-  if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor()) {
-    reply->set_reply_error();
-    Send(reply.release());
-    return;
-  }
-
   GpuProcessHost* host = GpuProcessHost::FromID(gpu_process_id_);
   if (!host) {
     host = GpuProcessHost::Get(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
