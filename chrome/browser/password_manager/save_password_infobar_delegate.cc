@@ -21,20 +21,11 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-namespace {
-
-int GetCancelButtonText(password_manager::CredentialSourceType source_type) {
-  return IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON;
-}
-
-}  // namespace
-
 // static
 void SavePasswordInfoBarDelegate::Create(
     content::WebContents* web_contents,
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-    const std::string& uma_histogram_suffix,
-    password_manager::CredentialSourceType source_type) {
+    const std::string& uma_histogram_suffix) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   sync_driver::SyncService* sync_service =
@@ -48,7 +39,7 @@ void SavePasswordInfoBarDelegate::Create(
       ->AddInfoBar(CreateSavePasswordInfoBar(
           make_scoped_ptr(new SavePasswordInfoBarDelegate(
               web_contents, std::move(form_to_save), uma_histogram_suffix,
-              source_type, is_smartlock_branding_enabled,
+              is_smartlock_branding_enabled,
               should_show_first_run_experience))));
 }
 
@@ -87,14 +78,12 @@ SavePasswordInfoBarDelegate::SavePasswordInfoBarDelegate(
     content::WebContents* web_contents,
     scoped_ptr<password_manager::PasswordFormManager> form_to_save,
     const std::string& uma_histogram_suffix,
-    password_manager::CredentialSourceType source_type,
     bool is_smartlock_branding_enabled,
     bool should_show_first_run_experience)
     : PasswordManagerInfoBarDelegate(),
       form_to_save_(std::move(form_to_save)),
       infobar_response_(password_manager::metrics_util::NO_RESPONSE),
       uma_histogram_suffix_(uma_histogram_suffix),
-      source_type_(source_type),
       should_show_first_run_experience_(should_show_first_run_experience),
       web_contents_(web_contents) {
   if (!uma_histogram_suffix_.empty()) {
@@ -137,7 +126,7 @@ base::string16 SavePasswordInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16((button == BUTTON_OK)
                                        ? IDS_PASSWORD_MANAGER_SAVE_BUTTON
-                                       : GetCancelButtonText(source_type_));
+                                       : IDS_PASSWORD_MANAGER_BLACKLIST_BUTTON);
 }
 
 bool SavePasswordInfoBarDelegate::Accept() {

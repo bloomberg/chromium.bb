@@ -77,6 +77,8 @@ class PasswordManagerClient {
   // the stored one. In this case form_to_save.password_overridden() == true
   // and form_to_save.pending_credentials() should correspond to the credential
   // that was overidden.
+  // TODO(crbug.com/576747): Analyze usefulness of the |type| parameter, make a
+  // decision if it should be kept or removed.
   virtual bool PromptUserToSaveOrUpdatePassword(
       scoped_ptr<PasswordFormManager> form_to_save,
       CredentialSourceType type,

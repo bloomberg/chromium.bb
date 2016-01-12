@@ -39,8 +39,7 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
   static void Create(
       content::WebContents* web_contents,
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
-      const std::string& uma_histogram_suffix,
-      password_manager::CredentialSourceType source_type);
+      const std::string& uma_histogram_suffix);
 
   ~SavePasswordInfoBarDelegate() override;
 
@@ -59,7 +58,6 @@ class SavePasswordInfoBarDelegate : public PasswordManagerInfoBarDelegate {
       content::WebContents* web_contents,
       scoped_ptr<password_manager::PasswordFormManager> form_to_save,
       const std::string& uma_histogram_suffix,
-      password_manager::CredentialSourceType source_type,
       bool is_smartlock_branding_enabled,
       bool should_show_first_run_experience);
 
