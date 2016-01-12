@@ -654,6 +654,21 @@
     <message name="IDS_ERRORPAGES_DETAILS_UNSUPPORTED_SCHEME_ERROR" desc="Details error message to tell user that the requested URI Scheme is not supported [Length: 20em]">
       Unsupported URL.
     </message>
+    <message name="IDS_ERRORPAGES_TITLE_UNSAFE_PORT" desc="Title of error message to tell user that the requested port is blocked as unsafe. [Length: 20em]">
+      Unsafe Port <ph name="SITE">$1<ex>google.xom</ex></ph>
+    </message>
+    <message name="IDS_ERRORPAGES_HEADING_UNSAFE_PORT" desc="Header error message to tell user that the requested port is blocked as unsafe. [Length: 20em]">
+      Unsafe Port Blocked
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_UNSAFE_PORT" desc="Summary error message to tell user that the requested port is blocked as unsafe. [Length: 40em]">
+      The requested port is unsafe and has been blocked.
+    </message>
+    <message name="IDS_ERRORPAGES_DETAILS_UNSAFE_PORT" desc="Details error message to tell user that the requested port is blocked as unsafe [Length: 20em]">
+      Unsafe port blocked.
+    </message>
+    <message name="IDS_ERRORPAGES_SUMMARY_NOT_AVAILABLE_NO_EMPHASIS" desc="Summary in the error page when we can't connect to a site. [iOS only]">
+      The webpage at <ph name="SITE">$1<ex>google.xom</ex></ph> might be temporarily down or it may have moved permanently to a new web address.
+    </message>
   </if>
 
 </grit-part>
