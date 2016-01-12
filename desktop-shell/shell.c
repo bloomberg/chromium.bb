@@ -636,6 +636,7 @@ shell_configuration(struct desktop_shell *shell)
 	struct weston_config_section *section;
 	char *s, *client;
 	int ret;
+	int allow_zap;
 
 	section = weston_config_get_section(shell->compositor->config,
 					    "shell", NULL, NULL);
@@ -647,6 +648,11 @@ shell_configuration(struct desktop_shell *shell)
 					 "client", &s, client);
 	free(client);
 	shell->client = s;
+
+	weston_config_section_get_bool(section,
+				       "allow-zap", &allow_zap, true);
+	shell->allow_zap = allow_zap;
+
 	weston_config_section_get_string(section,
 					 "binding-modifier", &s, "super");
 	shell->binding_modifier = get_modifier(s);
@@ -6425,10 +6431,12 @@ shell_add_bindings(struct weston_compositor *ec, struct desktop_shell *shell)
 	uint32_t mod;
 	int i, num_workspace_bindings;
 
+	if (shell->allow_zap)
+		weston_compositor_add_key_binding(ec, KEY_BACKSPACE,
+					          MODIFIER_CTRL | MODIFIER_ALT,
+					          terminate_binding, ec);
+
 	/* fixed bindings */
-	weston_compositor_add_key_binding(ec, KEY_BACKSPACE,
-				          MODIFIER_CTRL | MODIFIER_ALT,
-				          terminate_binding, ec);
 	weston_compositor_add_button_binding(ec, BTN_LEFT, 0,
 					     click_to_activate_binding,
 					     shell);

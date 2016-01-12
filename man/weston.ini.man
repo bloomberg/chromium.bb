@@ -258,6 +258,10 @@ sets the effect used with the focused and unfocused windows. Can be
 .B none.
 By default, no animation is used.
 .TP 7
+.BI "allow-zap=" true
+whether the shell should quit when the Ctrl-Alt-Backspace key combination is
+pressed
+.TP 7
 .BI "binding-modifier=" ctrl
 sets the modifier key used for common bindings (string), such as moving
 surfaces, resizing, rotating, switching, closing and setting the transparency
