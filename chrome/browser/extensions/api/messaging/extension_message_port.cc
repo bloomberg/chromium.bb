@@ -76,11 +76,14 @@ ExtensionMessagePort::ExtensionMessagePort(
       extension_id_(extension_id),
       browser_context_(extension_process->GetBrowserContext()),
       extension_process_(extension_process),
-      frames_(ProcessManager::Get(browser_context_)->
-              GetRenderFrameHostsForExtension(extension_id)),
       did_create_port_(false),
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
+  auto all_hosts = ProcessManager::Get(browser_context_)
+                       ->GetRenderFrameHostsForExtension(extension_id);
+  for (content::RenderFrameHost* rfh : all_hosts)
+    RegisterFrame(rfh);
+
   frame_tracker_->TrackExtensionProcessFrames();
 }
 
