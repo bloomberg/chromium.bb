@@ -8,6 +8,7 @@
 #include <string>
 
 #include "sync/api/data_batch.h"
+#include "sync/api/entity_change.h"
 #include "sync/api/metadata_batch.h"
 #include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_service.h"

@@ -10,6 +10,25 @@ SimpleMetadataChangeList::SimpleMetadataChangeList() {}
 
 SimpleMetadataChangeList::~SimpleMetadataChangeList() {}
 
+void SimpleMetadataChangeList::UpdateDataTypeState(
+    const DataTypeState& data_type_state) {
+  // TODO(skym): Implementation.
+}
+
+void SimpleMetadataChangeList::UpdateMetadata(
+    const std::string& client_tag,
+    const sync_pb::EntityMetadata& metadata) {
+  // TODO(skym): Implementation.
+}
+
+void SimpleMetadataChangeList::ClearDataTypeState() {
+  // TODO(skym): Implementation.
+}
+
+void SimpleMetadataChangeList::ClearMetadata(const std::string& client_tag) {
+  // TODO(skym): Implementation.
+}
+
 void SimpleMetadataChangeList::TranfserChanges(
     ModelTypeStore* store,
     ModelTypeStore::WriteBatch* write_batch) {

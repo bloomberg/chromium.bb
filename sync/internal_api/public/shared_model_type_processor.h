@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "sync/api/metadata_change_list.h"
 #include "sync/api/model_type_change_processor.h"
 #include "sync/api/model_type_service.h"
 #include "sync/api/sync_error.h"

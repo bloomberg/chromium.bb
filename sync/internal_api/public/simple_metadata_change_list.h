@@ -19,6 +19,12 @@ class SYNC_EXPORT SimpleMetadataChangeList : public MetadataChangeList {
   SimpleMetadataChangeList();
   ~SimpleMetadataChangeList() override;
 
+  void UpdateDataTypeState(const DataTypeState& data_type_state) override;
+  void ClearDataTypeState() override;
+  void UpdateMetadata(const std::string& client_tag,
+                      const sync_pb::EntityMetadata& metadata) override;
+  void ClearMetadata(const std::string& client_tag) override;
+
   // Moves all currently accumulated changes into the write batch, clear out
   // local copies. Calling this multiple times will work, but should not be
   // necessary.

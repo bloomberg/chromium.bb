@@ -48,6 +48,10 @@ class SYNC_EXPORT ModelTypeService {
       EntityDataList entity_data_list) = 0;
 
   // Apply changes from the sync server locally.
+  // Please note that |entity_changes| might have fewer entries than
+  // |metadata_change_list| in case when some of the data changes are filtered
+  // out, or even be empty in case when a commit confirmation is processed and
+  // only the metadata needs to persisted.
   virtual syncer::SyncError ApplySyncChanges(
       scoped_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) = 0;

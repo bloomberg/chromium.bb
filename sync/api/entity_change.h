@@ -34,9 +34,9 @@ class SYNC_EXPORT EntityChange {
  private:
   EntityChange(std::string client_key, ChangeType type, EntityDataPtr data);
 
-  const std::string client_key_;
-  const ChangeType type_;
-  const EntityDataPtr data_;
+  std::string client_key_;
+  ChangeType type_;
+  EntityDataPtr data_;
 };
 
 typedef std::vector<EntityChange> EntityChangeList;
