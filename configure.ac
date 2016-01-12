@@ -158,6 +158,7 @@ AC_CONFIG_FILES([
         tests/doctests/Makefile
         tests/harness/Makefile
         tests/harnessSources/Makefile
+        tests/yaml/Makefile
 	python/Makefile
 	python/louis/Makefile
         tools/Makefile

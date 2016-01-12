@@ -231,6 +231,14 @@ dist_yaml_TESTS =					\
 	yaml/en-ueb-g1_harness.yaml			\
 	yaml/en-ueb-g2-dictionary_harness.yaml		\
 	yaml/en-ueb-symbols_harness.yaml		\
+	yaml/en-ueb-02-stand_alone.yaml			\
+	yaml/en-ueb-03-symbols.yaml			\
+	yaml/en-ueb-05-grade_1_mode.yaml		\
+	yaml/en-ueb-06-numeric_mode.yaml		\
+	yaml/en-ueb-08-capitalization.yaml		\
+	yaml/en-ueb-09-typeforms.yaml			\
+	yaml/en-ueb-10-07-contractions.yaml		\
+	yaml/en-ueb-10-13-contractions.yaml		\
 	yaml/en-us-g2-dictionary_harness.yaml		\
 	yaml/en-us-g2-end-emphasis_harness.yaml		\
 	yaml/eo-g1_harness.yaml				\
