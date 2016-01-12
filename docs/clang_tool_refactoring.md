@@ -2,99 +2,171 @@
 
 [TOC]
 
+## Introduction
+
+Clang tools can help with global refactorings of Chromium code. Clang tools can
+take advantage of clang's AST to perform refactorings that would be impossible
+with a traditional find-and-replace regexp:
+
+*   Constructing `scoped_ptr<T>` from `NULL`: <https://crbug.com/173286>
+*   Implicit conversions of `scoped_refptr<T>` to `T*`: <https://crbug.com/110610>
+*   Rename everything in Blink to follow Chromium style: <https://crbug.com/563793>
+
 ## Caveats
 
-*   The current workflow requires git.
-*   This doesn't work on Windows... yet. I'm hoping to have a proof-of-concept
-    working on Windows as well ~~in a month~~ several centuries from now.
+An invocation of the clang tool runs on one build config. Code that only
+compiles on one platform or code that is guarded by a set of compile-time flags
+can be problematic. Performing a global refactoring typically requires running
+the tool once in each build config with code that needs to be updated.
+
+Other minor issues:
+
+*   Requires a git checkout.
+*   Requires [some hacks to run on Windows](https://codereview.chromium.org/718873004).
 
 ## Prerequisites
 
-Everything needed should be in a default Chromium checkout using gclient.
-`third_party/llvm-build/Release+Asserts/bin` should be in your `$PATH`.
+A Chromium checkout created with `fetch` should have everything needed.
 
-## Writing the Tool
+For convenience, add `third_party/llvm-build/Release+Asserts/bin` to `$PATH`.
 
-An example clang tool is being implemented in
-https://codereview.chromium.org/12746010/. Other useful resources might be the
-[basic tutorial for Clang's AST matchers](http://clang.llvm.org/docs/LibASTMatchersTutorial.html)
-or the
-[AST matcher reference](http://clang.llvm.org/docs/LibASTMatchersReference.html).
+## Writing the tool
 
-Build your tool by running the following command (requires cmake version 2.8.10
-or later):
+LLVM uses C++11 and CMake. Source code for Chromium clang tools lives in
+[//tools/clang](https://chromium.googlesource.com/chromium/src/tools/clang/+/master).
+It is generally easiest to use one of the already-written tools as the base for
+writing a new tool.
 
-```shell
-tools/clang/scripts/update.py --force-local-build --without-android \
---tools <tools>
+Chromium clang tools generally follow this pattern:
+
+1.  Instantiate a [`clang::ast_matchers::MatchFinder`](
+    http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder.html).
+2.  Call `addMatcher()` to register [`clang::ast_matchers::MatchFinder::MatchCallback`](
+    http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html) actions to execute when [matching](http://clang.llvm.org/docs/LibASTMatchersReference.html) the AST.
+3.  Create a new `clang::tooling::FrontendActionFactory` from the `MatchFinder`.
+4.  Run the action across the specified files with
+    [`clang::tooling::ClangTool::run`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1ClangTool.html#acec91f63b45ac7ee2d6c94cb9c10dab3).
+5.  Serialize generated [`clang::tooling::Replacement`](
+    http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1Replacement.html)s to
+    `stdout`.
+
+Other useful references when writing the tool:
+
+*   [Clang doxygen reference](http://clang.llvm.org/doxygen/index.html)
+*   [Tutorial for building tools using LibTooling and LibASTMatchers](http://clang.llvm.org/docs/LibASTMatchersTutorial.html)
+
+### Edit serialization format
+```
+==== BEGIN EDITS ====
+r:::path/to/file1:::offset1:::length1:::replacement text
+r:::path/to/file2:::offset2:::length2:::replacement text
+
+       ...
+
+==== END EDITS ====
 ```
 
-`<tools>` is a semicolon delimited list of subdirectories in `tools/clang` to
-build. The resulting binary will end up in
-`third_party/llvm-build/Release+Asserts/bin`. For example, to build the Chrome
-plugin and the empty\_string tool, run the following:
+The header and footer are required. Each line between the header and footer
+represents one edit. Fields are separated by `:::`, and the first field must
+be `r` (for replacement). In the future, this may be extended to handle header
+insertion/removal. A deletion is an edit with no replacement text.
 
+The edits are applied by [`run_tool.py`](#Running), which understands certain
+conventions:
+
+*   The tool should munge newlines in replacement text to `\0`. The script
+    knows to translate `\0` back to newlines when applying edits.
+*   When removing an element from a 'list' (e.g. function parameters,
+    initializers), the tool should emit a deletion for just the element. The
+    script understands how to extend the deletion to remove commas, etc. as
+    needed.
+
+TODO: Document more about `SourceLocation` and how spelling loc differs from
+expansion loc, etc.
+
+### Why not RefactoringTool?
+While clang has a [`clang::tooling::RefactoringTool`](
+http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1RefactoringTool.html) to
+automatically apply the generated replacements and save the results, it doesn't
+work well for Chromium:
+
+*   Clang tools run actions serially, so runtime scales poorly to tens of
+    thousands of files.
+*   A parsing error in any file (quite common in NaCl source) prevents any of
+    the generated replacements from being applied.
+
+## Building
+Synopsis:
 ```shell
 tools/clang/scripts/update.py --force-local-build --without-android \
---tools plugins empty_string
+  --tools blink_gc_plugin plugins rewrite_to_chrome_style
+```
+Running this command builds the [Oilpan plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/blink_gc_plugin/),
+the [Chrome style
+plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/plugins/),
+and the [Blink to Chrome style rewriter](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/rewrite_to_chrome_style/). Additional arguments to `--tools` should be the name of
+subdirectories in
+[//tools/clang](https://chromium.googlesource.com/chromium/src/+/master/tools/clang).
+Generally, `--tools` should always include `blink_gc_plugin` and `plugins`: otherwise, Chromium won't build.
+
+## Running
+First, build all chromium targets to avoid failures due to missing dependecies
+that are generated as part of the build:
+```shell
+ninja -C out/Debug
 ```
 
-When writing AST matchers, the following can be helpful to see what clang thinks
-the AST is:
+Then run the actual tool:
+```
+tools/clang/scripts/run_tool.py <toolname> \
+  --generate-compdb
+  out/Debug <path 1> <path 2> ...
+```
 
+`--generate-compdb` can be omitted if the compile DB was already generated and
+the list of build flags and source files has not changed since generation.
+
+`<path 1>`, `<path 2>`, etc are optional arguments to filter the files to run
+the tool across. This is helpful when sharding global refactorings into smaller
+chunks. For example, the following command will run the `empty_string` tool
+across just the files in `//base`:
+
+```shell
+tools/clang/scripts/run_tool.py empty_string  \
+  --generated-compdb \
+  out/Debug base
+```
+
+## Debugging
+Dumping the AST for a file:
 ```shell
 clang++ -cc1 -ast-dump foo.cc
 ```
 
-## Running the tool
-
-First, you'll need to generate the compilation database with the following
-command:
-
+Using `clang-query` to dynamically test matchers (requires checking out
+and building [clang-tools-extras](https://github.com/llvm-mirror/clang-tools-extra)):
 ```shell
-cd $HOME/src/chrome/src
-ninja -C out/Debug -t compdb cc cxx objc objcxx > \
-out/Debug/compile_commands.json
+clang-query -p path/to/compdb base/memory/ref_counted.cc
 ```
 
-This will dump the command lines used to build the C/C++ modules in all of
-Chromium into the resulting file. Then run the following command to run your
-tool across all Chromium code:
-
-```shell
-# Make sure all chromium targets are built to avoid missing generated
-# dependencies
-ninja -C out/Debug
-tools/clang/scripts/run_tool.py <toolname> \
-<path/to/directory/with/compile_commands.json> <path 1> <path 2> ...
+`printf` debugging:
+```c++
+  clang::Decl* decl = result.Nodes.getNodeAs<clang::Decl>("decl");
+  decl->dumpColor();
+  clang::Stmt* stmt = result.Nodes.getNodeAs<clang::Stmt>("stmt");
+  stmt->dumpColor();
 ```
-
-`<path 1>`, `<path 2>`, etc are optional arguments you use to filter the files
-that will be rewritten. For example, if you only want to run the `empty-string`
-tool on files in `chrome/browser/extensions` and `sync`, you'd do something like:
-
-```shell
-tools/clang/scripts/run_tool.py empty_string out/Debug \
-chrome/browser/extensions sync
-```
-
-## Limitations
-
-Since the compile database is generated by ninja, that means that files that
-aren't compiled on that platform won't be processed. That means if you want to
-apply a change across all Chromium platforms, you'll have to run the tool once
-on each platform.
+By default, the script hides the output of the tool. The easiest way to change
+that is to `return 1` from the `main()` function of the clang tool.
 
 ## Testing
-
-`test_tool.py` is the test harness for running tests. To use it, simply run:
-
+Synposis:
 ```shell
 test_tool.py <tool name>
 ```
 
-Note that name of the built tool and the subdirectory it lives in at
-`tools/clang` must match. What the test harness does is find all files that
-match the pattern `*-original.cc` in your tool's tests subdirectory. It then
-runs the tool across those files and compares it to the expected result, stored
-in `*-expected.cc`
+The name of the tool binary and the subdirectory for the tool in
+`//tools/clang` must match. The test runner finds all files that match the
+pattern `//tools/clang/<tool name>/tests/*-original.cc`, runs the tool across
+those files, and compared it to the `*-expected.cc` version. If there is a
+mismatch, the result is saved in `*-actual.cc`.
