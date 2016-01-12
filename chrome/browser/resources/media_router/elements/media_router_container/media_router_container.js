@@ -302,6 +302,7 @@ Polymer({
 
   observers: [
     'maybeUpdateStartSinkDisplayStartTime_(currentView_, sinksToShow_)',
+    'shownComponentsChanged_(showFirstRunFlow, currentView_)'
   ],
 
   ready: function() {
@@ -546,6 +547,17 @@ Polymer({
    */
   computeShareScreenSubheadingHidden_: function(castModeList) {
     return this.computeNonDefaultCastModeList_(castModeList).length == 0;
+  },
+
+  /**
+   * @param {boolean} showFirstRunFlow Whether or not to show the first run
+   *     flow.
+   * @param {!media_router.MediaRouterView} currentView The current view.
+   * @private
+   */
+  computeShowFirstRunFlow_: function(showFirstRunFlow, currentView) {
+    return showFirstRunFlow &&
+        currentView == media_router.MediaRouterView.SINK_LIST;
   },
 
   /**
@@ -955,6 +967,31 @@ Polymer({
    */
   showCastModeList_: function() {
     this.currentView_ = media_router.MediaRouterView.CAST_MODE_LIST;
+  },
+
+  /**
+   * Updates the top margins of the header and sink list view depending on
+   * whether the first run flow is being shown.
+   *
+   * @param {boolean} showFirstRunFlow Whether or not to show the first run
+   *     flow.
+   * @param {!media_router.MediaRouterView} currentView The current view.
+   * @private
+   */
+  shownComponentsChanged_: function(showFirstRunFlow, currentView) {
+    var headerHeight = this.$$('#container-header').offsetHeight;
+    if (this.computeShowFirstRunFlow_(showFirstRunFlow, currentView)) {
+      // Ensures that first run flow elements have finished stamping.
+      this.async(function() {
+        var firstRunFlowHeight = this.$$('#first-run-flow').offsetHeight;
+        this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
+        this.$['sink-list-view'].style.marginTop =
+            firstRunFlowHeight + headerHeight + 'px';
+      });
+    } else {
+      this.$['container-header'].style.marginTop = '0px';
+      this.$['sink-list-view'].style.marginTop = headerHeight + 'px';
+    }
   },
 
   /**

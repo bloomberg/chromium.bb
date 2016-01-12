@@ -39,7 +39,7 @@ using ui::WebDialogDelegate;
 
 namespace {
 #if defined(OS_MACOSX)
-const int kFixedHeight = 265;
+const int kFixedHeight = 350;
 #else
 const int kMaxHeight = 400;
 const int kMinHeight = 80;

@@ -19,6 +19,7 @@
 }
 
 #cast-mode-list {
+  margin-top: var(--container-header-height);
   padding-bottom: 12px;
   padding-top: 4px;
 }
@@ -56,6 +57,8 @@
 #first-run-flow {
   background-color: rgb(33, 150, 243);
   padding: 24px 16px 4px 16px;
+  position: fixed;
+  z-index: 1;
 }
 
 #first-run-text,
@@ -100,7 +103,6 @@ paper-item:hover {
 paper-menu {
   -webkit-user-select: none;
   color: rgba(0, 0, 0, 0.87);
-  margin-top: var(--container-header-height);
   overflow-x: hidden;
   overflow-y: auto;
   padding-bottom: 12px;

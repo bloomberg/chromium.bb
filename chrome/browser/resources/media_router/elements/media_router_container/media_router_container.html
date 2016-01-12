@@ -14,7 +14,8 @@
   <link rel="import" type="css" href="../../media_router_common.css">
   <link rel="import" type="css" href="media_router_container.css">
   <template>
-    <template is="dom-if" if="[[showFirstRunFlow]]">
+    <template is="dom-if"
+        if="[[computeShowFirstRunFlow_(showFirstRunFlow, currentView_)]]">
       <div id="first-run-flow">
         <div id="first-run-title">[[firstRunFlowTitle_]]</div>
         <div id="first-run-text">[[firstRunFlowText_]]</div>
