@@ -40,7 +40,7 @@ public:
     template<typename T>
     static PassOwnPtr<CancellableTaskFactory> create(T* thisObject, void (T::*method)(), typename std::enable_if<IsGarbageCollectedType<T>::value>::type* = nullptr)
     {
-        return adoptPtr(new CancellableTaskFactory(WTF::bind(method, AllowCrossThreadWeakPersistent<T>(thisObject))));
+        return adoptPtr(new CancellableTaskFactory(WTF::bind(method, CrossThreadWeakPersistentThisPointer<T>(thisObject))));
     }
 
     template<typename T>
