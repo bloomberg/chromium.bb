@@ -4,7 +4,7 @@
 
 [
     RuntimeEnabled=CSSTypedOM,
-    WillBeGarbageCollected
+    GarbageCollected
 ] interface StyleValue {
     readonly attribute DOMString cssString;
     // static (StyleValue or sequence<StyleValue>)? parse(DOMString property, DOMString cssText);

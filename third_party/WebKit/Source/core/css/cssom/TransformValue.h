@@ -12,11 +12,12 @@
 namespace blink {
 
 class CORE_EXPORT TransformValue final : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(TransformValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<TransformValue> create()
+    static TransformValue* create()
     {
-        return adoptRefWillBeNoop(new TransformValue());
+        return new TransformValue();
     }
 
     bool is2D() const;

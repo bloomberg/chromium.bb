@@ -12,22 +12,23 @@ namespace blink {
 
 class CSSPrimitiveValue;
 
-class CORE_EXPORT SimpleLength : public LengthValue {
+class CORE_EXPORT SimpleLength final : public LengthValue {
+    WTF_MAKE_NONCOPYABLE(SimpleLength);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<SimpleLength> create(double value, const String& type, ExceptionState& exceptionState)
+    static SimpleLength* create(double value, const String& type, ExceptionState& exceptionState)
     {
         LengthUnit unit = LengthValue::lengthUnitFromName(type);
         if (unit == LengthUnit::Count) {
             exceptionState.throwTypeError("Invalid unit for SimpleLength.");
             return nullptr;
         }
-        return adoptRefWillBeNoop(new SimpleLength(value, unit));
+        return new SimpleLength(value, unit);
     }
 
-    static PassRefPtrWillBeRawPtr<SimpleLength> create(double value, LengthUnit type)
+    static SimpleLength* create(double value, LengthUnit type)
     {
-        return adoptRefWillBeNoop(new SimpleLength(value, type));
+        return new SimpleLength(value, type);
     }
 
     double value() const { return m_value; }
@@ -42,10 +43,10 @@ public:
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 protected:
-    virtual PassRefPtrWillBeRawPtr<LengthValue> addInternal(const LengthValue* other, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> subtractInternal(const LengthValue* other, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> multiplyInternal(double, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> divideInternal(double, ExceptionState&);
+    virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);
+    virtual LengthValue* subtractInternal(const LengthValue* other, ExceptionState&);
+    virtual LengthValue* multiplyInternal(double, ExceptionState&);
+    virtual LengthValue* divideInternal(double, ExceptionState&);
 
 private:
     SimpleLength(double value, LengthUnit unit) : LengthValue(), m_unit(unit), m_value(value) {}

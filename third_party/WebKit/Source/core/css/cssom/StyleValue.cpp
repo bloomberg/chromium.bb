@@ -8,7 +8,7 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<StyleValue> StyleValue::create(const CSSValue& val)
+StyleValue* StyleValue::create(const CSSValue& val)
 {
     // TODO: implement.
     return nullptr;

@@ -15,9 +15,9 @@ namespace blink {
 class ScriptState;
 class ScriptValue;
 
-class CORE_EXPORT StyleValue : public RefCountedWillBeGarbageCollectedFinalized<StyleValue>, public ScriptWrappable {
+class CORE_EXPORT StyleValue : public GarbageCollectedFinalized<StyleValue>, public ScriptWrappable {
+    WTF_MAKE_NONCOPYABLE(StyleValue);
     DEFINE_WRAPPERTYPEINFO();
-
 public:
     enum StyleValueType {
         KeywordValueType, SimpleLengthType, CalcLengthType, NumberType, TransformValueType
@@ -25,7 +25,7 @@ public:
 
     virtual StyleValueType type() const = 0;
 
-    static PassRefPtrWillBeRawPtr<StyleValue> create(const CSSValue&);
+    static StyleValue* create(const CSSValue&);
     static ScriptValue parse(ScriptState*, const String& property, const String& cssText);
 
     virtual String cssString() const = 0;

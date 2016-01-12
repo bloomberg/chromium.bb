@@ -12,6 +12,7 @@ namespace blink {
 class ExceptionState;
 
 class CORE_EXPORT LengthValue : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(LengthValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum LengthUnit {
@@ -33,10 +34,10 @@ public:
         Count // Keep last. Not a real value.
     };
 
-    PassRefPtrWillBeRawPtr<LengthValue> add(const LengthValue* other, ExceptionState&);
-    PassRefPtrWillBeRawPtr<LengthValue> subtract(const LengthValue* other, ExceptionState&);
-    PassRefPtrWillBeRawPtr<LengthValue> multiply(double, ExceptionState&);
-    PassRefPtrWillBeRawPtr<LengthValue> divide(double, ExceptionState&);
+    LengthValue* add(const LengthValue* other, ExceptionState&);
+    LengthValue* subtract(const LengthValue* other, ExceptionState&);
+    LengthValue* multiply(double, ExceptionState&);
+    LengthValue* divide(double, ExceptionState&);
 
     static LengthValue* parse(const String& cssString);
     static LengthValue* fromValue(double value, const String& typeStr);
@@ -44,16 +45,15 @@ public:
     // static LengthValue* fromDictionary(const CalcDictionary&);
 
 protected:
-    // Length(const String& cssString) : StyleValue(cssString) {}
-    // Length(double value, LengthUnit type) {}
     LengthValue() {}
+
     static LengthUnit lengthUnitFromName(const String&);
     static const String& lengthTypeToString(LengthUnit type);
 
-    virtual PassRefPtrWillBeRawPtr<LengthValue> addInternal(const LengthValue* other, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> subtractInternal(const LengthValue* other, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> multiplyInternal(double, ExceptionState&);
-    virtual PassRefPtrWillBeRawPtr<LengthValue> divideInternal(double, ExceptionState&);
+    virtual LengthValue* addInternal(const LengthValue* other, ExceptionState&);
+    virtual LengthValue* subtractInternal(const LengthValue* other, ExceptionState&);
+    virtual LengthValue* multiplyInternal(double, ExceptionState&);
+    virtual LengthValue* divideInternal(double, ExceptionState&);
 };
 
 } // namespace blink

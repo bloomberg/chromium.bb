@@ -10,17 +10,17 @@
 
 namespace blink {
 
-class CORE_EXPORT KeywordValue : public StyleValue {
+class CORE_EXPORT KeywordValue final : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(KeywordValue);
     DEFINE_WRAPPERTYPEINFO();
-
 public:
     enum KeywordValueName {
         Initial, Inherit, Revert, Unset
     };
 
-    static PassRefPtrWillBeRawPtr<KeywordValue> create(const String& keyword)
+    static KeywordValue* create(const String& keyword)
     {
-        return adoptRefWillBeNoop(new KeywordValue(keyword));
+        return new KeywordValue(keyword);
     }
 
     StyleValueType type() const override { return KeywordValueType; }

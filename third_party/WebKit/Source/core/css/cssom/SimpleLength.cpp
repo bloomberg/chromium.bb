@@ -23,7 +23,7 @@ PassRefPtrWillBeRawPtr<CSSValue> SimpleLength::toCSSValue() const
     return cssValuePool().createValue(m_value, CSSPrimitiveValue::fromName(unit()));
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
+LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
     const SimpleLength* o = toSimpleLength(other);
     if (m_unit == o->m_unit)
@@ -34,7 +34,7 @@ PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::addInternal(const LengthValue*
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
+LengthValue* SimpleLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
 {
     const SimpleLength* o = toSimpleLength(other);
     if (m_unit == o->m_unit)
@@ -45,12 +45,12 @@ PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::subtractInternal(const LengthV
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
+LengthValue* SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value * x, m_unit);
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> SimpleLength::divideInternal(double x, ExceptionState& exceptionState)
+LengthValue* SimpleLength::divideInternal(double x, ExceptionState& exceptionState)
 {
     return create(m_value / x, m_unit);
 }

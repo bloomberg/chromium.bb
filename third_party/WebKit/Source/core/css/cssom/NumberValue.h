@@ -14,11 +14,12 @@
 namespace blink {
 
 class CORE_EXPORT NumberValue final : public StyleValue {
+    WTF_MAKE_NONCOPYABLE(NumberValue);
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static PassRefPtrWillBeRawPtr<NumberValue> create(double value)
+    static NumberValue* create(double value)
     {
-        return adoptRefWillBeNoop(new NumberValue(value));
+        return new NumberValue(value);
     }
 
     double value() const { return m_value; }

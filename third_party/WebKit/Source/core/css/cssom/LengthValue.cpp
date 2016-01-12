@@ -55,7 +55,7 @@ LengthValue* LengthValue::fromValue(double value, const String& typeStr)
     // return SimpleLength::create(value, lengthUnitFromName(typeStr)).get();
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::add(const LengthValue* other, ExceptionState& exceptionState)
+LengthValue* LengthValue::add(const LengthValue* other, ExceptionState& exceptionState)
 {
     if (type() == other->type())
         return addInternal(other, exceptionState);
@@ -64,7 +64,7 @@ PassRefPtrWillBeRawPtr<LengthValue> LengthValue::add(const LengthValue* other, E
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::subtract(const LengthValue* other, ExceptionState& exceptionState)
+LengthValue* LengthValue::subtract(const LengthValue* other, ExceptionState& exceptionState)
 {
     if (type() == other->type())
         return subtractInternal(other, exceptionState);
@@ -73,12 +73,12 @@ PassRefPtrWillBeRawPtr<LengthValue> LengthValue::subtract(const LengthValue* oth
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::multiply(double x, ExceptionState& exceptionState)
+LengthValue* LengthValue::multiply(double x, ExceptionState& exceptionState)
 {
     return multiplyInternal(x, exceptionState);
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::divide(double x, ExceptionState& exceptionState)
+LengthValue* LengthValue::divide(double x, ExceptionState& exceptionState)
 {
     return divideInternal(x, exceptionState);
 }
@@ -145,25 +145,25 @@ const String& LengthValue::lengthTypeToString(LengthValue::LengthUnit unit)
     }
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::addInternal(const LengthValue*, ExceptionState&)
+LengthValue* LengthValue::addInternal(const LengthValue*, ExceptionState&)
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::subtractInternal(const LengthValue*, ExceptionState&)
+LengthValue* LengthValue::subtractInternal(const LengthValue*, ExceptionState&)
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::multiplyInternal(double, ExceptionState&)
+LengthValue* LengthValue::multiplyInternal(double, ExceptionState&)
 {
     ASSERT_NOT_REACHED();
     return nullptr;
 }
 
-PassRefPtrWillBeRawPtr<LengthValue> LengthValue::divideInternal(double, ExceptionState&)
+LengthValue* LengthValue::divideInternal(double, ExceptionState&)
 {
     ASSERT_NOT_REACHED();
     return nullptr;
