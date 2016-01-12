@@ -115,7 +115,7 @@ void CmaRenderer::Initialize(
   waiting_for_decryption_key_cb_ = waiting_for_decryption_key_cb;
 
   MediaPipelineClient media_pipeline_client;
-  media_pipeline_client.error_cb = error_cb_;
+  media_pipeline_client.error_cb = ::media::BindToCurrentLoop(error_cb_);
   media_pipeline_client.buffering_state_cb = ::media::BindToCurrentLoop(
       base::Bind(&CmaRenderer::OnBufferingNotification, weak_this_));
   media_pipeline_client.time_update_cb = ::media::BindToCurrentLoop(
