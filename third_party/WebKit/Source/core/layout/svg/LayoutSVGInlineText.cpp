@@ -177,7 +177,6 @@ PositionWithAffinity LayoutSVGInlineText::positionForPoint(const LayoutPoint& po
     const SVGTextFragment* closestDistanceFragment = nullptr;
     SVGInlineTextBox* closestDistanceBox = nullptr;
 
-    AffineTransform fragmentTransform;
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
         if (!box->isSVGInlineTextBox())
             continue;
