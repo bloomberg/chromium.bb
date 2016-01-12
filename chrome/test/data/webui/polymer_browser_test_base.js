@@ -60,6 +60,7 @@ PolymerTest.prototype = {
 
     // List of imported URLs for debugging purposes.
     PolymerTest.importUrls_ = [];
+    PolymerTest.scriptUrls_ = [];
 
     // Importing a URL like "chrome://md-settings/foo" redirects to the base
     // ("chrome://md-settings") page, which due to how browsePreload works can
@@ -78,6 +79,8 @@ PolymerTest.prototype = {
             'sure the following URLs are correct and unique:\n';
         for (var i = 0; i < PolymerTest.importUrls_.length; i++)
           msg += '  ' + PolymerTest.importUrls_[i] + '\n';
+        for (var i = 0; i < PolymerTest.scriptUrls_.length; i++)
+          msg += '  ' + PolymerTest.scriptUrls_[i] + '\n';
         console.error(msg);
 
         // Mocha will handle the error.
@@ -93,11 +96,13 @@ PolymerTest.prototype = {
             PolymerTest.importHtml(
                 'chrome://resources/polymer/v1_0/polymer/polymer.html'));
       }
-      if (typeof TestHelpers != 'object') {
+      if (typeof MockInteractions != 'object') {
+        // Avoid importing the HTML file because iron-test-helpers assumes it is
+        // not being imported separately alongside a vulcanized Polymer.
         promises.push(
-            PolymerTest.importHtml(
+            PolymerTest.loadScript(
                 'chrome://resources/polymer/v1_0/iron-test-helpers/' +
-                'iron-test-helpers.html'));
+                'mock-interactions.js'));
       }
       return Promise.all(promises);
     });
@@ -125,7 +130,7 @@ PolymerTest.prototype = {
 /**
  * Imports the HTML file.
  * @param {string} src The URL to load.
- * @return {Promise} A promise that is resolved/rejected on success/failure.
+ * @return {!Promise} A promise that is resolved/rejected on success/failure.
  */
 PolymerTest.importHtml = function(src) {
   PolymerTest.importUrls_.push(src);
@@ -137,6 +142,23 @@ PolymerTest.importHtml = function(src) {
   });
   link.href = src;
   document.head.appendChild(link);
+  return promise;
+};
+
+/**
+ * Loads the script file.
+ * @param {string} src The URL to load.
+ * @return {!Promise} A promise that is resolved/rejected on success/failure.
+ */
+PolymerTest.loadScript = function(src) {
+  PolymerTest.scriptUrls_.push(src);
+  var script = document.createElement('script');
+  var promise = new Promise(function(resolve, reject) {
+    script.onload = resolve;
+    script.onerror = reject;
+  });
+  script.src = src;
+  document.head.appendChild(script);
   return promise;
 };
 
