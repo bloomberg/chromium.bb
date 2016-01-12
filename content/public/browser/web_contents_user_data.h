@@ -17,7 +17,7 @@ namespace content {
 // --- in foo_tab_helper.h ---
 // class FooTabHelper : public content::WebContentsUserData<FooTabHelper> {
 //  public:
-//   virtual ~FooTabHelper();
+//   ~FooTabHelper() override;
 //   // ... more public stuff here ...
 //  private:
 //   explicit FooTabHelper(content::WebContents* contents);
