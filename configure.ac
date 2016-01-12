@@ -174,7 +174,8 @@ MAYBE_WARN="-Wall -Wextra \
 -Wstrict-aliasing=2 -Winit-self \
 -Wdeclaration-after-statement -Wold-style-definition \
 -Wno-unused-parameter \
--Wno-attributes -Wno-long-long -Winline -Wshadow"
+-Wno-attributes -Wno-long-long -Winline -Wshadow \
+-Wno-missing-field-initializers"
 
 # invalidate cached value if MAYBE_WARN has changed
 if test "x$libdrm_cv_warn_maybe" != "x$MAYBE_WARN"; then
