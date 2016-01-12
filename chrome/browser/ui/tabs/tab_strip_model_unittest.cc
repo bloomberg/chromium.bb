@@ -2524,3 +2524,25 @@ TEST_F(TabStripModelTest, LinkClicksWithPinnedTabOrdering) {
   EXPECT_EQ(3, strip.GetIndexOfWebContents(page_d_contents));
   strip.CloseAllTabs();
 }
+
+// This test covers a bug in TabStripModel::MoveWebContentsAt(). Specifically
+// if |select_after_move| was true it checked if the index
+// select_after_move (as an int) was selected rather than |to_position|.
+TEST_F(TabStripModelTest, MoveWebContentsAt) {
+  TabStripDummyDelegate delegate;
+  TabStripModel strip(&delegate, profile());
+  MockTabStripModelObserver observer(&strip);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AppendWebContents(CreateWebContents(), false);
+  strip.AddObserver(&observer);
+
+  strip.ActivateTabAt(1, true);
+  EXPECT_EQ(1, strip.active_index());
+
+  strip.MoveWebContentsAt(2, 3, true);
+  EXPECT_EQ(3, strip.active_index());
+
+  strip.CloseAllTabs();
+}

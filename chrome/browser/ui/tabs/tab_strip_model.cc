@@ -1307,7 +1307,7 @@ void TabStripModel::MoveWebContentsAtImpl(int index,
   contents_data_.insert(contents_data_.begin() + to_position, moved_data);
 
   selection_model_.Move(index, to_position);
-  if (!selection_model_.IsSelected(select_after_move) && select_after_move) {
+  if (!selection_model_.IsSelected(to_position) && select_after_move) {
     // TODO(sky): why doesn't this code notify observers?
     selection_model_.SetSelectedIndex(to_position);
   }
