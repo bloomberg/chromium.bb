@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.media.remote;
 import android.app.Dialog;
 import android.app.Instrumentation;
 import android.graphics.Rect;
+import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
@@ -110,8 +111,35 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     private boolean mPlaying = false;
 
+    private StrictMode.ThreadPolicy mOldPolicy;
+
     public CastTestBase() {
         super(ChromeActivity.class);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        // Temporary until support library is updated, see http://crbug.com/576393.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mOldPolicy = StrictMode.allowThreadDiskReads();
+                StrictMode.allowThreadDiskWrites();
+            }
+        });
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        // Temporary until support library is updated, see http://crbug.com/576393.
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                StrictMode.setThreadPolicy(mOldPolicy);
+            }
+        });
+        super.tearDown();
     }
 
     @Override

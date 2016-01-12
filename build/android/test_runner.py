@@ -393,6 +393,10 @@ def AddInstrumentationTestOptions(parser):
                      help='Delete stale test data on the device.')
   group.add_argument('--timeout-scale', type=float,
                      help='Factor by which timeouts should be scaled.')
+  group.add_argument('--strict-mode', dest='strict_mode', default='testing',
+                     help='StrictMode command-line flag set on the device, '
+                          'death/testing to kill the process, off to stop '
+                          'checking, flash to flash only. Default testing.')
 
   AddCommonOptions(parser)
   AddDeviceOptions(parser)
@@ -455,7 +459,8 @@ def ProcessInstrumentationOptions(args):
       args.delete_stale_data,
       args.timeout_scale,
       args.apk_under_test,
-      args.additional_apks)
+      args.additional_apks,
+      args.strict_mode)
 
 
 def AddUIAutomatorTestOptions(parser):

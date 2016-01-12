@@ -107,6 +107,7 @@ public class PrerenderServiceTest extends
      * @throws Exception
      */
     @SmallTest
+    @DisabledTest
     @Feature({"PrerenderService"})
     public void testPrerenderingRedirectUrl() throws Exception {
         if (SysUtils.isLowEndDevice()) return;
@@ -135,6 +136,7 @@ public class PrerenderServiceTest extends
     private void loadChromeWithUrl(final String url) throws InterruptedException {
         assertNotNull(getActivity());
         ThreadUtils.runOnUiThreadBlocking(new Runnable(){
+            @Override
             public void run() {
                 ((EditText) getActivity().findViewById(R.id.url_to_load)).setText(url);
             }

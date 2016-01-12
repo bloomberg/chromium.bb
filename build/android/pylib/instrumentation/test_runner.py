@@ -111,6 +111,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
         os.path.join(host_paths.DIR_SOURCE_ROOT), self._lighttp_port)
     if self.flags:
       flags_to_add = ['--disable-fre', '--enable-test-intents']
+      if self.options.strict_mode and self.options.strict_mode != 'off':
+        flags_to_add.append('--strict-mode=' + self.options.strict_mode)
       if self.options.device_flags:
         with open(self.options.device_flags) as device_flags_file:
           stripped_flags = (l.strip() for l in device_flags_file)

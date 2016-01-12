@@ -344,6 +344,10 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       with open(args.device_flags_file) as device_flags_file:
         stripped_lines = (l.strip() for l in device_flags_file)
         self._flags.extend([flag for flag in stripped_lines if flag])
+    if (hasattr(args, 'strict_mode') and
+        args.strict_mode and
+        args.strict_mode != 'off'):
+      self._flags.append('--strict-mode=' + args.strict_mode)
 
   def _initializeDriverAttributes(self):
     self._driver_apk = os.path.join(
