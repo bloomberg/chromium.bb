@@ -65,11 +65,11 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//mash/wm/public/interfaces",
     "//mash/wm/resources",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
     "//mojo/converters/input_events",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
     "//skia",
     "//ui/aura",
     "//ui/events",
@@ -93,7 +93,7 @@ mojo_native_application("wm") {
   deps = [
     ":lib",
     ":resources",
-    "//mojo/application/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 
   data_deps = [
@@ -136,10 +136,10 @@ mojo_native_application("apptests") {
     "//components/mus/public/cpp",
     "//components/mus/public/cpp/tests:test_support",
     "//components/mus/public/interfaces",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/cpp:test_support",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",
   ]

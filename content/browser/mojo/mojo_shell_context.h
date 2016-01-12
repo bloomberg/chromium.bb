@@ -13,8 +13,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 class GURL;
 

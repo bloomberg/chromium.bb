@@ -336,7 +336,7 @@ interface ServiceProvider {
 ```
 
 Definitions for these interfaces can be found in
-`/mojo/application/public/interfaces`. Also note that `mojo::URLRequest` is a
+`/mojo/shell/public/interfaces`. Also note that `mojo::URLRequest` is a
 Mojo struct defined in
 `/mojo/services/network/public/interfaces/url_loader.mojom`.
 
@@ -383,7 +383,7 @@ interface Application {
 Of course, in Chromium and Mandoline environments this interface is obscured
 from application code and applications should generally just implement
 `mojo::ApplicationDelegate` (defined in
-`/mojo/application/public/cpp/application_delegate.h`.) We'll see a concrete
+`/mojo/shell/public/cpp/application_delegate.h`.) We'll see a concrete
 example of this in the next section,
 [Your First Mojo Application](#Your-First-Mojo-Application).
 
@@ -489,7 +489,7 @@ Let's update `main.cc` with the following contents:
 
 ```cpp
 #include "components/hello/hello_app.h"
-#include "mojo/application/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 #include "third_party/mojo/src/mojo/public/c/system/main.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
@@ -535,8 +535,8 @@ mojom("interfaces") {
 
 #include "base/macros.h"
 #include "components/hello/public/interfaces/greeter.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace hello {
 
@@ -569,7 +569,7 @@ class HelloApp : public mojo::ApplicationDelegate,
 ```cpp
 #include "base/macros.h"
 #include "components/hello/hello_app.h"
-#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/interface_request.h"
 #include "third_party/mojo/src/mojo/public/cpp/bindings/strong_binding.h"
 
@@ -635,8 +635,8 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/hello/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/environment:chromium",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -680,8 +680,8 @@ First let's introduce some test code:
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/hello/public/interfaces/greeter.mojom.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace hello {
 namespace {
@@ -735,7 +735,7 @@ mojo_native_application("apptests") {
   ]
   deps = [
     "//base",
-    "//mojo/application/public/cpp:test_support",
+    "//mojo/shell/public/cpp:test_support",
   ]
   public_deps = [
     "//components/hello/public/interfaces",
@@ -784,7 +784,7 @@ This is exploited by the definition of
 `mojo::ApplicationConnection::ConnectToService<T>`, which uses `T::Name_` as the
 name of the service to connect to. The type `T` in this context is inferred from
 the `InterfacePtr<T>*` argument. You can inspect the definition of
-`ConnectToService` in `/mojo/application/public/cpp/application_connection.h`
+`ConnectToService` in `/mojo/shell/public/cpp/application_connection.h`
 for additional clarity.
 
 We could have instead written this code as:

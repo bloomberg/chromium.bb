@@ -5,14 +5,14 @@
 #ifndef MOJO_SHELL_SHELL_APPLICATION_DELEGATE_H_
 #define MOJO_SHELL_SHELL_APPLICATION_DELEGATE_H_
 
-#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 namespace mojo {
 namespace shell {

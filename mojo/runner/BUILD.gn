@@ -128,7 +128,6 @@ source_set("lib") {
     "//components/devtools_service/public/cpp",
     "//components/devtools_service/public/interfaces",
     "//components/tracing:startup_tracing",
-    "//mojo/application/public/cpp",
     "//mojo/message_pump",
     "//mojo/runner/child:interfaces",
     "//mojo/runner/host:lib",
@@ -137,6 +136,7 @@ source_set("lib") {
     "//mojo/services/tracing/public/interfaces",
     "//mojo/shell",
     "//mojo/shell/package_manager",
+    "//mojo/shell/public/cpp",
     "//mojo/util:filename_util",
     "//third_party/mojo/src/mojo/edk/system",
     "//ui/gl",
@@ -172,7 +172,7 @@ source_set("lib") {
       ":jni_headers",
       ":run_android_application_function",
       "//components/mus/gles2",
-      "//mojo/application/public/cpp:content_handler",
+      "//mojo/shell/public/cpp:content_handler",
     ]
   } else {
     sources += [

@@ -20,9 +20,9 @@
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::Exactly;

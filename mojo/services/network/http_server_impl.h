@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/services/network/public/interfaces/http_server.mojom.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "net/server/http_server.h"
 
 namespace net {

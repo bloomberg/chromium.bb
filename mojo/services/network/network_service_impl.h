@@ -6,9 +6,9 @@
 #define MOJO_SERVICES_NETWORK_NETWORK_SERVICE_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "url/gurl.h"
 
 namespace mojo {

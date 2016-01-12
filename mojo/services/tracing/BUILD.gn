@@ -13,8 +13,8 @@ mojo_native_application("tracing") {
 
   deps = [
     ":lib",
-    "//mojo/application/public/cpp",
     "//mojo/public/cpp/system",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -30,8 +30,8 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/interfaces",
+    "//mojo/shell/public/cpp",
   ]
 }

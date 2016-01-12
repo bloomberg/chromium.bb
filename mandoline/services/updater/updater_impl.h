@@ -6,9 +6,9 @@
 #define MANDOLINE_SERVICES_UPDATER_UPDATER_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/updater/updater.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace updater {
 

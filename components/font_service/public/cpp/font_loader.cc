@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/trace_event/trace_event.h"
 #include "components/font_service/public/cpp/font_service_thread.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace font_service {
 namespace {

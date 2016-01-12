@@ -13,13 +13,13 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
-#include "mojo/application/public/interfaces/application_manager.mojom.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/shell/capability_filter.h"
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {

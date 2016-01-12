@@ -13,11 +13,11 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/font_service/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 
   public_deps = [
@@ -33,9 +33,9 @@ mojo_native_application("font_service") {
   deps = [
     ":lib",
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings:callback",
+    "//mojo/shell/public/cpp",
   ]
 }

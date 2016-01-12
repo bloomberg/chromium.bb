@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 
 namespace mojo {
 namespace runner {

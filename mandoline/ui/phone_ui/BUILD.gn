@@ -13,7 +13,7 @@ mojo_native_application("phone_ui") {
   deps = [
     ":lib",
     "//components/web_view:web_view",
-    "//mojo/application/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -30,10 +30,10 @@ source_set("lib") {
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//mandoline/ui/desktop_ui/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
+    "//mojo/shell/public/cpp",
     "//ui/gfx/geometry",
     "//url",
   ]

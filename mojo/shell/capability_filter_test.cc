@@ -9,15 +9,15 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/package_manager.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 namespace mojo {
 namespace shell {

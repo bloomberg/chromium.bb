@@ -12,9 +12,9 @@
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
 #include "content/renderer/mus/render_widget_mus_connection.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 #include "url/gurl.h"
 
 namespace content {

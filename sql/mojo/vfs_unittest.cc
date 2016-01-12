@@ -8,8 +8,8 @@
 
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 #include "testing/gtest/include/gtest/gtest.h"

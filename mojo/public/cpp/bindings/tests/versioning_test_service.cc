@@ -6,14 +6,14 @@
 
 #include <map>
 
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_runner.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/bindings/tests/versioning_test_service.mojom.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 namespace test {

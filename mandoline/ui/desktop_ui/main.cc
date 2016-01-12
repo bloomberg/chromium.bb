@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "mandoline/ui/desktop_ui/browser_manager.h"
-#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new mandoline::BrowserManager);

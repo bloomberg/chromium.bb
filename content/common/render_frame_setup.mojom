@@ -4,7 +4,7 @@
 
 module content;
 
-import "mojo/application/public/interfaces/service_provider.mojom";
+import "mojo/shell/public/interfaces/service_provider.mojom";
 
 interface RenderFrameSetup {
   ExchangeServiceProviders(int32 frame_routing_id,

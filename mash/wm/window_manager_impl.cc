@@ -19,8 +19,8 @@
 #include "mash/wm/property_util.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
 #include "mash/wm/window_manager_application.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mojo {
 

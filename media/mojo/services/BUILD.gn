@@ -73,10 +73,10 @@ source_set("proxy") {
     "//base",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//mojo/shell/public/interfaces",
   ]
 }
 
@@ -106,10 +106,10 @@ source_set("cdm_service") {
     "//base",
     "//media",
     "//media/mojo/interfaces",
-    "//mojo/application/public/interfaces",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/public/c/system:for_component",
+    "//mojo/shell/public/interfaces",
   ]
 
   sources = [
@@ -169,8 +169,8 @@ source_set("application") {
     ":media_client",
     ":renderer_service",
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/public/c/system:for_component",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -220,7 +220,7 @@ mojo_native_application("media_apptests") {
   deps = [
     ":proxy",
     "//media/base:test_support",
-    "//mojo/application/public/cpp:test_support",
+    "//mojo/shell/public/cpp:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "components/devtools_service/devtools_http_server.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace devtools_service {
 

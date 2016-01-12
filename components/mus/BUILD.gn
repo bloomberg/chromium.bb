@@ -19,10 +19,10 @@ if (is_android) {
     deps = [
       ":lib",
       "public/interfaces",
-      "//mojo/application/public/cpp:sources",
       "//mojo/public/cpp/bindings",
       "//mojo/services/tracing/public/interfaces",
       "//mojo/shell",
+      "//mojo/shell/public/cpp:sources",
     ]
   }
 } else {
@@ -33,7 +33,7 @@ if (is_android) {
 
     deps = [
       ":lib",
-      "//mojo/application/public/cpp:sources",
+      "//mojo/shell/public/cpp:sources",
     ]
 
     if (is_win) {
@@ -75,9 +75,9 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/mus/surfaces",
     "//components/mus/ws:lib",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
     "//ui/events",
     "//ui/gl:gl",
     "//ui/platform_window:platform_impls",

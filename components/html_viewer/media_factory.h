@@ -15,7 +15,7 @@
 #include "media/base/audio_hardware_config.h"
 #include "media/blink/url_index.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -6,9 +6,9 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/compositor/layer.h"

@@ -12,10 +12,10 @@
 #include "base/task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/simple_thread.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_runner.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_runner.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
 
 namespace mojo {
 namespace shell {

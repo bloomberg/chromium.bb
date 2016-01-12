@@ -10,10 +10,10 @@
 #include "base/lazy_instance.h"
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/runner/child/runner_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace content {
 namespace {

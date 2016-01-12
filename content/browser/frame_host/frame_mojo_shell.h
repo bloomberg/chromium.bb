@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace content {
 

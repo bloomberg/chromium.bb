@@ -39,7 +39,7 @@ source_set("ppapi_plugin_sources") {
     "//content:export",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//mojo/application/public/interfaces",
+    "//mojo/shell/public/interfaces",
     "//ppapi/proxy:ipc",
     "//skia",
     "//third_party/WebKit/public:blink",

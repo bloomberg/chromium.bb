@@ -8,9 +8,9 @@
 #include <stdint.h>
 
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 
 namespace net {
 class WebSocketChannel;

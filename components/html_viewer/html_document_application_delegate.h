@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "components/html_viewer/html_factory.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace html_viewer {
 

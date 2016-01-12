@@ -10,6 +10,6 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//mojo/application/public/interfaces",
+    "//mojo/shell/public/interfaces",
   ]
 }

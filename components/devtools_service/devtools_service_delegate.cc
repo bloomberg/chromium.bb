@@ -9,9 +9,9 @@
 #include "base/logging.h"
 #include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "url/gurl.h"
 
 namespace devtools_service {

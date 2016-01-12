@@ -11,8 +11,8 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/identity.h"
+#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "url/gurl.h"
 
 namespace mojo {

@@ -33,7 +33,7 @@ if (enable_plugins && !is_linux) {
     deps = [
       "//content:export",
       "//content/public/common:common_sources",
-      "//mojo/application/public/interfaces",
+      "//mojo/shell/public/interfaces",
       "//skia",
       "//third_party/WebKit/public:blink",
       "//third_party/npapi",

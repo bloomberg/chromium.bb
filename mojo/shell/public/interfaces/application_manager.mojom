@@ -1,0 +1,67 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo.shell.mojom;
+
+import "mojo/shell/public/interfaces/shell.mojom";
+
+struct ApplicationInfo {
+  int32 id;
+  string url;
+  string qualifier;
+  uint32 pid;
+};
+
+// Implemented by an application that wishes to be informed when the list of
+// running applications changes.
+interface ApplicationManagerListener {
+  // Called once when the listener is added via
+  // ApplicationManager::AddListener() to provide the initial list of running
+  // applications that the listener observes changes against.
+  SetRunningApplications(array<ApplicationInfo> applications);
+
+  // Called when the application manager has started tracking an application.
+  // This happens when the application manager first handles a request to launch
+  // the application, and before any process or content handler is created for
+  // it.
+  ApplicationInstanceCreated(ApplicationInfo application);
+
+  // Called when the application manager has stopped tracking an application.
+  // (i.e. when it has ended/quit).
+  ApplicationInstanceDestroyed(int32 id);
+
+  // Called when a pid is available for the application. This could be because a
+  // process was created by the runner for it, or because an existing content
+  // handler process was assigned.
+  ApplicationPIDAvailable(int32 id, uint32 pid);
+};
+
+// Implemented by an object in the application manager associated with a
+// specific instance. Tells it the PID for a process launched by the client.
+// This interface is only available to callers of ApplicationManager::
+// CreateInstanceForHandle().
+interface PIDReceiver {
+  SetPID(uint32 pid);
+};
+
+interface ApplicationManager {
+  // Instructs the ApplicationManager to create an instance for an existing
+  // process at the other end of |channel|, and perform applicable
+  // initialization. This assumes the target process will bind the other end of
+  // channel to an implementation of ChildController and bind an Application
+  // request there.
+  CreateInstanceForHandle(handle channel,
+                          string url,
+                          mojo.CapabilityFilter filter,
+                          PIDReceiver& pid_receiver);
+
+  // Called by a child process every time it launches a process. This is needed
+  // so that the ChildBroker class in the grandchild process can talk to the one
+  // global BrokerState in the parent mojo_runner process.
+  RegisterProcessWithBroker(uint32 pid,
+                            handle pipe);
+
+  // The listener is removed when the pipe is closed.
+  AddListener(ApplicationManagerListener listener);
+};

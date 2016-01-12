@@ -13,10 +13,10 @@
 #include "components/mus/ws/window_coordinate_conversions.h"
 #include "components/mus/ws/window_tree_host_connection.h"
 #include "components/mus/ws/window_tree_impl.h"
-#include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/input_events/input_events_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
 namespace mus {

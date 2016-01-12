@@ -12,9 +12,9 @@ source_set("cpp") {
     "//base",
     "//components/mus/public/cpp",
     "//components/web_view/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/shell/public/cpp",
   ]
 }

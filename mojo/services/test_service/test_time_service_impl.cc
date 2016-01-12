@@ -9,9 +9,9 @@
 #include <utility>
 
 #include "base/time/time.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/test_service/test_request_tracker.mojom.h"
 #include "mojo/services/test_service/tracked_service.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mojo {
 namespace test {

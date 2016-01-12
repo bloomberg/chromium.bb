@@ -19,9 +19,9 @@ source_set("mojo") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//components/filesystem/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/platform_handle",
+    "//mojo/shell/public/cpp",
     "//third_party/sqlite",
   ]
 }
@@ -51,9 +51,9 @@ mojo_native_application("apptests") {
     "//base",
     "//base/test:test_support",
     "//components/filesystem/public/interfaces",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/cpp:test_support",
     "//mojo/public/cpp/bindings",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
     "//sql",
     "//sql:redirection_header",
     "//sql:test_support",

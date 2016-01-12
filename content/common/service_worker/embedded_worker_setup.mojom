@@ -4,7 +4,7 @@
 
 module content;
 
-import "mojo/application/public/interfaces/service_provider.mojom";
+import "mojo/shell/public/interfaces/service_provider.mojom";
 
 interface EmbeddedWorkerSetup {
   ExchangeServiceProviders(int32 thread_id,

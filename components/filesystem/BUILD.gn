@@ -21,11 +21,11 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/filesystem/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/common:common_base",
     "//mojo/platform_handle",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
     "//url",
   ]
 }
@@ -38,12 +38,12 @@ mojo_native_application("filesystem") {
   deps = [
     ":lib",
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/environment:chromium",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -62,9 +62,9 @@ mojo_native_application("apptests") {
   deps = [
     "//base",
     "//components/filesystem/public/interfaces",
-    "//mojo/application/public/cpp:test_support",
     "//mojo/platform_handle:for_shared_library",
     "//mojo/public/cpp/bindings",
+    "//mojo/shell/public/cpp:test_support",
   ]
 
   data_deps = [

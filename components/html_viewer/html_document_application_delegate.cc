@@ -10,9 +10,9 @@
 #include "base/macros.h"
 #include "components/html_viewer/global_state.h"
 #include "components/html_viewer/html_document.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/connect.h"
 
 namespace html_viewer {
 

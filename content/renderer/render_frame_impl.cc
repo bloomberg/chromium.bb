@@ -214,9 +214,9 @@
 
 #if defined(ENABLE_MOJO_MEDIA)
 #include "media/mojo/services/mojo_cdm_factory.h"  // nogncheck
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #endif
 
 #if defined(ENABLE_MOJO_MEDIA) && !defined(OS_ANDROID)

@@ -11,11 +11,11 @@
 #include "components/mus/public/cpp/context_provider.h"
 #include "components/mus/public/interfaces/gpu.mojom.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/gles2/gles2_context.h"
 #include "mojo/gpu/mojo_gles2_impl_autogen.h"
 #include "mojo/public/cpp/environment/environment.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace html_viewer {
 

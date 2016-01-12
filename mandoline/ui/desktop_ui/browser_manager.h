@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/launch_handler.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/connect.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/connect.h"
 #include "url/gurl.h"
 
 namespace mojo {

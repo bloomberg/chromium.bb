@@ -153,7 +153,7 @@ include_rules = [
   "+media/audio", # For media audio hang monitor.
   "+media/base",  # For media switches
   "+media/midi",  # For midi switches
-  "+mojo/application/public/cpp",
+  "+mojo/shell/public/cpp",
   "+mojo/converters",
   "+mojo/runner/child",
   "+policy",  # For generated headers and source

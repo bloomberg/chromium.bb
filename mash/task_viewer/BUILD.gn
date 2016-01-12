@@ -16,11 +16,11 @@ mojo_native_application("task_viewer") {
 
   deps = [
     "//base",
-    "//mojo/application/public/cpp",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/interfaces",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]

@@ -19,13 +19,13 @@
 #include "components/devtools_service/devtools_agent_host.h"
 #include "components/devtools_service/devtools_registry_impl.h"
 #include "components/devtools_service/devtools_service.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/services/network/public/cpp/web_socket_read_queue.h"
 #include "mojo/services/network/public/cpp/web_socket_write_queue.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace devtools_service {
 

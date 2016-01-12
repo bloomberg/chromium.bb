@@ -1,5 +1,5 @@
 include_rules = [
-  "+mojo/application",
+  "+mojo/shell",
   "+mojo/common",
   "+mojo/public",
   "+mojo/services/tracing/public/cpp",

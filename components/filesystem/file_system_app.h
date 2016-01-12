@@ -9,9 +9,9 @@
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/file_system_impl.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 class ApplicationImpl;

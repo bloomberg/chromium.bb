@@ -16,11 +16,11 @@
 #include "components/mus/public/interfaces/window_tree.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/connection_manager_delegate.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 class ApplicationImpl;

@@ -8,8 +8,8 @@
 
 #include "base/bind.h"
 #include "components/mus/public/cpp/event_matcher.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mash {
 namespace browser_driver {

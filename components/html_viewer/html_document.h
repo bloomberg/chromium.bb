@@ -17,11 +17,11 @@
 #include "components/html_viewer/public/interfaces/test_html_viewer.mojom.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/cpp/service_provider_impl.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;

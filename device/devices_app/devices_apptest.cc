@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "device/devices_app/devices_app.h"
 #include "device/devices_app/usb/public/interfaces/device_manager.mojom.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace device {
 namespace {

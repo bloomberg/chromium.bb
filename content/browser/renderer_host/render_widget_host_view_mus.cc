@@ -14,7 +14,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/render_widget_window_tree_client_factory.mojom.h"
 #include "content/public/common/mojo_shell_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"

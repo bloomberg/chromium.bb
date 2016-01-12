@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "mash/wm/window_manager_application.h"
-#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new mash::wm::WindowManagerApplication);

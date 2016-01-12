@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/connect_util.h"
 #include "mojo/shell/fetcher/about_fetcher.h"
@@ -18,6 +17,7 @@
 #include "mojo/shell/fetcher/network_fetcher.h"
 #include "mojo/shell/fetcher/switches.h"
 #include "mojo/shell/package_manager/content_handler_connection.h"
+#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "mojo/shell/query_util.h"
 #include "mojo/shell/switches.h"
 #include "mojo/util/filename_util.h"

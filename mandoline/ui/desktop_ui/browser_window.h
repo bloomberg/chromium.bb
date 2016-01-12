@@ -16,8 +16,8 @@
 #include "mandoline/ui/desktop_ui/find_bar_delegate.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/omnibox.mojom.h"
 #include "mandoline/ui/desktop_ui/public/interfaces/view_embedder.mojom.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 #include "url/gurl.h"
 
 namespace mojo {

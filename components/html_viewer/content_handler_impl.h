@@ -6,9 +6,9 @@
 #define COMPONENTS_HTML_VIEWER_CONTENT_HANDLER_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace html_viewer {
 

@@ -8,9 +8,9 @@
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/runner/android/android_handler.h"
 #include "mojo/shell/application_loader.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mojo {
 namespace runner {

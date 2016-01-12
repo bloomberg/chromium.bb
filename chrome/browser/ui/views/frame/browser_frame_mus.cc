@@ -10,7 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/interfaces/window_tree.mojom.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/views/mus/window_manager_connection.h"
 #include "ui/views/mus/window_manager_frame_values.h"
 

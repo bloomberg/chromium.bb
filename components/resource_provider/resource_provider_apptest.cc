@@ -11,14 +11,14 @@
 #include "base/run_loop.h"
 #include "components/resource_provider/public/cpp/resource_loader.h"
 #include "components/resource_provider/public/interfaces/resource_provider.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 namespace resource_provider {
 namespace {

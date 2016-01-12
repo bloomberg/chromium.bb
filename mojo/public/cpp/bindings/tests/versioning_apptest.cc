@@ -5,10 +5,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/public/interfaces/bindings/tests/versioning_test_client.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace mojo {
 namespace test {

@@ -17,7 +17,7 @@
 #include "build/build_config.h"
 #include "components/filesystem/directory_impl.h"
 #include "components/filesystem/file_system_app.h"
-#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)

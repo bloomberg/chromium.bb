@@ -9,10 +9,10 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 

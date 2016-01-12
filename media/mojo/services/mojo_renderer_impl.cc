@@ -13,8 +13,8 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/demuxer_stream_provider.h"
 #include "media/mojo/services/mojo_demuxer_stream_impl.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 namespace media {
 

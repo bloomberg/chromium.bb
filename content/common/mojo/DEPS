@@ -1,6 +1,6 @@
 include_rules = [
-  "+mojo/application/public/cpp",
-  "+mojo/application/public/interfaces",
+  "+mojo/shell/public/cpp",
+  "+mojo/shell/public/interfaces",
   "+mojo/converters/network",
   "+mojo/runner/child",
 ]

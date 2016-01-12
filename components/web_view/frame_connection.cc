@@ -16,13 +16,13 @@
 #include "components/web_view/frame_tree.h"
 #include "components/web_view/frame_utils.h"
 #include "components/web_view/test_runner/public/interfaces/layout_test_runner.mojom.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 #if defined(OS_LINUX) && !defined(OS_ANDROID)
 #include "components/font_service/public/interfaces/font_service.mojom.h"

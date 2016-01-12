@@ -21,13 +21,13 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/devtools_service/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/public/cpp/system",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/shell/public/cpp",
     "//url",
   ]
 }
@@ -41,6 +41,6 @@ mojo_native_application("devtools_service") {
 
   deps = [
     ":lib",
-    "//mojo/application/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 }

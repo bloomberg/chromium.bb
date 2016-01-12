@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "content/common/process_control.mojom.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
 
 class GURL;
 

@@ -2,7 +2,7 @@ include_rules = [
   "+components/mus",
   "+components/web_view/public",
   "+mandoline/services",
-  "+mojo/application",
+  "+mojo/shell",
   "+mojo/common",
   "+mojo/converters",
   "+mojo/public",

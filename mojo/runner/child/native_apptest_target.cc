@@ -7,14 +7,14 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/runner/child/test_native_main.h"
 #include "mojo/runner/child/test_native_service.mojom.h"
 #include "mojo/runner/init.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace {
 

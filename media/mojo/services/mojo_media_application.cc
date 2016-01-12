@@ -10,8 +10,8 @@
 #include "media/base/media_log.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/service_factory_impl.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace media {
 

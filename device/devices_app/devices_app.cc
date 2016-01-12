@@ -17,9 +17,9 @@
 #include "device/core/device_client.h"
 #include "device/devices_app/usb/device_manager_impl.h"
 #include "device/usb/usb_service.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "url/gurl.h"
 
 namespace device {

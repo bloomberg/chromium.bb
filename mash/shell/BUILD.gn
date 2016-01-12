@@ -18,9 +18,9 @@ mojo_native_application("shell") {
 
   deps = [
     "//base",
-    "//mojo/application/public/cpp",
-    "//mojo/application/public/cpp:sources",
     "//mojo/public/cpp/bindings",
+    "//mojo/shell/public/cpp",
+    "//mojo/shell/public/cpp:sources",
   ]
 
   data_deps = [

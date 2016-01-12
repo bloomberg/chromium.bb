@@ -11,7 +11,7 @@
 #include "media/base/media.h"
 #include "media/mojo/interfaces/provision_fetcher.mojom.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"
-#include "mojo/application/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/connect.h"
 
 namespace media {
 

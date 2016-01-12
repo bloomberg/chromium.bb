@@ -6,10 +6,10 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/shell/application_loader.h"
 #include "mojo/shell/application_manager.h"
 #include "mojo/shell/capability_filter_unittest.mojom.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

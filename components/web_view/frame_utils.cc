@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "components/web_view/web_view_switches.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace web_view {
 namespace {

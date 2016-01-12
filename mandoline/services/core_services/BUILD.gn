@@ -52,12 +52,12 @@ source_set("sources") {
     "//components/clipboard:lib",
     "//components/filesystem:lib",
     "//components/web_view:lib",
-    "//mojo/application/public/cpp",
     "//mojo/logging",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing:lib",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
     "//third_party/icu",
     "//url",
   ]

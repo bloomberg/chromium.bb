@@ -15,7 +15,7 @@
 #include "media/base/video_frame.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/services/media_type_converters.h"
-#include "mojo/application/public/cpp/connect.h"
+#include "mojo/shell/public/cpp/connect.h"
 
 namespace media {
 

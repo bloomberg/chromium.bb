@@ -8,15 +8,15 @@
 #include "base/observer_list.h"
 #include "base/threading/thread.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/network/network_context.h"
 #include "mojo/services/network/public/interfaces/cookie_store.mojom.h"
 #include "mojo/services/network/public/interfaces/network_service.mojom.h"
 #include "mojo/services/network/public/interfaces/url_loader_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace sql {
 class ScopedMojoFilesystemVFS;

@@ -20,7 +20,6 @@
 #include "content/public/browser/utility_process_host_client.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_registry.h"
-#include "mojo/application/public/cpp/application_delegate.h"
 #include "mojo/common/url_type_converters.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/string.h"
@@ -28,6 +27,7 @@
 #include "mojo/shell/connect_to_application_params.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 #include "mojo/shell/static_application_loader.h"
 
 #if defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS) || \

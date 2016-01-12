@@ -18,7 +18,7 @@
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_surface.h"
 #include "components/mus/public/cpp/window_tracker.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mojo/shell/public/cpp/service_provider_impl.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 

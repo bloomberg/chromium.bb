@@ -11,8 +11,8 @@
 #include "media/mojo/services/mojo_cdm_service.h"
 #include "media/mojo/services/mojo_media_client.h"
 #include "media/mojo/services/mojo_renderer_service.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 namespace media {
 

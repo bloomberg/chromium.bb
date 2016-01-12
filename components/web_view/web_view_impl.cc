@@ -21,8 +21,8 @@
 #include "components/web_view/navigation_entry.h"
 #include "components/web_view/pending_web_view_load.h"
 #include "components/web_view/url_request_cloneable.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "url/gurl.h"
 
 namespace web_view {

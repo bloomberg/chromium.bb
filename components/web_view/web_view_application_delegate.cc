@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "components/web_view/web_view_impl.h"
-#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 
 namespace web_view {
 

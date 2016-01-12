@@ -5,9 +5,9 @@
 #ifndef SERVICES_TEST_SERVICE_TEST_SERVICE_APPLICATION_H_
 #define SERVICES_TEST_SERVICE_TEST_SERVICE_APPLICATION_H_
 
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/public/cpp/system/macros.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 class ApplicationConnection;

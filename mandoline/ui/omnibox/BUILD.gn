@@ -12,7 +12,7 @@ mojo_native_application("omnibox") {
   deps = [
     ":lib",
     "//mandoline/ui/common/resources",
-    "//mojo/application/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 
   resources = [ "$root_out_dir/mandoline_ui.pak" ]
@@ -29,11 +29,11 @@ source_set("lib") {
     "//components/mus/public/cpp",
     "//components/url_formatter",
     "//mandoline/ui/desktop_ui/public/interfaces",
-    "//mojo/application/public/cpp:sources",
     "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/public/cpp/bindings",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp:sources",
     "//skia",
     "//ui/gfx/geometry",
     "//ui/mojo/init",

@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory_impl.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 
 namespace html_viewer {
 

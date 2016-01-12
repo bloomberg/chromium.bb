@@ -11,14 +11,14 @@
 #include "base/callback.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_surface.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace bitmap_uploader {
 namespace {

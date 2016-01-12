@@ -14,10 +14,10 @@
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "components/mus/ws/ids.h"
 #include "components/mus/ws/test_change_tracker.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 using mojo::ApplicationConnection;
 using mojo::ApplicationDelegate;

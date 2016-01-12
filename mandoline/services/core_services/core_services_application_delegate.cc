@@ -15,13 +15,13 @@
 #include "components/filesystem/file_system_app.h"
 #include "components/web_view/web_view_application_delegate.h"
 #include "mandoline/services/core_services/application_delegate_factory.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/logging/init_logging.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/services/tracing/tracing_app.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 #include "url/gurl.h"
 
 namespace core_services {

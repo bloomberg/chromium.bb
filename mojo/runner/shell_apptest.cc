@@ -12,8 +12,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/system/macros.h"
 #include "mojo/runner/kPingable.h"
@@ -22,6 +20,8 @@
 #include "mojo/services/http_server/public/interfaces/http_server.mojom.h"
 #include "mojo/services/http_server/public/interfaces/http_server_factory.mojom.h"
 #include "mojo/services/network/public/interfaces/net_address.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace mojo {
 namespace {

@@ -26,11 +26,11 @@
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/test_frame_tree_delegate.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
-#include "mojo/application/public/cpp/service_provider_impl.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/service_provider_impl.h"
 
 using mus::Window;
 using mus::WindowTreeConnection;

@@ -9,12 +9,12 @@
 
 #include "base/bind.h"
 #include "base/files/file.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/connect.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/platform_handle/platform_handle_functions.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/connect.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 
 namespace resource_provider {
 namespace {

@@ -12,11 +12,11 @@
 #include "base/process/launch.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/message_pump/message_pump_mojo.h"
 #include "mojo/runner/child/runner_connection.h"
 #include "mojo/runner/init.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 #include "third_party/mojo/src/mojo/edk/embedder/process_delegate.h"
 

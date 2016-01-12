@@ -22,9 +22,9 @@ source_set("lib") {
   deps = [
     ":interfaces",
     "//base",
-    "//mojo/application/public/interfaces",
     "//mojo/message_pump",
     "//mojo/platform_handle:platform_handle_impl",
+    "//mojo/shell/public/interfaces",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }
@@ -35,7 +35,7 @@ mojom("interfaces") {
   ]
 
   deps = [
-    "//mojo/application/public/interfaces",
+    "//mojo/shell/public/interfaces",
   ]
 
   import_dirs = [ "//mojo/services" ]
@@ -53,10 +53,10 @@ source_set("test_native_main") {
 
   deps = [
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/gles2",
     "//mojo/message_pump",
     "//mojo/runner/child:lib",
+    "//mojo/shell/public/cpp",
     "//third_party/mojo/src/mojo/edk/system",
   ]
 }
@@ -67,7 +67,7 @@ mojom("apptest_interfaces") {
   ]
 
   deps = [
-    "//mojo/application/public/interfaces",
+    "//mojo/shell/public/interfaces",
   ]
 
   import_dirs = [ "//mojo/services" ]
@@ -86,10 +86,10 @@ mojo_native_application("apptests") {
     ":apptest_interfaces",
     "//base",
     "//base/test:test_config",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/cpp:test_support",
     "//mojo/common:common_base",
     "//mojo/converters/network:network",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
   ]
 
   data_deps = [
@@ -110,7 +110,7 @@ executable("native_target") {
     ":lib",
     ":test_native_main",
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
+    "//mojo/shell/public/cpp",
   ]
 }

@@ -5,7 +5,7 @@ include_rules = [
   "+components/resource_provider",
   "+components/mus",
   "+components/web_view",
-  "+mojo/application",
+  "+mojo/shell",
   "+mojo/common",
   "+mojo/logging",
   "+mojo/message_pump",

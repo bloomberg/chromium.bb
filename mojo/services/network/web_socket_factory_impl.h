@@ -7,9 +7,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "mojo/application/public/cpp/app_lifetime_helper.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
+#include "mojo/shell/public/cpp/app_lifetime_helper.h"
 
 namespace mojo {
 class NetworkContext;

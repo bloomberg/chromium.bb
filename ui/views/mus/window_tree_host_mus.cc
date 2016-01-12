@@ -5,7 +5,7 @@
 #include "ui/views/mus/window_tree_host_mus.h"
 
 #include "components/bitmap_uploader/bitmap_uploader.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/view_prop.h"

@@ -8,7 +8,7 @@
 
 #include "components/html_viewer/content_handler_impl.h"
 #include "components/html_viewer/global_state.h"
-#include "mojo/application/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 
 namespace html_viewer {
 

@@ -11,10 +11,10 @@
 #include "base/bind.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/utf_string_conversions.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/test_service/test_service_application.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
 #include "mojo/services/test_service/tracked_service.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace mojo {
 namespace test {

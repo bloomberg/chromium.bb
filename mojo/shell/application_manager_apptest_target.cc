@@ -5,12 +5,12 @@
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/runner/child/test_native_main.h"
 #include "mojo/runner/init.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTestPtr;
 

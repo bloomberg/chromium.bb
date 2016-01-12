@@ -4,8 +4,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory_impl.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory_impl.h"
 #include "url/gurl.h"
 
 namespace media {

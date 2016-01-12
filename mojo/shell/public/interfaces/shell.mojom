@@ -1,0 +1,79 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "mojo/shell/public/interfaces/service_provider.mojom";
+import "network/public/interfaces/url_loader.mojom";
+
+// Specifies a whitelist of applications and services an application can connect
+// to. Connections to applications not explicitly specified here as a key are
+// rejected. Connections to services not specified in an application's allowed
+// interfaces value are not made.
+// A "*" value as the only key in an otherwise empty map means the application
+// may connect to any other application.
+// A "*" value as the only string in an otherwise empty array of interface names
+// means the application may connect to any service in that application.
+// An empty interface name array means the application may not connect to any
+// services exposed by the application it is connecting to.
+struct CapabilityFilter {
+  map<string, array<string>> filter;
+};
+
+// An interface through which a Mojo application may communicate with the Mojo
+// system and request connections to other applications.
+interface Shell {
+  // Used to indicate the app was not launched by a content handler.
+  const uint32 kInvalidContentHandlerID = 0;
+
+  // Establishes a connection with another application ("target application")
+  // (located at |request->url|) through which the calling application and the
+  // target application may request services from one another.
+  // |application_url| is a URLRequest in case this is called for an HTTP
+  // navigation, in which case HTTP specific information like POST data,
+  // referrer header etc... needed.
+  //
+  // If the calling application would like to request services from the target
+  // application, it should pass a valid interface request in the |services|
+  // parameter (i.e. one containing a valid message pipe endpoint). If the
+  // target application does not wish to offer services, it may either not bind
+  // an implementation to the interface request, or else bind an implementation
+  // that will reject some or all service requests.
+  //
+  // If the calling application would like to offer services to the target
+  // application, it should pass a bound interface through the
+  // |exposed_services| parameter. The target application may then request
+  // services through that interface.
+  //
+  // At least one of |services| or |exposed_services| should be valid/bound in
+  // the call.
+  //
+  // If the |application_url| does not contain a domain, but is of the form
+  // "mojo:{service}", it is up to the Mojo shell to select an appropriate
+  // application for the service. Currently, the shell does this based on the
+  // value of its --origin flag.
+  //
+  // |filter| is a whitelist of application URLs and services that the target
+  // application is permitted to connect to. See documentation for
+  // CapabilityFilter above.
+  //
+  // If the connection to |application_url| involves a content handler, then
+  // |content_handler_id| is the id of the deepest content handler used to
+  // establish the connection to |application_url|. If no content handler is
+  // used |content_handler_id| is kInvalidContentHandlerID.
+  // TODO(beng): determine if we need to expose the target application id also.
+  ConnectToApplication(URLRequest application_url,
+                       ServiceProvider&? services,
+                       ServiceProvider? exposed_services,
+                       CapabilityFilter filter) => (uint32 content_handler_id);
+
+  // When there are no more instantiated services in an application, it should
+  // start its shutdown process by calling this method. Additionally, it should
+  // keep track of any new service requests that come in. The shell will then
+  // call Application::OnQuitRequested and start queueing new service requests.
+  // If the application didn't get any new service requests in the meantime, it
+  // should call the callback with a true value. Otherwise it should call it
+  // with false.
+  QuitApplication();
+};

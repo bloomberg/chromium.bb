@@ -6,7 +6,7 @@ include_rules = [
   "+components/mus/common",
   "+components/mus/public",
   "+components/resource_provider/public/interfaces",
-  "+mojo/application/public",
+  "+mojo/shell/public",
   "+mojo/common",
   "+mojo/converters/geometry",
   "+mojo/public",

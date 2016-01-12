@@ -7,11 +7,11 @@
 #include <assert.h>
 #include <utility>
 
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/services/test_service/test_service_impl.h"
 #include "mojo/services/test_service/test_time_service_impl.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 
 namespace mojo {
 namespace test {

@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "components/clipboard/public/interfaces/clipboard.mojom.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/common/common_type_converters.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 using mojo::Array;
 using mojo::Clipboard;

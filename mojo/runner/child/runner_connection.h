@@ -6,7 +6,7 @@
 #define MOJO_RUNNER_CHILD_RUNNER_CONNECTION_H_
 
 #include "base/macros.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
 
 namespace mojo {
 namespace runner {

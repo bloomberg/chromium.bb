@@ -8,15 +8,15 @@
 
 #include "base/macros.h"
 #include "base/path_service.h"
-#include "mojo/application/public/cpp/application_connection.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/interfaces/content_handler.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/shell/capability_filter_test.h"
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/package_manager/package_manager_impl.h"
+#include "mojo/shell/public/cpp/application_connection.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/interfaces/content_handler.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {

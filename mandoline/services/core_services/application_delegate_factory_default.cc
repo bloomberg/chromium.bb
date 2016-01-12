@@ -4,7 +4,7 @@
 
 #include "mandoline/services/core_services/application_delegate_factory.h"
 
-#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 
 namespace core_services {
 

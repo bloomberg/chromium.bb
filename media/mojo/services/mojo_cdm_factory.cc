@@ -14,8 +14,8 @@
 #include "media/cdm/aes_decryptor.h"
 #include "media/mojo/interfaces/service_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm.h"
-#include "mojo/application/public/cpp/connect.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/shell/public/cpp/connect.h"
 
 namespace media {
 

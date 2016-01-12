@@ -1,0 +1,111 @@
+# Copyright 2014 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+# GYP version: mojo/mojo_base.gyp:mojo_application_base
+source_set("cpp") {
+  public_deps = [
+    ":init_commandline",
+    ":sources",
+  ]
+}
+
+# Like the target above, but without special commandline initialization that
+# apps use.
+source_set("cpp_for_chromium") {
+  public_deps = [
+    ":sources",
+  ]
+}
+
+source_set("sources") {
+  sources = [
+    "app_lifetime_helper.h",
+    "application_connection.h",
+    "application_delegate.h",
+    "application_impl.h",
+    "application_runner.h",
+    "connect.h",
+    "initialize_base_and_icu.cc",
+    "interface_factory.h",
+    "interface_factory_impl.h",
+    "lib/app_lifetime_helper.cc",
+    "lib/application_delegate.cc",
+    "lib/application_impl.cc",
+    "lib/application_runner.cc",
+    "lib/interface_factory_connector.h",
+    "lib/service_connector_registry.cc",
+    "lib/service_connector_registry.h",
+    "lib/service_provider_impl.cc",
+    "lib/service_registry.cc",
+    "lib/service_registry.h",
+    "service_connector.h",
+    "service_provider_impl.h",
+  ]
+
+  deps = [
+    "//base:i18n",
+    "//mojo/common",
+    "//mojo/converters/network",
+    "//mojo/environment:chromium",
+    "//mojo/message_pump",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
+    "//mojo/shell/public/interfaces",
+  ]
+}
+
+source_set("init_commandline") {
+  sources = [
+    "lib/init_commandline.cc",
+  ]
+}
+
+source_set("content_handler") {
+  sources = [
+    "content_handler_factory.h",
+    "lib/content_handler_factory.cc",
+  ]
+  deps = [
+    ":cpp",
+
+    # TODO: this code should not depend on base.
+    "//base",
+    "//mojo/message_pump",
+    "//mojo/services/network/public/interfaces",
+    "//mojo/shell/public/interfaces:interfaces_cpp_sources",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "application_test_base.h",
+    "lib/application_test_base.cc",
+    "lib/application_test_main.cc",
+  ]
+
+  public_deps = [
+    ":cpp",
+    "//testing/gtest",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/logging",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/environment",
+    "//mojo/public/cpp/system",
+    "//mojo/shell/public/interfaces:interfaces_cpp_sources",
+  ]
+
+  data_deps = []
+  if (is_android) {
+    data_deps += [ "//mojo/android" ]
+  }
+}

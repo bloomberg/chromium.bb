@@ -59,8 +59,6 @@ source_set("lib") {
     "//components/mus/public/interfaces",
     "//components/resource_provider/public/interfaces",
     "//components/web_view/test_runner/public/interfaces",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/common:url_type_converters",
     "//mojo/converters/geometry",
@@ -68,6 +66,8 @@ source_set("lib") {
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
     "//mojo/services/tracing/public/interfaces",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/interfaces",
     "//url",
   ]
 
@@ -87,7 +87,7 @@ mojo_native_application("web_view") {
 
   deps = [
     ":lib",
-    "//mojo/application/public/cpp",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -124,8 +124,8 @@ mojo_native_application("apptests") {
     "//components/mus/public/interfaces",
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/cpp:test_support",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
     "//mojo/util:filename_util",
     "//ui/mojo/geometry:interfaces",
     "//ui/mojo/geometry:util",

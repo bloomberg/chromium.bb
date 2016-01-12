@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "content/public/test/test_mojo_service.mojom.h"
-#include "mojo/application/public/cpp/application_delegate.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 #include "url/gurl.h"
 
 namespace content {

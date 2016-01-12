@@ -58,9 +58,9 @@ mojo_native_application("web_view_test_runner") {
     "//components/web_view/public/cpp",
     "//components/web_view/public/interfaces",
     "//components/web_view/test_runner/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common",
     "//mojo/converters/geometry",
+    "//mojo/shell/public/cpp",
     "//ui/gfx/geometry",
     "//url",
   ]

@@ -14,8 +14,8 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/tracing/public/cpp/switches.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {

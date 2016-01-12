@@ -1,6 +1,6 @@
 include_rules = [
   "+components/filesystem",
-  "+mojo/application",
+  "+mojo/shell",
   "+mojo/public",
   "+mojo/util",
 ]

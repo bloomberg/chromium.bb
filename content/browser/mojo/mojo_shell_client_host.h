@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/process/process_handle.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "third_party/mojo/src/mojo/edk/embedder/scoped_platform_handle.h"
 
 namespace content {

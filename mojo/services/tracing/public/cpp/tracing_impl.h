@@ -6,9 +6,9 @@
 #define MOJO_SERVICES_TRACING_PUBLIC_CPP_TRACING_IMPL_H_
 
 #include "base/macros.h"
-#include "mojo/application/public/cpp/interface_factory.h"
 #include "mojo/services/tracing/public/cpp/trace_provider_impl.h"
 #include "mojo/services/tracing/public/interfaces/tracing.mojom.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
 
 namespace mojo {
 

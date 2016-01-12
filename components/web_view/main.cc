@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "components/web_view/web_view_application_delegate.h"
-#include "mojo/application/public/cpp/application_runner.h"
 #include "mojo/public/c/system/main.h"
+#include "mojo/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
   mojo::ApplicationRunner runner(new web_view::WebViewApplicationDelegate);

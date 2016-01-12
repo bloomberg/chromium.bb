@@ -27,8 +27,8 @@
 #include "components/web_view/frame_tree.h"
 #include "components/web_view/public/interfaces/frame.mojom.h"
 #include "components/web_view/test_frame_tree_delegate.h"
-#include "mojo/application/public/cpp/application_impl.h"
 #include "mojo/services/accessibility/public/interfaces/accessibility.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 using mus::mojom::WindowTreeClientPtr;

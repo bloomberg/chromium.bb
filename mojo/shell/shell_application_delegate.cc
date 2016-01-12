@@ -9,8 +9,8 @@
 #include <utility>
 
 #include "base/process/process.h"
-#include "mojo/application/public/cpp/application_connection.h"
 #include "mojo/shell/application_manager.h"
+#include "mojo/shell/public/cpp/application_connection.h"
 #include "third_party/mojo/src/mojo/edk/embedder/embedder.h"
 
 namespace mojo {

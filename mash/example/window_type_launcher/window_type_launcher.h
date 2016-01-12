@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "mojo/application/public/cpp/application_delegate.h"
+#include "mojo/shell/public/cpp/application_delegate.h"
 
 namespace views {
 class AuraInit;

@@ -1,0 +1,20 @@
+// Copyright 2014 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module mojo;
+
+import "mojo/shell/public/interfaces/application.mojom";
+import "network/public/interfaces/url_loader.mojom";
+
+// Interface implemented by content handlers. To avoid race conditions with
+// dropped requests, the implementation should keep a reference to the lifetime
+// of the app (by holding on to AppRefCount). Each application started by
+// StartApplication should call the callback given by that method on
+// destruction. When the owner in the shell notices this, it will destroy the
+// interface pointer, which should cause the strongly-bound ContentHandler
+// implementation to self destruct and release the app reference.
+interface ContentHandler {
+  // The callback should be called when the application is destructed.
+  StartApplication(Application& application, URLResponse response) => ();
+};

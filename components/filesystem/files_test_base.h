@@ -7,8 +7,8 @@
 
 #include "base/macros.h"
 #include "components/filesystem/public/interfaces/file_system.mojom.h"
-#include "mojo/application/public/cpp/application_test_base.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
 
 namespace filesystem {
 

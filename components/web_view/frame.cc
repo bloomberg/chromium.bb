@@ -19,8 +19,8 @@
 #include "components/web_view/frame_tree_delegate.h"
 #include "components/web_view/frame_user_data.h"
 #include "components/web_view/frame_utils.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/url_type_converters.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "url/gurl.h"
 
 using mus::Window;

@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 #include "mojo/util/capture_util.h"
 #include "sql/mojo/mojo_vfs.h"
 #include "sql/test/test_helpers.h"

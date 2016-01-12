@@ -12,10 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/application/public/interfaces/application.mojom.h"
-#include "mojo/application/public/interfaces/application_manager.mojom.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
-#include "mojo/application/public/interfaces/shell.mojom.h"
 #include "mojo/common/weak_interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -25,6 +21,10 @@
 #include "mojo/shell/fetcher.h"
 #include "mojo/shell/identity.h"
 #include "mojo/shell/native_runner.h"
+#include "mojo/shell/public/interfaces/application.mojom.h"
+#include "mojo/shell/public/interfaces/application_manager.mojom.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/shell.mojom.h"
 #include "url/gurl.h"
 
 namespace base {

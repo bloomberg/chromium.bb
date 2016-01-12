@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "content/public/browser/mojo_app_connection.h"
-#include "mojo/application/public/interfaces/service_provider.mojom.h"
+#include "mojo/shell/public/interfaces/service_provider.mojom.h"
 
 class GURL;
 

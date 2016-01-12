@@ -11,12 +11,12 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/process/process_handle.h"
-#include "mojo/application/public/cpp/application_impl.h"
-#include "mojo/application/public/cpp/application_test_base.h"
-#include "mojo/application/public/cpp/interface_factory.h"
-#include "mojo/application/public/interfaces/application_manager.mojom.h"
 #include "mojo/converters/network/network_type_converters.h"
 #include "mojo/shell/application_manager_apptests.mojom.h"
+#include "mojo/shell/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_test_base.h"
+#include "mojo/shell/public/cpp/interface_factory.h"
+#include "mojo/shell/public/interfaces/application_manager.mojom.h"
 
 using mojo::shell::test::mojom::CreateInstanceForHandleTest;
 

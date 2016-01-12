@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "components/mus/public/cpp/window.h"
-#include "mojo/application/public/cpp/application_impl.h"
+#include "mojo/shell/public/cpp/application_impl.h"
 
 namespace web_view {
 namespace {

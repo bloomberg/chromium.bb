@@ -16,9 +16,9 @@ mojo_native_application("updater") {
   deps = [
     "//base",
     "//components/update_client",
-    "//mojo/application/public/cpp",
     "//mojo/public/cpp/system",
     "//mojo/services/updater",
+    "//mojo/shell/public/cpp",
     "//url",
   ]
 }

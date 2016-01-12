@@ -93,7 +93,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//components/filesystem/public/interfaces",
-    "//mojo/application/public/cpp",
     "//mojo/common:common_base",
     "//mojo/common:url_type_converters",
     "//mojo/message_pump",
@@ -101,6 +100,7 @@ source_set("lib") {
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
     "//mojo/services/tracing/public/cpp",
+    "//mojo/shell/public/cpp",
     "//net",
     "//net:extras",
     "//net:http_server",
@@ -119,11 +119,11 @@ source_set("sources") {
   deps = [
     ":lib",
     "//base",
-    "//mojo/application/public/cpp",
     "//mojo/public/c/system:for_shared_library",
     "//mojo/public/cpp/bindings:bindings",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/shell/public/cpp",
   ]
 }
 
@@ -141,13 +141,13 @@ mojo_native_application("apptests") {
     ":lib",
     ":network",
     "//base",
-    "//mojo/application/public/cpp:sources",
-    "//mojo/application/public/cpp:test_support",
     "//mojo/common:common_base",
     "//mojo/message_pump",
     "//mojo/public/cpp/bindings:callback",
     "//mojo/services/network/public/cpp",
     "//mojo/services/network/public/interfaces",
+    "//mojo/shell/public/cpp:sources",
+    "//mojo/shell/public/cpp:test_support",
     "//net",
     "//net:test_support",
     "//testing/gtest",
