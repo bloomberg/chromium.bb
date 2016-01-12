@@ -160,7 +160,9 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
         intercepting_filter_.get());
     content::RenderFrame* render_frame = GetRenderFrame();
     classifier_ = new StrictMock<MockPhishingClassifier>(render_frame);
-    delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
+    PostTaskToInProcessRendererAndWait(
+        base::Bind(&PhishingClassifierDelegateTest::SetUpOnRendererThread,
+                   base::Unretained(this)));
 
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&PhishingClassifierDelegateTest::HandleRequest,
@@ -253,6 +255,16 @@ class PhishingClassifierDelegateTest : public InProcessBrowserTest {
   StrictMock<MockPhishingClassifier>* classifier_;  // Owned by |delegate_|.
   PhishingClassifierDelegate* delegate_;  // Owned by the RenderView.
   scoped_refptr<content::MessageLoopRunner> runner_;
+
+ private:
+  void SetUpOnRendererThread() {
+    content::RenderFrame* render_frame = GetRenderFrame();
+    // PhishingClassifierDelegate is a RenderFrameObserver and therefore has to
+    // be created on the renderer thread, which is not the main thread in an
+    // in-process-browser-test.
+    delegate_ = PhishingClassifierDelegate::Create(render_frame, classifier_);
+  }
+
 };
 
 IN_PROC_BROWSER_TEST_F(PhishingClassifierDelegateTest, Navigation) {
