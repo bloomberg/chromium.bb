@@ -75,6 +75,15 @@ Polymer({
     },
 
     /**
+     * The time |this| element calls ready().
+     * @private {number}
+     */
+    elementReadyTimeMs_: {
+      type: Number,
+      value: 0,
+    },
+
+    /**
      * The text for the first run flow button.
      * @private {string}
      */
@@ -274,6 +283,15 @@ Polymer({
       type: Boolean,
       value: false,
     },
+
+    /**
+     * Whether the user has already taken an action.
+     * @type {boolean}
+     */
+    userHasTakenInitialAction_: {
+      type: Boolean,
+      value: false,
+    },
   },
 
   listeners: {
@@ -287,6 +305,7 @@ Polymer({
   ],
 
   ready: function() {
+    this.elementReadyTimeMs_ = performance.now();
     this.showSinkList_();
   },
 
@@ -310,6 +329,29 @@ Polymer({
   acknowledgeFirstRunFlow_: function() {
     this.showFirstRunFlow = false;
     this.fire('acknowledge-first-run-flow');
+  },
+
+  /**
+   * Fires a 'report-initial-action' event when the user takes their first
+   * action after the dialog opens. Also fires a 'report-initial-action-close'
+   * event if that initial action is to close the dialog.
+   */
+  maybeReportUserFirstAction: function(initialAction) {
+    if (this.userHasTakenInitialAction_)
+      return;
+
+    this.fire('report-initial-action', {
+      action: initialAction,
+    });
+
+    if (initialAction == media_router.MediaRouterUserAction.CLOSE) {
+      var timeToClose = performance.now() - this.elementReadyTimeMs_;
+      this.fire('report-initial-action-close', {
+        timeMs: timeToClose,
+      });
+    }
+
+    this.userHasTakenInitialAction_ = true;
   },
 
   /**
@@ -723,6 +765,8 @@ Polymer({
     }
 
     this.showSinkList_();
+    this.maybeReportUserFirstAction(
+        media_router.MediaRouterUserAction.CHANGE_MODE);
   },
 
   /**
@@ -730,11 +774,19 @@ Polymer({
    * to close the dialog if there is no click within three seconds.
    *
    * @param {!Event} event The event object.
+   * @param {{detail: {route: media_router.Route}}} data
+   * Parameters in |data|.detail:
+   *   route - route to close.
    * @private
    */
-  onCloseRouteClick_: function(event) {
+  onCloseRouteClick_: function(event, data) {
     this.showSinkList_();
     this.startTapTimer_();
+
+    if (data.route.isLocal) {
+      this.maybeReportUserFirstAction(
+          media_router.MediaRouterUserAction.STOP_LOCAL);
+    }
   },
 
   /**
@@ -917,6 +969,8 @@ Polymer({
     if (route) {
       this.showRouteDetails_(route);
       this.fire('navigate-sink-list-to-details');
+      this.maybeReportUserFirstAction(
+          media_router.MediaRouterUserAction.STATUS_REMOTE);
     } else if (this.currentLaunchingSinkId_ == '') {
       // Allow one launch at a time.
       this.fire('create-route', {
@@ -934,6 +988,9 @@ Polymer({
       var timeToSelectSink =
           performance.now() - this.populatedSinkListSeenTimeMs_;
       this.fire('report-sink-click-time', {timeMs: timeToSelectSink});
+
+      this.maybeReportUserFirstAction(
+          media_router.MediaRouterUserAction.START_LOCAL);
     }
   },
 

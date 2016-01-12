@@ -46,6 +46,19 @@ enum class MediaRouteProviderWakeReason {
   TOTAL_COUNT = 15
 };
 
+// The possible actions a user can take while interacting with the Media Router
+// dialog.
+enum class MediaRouterUserAction {
+  CHANGE_MODE = 0,
+  START_LOCAL = 1,
+  STOP_LOCAL = 2,
+  CLOSE = 3,
+  STATUS_REMOTE = 4,
+
+  // Note: Add entries only immediately above this line.
+  TOTAL_COUNT = 5
+};
+
 class MediaRouterMetrics {
  public:
   // Records where the user clicked to open the Media Router dialog.
@@ -65,6 +78,11 @@ class MediaRouterMetrics {
   // initial data after a user clicks to open the dialog.
   static void RecordMediaRouterDialogLoaded(
       const base::TimeDelta delta);
+
+  // Records the first action the user took after the Media Router dialog
+  // opened.
+  static void RecordMediaRouterInitialUserAction(
+      MediaRouterUserAction action);
 };
 
 }  // namespace media_router

@@ -185,6 +185,15 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the initial action the user took.
+   *
+   * @param {number} action
+   */
+  function reportInitialAction(action) {
+    chrome.send('reportInitialAction', [action]);
+  }
+
+  /**
    * Reports the navigation to the specified view.
    *
    * @param {string} view
@@ -222,6 +231,16 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the time, in ms, it took for the user to close the dialog without
+   * taking any other action.
+   *
+   * @param {number} timeMs
+   */
+  function reportTimeToInitialActionClose(timeMs) {
+    chrome.send('reportTimeToInitialActionClose', [timeMs]);
+  }
+
+  /**
    * Requests data to initialize the WebUI with.
    * The data will be returned via media_router.ui.setInitialData.
    */
@@ -249,11 +268,13 @@ cr.define('media_router.browserApi', function() {
     joinRoute: joinRoute,
     onInitialDataReceived: onInitialDataReceived,
     reportClickedSinkIndex: reportClickedSinkIndex,
+    reportInitialAction: reportInitialAction,
     reportInitialState: reportInitialState,
     reportNavigateToView: reportNavigateToView,
     reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,
     reportTimeToClickSink: reportTimeToClickSink,
+    reportTimeToInitialActionClose: reportTimeToInitialActionClose,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,
   };

@@ -19704,6 +19704,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Ui.Action.CloseLatency" units="ms">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken from the user opening the Media Router dialog
+    to the user closing the dialog. This is only recorded if closing the dialog
+    is the first action the user takes.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Action.StartLocal.Latency" units="ms">
   <owner>apacible@chromium.org</owner>
   <summary>
@@ -19753,6 +19762,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Duration in milliseconds taken from a user click to open the Media Router
     dialog to the initial paint.
+  </summary>
+</histogram>
+
+<histogram name="MediaRouter.Ui.FirstAction" units="MediaRouterUserAction">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    The first action taken by the user after opening the Media Router dialog.
   </summary>
 </histogram>
 
@@ -70600,6 +70616,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="App"/>
   <int value="2" label="Tab"/>
   <int value="4" label="Desktop"/>
+</enum>
+
+<enum name="MediaRouterUserAction" type="int">
+  <int value="0" label="Change Mode"/>
+  <int value="1" label="Start Local"/>
+  <int value="2" label="Stop Local"/>
+  <int value="3" label="Close"/>
+  <int value="4" label="Status Remote"/>
 </enum>
 
 <enum name="MediaRouteType" type="int">

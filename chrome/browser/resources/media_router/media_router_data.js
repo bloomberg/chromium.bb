@@ -24,6 +24,18 @@ cr.define('media_router', function() {
   };
 
   /**
+   * This corresponds to the C++ MediaRouterMetrics MediaRouterUserAction.
+   * @enum {number}
+   */
+  var MediaRouterUserAction = {
+    CHANGE_MODE: 0,
+    START_LOCAL: 1,
+    STOP_LOCAL: 2,
+    CLOSE: 3,
+    STATUS_REMOTE: 4,
+  };
+
+  /**
    * The possible states of the Media Router dialog. Used to determine which
    * components to show.
    * @enum {string}
@@ -212,6 +224,7 @@ cr.define('media_router', function() {
   return {
     AUTO_CAST_MODE: AUTO_CAST_MODE,
     CastModeType: CastModeType,
+    MediaRouterUserAction: MediaRouterUserAction,
     MediaRouterView: MediaRouterView,
     SinkIconType: SinkIconType,
     SinkStatus: SinkStatus,

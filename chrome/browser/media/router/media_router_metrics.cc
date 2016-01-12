@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/router/media_router_metrics.h"
 
+#include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 
 namespace media_router {
@@ -40,6 +41,16 @@ void MediaRouterMetrics::RecordMediaRouterDialogLoaded(
     const base::TimeDelta delta) {
   UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Dialog.LoadedWithData",
                       delta);
+}
+
+// static
+void MediaRouterMetrics::RecordMediaRouterInitialUserAction(
+    MediaRouterUserAction action) {
+  DCHECK_NE(static_cast<int>(action),
+            static_cast<int>(MediaRouterUserAction::TOTAL_COUNT));
+  UMA_HISTOGRAM_ENUMERATION(
+      "MediaRouter.Ui.FirstAction", static_cast<int>(action),
+      static_cast<int>(MediaRouterUserAction::TOTAL_COUNT));
 }
 
 }  // namespace media_router
