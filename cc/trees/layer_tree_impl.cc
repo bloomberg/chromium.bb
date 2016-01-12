@@ -1884,7 +1884,9 @@ void LayerTreeImpl::GetViewportSelection(ViewportSelection* selection) {
 }
 
 void LayerTreeImpl::InputScrollAnimationFinished() {
-  layer_tree_host_impl_->ScrollEnd();
+  // TODO(majidvp): We should pass in the original starting scroll position here
+  ScrollState scroll_state(0, 0, 0, 0, 0, 0, false, false, false);
+  layer_tree_host_impl_->ScrollEnd(&scroll_state);
 }
 
 bool LayerTreeImpl::SmoothnessTakesPriority() const {

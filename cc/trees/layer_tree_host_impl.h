@@ -161,23 +161,22 @@ class CC_EXPORT LayerTreeHostImpl
   // InputHandler implementation
   void BindToClient(InputHandlerClient* client) override;
   InputHandler::ScrollStatus ScrollBegin(
-      const gfx::Point& viewport_point,
+      ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
   InputHandler::ScrollStatus RootScrollBegin(
+      ScrollState* scroll_state,
       InputHandler::ScrollInputType type) override;
   InputHandler::ScrollStatus ScrollAnimated(
       const gfx::Point& viewport_point,
       const gfx::Vector2dF& scroll_delta) override;
   void ApplyScroll(LayerImpl* layer, ScrollState* scroll_state);
-  InputHandlerScrollResult ScrollBy(
-      const gfx::Point& viewport_point,
-      const gfx::Vector2dF& scroll_delta) override;
+  InputHandlerScrollResult ScrollBy(ScrollState* scroll_state) override;
   bool ScrollVerticallyByPage(const gfx::Point& viewport_point,
                               ScrollDirection direction) override;
   void RequestUpdateForSynchronousInputHandler() override;
   void SetSynchronousInputHandlerRootScrollOffset(
       const gfx::ScrollOffset& root_offset) override;
-  void ScrollEnd() override;
+  void ScrollEnd(ScrollState* scroll_state) override;
   InputHandler::ScrollStatus FlingScrollBegin() override;
   void MouseMoveAt(const gfx::Point& viewport_point) override;
   void PinchGestureBegin() override;
@@ -655,8 +654,10 @@ class CC_EXPORT LayerTreeHostImpl
   void ScrollViewportInnerFirst(gfx::Vector2dF scroll_delta);
 
   InputHandler::ScrollStatus ScrollBeginImpl(
+      ScrollState* scroll_state,
       LayerImpl* scrolling_layer_impl,
       InputHandler::ScrollInputType type);
+  void DistributeScrollDelta(ScrollState* scroll_state);
 
   bool AnimatePageScale(base::TimeTicks monotonic_time);
   bool AnimateScrollbars(base::TimeTicks monotonic_time);

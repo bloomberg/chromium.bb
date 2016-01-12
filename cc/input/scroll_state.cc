@@ -14,29 +14,37 @@ ScrollState::ScrollState(double delta_x,
                          double delta_y,
                          int start_position_x,
                          int start_position_y,
+                         double velocity_x,
+                         double velocity_y,
+                         bool is_beginning,
+                         bool is_in_inertial_phase,
+                         bool is_ending,
                          bool should_propagate,
                          bool delta_consumed_for_scroll_sequence,
                          bool is_direct_manipulation)
-    : data_(new ScrollStateData(delta_x,
-                                delta_y,
-                                start_position_x,
-                                start_position_y,
-                                should_propagate,
-                                delta_consumed_for_scroll_sequence,
-                                is_direct_manipulation)) {}
+    : data_(delta_x,
+            delta_y,
+            start_position_x,
+            start_position_y,
+            velocity_x,
+            velocity_y,
+            is_beginning,
+            is_in_inertial_phase,
+            is_ending,
+            should_propagate,
+            delta_consumed_for_scroll_sequence,
+            is_direct_manipulation) {}
 
-ScrollState::ScrollState(scoped_ptr<ScrollStateData> data) {
-  data_ = std::move(data);
-}
+ScrollState::ScrollState(ScrollStateData data) : data_(data) {}
 
 ScrollState::~ScrollState() {}
 
 void ScrollState::ConsumeDelta(double x, double y) {
-  data_->delta_x -= x;
-  data_->delta_y -= y;
+  data_.delta_x -= x;
+  data_.delta_y -= y;
 
   if (x || y)
-    data_->delta_consumed_for_scroll_sequence = true;
+    data_.delta_consumed_for_scroll_sequence = true;
 }
 
 void ScrollState::DistributeToScrollChainDescendant() {

@@ -20,13 +20,27 @@ struct CC_EXPORT ScrollStateData {
                   double delta_y,
                   int start_position_x,
                   int start_position_y,
+                  double velocity_x,
+                  double velocity_y,
+                  bool is_beginning,
+                  bool is_in_inertial_phase,
+                  bool is_ending,
                   bool should_propagate,
                   bool delta_consumed_for_scroll_sequence,
                   bool is_direct_manipulation);
+  // Scroll delta in viewport coordinates (DIP).
   double delta_x;
   double delta_y;
-  double start_position_x;
-  double start_position_y;
+  // Scroll position in viewport coordinates (DIP).
+  int start_position_x;
+  int start_position_y;
+  // Scroll velocity in DIP/seconds.
+  double velocity_x;
+  double velocity_y;
+
+  bool is_beginning;
+  bool is_in_inertial_phase;
+  bool is_ending;
 
   bool should_propagate;
 

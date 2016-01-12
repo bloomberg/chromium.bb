@@ -28,6 +28,22 @@
 namespace cc {
 namespace {
 
+scoped_ptr<ScrollState> BeginState(const gfx::Point& point) {
+  return ScrollState::Create(gfx::Vector2dF(), point, gfx::Vector2dF(), true,
+                             false, false);
+}
+
+scoped_ptr<ScrollState> UpdateState(const gfx::Point& point,
+                                    const gfx::Vector2dF& delta) {
+  return ScrollState::Create(delta, point, gfx::Vector2dF(), false, false,
+                             false);
+}
+
+scoped_ptr<ScrollState> EndState() {
+  return ScrollState::Create(gfx::Vector2dF(), gfx::Point(), gfx::Vector2dF(),
+                             false, false, true);
+}
+
 class LayerTreeHostScrollTest : public LayerTreeTest {
  protected:
   void SetupTree() override {
@@ -587,15 +603,16 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       case 0: {
         // GESTURE scroll on impl thread. Also tests that the last scrolled
         // layer id is stored even after the scrolling ends.
-        InputHandler::ScrollStatus status = impl->ScrollBegin(
+        gfx::Point scroll_point =
             gfx::ToCeiledPoint(expected_scroll_layer_impl->position() -
-                               gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandler::GESTURE);
+                               gfx::Vector2dF(0.5f, 0.5f));
+        InputHandler::ScrollStatus status = impl->ScrollBegin(
+            BeginState(scroll_point).get(), InputHandler::GESTURE);
         EXPECT_EQ(InputHandler::SCROLL_STARTED, status);
-        impl->ScrollBy(gfx::Point(), scroll_amount_);
+        impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
         LayerImpl* scrolling_layer = impl->CurrentlyScrollingLayer();
         CHECK(scrolling_layer);
-        impl->ScrollEnd();
+        impl->ScrollEnd(EndState().get());
         CHECK(!impl->CurrentlyScrollingLayer());
         EXPECT_EQ(scrolling_layer->id(),
                   impl->active_tree()->LastScrolledLayerId());
@@ -609,13 +626,14 @@ class LayerTreeHostScrollTestCaseWithChild : public LayerTreeHostScrollTest {
       }
       case 1: {
         // WHEEL scroll on impl thread.
-        InputHandler::ScrollStatus status = impl->ScrollBegin(
+        gfx::Point scroll_point =
             gfx::ToCeiledPoint(expected_scroll_layer_impl->position() +
-                               gfx::Vector2dF(0.5f, 0.5f)),
-            InputHandler::WHEEL);
+                               gfx::Vector2dF(0.5f, 0.5f));
+        InputHandler::ScrollStatus status = impl->ScrollBegin(
+            BeginState(scroll_point).get(), InputHandler::WHEEL);
         EXPECT_EQ(InputHandler::SCROLL_STARTED, status);
-        impl->ScrollBy(gfx::Point(), scroll_amount_);
-        impl->ScrollEnd();
+        impl->ScrollBy(UpdateState(gfx::Point(), scroll_amount_).get());
+        impl->ScrollEnd(EndState().get());
 
         // Check the scroll is applied as a delta.
         EXPECT_VECTOR_EQ(javascript_scroll_,
