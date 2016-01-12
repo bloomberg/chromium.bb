@@ -78,7 +78,8 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * @param options Optional map of options to include when showing the notification.
      * @return The Android Notification object, as shown in the framework.
      */
-    protected Notification showAndGetNotification(String title, String options) throws Exception {
+    protected Notification showAndGetNotification(String title, String options)
+            throws InterruptedException, TimeoutException {
         runJavaScriptCodeInCurrentTab("showNotification(\"" + title + "\", " + options + ");");
         return waitForNotification().notification;
     }
@@ -89,7 +90,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      *
      * @return The NotificationEntry object tracked by the MockNotificationManagerProxy.
      */
-    protected NotificationEntry waitForNotification() throws Exception {
+    protected NotificationEntry waitForNotification() throws InterruptedException {
         waitForNotificationManagerMutation();
         List<NotificationEntry> notifications = getNotificationEntries();
         assertEquals(1, notifications.size());
@@ -104,7 +105,7 @@ public class NotificationTestBase extends ChromeTabbedActivityTestBase {
      * Waits for a mutation to occur in the mocked notification manager. This indicates that Chrome
      * called into Android to notify or cancel a notification.
      */
-    protected void waitForNotificationManagerMutation() throws Exception {
+    protected void waitForNotificationManagerMutation() throws InterruptedException {
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {

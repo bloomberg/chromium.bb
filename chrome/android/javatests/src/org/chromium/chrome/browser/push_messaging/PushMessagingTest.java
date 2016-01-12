@@ -33,7 +33,6 @@ import java.util.concurrent.TimeoutException;
  * Instrumentation tests for the Push API and the integration with the Notifications API on Android.
  */
 // TODO(mvanouwerkerk): remove @SuppressLint once crbug.com/501900 is fixed.
-// TODO(mvanouwerkerk): Replace "throws Exception" with more specific exceptions.
 @SuppressLint("NewApi")
 public class PushMessagingTest
         extends NotificationTestBase implements PushMessagingServiceObserver.Listener {
@@ -82,7 +81,7 @@ public class PushMessagingTest
      */
     @MediumTest
     @Feature({"Browser", "PushMessaging"})
-    public void testPushAndShowNotification() throws Exception {
+    public void testPushAndShowNotification() throws InterruptedException, TimeoutException {
         FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
         GCMDriver.overrideSubscriberForTesting(subscriber);
 
@@ -103,7 +102,7 @@ public class PushMessagingTest
      */
     @LargeTest
     @Feature({"Browser", "PushMessaging"})
-    public void testDefaultNotification() throws Exception {
+    public void testDefaultNotification() throws InterruptedException, TimeoutException {
         FakeGoogleCloudMessagingSubscriber subscriber = new FakeGoogleCloudMessagingSubscriber();
         GCMDriver.overrideSubscriberForTesting(subscriber);
 
@@ -150,7 +149,8 @@ public class PushMessagingTest
      * Runs {@code script} in the current tab and waits for the tab title to change to
      * {@code expectedTitle}.
      */
-    private void runScriptAndWaitForTitle(String script, String expectedTitle) throws Exception {
+    private void runScriptAndWaitForTitle(String script, String expectedTitle)
+            throws InterruptedException {
         runScriptAndWaitForTitle(script, expectedTitle, getActivity().getActivityTab());
     }
 
@@ -159,13 +159,13 @@ public class PushMessagingTest
      * {@code expectedTitle}.
      */
     private void runScriptAndWaitForTitle(String script, String expectedTitle, Tab tab)
-            throws Exception {
+            throws InterruptedException {
         JavaScriptUtils.executeJavaScript(tab.getWebContents(), script);
         waitForTitle(tab, expectedTitle);
     }
 
     private void sendPushAndWaitForCallback(final String appId, final String senderId)
-            throws Exception {
+            throws InterruptedException, TimeoutException {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
