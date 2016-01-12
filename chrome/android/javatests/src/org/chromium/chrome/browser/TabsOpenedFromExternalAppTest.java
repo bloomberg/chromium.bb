@@ -8,10 +8,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
 import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.LargeTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.text.TextUtils;
 import android.view.ContextMenu;
-import android.view.KeyEvent;
 import android.view.View;
 
 import junit.framework.Assert;
@@ -19,7 +19,6 @@ import junit.framework.Assert;
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -34,7 +33,6 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.KeyUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 
 import java.util.concurrent.Callable;
@@ -161,12 +159,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Tests that URLs opened from the same external app don't create new tabs.
      * @throws InterruptedException
      */
-    /**
-     * @LargeTest
-     * @Feature({"Navigation"})
-     * Bug 5856404
-     */
-    @FlakyTest
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNoNewTabForSameApp() throws InterruptedException {
         startMainActivityFromLauncher();
 
@@ -194,8 +188,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // And pressing back should close Clank.
         assertTrue("Window does not have focus before pressing back.",
                 getActivity().hasWindowFocus());
-        KeyUtils.singleKeyEventView(getInstrumentation(), getActivity().getActivityTab().getView(),
-                KeyEvent.KEYCODE_BACK);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
         getInstrumentation().waitForIdleSync();
         assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
     }
@@ -204,15 +202,11 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * Tests that URLs opened from an unspecified external app (no Browser.EXTRA_APPLICATION_ID in
      * the intent extras) don't create new tabs.
      * @throws InterruptedException
-     * TODO(jcivelli): http:/b/5882419 we disabled this behavior so this test is disabled until we
-     *                 figure out what we want to do.
      */
-    /**
-     * @LargeTest
-     * @Feature({"Navigation"})
-     * Bug 5856404
-     */
-    @DisabledTest
+
+
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNewTabForUnknownApp() throws InterruptedException {
         startMainActivityFromLauncher();
 
@@ -246,8 +240,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // And pressing back should close Clank.
         assertTrue("Window does not have focus before pressing back.",
                 getActivity().hasWindowFocus());
-        KeyUtils.singleKeyEventView(getInstrumentation(), getActivity().getActivityTab().getView(),
-                KeyEvent.KEYCODE_BACK);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
         getInstrumentation().waitForIdleSync();
         assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
     }
@@ -257,12 +255,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * the intent do create new tabs.
      * @throws InterruptedException
      */
-    /**
-     * Bug: crbug.com/155004
-     * @LargeTest
-     * @Feature({"Navigation"})
-     */
-    @DisabledTest
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNewTabWithNewTabExtra() throws InterruptedException {
         startMainActivityFromLauncher();
 
@@ -290,8 +284,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // And pressing back should close Clank.
         assertTrue("Window does not have focus before pressing back.",
                 getActivity().hasWindowFocus());
-        KeyUtils.singleKeyEventView(getInstrumentation(), getActivity().getActivityTab().getView(),
-                KeyEvent.KEYCODE_BACK);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
         getInstrumentation().waitForIdleSync();
         assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
     }
@@ -301,12 +299,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * tab) from the external app.
      * @throws InterruptedException
      */
-    /**
-     * @LargeTest
-     * @Feature({"Navigation", "Main"})
-     * Bug 5856404
-     */
-    @FlakyTest
+    @LargeTest
+    @Feature({"Navigation", "Main"})
     public void testNoNewTabForSameAppOnStart() throws InterruptedException {
         String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
         String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
@@ -327,8 +321,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // And pressing back should close Clank.
         assertTrue("Window does not have focus before pressing back.",
                 getActivity().hasWindowFocus());
-        KeyUtils.singleKeyEventView(getInstrumentation(), getActivity().getActivityTab().getView(),
-                KeyEvent.KEYCODE_BACK);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
         getInstrumentation().waitForIdleSync();
         assertFalse("Window still has focus after pressing back.", getActivity().hasWindowFocus());
     }
@@ -336,11 +334,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
     /**
      * Test that URLs opened from different external apps do create new tabs.
      * @throws InterruptedException
-     *
-     * @LargeTest
-     * crbug.com/157773
      */
-    @FlakyTest
+    @LargeTest
     @Feature({"Navigation", "Main"})
     public void testNewTabForDifferentApps() throws InterruptedException {
         startMainActivityFromLauncher();
@@ -536,7 +531,12 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
 
         // Hitting "back" should close the tab, minimize Chrome, and select the background tab.
         // Confirm that the number of tabs is correct and that closing the tab didn't cause a crash.
-        getActivity().onBackPressed();
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().onBackPressed();
+            }
+        });
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
