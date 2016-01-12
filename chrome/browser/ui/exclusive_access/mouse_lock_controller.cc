@@ -231,15 +231,17 @@ void MouseLockController::UnlockMouse() {
 }
 
 ContentSetting MouseLockController::GetMouseLockSetting(const GURL& url) const {
-  // If simplified UI is enabled, never ask the user, just auto-allow. (Always
-  // return CONTENT_SETTING_ALLOW in favour of CONTENT_SETTING_ASK.)
-  bool simplified_ui =
-      ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  // If simplified UI is enabled, never ask the user, just auto-allow. We no
+  // longer give users control over this at the settings level (since it is very
+  // easy to escape mouse lock when it happens). Even if the user has blocked
+  // access to this site in the past, we now ignore that setting.
+  if (ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled())
+    return CONTENT_SETTING_ALLOW;
 
   // Always ask on file:// URLs, since we can't meaningfully make the
   // decision stick for a particular origin.
   // TODO(estark): Revisit this when crbug.com/455882 is fixed.
-  if (url.SchemeIsFile() && !simplified_ui)
+  if (url.SchemeIsFile())
     return CONTENT_SETTING_ASK;
 
   if (exclusive_access_manager()
@@ -252,9 +254,6 @@ ContentSetting MouseLockController::GetMouseLockSetting(const GURL& url) const {
           exclusive_access_manager()->context()->GetProfile());
   ContentSetting setting = settings_map->GetContentSetting(
       url, url, CONTENT_SETTINGS_TYPE_MOUSELOCK, std::string());
-
-  if (simplified_ui && setting == CONTENT_SETTING_ASK)
-    return CONTENT_SETTING_ALLOW;
 
   return setting;
 }
