@@ -13,6 +13,7 @@ import android.os.Build;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ class MediaCodecUtil {
     /**
      * This class represents supported android codec information.
      */
+    @MainDex
     private static class CodecInfo {
         private final String mCodecType; // e.g. "video/x-vnd.on2.vp8".
         private final String mCodecName; // e.g. "OMX.google.vp8.decoder".
@@ -63,6 +65,7 @@ class MediaCodecUtil {
     /**
      * Class to pass parameters from createDecoder()
      */
+    @MainDex
     public static class CodecCreationInfo {
         public MediaCodec mediaCodec = null;
         public boolean supportsAdaptivePlayback = false;

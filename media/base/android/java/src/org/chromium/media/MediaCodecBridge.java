@@ -18,6 +18,7 @@ import android.view.Surface;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 import java.nio.ByteBuffer;
 
@@ -71,6 +72,7 @@ class MediaCodecBridge {
     private String mMime;
     private boolean mAdaptivePlaybackSupported;
 
+    @MainDex
     private static class DequeueInputResult {
         private final int mStatus;
         private final int mIndex;
@@ -91,6 +93,7 @@ class MediaCodecBridge {
         }
     }
 
+    @MainDex
     private static class DequeueOutputResult {
         private final int mStatus;
         private final int mIndex;
