@@ -21,6 +21,7 @@ html:not([subframe]) #sub-frame-error {
 
 h1 {
   margin-top: 0;
+  word-wrap: break-word;
 }
 
 h2 {
@@ -66,6 +67,7 @@ a {
 
 .error-code {
   display: block;
+  font-size: .8em;
 }
 
 #content-top {
@@ -118,7 +120,7 @@ a {
 #search-box {
   border: 1px solid #cdcdcd;
   flex-grow: 1;
-  font-size: 16px;
+  font-size: 1em;
   height: 26px;
   margin-right: 0;
   padding: 1px 9px;
@@ -233,9 +235,6 @@ a {
   }
   .suggestion-header {
     margin-bottom: 0;
-  }
-  .error-code {
-    margin: 10px 0;
   }
 }
 

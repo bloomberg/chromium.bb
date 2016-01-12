@@ -209,14 +209,6 @@ function onDocumentLoad() {
     detailsButton.classList.add('singular');
   }
 
-<if expr="not chromeos">
-  // Hide the details button if there are no details to show.
-  if (loadTimeData.valueExists('summary') &&
-          !loadTimeData.getValue('summary').msg) {
-    detailsButton.style.display = 'none';
-  }
-</if>
-
   // Show control buttons.
   if (reloadButtonVisible || showSavedCopyButtonVisible ||
       showOfflinePagesButtonVisible || showOfflineCopyButton) {
@@ -228,13 +220,6 @@ function onDocumentLoad() {
         showSavedCopyButtonVisible) {
       secondaryButton.classList.add('secondary-button');
     }
-  }
-
-  // Add a main message paragraph.
-  if (loadTimeData.valueExists('primaryParagraph')) {
-    var p = document.querySelector('#main-message p');
-    p.innerHTML = loadTimeData.getString('primaryParagraph');
-    p.hidden = false;
   }
 }
 
