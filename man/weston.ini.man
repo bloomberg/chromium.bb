@@ -266,7 +266,7 @@ pressed
 sets the modifier key used for common bindings (string), such as moving
 surfaces, resizing, rotating, switching, closing and setting the transparency
 for windows, controlling the backlight and zooming the desktop. Possible values:
-ctrl, alt, super (default)
+none, ctrl, alt, super (default)
 .TP 7
 .BI "num-workspaces=" 6
 defines the number of workspaces (unsigned integer). The user can switch
