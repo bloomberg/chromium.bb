@@ -33,10 +33,15 @@ const int kRestartFramePeriods = 3;
 const int kEncodingSpeedAccHalfLife = 120000;  // 0.12 second.
 
 // The target deadline utilization signal. This is a trade-off between quality
-// and less CPU usage. The range of this value is [0, 1]. With the higher this
-// value, the better quality and higher CPU usage. The typical range for cast
-// streaming is [0.6, 0.7].
-const double kTargetDeadlineUtilization = 0.7;
+// and less CPU usage. The range of this value is [0, 1]. Higher the value,
+// better the quality and higher the CPU usage.
+//
+// For machines with more than two encoding threads.
+const double kHiTargetDeadlineUtilization = 0.7;
+// For machines with two encoding threads.
+const double kMidTargetDeadlineUtilization = 0.6;
+// For machines with single encoding thread.
+const double kLoTargetDeadlineUtilization = 0.5;
 
 // This is the equivalent change on encoding speed for the change on each
 // quantizer step.
@@ -61,6 +66,12 @@ bool HasSufficientFeedback(
 
 Vp8Encoder::Vp8Encoder(const VideoSenderConfig& video_config)
     : cast_config_(video_config),
+      target_deadline_utilization_(
+          video_config.number_of_encode_threads > 2
+              ? kHiTargetDeadlineUtilization
+              : (video_config.number_of_encode_threads > 1
+                     ? kMidTargetDeadlineUtilization
+                     : kLoTargetDeadlineUtilization)),
       key_frame_requested_(true),
       bitrate_kbit_(cast_config_.start_bitrate / 1000),
       last_encoded_frame_id_(kFirstFrameId - 1),
@@ -343,7 +354,7 @@ void Vp8Encoder::Encode(const scoped_refptr<media::VideoFrame>& video_frame,
             std::max(0, quantizer - cast_config_.min_qp);
     double adjusted_encoding_speed = actual_encoding_speed *
                                      encoded_frame->deadline_utilization /
-                                     kTargetDeadlineUtilization;
+                                     target_deadline_utilization_;
     encoding_speed_acc_.Update(adjusted_encoding_speed,
                                video_frame->timestamp());
   }
