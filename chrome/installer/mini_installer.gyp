@@ -1,5 +1,6 @@
 {
   'variables': {
+    'chromium_code': 1,
     'version_py': '<(DEPTH)/build/util/version.py',
     'version_path': '../../chrome/VERSION',
     'lastchange_path': '<(DEPTH)/build/util/LASTCHANGE',

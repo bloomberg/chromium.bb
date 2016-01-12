@@ -781,7 +781,7 @@ void DeleteOldChromeTempDirectories() {
   if (!len || len >= temp.capacity())
     return;
 
-  for (int i = 0; i < _countof(kDirectoryPrefixes); ++i) {
+  for (size_t i = 0; i < _countof(kDirectoryPrefixes); ++i) {
     DeleteDirectoriesWithPrefix(temp.get(), kDirectoryPrefixes[i]);
   }
 }
