@@ -10,25 +10,22 @@
 
 #include <map>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "components/mus/gles2/gpu_state.h"
+#include "base/threading/non_thread_safe.h"
+#include "components/mus/gles2/command_buffer_driver.h"
+#include "components/mus/public/interfaces/command_buffer.mojom.h"
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/command_buffer_shared.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gpu {
-class CommandBuffer;
-class CommandBufferService;
-class GpuScheduler;
-class GpuControlService;
-class SyncPointClient;
-class SyncPointOrderData;
-namespace gles2 {
-class GLES2Decoder;
-}
+namespace {
+class WaitableEvent;
 }
 
 namespace gfx {
@@ -38,22 +35,38 @@ class GLSurface;
 
 namespace mus {
 
+class CommandBufferDriver;
 class CommandBufferLocalClient;
 class GpuState;
 
-// This class provides a thin wrapper around a CommandBufferService and a
-// GpuControl implementation to allow cc::Display to generate GL directly on
-// the same thread.
-class CommandBufferLocal : public gpu::GpuControl {
+// This class provides a wrapper around a CommandBufferDriver and a GpuControl
+// implementation to allow cc::Display to generate GL directly on the main
+// thread.
+class CommandBufferLocal : public gpu::CommandBuffer,
+                           public gpu::GpuControl,
+                           public CommandBufferDriver::Client,
+                           base::NonThreadSafe {
  public:
   CommandBufferLocal(CommandBufferLocalClient* client,
                      gfx::AcceleratedWidget widget,
                      const scoped_refptr<GpuState>& gpu_state);
-  ~CommandBufferLocal() override;
 
-  bool Initialize();
+  // Destroy the CommandBufferLocal. The client should not use this class
+  // after calling it.
+  void Destroy();
 
-  gpu::CommandBuffer* GetCommandBuffer();
+  // gpu::CommandBuffer implementation:
+  bool Initialize() override;
+  gpu::CommandBuffer::State GetLastState() override;
+  int32_t GetLastToken() override;
+  void Flush(int32_t put_offset) override;
+  void OrderingBarrier(int32_t put_offset) override;
+  void WaitForTokenInRange(int32_t start, int32_t end) override;
+  void WaitForGetOffsetInRange(int32_t start, int32_t end) override;
+  void SetGetBuffer(int32_t buffer) override;
+  scoped_refptr<gpu::Buffer> CreateTransferBuffer(size_t size,
+                                                  int32_t* id) override;
+  void DestroyTransferBuffer(int32_t id) override;
 
   // gpu::GpuControl implementation:
   gpu::Capabilities GetCapabilities() override;
@@ -64,7 +77,7 @@ class CommandBufferLocal : public gpu::GpuControl {
   void DestroyImage(int32_t id) override;
   int32_t CreateGpuMemoryBufferImage(size_t width,
                                      size_t height,
-                                     unsigned internalformat,
+                                     unsigned internal_format,
                                      unsigned usage) override;
   uint32_t InsertSyncPoint() override;
   uint32_t InsertFutureSyncPoint() override;
@@ -86,33 +99,64 @@ class CommandBufferLocal : public gpu::GpuControl {
                        const base::Closure& callback) override;
   bool CanWaitUnverifiedSyncToken(const gpu::SyncToken* sync_token) override;
 
+  // CommandBufferDriver::Client implementation:
+  void DidLoseContext(uint32_t reason) override;
+  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override;
+
  private:
-  void PumpCommands();
+  ~CommandBufferLocal() override;
 
-  void OnUpdateVSyncParameters(const base::TimeTicks timebase,
-                               const base::TimeDelta interval);
-  bool OnWaitSyncPoint(uint32_t sync_point);
-  void OnFenceSyncRelease(uint64_t release);
-  bool OnWaitFenceSync(gpu::CommandBufferNamespace namespace_id,
-                       uint64_t command_buffer_id,
-                       uint64_t release);
-  void OnParseError();
-  void OnContextLost(uint32_t reason);
+  gpu::CommandBufferSharedState* shared_state() const { return shared_state_; }
+  void TryUpdateState();
+  void MakeProgressAndUpdateState();
 
-  const uint64_t command_buffer_id_;
+  // Helper functions are called in the GPU thread.
+  void InitializeOnGpuThread(base::WaitableEvent* event, bool* result);
+  bool FlushOnGpuThread(int32_t put_offset, uint32_t order_num);
+  bool SetGetBufferOnGpuThread(int32_t buffer);
+  bool RegisterTransferBufferOnGpuThread(
+      int32_t id,
+      mojo::ScopedSharedBufferHandle transfer_buffer,
+      uint32_t size);
+  bool DestroyTransferBufferOnGpuThread(int32_t id);
+  bool RetireSyncPointOnGpuThread(uint32_t sync_point);
+  bool CreateImageOnGpuThread(int32_t id,
+                              mojo::ScopedHandle memory_handle,
+                              int32_t type,
+                              mojo::SizePtr size,
+                              int32_t format,
+                              int32_t internal_format);
+  bool DestroyImageOnGpuThread(int32_t id);
+  bool MakeProgressOnGpuThread(base::WaitableEvent* event,
+                               gpu::CommandBuffer::State* state);
+  bool DeleteOnGpuThread();
+
+  // Helper functions are called in the client thread.
+  void DidLoseContextOnClientThread(uint32_t reason);
+  void UpdateVSyncParametersOnClientThread(int64_t timebase, int64_t interval);
+
   gfx::AcceleratedWidget widget_;
   scoped_refptr<GpuState> gpu_state_;
-  scoped_ptr<gpu::CommandBufferService> command_buffer_;
-  scoped_ptr<gpu::GpuScheduler> scheduler_;
-  scoped_refptr<gpu::SyncPointOrderData> sync_point_order_data_;
-  scoped_ptr<gpu::SyncPointClient> sync_point_client_;
-  scoped_ptr<gpu::gles2::GLES2Decoder> decoder_;
-  scoped_refptr<gfx::GLContext> context_;
-  scoped_refptr<gfx::GLSurface> surface_;
+  scoped_ptr<CommandBufferDriver> driver_;
   CommandBufferLocalClient* client_;
+  scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
+  std::deque<uint32_t> sync_points_;
 
+  // Members accessed on the client thread:
+  gpu::CommandBuffer::State last_state_;
+  mojo::ScopedSharedBufferHandle shared_state_handle_;
+  gpu::CommandBufferSharedState* shared_state_;
+  int32_t last_put_offset_;
+  gpu::Capabilities capabilities_;
+  int32_t next_transfer_buffer_id_;
+  int32_t next_image_id_;
   uint64_t next_fence_sync_release_;
+  uint64_t flushed_fence_sync_release_;
 
+  base::WeakPtr<CommandBufferLocal> weak_ptr_;
+
+  // This weak factory will be invalidated in the client thread, so all weak
+  // pointers have to be dereferenced in the client thread too.
   base::WeakPtrFactory<CommandBufferLocal> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferLocal);

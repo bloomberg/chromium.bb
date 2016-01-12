@@ -61,6 +61,10 @@ namespace common {
 class MessagePumpMojo;
 }
 }
+namespace mus {
+class CommandBufferLocal;
+class GpuState;
+}
 namespace net {
 class NetworkChangeNotifierMac;
 namespace internal {
@@ -205,6 +209,8 @@ class BASE_EXPORT ThreadRestrictions {
   friend class android::JavaHandlerThread;
   friend class gles2::CommandBufferClientImpl;
   friend class mojo::common::MessagePumpMojo;
+  friend class mus::CommandBufferLocal;
+  friend class mus::GpuState;
 
   // END ALLOWED USAGE.
   // BEGIN USAGE THAT NEEDS TO BE FIXED.

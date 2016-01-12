@@ -37,14 +37,9 @@ class CommandBufferTaskRunner
   bool PostTask(const CommandBufferDriver* driver,
                 const TaskCallback& task);
 
-  // Run one task in the |driver_map_|. This method could be blocked, if there
-  // isn't any task which is executable.
-  // Note: this method must be called on the main thread which is the owner of
-  // |driver_task_runner_|.
-  void RunOneTask();
-
-  // Called by CommandBufferDriver when a driver becomes scheduled.
-  void OnScheduled(const CommandBufferDriver* driver);
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner() const {
+    return task_runner_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<CommandBufferTaskRunner>;
@@ -55,7 +50,7 @@ class CommandBufferTaskRunner
   // When there isn't any command buffer task, and if the |block| is false,
   // this function will return false immediately, otherwise, this function
   // will be blocked until a task is available for executing.
-  bool RunOneTaskInternalLocked(bool block);
+  bool RunOneTaskInternalLocked();
 
   // Post a task to the main thread to execute tasks in |driver_map_|, if it is
   // necessary.
@@ -65,7 +60,7 @@ class CommandBufferTaskRunner
   void RunCommandBufferTask();
 
   base::ThreadChecker thread_checker_;
-  scoped_refptr<base::SingleThreadTaskRunner> driver_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   typedef std::deque<TaskCallback> TaskQueue;
   typedef std::map<const CommandBufferDriver*, TaskQueue> DriverMap;
@@ -74,11 +69,6 @@ class CommandBufferTaskRunner
 
   // The access lock for |driver_map_| and |need_post_task_|.
   base::Lock lock_;
-
-  // The condition variable is for signalling the blocked
-  // |RunOneTaskInternalLocked()| that new tasks are submitted into the
-  // |driver_map_| or some existing tasks in |driver_map_| become executable.
-  base::ConditionVariable cond_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferTaskRunner);
 };

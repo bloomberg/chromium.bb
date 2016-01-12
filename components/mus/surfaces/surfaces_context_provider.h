@@ -74,7 +74,7 @@ class SurfacesContextProvider : public cc::ContextProvider,
 
   SurfacesContextProviderDelegate* delegate_;
   gfx::AcceleratedWidget widget_;
-  scoped_ptr<CommandBufferLocal> command_buffer_local_;
+  CommandBufferLocal* command_buffer_local_;
 
   base::Lock context_lock_;
 

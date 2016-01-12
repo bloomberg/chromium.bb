@@ -15,11 +15,15 @@
 #include "gpu/config/gpu_info.h"
 #include "ui/gl/gl_share_group.h"
 
+namespace {
+class WaitableEvent;
+}
+
 namespace mus {
 
 // We need to share these across all CommandBuffer instances so that contexts
 // they create can share resources with each other via mailboxes.
-class GpuState : public base::RefCounted<GpuState> {
+class GpuState : public base::RefCountedThreadSafe<GpuState> {
  public:
   explicit GpuState(bool hardware_rendering_available);
 
@@ -30,7 +34,7 @@ class GpuState : public base::RefCounted<GpuState> {
     return control_thread_.task_runner();
   }
 
-  void StopControlThread();
+  void StopThreads();
 
   CommandBufferTaskRunner* command_buffer_task_runner() const {
     return command_buffer_task_runner_.get();
@@ -55,10 +59,16 @@ class GpuState : public base::RefCounted<GpuState> {
   }
 
  private:
-  friend class base::RefCounted<GpuState>;
+  friend class base::RefCountedThreadSafe<GpuState>;
   ~GpuState();
 
+  void InitializeOnGpuThread(base::WaitableEvent* event);
+
+  // |gpu_thread_| is for executing OS GL calls.
+  base::Thread gpu_thread_;
+  // |control_thread_| is for mojo incoming calls of CommandBufferImpl.
   base::Thread control_thread_;
+
   scoped_refptr<CommandBufferTaskRunner> command_buffer_task_runner_;
   scoped_ptr<gpu::SyncPointManager> sync_point_manager_;
   scoped_refptr<gfx::GLShareGroup> share_group_;

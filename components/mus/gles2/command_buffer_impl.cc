@@ -17,6 +17,8 @@ namespace mus {
 
 namespace {
 
+uint64_t g_next_command_buffer_id = 0;
+
 void RunInitializeCallback(
     const mojom::CommandBuffer::InitializeCallback& callback,
     mojom::CommandBufferInfoPtr info) {
@@ -25,8 +27,8 @@ void RunInitializeCallback(
 
 void RunMakeProgressCallback(
     const mojom::CommandBuffer::MakeProgressCallback& callback,
-    mojom::CommandBufferStatePtr state) {
-  callback.Run(std::move(state));
+    const gpu::CommandBuffer::State& state) {
+  callback.Run(mojom::CommandBufferState::From(state));
 }
 
 }  // namespace
@@ -38,7 +40,10 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
       : command_buffer_(command_buffer) {}
 
  private:
-  void DidLoseContext() override { command_buffer_->DidLoseContext(); }
+  void DidLoseContext(uint32_t reason) override {
+    command_buffer_->DidLoseContext(reason);
+  }
+  void UpdateVSyncParameters(int64_t timebase, int64_t interval) override {}
 
   CommandBufferImpl* command_buffer_;
 
@@ -47,25 +52,24 @@ class CommandBufferImpl::CommandBufferDriverClientImpl
 
 CommandBufferImpl::CommandBufferImpl(
     mojo::InterfaceRequest<mus::mojom::CommandBuffer> request,
-    scoped_refptr<GpuState> gpu_state,
-    scoped_ptr<CommandBufferDriver> driver)
-    : gpu_state_(gpu_state),
-      driver_(std::move(driver)),
-      observer_(nullptr),
-      weak_ptr_factory_(this) {
-  driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
-
+    scoped_refptr<GpuState> gpu_state)
+    : gpu_state_(gpu_state), observer_(nullptr) {
+  // Bind |CommandBufferImpl| to the |request| in the GPU control thread.
   gpu_state_->control_task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&CommandBufferImpl::BindToRequest,
-                 weak_ptr_factory_.GetWeakPtr(), base::Passed(&request)));
+                 base::Unretained(this), base::Passed(&request)));
 }
 
-void CommandBufferImpl::DidLoseContext() {
-  OnConnectionError();
+void CommandBufferImpl::DidLoseContext(uint32_t reason) {
+  driver_->set_client(nullptr);
+  loss_observer_->DidLoseContext(reason);
 }
 
 CommandBufferImpl::~CommandBufferImpl() {
+  // Retire all sync points.
+  for (uint32_t sync_point : sync_points_)
+    gpu_state_->sync_point_manager()->RetireSyncPoint(sync_point);
   if (observer_)
     observer_->OnCommandBufferImplDestroyed();
 }
@@ -75,19 +79,18 @@ void CommandBufferImpl::Initialize(
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs,
     const mojom::CommandBuffer::InitializeCallback& callback) {
-  gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::InitializeHelper, base::Unretained(this),
-                 base::Passed(&loss_observer), base::Passed(&shared_state),
-                 base::Passed(&attribs),
+  gpu_state_->command_buffer_task_runner()->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&CommandBufferImpl::InitializeOnGpuThread,
+                 base::Unretained(this), base::Passed(&loss_observer),
+                 base::Passed(&shared_state), base::Passed(&attribs),
                  base::Bind(&RunInitializeCallback, callback)));
 }
 
 void CommandBufferImpl::SetGetBuffer(int32_t buffer) {
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::SetGetBufferHelper,
-                  base::Unretained(this), buffer));
+      driver_.get(), base::Bind(&CommandBufferImpl::SetGetBufferOnGpuThread,
+                                base::Unretained(this), buffer));
 }
 
 void CommandBufferImpl::Flush(int32_t put_offset) {
@@ -95,18 +98,18 @@ void CommandBufferImpl::Flush(int32_t put_offset) {
   const uint32_t order_num = driver_->sync_point_order_data()
       ->GenerateUnprocessedOrderNumber(sync_point_manager);
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::FlushHelper,
-                 base::Unretained(this), put_offset, order_num));
+      driver_.get(), base::Bind(&CommandBufferImpl::FlushOnGpuThread,
+                                base::Unretained(this), put_offset, order_num));
 }
 
 void CommandBufferImpl::MakeProgress(
     int32_t last_get_offset,
     const mojom::CommandBuffer::MakeProgressCallback& callback) {
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(), base::Bind(&CommandBufferImpl::MakeProgressHelper,
+      driver_.get(), base::Bind(&CommandBufferImpl::MakeProgressOnGpuThread,
                                 base::Unretained(this), last_get_offset,
-                                base::Bind(RunMakeProgressCallback, callback)));
+                                base::Bind(&RunMakeProgressCallback,
+                                           callback)));
 }
 
 void CommandBufferImpl::RegisterTransferBuffer(
@@ -115,15 +118,15 @@ void CommandBufferImpl::RegisterTransferBuffer(
     uint32_t size) {
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
-      base::Bind(&CommandBufferImpl::RegisterTransferBufferHelper,
-                 base::Unretained(this), id,
-                 base::Passed(&transfer_buffer), size));
+      base::Bind(&CommandBufferImpl::RegisterTransferBufferOnGpuThread,
+                 base::Unretained(this), id, base::Passed(&transfer_buffer),
+                 size));
 }
 
 void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
-      base::Bind(&CommandBufferImpl::DestroyTransferBufferHelper,
+      base::Bind(&CommandBufferImpl::DestroyTransferBufferOnGpuThread,
                  base::Unretained(this), id));
 }
 
@@ -131,22 +134,18 @@ void CommandBufferImpl::InsertSyncPoint(
     bool retire,
     const mojom::CommandBuffer::InsertSyncPointCallback& callback) {
   uint32_t sync_point = gpu_state_->sync_point_manager()->GenerateSyncPoint();
+  sync_points_.push_back(sync_point);
   callback.Run(sync_point);
-  if (retire) {
-    gpu_state_->command_buffer_task_runner()->PostTask(
-        driver_.get(),
-        base::Bind(&CommandBufferImpl::RetireSyncPointHelper,
-                   base::Unretained(this),
-                   sync_point));
-  }
+  if (retire)
+    RetireSyncPoint(sync_point);
 }
 
 void CommandBufferImpl::RetireSyncPoint(uint32_t sync_point) {
+  DCHECK(!sync_points_.empty() && sync_points_.front() == sync_point);
+  sync_points_.pop_front();
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::RetireSyncPointHelper,
-                 base::Unretained(this),
-                 sync_point));
+      driver_.get(), base::Bind(&CommandBufferImpl::RetireSyncPointOnGpuThread,
+                                base::Unretained(this), sync_point));
 }
 
 void CommandBufferImpl::CreateImage(int32_t id,
@@ -157,17 +156,15 @@ void CommandBufferImpl::CreateImage(int32_t id,
                                     int32_t internal_format) {
   gpu_state_->command_buffer_task_runner()->PostTask(
       driver_.get(),
-      base::Bind(&CommandBufferImpl::CreateImageHelper,
-                 base::Unretained(this), id,
-                 base::Passed(&memory_handle), type,
+      base::Bind(&CommandBufferImpl::CreateImageOnGpuThread,
+                 base::Unretained(this), id, base::Passed(&memory_handle), type,
                  base::Passed(&size), format, internal_format));
 }
 
 void CommandBufferImpl::DestroyImage(int32_t id) {
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::DestroyImageHelper,
-                 base::Unretained(this), id));
+      driver_.get(), base::Bind(&CommandBufferImpl::DestroyImageOnGpuThread,
+                                base::Unretained(this), id));
 }
 
 void CommandBufferImpl::BindToRequest(
@@ -177,15 +174,19 @@ void CommandBufferImpl::BindToRequest(
   binding_->set_connection_error_handler([this]() { OnConnectionError(); });
 }
 
-bool CommandBufferImpl::InitializeHelper(
+void CommandBufferImpl::InitializeOnGpuThread(
     mojom::CommandBufferLostContextObserverPtr loss_observer,
     mojo::ScopedSharedBufferHandle shared_state,
     mojo::Array<int32_t> attribs,
     const base::Callback<void(mojom::CommandBufferInfoPtr)>& callback) {
-  DCHECK(driver_->IsScheduled());
+  DCHECK(!driver_);
+  driver_.reset(new CommandBufferDriver(
+      gpu::CommandBufferNamespace::MOJO, ++g_next_command_buffer_id,
+      gfx::kNullAcceleratedWidget, gpu_state_));
+  driver_->set_client(make_scoped_ptr(new CommandBufferDriverClientImpl(this)));
+  loss_observer_ = mojo::MakeProxy(loss_observer.PassInterface());
   bool result =
-      driver_->Initialize(loss_observer.PassInterface(),
-                          std::move(shared_state), std::move(attribs));
+      driver_->Initialize(std::move(shared_state), std::move(attribs));
   mojom::CommandBufferInfoPtr info;
   if (result) {
     info = mojom::CommandBufferInfo::New();
@@ -196,17 +197,16 @@ bool CommandBufferImpl::InitializeHelper(
   }
   gpu_state_->control_task_runner()->PostTask(
       FROM_HERE, base::Bind(callback, base::Passed(&info)));
-  return true;
 }
 
-bool CommandBufferImpl::SetGetBufferHelper(int32_t buffer) {
+bool CommandBufferImpl::SetGetBufferOnGpuThread(int32_t buffer) {
   DCHECK(driver_->IsScheduled());
   driver_->SetGetBuffer(buffer);
   return true;
 }
 
-bool CommandBufferImpl::FlushHelper(int32_t put_offset,
-                                    uint32_t order_num) {
+bool CommandBufferImpl::FlushOnGpuThread(int32_t put_offset,
+                                         uint32_t order_num) {
   DCHECK(driver_->IsScheduled());
   driver_->sync_point_order_data()->BeginProcessingOrderNumber(order_num);
   driver_->Flush(put_offset);
@@ -221,18 +221,16 @@ bool CommandBufferImpl::FlushHelper(int32_t put_offset,
   return complete;
 }
 
-bool CommandBufferImpl::MakeProgressHelper(
+bool CommandBufferImpl::MakeProgressOnGpuThread(
     int32_t last_get_offset,
-    const base::Callback<void(mojom::CommandBufferStatePtr)>& callback) {
+    const base::Callback<void(const gpu::CommandBuffer::State&)>& callback) {
   DCHECK(driver_->IsScheduled());
-  mojom::CommandBufferStatePtr state =
-      mojom::CommandBufferState::From(driver_->GetLastState());
   gpu_state_->control_task_runner()->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(&state)));
+      FROM_HERE, base::Bind(callback, driver_->GetLastState()));
   return true;
 }
 
-bool CommandBufferImpl::RegisterTransferBufferHelper(
+bool CommandBufferImpl::RegisterTransferBufferOnGpuThread(
     int32_t id,
     mojo::ScopedSharedBufferHandle transfer_buffer,
     uint32_t size) {
@@ -241,32 +239,31 @@ bool CommandBufferImpl::RegisterTransferBufferHelper(
   return true;
 }
 
-bool CommandBufferImpl::DestroyTransferBufferHelper(int32_t id) {
+bool CommandBufferImpl::DestroyTransferBufferOnGpuThread(int32_t id) {
   DCHECK(driver_->IsScheduled());
   driver_->DestroyTransferBuffer(id);
   return true;
 }
 
-bool CommandBufferImpl::RetireSyncPointHelper(uint32_t sync_point) {
+bool CommandBufferImpl::RetireSyncPointOnGpuThread(uint32_t sync_point) {
   DCHECK(driver_->IsScheduled());
   gpu_state_->sync_point_manager()->RetireSyncPoint(sync_point);
   return true;
 }
 
-bool CommandBufferImpl::CreateImageHelper(
-    int32_t id,
-    mojo::ScopedHandle memory_handle,
-    int32_t type,
-    mojo::SizePtr size,
-    int32_t format,
-    int32_t internal_format) {
+bool CommandBufferImpl::CreateImageOnGpuThread(int32_t id,
+                                               mojo::ScopedHandle memory_handle,
+                                               int32_t type,
+                                               mojo::SizePtr size,
+                                               int32_t format,
+                                               int32_t internal_format) {
   DCHECK(driver_->IsScheduled());
   driver_->CreateImage(id, std::move(memory_handle), type, std::move(size),
                        format, internal_format);
   return true;
 }
 
-bool CommandBufferImpl::DestroyImageHelper(int32_t id) {
+bool CommandBufferImpl::DestroyImageOnGpuThread(int32_t id) {
   DCHECK(driver_->IsScheduled());
   driver_->DestroyImage(id);
   return true;
@@ -282,11 +279,11 @@ void CommandBufferImpl::OnConnectionError() {
   // Objects we own (such as CommandBufferDriver) need to be destroyed on the
   // thread we were created on.
   gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(),
-      base::Bind(&CommandBufferImpl::DeleteHelper, base::Unretained(this)));
+      driver_.get(), base::Bind(&CommandBufferImpl::DeleteOnGpuThread,
+                                base::Unretained(this)));
 }
 
-bool CommandBufferImpl::DeleteHelper() {
+bool CommandBufferImpl::DeleteOnGpuThread() {
   delete this;
   return true;
 }

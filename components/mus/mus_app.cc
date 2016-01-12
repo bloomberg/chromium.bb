@@ -45,7 +45,7 @@ MandolineUIServicesApp::MandolineUIServicesApp()
 
 MandolineUIServicesApp::~MandolineUIServicesApp() {
   if (gpu_state_)
-    gpu_state_->StopControlThread();
+    gpu_state_->StopThreads();
   // Destroy |connection_manager_| first, since it depends on |event_source_|.
   connection_manager_.reset();
 }
@@ -55,9 +55,9 @@ void MandolineUIServicesApp::Initialize(ApplicationImpl* app) {
   surfaces_state_ = new SurfacesState;
 
 #if defined(USE_X11)
+  XInitThreads();
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(kUseX11TestConfig)) {
-    XInitThreads();
     ui::test::SetUseOverrideRedirectWindowByDefault(true);
   }
 #endif

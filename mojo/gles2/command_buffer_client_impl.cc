@@ -149,7 +149,6 @@ void CommandBufferClientImpl::WaitForTokenInRange(int32_t start, int32_t end) {
   while (!InRange(start, end, last_state_.token) &&
          last_state_.error == gpu::error::kNoError) {
     MakeProgressAndUpdateState();
-    TryUpdateState();
   }
 }
 
@@ -159,7 +158,6 @@ void CommandBufferClientImpl::WaitForGetOffsetInRange(int32_t start,
   while (!InRange(start, end, last_state_.get_offset) &&
          last_state_.error == gpu::error::kNoError) {
     MakeProgressAndUpdateState();
-    TryUpdateState();
   }
 }
 
@@ -217,6 +215,12 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
   gfx::GpuMemoryBufferHandle handle = gpu_memory_buffer->GetHandle();
 
   bool requires_sync_point = false;
+  if (handle.type != gfx::SHARED_MEMORY_BUFFER) {
+    requires_sync_point = true;
+    NOTIMPLEMENTED();
+    return -1;
+  }
+
   base::SharedMemoryHandle dupd_handle =
       base::SharedMemory::DuplicateHandle(handle.handle);
 #if defined(OS_WIN)
@@ -224,12 +228,6 @@ int32_t CommandBufferClientImpl::CreateImage(ClientBuffer buffer,
 #else
   int platform_handle = dupd_handle.fd;
 #endif
-
-  if (handle.type != gfx::SHARED_MEMORY_BUFFER) {
-    requires_sync_point = true;
-    NOTIMPLEMENTED();
-    return -1;
-  }
 
   MojoHandle mojo_handle = MOJO_HANDLE_INVALID;
   MojoResult create_result = MojoCreatePlatformHandleWrapper(
@@ -304,6 +302,7 @@ void CommandBufferClientImpl::RetireSyncPoint(uint32_t sync_point) {
 void CommandBufferClientImpl::SignalSyncPoint(uint32_t sync_point,
                                               const base::Closure& callback) {
   // TODO(piman)
+  NOTIMPLEMENTED();
 }
 
 void CommandBufferClientImpl::SignalQuery(uint32_t query,
@@ -385,6 +384,7 @@ bool CommandBufferClientImpl::IsFenceSyncFlushReceived(uint64_t release) {
 void CommandBufferClientImpl::SignalSyncToken(const gpu::SyncToken& sync_token,
                                               const base::Closure& callback) {
   // TODO(dyen)
+  NOTIMPLEMENTED();
 }
 
 bool CommandBufferClientImpl::CanWaitUnverifiedSyncToken(
