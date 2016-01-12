@@ -107,6 +107,10 @@ bool HardwareDisplayPlane::IsSupportedFormat(uint32_t format) {
   return false;
 }
 
+const std::vector<uint32_t>& HardwareDisplayPlane::supported_formats() const {
+  return supported_formats_;
+}
+
 bool HardwareDisplayPlane::InitializeProperties(
     DrmDevice* drm,
     const ScopedDrmObjectPropertyPtr& plane_props) {

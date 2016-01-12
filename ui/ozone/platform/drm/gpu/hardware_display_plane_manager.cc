@@ -135,6 +135,8 @@ bool HardwareDisplayPlaneManager::Initialize(DrmDevice* drm) {
                const scoped_ptr<HardwareDisplayPlane>& r) {
               return l->plane_id() < r->plane_id();
             });
+
+  PopulateSupportedFormats();
   return true;
 }
 
@@ -180,6 +182,18 @@ bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
   // rely on the sorting we do based on plane ids ?
 
   return true;
+}
+
+void HardwareDisplayPlaneManager::PopulateSupportedFormats() {
+  std::set<uint32_t> supported_formats;
+
+  for (const auto& plane : planes_) {
+    const std::vector<uint32_t>& formats = plane->supported_formats();
+    supported_formats.insert(formats.begin(), formats.end());
+  }
+
+  supported_formats_.reserve(supported_formats.size());
+  supported_formats_.assign(supported_formats.begin(), supported_formats.end());
 }
 
 void HardwareDisplayPlaneManager::ResetCurrentPlaneList(
@@ -278,6 +292,11 @@ bool HardwareDisplayPlaneManager::AssignOverlayPlanes(
     hw_plane->set_in_use(true);
   }
   return true;
+}
+
+const std::vector<uint32_t>& HardwareDisplayPlaneManager::GetSupportedFormats()
+    const {
+  return supported_formats_;
 }
 
 bool HardwareDisplayPlaneManager::IsFormatSupported(uint32_t fourcc_format,

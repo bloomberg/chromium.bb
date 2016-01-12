@@ -49,6 +49,8 @@ class OZONE_EXPORT HardwareDisplayPlane {
   void set_owning_crtc(uint32_t crtc) { owning_crtc_ = crtc; }
   uint32_t owning_crtc() const { return owning_crtc_; }
 
+  const std::vector<uint32_t>& supported_formats() const;
+
  protected:
   virtual bool InitializeProperties(
       DrmDevice* drm,

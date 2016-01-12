@@ -96,6 +96,10 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
     return planes_;
   }
 
+  // Returns all formats which can be scanned out by this PlaneManager. Use
+  // IsFormatSupported to find if a given format is supported on a particular
+  // plane for a given crtc.
+  const std::vector<uint32_t>& GetSupportedFormats() const;
   bool IsFormatSupported(uint32_t fourcc_format,
                          uint32_t z_order,
                          uint32_t crtc_id) const;
@@ -128,12 +132,16 @@ class OZONE_EXPORT HardwareDisplayPlaneManager {
 
   void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
 
+  // Populates scanout formats supported by all planes.
+  void PopulateSupportedFormats();
+
   // Object containing the connection to the graphics device and wraps the API
   // calls to control it. Not owned.
   DrmDevice* drm_;
 
   std::vector<scoped_ptr<HardwareDisplayPlane>> planes_;
   std::vector<uint32_t> crtcs_;
+  std::vector<uint32_t> supported_formats_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManager);
 };
