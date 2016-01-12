@@ -74,6 +74,11 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   typedef base::Callback<void(const gfx::GpuMemoryBufferHandle& handle)>
       CreateGpuMemoryBufferCallback;
 
+#if defined(OS_CHROMEOS)
+  typedef base::Callback<void(const IPC::ChannelHandle&)>
+      CreateArcVideoAcceleratorChannelCallback;
+#endif
+
   static bool gpu_enabled() { return gpu_enabled_; }
   static int gpu_crash_count() { return gpu_crash_count_; }
 
@@ -154,6 +159,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
                               int client_id,
                               const gpu::SyncToken& sync_token);
 
+#if defined(OS_CHROMEOS)
+  // Tells the GPU process to create a new ipc channel for
+  // ArcVideoAccelerator.
+  void CreateArcVideoAcceleratorChannel(
+      const CreateArcVideoAcceleratorChannelCallback& callback);
+#endif
+
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 
@@ -196,6 +208,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void OnChannelEstablished(const IPC::ChannelHandle& channel_handle);
   void OnCommandBufferCreated(CreateCommandBufferResult result);
   void OnGpuMemoryBufferCreated(const gfx::GpuMemoryBufferHandle& handle);
+  void OnArcVideoAcceleratorChannelCreated(const IPC::ChannelHandle& handle);
   void OnDidCreateOffscreenContext(const GURL& url);
   void OnDidLoseContext(bool offscreen,
                         gpu::error::ContextLostReason reason,
@@ -241,6 +254,13 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // The pending create gpu memory buffer requests we need to reply to.
   std::queue<CreateGpuMemoryBufferCallback> create_gpu_memory_buffer_requests_;
+
+#if defined(OS_CHROMEOS)
+  // The pending create arc video accelerator channel requests we need to reply
+  // to.
+  std::queue<CreateArcVideoAcceleratorChannelCallback>
+      create_arc_video_accelerator_channel_requests_;
+#endif
 
   // Qeueud messages to send when the process launches.
   std::queue<IPC::Message*> queued_messages_;

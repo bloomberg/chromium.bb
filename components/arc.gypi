@@ -40,6 +40,9 @@
         'arc/settings/arc_settings_bridge.h',
         'arc/power/arc_power_bridge.cc',
         'arc/power/arc_power_bridge.h',
+        'arc/video/arc_video_bridge.cc',
+        'arc/video/arc_video_bridge.h',
+        'arc/video/video_host_delegate.h',
       ],
     },
     {
@@ -80,6 +83,7 @@
         'arc/common/power.mojom',
         'arc/common/process.mojom',
         'arc/common/settings.mojom',
+        'arc/common/video.mojom',
       ],
     },
   ],

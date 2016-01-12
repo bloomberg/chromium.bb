@@ -15,15 +15,17 @@ class ArcAuthService;
 class ArcBridgeService;
 class ArcClipboardBridge;
 class ArcInputBridge;
-class ArcSettingsBridge;
 class ArcPowerBridge;
+class ArcSettingsBridge;
+class ArcVideoBridge;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
   ArcServiceManager(scoped_ptr<ArcAuthService> auth_service,
-                    scoped_ptr<ArcSettingsBridge> settings_bridge);
+                    scoped_ptr<ArcSettingsBridge> settings_bridge,
+                    scoped_ptr<ArcVideoBridge> video_bridge);
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
@@ -44,6 +46,7 @@ class ArcServiceManager {
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
   scoped_ptr<ArcPowerBridge> arc_power_bridge_;
+  scoped_ptr<ArcVideoBridge> arc_video_bridge_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };
