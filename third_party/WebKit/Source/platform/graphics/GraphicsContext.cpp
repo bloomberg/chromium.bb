@@ -53,7 +53,6 @@ namespace blink {
 
 GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode disableContextOrPainting, SkMetaData* metaData)
     : m_canvas(nullptr)
-    , m_originalCanvas(nullptr)
     , m_paintController(paintController)
     , m_paintStateStack()
     , m_paintStateIndex(0)
@@ -310,7 +309,7 @@ PassRefPtr<const SkPicture> GraphicsContext::endRecording()
         return nullptr;
 
     RefPtr<const SkPicture> picture = adoptRef(m_pictureRecorder.endRecordingAsPicture());
-    m_canvas = m_originalCanvas;
+    m_canvas = nullptr;
     ASSERT(picture);
     return picture.release();
 }

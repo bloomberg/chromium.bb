@@ -346,10 +346,6 @@ private:
     // null indicates painting is contextDisabled. Never delete this object.
     SkCanvas* m_canvas;
 
-    // This stores the canvas object used to construct the GraphicsContext, if any. It is only
-    // used when Slimming Paint is active.
-    SkCanvas* m_originalCanvas;
-
     PaintController& m_paintController;
 
     // Paint states stack. Enables local drawing state change with save()/restore() calls.
