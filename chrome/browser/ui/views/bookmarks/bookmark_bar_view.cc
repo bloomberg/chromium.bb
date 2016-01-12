@@ -176,12 +176,7 @@ static const int kManagedFolderButtonTag = 3;
 // Tag for the 'Supervised bookmarks' button.
 static const int kSupervisedFolderButtonTag = 4;
 
-#if !defined(OS_WIN)
 static const gfx::ElideBehavior kElideBehavior = gfx::FADE_TAIL;
-#else
-// Windows fade eliding causes text to darken; see http://crbug.com/388084
-static const gfx::ElideBehavior kElideBehavior = gfx::ELIDE_TAIL;
-#endif
 
 namespace {
 
