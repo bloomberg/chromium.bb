@@ -472,9 +472,7 @@ function _drawGrid(context, rulerAtRight, rulerAtBottom)
 
     context.save();
 
-    var pageFactor = pageZoomFactor * pageScaleFactor;
-    var scrollX = window.scrollX * pageScaleFactor;
-    var scrollY = window.scrollY * pageScaleFactor;
+    var pageFactor = pageZoomFactor;
     function zoom(x)
     {
         return Math.round(x * pageFactor);
@@ -614,7 +612,6 @@ function reset(resetData)
 {
     window.viewportSize = resetData.viewportSize;
     window.deviceScaleFactor = resetData.deviceScaleFactor;
-    window.pageScaleFactor = resetData.pageScaleFactor;
     window.pageZoomFactor = resetData.pageZoomFactor;
     window.scrollX = Math.round(resetData.scrollX);
     window.scrollY = Math.round(resetData.scrollY);
