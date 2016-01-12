@@ -49,6 +49,7 @@ include_rules = [
   "+components/rlz",
   "+components/search",
   "+components/search_engines",
+  "+components/security_state",
   "+components/security_interstitials",
   "+components/sessions",
   "+components/signin/core/browser",
