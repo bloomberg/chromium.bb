@@ -2489,7 +2489,6 @@
             # message loops. See 306348
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
-            'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
             # This tests the language options UI features that do not exist on
             # Mac.
             'browser/ui/webui/options/multilanguage_options_webui_browsertest.js',
@@ -2626,7 +2625,6 @@
             # official builds.
             'renderer/safe_browsing/phishing_classifier_browsertest.cc',
             'renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc',
-            'renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc',
           ]
         }],
         ['enable_autofill_dialog!=1 or OS=="android" or OS=="ios"', {

@@ -239,8 +239,7 @@ void PhishingDOMFeatureExtractor::HandleLink(
   }
 
   // Retrieve the link and resolve the link in case it's relative.
-  blink::WebURL full_url = element.document().completeURL(
-      element.getAttribute("href"));
+  blink::WebURL full_url = CompleteURL(element, element.getAttribute("href"));
 
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
@@ -274,8 +273,7 @@ void PhishingDOMFeatureExtractor::HandleForm(
     return;
   }
 
-  blink::WebURL full_url = element.document().completeURL(
-      element.getAttribute("action"));
+  blink::WebURL full_url = CompleteURL(element, element.getAttribute("action"));
 
   page_feature_state_->page_action_urls.insert(full_url.string().utf8());
 
@@ -299,8 +297,7 @@ void PhishingDOMFeatureExtractor::HandleImage(
   }
 
   // Record whether the image points to a different domain.
-  blink::WebURL full_url = element.document().completeURL(
-      element.getAttribute("src"));
+  blink::WebURL full_url = CompleteURL(element, element.getAttribute("src"));
   std::string domain;
   bool is_external = IsExternalDomain(full_url, &domain);
   if (domain.empty()) {
@@ -425,6 +422,12 @@ bool PhishingDOMFeatureExtractor::IsExternalDomain(const GURL& url,
   }
 
   return !domain->empty() && *domain != cur_frame_data_->domain;
+}
+
+blink::WebURL PhishingDOMFeatureExtractor::CompleteURL(
+    const blink::WebElement& element,
+    const blink::WebString& partial_url) {
+  return element.document().completeURL(partial_url);
 }
 
 void PhishingDOMFeatureExtractor::InsertFeatures() {

@@ -1,47 +1,28 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Note that although this is not a "browser" test, it runs as part of
-// browser_tests.  This is because WebKit does not work properly if it is
-// shutdown and re-initialized.  Since browser_tests runs each test in a
-// new process, this avoids the problem.
 
 #include "chrome/renderer/safe_browsing/phishing_dom_feature_extractor.h"
 
-#include <stdint.h>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/callback.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/location.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
+#include "chrome/renderer/chrome_content_renderer_client.h"
+#include "chrome/renderer/extensions/chrome_extensions_dispatcher_delegate.h"
+#include "chrome/renderer/extensions/chrome_extensions_renderer_client.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/test_utils.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/interstitial_page.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/web_contents.h"
+#include "chrome/renderer/spellchecker/spellcheck.h"
+#include "chrome/test/base/chrome_render_view_test.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "net/dns/mock_host_resolver.h"
-#include "net/test/embedded_test_server/embedded_test_server.h"
-#include "net/test/embedded_test_server/http_request.h"
-#include "net/test/embedded_test_server/http_response.h"
+#include "extensions/renderer/dispatcher.h"
+#include "net/base/escape.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -54,10 +35,144 @@ using ::testing::Return;
 
 namespace safe_browsing {
 
-class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
+// TestPhishingDOMFeatureExtractor has nearly identical behavior as
+// PhishingDOMFeatureExtractor, except the IsExternalDomain() and
+// CompleteURL() functions. This is to work around the fact that
+// ChromeRenderViewTest object does not know where the html content is hosted.
+class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
  public:
-  content::WebContents* GetWebContents() {
-    return browser()->tab_strip_model()->GetActiveWebContents();
+  explicit TestPhishingDOMFeatureExtractor(FeatureExtractorClock* clock)
+      : PhishingDOMFeatureExtractor(clock) {}
+
+  void SetDocumentDomain(std::string domain) { base_domain_ = domain; }
+
+  void SetURLToFrameDomainCheckingMap(
+      const base::hash_map<std::string, std::string>& checking_map) {
+    url_to_frame_domain_map_ = checking_map;
+  }
+
+  void Reset() {
+    base_domain_.clear();
+    url_to_frame_domain_map_.clear();
+  }
+
+ private:
+  // LoadHTML() function in RenderViewTest only loads html as data,
+  // thus cur_frame_data_->domain is empty. Therefore, in base class
+  // PhishingDOMFeatureExtractor::IsExternalDomain() will always return false.
+  // Overriding IsExternalDomain(..) to work around this problem.
+  bool IsExternalDomain(const GURL& url, std::string* domain) const override {
+    DCHECK(domain);
+    *domain = net::registry_controlled_domains::GetDomainAndRegistry(
+        url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+    if (domain->empty())
+      *domain = url.spec();
+    // If this html only has one frame, use base_domain_ to determine if url
+    // is external.
+    if (!base_domain_.empty()) {
+      return !url.DomainIs(base_domain_);
+    } else {
+      // html contains multiple frames, need to check against
+      // its corresponding frame's domain.
+      auto it = url_to_frame_domain_map_.find(url.spec());
+      if (it != url_to_frame_domain_map_.end()) {
+        const std::string document_domain = it->second;
+        return !url.DomainIs(document_domain);
+      }
+      NOTREACHED() << "Testing input setup is incorrect. "
+                      "Please check url_to_frame_domain_map_ setup.";
+      return true;
+    }
+  }
+
+  // For similar reason as above, PhishingDOMFeatureExtractor::CompeteURL(..)
+  // always returns empty WebURL. Overriding this CompeteURL(..) to work around
+  // this issue.
+  blink::WebURL CompleteURL(const blink::WebElement& element,
+                            const blink::WebString& partial_url) override {
+    GURL parsed_url(GURL(partial_url.utf8()));
+    GURL full_url;
+    if (parsed_url.has_scheme()) {
+      // This is already a complete URL.
+      full_url = GURL(partial_url);
+    } else if (!base_domain_.empty()) {
+      // This is a partial URL and only one frame in testing html.
+      full_url = GURL("http://" + base_domain_).Resolve(partial_url);
+    } else {
+      auto it = url_to_frame_domain_map_.find(partial_url.utf8());
+      if (it != url_to_frame_domain_map_.end()) {
+        const std::string frame_domain = it->second;
+        full_url = GURL("http://" + it->second).Resolve(partial_url.utf8());
+        url_to_frame_domain_map_[full_url.spec()] = it->second;
+      } else {
+        NOTREACHED() << "Testing input setup is incorrect. "
+                        "Please check url_to_frame_domain_map_ setup.";
+      }
+    }
+    return blink::WebURL(full_url);
+  }
+
+  // If there is only main frame, we use base_domain_ to track where
+  // the html content is hosted.
+  std::string base_domain_;
+
+  // If html contains multiple frame/iframe, we track domain of each frame by
+  // using this map, where keys are the urls mentioned in the html content,
+  // values are the domains of the corresponding frames.
+  base::hash_map<std::string, std::string> url_to_frame_domain_map_;
+};
+
+class TestChromeContentRendererClient : public ChromeContentRendererClient {
+ public:
+  TestChromeContentRendererClient() {}
+  ~TestChromeContentRendererClient() override {}
+  // Since visited_link_slave_ in ChromeContentRenderClient never get initiated,
+  // overrides VisitedLinkedHash() function to prevent crashing.
+  unsigned long long VisitedLinkHash(const char* canonical_url,
+                                     size_t length) override {
+    return 0LL;
+  }
+};
+
+class PhishingDOMFeatureExtractorTest : public ChromeRenderViewTest {
+ public:
+  PhishingDOMFeatureExtractorTest()
+      : success_(false),
+        message_loop_(new content::MessageLoopRunner),
+        weak_factory_(this) {}
+
+  bool GetSuccess() { return success_; }
+  void ResetTest() {
+    success_ = false;
+    message_loop_ = new content::MessageLoopRunner;
+    extractor_->Reset();
+  }
+
+  void ExtractFeaturesAcrossFrames(
+      const std::string& html_content,
+      FeatureMap* features,
+      const base::hash_map<std::string, std::string>& url_frame_domain_map) {
+    extractor_->SetURLToFrameDomainCheckingMap(url_frame_domain_map);
+    LoadHTML(html_content.c_str());
+
+    extractor_->ExtractFeatures(
+        GetMainFrame()->document(), features,
+        base::Bind(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
+                   weak_factory_.GetWeakPtr()));
+    message_loop_->Run();
+  }
+
+  void ExtractFeatures(const std::string& document_domain,
+                       const std::string& html_content,
+                       FeatureMap* features) {
+    extractor_->SetDocumentDomain(document_domain);
+    LoadHTML(html_content.c_str());
+
+    extractor_->ExtractFeatures(
+        GetMainFrame()->document(), features,
+        base::Bind(&PhishingDOMFeatureExtractorTest::AnotherExtractionDone,
+                   weak_factory_.GetWeakPtr()));
+    message_loop_->Run();
   }
 
   // Helper for the SubframeRemoval test that posts a message to remove
@@ -69,121 +184,53 @@ class PhishingDOMFeatureExtractorTest : public InProcessBrowserTest {
   }
 
  protected:
-  PhishingDOMFeatureExtractorTest() : weak_factory_(this) {}
+  void SetUp() override {
+    ChromeRenderViewTest::SetUp();
+    extractor_.reset(new TestPhishingDOMFeatureExtractor(&clock_));
+  }
 
-  ~PhishingDOMFeatureExtractorTest() override {}
+  void TearDown() override {
+    extractor_.reset(nullptr);
+    ChromeRenderViewTest::TearDown();
+  }
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kSingleProcess);
-#if defined(OS_WIN)
-    // Don't want to try to create a GPU process.
-    command_line->AppendSwitch(switches::kDisableGpu);
+  content::ContentRendererClient* CreateContentRendererClient() override {
+    ChromeContentRendererClient* client = new TestChromeContentRendererClient();
+#if defined(ENABLE_EXTENSIONS)
+    extension_dispatcher_delegate_.reset(
+        new ChromeExtensionsDispatcherDelegate());
+    ChromeExtensionsRendererClient* ext_client =
+        ChromeExtensionsRendererClient::GetInstance();
+    ext_client->SetExtensionDispatcherForTest(make_scoped_ptr(
+        new extensions::Dispatcher(extension_dispatcher_delegate_.get())));
 #endif
+#if defined(ENABLE_SPELLCHECK)
+    client->SetSpellcheck(new SpellCheck());
+#endif
+    return client;
   }
 
-  void SetUpOnMainThread() override {
-    extractor_.reset(new PhishingDOMFeatureExtractor(&clock_));
-
-    embedded_test_server()->RegisterRequestHandler(
-        base::Bind(&PhishingDOMFeatureExtractorTest::HandleRequest,
-                   base::Unretained(this)));
-    ASSERT_TRUE(embedded_test_server()->Start());
-    host_resolver()->AddRule("*", "127.0.0.1");
-  }
-
-  // Runs the DOMFeatureExtractor, waiting for the completion callback.
-  // Returns the success boolean from the callback.
-  bool ExtractFeatures(FeatureMap* features) {
-    success_ = false;
-    PostTaskToInProcessRendererAndWait(
-        base::Bind(&PhishingDOMFeatureExtractorTest::ExtractFeaturesInternal,
-        base::Unretained(this),
-        features));
-    return success_;
-  }
-
-  blink::WebFrame* GetWebFrame() {
-    int render_frame_routing_id =
-        GetWebContents()->GetMainFrame()->GetRoutingID();
-    content::RenderFrame* render_frame =
-        content::RenderFrame::FromRoutingID(render_frame_routing_id);
-    return render_frame->GetWebFrame();
-  }
-
-  void ExtractFeaturesInternal(FeatureMap* features) {
-    scoped_refptr<content::MessageLoopRunner> message_loop =
-        new content::MessageLoopRunner;
-
-    extractor_->ExtractFeatures(
-        GetWebFrame()->document(), features,
-        base::Bind(&PhishingDOMFeatureExtractorTest::ExtractionDone,
-                   base::Unretained(this), message_loop->QuitClosure()));
-    message_loop->Run();
-  }
-
-  // Completion callback for feature extraction.
-  void ExtractionDone(const base::Closure& quit_closure,
-                      bool success) {
+  void AnotherExtractionDone(bool success) {
     success_ = success;
-    quit_closure.Run();
+    message_loop_->QuitClosure().Run();
   }
 
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
-    blink::WebFrame* main_frame = GetWebFrame();
+    blink::WebFrame* main_frame = GetMainFrame();
     ASSERT_TRUE(main_frame);
-    main_frame->executeScript(
-        blink::WebString(
-            "document.body.removeChild(document.getElementById('frame1'));"));
+    main_frame->executeScript(blink::WebString(
+        "document.body.removeChild(document.getElementById('frame1'));"));
   }
-
-  scoped_ptr<net::test_server::HttpResponse> HandleRequest(
-      const net::test_server::HttpRequest& request) {
-    auto host_it = request.headers.find("Host");
-    if (host_it == request.headers.end())
-      return scoped_ptr<net::test_server::HttpResponse>();
-
-    std::string url =
-        std::string("http://") + host_it->second + request.relative_url;
-    std::map<std::string, std::string>::const_iterator it =
-        responses_.find(url);
-    if (it == responses_.end())
-      return scoped_ptr<net::test_server::HttpResponse>();
-
-    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
-        new net::test_server::BasicHttpResponse());
-    http_response->set_code(net::HTTP_OK);
-    http_response->set_content_type("text/html");
-    http_response->set_content(it->second);
-    return std::move(http_response);
-  }
-
-  GURL GetURL(const std::string& host, const std::string& path) {
-    GURL::Replacements replace;
-    replace.SetHostStr(host);
-    replace.SetPathStr(path);
-    return embedded_test_server()->base_url().ReplaceComponents(replace);
-  }
-
-  // Returns the URL that was loaded.
-  GURL LoadHtml(const std::string& host, const std::string& content) {
-    GURL url(GetURL(host, ""));
-    responses_[url.spec()] = content;
-    ui_test_utils::NavigateToURL(browser(), url);
-    return url;
-  }
-
-  // Map of url -> response body for network requests from the renderer.
-  // Any urls not in this map are served a 404 error.
-  std::map<std::string, std::string> responses_;
 
   MockFeatureExtractorClock clock_;
-  scoped_ptr<PhishingDOMFeatureExtractor> extractor_;
-  bool success_;  // holds the success value from ExtractFeatures
+  bool success_;
+  scoped_ptr<TestPhishingDOMFeatureExtractor> extractor_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_;
   base::WeakPtrFactory<PhishingDOMFeatureExtractorTest> weak_factory_;
 };
 
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
@@ -197,22 +244,22 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://other.com/"));
 
-  GURL url = embedded_test_server()->GetURL("/query");
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("host.com");
-  expected_features.AddBooleanFeature(
-      features::kPageActionURL + url.ReplaceComponents(replace_host).spec());
+  GURL url("http://host.com/query");
+  expected_features.AddBooleanFeature(features::kPageActionURL + url.spec());
 
   FeatureMap features;
-  LoadHtml(
+  EXPECT_FALSE(GetSuccess());
+
+  ExtractFeatures(
       "host.com",
       "<html><head><body>"
       "<form action=\"query\"><input type=text><input type=checkbox></form>"
       "<form action=\"http://cgi.host.com/submit\"></form>"
       "<form action=\"http://other.com/\"></form>"
       "<form action=\"query\"></form>"
-      "<form></form></body></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+      "<form></form></body></html>",
+      &features);
+  EXPECT_TRUE(GetSuccess());
   ExpectFeatureMapsAreEqual(features, expected_features);
 
   expected_features.Clear();
@@ -220,35 +267,40 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, FormFeatures) {
   expected_features.AddBooleanFeature(features::kPageHasPswdInputs);
 
   features.Clear();
-  LoadHtml(
-      "host.com",
-      "<html><head><body>"
-      "<input type=\"radio\"><input type=password></body></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ResetTest();
+  EXPECT_FALSE(GetSuccess());
+  ExtractFeatures("host.com",
+                  "<html><head><body>"
+                  "<input type=\"radio\"><input type=password></body></html>",
+                  &features);
+  EXPECT_TRUE(GetSuccess());
   ExpectFeatureMapsAreEqual(features, expected_features);
 
   expected_features.Clear();
   expected_features.AddBooleanFeature(features::kPageHasTextInputs);
 
   features.Clear();
-  LoadHtml(
-      "host.com",
-      "<html><head><body><input></body></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ResetTest();
+  EXPECT_FALSE(GetSuccess());
+  ExtractFeatures("host.com", "<html><head><body><input></body></html>",
+                  &features);
+  EXPECT_TRUE(GetSuccess());
   ExpectFeatureMapsAreEqual(features, expected_features);
 
   expected_features.Clear();
   expected_features.AddBooleanFeature(features::kPageHasTextInputs);
 
   features.Clear();
-  LoadHtml(
-      "host.com",
-      "<html><head><body><input type=\"invalid\"></body></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ResetTest();
+  EXPECT_FALSE(GetSuccess());
+  ExtractFeatures("host.com",
+                  "<html><head><body><input type=\"invalid\"></body></html>",
+                  &features);
+  EXPECT_TRUE(GetSuccess());
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
@@ -259,52 +311,34 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, LinkFeatures) {
                                       std::string("chromium.org"));
 
   FeatureMap features;
-  LoadHtml(
-      "www.host.com",
-      "<html><head><body>"
-      "<a href=\"http://www2.host.com/abc\">link</a>"
-      "<a name=page_anchor></a>"
-      "<a href=\"http://www.chromium.org/\">chromium</a>"
-      "</body></html");
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ExtractFeatures("host.com",
+                  "<html><head><body>"
+                  "<a href=\"http://www2.host.com/abc\">link</a>"
+                  "<a name=page_anchor></a>"
+                  "<a href=\"http://www.chromium.org/\">chromium</a>"
+                  "</body></html>",
+                  &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
 
   expected_features.Clear();
   expected_features.AddRealFeature(features::kPageExternalLinksFreq, 0.25);
-  expected_features.AddRealFeature(features::kPageSecureLinksFreq, 0.5);
+  expected_features.AddRealFeature(features::kPageSecureLinksFreq, 0.25);
   expected_features.AddBooleanFeature(features::kPageLinkDomain +
                                       std::string("chromium.org"));
-
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server.Start());
-
-  // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
-  // so use a domain.
-  GURL url = https_server.GetURL("/safe_browsing/secure_link_features.html");
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("host.com");
-  ui_test_utils::NavigateToURL(browser(), url.ReplaceComponents(replace_host));
-
-  // Click through the certificate error interstitial.
-  content::InterstitialPage* interstitial_page =
-      GetWebContents()->GetInterstitialPage();
-  interstitial_page->Proceed();
-  content::WaitForLoadStop(GetWebContents());
-
   features.Clear();
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ResetTest();
+  ExtractFeatures("host.com",
+                  "<html><head><body>"
+                  "<a href=\"login\">this is not secure</a>"
+                  "<a href=\"http://host.com\">not secure</a>"
+                  "<a href=\"http://chromium.org/\">also not secure</a>"
+                  "<a href=\"https://www2.host.com/login\"> this secure</a>"
+                  "</body></html>",
+                  &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-// Flaky on Win/Linux.  https://crbug.com/373155.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_ScriptAndImageFeatures DISABLED_ScriptAndImageFeatures
-#else
-#define MAYBE_ScriptAndImageFeatures ScriptAndImageFeatures
-#endif
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
-                       MAYBE_ScriptAndImageFeatures) {
+TEST_F(PhishingDOMFeatureExtractorTest, ScriptAndImageFeatures) {
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
@@ -312,10 +346,10 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
   expected_features.AddBooleanFeature(features::kPageNumScriptTagsGTOne);
 
   FeatureMap features;
-  LoadHtml(
+  ExtractFeatures(
       "host.com",
-      "<html><head><script></script><script></script></head></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+      "<html><head><script></script><script></script></head></html>",
+      &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
 
   expected_features.Clear();
@@ -324,57 +358,74 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest,
   expected_features.AddRealFeature(features::kPageImgOtherDomainFreq, 0.5);
 
   features.Clear();
-  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
-  https_server.ServeFilesFromSourceDirectory("chrome/test/data");
-  ASSERT_TRUE(https_server.Start());
-
-  // The PhishingDOMFeatureExtractor depends on URLs being domains and not IPs,
-  // so use a domain.
-  GURL url = embedded_test_server()->GetURL(
-      "/safe_browsing/secure_script_and_image.html");
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("host.com");
-  ui_test_utils::NavigateToURL(browser(), url.ReplaceComponents(replace_host));
-
-  // Click through the certificate error interstitial.
-  content::InterstitialPage* interstitial_page =
-      GetWebContents()->GetInterstitialPage();
-  interstitial_page->Proceed();
-  content::WaitForLoadStop(GetWebContents());
-
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ResetTest();
+  std::string html(
+      "<html><head><script></script><script></script><script></script>"
+      "<script></script><script></script><script></script><script></script>"
+      "</head><body>"
+      "<img src=\"file:///C:/other.png\">"
+      "<img src=\"img/header.png\">"
+      "</body></html>");
+  ExtractFeatures("host.com", html, &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
+// A page with nested iframes.
+//         html
+// iframe2 /  \ iframe1
+//              \ iframe3
+TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   // This test doesn't exercise the extraction timing.
+  // Test that features are aggregated across all frames.
   EXPECT_CALL(clock_, Now()).WillRepeatedly(Return(base::TimeTicks::Now()));
 
-  // Test that features are aggregated across all frames.
-
-  responses_[GetURL("host2.com", "").spec()] =
-      "<html><head><script></script><body>"
-      "<form action=\"http://host4.com/\"><input type=checkbox></form>"
-      "<form action=\"http://host2.com/submit\"></form>"
-      "<a href=\"http://www.host2.com/home\">link</a>"
-      "<iframe src=\"nested.html\"></iframe>"
-      "<body></html>";
-
-  responses_[GetURL("host2.com", "nested.html").spec()] =
+  const char urlprefix[] = "data:text/html;charset=utf-8,";
+  base::hash_map<std::string, std::string> url_iframe_map;
+  std::string iframe1_nested_html(
       "<html><body><input type=password>"
-      "<a href=\"https://host4.com/\">link</a>"
-      "<a href=\"relative\">another</a>"
-      "</body></html>";
+      "<a href=\"https://host3.com/submit\">link</a>"
+      "<a href=\"relative\">link</a>"
+      "</body></html>");
+  GURL iframe1_nested_url(urlprefix + iframe1_nested_html);
+  // iframe1_nested is on host1.com.
+  url_iframe_map["https://host3.com/submit"] = "host1.com";
+  url_iframe_map["relative"] = "host1.com";
 
-  responses_[GetURL("host3.com", "").spec()] =
+  std::string iframe1_html(
       "<html><head><script></script><body>"
-      "<img src=\"http://host.com/123.png\">"
-      "</body></html>";
+      "<form action=\"http://host3.com/home\"><input type=checkbox></form>"
+      "<form action=\"http://host1.com/submit\"></form>"
+      "<a href=\"http://www.host1.com/reset\">link</a>"
+      "<iframe src=\"" +
+      net::EscapeForHTML(iframe1_nested_url.spec()) +
+      "\"></iframe></head></html>");
+  GURL iframe1_url(urlprefix + iframe1_html);
+  // iframe1 is on host1.com too.
+  url_iframe_map["http://host3.com/home"] = "host1.com";
+  url_iframe_map["http://host1.com/submit"] = "host1.com";
+  url_iframe_map["http://www.host1.com/reset"] = "host1.com";
+
+  std::string iframe2_html(
+      "<html><head><script></script><body>"
+      "<img src=\"file:///C:/other.html\">"
+      "</body></html>");
+  GURL iframe2_url(urlprefix + iframe2_html);
+  // iframe2 is on host2.com
+  url_iframe_map["file:///C:/other.html"] = "host2.com";
+
+  std::string html(
+      "<html><body><input type=text>"
+      "<a href=\"info.html\">link</a>"
+      "<iframe src=\"" +
+      net::EscapeForHTML(iframe1_url.spec()) + "\"></iframe><iframe src=\"" +
+      net::EscapeForHTML(iframe2_url.spec()) + "\"></iframe></body></html>");
+  // The entire html is hosted on host.com
+  url_iframe_map["info.html"] = "host.com";
 
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageHasForms);
   // Form action domains are compared to the URL of the document they're in,
-  // not the URL of the toplevel page.  So http://host2.com/ has two form
+  // not the URL of the toplevel page.  So http://host1.com/ has two form
   // actions, one of which is external.
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
   expected_features.AddBooleanFeature(features::kPageHasTextInputs);
@@ -382,42 +433,21 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubFrames) {
   expected_features.AddBooleanFeature(features::kPageHasCheckInputs);
   expected_features.AddRealFeature(features::kPageExternalLinksFreq, 0.25);
   expected_features.AddBooleanFeature(features::kPageLinkDomain +
-                                      std::string("host4.com"));
+                                      std::string("host3.com"));
   expected_features.AddRealFeature(features::kPageSecureLinksFreq, 0.25);
   expected_features.AddBooleanFeature(features::kPageNumScriptTagsGTOne);
   expected_features.AddRealFeature(features::kPageImgOtherDomainFreq, 1.0);
   expected_features.AddBooleanFeature(features::kPageActionURL +
-      std::string("http://host2.com/submit"));
+                                      std::string("http://host1.com/submit"));
   expected_features.AddBooleanFeature(features::kPageActionURL +
-      std::string("http://host4.com/"));
+                                      std::string("http://host3.com/home"));
 
   FeatureMap features;
-  GURL url = embedded_test_server()->GetURL("/");
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("host2.com");
-  GURL::Replacements replace_host_2;
-  replace_host_2.SetHostStr("host3.com");
-
-  std::string html(
-      "<html><body><input type=text><a href=\"info.html\">link</a>"
-      "<iframe src=\"");
-  html += url.ReplaceComponents(replace_host).spec();
-  html += std::string("\"></iframe><iframe src=\"");
-  html += url.ReplaceComponents(replace_host_2).spec();
-  html += std::string("\"></iframe></body></html>");
-
-  LoadHtml("host.com", html);
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ExtractFeaturesAcrossFrames(html, &features, url_iframe_map);
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 
-// Test flakes with LSAN enabled. See http://crbug.com/373155.
-#if defined(LEAK_SANITIZER)
-#define MAYBE_Continuation DISABLED_Continuation
-#else
-#define MAYBE_Continuation Continuation
-#endif
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
+TEST_F(PhishingDOMFeatureExtractorTest, Continuation) {
   // For this test, we'll cause the feature extraction to run multiple
   // iterations by incrementing the clock.
 
@@ -425,12 +455,13 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
   // be computed correctly, the extractor has to examine the whole document.
   // Note: the empty HEAD is important -- WebKit will synthesize a HEAD if
   // there isn't one present, which can be confusing for the element counts.
-  std::string response = "<html><head></head><body>"
+  std::string html =
+      "<html><head></head><body>"
       "<form action=\"ondomain\"></form>";
   for (int i = 0; i < 45; ++i) {
-    response.append("<p>");
+    html.append("<p>");
   }
-  response.append("<form action=\"http://host2.com/\"></form></body></html>");
+  html.append("<form action=\"http://host2.com/\"></form></body></html>");
 
   // Advance the clock 6 ms every 10 elements processed, 10 ms between chunks.
   // Note that this assumes kClockCheckGranularity = 10 and
@@ -467,17 +498,13 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
   FeatureMap expected_features;
   expected_features.AddBooleanFeature(features::kPageHasForms);
   expected_features.AddRealFeature(features::kPageActionOtherDomainFreq, 0.5);
-  GURL url = embedded_test_server()->GetURL("/ondomain");
-  GURL::Replacements replace_host;
-  replace_host.SetHostStr("host.com");
-  expected_features.AddBooleanFeature(
-      features::kPageActionURL + url.ReplaceComponents(replace_host).spec());
+  expected_features.AddBooleanFeature(features::kPageActionURL +
+                                      std::string("http://host.com/ondomain"));
   expected_features.AddBooleanFeature(features::kPageActionURL +
       std::string("http://host2.com/"));
 
   FeatureMap features;
-  LoadHtml("host.com", response);
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ExtractFeatures("host.com", html, &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
   // Make sure none of the mock expectations carry over to the next test.
   ::testing::Mock::VerifyAndClearExpectations(&clock_);
@@ -503,17 +530,21 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, MAYBE_Continuation) {
       .WillOnce(Return(now + base::TimeDelta::FromMilliseconds(620)));
 
   features.Clear();
-  EXPECT_FALSE(ExtractFeatures(&features));
+  ResetTest();
+  ExtractFeatures("host.com", html, &features);
+  EXPECT_FALSE(GetSuccess());
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
+TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
   // In this test, we'll advance the feature extractor so that it is positioned
   // inside an iframe, and have it pause due to exceeding the chunk time limit.
   // Then, prior to continuation, the iframe is removed from the document.
   // As currently implemented, this should finish extraction from the removed
   // iframe document.
-  responses_[GetURL("host.com", "frame.html").spec()] =
-      "<html><body><p><p><p><input type=password></body></html>";
+  const char urlprefix[] = "data:text/html;charset=utf-8,";
+  std::string iframe1_html(
+      "<html><body><p><p><p><input type=password></body></html>");
+  GURL iframe1_url(urlprefix + iframe1_html);
 
   base::TimeTicks now = base::TimeTicks::Now();
   EXPECT_CALL(clock_, Now())
@@ -539,12 +570,13 @@ IN_PROC_BROWSER_TEST_F(PhishingDOMFeatureExtractorTest, SubframeRemoval) {
   expected_features.AddBooleanFeature(features::kPageHasPswdInputs);
 
   FeatureMap features;
-  LoadHtml(
-      "host.com",
+  std::string html(
       "<html><head></head><body>"
-      "<iframe src=\"frame.html\" id=\"frame1\"></iframe>"
+      "<iframe src=\"" +
+      net::EscapeForHTML(iframe1_url.spec()) +
+      "\" id=\"frame1\"></iframe>"
       "<form></form></body></html>");
-  ASSERT_TRUE(ExtractFeatures(&features));
+  ExtractFeatures("host.com", html, &features);
   ExpectFeatureMapsAreEqual(features, expected_features);
 }
 

@@ -110,7 +110,12 @@ class PhishingDOMFeatureExtractor {
   // Given a URL, checks whether the domain is different from the domain of
   // the current frame's URL.  If so, stores the domain in |domain| and returns
   // true, otherwise returns false.
-  bool IsExternalDomain(const GURL& url, std::string* domain) const;
+  virtual bool IsExternalDomain(const GURL& url, std::string* domain) const;
+
+  // Given a partial URL, extend it to a full url based on the current frame's
+  // URL.
+  virtual blink::WebURL CompleteURL(const blink::WebElement& element,
+                                    const blink::WebString& partial_url);
 
   // Called once all frames have been processed to compute features from the
   // PageFeatureState and add them to |features_|.  See features.h for a

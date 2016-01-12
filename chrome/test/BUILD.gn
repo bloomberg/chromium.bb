@@ -1187,7 +1187,6 @@ if (!is_android) {
         # message loops. See 306348
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
-        "../renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc",
       ]
     }
     if (is_mac || is_win) {
@@ -1274,7 +1273,6 @@ if (!is_android) {
         # official builds.
         "../renderer/safe_browsing/phishing_classifier_browsertest.cc",
         "../renderer/safe_browsing/phishing_classifier_delegate_browsertest.cc",
-        "../renderer/safe_browsing/phishing_dom_feature_extractor_browsertest.cc",
       ]
     }
     if (!enable_autofill_dialog || is_android || is_ios) {
