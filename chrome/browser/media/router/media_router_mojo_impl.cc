@@ -198,24 +198,28 @@ void MediaRouterMojoImpl::OnSinksReceived(
     const mojo::String& media_source,
     mojo::Array<interfaces::MediaSinkPtr> sinks) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
-  if (!HasSinksObservers(media_source)) {
-    DVLOG_WITH_INSTANCE(1)
-        << "Received sink list without any active observers: " << media_source;
+  auto it = sinks_queries_.find(media_source);
+  if (it == sinks_queries_.end()) {
+    DVLOG_WITH_INSTANCE(1) << "Received sink list without MediaSinksQuery.";
     return;
   }
 
-  std::vector<MediaSink> sinks_converted;
-  sinks_converted.reserve(sinks.size());
+  auto* sinks_query = it->second;
+  sinks_query->has_cached_result = true;
+  auto& cached_sink_list = sinks_query->cached_sink_list;
+  cached_sink_list.clear();
+  cached_sink_list.reserve(sinks.size());
+  for (size_t i = 0; i < sinks.size(); ++i)
+    cached_sink_list.push_back(sinks[i].To<MediaSink>());
 
-  for (size_t i = 0; i < sinks.size(); ++i) {
-    sinks_converted.push_back(sinks[i].To<MediaSink>());
+  if (!sinks_query->observers.might_have_observers()) {
+    DVLOG_WITH_INSTANCE(1)
+        << "Received sink list without any active observers: " << media_source;
+  } else {
+    FOR_EACH_OBSERVER(MediaSinksObserver, sinks_query->observers,
+                      OnSinksReceived(cached_sink_list));
   }
-
-  auto sinks_query = sinks_queries_.get(media_source);
-  FOR_EACH_OBSERVER(MediaSinksObserver, sinks_query->observers,
-                    OnSinksReceived(sinks_converted));
 }
 
 void MediaRouterMojoImpl::OnRoutesUpdated(
@@ -414,27 +418,30 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // to it. Fail if |observer| is already registered.
   const std::string& source_id = observer->source().id();
   auto* sinks_query = sinks_queries_.get(source_id);
+  bool new_query = false;
   if (!sinks_query) {
+    new_query = true;
     sinks_query = new MediaSinksQuery;
     sinks_queries_.add(source_id, make_scoped_ptr(sinks_query));
   } else {
     DCHECK(!sinks_query->observers.HasObserver(observer));
   }
 
-  // We need to call DoStartObservingMediaSinks every time an observer is
-  // added to ensure the observer will be notified with a fresh set of results.
-  // The exception is if it is known that no sinks are available, then there is
-  // no need to call to MRPM.
-  // TODO(imcheng): Implement caching. (crbug.com/492451)
+  // If sink availability is UNAVAILABLE, then there is no need to call MRPM.
+  // |observer| can be immediately notified with an empty list.
   sinks_query->observers.AddObserver(observer);
-  if (availability_ != interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
-    SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_SINKS);
-    RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
-                          base::Unretained(this), source_id));
-  } else {
+  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
     observer->OnSinksReceived(std::vector<MediaSink>());
+  } else {
+    // Need to call MRPM to start observing sinks if the query is new.
+    if (new_query) {
+      SetWakeReason(MediaRouteProviderWakeReason::START_OBSERVING_MEDIA_SINKS);
+      RunOrDefer(base::Bind(&MediaRouterMojoImpl::DoStartObservingMediaSinks,
+                            base::Unretained(this), source_id));
+    } else if (sinks_query->has_cached_result) {
+      observer->OnSinksReceived(sinks_query->cached_sink_list);
+    }
   }
-
   return true;
 }
 
@@ -734,8 +741,12 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
   availability_ = availability;
   if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
     // Sinks are no longer available. MRPM has already removed all sink queries.
-    for (auto& source_and_query : sinks_queries_)
-      source_and_query.second->is_active = false;
+    for (auto& source_and_query : sinks_queries_) {
+      auto* query = source_and_query.second;
+      query->is_active = false;
+      query->has_cached_result = false;
+      query->cached_sink_list.clear();
+    }
   } else {
     // Sinks are now available. Tell MRPM to start all sink queries again.
     for (const auto& source_and_query : sinks_queries_) {
@@ -770,12 +781,12 @@ void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     return;
 
   // No need to call MRPM if all observers have been removed in the meantime.
-  if (!HasSinksObservers(source_id))
+  auto* sinks_query = sinks_queries_.get(source_id);
+  if (!sinks_query || !sinks_query->observers.might_have_observers())
     return;
 
   DVLOG_WITH_INSTANCE(1) << "MRPM.StartObservingMediaSinks: " << source_id;
   media_route_provider_->StartObservingMediaSinks(source_id);
-  auto* sinks_query = sinks_queries_.get(source_id);
   sinks_query->is_active = true;
 }
 
@@ -801,12 +812,12 @@ void MediaRouterMojoImpl::DoStartObservingMediaRoutes(
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaRoutes";
 
   // No need to call MRPM if all observers have been removed in the meantime.
-  if (!HasRoutesObservers(source_id))
+  auto* routes_query = routes_queries_.get(source_id);
+  if (!routes_query || !routes_query->observers.might_have_observers())
     return;
 
   DVLOG_WITH_INSTANCE(1) << "MRPM.StartObservingMediaRoutes: " << source_id;
   media_route_provider_->StartObservingMediaRoutes(source_id);
-  auto* routes_query = routes_queries_.get(source_id);
   routes_query->is_active = true;
 }
 
@@ -926,18 +937,6 @@ void MediaRouterMojoImpl::SetWakeReason(MediaRouteProviderWakeReason reason) {
 void MediaRouterMojoImpl::ClearWakeReason() {
   DCHECK(current_wake_reason_ != MediaRouteProviderWakeReason::TOTAL_COUNT);
   current_wake_reason_ = MediaRouteProviderWakeReason::TOTAL_COUNT;
-}
-
-bool MediaRouterMojoImpl::HasRoutesObservers(
-    const MediaSource::Id& source_id) const {
-  auto* routes_query = routes_queries_.get(source_id);
-  return routes_query && routes_query->observers.might_have_observers();
-}
-
-bool MediaRouterMojoImpl::HasSinksObservers(
-    const MediaSource::Id& source_id) const {
-  auto* sinks_query = sinks_queries_.get(source_id);
-  return sinks_query && sinks_query->observers.might_have_observers();
 }
 
 }  // namespace media_router

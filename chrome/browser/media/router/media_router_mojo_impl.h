@@ -162,10 +162,16 @@ class MediaRouterMojoImpl : public MediaRouterBase,
     MediaSinksQuery();
     ~MediaSinksQuery();
 
-    // True if the query has been sent to the MRPM.  False otherwise.
+    // True if the query has been sent to the MRPM.
     bool is_active = false;
-    base::ObserverList<MediaSinksObserver> observers;
 
+    // True if cached result is available.
+    bool has_cached_result = false;
+
+    // Cached list of sinks for the query, if |has_cached_result| is true.
+    // Empty otherwise.
+    std::vector<MediaSink> cached_sink_list;
+    base::ObserverList<MediaSinksObserver> observers;
     DISALLOW_COPY_AND_ASSIGN(MediaSinksQuery);
   };
 
@@ -206,9 +212,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
   // Drops all pending requests. Called when we have a connection error to
   // component extension and further reattempts are unlikely to help.
   void DrainPendingRequests();
-
-  bool HasRoutesObservers(const MediaSource::Id& source_id) const;
-  bool HasSinksObservers(const MediaSource::Id& source_id) const;
 
   // MediaRouter implementation.
   bool RegisterMediaSinksObserver(MediaSinksObserver* observer) override;
