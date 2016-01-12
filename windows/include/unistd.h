@@ -21,7 +21,4 @@
    Boston, MA 02110-1301, USA.
    */
 
-#define PACKAGE_VERSION "liblouis-2.6.5"
-#define HAVE_DECL_STRERROR_R 1
-#define _GL_ATTRIBUTE_FORMAT_PRINTF(a, b)
-#define _GL_ARG_NONNULL(a)
+// This is a stub to compile gnulib's error module.

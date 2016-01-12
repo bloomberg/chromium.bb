@@ -26,6 +26,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 
 #define EXIT_SKIPPED 77
 
+#ifdef _WIN32
+char *program_name = "check_yaml";
+#endif
+
 #ifdef HAVE_LIBYAML
 #include <yaml.h>
 
@@ -484,7 +488,7 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
   }
 }
 
-#endif
+#endif // HAVE_LIBYAML
 
 int
 main(int argc, char *argv[]) {
@@ -594,6 +598,6 @@ main(int argc, char *argv[]) {
 
   return errors ? 1 : 0;
 
-#endif
+#endif // not HAVE_LIBYAML
 }
 
