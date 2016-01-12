@@ -8,7 +8,7 @@ import("//ppapi/native_client/nacl_test_data.gni")
 group("extensions") {
   newlib = "//build/toolchain/nacl:clang_newlib_${target_cpu}"
   pnacl = "//build/toolchain/nacl:newlib_pnacl"
-  deps = [
+  data_deps = [
     ":ppapi_tests_extensions_background_keepalive($newlib)",
     ":ppapi_tests_extensions_load_unload($newlib)",
     ":ppapi_tests_extensions_media_galleries($newlib)",
@@ -21,7 +21,7 @@ group("extensions") {
   ]
   if ((target_cpu == "x86" || target_cpu == "x64") && is_linux) {
     nonsfi = "//build/toolchain/nacl:newlib_pnacl_nonsfi"
-    deps += [ ":ppapi_tests_extensions_packaged_app($nonsfi)" ]
+    data_deps += [ ":ppapi_tests_extensions_packaged_app($nonsfi)" ]
   }
 }
 

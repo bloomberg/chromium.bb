@@ -193,6 +193,8 @@ source_set("ppapi_gles2_lib") {
 if (enable_nacl) {
   if (is_nacl) {
     shared_library("ppapi_cpp_lib_shared") {
+      output_name = "libppapi_cpp"
+
       # When using gcc, we hide all symbols by default, but that breaks at
       # link time as the test executable requires symbols defined in the
       # shared library.
@@ -211,7 +213,8 @@ if (enable_nacl) {
       ]
     }
 
-    executable("ppapi_nacl_tests") {
+    executable("ppapi_nacl_tests_nexe") {
+      output_name = "ppapi_nacl_tests"
       include_dirs = [ "lib/gl/include" ]
       sources = ppapi_sources.test_common_source_files +
                 ppapi_sources.test_nacl_source_files
@@ -235,7 +238,7 @@ if (enable_nacl) {
       action("translate_pexe_to_nexe") {
         # We specify the toolchain explicitly because in the Non-SFI case, we
         # still want to use the pexe built using the newlib_pnacl toolchain.
-        tests = ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)"
+        tests = ":ppapi_nacl_tests_nexe(//build/toolchain/nacl:newlib_pnacl)"
 
         pexe = get_label_info(tests, "root_out_dir") + "/ppapi_nacl_tests.pexe"
         nexe = "${root_out_dir}/ppapi_nacl_tests.nexe"
@@ -295,26 +298,29 @@ if (enable_nacl) {
       }
     }
 
-    copy("nacl_tests_copy") {
+    copy("ppapi_nacl_tests_copy") {
       sources = [
         "${root_out_dir}/ppapi_nacl_tests.nexe",
       ]
 
       # The CPU names used in tests/ppapi_nacl_tests_newlib.nmf
       # are the ones used in GYP (x32 for x86).
-      if (current_cpu == "pnacl") {
-        suffix = "pnacl"
+      if (target_cpu == "x86" ||
+          (is_nacl_nonsfi && (target_cpu == "x86" || target_cpu == "x64"))) {
+        nmf_cpu = "x32"
       } else {
-        if (target_cpu == "x86") {
-          nmf_cpu = "x32"
+        nmf_cpu = target_cpu
+      }
+      if (current_cpu == "pnacl") {
+        if (is_nacl_nonsfi) {
+          suffix = "pnacl_newlib_${nmf_cpu}_nonsfi"
         } else {
-          nmf_cpu = target_cpu
+          suffix = "pnacl_newlib_${nmf_cpu}"
         }
-        if (is_nacl_glibc) {
-          suffix = "glibc_${nmf_cpu}"
-        } else {
-          suffix = "newlib_${nmf_cpu}"
-        }
+      } else if (is_nacl_glibc) {
+        suffix = "glibc_${nmf_cpu}"
+      } else {
+        suffix = "newlib_${nmf_cpu}"
       }
       outputs = [
         "${root_build_dir}/{{source_name_part}}_${suffix}.nexe",
@@ -325,31 +331,41 @@ if (enable_nacl) {
         ]
       } else {
         deps = [
-          ":ppapi_nacl_tests",
+          ":ppapi_nacl_tests_nexe",
         ]
       }
     }
 
-    generate_nmf("ppapi_nacl_tests_nmf") {
-      if (is_nacl_glibc) {
-        nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
-        stage_dependencies = root_build_dir
-      } else if (current_cpu == "pnacl") {
-        nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
-      } else {
-        nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
+    if (is_nacl_nonsfi) {
+      generate_nonsfi_test_nmf("ppapi_nacl_tests_nmf") {
+        nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl_nonsfi.nmf"
+        files = get_target_outputs(":ppapi_nacl_tests_copy")
+        executable = files[0]
+        deps = [
+          ":ppapi_nacl_tests_copy",
+        ]
       }
-      executables = get_target_outputs(":nacl_tests_copy")
-      deps = [
-        ":nacl_tests_copy",
-      ]
+    } else {
+      generate_nmf("ppapi_nacl_tests_nmf") {
+        if (is_nacl_glibc) {
+          nmf = "${root_build_dir}/ppapi_nacl_tests_glibc.nmf"
+          stage_dependencies = root_build_dir
+        } else if (current_cpu == "pnacl") {
+          nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl.nmf"
+        } else {
+          nmf = "${root_build_dir}/ppapi_nacl_tests_newlib.nmf"
+        }
+        executables = get_target_outputs(":ppapi_nacl_tests_copy")
+        deps = [
+          ":ppapi_nacl_tests_copy",
+        ]
+      }
     }
 
-    generate_nonsfi_test_nmf("ppapi_nacl_tests_pnacl_nonsfi_nmf") {
-      nmf = "${root_build_dir}/ppapi_nacl_tests_pnacl_nonsfi.nmf"
-      executable = "${root_out_dir}/ppapi_nacl_tests.nexe"
-      deps = [
-        ":translate_pexe_to_nexe",
+    group("ppapi_nacl_tests") {
+      data_deps = [
+        ":ppapi_nacl_tests_copy",
+        ":ppapi_nacl_tests_nmf",
       ]
     }
   }
@@ -357,13 +373,13 @@ if (enable_nacl) {
   group("ppapi_nacl_tests_all") {
     data_deps = [
       ":copy_test_files",
-      ":nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
-      ":ppapi_nacl_tests_nmf(//build/toolchain/nacl:glibc_${target_cpu})",
+      ":ppapi_nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
+      ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})",
     ]
     if (enable_pnacl) {
       data_deps += [
-        ":ppapi_nacl_tests_nmf(//build/toolchain/nacl:newlib_pnacl)",
-        ":ppapi_nacl_tests_pnacl_nonsfi_nmf(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
+        ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
+        ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
       ]
     }
   }

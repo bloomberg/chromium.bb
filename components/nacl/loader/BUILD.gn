@@ -164,7 +164,7 @@ if (is_linux) {
   }
 
   group("helper_nonsfi") {
-    deps = [
+    data_deps = [
       ":nacl_helper_nonsfi_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
   }
@@ -183,6 +183,7 @@ if (is_linux) {
     testonly = true
     data_deps = [
       ":helper_nonsfi_unittests",
+      ":nacl_helper_nonsfi_unittests_main_copy(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
   }
 }
