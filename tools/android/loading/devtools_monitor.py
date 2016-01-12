@@ -5,6 +5,25 @@
 """Library handling DevTools websocket interaction.
 """
 
+import httplib
+import json
+import logging
+import os
+import sys
+
+file_dir = os.path.dirname(__file__)
+sys.path.append(os.path.join(file_dir, '..', '..', 'telemetry'))
+
+from telemetry.internal.backends.chrome_inspector import inspector_websocket
+from telemetry.internal.backends.chrome_inspector import websocket
+
+
+class DevToolsConnectionException(Exception):
+  def __init__(self, message):
+    super(DevToolsConnectionException, self).__init__(message)
+    logging.warning("DevToolsConnectionException: " + message)
+
+
 class DevToolsConnection(object):
   """Handles the communication with a DevTools server.
   """
@@ -15,7 +34,10 @@ class DevToolsConnection(object):
       hostname: server hostname.
       port: port number.
     """
-    pass
+    self._ws = self._Connect(hostname, port)
+    self._listeners = {}
+    self._domains_to_enable = set()
+    self._please_stop = False
 
   def RegisterListener(self, name, listener):
     """Registers a listener for an event.
@@ -27,7 +49,9 @@ class DevToolsConnection(object):
             Network.requestWillBeSent.
       listener: (Listener) listener instance.
     """
-    pass
+    domain = name[:name.index('.')]
+    self._listeners[name] = listener
+    self._domains_to_enable.add(domain)
 
   def UnregisterListener(self, listener):
     """Unregisters a listener.
@@ -35,7 +59,10 @@ class DevToolsConnection(object):
     Args:
       listener: (Listener) listener to unregister.
     """
-    pass
+    keys = [k for (k, v) in self._listeners if k == name]
+    assert keys, "Removing non-existent listener"
+    for key in keys:
+      del(self._listeners[key])
 
   def SyncRequest(self, method, params=None):
     """Issues a synchronous request to the DevTools server.
@@ -47,7 +74,10 @@ class DevToolsConnection(object):
     Returns:
       The answer.
     """
-    pass
+    request = {'method': method}
+    if params:
+      request['params'] = params
+    return self._ws.SyncRequest(request)
 
   def SendAndIgnoreResponse(self, method, params=None):
     """Issues a request to the DevTools server, do not wait for the response.
@@ -56,15 +86,66 @@ class DevToolsConnection(object):
       method: (str) Method.
       params: (dict) Optional parameters to the request.
     """
-    pass
+    request = {'method': method}
+    if params:
+      request['params'] = params
+    self._ws.SendAndIgnoreResponse(request)
+
+  def SetUpMonitoring(self):
+    for domain in self._domains_to_enable:
+      self._ws.RegisterDomain(domain, self._OnDataReceived)
+      self.SyncRequest('%s.enable' % domain)
 
   def StartMonitoring(self):
-    """Starts monitoring, enabling the relevant domains first."""
-    pass
+    """Starts monitoring.
 
-  def Stop(self):
+    DevToolsConnection.SetUpMonitoring() has to be called first.
+    """
+    while not self._please_stop:
+      try:
+        self._ws.DispatchNotifications()
+      except websocket.WebSocketTimeoutException as e:
+        break
+    if not self._please_stop:
+      logging.warning('Monitoring stopped on a timeout.')
+    self._TearDownMonitoring()
+
+  def StopMonitoring(self):
     """Stops the monitoring."""
-    pass
+    self._please_stop = True
+
+  def _TearDownMonitoring(self):
+    for domain in self._domains_to_enable:
+      self.SyncRequest('%s.disable' % domain)
+      self._ws.UnregisterDomain(domain)
+    self._domains_to_enable.clear()
+    self._listeners.clear()
+
+  def _OnDataReceived(self, msg):
+    method = msg.get('method', None)
+    if method not in self._listeners:
+      return
+    self._listeners[method].Handle(method, msg)
+
+  @classmethod
+  def _GetWebSocketUrl(cls, hostname, port):
+    r = httplib.HTTPConnection(hostname, port)
+    r.request('GET', '/json')
+    response = r.getresponse()
+    if response.status != 200:
+      raise DevToolsConnectionException(
+          'Cannot connect to DevTools, reponse code %d' % response.status)
+    json_response = json.loads(response.read())
+    r.close()
+    websocket_url = json_response[0]['webSocketDebuggerUrl']
+    return websocket_url
+
+  @classmethod
+  def _Connect(cls, hostname, port):
+    websocket_url = cls._GetWebSocketUrl(hostname, port)
+    ws = inspector_websocket.InspectorWebsocket()
+    ws.Connect(websocket_url)
+    return ws
 
 
 class Listener(object):
@@ -77,7 +158,7 @@ class Listener(object):
     """
     pass
 
-  def Handle(self, event_name, event):
+  def Handle(self, method, msg):
     """Handles an event this instance listens for.
 
     Args:

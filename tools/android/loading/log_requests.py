@@ -14,66 +14,18 @@ import logging
 import optparse
 import os
 import sys
-import time
 
 file_dir = os.path.dirname(__file__)
 sys.path.append(os.path.join(file_dir, '..', '..', '..', 'build', 'android'))
 sys.path.append(os.path.join(file_dir, '..', '..', 'telemetry'))
 sys.path.append(os.path.join(file_dir, '..', '..', 'chrome_proxy'))
 
-from pylib import constants
-from pylib import flag_changer
 from pylib.device import device_utils
-from pylib.device import intent
 from common import inspector_network
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
 
-
-_PORT = 9222 # DevTools port number.
-
-
-@contextlib.contextmanager
-def FlagChanger(device, command_line_path, new_flags):
-  """Changes the flags in a context, restores them afterwards.
-
-  Args:
-    device: Device to target, from DeviceUtils.
-    command_line_path: Full path to the command-line file.
-    new_flags: Flags to add.
-  """
-  # If we're logging requests from a local desktop chrome instance there is no
-  # device.
-  if not device:
-    yield
-    return
-  changer = flag_changer.FlagChanger(device, command_line_path)
-  changer.AddFlags(new_flags)
-  try:
-    yield
-  finally:
-    changer.Restore()
-
-
-@contextlib.contextmanager
-def ForwardPort(device, local, remote):
-  """Forwards a local port to a remote one on a device in a context."""
-  # If we're logging requests from a local desktop chrome instance there is no
-  # device.
-  if not device:
-    yield
-    return
-  device.adb.Forward(local, remote)
-  try:
-    yield
-  finally:
-    device.adb.ForwardRemove(local)
-
-
-def _SetUpDevice(device, package_info):
-  """Enables root and closes Chrome on a device."""
-  device.EnableRoot()
-  device.KillAll(package_info.package, quiet=True)
+import device_setup
 
 
 class AndroidRequestsLogger(object):
@@ -111,7 +63,7 @@ class AndroidRequestsLogger(object):
   def _LogPageLoadInternal(self, url, clear_cache):
     """Returns the collection of requests made to load a given URL.
 
-    Assumes that DevTools is available on http://localhost:_PORT.
+    Assumes that DevTools is available on http://localhost:DEVTOOLS_PORT.
 
     Args:
       url: URL to load.
@@ -122,7 +74,8 @@ class AndroidRequestsLogger(object):
     """
     self._main_frame_id = None
     self._please_stop = False
-    r = httplib.HTTPConnection('localhost', _PORT)
+    r = httplib.HTTPConnection(
+        device_setup.DEVTOOLS_HOSTNAME, device_setup.DEVTOOLS_PORT)
     r.request('GET', '/json')
     response = r.getresponse()
     if response.status != 200:
@@ -155,7 +108,7 @@ class AndroidRequestsLogger(object):
   def _LogTracingInternal(self, url):
     self._main_frame_id = None
     self._please_stop = False
-    r = httplib.HTTPConnection('localhost', _PORT)
+    r = httplib.HTTPConnection('localhost', device_setup.DEVTOOLS_PORT)
     r.request('GET', '/json')
     response = r.getresponse()
     if response.status != 200:
@@ -182,36 +135,6 @@ class AndroidRequestsLogger(object):
     return {'events': self._tracing_data,
             'end': ws.SyncRequest({'method': 'Tracing.end'})}
 
-  def _DoSomeLogging(self, package, fn):
-    """Start logging process.
-
-    Sets up any device and tracing appropriately and then executes the core
-    logging function.
-
-    Args:
-      package: the key for chrome package info.
-      fn: the function to execute that launches chrome and performs the
-      appropriate instrumentation, see _Log*Internal().
-
-    Returns:
-      As fn() returns.
-    """
-    package_info = constants.PACKAGE_INFO[package]
-    command_line_path = '/data/local/chrome-command-line'
-    new_flags = ['--enable-test-events', '--remote-debugging-port=%d' % _PORT]
-    if self.device:
-      _SetUpDevice(self.device, package_info)
-    with FlagChanger(self.device, command_line_path, new_flags):
-      if self.device:
-        start_intent = intent.Intent(
-            package=package_info.package, activity=package_info.activity,
-            data='about:blank')
-        self.device.StartActivity(start_intent, blocking=True)
-        time.sleep(2)
-      # If no device, we don't care about chrome startup so skip the about page.
-      with ForwardPort(self.device, 'tcp:%d' % _PORT,
-                       'localabstract:chrome_devtools_remote'):
-        return fn()
 
   def LogPageLoad(self, url, clear_cache, package):
     """Returns the collection of requests made to load a given URL on a device.
@@ -223,8 +146,9 @@ class AndroidRequestsLogger(object):
     Returns:
       See _LogPageLoadInternal().
     """
-    return self._DoSomeLogging(
-        package, lambda: self._LogPageLoadInternal(url, clear_cache))
+    return device_setup.SetUpAndExecute(
+        self.device, package,
+        lambda: self._LogPageLoadInternal(url, clear_cache))
 
   def LogTracing(self, url):
     """Log tracing events from a load of the given URL.
@@ -233,7 +157,8 @@ class AndroidRequestsLogger(object):
     simultaneously with network requests, but as that wasn't working the tracing
     logging was broken out separately. It still doesn't work...
     """
-    return self._DoSomeLogging('chrome', lambda: self._LogTracingInternal(url))
+    return device_setup.SetUpAndExecute(
+        self.device, 'chrome', lambda: self._LogTracingInternal(url))
 
 
 def _ResponseDataToJson(data):
