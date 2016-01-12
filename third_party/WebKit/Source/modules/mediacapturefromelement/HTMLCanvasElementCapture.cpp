@@ -26,14 +26,19 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
 
 MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, double frameRate, ExceptionState& exceptionState)
 {
+    if (frameRate < 0.0) {
+        exceptionState.throwDOMException(NotSupportedError, "Given frame rate is not supported.");
+        return nullptr;
+    }
+
     return HTMLCanvasElementCapture::captureStream(element, true, frameRate, exceptionState);
 }
 
 MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element, bool givenFrameRate, double frameRate, ExceptionState& exceptionState)
 {
     if (!element.originClean()) {
-        exceptionState.throwDOMException(SecurityError, "Canvas is not origin-clean.");
-        return MediaStream::create(element.executionContext());
+        exceptionState.throwSecurityError("Canvas is not origin-clean.");
+        return nullptr;
     }
 
     WebMediaStreamTrack track;
@@ -46,7 +51,7 @@ MediaStream* HTMLCanvasElementCapture::captureStream(HTMLCanvasElement& element,
     ASSERT(handler);
     if (!handler) {
         exceptionState.throwDOMException(NotSupportedError, "No CanvasCapture handler can be created.");
-        return MediaStream::create(element.executionContext());
+        return nullptr;
     }
 
     MediaStreamTrackVector tracks;
