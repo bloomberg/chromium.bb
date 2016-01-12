@@ -14,11 +14,10 @@ import sys
 import tempfile
 import threading
 
-#pylint: disable=relative-import
-import common_lib
-import process
-import rpc_server
-import jsonrpclib
+from legion.lib import common_lib
+from legion.lib import process
+from legion.lib.rpc import rpc_server
+from legion.lib.rpc import jsonrpclib
 
 ISOLATE_PY = os.path.join(common_lib.SWARMING_DIR, 'isolate.py')
 SWARMING_PY = os.path.join(common_lib.SWARMING_DIR, 'swarming.py')
@@ -90,6 +89,9 @@ class TaskController(object):
     self._swarming_server = args.swarming_server
     self._connection_timeout_secs = (connection_timeout_secs or
                                     args.task_connection_timeout_secs)
+
+    # Register for the shutdown event
+    common_lib.OnShutdown += self.Release
 
   @property
   def name(self):

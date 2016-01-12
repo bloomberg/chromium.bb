@@ -12,9 +12,8 @@ is based on an OTP passed to the run_task binary on startup.
 import logging
 import threading
 
-#pylint: disable=relative-import
-import common_lib
-import SimpleJSONRPCServer
+from legion.lib import common_lib
+from legion.lib.rpc import SimpleJSONRPCServer
 
 
 class TaskRegistrationServer(object):
@@ -25,6 +24,8 @@ class TaskRegistrationServer(object):
     self._rpc_server = None
     self._thread = None
     self._port = common_lib.GetUnusedPort()
+    # Register for the shutdown event
+    common_lib.OnShutdown += self.Shutdown
 
   @property
   def port(self):

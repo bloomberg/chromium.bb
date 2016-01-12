@@ -11,9 +11,8 @@ import socket
 import sys
 import threading
 
-#pylint: disable=relative-import
-import common_lib
-import process
+from legion.lib import common_lib
+from legion.lib import process
 
 
 class RPCMethods(object):

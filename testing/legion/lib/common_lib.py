@@ -8,12 +8,19 @@ import argparse
 import logging
 import os
 import socket
+import sys
+
+# pylint: disable=relative-import
+# Import event directly here since it is used to decorate a module-level method.
+import event
 
 LOGGING_LEVELS = ['DEBUG', 'INFO', 'WARNING', 'WARN', 'ERROR']
 MY_IP = socket.gethostbyname(socket.gethostname())
 DEFAULT_TIMEOUT_SECS = 30 * 60  # 30 minutes
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-SWARMING_DIR = os.path.join(THIS_DIR, '..', '..', 'tools', 'swarming_client')
+LEGION_IMPORT_FIX = os.path.join(THIS_DIR, '..', '..')
+SWARMING_DIR = os.path.join(THIS_DIR, '..', '..', '..', 'tools',
+                            'swarming_client')
 
 
 def InitLogging():
@@ -48,3 +55,29 @@ def GetUnusedPort():
   _, port = s.getsockname()
   s.close()
   return port
+
+
+def SetupEnvironment():
+  """Perform all environmental setup steps needed."""
+  InitLogging()
+  sys.path.append(LEGION_IMPORT_FIX)
+  sys.path.append(SWARMING_DIR)
+
+
+def Shutdown():
+  """Raises the on_shutdown event."""
+  OnShutdown()
+
+
+@event.Event
+def OnShutdown():
+  """Shutdown event dispatcher.
+
+  To use this simply use the following code example:
+  common_lib.OnShutdown += my_handler_method
+
+  my_handler_method will be called when OnShutdown is called (this is done via
+  the Shutdown method above, but can be called directly as well.
+  """
+  pass
+

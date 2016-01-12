@@ -11,9 +11,12 @@ import socket
 import sys
 import time
 
-#pylint: disable=relative-import
-import common_lib
-import rpc_server
+# pylint: disable=relative-import
+# Import common_lib first so we can setup the environment
+from lib import common_lib
+common_lib.SetupEnvironment()
+
+from legion.lib.rpc import rpc_server
 
 
 def main():

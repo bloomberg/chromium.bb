@@ -15,12 +15,7 @@ import sys
 import threading
 import time
 
-#pylint: disable=relative-import
-import common_lib
-
-# Map swarming_client to use subprocess42
-sys.path.append(common_lib.SWARMING_DIR)
-
+from legion.lib import common_lib
 from utils import subprocess42
 
 

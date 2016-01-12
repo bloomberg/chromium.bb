@@ -19,11 +19,10 @@ import threading
 import time
 import SocketServer
 
-#pylint: disable=relative-import
-import common_lib
-import jsonrpclib
-import rpc_methods
-import SimpleJSONRPCServer
+from legion.lib import common_lib
+from legion.lib.rpc import jsonrpclib
+from legion.lib.rpc import rpc_methods
+from legion.lib.rpc import SimpleJSONRPCServer
 
 
 class RequestHandler(SimpleJSONRPCServer.SimpleJSONRPCRequestHandler):

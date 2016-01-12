@@ -9,10 +9,9 @@ import ssl
 import subprocess
 import tempfile
 
-#pylint: disable=relative-import
-import common_lib
-import jsonrpclib
-import SimpleJSONRPCServer
+from legion.lib import common_lib
+from legion.lib.rpc import jsonrpclib
+from legion.lib.rpc import SimpleJSONRPCServer
 
 
 class Error(Exception):
