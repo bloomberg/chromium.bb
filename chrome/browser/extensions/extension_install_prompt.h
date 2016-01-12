@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,10 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "extensions/common/permissions/permission_message.h"
-#include "extensions/common/url_pattern.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 
 class ExtensionInstallPromptShowParams;
@@ -43,18 +40,15 @@ class BundleInstaller;
 class CrxInstallError;
 class Extension;
 class ExtensionInstallUI;
-class ExtensionWebstorePrivateApiTest;
-class MockGetAuthTokenFunction;
 class PermissionSet;
 }  // namespace extensions
 
-namespace infobars {
-class InfoBarDelegate;
+namespace gfx {
+class ImageSkia;
 }
 
 // Displays all the UI around extension installation.
-class ExtensionInstallPrompt
-    : public base::SupportsWeakPtr<ExtensionInstallPrompt> {
+class ExtensionInstallPrompt {
  public:
   // This enum is associated with Extensions.InstallPrompt_Type UMA histogram.
   // Do not modify existing values and add new values only to the end.
@@ -348,13 +342,7 @@ class ExtensionInstallPrompt
 
   bool did_call_show_dialog() const { return did_call_show_dialog_; }
 
- protected:
-  friend class extensions::ExtensionWebstorePrivateApiTest;
-  friend class WebstoreStartupInstallUnpackFailureTest;
-
  private:
-  friend class GalleryInstallApiTestObserver;
-
   // Sets the icon that will be used in any UI. If |icon| is NULL, or contains
   // an empty bitmap, then a default icon will be used instead.
   void SetIcon(const SkBitmap* icon);
@@ -402,6 +390,8 @@ class ExtensionInstallPrompt
 
   // Whether or not the |show_dialog_callback_| was called.
   bool did_call_show_dialog_;
+
+  base::WeakPtrFactory<ExtensionInstallPrompt> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstallPrompt);
 };

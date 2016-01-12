@@ -38,13 +38,12 @@
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_data.h"
-#include "extensions/common/url_pattern.h"
 #include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia.h"
 
 using extensions::BundleInstaller;
 using extensions::Extension;
@@ -623,7 +622,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(content::WebContents* contents)
       install_ui_(extensions::CreateExtensionInstallUI(
           ProfileForWebContents(contents))),
       show_params_(new ExtensionInstallPromptShowParams(contents)),
-      did_call_show_dialog_(false) {
+      did_call_show_dialog_(false),
+      weak_factory_(this) {
 }
 
 ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
@@ -634,7 +634,8 @@ ExtensionInstallPrompt::ExtensionInstallPrompt(Profile* profile,
       install_ui_(extensions::CreateExtensionInstallUI(profile)),
       show_params_(
           new ExtensionInstallPromptShowParams(profile, native_window)),
-      did_call_show_dialog_(false) {
+      did_call_show_dialog_(false),
+      weak_factory_(this) {
 }
 
 ExtensionInstallPrompt::~ExtensionInstallPrompt() {
@@ -751,7 +752,8 @@ void ExtensionInstallPrompt::LoadImageIfNeeded() {
   loader->LoadImagesAsync(
       extension_,
       images_list,
-      base::Bind(&ExtensionInstallPrompt::OnImageLoaded, AsWeakPtr()));
+      base::Bind(&ExtensionInstallPrompt::OnImageLoaded,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void ExtensionInstallPrompt::ShowConfirmation() {

@@ -30,6 +30,7 @@
 #include "extensions/common/url_pattern_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/skia_util.h"
 
 namespace extensions {
