@@ -746,9 +746,15 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
     DVLOG(1) << "input_callback_is_active: " << input_callback_is_active;
 
     if (!input_callback_is_active) {
-      // Now when we know that startup has failed for some reason, add extra
-      // UMA stats in an attempt to figure out the exact reason.
-      AddHistogramsForFailedStartup();
+      const bool agc = GetAutomaticGainControl();
+      UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac", agc);
+      // Only add UMA stat related to failing input audio for streams where
+      // the AGC has been enabled, e.g. WebRTC audio input streams.
+      if (agc) {
+        // Now when we know that startup has failed for some reason, add extra
+        // UMA stats in an attempt to figure out the exact reason.
+        AddHistogramsForFailedStartup();
+      }
     }
   }
 }
@@ -778,8 +784,6 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
-  UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
-                        GetAutomaticGainControl());
 }
 
 }  // namespace media
