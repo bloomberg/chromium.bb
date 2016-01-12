@@ -19,7 +19,6 @@
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 #include "third_party/skia/include/effects/SkMagnifierImageFilter.h"
-#include "third_party/skia/include/effects/SkRectShaderImageFilter.h"
 #include "ui/gfx/geometry/size_f.h"
 
 namespace cc {
