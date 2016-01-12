@@ -13,9 +13,6 @@
 #include "components/password_manager/core/browser/password_store.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-// TODO(sync): The PasswordFormData code must eventually be refactored away --
-// http://crbug.com/87185.
-
 namespace password_manager {
 
 // This template allows creating methods with signature conforming to
