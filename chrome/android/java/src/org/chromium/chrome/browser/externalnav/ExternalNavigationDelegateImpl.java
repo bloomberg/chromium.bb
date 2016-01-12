@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.TransactionTooLargeException;
 import android.provider.Browser;
+import android.provider.Telephony;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.util.Log;
@@ -406,6 +407,12 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     @Override
     public boolean isDocumentMode() {
         return FeatureUtilities.isDocumentMode(mActivity);
+    }
+
+    @Override
+    public String getDefaultSmsPackageName() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return null;
+        return Telephony.Sms.getDefaultSmsPackage(mActivity);
     }
 
     private static void logTransactionTooLargeOrRethrow(RuntimeException e, Intent intent) {

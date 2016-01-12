@@ -77,6 +77,9 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
     private static final String CALENDAR_URL = "http://www.google.com/calendar";
     private static final String KEEP_URL = "http://www.google.com/keep";
 
+    private static final String TEXT_APP_1_PACKAGE_NAME = "text_app_1";
+    private static final String TEXT_APP_2_PACKAGE_NAME = "text_app_2";
+
     private final TestExternalNavigationDelegate mDelegate;
     private ExternalNavigationHandler mUrlHandler;
 
@@ -1145,6 +1148,47 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 START_FILE);
     }
 
+    @SmallTest
+    public void testSms_DispatchIntentsToDefaultSmsApp() {
+        final String referer = "https://www.google.com/";
+        mDelegate.defaultSmsPackageName = TEXT_APP_2_PACKAGE_NAME;
+
+        check("sms:+012345678?body=hello%20there",
+                referer,
+                NORMAL_PROFILE,
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
+
+        assertNotNull(mDelegate.startActivityIntent);
+        assertEquals(TEXT_APP_2_PACKAGE_NAME, mDelegate.startActivityIntent.getPackage());
+    }
+
+    @SmallTest
+    public void testSms_DefaultSmsAppDoesNotHandleIntent() {
+        final String referer = "https://www.google.com/";
+        // Note that this package does not resolve the intent.
+        mDelegate.defaultSmsPackageName = "text_app_3";
+
+        check("sms:+012345678?body=hello%20there",
+                referer,
+                NORMAL_PROFILE,
+                PageTransition.LINK,
+                NO_REDIRECT,
+                true,
+                false,
+                null,
+                OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT,
+                START_ACTIVITY);
+
+        assertNotNull(mDelegate.startActivityIntent);
+        assertNull(mDelegate.startActivityIntent.getPackage());
+    }
+
     private static class TestExternalNavigationDelegate implements ExternalNavigationDelegate {
         private Context mContext;
 
@@ -1171,6 +1215,11 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
                 list.add(new ComponentName("plus", "plus"));
             } else if (intent.getDataString().startsWith(CALENDAR_URL)) {
                 list.add(new ComponentName("calendar", "calendar"));
+            } else if (intent.getDataString().startsWith("sms")) {
+                list.add(new ComponentName(
+                        TEXT_APP_1_PACKAGE_NAME, TEXT_APP_1_PACKAGE_NAME + ".cls"));
+                list.add(new ComponentName(
+                        TEXT_APP_2_PACKAGE_NAME, TEXT_APP_2_PACKAGE_NAME + ".cls"));
             } else {
                 list.add(new ComponentName("foo", "foo"));
             }
@@ -1244,6 +1293,11 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
             return FeatureUtilities.isDocumentMode(mContext);
         }
 
+        @Override
+        public String getDefaultSmsPackageName() {
+            return defaultSmsPackageName;
+        }
+
         public void reset() {
             startActivityIntent = null;
             startIncognitoIntentCalled = false;
@@ -1278,6 +1332,7 @@ public class ExternalNavigationHandlerTest extends InstrumentationTestCase {
 
         public boolean shouldRequestFileAccess;
         public boolean startFileIntentCalled;
+        public String defaultSmsPackageName;
     }
 
     private void checkIntentSanity(Intent intent, String name) {

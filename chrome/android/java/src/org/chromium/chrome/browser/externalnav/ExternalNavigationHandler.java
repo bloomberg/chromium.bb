@@ -38,6 +38,7 @@ public class ExternalNavigationHandler {
     private static final String TAG = "UrlHandler";
     private static final String SCHEME_WTAI = "wtai://wp/";
     private static final String SCHEME_WTAI_MC = "wtai://wp/mc;";
+    private static final String SCHEME_SMS = "sms:";
 
     @VisibleForTesting
     public static final String EXTRA_BROWSER_FALLBACK_URL = "browser_fallback_url";
@@ -264,7 +265,8 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        boolean canResolveActivity = mDelegate.queryIntentActivities(intent).size() > 0;
+        List<ComponentName> resolvingComponentNames = mDelegate.queryIntentActivities(intent);
+        boolean canResolveActivity = resolvingComponentNames.size() > 0;
         // check whether the intent can be resolved. If not, we will see
         // whether we can download it from the Market.
         if (!canResolveActivity) {
@@ -304,6 +306,10 @@ public class ExternalNavigationHandler {
         if (selector != null) {
             selector.addCategory(Intent.CATEGORY_BROWSABLE);
             selector.setComponent(null);
+        }
+
+        if (intent.getPackage() == null && params.getUrl().startsWith(SCHEME_SMS)) {
+            intent.setPackage(getDefaultSmsPackageName(resolvingComponentNames));
         }
 
         // Set the Browser application ID to us in case the user chooses Chrome
@@ -434,5 +440,23 @@ public class ExternalNavigationHandler {
             Log.w(TAG, "Bad URI " + url, ex);
         }
         return false;
+    }
+
+    /**
+     * Dispatch SMS intents to the default SMS application if applicable.
+     * Most SMS apps refuse to send SMS if not set as default SMS application.
+     *
+     * @param resolvingComponentNames The list of ComponentName that resolves the current intent.
+     */
+    private String getDefaultSmsPackageName(List<ComponentName> resolvingComponentNames) {
+        String defaultSmsPackageName = mDelegate.getDefaultSmsPackageName();
+        if (defaultSmsPackageName == null) return null;
+        // Makes sure that the default SMS app actually resolves the intent.
+        for (ComponentName componentName : resolvingComponentNames) {
+            if (defaultSmsPackageName.equals(componentName.getPackageName())) {
+                return defaultSmsPackageName;
+            }
+        }
+        return null;
     }
 }

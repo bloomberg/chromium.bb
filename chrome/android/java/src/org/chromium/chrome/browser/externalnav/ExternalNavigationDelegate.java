@@ -99,4 +99,9 @@ interface ExternalNavigationDelegate {
      * Check if Chrome is running in document mode.
      */
     boolean isDocumentMode();
+
+    /**
+     * @return Default SMS application's package name. Null if there isn't any.
+     */
+    String getDefaultSmsPackageName();
 }
