@@ -361,12 +361,6 @@ class BrowserWindow : public ui::BaseWindow {
   // Construct a BrowserWindow implementation for the specified |browser|.
   static BrowserWindow* CreateBrowserWindow(Browser* browser);
 
-  // Returns a HostDesktopType that is compatible with the current Chrome window
-  // configuration. On Windows with Ash, this is always HOST_DESKTOP_TYPE_ASH
-  // while Chrome is running in Metro mode. Otherwise returns |desktop_type|.
-  static chrome::HostDesktopType AdjustHostDesktopType(
-      chrome::HostDesktopType desktop_type);
-
   // Shows the avatar bubble on the window frame off of the avatar button with
   // the given mode. The Service Type specified by GAIA is provided as well.
   // |access_point| indicates the access point used to open the Gaia sign in

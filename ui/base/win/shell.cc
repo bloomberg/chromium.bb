@@ -16,7 +16,6 @@
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -99,10 +98,8 @@ bool OpenFolderViaShell(const base::FilePath& full_path) {
 bool PreventWindowFromPinning(HWND hwnd) {
   DCHECK(hwnd);
 
-  // This functionality is only available on Win7+. It also doesn't make sense
-  // to do this for Chrome Metro.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      base::win::IsMetroProcess())
+  // This functionality is only available on Win7+.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return false;
 
   base::win::ScopedComPtr<IPropertyStore> pps;
@@ -123,10 +120,8 @@ void SetAppDetailsForWindow(const base::string16& app_id,
                             HWND hwnd) {
   DCHECK(hwnd);
 
-  // This functionality is only available on Win7+. It also doesn't make sense
-  // to do this for Chrome Metro.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      base::win::IsMetroProcess())
+  // This functionality is only available on Win7+.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   base::win::ScopedComPtr<IPropertyStore> pps;
@@ -181,10 +176,8 @@ void SetRelaunchDetailsForWindow(const base::string16& relaunch_command,
 void ClearWindowPropertyStore(HWND hwnd) {
   DCHECK(hwnd);
 
-  // This functionality is only available on Win7+. It also doesn't make sense
-  // to do this for Chrome Metro.
-  if (base::win::GetVersion() < base::win::VERSION_WIN7 ||
-      base::win::IsMetroProcess())
+  // This functionality is only available on Win7+.
+  if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   base::win::ScopedComPtr<IPropertyStore> pps;

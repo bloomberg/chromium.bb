@@ -6,7 +6,6 @@
 
 #include "base/i18n/rtl.h"
 #include "base/strings/string_util.h"
-#include "base/win/metro.h"
 #include "base/win/win_util.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
@@ -215,9 +214,6 @@ void ShowSystemMenu(HWND window) {
 }
 
 void ShowSystemMenuAtPoint(HWND window, const Point& point) {
-  // In the Metro process, we never want to show the system menu.
-  if (base::win::IsMetroProcess())
-    return;
   UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
   if (base::i18n::IsRTL())
     flags |= TPM_RIGHTALIGN;
@@ -235,13 +231,7 @@ extern "C" {
 }
 
 HWND GetWindowToParentTo(bool get_real_hwnd) {
-  HMODULE metro = base::win::GetMetroModule();
-  if (!metro)
-    return get_real_hwnd ? ::GetDesktopWindow() : HWND_DESKTOP;
-  // In windows 8 metro-mode the root window is not the desktop.
-  RootWindow root_window =
-      reinterpret_cast<RootWindow>(::GetProcAddress(metro, "GetRootWindow"));
-  return root_window();
+  return get_real_hwnd ? ::GetDesktopWindow() : HWND_DESKTOP;
 }
 
 }  // namespace gfx

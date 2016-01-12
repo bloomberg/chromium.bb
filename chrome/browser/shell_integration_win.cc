@@ -603,8 +603,8 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(dist, is_per_user_install));
     if (check_dual_mode && expected_app_id == default_chromium_model_id) {
-      const bool dual_mode_desired =
-          InstallUtil::ShouldInstallMetroProperties();
+      // TODO(scottmg): Simplify with no Metro: http://crbug.com/558054.
+      const bool dual_mode_desired = false;
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {

@@ -214,7 +214,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <shellapi.h>
-#include "base/win/metro.h"
 #include "chrome/browser/task_manager/task_manager.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "components/autofill/core/browser/autofill_ie_toolbar_import_win.h"
@@ -383,8 +382,7 @@ Browser::Browser(const CreateParams& params)
       override_bounds_(params.initial_bounds),
       initial_show_state_(params.initial_show_state),
       is_session_restore_(params.is_session_restore),
-      host_desktop_type_(
-          BrowserWindow::AdjustHostDesktopType(params.host_desktop_type)),
+      host_desktop_type_(params.host_desktop_type),
       content_setting_bubble_model_delegate_(
           new BrowserContentSettingBubbleModelDelegate(this)),
       toolbar_model_delegate_(new BrowserToolbarModelDelegate(this)),

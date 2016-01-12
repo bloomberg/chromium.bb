@@ -15,10 +15,6 @@
 #include "gpu/config/gpu_feature_type.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
-
 namespace extensions {
 
 ChromeRequirementsChecker::ChromeRequirementsChecker()
@@ -41,12 +37,6 @@ void ChromeRequirementsChecker::Check(
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
     errors_.push_back(
         l10n_util::GetStringUTF8(IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
-#endif
-#if defined(OS_WIN)
-    if (base::win::IsMetroProcess()) {
-      errors_.push_back(
-          l10n_util::GetStringUTF8(IDS_EXTENSION_NPAPI_NOT_SUPPORTED));
-    }
 #endif
   }
 

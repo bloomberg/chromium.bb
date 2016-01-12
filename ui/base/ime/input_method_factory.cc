@@ -10,7 +10,6 @@
 #if defined(OS_CHROMEOS)
 #include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
-#include "base/win/metro.h"
 #include "ui/base/ime/input_method_win.h"
 #include "ui/base/ime/remote_input_method_win.h"
 #elif defined(OS_MACOSX)

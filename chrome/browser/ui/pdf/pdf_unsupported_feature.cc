@@ -38,7 +38,6 @@
 #include "ui/base/webui/jstemplate_builder.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "chrome/browser/ui/pdf/adobe_reader_info_win.h"
 #endif
 
@@ -275,9 +274,6 @@ base::string16 PDFUnsupportedFeaturePromptClient::GetMessageText() const {
 }
 
 base::string16 PDFUnsupportedFeaturePromptClient::GetAcceptButtonText() const {
-  if (base::win::IsMetroProcess())
-    return l10n_util::GetStringUTF16(IDS_PDF_BUBBLE_METRO_MODE_LINK);
-
   return l10n_util::GetStringUTF16(
       reader_info_.is_installed ? IDS_PDF_BUBBLE_OPEN_IN_READER_LINK
                                 : IDS_PDF_BUBBLE_INSTALL_READER_LINK);
@@ -293,11 +289,6 @@ bool PDFUnsupportedFeaturePromptClient::ShouldExpire(
 }
 
 void PDFUnsupportedFeaturePromptClient::Accept() {
-  if (base::win::IsMetroProcess()) {
-    chrome::AttemptRestartToDesktopMode();
-    return;
-  }
-
   if (!reader_info_.is_installed) {
     content::RecordAction(UserMetricsAction("PDF_InstallReaderInfoBarOK"));
     OpenReaderUpdateURL(web_contents_);

@@ -74,11 +74,9 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "base/win/shortcut.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/enumerate_modules_model_win.h"
-#include "chrome/browser/ui/metro_pin_tab_helper_win.h"
 #include "content/public/browser/gpu_data_manager.h"
 #endif
 
@@ -384,13 +382,7 @@ base::string16 AppMenuModel::GetLabelForCommandId(int command_id) const {
 #elif defined(OS_WIN)
     case IDC_PIN_TO_START_SCREEN: {
       int string_id = IDS_PIN_TO_START_SCREEN;
-      WebContents* web_contents =
-          browser_->tab_strip_model()->GetActiveWebContents();
-      MetroPinTabHelper* tab_helper =
-          web_contents ? MetroPinTabHelper::FromWebContents(web_contents)
-                       : NULL;
-      if (tab_helper && tab_helper->IsPinned())
-        string_id = IDS_UNPIN_FROM_START_SCREEN;
+      // TODO(scottmg): Remove http://crbug.com/558054.
       return l10n_util::GetStringUTF16(string_id);
     }
 #endif
@@ -770,7 +762,7 @@ bool AppMenuModel::IsCommandIdVisible(int command_id) const {
       return true;
     }
     case IDC_PIN_TO_START_SCREEN:
-      return base::win::IsMetroProcess();
+      return false;
 #else
     case IDC_VIEW_INCOMPATIBILITIES:
     case IDC_PIN_TO_START_SCREEN:

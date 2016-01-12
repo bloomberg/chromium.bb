@@ -1003,7 +1003,6 @@ if (is_win) {
     ]
     deps = [
       "//base",
-      "//chrome/browser/metro_utils",
       "//chrome/common:constants",
     ]
     if (enable_configuration_policy) {

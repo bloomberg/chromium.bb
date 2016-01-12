@@ -12,7 +12,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
-#include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/ui/views/apps/app_window_desktop_native_widget_aura_win.h"
@@ -37,16 +36,6 @@ ChromeNativeAppWindowViewsWin::ChromeNativeAppWindowViewsWin()
 }
 
 ChromeNativeAppWindowViewsWin::~ChromeNativeAppWindowViewsWin() {
-}
-
-void ChromeNativeAppWindowViewsWin::ActivateParentDesktopIfNecessary() {
-  // Only switching into Ash from Native is supported. Tearing the user out of
-  // Metro mode can only be done by launching a process from Metro mode itself.
-  // This is done for launching apps, but not regular activations.
-  if (IsRunningInAsh() &&
-      chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_NATIVE) {
-    chrome::ActivateMetroChrome();
-  }
 }
 
 HWND ChromeNativeAppWindowViewsWin::GetNativeAppWindowHWND() const {
@@ -147,16 +136,6 @@ ChromeNativeAppWindowViewsWin::CreateStandardDesktopAppFrame() {
     return glass_frame_view_;
   }
   return ChromeNativeAppWindowViewsAura::CreateStandardDesktopAppFrame();
-}
-
-void ChromeNativeAppWindowViewsWin::Show() {
-  ActivateParentDesktopIfNecessary();
-  ChromeNativeAppWindowViewsAura::Show();
-}
-
-void ChromeNativeAppWindowViewsWin::Activate() {
-  ActivateParentDesktopIfNecessary();
-  ChromeNativeAppWindowViewsAura::Activate();
 }
 
 bool ChromeNativeAppWindowViewsWin::CanMinimize() const {

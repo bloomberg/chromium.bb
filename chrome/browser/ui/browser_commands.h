@@ -103,9 +103,6 @@ bool CanBookmarkAllTabs(const Browser* browser);
 void SaveCreditCard(Browser* browser);
 void Translate(Browser* browser);
 void ManagePasswordsForPage(Browser* browser);
-#if defined(OS_WIN)
-void TogglePagePinnedToStartScreen(Browser* browser);
-#endif
 void SavePage(Browser* browser);
 bool CanSavePage(const Browser* browser);
 void ShowFindBar(Browser* browser);

@@ -17,7 +17,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
-#include "base/win/metro.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_switches.h"
 #include "ipc/ipc_channel.h"

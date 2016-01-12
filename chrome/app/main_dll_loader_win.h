@@ -55,7 +55,6 @@ class MainDllLoader {
  private:
   HMODULE dll_;
   std::string process_type_;
-  const bool metro_mode_;
 };
 
 // Factory for the MainDllLoader. Caller owns the pointer and should call

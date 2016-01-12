@@ -26,8 +26,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
   }
 
  private:
-  void ActivateParentDesktopIfNecessary();
-
   void OnShortcutInfoLoaded(
       const web_app::ShortcutInfo& shortcut_info);
 
@@ -43,10 +41,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
   void InitializeDefaultWindow(
       const extensions::AppWindow::CreateParams& create_params) override;
   views::NonClientFrameView* CreateStandardDesktopAppFrame() override;
-
-  // Overridden from ui::BaseWindow:
-  void Show() override;
-  void Activate() override;
 
   // Overridden from views::WidgetDelegate:
   bool CanMinimize() const override;

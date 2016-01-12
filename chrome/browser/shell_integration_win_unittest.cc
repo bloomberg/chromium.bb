@@ -36,9 +36,7 @@ struct ShortcutTestObject {
 
 class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
  protected:
-  ShellIntegrationWinMigrateShortcutTest()
-      : desired_dual_mode_for_os_version(
-            InstallUtil::ShouldInstallMetroProperties()) {}
+  ShellIntegrationWinMigrateShortcutTest() {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -264,10 +262,6 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
   // The app id of the example app for the non-default profile.
   base::string16 non_default_profile_extension_app_id_;
 
-  // True if the dual mode property should be set for the default chrome
-  // shortcut on the current OS version.
-  const bool desired_dual_mode_for_os_version;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(ShellIntegrationWinMigrateShortcutTest);
 };
@@ -322,13 +316,10 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, CheckDualMode) {
 
   // 9 shortcuts should have their app id updated below.
 
-  // If |desired_dual_mode_for_os_version| is true: shortcut 2 and 13 should
-  //   also be migrated to dual_mode for a total of 11 shortcuts migrated.
-  // If |desired_dual_mode_for_os_version| is false: shortcut 11 should
-  //   be migrate away from dual_mode for a total of 10 shortcuts migrated.
-  EXPECT_EQ(desired_dual_mode_for_os_version ? 11 : 10,
-            ShellIntegration::MigrateShortcutsInPathInternal(
-                chrome_exe_, temp_dir_.path(), true));
+  // shortcut 11 should be migrate away from dual_mode for a total of 10
+  // shortcuts migrated.
+  EXPECT_EQ(10, ShellIntegration::MigrateShortcutsInPathInternal(
+                    chrome_exe_, temp_dir_.path(), true));
 
   // Shortcut 1, 3, 4, 5, 6, 7, 8, 9, and 10 should have had both their app_id
   // fixed and shortcut 1, 2, 3, 4, and 5 should also have had their dual_mode
@@ -347,16 +338,7 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, CheckDualMode) {
 
   // Explicitly flag the expected dual_mode properties.
   shortcuts_[0].properties.set_dual_mode(false);
-  if (desired_dual_mode_for_os_version) {
-    shortcuts_[1].properties.set_dual_mode(true);
-    shortcuts_[2].properties.set_dual_mode(true);
-    shortcuts_[3].properties.set_dual_mode(true);
-    shortcuts_[4].properties.set_dual_mode(true);
-    shortcuts_[5].properties.set_dual_mode(true);
-    shortcuts_[12].properties.set_dual_mode(true);
-  } else {
-    shortcuts_[11].properties.set_dual_mode(false);
-  }
+  shortcuts_[11].properties.set_dual_mode(false);
   shortcuts_[6].properties.set_dual_mode(false);
   shortcuts_[7].properties.set_dual_mode(false);
   shortcuts_[8].properties.set_dual_mode(false);

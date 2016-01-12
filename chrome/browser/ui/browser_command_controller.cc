@@ -58,9 +58,7 @@
 #endif
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "base/win/windows_version.h"
-#include "chrome/browser/ui/apps/apps_metro_handler_win.h"
 #include "content/public/browser/gpu_data_manager.h"
 #endif
 
@@ -117,73 +115,6 @@ bool HasInternalURL(const NavigationEntry* entry) {
 
   return false;
 }
-
-#if defined(OS_WIN)
-// Windows 8 specific helper class to manage DefaultBrowserWorker. It does the
-// following asynchronous actions in order:
-// 1- Check that chrome is the default browser
-// 2- If we are the default, restart chrome in metro and exit
-// 3- If not the default browser show the 'select default browser' system dialog
-// 4- When dialog dismisses check again who got made the default
-// 5- If we are the default then restart chrome in metro and exit
-// 6- If we are not the default exit.
-//
-// Note: this class deletes itself.
-class SwitchToMetroUIHandler
-    : public ShellIntegration::DefaultWebClientObserver {
- public:
-  SwitchToMetroUIHandler()
-      : default_browser_worker_(
-            new ShellIntegration::DefaultBrowserWorker(this)),
-        first_check_(true) {
-    default_browser_worker_->StartCheckIsDefault();
-  }
-
-  ~SwitchToMetroUIHandler() override {
-    default_browser_worker_->ObserverDestroyed();
-  }
-
- private:
-  void SetDefaultWebClientUIState(
-      ShellIntegration::DefaultWebClientUIState state) override {
-    switch (state) {
-      case ShellIntegration::STATE_PROCESSING:
-        return;
-      case ShellIntegration::STATE_UNKNOWN :
-        break;
-      case ShellIntegration::STATE_IS_DEFAULT:
-        chrome::AttemptRestartToMetroMode();
-        break;
-      case ShellIntegration::STATE_NOT_DEFAULT:
-        if (first_check_) {
-          default_browser_worker_->StartSetAsDefault();
-          return;
-        }
-        break;
-      default:
-        NOTREACHED();
-    }
-    delete this;
-  }
-
-  void OnSetAsDefaultConcluded(bool success) override {
-    if (!success) {
-      delete this;
-      return;
-    }
-    first_check_ = false;
-  }
-
-  bool IsInteractiveSetDefaultPermitted() override {
-    return true;
-  }
-
-  scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
-  bool first_check_;
-
-  DISALLOW_COPY_AND_ASSIGN(SwitchToMetroUIHandler);
-};
-#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -499,32 +430,12 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_METRO_SNAP_DISABLE:
       browser_->SetMetroSnapMode(false);
       break;
+    // TODO(scottmg): Remove entirely http://crbug.com/558054.
     case IDC_WIN_DESKTOP_RESTART:
-      if (!VerifyASHSwitchForApps(window()->GetNativeWindow(), id))
-        break;
-
-      chrome::AttemptRestartToDesktopMode();
-      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-        content::RecordAction(base::UserMetricsAction("Win8DesktopRestart"));
-      } else {
-        content::RecordAction(base::UserMetricsAction("Win7DesktopRestart"));
-      }
       break;
+    // TODO(scottmg): Remove entirely http://crbug.com/558054.
     case IDC_WIN8_METRO_RESTART:
     case IDC_WIN_CHROMEOS_RESTART:
-      if (!VerifyASHSwitchForApps(window()->GetNativeWindow(), id))
-        break;
-      if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
-        // SwitchToMetroUIHandler deletes itself.
-        new SwitchToMetroUIHandler;
-        content::RecordAction(base::UserMetricsAction("Win8MetroRestart"));
-      } else {
-        content::RecordAction(base::UserMetricsAction("Win7ASHRestart"));
-        chrome::AttemptRestartToMetroMode();
-      }
-      break;
-    case IDC_PIN_TO_START_SCREEN:
-      TogglePagePinnedToStartScreen(browser_);
       break;
 #endif
 

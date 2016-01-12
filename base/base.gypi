@@ -732,8 +732,6 @@
           'win/iunknown_impl.h',
           'win/message_window.cc',
           'win/message_window.h',
-          'win/metro.cc',
-          'win/metro.h',
           'win/object_watcher.cc',
           'win/object_watcher.h',
           'win/process_startup_helper.cc',

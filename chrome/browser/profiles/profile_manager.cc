@@ -110,7 +110,6 @@
 #endif  // !defined (OS_IOS)
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 

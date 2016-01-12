@@ -12,7 +12,6 @@
       ],
       'dependencies': [
         '../base/base.gyp:base',
-        '../chrome/chrome.gyp:metro_utils',
         '../chrome/common_constants.gyp:common_constants',
       ],
       'conditions': [

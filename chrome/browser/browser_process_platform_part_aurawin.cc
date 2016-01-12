@@ -56,7 +56,6 @@ void BrowserProcessPlatformPart::PlatformSpecificCommandLineProcessing(
         command_line.GetSwitchValueNative(
             switches::kViewerLaunchViaAppId)));
   }
-
 }
 
 void BrowserProcessPlatformPart::Observe(
@@ -68,17 +67,6 @@ void BrowserProcessPlatformPart::Observe(
   PrefService* pref_service = g_browser_process->local_state();
   bool is_relaunch = pref_service->GetBoolean(prefs::kWasRestarted);
   if (is_relaunch) {
-    upgrade_util::RelaunchMode mode =
-        upgrade_util::RelaunchModeStringToEnum(
-            pref_service->GetString(prefs::kRelaunchMode));
-    if (metro_viewer_process_host_.get()) {
-      if (mode == upgrade_util::RELAUNCH_MODE_DESKTOP) {
-        // Metro -> Desktop
-        chrome::ActivateDesktopHelper(chrome::ASH_TERMINATE);
-      } else {
-        // Metro -> Metro
-        ChromeMetroViewerProcessHost::HandleMetroExit();
-      }
-    }
+    // TODO(scottmg): A lot of this can be removed http://crbug.com/558054.
   }
 }

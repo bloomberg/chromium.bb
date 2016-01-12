@@ -46,10 +46,6 @@
 #include "extensions/common/manifest_handlers/webview_info.h"
 #endif
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
-
 #if !defined(DISABLE_NACL)
 #include "components/nacl/common/nacl_constants.h"
 #endif
@@ -347,13 +343,6 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
     const WebPluginInfo& plugin,
     const PluginMetadata* plugin_metadata,
     ChromeViewHostMsg_GetPluginInfo_Status* status) const {
-#if defined(OS_WIN)
-  if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI &&
-      base::win::IsMetroProcess()) {
-    *status = ChromeViewHostMsg_GetPluginInfo_Status::kNPAPINotSupported;
-    return;
-  }
-#endif
   if (plugin.type == WebPluginInfo::PLUGIN_TYPE_NPAPI) {
     CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
     // NPAPI plugins are not supported inside <webview> guests.

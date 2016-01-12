@@ -122,11 +122,6 @@ void ChromeMetroViewerProcessHost::OnChannelConnected(int32_t /*peer_pid*/) {
   // Set environment variable to let breakpad know that metro process was
   // connected.
   ::SetEnvironmentVariableA(env_vars::kMetroConnected, "1");
-
-  if (!content::GpuDataManager::GetInstance()->GpuAccessAllowed(NULL)) {
-    DVLOG(1) << "No GPU access, attempting to restart in Desktop\n";
-    chrome::AttemptRestartToDesktopMode();
-  }
 }
 
 void ChromeMetroViewerProcessHost::OnSetTargetSurface(

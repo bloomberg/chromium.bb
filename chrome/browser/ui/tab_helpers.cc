@@ -73,10 +73,6 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #endif  // BUILDFLAG(ANDROID_JAVA_UI)
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/metro_pin_tab_helper_win.h"
-#endif
-
 #if defined(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "chrome/browser/captive_portal/captive_portal_tab_helper.h"
 #endif
@@ -210,10 +206,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (banners::AppBannerManagerDesktop::IsEnabled()) {
     banners::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   }
-#endif
-
-#if defined(OS_WIN)
-  MetroPinTabHelper::CreateForWebContents(web_contents);
 #endif
 
   // --- Feature tab helpers behind flags ---

@@ -13,7 +13,6 @@
 #include "base/metrics/histogram.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/win/metro.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
@@ -378,10 +377,8 @@ VideoCaptureDeviceFactoryWin::VideoCaptureDeviceFactoryWin() {
   // 8 in non-Metro mode.
   const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   use_media_foundation_ =
-      (base::win::IsMetroProcess() &&
-       !cmd_line->HasSwitch(switches::kForceDirectShowVideoCapture)) ||
-      (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-       cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture));
+      base::win::GetVersion() >= base::win::VERSION_WIN7 &&
+      cmd_line->HasSwitch(switches::kForceMediaFoundationVideoCapture);
 }
 
 scoped_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::Create(

@@ -19,7 +19,6 @@
 #include "base/process/process.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
-#include "base/win/metro.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -51,31 +50,17 @@ bool LaunchSetupForEula(const base::FilePath::StringType& value,
   base::CommandLine cl(base::CommandLine::NO_PROGRAM);
   cl.AppendSwitchNative(installer::switches::kShowEula, value);
 
-  if (base::win::IsMetroProcess()) {
-    cl.AppendSwitch(installer::switches::kShowEulaForMetro);
+  base::CommandLine setup_path(exe_path);
+  setup_path.AppendArguments(cl, false);
 
-    // This obscure use of the 'log usage' mask for windows 8 is documented here
-    // http://go.microsoft.com/fwlink/?LinkID=243079. It causes the desktop
-    // process to receive focus. Pass SEE_MASK_FLAG_NO_UI to avoid hangs if an
-    // error occurs since the UI can't be shown from a metro process.
-    ui::win::OpenAnyViaShell(exe_path.value(),
-                             exe_dir.value(),
-                             cl.GetCommandLineString(),
-                             SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_FLAG_NO_UI);
+  base::Process process =
+      base::LaunchProcess(setup_path, base::LaunchOptions());
+  int exit_code = 0;
+  if (!process.IsValid() || !process.WaitForExit(&exit_code))
     return false;
-  } else {
-    base::CommandLine setup_path(exe_path);
-    setup_path.AppendArguments(cl, false);
 
-    base::Process process =
-        base::LaunchProcess(setup_path, base::LaunchOptions());
-    int exit_code = 0;
-    if (!process.IsValid() || !process.WaitForExit(&exit_code))
-      return false;
-
-    *ret_code = exit_code;
-    return true;
-  }
+  *ret_code = exit_code;
+  return true;
 }
 
 // Returns true if the EULA is required but has not been accepted by this user.

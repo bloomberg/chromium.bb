@@ -20,9 +20,3 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
       l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
   return view;
 }
-
-// static
-chrome::HostDesktopType BrowserWindow::AdjustHostDesktopType(
-    chrome::HostDesktopType desktop_type) {
-  return NativeBrowserFrameFactory::AdjustHostDesktopType(desktop_type);
-}

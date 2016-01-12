@@ -32,10 +32,6 @@ class Version;
 // independently.
 class InstallUtil {
  public:
-  // Returns true if properties that enable Metro mode on Win8+ should be
-  // installed.
-  static bool ShouldInstallMetroProperties();
-
   // Get the path to this distribution's Active Setup registry entries.
   // e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
   static base::string16 GetActiveSetupPath(BrowserDistribution* dist);

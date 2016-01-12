@@ -25,7 +25,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
@@ -162,73 +161,8 @@ bool RelaunchChromeHelper(const base::CommandLine& command_line,
   chrome_exe_command_line.SetProgram(
       chrome_exe.DirName().Append(installer::kChromeExe));
 
-  // Relaunch directly if Chrome doesn't support Metro-mode on this platform
-  // unless an explicit relaunch mode was specified (e.g. for the Ash shell on
-  // Win7).
-  if (!base::win::IsChromeMetroSupported() &&
-      relaunch_mode != RELAUNCH_MODE_METRO &&
-      relaunch_mode != RELAUNCH_MODE_DESKTOP) {
-    return base::LaunchProcess(chrome_exe_command_line,
-                               base::LaunchOptions()).IsValid();
-  }
-
-  // On Windows 8 we always use the delegate_execute for re-launching chrome.
-  // On Windows 7 we use delegate_execute for re-launching chrome into Windows
-  // ASH.
-  //
-  // Pass this Chrome's Start Menu shortcut path to the relauncher so it can re-
-  // activate chrome via ShellExecute which will wait until we exit. Since
-  // ShellExecute does not support handle passing to the child process we create
-  // a uniquely named mutex that we aquire and never release. So when we exit,
-  // Windows marks our mutex as abandoned and the wait is satisfied. The format
-  // of the named mutex is important. See DelegateExecuteOperation for more
-  // details.
-  base::string16 mutex_name =
-      base::StringPrintf(L"chrome.relaunch.%d", ::GetCurrentProcessId());
-  HANDLE mutex = ::CreateMutexW(NULL, TRUE, mutex_name.c_str());
-  // The |mutex| handle needs to be leaked. See comment above.
-  if (!mutex) {
-    NOTREACHED();
-    return false;
-  }
-  if (::GetLastError() == ERROR_ALREADY_EXISTS) {
-    NOTREACHED() << "Relaunch mutex already exists";
-    return false;
-  }
-
-  base::CommandLine relaunch_cmd(base::CommandLine::NO_PROGRAM);
-  relaunch_cmd.AppendSwitchPath(switches::kRelaunchShortcut,
-      ShellIntegration::GetStartMenuShortcut(chrome_exe));
-  relaunch_cmd.AppendSwitchNative(switches::kWaitForMutex, mutex_name);
-
-  if (relaunch_mode != RELAUNCH_MODE_DEFAULT) {
-    relaunch_cmd.AppendSwitch(relaunch_mode == RELAUNCH_MODE_METRO?
-        switches::kForceImmersive : switches::kForceDesktop);
-  }
-
-  base::string16 params(relaunch_cmd.GetCommandLineString());
-  base::string16 path(GetMetroRelauncherPath(chrome_exe, version_str).value());
-
-  SHELLEXECUTEINFO sei = { sizeof(sei) };
-  sei.fMask = SEE_MASK_FLAG_LOG_USAGE | SEE_MASK_NOCLOSEPROCESS;
-  sei.nShow = SW_SHOWNORMAL;
-  sei.lpFile = path.c_str();
-  sei.lpParameters = params.c_str();
-
-  if (!::ShellExecuteExW(&sei)) {
-    NOTREACHED() << "ShellExecute failed with " << GetLastError();
-    return false;
-  }
-  DWORD pid = ::GetProcessId(sei.hProcess);
-  CloseHandle(sei.hProcess);
-  if (!pid)
-    return false;
-  // The next call appears to be needed if we are relaunching from desktop into
-  // metro mode. The observed effect if not done is that chrome starts in metro
-  // mode but it is not given focus and it gets killed by windows after a few
-  // seconds.
-  ::AllowSetForegroundWindow(pid);
-  return true;
+  return base::LaunchProcess(chrome_exe_command_line, base::LaunchOptions())
+      .IsValid();
 }
 
 bool RelaunchChromeBrowser(const base::CommandLine& command_line) {
@@ -308,8 +242,6 @@ bool DoUpgradeTasks(const base::CommandLine& command_line) {
   // The DelegateExecute verb handler finalizes pending in-use updates for
   // metro mode launches, as Chrome cannot be gracefully relaunched when
   // running in this mode.
-  if (base::win::IsMetroProcess())
-    return false;
   if (!SwapNewChromeExeIfPresent() && !IsRunningOldChrome())
     return false;
   // At this point the chrome.exe has been swapped with the new one.

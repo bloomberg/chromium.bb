@@ -21,7 +21,6 @@
 #include "ui/gfx/screen.h"
 
 #if defined(OS_WIN)
-#include "base/win/metro.h"
 #include "ui/gfx/win/dpi.h"
 #include <Windows.h>
 #endif  // defined(OS_WIN)

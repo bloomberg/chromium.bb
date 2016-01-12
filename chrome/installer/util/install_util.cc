@@ -27,7 +27,6 @@
 #include "base/sys_info.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_constants.h"
@@ -130,13 +129,6 @@ HWND CreateUACForegroundWindow() {
 
 }  // namespace
 
-bool InstallUtil::ShouldInstallMetroProperties() {
-  // Install Metro properties on Windows versions that Chrome supports as well
-  // as on any version prior to Win8 to ease in-place upgrades to Win8.
-  return base::win::IsChromeMetroSupported() ||
-         base::win::GetVersion() < base::win::VERSION_WIN8;
-}
-
 base::string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
   static const wchar_t kInstalledComponentsPath[] =
       L"Software\\Microsoft\\Active Setup\\Installed Components\\";
@@ -163,8 +155,6 @@ void InstallUtil::TriggerActiveSetupCommand() {
   cmd.AppendSwitch(installer::switches::kForceConfigureUserSettings);
 
   base::LaunchOptions launch_options;
-  if (base::win::IsMetroProcess())
-    launch_options.force_breakaway_from_job_ = true;
   base::Process process =
       base::LaunchProcess(cmd.GetCommandLineString(), launch_options);
   if (!process.IsValid())

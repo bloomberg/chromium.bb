@@ -39,9 +39,6 @@
 #include "ui/gfx/vector_icons_public.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
 #include "chrome/browser/plugins/plugin_installer.h"
 #include "chrome/browser/plugins/plugin_installer_observer.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
@@ -438,10 +435,6 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
 
 void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
 #if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
-#if !defined(USE_AURA)
-  DCHECK(base::win::IsMetroProcess());
-#endif
-
   scoped_ptr<PluginMetadata> plugin;
   bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
       identifier, NULL, &plugin);

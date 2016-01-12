@@ -85,10 +85,6 @@
 #include "net/base/escape.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/ui/metro_pin_tab_helper_win.h"
-#endif
-
 #if defined(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
@@ -847,14 +843,6 @@ void ManagePasswordsForPage(Browser* browser) {
   TabDialogs::FromWebContents(web_contents)->ShowManagePasswordsBubble(
       !controller->IsAutomaticallyOpeningBubble());
 }
-
-#if defined(OS_WIN)
-void TogglePagePinnedToStartScreen(Browser* browser) {
-  MetroPinTabHelper::FromWebContents(
-      browser->tab_strip_model()->GetActiveWebContents())->
-          TogglePinnedToStartScreen();
-}
-#endif
 
 void SavePage(Browser* browser) {
   content::RecordAction(UserMetricsAction("SavePage"));

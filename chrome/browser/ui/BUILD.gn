@@ -390,7 +390,6 @@ source_set("ui") {
       "//ui/views/controls/webview",
     ]
     deps += [
-      "//chrome/browser/metro_utils",
       "//chrome/installer/util:strings",
       "//components/search_engines",
       "//google_update",

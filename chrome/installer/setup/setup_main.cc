@@ -976,8 +976,6 @@ installer::InstallStatus RegisterDevChrome(
     // Create the Start menu shortcut and pin it to the Win7+ taskbar.
     ShellUtil::ShortcutProperties shortcut_properties(ShellUtil::CURRENT_USER);
     chrome.AddDefaultShortcutProperties(chrome_exe, &shortcut_properties);
-    if (InstallUtil::ShouldInstallMetroProperties())
-      shortcut_properties.set_dual_mode(true);
     shortcut_properties.set_pin_to_taskbar(true);
     ShellUtil::CreateOrUpdateShortcut(
         ShellUtil::SHORTCUT_LOCATION_START_MENU_ROOT, chrome_dist,

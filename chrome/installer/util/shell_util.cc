@@ -36,7 +36,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/values.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_comptr.h"
@@ -300,10 +299,7 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
     entries->push_back(new RegistryEntry(
         prog_id_path + ShellUtil::kRegShellOpen, ShellUtil::kRegDelegateExecute,
         app_info.delegate_clsid));
-    // If Metro is not supported, remove the DelegateExecute entry instead of
-    // adding it.
-    if (!base::win::IsChromeMetroSupported())
-      entries->back()->set_removal_flag(RegistryEntry::RemovalFlag::VALUE);
+    entries->back()->set_removal_flag(RegistryEntry::RemovalFlag::VALUE);
   }
 
   // The following entries are required as of Windows 8, but do not
@@ -381,12 +377,10 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
   if (!app_info.delegate_clsid.empty()) {
     ScopedVector<RegistryEntry> delegate_execute_entries =
         GetChromeDelegateExecuteEntries(chrome_exe, app_info);
-    if (!base::win::IsChromeMetroSupported()) {
-      // Remove the keys (not only their values) so that Windows will continue
-      // to launch Chrome without a pesky association error.
-      for (RegistryEntry* entry : delegate_execute_entries)
-        entry->set_removal_flag(RegistryEntry::RemovalFlag::KEY);
-    }
+    // Remove the keys (not only their values) so that Windows will continue
+    // to launch Chrome without a pesky association error.
+    for (RegistryEntry* entry : delegate_execute_entries)
+      entry->set_removal_flag(RegistryEntry::RemovalFlag::KEY);
     // Move |delegate_execute_entries| to |entries|.
     entries->insert(entries->end(), delegate_execute_entries.begin(),
                     delegate_execute_entries.end());

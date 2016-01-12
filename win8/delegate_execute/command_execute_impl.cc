@@ -14,7 +14,6 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
@@ -487,26 +486,7 @@ EC_HOST_UI_MODE CommandExecuteImpl::GetLaunchMode() {
     return launch_mode;
   }
 
-  if (!base::win::IsChromeMetroSupported()) {
-    launch_mode = ECHUIM_DESKTOP;
-    launch_mode_determined = true;
-    return launch_mode;
-  }
-
-  // Use the previous mode if available. Else launch in desktop mode.
-  DWORD reg_value;
-  if (reg_key.ReadValueDW(chrome::kLaunchModeValue,
-                          &reg_value) != ERROR_SUCCESS) {
-    launch_mode = ECHUIM_DESKTOP;
-    AtlTrace("Can't read registry, defaulting to %s\n", modes[launch_mode]);
-  } else if (reg_value >= ECHUIM_SYSTEM_LAUNCHER) {
-    AtlTrace("Invalid registry launch mode value %u\n", reg_value);
-    launch_mode = ECHUIM_DESKTOP;
-  } else {
-    launch_mode = static_cast<EC_HOST_UI_MODE>(reg_value);
-    AtlTrace("Launch mode forced by registry to %s\n", modes[launch_mode]);
-  }
-
+  launch_mode = ECHUIM_DESKTOP;
   launch_mode_determined = true;
   return launch_mode;
 }

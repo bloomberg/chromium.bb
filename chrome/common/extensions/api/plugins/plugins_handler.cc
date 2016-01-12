@@ -20,10 +20,6 @@
 #include "extensions/common/permissions/api_permission_set.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
-
 namespace extensions {
 
 namespace keys = manifest_keys;
@@ -102,17 +98,13 @@ bool PluginsHandler::Parse(Extension* extension, base::string16* error) {
       }
     }
 
-    // We don't allow extensions to load NPAPI plugins on Chrome OS, or under
-    // Windows 8 Metro mode, but still parse the entries to display consistent
-    // error messages. If the extension actually requires the plugins then
-    // LoadRequirements will prevent it loading.
+    // We don't allow extensions to load NPAPI plugins on Chrome OS, but still
+    // parse the entries to display consistent error messages. If the extension
+    // actually requires the plugins then LoadRequirements will prevent it
+    // loading.
 #if defined(OS_CHROMEOS)
     continue;
-#elif defined(OS_WIN)
-    if (base::win::IsMetroProcess()) {
-      continue;
-    }
-#endif  // defined(OS_WIN).
+#endif  // defined(OS_CHROMEOS).
     plugins_data->plugins.push_back(PluginInfo(
         extension->path().Append(base::FilePath::FromUTF8Unsafe(path_str)),
         is_public));

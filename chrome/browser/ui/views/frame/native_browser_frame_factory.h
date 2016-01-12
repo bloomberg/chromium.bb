@@ -24,11 +24,6 @@ class NativeBrowserFrameFactory {
   // factory. Use null to go back to default factory.
   static void Set(NativeBrowserFrameFactory* new_factory);
 
-  // Returns HOST_DESKTOP_TYPE_ASH on Windows when configured to allow browser
-  // windows only in Metro mode, otherwise |desktop_type|.
-  static chrome::HostDesktopType AdjustHostDesktopType(
-      chrome::HostDesktopType desktop_type);
-
   virtual NativeBrowserFrame* Create(BrowserFrame* browser_frame,
                                      BrowserView* browser_view);
 
@@ -37,10 +32,6 @@ class NativeBrowserFrameFactory {
   virtual ~NativeBrowserFrameFactory() {}
 
  private:
-  // For Chrome running on desktop platforms, returns true if the factory should
-  // create an ash browser frame for the provided |browser_view|.
-  static bool ShouldCreateForAshDesktop(BrowserView* browser_view);
-
   DISALLOW_COPY_AND_ASSIGN(NativeBrowserFrameFactory);
 };
 

@@ -25,7 +25,6 @@
 #include "base/scoped_native_library.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -279,21 +278,6 @@ int DoUninstallTasks(bool chrome_still_running) {
 ChromeBrowserMainPartsWin::ChromeBrowserMainPartsWin(
     const content::MainFunctionParams& parameters)
     : ChromeBrowserMainParts(parameters) {
-  if (base::win::IsMetroProcess()) {
-    typedef const wchar_t* (*GetMetroSwitches)(void);
-    GetMetroSwitches metro_switches_proc = reinterpret_cast<GetMetroSwitches>(
-        GetProcAddress(base::win::GetMetroModule(),
-                       "GetMetroCommandLineSwitches"));
-    if (metro_switches_proc) {
-      base::string16 metro_switches = (*metro_switches_proc)();
-      if (!metro_switches.empty()) {
-        base::CommandLine extra_switches(base::CommandLine::NO_PROGRAM);
-        extra_switches.ParseFromString(metro_switches);
-        base::CommandLine::ForCurrentProcess()->AppendArguments(extra_switches,
-                                                                false);
-      }
-    }
-  }
 }
 
 ChromeBrowserMainPartsWin::~ChromeBrowserMainPartsWin() {
@@ -544,10 +528,6 @@ bool ChromeBrowserMainPartsWin::CheckMachineLevelInstall() {
         sei.nShow = SW_SHOWNORMAL;
         sei.lpFile = setup_exe.value().c_str();
         sei.lpParameters = params.c_str();
-        // On Windows 8 SEE_MASK_FLAG_LOG_USAGE is necessary to guarantee we
-        // flip to the Desktop when launching.
-        if (base::win::IsMetroProcess())
-          sei.fMask |= SEE_MASK_FLAG_LOG_USAGE;
 
         if (!::ShellExecuteEx(&sei))
           DPCHECK(false);

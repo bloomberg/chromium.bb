@@ -30,7 +30,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "base/win/metro.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_handle.h"
@@ -531,8 +530,6 @@ bool DismissVirtualKeyboard() {
   }
   return false;
 }
-
-typedef HWND (*MetroRootWindow) ();
 
 enum DomainEnrollementState {UNKNOWN = -1, NOT_ENROLLED, ENROLLED};
 static volatile long int g_domain_state = UNKNOWN;

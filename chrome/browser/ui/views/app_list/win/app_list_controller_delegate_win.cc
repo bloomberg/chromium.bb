@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
-#include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -31,14 +30,4 @@ gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
 
 void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
   params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
-  extensions::AppWindow* any_existing_window =
-      extensions::AppWindowRegistry::Get(params->profile)
-          ->GetCurrentAppWindowForApp(params->extension_id);
-  if (any_existing_window &&
-      chrome::GetHostDesktopTypeForNativeWindow(
-          any_existing_window->GetNativeWindow())
-      != chrome::HOST_DESKTOP_TYPE_NATIVE) {
-    params->desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
-    chrome::ActivateMetroChrome();
-  }
 }

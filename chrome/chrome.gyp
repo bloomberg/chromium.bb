@@ -462,7 +462,6 @@
       'includes': [
         'chrome_watcher/chrome_watcher.gypi',
         'chrome_process_finder.gypi',
-        'metro_utils.gypi',
       ],
     }],  # OS=="win"
     ['OS=="win" and target_arch=="ia32"',

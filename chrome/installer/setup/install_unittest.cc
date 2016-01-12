@@ -90,8 +90,7 @@ class InstallShortcutTest : public testing::Test {
     expected_properties_.set_description(chrome_properties.description);
     expected_properties_.set_dual_mode(false);
     expected_start_menu_properties_ = expected_properties_;
-    expected_start_menu_properties_.set_dual_mode(
-        InstallUtil::ShouldInstallMetroProperties());
+    expected_start_menu_properties_.set_dual_mode(false);
 
     prefs_.reset(GetFakeMasterPrefs(false, false));
 

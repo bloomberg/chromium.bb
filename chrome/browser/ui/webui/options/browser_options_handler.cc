@@ -1586,21 +1586,6 @@ void BrowserOptionsHandler::HandleDefaultZoomFactor(
 }
 
 void BrowserOptionsHandler::HandleRestartBrowser(const base::ListValue* args) {
-#if defined(OS_WIN) && defined(USE_ASH)
-  // If hardware acceleration is disabled then we need to force restart
-  // browser in desktop mode.
-  // TODO(shrikant): Remove this once we fix start mode logic for browser.
-  // Currently there are issues with determining correct browser mode
-  // at startup.
-  if (chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-    PrefService* pref_service = g_browser_process->local_state();
-    if (!pref_service->GetBoolean(prefs::kHardwareAccelerationModeEnabled)) {
-      chrome::AttemptRestartToDesktopMode();
-      return;
-    }
-  }
-#endif
-
 #if defined(OS_WIN)
   // On Windows Breakpad will upload crash reports if the breakpad pipe name
   // environment variable is defined. So we undefine this environment variable

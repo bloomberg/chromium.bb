@@ -30,9 +30,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
-#if defined(OS_WIN)
-#include "base/win/metro.h"
-#endif
 #include "chrome/browser/plugins/plugin_installer.h"
 #endif
 
@@ -277,7 +274,7 @@ void LaunchDesktopInstanceHelper(const base::string16& url) {
 }
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-  chrome::AttemptRestartToDesktopMode();
+  // TODO(scottmg): Remove this entire class http://crbug.com/558054.
   return true;
 }
 

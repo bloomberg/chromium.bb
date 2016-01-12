@@ -24,8 +24,6 @@ class NavigationMetricsRecorder
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) override;
 
-  void DidStartLoading() override;
-
   DISALLOW_COPY_AND_ASSIGN(NavigationMetricsRecorder);
 };
 

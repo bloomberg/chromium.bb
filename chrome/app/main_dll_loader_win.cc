@@ -26,7 +26,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/metro.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "chrome/app/chrome_crash_reporter_client.h"
@@ -61,7 +60,7 @@ typedef void (*RelaunchChromeBrowserWithNewCommandLineIfNeededFunc)();
 
 // Loads |module| after setting the CWD to |module|'s directory. Returns a
 // reference to the loaded module on success, or null on error.
-HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
+HMODULE LoadModuleWithDirectory(const base::FilePath& module) {
   ::SetCurrentDirectoryW(module.DirName().value().c_str());
 
   // Get pre-read options from the PreRead field trial.
@@ -75,7 +74,7 @@ HMODULE LoadModuleWithDirectory(const base::FilePath& module, bool pre_read) {
       &trial_prefetch_virtual_memory);
 
   // Pre-read the binary to warm the memory caches (avoids a lot of random IO).
-  if (pre_read && !trial_no_pre_read) {
+  if (!trial_no_pre_read) {
     base::ThreadPriority previous_priority = base::ThreadPriority::NORMAL;
     if (trial_high_priority) {
       previous_priority = base::PlatformThread::GetCurrentThreadPriority();
@@ -166,7 +165,7 @@ std::wstring GetProfileType() {
 //=============================================================================
 
 MainDllLoader::MainDllLoader()
-    : dll_(nullptr), metro_mode_(base::win::IsMetroProcess()) {
+    : dll_(nullptr) {
 }
 
 MainDllLoader::~MainDllLoader() {
@@ -180,9 +179,7 @@ MainDllLoader::~MainDllLoader() {
 // installed build.
 HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
   const base::char16* dll_name = nullptr;
-  if (metro_mode_) {
-    dll_name = installer::kChromeMetroDll;
-  } else if (process_type_ == "service" || process_type_.empty()) {
+  if (process_type_ == "service" || process_type_.empty()) {
     dll_name = installer::kChromeDll;
   } else if (process_type_ == "watcher") {
     dll_name = kChromeWatcherDll;
@@ -199,8 +196,7 @@ HMODULE MainDllLoader::Load(base::string16* version, base::FilePath* module) {
     PLOG(ERROR) << "Cannot find module " << dll_name;
     return nullptr;
   }
-  const bool pre_read = !metro_mode_;
-  HMODULE dll = LoadModuleWithDirectory(*module, pre_read);
+  HMODULE dll = LoadModuleWithDirectory(*module);
   if (!dll) {
     PLOG(ERROR) << "Failed to load Chrome DLL from " << module->value();
     return nullptr;
@@ -219,16 +215,6 @@ int MainDllLoader::Launch(HINSTANCE instance) {
 
   base::string16 version;
   base::FilePath file;
-
-  if (metro_mode_) {
-    HMODULE metro_dll = Load(&version, &file);
-    if (!metro_dll)
-      return chrome::RESULT_CODE_MISSING_DATA;
-
-    InitMetro chrome_metro_main =
-        reinterpret_cast<InitMetro>(::GetProcAddress(metro_dll, "InitMetro"));
-    return chrome_metro_main();
-  }
 
   if (process_type_ == "watcher") {
     chrome::RegisterPathProvider();

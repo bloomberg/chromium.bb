@@ -326,7 +326,6 @@
       'browser/lifetime/application_lifetime.cc',
       'browser/lifetime/application_lifetime.h',
       'browser/lifetime/application_lifetime_mac.mm',
-      'browser/lifetime/application_lifetime_win.cc',
       'browser/mac/bluetooth_utility.h',
       'browser/mac/bluetooth_utility.mm',
       'browser/mac/dock.h',

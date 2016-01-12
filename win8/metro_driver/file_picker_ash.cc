@@ -14,7 +14,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/win/metro.h"
 #include "base/win/scoped_comptr.h"
 #include "ui/metro_viewer/metro_viewer_messages.h"
 #include "win8/metro_driver/chrome_app_view_ash.h"
