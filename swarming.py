@@ -1052,7 +1052,7 @@ def CMDbots(parser, args):
 
     # If the user requested to filter on dimensions, ensure the bot has all the
     # dimensions requested.
-    dimensions = {i['key']: i['value'] for i in bot['dimensions']}
+    dimensions = {i['key']: i.get('value') for i in bot['dimensions']}
     for key, value in options.dimensions:
       if key not in dimensions:
         break
