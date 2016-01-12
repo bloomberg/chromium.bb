@@ -3821,6 +3821,11 @@ bool CSSPropertyParser::parseBorderImageOutset(RefPtrWillBeRawPtr<CSSQuadValue>&
 
 bool CSSPropertyParser::parseRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4], RefPtrWillBeRawPtr<CSSPrimitiveValue> radii2[4], CSSParserValueList* args, CSSPropertyID unresolvedProperty)
 {
+#if ENABLE(OILPAN)
+    // Unconditionally zero initialize the arrays of raw pointers.
+    memset(&radii, 0, 4 * sizeof(radii[0]));
+    memset(&radii2, 0, 4 * sizeof(radii2[0]));
+#endif
     CSSParserValue* value = args->current();
     int i;
     for (i = 0; i < 4 && value && value->m_unit != CSSParserValue::Operator;++i, value = args->next()) {
