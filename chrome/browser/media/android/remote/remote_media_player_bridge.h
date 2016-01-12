@@ -115,11 +115,6 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   // are retrieved.
   void OnCookiesRetrieved(const std::string& cookies);
 
-  // Prepare the player for playback, asynchronously. When succeeds,
-  // OnMediaPrepared() will be called. Otherwise, OnMediaError() will
-  // be called with an error type.
-  void Prepare();
-
   long start_position_millis_;
   MediaPlayerAndroid* local_player_;
   int width_;
