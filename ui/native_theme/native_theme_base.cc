@@ -173,8 +173,8 @@ void NativeThemeBase::PaintStateTransition(SkCanvas* canvas,
   switch (part) {
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
-      PaintScrollbarThumbStateTransition(
-          canvas, startState, endState, progress, rect);
+      PaintScrollbarThumbStateTransition(canvas, part, startState, endState,
+                                         progress, rect);
       break;
     default:
       NOTREACHED() << "Does not support state transition for this part:"

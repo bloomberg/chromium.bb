@@ -10,63 +10,60 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "ui/base/layout.h"
-#include "ui/base/nine_image_painter_factory.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/nine_image_painter.h"
 #include "ui/gfx/path.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/common_theme.h"
 #include "ui/native_theme/native_theme_switches.h"
-#include "ui/resources/grit/ui_resources.h"
-
-using gfx::NineImagePainter;
-
-#define EMPTY_IMAGE_GRID { 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 namespace ui {
 
 namespace {
 
-const int kScrollbarThumbImages[NativeTheme::kNumStates][9] = {
-  EMPTY_IMAGE_GRID,
-  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_HOVER),
-  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_NORMAL),
-  IMAGE_GRID(IDR_SCROLLBAR_THUMB_BASE_PRESSED)
-};
+SkAlpha ThumbAlphaForState(NativeTheme::State state) {
+  bool overlay = IsOverlayScrollbarEnabled();
+  switch (state) {
+    case NativeTheme::kDisabled:
+      return 0x00;
+    case NativeTheme::kHovered:
+      return overlay ? 0xB2 : 0x4D;
+    case NativeTheme::kNormal:
+      return overlay ? 0x8C : 0x33;
+    case NativeTheme::kPressed:
+      return overlay ? 0xB2 : 0x80;
+    case NativeTheme::kNumStates:
+      break;
+  }
 
-const int kScrollbarArrowButtonImages[NativeTheme::kNumStates][9] = {
-  EMPTY_IMAGE_GRID,
-  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_HOVER),
-  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_NORMAL),
-  IMAGE_GRID(IDR_SCROLLBAR_ARROW_BUTTON_BASE_PRESSED)
-};
+  NOTREACHED();
+  return 0xFF;
+}
 
-const uint8_t kScrollbarOverlayThumbFillAlphas[NativeTheme::kNumStates] = {
-    0,    // Does not matter, will not paint for disabled state.
-    178,  // Hover state, opacity 70%, alpha would be 0.7 * 255.
-    140,  // Normal state, opacity 55%, alpha would be 0.55 * 255.
-    178   // Pressed state, opacity 70%, alpha would be 0.7 * 255.
-};
+SkAlpha ThumbStrokeAlphaForState(NativeTheme::State state) {
+  DCHECK(IsOverlayScrollbarEnabled());
+  switch (state) {
+    case NativeTheme::kDisabled:
+      return 0x00;
+    case NativeTheme::kHovered:
+    case NativeTheme::kPressed:
+      return 0x33;
+    case NativeTheme::kNormal:
+      return 0x26;
+    case NativeTheme::kNumStates:
+      break;
+  }
 
-const uint8_t kScrollbarOverlayThumbStrokeAlphas[NativeTheme::kNumStates] = {
-    0,   // Does not matter, will not paint for disabled state.
-    51,  // Hover state, opacity 20%, alpha would be 0.2 * 255.
-    38,  // Normal state, opacity 15%, alpha would be 0.15 * 255.
-    51   // Pressed state, opacity 20%, alpha would be 0.2 * 255.
-};
+  NOTREACHED();
+  return 0xFF;
+}
 
-const int kScrollbarOverlayThumbStrokeImages[9] =
-    IMAGE_GRID_NO_CENTER(IDR_SCROLLBAR_OVERLAY_THUMB_STROKE);
-
-const int kScrollbarOverlayThumbFillImages[9] =
-    IMAGE_GRID(IDR_SCROLLBAR_OVERLAY_THUMB_FILL);
-
-const int kScrollbarTrackImages[9] = IMAGE_GRID(IDR_SCROLLBAR_BASE);
+const SkColor kTrackColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
 }  // namespace
 
@@ -137,106 +134,101 @@ void NativeThemeAura::PaintMenuItemBackground(
   CommonThemePaintMenuItemBackground(canvas, state, rect);
 }
 
-void NativeThemeAura::PaintArrowButton(
-      SkCanvas* gc,
-      const gfx::Rect& rect,
-      Part direction,
-      State state) const {
-  if (direction == kInnerSpinButton) {
-    NativeThemeBase::PaintArrowButton(gc, rect, direction, state);
-    return;
-  }
-  PaintPainter(GetOrCreatePainter(
-                   kScrollbarArrowButtonImages, state,
-                   scrollbar_arrow_button_painters_),
-               gc, rect);
-
+void NativeThemeAura::PaintArrowButton(SkCanvas* canvas,
+                                       const gfx::Rect& rect,
+                                       Part direction,
+                                       State state) const {
+  SkColor bg_color = kTrackColor;
   // Aura-win uses slightly different arrow colors.
-  SkColor arrow_color = GetArrowColor(state);
+  SkColor arrow_color = gfx::kPlaceholderColor;
   switch (state) {
+    case kDisabled:
+      arrow_color = GetArrowColor(state);
+      break;
     case kHovered:
+      bg_color = SkColorSetRGB(0xD2, 0xD2, 0xD2);
+    // Fall through.
     case kNormal:
       arrow_color = SkColorSetRGB(0x50, 0x50, 0x50);
       break;
     case kPressed:
+      bg_color = SkColorSetRGB(0x78, 0x78, 0x78);
       arrow_color = SK_ColorWHITE;
-    default:
+      break;
+    case kNumStates:
       break;
   }
-  PaintArrow(gc, rect, direction, arrow_color);
+  DCHECK_NE(arrow_color, gfx::kPlaceholderColor);
+
+  SkPaint paint;
+  paint.setColor(bg_color);
+  canvas->drawIRect(gfx::RectToSkIRect(rect), paint);
+
+  PaintArrow(canvas, rect, direction, arrow_color);
 }
 
 void NativeThemeAura::PaintScrollbarTrack(
-    SkCanvas* sk_canvas,
+    SkCanvas* canvas,
     Part part,
     State state,
     const ScrollbarTrackExtraParams& extra_params,
     const gfx::Rect& rect) const {
   // Overlay Scrollbar should never paint a scrollbar track.
   DCHECK(!IsOverlayScrollbarEnabled());
-  if (!scrollbar_track_painter_)
-    scrollbar_track_painter_ = CreateNineImagePainter(kScrollbarTrackImages);
-  PaintPainter(scrollbar_track_painter_.get(), sk_canvas, rect);
+  SkPaint paint;
+  paint.setColor(kTrackColor);
+  canvas->drawIRect(gfx::RectToSkIRect(rect), paint);
 }
 
-void NativeThemeAura::PaintScrollbarThumb(SkCanvas* sk_canvas,
+void NativeThemeAura::PaintScrollbarThumb(SkCanvas* canvas,
                                           Part part,
                                           State state,
                                           const gfx::Rect& rect) const {
-  gfx::Rect thumb_rect(rect);
-  if (IsOverlayScrollbarEnabled()) {
-    // Overlay scrollbar has no track, just paint thumb directly.
-    // Do not paint if state is disabled.
-    if (state == kDisabled)
-      return;
-
-    if (!scrollbar_overlay_thumb_painter_) {
-      scrollbar_overlay_thumb_painter_ =
-          CreateDualPainter(kScrollbarOverlayThumbFillImages,
-                            kScrollbarOverlayThumbFillAlphas,
-                            kScrollbarOverlayThumbStrokeImages,
-                            kScrollbarOverlayThumbStrokeAlphas);
-    }
-
-    PaintDualPainter(
-        scrollbar_overlay_thumb_painter_.get(), sk_canvas, thumb_rect, state);
+  // Do not paint if state is disabled.
+  if (state == kDisabled)
     return;
-  }
-  // If there are no scrollbuttons then provide some padding so that thumb
-  // doesn't touch the top of the track.
-  const int extra_padding = (scrollbar_button_length() == 0) ? 2 : 0;
-  if (part == NativeTheme::kScrollbarVerticalThumb)
-    thumb_rect.Inset(2, extra_padding, 2, extra_padding);
-  else
-    thumb_rect.Inset(extra_padding, 2, extra_padding, 2);
-  PaintPainter(GetOrCreatePainter(
-                   kScrollbarThumbImages, state, scrollbar_thumb_painters_),
-               sk_canvas,
-               thumb_rect);
+
+  PaintScrollbarThumbStateTransition(canvas, part, state, state, 1.0, rect);
 }
 
 void NativeThemeAura::PaintScrollbarThumbStateTransition(
     SkCanvas* canvas,
-    State startState,
-    State endState,
+    Part part,
+    State start_state,
+    State end_state,
     double progress,
     const gfx::Rect& rect) const {
-  // Only Overlay scrollbars should have state transition animation.
-  DCHECK(IsOverlayScrollbarEnabled());
-  if (!scrollbar_overlay_thumb_painter_) {
-    scrollbar_overlay_thumb_painter_ =
-        CreateDualPainter(kScrollbarOverlayThumbFillImages,
-                          kScrollbarOverlayThumbFillAlphas,
-                          kScrollbarOverlayThumbStrokeImages,
-                          kScrollbarOverlayThumbStrokeAlphas);
+  gfx::Rect thumb_rect(rect);
+  if (IsOverlayScrollbarEnabled()) {
+    // In overlay mode, draw a stroke (border).
+    const int kStrokeWidth = 1;
+    SkAlpha stroke_alpha = gfx::Tween::IntValueBetween(
+        progress, ThumbStrokeAlphaForState(start_state),
+        ThumbStrokeAlphaForState(end_state));
+    SkPaint paint;
+    paint.setColor(SkColorSetA(SK_ColorWHITE, stroke_alpha));
+    paint.setStyle(SkPaint::kStroke_Style);
+    paint.setStrokeWidth(kStrokeWidth);
+    canvas->drawIRect(gfx::RectToSkIRect(thumb_rect), paint);
+
+    thumb_rect.Inset(kStrokeWidth, kStrokeWidth, kStrokeWidth, kStrokeWidth);
+  } else {
+    // If there are no scrollbuttons then provide some padding so that the thumb
+    // doesn't touch the top of the track.
+    const int kThumbPadding = 2;
+    const int extra_padding =
+        (scrollbar_button_length() == 0) ? kThumbPadding : 0;
+    if (part == NativeTheme::kScrollbarVerticalThumb)
+      thumb_rect.Inset(kThumbPadding, extra_padding);
+    else
+      thumb_rect.Inset(extra_padding, kThumbPadding);
   }
 
-  PaintDualPainterTransition(scrollbar_overlay_thumb_painter_.get(),
-                             canvas,
-                             rect,
-                             startState,
-                             endState,
-                             progress);
+  SkPaint paint;
+  SkAlpha alpha = gfx::Tween::IntValueBetween(
+      progress, ThumbAlphaForState(start_state), ThumbAlphaForState(end_state));
+  paint.setColor(SkColorSetA(SK_ColorBLACK, alpha));
+  canvas->drawIRect(gfx::RectToSkIRect(thumb_rect), paint);
 }
 
 void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
@@ -245,93 +237,8 @@ void NativeThemeAura::PaintScrollbarCorner(SkCanvas* canvas,
   // Overlay Scrollbar should never paint a scrollbar corner.
   DCHECK(!IsOverlayScrollbarEnabled());
   SkPaint paint;
-  paint.setColor(SkColorSetRGB(0xF1, 0xF1, 0xF1));
-  paint.setStyle(SkPaint::kFill_Style);
-  paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+  paint.setColor(SkColorSetRGB(0xDC, 0xDC, 0xDC));
   canvas->drawIRect(RectToSkIRect(rect), paint);
 }
-
-NineImagePainter* NativeThemeAura::GetOrCreatePainter(
-    const int images[kNumStates][9],
-    State state,
-    scoped_ptr<NineImagePainter> painters[kNumStates]) const {
-  if (painters[state])
-    return painters[state].get();
-  if (images[state][0] == 0) {
-    // Must always provide normal state images.
-    DCHECK_NE(kNormal, state);
-    return GetOrCreatePainter(images, kNormal, painters);
-  }
-  painters[state] = CreateNineImagePainter(images[state]);
-  return painters[state].get();
-}
-
-void NativeThemeAura::PaintPainter(NineImagePainter* painter,
-                                   SkCanvas* sk_canvas,
-                                   const gfx::Rect& rect) const {
-  DCHECK(painter);
-  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  painter->Paint(canvas.get(), rect);
-}
-
-scoped_ptr<NativeThemeAura::DualPainter> NativeThemeAura::CreateDualPainter(
-    const int fill_image_ids[9],
-    const uint8_t fill_alphas[kNumStates],
-    const int stroke_image_ids[9],
-    const uint8_t stroke_alphas[kNumStates]) const {
-  scoped_ptr<NativeThemeAura::DualPainter> dual_painter(
-      new NativeThemeAura::DualPainter(CreateNineImagePainter(fill_image_ids),
-                                       fill_alphas,
-                                       CreateNineImagePainter(stroke_image_ids),
-                                       stroke_alphas));
-  return dual_painter;
-}
-
-void NativeThemeAura::PaintDualPainter(
-    NativeThemeAura::DualPainter* dual_painter,
-    SkCanvas* sk_canvas,
-    const gfx::Rect& rect,
-    State state) const {
-  DCHECK(dual_painter);
-  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  dual_painter->fill_painter->Paint(
-      canvas.get(), rect, dual_painter->fill_alphas[state]);
-  dual_painter->stroke_painter->Paint(
-      canvas.get(), rect, dual_painter->stroke_alphas[state]);
-}
-
-void NativeThemeAura::PaintDualPainterTransition(
-    NativeThemeAura::DualPainter* dual_painter,
-    SkCanvas* sk_canvas,
-    const gfx::Rect& rect,
-    State startState,
-    State endState,
-    double progress) const {
-  DCHECK(dual_painter);
-  scoped_ptr<gfx::Canvas> canvas(CommonThemeCreateCanvas(sk_canvas));
-  uint8_t fill_alpha = dual_painter->fill_alphas[startState] +
-                       (dual_painter->fill_alphas[endState] -
-                        dual_painter->fill_alphas[startState]) *
-                           progress;
-  uint8_t stroke_alpha = dual_painter->stroke_alphas[startState] +
-                         (dual_painter->stroke_alphas[endState] -
-                          dual_painter->stroke_alphas[startState]) *
-                             progress;
-
-  dual_painter->fill_painter->Paint(canvas.get(), rect, fill_alpha);
-  dual_painter->stroke_painter->Paint(canvas.get(), rect, stroke_alpha);
-}
-
-NativeThemeAura::DualPainter::DualPainter(
-    scoped_ptr<NineImagePainter> fill_painter,
-    const uint8_t fill_alphas[kNumStates],
-    scoped_ptr<NineImagePainter> stroke_painter,
-    const uint8_t stroke_alphas[kNumStates])
-    : fill_painter(std::move(fill_painter)),
-      fill_alphas(fill_alphas),
-      stroke_painter(std::move(stroke_painter)),
-      stroke_alphas(stroke_alphas) {}
-
-NativeThemeAura::DualPainter::~DualPainter() {}
 
 }  // namespace ui

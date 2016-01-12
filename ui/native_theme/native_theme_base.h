@@ -134,12 +134,13 @@ class NATIVE_THEME_EXPORT NativeThemeBase : public NativeTheme {
       const gfx::Rect& rect,
       const ProgressBarExtraParams& progress_bar) const;
 
-  virtual void PaintScrollbarThumbStateTransition(
-      SkCanvas* canvas,
-      State startState,
-      State endState,
-      double progress,
-      const gfx::Rect& rect) const {}
+  virtual void PaintScrollbarThumbStateTransition(SkCanvas* canvas,
+                                                  Part part,
+                                                  State startState,
+                                                  State endState,
+                                                  double progress,
+                                                  const gfx::Rect& rect) const {
+  }
 
   // Shrinks checkbox/radio button rect, if necessary, to make room for padding
   // and drop shadow.
