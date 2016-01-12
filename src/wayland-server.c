@@ -313,7 +313,6 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		closure = wl_connection_demarshal(client->connection, size,
 						  &client->objects, message);
-		len -= size;
 
 		if (closure == NULL && errno == ENOMEM) {
 			wl_resource_post_no_memory(resource);
@@ -346,6 +345,8 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 
 		if (client->error)
 			break;
+
+		len = wl_connection_pending_input(connection);
 	}
 
 	if (client->error)

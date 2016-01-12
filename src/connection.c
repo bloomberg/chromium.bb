@@ -314,6 +314,12 @@ wl_connection_flush(struct wl_connection *connection)
 	return connection->out.head - tail;
 }
 
+uint32_t
+wl_connection_pending_input(struct wl_connection *connection)
+{
+	return wl_buffer_size(&connection->in);
+}
+
 int
 wl_connection_read(struct wl_connection *connection)
 {
@@ -350,7 +356,7 @@ wl_connection_read(struct wl_connection *connection)
 
 	connection->in.head += len;
 
-	return connection->in.head - connection->in.tail;
+	return wl_connection_pending_input(connection);
 }
 
 int
