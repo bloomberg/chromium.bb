@@ -5638,7 +5638,7 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
       SyncToken sync_token;
       memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
 
-      if (!sync_token.verified_flush()) {
+      if (sync_token.HasData() && !sync_token.verified_flush()) {
         if (!gpu_control_->CanWaitUnverifiedSyncToken(&sync_token)) {
           SetGLError(GL_INVALID_VALUE, "glVerifySyncTokensCHROMIUM",
                      "Cannot verify sync token using this context.");
@@ -5661,11 +5661,13 @@ void GLES2Implementation::VerifySyncTokensCHROMIUM(GLbyte **sync_tokens,
 
     // We can automatically mark everything as verified now.
     for (GLsizei i = 0; i < count; ++i) {
-      SyncToken sync_token;
-      memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
-      if (!sync_token.verified_flush()) {
-        sync_token.SetVerifyFlush();
-        memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
+      if (sync_tokens[i]) {
+        SyncToken sync_token;
+        memcpy(&sync_token, sync_tokens[i], sizeof(sync_token));
+        if (sync_token.HasData() && !sync_token.verified_flush()) {
+          sync_token.SetVerifyFlush();
+          memcpy(sync_tokens[i], &sync_token, sizeof(sync_token));
+        }
       }
     }
   }

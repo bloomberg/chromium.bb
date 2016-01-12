@@ -1149,7 +1149,7 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
   bool need_sync_token = false;
 
   gpu::SyncToken new_sync_token;
-  std::vector<GLbyte*> unverified_sync_tokens;
+  std::vector<size_t> unverified_token_indexes;
   for (ResourceIdArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
@@ -1160,12 +1160,20 @@ void ResourceProvider::PrepareSendToParent(const ResourceIdArray& resources,
 
     if (resource.mailbox_holder.sync_token.HasData() &&
         !resource.mailbox_holder.sync_token.verified_flush()) {
-      unverified_sync_tokens.push_back(
-          resource.mailbox_holder.sync_token.GetData());
+      unverified_token_indexes.push_back(list->size());
     }
 
     ++resources_.find(*it)->second.exported_count;
     list->push_back(resource);
+  }
+
+  // Fill out unverified sync tokens array.
+  std::vector<GLbyte*> unverified_sync_tokens;
+  unverified_sync_tokens.reserve(unverified_token_indexes.size() + 1);
+  for (auto it = unverified_token_indexes.begin();
+       it != unverified_token_indexes.end(); ++it) {
+    unverified_sync_tokens.push_back(
+        list->at(*it).mailbox_holder.sync_token.GetData());
   }
 
   if (need_sync_token &&
