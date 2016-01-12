@@ -390,6 +390,11 @@ public class TouchInputHandler implements TouchInputHandlerInterface {
             }
 
             if (pointerCount == 2 && mSwipePinchDetector.isSwiping()) {
+                if (!mInputStrategy.isIndirectInputMode()) {
+                    // Ensure the cursor is located at the coordinates of the original event,
+                    // otherwise the target window may not receive the scroll event correctly.
+                    moveCursorToScreenPoint(e1.getX(), e1.getY());
+                }
                 mInputStrategy.onScroll(distanceX, distanceY);
 
                 // Prevent the cursor being moved or flung by the gesture.
