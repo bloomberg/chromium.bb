@@ -389,7 +389,7 @@ class SingleTestRunner(object):
                 args = self._port.lookup_physical_reference_args(self._test_name)
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
-            driver_input = DriverInput(reference_test_name, self._timeout, image_hash=None, should_run_pixel_test=True, args=args)
+            driver_input = DriverInput(reference_test_name, self._timeout, image_hash=test_output.image_hash, should_run_pixel_test=True, args=args)
             reference_output = self._reference_driver.run_test(driver_input, self._stop_when_done)
             total_test_time += reference_output.test_time
             test_result = self._compare_output_with_reference(reference_output, test_output, reference_filename, expectation == '!=')
@@ -423,14 +423,7 @@ class SingleTestRunner(object):
             failures.append(test_failures.FailureReftestNoImagesGenerated(reference_filename))
         elif mismatch:
             if reference_driver_output.image_hash == actual_driver_output.image_hash:
-                diff, err_str = self._port.diff_image(reference_driver_output.image, actual_driver_output.image)
-                if not diff:
-                    failures.append(test_failures.FailureReftestMismatchDidNotOccur(reference_filename))
-                elif err_str:
-                    _log.error(err_str)
-                else:
-                    _log.warning("  %s -> ref test hashes matched but diff failed" % self._test_name)
-
+                failures.append(test_failures.FailureReftestMismatchDidNotOccur(reference_filename))
         elif reference_driver_output.image_hash != actual_driver_output.image_hash:
             diff, err_str = self._port.diff_image(reference_driver_output.image, actual_driver_output.image)
             if diff:
