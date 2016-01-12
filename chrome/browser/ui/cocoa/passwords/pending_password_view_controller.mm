@@ -126,7 +126,8 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   int titleWidth = kDesiredBubbleWidth - kFramePadding - titleRightPadding;
   [titleView setVerticallyResizable:YES];
   [titleView setFrameSize:NSMakeSize(titleWidth, MAXFLOAT)];
-  [[titleView textContainer] setLineFragmentPadding:0];
+  // Set the same text inset as in |passwordRow|.
+  [[titleView textContainer] setLineFragmentPadding:kTitleTextInset];
   [titleView sizeToFit];
 
   [view addSubview:titleView];
