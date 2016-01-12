@@ -6,8 +6,8 @@
 
 BrowsingDataRemoverCompletionObserver::BrowsingDataRemoverCompletionObserver(
     BrowsingDataRemover* remover)
-    : message_loop_runner_(new content::MessageLoopRunner) {
-  remover->AddObserver(this);
+    : message_loop_runner_(new content::MessageLoopRunner), observer_(this) {
+  observer_.Add(remover);
 }
 
 BrowsingDataRemoverCompletionObserver::
@@ -18,6 +18,7 @@ void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
 }
 
 void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
+  observer_.RemoveAll();
   message_loop_runner_->Quit();
 }
 

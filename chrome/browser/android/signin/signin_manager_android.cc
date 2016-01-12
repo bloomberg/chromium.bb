@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/oauth2_token_service_delegate_android.h"
@@ -58,9 +59,10 @@ class ProfileDataRemover : public BrowsingDataRemover::Observer {
   ProfileDataRemover(Profile* profile, const base::Closure& callback)
       : callback_(callback),
         origin_runner_(base::ThreadTaskRunnerHandle::Get()),
-        remover_(BrowsingDataRemover::CreateForUnboundedRange(profile)) {
+        remover_(BrowsingDataRemoverFactory::GetForBrowserContext(profile)) {
     remover_->AddObserver(this);
-    remover_->Remove(BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
+    remover_->Remove(BrowsingDataRemover::Unbounded(),
+                     BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
   }
 
   ~ProfileDataRemover() override {}

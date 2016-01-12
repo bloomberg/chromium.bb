@@ -9,6 +9,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
@@ -87,10 +88,11 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
   }
 
   void RemoveAndWait(int remove_mask) {
-    BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
-        browser()->profile(), BrowsingDataRemover::LAST_HOUR);
+    BrowsingDataRemover* remover =
+        BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+    remover->Remove(BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
+                    remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
     completion_observer.BlockUntilCompletion();
   }
 };

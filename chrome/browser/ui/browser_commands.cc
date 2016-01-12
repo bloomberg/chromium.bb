@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/dom_distiller/tab_utils.h"
@@ -1178,8 +1179,9 @@ void ToggleFullscreenMode(Browser* browser) {
 
 void ClearCache(Browser* browser) {
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(browser->profile());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser->profile());
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover takes care of deleting itself when done.
 }

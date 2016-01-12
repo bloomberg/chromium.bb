@@ -7,9 +7,12 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "content/public/test/test_utils.h"
 
+// This class can be used to wait for a BrowsingDataRemover to complete
+// operation. It is not suitable for repeated use.
 class BrowsingDataRemoverCompletionObserver
     : public BrowsingDataRemover::Observer {
  public:
@@ -24,6 +27,7 @@ class BrowsingDataRemoverCompletionObserver
 
  private:
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionObserver);
 };

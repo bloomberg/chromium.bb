@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/extensions/api/browsing_data/browsing_data_api.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/profiles/profile.h"
@@ -259,20 +260,21 @@ class ExtensionBrowsingDataTest : public InProcessBrowserTest {
   scoped_ptr<BrowsingDataRemover::NotificationDetails> called_with_details_;
 
   BrowsingDataRemover::CallbackSubscription callback_subscription_;
-
 };
 
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowsingDataTest, OneAtATime) {
-  BrowsingDataRemover::set_removing(true);
+  BrowsingDataRemover* browsing_data_remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+  browsing_data_remover->SetRemoving(true);
   scoped_refptr<BrowsingDataRemoveFunction> function =
       new BrowsingDataRemoveFunction();
   EXPECT_TRUE(base::MatchPattern(
       RunFunctionAndReturnError(function.get(), kRemoveEverythingArguments,
                                 browser()),
       extension_browsing_data_api_constants::kOneAtATimeError));
-  BrowsingDataRemover::set_removing(false);
+  browsing_data_remover->SetRemoving(false);
 
   EXPECT_EQ(base::Time(), GetBeginTime());
   EXPECT_EQ(-1, GetRemovalMask());

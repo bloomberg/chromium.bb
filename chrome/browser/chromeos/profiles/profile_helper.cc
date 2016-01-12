@@ -9,6 +9,8 @@
 #include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -73,11 +75,8 @@ ProfileHelper::~ProfileHelper() {
   if (user_manager::UserManager::IsInitialized())
     user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
 
-  if (browsing_data_remover_) {
+  if (browsing_data_remover_)
     browsing_data_remover_->RemoveObserver(this);
-    // BrowsingDataRemover deletes itself.
-    browsing_data_remover_ = nullptr;
-  }
 }
 
 // static
@@ -230,9 +229,10 @@ void ProfileHelper::ClearSigninProfile(const base::Closure& on_clear_callback) {
   if (profile_manager->GetProfileByPath(GetSigninProfileDir())) {
     LOG_ASSERT(!browsing_data_remover_);
     browsing_data_remover_ =
-        BrowsingDataRemover::CreateForUnboundedRange(GetSigninProfile());
+        BrowsingDataRemoverFactory::GetForBrowserContext(GetSigninProfile());
     browsing_data_remover_->AddObserver(this);
-    browsing_data_remover_->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+    browsing_data_remover_->Remove(BrowsingDataRemover::Unbounded(),
+                                   BrowsingDataRemover::REMOVE_SITE_DATA,
                                    BrowsingDataHelper::ALL);
   } else {
     on_clear_profile_stage_finished_.Run();
@@ -374,7 +374,6 @@ void ProfileHelper::OnSigninProfileCleared() {
 void ProfileHelper::OnBrowsingDataRemoverDone() {
   LOG_ASSERT(browsing_data_remover_);
   browsing_data_remover_->RemoveObserver(this);
-  // BrowsingDataRemover deletes itself.
   browsing_data_remover_ = nullptr;
 
   on_clear_profile_stage_finished_.Run();

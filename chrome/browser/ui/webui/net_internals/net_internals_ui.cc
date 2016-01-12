@@ -34,6 +34,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/io_thread.h"
@@ -526,9 +527,11 @@ void NetInternalsMessageHandler::OnRendererReady(const base::ListValue* list) {
 
 void NetInternalsMessageHandler::OnClearBrowserCache(
     const base::ListValue* list) {
-  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForUnboundedRange(
-      Profile::FromWebUI(web_ui()));
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(
+          Profile::FromWebUI(web_ui()));
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   // BrowsingDataRemover deletes itself.
 }

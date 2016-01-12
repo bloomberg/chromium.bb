@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/plugins/plugin_data_remover_helper.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -231,8 +232,13 @@ void BrowsingDataSettingsFunction::SetDetails(
   permitted_dict->SetBoolean(data_type, is_permitted);
 }
 
+BrowsingDataRemoverFunction::BrowsingDataRemoverFunction() : observer_(this) {}
+
 void BrowsingDataRemoverFunction::OnBrowsingDataRemoverDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  observer_.RemoveAll();
+
   this->SendResponse(true);
 
   Release();  // Balanced in RunAsync.
@@ -291,6 +297,8 @@ bool BrowsingDataRemoverFunction::RunAsync() {
   return true;
 }
 
+BrowsingDataRemoverFunction::~BrowsingDataRemoverFunction() {}
+
 void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
     scoped_refptr<PluginPrefs> plugin_prefs) {
   if (!PluginDataRemoverHelper::IsSupported(plugin_prefs.get()))
@@ -302,7 +310,9 @@ void BrowsingDataRemoverFunction::CheckRemovingPluginDataSupported(
 }
 
 void BrowsingDataRemoverFunction::StartRemoving() {
-  if (BrowsingDataRemover::is_removing()) {
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetProfile());
+  if (remover->is_removing()) {
     error_ = extension_browsing_data_api_constants::kOneAtATimeError;
     SendResponse(false);
     return;
@@ -315,10 +325,10 @@ void BrowsingDataRemoverFunction::StartRemoving() {
   // that we're notified after removal) and call remove() with the arguments
   // we've generated above. We can use a raw pointer here, as the browsing data
   // remover is responsible for deleting itself once data removal is complete.
-  BrowsingDataRemover* remover = BrowsingDataRemover::CreateForRange(
-      GetProfile(), remove_since_, base::Time::Max());
-  remover->AddObserver(this);
-  remover->Remove(removal_mask_, origin_type_mask_);
+  observer_.Add(remover);
+  remover->Remove(
+      BrowsingDataRemover::TimeRange(remove_since_, base::Time::Max()),
+      removal_mask_, origin_type_mask_);
 }
 
 int BrowsingDataRemoverFunction::ParseOriginTypeMask(

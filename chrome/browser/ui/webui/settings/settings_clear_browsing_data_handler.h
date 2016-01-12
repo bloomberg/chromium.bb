@@ -43,8 +43,7 @@ class ClearBrowsingDataHandler : public SettingsPageUIHandler,
   // Updates UI when the pref to allow clearing history changes.
   virtual void OnBrowsingHistoryPrefChanged();
 
-  // If non-null it means removal is in progress. BrowsingDataRemover takes care
-  // of deleting itself when done.
+  // If non-null it means removal is in progress.
   BrowsingDataRemover* remover_;
 
   // Keeps track of whether clearing LSO data is supported.

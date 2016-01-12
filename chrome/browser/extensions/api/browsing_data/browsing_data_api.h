@@ -11,6 +11,7 @@
 
 #include <string>
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
@@ -84,6 +85,8 @@ class BrowsingDataSettingsFunction : public ChromeSyncExtensionFunction {
 class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
                                     public BrowsingDataRemover::Observer {
  public:
+  BrowsingDataRemoverFunction();
+
   // BrowsingDataRemover::Observer interface method.
   void OnBrowsingDataRemoverDone() override;
 
@@ -91,7 +94,7 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
   bool RunAsync() override;
 
  protected:
-  ~BrowsingDataRemoverFunction() override {}
+  ~BrowsingDataRemoverFunction() override;
 
   // Children should override this method to provide the proper removal mask
   // based on the API call they represent.
@@ -113,6 +116,7 @@ class BrowsingDataRemoverFunction : public ChromeAsyncExtensionFunction,
   base::Time remove_since_;
   int removal_mask_;
   int origin_type_mask_;
+  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 };
 
 class BrowsingDataRemoveAppcacheFunction : public BrowsingDataRemoverFunction {

@@ -23,6 +23,7 @@
 #include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/cache_counter.h"
 #include "chrome/browser/browsing_data/history_counter.h"
 #include "chrome/browser/browsing_data/passwords_counter.h"
@@ -278,12 +279,13 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
         checked_other_types);
   }
 
-  // BrowsingDataRemover deletes itself when done.
-  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
-  remover_ = BrowsingDataRemover::CreateForPeriod(profile,
-      static_cast<BrowsingDataRemover::TimePeriod>(period_selected));
+  remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   remover_->AddObserver(this);
-  remover_->Remove(remove_mask, origin_mask);
+  int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
+  remover_->Remove(
+      BrowsingDataRemover::Period(
+          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
+      remove_mask, origin_mask);
 
   // Store the clear browsing data time. Next time the clear browsing data
   // dialog is open, this time is used to decide whether to display an info
@@ -293,9 +295,8 @@ void ClearBrowserDataHandler::HandleClearBrowserData(
 }
 
 void ClearBrowserDataHandler::OnBrowsingDataRemoverDone() {
-  // No need to remove ourselves as an observer as BrowsingDataRemover deletes
-  // itself after we return.
-  remover_ = NULL;
+  remover_->RemoveObserver(this);
+  remover_ = nullptr;
   web_ui()->CallJavascriptFunction("ClearBrowserDataOverlay.doneClearing");
 }
 

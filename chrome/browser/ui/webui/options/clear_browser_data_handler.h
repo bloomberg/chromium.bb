@@ -58,8 +58,7 @@ class ClearBrowserDataHandler : public OptionsPageUIHandler,
   // bottom of the dialog.
   void OnStateChanged() override;
 
-  // If non-null it means removal is in progress. BrowsingDataRemover takes care
-  // of deleting itself when done.
+  // If non-null it means removal is in progress.
   BrowsingDataRemover* remover_;
 
   // Keeps track of whether clearing LSO data is supported.

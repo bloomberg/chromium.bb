@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
@@ -1124,12 +1125,12 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
 
   // Simulate a user clearing site data (including Service Workers, crucially).
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(GetBrowser()->profile());
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetBrowser()->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->Remove(BrowsingDataRemover::REMOVE_SITE_DATA,
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_SITE_DATA,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   observer.BlockUntilCompletion();
-  // BrowsingDataRemover deletes itself.
 
   base::RunLoop run_loop;
   push_service()->SetContentSettingChangedCallbackForTesting(

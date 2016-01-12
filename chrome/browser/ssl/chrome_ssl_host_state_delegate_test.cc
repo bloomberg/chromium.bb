@@ -12,6 +12,7 @@
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -542,10 +543,11 @@ class RemoveBrowsingHistorySSLHostStateDelegateTest
     : public ChromeSSLHostStateDelegateTest {
  public:
   void RemoveAndWait(Profile* profile) {
-    BrowsingDataRemover* remover = BrowsingDataRemover::CreateForPeriod(
-        profile, BrowsingDataRemover::LAST_HOUR);
+    BrowsingDataRemover* remover =
+        BrowsingDataRemoverFactory::GetForBrowserContext(profile);
     BrowsingDataRemoverCompletionObserver completion_observer(remover);
-    remover->Remove(BrowsingDataRemover::REMOVE_HISTORY,
+    remover->Remove(BrowsingDataRemover::Period(BrowsingDataRemover::LAST_HOUR),
+                    BrowsingDataRemover::REMOVE_HISTORY,
                     BrowsingDataHelper::UNPROTECTED_WEB);
     completion_observer.BlockUntilCompletion();
   }

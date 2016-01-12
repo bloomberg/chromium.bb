@@ -20,6 +20,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/net/net_error_diagnostics_dialog.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -998,8 +999,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, StaleCacheStatus) {
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   ui_test_utils::NavigateToURL(browser(), test_url);
   EXPECT_TRUE(ProbeStaleCopyValue(false));
@@ -1267,8 +1269,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageNavigationCorrectionsFailTest,
   // Clear the cache and reload the same URL; confirm the error page is told
   // that there is no cached copy.
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(browser()->profile());
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser()->profile());
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
       browser(), test_url, 2);

@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_test_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -222,9 +223,10 @@ std::string CreateServerRedirect(const std::string& dest_url) {
 // Clears the specified data using BrowsingDataRemover.
 void ClearBrowsingData(Browser* browser, int remove_mask) {
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(browser->profile());
+      BrowsingDataRemoverFactory::GetForBrowserContext(browser->profile());
   BrowsingDataRemoverCompletionObserver observer(remover);
-  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+  remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
   observer.BlockUntilCompletion();
   // BrowsingDataRemover deletes itself.
 }

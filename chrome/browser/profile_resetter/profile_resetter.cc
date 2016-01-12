@@ -14,6 +14,8 @@
 #include "base/synchronization/cancellation_flag.h"
 #include "build/build_config.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/google/google_url_tracker_factory.h"
@@ -73,7 +75,7 @@ ProfileResetter::ProfileResetter(Profile* profile)
     : profile_(profile),
       template_url_service_(TemplateURLServiceFactory::GetForProfile(profile_)),
       pending_reset_flags_(0),
-      cookies_remover_(NULL),
+      cookies_remover_(nullptr),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
   DCHECK(profile_);
@@ -245,16 +247,18 @@ void ProfileResetter::ResetCookiesAndSiteData() {
   DCHECK(CalledOnValidThread());
   DCHECK(!cookies_remover_);
 
-  cookies_remover_ = BrowsingDataRemover::CreateForUnboundedRange(profile_);
+  cookies_remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
   cookies_remover_->AddObserver(this);
   int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA |
                     BrowsingDataRemover::REMOVE_CACHE;
   PrefService* prefs = profile_->GetPrefs();
   DCHECK(prefs);
+
   // Don't try to clear LSO data if it's not supported.
   if (!prefs->GetBoolean(prefs::kClearPluginLSODataEnabled))
     remove_mask &= ~BrowsingDataRemover::REMOVE_PLUGIN_DATA;
-  cookies_remover_->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
+  cookies_remover_->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
+                           BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 void ProfileResetter::ResetExtensions() {
@@ -330,7 +334,8 @@ void ProfileResetter::OnTemplateURLServiceLoaded() {
 }
 
 void ProfileResetter::OnBrowsingDataRemoverDone() {
-  cookies_remover_ = NULL;
+  cookies_remover_->RemoveObserver(this);
+  cookies_remover_ = nullptr;
   MarkAsDone(COOKIES_AND_SITE_DATA);
 }
 

@@ -33,6 +33,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/chrome_content_browser_client_parts.h"
 #include "chrome/browser/chrome_net_benchmarking_message_filter.h"
@@ -2393,20 +2394,20 @@ void ChromeContentBrowserClient::ClearCache(RenderFrameHost* rfh) {
   Profile* profile = Profile::FromBrowserContext(
       rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(profile);
-  remover->Remove(BrowsingDataRemover::REMOVE_CACHE,
+      BrowsingDataRemoverFactory::GetForBrowserContext(profile);
+  remover->Remove(BrowsingDataRemover::Unbounded(),
+                  BrowsingDataRemover::REMOVE_CACHE,
                   BrowsingDataHelper::UNPROTECTED_WEB);
-  // BrowsingDataRemover takes care of deleting itself when done.
 }
 
 void ChromeContentBrowserClient::ClearCookies(RenderFrameHost* rfh) {
   Profile* profile = Profile::FromBrowserContext(
       rfh->GetSiteInstance()->GetProcess()->GetBrowserContext());
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForUnboundedRange(profile);
+      BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   int remove_mask = BrowsingDataRemover::REMOVE_SITE_DATA;
-  remover->Remove(remove_mask, BrowsingDataHelper::UNPROTECTED_WEB);
-  // BrowsingDataRemover takes care of deleting itself when done.
+  remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
+                  BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {

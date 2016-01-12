@@ -95,6 +95,8 @@
       'browser/browsing_data/browsing_data_quota_helper_impl.h',
       'browser/browsing_data/browsing_data_remover.cc',
       'browser/browsing_data/browsing_data_remover.h',
+      'browser/browsing_data/browsing_data_remover_factory.cc',
+      'browser/browsing_data/browsing_data_remover_factory.h',
       'browser/browsing_data/browsing_data_service_worker_helper.cc',
       'browser/browsing_data/browsing_data_service_worker_helper.h',
       'browser/browsing_data/cache_counter.cc',

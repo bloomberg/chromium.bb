@@ -13,6 +13,7 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -470,12 +471,10 @@ ChromeSyncClient::GetSyncApiComponentFactory() {
 }
 
 void ChromeSyncClient::ClearBrowsingData(base::Time start, base::Time end) {
-  // BrowsingDataRemover deletes itself when it's done.
   BrowsingDataRemover* remover =
-      BrowsingDataRemover::CreateForRange(profile_, start, end);
-  if (browsing_data_remover_observer_)
-    remover->AddObserver(browsing_data_remover_observer_);
-  remover->Remove(BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
+      BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
+  remover->Remove(BrowsingDataRemover::TimeRange(start, end),
+                  BrowsingDataRemover::REMOVE_ALL, BrowsingDataHelper::ALL);
 
   scoped_refptr<password_manager::PasswordStore> password =
       PasswordStoreFactory::GetForProfile(profile_,
@@ -485,6 +484,14 @@ void ChromeSyncClient::ClearBrowsingData(base::Time start, base::Time end) {
 
 void ChromeSyncClient::SetBrowsingDataRemoverObserverForTesting(
     BrowsingDataRemover::Observer* observer) {
+  BrowsingDataRemover* remover =
+      BrowsingDataRemoverFactory::GetForBrowserContext(profile_);
+  if (browsing_data_remover_observer_)
+    remover->RemoveObserver(browsing_data_remover_observer_);
+
+  if (observer)
+    remover->AddObserver(observer);
+
   browsing_data_remover_observer_ = observer;
 }
 

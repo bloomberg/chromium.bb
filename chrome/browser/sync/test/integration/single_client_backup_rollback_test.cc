@@ -134,6 +134,11 @@ class SyncRollbackChecker : public sync_driver::SyncServiceObserver,
 
   // BrowsingDataRemoverObserver::Observer implementation.
   void OnBrowsingDataRemoverDone() override {
+    // Remove ourselves as an observer.
+    browser_sync::ChromeSyncClient* sync_client =
+        static_cast<browser_sync::ChromeSyncClient*>(pss_->GetSyncClient());
+    sync_client->SetBrowsingDataRemoverObserverForTesting(nullptr);
+
     clear_done_ = true;
     if (rollback_started_) {
       run_loop_.Quit();

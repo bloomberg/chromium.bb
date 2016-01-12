@@ -11,13 +11,14 @@
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/web_ui.h"
 
 namespace settings {
 
 ClearBrowsingDataHandler::ClearBrowsingDataHandler(content::WebUI* webui)
-    : remover_(NULL) {
+    : remover_(nullptr) {
   PrefService* prefs = Profile::FromWebUI(webui)->GetPrefs();
   clear_plugin_lso_data_enabled_.Init(prefs::kClearPluginLSODataEnabled, prefs);
   pepper_flash_settings_enabled_.Init(prefs::kPepperFlashSettingsEnabled,
@@ -122,18 +123,18 @@ void ClearBrowsingDataHandler::HandleClearBrowserData(
         checked_other_types);
   }
 
-  // BrowsingDataRemover deletes itself when done.
   int period_selected = prefs->GetInteger(prefs::kDeleteTimePeriod);
-  remover_ = BrowsingDataRemover::CreateForPeriod(
-      profile, static_cast<BrowsingDataRemover::TimePeriod>(period_selected));
+  remover_ = BrowsingDataRemoverFactory::GetForBrowserContext(profile);
   remover_->AddObserver(this);
-  remover_->Remove(remove_mask, origin_mask);
+  remover_->Remove(
+      BrowsingDataRemover::Period(
+          static_cast<BrowsingDataRemover::TimePeriod>(period_selected)),
+      remove_mask, origin_mask);
 }
 
 void ClearBrowsingDataHandler::OnBrowsingDataRemoverDone() {
-  // No need to remove ourselves as an observer as BrowsingDataRemover deletes
-  // itself after we return.
-  remover_ = NULL;
+  remover_->RemoveObserver(this);
+  remover_ = nullptr;
   web_ui()->CallJavascriptFunction("SettingsClearBrowserData.doneClearing");
 }
 

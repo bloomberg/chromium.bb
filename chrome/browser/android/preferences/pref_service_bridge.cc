@@ -16,11 +16,13 @@
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
+#include "base/scoped_observer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
+#include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -472,14 +474,15 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
  public:
   // |obj| is expected to be the object passed into ClearBrowsingData(); e.g. a
   // ChromePreference.
-  ClearBrowsingDataObserver(JNIEnv* env, jobject obj)
-      : weak_chrome_native_preferences_(env, obj) {
+  ClearBrowsingDataObserver(JNIEnv* env,
+                            jobject obj,
+                            BrowsingDataRemover* browsing_data_remover)
+      : weak_chrome_native_preferences_(env, obj), observer_(this) {
+    observer_.Add(browsing_data_remover);
   }
 
   void OnBrowsingDataRemoverDone() override {
-    // Just as a BrowsingDataRemover deletes itself when done, we delete ourself
-    // when done.  No need to remove ourself as an observer given the lifetime
-    // of BrowsingDataRemover.
+    // We delete ourselves when done.
     scoped_ptr<ClearBrowsingDataObserver> auto_delete(this);
 
     JNIEnv* env = AttachCurrentThread();
@@ -492,7 +495,9 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
 
  private:
   JavaObjectWeakGlobalRef weak_chrome_native_preferences_;
+  ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 };
+
 }  // namespace
 
 static void ClearBrowsingData(JNIEnv* env,
@@ -502,13 +507,11 @@ static void ClearBrowsingData(JNIEnv* env,
                               jboolean cookies_and_site_data,
                               jboolean passwords,
                               jboolean form_data) {
-  // BrowsingDataRemover deletes itself.
   BrowsingDataRemover* browsing_data_remover =
-      BrowsingDataRemover::CreateForPeriod(
-          GetOriginalProfile(),
-          static_cast<BrowsingDataRemover::TimePeriod>(
-              BrowsingDataRemover::EVERYTHING));
-  browsing_data_remover->AddObserver(new ClearBrowsingDataObserver(env, obj));
+      BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
+  // ClearBrowsingDataObserver removes itself when |browsing_data_remover| is
+  // done.
+  new ClearBrowsingDataObserver(env, obj, browsing_data_remover);
 
   int remove_mask = 0;
   if (history)
@@ -523,7 +526,7 @@ static void ClearBrowsingData(JNIEnv* env,
     remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
   if (form_data)
     remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
-  browsing_data_remover->Remove(remove_mask,
+  browsing_data_remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
                                 BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
