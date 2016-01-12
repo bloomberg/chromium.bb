@@ -59,6 +59,7 @@ class SaveCardBubbleControllerImpl
   void ShowBubbleForUpload(const base::Closure& save_card_callback,
                            scoped_ptr<base::DictionaryValue> legal_message);
 
+  void HideBubble();
   void ReshowBubble();
 
   // Returns true if Omnibox save credit card icon should be visible.

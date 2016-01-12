@@ -22,6 +22,8 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
       browser_(browser) {
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_TOOLTIP_SAVE_CREDIT_CARD));
+  if (browser)
+    browser->tab_strip_model()->AddObserver(this);
 }
 
 SaveCardIconView::~SaveCardIconView() {}
@@ -30,14 +32,7 @@ void SaveCardIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
 views::BubbleDelegateView* SaveCardIconView::GetBubble() const {
-  if (!browser_)
-    return nullptr;
-  content::WebContents* web_contents =
-      browser_->tab_strip_model()->GetActiveWebContents();
-  if (!web_contents)
-    return nullptr;
-  autofill::SaveCardBubbleControllerImpl* controller =
-      autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+  SaveCardBubbleControllerImpl* controller = GetController();
   if (!controller)
     return nullptr;
 
@@ -47,6 +42,22 @@ views::BubbleDelegateView* SaveCardIconView::GetBubble() const {
 
 gfx::VectorIconId SaveCardIconView::GetVectorIcon() const {
   return gfx::VectorIconId::CREDIT_CARD;
+}
+
+void SaveCardIconView::TabDeactivated(content::WebContents* contents) {
+  SaveCardBubbleControllerImpl* controller = GetController();
+  if (controller)
+    controller->HideBubble();
+}
+
+SaveCardBubbleControllerImpl* SaveCardIconView::GetController() const {
+  if (!browser_)
+    return nullptr;
+  content::WebContents* web_contents =
+      browser_->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
+    return nullptr;
+  return autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents);
 }
 
 }  // namespace autofill
