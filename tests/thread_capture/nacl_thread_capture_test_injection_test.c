@@ -19,6 +19,8 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 static const int kExpectedSignal = SIGILL;
+#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips
+static const int kExpectedSignal = SIGTRAP;
 #else
 static const int kExpectedSignal = SIGSEGV;
 #endif

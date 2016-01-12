@@ -108,7 +108,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
   uint32_t idx = NaClGetThreadIdx(natp);
   NaClLog(2,
           "NaClTlsFree: old idx %d $tp %x\n",
-          idx, natp->user.t8);
+          idx, natp->user.tls_value1);
 
   NaClXMutexLock(&gNaClTlsMu);
   gNaClThreadIdxInUse[idx - 1] = 0;
@@ -119,7 +119,7 @@ void NaClTlsFree(struct NaClAppThread *natp) {
 
 
 void NaClTlsSetTlsValue1(struct NaClAppThread *natp, uint32_t value) {
-  natp->user.t8 = value;
+  natp->user.tls_value1 = value;
 }
 
 
@@ -129,7 +129,7 @@ void NaClTlsSetTlsValue2(struct NaClAppThread *natp, uint32_t value) {
 
 
 uint32_t NaClTlsGetTlsValue1(struct NaClAppThread *natp) {
-  return natp->user.t8;
+  return natp->user.tls_value1;
 }
 
 

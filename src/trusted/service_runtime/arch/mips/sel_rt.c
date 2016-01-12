@@ -8,6 +8,7 @@
  * NaCl Secure Runtime
  */
 #include "native_client/src/include/portability_string.h"
+#include "native_client/src/shared/platform/nacl_global_secure_random.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_signal.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
@@ -15,9 +16,11 @@
 #include "native_client/src/trusted/service_runtime/sel_rt.h"
 #include "native_client/src/trusted/service_runtime/arch/mips/sel_ldr_mips.h"
 
+uint32_t nacl_guard_token;
+
 void NaClInitGlobals(void) {
-   NaClLog(2, "NaClInitGlobals\n");
-  /* intentionally left empty */
+  NaClLog(2, "NaClInitGlobals\n");
+  nacl_guard_token = NaClGlobalSecureRngUint32();
 }
 
 
@@ -38,6 +41,8 @@ int NaClAppThreadInitArchSpecific(struct NaClAppThread *natp,
   ntcp->tls_idx = NaClTlsAllocate(natp);
   if (ntcp->tls_idx == NACL_TLS_INDEX_INVALID)
     return 0;
+  ntcp->t8 = (uintptr_t) &ntcp->tls_value1;
+  ntcp->guard_token = nacl_guard_token;
 
   NaClLog(4, "user.tls_idx: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->tls_idx);
   NaClLog(4, "user.stack_ptr: 0x%08"NACL_PRIxNACL_REG"\n", ntcp->stack_ptr);

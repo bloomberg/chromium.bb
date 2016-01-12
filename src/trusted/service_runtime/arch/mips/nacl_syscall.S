@@ -86,17 +86,14 @@ DEFINE_GLOBAL_HIDDEN_FUNCTION(NaClSyscallSeg):
   sw    $ra, -4($sp)
   /* Save return address that indicates which trampoline was called. */
   sw    $t5, -8($sp)
+  add   $a0, $t8, -NACL_THREAD_CONTEXT_OFFSET_TLS_VALUE1
 
-  /* Load the __thread variable's offset into a3. */
-  lui   $a3, %tprel_hi(nacl_current_thread)
-  addiu $a3, $a3, %tprel_lo(nacl_current_thread)
+  lw    $t2, NACL_THREAD_CONTEXT_OFFSET_GUARD_TOKEN($a0)
+  la    $t3, nacl_guard_token
+  lw    $t3, 0($t3)
+  bne   $t2, $t3, NaClSyscallThreadCaptureFault
+  nop
 
-  /* Fetch the thread-local variable: set a0 = nacl_current_thread */
-  rdhwr $v1, $29
-  addu  $a3, $v1, $a3
-  lw    $a0, 0($a3)
-
-DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallThreadCaptureFault):
   sw $s0, NACL_THREAD_CONTEXT_OFFSET_S0($a0)
   sw $s1, NACL_THREAD_CONTEXT_OFFSET_S1($a0)
   sw $s2, NACL_THREAD_CONTEXT_OFFSET_S2($a0)
@@ -132,5 +129,5 @@ DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallSegRegsSaved):
    * If the thread returns, which must not happen, it will be halted
    * by the following instruction.
    */
-
+DEFINE_GLOBAL_HIDDEN_LOCATION(NaClSyscallThreadCaptureFault):
   .word NACL_HALT_WORD

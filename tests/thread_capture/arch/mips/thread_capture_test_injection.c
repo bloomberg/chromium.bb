@@ -18,7 +18,7 @@ static int32_t TestSyscall(struct NaClAppThread *natp) {
   g_nacl_syscall_thread_capture_fault_addr =
       (uintptr_t) &NaClSyscallThreadCaptureFault;
 
-  NaClTlsSetCurrentThread(NULL);
+  natp->user.guard_token++;
 
   return 0;
 }

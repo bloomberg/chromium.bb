@@ -66,6 +66,23 @@ static void EditArmCode(void *code, size_t code_length) {
   }
 }
 
+static void EditMipsCode(void *code, size_t code_length) {
+  Elf32_Word *const words = code;
+  Elf32_Word *const end = (void *) ((uint8_t *) code + code_length);
+  Elf32_Word *insn;
+
+  for (insn = words; insn < end; ++insn) {
+    if ((*insn & 0xFFE0FFFF) == 0x8f000000) {
+      /*
+       * This is 'lw $REG, 0($t8)'.
+       * Turn it into 'lw $REG, 4($t8)'.
+       */
+      *insn |= 4;
+      ++g_changes;
+    }
+  }
+}
+
 static Bool ConsiderOneInsn(const uint8_t *insn_begin, const uint8_t *insn_end,
                             uint32_t validation_info, void *data) {
   UNREFERENCED_PARAMETER(data);
@@ -189,10 +206,7 @@ static Bool EditTLSCode(const char *infile, uint32_t code_addr,
       }
       return TRUE;
     case EM_MIPS:
-      if (g_verbose) {
-        printf("%s: MIPS ELF detected, no instructions changed\n",
-               infile);
-      }
+      EditMipsCode(g_code_start, code_length);
       return TRUE;
     default:
       fprintf(stderr, "%s: Unsupported e_machine %d\n",

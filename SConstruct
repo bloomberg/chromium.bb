@@ -3499,16 +3499,6 @@ nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
 nacl_irt_env.Replace(LINK=(nacl_irt_env['LINK'].
                            replace('nacl-clang++', 'nacl-clang')))
 
-
-# All IRT code must avoid direct use of the TLS ABI register, which
-# is reserved for user TLS.  Instead, ensure all TLS accesses use a
-# call to __nacl_read_tp, which the IRT code overrides to segregate
-# IRT-private TLS from user TLS. This only applies to mips now, on
-# other platforms we modify the TLS register through tls_edit as a
-# post process.
-if nacl_irt_env.Bit('build_mips32'):
-  nacl_irt_env.Append(LINKFLAGS=['-Wt,-mtls-use-call'])
-
 # TODO(mcgrathr): Clean up uses of these methods.
 def AddLibraryDummy(env, nodes):
   return nodes
