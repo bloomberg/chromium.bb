@@ -35,9 +35,9 @@
 #include "crypto/scoped_openssl_types.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
-#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_ev_whitelist.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate_net_log_param.h"
 #include "net/cert/x509_util_openssl.h"
@@ -541,7 +541,7 @@ SSLClientSocketOpenSSL::SSLClientSocketOpenSSL(
       ssl_failure_state_(SSL_FAILURE_NONE),
       signature_result_(kNoPendingResult),
       transport_security_state_(context.transport_security_state),
-      policy_enforcer_(context.cert_policy_enforcer),
+      policy_enforcer_(context.ct_policy_enforcer),
       net_log_(transport_->socket()->NetLog()),
       weak_factory_(this) {
   DCHECK(cert_verifier_);

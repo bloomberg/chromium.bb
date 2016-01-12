@@ -36,7 +36,7 @@
 
 namespace net {
 
-class CertPolicyEnforcer;
+class CTPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class ClientSocketFactory;
@@ -120,7 +120,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       ClientSocketFactory* client_socket_factory,
       base::WeakPtr<HttpServerProperties> http_server_properties,
       CertVerifier* cert_verifier,
-      CertPolicyEnforcer* cert_policy_enforcer,
+      CTPolicyEnforcer* ct_policy_enforcer,
       ChannelIDService* channel_id_service,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,

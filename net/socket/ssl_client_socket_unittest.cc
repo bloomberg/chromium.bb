@@ -20,7 +20,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_data_directory.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/cert_policy_enforcer.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/cert/test_root_certs.h"
@@ -681,8 +681,8 @@ class MockCTVerifier : public CTVerifier {
   MOCK_METHOD1(SetObserver, void(CTVerifier::Observer*));
 };
 
-// A mock CertPolicyEnforcer that returns a custom verification result.
-class MockCertPolicyEnforcer : public CertPolicyEnforcer {
+// A mock CTPolicyEnforcer that returns a custom verification result.
+class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
   MOCK_METHOD4(DoesConformToCTEVPolicy,
                bool(X509Certificate* cert,
@@ -715,8 +715,8 @@ class SSLClientSocketTest : public PlatformTest {
     context_.cert_transparency_verifier = ct_verifier;
   }
 
-  void SetCertPolicyEnforcer(CertPolicyEnforcer* policy_enforcer) {
-    context_.cert_policy_enforcer = policy_enforcer;
+  void SetCTPolicyEnforcer(CTPolicyEnforcer* policy_enforcer) {
+    context_.ct_policy_enforcer = policy_enforcer;
   }
 
   // Starts the test server with SSL configuration |ssl_options|. Returns true
@@ -2315,7 +2315,7 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedNoCTVerifier) {
   EXPECT_TRUE(result.cert_status & CERT_STATUS_IS_EV);
 }
 
-// Test that when a CT verifier and a CertPolicyEnforcer are defined, and
+// Test that when a CT verifier and a CTPolicyEnforcer are defined, and
 // the EV certificate used conforms to the CT/EV policy, its EV status
 // is maintained.
 TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
@@ -2326,14 +2326,14 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
 
   // To activate the CT/EV policy enforcement non-null CTVerifier and
-  // CertPolicyEnforcer are needed.
+  // CTPolicyEnforcer are needed.
   MockCTVerifier ct_verifier;
   SetCTVerifier(&ct_verifier);
   EXPECT_CALL(ct_verifier, Verify(_, "", "", _, _)).WillRepeatedly(Return(OK));
 
   // Emulate compliance of the certificate to the policy.
-  MockCertPolicyEnforcer policy_enforcer;
-  SetCertPolicyEnforcer(&policy_enforcer);
+  MockCTPolicyEnforcer policy_enforcer;
+  SetCTPolicyEnforcer(&policy_enforcer);
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
       .WillRepeatedly(Return(true));
 
@@ -2347,7 +2347,7 @@ TEST_F(SSLClientSocketTest, EVCertStatusMaintainedForCompliantCert) {
   EXPECT_TRUE(result.cert_status & CERT_STATUS_IS_EV);
 }
 
-// Test that when a CT verifier and a CertPolicyEnforcer are defined, but
+// Test that when a CT verifier and a CTPolicyEnforcer are defined, but
 // the EV certificate used does not conform to the CT/EV policy, its EV status
 // is removed.
 TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
@@ -2358,14 +2358,14 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
 
   // To activate the CT/EV policy enforcement non-null CTVerifier and
-  // CertPolicyEnforcer are needed.
+  // CTPolicyEnforcer are needed.
   MockCTVerifier ct_verifier;
   SetCTVerifier(&ct_verifier);
   EXPECT_CALL(ct_verifier, Verify(_, "", "", _, _)).WillRepeatedly(Return(OK));
 
   // Emulate non-compliance of the certificate to the policy.
-  MockCertPolicyEnforcer policy_enforcer;
-  SetCertPolicyEnforcer(&policy_enforcer);
+  MockCTPolicyEnforcer policy_enforcer;
+  SetCTPolicyEnforcer(&policy_enforcer);
   EXPECT_CALL(policy_enforcer, DoesConformToCTEVPolicy(_, _, _, _))
       .WillRepeatedly(Return(false));
 

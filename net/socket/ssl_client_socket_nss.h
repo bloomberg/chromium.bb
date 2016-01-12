@@ -34,7 +34,7 @@
 namespace net {
 
 class BoundNetLog;
-class CertPolicyEnforcer;
+class CTPolicyEnforcer;
 class CertVerifier;
 class ChannelIDService;
 class CTVerifier;
@@ -196,7 +196,7 @@ class SSLClientSocketNSS : public SSLClientSocket {
 
   TransportSecurityState* transport_security_state_;
 
-  CertPolicyEnforcer* const policy_enforcer_;
+  CTPolicyEnforcer* const policy_enforcer_;
 
   // pinning_failure_log contains a message produced by
   // TransportSecurityState::CheckPublicKeyPins in the event of a

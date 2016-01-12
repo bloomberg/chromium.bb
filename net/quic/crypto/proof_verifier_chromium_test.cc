@@ -8,10 +8,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_data_directory.h"
-#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_serialization.h"
 #include "net/cert/ct_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
@@ -50,28 +50,28 @@ class FailsTestCertVerifier : public CertVerifier {
   }
 };
 
-// CertPolicyEnforcer that will fail the test if it is ever called.
-class FailsTestCertPolicyEnforcer : public CertPolicyEnforcer {
+// CTPolicyEnforcer that will fail the test if it is ever called.
+class FailsTestCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  FailsTestCertPolicyEnforcer() {}
-  ~FailsTestCertPolicyEnforcer() override {}
+  FailsTestCTPolicyEnforcer() {}
+  ~FailsTestCTPolicyEnforcer() override {}
 
   bool DoesConformToCTEVPolicy(X509Certificate* cert,
                                const ct::EVCertsWhitelist* ev_whitelist,
                                const ct::CTVerifyResult& ct_result,
                                const BoundNetLog& net_log) override {
-    ADD_FAILURE() << "CertPolicyEnforcer::DoesConformToCTEVPolicy() should "
+    ADD_FAILURE() << "CTPolicyEnforcer::DoesConformToCTEVPolicy() should "
                   << "not be called";
     return false;
   }
 };
 
-// CertPolicyEnforcer that can simulate whether or not a given certificate
+// CTPolicyEnforcer that can simulate whether or not a given certificate
 // conforms to the CT/EV policy.
-class MockCertPolicyEnforcer : public CertPolicyEnforcer {
+class MockCTPolicyEnforcer : public CTPolicyEnforcer {
  public:
-  MockCertPolicyEnforcer(bool is_ev) : is_ev_(is_ev) {}
-  ~MockCertPolicyEnforcer() override {}
+  MockCTPolicyEnforcer(bool is_ev) : is_ev_(is_ev) {}
+  ~MockCTPolicyEnforcer() override {}
 
   bool DoesConformToCTEVPolicy(X509Certificate* cert,
                                const ct::EVCertsWhitelist* ev_whitelist,
@@ -343,7 +343,7 @@ TEST_F(ProofVerifierChromiumTest, PreservesEVIfAllowed) {
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
 
-  MockCertPolicyEnforcer policy_enforcer(true /*is_ev*/);
+  MockCTPolicyEnforcer policy_enforcer(true /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());
@@ -375,7 +375,7 @@ TEST_F(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
 
-  MockCertPolicyEnforcer policy_enforcer(false /*is_ev*/);
+  MockCTPolicyEnforcer policy_enforcer(false /*is_ev*/);
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());
@@ -408,7 +408,7 @@ TEST_F(ProofVerifierChromiumTest, IgnoresPolicyEnforcerIfNotEV) {
   MockCertVerifier dummy_verifier;
   dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
 
-  FailsTestCertPolicyEnforcer policy_enforcer;
+  FailsTestCTPolicyEnforcer policy_enforcer;
 
   ProofVerifierChromium proof_verifier(&dummy_verifier, &policy_enforcer,
                                        nullptr, ct_verifier_.get());

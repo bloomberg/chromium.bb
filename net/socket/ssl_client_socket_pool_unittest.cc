@@ -130,7 +130,7 @@ class SSLClientSocketPoolTest
     pool_.reset(new SSLClientSocketPool(
         kMaxSockets, kMaxSocketsPerGroup, NULL /* cert_verifier */,
         NULL /* channel_id_service */, NULL /* transport_security_state */,
-        NULL /* cert_transparency_verifier */, NULL /* cert_policy_enforcer */,
+        NULL /* cert_transparency_verifier */, NULL /* ct_policy_enforcer */,
         std::string() /* ssl_session_cache_shard */, &socket_factory_,
         transport_pool ? &transport_socket_pool_ : NULL,
         socks_pool ? &socks_socket_pool_ : NULL,

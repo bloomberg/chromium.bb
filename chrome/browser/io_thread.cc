@@ -64,12 +64,12 @@
 #include "net/base/net_util.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/base/sdch_manager.h"
-#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_known_logs_static.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -766,9 +766,9 @@ void IOThread::Init() {
   // is fixed.
   tracked_objects::ScopedTracker tracking_profile10(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "466432 IOThread::InitAsync::CertPolicyEnforcer"));
-  net::CertPolicyEnforcer* policy_enforcer = new net::CertPolicyEnforcer;
-  globals_->cert_policy_enforcer.reset(policy_enforcer);
+          "466432 IOThread::InitAsync::CTPolicyEnforcer"));
+  net::CTPolicyEnforcer* policy_enforcer = new net::CTPolicyEnforcer;
+  globals_->ct_policy_enforcer.reset(policy_enforcer);
 
   globals_->ssl_config_service = GetSSLConfigService();
 
@@ -1114,7 +1114,7 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
     net::HttpNetworkSession::Params* params) {
   //  The next two properties of the params don't seem to be
   // elements of URLRequestContext, so they must be set here.
-  params->cert_policy_enforcer = globals.cert_policy_enforcer.get();
+  params->ct_policy_enforcer = globals.ct_policy_enforcer.get();
   params->host_mapping_rules = globals.host_mapping_rules.get();
 
   params->ignore_certificate_errors = globals.ignore_certificate_errors;

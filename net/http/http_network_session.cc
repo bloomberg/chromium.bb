@@ -50,7 +50,7 @@ ClientSocketPoolManager* CreateSocketPoolManager(
                                    : ClientSocketFactory::GetDefaultFactory(),
       params.host_resolver, params.cert_verifier, params.channel_id_service,
       params.transport_security_state, params.cert_transparency_verifier,
-      params.cert_policy_enforcer, ssl_session_cache_shard,
+      params.ct_policy_enforcer, ssl_session_cache_shard,
       params.ssl_config_service, pool_type);
 }
 
@@ -74,7 +74,7 @@ HttpNetworkSession::Params::Params()
     : client_socket_factory(NULL),
       host_resolver(NULL),
       cert_verifier(NULL),
-      cert_policy_enforcer(NULL),
+      ct_policy_enforcer(NULL),
       channel_id_service(NULL),
       transport_security_state(NULL),
       cert_transparency_verifier(NULL),
@@ -149,7 +149,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
               : ClientSocketFactory::GetDefaultFactory(),
           params.http_server_properties,
           params.cert_verifier,
-          params.cert_policy_enforcer,
+          params.ct_policy_enforcer,
           params.channel_id_service,
           params.transport_security_state,
           params.cert_transparency_verifier,

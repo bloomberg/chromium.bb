@@ -1,8 +1,8 @@
 // Copyright 2014 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef NET_CERT_CERT_POLICY_ENFORCER_H
-#define NET_CERT_CERT_POLICY_ENFORCER_H
+#ifndef NET_CERT_CT_POLICY_ENFORCER_H
+#define NET_CERT_CT_POLICY_ENFORCER_H
 
 #include <stddef.h>
 
@@ -22,10 +22,10 @@ class X509Certificate;
 
 // Class for checking that a given certificate conforms to security-related
 // policies.
-class NET_EXPORT CertPolicyEnforcer {
+class NET_EXPORT CTPolicyEnforcer {
  public:
-  CertPolicyEnforcer() {}
-  virtual ~CertPolicyEnforcer() {}
+  CTPolicyEnforcer() {}
+  virtual ~CTPolicyEnforcer() {}
 
   // Returns true if the collection of SCTs for the given certificate
   // conforms with the CT/EV policy. Conformance details are logged to
@@ -41,4 +41,4 @@ class NET_EXPORT CertPolicyEnforcer {
 
 }  // namespace net
 
-#endif  // NET_CERT_CERT_POLICY_ENFORCER_H
+#endif  // NET_CERT_CT_POLICY_ENFORCER_H

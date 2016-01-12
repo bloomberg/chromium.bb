@@ -60,7 +60,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
                               ChannelIDService* channel_id_service,
                               TransportSecurityState* transport_security_state,
                               CTVerifier* cert_transparency_verifier,
-                              CertPolicyEnforcer* cert_policy_enforcer,
+                              CTPolicyEnforcer* ct_policy_enforcer,
                               const std::string& ssl_session_cache_shard,
                               SSLConfigService* ssl_config_service,
                               HttpNetworkSession::SocketPoolType pool_type);
@@ -106,7 +106,7 @@ class ClientSocketPoolManagerImpl : public base::NonThreadSafe,
   ChannelIDService* const channel_id_service_;
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;
-  CertPolicyEnforcer* const cert_policy_enforcer_;
+  CTPolicyEnforcer* const ct_policy_enforcer_;
   const std::string ssl_session_cache_shard_;
   const scoped_refptr<SSLConfigService> ssl_config_service_;
   const HttpNetworkSession::SocketPoolType pool_type_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/cert_policy_enforcer.h"
+#include "net/cert/ct_policy_enforcer.h"
 
 #include <string>
 
@@ -52,10 +52,10 @@ const char kGoogleAviatorLogID[] =
 static_assert(arraysize(kGoogleAviatorLogID) - 1 == crypto::kSHA256Length,
               "Incorrect log ID length.");
 
-class CertPolicyEnforcerTest : public ::testing::Test {
+class CTPolicyEnforcerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    policy_enforcer_.reset(new CertPolicyEnforcer);
+    policy_enforcer_.reset(new CTPolicyEnforcer);
 
     std::string der_test_cert(ct::GetDerEncodedX509Cert());
     chain_ = X509Certificate::CreateFromBytes(der_test_cert.data(),
@@ -137,13 +137,13 @@ class CertPolicyEnforcerTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<CertPolicyEnforcer> policy_enforcer_;
+  scoped_ptr<CTPolicyEnforcer> policy_enforcer_;
   scoped_refptr<X509Certificate> chain_;
   std::string google_log_id_;
   std::string non_google_log_id_;
 };
 
-TEST_F(CertPolicyEnforcerTest,
+TEST_F(CTPolicyEnforcerTest,
        DoesNotConformToCTEVPolicyNotEnoughDiverseSCTsAllGoogle) {
   ct::CTVerifyResult result;
   FillResultWithRepeatedLogID(google_log_id_, 2, true, &result);
@@ -152,7 +152,7 @@ TEST_F(CertPolicyEnforcerTest,
       chain_.get(), nullptr, result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest,
+TEST_F(CTPolicyEnforcerTest,
        DoesNotConformToCTEVPolicyNotEnoughDiverseSCTsAllNonGoogle) {
   ct::CTVerifyResult result;
   FillResultWithRepeatedLogID(non_google_log_id_, 2, true, &result);
@@ -161,7 +161,7 @@ TEST_F(CertPolicyEnforcerTest,
       chain_.get(), nullptr, result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
+TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
   ct::CTVerifyResult result;
   FillResultWithRepeatedLogID(non_google_log_id_, 2, false, &result);
 
@@ -169,7 +169,7 @@ TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyIfSCTBeforeEnforcementDate) {
                                                         result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyWithNonEmbeddedSCTs) {
+TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithNonEmbeddedSCTs) {
   ct::CTVerifyResult result;
   FillResultWithSCTsOfOrigin(
       ct::SignedCertificateTimestamp::SCT_FROM_TLS_EXTENSION, 2, &result);
@@ -178,7 +178,7 @@ TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyWithNonEmbeddedSCTs) {
                                                         result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyWithEmbeddedSCTs) {
+TEST_F(CTPolicyEnforcerTest, ConformsToCTEVPolicyWithEmbeddedSCTs) {
   // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
   ct::CTVerifyResult result;
   FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 5,
@@ -188,7 +188,7 @@ TEST_F(CertPolicyEnforcerTest, ConformsToCTEVPolicyWithEmbeddedSCTs) {
                                                         result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
+TEST_F(CTPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
   scoped_refptr<ct::EVCertsWhitelist> non_including_whitelist(
       new DummyEVCertsWhitelist(true, false));
   // This chain_ is valid for 10 years - over 121 months - so requires 5 SCTs.
@@ -208,7 +208,7 @@ TEST_F(CertPolicyEnforcerTest, DoesNotConformToCTEVPolicyNotEnoughSCTs) {
       chain_.get(), whitelist.get(), result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, DoesNotConformToPolicyInvalidDates) {
+TEST_F(CTPolicyEnforcerTest, DoesNotConformToPolicyInvalidDates) {
   scoped_refptr<X509Certificate> no_valid_dates_cert(new X509Certificate(
       "subject", "issuer", base::Time(), base::Time::Now()));
   ct::CTVerifyResult result;
@@ -223,7 +223,7 @@ TEST_F(CertPolicyEnforcerTest, DoesNotConformToPolicyInvalidDates) {
       chain_.get(), whitelist.get(), result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest,
+TEST_F(CTPolicyEnforcerTest,
        ConformsToPolicyExactNumberOfSCTsForValidityPeriod) {
   // Test multiple validity periods
   const struct TestData {
@@ -267,7 +267,7 @@ TEST_F(CertPolicyEnforcerTest,
   }
 }
 
-TEST_F(CertPolicyEnforcerTest, ConformsToPolicyByEVWhitelistPresence) {
+TEST_F(CTPolicyEnforcerTest, ConformsToPolicyByEVWhitelistPresence) {
   scoped_refptr<ct::EVCertsWhitelist> whitelist(
       new DummyEVCertsWhitelist(true, true));
 
@@ -278,7 +278,7 @@ TEST_F(CertPolicyEnforcerTest, ConformsToPolicyByEVWhitelistPresence) {
       chain_.get(), whitelist.get(), result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, IgnoresInvalidEVWhitelist) {
+TEST_F(CTPolicyEnforcerTest, IgnoresInvalidEVWhitelist) {
   scoped_refptr<ct::EVCertsWhitelist> whitelist(
       new DummyEVCertsWhitelist(false, true));
 
@@ -289,7 +289,7 @@ TEST_F(CertPolicyEnforcerTest, IgnoresInvalidEVWhitelist) {
       chain_.get(), whitelist.get(), result, BoundNetLog()));
 }
 
-TEST_F(CertPolicyEnforcerTest, IgnoresNullEVWhitelist) {
+TEST_F(CTPolicyEnforcerTest, IgnoresNullEVWhitelist) {
   ct::CTVerifyResult result;
   FillResultWithSCTsOfOrigin(ct::SignedCertificateTimestamp::SCT_EMBEDDED, 1,
                              &result);

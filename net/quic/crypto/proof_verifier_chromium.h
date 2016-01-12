@@ -21,7 +21,7 @@
 
 namespace net {
 
-class CertPolicyEnforcer;
+class CTPolicyEnforcer;
 class CertVerifier;
 class CTVerifier;
 class TransportSecurityState;
@@ -59,7 +59,7 @@ struct ProofVerifyContextChromium : public ProofVerifyContext {
 class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
  public:
   ProofVerifierChromium(CertVerifier* cert_verifier,
-                        CertPolicyEnforcer* cert_policy_enforcer,
+                        CTPolicyEnforcer* ct_policy_enforcer,
                         TransportSecurityState* transport_security_state,
                         CTVerifier* cert_transparency_verifier);
   ~ProofVerifierChromium() override;
@@ -86,7 +86,7 @@ class NET_EXPORT_PRIVATE ProofVerifierChromium : public ProofVerifier {
 
   // Underlying verifier used to verify certificates.
   CertVerifier* const cert_verifier_;
-  CertPolicyEnforcer* const cert_policy_enforcer_;
+  CTPolicyEnforcer* const ct_policy_enforcer_;
 
   TransportSecurityState* const transport_security_state_;
   CTVerifier* const cert_transparency_verifier_;

@@ -45,12 +45,12 @@
 #include "net/base/net_util.h"
 #include "net/base/network_quality_estimator.h"
 #include "net/base/sdch_manager.h"
-#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/ct_known_logs.h"
 #include "net/cert/ct_known_logs_static.h"
 #include "net/cert/ct_log_verifier.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/cert/multi_threaded_cert_verifier.h"
@@ -407,8 +407,8 @@ void IOSChromeIOThread::Init() {
   // Add built-in logs
   ct_verifier->AddLogs(ct_logs);
 
-  net::CertPolicyEnforcer* policy_enforcer = new net::CertPolicyEnforcer;
-  globals_->cert_policy_enforcer.reset(policy_enforcer);
+  net::CTPolicyEnforcer* policy_enforcer = new net::CTPolicyEnforcer;
+  globals_->ct_policy_enforcer.reset(policy_enforcer);
 
   globals_->ssl_config_service = GetSSLConfigService();
 
@@ -596,7 +596,7 @@ void IOSChromeIOThread::InitializeNetworkSessionParamsFromGlobals(
     net::HttpNetworkSession::Params* params) {
   //  The next two properties of the params don't seem to be
   // elements of URLRequestContext, so they must be set here.
-  params->cert_policy_enforcer = globals.cert_policy_enforcer.get();
+  params->ct_policy_enforcer = globals.ct_policy_enforcer.get();
 
   params->ignore_certificate_errors = false;
   params->testing_fixed_http_port = globals.testing_fixed_http_port;

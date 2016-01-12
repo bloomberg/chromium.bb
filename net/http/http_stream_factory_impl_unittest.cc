@@ -448,7 +448,7 @@ CapturePreconnectsSSLSocketPool::CapturePreconnectsSocketPool(
                           nullptr,        // channel_id_store
                           nullptr,        // transport_security_state
                           nullptr,        // cert_transparency_verifier
-                          nullptr,        // cert_policy_enforcer
+                          nullptr,        // ct_policy_enforcer
                           std::string(),  // ssl_session_cache_shard
                           nullptr,        // deterministic_socket_factory
                           nullptr,        // transport_socket_pool

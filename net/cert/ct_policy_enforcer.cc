@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/cert/cert_policy_enforcer.h"
+#include "net/cert/ct_policy_enforcer.h"
 
 #include <algorithm>
 #include <utility>
@@ -296,7 +296,7 @@ void CheckCTEVPolicyCompliance(X509Certificate* cert,
 
 }  // namespace
 
-bool CertPolicyEnforcer::DoesConformToCTEVPolicy(
+bool CTPolicyEnforcer::DoesConformToCTEVPolicy(
     X509Certificate* cert,
     const ct::EVCertsWhitelist* ev_whitelist,
     const ct::CTVerifyResult& ct_result,

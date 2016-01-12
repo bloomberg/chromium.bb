@@ -19,10 +19,10 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/cert_policy_enforcer.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
+#include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_verifier.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
@@ -52,7 +52,7 @@ class ProofVerifierChromium::Job {
  public:
   Job(ProofVerifierChromium* proof_verifier,
       CertVerifier* cert_verifier,
-      CertPolicyEnforcer* cert_policy_enforcer,
+      CTPolicyEnforcer* ct_policy_enforcer,
       TransportSecurityState* transport_security_state,
       CTVerifier* cert_transparency_verifier,
       int cert_verify_flags,
@@ -93,7 +93,7 @@ class ProofVerifierChromium::Job {
   CertVerifier* verifier_;
   scoped_ptr<CertVerifier::Request> cert_verifier_request_;
 
-  CertPolicyEnforcer* policy_enforcer_;
+  CTPolicyEnforcer* policy_enforcer_;
 
   TransportSecurityState* transport_security_state_;
 
@@ -125,14 +125,14 @@ class ProofVerifierChromium::Job {
 ProofVerifierChromium::Job::Job(
     ProofVerifierChromium* proof_verifier,
     CertVerifier* cert_verifier,
-    CertPolicyEnforcer* cert_policy_enforcer,
+    CTPolicyEnforcer* ct_policy_enforcer,
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier,
     int cert_verify_flags,
     const BoundNetLog& net_log)
     : proof_verifier_(proof_verifier),
       verifier_(cert_verifier),
-      policy_enforcer_(cert_policy_enforcer),
+      policy_enforcer_(ct_policy_enforcer),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier),
       cert_verify_flags_(cert_verify_flags),
@@ -396,11 +396,11 @@ bool ProofVerifierChromium::Job::VerifySignature(const string& signed_data,
 
 ProofVerifierChromium::ProofVerifierChromium(
     CertVerifier* cert_verifier,
-    CertPolicyEnforcer* cert_policy_enforcer,
+    CTPolicyEnforcer* ct_policy_enforcer,
     TransportSecurityState* transport_security_state,
     CTVerifier* cert_transparency_verifier)
     : cert_verifier_(cert_verifier),
-      cert_policy_enforcer_(cert_policy_enforcer),
+      ct_policy_enforcer_(ct_policy_enforcer),
       transport_security_state_(transport_security_state),
       cert_transparency_verifier_(cert_transparency_verifier) {}
 
@@ -425,7 +425,7 @@ QuicAsyncStatus ProofVerifierChromium::VerifyProof(
   const ProofVerifyContextChromium* chromium_context =
       reinterpret_cast<const ProofVerifyContextChromium*>(verify_context);
   scoped_ptr<Job> job(
-      new Job(this, cert_verifier_, cert_policy_enforcer_,
+      new Job(this, cert_verifier_, ct_policy_enforcer_,
               transport_security_state_, cert_transparency_verifier_,
               chromium_context->cert_verify_flags, chromium_context->net_log));
   QuicAsyncStatus status =
