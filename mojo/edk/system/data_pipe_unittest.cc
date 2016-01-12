@@ -10,10 +10,12 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/simple_platform_support.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/system/waiter.h"
+#include "mojo/edk/test/multiprocess_test_helper.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
@@ -32,6 +34,11 @@ const uint32_t kSizeOfOptions =
 // iterations (separated by a short sleep).
 // TODO(vtl): Get rid of this.
 const size_t kMaxPoll = 100;
+
+// Used in Multiprocess test.
+const size_t kMultiprocessCapacity = 37;
+const char kMultiprocessTestData[] = "hello i'm a string that is 36 bytes";
+const int kMultiprocessMaxIter = 513;
 
 class DataPipeTest : public testing::Test {
  public:
@@ -53,8 +60,8 @@ class DataPipeTest : public testing::Test {
                        uint32_t* num_bytes,
                        bool all_or_none = false) {
     return MojoWriteData(producer_, elements, num_bytes,
-                         all_or_none ? MOJO_READ_DATA_FLAG_ALL_OR_NONE :
-                                       MOJO_WRITE_DATA_FLAG_NONE);
+                         all_or_none ? MOJO_WRITE_DATA_FLAG_ALL_OR_NONE
+                                     : MOJO_WRITE_DATA_FLAG_NONE);
   }
 
   MojoResult ReadData(void* elements,
@@ -97,9 +104,9 @@ class DataPipeTest : public testing::Test {
   MojoResult BeginWriteData(void** elements,
                             uint32_t* num_bytes,
                             bool all_or_none = false) {
-    MojoReadDataFlags flags = MOJO_READ_DATA_FLAG_NONE;
+    MojoReadDataFlags flags = MOJO_WRITE_DATA_FLAG_NONE;
     if (all_or_none)
-      flags |= MOJO_READ_DATA_FLAG_ALL_OR_NONE;
+      flags |= MOJO_WRITE_DATA_FLAG_ALL_OR_NONE;
     return MojoBeginWriteData(producer_, elements, num_bytes, flags);
   }
 
@@ -1624,6 +1631,220 @@ TEST_F(DataPipeTest, ConsumerWithClosedProducerSent) {
 
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe0));
   ASSERT_EQ(MOJO_RESULT_OK, MojoClose(pipe1));
+}
+
+bool WriteAllData(MojoHandle producer,
+                  const void* elements,
+                  uint32_t num_bytes) {
+  for (size_t i = 0; i < kMaxPoll; i++) {
+    // Write as much data as we can.
+    uint32_t write_bytes = num_bytes;
+    MojoResult result = MojoWriteData(producer, elements, &write_bytes,
+                                      MOJO_WRITE_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_OK) {
+      num_bytes -= write_bytes;
+      elements = static_cast<const uint8_t*>(elements) + write_bytes;
+      if (num_bytes == 0)
+        return true;
+    } else {
+      EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT, result);
+    }
+
+    MojoHandleSignalsState hss = MojoHandleSignalsState();
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(producer, MOJO_HANDLE_SIGNAL_WRITABLE,
+                                       MOJO_DEADLINE_INDEFINITE, &hss));
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
+  }
+
+  return false;
+}
+
+// If |expect_empty| is true, expect |consumer| to be empty after reading.
+bool ReadAllData(MojoHandle consumer,
+                 void* elements,
+                 uint32_t num_bytes,
+                 bool expect_empty) {
+  for (size_t i = 0; i < kMaxPoll; i++) {
+    // Read as much data as we can.
+    uint32_t read_bytes = num_bytes;
+    MojoResult result =
+        MojoReadData(consumer, elements, &read_bytes, MOJO_READ_DATA_FLAG_NONE);
+    if (result == MOJO_RESULT_OK) {
+      num_bytes -= read_bytes;
+      elements = static_cast<uint8_t*>(elements) + read_bytes;
+      if (num_bytes == 0) {
+        if (expect_empty) {
+          // Expect no more data.
+          test::Sleep(test::TinyDeadline());
+          MojoReadData(consumer, nullptr, &num_bytes,
+                       MOJO_READ_DATA_FLAG_QUERY);
+          EXPECT_EQ(0u, num_bytes);
+        }
+        return true;
+      }
+    } else {
+      EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT, result);
+    }
+
+    MojoHandleSignalsState hss = MojoHandleSignalsState();
+    EXPECT_EQ(MOJO_RESULT_OK, MojoWait(consumer, MOJO_HANDLE_SIGNAL_READABLE,
+                                       MOJO_DEADLINE_INDEFINITE, &hss));
+    // Peer could have become closed while we're still waiting for data.
+    EXPECT_TRUE(MOJO_HANDLE_SIGNAL_READABLE & hss.satisfied_signals);
+    EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+              hss.satisfiable_signals);
+  }
+
+  return num_bytes == 0;
+}
+
+#if defined(OS_ANDROID)
+// Android multi-process tests are not executing the new process. This is flaky.
+#define MAYBE_Multiprocess DISABLED_Multiprocess
+#else
+#define MAYBE_Multiprocess Multiprocess
+#endif  // defined(OS_ANDROID)
+TEST_F(DataPipeTest, MAYBE_Multiprocess) {
+  const uint32_t kTestDataSize =
+      static_cast<uint32_t>(sizeof(kMultiprocessTestData));
+  const MojoCreateDataPipeOptions options = {
+      kSizeOfOptions,                           // |struct_size|.
+      MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,  // |flags|.
+      1,                                        // |element_num_bytes|.
+      kMultiprocessCapacity                     // |capacity_num_bytes|.
+  };
+  ASSERT_EQ(MOJO_RESULT_OK, Create(&options));
+
+  test::MultiprocessTestHelper multiprocess_test_helper;
+  multiprocess_test_helper.StartChild("MultiprocessClient");
+
+  // Send some data before serialising and sending the data pipe over.
+  // This is the first write so we don't need to use WriteAllData.
+  uint32_t num_bytes = kTestDataSize;
+  ASSERT_EQ(MOJO_RESULT_OK, WriteData(kMultiprocessTestData, &num_bytes,
+                                      MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
+  ASSERT_EQ(kTestDataSize, num_bytes);
+
+  MojoHandle server_mp =
+      CreateMessagePipe(
+          std::move(multiprocess_test_helper.server_platform_handle))
+          .release()
+          .value();
+
+  // Send child process the data pipe.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(server_mp, nullptr, 0, &consumer_,
+                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Send a bunch of data of varying sizes.
+  uint8_t buffer[100];
+  int seq = 0;
+  for (int i = 0; i < kMultiprocessMaxIter; ++i) {
+    for (uint32_t size = 1; size <= kMultiprocessCapacity; size++) {
+      for (unsigned int j = 0; j < size; ++j)
+        buffer[j] = seq + j;
+      EXPECT_TRUE(WriteAllData(producer_, buffer, size));
+      seq += size;
+    }
+  }
+
+  // Write the test string in again.
+  EXPECT_TRUE(WriteAllData(producer_, kMultiprocessTestData, kTestDataSize));
+
+  // Swap ends.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(server_mp, nullptr, 0, &producer_,
+                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Receive the consumer from the other side.
+  producer_ = MOJO_HANDLE_INVALID;
+  MojoHandleSignalsState hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(server_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  MojoHandle handles[2];
+  uint32_t num_handles = MOJO_ARRAYSIZE(handles);
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(server_mp, nullptr, 0, handles, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(1u, num_handles);
+  consumer_ = handles[0];
+
+  // Read the test string twice. Once for when we sent it, and once for the
+  // other end sending it.
+  for (int i = 0; i < 2; ++i) {
+    EXPECT_TRUE(ReadAllData(consumer_, buffer, kTestDataSize, i == 1));
+    EXPECT_EQ(0, memcmp(buffer, kMultiprocessTestData, kTestDataSize));
+  }
+
+  // Don't have to close the consumer here because it will be done for us.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(server_mp));
+  EXPECT_TRUE(multiprocess_test_helper.WaitForChildTestShutdown());
+}
+
+MOJO_MULTIPROCESS_TEST_CHILD_TEST(MultiprocessClient) {
+  ScopedPlatformHandle client_platform_handle =
+      std::move(test::MultiprocessTestHelper::client_platform_handle);
+  const uint32_t kTestDataSize =
+      static_cast<uint32_t>(sizeof(kMultiprocessTestData));
+  EXPECT_TRUE(client_platform_handle.is_valid());
+
+  MojoHandle client_mp =
+      CreateMessagePipe(std::move(client_platform_handle)).release().value();
+
+  // Receive the data pipe from the other side.
+  MojoHandle consumer = MOJO_HANDLE_INVALID;
+  MojoHandleSignalsState hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  MojoHandle handles[2];
+  uint32_t num_handles = MOJO_ARRAYSIZE(handles);
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, nullptr, 0, handles, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(1u, num_handles);
+  consumer = handles[0];
+
+  // Read the initial string that was sent.
+  int32_t buffer[100];
+  EXPECT_TRUE(ReadAllData(consumer, buffer, kTestDataSize, false));
+  EXPECT_EQ(0, memcmp(buffer, kMultiprocessTestData, kTestDataSize));
+
+  // Receive the main data and check it is correct.
+  int seq = 0;
+  uint8_t expected_buffer[100];
+  for (int i = 0; i < kMultiprocessMaxIter; ++i) {
+    for (uint32_t size = 1; size <= kMultiprocessCapacity; ++size) {
+      for (unsigned int j = 0; j < size; ++j)
+        expected_buffer[j] = seq + j;
+      EXPECT_TRUE(ReadAllData(consumer, buffer, size, false));
+      EXPECT_EQ(0, memcmp(buffer, expected_buffer, size));
+
+      seq += size;
+    }
+  }
+
+  // Swap ends.
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(client_mp, nullptr, 0, &consumer,
+                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+  // Receive the producer from the other side.
+  MojoHandle producer = MOJO_HANDLE_INVALID;
+  hss = MojoHandleSignalsState();
+  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(client_mp, MOJO_HANDLE_SIGNAL_READABLE,
+                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  num_handles = MOJO_ARRAYSIZE(handles);
+  ASSERT_EQ(MOJO_RESULT_OK,
+            MojoReadMessage(client_mp, nullptr, 0, handles, &num_handles,
+                            MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(1u, num_handles);
+  producer = handles[0];
+
+  // Write the test string one more time.
+  EXPECT_TRUE(WriteAllData(producer, kMultiprocessTestData, kTestDataSize));
+
+  // We swapped ends, so close the producer.
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(producer));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(client_mp));
 }
 
 }  // namespace
