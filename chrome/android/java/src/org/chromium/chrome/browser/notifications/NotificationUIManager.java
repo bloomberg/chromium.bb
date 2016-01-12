@@ -559,7 +559,8 @@ public class NotificationUIManager {
      *
      * @return Whether custom layouts should be used.
      */
-    private static boolean useCustomLayouts() {
+    @VisibleForTesting
+    static boolean useCustomLayouts() {
         // Query the field trial state first to ensure correct UMA reporting.
         String groupName = FieldTrialList.findFullName("WebNotificationCustomLayouts");
         CommandLine commandLine = CommandLine.getInstance();
@@ -569,7 +570,7 @@ public class NotificationUIManager {
         if (commandLine.hasSwitch(ChromeSwitches.ENABLE_WEB_NOTIFICATION_CUSTOM_LAYOUTS)) {
             return true;
         }
-        return groupName.equals("Enabled");
+        return !groupName.equals("Disabled");
     }
 
     /**

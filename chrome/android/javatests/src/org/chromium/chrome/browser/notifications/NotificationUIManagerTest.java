@@ -62,9 +62,10 @@ public class NotificationUIManagerTest extends NotificationTestBase {
         assertTrue(tickerText.contains("MyNotification"));
         assertTrue(tickerText.contains("Hello"));
 
-        // Validate the appearance style of the notification. The EXTRA_TEMPLATE was inroduced
+        // Validate the appearance style of the notification. The EXTRA_TEMPLATE was introduced
         // in Android Lollipop, we cannot verify this in earlier versions.
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                && !NotificationUIManager.useCustomLayouts()) {
             assertEquals("android.app.Notification$BigTextStyle",
                     notification.extras.getString(Notification.EXTRA_TEMPLATE));
         }
