@@ -37,6 +37,14 @@ class BinderCommandStreamTest : public ::testing::Test,
     received_response_ = RESPONSE_COMPLETE;
   }
 
+  void OnIncrementWeakReference(void* ptr, void* cookie) override {}
+
+  void OnIncrementStrongReference(void* ptr, void* cookie) override {}
+
+  void OnDecrementStrongReference(void* ptr, void* cookie) override {}
+
+  void OnDecrementWeakReference(void* ptr, void* cookie) override {}
+
   void OnFailedReply() override { received_response_ = RESPONSE_FAILED; }
 
  protected:

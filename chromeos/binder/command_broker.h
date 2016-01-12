@@ -54,6 +54,10 @@ class CHROMEOS_EXPORT CommandBroker
   void OnReply(scoped_ptr<TransactionData> data) override;
   void OnDeadReply() override;
   void OnTransactionComplete() override;
+  void OnIncrementWeakReference(void* ptr, void* cookie) override;
+  void OnIncrementStrongReference(void* ptr, void* cookie) override;
+  void OnDecrementStrongReference(void* ptr, void* cookie) override;
+  void OnDecrementWeakReference(void* ptr, void* cookie) override;
   void OnFailedReply() override;
 
  private:

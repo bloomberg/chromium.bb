@@ -140,9 +140,36 @@ bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
     case BR_ACQUIRE:
     case BR_RELEASE:
     case BR_DECREFS:
-    case BR_ATTEMPT_ACQUIRE:
-      NOTIMPLEMENTED();
+    case BR_ATTEMPT_ACQUIRE: {
+      binder_ptr_cookie data = {};
+      if (!reader->Read(&data, sizeof(data))) {
+        LOG(ERROR) << "Failed to read arguments.";
+        return false;
+      }
+      void* ptr = reinterpret_cast<void*>(data.ptr);
+      void* cookie = reinterpret_cast<void*>(data.cookie);
+      switch (command) {
+        case BR_INCREFS:
+          incoming_command_handler_->OnIncrementWeakReference(ptr, cookie);
+          AppendOutgoingCommand(BC_INCREFS_DONE, &data, sizeof(data));
+          break;
+        case BR_ACQUIRE:
+          incoming_command_handler_->OnIncrementStrongReference(ptr, cookie);
+          AppendOutgoingCommand(BC_ACQUIRE_DONE, &data, sizeof(data));
+          break;
+        case BR_RELEASE:
+          incoming_command_handler_->OnDecrementStrongReference(ptr, cookie);
+          break;
+        case BR_DECREFS:
+          incoming_command_handler_->OnDecrementWeakReference(ptr, cookie);
+          break;
+        case BR_ATTEMPT_ACQUIRE:
+          // Kernel's binder.h says this is not currently supported.
+          NOTREACHED();
+          break;
+      }
       break;
+    }
     case BR_NOOP:
       break;
     case BR_SPAWN_LOOPER:

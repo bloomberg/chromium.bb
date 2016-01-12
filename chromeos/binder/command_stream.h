@@ -42,6 +42,18 @@ class CHROMEOS_EXPORT CommandStream {
     // Called to handle BR_TRANSACTION_COMPLETE.
     virtual void OnTransactionComplete() = 0;
 
+    // Called to handle BR_INCREFS.
+    virtual void OnIncrementWeakReference(void* ptr, void* cookie) = 0;
+
+    // Called to handle BR_ACQUIRE.
+    virtual void OnIncrementStrongReference(void* ptr, void* cookie) = 0;
+
+    // Called to handle BR_RELEASE.
+    virtual void OnDecrementStrongReference(void* ptr, void* cookie) = 0;
+
+    // Called to handle BR_DECREFS.
+    virtual void OnDecrementWeakReference(void* ptr, void* cookie) = 0;
+
     // Called to handle BR_FAILED_REPLY.
     virtual void OnFailedReply() = 0;
   };

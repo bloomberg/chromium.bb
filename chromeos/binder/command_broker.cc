@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chromeos/binder/driver.h"
+#include "chromeos/binder/local_object.h"
 #include "chromeos/binder/transaction_data.h"
 
 namespace binder {
@@ -117,6 +118,22 @@ void CommandBroker::OnTransactionComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_EQ(response_type_, RESPONSE_TYPE_NONE);
   response_type_ = RESPONSE_TYPE_TRANSACTION_COMPLETE;
+}
+
+void CommandBroker::OnIncrementWeakReference(void* ptr, void* cookie) {
+  // Do nothing.
+}
+
+void CommandBroker::OnIncrementStrongReference(void* ptr, void* cookie) {
+  reinterpret_cast<LocalObject*>(cookie)->AddRef();
+}
+
+void CommandBroker::OnDecrementStrongReference(void* ptr, void* cookie) {
+  reinterpret_cast<LocalObject*>(cookie)->Release();
+}
+
+void CommandBroker::OnDecrementWeakReference(void* ptr, void* cookie) {
+  // Do nothing.
 }
 
 void CommandBroker::OnFailedReply() {
