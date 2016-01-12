@@ -327,12 +327,12 @@ class NET_EXPORT_PRIVATE QuicConnection
   // If |listener| is provided, then it will be informed once ACKs have been
   // received for all the packets written in this call.
   // The |listener| is not owned by the QuicConnection and must outlive it.
-  QuicConsumedData SendStreamData(QuicStreamId id,
-                                  QuicIOVector iov,
-                                  QuicStreamOffset offset,
-                                  bool fin,
-                                  FecProtection fec_protection,
-                                  QuicAckListenerInterface* listener);
+  virtual QuicConsumedData SendStreamData(QuicStreamId id,
+                                          QuicIOVector iov,
+                                          QuicStreamOffset offset,
+                                          bool fin,
+                                          FecProtection fec_protection,
+                                          QuicAckListenerInterface* listener);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
@@ -635,20 +635,6 @@ class NET_EXPORT_PRIVATE QuicConnection
   bool ack_frame_updated() const;
 
  protected:
-  // Packets which have not been written to the wire.
-  struct QueuedPacket {
-    explicit QueuedPacket(SerializedPacket packet);
-    QueuedPacket(SerializedPacket packet,
-                 TransmissionType transmission_type,
-                 QuicPacketNumber original_packet_number);
-
-    SerializedPacket serialized_packet;
-    TransmissionType transmission_type;
-    // The packet's original packet number if it is a retransmission.
-    // Otherwise it must be 0.
-    QuicPacketNumber original_packet_number;
-  };
-
   // Do any work which logically would be done in OnPacket but can not be
   // safely done until the packet is validated.  Returns true if the packet
   // can be handled, false otherwise. Also migrates the connection if the packet
@@ -657,7 +643,7 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Send a packet to the peer, and takes ownership of the packet if the packet
   // cannot be written immediately.
-  virtual void SendOrQueuePacket(QueuedPacket packet);
+  virtual void SendOrQueuePacket(SerializedPacket* packet);
 
   QuicConnectionHelperInterface* helper() { return helper_; }
 
@@ -681,7 +667,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   friend class test::QuicConnectionPeer;
   friend class test::PacketSavingConnection;
 
-  typedef std::list<QueuedPacket> QueuedPacketList;
+  typedef std::list<SerializedPacket> QueuedPacketList;
   typedef std::map<QuicFecGroupNumber, QuicFecGroup*> FecGroupMap;
 
   // Writes the given packet to socket, encrypted with packet's
@@ -691,11 +677,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // retransmittable frames to nullptr.
   // Saves the connection close packet for later transmission, even if the
   // writer is write blocked.
-  bool WritePacket(QueuedPacket* packet);
+  bool WritePacket(SerializedPacket* packet);
 
   // Does the main work of WritePacket, but does not delete the packet or
   // retransmittable frames upon success.
-  bool WritePacketInner(QueuedPacket* packet);
+  bool WritePacketInner(SerializedPacket* packet);
 
   // Make sure an ack we got from our peer is sane.
   // Returns nullptr for valid acks or an error std::string if it was invalid.
@@ -713,7 +699,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();
 
-  // Deletes and clears any QueuedPackets.
+  // Deletes and clears any queued packets.
   void ClearQueuedPackets();
 
   // Closes the connection if the sent or received packet manager are tracking
@@ -728,7 +714,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   void WritePendingRetransmissions();
 
   // Returns true if the packet should be discarded and not sent.
-  bool ShouldDiscardPacket(const QueuedPacket& packet);
+  bool ShouldDiscardPacket(const SerializedPacket& packet);
 
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.
@@ -781,8 +767,8 @@ class NET_EXPORT_PRIVATE QuicConnection
   void CheckForAddressMigration(const IPEndPoint& self_address,
                                 const IPEndPoint& peer_address);
 
-  HasRetransmittableData IsRetransmittable(const QueuedPacket& packet);
-  bool IsTerminationPacket(const QueuedPacket& packet);
+  HasRetransmittableData IsRetransmittable(const SerializedPacket& packet);
+  bool IsTerminationPacket(const SerializedPacket& packet);
 
   // Set the size of the packet we are targeting while doing path MTU discovery.
   void SetMtuDiscoveryTarget(QuicByteCount target);
@@ -992,6 +978,9 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Whether a GoAway has been received.
   bool goaway_received_;
+
+  // If true, multipath is enabled for this connection.
+  bool multipath_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

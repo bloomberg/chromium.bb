@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/stl_util.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
 #include "net/tools/quic/quic_per_connection_packet_writer.h"
@@ -401,10 +402,11 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
                                         QuicErrorCode error) {
   SessionMap::iterator it = session_map_.find(connection_id);
   if (it == session_map_.end()) {
-    LOG(DFATAL) << "ConnectionId " << connection_id
-                << " does not exist in the session map.  "
-                << "Error: " << QuicUtils::ErrorToString(error);
-    LOG(DFATAL) << base::debug::StackTrace().ToString();
+    QUIC_BUG << "ConnectionId " << connection_id
+             << " does not exist in the session map.  Error: "
+             << QuicUtils::ErrorToString(error);
+    QUIC_BUG << base::debug::StackTrace().ToString();
+    ;
     return;
   }
 

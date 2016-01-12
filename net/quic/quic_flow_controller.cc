@@ -5,6 +5,7 @@
 #include "net/quic/quic_flow_controller.h"
 
 #include "base/strings/stringprintf.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_protocol.h"
@@ -245,8 +246,8 @@ void QuicFlowController::UpdateReceiveWindowSize(QuicStreamOffset size) {
   DVLOG(1) << ENDPOINT << "UpdateReceiveWindowSize for stream " << id_ << ": "
            << size;
   if (receive_window_size_ != receive_window_offset_) {
-    LOG(DFATAL) << "receive_window_size_:" << receive_window_size_
-                << " != receive_window_offset:" << receive_window_offset_;
+    QUIC_BUG << "receive_window_size_:" << receive_window_size_
+             << " != receive_window_offset:" << receive_window_offset_;
     return;
   }
   receive_window_size_ = size;

@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/spdy/spdy_http_utils.h"
 
 using base::FilePath;
@@ -114,7 +115,7 @@ void QuicInMemoryCache::ResetForTests() {
 
 void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   if (cache_directory.empty()) {
-    LOG(DFATAL) << "cache_directory must not be empty.";
+    QUIC_BUG << "cache_directory must not be empty.";
     return;
   }
   VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
@@ -205,7 +206,7 @@ void QuicInMemoryCache::AddResponseImpl(
   DCHECK(!host.empty()) << "Host must be populated, e.g. \"www.google.com\"";
   string key = GetKey(host, path);
   if (ContainsKey(responses_, key)) {
-    LOG(DFATAL) << "Response for '" << key << "' already exists!";
+    QUIC_BUG << "Response for '" << key << "' already exists!";
     return;
   }
   Response* new_response = new Response();

@@ -11,6 +11,7 @@
 #include "net/quic/congestion_control/pacing_sender.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/proto/cached_network_parameters.pb.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
@@ -392,6 +393,16 @@ void QuicSentPacketManager::MarkForRetransmission(
   pending_retransmissions_[packet_number] = transmission_type;
 }
 
+void QuicSentPacketManager::RecordOneSpuriousRetransmission(
+    const TransmissionInfo& info) {
+  stats_->bytes_spuriously_retransmitted += info.bytes_sent;
+  ++stats_->packets_spuriously_retransmitted;
+  if (debug_delegate_ != nullptr) {
+    debug_delegate_->OnSpuriousPacketRetransmission(info.transmission_type,
+                                                    info.bytes_sent);
+  }
+}
+
 void QuicSentPacketManager::RecordSpuriousRetransmissions(
     const TransmissionInfo& info,
     QuicPacketNumber acked_packet_number) {
@@ -401,12 +412,7 @@ void QuicSentPacketManager::RecordSpuriousRetransmissions(
       const TransmissionInfo& retransmit_info =
           unacked_packets_.GetTransmissionInfo(retransmission);
       retransmission = retransmit_info.retransmission;
-      stats_->bytes_spuriously_retransmitted += retransmit_info.bytes_sent;
-      ++stats_->packets_spuriously_retransmitted;
-      if (debug_delegate_ != nullptr) {
-        debug_delegate_->OnSpuriousPacketRetransmission(
-            retransmit_info.transmission_type, retransmit_info.bytes_sent);
-      }
+      RecordOneSpuriousRetransmission(retransmit_info);
     }
     return;
   }
@@ -417,20 +423,15 @@ void QuicSentPacketManager::RecordSpuriousRetransmissions(
     // ianswett: Prevents crash in b/20552846.
     if (*it < unacked_packets_.GetLeastUnacked() ||
         *it > unacked_packets_.largest_sent_packet()) {
-      LOG(DFATAL) << "Retransmission out of range:" << *it
-                  << " least unacked:" << unacked_packets_.GetLeastUnacked()
-                  << " largest sent:" << unacked_packets_.largest_sent_packet();
+      QUIC_BUG << "Retransmission out of range:" << *it
+               << " least unacked:" << unacked_packets_.GetLeastUnacked()
+               << " largest sent:" << unacked_packets_.largest_sent_packet();
       return;
     }
     const TransmissionInfo& retransmit_info =
         unacked_packets_.GetTransmissionInfo(*it);
 
-    stats_->bytes_spuriously_retransmitted += retransmit_info.bytes_sent;
-    ++stats_->packets_spuriously_retransmitted;
-    if (debug_delegate_ != nullptr) {
-      debug_delegate_->OnSpuriousPacketRetransmission(
-          retransmit_info.transmission_type, retransmit_info.bytes_sent);
-    }
+    RecordOneSpuriousRetransmission(retransmit_info);
   }
 }
 
@@ -569,9 +570,9 @@ bool QuicSentPacketManager::OnPacketSent(
 
   if (original_packet_number != 0) {
     if (!pending_retransmissions_.erase(original_packet_number)) {
-      DLOG(DFATAL) << "Expected packet number to be in "
-                   << "pending_retransmissions_.  packet_number: "
-                   << original_packet_number;
+      QUIC_BUG << "Expected packet number to be in "
+               << "pending_retransmissions_.  packet_number: "
+               << original_packet_number;
     }
   }
 
@@ -787,8 +788,8 @@ bool QuicSentPacketManager::MaybeUpdateRTT(const QuicAckFrame& ack_frame,
       unacked_packets_.GetTransmissionInfo(ack_frame.largest_observed);
   // Ensure the packet has a valid sent time.
   if (transmission_info.sent_time == QuicTime::Zero()) {
-    LOG(DFATAL) << "Acked packet has zero sent time, largest_observed:"
-                << ack_frame.largest_observed;
+    QUIC_BUG << "Acked packet has zero sent time, largest_observed:"
+             << ack_frame.largest_observed;
     return false;
   }
 

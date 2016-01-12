@@ -75,6 +75,8 @@ class NET_EXPORT_PRIVATE QuicNegotiableValue : public QuicConfigValue {
 };
 
 class NET_EXPORT_PRIVATE QuicNegotiableUint32 : public QuicNegotiableValue {
+  // TODO(fayang): some negotiated values use uint32 as bool (e.g., silent
+  // close). Consider adding a QuicNegotiableBool type.
  public:
   // Default and max values default to 0.
   QuicNegotiableUint32(QuicTag name, QuicConfigPresence presence);
@@ -327,6 +329,10 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   uint32_t ReceivedSocketReceiveBuffer() const;
 
+  void SetMultipathEnabled(bool multipath_enabled);
+
+  bool MultipathEnabled() const;
+
   bool negotiated() const;
 
   // ToHandshakeMessage serialises the settings in this object as a series of
@@ -373,6 +379,9 @@ class NET_EXPORT_PRIVATE QuicConfig {
 
   // Socket receive buffer in bytes.
   QuicFixedUint32 socket_receive_buffer_;
+
+  // Whether to support multipath for this connection.
+  QuicNegotiableUint32 multipath_enabled_;
 };
 
 }  // namespace net

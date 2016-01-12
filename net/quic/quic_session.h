@@ -205,7 +205,7 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   ReliableQuicStream* GetStream(const QuicStreamId stream_id);
 
   // Mark a stream as draining.
-  void StreamDraining(QuicStreamId id);
+  virtual void StreamDraining(QuicStreamId id);
 
   // Close the connection, if it is not already closed.
   void CloseConnectionWithDetails(QuicErrorCode error, const char* details);
@@ -246,6 +246,21 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // operations are being done on the streams at this time)
   virtual void PostProcessAfterData();
 
+  // Performs the work required to close |stream_id|.  If |locally_reset|
+  // then the stream has been reset by this endpoint, not by the peer.
+  virtual void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
+
+  // When a stream is closed locally, it may not yet know how many bytes the
+  // peer sent on that stream.
+  // When this data arrives (via stream frame w. FIN, or RST) this method
+  // is called, and correctly updates the connection level flow controller.
+  void UpdateFlowControlOnFinalReceivedByteOffset(
+      QuicStreamId id,
+      QuicStreamOffset final_byte_offset);
+
+  // Return true if given stream is peer initiated.
+  bool IsIncomingStream(QuicStreamId id) const;
+
   StreamMap& static_streams() { return static_stream_map_; }
   const StreamMap& static_streams() const { return static_stream_map_; }
 
@@ -277,21 +292,26 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
 
   size_t GetNumLocallyClosedOutgoingStreamsHighestOffset() const;
 
+  QuicStreamId next_outgoing_stream_id() const {
+    return next_outgoing_stream_id_;
+  }
+
+  // Close connection when receive a frame for a locally-created nonexistant
+  // stream.
+  // Prerequisite: IsClosedStream(stream_id) == false
+  // Server session might need to override this method to allow server push
+  // stream to be promised before creating an active stream.
+  virtual void HandleFrameOnNonexistentOutgoingStream(QuicStreamId stream_id);
+
+  // If stream is a locally closed stream, this RST will update FIN offset.
+  // Otherwise stream is a preserved stream and the behavior of it depends on
+  // derived class's own implementation.
+  virtual void HandleRstOnValidNonexistentStream(
+      const QuicRstStreamFrame& frame);
+
  private:
   friend class test::QuicSessionPeer;
   friend class VisitorShim;
-
-  // Performs the work required to close |stream_id|.  If |locally_reset|
-  // then the stream has been reset by this endpoint, not by the peer.
-  void CloseStreamInner(QuicStreamId stream_id, bool locally_reset);
-
-  // When a stream is closed locally, it may not yet know how many bytes the
-  // peer sent on that stream.
-  // When this data arrives (via stream frame w. FIN, or RST) this method
-  // is called, and correctly updates the connection level flow controller.
-  void UpdateFlowControlOnFinalReceivedByteOffset(
-      QuicStreamId id,
-      QuicStreamOffset final_byte_offset);
 
   // Called in OnConfigNegotiated when we receive a new stream level flow
   // control window in a negotiated config. Closes the connection if invalid.
@@ -308,9 +328,6 @@ class NET_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface {
   // Called in OnConfigNegotiated for finch trials to measure performance of
   // starting with smaller flow control receive windows and auto-tuning.
   void AdjustInitialFlowControlWindows(size_t stream_window);
-
-  // Return true if given stream is peer initiated.
-  bool IsIncomingStream(QuicStreamId id) const;
 
   // Keep track of highest received byte offset of locally closed streams, while
   // waiting for a definitive final highest offset from the peer.

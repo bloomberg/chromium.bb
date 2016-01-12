@@ -13,6 +13,7 @@
 #include "net/spdy/spdy_frame_builder.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/spdy/spdy_protocol.h"
+#include "url/gurl.h"
 
 using std::string;
 using std::vector;
@@ -103,6 +104,33 @@ bool SpdyUtils::ParseTrailers(const char* data,
 
   DVLOG(1) << "Successfully parsed Trailers.";
   return true;
+}
+
+// static
+string SpdyUtils::GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers) {
+  SpdyHeaderBlock::const_iterator it = headers.find(":scheme");
+  if (it == headers.end())
+    return "";
+  std::string url = it->second.as_string();
+
+  url.append("://");
+
+  it = headers.find(":authority");
+  if (it == headers.end())
+    return "";
+  url.append(it->second.as_string());
+
+  it = headers.find(":path");
+  if (it == headers.end())
+    return "";
+  url.append(it->second.as_string());
+  return url;
+}
+
+// static
+bool SpdyUtils::UrlIsValid(const SpdyHeaderBlock& headers) {
+  string url(GetUrlFromHeaderBlock(headers));
+  return url != "" && GURL(url).is_valid();
 }
 
 }  // namespace net

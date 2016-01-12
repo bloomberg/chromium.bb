@@ -791,7 +791,9 @@ SerializedPacket::SerializedPacket(
       entropy_hash(entropy_hash),
       is_fec_packet(false),
       has_ack(has_ack),
-      has_stop_waiting(has_stop_waiting) {}
+      has_stop_waiting(has_stop_waiting),
+      original_packet_number(0),
+      transmission_type(NOT_RETRANSMISSION) {}
 
 SerializedPacket::SerializedPacket(
     QuicPathId path_id,

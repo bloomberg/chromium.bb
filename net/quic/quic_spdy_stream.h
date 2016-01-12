@@ -88,6 +88,17 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // should be closed; no more data will be sent by the peer.
   virtual void OnStreamHeadersComplete(bool fin, size_t frame_len);
 
+  // Called by the session when decompressed PUSH_PROMISE headers data
+  // is received for this stream.
+  // May be called multiple times, with each call providing additional headers
+  // data until OnPromiseHeadersComplete is called.
+  virtual void OnPromiseHeaders(StringPiece headers_data);
+
+  // Called by the session when decompressed push promise headers have
+  // been completely delivered to this stream.
+  virtual void OnPromiseHeadersComplete(QuicStreamId promised_id,
+                                        size_t frame_len);
+
   // Override the base class to not discard response when receiving
   // QUIC_STREAM_NO_ERROR on QUIC_VERSION_29 and later versions.
   void OnStreamReset(const QuicRstStreamFrame& frame) override;
@@ -145,6 +156,7 @@ class NET_EXPORT_PRIVATE QuicSpdyStream : public ReliableQuicStream {
   // trailing) headers are expected next.
   virtual void OnInitialHeadersComplete(bool fin, size_t frame_len);
   virtual void OnTrailingHeadersComplete(bool fin, size_t frame_len);
+  QuicSpdySession* spdy_session() const { return spdy_session_; }
 
   // Returns true if headers have been fully read and consumed.
   bool FinishedReadingHeaders() const;

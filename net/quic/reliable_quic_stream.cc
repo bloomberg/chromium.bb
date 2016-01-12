@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "net/quic/iovector.h"
 #include "net/quic/quic_ack_listener_interface.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_flow_controller.h"
 #include "net/quic/quic_session.h"
@@ -186,12 +187,12 @@ void ReliableQuicStream::WriteOrBufferData(
     bool fin,
     QuicAckListenerInterface* ack_listener) {
   if (data.empty() && !fin) {
-    LOG(DFATAL) << "data.empty() && !fin";
+    QUIC_BUG << "data.empty() && !fin";
     return;
   }
 
   if (fin_buffered_) {
-    LOG(DFATAL) << "Fin already buffered";
+    QUIC_BUG << "Fin already buffered";
     return;
   }
   if (write_side_closed_) {
@@ -229,9 +230,8 @@ void ReliableQuicStream::OnCanWrite() {
         pending_data->offset >= pending_data->data.size()) {
       // This should be impossible because offset tracks the amount of
       // pending_data written thus far.
-      LOG(DFATAL) << "Pending offset is beyond available data. offset: "
-                  << pending_data->offset
-                  << " vs: " << pending_data->data.size();
+      QUIC_BUG << "Pending offset is beyond available data. offset: "
+               << pending_data->offset << " vs: " << pending_data->data.size();
       return;
     }
     size_t remaining_len = pending_data->data.size() - pending_data->offset;

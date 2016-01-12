@@ -10,11 +10,11 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "net/quic/quic_flags.h"
-#include "net/quic/quic_spdy_session.h"
 #include "net/quic/quic_spdy_stream.h"
 #include "net/quic/spdy_utils.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_simple_server_session.h"
 
 using base::StringPiece;
 using base::StringToInt;
@@ -143,9 +143,15 @@ void QuicSimpleServerStream::SendResponse() {
 
   // Examing response status, if it was not pure integer as typical h2 response
   // status, send error response.
-  string request_url = request_headers_[":scheme"].as_string() + "://" +
-                       request_headers_[":authority"].as_string() +
-                       request_headers_[":path"].as_string();
+  string request_url;
+  if (!request_headers_[":scheme"].as_string().empty()) {
+    request_url = request_headers_[":scheme"].as_string() + "://" +
+                  request_headers_[":authority"].as_string() +
+                  request_headers_[":path"].as_string();
+  } else {
+    request_url = request_headers_[":authority"].as_string() +
+                  request_headers_[":path"].as_string();
+  }
   int response_code;
   SpdyHeaderBlock response_headers = response->headers();
   if (!base::StringToInt(response_headers[":status"], &response_code)) {
@@ -168,6 +174,18 @@ void QuicSimpleServerStream::SendResponse() {
       return;
     }
   }
+  list<QuicInMemoryCache::ServerPushInfo> resources =
+      QuicInMemoryCache::GetInstance()->GetServerPushResources(request_url);
+  DVLOG(1) << "Found " << resources.size() << " push resources for stream "
+           << id();
+
+  if (!resources.empty()) {
+    QuicSimpleServerSession* session =
+        static_cast<QuicSimpleServerSession*>(spdy_session());
+    session->PromisePushResources(request_url, resources, id(),
+                                  request_headers_);
+  }
+
   DVLOG(1) << "Sending response for stream " << id();
   SendHeadersAndBodyAndTrailers(response->headers(), response->body(),
                                 response->trailers());

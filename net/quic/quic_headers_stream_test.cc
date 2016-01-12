@@ -115,6 +115,7 @@ vector<TestParams> GetTestParams() {
     params.push_back(TestParams(version, Perspective::IS_CLIENT));
     params.push_back(TestParams(version, Perspective::IS_SERVER));
   }
+  FLAGS_quic_supports_push_promise = true;
   return params;
 }
 
@@ -130,6 +131,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
         framer_(HTTP2),
         stream_frame_(kHeadersStreamId, /*fin=*/false, /*offset=*/0, ""),
         next_promised_stream_id_(2) {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     headers_[":version"] = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";
@@ -224,7 +226,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParams> {
 
   void CloseConnection() { QuicConnectionPeer::CloseConnection(connection_); }
 
-  QuicStreamId NextPromisedStreamId() { return next_promised_stream_id_++; }
+  QuicStreamId NextPromisedStreamId() { return next_promised_stream_id_ += 2; }
 
   static const bool kFrameComplete = true;
   static const bool kHasPriority = true;
@@ -335,6 +337,82 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
       }
     }
   }
+}
+
+TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
+  if (perspective() == Perspective::IS_SERVER)
+    return;
+  for (QuicStreamId stream_id = kClientDataStreamId1;
+       stream_id < kClientDataStreamId3; stream_id += 2) {
+    QuicStreamId promised_stream_id = NextPromisedStreamId();
+    scoped_ptr<SpdySerializedFrame> frame;
+    SpdyPushPromiseIR push_promise(stream_id, promised_stream_id);
+    push_promise.set_header_block(headers_);
+    frame.reset(framer_.SerializeFrame(push_promise));
+    if (perspective() == Perspective::IS_SERVER) {
+      EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                    QUIC_INVALID_HEADERS_STREAM_DATA,
+                                    "PUSH_PROMISE not supported."))
+          .WillRepeatedly(
+              InvokeWithoutArgs(this, &QuicHeadersStreamTest::CloseConnection));
+    } else {
+      EXPECT_CALL(session_, OnPromiseHeaders(stream_id, _))
+          .WillRepeatedly(WithArgs<1>(
+              Invoke(this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
+      EXPECT_CALL(session_, OnPromiseHeadersComplete(
+                                stream_id, promised_stream_id, frame->size()));
+    }
+    stream_frame_.frame_buffer = frame->data();
+    stream_frame_.frame_length = frame->size();
+    headers_stream_->OnStreamFrame(stream_frame_);
+    if (perspective() == Perspective::IS_CLIENT) {
+      stream_frame_.offset += frame->size();
+      CheckHeaders();
+    }
+  }
+}
+
+TEST_P(QuicHeadersStreamTest, PushPromiseOutOfOrder) {
+  if (perspective() == Perspective::IS_SERVER)
+    return;
+
+  QuicStreamId promised_stream_id = NextPromisedStreamId();
+  QuicStreamId stream_id = kClientDataStreamId1;
+
+  scoped_ptr<SpdySerializedFrame> frame;
+  SpdyPushPromiseIR push_promise(stream_id, promised_stream_id);
+  push_promise.set_header_block(headers_);
+  frame.reset(framer_.SerializeFrame(push_promise));
+  EXPECT_CALL(session_, OnPromiseHeaders(stream_id, _))
+      .WillRepeatedly(WithArgs<1>(
+          Invoke(this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
+  EXPECT_CALL(session_, OnPromiseHeadersComplete(stream_id, promised_stream_id,
+                                                 frame->size()));
+  stream_frame_.frame_buffer = frame->data();
+  stream_frame_.frame_length = frame->size();
+  headers_stream_->OnStreamFrame(stream_frame_);
+  if (perspective() == Perspective::IS_CLIENT) {
+    stream_frame_.offset += frame->size();
+    CheckHeaders();
+  }
+
+  stream_id += 2;
+  push_promise.set_stream_id(stream_id);
+  frame.reset(framer_.SerializeFrame(push_promise));
+  EXPECT_CALL(session_, OnPromiseHeaders(stream_id, _))
+      .WillRepeatedly(WithArgs<1>(
+          Invoke(this, &QuicHeadersStreamTest::SaveHeaderDataStringPiece)));
+  EXPECT_CALL(session_, OnPromiseHeadersComplete(stream_id, promised_stream_id,
+                                                 frame->size()));
+  EXPECT_CALL(*connection_, SendConnectionCloseWithDetails(
+                                QUIC_INVALID_STREAM_ID,
+                                "Received push stream id lesser or equal to the"
+                                " last accepted before"))
+      .WillRepeatedly(
+          InvokeWithoutArgs(this, &QuicHeadersStreamTest::CloseConnection));
+  stream_frame_.frame_buffer = frame->data();
+  stream_frame_.frame_length = frame->size();
+  headers_stream_->OnStreamFrame(stream_frame_);
 }
 
 TEST_P(QuicHeadersStreamTest, EmptyHeaderHOLBlockedTime) {

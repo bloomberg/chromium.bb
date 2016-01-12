@@ -1090,8 +1090,8 @@ void QuicCryptoServerConfig::EvaluateClientHello(
   // Server nonce is optional, and used for key derivation if present.
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
 
-  if (version > QUIC_VERSION_26) {
-    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_27 and higher.";
+  if (version > QUIC_VERSION_30) {
+    DVLOG(1) << "No 0-RTT replay protection in QUIC_VERSION_31 and higher.";
     // If the server nonce is empty and we're requiring handshake confirmation
     // for DoS reasons then we must reject the CHLO.
     if (FLAGS_quic_require_handshake_confirmation &&
@@ -1142,15 +1142,26 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     base::AutoLock locked(strike_register_client_lock_);
 
     if (strike_register_client_.get() == nullptr) {
-      strike_register_client_.reset(new LocalStrikeRegisterClient(
-          strike_register_max_entries_,
-          static_cast<uint32_t>(info->now.ToUNIXSeconds()),
-          strike_register_window_secs_, primary_orbit,
-          strike_register_no_startup_period_
-              ? StrikeRegister::NO_STARTUP_PERIOD_NEEDED
-              : StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+      if (!FLAGS_require_strike_register_or_server_nonce) {
+        strike_register_client_.reset(new LocalStrikeRegisterClient(
+            strike_register_max_entries_,
+            static_cast<uint32_t>(info->now.ToUNIXSeconds()),
+            strike_register_window_secs_, primary_orbit,
+            strike_register_no_startup_period_
+                ? StrikeRegister::NO_STARTUP_PERIOD_NEEDED
+                : StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+      }
     }
     strike_register_client = strike_register_client_.get();
+  }
+
+  if (!strike_register_client) {
+    // Either a valid server nonces or a strike register is required.
+    // Since neither are present, reject the handshake which will send a
+    // server nonce to the client.
+    info->reject_reasons.push_back(SERVER_NONCE_REQUIRED_FAILURE);
+    helper.ValidationComplete(QUIC_NO_ERROR, "");
+    return;
   }
 
   strike_register_client->VerifyNonceIsValidAndUnique(

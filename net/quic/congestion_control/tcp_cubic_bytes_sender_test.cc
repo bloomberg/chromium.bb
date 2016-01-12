@@ -232,6 +232,63 @@ TEST_F(TcpCubicBytesSenderTest, SlowStartPacketLoss) {
   EXPECT_FALSE(sender_->hybrid_slow_start().started());
 }
 
+TEST_F(TcpCubicBytesSenderTest, SlowStartPacketLossWithLargeReduction) {
+  QuicConfig config;
+  QuicTagVector options;
+  options.push_back(kSSLR);
+  QuicConfigPeer::SetReceivedConnectionOptions(&config, options);
+  sender_->SetFromConfig(config, Perspective::IS_SERVER);
+
+  sender_->SetNumEmulatedConnections(1);
+  const int kNumberOfAcks = 10;
+  for (int i = 0; i < kNumberOfAcks; ++i) {
+    // Send our full send window.
+    SendAvailableSendWindow();
+    AckNPackets(2);
+  }
+  SendAvailableSendWindow();
+  QuicByteCount expected_send_window =
+      kDefaultWindowTCP + (kDefaultTCPMSS * 2 * kNumberOfAcks);
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Lose a packet to exit slow start. We should now have fallen out of
+  // slow start with a window reduced by 1.
+  LoseNPackets(1);
+  expected_send_window -= kDefaultTCPMSS;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Lose 5 packets in recovery and verify that congestion window is reduced
+  // further.
+  LoseNPackets(5);
+  expected_send_window -= 5 * kDefaultTCPMSS;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  size_t packets_in_recovery_window = expected_send_window / kDefaultTCPMSS;
+
+  // Recovery phase. We need to ack every packet in the recovery window before
+  // we exit recovery.
+  size_t number_of_packets_in_window = expected_send_window / kDefaultTCPMSS;
+  DVLOG(1) << "number_packets: " << number_of_packets_in_window;
+  AckNPackets(packets_in_recovery_window);
+  SendAvailableSendWindow();
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // We need to ack an entire window before we increase CWND by 1.
+  AckNPackets(number_of_packets_in_window - 1);
+  SendAvailableSendWindow();
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Next ack should increase cwnd by 1.
+  AckNPackets(1);
+  expected_send_window += kDefaultTCPMSS;
+  EXPECT_EQ(expected_send_window, sender_->GetCongestionWindow());
+
+  // Now RTO and ensure slow start gets reset.
+  EXPECT_TRUE(sender_->hybrid_slow_start().started());
+  sender_->OnRetransmissionTimeout(true);
+  EXPECT_FALSE(sender_->hybrid_slow_start().started());
+}
+
 TEST_F(TcpCubicBytesSenderTest, NoPRRWhenLessThanOnePacketInFlight) {
   SendAvailableSendWindow();
   LoseNPackets(kInitialCongestionWindowPackets - 1);

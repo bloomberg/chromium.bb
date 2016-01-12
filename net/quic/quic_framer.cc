@@ -14,6 +14,7 @@
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_flags.h"
@@ -123,7 +124,7 @@ QuicPacketNumberLength ReadSequenceNumberLength(uint8_t flags) {
     case PACKET_FLAGS_1BYTE_PACKET:
       return PACKET_1BYTE_PACKET_NUMBER;
     default:
-      LOG(DFATAL) << "Unreachable case statement.";
+      QUIC_BUG << "Unreachable case statement.";
       return PACKET_6BYTE_PACKET_NUMBER;
   }
 }
@@ -222,7 +223,7 @@ size_t QuicFramer::GetStreamIdSize(QuicStreamId stream_id) {
       return i;
     }
   }
-  LOG(DFATAL) << "Failed to determine StreamIDSize.";
+  QUIC_BUG << "Failed to determine StreamIDSize.";
   return 4;
 }
 
@@ -240,7 +241,7 @@ size_t QuicFramer::GetStreamOffsetSize(QuicStreamOffset offset) {
       return i;
     }
   }
-  LOG(DFATAL) << "Failed to determine StreamOffsetSize.";
+  QUIC_BUG << "Failed to determine StreamOffsetSize.";
   return 8;
 }
 
@@ -269,12 +270,11 @@ size_t QuicFramer::GetSerializedFrameLength(
   // Prevent a rare crash reported in b/19458523.
   if ((frame.type == STREAM_FRAME || frame.type == ACK_FRAME) &&
       frame.stream_frame == nullptr) {
-    LOG(DFATAL) << "Cannot compute the length of a null frame. "
-                << "type:" << frame.type << "free_bytes:" << free_bytes
-                << " first_frame:" << first_frame
-                << " last_frame:" << last_frame
-                << " is_in_fec:" << is_in_fec_group
-                << " seq num length:" << packet_number_length;
+    QUIC_BUG << "Cannot compute the length of a null frame. "
+             << "type:" << frame.type << "free_bytes:" << free_bytes
+             << " first_frame:" << first_frame << " last_frame:" << last_frame
+             << " is_in_fec:" << is_in_fec_group
+             << " seq num length:" << packet_number_length;
     set_error(QUIC_INTERNAL_ERROR);
     visitor_->OnError(this);
     return 0;
@@ -322,7 +322,7 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
                                    size_t packet_length) {
   QuicDataWriter writer(packet_length, buffer);
   if (!AppendPacketHeader(header, &writer)) {
-    LOG(DFATAL) << "AppendPacketHeader failed";
+    QUIC_BUG << "AppendPacketHeader failed";
     return 0;
   }
 
@@ -333,7 +333,7 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         (header.is_in_fec_group == NOT_IN_FEC_GROUP) &&
         (i == frames.size() - 1);
     if (!AppendTypeByte(frame, no_stream_frame_length, &writer)) {
-      LOG(DFATAL) << "AppendTypeByte failed";
+      QUIC_BUG << "AppendTypeByte failed";
       return 0;
     }
 
@@ -344,20 +344,20 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
       case STREAM_FRAME:
         if (!AppendStreamFrame(*frame.stream_frame, no_stream_frame_length,
                                &writer)) {
-          LOG(DFATAL) << "AppendStreamFrame failed";
+          QUIC_BUG << "AppendStreamFrame failed";
           return 0;
         }
         break;
       case ACK_FRAME:
         if (!AppendAckFrameAndTypeByte(header, *frame.ack_frame, &writer)) {
-          LOG(DFATAL) << "AppendAckFrameAndTypeByte failed";
+          QUIC_BUG << "AppendAckFrameAndTypeByte failed";
           return 0;
         }
         break;
       case STOP_WAITING_FRAME:
         if (!AppendStopWaitingFrame(header, *frame.stop_waiting_frame,
                                     &writer)) {
-          LOG(DFATAL) << "AppendStopWaitingFrame failed";
+          QUIC_BUG << "AppendStopWaitingFrame failed";
           return 0;
         }
         break;
@@ -368,38 +368,38 @@ size_t QuicFramer::BuildDataPacket(const QuicPacketHeader& header,
         break;
       case RST_STREAM_FRAME:
         if (!AppendRstStreamFrame(*frame.rst_stream_frame, &writer)) {
-          LOG(DFATAL) << "AppendRstStreamFrame failed";
+          QUIC_BUG << "AppendRstStreamFrame failed";
           return 0;
         }
         break;
       case CONNECTION_CLOSE_FRAME:
         if (!AppendConnectionCloseFrame(*frame.connection_close_frame,
                                         &writer)) {
-          LOG(DFATAL) << "AppendConnectionCloseFrame failed";
+          QUIC_BUG << "AppendConnectionCloseFrame failed";
           return 0;
         }
         break;
       case GOAWAY_FRAME:
         if (!AppendGoAwayFrame(*frame.goaway_frame, &writer)) {
-          LOG(DFATAL) << "AppendGoAwayFrame failed";
+          QUIC_BUG << "AppendGoAwayFrame failed";
           return 0;
         }
         break;
       case WINDOW_UPDATE_FRAME:
         if (!AppendWindowUpdateFrame(*frame.window_update_frame, &writer)) {
-          LOG(DFATAL) << "AppendWindowUpdateFrame failed";
+          QUIC_BUG << "AppendWindowUpdateFrame failed";
           return 0;
         }
         break;
       case BLOCKED_FRAME:
         if (!AppendBlockedFrame(*frame.blocked_frame, &writer)) {
-          LOG(DFATAL) << "AppendBlockedFrame failed";
+          QUIC_BUG << "AppendBlockedFrame failed";
           return 0;
         }
         break;
       default:
         RaiseError(QUIC_INVALID_FRAME_DATA);
-        LOG(DFATAL) << "QUIC_INVALID_FRAME_DATA";
+        QUIC_BUG << "QUIC_INVALID_FRAME_DATA";
         return 0;
     }
     ++i;
@@ -418,12 +418,12 @@ QuicPacket* QuicFramer::BuildFecPacket(const QuicPacketHeader& header,
   scoped_ptr<char[]> buffer(new char[len]);
   QuicDataWriter writer(len, buffer.get());
   if (!AppendPacketHeader(header, &writer)) {
-    LOG(DFATAL) << "AppendPacketHeader failed";
+    QUIC_BUG << "AppendPacketHeader failed";
     return nullptr;
   }
 
   if (!writer.WriteBytes(redundancy.data(), redundancy.length())) {
-    LOG(DFATAL) << "Failed to add FEC";
+    QUIC_BUG << "Failed to add FEC";
     return nullptr;
   }
 
@@ -1000,7 +1000,7 @@ uint8_t QuicFramer::GetSequenceNumberFlags(
     case PACKET_6BYTE_PACKET_NUMBER:
       return PACKET_FLAGS_6BYTE_PACKET;
     default:
-      LOG(DFATAL) << "Unreachable case statement.";
+      QUIC_BUG << "Unreachable case statement.";
       return PACKET_FLAGS_6BYTE_PACKET;
   }
 }
@@ -1691,7 +1691,7 @@ size_t QuicFramer::EncryptPayload(EncryptionLevel level,
   // Copy in the header, because the encrypter only populates the encrypted
   // plaintext content.
   const size_t ad_len = associated_data.length();
-  memcpy(buffer, associated_data.data(), ad_len);
+  memmove(buffer, associated_data.data(), ad_len);
   // Encrypt the plaintext into the buffer.
   size_t output_length = 0;
   if (!encrypter_[level]->EncryptPacket(packet_number, associated_data,
@@ -1859,7 +1859,7 @@ bool QuicFramer::AppendTypeByte(const QuicFrame& frame,
   switch (frame.type) {
     case STREAM_FRAME: {
       if (frame.stream_frame == nullptr) {
-        LOG(DFATAL) << "Failed to append STREAM frame with no stream_frame.";
+        QUIC_BUG << "Failed to append STREAM frame with no stream_frame.";
       }
       // Fin bit.
       type_byte |= frame.stream_frame->fin ? kQuicStreamFinMask : 0;
@@ -1927,23 +1927,23 @@ bool QuicFramer::AppendStreamFrame(const QuicStreamFrame& frame,
                                    bool no_stream_frame_length,
                                    QuicDataWriter* writer) {
   if (!writer->WriteBytes(&frame.stream_id, GetStreamIdSize(frame.stream_id))) {
-    LOG(DFATAL) << "Writing stream id size failed.";
+    QUIC_BUG << "Writing stream id size failed.";
     return false;
   }
   if (!writer->WriteBytes(&frame.offset, GetStreamOffsetSize(frame.offset))) {
-    LOG(DFATAL) << "Writing offset size failed.";
+    QUIC_BUG << "Writing offset size failed.";
     return false;
   }
   if (!no_stream_frame_length) {
     if ((frame.frame_length > numeric_limits<uint16_t>::max()) ||
         !writer->WriteUInt16(static_cast<uint16_t>(frame.frame_length))) {
-      LOG(DFATAL) << "Writing stream frame length failed";
+      QUIC_BUG << "Writing stream frame length failed";
       return false;
     }
   }
 
   if (!writer->WriteBytes(frame.frame_buffer, frame.frame_length)) {
-    LOG(DFATAL) << "Writing frame data failed.";
+    QUIC_BUG << "Writing frame data failed.";
     return false;
   }
   return true;
@@ -2170,20 +2170,20 @@ bool QuicFramer::AppendStopWaitingFrame(const QuicPacketHeader& header,
   const QuicPacketNumber length_shift =
       header.public_header.packet_number_length * 8;
   if (!writer->WriteUInt8(frame.entropy_hash)) {
-    LOG(DFATAL) << " hash failed";
+    QUIC_BUG << " hash failed";
     return false;
   }
 
   if (least_unacked_delta >> length_shift > 0) {
-    LOG(DFATAL) << "packet_number_length "
-                << header.public_header.packet_number_length
-                << " is too small for least_unacked_delta: "
-                << least_unacked_delta;
+    QUIC_BUG << "packet_number_length "
+             << header.public_header.packet_number_length
+             << " is too small for least_unacked_delta: "
+             << least_unacked_delta;
     return false;
   }
   if (!AppendPacketSequenceNumber(header.public_header.packet_number_length,
                                   least_unacked_delta, writer)) {
-    LOG(DFATAL) << " seq failed: " << header.public_header.packet_number_length;
+    QUIC_BUG << " seq failed: " << header.public_header.packet_number_length;
     return false;
   }
 

@@ -126,6 +126,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
                  &buffer_allocator_,
                  &delegate_),
         serialized_packet_(creator_.NoPacket()) {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     creator_.set_connection_id_length(GetParam().connection_id_length);
 
     creator_.SetEncrypter(ENCRYPTION_INITIAL, new NullEncrypter());
@@ -135,6 +136,7 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     server_framer_.set_visitor(&framer_visitor_);
     // TODO(ianswett): Fix this test so it uses a non-null encrypter.
     FLAGS_quic_never_write_unencrypted_data = false;
+    FLAGS_quic_no_unencrypted_fec = false;
   }
 
   ~QuicPacketCreatorTest() override {}
@@ -1585,6 +1587,56 @@ TEST_P(QuicPacketCreatorTest, AddUnencryptedStreamDataClosesConnection) {
                                StringPiece());
   EXPECT_DFATAL(creator_.AddSavedFrame(QuicFrame(&stream_frame)),
                 "Cannot send stream data without encryption.");
+}
+
+TEST_P(QuicPacketCreatorTest, DontSendUnencryptedFec) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_no_unencrypted_fec, true);
+  // Send FEC packet every 6 packets.
+  creator_.set_max_packets_per_fec_group(6);
+  // Send stream data encrypted with FEC protection.
+  creator_.set_encryption_level(ENCRYPTION_INITIAL);
+  // Turn on FEC protection.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(kHeadersStreamId, io_vector, 0u, 0u, false,
+                                   false, &frame, MUST_FEC_PROTECT));
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+  // Serialize the packet.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+  creator_.Flush();
+
+  // The creator will clear the FEC group rather than try to send without
+  // encryption.
+  creator_.set_encryption_level(ENCRYPTION_NONE);
+  EXPECT_CALL(delegate_, OnResetFecGroup());
+  creator_.MaybeSendFecPacketAndCloseGroup(true, false);
+}
+
+TEST_P(QuicPacketCreatorTest, SerializeUnencryptedFecClosesConnection) {
+  ValueRestore<bool> old_flag(&FLAGS_quic_no_unencrypted_fec, true);
+  // Send FEC packet every 6 packets.
+  creator_.set_max_packets_per_fec_group(6);
+  // Send stream data encrypted with FEC protection.
+  creator_.set_encryption_level(ENCRYPTION_INITIAL);
+  // Turn on FEC protection.
+  QuicFrame frame;
+  QuicIOVector io_vector(MakeIOVector("test"));
+  ASSERT_TRUE(creator_.ConsumeData(kHeadersStreamId, io_vector, 0u, 0u, false,
+                                   false, &frame, MUST_FEC_PROTECT));
+  EXPECT_TRUE(QuicPacketCreatorPeer::IsFecProtected(&creator_));
+  // Serialize the packet.
+  EXPECT_CALL(delegate_, OnSerializedPacket(_))
+      .WillOnce(Invoke(this, &QuicPacketCreatorTest::ClearSerializedPacket));
+  creator_.Flush();
+
+  // Try to send an FEC packet unencrypted.
+  creator_.set_encryption_level(ENCRYPTION_NONE);
+  EXPECT_CALL(delegate_, CloseConnection(QUIC_UNENCRYPTED_FEC_DATA, _));
+  char seralized_fec_buffer[kMaxPacketSize];
+  EXPECT_DFATAL(QuicPacketCreatorPeer::SerializeFec(
+                    &creator_, seralized_fec_buffer, kMaxPacketSize),
+                "SerializeFEC must be called with encryption.");
 }
 
 }  // namespace

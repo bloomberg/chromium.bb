@@ -145,7 +145,7 @@ class QuicCryptoServerStreamTest : public ::testing::TestWithParam<bool> {
   }
 
   bool AsyncStrikeRegisterVerification() {
-    if (server_connection_->version() > QUIC_VERSION_26) {
+    if (server_connection_->version() > QUIC_VERSION_30) {
       return false;
     }
     return GetParam();
@@ -377,7 +377,12 @@ TEST_P(QuicCryptoServerStreamTest, ZeroRTT) {
         server_stream());
   }
 
-  EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
+  if (FLAGS_require_strike_register_or_server_nonce &&
+      !AsyncStrikeRegisterVerification()) {
+    EXPECT_EQ(2, client_stream()->num_sent_client_hellos());
+  } else {
+    EXPECT_EQ(1, client_stream()->num_sent_client_hellos());
+  }
 }
 
 TEST_P(QuicCryptoServerStreamTest, MessageAfterHandshake) {

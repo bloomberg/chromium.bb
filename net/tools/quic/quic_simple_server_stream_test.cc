@@ -11,15 +11,18 @@
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_utils.h"
 #include "net/quic/spdy_utils.h"
+#include "net/quic/test_tools/crypto_test_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 #include "net/quic/test_tools/reliable_quic_stream_peer.h"
 #include "net/test/gtest_util.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_simple_server_session.h"
 #include "net/tools/quic/spdy_balsa_utils.h"
 #include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 using base::StringPiece;
 using net::test::MockConnection;
@@ -48,6 +51,8 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
   QuicSimpleServerStreamPeer(QuicStreamId stream_id, QuicSpdySession* session)
       : QuicSimpleServerStream(stream_id, session) {}
 
+  ~QuicSimpleServerStreamPeer() override{};
+
   using QuicSimpleServerStream::SendResponse;
   using QuicSimpleServerStream::SendErrorResponse;
 
@@ -74,6 +79,62 @@ class QuicSimpleServerStreamPeer : public QuicSimpleServerStream {
   }
 };
 
+class MockQuicSimpleServerSession : public QuicSimpleServerSession {
+ public:
+  const size_t kMaxStreamsForTest = 100;
+
+  explicit MockQuicSimpleServerSession(QuicConnection* connection,
+                                       MockQuicServerSessionVisitor* owner,
+                                       QuicCryptoServerConfig* crypto_config)
+      : QuicSimpleServerSession(::net::test::DefaultQuicConfig(),
+                                connection,
+                                owner,
+                                crypto_config) {
+    set_max_open_streams(kMaxStreamsForTest);
+    ON_CALL(*this, WritevData(_, _, _, _, _, _))
+        .WillByDefault(testing::Return(QuicConsumedData(0, false)));
+  }
+
+  ~MockQuicSimpleServerSession() override {}
+
+  MOCK_METHOD2(OnConnectionClosed, void(QuicErrorCode error, bool from_peer));
+  MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
+  MOCK_METHOD6(WritevData,
+               QuicConsumedData(QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                bool fin,
+                                FecProtection fec_protection,
+                                QuicAckListenerInterface*));
+  MOCK_METHOD2(OnStreamHeaders,
+               void(QuicStreamId stream_id, StringPiece headers_data));
+  MOCK_METHOD2(OnStreamHeadersPriority,
+               void(QuicStreamId stream_id, SpdyPriority priority));
+  MOCK_METHOD3(OnStreamHeadersComplete,
+               void(QuicStreamId stream_id, bool fin, size_t frame_len));
+  MOCK_METHOD5(WriteHeaders,
+               size_t(QuicStreamId id,
+                      const SpdyHeaderBlock& headers,
+                      bool fin,
+                      SpdyPriority priority,
+                      QuicAckListenerInterface* ack_notifier_delegate));
+  MOCK_METHOD3(SendRstStream,
+               void(QuicStreamId stream_id,
+                    QuicRstStreamErrorCode error,
+                    QuicStreamOffset bytes_written));
+  MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
+  MOCK_METHOD4(PromisePushResources,
+               void(const string&,
+                    const list<QuicInMemoryCache::ServerPushInfo>&,
+                    QuicStreamId,
+                    const SpdyHeaderBlock&));
+
+  using QuicSession::ActivateStream;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockQuicSimpleServerSession);
+};
+
 namespace {
 
 class QuicSimpleServerStreamTest
@@ -84,7 +145,12 @@ class QuicSimpleServerStreamTest
             new StrictMock<MockConnection>(&helper_,
                                            Perspective::IS_SERVER,
                                            SupportedVersions(GetParam()))),
-        session_(connection_),
+        session_owner_(new StrictMock<MockQuicServerSessionVisitor>()),
+        crypto_config_(new QuicCryptoServerConfig(
+            QuicCryptoServerConfig::TESTING,
+            QuicRandom::GetInstance(),
+            ::net::test::CryptoTestUtils::ProofSourceForTesting())),
+        session_(connection_, session_owner_, crypto_config_.get()),
         body_("hello world") {
     SpdyHeaderBlock request_headers;
     request_headers[":host"] = "";
@@ -126,7 +192,9 @@ class QuicSimpleServerStreamTest
   SpdyHeaderBlock response_headers_;
   MockConnectionHelper helper_;
   StrictMock<MockConnection>* connection_;
-  StrictMock<MockQuicSpdySession> session_;
+  StrictMock<MockQuicServerSessionVisitor>* session_owner_;
+  std::unique_ptr<QuicCryptoServerConfig> crypto_config_;
+  StrictMock<MockQuicSimpleServerSession> session_;
   QuicSimpleServerStreamPeer* stream_;  // Owned by session_.
   string headers_string_;
   string body_;
@@ -291,6 +359,41 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
   EXPECT_FALSE(ReliableQuicStreamPeer::read_side_closed(stream_));
   EXPECT_TRUE(stream_->reading_stopped());
   EXPECT_TRUE(stream_->write_side_closed());
+}
+
+TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
+  // Tests that if a reponse has push resources to be send, SendResponse() will
+  // call PromisePushResources() to handle these resources.
+
+  // Add a request and response with valid headers into cache.
+  string host = "www.google.com";
+  string request_path = "/foo";
+  string body = "Yummm";
+  SpdyHeaderBlock response_headers;
+  string url = host + "/bar";
+  QuicInMemoryCache::ServerPushInfo push_info(GURL(url), response_headers,
+                                              kDefaultPriority, "Push body");
+  list<QuicInMemoryCache::ServerPushInfo> push_resources;
+  push_resources.push_back(push_info);
+  QuicInMemoryCache::GetInstance()->AddSimpleResponseWithServerPushResources(
+      host, request_path, 200, body, push_resources);
+
+  SpdyHeaderBlock* request_headers = stream_->mutable_headers();
+  (*request_headers)[":path"] = request_path;
+  (*request_headers)[":authority"] = host;
+  (*request_headers)[":version"] = "HTTP/1.1";
+  (*request_headers)[":method"] = "GET";
+
+  stream_->set_fin_received(true);
+  InSequence s;
+  EXPECT_CALL(session_, PromisePushResources(host + request_path, _,
+                                             ::net::test::kClientDataStreamId1,
+                                             *request_headers));
+  EXPECT_CALL(session_, WriteHeaders(stream_->id(), _, false, _, nullptr));
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+      .Times(1)
+      .WillOnce(Return(QuicConsumedData(body.length(), true)));
+  QuicSimpleServerStreamPeer::SendResponse(stream_);
 }
 
 TEST_P(QuicSimpleServerStreamTest, PushResponseOnClientInitiatedStream) {

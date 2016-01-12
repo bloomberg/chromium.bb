@@ -340,7 +340,14 @@ class NET_EXPORT_PRIVATE QuicSentPacketManager {
   void MarkForRetransmission(QuicPacketNumber packet_number,
                              TransmissionType transmission_type);
 
-  // Notify observers about spurious retransmits.
+  // Notify observers that packet with TransmissionInfo |info| is a spurious
+  // retransmission. It is caller's responsibility to guarantee the packet with
+  // TransmissionInfo |info| is a spurious retransmission before calling this
+  // function.
+  void RecordOneSpuriousRetransmission(const TransmissionInfo& info);
+
+  // Notify observers about spurious retransmits of packet with TransmissionInfo
+  // |info|.
   void RecordSpuriousRetransmissions(const TransmissionInfo& info,
                                      QuicPacketNumber acked_packet_number);
 

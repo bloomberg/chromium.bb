@@ -33,7 +33,21 @@ class NET_EXPORT_PRIVATE QuicClientSessionBase : public QuicSpdySession {
   // Override base class to set FEC policy before any data is sent by client.
   void OnCryptoHandshakeEvent(CryptoHandshakeEvent event) override;
 
+  // Called by |headers_stream_| when push promise headers have been
+  // received for a stream.
+  void OnPromiseHeaders(QuicStreamId stream_id,
+                        StringPiece headers_data) override;
+
+  // Called by |headers_stream_| when push promise headers have been
+  // completely received.  |fin| will be true if the fin flag was set
+  // in the headers.
+  void OnPromiseHeadersComplete(QuicStreamId stream_id,
+                                QuicStreamId promised_stream_id,
+                                size_t frame_len) override;
+
  private:
+  QuicStreamId largest_promised_stream_id_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicClientSessionBase);
 };
 

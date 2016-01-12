@@ -5,7 +5,7 @@
 #include "net/quic/quic_unacked_packet_map.h"
 
 #include "base/logging.h"
-#include "base/stl_util.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection_stats.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils_chromium.h"
@@ -93,9 +93,9 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
     TransmissionInfo* info) {
   if (old_packet_number < least_unacked_ ||
       old_packet_number > largest_sent_packet_) {
-    LOG(DFATAL) << "Old TransmissionInfo no longer exists for:"
-                << old_packet_number << " least_unacked:" << least_unacked_
-                << " largest_sent:" << largest_sent_packet_;
+    QUIC_BUG << "Old TransmissionInfo no longer exists for:"
+             << old_packet_number << " least_unacked:" << least_unacked_
+             << " largest_sent:" << largest_sent_packet_;
     return;
   }
   DCHECK_GE(new_packet_number, least_unacked_ + unacked_packets_.size());
@@ -359,7 +359,7 @@ QuicTime QuicUnackedPacketMap::GetLastPacketSentTime() const {
     }
     ++it;
   }
-  LOG(DFATAL) << "GetLastPacketSentTime requires in flight packets.";
+  QUIC_BUG << "GetLastPacketSentTime requires in flight packets.";
   return QuicTime::Zero();
 }
 

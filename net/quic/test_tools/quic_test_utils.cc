@@ -31,18 +31,6 @@ using testing::_;
 
 namespace net {
 namespace test {
-namespace {
-
-// No-op alarm implementation used by MockConnectionHelper.
-class TestAlarm : public QuicAlarm {
- public:
-  explicit TestAlarm(QuicAlarm::Delegate* delegate) : QuicAlarm(delegate) {}
-
-  void SetImpl() override {}
-  void CancelImpl() override {}
-};
-
-}  // namespace
 
 QuicAckFrame MakeAckFrame(QuicPacketNumber largest_observed) {
   QuicAckFrame ack;
@@ -206,7 +194,7 @@ QuicRandom* MockConnectionHelper::GetRandomGenerator() {
 }
 
 QuicAlarm* MockConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
-  return new TestAlarm(delegate);
+  return new MockConnectionHelper::TestAlarm(delegate);
 }
 
 QuicBufferAllocator* MockConnectionHelper::GetBufferAllocator() {
@@ -294,17 +282,16 @@ PacketSavingConnection::~PacketSavingConnection() {
   STLDeleteElements(&encrypted_packets_);
 }
 
-void PacketSavingConnection::SendOrQueuePacket(QueuedPacket packet) {
-  if (!packet.serialized_packet.packet->owns_buffer()) {
-    scoped_ptr<QuicEncryptedPacket> encrypted_deleter(
-        packet.serialized_packet.packet);
-    packet.serialized_packet.packet = packet.serialized_packet.packet->Clone();
+void PacketSavingConnection::SendOrQueuePacket(SerializedPacket* packet) {
+  if (!packet->packet->owns_buffer()) {
+    scoped_ptr<QuicEncryptedPacket> encrypted_deleter(packet->packet);
+    packet->packet = packet->packet->Clone();
   }
-  encrypted_packets_.push_back(packet.serialized_packet.packet);
+  encrypted_packets_.push_back(packet->packet);
   // Transfer ownership of the packet to the SentPacketManager and the
   // ack notifier to the AckNotifierManager.
-  sent_packet_manager_.OnPacketSent(&packet.serialized_packet, 0,
-                                    QuicTime::Zero(), 1000, NOT_RETRANSMISSION,
+  sent_packet_manager_.OnPacketSent(packet, 0, QuicTime::Zero(), 1000,
+                                    NOT_RETRANSMISSION,
                                     HAS_RETRANSMITTABLE_DATA);
 }
 

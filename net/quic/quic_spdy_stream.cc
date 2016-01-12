@@ -191,6 +191,20 @@ void QuicSpdyStream::OnInitialHeadersComplete(bool fin, size_t /*frame_len*/) {
   }
 }
 
+void QuicSpdyStream::OnPromiseHeaders(StringPiece headers_data) {
+  headers_data.AppendToString(&decompressed_headers_);
+}
+
+void QuicSpdyStream::OnPromiseHeadersComplete(
+    QuicStreamId /* promised_stream_id */,
+    size_t /* frame_len */) {
+  // To be overridden in QuicSpdyClientStream.  Not supported on
+  // server side.
+  session()->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
+                                        "Promise headers received by server");
+  return;
+}
+
 void QuicSpdyStream::OnTrailingHeadersComplete(bool fin, size_t /*frame_len*/) {
   DCHECK(!trailers_decompressed_);
   if (fin_received()) {

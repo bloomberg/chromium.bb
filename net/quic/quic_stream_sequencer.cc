@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_frame_list.h"
@@ -158,9 +159,9 @@ void QuicStreamSequencer::MarkConsumed(size_t num_bytes_consumed) {
   DCHECK(!blocked_);
   bool result = buffered_frames_->MarkConsumed(num_bytes_consumed);
   if (!result) {
-    LOG(DFATAL) << "Invalid argument to MarkConsumed."
-                << " expect to consume: " << num_bytes_consumed
-                << ", but not enough bytes available.";
+    QUIC_BUG << "Invalid argument to MarkConsumed."
+             << " expect to consume: " << num_bytes_consumed
+             << ", but not enough bytes available.";
     stream_->Reset(QUIC_ERROR_PROCESSING_STREAM);
     return;
   }

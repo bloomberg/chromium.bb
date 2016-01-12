@@ -204,6 +204,7 @@ class QuicSessionTestBase : public ::testing::TestWithParam<QuicVersion> {
                                            perspective,
                                            SupportedVersions(GetParam()))),
         session_(connection_) {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     session_.config()->SetInitialStreamFlowControlWindowToSend(
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(

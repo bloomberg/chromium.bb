@@ -18,6 +18,7 @@
 #include "net/quic/crypto/p256_key_exchange.h"
 #include "net/quic/crypto/proof_verifier.h"
 #include "net/quic/crypto/quic_encrypter.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_utils.h"
 
 using base::StringPiece;
@@ -339,7 +340,7 @@ void QuicCryptoClientConfig::CachedState::InitializeFrom(
 QuicConnectionId
 QuicCryptoClientConfig::CachedState::GetNextServerDesignatedConnectionId() {
   if (server_designated_connection_ids_.empty()) {
-    LOG(DFATAL)
+    QUIC_BUG
         << "Attempting to consume a connection id that was never designated.";
     return 0;
   }
@@ -350,7 +351,7 @@ QuicCryptoClientConfig::CachedState::GetNextServerDesignatedConnectionId() {
 
 string QuicCryptoClientConfig::CachedState::GetNextServerNonce() {
   if (server_nonces_.empty()) {
-    LOG(DFATAL)
+    QUIC_BUG
         << "Attempting to consume a server nonce that was never designated.";
     return "";
   }

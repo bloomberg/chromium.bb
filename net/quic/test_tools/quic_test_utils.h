@@ -305,6 +305,21 @@ class MockConnectionHelper : public QuicConnectionHelperInterface {
   QuicBufferAllocator* GetBufferAllocator() override;
   void AdvanceTime(QuicTime::Delta delta);
 
+  // No-op alarm implementation
+  class TestAlarm : public QuicAlarm {
+   public:
+    explicit TestAlarm(QuicAlarm::Delegate* delegate) : QuicAlarm(delegate) {}
+
+    void SetImpl() override {}
+    void CancelImpl() override {}
+
+    using QuicAlarm::Fire;
+  };
+
+  void FireAlarm(QuicAlarm* alarm) {
+    reinterpret_cast<TestAlarm*>(alarm)->Fire();
+  }
+
  private:
   MockClock clock_;
   MockRandom random_generator_;
@@ -416,7 +431,7 @@ class PacketSavingConnection : public MockConnection {
 
   ~PacketSavingConnection() override;
 
-  void SendOrQueuePacket(QueuedPacket packet) override;
+  void SendOrQueuePacket(SerializedPacket* packet) override;
 
   std::vector<QuicEncryptedPacket*> encrypted_packets_;
 
@@ -454,6 +469,12 @@ class MockQuicSpdySession : public QuicSpdySession {
                void(QuicStreamId stream_id, SpdyPriority priority));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
+  MOCK_METHOD2(OnPromiseHeaders,
+               void(QuicStreamId stream_id, StringPiece headers_data));
+  MOCK_METHOD3(OnPromiseHeadersComplete,
+               void(QuicStreamId stream_id,
+                    QuicStreamId promised_stream_id,
+                    size_t frame_len));
   MOCK_METHOD0(IsCryptoHandshakeConfirmed, bool());
   MOCK_METHOD5(WriteHeaders,
                size_t(QuicStreamId id,

@@ -343,7 +343,8 @@ QuicConfig::QuicConfig()
       initial_round_trip_time_us_(kIRTT, PRESENCE_OPTIONAL),
       initial_stream_flow_control_window_bytes_(kSFCW, PRESENCE_OPTIONAL),
       initial_session_flow_control_window_bytes_(kCFCW, PRESENCE_OPTIONAL),
-      socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL) {
+      socket_receive_buffer_(kSRBF, PRESENCE_OPTIONAL),
+      multipath_enabled_(kMPTH, PRESENCE_OPTIONAL) {
   SetDefaults();
 }
 
@@ -518,6 +519,15 @@ bool QuicConfig::HasReceivedSocketReceiveBuffer() const {
 
 uint32_t QuicConfig::ReceivedSocketReceiveBuffer() const {
   return socket_receive_buffer_.GetReceivedValue();
+}
+
+void QuicConfig::SetMultipathEnabled(bool multipath_enabled) {
+  uint32_t value = multipath_enabled ? 1 : 0;
+  multipath_enabled_.set(value, value);
+}
+
+bool QuicConfig::MultipathEnabled() const {
+  return multipath_enabled_.GetUint32() > 0;
 }
 
 bool QuicConfig::negotiated() const {

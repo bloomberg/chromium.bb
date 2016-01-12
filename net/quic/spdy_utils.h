@@ -43,6 +43,14 @@ class NET_EXPORT_PRIVATE SpdyUtils {
                             size_t* final_byte_offset,
                             SpdyHeaderBlock* trailers);
 
+  // Returns URL composed from scheme, authority, and path header
+  // values, or empty string if any of those fields are missing.
+  static std::string GetUrlFromHeaderBlock(const net::SpdyHeaderBlock& headers);
+
+  // Returns true if result of |GetUrlFromHeaderBlock()| is non-empty
+  // and is a well-formed URL.
+  static bool UrlIsValid(const net::SpdyHeaderBlock& headers);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(SpdyUtils);
 };

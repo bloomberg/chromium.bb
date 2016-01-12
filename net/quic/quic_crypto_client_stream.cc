@@ -300,10 +300,8 @@ void QuicCryptoClientStream::DoSendCHLO(
   // inchoate or subsequent hello.
   session()->config()->ToHandshakeMessage(&out);
 
-  // This block and function should be removed after removing QUIC_VERSION_25.
-  if (FLAGS_quic_require_fix) {
-    AppendFixed(&out);
-  }
+  // This call and function should be removed after removing QUIC_VERSION_25.
+  AppendFixed(&out);
 
   if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
     crypto_config_->FillInchoateClientHello(

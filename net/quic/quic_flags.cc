@@ -14,7 +14,7 @@ bool FLAGS_use_early_return_when_verifying_chlo = true;
 // If true, QUIC connections will support FEC protection of data while sending
 // packets, to reduce latency of data delivery to the application. The client
 // must also request FEC protection for the server to use FEC.
-bool FLAGS_enable_quic_fec = false;
+bool FLAGS_enable_quic_fec = true;
 
 // When true, defaults to BBR congestion control instead of Cubic.
 bool FLAGS_quic_use_bbr_congestion_control = false;
@@ -45,8 +45,14 @@ bool FLAGS_enable_quic_stateless_reject_support = true;
 // client connection option ACKD.
 bool FLAGS_quic_ack_decimation = true;
 
+// This flag is not in use, just to keep consistency for shared code.
+bool FLAGS_quic_always_log_bugs_for_tests = false;
+
 // If true, flow controller may grow the receive window size if necessary.
 bool FLAGS_quic_auto_tune_receive_window = true;
+
+// If true, multipath is enabled for the connection.
+bool FLAGS_quic_enable_multipath = false;
 
 // Limits QUIC's max CWND to 200 packets.
 bool FLAGS_quic_limit_max_cwnd = true;
@@ -106,11 +112,18 @@ bool FLAGS_quic_block_unencrypted_writes = true;
 // If true, Close the connection instead of writing unencrypted stream data.
 bool FLAGS_quic_never_write_unencrypted_data = true;
 
+// If true, clear the FEC group instead of sending it with ENCRYPTION_NONE.
+// Close the connection if we ever try to serialized unencrypted FEC.
+bool FLAGS_quic_no_unencrypted_fec = true;
+
 // If true, reject any incoming QUIC which does not have the FIXD tag.
 bool FLAGS_quic_require_fix = true;
 
 // If true, QUIC supports sending trailers from Server to Client.
 bool FLAGS_quic_supports_trailers = true;
+
+// If true, headers stream will support receiving PUSH_PROMISE frames.
+bool FLAGS_quic_supports_push_promise = false;
 
 // Fixes a bug in QUIC_VERSION_26 by always using the primary config when
 // getting the proof of possession.
@@ -128,9 +141,6 @@ bool FLAGS_quic_validate_stk_without_scid = true;
 // If true, use the new write blocked list for QUIC.
 bool FLAGS_quic_new_blocked_list = true;
 
-// If true, use inplace encryption for QUIC.
-bool FLAGS_quic_inplace_encryption = true;
-
 // If true, QUIC will support RFC 7539 variants of ChaCha20 Poly1305.
 bool FLAGS_quic_use_rfc7539 = true;
 
@@ -139,3 +149,7 @@ bool FLAGS_quic_drop_non_awaited_packets = false;
 
 // If true, use the fast implementation of IncrementalHash/FNV1a_128_Hash.
 bool FLAGS_quic_utils_use_fast_incremental_hash = true;
+
+// If true, require QUIC connections to use a valid server nonce or a non-local
+// strike register.
+bool FLAGS_require_strike_register_or_server_nonce = true;

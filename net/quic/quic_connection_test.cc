@@ -694,6 +694,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
         frame2_(1, false, 3, StringPiece(data2)),
         packet_number_length_(PACKET_6BYTE_PACKET_NUMBER),
         connection_id_length_(PACKET_8BYTE_CONNECTION_ID) {
+    FLAGS_quic_always_log_bugs_for_tests = true;
     connection_.set_visitor(&visitor_);
     connection_.SetSendAlgorithm(send_algorithm_);
     connection_.SetLossAlgorithm(loss_algorithm_);
@@ -737,6 +738,7 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
     // TODO(ianswett): Fix QuicConnectionTests so they don't attempt to write
     // non-crypto stream data at ENCRYPTION_NONE.
     FLAGS_quic_never_write_unencrypted_data = false;
+    FLAGS_quic_no_unencrypted_fec = false;
   }
 
   QuicVersion version() { return GetParam().version; }
@@ -5568,6 +5570,32 @@ TEST_P(QuicConnectionTest, SendingUnencryptedStreamDataFails) {
   EXPECT_DFATAL(connection_.SendStreamDataWithString(3, "", 0, kFin, nullptr),
                 "Cannot send stream data without encryption.");
   EXPECT_FALSE(connection_.connected());
+}
+
+TEST_P(QuicConnectionTest, EnableMultipathNegotiation) {
+  // Test multipath negotiation during crypto handshake. Multipath is enabled
+  // when both endpoints enable multipath.
+  ValueRestore<bool> old_flag(&FLAGS_quic_enable_multipath, true);
+  EXPECT_TRUE(connection_.connected());
+  EXPECT_FALSE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
+  EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _));
+  QuicConfig config;
+  // Enable multipath on server side.
+  config.SetMultipathEnabled(true);
+
+  // Create a handshake message enables multipath.
+  CryptoHandshakeMessage msg;
+  string error_details;
+  QuicConfig client_config;
+  // Enable multipath on client side.
+  client_config.SetMultipathEnabled(true);
+  client_config.ToHandshakeMessage(&msg);
+  const QuicErrorCode error =
+      config.ProcessPeerHello(msg, CLIENT, &error_details);
+  EXPECT_EQ(QUIC_NO_ERROR, error);
+
+  connection_.SetFromConfig(config);
+  EXPECT_TRUE(QuicConnectionPeer::IsMultipathEnabled(&connection_));
 }
 
 }  // namespace

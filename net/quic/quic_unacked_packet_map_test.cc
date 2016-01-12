@@ -30,10 +30,8 @@ class QuicUnackedPacketMapTest : public ::testing::Test {
   ~QuicUnackedPacketMapTest() override { STLDeleteElements(&packets_); }
 
   SerializedPacket CreateRetransmittablePacket(QuicPacketNumber packet_number) {
-    packets_.push_back(new QuicEncryptedPacket(nullptr, kDefaultLength));
-    return SerializedPacket(kDefaultPathId, packet_number,
-                            PACKET_1BYTE_PACKET_NUMBER, packets_.back(), 0,
-                            new RetransmittableFrames(), false, false);
+    return CreateRetransmittablePacketForStream(packet_number,
+                                                kHeadersStreamId);
   }
 
   SerializedPacket CreateRetransmittablePacketForStream(

@@ -5,6 +5,7 @@
 #include "net/quic/quic_packet_generator.h"
 
 #include "base/logging.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_utils.h"
@@ -84,7 +85,7 @@ void QuicPacketGenerator::SetShouldSendAck(bool also_send_stop_waiting) {
   }
 
   if (also_send_stop_waiting && packet_creator_.has_stop_waiting()) {
-    LOG(DFATAL) << "Should only ever be one pending stop waiting frame.";
+    QUIC_BUG << "Should only ever be one pending stop waiting frame.";
     return;
   }
 
@@ -120,7 +121,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
   }
 
   if (!fin && (iov.total_length == 0)) {
-    LOG(DFATAL) << "Attempt to consume empty data without FIN.";
+    QUIC_BUG << "Attempt to consume empty data without FIN.";
     return QuicConsumedData(0, false);
   }
 
@@ -132,7 +133,7 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(
                                      has_handshake, &frame, fec_protection)) {
       // The creator is always flushed if there's not enough room for a new
       // stream frame before ConsumeData, so ConsumeData should always succeed.
-      LOG(DFATAL) << "Failed to ConsumeData, stream:" << id;
+      QUIC_BUG << "Failed to ConsumeData, stream:" << id;
       return QuicConsumedData(0, false);
     }
 
@@ -231,7 +232,7 @@ void QuicPacketGenerator::SendQueuedFrames(bool flush, bool is_fec_timeout) {
 void QuicPacketGenerator::OnFecTimeout() {
   DCHECK(!InBatchMode());
   if (!packet_creator_.ShouldSendFec(true)) {
-    LOG(DFATAL) << "No FEC packet to send on FEC timeout.";
+    QUIC_BUG << "No FEC packet to send on FEC timeout.";
     return;
   }
   // Flush out any pending frames in the generator and the creator, and then

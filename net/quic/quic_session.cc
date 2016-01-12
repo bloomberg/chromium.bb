@@ -7,6 +7,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/quic/crypto/proof_verifier.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_connection.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_flow_controller.h"
@@ -169,10 +170,7 @@ void QuicSession::OnRstStream(const QuicRstStreamFrame& frame) {
 
   ReliableQuicStream* stream = GetOrCreateDynamicStream(frame.stream_id);
   if (!stream) {
-    // The RST frame contains the final byte offset for the stream: we can now
-    // update the connection level flow controller if needed.
-    UpdateFlowControlOnFinalReceivedByteOffset(frame.stream_id,
-                                               frame.byte_offset);
+    HandleRstOnValidNonexistentStream(frame);
     return;  // Errors are handled by GetStream.
   }
 
@@ -195,8 +193,7 @@ void QuicSession::OnConnectionClosed(QuicErrorCode error, bool from_peer) {
     it->second->OnConnectionClosed(error, from_peer);
     // The stream should call CloseStream as part of OnConnectionClosed.
     if (dynamic_stream_map_.find(id) != dynamic_stream_map_.end()) {
-      LOG(DFATAL) << ENDPOINT
-                  << "Stream failed to close under OnConnectionClosed";
+      QUIC_BUG << ENDPOINT << "Stream failed to close under OnConnectionClosed";
       CloseStream(id);
     }
   }
@@ -260,7 +257,7 @@ void QuicSession::OnCanWrite() {
     if (!(write_blocked_streams_.HasWriteBlockedCryptoOrHeadersStream() ||
           write_blocked_streams_.HasWriteBlockedDataStreams())) {
       // Writing one stream removed another!? Something's broken.
-      LOG(DFATAL) << "WriteBlockedStream is missing";
+      QUIC_BUG << "WriteBlockedStream is missing";
       connection_->CloseConnection(QUIC_INTERNAL_ERROR, false);
       return;
     }
@@ -319,7 +316,7 @@ void QuicSession::SendRstStream(QuicStreamId id,
                                 QuicRstStreamErrorCode error,
                                 QuicStreamOffset bytes_written) {
   if (ContainsKey(static_stream_map_, id)) {
-    LOG(DFATAL) << "Cannot send RST for a static stream with ID " << id;
+    QUIC_BUG << "Cannot send RST for a static stream with ID " << id;
     return;
   }
 
@@ -511,6 +508,28 @@ void QuicSession::AdjustInitialFlowControlWindows(size_t stream_window) {
   }
 }
 
+void QuicSession::HandleFrameOnNonexistentOutgoingStream(
+    QuicStreamId stream_id) {
+  DCHECK(!IsClosedStream(stream_id));
+  // Received a frame for a locally-created stream that is not currently
+  // active. This is an error.
+  CloseConnectionWithDetails(QUIC_INVALID_STREAM_ID,
+                             "Data for nonexistent stream");
+}
+
+void QuicSession::HandleRstOnValidNonexistentStream(
+    const QuicRstStreamFrame& frame) {
+  // If the stream is neither originally in active streams nor created in
+  // GetOrCreateDynamicStream(), it could be a closed stream in which case its
+  // final received byte offset need to be updated.
+  if (IsClosedStream(frame.stream_id)) {
+    // The RST frame contains the final byte offset for the stream: we can now
+    // update the connection level flow controller if needed.
+    UpdateFlowControlOnFinalReceivedByteOffset(frame.stream_id,
+                                               frame.byte_offset);
+  }
+}
+
 void QuicSession::OnNewStreamFlowControlWindow(QuicStreamOffset new_window) {
   if (new_window < kMinimumFlowControlSendWindow) {
     LOG(ERROR) << "Peer sent us an invalid stream flow control send window: "
@@ -653,10 +672,7 @@ ReliableQuicStream* QuicSession::GetOrCreateDynamicStream(
   }
 
   if (!IsIncomingStream(stream_id)) {
-    // Received a frame for a locally-created stream that is not currently
-    // active. This is an error.
-    CloseConnectionWithDetails(QUIC_INVALID_STREAM_ID,
-                               "Data for nonexistent stream");
+    HandleFrameOnNonexistentOutgoingStream(stream_id);
     return nullptr;
   }
 
@@ -776,7 +792,7 @@ void QuicSession::MarkConnectionLevelWriteBlocked(QuicStreamId id,
         << "Priorities do not match.  Got: " << static_cast<int>(priority)
         << " Expected: " << static_cast<int>(stream->Priority());
   } else {
-    LOG(DFATAL) << "Marking unknown stream " << id << " blocked.";
+    QUIC_BUG << "Marking unknown stream " << id << " blocked.";
   }
 #endif
 

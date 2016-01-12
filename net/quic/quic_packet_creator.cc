@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_data_writer.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_flags.h"
@@ -175,7 +176,7 @@ bool QuicPacketCreator::IsFecGroupOpen() const {
 
 void QuicPacketCreator::StartFecProtectingPackets() {
   if (max_packets_per_fec_group_ == 0) {
-    LOG(DFATAL) << "Cannot start FEC protection when FEC is not enabled.";
+    QUIC_BUG << "Cannot start FEC protection when FEC is not enabled.";
     return;
   }
   // TODO(jri): This currently requires that the generator flush out any
@@ -184,7 +185,7 @@ void QuicPacketCreator::StartFecProtectingPackets() {
   // generator to check if the resulting expansion still allows the incoming
   // frame to be added to the packet.
   if (HasPendingFrames()) {
-    LOG(DFATAL) << "Cannot start FEC protection with pending frames.";
+    QUIC_BUG << "Cannot start FEC protection with pending frames.";
     return;
   }
   DCHECK(!fec_protect_);
@@ -193,7 +194,7 @@ void QuicPacketCreator::StartFecProtectingPackets() {
 
 void QuicPacketCreator::StopFecProtectingPackets() {
   if (fec_group_.get() != nullptr) {
-    LOG(DFATAL) << "Cannot stop FEC protection with open FEC group.";
+    QUIC_BUG << "Cannot stop FEC protection with open FEC group.";
     return;
   }
   DCHECK(fec_protect_);
@@ -465,8 +466,8 @@ void QuicPacketCreator::Flush() {
 
 void QuicPacketCreator::OnSerializedPacket(SerializedPacket* packet) {
   if (packet->packet == nullptr) {
-    LOG(DFATAL) << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
-                << " should_fec_protect_:" << should_fec_protect_next_packet_;
+    QUIC_BUG << "Failed to SerializePacket. fec_policy:" << fec_send_policy()
+             << " should_fec_protect_:" << should_fec_protect_next_packet_;
     delegate_->CloseConnection(QUIC_FAILED_TO_SERIALIZE_PACKET, false);
     return;
   }
@@ -569,71 +570,34 @@ SerializedPacket QuicPacketCreator::SerializePacket(
                                       queued_frames_.back().type == ACK_FRAME;
   // Use the packet_size_ instead of the buffer size to ensure smaller
   // packet sizes are properly used.
-  size_t encrypted_length = 0u;
-  if (FLAGS_quic_inplace_encryption) {
-    size_t length = framer_->BuildDataPacket(header, queued_frames_,
-                                             encrypted_buffer, packet_size_);
-    if (length == 0) {
-      LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
-                  << " frames.";
-      return NoPacket();
-    }
-
-    // TODO(ianswett) Consider replacing QuicPacket with something else, since
-    // it's only used to provide convenience methods to FEC and encryption.
-    QuicPacket packet(encrypted_buffer, length,
-                      /* owns_buffer */ false,
-                      header.public_header.connection_id_length,
-                      header.public_header.version_flag,
-                      header.public_header.packet_number_length);
-    OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
-
-    // Because of possible truncation, we can't be confident that our
-    // packet size calculation worked correctly.
-    if (!possibly_truncated_by_length) {
-      DCHECK_EQ(packet_size_, length);
-    }
-    // Immediately encrypt the packet, to ensure we don't encrypt the same
-    // packet number multiple times.
-    encrypted_length =
-        framer_->EncryptPayload(encryption_level_, packet_number_, packet,
-                                encrypted_buffer, encrypted_buffer_len);
-  } else {
-    // The optimized encryption algorithm implementations run faster when
-    // operating on aligned memory.
-    // TODO(rtenneti): Change the default 64 alignas value (used the default
-    // value from CACHELINE_SIZE).
-    ALIGNAS(64) char buffer[kMaxPacketSize];
-    size_t length =
-        framer_->BuildDataPacket(header, queued_frames_, buffer, packet_size_);
-    if (length == 0) {
-      LOG(DFATAL) << "Failed to serialize " << queued_frames_.size()
-                  << " frames.";
-      return NoPacket();
-    }
-
-    // TODO(ianswett) Consider replacing QuicPacket with something else, since
-    // it's only used to provide convenience methods to FEC and encryption.
-    QuicPacket packet(buffer, length,
-                      /* owns_buffer */ false,
-                      header.public_header.connection_id_length,
-                      header.public_header.version_flag,
-                      header.public_header.packet_number_length);
-    OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
-
-    // Because of possible truncation, we can't be confident that our
-    // packet size calculation worked correctly.
-    if (!possibly_truncated_by_length) {
-      DCHECK_EQ(packet_size_, length);
-    }
-    // Immediately encrypt the packet, to ensure we don't encrypt the same
-    // packet number multiple times.
-    encrypted_length =
-        framer_->EncryptPayload(encryption_level_, packet_number_, packet,
-                                encrypted_buffer, encrypted_buffer_len);
+  size_t length = framer_->BuildDataPacket(header, queued_frames_,
+                                           encrypted_buffer, packet_size_);
+  if (length == 0) {
+    QUIC_BUG << "Failed to serialize " << queued_frames_.size() << " frames.";
+    return NoPacket();
   }
+
+  // TODO(ianswett) Consider replacing QuicPacket with something else, since
+  // it's only used to provide convenience methods to FEC and encryption.
+  QuicPacket packet(encrypted_buffer, length,
+                    /* owns_buffer */ false,
+                    header.public_header.connection_id_length,
+                    header.public_header.version_flag,
+                    header.public_header.packet_number_length);
+  OnBuiltFecProtectedPayload(header, packet.FecProtectedData());
+
+  // Because of possible truncation, we can't be confident that our
+  // packet size calculation worked correctly.
+  if (!possibly_truncated_by_length) {
+    DCHECK_EQ(packet_size_, length);
+  }
+  // Immediately encrypt the packet, to ensure we don't encrypt the same
+  // packet number multiple times.
+  size_t encrypted_length =
+      framer_->EncryptPayload(encryption_level_, packet_number_, packet,
+                              encrypted_buffer, encrypted_buffer_len);
   if (encrypted_length == 0) {
-    LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
+    QUIC_BUG << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
 
@@ -661,8 +625,13 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
                                                  size_t buffer_len) {
   DCHECK_LT(0u, buffer_len);
   if (fec_group_.get() == nullptr || fec_group_->NumReceivedPackets() <= 0) {
-    LOG(DFATAL) << "SerializeFEC called but no group or zero packets in group.";
+    QUIC_BUG << "SerializeFEC called but no group or zero packets in group.";
     // TODO(jri): Make this a public method of framer?
+    return NoPacket();
+  }
+  if (FLAGS_quic_no_unencrypted_fec && encryption_level_ == ENCRYPTION_NONE) {
+    LOG(DFATAL) << "SerializeFEC must be called with encryption.";
+    delegate_->CloseConnection(QUIC_UNENCRYPTED_FEC_DATA, false);
     return NoPacket();
   }
   DCHECK_EQ(0u, queued_frames_.size());
@@ -681,7 +650,7 @@ SerializedPacket QuicPacketCreator::SerializeFec(char* buffer,
   size_t encrypted_length = framer_->EncryptPayload(
       encryption_level_, packet_number_, *packet, buffer, buffer_len);
   if (encrypted_length == 0) {
-    LOG(DFATAL) << "Failed to encrypt packet number " << packet_number_;
+    QUIC_BUG << "Failed to encrypt packet number " << packet_number_;
     return NoPacket();
   }
   SerializedPacket serialized(current_path_, header.packet_number,
@@ -741,7 +710,7 @@ bool QuicPacketCreator::AddFrame(const QuicFrame& frame,
   if (FLAGS_quic_never_write_unencrypted_data && frame.type == STREAM_FRAME &&
       frame.stream_frame->stream_id != kCryptoStreamId &&
       encryption_level_ == ENCRYPTION_NONE) {
-    LOG(DFATAL) << "Cannot send stream data without encryption.";
+    QUIC_BUG << "Cannot send stream data without encryption.";
     delegate_->CloseConnection(QUIC_UNENCRYPTED_STREAM_DATA, false);
     return false;
   }
@@ -811,7 +780,9 @@ void QuicPacketCreator::MaybeStartFecProtection() {
 void QuicPacketCreator::MaybeSendFecPacketAndCloseGroup(bool force_send_fec,
                                                         bool is_fec_timeout) {
   if (ShouldSendFec(force_send_fec)) {
-    if (fec_send_policy_ == FEC_ALARM_TRIGGER && !is_fec_timeout) {
+    if ((FLAGS_quic_no_unencrypted_fec &&
+         encryption_level_ == ENCRYPTION_NONE) ||
+        (fec_send_policy_ == FEC_ALARM_TRIGGER && !is_fec_timeout)) {
       ResetFecGroup();
       delegate_->OnResetFecGroup();
     } else {
@@ -860,8 +831,7 @@ void QuicPacketCreator::SetCurrentPath(
   }
 
   if (HasPendingFrames()) {
-    LOG(DFATAL)
-        << "Unable to change paths when a packet is under construction.";
+    QUIC_BUG << "Unable to change paths when a packet is under construction.";
     return;
   }
 

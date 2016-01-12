@@ -14,6 +14,7 @@
 
 #include "base/logging.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_bug_tracker.h"
 #include "net/quic/quic_flags.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_socket_utils.h"
@@ -88,7 +89,7 @@ bool QuicPacketReader::ReadAndDispatchPackets(
     IPAddressNumber server_ip =
         QuicSocketUtils::GetAddressFromMsghdr(&mmsg_hdr_[i].msg_hdr);
     if (!IsInitializedAddress(server_ip)) {
-      LOG(DFATAL) << "Unable to get server address.";
+      QUIC_BUG << "Unable to get server address.";
       continue;
     }
 

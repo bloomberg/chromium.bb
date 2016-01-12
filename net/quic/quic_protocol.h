@@ -125,6 +125,9 @@ const bool kIncludeVersion = true;
 // Signifies that the QuicPacket will contain path id.
 const bool kIncludePathId = true;
 
+// Stream ID is reserved to denote an invalid ID.
+const QuicStreamId kInvalidStreamId = 0;
+
 // Reserved ID for the crypto stream.
 const QuicStreamId kCryptoStreamId = 1;
 
@@ -474,7 +477,7 @@ AdjustErrorForVersion(QuicRstStreamErrorCode error_code, QuicVersion version);
 // These values must remain stable as they are uploaded to UMA histograms.
 // To add a new error code, use the current value of QUIC_LAST_ERROR and
 // increment QUIC_LAST_ERROR.
-// last value = 77
+// last value = 78
 enum QuicErrorCode {
   QUIC_NO_ERROR = 0,
 
@@ -494,6 +497,8 @@ enum QuicErrorCode {
   QUIC_INVALID_STREAM_DATA = 46,
   // STREAM frame data is not encrypted.
   QUIC_UNENCRYPTED_STREAM_DATA = 61,
+  // FEC frame data is not encrypted.
+  QUIC_UNENCRYPTED_FEC_DATA = 77,
   // RST_STREAM frame data is malformed.
   QUIC_INVALID_RST_STREAM_DATA = 6,
   // CONNECTION_CLOSE frame data is malformed.
@@ -635,7 +640,7 @@ enum QuicErrorCode {
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 77,
+  QUIC_LAST_ERROR = 78,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.
@@ -1255,6 +1260,8 @@ struct NET_EXPORT_PRIVATE SerializedPacket {
   bool is_fec_packet;
   bool has_ack;
   bool has_stop_waiting;
+  QuicPacketNumber original_packet_number;
+  TransmissionType transmission_type;
 
   // Optional notifiers which will be informed when this packet has been ACKed.
   std::list<AckListenerWrapper> listeners;

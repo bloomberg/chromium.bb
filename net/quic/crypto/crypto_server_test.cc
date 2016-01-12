@@ -359,9 +359,9 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
 
   void CheckRejectTag() {
     if (RejectsAreStateless()) {
-      ASSERT_EQ(kSREJ, out_.tag());
+      ASSERT_EQ(kSREJ, out_.tag()) << QuicUtils::TagToString(out_.tag());
     } else {
-      ASSERT_EQ(kREJ, out_.tag());
+      ASSERT_EQ(kREJ, out_.tag()) << QuicUtils::TagToString(out_.tag());
     }
   }
 
@@ -745,7 +745,7 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
   ShouldSucceed(msg);
   CheckRejectTag();
 
-  if (client_version_ <= QUIC_VERSION_26) {
+  if (client_version_ <= QUIC_VERSION_30) {
     const HandshakeFailureReason kRejectReasons[] = {
         SOURCE_ADDRESS_TOKEN_DECRYPTION_FAILURE, CLIENT_NONCE_INVALID_FAILURE,
         SERVER_NONCE_DECRYPTION_FAILURE};
@@ -758,9 +758,10 @@ TEST_P(CryptoServerTest, CorruptMultipleTags) {
 }
 
 TEST_P(CryptoServerTest, ReplayProtection) {
-  if (client_version_ > QUIC_VERSION_26) {
+  if (client_version_ > QUIC_VERSION_30) {
     return;
   }
+  FLAGS_require_strike_register_or_server_nonce = false;
   // This tests that disabling replay protection works.
   // clang-format off
   CryptoHandshakeMessage msg = CryptoTestUtils::Message(
@@ -796,6 +797,33 @@ TEST_P(CryptoServerTest, ReplayProtection) {
   // The message should accepted twice when replay protection is off.
   ASSERT_EQ(kSHLO, out_.tag());
   CheckServerHello(out_);
+}
+
+TEST_P(CryptoServerTest, NoServerNonce) {
+  FLAGS_require_strike_register_or_server_nonce = true;
+  // When no server nonce is present and no strike register is configured,
+  // the CHLO should be rejected.
+  // clang-format off
+  CryptoHandshakeMessage msg = CryptoTestUtils::Message(
+      "CHLO",
+      "AEAD", "AESG",
+      "KEXS", "C255",
+      "SCID", scid_hex_.c_str(),
+      "#004b5453", srct_hex_.c_str(),
+      "PUBS", pub_hex_.c_str(),
+      "NONC", nonce_hex_.c_str(),
+      "XLCT", XlctHexString().c_str(),
+      "VER\0", client_version_string_.c_str(),
+      "$padding", static_cast<int>(kClientHelloMinimumSize),
+      nullptr);
+  // clang-format on
+
+  ShouldSucceed(msg);
+
+  CheckRejectTag();
+  const HandshakeFailureReason kRejectReasons[] = {
+      SERVER_NONCE_REQUIRED_FAILURE};
+  CheckRejectReasons(kRejectReasons, arraysize(kRejectReasons));
 }
 
 TEST_P(CryptoServerTest, ProofForSuppliedServerConfig) {

@@ -28,4 +28,35 @@ void QuicClientSessionBase::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   headers_stream()->set_fec_policy(FEC_PROTECT_ALWAYS);
 }
 
+void QuicClientSessionBase::OnPromiseHeaders(QuicStreamId stream_id,
+                                             StringPiece headers_data) {
+  QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive headers after a stream has been reset.
+    return;
+  }
+  stream->OnPromiseHeaders(headers_data);
+}
+
+void QuicClientSessionBase::OnPromiseHeadersComplete(
+    QuicStreamId stream_id,
+    QuicStreamId promised_stream_id,
+    size_t frame_len) {
+  if (promised_stream_id != kInvalidStreamId &&
+      promised_stream_id <= largest_promised_stream_id_) {
+    CloseConnectionWithDetails(QUIC_INVALID_STREAM_ID,
+                               "Received push stream id lesser or equal to the"
+                               " last accepted before");
+    return;
+  }
+  largest_promised_stream_id_ = promised_stream_id;
+
+  QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
+  if (!stream) {
+    // It's quite possible to receive headers after a stream has been reset.
+    return;
+  }
+  stream->OnPromiseHeadersComplete(promised_stream_id, frame_len);
+}
+
 }  // namespace net
