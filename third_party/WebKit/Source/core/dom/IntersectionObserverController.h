@@ -17,7 +17,6 @@
 namespace blink {
 
 class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController>, public ActiveDOMObject {
-    USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 public:
     static IntersectionObserverController* create(Document*);
     ~IntersectionObserverController();
