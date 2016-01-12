@@ -42,13 +42,15 @@ namespace {
 
 // For Android builds, notifies the TabAndroid associated with |web_contents|
 // that a Lo-Fi response has been received. The TabAndroid then handles showing
-// Lo-Fi UI if this is the first Lo-Fi response for a page load.
-void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents) {
+// Lo-Fi UI if this is the first Lo-Fi response for a page load. |is_preview|
+// indicates whether the response was a Lo-Fi preview response.
+void OnLoFiResponseReceivedOnUI(content::WebContents* web_contents,
+                                bool is_preview) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 #if defined(OS_ANDROID)
   TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
   if (tab)
-    tab->OnLoFiResponseReceived();
+    tab->OnLoFiResponseReceived(is_preview);
 #endif
 }
 

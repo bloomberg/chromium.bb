@@ -54,15 +54,16 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
      * snackbar.
      *
      * @param tab The tab to show the snackbar on.
+     * @param isPreview Whether the snackbar should have the Lo-Fi preview message.
      */
-    public void maybeCreateLoFiBar(Tab tab) {
+    public void maybeCreateLoFiBar(Tab tab, final boolean isPreview) {
         if (mLoFiPopupShownForPageLoad) return;
         mLoFiPopupShownForPageLoad = true;
         if (tab.isHidden()) {
             TabObserver tabObserver = new EmptyTabObserver() {
                 @Override
                 public void onShown(Tab tab) {
-                    showLoFiBar(tab);
+                    showLoFiBar(tab, isPreview);
                     tab.removeObserver(this);
                 }
 
@@ -79,19 +80,23 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
             tab.addObserver(tabObserver);
             return;
         }
-        showLoFiBar(tab);
+        showLoFiBar(tab, isPreview);
     }
 
     /**
      * @param tab The tab. Saved to reload the page.
      */
-    private void showLoFiBar(Tab tab) {
+    private void showLoFiBar(Tab tab, boolean isPreview) {
         if (mDisabled) return;
         mTab = tab;
-        mSnackbarManager.showSnackbar(Snackbar.make(
-                mContext.getString(R.string.data_reduction_lo_fi_snackbar_message), this)
-                .setAction(mContext.getString(R.string.data_reduction_lo_fi_snackbar_action),
-                        tab.getId())
+        String message = mContext
+                .getString(isPreview ? R.string.data_reduction_lo_fi_preview_snackbar_message
+                        : R.string.data_reduction_lo_fi_snackbar_message);
+        String buttonText = mContext
+                .getString(isPreview ? R.string.data_reduction_lo_fi_preview_snackbar_action
+                        : R.string.data_reduction_lo_fi_snackbar_action);
+        mSnackbarManager.showSnackbar(Snackbar.make(message, this)
+                .setAction(buttonText, tab.getId())
                 .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
         DataReductionProxySettings.getInstance().incrementLoFiSnackbarShown();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(

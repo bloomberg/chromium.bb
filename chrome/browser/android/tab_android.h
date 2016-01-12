@@ -128,7 +128,11 @@ class TabAndroid : public CoreTabHelperDelegate,
   void ShowOfflinePages();
   void LoadOfflineCopy(const GURL& url);
 
-  void OnLoFiResponseReceived();
+  // Notifies this TabAndroid that a Lo-Fi response has been received. The
+  // TabAndroid then handles showing Lo-Fi UI if this is the first Lo-Fi
+  // response for a page load. |is_preview| indicates whether the response was a
+  // Lo-Fi preview response.
+  void OnLoFiResponseReceived(bool is_preview);
 
   // Overridden from CoreTabHelperDelegate:
   void SwapTabContents(content::WebContents* old_contents,

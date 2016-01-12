@@ -113,17 +113,21 @@ class TestLoFiDecider : public LoFiDecider {
 
 class TestLoFiUIService : public LoFiUIService {
  public:
-  TestLoFiUIService() : on_lofi_response_(false) {}
+  TestLoFiUIService() : on_lofi_response_(false), is_preview_(false) {}
   ~TestLoFiUIService() override {}
 
   bool DidNotifyLoFiResponse() const { return on_lofi_response_; }
+  bool is_preview() const { return is_preview_; }
 
-  void OnLoFiReponseReceived(const net::URLRequest& request) override {
+  void OnLoFiReponseReceived(const net::URLRequest& request,
+                             bool is_preview) override {
     on_lofi_response_ = true;
+    is_preview_ = is_preview;
   }
 
  private:
   bool on_lofi_response_;
+  bool is_preview_;
 };
 
 }  // namespace
@@ -186,6 +190,10 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
   void VerifyDidNotifyLoFiResponse(bool lofi_response) {
     EXPECT_EQ(lofi_response, lofi_ui_service_->DidNotifyLoFiResponse());
+  }
+
+  void VerifyLoFiPreviewResponse(bool is_preview) {
+    EXPECT_EQ(is_preview, lofi_ui_service_->is_preview());
   }
 
   int64_t total_received_bytes() {
@@ -737,6 +745,43 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
                     kResponseContentLength);
 
     VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
+  }
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFiPreview) {
+  const int64_t kResponseContentLength = 140;
+  const int64_t kOriginalContentLength = 200;
+
+  set_network_delegate(data_reduction_proxy_network_delegate_.get());
+
+  // Enable Lo-Fi.
+  const struct {
+    bool is_preview;
+  } tests[] = {
+      {false}, {true},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string raw_headers =
+        "HTTP/1.1 200 OK\n"
+        "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
+        "Expires: Mon, 24 Nov 2014 12:45:26 GMT\n"
+        "Via: 1.1 Chrome-Compression-Proxy\n"
+        "x-original-content-length: " +
+        base::Int64ToString(kOriginalContentLength) + "\n";
+
+    if (tests[i].is_preview)
+      raw_headers += "Chrome-Proxy: q=preview\n";
+
+    HeadersToRaw(&raw_headers);
+    std::string response_headers =
+        net::HttpUtil::ConvertHeadersBackToHTTPResponse(raw_headers);
+
+    FetchURLRequest(GURL("http://www.google.com/"), response_headers,
+                    kResponseContentLength);
+
+    VerifyDidNotifyLoFiResponse(tests[i].is_preview);
+    VerifyLoFiPreviewResponse(tests[i].is_preview);
   }
 }
 

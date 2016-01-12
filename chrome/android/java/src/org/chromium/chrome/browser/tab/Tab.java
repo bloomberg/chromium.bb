@@ -2592,11 +2592,13 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * If a Lo-Fi snackbar has not been shown yet for this page load, a Lo-Fi snackbar is shown.
+     *
+     * @param isPreview Whether the Lo-Fi response was a preview response.
      */
     @CalledByNative
-    public void onLoFiResponseReceived() {
+    public void onLoFiResponseReceived(boolean isPreview) {
         if (mLoFiBarPopupController != null) {
-            mLoFiBarPopupController.maybeCreateLoFiBar(this);
+            mLoFiBarPopupController.maybeCreateLoFiBar(this, isPreview);
         }
     }
 
