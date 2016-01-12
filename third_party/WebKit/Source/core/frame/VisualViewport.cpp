@@ -89,19 +89,11 @@ DEFINE_TRACE(VisualViewport)
 
 void VisualViewport::setSize(const IntSize& size)
 {
-    // When the main frame is remote, we won't have an associated frame.
-    if (!mainFrame())
-        return;
-
     if (m_size == size)
         return;
 
-    bool autosizerNeedsUpdating =
-        (size.width() != m_size.width())
-        && mainFrame()->settings()
-        && mainFrame()->settings()->textAutosizingEnabled();
-
     TRACE_EVENT2("blink", "VisualViewport::setSize", "width", size.width(), "height", size.height());
+    bool widthDidChange = size.width() != m_size.width();
     m_size = size;
 
     if (m_innerViewportContainerLayer) {
@@ -110,6 +102,13 @@ void VisualViewport::setSize(const IntSize& size)
         // Need to re-compute sizes for the overlay scrollbars.
         initializeScrollbars();
     }
+
+    if (!mainFrame())
+        return;
+
+    bool autosizerNeedsUpdating = widthDidChange
+        && mainFrame()->settings()
+        && mainFrame()->settings()->textAutosizingEnabled();
 
     if (autosizerNeedsUpdating) {
         // This needs to happen after setting the m_size member since it'll be read in the update call.

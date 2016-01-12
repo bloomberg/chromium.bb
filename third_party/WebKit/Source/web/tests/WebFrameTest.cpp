@@ -7023,6 +7023,31 @@ TEST_F(WebFrameSwapTest, SwapMainFrame)
     remoteFrame->close();
 }
 
+TEST_F(WebFrameSwapTest, ValidateSizeOnRemoteToLocalMainFrameSwap)
+{
+    WebSize size(111, 222);
+
+    WebRemoteFrame* remoteFrame = WebRemoteFrame::create(WebTreeScopeType::Document, nullptr);
+    mainFrame()->swap(remoteFrame);
+
+    remoteFrame->view()->resize(size);
+
+    FrameTestHelpers::TestWebFrameClient client;
+    WebLocalFrame* localFrame = WebLocalFrame::createProvisional(&client, remoteFrame, WebSandboxFlags::None, WebFrameOwnerProperties());
+    remoteFrame->swap(localFrame);
+
+    // Verify that the size that was set with a remote main frame is correct
+    // after swapping to a local frame.
+    FrameHost* host = toWebViewImpl(localFrame->view())->page()->mainFrame()->host();
+    EXPECT_EQ(size.width, host->visualViewport().size().width());
+    EXPECT_EQ(size.height, host->visualViewport().size().height());
+
+    // Manually reset to break WebViewHelper's dependency on the stack allocated
+    // TestWebFrameClient.
+    reset();
+    remoteFrame->close();
+}
+
 namespace {
 
 class SwapMainFrameWhenTitleChangesWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
