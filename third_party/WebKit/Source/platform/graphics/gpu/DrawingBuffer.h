@@ -220,6 +220,8 @@ private:
     void deleteMailbox(const WebExternalTextureMailbox&);
     void freeRecycledMailboxes();
 
+    void initializeInternalTextureParameters();
+
     // Updates the current size of the buffer, ensuring that s_currentResourceUsePixels is updated.
     void setSize(const IntSize& size);
 
@@ -294,6 +296,7 @@ private:
     AntialiasingMode m_antiAliasingMode;
 
     WebGraphicsContext3D::Attributes m_actualAttributes;
+    unsigned m_target;
     unsigned m_internalColorFormat;
     unsigned m_colorFormat;
     unsigned m_internalRenderbufferFormat;

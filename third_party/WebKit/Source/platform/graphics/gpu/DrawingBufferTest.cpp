@@ -46,11 +46,34 @@ using testing::_;
 
 namespace blink {
 
+namespace {
+
+// The target to use when binding a texture to a Chromium image.
+WGC3Denum imageTextureTarget()
+{
+#if OS(MACOSX)
+    return GC3D_TEXTURE_RECTANGLE_ARB;
+#else
+    return GL_TEXTURE_2D;
+#endif
+}
+
+// The target to use when preparing a mailbox texture.
+WGC3Denum drawingBufferTextureTarget()
+{
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+        return imageTextureTarget();
+    return GL_TEXTURE_2D;
+}
+
+} // namespace
+
 class WebGraphicsContext3DForTests : public MockWebGraphicsContext3D {
 public:
     WebGraphicsContext3DForTests()
         : MockWebGraphicsContext3D()
         , m_boundTexture(0)
+        , m_boundTextureTarget(0)
         , m_currentMailboxByte(0)
         , m_mostRecentlyWaitedSyncToken(0)
         , m_currentImageId(1)
@@ -59,9 +82,13 @@ public:
 
     void bindTexture(WGC3Denum target, WebGLId texture) override
     {
-        if (target == GL_TEXTURE_2D) {
-            m_boundTexture = texture;
-        }
+        if (target != m_boundTextureTarget && texture == 0)
+            return;
+
+        // For simplicity, only allow one target to ever be bound.
+        ASSERT_TRUE(m_boundTextureTarget == 0 || target == m_boundTextureTarget);
+        m_boundTextureTarget = target;
+        m_boundTexture = texture;
     }
 
     void texImage2D(WGC3Denum target, WGC3Dint level, WGC3Denum internalformat, WGC3Dsizei width, WGC3Dsizei height, WGC3Dint border, WGC3Denum format, WGC3Denum type, const void* pixels) override
@@ -80,7 +107,7 @@ public:
 
     void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) override
     {
-        ASSERT_EQ(target, static_cast<WGC3Denum>(GL_TEXTURE_2D));
+        ASSERT_EQ(target, drawingBufferTextureTarget());
         ASSERT_TRUE(m_textureSizes.contains(texture));
         m_mostRecentlyProducedSize = m_textureSizes.get(texture);
     }
@@ -134,7 +161,7 @@ public:
     MOCK_METHOD1(bindTexImage2DMock, void(WGC3Dint imageId));
     void bindTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
     {
-        if (target == GL_TEXTURE_2D) {
+        if (target == imageTextureTarget()) {
             m_textureSizes.set(m_boundTexture, m_imageSizes.find(imageId)->value);
             m_imageToTextureMap.set(imageId, m_boundTexture);
             bindTexImage2DMock(imageId);
@@ -144,7 +171,7 @@ public:
     MOCK_METHOD1(releaseTexImage2DMock, void(WGC3Dint imageId));
     void releaseTexImage2DCHROMIUM(WGC3Denum target, WGC3Dint imageId)
     {
-        if (target == GL_TEXTURE_2D) {
+        if (target == imageTextureTarget()) {
             m_imageSizes.set(m_currentImageId, IntSize());
             m_imageToTextureMap.remove(imageId);
             releaseTexImage2DMock(imageId);
@@ -163,6 +190,7 @@ public:
 
 private:
     WebGLId m_boundTexture;
+    WGC3Denum m_boundTextureTarget;
     HashMap<WebGLId, IntSize> m_textureSizes;
     WGC3Dbyte m_currentMailboxByte;
     IntSize m_mostRecentlyProducedSize;
