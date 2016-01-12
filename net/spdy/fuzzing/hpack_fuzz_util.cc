@@ -141,9 +141,9 @@ string HpackFuzzUtil::HeaderBlockPrefix(size_t block_size) {
 
 // static
 void HpackFuzzUtil::InitializeFuzzerContext(FuzzerContext* context) {
-  context->first_stage.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
+  context->first_stage.reset(new HpackDecoder());
   context->second_stage.reset(new HpackEncoder(ObtainHpackHuffmanTable()));
-  context->third_stage.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
+  context->third_stage.reset(new HpackDecoder());
 }
 
 // static

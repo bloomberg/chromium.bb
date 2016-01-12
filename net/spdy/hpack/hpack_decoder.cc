@@ -21,9 +21,8 @@ const char kCookieKey[] = "cookie";
 
 }  // namespace
 
-HpackDecoder::HpackDecoder(const HpackHuffmanTable& table)
+HpackDecoder::HpackDecoder()
     : max_string_literal_size_(kDefaultMaxStringLiteralSize),
-      huffman_table_(table),
       handler_(nullptr),
       regular_header_seen_(false),
       header_block_started_(false) {}
@@ -209,7 +208,7 @@ bool HpackDecoder::DecodeNextStringLiteral(HpackInputStream* input_stream,
                                            StringPiece* output) {
   if (input_stream->MatchPrefixAndConsume(kStringLiteralHuffmanEncoded)) {
     string* buffer = is_key ? &key_buffer_ : &value_buffer_;
-    bool result = input_stream->DecodeNextHuffmanString(huffman_table_, buffer);
+    bool result = input_stream->DecodeNextHuffmanString(buffer);
     *output = StringPiece(*buffer);
     return result;
   }

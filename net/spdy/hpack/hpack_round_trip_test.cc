@@ -26,9 +26,7 @@ namespace {
 
 class HpackRoundTripTest : public ::testing::Test {
  protected:
-  HpackRoundTripTest()
-      : encoder_(ObtainHpackHuffmanTable()),
-        decoder_(ObtainHpackHuffmanTable()) {}
+  HpackRoundTripTest() : encoder_(ObtainHpackHuffmanTable()), decoder_() {}
 
   void SetUp() override {
     // Use a small table size to tickle eviction handling.

@@ -2961,7 +2961,7 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
 HpackDecoder* SpdyFramer::GetHpackDecoder() {
   DCHECK_LT(SPDY3, protocol_version());
   if (hpack_decoder_.get() == nullptr) {
-    hpack_decoder_.reset(new HpackDecoder(ObtainHpackHuffmanTable()));
+    hpack_decoder_.reset(new HpackDecoder());
   }
   return hpack_decoder_.get();
 }

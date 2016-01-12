@@ -12,6 +12,7 @@
 #include "base/strings/string_piece.h"
 #include "net/spdy/hpack/hpack_constants.h"
 #include "net/spdy/spdy_test_utils.h"
+#include "net/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -23,17 +24,6 @@ using std::string;
 using test::a2b_hex;
 
 const size_t kLiteralBound = 1024;
-
-class HpackInputStreamTest : public ::testing::Test {
- public:
-  void SetUp() override {
-    std::vector<HpackHuffmanSymbol> code = HpackHuffmanCode();
-    EXPECT_TRUE(huffman_table_.Initialize(&code[0], code.size()));
-  }
-
- protected:
-  HpackHuffmanTable huffman_table_;
-};
 
 // Hex representation of encoded length and Huffman string.
 const char kEncodedHuffmanFixture[] =
@@ -76,7 +66,7 @@ uint32_t bits32(const string& bitstring) {
 // certain integers are decoded correctly with an 8-bit prefix in
 // exactly {Number} bytes.
 
-TEST_F(HpackInputStreamTest, OneByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, OneByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0x00u, DecodeValidUint32(8, string("\x00", 1)));
   EXPECT_EQ(0x7fu, DecodeValidUint32(8, "\x7f"));
@@ -86,7 +76,7 @@ TEST_F(HpackInputStreamTest, OneByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff");
 }
 
-TEST_F(HpackInputStreamTest, TwoByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, TwoByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0xffu, DecodeValidUint32(8, string("\xff\x00", 2)));
   EXPECT_EQ(0x0100u, DecodeValidUint32(8, "\xff\x01"));
@@ -97,7 +87,7 @@ TEST_F(HpackInputStreamTest, TwoByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, ThreeByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, ThreeByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0x017fu, DecodeValidUint32(8, "\xff\x80\x01"));
   EXPECT_EQ(0x0fffu, DecodeValidUint32(8, "\xff\x80\x1e"));
@@ -110,7 +100,7 @@ TEST_F(HpackInputStreamTest, ThreeByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, FourByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, FourByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0x40ffu, DecodeValidUint32(8, "\xff\x80\x80\x01"));
   EXPECT_EQ(0xffffu, DecodeValidUint32(8, "\xff\x80\xfe\x03"));
@@ -123,7 +113,7 @@ TEST_F(HpackInputStreamTest, FourByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, FiveByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, FiveByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0x002000ffu, DecodeValidUint32(8, "\xff\x80\x80\x80\x01"));
   EXPECT_EQ(0x00ffffffu, DecodeValidUint32(8, "\xff\x80\xfe\xff\x07"));
@@ -136,7 +126,7 @@ TEST_F(HpackInputStreamTest, FiveByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\xff\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, SixByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, SixByteIntegersEightBitPrefix) {
   // Minimum.
   EXPECT_EQ(0x100000ffu, DecodeValidUint32(8, "\xff\x80\x80\x80\x80\x01"));
   // Maximum.
@@ -149,7 +139,7 @@ TEST_F(HpackInputStreamTest, SixByteIntegersEightBitPrefix) {
 
 // There are no valid uint32_t encodings that are greater than six
 // bytes.
-TEST_F(HpackInputStreamTest, SevenByteIntegersEightBitPrefix) {
+TEST(HpackInputStreamTest, SevenByteIntegersEightBitPrefix) {
   ExpectDecodeUint32Invalid(8, "\xff\x80\x80\x80\x80\x80\x00");
   ExpectDecodeUint32Invalid(8, "\xff\x80\x80\x80\x80\x80\x01");
   ExpectDecodeUint32Invalid(8, "\xff\xff\xff\xff\xff\xff\xff");
@@ -159,7 +149,7 @@ TEST_F(HpackInputStreamTest, SevenByteIntegersEightBitPrefix) {
 // certain integers are encoded correctly with an N-bit prefix in
 // exactly {Number} bytes for N in {1, 2, ..., 7}.
 
-TEST_F(HpackInputStreamTest, OneByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, OneByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x00u, DecodeValidUint32(7, string("\x00", 1)));
   EXPECT_EQ(0x00u, DecodeValidUint32(7, "\x80"));
@@ -209,7 +199,7 @@ TEST_F(HpackInputStreamTest, OneByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff");
 }
 
-TEST_F(HpackInputStreamTest, TwoByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, TwoByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x7fu, DecodeValidUint32(7, string("\x7f\x00", 2)));
   EXPECT_EQ(0x7fu, DecodeValidUint32(7, string("\xff\x00", 2)));
@@ -259,7 +249,7 @@ TEST_F(HpackInputStreamTest, TwoByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, ThreeByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, ThreeByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0xffu, DecodeValidUint32(7, "\x7f\x80\x01"));
   EXPECT_EQ(0xffu, DecodeValidUint32(7, "\xff\x80\x01"));
@@ -309,7 +299,7 @@ TEST_F(HpackInputStreamTest, ThreeByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, FourByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, FourByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x407fu, DecodeValidUint32(7, "\x7f\x80\x80\x01"));
   EXPECT_EQ(0x407fu, DecodeValidUint32(7, "\xff\x80\x80\x01"));
@@ -359,7 +349,7 @@ TEST_F(HpackInputStreamTest, FourByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, FiveByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, FiveByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x20007fu, DecodeValidUint32(7, "\x7f\x80\x80\x80\x01"));
   EXPECT_EQ(0x20007fu, DecodeValidUint32(7, "\xff\x80\x80\x80\x01"));
@@ -409,7 +399,7 @@ TEST_F(HpackInputStreamTest, FiveByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(1, "\xff\xff\xff\xff\xff");
 }
 
-TEST_F(HpackInputStreamTest, SixByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, SixByteIntegersOneToSevenBitPrefixes) {
   // Minimums.
   EXPECT_EQ(0x1000007fu, DecodeValidUint32(7, "\x7f\x80\x80\x80\x80\x01"));
   EXPECT_EQ(0x1000007fu, DecodeValidUint32(7, "\xff\x80\x80\x80\x80\x01"));
@@ -461,7 +451,7 @@ TEST_F(HpackInputStreamTest, SixByteIntegersOneToSevenBitPrefixes) {
 
 // There are no valid uint32_t encodings that are greater than six
 // bytes.
-TEST_F(HpackInputStreamTest, SevenByteIntegersOneToSevenBitPrefixes) {
+TEST(HpackInputStreamTest, SevenByteIntegersOneToSevenBitPrefixes) {
   ExpectDecodeUint32Invalid(7, "\x7f\x80\x80\x80\x80\x80\x00");
   ExpectDecodeUint32Invalid(7, "\x7f\x80\x80\x80\x80\x80\x01");
   ExpectDecodeUint32Invalid(7, "\xff\xff\xff\xff\xff\xff\xff");
@@ -486,7 +476,7 @@ TEST_F(HpackInputStreamTest, SevenByteIntegersOneToSevenBitPrefixes) {
 }
 
 // Decoding a valid encoded string literal should work.
-TEST_F(HpackInputStreamTest, DecodeNextIdentityString) {
+TEST(HpackInputStreamTest, DecodeNextIdentityString) {
   HpackInputStream input_stream(kLiteralBound, "\x0estring literal");
 
   EXPECT_TRUE(input_stream.HasMoreData());
@@ -498,7 +488,7 @@ TEST_F(HpackInputStreamTest, DecodeNextIdentityString) {
 
 // Decoding an encoded string literal with size larger than
 // |max_string_literal_size_| should fail.
-TEST_F(HpackInputStreamTest, DecodeNextIdentityStringSizeLimit) {
+TEST(HpackInputStreamTest, DecodeNextIdentityStringSizeLimit) {
   HpackInputStream input_stream(13, "\x0estring literal");
 
   EXPECT_TRUE(input_stream.HasMoreData());
@@ -508,7 +498,7 @@ TEST_F(HpackInputStreamTest, DecodeNextIdentityStringSizeLimit) {
 
 // Decoding an encoded string literal with size larger than the
 // remainder of the buffer should fail.
-TEST_F(HpackInputStreamTest, DecodeNextIdentityStringNotEnoughInput) {
+TEST(HpackInputStreamTest, DecodeNextIdentityStringNotEnoughInput) {
   // Set the length to be one more than it should be.
   HpackInputStream input_stream(kLiteralBound, "\x0fstring literal");
 
@@ -517,37 +507,37 @@ TEST_F(HpackInputStreamTest, DecodeNextIdentityStringNotEnoughInput) {
   EXPECT_FALSE(input_stream.DecodeNextIdentityString(&string_piece));
 }
 
-TEST_F(HpackInputStreamTest, DecodeNextHuffmanString) {
+TEST(HpackInputStreamTest, DecodeNextHuffmanString) {
   string output, input(a2b_hex(kEncodedHuffmanFixture));
   HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture) - 1, input);
 
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_TRUE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
+  EXPECT_TRUE(input_stream.DecodeNextHuffmanString(&output));
   EXPECT_EQ(kDecodedHuffmanFixture, output);
   EXPECT_FALSE(input_stream.HasMoreData());
 }
 
-TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringSizeLimit) {
+TEST(HpackInputStreamTest, DecodeNextHuffmanStringSizeLimit) {
   string output, input(a2b_hex(kEncodedHuffmanFixture));
   // Max string literal is one byte shorter than the decoded fixture.
   HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture) - 2, input);
 
   // Decoded string overflows the max string literal.
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
+  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(&output));
 }
 
-TEST_F(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
+TEST(HpackInputStreamTest, DecodeNextHuffmanStringNotEnoughInput) {
   string output, input(a2b_hex(kEncodedHuffmanFixture));
   input[0]++;  // Input prefix is one byte larger than available input.
   HpackInputStream input_stream(arraysize(kDecodedHuffmanFixture) - 1, input);
 
   // Not enough buffer for declared encoded length.
   EXPECT_TRUE(input_stream.HasMoreData());
-  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(huffman_table_, &output));
+  EXPECT_FALSE(input_stream.DecodeNextHuffmanString(&output));
 }
 
-TEST_F(HpackInputStreamTest, PeekBitsAndConsume) {
+TEST(HpackInputStreamTest, PeekBitsAndConsume) {
   HpackInputStream input_stream(kLiteralBound, "\xad\xab\xad\xab\xad");
 
   uint32_t bits = 0;
@@ -609,7 +599,97 @@ TEST_F(HpackInputStreamTest, PeekBitsAndConsume) {
   EXPECT_FALSE(input_stream.HasMoreData());
 }
 
-TEST_F(HpackInputStreamTest, ConsumeByteRemainder) {
+TEST(HpackInputStreamTest, InitializePeekBits) {
+  {
+    // Empty input, peeked_count == 0 and bits == 0.
+    HpackInputStream input_stream(kLiteralBound, "");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(0u, peeked_count);
+    EXPECT_EQ(0u, bits);
+  }
+  {
+    // One input byte, returns peeked_count == 8 and bits
+    // has the input byte in its high order bits.
+    HpackInputStream input_stream(kLiteralBound, "\xfe");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(8u, peeked_count);
+    EXPECT_EQ(0xfe000000, bits);
+    input_stream.ConsumeBits(8);
+    EXPECT_FALSE(input_stream.HasMoreData());
+  }
+  {
+    // Two input bytes, returns peeked_count == 16 and bits
+    // has the two input bytes in its high order bits.
+    HpackInputStream input_stream(kLiteralBound, "\xfe\xdc");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(16u, peeked_count);
+    EXPECT_EQ(0xfedc0000, bits);
+    input_stream.ConsumeBits(16);
+    EXPECT_FALSE(input_stream.HasMoreData());
+  }
+  {
+    // Three input bytes, returns peeked_count == 24 and bits
+    // has the three input bytes in its high order bits.
+    HpackInputStream input_stream(kLiteralBound, "\xab\xcd\xef");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(24u, peeked_count);
+    EXPECT_EQ(0xabcdef00, bits);
+    input_stream.ConsumeBits(24);
+    EXPECT_FALSE(input_stream.HasMoreData());
+  }
+  {
+    // Four input bytes, returns peeked_count == 32 and bits
+    // contains the four input bytes.
+    HpackInputStream input_stream(kLiteralBound, "\xfe\xed\xdc\xcb");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(32u, peeked_count);
+    EXPECT_EQ(0xfeeddccb, bits);
+    input_stream.ConsumeBits(32);
+    EXPECT_FALSE(input_stream.HasMoreData());
+  }
+  {
+    // Five input bytes, returns peeked_count == 32 and bits
+    // contains the first four input bytes.
+    HpackInputStream input_stream(kLiteralBound, "\xfe\xed\xdc\xcb\xba");
+    auto peeked_count_and_bits = input_stream.InitializePeekBits();
+    size_t peeked_count = peeked_count_and_bits.first;
+    uint32_t bits = peeked_count_and_bits.second;
+    EXPECT_EQ(32u, peeked_count);
+    EXPECT_EQ(0xfeeddccb, bits);
+    EXPECT_TRUE(input_stream.HasMoreData());
+
+    // If we consume some bits, then InitializePeekBits will return no bits.
+    input_stream.ConsumeBits(28);
+    peeked_count -= 28;
+    bits <<= 28;
+    EXPECT_EQ(0xb0000000, bits);
+
+    EXPECT_DFATAL(peeked_count_and_bits = input_stream.InitializePeekBits(),
+                  "bit_offset_");
+    EXPECT_EQ(0u, peeked_count_and_bits.first);
+    EXPECT_EQ(0u, peeked_count_and_bits.second);
+    EXPECT_TRUE(input_stream.HasMoreData());
+
+    // Can PeekBits, which will get us the last byte's bits.
+    EXPECT_TRUE(input_stream.PeekBits(&peeked_count, &bits));
+    EXPECT_EQ(12u, peeked_count);
+    EXPECT_EQ(0xbba00000, bits);
+    input_stream.ConsumeBits(12);
+    EXPECT_FALSE(input_stream.HasMoreData());
+  }
+}
+
+TEST(HpackInputStreamTest, ConsumeByteRemainder) {
   HpackInputStream input_stream(kLiteralBound, "\xad\xab");
   // Does nothing.
   input_stream.ConsumeByteRemainder();
