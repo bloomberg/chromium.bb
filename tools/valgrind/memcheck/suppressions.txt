@@ -3248,19 +3248,11 @@
    bug_562718b
    Memcheck:Uninitialized
    fun:_ZN5blink10PaintLayer31setNeedsCompositingInputsUpdateEv
-   fun:_ZN5blink10PaintLayer12styleChangedENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink20LayoutBoxModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink9LayoutBox14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink11LayoutBlock14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
 }
 {
    bug_562718c
    Memcheck:Uninitialized
    fun:_ZN5blink10PaintLayer30updateDescendantDependentFlagsEv
-   fun:_ZN5blink10PaintLayer12styleChangedENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink20LayoutBoxModelObject14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink9LayoutBox14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
-   fun:_ZN5blink11LayoutBlock14styleDidChangeENS_15StyleDifferenceEPKNS_13ComputedStyleE
 }
 {
    bug_562718d
@@ -3279,6 +3271,41 @@
    fun:_ZN8GrGLCapsC1ERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
    fun:_ZN15GrGLContextInfoC1ERKNS_15ConstructorArgsE
    fun:_ZN11GrGLContextC2ERKN15GrGLContextInfo15ConstructorArgsE
+}
+{
+   bug_562718f
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN5blink17PaintLayerPainter13paintChildrenEjRNS_15GraphicsContextERKNS_22PaintLayerPaintingInfoEj
+   fun:_ZN5blink17PaintLayerPainter18paintLayerContentsERNS_15GraphicsContextERKNS_22PaintLayerPaintingInfoEjNS0_14FragmentPolicyE
+}
+{
+   bug_562718g
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN5blink20PaintLayerCompositor14updateIfNeededEv
+   fun:_ZN5blink20PaintLayerCompositor23updateIfNeededRecursiveEv
+   ...
+   fun:_ZN5blink9FrameView29updateLifecyclePhasesInternalENS0_21LifeCycleUpdateOptionE
+}
+{
+   bug_562718h
+   Memcheck:Uninitialized
+   fun:_ZN5blink10PaintLayer35update3DTransformedDescendantStatusEv
+   fun:_ZN5blink10PaintLayer12hitTestLayerEPS0_S1_RNS_13HitTestResultERKNS_10LayoutRectERKNS_15HitTestLocationEbPKNS_24HitTestingTransformStateEPd
+   fun:_ZN5blink10PaintLayer7hitTestERNS_13HitTestResultE
+   fun:_ZN5blink10LayoutView24hitTestNoLifecycleUpdateERNS_13HitTestResultE
+}
+{
+   bug_562718i
+   Memcheck:Uninitialized
+   ...
+   fun:_ZNK5blink10PaintLayer37containingLayerForOutOfFlowPositionedEPKS0_Pb
+   fun:_ZN5blink10PaintLayer19updateLayerPositionEv
+   ...
+   fun:_ZN5blink10PaintLayer28updateLayerPositionRecursiveEv
+   fun:_ZN5blink10PaintLayer31updateLayerPositionsAfterLayoutEv
+   fun:_ZN5blink9FrameView6layoutEv
 }
 {
    bug_542543b
