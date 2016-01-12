@@ -29,6 +29,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/CullRect.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
@@ -40,9 +41,9 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebScrollbarBehavior.h"
+#include "wtf/Optional.h"
 
 #if !OS(MACOSX)
-#include "public/platform/WebRect.h"
 #include "public/platform/WebThemeEngine.h"
 #endif
 
@@ -123,8 +124,17 @@ bool ScrollbarTheme::paint(const ScrollbarThemeClient& scrollbar, GraphicsContex
     }
 
     // Paint the thumb.
-    if (scrollMask & ThumbPart)
+    if (scrollMask & ThumbPart) {
+        Optional<CompositingRecorder> compositingRecorder;
+        float opacity = thumbOpacity(scrollbar);
+        if (opacity != 1.0f) {
+            FloatRect floatThumbRect(thumbRect);
+            floatThumbRect.inflate(1); // some themes inflate thumb bounds
+            compositingRecorder.emplace(graphicsContext, scrollbar, SkXfermode::kSrcOver_Mode, opacity, &floatThumbRect);
+        }
+
         paintThumb(graphicsContext, scrollbar, thumbRect);
+    }
 
     return true;
 }
