@@ -53,16 +53,12 @@ struct LayoutBoxRareData {
     WTF_MAKE_NONCOPYABLE(LayoutBoxRareData); USING_FAST_MALLOC(LayoutBoxRareData);
 public:
     LayoutBoxRareData()
-        : m_inlineBoxWrapper(nullptr)
-        , m_spannerPlaceholder(nullptr)
+        : m_spannerPlaceholder(nullptr)
         , m_overrideLogicalContentHeight(-1)
         , m_overrideLogicalContentWidth(-1)
         , m_previousBorderBoxSize(-1, -1)
     {
     }
-
-    // For inline replaced elements, the inline box that owns us.
-    InlineBox* m_inlineBoxWrapper;
 
     // For spanners, the spanner placeholder that lays us out within the multicol container.
     LayoutMultiColumnSpannerPlaceholder* m_spannerPlaceholder;
@@ -570,7 +566,7 @@ public:
     // For inline replaced elements, this function returns the inline box that owns us.  Enables
     // the replaced LayoutObject to quickly determine what line it is contained on and to easily
     // iterate over structures on the line.
-    InlineBox* inlineBoxWrapper() const { return m_rareData ? m_rareData->m_inlineBoxWrapper : 0; }
+    InlineBox* inlineBoxWrapper() const { return m_inlineBoxWrapper; }
     void setInlineBoxWrapper(InlineBox*);
     void deleteLineBoxWrapper();
 
@@ -995,6 +991,10 @@ protected:
     OwnPtr<OverflowModel> m_overflow;
 
 private:
+    // The inline box containing this LayoutBox, forl inline replaced elements.
+    // It's not in m_rareData because of its high occurrence rate (12% of LayoutBoxes for top 10k sites).
+    InlineBox* m_inlineBoxWrapper;
+
     OwnPtr<LayoutBoxRareData> m_rareData;
 };
 
@@ -1059,16 +1059,16 @@ inline LayoutBox* LayoutBox::nextSiblingMultiColumnBox() const
 inline void LayoutBox::setInlineBoxWrapper(InlineBox* boxWrapper)
 {
     if (boxWrapper) {
-        ASSERT(!inlineBoxWrapper());
-        // m_inlineBoxWrapper should already be 0. Deleting it is a safeguard against security issues.
+        ASSERT(!m_inlineBoxWrapper);
+        // m_inlineBoxWrapper should already be nullptr. Deleting it is a safeguard against security issues.
         // Otherwise, there will two line box wrappers keeping the reference to this layoutObject, and
         // only one will be notified when the layoutObject is getting destroyed. The second line box wrapper
         // will keep a stale reference.
-        if (UNLIKELY(inlineBoxWrapper() != nullptr))
+        if (UNLIKELY(m_inlineBoxWrapper != nullptr))
             deleteLineBoxWrapper();
     }
 
-    ensureRareData().m_inlineBoxWrapper = boxWrapper;
+    m_inlineBoxWrapper = boxWrapper;
 }
 
 } // namespace blink

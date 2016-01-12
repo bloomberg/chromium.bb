@@ -89,11 +89,22 @@ static OverrideSizeMap* gExtraBlockOffsetMap = nullptr;
 static const int autoscrollBeltSize = 20;
 static const unsigned backgroundObscurationTestMaxDepth = 4;
 
+struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
+    LayoutRect frameRect;
+    LayoutUnit intrinsicContentLogicalHeight;
+    LayoutRectOutsets marginBoxOutsets;
+    LayoutUnit preferredLogicalWidth[2];
+    void* pointers[3];
+};
+
+static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox), "LayoutBox should stay small");
+
 LayoutBox::LayoutBox(ContainerNode* node)
     : LayoutBoxModelObject(node)
     , m_intrinsicContentLogicalHeight(-1)
     , m_minPreferredLogicalWidth(-1)
     , m_maxPreferredLogicalWidth(-1)
+    , m_inlineBoxWrapper(nullptr)
 {
     setIsBox();
 }
@@ -1744,13 +1755,12 @@ InlineBox* LayoutBox::createInlineBox()
 
 void LayoutBox::dirtyLineBoxes(bool fullLayout)
 {
-    if (inlineBoxWrapper()) {
+    if (m_inlineBoxWrapper) {
         if (fullLayout) {
-            inlineBoxWrapper()->destroy();
-            ASSERT(m_rareData);
-            m_rareData->m_inlineBoxWrapper = nullptr;
+            m_inlineBoxWrapper->destroy();
+            m_inlineBoxWrapper = nullptr;
         } else {
-            inlineBoxWrapper()->dirtyLineBoxes();
+            m_inlineBoxWrapper->dirtyLineBoxes();
         }
     }
 }
@@ -1801,12 +1811,11 @@ void LayoutBox::moveWithEdgeOfInlineContainerIfNecessary(bool isHorizontal)
 
 void LayoutBox::deleteLineBoxWrapper()
 {
-    if (inlineBoxWrapper()) {
+    if (m_inlineBoxWrapper) {
         if (!documentBeingDestroyed())
-            inlineBoxWrapper()->remove();
-        inlineBoxWrapper()->destroy();
-        ASSERT(m_rareData);
-        m_rareData->m_inlineBoxWrapper = nullptr;
+            m_inlineBoxWrapper->remove();
+        m_inlineBoxWrapper->destroy();
+        m_inlineBoxWrapper = nullptr;
     }
 }
 
