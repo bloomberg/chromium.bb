@@ -162,6 +162,17 @@ Polymer({
     },
 
     /**
+     * The time the sink list was shown and populated with at least one sink.
+     * This is reset whenever the user switches views or there are no sinks
+     * available for display.
+     * @private {number}
+     */
+    populatedSinkListSeenTimeMs_: {
+      type: Number,
+      value: -1,
+    },
+
+    /**
      * The list of current routes.
      * @type {!Array<!media_router.Route>}
      */
@@ -270,6 +281,10 @@ Polymer({
     'mouseleave': 'onMouseLeave_',
     'mouseenter': 'onMouseEnter_',
   },
+
+  observers: [
+    'maybeUpdateStartSinkDisplayStartTime_(currentView_, sinksToShow_)',
+  ],
 
   ready: function() {
     this.showSinkList_();
@@ -658,6 +673,29 @@ Polymer({
   },
 
   /**
+   * May update |populatedSinkListSeenTimeMs_| depending on |currentView| and
+   * |sinksToShow|.
+   * Called when |currentView_| or |sinksToShow_| is updated.
+   *
+   * @param {?media_router.MediaRouterView} currentView The current view of the
+   *                                        dialog.
+   * @param {!Array<!media_router.Sink>} sinksToShow The sinks to display.
+   * @private
+   */
+  maybeUpdateStartSinkDisplayStartTime_: function(currentView, sinksToShow) {
+    if (currentView == media_router.MediaRouterView.SINK_LIST &&
+        sinksToShow.length != 0) {
+      // Only set |populatedSinkListSeenTimeMs_| if it has not already been set.
+      if (this.populatedSinkListSeenTimeMs_ == -1)
+        this.populatedSinkListSeenTimeMs_ = performance.now();
+    } else {
+      // Reset |populatedSinkListLastSeen_| if the sink list isn't being shown
+      // or if there aren't any sinks available for display.
+      this.populatedSinkListSeenTimeMs_ = -1;
+    }
+  },
+
+  /**
    * Handles a cast mode selection. Updates |headerText|, |headerTextTooltip|,
    * and |shownCastModeValue_|.
    *
@@ -892,6 +930,10 @@ Polymer({
                 sink.castModes & -sink.castModes : this.shownCastModeValue_
       });
       this.currentLaunchingSinkId_ = sink.id;
+
+      var timeToSelectSink =
+          performance.now() - this.populatedSinkListSeenTimeMs_;
+      this.fire('report-sink-click-time', {timeMs: timeToSelectSink});
     }
   },
 

@@ -19704,6 +19704,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="MediaRouter.Ui.Action.StartLocal.Latency" units="ms">
+  <owner>apacible@chromium.org</owner>
+  <summary>
+    Duration in milliseconds taken from the Media Router dialog showing the sink
+    list and being populated with at least one device to the user selecting a
+    device immediately after to create a new route.
+  </summary>
+</histogram>
+
 <histogram name="MediaRouter.Ui.Action.StartLocalPosition"
     enum="MediaRouterSinkPositionLabel">
   <owner>apacible@chromium.org</owner>

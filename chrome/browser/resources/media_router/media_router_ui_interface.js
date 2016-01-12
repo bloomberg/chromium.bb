@@ -212,6 +212,16 @@ cr.define('media_router.browserApi', function() {
   }
 
   /**
+   * Reports the time it took for the user to select a sink after the sink list
+   * is populated and shown.
+   *
+   * @param {number} timeMs
+   */
+  function reportTimeToClickSink(timeMs) {
+    chrome.send('reportTimeToClickSink', [timeMs]);
+  }
+
+  /**
    * Requests data to initialize the WebUI with.
    * The data will be returned via media_router.ui.setInitialData.
    */
@@ -243,6 +253,7 @@ cr.define('media_router.browserApi', function() {
     reportNavigateToView: reportNavigateToView,
     reportSelectedCastMode: reportSelectedCastMode,
     reportSinkCount: reportSinkCount,
+    reportTimeToClickSink: reportTimeToClickSink,
     requestInitialData: requestInitialData,
     requestRoute: requestRoute,
   };

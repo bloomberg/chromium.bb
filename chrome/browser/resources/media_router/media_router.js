@@ -36,6 +36,8 @@ cr.define('media_router', function() {
                                onNavigateToDetails);
     container.addEventListener('navigate-to-cast-mode-list',
                                onNavigateToCastMode);
+    container.addEventListener('report-sink-click-time',
+                               onSinkClickTimeReported);
     container.addEventListener('report-sink-count', onSinkCountReported);
     container.addEventListener('show-initial-state', onShowInitialState);
     container.addEventListener('sink-click', onSinkClick);
@@ -190,6 +192,18 @@ cr.define('media_router', function() {
    */
   function onSinkClick(data) {
     media_router.browserApi.reportClickedSinkIndex(data.detail.index);
+  }
+
+  /**
+   * Reports the time it took for the user to select a sink to create a route
+   * after the list was popuated and shown.
+   *
+   * @param {{detail: {timeMs: number}}} data
+   * Paramters in |data|.detail:
+   *   timeMs - the time it took for the user to select a sink.
+   */
+  function onSinkClickTimeReported(data) {
+    media_router.browserApi.reportTimeToClickSink(data.detail.timeMs);
   }
 
   /**

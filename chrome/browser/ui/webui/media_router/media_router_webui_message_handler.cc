@@ -40,6 +40,7 @@ const char kReportInitialState[] = "reportInitialState";
 const char kReportNavigateToView[] = "reportNavigateToView";
 const char kReportSelectedCastMode[] = "reportSelectedCastMode";
 const char kReportSinkCount[] = "reportSinkCount";
+const char kReportTimeToClickSink[] = "reportTimeToClickSink";
 const char kOnInitialDataReceived[] = "onInitialDataReceived";
 
 // JS function names.
@@ -291,6 +292,10 @@ void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kReportSinkCount,
       base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReportTimeToClickSink,
+      base::Bind(&MediaRouterWebUIMessageHandler::OnReportTimeToClickSink,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kOnInitialDataReceived,
@@ -549,6 +554,18 @@ void MediaRouterWebUIMessageHandler::OnReportSinkCount(
     return;
   }
   UMA_HISTOGRAM_COUNTS_100("MediaRouter.Ui.Device.Count", sink_count);
+}
+
+void MediaRouterWebUIMessageHandler::OnReportTimeToClickSink(
+    const base::ListValue* args) {
+  DVLOG(1) << "OnReportTimeToClickSink";
+  double time_to_click;
+  if (!args->GetDouble(0, &time_to_click)) {
+    DVLOG(1) << "Unable to extract args.";
+    return;
+  }
+  UMA_HISTOGRAM_TIMES("MediaRouter.Ui.Action.StartLocal.Latency",
+                      base::TimeDelta::FromMillisecondsD(time_to_click));
 }
 
 void MediaRouterWebUIMessageHandler::OnInitialDataReceived(

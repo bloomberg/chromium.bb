@@ -64,6 +64,7 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   void OnReportNavigateToView(const base::ListValue* args);
   void OnReportSelectedCastMode(const base::ListValue* args);
   void OnReportSinkCount(const base::ListValue* args);
+  void OnReportTimeToClickSink(const base::ListValue* args);
   void OnInitialDataReceived(const base::ListValue* args);
 
   // Performs an action for an Issue of |type|.
