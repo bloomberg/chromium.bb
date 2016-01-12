@@ -204,7 +204,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
     request->SetLoadFlags(0);
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
-    VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+                     headers);
     VerifyLoFiPreviewHeader(false, headers);
 
     // The Lo-Fi flag is "cellular-only" and Lo-Fi is being used. Lo-Fi header
@@ -214,7 +215,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFiValueCellularOnly);
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
-    VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+                     headers);
     VerifyLoFiPreviewHeader(false, headers);
 
     // The Lo-Fi flag is "slow-connections-only" and Lo-Fi is being used. Lo-Fi
@@ -224,7 +226,8 @@ TEST_F(ContentLoFiDeciderTest, LoFiFlags) {
         switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
     headers.Clear();
     NotifyBeforeSendProxyHeaders(&headers, request.get());
-    VerifyLoFiHeader(tests[i].is_using_lofi, headers);
+    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_using_previews,
+                     headers);
     VerifyLoFiPreviewHeader(false, headers);
   }
 }
@@ -287,8 +290,7 @@ TEST_F(ContentLoFiDeciderTest, LoFiPreviewFieldTrial) {
       request->SetLoadFlags(request->load_flags() | net::LOAD_MAIN_FRAME);
     net::HttpRequestHeaders headers;
     NotifyBeforeSendProxyHeaders(&headers, request.get());
-    VerifyLoFiHeader(tests[i].is_using_lofi && !tests[i].is_main_frame,
-                     headers);
+    VerifyLoFiHeader(false, headers);
     VerifyLoFiPreviewHeader(tests[i].is_using_lofi && tests[i].is_main_frame,
                             headers);
   }
