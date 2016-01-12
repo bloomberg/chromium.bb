@@ -14,7 +14,6 @@ namespace content {
 
 struct LoadFromMemoryCacheDetails {
   LoadFromMemoryCacheDetails(const GURL& url,
-                             int pid,
                              int cert_id,
                              net::CertStatus cert_status,
                              const std::string& http_method,
@@ -23,7 +22,6 @@ struct LoadFromMemoryCacheDetails {
   ~LoadFromMemoryCacheDetails();
 
   GURL url;
-  int pid;
   int cert_id;
   net::CertStatus cert_status;
   std::string http_method;

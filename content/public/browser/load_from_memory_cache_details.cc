@@ -8,14 +8,12 @@ namespace content {
 
 LoadFromMemoryCacheDetails::LoadFromMemoryCacheDetails(
     const GURL& url,
-    int pid,
     int cert_id,
     net::CertStatus cert_status,
     const std::string& http_method,
     const std::string& mime_type,
     ResourceType resource_type)
     : url(url),
-      pid(pid),
       cert_id(cert_id),
       cert_status(cert_status),
       http_method(http_method),

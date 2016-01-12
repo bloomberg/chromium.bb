@@ -24,11 +24,9 @@ ResourceRequestDetails::ResourceRequestDetails(const net::URLRequest* request,
       socket_address(request->GetSocketAddress()) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   resource_type = info->GetResourceType();
-  render_frame_id = info->GetRenderFrameID();
   http_response_code =
       request->response_info().headers.get() ?
           request->response_info().headers.get()->response_code() : -1;
-  origin_child_id = info->GetChildID();
 }
 
 ResourceRequestDetails::~ResourceRequestDetails() {}

@@ -151,7 +151,6 @@ void SSLManager::DidLoadFromMemoryCache(
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details.url,
       RESOURCE_TYPE_SUB_RESOURCE,
-      details.pid,
       details.cert_id,
       details.cert_status));
 
@@ -164,7 +163,6 @@ void SSLManager::DidStartResourceResponse(
   scoped_refptr<SSLRequestInfo> info(new SSLRequestInfo(
       details.url,
       details.resource_type,
-      details.origin_child_id,
       details.ssl_cert_id,
       details.ssl_cert_status));
 

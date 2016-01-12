@@ -8,12 +8,10 @@ namespace content {
 
 SSLRequestInfo::SSLRequestInfo(const GURL& url,
                                ResourceType resource_type,
-                               int child_id,
                                int ssl_cert_id,
                                net::CertStatus ssl_cert_status)
     : url_(url),
       resource_type_(resource_type),
-      child_id_(child_id),
       ssl_cert_id_(ssl_cert_id),
       ssl_cert_status_(ssl_cert_status) {
 }

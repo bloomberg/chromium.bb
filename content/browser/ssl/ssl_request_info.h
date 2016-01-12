@@ -16,19 +16,17 @@
 namespace content {
 
 // SSLRequestInfo wraps up the information SSLPolicy needs about a request in
-// order to update our security IU.  SSLRequestInfo is RefCounted in case we
+// order to update our security UI.  SSLRequestInfo is RefCounted in case we
 // need to deal with the request asynchronously.
 class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
  public:
   SSLRequestInfo(const GURL& url,
                  ResourceType resource_type,
-                 int child_id,
                  int ssl_cert_id,
                  net::CertStatus ssl_cert_status);
 
   const GURL& url() const { return url_; }
   ResourceType resource_type() const { return resource_type_; }
-  int child_id() const { return child_id_; }
   int ssl_cert_id() const { return ssl_cert_id_; }
   net::CertStatus ssl_cert_status() const { return ssl_cert_status_; }
 
@@ -39,7 +37,6 @@ class SSLRequestInfo : public base::RefCounted<SSLRequestInfo> {
 
   GURL url_;
   ResourceType resource_type_;
-  int child_id_;
   int ssl_cert_id_;
   net::CertStatus ssl_cert_status_;
 

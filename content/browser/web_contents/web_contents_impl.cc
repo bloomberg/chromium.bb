@@ -3171,8 +3171,8 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
   // Send out a notification that we loaded a resource from our memory cache.
   // TODO(alcutter,eranm): Pass signed_certificate_timestamp_ids into details.
   LoadFromMemoryCacheDetails details(
-      url, GetRenderProcessHost()->GetID(), status.cert_id, status.cert_status,
-      http_method, mime_type, resource_type);
+      url, status.cert_id, status.cert_status, http_method, mime_type,
+      resource_type);
 
   controller_.ssl_manager()->DidLoadFromMemoryCache(details);
 
