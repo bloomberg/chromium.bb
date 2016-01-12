@@ -412,9 +412,6 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
         params.version);
   }
 
-  CHECK(params.imc_bootstrap_handle != IPC::InvalidPlatformFileForTransit());
-  args->imc_bootstrap_handle =
-      IPC::PlatformFileForTransitToPlatformFile(params.imc_bootstrap_handle);
   args->enable_debug_stub = params.enable_debug_stub;
 
   // Now configure parts that depend on process type.

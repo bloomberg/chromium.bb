@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/files/file.h"
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
@@ -37,7 +38,6 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
       pp_instance_(pp_instance),
       main_service_runtime_(main_service_runtime),
       uses_nonsfi_mode_(uses_nonsfi_mode),
-      bootstrap_channel_(NACL_INVALID_HANDLE),
       process_id_(base::kNullProcessId) {
 }
 
@@ -56,6 +56,7 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     return;
   }
 
+  NaClHandle bootstrap_channel;
   GetNaClInterface()->LaunchSelLdr(
       pp_instance_,
       PP_FromBool(main_service_runtime_),
@@ -63,11 +64,15 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       &params.file_info,
       PP_FromBool(uses_nonsfi_mode_),
       params.process_type,
-      &bootstrap_channel_,
+      &bootstrap_channel,
       &translator_channel_,
       &process_id_,
       callback.pp_completion_callback());
   subprocess_.reset(tmp_subprocess.release());
+
+  // TODO(mseaborn): Remove the bootstrap channel entirely, since we no
+  // longer use it.  For now, ensure this handle/FD does not get leaked.
+  base::File closer(bootstrap_channel);
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {

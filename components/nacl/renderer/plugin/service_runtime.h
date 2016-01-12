@@ -18,7 +18,6 @@
 #include "ipc/ipc_sync_channel.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
-#include "native_client/src/public/imc_types.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "ppapi/cpp/completion_callback.h"
 
@@ -81,8 +80,6 @@ class ServiceRuntime {
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
   nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
-
-  NaClHandle bootstrap_channel_;
 
   scoped_ptr<IPC::SyncChannel> translator_channel_;
   base::ProcessId process_id_;
