@@ -266,6 +266,7 @@
     { "name": "chromiumcodereview.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "chrome-devtools-frontend.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "codereview.appspot.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
+    { "name": "build.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "codereview.chromium.org", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "code.google.com", "include_subdomains": true, "mode": "force-https", "pins": "google" },
     { "name": "googlecode.com", "include_subdomains": true, "pins": "google" },
