@@ -89,6 +89,17 @@ SkPaint* GetBadgeTextPaintSingleton() {
   return text_paint;
 }
 
+gfx::ImageSkiaRep ScaleImageSkiaRep(const gfx::ImageSkiaRep& rep,
+                                    float target_scale) {
+  gfx::Size scaled_size =
+      gfx::ScaleToCeiledSize(rep.pixel_size(), target_scale / rep.scale());
+  return gfx::ImageSkiaRep(skia::ImageOperations::Resize(
+      rep.sk_bitmap(),
+      skia::ImageOperations::RESIZE_BEST,
+      scaled_size.width(),
+      scaled_size.height()), target_scale);
+}
+
 }  // namespace
 
 IconWithBadgeImageSource::Badge::Badge(const std::string& text,
@@ -117,11 +128,18 @@ void IconWithBadgeImageSource::Draw(gfx::Canvas* canvas) {
   if (icon_.IsEmpty())
     return;
 
-  int x_offset = std::floor((size().width() - icon_.Width()) / 2.0);
-  int y_offset = std::floor((size().height() - icon_.Height()) / 2.0);
   gfx::ImageSkia skia = icon_.AsImageSkia();
+  // TODO(estade): Fix setIcon and enable this on !MD.
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    gfx::ImageSkiaRep rep = skia.GetRepresentation(canvas->image_scale());
+    if (rep.scale() != canvas->image_scale())
+      skia.AddRepresentation(ScaleImageSkiaRep(rep, canvas->image_scale()));
+  }
   if (grayscale_)
     skia = gfx::ImageSkiaOperations::CreateHSLShiftedImage(skia, {-1, 0, 0.6});
+
+  int x_offset = std::floor((size().width() - icon_.Width()) / 2.0);
+  int y_offset = std::floor((size().height() - icon_.Height()) / 2.0);
   canvas->DrawImageInt(skia, x_offset, y_offset);
 
   // Draw a badge on the provided browser action icon's canvas.
