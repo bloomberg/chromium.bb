@@ -63,7 +63,8 @@ size_t SupervisedUserSiteList::HostnameHash::hash() const {
   return *reinterpret_cast<const size_t*>(bytes_.data());
 }
 
-void SupervisedUserSiteList::Load(const base::string16& title,
+void SupervisedUserSiteList::Load(const std::string& id,
+                                  const base::string16& title,
                                   const base::FilePath& path,
                                   const LoadedCallback& callback) {
   base::PostTaskAndReplyWithResult(
@@ -72,16 +73,17 @@ void SupervisedUserSiteList::Load(const base::string16& title,
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN)
           .get(),
       FROM_HERE, base::Bind(&ReadFileOnBlockingThread, path),
-      base::Bind(&SupervisedUserSiteList::OnJsonLoaded, title, path,
+      base::Bind(&SupervisedUserSiteList::OnJsonLoaded, id, title, path,
                  base::TimeTicks::Now(), callback));
 }
 
 SupervisedUserSiteList::SupervisedUserSiteList(
+    const std::string& id,
     const base::string16& title,
     const GURL& entry_point,
     const base::ListValue* patterns,
     const base::ListValue* hostname_hashes)
-    : title_(title), entry_point_(entry_point) {
+    : id_(id), title_(title), entry_point_(entry_point) {
   if (patterns) {
     for (const base::Value* entry : *patterns) {
       std::string pattern;
@@ -114,11 +116,18 @@ SupervisedUserSiteList::SupervisedUserSiteList(
     LOG(WARNING) << "Site list is empty!";
 }
 
+SupervisedUserSiteList::SupervisedUserSiteList(
+    const std::string& id,
+    const base::string16& title,
+    const std::vector<std::string>& patterns)
+    : id_(id), title_(title), patterns_(patterns) {}
+
 SupervisedUserSiteList::~SupervisedUserSiteList() {
 }
 
 // static
 void SupervisedUserSiteList::OnJsonLoaded(
+    const std::string& id,
     const base::string16& title,
     const base::FilePath& path,
     base::TimeTicks start_time,
@@ -159,5 +168,5 @@ void SupervisedUserSiteList::OnJsonLoaded(
   dict->GetList(kHostnameHashesKey, &hostname_hashes);
 
   callback.Run(make_scoped_refptr(new SupervisedUserSiteList(
-      title, GURL(entry_point_url), patterns, hostname_hashes)));
+      id, title, GURL(entry_point_url), patterns, hostname_hashes)));
 }

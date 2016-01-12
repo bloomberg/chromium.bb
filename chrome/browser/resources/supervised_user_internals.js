@@ -8,6 +8,8 @@ cr.define('chrome.supervised_user_internals', function() {
   function initialize() {
     function submitURL(event) {
       $('try-url-result').textContent = '';
+      $('manual-whitelist').textContent = '';
+      $('whitelists').textContent = '';
       chrome.send('tryURL', [$('try-url-input').value]);
       event.preventDefault();
     }
@@ -70,7 +72,9 @@ cr.define('chrome.supervised_user_internals', function() {
   }
 
   function receiveTryURLResult(result) {
-    $('try-url-result').textContent = result;
+    $('try-url-result').textContent = result['allowResult'];
+    $('manual-whitelist').textContent = result['manual'];
+    $('whitelists').textContent = result['whitelists'];
   }
 
   /**

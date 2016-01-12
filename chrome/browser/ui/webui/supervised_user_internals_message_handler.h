@@ -44,10 +44,10 @@ class SupervisedUserInternalsMessageHandler
   void SendBasicInfo();
   void SendSupervisedUserSettings(const base::DictionaryValue* settings);
 
-  void OnTryURLResult(
-      SupervisedUserURLFilter::FilteringBehavior behavior,
-      SupervisedUserURLFilter::FilteringBehaviorReason reason,
-      bool uncertain);
+  void OnTryURLResult(const std::map<std::string, base::string16>& whitelists,
+                      SupervisedUserURLFilter::FilteringBehavior behavior,
+                      SupervisedUserURLFilter::FilteringBehaviorReason reason,
+                      bool uncertain);
 
   void OnURLChecked(const GURL& url,
                     SupervisedUserURLFilter::FilteringBehavior behavior,

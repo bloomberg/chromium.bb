@@ -55,7 +55,8 @@ class SupervisedUserURLFilter
     DEFAULT,
     ASYNC_CHECKER,
     BLACKLIST,
-    MANUAL
+    MANUAL,
+    WHITELIST
   };
 
   using FilteringBehaviorCallback = base::Callback<void(FilteringBehavior,
@@ -128,6 +129,11 @@ class SupervisedUserURLFilter
       const GURL& url,
       const FilteringBehaviorCallback& callback) const;
 
+  // Gets all the whitelists that the url is part of. Returns id->name of each
+  // whitelist.
+  std::map<std::string, base::string16> GetMatchingWhitelistTitles(
+      const GURL& url) const;
+
   // Sets the filtering behavior for pages not on a list (default is ALLOW).
   void SetDefaultFilteringBehavior(FilteringBehavior behavior);
 
@@ -145,6 +151,10 @@ class SupervisedUserURLFilter
 
   // Set the list of matched patterns to the passed in list, for testing.
   void SetFromPatternsForTesting(const std::vector<std::string>& patterns);
+
+  // Sets the site lists to the passed list, for testing.
+  void SetFromSiteListsForTesting(
+      const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists);
 
   // Sets the set of manually allowed or blocked hosts.
   void SetManualHosts(const std::map<std::string, bool>* host_map);

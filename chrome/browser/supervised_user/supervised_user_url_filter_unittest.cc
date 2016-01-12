@@ -4,8 +4,12 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/supervised_user/supervised_user_site_list.h"
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -339,4 +343,46 @@ TEST_F(SupervisedUserURLFilterTest, Patterns) {
   EXPECT_FALSE(IsURLWhitelisted("http://accounts.google.com/bar/"));
   EXPECT_FALSE(IsURLWhitelisted("http://www.google.co.uk/blurp/"));
   EXPECT_TRUE(IsURLWhitelisted("http://mail.google.com/moose/"));
+}
+
+TEST_F(SupervisedUserURLFilterTest, Whitelists) {
+  std::vector<std::string> patterns1;
+  patterns1.push_back("google.com");
+  patterns1.push_back("example.com");
+
+  std::vector<std::string> patterns2;
+  patterns2.push_back("secure.com");
+  patterns2.push_back("example.com");
+
+  const std::string id1 = "ID1";
+  const std::string id2 = "ID2";
+  const base::string16 title1 = base::ASCIIToUTF16("Title 1");
+  const base::string16 title2 = base::ASCIIToUTF16("Title 2");
+
+  scoped_refptr<SupervisedUserSiteList> site_list1 =
+      make_scoped_refptr(new SupervisedUserSiteList(id1, title1, patterns1));
+  scoped_refptr<SupervisedUserSiteList> site_list2 =
+      make_scoped_refptr(new SupervisedUserSiteList(id2, title2, patterns2));
+
+  std::vector<scoped_refptr<SupervisedUserSiteList>> site_lists;
+  site_lists.push_back(site_list1);
+  site_lists.push_back(site_list2);
+
+  filter_->SetFromSiteListsForTesting(site_lists);
+  filter_->SetDefaultFilteringBehavior(SupervisedUserURLFilter::BLOCK);
+  run_loop_.Run();
+
+  std::map<std::string, base::string16> expected_whitelists;
+  expected_whitelists[id1] = title1;
+  expected_whitelists[id2] = title2;
+
+  std::map<std::string, base::string16> actual_whitelists =
+      filter_->GetMatchingWhitelistTitles(GURL("https://example.com"));
+  ASSERT_EQ(expected_whitelists, actual_whitelists);
+
+  expected_whitelists.erase(id2);
+
+  actual_whitelists =
+      filter_->GetMatchingWhitelistTitles(GURL("https://google.com"));
+  ASSERT_EQ(expected_whitelists, actual_whitelists);
 }

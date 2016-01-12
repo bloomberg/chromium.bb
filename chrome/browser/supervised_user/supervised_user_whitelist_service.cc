@@ -339,7 +339,7 @@ void SupervisedUserWhitelistService::OnWhitelistReady(
     return;
 
   SupervisedUserSiteList::Load(
-      title, whitelist_path,
+      id, title, whitelist_path,
       base::Bind(&SupervisedUserWhitelistService::OnWhitelistLoaded,
                  weak_ptr_factory_.GetWeakPtr(), id, base::TimeTicks::Now()));
 }

@@ -507,7 +507,9 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   SupervisedUserURLFilter* url_filter =
       supervised_user_service->GetURLFilterForUIThread();
 
+  const std::string id1 = "ID 1";
   const base::string16 title1 = base::ASCIIToUTF16("Title 1");
+  const std::string id2 = "ID 2";
   const base::string16 title2 = base::ASCIIToUTF16("Title 2");
 
   GURL youtube_url("http://www.youtube.com");
@@ -534,10 +536,11 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
       supervised_user_service->GetWhitelistService();
   base::FilePath whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack/site_list.json");
-  whitelist_service->LoadWhitelistForTesting("aaaa", title1, whitelist_path);
+  whitelist_service->LoadWhitelistForTesting(id1, title1, whitelist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
+  EXPECT_EQ(id1, site_list_observer_.site_lists()[0]->id());
   EXPECT_EQ(title1, site_list_observer_.site_lists()[0]->title());
   EXPECT_EQ(youtube_url, site_list_observer_.site_lists()[0]->entry_point());
 
@@ -550,12 +553,14 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
   // Load a second whitelist.
   whitelist_path =
       test_data_dir.AppendASCII("whitelists/content_pack_2/site_list.json");
-  whitelist_service->LoadWhitelistForTesting("bbbb", title2, whitelist_path);
+  whitelist_service->LoadWhitelistForTesting(id2, title2, whitelist_path);
   site_list_observer_.Wait();
 
   ASSERT_EQ(2u, site_list_observer_.site_lists().size());
+  EXPECT_EQ(id1, site_list_observer_.site_lists()[0]->id());
   EXPECT_EQ(title1, site_list_observer_.site_lists()[0]->title());
   EXPECT_EQ(youtube_url, site_list_observer_.site_lists()[0]->entry_point());
+  EXPECT_EQ(id2, site_list_observer_.site_lists()[1]->id());
   EXPECT_EQ(title2, site_list_observer_.site_lists()[1]->title());
   EXPECT_TRUE(site_list_observer_.site_lists()[1]->entry_point().is_empty());
 
@@ -566,10 +571,11 @@ TEST_F(SupervisedUserServiceExtensionTest, InstallContentPacks) {
             url_filter->GetFilteringBehaviorForURL(moose_url));
 
   // Unload the first whitelist.
-  whitelist_service->UnloadWhitelist("aaaa");
+  whitelist_service->UnloadWhitelist(id1);
   site_list_observer_.Wait();
 
   ASSERT_EQ(1u, site_list_observer_.site_lists().size());
+  EXPECT_EQ(id2, site_list_observer_.site_lists()[0]->id());
   EXPECT_EQ(title2, site_list_observer_.site_lists()[0]->title());
   EXPECT_TRUE(site_list_observer_.site_lists()[0]->entry_point().is_empty());
 

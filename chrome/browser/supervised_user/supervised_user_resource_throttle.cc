@@ -61,6 +61,9 @@ int GetHistogramValueForFilteringBehavior(
           return FILTERING_BEHAVIOR_BLOCK_BLACKLIST;
         case SupervisedUserURLFilter::ASYNC_CHECKER:
           return FILTERING_BEHAVIOR_BLOCK_SAFESITES;
+        case SupervisedUserURLFilter::WHITELIST:
+          NOTREACHED();
+          break;
         case SupervisedUserURLFilter::MANUAL:
           return FILTERING_BEHAVIOR_BLOCK_MANUAL;
         case SupervisedUserURLFilter::DEFAULT:

@@ -14,6 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -61,10 +62,12 @@ class SupervisedUserSiteList
 
   // Asynchronously loads the site list from |file| and calls |callback| with
   // the newly created object.
-  static void Load(const base::string16& title,
+  static void Load(const std::string& id,
+                   const base::string16& title,
                    const base::FilePath& file,
                    const LoadedCallback& callback);
 
+  const std::string& id() const { return id_; }
   const base::string16& title() const { return title_; }
   const GURL& entry_point() const { return entry_point_; }
   const std::vector<std::string>& patterns() const { return patterns_; }
@@ -74,21 +77,29 @@ class SupervisedUserSiteList
 
  private:
   friend class base::RefCountedThreadSafe<SupervisedUserSiteList>;
+  friend class SupervisedUserURLFilterTest;
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest, Whitelists);
 
-  SupervisedUserSiteList(const base::string16& title,
+  SupervisedUserSiteList(const std::string& id,
+                         const base::string16& title,
                          const GURL& entry_point,
                          const base::ListValue* patterns,
                          const base::ListValue* hostname_hashes);
+  SupervisedUserSiteList(const std::string& id,
+                         const base::string16& title,
+                         const std::vector<std::string>& patterns);
   ~SupervisedUserSiteList();
 
   // Static private so it can access the private constructor.
   static void OnJsonLoaded(
+      const std::string& id,
       const base::string16& title,
       const base::FilePath& path,
       base::TimeTicks start_time,
       const SupervisedUserSiteList::LoadedCallback& callback,
       scoped_ptr<base::Value> value);
 
+  std::string id_;
   base::string16 title_;
   GURL entry_point_;
 

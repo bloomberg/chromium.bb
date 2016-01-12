@@ -53,7 +53,10 @@ struct SupervisedUserURLFilter::Contents {
   URLMatcher url_matcher;
   base::hash_set<HostnameHash, HashHostnameHash> hostname_hashes;
   // TODO(treib,bauerb): Add infrastructure to track from which whitelist each
-  // pattern/hash came. crbug.com/557651
+  // hash came. crbug.com/557651
+  // This only tracks pattern lists.
+  std::map<URLMatcherConditionSet::ID, scoped_refptr<SupervisedUserSiteList>>
+      site_lists_by_matcher_id;
 };
 
 namespace {
@@ -76,8 +79,8 @@ class FilterBuilder {
   FilterBuilder();
   ~FilterBuilder();
 
-  // Adds a single URL pattern.
-  bool AddPattern(const std::string& pattern);
+  // Adds a single URL pattern and returns the id of its matcher.
+  URLMatcherConditionSet::ID AddPattern(const std::string& pattern);
 
   // Adds a single hostname SHA1 hash.
   void AddHostnameHash(const HostnameHash& hash);
@@ -93,6 +96,8 @@ class FilterBuilder {
   scoped_ptr<SupervisedUserURLFilter::Contents> contents_;
   URLMatcherConditionSet::Vector all_conditions_;
   URLMatcherConditionSet::ID matcher_id_;
+  std::map<URLMatcherConditionSet::ID, scoped_refptr<SupervisedUserSiteList>>
+      site_lists_by_matcher_id_;
 };
 
 FilterBuilder::FilterBuilder()
@@ -103,7 +108,8 @@ FilterBuilder::~FilterBuilder() {
   DCHECK(!contents_.get());
 }
 
-bool FilterBuilder::AddPattern(const std::string& pattern) {
+URLMatcherConditionSet::ID FilterBuilder::AddPattern(
+    const std::string& pattern) {
   std::string scheme;
   std::string host;
   uint16_t port = 0;
@@ -116,7 +122,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern) {
           callback, pattern,
           &scheme, &host, &match_subdomains, &port, &path, &query)) {
     LOG(ERROR) << "Invalid pattern " << pattern;
-    return false;
+    return -1;
   }
 
   scoped_refptr<URLMatcherConditionSet> condition_set =
@@ -124,7 +130,7 @@ bool FilterBuilder::AddPattern(const std::string& pattern) {
           &contents_->url_matcher, ++matcher_id_,
           scheme, host, match_subdomains, port, path, query, true);
   all_conditions_.push_back(std::move(condition_set));
-  return true;
+  return matcher_id_;
 }
 
 void FilterBuilder::AddHostnameHash(const HostnameHash& hash) {
@@ -133,8 +139,12 @@ void FilterBuilder::AddHostnameHash(const HostnameHash& hash) {
 
 void FilterBuilder::AddSiteList(
     const scoped_refptr<SupervisedUserSiteList>& site_list) {
-  for (const std::string& pattern : site_list->patterns())
-    AddPattern(pattern);
+  for (const std::string& pattern : site_list->patterns()) {
+    URLMatcherConditionSet::ID id = AddPattern(pattern);
+    if (id >= 0) {
+      site_lists_by_matcher_id_[id] = site_list;
+    }
+  }
 
   for (const HostnameHash& hash : site_list->hostname_hashes())
     AddHostnameHash(hash);
@@ -142,6 +152,8 @@ void FilterBuilder::AddSiteList(
 
 scoped_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
   contents_->url_matcher.AddConditionSets(all_conditions_);
+  contents_->site_lists_by_matcher_id.insert(site_lists_by_matcher_id_.begin(),
+                                             site_lists_by_matcher_id_.end());
   return std::move(contents_);
 }
 
@@ -152,6 +164,15 @@ CreateWhitelistFromPatternsForTesting(
   for (const std::string& pattern : patterns)
     builder.AddPattern(pattern);
 
+  return builder.Build();
+}
+
+scoped_ptr<SupervisedUserURLFilter::Contents>
+CreateWhitelistsFromSiteListsForTesting(
+    const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
+  FilterBuilder builder;
+  for (const scoped_refptr<SupervisedUserSiteList>& site_list : site_lists)
+    builder.AddSiteList(site_list);
   return builder.Build();
 }
 
@@ -205,6 +226,9 @@ int SupervisedUserURLFilter::GetBlockMessageID(
     case BLACKLIST:
     case ASYNC_CHECKER:
       return IDS_SUPERVISED_USER_BLOCK_MESSAGE_SAFE_SITES;
+    case WHITELIST:
+      NOTREACHED();
+      break;
     case MANUAL:
       return is_child_account ?
           (single_parent ?
@@ -224,6 +248,9 @@ int SupervisedUserURLFilter::GetBlockHeaderID(FilteringBehaviorReason reason) {
     case BLACKLIST:
     case ASYNC_CHECKER:
       return IDS_SUPERVISED_USER_BLOCK_HEADER_SAFE_SITES;
+    case WHITELIST:
+      NOTREACHED();
+      break;
     case MANUAL:
       return IDS_SUPERVISED_USER_BLOCK_HEADER_MANUAL;
   }
@@ -346,12 +373,17 @@ SupervisedUserURLFilter::GetFilteringBehaviorForURL(
   // Check the list of URL patterns.
   std::set<URLMatcherConditionSet::ID> matching_ids =
       contents_->url_matcher.MatchURL(url);
-  if (!matching_ids.empty())
+
+  if (!matching_ids.empty()) {
+    *reason = WHITELIST;
     return ALLOW;
+  }
 
   // Check the list of hostname hashes.
-  if (contents_->hostname_hashes.count(HostnameHash(url.host())))
+  if (contents_->hostname_hashes.count(HostnameHash(url.host()))) {
+    *reason = WHITELIST;
     return ALLOW;
+  }
 
   // Check the static blacklist, unless the default is to block anyway.
   if (!manual_only && default_behavior_ != BLOCK &&
@@ -384,6 +416,21 @@ bool SupervisedUserURLFilter::GetFilteringBehaviorForURLWithAsyncChecks(
       base::Bind(&SupervisedUserURLFilter::CheckCallback,
                  base::Unretained(this),
                  callback));
+}
+
+std::map<std::string, base::string16>
+SupervisedUserURLFilter::GetMatchingWhitelistTitles(const GURL& url) const {
+  std::map<std::string, base::string16> whitelists;
+
+  std::set<URLMatcherConditionSet::ID> matching_ids =
+      contents_->url_matcher.MatchURL(url);
+
+  for (const auto& matching_id : matching_ids) {
+    const scoped_refptr<SupervisedUserSiteList>& site_list =
+        contents_->site_lists_by_matcher_id[matching_id];
+    whitelists[site_list->id()] = site_list->title();
+  }
+  return whitelists;
 }
 
 void SupervisedUserURLFilter::SetDefaultFilteringBehavior(
@@ -425,6 +472,16 @@ void SupervisedUserURLFilter::SetFromPatternsForTesting(
       blocking_task_runner_.get(),
       FROM_HERE,
       base::Bind(&CreateWhitelistFromPatternsForTesting, patterns),
+      base::Bind(&SupervisedUserURLFilter::SetContents, this));
+}
+
+void SupervisedUserURLFilter::SetFromSiteListsForTesting(
+    const std::vector<scoped_refptr<SupervisedUserSiteList>>& site_lists) {
+  DCHECK(CalledOnValidThread());
+
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&CreateWhitelistsFromSiteListsForTesting, site_lists),
       base::Bind(&SupervisedUserURLFilter::SetContents, this));
 }
 

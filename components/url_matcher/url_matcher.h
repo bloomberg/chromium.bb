@@ -312,6 +312,7 @@ class URL_MATCHER_EXPORT URLMatcherPortFilter {
 class URL_MATCHER_EXPORT URLMatcherConditionSet
     : public base::RefCounted<URLMatcherConditionSet> {
  public:
+  // Valid IDs will be >= 0.
   typedef int ID;
   typedef std::set<URLMatcherCondition> Conditions;
   typedef std::set<URLQueryElementMatcherCondition> QueryConditions;
