@@ -1577,34 +1577,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * This is a test that happens to create a separate bar without any content area!
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @FlakyTest
-    public void testDisembodiedBar() throws InterruptedException, TimeoutException {
-        mPolicy.setTapPrefetchLimitForDecidedForTesting(2);
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-        // 3rd click should not preload.
-        clickToTriggerPrefetch();
-        assertLoadedNoUrl();
-
-        // Expanding the panel should reset the limit.
-        flingPanelUp();
-        tapBasePageToClosePanel();
-        waitForPanelToCloseAndSelectionDissolved();
-
-        // Click should preload again.
-        clickToTriggerPrefetch();
-        assertLoadedLowPriorityUrl();
-    }
-
-    /**
      * Tests expanding the panel before the search term has resolved, verifies that nothing
      * loads until the resolve completes and that it's now a normal priority URL.
      */
