@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Copyright (c) 2013 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -38,13 +39,6 @@ from optparse import OptionParser
 # Additionally, you can specify the option --atleast-version. This will skip
 # the normal outputting of a dictionary and instead print true or false,
 # depending on the return value of pkg-config for the given package.
-
-# If this is run on non-Linux platforms, just return nothing and indicate
-# success. This allows us to "kind of emulate" a Linux build from other
-# platforms.
-if sys.platform.find("linux") == -1:
-  print "[[],[],[],[],[]]"
-  sys.exit(0)
 
 
 def SetConfigPath(options):
@@ -108,99 +102,113 @@ def RewritePath(path, strip_prefix, sysroot):
     return path
 
 
-parser = OptionParser()
-parser.add_option('-p', action='store', dest='pkg_config', type='string',
-                  default='pkg-config')
-parser.add_option('-v', action='append', dest='strip_out', type='string')
-parser.add_option('-s', action='store', dest='sysroot', type='string')
-parser.add_option('-a', action='store', dest='arch', type='string')
-parser.add_option('--system_libdir', action='store', dest='system_libdir',
-                  type='string', default='lib')
-parser.add_option('--atleast-version', action='store',
-                  dest='atleast_version', type='string')
-parser.add_option('--libdir', action='store_true', dest='libdir')
-(options, args) = parser.parse_args()
+def main():
+  # If this is run on non-Linux platforms, just return nothing and indicate
+  # success. This allows us to "kind of emulate" a Linux build from other
+  # platforms.
+  if "linux" not in sys.platform:
+    print "[[],[],[],[],[]]"
+    return 0
 
-# Make a list of regular expressions to strip out.
-strip_out = []
-if options.strip_out != None:
-  for regexp in options.strip_out:
-    strip_out.append(re.compile(regexp))
+  parser = OptionParser()
+  parser.add_option('-d', '--debug', action='store_true')
+  parser.add_option('-p', action='store', dest='pkg_config', type='string',
+                    default='pkg-config')
+  parser.add_option('-v', action='append', dest='strip_out', type='string')
+  parser.add_option('-s', action='store', dest='sysroot', type='string')
+  parser.add_option('-a', action='store', dest='arch', type='string')
+  parser.add_option('--system_libdir', action='store', dest='system_libdir',
+                    type='string', default='lib')
+  parser.add_option('--atleast-version', action='store',
+                    dest='atleast_version', type='string')
+  parser.add_option('--libdir', action='store_true', dest='libdir')
+  (options, args) = parser.parse_args()
 
-if options.sysroot:
-  SetConfigPath(options)
-  prefix = GetPkgConfigPrefixToStrip(args)
-else:
-  prefix = ''
+  # Make a list of regular expressions to strip out.
+  strip_out = []
+  if options.strip_out != None:
+    for regexp in options.strip_out:
+      strip_out.append(re.compile(regexp))
 
-if options.atleast_version:
-  # When asking for the return value, just run pkg-config and print the return
-  # value, no need to do other work.
-  if not subprocess.call([options.pkg_config,
-                          "--atleast-version=" + options.atleast_version] +
-                          args,
-                         env=os.environ):
-    print "true"
+  if options.sysroot:
+    SetConfigPath(options)
+    if options.debug:
+      sys.stderr.write('PKG_CONFIG_PATH=%s\n' % os.environ['PKG_CONFIG_PATH'])
+    prefix = GetPkgConfigPrefixToStrip(args)
   else:
-    print "false"
-  sys.exit(0)
+    prefix = ''
 
-if options.libdir:
+  if options.atleast_version:
+    # When asking for the return value, just run pkg-config and print the return
+    # value, no need to do other work.
+    if not subprocess.call([options.pkg_config,
+                            "--atleast-version=" + options.atleast_version] +
+                            args):
+      print "true"
+    else:
+      print "false"
+    return 0
+
+  if options.libdir:
+    try:
+      libdir = subprocess.check_output([options.pkg_config,
+                                        "--variable=libdir"] +
+                                       args)
+    except:
+      print "Error from pkg-config."
+      return 1
+    sys.stdout.write(libdir.strip())
+    return 0
+
   try:
-    libdir = subprocess.check_output([options.pkg_config,
-                                      "--variable=libdir"] +
-                                     args,
-                                     env=os.environ)
+    flag_string = subprocess.check_output(
+        [ options.pkg_config, "--cflags", "--libs" ] +
+        args)
+    # For now just split on spaces to get the args out. This will break if
+    # pkgconfig returns quoted things with spaces in them, but that doesn't seem
+    # to happen in practice.
+    all_flags = flag_string.strip().split(' ')
   except:
-    print "Error from pkg-config."
-    sys.exit(1)
-  sys.stdout.write(libdir.strip())
-  sys.exit(0)
-
-try:
-  flag_string = subprocess.check_output(
-      [ options.pkg_config, "--cflags", "--libs" ] +
-      args, env=os.environ)
-  # For now just split on spaces to get the args out. This will break if
-  # pkgconfig returns quoted things with spaces in them, but that doesn't seem
-  # to happen in practice.
-  all_flags = flag_string.strip().split(' ')
-except:
-  print "Could not run pkg-config."
-  sys.exit(1)
+    print "Could not run pkg-config."
+    return 1
 
 
-sysroot = options.sysroot
-if not sysroot:
-  sysroot = ''
+  sysroot = options.sysroot
+  if not sysroot:
+    sysroot = ''
 
-includes = []
-cflags = []
-libs = []
-lib_dirs = []
-ldflags = []
+  includes = []
+  cflags = []
+  libs = []
+  lib_dirs = []
+  ldflags = []
 
-for flag in all_flags[:]:
-  if len(flag) == 0 or MatchesAnyRegexp(flag, strip_out):
-    continue;
+  for flag in all_flags[:]:
+    if len(flag) == 0 or MatchesAnyRegexp(flag, strip_out):
+      continue;
 
-  if flag[:2] == '-l':
-    libs.append(RewritePath(flag[2:], prefix, sysroot))
-  elif flag[:2] == '-L':
-    lib_dirs.append(RewritePath(flag[2:], prefix, sysroot))
-  elif flag[:2] == '-I':
-    includes.append(RewritePath(flag[2:], prefix, sysroot))
-  elif flag[:3] == '-Wl':
-    ldflags.append(flag)
-  elif flag == '-pthread':
-    # Many libs specify "-pthread" which we don't need since we always include
-    # this anyway. Removing it here prevents a bunch of duplicate inclusions on
-    # the command line.
-    pass
-  else:
-    cflags.append(flag)
+    if flag[:2] == '-l':
+      libs.append(RewritePath(flag[2:], prefix, sysroot))
+    elif flag[:2] == '-L':
+      lib_dirs.append(RewritePath(flag[2:], prefix, sysroot))
+    elif flag[:2] == '-I':
+      includes.append(RewritePath(flag[2:], prefix, sysroot))
+    elif flag[:3] == '-Wl':
+      ldflags.append(flag)
+    elif flag == '-pthread':
+      # Many libs specify "-pthread" which we don't need since we always include
+      # this anyway. Removing it here prevents a bunch of duplicate inclusions
+      # on the command line.
+      pass
+    else:
+      cflags.append(flag)
 
-# Output a GN array, the first one is the cflags, the second are the libs. The
-# JSON formatter prints GN compatible lists when everything is a list of
-# strings.
-print json.dumps([includes, cflags, libs, lib_dirs, ldflags])
+  # Output a GN array, the first one is the cflags, the second are the libs. The
+  # JSON formatter prints GN compatible lists when everything is a list of
+  # strings.
+  print json.dumps([includes, cflags, libs, lib_dirs, ldflags])
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(main())
