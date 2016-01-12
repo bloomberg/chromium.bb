@@ -44,6 +44,9 @@ public class ContextualSearchFieldTrial {
             "disable_accept_languages_for_translation";
     static final String ENABLE_ENGLISH_TARGET_TRANSLATION = "enable_english_target_translation";
 
+    // Quick Answers.
+    private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
+
     // Cached values to avoid repeated and redundant JNI operations.
     private static Boolean sEnabled;
     private static Boolean sDisableSearchTermResolution;
@@ -55,6 +58,7 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsAcceptLanguagesForTranslationDisabled;
     private static Boolean sIsKeyboardLanguagesForTranslationDisabled;
     private static Boolean sIsEnglishTargetTranslationEnabled;
+    private static Boolean sIsQuickAnswersEnabled;
 
     /**
      * Don't instantiate.
@@ -226,6 +230,16 @@ public class ContextualSearchFieldTrial {
             sIsEnglishTargetTranslationEnabled = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
         }
         return sIsEnglishTargetTranslationEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether showing "quick answers" in the Bar is enabled.
+     */
+    static boolean isQuickAnswersEnabled() {
+        if (sIsQuickAnswersEnabled == null) {
+            sIsQuickAnswersEnabled = getBooleanParam(ENABLE_QUICK_ANSWERS);
+        }
+        return sIsQuickAnswersEnabled.booleanValue();
     }
 
     // --------------------------------------------------------------------------------------------

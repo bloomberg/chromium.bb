@@ -6,30 +6,30 @@
 
 #include <utility>
 
-#include "components/contextual_search/browser/contextual_search_ui_handle.h"
+#include "components/contextual_search/browser/contextual_search_js_api_handler.h"
 
 namespace contextual_search {
 
 ContextualSearchJsApiServiceImpl::ContextualSearchJsApiServiceImpl(
-    ContextualSearchUIHandle* contextual_search_ui_handle,
+    ContextualSearchJsApiHandler* contextual_search_js_api_handler,
     mojo::InterfaceRequest<ContextualSearchJsApiService> request)
     : binding_(this, std::move(request)),
-      contextual_search_ui_handle_(contextual_search_ui_handle) {}
+      contextual_search_js_api_handler_(contextual_search_js_api_handler) {}
 
 ContextualSearchJsApiServiceImpl::~ContextualSearchJsApiServiceImpl() {}
 
 void ContextualSearchJsApiServiceImpl::HandleSetCaption(
     const mojo::String& caption,
     bool does_answer) {
-  contextual_search_ui_handle_->SetCaption(caption, does_answer);
+  contextual_search_js_api_handler_->SetCaption(caption, does_answer);
 }
 
 // static
 void CreateContextualSearchJsApiService(
-    ContextualSearchUIHandle* contextual_search_ui_handle,
+    ContextualSearchJsApiHandler* contextual_search_js_api_handler,
     mojo::InterfaceRequest<ContextualSearchJsApiService> request) {
   // This is strongly bound and owned by the pipe.
-  new ContextualSearchJsApiServiceImpl(contextual_search_ui_handle,
+  new ContextualSearchJsApiServiceImpl(contextual_search_js_api_handler,
                                        std::move(request));
 }
 

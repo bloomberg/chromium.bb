@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.ViewTreeObserver.OnGlobalFocusChangeListener;
 
+import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -744,6 +745,20 @@ public class ContextualSearchManager extends ContextualSearchObservable
         return mPolicy.isTapSupported();
     }
 
+    /**
+     * Called by the page through the CS JavaScript API to notify CS that there is
+     * a caption available on the current overlay.
+     * @param caption The caption to display.
+     * @param doesAnswer Whether the caption should be regarded as an answer such
+     *        that the user may not need to open the panel, or whether the caption
+     *        is simply informative or descriptive of the answer in the full results.
+     */
+    @CalledByNative
+    private void onSetCaption(String caption, boolean doesAnswer) {
+        // TODO(donnd): notify the UI of the caption and log doesAnswer.
+        Log.i(TAG, "ctxs setCaption: '" + caption + "', " + doesAnswer);
+    }
+
     // ============================================================================================
     // ContextualSearchTranslateInterface
     // ============================================================================================
@@ -845,6 +860,13 @@ public class ContextualSearchManager extends ContextualSearchObservable
 
         @Override
         public void onContentViewCreated(ContentViewCore contentViewCore) {
+            // TODO(donnd): Consider moving to OverlayPanelContent.
+            if (mPolicy.isContextualSearchJsApiEnabled()) {
+                // Enable the Contextual Search JavaScript API between our service and the new view.
+                nativeEnableContextualSearchJsApiForOverlay(
+                        mNativeContextualSearchManagerPtr, contentViewCore);
+            }
+
             // TODO(mdjones): Move SearchContentViewDelegate ownership to panel.
             mSearchContentViewDelegate.setOverlayPanelContentViewCore(contentViewCore);
         }
@@ -1195,6 +1217,8 @@ public class ContextualSearchManager extends ContextualSearchObservable
     private native void nativeGatherSurroundingText(long nativeContextualSearchManager,
             String selection, boolean useResolvedSearchTerm, ContentViewCore baseContentViewCore,
             boolean maySendBasePageUrl);
+    private native void nativeEnableContextualSearchJsApiForOverlay(
+            long nativeContextualSearchManager, ContentViewCore overlayContentViewCore);
     // Don't call these directly, instead call the private methods that cache the results.
     private native String nativeGetTargetLanguage(long nativeContextualSearchManager);
     private native String nativeGetAcceptLanguages(long nativeContextualSearchManager);

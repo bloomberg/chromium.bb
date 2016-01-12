@@ -385,6 +385,14 @@ class ContextualSearchPolicy {
         return false;
     }
 
+    /**
+     * @return Whether Contextual Search should enable its JavaScript API in the overlay panel.
+     */
+    boolean isContextualSearchJsApiEnabled() {
+        // Quick answers requires the JS API.
+        return ContextualSearchFieldTrial.isQuickAnswersEnabled();
+    }
+
     // --------------------------------------------------------------------------------------------
     // Testing support.
     // --------------------------------------------------------------------------------------------

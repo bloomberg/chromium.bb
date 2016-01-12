@@ -6,7 +6,7 @@
 #define COMPONENTS_CONTEXTUAL_SEARCH_BROWSER_CONTEXTUAL_SEARCH_JS_API_SERVICE_IMPL_H_
 
 #include "base/macros.h"
-#include "components/contextual_search/browser/contextual_search_ui_handle.h"
+#include "components/contextual_search/browser/contextual_search_js_api_handler.h"
 #include "components/contextual_search/common/contextual_search_js_api_service.mojom.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -17,7 +17,7 @@ namespace contextual_search {
 class ContextualSearchJsApiServiceImpl : public ContextualSearchJsApiService {
  public:
   ContextualSearchJsApiServiceImpl(
-      ContextualSearchUIHandle* contextual_search_ui_handle,
+      ContextualSearchJsApiHandler* contextual_search_js_api_handler,
       mojo::InterfaceRequest<ContextualSearchJsApiService> request);
   ~ContextualSearchJsApiServiceImpl() override;
 
@@ -27,15 +27,15 @@ class ContextualSearchJsApiServiceImpl : public ContextualSearchJsApiService {
  private:
   mojo::StrongBinding<ContextualSearchJsApiService> binding_;
 
-  // The UI that handles calls through this API.
-  ContextualSearchUIHandle* contextual_search_ui_handle_;
+  // The UI handler for calls through the JavaScript API.
+  ContextualSearchJsApiHandler* contextual_search_js_api_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchJsApiServiceImpl);
 };
 
 // static
 void CreateContextualSearchJsApiService(
-    ContextualSearchUIHandle* contextual_search_ui_handle,
+    ContextualSearchJsApiHandler* contextual_search_js_api_handler,
     mojo::InterfaceRequest<ContextualSearchJsApiService> request);
 
 }  // namespace contextual_search

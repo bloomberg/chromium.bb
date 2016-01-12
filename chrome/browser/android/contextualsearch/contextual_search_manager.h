@@ -12,15 +12,17 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_context.h"
 #include "chrome/browser/android/contextualsearch/contextual_search_delegate.h"
+#include "components/contextual_search/browser/contextual_search_js_api_handler.h"
 
 // Manages the native extraction and request logic for Contextual Search,
 // and interacts with the Java ContextualSearchManager for UX.
 // Most of the work is done by the associated ContextualSearchDelegate.
-class ContextualSearchManager {
+class ContextualSearchManager
+    : public contextual_search::ContextualSearchJsApiHandler {
  public:
   // Constructs a native manager associated with the Java manager.
   ContextualSearchManager(JNIEnv* env, jobject obj);
-  virtual ~ContextualSearchManager();
+  ~ContextualSearchManager() override;
 
   // Called by the Java ContextualSearchManager when it is being destroyed.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -59,6 +61,15 @@ class ContextualSearchManager {
   base::android::ScopedJavaLocalRef<jstring> GetAcceptLanguages(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+
+  // Enables the Contextual Search JS API for the given |ContentViewCore|.
+  void EnableContextualSearchJsApiForOverlay(
+      JNIEnv* env,
+      jobject obj,
+      jobject j_overlay_content_view_core);
+
+  // ContextualSearchJsApiHandler overrides:
+  void SetCaption(std::string caption, bool does_answer) override;
 
  private:
   void OnSearchTermResolutionResponse(
