@@ -19,7 +19,7 @@ TESTING_DIR = os.path.join(
 sys.path.append(TESTING_DIR)
 
 from legion import legion_test_case
-from legion import jsonrpclib
+from legion.lib.rpc import jsonrpclib
 
 
 class ExampleTestController(legion_test_case.TestCase):
