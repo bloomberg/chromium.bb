@@ -396,6 +396,16 @@ var Should = (function () {
     function ShouldModel(desc, target, opts) {
         this.desc = desc;
         this.target = target;
+
+        // Check if the target contains any NaN value.
+        this._checkNaN(this.target, 'ACTUAL');
+        // if (resultNaNCheck.length > 0) {
+        //     var failureMessage = 'NaN found while testing the target (' + label + ')';
+        //     testFailed(failureMessage + ': "' + this.desc + '" \n' +
+        //         resultNaNCheck);
+        //     throw failureMessage;
+        // }
+
         // |_testPassed| and |_testFailed| set this appropriately.
         this._success = false;
 
@@ -433,6 +443,47 @@ var Should = (function () {
         throw failureMessage;
     };
 
+    // Check the expected value if it is a NaN (Number) or has NaN(s) in
+    // its content (Array or Float32Array). Returns a string depends on the
+    // result of check.
+    ShouldModel.prototype._checkNaN = function (value, label) {
+        var failureMessage = 'NaN found in ' + label + ' while testing "' +
+            this.desc + '"';
+
+        // Checking a single variable first.
+        if (Number.isNaN(value)) {
+            testFailed(failureMessage);
+            throw failureMessage;
+        }
+
+        // If the value is not a NaN nor array, we can assume it is safe.
+        if (!this._isArray(value))
+            return;
+
+        // Otherwise, check the array array.
+        var indices = [];
+        for (var i = 0; i < value.length; i++) {
+            if (Number.isNaN(value[i]))
+                indices.push(i);
+        }
+
+        if (indices.length === 0)
+            return;
+
+        var failureDetail = ' (' + indices.length + ' instances total)\n';
+        for (var n = 0; n < indices.length; n++) {
+            failureDetail += '   >> [' + indices[n] + '] = NaN\n';
+            if (n >= this.NUM_ERRORS_LOG) {
+                failureDetail += ' and ' + (indices.length - n) +
+                ' more NaNs...';
+                break;
+            }
+        }
+
+        testFailed(failureMessage + failureDetail);
+        throw failureMessage;
+    };
+
     // Check if |target| is equal to |value|.
     //
     // Example:
@@ -443,6 +494,8 @@ var Should = (function () {
         var type = typeof value;
         this._assert(type === 'number' || type === 'string',
             'value should be number or string for');
+
+        this._checkNaN(value, 'EXPECTED');
 
         if (this.target === value)
             this._testPassed('is equal to ' + value);
@@ -461,6 +514,8 @@ var Should = (function () {
         var type = typeof value;
         this._assert(type === 'number' || type === 'string',
             'value should be number or string for');
+
+        this._checkNaN(value, 'EXPECTED');
 
         if (this.target === value)
             this._testFailed('should not be equal to ' + value);
@@ -481,6 +536,8 @@ var Should = (function () {
         this._assert(type === 'number' || type === 'string',
             'value should be number or string for');
 
+        this._checkNaN(value, 'EXPECTED');
+
         if (this.target >= value)
             this._testPassed("is greater than or equal to " + value);
         else
@@ -500,6 +557,8 @@ var Should = (function () {
     ShouldModel.prototype.beLessThanOrEqualTo = function (value) {
         var type = typeof value;
         this._assert(type === 'number', 'value should be number or string for');
+
+        this._checkNaN(value, 'EXPECTED');
 
         if (this.target <= value)
             this._testPassed("is less than or equal to " + value);
@@ -523,6 +582,8 @@ var Should = (function () {
     ShouldModel.prototype.beCloseTo = function (value, errorThreshold, precision) {
         var type = typeof value;
         this._assert(type === 'number', 'value should be number for');
+
+        this._checkNaN(value, 'EXPECTED');
 
         if (value) {
             var relativeError = Math.abs(this.target - value) / Math.abs(value);
@@ -609,6 +670,8 @@ var Should = (function () {
     // Result:
     // "PASS [2, 2, 2] has constant values of 2."
     ShouldModel.prototype.beConstantValueOf = function (value) {
+        this._checkNaN(value, 'EXPECTED');
+
         var mismatches = {};
         for (var i = 0; i < this.target.length; i++) {
             if (this.target[i] !== value)
@@ -645,6 +708,8 @@ var Should = (function () {
     ShouldModel.prototype.beEqualToArray = function (array) {
         this._assert(this._isArray(array) && this.target.length === array.length,
             'Invalid array or the length does not match.');
+
+        this._checkNaN(array, 'EXPECTED');
 
         var mismatches = {};
         for (var i = 0; i < this.target.length; i++) {
@@ -687,6 +752,8 @@ var Should = (function () {
         this._assert(this.target.length >= array.length,
             'The target array length must be longer than ' + array.length +
             ' but got ' + this.target.length + '.');
+
+        this._checkNaN(array, 'EXPECTED');
 
         var mismatches = {};
         var maxDiff = 0.0;
@@ -737,6 +804,8 @@ var Should = (function () {
     // "PASS My random array contains all the expected values in the correct
     //  order: [1,3,2]."
     ShouldModel.prototype.containValues = function (expected) {
+        this._checkNaN(expected, 'EXPECTED');
+
         var indexExpected = 0, indexActual = 0;
         while (indexExpected < expected.length && indexActual < this.target.length) {
             if (expected[indexExpected] === this.target[indexActual])
@@ -763,6 +832,8 @@ var Should = (function () {
     // Result:
     // "PASS Channel #0 has no glitch above the threshold of 0.0005."
     ShouldModel.prototype.notGlitch = function (threshold) {
+        this._checkNaN(threshold, 'EXPECTED');
+
         for (var i = 1; i < this.target.length; i++) {
             var diff = Math.abs(this.target[i-1] - this.target[i]);
             if (diff >= threshold) {
