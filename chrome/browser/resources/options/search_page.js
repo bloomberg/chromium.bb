@@ -148,7 +148,7 @@ cr.define('options', function() {
 
     /**
      * Wait a bit to see if the user is still entering search text.
-     * @type {object}
+     * @type {number|undefined}
      * @private
      */
     delayedSearchMetric_: undefined,
