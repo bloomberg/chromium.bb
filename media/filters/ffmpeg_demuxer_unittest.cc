@@ -1117,7 +1117,7 @@ TEST_F(FFmpegDemuxerTest, NaturalSizeWithPASP) {
 
 #endif
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
   CreateDemuxer("bear-hevc-frag.mp4");
   InitializeDemuxer();

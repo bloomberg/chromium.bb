@@ -170,7 +170,7 @@ static bool IsCodecSupportedOnAndroid(MimeUtil::Codec codec) {
       return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
 
     case MimeUtil::HEVC_MAIN:
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
       // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
       // http://developer.android.com/reference/android/media/MediaFormat.html
       return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
@@ -231,7 +231,7 @@ static const char kMP4VideoCodecsExpression[] =
     // kUnambiguousCodecStringMap/kAmbiguousCodecStringMap should be the only
     // mapping from strings to codecs. See crbug.com/461009.
     "avc1.42E00A,avc1.4D400A,avc1.64000A,"
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     // Any valid unambiguous HEVC codec id will work here, since these strings
     // are parsed and mapped to MimeUtil::Codec enum values.
     "hev1.1.6.L93.B0,"
@@ -597,7 +597,7 @@ static bool ParseH264CodecID(const std::string& codec_id,
   return true;
 }
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 // ISO/IEC FDIS 14496-15 standard section E.3 describes the syntax of codec ids
 // reserved for HEVC. According to that spec HEVC codec id must start with
 // either "hev1." or "hvc1.". We don't yet support full parsing of HEVC codec
@@ -647,7 +647,7 @@ bool MimeUtil::StringToCodec(const std::string& codec_id,
   // If |codec_id| is not in |string_to_codec_map_|, then we assume that it is
   // either H.264 or HEVC/H.265 codec ID because currently those are the only
   // ones that are not added to the |string_to_codec_map_| and require parsing.
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   if (ParseHEVCCodecID(codec_id, codec, is_ambiguous)) {
     return true;
   }

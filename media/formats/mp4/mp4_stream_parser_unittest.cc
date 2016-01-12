@@ -300,7 +300,7 @@ TEST_F(MP4StreamParserTest, VideoSamplesStartWithAUDs) {
   ParseMP4File("bear-1280x720-av_with-aud-nalus_frag.mp4", 512);
 }
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 TEST_F(MP4StreamParserTest, HEVC_in_MP4_container) {
   InitializeParserAndExpectLiveness(DemuxerStream::LIVENESS_RECORDED);
   scoped_refptr<DecoderBuffer> buffer = ReadTestDataFile("bear-hevc-frag.mp4");

@@ -155,7 +155,7 @@ static const CodecInfo kH264AVC1CodecInfo = { "avc1.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_H264 };
 static const CodecInfo kH264AVC3CodecInfo = { "avc3.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_H264 };
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 static const CodecInfo kHEVCHEV1CodecInfo = { "hev1.*", CodecInfo::VIDEO, NULL,
                                               CodecInfo::HISTOGRAM_HEVC };
 static const CodecInfo kHEVCHVC1CodecInfo = { "hvc1.*", CodecInfo::VIDEO, NULL,
@@ -189,16 +189,11 @@ static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, NULL,
 #endif
 
 static const CodecInfo* kVideoMP4Codecs[] = {
-  &kH264AVC1CodecInfo,
-  &kH264AVC3CodecInfo,
-#if defined(ENABLE_HEVC_DEMUXING)
-  &kHEVCHEV1CodecInfo,
-  &kHEVCHVC1CodecInfo,
+    &kH264AVC1CodecInfo, &kH264AVC3CodecInfo,
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    &kHEVCHEV1CodecInfo, &kHEVCHVC1CodecInfo,
 #endif
-  &kMPEG4AACCodecInfo,
-  &kMPEG2AACLCCodecInfo,
-  NULL
-};
+    &kMPEG4AACCodecInfo, &kMPEG2AACLCCodecInfo, NULL};
 
 static const CodecInfo* kAudioMP4Codecs[] = {&kMPEG4AACCodecInfo,
                                              &kMPEG2AACLCCodecInfo,

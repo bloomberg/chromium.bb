@@ -1555,11 +1555,6 @@
                 'renderer/external_popup_menu_browsertest.cc',
               ],
             }],
-            ['chromecast==1', {
-              'defines': [
-                'ENABLE_HEVC_DEMUXING',
-              ],
-            }],
             ['use_aura==1 or toolkit_views==1', {
               'dependencies': [
                 '../ui/events/events.gyp:events_test_support',

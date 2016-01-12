@@ -12,8 +12,9 @@
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
+#include "media/media_features.h"
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #include "media/formats/mp4/hevc.h"
 #endif
 
@@ -484,7 +485,7 @@ bool IsFormatValidH264(const FourCC& format,
                                  sinf.format.format == FOURCC_AVC3));
 }
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 bool IsFormatValidHEVC(const FourCC& format,
                        const ProtectionSchemeInfo& sinf) {
   return format == FOURCC_HEV1 || format == FOURCC_HVC1 ||
@@ -526,7 +527,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
         make_scoped_refptr(new AVCBitstreamConverter(std::move(avcConfig)));
     video_codec = kCodecH264;
     video_codec_profile = H264PROFILE_MAIN;
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   } else if (IsFormatValidHEVC(format, sinf)) {
     DVLOG(2) << __FUNCTION__
              << " parsing HEVCDecoderConfigurationRecord (hvcC)";
@@ -549,7 +550,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 }
 
 bool VideoSampleEntry::IsFormatValid() const {
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
   if (IsFormatValidHEVC(format, sinf))
     return true;
 #endif

@@ -42,7 +42,7 @@ const char kOggOpusProbably[] = "";
 const char kMpeg2AacProbably[] = "";
 #endif  // !OS_ANDROID
 
-#if defined(ENABLE_HEVC_DEMUXING)
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 const char* kHevcSupported = kPropProbably;
 #else
 const char* kHevcSupported = kNot;

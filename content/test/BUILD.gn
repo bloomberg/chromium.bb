@@ -7,7 +7,6 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/v8.gni")
-import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 
@@ -352,10 +351,6 @@ test("content_browsertests") {
   }
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-
-  if (proprietary_codecs && enable_hevc_demuxing) {
-    defines += [ "ENABLE_HEVC_DEMUXING" ]
-  }
 
   configs += [
     "//build/config:precompiled_headers",

@@ -37,17 +37,14 @@
         # Enable AC3/EAC3 audio demuxing. Actual decoding must be provided by
         # the platform (or HDMI sink in Chromecast for audio pass-through case).
         'enable_ac3_eac3_audio_demuxing%': 1,
-        'enable_mse_mpeg2ts_stream_parser%': 1,
-      }, {
-        'enable_ac3_eac3_audio_demuxing%': 0,
-        'enable_mse_mpeg2ts_stream_parser%': 0,
-      }],
-      ['chromecast==1', {
         # Enable HEVC/H265 demuxing. Actual decoding must be provided by the
         # platform.
         'enable_hevc_demuxing%': 1,
+        'enable_mse_mpeg2ts_stream_parser%': 1,
       }, {
+        'enable_ac3_eac3_audio_demuxing%': 0,
         'enable_hevc_demuxing%': 0,
+        'enable_mse_mpeg2ts_stream_parser%': 0,
       }],
     ],
   },
@@ -64,6 +61,7 @@
         'buildflag_header_path': 'media/media_features.h',
         'buildflag_flags': [
           "ENABLE_AC3_EAC3_AUDIO_DEMUXING=<(enable_ac3_eac3_audio_demuxing)",
+          "ENABLE_HEVC_DEMUXING=<(enable_hevc_demuxing)",
           "ENABLE_MSE_MPEG2TS_STREAM_PARSER=<(enable_mse_mpeg2ts_stream_parser)",
         ],
       },
@@ -1124,9 +1122,6 @@
           ],
         }],
         ['proprietary_codecs==1 and enable_hevc_demuxing==1', {
-          'defines': [
-            'ENABLE_HEVC_DEMUXING'
-          ],
           'sources': [
             'filters/h265_parser.cc',
             'filters/h265_parser.h',
@@ -1354,9 +1349,6 @@
           ],
         }],
         ['proprietary_codecs==1 and enable_hevc_demuxing==1', {
-          'defines': [
-            'ENABLE_HEVC_DEMUXING'
-          ],
           'sources': [
             'filters/h265_parser_unittest.cc',
           ],
