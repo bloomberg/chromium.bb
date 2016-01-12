@@ -14,7 +14,7 @@ namespace navigation_interception {
 
 namespace {
 
-using ChecksPerformedCallback = base::Callback<void(bool)>;
+using ChecksPerformedCallback = base::Callback<void(bool, bool)>;
 
 // This is used to run |should_ignore_callback| if it can destroy the
 // WebContents (and the InterceptNavigationThrottle along). In that case,
@@ -23,14 +23,18 @@ void RunCallback(
     content::WebContents* web_contents,
     const NavigationParams& navigation_params,
     InterceptNavigationThrottle::CheckCallback should_ignore_callback,
-    ChecksPerformedCallback on_checks_performed_callback) {
+    ChecksPerformedCallback on_checks_performed_callback,
+    base::WeakPtr<InterceptNavigationThrottle> throttle) {
   bool should_ignore_navigation =
       should_ignore_callback.Run(web_contents, navigation_params);
 
   // If the InterceptNavigationThrottle that called RunCallback is still alive
   // after |should_ignore_callback| has run, this will run
   // InterceptNavigationThrottle::OnAsynchronousChecksPerformed.
-  on_checks_performed_callback.Run(should_ignore_navigation);
+  // TODO(clamy): remove this boolean after crbug.com/570200 is fixed.
+  bool throttle_was_destroyed = !throttle.get();
+  on_checks_performed_callback.Run(should_ignore_navigation,
+                                   throttle_was_destroyed);
 }
 
 }  // namespace
@@ -97,7 +101,8 @@ void InterceptNavigationThrottle::RunCallbackAsynchronously(
       navigation_handle()->GetWebContents(), navigation_params,
       should_ignore_callback_,
       base::Bind(&InterceptNavigationThrottle::OnAsynchronousChecksPerformed,
-                 weak_factory_.GetWeakPtr()));
+                 weak_factory_.GetWeakPtr()),
+      weak_factory_.GetWeakPtr());
 
   // DO NOT ADD CODE AFTER HERE: at this point the InterceptNavigationThrottle
   // may have been destroyed by the |should_ignore_callback_|. Adding code here
@@ -110,12 +115,16 @@ void InterceptNavigationThrottle::RunCallbackAsynchronously(
 }
 
 void InterceptNavigationThrottle::OnAsynchronousChecksPerformed(
-    bool should_ignore_navigation) {
+    bool should_ignore_navigation,
+    bool throttle_was_destroyed) {
+  CHECK(!throttle_was_destroyed);
+  content::NavigationHandle* handle = navigation_handle();
+  CHECK(handle);
   if (should_ignore_navigation) {
     navigation_handle()->CancelDeferredNavigation(
         content::NavigationThrottle::CANCEL_AND_IGNORE);
   } else {
-    navigation_handle()->Resume();
+    handle->Resume();
   }
 }
 
