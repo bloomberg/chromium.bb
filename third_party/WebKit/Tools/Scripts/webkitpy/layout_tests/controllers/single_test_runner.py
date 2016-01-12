@@ -360,7 +360,7 @@ class SingleTestRunner(object):
 
     def _run_reftest(self):
         test_output = self._driver.run_test(self._driver_input(), self._stop_when_done)
-        total_test_time = 0
+        total_test_time = test_output.test_time
         reference_output = None
         test_result = None
 
@@ -391,11 +391,11 @@ class SingleTestRunner(object):
             reference_test_names.append(reference_test_name)
             driver_input = DriverInput(reference_test_name, self._timeout, image_hash=None, should_run_pixel_test=True, args=args)
             reference_output = self._reference_driver.run_test(driver_input, self._stop_when_done)
+            total_test_time += reference_output.test_time
             test_result = self._compare_output_with_reference(reference_output, test_output, reference_filename, expectation == '!=')
 
             if (expectation == '!=' and test_result.failures) or (expectation == '==' and not test_result.failures):
                 break
-            total_test_time += test_result.test_run_time
 
         assert(reference_output)
         test_result_writer.write_test_result(self._filesystem, self._port, self._results_directory, self._test_name, test_output, reference_output, test_result.failures)
@@ -403,21 +403,21 @@ class SingleTestRunner(object):
         # FIXME: We don't really deal with a mix of reftest types properly. We pass in a set() to reftest_type
         # and only really handle the first of the references in the result.
         reftest_type = list(set([reference_file[0] for reference_file in self._reference_files]))
-        return TestResult(self._test_name, test_result.failures, total_test_time + test_result.test_run_time,
+        return TestResult(self._test_name, test_result.failures, total_test_time,
                           test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid,
                           references=reference_test_names)
 
+    # The returned TestResult always has 0 test_run_time. _run_reftest() calculates total_run_time from test outputs.
     def _compare_output_with_reference(self, reference_driver_output, actual_driver_output, reference_filename, mismatch):
-        total_test_time = reference_driver_output.test_time + actual_driver_output.test_time
         has_stderr = reference_driver_output.has_stderr() or actual_driver_output.has_stderr()
         failures = []
         failures.extend(self._handle_error(actual_driver_output))
         if failures:
             # Don't continue any more if we already have crash or timeout.
-            return TestResult(self._test_name, failures, total_test_time, has_stderr)
+            return TestResult(self._test_name, failures, 0, has_stderr)
         failures.extend(self._handle_error(reference_driver_output, reference_filename=reference_filename))
         if failures:
-            return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
+            return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid)
 
         if not reference_driver_output.image_hash and not actual_driver_output.image_hash:
             failures.append(test_failures.FailureReftestNoImagesGenerated(reference_filename))
@@ -440,4 +440,4 @@ class SingleTestRunner(object):
             else:
                 _log.warning("  %s -> ref test hashes didn't match but diff passed" % self._test_name)
 
-        return TestResult(self._test_name, failures, total_test_time, has_stderr, pid=actual_driver_output.pid)
+        return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid)
