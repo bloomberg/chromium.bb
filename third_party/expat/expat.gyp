@@ -7,7 +7,7 @@
     'conditions': [
       # On Linux, we implicitly already depend on expat via fontconfig;
       # let's not pull it in twice.
-      ['os_posix == 1 and OS != "mac" and OS != "ios" and OS != "android"', {
+      ['os_posix==1 and OS!="mac" and OS!="ios" and OS!="android" and chromecast!=1', {
         'use_system_expat%': 1,
       }, {
         'use_system_expat%': 0,
@@ -66,7 +66,7 @@
                 'COMPILED_FROM_DSP',
               ],
             }],
-            ['OS=="mac" or OS=="ios" or OS=="android" or os_bsd==1', {
+            ['OS=="mac" or OS=="ios" or OS=="android" or os_bsd==1 or chromecast==1', {
               'defines': [
                 'HAVE_EXPAT_CONFIG_H',
               ],

@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-if (is_linux) {
+import("//build/config/chromecast_build.gni")
+
+# Chromecast doesn't ship expat as a system library
+if (is_linux && !is_chromecast) {
   config("expat_config") {
     libs = [ "expat" ]
   }
