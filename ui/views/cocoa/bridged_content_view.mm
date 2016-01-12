@@ -16,6 +16,7 @@
 #import "ui/events/keycodes/keyboard_code_conversion_mac.h"
 #include "ui/gfx/canvas_paint_mac.h"
 #include "ui/gfx/geometry/rect.h"
+#import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/controls/menu/menu_config.h"
 #include "ui/views/controls/menu/menu_controller.h"
@@ -54,6 +55,92 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
       return true;
   }
   return false;
+}
+
+// Returns true if |client| has RTL text.
+bool IsTextRTL(const ui::TextInputClient* client) {
+  gfx::Range text_range;
+  base::string16 text;
+  return client->GetTextRange(&text_range) &&
+         client->GetTextFromRange(text_range, &text) &&
+         base::i18n::GetStringDirection(text) == base::i18n::RIGHT_TO_LEFT;
+}
+
+// Returns the boundary rectangle for composition characters in the
+// |requested_range|. Sets |actual_range| corresponding to the returned
+// rectangle. For cases, where there is no composition text or the
+// |requested_range| lies outside the composition range, a zero width rectangle
+// corresponding to the caret bounds is returned. Logic used is similar to
+// RenderWidgetHostViewMac::GetCachedFirstRectForCharacterRange(...).
+gfx::Rect GetFirstRectForRangeHelper(const ui::TextInputClient* client,
+                                     const gfx::Range& requested_range,
+                                     gfx::Range* actual_range) {
+  // NSRange doesn't support reversed ranges.
+  DCHECK(!requested_range.is_reversed());
+  DCHECK(actual_range);
+
+  // Set up default return values, to be returned in case of unusual cases.
+  gfx::Rect default_rect;
+  *actual_range = gfx::Range::InvalidRange();
+  if (!client)
+    return default_rect;
+
+  default_rect = client->GetCaretBounds();
+  default_rect.set_width(0);
+
+  // If possible, modify actual_range to correspond to caret position.
+  gfx::Range selection_range;
+  if (client->GetSelectionRange(&selection_range)) {
+    // Caret bounds correspond to end index of selection_range.
+    *actual_range = gfx::Range(selection_range.end());
+  }
+
+  gfx::Range composition_range;
+  if (!client->HasCompositionText() ||
+      !client->GetCompositionTextRange(&composition_range) ||
+      !composition_range.Contains(requested_range))
+    return default_rect;
+
+  DCHECK(!composition_range.is_reversed());
+
+  const size_t from = requested_range.start() - composition_range.start();
+  const size_t to = requested_range.end() - composition_range.start();
+
+  // Pick the first character's bounds as the initial rectangle, then grow it to
+  // the full |requested_range| if possible.
+  const bool request_is_composition_end = from == composition_range.length();
+  const size_t first_index = request_is_composition_end ? from - 1 : from;
+  gfx::Rect union_rect;
+  if (!client->GetCompositionCharacterBounds(first_index, &union_rect))
+    return default_rect;
+
+  // If requested_range is empty, return a zero width rectangle corresponding to
+  // it.
+  if (from == to) {
+    if (request_is_composition_end && !IsTextRTL(client)) {
+      // In case of an empty requested range at end of composition, return the
+      // rectangle to the right of the last compositioned character.
+      union_rect.set_origin(union_rect.top_right());
+    }
+    union_rect.set_width(0);
+    *actual_range = requested_range;
+    return union_rect;
+  }
+
+  // Toolkit-views textfields are always single-line, so no need to check for
+  // line breaks.
+  for (size_t i = from + 1; i < to; i++) {
+    gfx::Rect current_rect;
+    if (client->GetCompositionCharacterBounds(i, &current_rect)) {
+      union_rect.Union(current_rect);
+    } else {
+      *actual_range =
+          gfx::Range(requested_range.start(), i + composition_range.start());
+      return union_rect;
+    }
+  }
+  *actual_range = requested_range;
+  return union_rect;
 }
 
 }  // namespace
@@ -604,9 +691,13 @@ bool DispatchEventToMenu(views::Widget* widget, ui::KeyboardCode key_code) {
 }
 
 - (NSRect)firstRectForCharacterRange:(NSRange)range
-                         actualRange:(NSRangePointer)actualRange {
-  NOTIMPLEMENTED();
-  return NSZeroRect;
+                         actualRange:(NSRangePointer)actualNSRange {
+  gfx::Range actualRange;
+  gfx::Rect rect = GetFirstRectForRangeHelper(textInputClient_,
+                                              gfx::Range(range), &actualRange);
+  if (actualNSRange)
+    *actualNSRange = actualRange.ToNSRange();
+  return gfx::ScreenRectToNSRect(rect);
 }
 
 - (BOOL)hasMarkedText {
