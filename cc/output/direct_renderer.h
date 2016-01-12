@@ -37,6 +37,7 @@ class CC_EXPORT DirectRenderer : public Renderer {
                  const gfx::Rect& device_viewport_rect,
                  const gfx::Rect& device_clip_rect,
                  bool disable_picture_quad_image_filtering) override;
+  virtual void SwapBuffersComplete() {}
 
   struct CC_EXPORT DrawingFrame {
     DrawingFrame();

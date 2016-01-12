@@ -27,7 +27,7 @@ class CC_EXPORT RendererSettings {
   bool finish_rendering_on_resize;
   bool should_clear_root_render_pass;
   bool disable_display_vsync;
-  bool delay_releasing_overlay_resources;
+  bool release_overlay_resources_on_swap_complete;
   double refresh_rate;
   int highp_threshold_min;
   bool use_rgba_4444_textures;

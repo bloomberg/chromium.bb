@@ -65,6 +65,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void Finish() override;
 
   void SwapBuffers(const CompositorFrameMetadata& metadata) override;
+  void SwapBuffersComplete() override;
 
   virtual bool IsContextLost();
 
@@ -264,8 +265,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   using OverlayResourceLockList =
       std::vector<scoped_ptr<ResourceProvider::ScopedReadLockGL>>;
   OverlayResourceLockList pending_overlay_resources_;
-  OverlayResourceLockList in_use_overlay_resources_;
-  OverlayResourceLockList previous_swap_overlay_resources_[2];
+  std::deque<OverlayResourceLockList> swapped_overlay_resources_;
 
   RendererCapabilitiesImpl capabilities_;
 

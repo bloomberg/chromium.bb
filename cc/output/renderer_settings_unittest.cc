@@ -27,7 +27,7 @@ TEST(RendererSettingsTest, AllFieldsFlipped) {
   settings.finish_rendering_on_resize = true;
   settings.should_clear_root_render_pass = false;
   settings.disable_display_vsync = true;
-  settings.delay_releasing_overlay_resources = true;
+  settings.release_overlay_resources_on_swap_complete = true;
   settings.refresh_rate = 6.0;
   settings.highp_threshold_min = 1;
   settings.use_rgba_4444_textures = true;
@@ -45,7 +45,7 @@ TEST(RendererSettingsTest, ArbitraryFieldValues) {
   settings.finish_rendering_on_resize = false;
   settings.should_clear_root_render_pass = false;
   settings.disable_display_vsync = true;
-  settings.delay_releasing_overlay_resources = true;
+  settings.release_overlay_resources_on_swap_complete = true;
   settings.refresh_rate = 999.0;
   settings.highp_threshold_min = 1;
   settings.use_rgba_4444_textures = true;

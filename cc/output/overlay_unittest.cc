@@ -157,7 +157,10 @@ class OverlayOutputSurface : public OutputSurface {
   }
 
   // OutputSurface implementation
-  void SwapBuffers(CompositorFrame* frame) override;
+  void SwapBuffers(CompositorFrame* frame) override {
+    client_->DidSwapBuffers();
+  }
+  void OnSwapBuffersComplete() override { client_->DidSwapBuffersComplete(); }
 
   void SetOverlayCandidateValidator(OverlayCandidateValidator* validator) {
     overlay_candidate_validator_.reset(validator);
@@ -179,11 +182,6 @@ class OverlayOutputSurface : public OutputSurface {
   scoped_ptr<OverlayCandidateValidator> overlay_candidate_validator_;
   bool is_displayed_as_overlay_plane_;
 };
-
-void OverlayOutputSurface::SwapBuffers(CompositorFrame* frame) {
-  client_->DidSwapBuffers();
-  client_->DidSwapBuffersComplete();
-}
 
 scoped_ptr<RenderPass> CreateRenderPass() {
   RenderPassId id(1, 0);
@@ -1715,7 +1713,18 @@ class GLRendererWithOverlaysTest : public testing::Test {
                                                   resource_provider_.get()));
   }
 
-  void SwapBuffers() { renderer_->SwapBuffers(CompositorFrameMetadata()); }
+  void SwapBuffers() {
+    renderer_->SwapBuffers(CompositorFrameMetadata());
+    output_surface_->OnSwapBuffersComplete();
+    renderer_->SwapBuffersComplete();
+  }
+  void SwapBuffersWithoutComplete() {
+    renderer_->SwapBuffers(CompositorFrameMetadata());
+  }
+  void SwapBuffersComplete() {
+    output_surface_->OnSwapBuffersComplete();
+    renderer_->SwapBuffersComplete();
+  }
 
   RendererSettings settings_;
   FakeOutputSurfaceClient output_surface_client_;
@@ -2018,9 +2027,9 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 }
 
-TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithExtraDelay) {
+TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAtSwapComplete) {
   bool use_validator = true;
-  settings_.delay_releasing_overlay_resources = true;
+  settings_.release_overlay_resources_on_swap_complete = true;
   Init(use_validator);
   renderer_->set_expect_overlays(true);
 
@@ -2059,95 +2068,57 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithExtraDelay) {
   overlay3.resource_id = resource3;
   overlay3.plane_z_order = 1;
 
+  // First frame, with no swap completion.
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->BeginDrawingFrame(&frame1);
   renderer_->FinishDrawingFrame(&frame1);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
-  SwapBuffers();
+  SwapBuffersWithoutComplete();
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
+  // Second frame, with no swap completion.
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->BeginDrawingFrame(&frame2);
   renderer_->FinishDrawingFrame(&frame2);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  SwapBuffers();
+  SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
+  // Third frame, still with no swap completion (where the resources would
+  // otherwise have been released).
   EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
   renderer_->BeginDrawingFrame(&frame3);
   renderer_->FinishDrawingFrame(&frame3);
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffers();
+  SwapBuffersWithoutComplete();
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
   Mock::VerifyAndClearExpectations(&scheduler_);
 
-  // No overlays, release the resource.
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  DirectRenderer::DrawingFrame frame_no_overlays;
-  frame_no_overlays.render_passes_in_draw_order = &pass_list;
-  renderer_->set_expect_overlays(false);
-  renderer_->BeginDrawingFrame(&frame_no_overlays);
-  renderer_->FinishDrawingFrame(&frame_no_overlays);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  SwapBuffers();
+  // This completion corresponds to the first frame.
+  SwapBuffersComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource2));
   EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
-  Mock::VerifyAndClearExpectations(&scheduler_);
 
-  // Use the same buffer twice.
-  renderer_->set_expect_overlays(true);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
-  renderer_->BeginDrawingFrame(&frame1);
-  renderer_->FinishDrawingFrame(&frame1);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
-  Mock::VerifyAndClearExpectations(&scheduler_);
-
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
-  renderer_->BeginDrawingFrame(&frame1);
-  renderer_->FinishDrawingFrame(&frame1);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  Mock::VerifyAndClearExpectations(&scheduler_);
-
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->set_expect_overlays(false);
-  renderer_->BeginDrawingFrame(&frame_no_overlays);
-  renderer_->FinishDrawingFrame(&frame_no_overlays);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  Mock::VerifyAndClearExpectations(&scheduler_);
-
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->set_expect_overlays(false);
-  renderer_->BeginDrawingFrame(&frame_no_overlays);
-  renderer_->FinishDrawingFrame(&frame_no_overlays);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  Mock::VerifyAndClearExpectations(&scheduler_);
-
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
-  renderer_->set_expect_overlays(false);
-  renderer_->BeginDrawingFrame(&frame_no_overlays);
-  renderer_->FinishDrawingFrame(&frame_no_overlays);
-  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource1));
-  SwapBuffers();
+  // This completion corresponds to the second frame.
+  SwapBuffersComplete();
   EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
-  Mock::VerifyAndClearExpectations(&scheduler_);
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_TRUE(resource_provider_->InUseByConsumer(resource3));
+
+  // This completion corresponds to the third frame.
+  SwapBuffersComplete();
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource1));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource2));
+  EXPECT_FALSE(resource_provider_->InUseByConsumer(resource3));
 }
 
 }  // namespace

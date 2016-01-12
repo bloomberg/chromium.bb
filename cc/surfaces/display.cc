@@ -297,6 +297,8 @@ void Display::DidSwapBuffers() {
 void Display::DidSwapBuffersComplete() {
   if (scheduler_)
     scheduler_->DidSwapBuffersComplete();
+  if (renderer_)
+    renderer_->SwapBuffersComplete();
 }
 
 void Display::CommitVSyncParameters(base::TimeTicks timebase,

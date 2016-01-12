@@ -19,7 +19,7 @@ RendererSettings::RendererSettings()
       finish_rendering_on_resize(false),
       should_clear_root_render_pass(true),
       disable_display_vsync(false),
-      delay_releasing_overlay_resources(false),
+      release_overlay_resources_on_swap_complete(false),
       refresh_rate(60.0),
       highp_threshold_min(0),
       use_rgba_4444_textures(false),
@@ -37,8 +37,8 @@ void RendererSettings::ToProtobuf(proto::RendererSettings* proto) const {
   proto->set_finish_rendering_on_resize(finish_rendering_on_resize);
   proto->set_should_clear_root_render_pass(should_clear_root_render_pass);
   proto->set_disable_display_vsync(disable_display_vsync);
-  proto->set_delay_releasing_overlay_resources(
-      delay_releasing_overlay_resources);
+  proto->set_release_overlay_resources_on_swap_complete(
+      release_overlay_resources_on_swap_complete);
   proto->set_refresh_rate(refresh_rate);
   proto->set_highp_threshold_min(highp_threshold_min);
   proto->set_use_rgba_4444_textures(use_rgba_4444_textures);
@@ -54,7 +54,8 @@ void RendererSettings::FromProtobuf(const proto::RendererSettings& proto) {
   finish_rendering_on_resize = proto.finish_rendering_on_resize();
   should_clear_root_render_pass = proto.should_clear_root_render_pass();
   disable_display_vsync = proto.disable_display_vsync();
-  delay_releasing_overlay_resources = proto.delay_releasing_overlay_resources();
+  release_overlay_resources_on_swap_complete =
+      proto.release_overlay_resources_on_swap_complete();
   refresh_rate = proto.refresh_rate();
   highp_threshold_min = proto.highp_threshold_min();
   use_rgba_4444_textures = proto.use_rgba_4444_textures();
@@ -70,8 +71,8 @@ bool RendererSettings::operator==(const RendererSettings& other) const {
          finish_rendering_on_resize == other.finish_rendering_on_resize &&
          should_clear_root_render_pass == other.should_clear_root_render_pass &&
          disable_display_vsync == other.disable_display_vsync &&
-         delay_releasing_overlay_resources ==
-             other.delay_releasing_overlay_resources &&
+         release_overlay_resources_on_swap_complete ==
+             other.release_overlay_resources_on_swap_complete &&
          refresh_rate == other.refresh_rate &&
          highp_threshold_min == other.highp_threshold_min &&
          use_rgba_4444_textures == other.use_rgba_4444_textures &&
