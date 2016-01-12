@@ -68,6 +68,8 @@ public:
     PositionTemplate<Strategy> startPosition() const;
     PositionTemplate<Strategy> endPosition() const;
 
+    bool isInTextSecurityMode() const;
+
 private:
     void init(Node* startNode, Node* endNode, int startOffset, int endOffset);
     void exitNode();

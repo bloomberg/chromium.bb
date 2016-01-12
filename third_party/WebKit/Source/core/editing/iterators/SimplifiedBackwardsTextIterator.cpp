@@ -381,6 +381,12 @@ PositionTemplate<Strategy>SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::en
     return PositionTemplate<Strategy>::editingPositionOf(m_startNode, m_startOffset);
 }
 
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::isInTextSecurityMode() const
+{
+    return isTextSecurityNode(node());
+}
+
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 

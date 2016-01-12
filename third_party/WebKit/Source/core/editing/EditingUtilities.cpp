@@ -1652,4 +1652,9 @@ Position adjustedSelectionStartForStyleComputation(const VisibleSelection& selec
     return mostForwardCaretPosition(visiblePosition.deepEquivalent());
 }
 
+bool isTextSecurityNode(const Node* node)
+{
+    return node && node->layoutObject() && node->layoutObject()->style()->textSecurity() != TSNONE;
+}
+
 } // namespace blink

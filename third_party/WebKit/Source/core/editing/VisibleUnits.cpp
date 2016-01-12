@@ -686,7 +686,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
     unsigned next = 0;
     bool needMoreContext = false;
     while (!it.atEnd()) {
-        bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
+        bool inTextSecurityMode = it.isInTextSecurityMode();
         // iterate to get chunks until the searchFunction returns a non-zero
         // value.
         // TODO(xiaochengh): Iterative prepending has quadratic running time
@@ -776,7 +776,7 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         // Keep asking the iterator for chunks until the search function
         // returns an end value not equal to the length of the string passed to
         // it.
-        bool inTextSecurityMode = it.node() && it.node()->layoutObject() && it.node()->layoutObject()->style()->textSecurity() != TSNONE;
+        bool inTextSecurityMode = it.isInTextSecurityMode();
         if (!inTextSecurityMode) {
             it.text().appendTextTo(string);
         } else {

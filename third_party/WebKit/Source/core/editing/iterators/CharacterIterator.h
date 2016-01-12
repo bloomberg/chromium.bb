@@ -58,6 +58,8 @@ public:
     int characterOffset() const { return m_offset; }
     EphemeralRangeTemplate<Strategy> range() const;
 
+    bool isInTextSecurityMode() const { return m_textIterator.isInTextSecurityMode(); }
+
     Document* ownerDocument() const;
     Node* currentContainer() const;
     int startOffset() const;

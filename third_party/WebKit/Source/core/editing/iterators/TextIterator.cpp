@@ -1084,6 +1084,12 @@ int TextIteratorAlgorithm<Strategy>::rangeLength(const PositionTemplate<Strategy
     return length;
 }
 
+template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::isInTextSecurityMode() const
+{
+    return isTextSecurityNode(node());
+}
+
 // --------
 
 template <typename Strategy>

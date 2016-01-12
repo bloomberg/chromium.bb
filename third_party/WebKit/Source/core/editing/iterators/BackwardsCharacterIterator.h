@@ -43,6 +43,8 @@ public:
 
     PositionTemplate<Strategy> endPosition() const;
 
+    bool isInTextSecurityMode() const { return m_textIterator.isInTextSecurityMode(); }
+
 private:
     int m_offset;
     int m_runOffset;

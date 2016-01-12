@@ -61,6 +61,7 @@ public:
     bool atEnd() const { return !m_textState.positionNode() || m_shouldStop; }
     void advance();
     bool isInsideAtomicInlineElement() const;
+    bool isInTextSecurityMode() const;
 
     EphemeralRangeTemplate<Strategy> range() const;
     Node* node() const;
