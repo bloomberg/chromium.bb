@@ -27,10 +27,42 @@
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 #include "platform/graphics/filters/Filter.h"
+#include "platform/graphics/filters/PaintFilterEffect.h"
 #include "platform/graphics/filters/SourceAlpha.h"
 #include "platform/graphics/filters/SourceGraphic.h"
 
 namespace blink {
+
+namespace {
+
+class FilterInputKeywords {
+public:
+    static const AtomicString& sourceGraphic()
+    {
+        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceGraphicName, ("SourceGraphic", AtomicString::ConstructFromLiteral));
+        return s_sourceGraphicName;
+    }
+
+    static const AtomicString& sourceAlpha()
+    {
+        DEFINE_STATIC_LOCAL(const AtomicString, s_sourceAlphaName, ("SourceAlpha", AtomicString::ConstructFromLiteral));
+        return s_sourceAlphaName;
+    }
+
+    static const AtomicString& fillPaint()
+    {
+        DEFINE_STATIC_LOCAL(const AtomicString, s_fillPaintName, ("FillPaint", AtomicString::ConstructFromLiteral));
+        return s_fillPaintName;
+    }
+
+    static const AtomicString& strokePaint()
+    {
+        DEFINE_STATIC_LOCAL(const AtomicString, s_strokePaintName, ("StrokePaint", AtomicString::ConstructFromLiteral));
+        return s_strokePaintName;
+    }
+};
+
+} // namespace
 
 void SVGFilterGraphNodeMap::addBuiltinEffect(FilterEffect* effect)
 {
@@ -83,12 +115,18 @@ DEFINE_TRACE(SVGFilterGraphNodeMap)
 
 SVGFilterBuilder::SVGFilterBuilder(
     PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic,
-    PassRefPtrWillBeRawPtr<SVGFilterGraphNodeMap> nodeMap)
+    PassRefPtrWillBeRawPtr<SVGFilterGraphNodeMap> nodeMap,
+    const SkPaint* fillPaint,
+    const SkPaint* strokePaint)
     : m_nodeMap(nodeMap)
 {
     RefPtrWillBeRawPtr<FilterEffect> sourceGraphicRef = sourceGraphic;
-    m_builtinEffects.add(SourceGraphic::effectName(), sourceGraphicRef);
-    m_builtinEffects.add(SourceAlpha::effectName(), SourceAlpha::create(sourceGraphicRef.get()));
+    m_builtinEffects.add(FilterInputKeywords::sourceGraphic(), sourceGraphicRef);
+    m_builtinEffects.add(FilterInputKeywords::sourceAlpha(), SourceAlpha::create(sourceGraphicRef.get()));
+    if (fillPaint)
+        m_builtinEffects.add(FilterInputKeywords::fillPaint(), PaintFilterEffect::create(sourceGraphicRef->filter(), *fillPaint));
+    if (strokePaint)
+        m_builtinEffects.add(FilterInputKeywords::strokePaint(), PaintFilterEffect::create(sourceGraphicRef->filter(), *strokePaint));
     addBuiltinEffects();
 }
 
@@ -172,7 +210,7 @@ FilterEffect* SVGFilterBuilder::getEffectById(const AtomicString& id) const
     if (m_lastEffect)
         return m_lastEffect.get();
 
-    return m_builtinEffects.get(SourceGraphic::effectName());
+    return m_builtinEffects.get(FilterInputKeywords::sourceGraphic());
 }
 
 } // namespace blink

@@ -34,8 +34,6 @@ public:
     static PassRefPtrWillBeRawPtr<SourceGraphic> create(Filter*);
     ~SourceGraphic() override;
 
-    static const AtomicString& effectName();
-
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
     FilterEffectType filterEffectType() const override { return FilterEffectTypeSourceInput; }

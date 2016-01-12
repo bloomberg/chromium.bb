@@ -354,12 +354,19 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         StyleResolverState resolverState(styleResolutionHost->document(), styleResolutionHost, filterStyle.get());
         resolverState.setStyle(filterStyle);
 
-        // TODO(junov): crbug.com/502877 Feed m_fillStyle and m_strokeStyle into FillPaint and
-        // StrokePaint respectively for filters that reference SVG.
         StyleBuilder::applyProperty(CSSPropertyWebkitFilter, resolverState, m_filterValue.get());
         RefPtrWillBeRawPtr<FilterEffectBuilder> filterEffectBuilder = FilterEffectBuilder::create();
+
+        // We can't reuse m_fillPaint and m_strokePaint for the filter, since these incorporate
+        // the global alpha, which isn't applicable here.
+        SkPaint fillPaintForFilter;
+        SkPaint strokePaintForFilter;
+        m_fillStyle->applyToPaint(fillPaintForFilter);
+        m_strokeStyle->applyToPaint(strokePaintForFilter);
+        fillPaintForFilter.setColor(m_fillStyle->paintColor());
+        strokePaintForFilter.setColor(m_strokeStyle->paintColor());
         const double effectiveZoom = 1.0; // Deliberately ignore zoom on the canvas element
-        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom);
+        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &fillPaintForFilter, &strokePaintForFilter);
 
         SkiaImageFilterBuilder imageFilterBuilder;
         RefPtrWillBeRawPtr<FilterEffect> lastEffect = filterEffectBuilder->lastEffect();

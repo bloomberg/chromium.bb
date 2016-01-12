@@ -29,8 +29,6 @@ class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
 public:
     static PassRefPtrWillBeRawPtr<SourceAlpha> create(FilterEffect*);
 
-    static const AtomicString& effectName();
-
     FloatRect determineAbsolutePaintRect(const FloatRect& requestedRect) override;
 
     FilterEffectType filterEffectType() const override { return FilterEffectTypeSourceInput; }

@@ -69,7 +69,7 @@ void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperatio
 }
 #endif
 
-PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation)
+PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     TreeScope* treeScope = &element->treeScope();
 
@@ -112,7 +112,7 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
     if (!previousEffect)
         previousEffect = result->sourceGraphic();
 
-    SVGFilterBuilder builder(previousEffect);
+    SVGFilterBuilder builder(previousEffect, nullptr, fillPaint, strokePaint);
     builder.buildGraph(result.get(), filterElement, referenceBox);
 
     result->setLastEffect(builder.lastEffect());

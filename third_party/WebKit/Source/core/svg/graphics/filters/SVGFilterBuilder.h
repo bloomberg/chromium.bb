@@ -29,6 +29,8 @@
 #include "wtf/text/AtomicStringHash.h"
 #include "wtf/text/WTFString.h"
 
+class SkPaint;
+
 namespace blink {
 
 class FloatRect;
@@ -77,7 +79,9 @@ class SVGFilterBuilder {
 public:
     SVGFilterBuilder(
         PassRefPtrWillBeRawPtr<FilterEffect> sourceGraphic,
-        PassRefPtrWillBeRawPtr<SVGFilterGraphNodeMap> = nullptr);
+        PassRefPtrWillBeRawPtr<SVGFilterGraphNodeMap> = nullptr,
+        const SkPaint* fillPaint = nullptr,
+        const SkPaint* strokePaint = nullptr);
 
     void buildGraph(Filter*, SVGFilterElement&, const FloatRect&);
 

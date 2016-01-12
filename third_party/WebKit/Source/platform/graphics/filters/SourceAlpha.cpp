@@ -34,12 +34,6 @@ PassRefPtrWillBeRawPtr<SourceAlpha> SourceAlpha::create(FilterEffect* sourceEffe
     return adoptRefWillBeNoop(new SourceAlpha(sourceEffect));
 }
 
-const AtomicString& SourceAlpha::effectName()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, s_effectName, ("SourceAlpha", AtomicString::ConstructFromLiteral));
-    return s_effectName;
-}
-
 SourceAlpha::SourceAlpha(FilterEffect* sourceEffect)
     : FilterEffect(sourceEffect->filter())
 {

@@ -36,6 +36,8 @@
 #include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
+class SkPaint;
+
 namespace blink {
 
 class Element;
@@ -53,7 +55,7 @@ public:
     static void clearDocumentResourceReference(const FilterOperation*);
 #endif
 
-    static PassRefPtrWillBeRawPtr<Filter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&);
+    static PassRefPtrWillBeRawPtr<Filter> build(float zoom, Element*, FilterEffect* previousEffect, const ReferenceFilterOperation&, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 };
 
 }

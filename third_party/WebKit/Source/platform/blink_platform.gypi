@@ -653,6 +653,8 @@
       'graphics/filters/FilterOperations.h',
       'graphics/filters/LightSource.cpp',
       'graphics/filters/LightSource.h',
+      'graphics/filters/PaintFilterEffect.cpp',
+      'graphics/filters/PaintFilterEffect.h',
       'graphics/filters/PointLightSource.cpp',
       'graphics/filters/PointLightSource.h',
       'graphics/filters/SkiaImageFilterBuilder.cpp',

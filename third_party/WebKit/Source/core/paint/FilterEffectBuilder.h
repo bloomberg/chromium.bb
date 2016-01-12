@@ -34,6 +34,8 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
+class SkPaint;
+
 namespace blink {
 
 class Filter;
@@ -51,7 +53,7 @@ public:
     virtual ~FilterEffectBuilder();
     DECLARE_TRACE();
 
-    bool build(Element*, const FilterOperations&, float zoom);
+    bool build(Element*, const FilterOperations&, float zoom, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 
     PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
     {

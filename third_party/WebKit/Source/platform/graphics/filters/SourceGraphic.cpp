@@ -42,12 +42,6 @@ PassRefPtrWillBeRawPtr<SourceGraphic> SourceGraphic::create(Filter* filter)
     return adoptRefWillBeNoop(new SourceGraphic(filter));
 }
 
-const AtomicString& SourceGraphic::effectName()
-{
-    DEFINE_STATIC_LOCAL(const AtomicString, s_effectName, ("SourceGraphic", AtomicString::ConstructFromLiteral));
-    return s_effectName;
-}
-
 FloatRect SourceGraphic::determineAbsolutePaintRect(const FloatRect& requestedRect)
 {
     FloatRect srcRect = intersection(m_sourceRect, requestedRect);
