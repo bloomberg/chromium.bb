@@ -76022,6 +76022,10 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="238" label="XXE"/>
   <int value="239" label="ZIPX"/>
   <int value="240" label="ZPAQ"/>
+  <int value="241" label="RELS"/>
+  <int value="242" label="MSG"/>
+  <int value="243" label="EML"/>
+  <int value="244" label="RTF"/>
 </enum>
 
 <enum name="SBClientDownloadIsSignedBinary" type="int">

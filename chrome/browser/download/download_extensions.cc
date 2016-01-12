@@ -71,6 +71,7 @@ const struct FileType {
 
     // Included for parity with kSafeBrowsingFileTypes.
     {"bin", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
+    {"rtf", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
 
     // Archive file types. Not inherently dangerous, but could contain dangerous
     // files. Included for parity with kSafeBrowsingFileTypes.
@@ -233,6 +234,11 @@ const struct FileType {
     // Windows executables.
     {"dll", DANGEROUS, DISALLOW_AUTO_OPEN},
     {"drv", DANGEROUS, DISALLOW_AUTO_OPEN},
+
+    // Opens in Outlook. Not common, but could be exploited (CVE-2015-6172)
+    {"eml", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
+    // Windows executable
     {"exe", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
     // Font file, uses Portable Executable or New Executable format. Not
@@ -316,6 +322,9 @@ const struct FileType {
     // Microsoft Management Console Snap-in. Contains executable code.
     {"msc", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
 
+    // Opens in Outlook. Not common, but could be exploited (CVE-2015-6172)
+    {"msg", ALLOW_ON_USER_GESTURE, ALLOW_AUTO_OPEN},
+
     // Microsoft Shell.
     {"msh", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"msh1", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
@@ -342,6 +351,7 @@ const struct FileType {
     // browser.
     {"partial", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"xrm-ms", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
+    {"rels", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"svg", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
     {"xml", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},
     {"xsl", ALLOW_ON_USER_GESTURE, DISALLOW_AUTO_OPEN},

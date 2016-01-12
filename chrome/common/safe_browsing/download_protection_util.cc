@@ -262,6 +262,10 @@ enum SBClientDownloadExtensions {
   EXTENSION_XXE,
   EXTENSION_ZIPX,
   EXTENSION_ZPAQ,
+  EXTENSION_RELS,
+  EXTENSION_MSG,
+  EXTENSION_EML,
+  EXTENSION_RTF,
 
   // New values go above this one.
   EXTENSION_MAX
@@ -319,6 +323,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".dmg"), EXTENSION_DMG, true, false},
     {FILE_PATH_LITERAL(".drv"), EXTENSION_DRV, true, false},
     {FILE_PATH_LITERAL(".efi"), EXTENSION_EFI, true, false},
+    {FILE_PATH_LITERAL(".eml"), EXTENSION_EML, true, false},
     {FILE_PATH_LITERAL(".exe"), EXTENSION_EXE, true, false},
     {FILE_PATH_LITERAL(".fat"), EXTENSION_FAT, true, true},
     {FILE_PATH_LITERAL(".fon"), EXTENSION_FON, true, false},
@@ -378,6 +383,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".mmc"), EXTENSION_MMC, true, false},
     {FILE_PATH_LITERAL(".mof"), EXTENSION_MOF, true, false},
     {FILE_PATH_LITERAL(".msc"), EXTENSION_MSC, true, false},
+    {FILE_PATH_LITERAL(".msg"), EXTENSION_MSG, true, false},
     {FILE_PATH_LITERAL(".msh"), EXTENSION_MSH, true, false},
     {FILE_PATH_LITERAL(".msh1"), EXTENSION_MSH1, true, false},
     {FILE_PATH_LITERAL(".msh1xml"), EXTENSION_MSH1XML, true, false},
@@ -452,9 +458,11 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".r29"), EXTENSION_R29, true, true},
     {FILE_PATH_LITERAL(".rar"), EXTENSION_RAR, true, true},
     {FILE_PATH_LITERAL(".rb"), EXTENSION_RB, true, false},
+    {FILE_PATH_LITERAL(".rels"), EXTENSION_RELS, true, false},
     {FILE_PATH_LITERAL(".reg"), EXTENSION_REG, true, false},
     {FILE_PATH_LITERAL(".rgs"), EXTENSION_RGS, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".rpm"), EXTENSION_RPM, true, false},
+    {FILE_PATH_LITERAL(".rtf"), EXTENSION_RTF, false, false},  // UMA only.
     {FILE_PATH_LITERAL(".scf"), EXTENSION_SCF, true, false},
     {FILE_PATH_LITERAL(".scr"), EXTENSION_SCR, true, false},
     {FILE_PATH_LITERAL(".sct"), EXTENSION_SCT, true, false},
