@@ -56,7 +56,6 @@ paper-dialog .explanation {
 
 paper-dialog .button-container {
   display: flex;
-  flex: 1;
   justify-content: flex-end;
 }
 

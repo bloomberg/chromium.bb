@@ -10,11 +10,11 @@
   <template>
     <template is="dom-repeat" items="[[startupPages_]]">
       <div class="list-item">
-        <iron-icon icon="image:brightness-1"
+        <iron-icon class="secondary" icon="image:brightness-1"
             item-icon></iron-icon>
-        <div>
-          <div>[[item.title]]</div>
-          <div>[[item.url]]</div>
+        <div class="middle">
+          <div class="text-elide">[[item.title]]</div>
+          <div class="text-elide secondary">[[item.url]]</div>
         </div>
         <iron-icon on-tap="onRemoveUrlTap_" icon="clear"></iron-icon>
       </div>
