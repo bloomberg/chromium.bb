@@ -3959,8 +3959,8 @@ void FrameView::updateViewportIntersectionsForSubtree(LifeCycleUpdateOption phas
     updateViewportIntersectionIfNeeded();
 
     // Notify javascript IntersectionObservers
-    if (phases == AllPhases)
-        frame().document()->ensureIntersectionObserverController().computeTrackedIntersectionObservations();
+    if (phases == AllPhases && frame().document()->intersectionObserverController())
+        frame().document()->intersectionObserverController()->computeTrackedIntersectionObservations();
 
     // Adjust render throttling for iframes based on visibility
     bool shouldNotify = !hadValidIntersection || hadEmptyIntersection != m_viewportIntersection.isEmpty();

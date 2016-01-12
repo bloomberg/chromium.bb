@@ -42,6 +42,7 @@ public:
     void setActive(bool);
     void disconnect();
     void removeObservation(IntersectionObservation&);
+    bool hasEntries() const { return m_entries.size(); }
 
     DECLARE_TRACE();
 

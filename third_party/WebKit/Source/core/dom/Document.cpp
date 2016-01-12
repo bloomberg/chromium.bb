@@ -5069,10 +5069,15 @@ WeakPtrWillBeRawPtr<Document> Document::createWeakPtr()
 #endif
 }
 
+IntersectionObserverController* Document::intersectionObserverController()
+{
+    return m_intersectionObserverController;
+}
+
 IntersectionObserverController& Document::ensureIntersectionObserverController()
 {
     if (!m_intersectionObserverController)
-        m_intersectionObserverController = new IntersectionObserverController();
+        m_intersectionObserverController = IntersectionObserverController::create(this);
     return *m_intersectionObserverController;
 }
 

@@ -11,12 +11,17 @@
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 
+// Design doc for IntersectionObserver implementation:
+//   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
+
 namespace blink {
 
-class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController> {
+class IntersectionObserverController : public GarbageCollectedFinalized<IntersectionObserverController>, public ActiveDOMObject {
 public:
-    IntersectionObserverController();
+    static IntersectionObserverController* create(Document*);
     ~IntersectionObserverController();
+
+    void resume() override;
 
     void scheduleIntersectionObserverForDelivery(IntersectionObserver&);
     void deliverIntersectionObservations(Timer<IntersectionObserverController>*);
@@ -27,14 +32,16 @@ public:
     DECLARE_TRACE();
 
 private:
-    // Design doc for IntersectionObserver implementation:
-    //   https://docs.google.com/a/google.com/document/d/1hLK0eyT5_BzyNS4OkjsnoqqFQDYCbKfyBinj94OnLiQ
+    explicit IntersectionObserverController(Document*);
 
+private:
     Timer<IntersectionObserverController> m_timer;
     // IntersectionObservers for which this is the tracking document.
     HeapHashSet<WeakMember<IntersectionObserver>> m_trackedIntersectionObservers;
     // IntersectionObservers for which this is the execution context of the callback.
     HeapHashSet<Member<IntersectionObserver>> m_pendingIntersectionObservers;
+
+    bool m_timerFiredWhileSuspended;
 };
 
 } // namespace blink

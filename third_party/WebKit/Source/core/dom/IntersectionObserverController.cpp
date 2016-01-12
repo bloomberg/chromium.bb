@@ -10,8 +10,17 @@ namespace blink {
 
 typedef HeapVector<Member<IntersectionObserver>> IntersectionObserverVector;
 
-IntersectionObserverController::IntersectionObserverController()
-    : m_timer(this, &IntersectionObserverController::deliverIntersectionObservations)
+IntersectionObserverController* IntersectionObserverController::create(Document* document)
+{
+    IntersectionObserverController* result = new IntersectionObserverController(document);
+    result->suspendIfNeeded();
+    return result;
+}
+
+IntersectionObserverController::IntersectionObserverController(Document* document)
+    : ActiveDOMObject(document)
+    , m_timer(this, &IntersectionObserverController::deliverIntersectionObservations)
+    , m_timerFiredWhileSuspended(false)
 {
 }
 
@@ -25,8 +34,22 @@ void IntersectionObserverController::scheduleIntersectionObserverForDelivery(Int
     m_pendingIntersectionObservers.add(&observer);
 }
 
+void IntersectionObserverController::resume()
+{
+    // If the timer fired while DOM objects were suspended, notifications might be late, so deliver
+    // them right away (rather than waiting for m_timer to fire again).
+    if (m_timerFiredWhileSuspended) {
+        m_timerFiredWhileSuspended = false;
+        deliverIntersectionObservations(nullptr);
+    }
+}
+
 void IntersectionObserverController::deliverIntersectionObservations(Timer<IntersectionObserverController>*)
 {
+    if (executionContext()->activeDOMObjectsAreSuspended()) {
+        m_timerFiredWhileSuspended = true;
+        return;
+    }
     IntersectionObserverVector observers;
     copyToVector(m_pendingIntersectionObservers, observers);
     m_pendingIntersectionObservers.clear();
@@ -38,8 +61,11 @@ void IntersectionObserverController::computeTrackedIntersectionObservations()
 {
     // TODO(szager): Need to define timestamp.
     double timestamp = currentTime();
-    for (auto& observer : m_trackedIntersectionObservers)
+    for (auto& observer : m_trackedIntersectionObservers) {
         observer->computeIntersectionObservations(timestamp);
+        if (observer->hasEntries())
+            scheduleIntersectionObserverForDelivery(*observer);
+    }
 }
 
 void IntersectionObserverController::addTrackedObserver(IntersectionObserver& observer)
@@ -59,6 +85,7 @@ void IntersectionObserverController::removeTrackedObserversForRoot(const Element
 
 DEFINE_TRACE(IntersectionObserverController)
 {
+    ActiveDOMObject::trace(visitor);
     visitor->trace(m_trackedIntersectionObservers);
     visitor->trace(m_pendingIntersectionObservers);
 }

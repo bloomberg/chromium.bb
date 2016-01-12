@@ -687,6 +687,7 @@ public:
 
     WeakPtrWillBeRawPtr<Document> createWeakPtr();
 
+    IntersectionObserverController* intersectionObserverController();
     IntersectionObserverController& ensureIntersectionObserverController();
 
     void updateViewportDescription();
