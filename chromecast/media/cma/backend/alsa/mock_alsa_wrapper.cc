@@ -13,6 +13,9 @@ struct _snd_pcm {};
 namespace chromecast {
 namespace media {
 
+const size_t kBytesPerSample = sizeof(int32_t);
+const int kNumChannels = 2;
+
 // This class keeps basic state to ensure that ALSA is being used correctly.
 // Calls from MockAlsaWrapper are delegated to an instance of this class in
 // cases where internal ALSA state change occurs, or where a valid value needs
@@ -57,7 +60,7 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
     CHECK_EQ(fake_handle_, handle);
     CHECK(buffer);
     const uint8_t* ptr = reinterpret_cast<const uint8_t*>(buffer);
-    int len = size * 2 * 4;
+    int len = size * kNumChannels * kBytesPerSample;
     data_.assign(ptr, ptr + len);
     return size;
   }
@@ -70,7 +73,7 @@ class MockAlsaWrapper::FakeAlsaWrapper : public AlsaWrapper {
   }
 
   ssize_t PcmFormatSize(snd_pcm_format_t format, size_t samples) override {
-    return 4 * samples;
+    return kBytesPerSample * samples;
   };
 
   snd_pcm_state_t state() { return state_; }
