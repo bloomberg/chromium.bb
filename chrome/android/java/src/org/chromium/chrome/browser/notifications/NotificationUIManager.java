@@ -468,14 +468,17 @@ public class NotificationUIManager {
                                                   incognito, tag, actionIndex));
         }
 
+        // If action buttons are displayed, there isn't room for the full Site Settings button
+        // label and icon, so abbreviate it. This has the unfortunate side-effect of unnecessarily
+        // abbreviating it on Android Wear also (crbug.com/576656). If custom layouts are enabled,
+        // the label and icon provided here only affect Android Wear, so don't abbreviate them.
+        boolean abbreviateSiteSettings = actionTitles.length > 0 && !useCustomLayouts();
+        int settingsIconId = abbreviateSiteSettings ? 0 : R.drawable.settings_cog;
+        CharSequence settingsTitle = abbreviateSiteSettings
+                                     ? res.getString(R.string.notification_site_settings_button)
+                                     : res.getString(R.string.page_info_site_settings_button);
         // If the settings button is displayed together with the other buttons it has to be the last
         // one, so add it after the other actions.
-        // If there are no actions provided by the website, use a longer title string.
-        CharSequence settingsTitle = actionTitles.length == 0
-                ? res.getString(R.string.page_info_site_settings_button)
-                : res.getString(R.string.notification_site_settings_button);
-        // If there are no actions provided by the website, use an icon.
-        int settingsIconId = actionTitles.length == 0 ? R.drawable.settings_cog : 0;
         notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
 
         notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
