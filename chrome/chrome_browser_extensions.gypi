@@ -23,6 +23,8 @@
       'browser/extensions/api/input_ime/input_ime_api.h',
       'browser/extensions/api/input_ime/input_ime_api_chromeos.cc',
       'browser/extensions/api/input_ime/input_ime_api_chromeos.h',
+      'browser/extensions/api/input_ime/input_ime_event_router_base.cc',
+      'browser/extensions/api/input_ime/input_ime_event_router_base.h',
       'browser/extensions/api/log_private/filter_handler.cc',
       'browser/extensions/api/log_private/filter_handler.h',
       'browser/extensions/api/log_private/log_parser.cc',
@@ -938,6 +940,14 @@
       'browser/extensions/api/storage/policy_value_store.cc',
       'browser/extensions/api/storage/policy_value_store.h',
     ],
+    'chrome_browser_extensions_input_ime_linux_win_sources': [
+      'browser/extensions/api/input_ime/input_ime_api.cc',
+      'browser/extensions/api/input_ime/input_ime_api.h',
+      'browser/extensions/api/input_ime/input_ime_api_nonchromeos.cc',
+      'browser/extensions/api/input_ime/input_ime_api_nonchromeos.h',
+      'browser/extensions/api/input_ime/input_ime_event_router_base.cc',
+      'browser/extensions/api/input_ime/input_ime_event_router_base.h',
+    ],
   },
   # ----------------------------------------------------------------------------
   # Note on GN build: everything below here is duplicated in
@@ -1080,6 +1090,11 @@
                 '../ui/events/platform/x11/x11_events_platform.gyp:x11_events_platform',
               ],
             }],
+            ['chromeos==0', {
+              'sources': [
+                '<@(chrome_browser_extensions_input_ime_linux_win_sources)',
+              ],
+            }],
           ],
         }],
         ['configuration_policy==1', {
@@ -1105,6 +1120,9 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
           ],
+          'sources': [
+            '<@(chrome_browser_extensions_input_ime_linux_win_sources)',
+          ],
         }, {  # 'OS!="win"
           'conditions': [
             ['OS=="linux" and toolkit_views==1',{
@@ -1126,13 +1144,6 @@
           'sources': [
             'browser/extensions/display_info_provider_aura.cc',
             'browser/extensions/display_info_provider_aura.h',
-          ],
-        }],
-        ['OS=="win" or OS=="linux"', {
-          'sources': [
-            'browser/extensions/api/input_ime/input_ime_api.cc',
-            'browser/extensions/api/input_ime/input_ime_api.h',
-            'browser/extensions/api/input_ime/input_ime_api_nonchromeos.cc',
           ],
         }],
         ['enable_app_list==1', {

@@ -27,6 +27,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api_chromeos.h"
+#elif defined(OS_LINUX) || defined(OS_WIN)
+#include "chrome/browser/extensions/api/input_ime/input_ime_api_nonchromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
 class Profile;
@@ -97,49 +99,8 @@ class ImeObserver : public IMEEngineObserver {
 }  // namespace ui
 
 namespace extensions {
+class InputImeEventRouter;
 class ExtensionRegistry;
-struct InputComponentInfo;
-
-class InputImeEventRouter {
- public:
-  explicit InputImeEventRouter(Profile* profile);
-  ~InputImeEventRouter();
-
-  bool RegisterImeExtension(
-      const std::string& extension_id,
-      const std::vector<extensions::InputComponentInfo>& input_components);
-  void UnregisterAllImes(const std::string& extension_id);
-
-  ui::IMEEngineHandlerInterface* GetEngine(const std::string& extension_id,
-                                           const std::string& component_id);
-  ui::IMEEngineHandlerInterface* GetActiveEngine(
-      const std::string& extension_id);
-
-  // Called when a key event was handled.
-  void OnKeyEventHandled(const std::string& extension_id,
-                         const std::string& request_id,
-                         bool handled);
-
-  std::string AddRequest(
-      const std::string& component_id,
-      ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data);
-
- private:
-  typedef std::map<
-      std::string,
-      std::pair<std::string,
-                ui::IMEEngineHandlerInterface::KeyEventDoneCallback>>
-      RequestMap;
-
-  // The engine map from extension_id to an engine.
-  std::map<std::string, ui::IMEEngineHandlerInterface*> engine_map_;
-
-  unsigned int next_request_id_;
-  RequestMap request_map_;
-  Profile* profile_;
-
-  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
-};
 
 class InputImeEventRouterFactory {
  public:

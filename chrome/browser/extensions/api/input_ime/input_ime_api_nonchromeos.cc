@@ -10,8 +10,6 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
-#include <utility>
-
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/common/chrome_switches.h"
@@ -58,12 +56,18 @@ class ImeObserverNonChromeOS : public ui::ImeObserver {
 
 namespace extensions {
 
-bool InputImeEventRouter::RegisterImeExtension(
-    const std::string& extension_id,
-    const std::vector<extensions::InputComponentInfo>& input_components) {
-  return false;
-}
+InputImeEventRouter::InputImeEventRouter(Profile* profile)
+    : InputImeEventRouterBase(profile) {}
 
-void InputImeEventRouter::UnregisterAllImes(const std::string& extension_id) {}
+InputImeEventRouter::~InputImeEventRouter() {}
+
+void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
+                                    const Extension* extension) {}
+
+void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
+                                      const Extension* extension,
+                                      UnloadedExtensionInfo::Reason reason) {}
+
+void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
 
 }  // namespace extensions

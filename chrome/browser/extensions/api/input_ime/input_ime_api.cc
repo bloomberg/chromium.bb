@@ -4,11 +4,8 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 
-#include <utility>
-
-#include "base/strings/string_number_conversions.h"
+#include "base/lazy_instance.h"
 #include "chrome/common/extensions/api/input_ime.h"
-#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "extensions/browser/extension_registry.h"
 
 namespace input_ime = extensions::api::input_ime;
@@ -245,58 +242,6 @@ InputImeEventRouter* InputImeEventRouterFactory::GetRouter(Profile* profile) {
   return router;
 }
 
-InputImeEventRouter::InputImeEventRouter(Profile* profile)
-    : next_request_id_(1), profile_(profile) {
-}
-
-InputImeEventRouter::~InputImeEventRouter() {
-}
-
-IMEEngineHandlerInterface* InputImeEventRouter::GetEngine(
-    const std::string& extension_id,
-    const std::string& component_id) {
-  std::map<std::string, IMEEngineHandlerInterface*>::iterator it =
-      engine_map_.find(extension_id);
-  if (it != engine_map_.end())
-    return it->second;
-  return NULL;
-}
-
-IMEEngineHandlerInterface* InputImeEventRouter::GetActiveEngine(
-    const std::string& extension_id) {
-  std::map<std::string, IMEEngineHandlerInterface*>::iterator it =
-      engine_map_.find(extension_id);
-  if (it != engine_map_.end() && it->second->IsActive())
-    return it->second;
-  return NULL;
-}
-
-void InputImeEventRouter::OnKeyEventHandled(
-    const std::string& extension_id,
-    const std::string& request_id,
-    bool handled) {
-  RequestMap::iterator request = request_map_.find(request_id);
-  if (request == request_map_.end()) {
-    LOG(ERROR) << "Request ID not found: " << request_id;
-    return;
-  }
-
-  std::string component_id = request->second.first;
-  (request->second.second).Run(handled);
-  request_map_.erase(request);
-}
-
-std::string InputImeEventRouter::AddRequest(
-    const std::string& component_id,
-    IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) {
-  std::string request_id = base::IntToString(next_request_id_);
-  ++next_request_id_;
-
-  request_map_[request_id] = std::make_pair(component_id, key_data);
-
-  return request_id;
-}
-
 bool InputImeKeyEventHandledFunction::RunAsync() {
   scoped_ptr<KeyEventHandled::Params> params(
       KeyEventHandled::Params::Create(*args_));
@@ -323,40 +268,6 @@ static base::LazyInstance<BrowserContextKeyedAPIFactory<InputImeAPI> >
 // static
 BrowserContextKeyedAPIFactory<InputImeAPI>* InputImeAPI::GetFactoryInstance() {
   return g_factory.Pointer();
-}
-
-void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
-                                    const Extension* extension) {
-  const std::vector<InputComponentInfo>* input_components =
-      extensions::InputComponents::GetInputComponents(extension);
-  if (input_components)
-    GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-        ->RegisterImeExtension(extension->id(), *input_components);
-}
-
-void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
-                                      const Extension* extension,
-                                      UnloadedExtensionInfo::Reason reason) {
-  const std::vector<InputComponentInfo>* input_components =
-      extensions::InputComponents::GetInputComponents(extension);
-  if (!input_components)
-    return;
-  if (input_components->size() > 0) {
-    GetInputImeEventRouter(Profile::FromBrowserContext(browser_context))
-        ->UnregisterAllImes(extension->id());
-  }
-}
-
-void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
-  if (!details.browser_context)
-    return;
-  IMEEngineHandlerInterface* engine =
-      GetInputImeEventRouter(
-          Profile::FromBrowserContext(details.browser_context))
-          ->GetActiveEngine(details.extension_id);
-  // Notifies the IME extension for IME ready with onActivate/onFocus events.
-  if (engine)
-    engine->Enable(engine->GetActiveComponentId());
 }
 
 InputImeEventRouter* GetInputImeEventRouter(Profile* profile) {

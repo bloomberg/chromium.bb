@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_CHROMEOS_H_
 #define CHROME_BROWSER_EXTENSIONS_API_INPUT_IME_INPUT_IME_API_CHROMEOS_H_
 
+#include <map>
+#include <string>
+#include <vector>
+
+#include "chrome/browser/extensions/api/input_ime/input_ime_event_router_base.h"
+#include "chrome/common/extensions/api/input_ime/input_components_handler.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -136,6 +142,28 @@ class InputImeHideInputViewFunction : public AsyncExtensionFunction {
 
   // ExtensionFunction:
   bool RunAsync() override;
+};
+
+class InputImeEventRouter : public InputImeEventRouterBase {
+ public:
+  explicit InputImeEventRouter(Profile* profile);
+  ~InputImeEventRouter() override;
+
+  bool RegisterImeExtension(
+      const std::string& extension_id,
+      const std::vector<extensions::InputComponentInfo>& input_components);
+  void UnregisterAllImes(const std::string& extension_id);
+
+  ui::IMEEngineHandlerInterface* GetEngine(const std::string& extension_id,
+                                           const std::string& component_id);
+  ui::IMEEngineHandlerInterface* GetActiveEngine(
+      const std::string& extension_id);
+
+ private:
+  // The engine map from extension_id to an engine.
+  std::map<std::string, ui::IMEEngineHandlerInterface*> engine_map_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
 };
 
 }  // namespace extensions
