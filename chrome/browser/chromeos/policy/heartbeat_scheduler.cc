@@ -369,7 +369,14 @@ void HeartbeatScheduler::SendHeartbeat() {
 void HeartbeatScheduler::SignUpUpstreamNotification() {
   DCHECK(gcm_driver_);
 
-  if (registration_id_.empty())
+  // Registration ID is a hard requirement for upstream notification signup,
+  // so we need to send the sign up message after registration is completed,
+  // as well as registration ID changes.
+  // We also listen to GCM driver connected events, so that once we
+  // reconnected to GCM server, we can resend the signup message immediately.
+  // Having both conditional checks here ensures that during the start up, the
+  // sign up message will be sent at most once.
+  if (registration_id_.empty() || !gcm_driver_->IsConnected())
     return;
 
   gcm::OutgoingMessage message;
