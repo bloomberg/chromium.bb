@@ -8,11 +8,13 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_util.h"
 #include "net/base/net_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory_impl_job.h"
 #include "net/http/http_stream_factory_impl_request.h"
+#include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
 #include "net/net_features.h"
 #include "net/quic/quic_server_id.h"
@@ -286,6 +288,9 @@ AlternativeService HttpStreamFactoryImpl::GetAlternativeServiceFor(
             server_id, request_info.privacy_mode, origin_host))
       return alternative_service;
 
+    if (!IsQuicWhitelistedForHost(destination.host()))
+      continue;
+
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
     if (first_alternative_service.protocol == UNINITIALIZED_ALTERNATE_PROTOCOL)
       first_alternative_service = alternative_service;
@@ -364,6 +369,18 @@ void HttpStreamFactoryImpl::OnPreconnectsComplete(const Job* job) {
   preconnect_job_set_.erase(job);
   delete job;
   OnPreconnectsCompleteInternal();
+}
+
+bool HttpStreamFactoryImpl::IsQuicWhitelistedForHost(const std::string& host) {
+  if (session_->params().transport_security_state->IsGooglePinnedHost(host))
+    return true;
+
+  std::string lower_host = base::ToLowerASCII(host);
+  if (ContainsKey(session_->params().quic_host_whitelist, lower_host))
+    return true;
+
+  return base::EndsWith(lower_host, ".snapchat.com",
+                        base::CompareCase::SENSITIVE);
 }
 
 }  // namespace net
