@@ -13,10 +13,10 @@
   |________|  if there is a lot of it.                  |
   |           __________________________________________|
   |                                                     |
-  |           Button       Button       Settings        |
+  |           Button       Button                       |
   |           __________________________________________|
   |                                                     |
-  |           www.example.com                           |
+  |           ⛭ www.example.com                         |
   |_____________________________________________________|
 -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -121,16 +121,24 @@
             android:id="@+id/footer_divider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginBottom="8dp"
             android:contentDescription="@null"
             style="@style/WebNotificationDivider"/>
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp">
+            android:layout_height="wrap_content">
 
-            <TextView
+            <ImageView
+                android:id="@+id/origin_settings_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentTop="true"
+                android:contentDescription="@null"
+                android:src="@drawable/settings_cog"
+                android:scaleType="centerInside"/>
+
+            <Button
                 android:id="@+id/origin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -138,9 +146,12 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_toStartOf="@+id/small_icon_footer"
+                android:minHeight="40dp"
+                android:gravity="start|center_vertical"
+                android:paddingStart="32dp"
                 android:singleLine="true"
                 android:ellipsize="start"
-                style="@style/WebNotificationOrigin"/>
+                style="@style/WebNotificationSettingsButton"/>
 
             <ViewStub
                 android:id="@id/small_icon_footer"
@@ -150,7 +161,7 @@
                 android:layout_height="16dp"
                 android:layout_marginEnd="8dp"
                 android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"/>
+                android:layout_centerVertical="true"/>
 
         </RelativeLayout>
 

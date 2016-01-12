@@ -467,17 +467,16 @@ public class NotificationUIManager {
                                                   persistentNotificationId, origin, profileId,
                                                   incognito, tag, actionIndex));
         }
-        // Site settings button is always the last action button.
-        if (actionTitles.length == 0) {
-            notificationBuilder.addAction(R.drawable.settings_cog,
-                    res.getString(R.string.page_info_site_settings_button), pendingSettingsIntent);
-        } else {
-            // Hide site settings icon and use shorter text when website provided
-            // action buttons.
-            notificationBuilder.addAction(0 /* actionIcon */,
-                    res.getString(R.string.notification_site_settings_button),
-                    pendingSettingsIntent);
-        }
+
+        // If the settings button is displayed together with the other buttons it has to be the last
+        // one, so add it after the other actions.
+        // If there are no actions provided by the website, use a longer title string.
+        CharSequence settingsTitle = actionTitles.length == 0
+                ? res.getString(R.string.page_info_site_settings_button)
+                : res.getString(R.string.notification_site_settings_button);
+        // If there are no actions provided by the website, use an icon.
+        int settingsIconId = actionTitles.length == 0 ? R.drawable.settings_cog : 0;
+        notificationBuilder.addSettingsAction(settingsIconId, settingsTitle, pendingSettingsIntent);
 
         notificationBuilder.setDefaults(makeDefaults(vibrationPattern.length, silent));
         if (vibrationPattern.length > 0) {

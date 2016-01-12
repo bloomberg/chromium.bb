@@ -58,6 +58,8 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
                                                     createIntent(context, "ActionButtonOne"))
                                             .addAction(0 /* iconId */, "button",
                                                     createIntent(context, "ActionButtonTwo"))
+                                            .addSettingsAction(0 /* iconId */, "settings",
+                                                    createIntent(context, "SettingsButton"))
                                             .build();
         View compactView = notification.contentView.apply(context, new LinearLayout(context));
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
@@ -79,7 +81,9 @@ public class CustomNotificationBuilderTest extends InstrumentationTestCase {
         assertSame(contentIntent, notification.contentIntent);
         assertSame(deleteIntent, notification.deleteIntent);
 
-        assertEquals(2, notification.actions.length);
+        // The regular actions and the settings action are added together in the notification
+        // actions array, so they can be exposed on e.g. Wear and custom lockscreens.
+        assertEquals(3, notification.actions.length);
         ArrayList<View> buttons = new ArrayList<>();
         bigView.findViewsWithText(buttons, "button", View.FIND_VIEWS_WITH_TEXT);
         assertEquals(2, buttons.size());

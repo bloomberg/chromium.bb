@@ -99,6 +99,7 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     private PendingIntent mContentIntent;
     private PendingIntent mDeleteIntent;
     private List<Action> mActions = new ArrayList<>(MAX_ACTION_BUTTONS);
+    private Action mSettingsAction;
     private int mDefaults = Notification.DEFAULT_ALL;
     private long[] mVibratePattern;
 
@@ -140,6 +141,7 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             addWorkProfileBadge(view);
         }
         addActionButtons(bigView);
+        configureSettingsButton(bigView);
 
         if (useMaterial()) {
             compactView.setViewVisibility(R.id.small_icon_overlay, View.VISIBLE);
@@ -166,6 +168,9 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         builder.setLargeIcon(mLargeIcon);
         for (Action action : mActions) {
             builder.addAction(action);
+        }
+        if (mSettingsAction != null) {
+            builder.addAction(mSettingsAction);
         }
 
         Notification notification = builder.build();
@@ -232,6 +237,13 @@ public class CustomNotificationBuilder implements NotificationBuilder {
     }
 
     @Override
+    public NotificationBuilder addSettingsAction(
+            int iconId, CharSequence title, PendingIntent intent) {
+        mSettingsAction = new Action(iconId, limitLength(title), intent);
+        return this;
+    }
+
+    @Override
     public NotificationBuilder setDefaults(int defaults) {
         mDefaults = defaults;
         return this;
@@ -250,12 +262,12 @@ public class CustomNotificationBuilder implements NotificationBuilder {
         // Remove the existing buttons in case an existing notification is being updated.
         bigView.removeAllViews(R.id.buttons);
 
-        if (mActions.isEmpty()) {
-            return;
-        }
+        // Always set the visibility of the views associated with the action buttons. The current
+        // visibility state is not known as perhaps an existing notification is being updated.
+        int visibility = mActions.isEmpty() ? View.GONE : View.VISIBLE;
+        bigView.setViewVisibility(R.id.button_divider, visibility);
+        bigView.setViewVisibility(R.id.buttons, visibility);
 
-        bigView.setViewVisibility(R.id.button_divider, View.VISIBLE);
-        bigView.setViewVisibility(R.id.buttons, View.VISIBLE);
         Resources resources = mContext.getResources();
         DisplayMetrics metrics = resources.getDisplayMetrics();
         for (Action action : mActions) {
@@ -287,6 +299,16 @@ public class CustomNotificationBuilder implements NotificationBuilder {
             view.setTextViewText(R.id.button, action.getTitle());
             view.setOnClickPendingIntent(R.id.button, action.getActionIntent());
             bigView.addView(R.id.buttons, view);
+        }
+    }
+
+    private void configureSettingsButton(RemoteViews bigView) {
+        if (mSettingsAction == null) {
+            return;
+        }
+        bigView.setOnClickPendingIntent(R.id.origin, mSettingsAction.getActionIntent());
+        if (useMaterial()) {
+            bigView.setInt(R.id.origin_settings_icon, "setColorFilter", BUTTON_ICON_COLOR_MATERIAL);
         }
     }
 

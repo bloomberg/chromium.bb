@@ -320,6 +320,10 @@
         <!-- textColor from the 4.4.4 notification_action.xml - no public aliases. -->
         <item name="android:textColor">#ccc</item>
     </style>
+    <style name="WebNotificationSettingsButton"
+        parent="@style/WebNotificationButton">
+        <item name="android:textAppearance">@style/TextAppearance.StatusBar.EventContent.Line2</item>
+    </style>
     <style name="WebNotificationLargeIcon">
         <item name="android:background">@drawable/notification_template_icon_bg</item>
     </style>

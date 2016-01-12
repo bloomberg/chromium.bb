@@ -93,6 +93,10 @@
         <item name="android:background">@drawable/web_notification_button_background</item>
         <item name="android:textColor">@color/secondary_text_default_material_light</item>
     </style>
+    <style name="WebNotificationSettingsButton"
+        parent="@style/WebNotificationButton">
+        <item name="android:textAppearance">@android:style/TextAppearance.Material.Notification.Info</item>
+    </style>
     <style name="WebNotificationLargeIcon">
         <item name="android:padding">12dp</item>
         <item name="android:background">@null</item>

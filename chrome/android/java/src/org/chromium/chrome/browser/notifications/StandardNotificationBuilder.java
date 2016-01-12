@@ -81,6 +81,12 @@ public class StandardNotificationBuilder implements NotificationBuilder {
     }
 
     @Override
+    public NotificationBuilder addSettingsAction(
+            int iconId, CharSequence title, PendingIntent intent) {
+        return addAction(iconId, title, intent);
+    }
+
+    @Override
     public NotificationBuilder setDefaults(int defaults) {
         mBuilder.setDefaults(defaults);
         return this;

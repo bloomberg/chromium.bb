@@ -69,6 +69,11 @@ public interface NotificationBuilder {
             int iconId, @Nullable CharSequence title, @Nullable PendingIntent intent);
 
     /**
+     * Adds an action to the notification for opening the settings screen.
+     */
+    NotificationBuilder addSettingsAction(int iconId, CharSequence title, PendingIntent intent);
+
+    /**
      * Sets the default notification options that will be used.
      * <p>
      * The value should be one or more of the following fields combined with
