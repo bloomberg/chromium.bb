@@ -85,7 +85,7 @@ void SlotAssignment::assign(Node& hostChild, HTMLSlotElement& slot)
     m_assignment.add(&hostChild, &slot);
     slot.appendAssignedNode(hostChild);
     if (isHTMLSlotElement(hostChild))
-        slot.appendDistributedNodes(toHTMLSlotElement(hostChild).getDistributedNodes());
+        slot.appendDistributedNodesFrom(toHTMLSlotElement(hostChild));
     else
         slot.appendDistributedNode(hostChild);
 }

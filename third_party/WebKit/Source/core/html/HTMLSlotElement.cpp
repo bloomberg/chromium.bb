@@ -32,6 +32,7 @@
 
 #include "core/HTMLNames.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
 
 namespace blink {
@@ -55,9 +56,9 @@ void HTMLSlotElement::appendDistributedNode(Node& node)
     m_distributedNodes.append(&node);
 }
 
-void HTMLSlotElement::appendDistributedNodes(const WillBeHeapVector<RefPtrWillBeMember<Node>>& nodes)
+void HTMLSlotElement::appendDistributedNodesFrom(const HTMLSlotElement& other)
 {
-    m_distributedNodes.appendVector(nodes);
+    m_distributedNodes.appendVector(other.m_distributedNodes);
 }
 
 void HTMLSlotElement::clearDistribution()
@@ -100,6 +101,55 @@ void HTMLSlotElement::detach(const AttachContext& context)
     HTMLElement::detach(context);
 }
 
+void HTMLSlotElement::attributeChanged(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& newValue, AttributeModificationReason reason)
+{
+    if (name == nameAttr) {
+        if (ShadowRoot* root = containingShadowRoot())
+            root->owner()->willAffectSelector();
+    }
+    HTMLElement::attributeChanged(name, oldValue, newValue, reason);
+}
+
+void HTMLSlotElement::childrenChanged(const ChildrenChange& change)
+{
+    HTMLElement::childrenChanged(change);
+    if (ShadowRoot* root = containingShadowRoot()) {
+        if (ElementShadow* rootOwner = root->owner())
+            rootOwner->setNeedsDistributionRecalc();
+    }
+}
+
+Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(ContainerNode* insertionPoint)
+{
+    HTMLElement::insertedInto(insertionPoint);
+    if (ShadowRoot* root = containingShadowRoot()) {
+        if (ElementShadow* rootOwner = root->owner())
+            rootOwner->setNeedsDistributionRecalc();
+    }
+
+    // We could have been distributed into in a detached subtree, make sure to
+    // clear the distribution when inserted again to avoid cycles.
+    clearDistribution();
+
+    return InsertionDone;
+}
+
+void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint)
+{
+    ShadowRoot* root = containingShadowRoot();
+    if (!root)
+        root = insertionPoint->containingShadowRoot();
+    if (root) {
+        if (ElementShadow* rootOwner = root->owner())
+            rootOwner->setNeedsDistributionRecalc();
+    }
+
+    // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
+    clearDistribution();
+
+    HTMLElement::removedFrom(insertionPoint);
+}
+
 void HTMLSlotElement::updateDistributedNodesWithFallback()
 {
     if (!m_distributedNodes.isEmpty())
@@ -109,7 +159,7 @@ void HTMLSlotElement::updateDistributedNodesWithFallback()
         if (isActiveInsertionPoint(child))
             continue;
         if (isHTMLSlotElement(child))
-            appendDistributedNodes(toHTMLSlotElement(child).getDistributedNodes());
+            appendDistributedNodesFrom(toHTMLSlotElement(child));
         else
             appendDistributedNode(child);
     }

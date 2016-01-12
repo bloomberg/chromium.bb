@@ -52,6 +52,7 @@ class ContainerNode;
 class DOMSettableTokenList;
 class Document;
 class Element;
+class ElementShadow;
 class Event;
 class EventDispatchMediator;
 class EventListener;
@@ -483,6 +484,7 @@ public:
     bool isInShadowTree() const { return getFlag(IsInShadowTreeFlag); }
     bool isInTreeScope() const { return getFlag(static_cast<NodeFlags>(InDocumentFlag | IsInShadowTreeFlag)); }
 
+    ElementShadow* parentElementShadow() const;
     bool isInV1ShadowTree() const;
     bool isInV0ShadowTree() const;
     bool isChildOfV1ShadowHost() const;

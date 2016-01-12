@@ -1194,6 +1194,8 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ol
         if (shouldInvalidateDistributionWhenAttributeChanged(parentElementShadow, name, newValue))
             parentElementShadow->setNeedsDistributionRecalc();
     }
+    if (name == HTMLNames::slotAttr && isChildOfV1ShadowHost())
+        parentElementShadow()->setNeedsDistributionRecalc();
 
     parseAttribute(name, oldValue, newValue);
 
