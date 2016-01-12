@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -27,8 +26,7 @@ class MenuRunner;
 // This class provides basic drawing and mouse-over behavior for buttons
 // appearing in the toolbar.
 class ToolbarButton : public views::LabelButton,
-                      public views::ContextMenuController,
-                      public views::InkDropHost {
+                      public views::ContextMenuController {
  public:
   // Takes ownership of the |model|, which can be null if no menu
   // is to be shown.
@@ -56,15 +54,13 @@ class ToolbarButton : public views::LabelButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleState(ui::AXViewState* state) override;
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   // views::ContextMenuController:
   void ShowContextMenuForView(View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
-
-  // views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
  protected:
   // Returns if menu should be shown. Override this to change default behavior.
@@ -76,9 +72,6 @@ class ToolbarButton : public views::LabelButton,
  private:
   // views::LabelButton:
   const char* GetClassName() const override;
-
-  // views::InkDropHost:
-  gfx::Point CalculateInkDropCenter() const override;
 
   // The associated profile. The browser theme affects rendering.
   Profile* profile_;

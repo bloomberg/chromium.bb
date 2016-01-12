@@ -132,8 +132,7 @@ class TestInkDropDelegate : public InkDropDelegate {
 };
 
 // A test Button class that owns a TestInkDropDelegate.
-class TestButtonWithInkDrop : public TestCustomButton,
-                              public views::InkDropHost {
+class TestButtonWithInkDrop : public TestCustomButton {
  public:
   TestButtonWithInkDrop(bool* ink_shown, bool* ink_hidden)
       : TestCustomButton(),

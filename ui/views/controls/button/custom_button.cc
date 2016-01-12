@@ -333,6 +333,26 @@ void CustomButton::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// CustomButton, views::InkDropHost implementation:
+
+void CustomButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  SetPaintToLayer(true);
+  SetFillsBoundsOpaquely(false);
+  layer()->Add(ink_drop_layer);
+  layer()->StackAtBottom(ink_drop_layer);
+}
+
+void CustomButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  layer()->Remove(ink_drop_layer);
+  SetFillsBoundsOpaquely(true);
+  SetPaintToLayer(false);
+}
+
+gfx::Point CustomButton::CalculateInkDropCenter() const {
+  return GetLocalBounds().CenterPoint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // CustomButton, protected:
 
 CustomButton::CustomButton(ButtonListener* listener)

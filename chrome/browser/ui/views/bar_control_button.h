@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/button/image_button.h"
 
 namespace gfx {
@@ -21,7 +20,7 @@ class InkDropDelegate;
 
 // A class for buttons that control bars (find bar, download shelf, etc.). The
 // button has an image and no text.
-class BarControlButton : public views::ImageButton, public views::InkDropHost {
+class BarControlButton : public views::ImageButton {
  public:
   explicit BarControlButton(views::ButtonListener* listener);
   ~BarControlButton() override;
@@ -37,11 +36,6 @@ class BarControlButton : public views::ImageButton, public views::InkDropHost {
   bool OnMousePressed(const ui::MouseEvent& event) override;
 
  private:
-  // views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  gfx::Point CalculateInkDropCenter() const override;
-
   gfx::VectorIconId id_;
   base::Callback<SkColor(void)> get_text_color_callback_;
 

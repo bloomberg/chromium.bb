@@ -198,21 +198,15 @@ void AppMenuButton::SetTrailingMargin(int margin) {
 }
 
 void AppMenuButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
   image()->SetPaintToLayer(true);
   image()->SetFillsBoundsOpaquely(false);
-
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
+  views::MenuButton::AddInkDropLayer(ink_drop_layer);
 }
 
 void AppMenuButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-
+  views::MenuButton::RemoveInkDropLayer(ink_drop_layer);
   image()->SetFillsBoundsOpaquely(true);
   image()->SetPaintToLayer(false);
-  SetPaintToLayer(false);
 }
 
 gfx::Point AppMenuButton::CalculateInkDropCenter() const {

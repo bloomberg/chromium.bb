@@ -174,6 +174,18 @@ ToolbarButton::CreateDefaultBorder() const {
   return border;
 }
 
+void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+  views::LabelButton::AddInkDropLayer(ink_drop_layer);
+}
+
+void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  views::LabelButton::RemoveInkDropLayer(ink_drop_layer);
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+}
+
 void ToolbarButton::ShowContextMenuForView(View* source,
                                            const gfx::Point& point,
                                            ui::MenuSourceType source_type) {
@@ -182,24 +194,6 @@ void ToolbarButton::ShowContextMenuForView(View* source,
 
   show_menu_factory_.InvalidateWeakPtrs();
   ShowDropDownMenu(source_type);
-}
-
-void ToolbarButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-
-  image()->SetFillsBoundsOpaquely(true);
-  image()->SetPaintToLayer(false);
-  SetPaintToLayer(false);
 }
 
 bool ToolbarButton::ShouldShowMenu() {
@@ -288,8 +282,4 @@ void ToolbarButton::ShowDropDownMenu(ui::MenuSourceType source_type) {
 
 const char* ToolbarButton::GetClassName() const {
   return "ToolbarButton";
-}
-
-gfx::Point ToolbarButton::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
 }

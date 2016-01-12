@@ -108,6 +108,9 @@ void ImageButton::OnPaint(gfx::Canvas* canvas) {
   // Call the base class first to paint any background/borders.
   View::OnPaint(canvas);
 
+  // TODO(estade|tdanderson|bruthig): The ink drop layer should be positioned
+  // behind the button's image which means the image needs to be painted to its
+  // own layer instead of to the Canvas.
   gfx::ImageSkia img = GetImageToPaint();
 
   if (!img.isNull()) {

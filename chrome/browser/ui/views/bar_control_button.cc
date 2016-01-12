@@ -61,25 +61,6 @@ void BarControlButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   OnThemeChanged();
 }
 
-void BarControlButton::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  // TODO(estade|tdanderson): The ink drop layer should be positioned behind
-  //                          the button's image.
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void BarControlButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-  SetFillsBoundsOpaquely(true);
-  SetPaintToLayer(false);
-}
-
-gfx::Point BarControlButton::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
-}
-
 bool BarControlButton::OnMousePressed(const ui::MouseEvent& event) {
   if (IsTriggerableEvent(event))
     ink_drop_delegate()->OnAction(views::InkDropState::ACTION_PENDING);

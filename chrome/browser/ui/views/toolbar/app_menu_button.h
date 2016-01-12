@@ -9,7 +9,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_painter.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/view.h"
@@ -25,8 +24,7 @@ class MenuListener;
 
 class ToolbarView;
 
-class AppMenuButton : public views::InkDropHost,
-                      public views::MenuButton,
+class AppMenuButton : public views::MenuButton,
                       public AppMenuIconPainter::Delegate {
  public:
   explicit AppMenuButton(ToolbarView* toolbar_view);
@@ -71,7 +69,7 @@ class AppMenuButton : public views::InkDropHost,
   static bool g_open_app_immediately_for_testing;
 
  private:
-  // views::InkDropHost:
+  // views::MenuButton:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
   gfx::Point CalculateInkDropCenter() const override;

@@ -124,6 +124,18 @@ bool ToolbarActionView::ShouldEnterPushedState(const ui::Event& event) {
              views::kMinimumMsBetweenButtonClicks;
 }
 
+void ToolbarActionView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  image()->SetPaintToLayer(true);
+  image()->SetFillsBoundsOpaquely(false);
+  views::MenuButton::AddInkDropLayer(ink_drop_layer);
+}
+
+void ToolbarActionView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+  views::MenuButton::RemoveInkDropLayer(ink_drop_layer);
+  image()->SetFillsBoundsOpaquely(true);
+  image()->SetPaintToLayer(false);
+}
+
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
   return delegate_->GetCurrentWebContents();
 }
@@ -171,24 +183,6 @@ void ToolbarActionView::OnMenuButtonClicked(views::View* sender,
   } else {
     view_controller_->ExecuteAction(true);
   }
-}
-
-void ToolbarActionView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  SetPaintToLayer(true);
-  SetFillsBoundsOpaquely(false);
-  image()->SetPaintToLayer(true);
-  image()->SetFillsBoundsOpaquely(false);
-
-  layer()->Add(ink_drop_layer);
-  layer()->StackAtBottom(ink_drop_layer);
-}
-
-void ToolbarActionView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  layer()->Remove(ink_drop_layer);
-
-  image()->SetFillsBoundsOpaquely(true);
-  image()->SetPaintToLayer(false);
-  SetPaintToLayer(false);
 }
 
 gfx::ImageSkia ToolbarActionView::GetIconForTest() {
@@ -300,10 +294,6 @@ void ToolbarActionView::ShowContextMenuForView(
 
   // Otherwise, no other menu is showing, and we can proceed normally.
   DoShowContextMenu(source_type);
-}
-
-gfx::Point ToolbarActionView::CalculateInkDropCenter() const {
-  return GetLocalBounds().CenterPoint();
 }
 
 void ToolbarActionView::DoShowContextMenu(

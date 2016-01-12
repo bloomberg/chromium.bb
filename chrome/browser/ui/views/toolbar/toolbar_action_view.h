@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_action_view_delegate_views.h"
-#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -38,8 +37,7 @@ class MenuRunner;
 class ToolbarActionView : public views::MenuButton,
                           public ToolbarActionViewDelegateViews,
                           public views::MenuButtonListener,
-                          public views::ContextMenuController,
-                          public views::InkDropHost {
+                          public views::ContextMenuController {
  public:
   // Need DragController here because ToolbarActionView could be
   // dragged/dropped.
@@ -78,6 +76,8 @@ class ToolbarActionView : public views::MenuButton,
   scoped_ptr<views::LabelButtonBorder> CreateDefaultBorder() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   bool ShouldEnterPushedState(const ui::Event& event) override;
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   // ToolbarActionViewDelegateViews:
   content::WebContents* GetCurrentWebContents() const override;
@@ -86,10 +86,6 @@ class ToolbarActionView : public views::MenuButton,
   // views::MenuButtonListener:
   void OnMenuButtonClicked(views::View* sender,
                            const gfx::Point& point) override;
-
-  // views::InkDropHost:
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
   ToolbarActionViewController* view_controller() {
     return view_controller_;
@@ -128,9 +124,6 @@ class ToolbarActionView : public views::MenuButton,
   void ShowContextMenuForView(views::View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
-
-  // views::InkDropHost:
-  gfx::Point CalculateInkDropCenter() const override;
 
   // Shows the context menu (if one exists) for the toolbar action.
   void DoShowContextMenu(ui::MenuSourceType source_type);

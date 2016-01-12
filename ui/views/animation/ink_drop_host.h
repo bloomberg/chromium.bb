@@ -27,7 +27,7 @@ class VIEWS_EXPORT InkDropHost {
   InkDropHost() {}
   virtual ~InkDropHost() {}
 
-  // Add the |ink_drop_layer| in to a visible layer tree.
+  // Adds the |ink_drop_layer| in to a visible layer tree.
   virtual void AddInkDropLayer(ui::Layer* ink_drop_layer) = 0;
 
   // Removes |ink_drop_layer| from the layer tree.

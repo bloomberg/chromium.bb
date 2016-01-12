@@ -10,6 +10,7 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/throb_animation.h"
+#include "ui/views/animation/ink_drop_host.h"
 #include "ui/views/animation/ink_drop_state.h"
 #include "ui/views/controls/button/button.h"
 
@@ -22,7 +23,8 @@ class InkDropDelegate;
 // part of the focus chain.  Call SetFocusable(true) to make it part of the
 // focus chain.
 class VIEWS_EXPORT CustomButton : public Button,
-                                  public gfx::AnimationDelegate {
+                                  public gfx::AnimationDelegate,
+                                  public views::InkDropHost {
  public:
   // An enum describing the events on which a button should notify its listener.
   enum NotifyAction {
@@ -99,6 +101,11 @@ class VIEWS_EXPORT CustomButton : public Button,
 
   // Overridden from gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
+
+  // Overridden from views::InkDropHost:
+  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
+  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
+  gfx::Point CalculateInkDropCenter() const override;
 
  protected:
   // Construct the Button with a Listener. See comment for Button's ctor.
