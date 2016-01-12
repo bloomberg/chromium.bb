@@ -110,6 +110,7 @@ class PPAPI_PROXY_EXPORT PpapiCommandBufferProxy : public gpu::CommandBuffer,
   uint64_t next_fence_sync_release_;
   uint64_t pending_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;
+  uint64_t validated_fence_sync_release_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiCommandBufferProxy);
 };

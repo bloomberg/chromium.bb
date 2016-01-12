@@ -144,6 +144,10 @@ void PPB_Graphics3D_Impl::RetireSyncPoint(uint32_t sync_point) {
   return command_buffer_->RetireSyncPoint(sync_point);
 }
 
+void PPB_Graphics3D_Impl::EnsureWorkVisible() {
+  command_buffer_->EnsureWorkVisible();
+}
+
 bool PPB_Graphics3D_Impl::BindToInstance(bool bind) {
   bound_to_instance_ = bind;
   return true;

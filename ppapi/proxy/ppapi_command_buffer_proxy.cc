@@ -27,7 +27,8 @@ PpapiCommandBufferProxy::PpapiCommandBufferProxy(
       dispatcher_(dispatcher),
       next_fence_sync_release_(1),
       pending_fence_sync_release_(0),
-      flushed_fence_sync_release_(0) {
+      flushed_fence_sync_release_(0),
+      validated_fence_sync_release_(0) {
   shared_state_shm_.reset(
       new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
@@ -184,7 +185,10 @@ bool PpapiCommandBufferProxy::IsGpuChannelLost() {
 }
 
 void PpapiCommandBufferProxy::EnsureWorkVisible() {
-  NOTIMPLEMENTED();
+  DCHECK_GE(flushed_fence_sync_release_, validated_fence_sync_release_);
+  Send(new PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible(
+      ppapi::API_ID_PPB_GRAPHICS_3D, resource_));
+  validated_fence_sync_release_ = flushed_fence_sync_release_;
 }
 
 gpu::CommandBufferNamespace PpapiCommandBufferProxy::GetNamespaceID() const {
@@ -208,9 +212,14 @@ bool PpapiCommandBufferProxy::IsFenceSyncFlushed(uint64_t release) {
 }
 
 bool PpapiCommandBufferProxy::IsFenceSyncFlushReceived(uint64_t release) {
-  // TODO(dyen): This needs a synchronous NOP to the PpapiHost which
-  // also sends a synchronous NOP to the actual server.
-  return IsFenceSyncFlushed(release);
+  if (!IsFenceSyncFlushed(release))
+    return false;
+
+  if (release <= validated_fence_sync_release_)
+    return true;
+
+  EnsureWorkVisible();
+  return release <= validated_fence_sync_release_;
 }
 
 void PpapiCommandBufferProxy::SignalSyncToken(const gpu::SyncToken& sync_token,

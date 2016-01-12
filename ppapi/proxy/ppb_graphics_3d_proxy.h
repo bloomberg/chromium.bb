@@ -56,6 +56,7 @@ class PPAPI_PROXY_EXPORT Graphics3D : public PPB_Graphics3D_Shared {
   uint32_t InsertSyncPoint() override;
   uint32_t InsertFutureSyncPoint() override;
   void RetireSyncPoint(uint32_t sync_point) override;
+  void EnsureWorkVisible() override;
 
  private:
   // PPB_Graphics3D_Shared overrides.
@@ -114,6 +115,7 @@ class PPB_Graphics3D_Proxy : public InterfaceProxy {
   void OnMsgInsertFutureSyncPoint(const HostResource& context,
                                   uint32_t* sync_point);
   void OnMsgRetireSyncPoint(const HostResource& context, uint32_t sync_point);
+  void OnMsgEnsureWorkVisible(const HostResource& context);
   // Renderer->plugin message handlers.
   void OnMsgSwapBuffersACK(const HostResource& context,
                            int32_t pp_error);

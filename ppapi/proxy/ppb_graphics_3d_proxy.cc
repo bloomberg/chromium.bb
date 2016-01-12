@@ -114,6 +114,10 @@ void Graphics3D::RetireSyncPoint(uint32_t sync_point) {
   NOTREACHED();
 }
 
+void Graphics3D::EnsureWorkVisible() {
+  NOTREACHED();
+}
+
 gpu::CommandBuffer* Graphics3D::GetCommandBuffer() {
   return command_buffer_.get();
 }
@@ -217,6 +221,8 @@ bool PPB_Graphics3D_Proxy::OnMessageReceived(const IPC::Message& msg) {
                         OnMsgInsertFutureSyncPoint)
     IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_RetireSyncPoint,
                         OnMsgRetireSyncPoint)
+    IPC_MESSAGE_HANDLER(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
+                        OnMsgEnsureWorkVisible)
 #endif  // !defined(OS_NACL)
 
     IPC_MESSAGE_HANDLER(PpapiMsg_PPBGraphics3D_SwapBuffersACK,
@@ -367,6 +373,12 @@ void PPB_Graphics3D_Proxy::OnMsgRetireSyncPoint(const HostResource& context,
   EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
   if (enter.succeeded())
     enter.object()->RetireSyncPoint(sync_point);
+}
+
+void PPB_Graphics3D_Proxy::OnMsgEnsureWorkVisible(const HostResource& context) {
+  EnterHostFromHostResource<PPB_Graphics3D_API> enter(context);
+  if (enter.succeeded())
+    enter.object()->EnsureWorkVisible();
 }
 #endif  // !defined(OS_NACL)
 

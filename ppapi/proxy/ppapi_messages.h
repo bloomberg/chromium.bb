@@ -1053,6 +1053,8 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiHostMsg_PPBGraphics3D_InsertFutureSyncPoint,
 IPC_MESSAGE_ROUTED2(PpapiHostMsg_PPBGraphics3D_RetireSyncPoint,
                     ppapi::HostResource /* context */,
                     uint32_t /* sync_point */)
+IPC_SYNC_MESSAGE_ROUTED1_0(PpapiHostMsg_PPBGraphics3D_EnsureWorkVisible,
+                           ppapi::HostResource /* context */)
 
 // PPB_ImageData.
 IPC_SYNC_MESSAGE_ROUTED4_3(PpapiHostMsg_PPBImageData_CreatePlatform,
