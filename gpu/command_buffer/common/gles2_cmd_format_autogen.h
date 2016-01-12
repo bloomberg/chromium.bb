@@ -6916,7 +6916,11 @@ struct ReadPixels {
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
   static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
 
-  typedef uint32_t Result;
+  struct Result {
+    uint32_t success;
+    int32_t row_length;
+    int32_t num_rows;
+  };
 
   static uint32_t ComputeSize() {
     return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
@@ -7006,6 +7010,15 @@ static_assert(offsetof(ReadPixels, result_shm_offset) == 40,
               "offset of ReadPixels result_shm_offset should be 40");
 static_assert(offsetof(ReadPixels, async) == 44,
               "offset of ReadPixels async should be 44");
+static_assert(offsetof(ReadPixels::Result, success) == 0,
+              "offset of ReadPixels Result success should be "
+              "0");
+static_assert(offsetof(ReadPixels::Result, row_length) == 4,
+              "offset of ReadPixels Result row_length should be "
+              "4");
+static_assert(offsetof(ReadPixels::Result, num_rows) == 8,
+              "offset of ReadPixels Result num_rows should be "
+              "8");
 
 struct ReleaseShaderCompiler {
   typedef ReleaseShaderCompiler ValueType;

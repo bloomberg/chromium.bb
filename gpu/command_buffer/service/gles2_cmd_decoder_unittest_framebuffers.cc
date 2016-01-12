@@ -533,6 +533,7 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
   uint32_t pixels_shm_id = kSharedMemoryId;
   uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(*result);
   void* dest = &result[1];
+
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .WillOnce(Return(GL_NO_ERROR))
@@ -566,12 +567,13 @@ void GLES2DecoderTest::CheckReadPixelsOutOfRange(GLint in_read_x,
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 
   GLint unpadded_row_size = emu.ComputeImageDataSize(in_read_width, 1);
   scoped_ptr<int8_t[]> zero(new int8_t[unpadded_row_size]);
   scoped_ptr<int8_t[]> pack(new int8_t[kPackAlignment]);
-  memset(zero.get(), 0, unpadded_row_size);
+  memset(zero.get(), kInitialMemoryValue, unpadded_row_size);
   memset(pack.get(), kInitialMemoryValue, kPackAlignment);
   for (GLint yy = 0; yy < in_read_height; ++yy) {
     const int8_t* row = static_cast<const int8_t*>(
@@ -655,6 +657,9 @@ TEST_P(GLES2DecoderTest, ReadPixels) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 1;
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   for (GLint yy = 0; yy < kHeight; ++yy) {
     EXPECT_TRUE(emu.CompareRowSegment(
@@ -689,10 +694,12 @@ TEST_P(GLES3DecoderTest, ReadPixelsBufferBound) {
   const GLint kBytesPerPixel = 4;
   GLint size = kWidth * kHeight * kBytesPerPixel;
   EXPECT_CALL(*gl_, ReadPixels(_, _, _, _, _, _, _)).Times(0);
+  typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
   uint32_t pixels_shm_id = kSharedMemoryId;
-  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(ReadPixels::Result);
+  uint32_t pixels_shm_offset = kSharedMemoryOffset + sizeof(Result);
 
   DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
   DoBufferData(GL_PIXEL_PACK_BUFFER, size);
@@ -709,6 +716,7 @@ TEST_P(GLES3DecoderTest, ReadPixelsBufferBound) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -859,6 +867,7 @@ TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   for (GLint yy = 0; yy < kHeight; ++yy) {
     EXPECT_TRUE(emu.CompareRowSegment(
@@ -899,6 +908,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsOutOfRange) {
 
 TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
   typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
   uint32_t pixels_shm_id = kSharedMemoryId;
@@ -916,6 +926,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   cmd.Init(0,
@@ -929,6 +940,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   cmd.Init(0,
@@ -942,6 +954,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
   cmd.Init(0,
@@ -955,6 +968,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(0,
            0,
@@ -979,6 +993,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            kInvalidSharedMemoryId,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   cmd.Init(0,
            0,
@@ -991,6 +1006,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsInvalidArgs) {
            result_shm_id,
            kInvalidSharedMemoryOffset,
            false);
+  result->success = 0;
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -1004,7 +1020,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
   InitDecoder(init);
 
   typedef ReadPixels::Result Result;
-
+  Result* result = GetSharedMemoryAs<Result*>();
   const GLsizei kWidth = 4;
   const GLsizei kHeight = 4;
   uint32_t result_shm_id = kSharedMemoryId;
@@ -1043,6 +1059,7 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixelsAsyncError) {
            result_shm_id,
            result_shm_offset,
            true);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
@@ -1994,6 +2011,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsGLError) {
   GLsizei width = 2;
   GLsizei height = 4;
   typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
   uint32_t pixels_shm_id = kSharedMemoryId;
@@ -2018,6 +2036,7 @@ TEST_P(GLES2DecoderTest, ReadPixelsGLError) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
 }
@@ -2125,6 +2144,7 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
       .Times(1)
       .RetiresOnSaturation();
   typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
   uint32_t pixels_shm_id = kSharedMemoryId;
@@ -2141,6 +2161,7 @@ TEST_P(GLES2DecoderWithShaderTest, UnClearedAttachmentsGetClearedOnReadPixels) {
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -2454,6 +2475,7 @@ TEST_P(GLES2DecoderManualInitTest,
       .Times(1)
       .RetiresOnSaturation();
   typedef ReadPixels::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>();
   uint32_t result_shm_id = kSharedMemoryId;
   uint32_t result_shm_offset = kSharedMemoryOffset;
   uint32_t pixels_shm_id = kSharedMemoryId;
@@ -2470,6 +2492,7 @@ TEST_P(GLES2DecoderManualInitTest,
            result_shm_id,
            result_shm_offset,
            false);
+  result->success = 0;
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

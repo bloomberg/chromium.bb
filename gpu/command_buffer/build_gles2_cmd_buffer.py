@@ -3494,7 +3494,12 @@ _FUNCTION_INFO = {
         'uint32_t pixels_shm_id, uint32_t pixels_shm_offset, '
         'uint32_t result_shm_id, uint32_t result_shm_offset, '
         'GLboolean async',
-    'result': ['uint32_t'],
+    'result': [
+      'uint32_t success',
+      # Below args exclude out-of-bounds area.
+      'int32_t row_length',
+      'int32_t num_rows',
+    ],
     'defer_reads': True,
     'trace_level': 1,
   },
