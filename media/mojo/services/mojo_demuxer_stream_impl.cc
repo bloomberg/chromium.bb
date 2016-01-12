@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/numerics/safe_conversions.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_decoder_config.h"
@@ -112,15 +111,13 @@ void MojoDemuxerStreamImpl::OnBufferReady(
 
   DCHECK_EQ(status, media::DemuxerStream::kOk);
   if (!buffer->end_of_stream()) {
-    DCHECK_GT(buffer->data_size(), 0u);
+    DCHECK_GT(buffer->data_size(), 0);
     // Serialize the data section of the DecoderBuffer into our pipe.
-    uint32_t bytes_to_write =
-        base::checked_cast<size_t, uint32_t>(buffer->data_size());
-    uint32_t bytes_written = bytes_to_write;
-    CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &bytes_written,
+    uint32_t num_bytes = buffer->data_size();
+    CHECK_EQ(WriteDataRaw(stream_pipe_.get(), buffer->data(), &num_bytes,
                           MOJO_READ_DATA_FLAG_ALL_OR_NONE),
              MOJO_RESULT_OK);
-    CHECK_EQ(bytes_to_write, bytes_written);
+    CHECK_EQ(num_bytes, static_cast<uint32_t>(buffer->data_size()));
   }
 
   // TODO(dalecurtis): Once we can write framed data to the DataPipe, fill via

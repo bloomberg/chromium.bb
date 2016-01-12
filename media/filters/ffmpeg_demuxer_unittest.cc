@@ -65,7 +65,7 @@ static void EosOnReadDone(bool* got_eos_buffer,
   }
 
   EXPECT_TRUE(buffer->data());
-  EXPECT_GT(buffer->data_size(), 0u);
+  EXPECT_GT(buffer->data_size(), 0);
   *got_eos_buffer = false;
 };
 
@@ -118,7 +118,7 @@ class FFmpegDemuxerTest : public testing::Test {
   MOCK_METHOD2(OnReadDoneCalled, void(int, int64_t));
 
   struct ReadExpectation {
-    ReadExpectation(size_t size,
+    ReadExpectation(int size,
                     int64_t timestamp_us,
                     const base::TimeDelta& discard_front_padding,
                     bool is_key_frame)
@@ -127,7 +127,7 @@ class FFmpegDemuxerTest : public testing::Test {
           discard_front_padding(discard_front_padding),
           is_key_frame(is_key_frame) {}
 
-    size_t size;
+    int size;
     int64_t timestamp_us;
     base::TimeDelta discard_front_padding;
     bool is_key_frame;

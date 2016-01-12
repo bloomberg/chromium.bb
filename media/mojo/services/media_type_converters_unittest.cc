@@ -110,8 +110,8 @@ void CompareVideoFrames(const scoped_refptr<VideoFrame>& original,
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_Normal) {
   const uint8_t kData[] = "hello, world";
   const uint8_t kSideData[] = "sideshow bob";
-  const size_t kDataSize = arraysize(kData);
-  const size_t kSideDataSize = arraysize(kSideData);
+  const int kDataSize = arraysize(kData);
+  const int kSideDataSize = arraysize(kSideData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
@@ -159,7 +159,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EOS) {
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
   const uint8_t kData[] = "hello, world";
-  const size_t kDataSize = arraysize(kData);
+  const int kDataSize = arraysize(kData);
 
   // Original.
   scoped_refptr<DecoderBuffer> buffer(DecoderBuffer::CopyFrom(
@@ -180,7 +180,7 @@ TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_KeyFrame) {
 
 TEST(MediaTypeConvertersTest, ConvertDecoderBuffer_EncryptedBuffer) {
   const uint8_t kData[] = "hello, world";
-  const size_t kDataSize = arraysize(kData);
+  const int kDataSize = arraysize(kData);
   const char kKeyId[] = "00112233445566778899aabbccddeeff";
   const char kIv[] = "0123456789abcdef";
 

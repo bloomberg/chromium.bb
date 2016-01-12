@@ -97,7 +97,7 @@ const uint8_t kKeyId[] = {
   0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35
 };
 
-const size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
+const int kAppendWholeFile = -1;
 
 // Constants for the Media Source config change tests.
 const int kAppendTimeSec = 1;
@@ -471,7 +471,7 @@ class MockMediaSource {
  public:
   MockMediaSource(const std::string& filename,
                   const std::string& mimetype,
-                  size_t initial_append_size)
+                  int initial_append_size)
       : current_position_(0),
         initial_append_size_(initial_append_size),
         mimetype_(mimetype),
@@ -487,7 +487,7 @@ class MockMediaSource {
     if (initial_append_size_ == kAppendWholeFile)
       initial_append_size_ = file_data_->data_size();
 
-    DCHECK_GT(initial_append_size_, 0u);
+    DCHECK_GT(initial_append_size_, 0);
     DCHECK_LE(initial_append_size_, file_data_->data_size());
   }
 
@@ -500,15 +500,14 @@ class MockMediaSource {
     encrypted_media_init_data_cb_ = encrypted_media_init_data_cb;
   }
 
-  void Seek(base::TimeDelta seek_time,
-            size_t new_position,
-            size_t seek_append_size) {
+  void Seek(base::TimeDelta seek_time, int new_position, int seek_append_size) {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
 
     chunk_demuxer_->ResetParserState(
         kSourceId,
         base::TimeDelta(), kInfiniteDuration(), &last_timestamp_offset_);
 
+    DCHECK_GE(new_position, 0);
     DCHECK_LT(new_position, file_data_->data_size());
     current_position_ = new_position;
 
@@ -519,7 +518,7 @@ class MockMediaSource {
     chunk_demuxer_->StartWaitingForSeek(seek_time);
   }
 
-  void AppendData(size_t size) {
+  void AppendData(int size) {
     DCHECK(chunk_demuxer_);
     DCHECK_LT(current_position_, file_data_->data_size());
     DCHECK_LE(current_position_ + size, file_data_->data_size());
@@ -627,8 +626,8 @@ class MockMediaSource {
 
  private:
   scoped_refptr<DecoderBuffer> file_data_;
-  size_t current_position_;
-  size_t initial_append_size_;
+  int current_position_;
+  int initial_append_size_;
   std::string mimetype_;
   ChunkDemuxer* chunk_demuxer_;
   scoped_ptr<Demuxer> owned_chunk_demuxer_;

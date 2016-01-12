@@ -15,11 +15,11 @@ namespace media {
 TEST(DecoderBufferTest, Constructors) {
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(0));
   EXPECT_TRUE(buffer->data());
-  EXPECT_EQ(0u, buffer->data_size());
+  EXPECT_EQ(0, buffer->data_size());
   EXPECT_FALSE(buffer->end_of_stream());
   EXPECT_FALSE(buffer->is_key_frame());
 
-  const size_t kTestSize = 10;
+  const int kTestSize = 10;
   scoped_refptr<DecoderBuffer> buffer3(new DecoderBuffer(kTestSize));
   ASSERT_TRUE(buffer3.get());
   EXPECT_EQ(kTestSize, buffer3->data_size());
@@ -32,7 +32,7 @@ TEST(DecoderBufferTest, CreateEOSBuffer) {
 
 TEST(DecoderBufferTest, CopyFrom) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const int kDataSize = arraysize(kData);
 
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
@@ -60,7 +60,7 @@ TEST(DecoderBufferTest, CopyFrom) {
 #if !defined(OS_ANDROID)
 TEST(DecoderBufferTest, PaddingAlignment) {
   const uint8_t kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const int kDataSize = arraysize(kData);
   scoped_refptr<DecoderBuffer> buffer2(DecoderBuffer::CopyFrom(
       reinterpret_cast<const uint8_t*>(&kData), kDataSize));
   ASSERT_TRUE(buffer2.get());
@@ -88,7 +88,7 @@ TEST(DecoderBufferTest, PaddingAlignment) {
 
 TEST(DecoderBufferTest, ReadingWriting) {
   const char kData[] = "hello";
-  const size_t kDataSize = arraysize(kData);
+  const int kDataSize = arraysize(kData);
 
   scoped_refptr<DecoderBuffer> buffer(new DecoderBuffer(kDataSize));
   ASSERT_TRUE(buffer.get());
