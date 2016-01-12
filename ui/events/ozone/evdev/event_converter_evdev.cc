@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/events/devices/device_util_linux.h"
 #include "ui/events/devices/input_device.h"
 
 namespace ui {
@@ -25,8 +26,8 @@ EventConverterEvdev::EventConverterEvdev(int fd,
                                          uint16_t product_id)
     : fd_(fd),
       path_(path),
-      input_device_(id, type, name, vendor_id, product_id) {
-}
+      input_device_(id, type, name, GetInputPathInSys(path), vendor_id,
+                    product_id) {}
 
 EventConverterEvdev::~EventConverterEvdev() {
   DCHECK(!enabled_);

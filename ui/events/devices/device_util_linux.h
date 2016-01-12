@@ -14,6 +14,10 @@ class FilePath;
 
 namespace ui {
 
+// Find sysfs device path for this device.
+EVENTS_DEVICES_EXPORT base::FilePath
+GetInputPathInSys(const base::FilePath& path);
+
 // Finds device type (internal or external) based on device path.
 EVENTS_DEVICES_EXPORT InputDeviceType
 GetInputDeviceTypeFromPath(const base::FilePath& path);

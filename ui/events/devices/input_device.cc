@@ -22,10 +22,15 @@ InputDevice::InputDevice(int id, InputDeviceType type, const std::string& name)
 InputDevice::InputDevice(int id,
                          InputDeviceType type,
                          const std::string& name,
+                         const base::FilePath& sys_path,
                          uint16_t vendor,
                          uint16_t product)
-    : id(id), type(type), name(name), vendor_id(vendor), product_id(product) {
-}
+    : id(id),
+      type(type),
+      name(name),
+      sys_path(sys_path),
+      vendor_id(vendor),
+      product_id(product) {}
 
 InputDevice::~InputDevice() {
 }

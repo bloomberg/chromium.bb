@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <string>
 
+#include "base/files/file_path.h"
 #include "ui/events/devices/events_devices_export.h"
 
 namespace ui {
@@ -29,6 +30,7 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
   InputDevice(int id,
               InputDeviceType type,
               const std::string& name,
+              const base::FilePath& sys_path,
               uint16_t vendor,
               uint16_t product);
   virtual ~InputDevice();
@@ -41,6 +43,9 @@ struct EVENTS_DEVICES_EXPORT InputDevice {
 
   // Name of the device.
   std::string name;
+
+  // The path to the input device in the sysfs filesystem.
+  base::FilePath sys_path;
 
   // USB-style device identifiers, where available, or 0 if unavailable.
   uint16_t vendor_id;
