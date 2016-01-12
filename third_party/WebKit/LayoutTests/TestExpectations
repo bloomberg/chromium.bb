@@ -1231,8 +1231,6 @@ crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select/popup-menu-appearance-tall.html [ Failure ]
-crbug.com/570656 [ Mac ] fast/writing-mode/Kusa-Makura-background-canvas.html [ Slow ]
-crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 
 crbug.com/575917 fast/js/const.html [ NeedsManualRebaseline ]
 crbug.com/575917 fast/js/inc-const-valueOf.html [ NeedsManualRebaseline ]
