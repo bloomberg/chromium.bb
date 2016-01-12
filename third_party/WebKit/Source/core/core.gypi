@@ -1977,8 +1977,6 @@
             'paint/BoxPainter.h',
             'paint/ClipScope.cpp',
             'paint/ClipScope.h',
-            'paint/CompositingRecorder.cpp',
-            'paint/CompositingRecorder.h',
             'paint/DetailsMarkerPainter.cpp',
             'paint/DetailsMarkerPainter.h',
             'paint/EllipsisBoxPainter.cpp',

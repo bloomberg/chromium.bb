@@ -5,11 +5,11 @@
 #include "core/paint/SVGMaskPainter.h"
 
 #include "core/layout/svg/LayoutSVGResourceMasker.h"
-#include "core/paint/CompositingRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 

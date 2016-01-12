@@ -36,7 +36,6 @@
 #include "core/style/ComputedStyle.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
-#include "core/paint/CompositingRecorder.h"
 #include "core/paint/FloatClipRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGDocumentExtensions.h"

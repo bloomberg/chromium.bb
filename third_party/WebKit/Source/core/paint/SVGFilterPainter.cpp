@@ -6,12 +6,11 @@
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/layout/svg/SVGLayoutSupport.h"
-#include "core/paint/CompositingRecorder.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/TransformRecorder.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
-#include "platform/graphics/paint/CompositingDisplayItem.h"
+#include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 
