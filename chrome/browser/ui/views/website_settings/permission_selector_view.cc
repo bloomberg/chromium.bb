@@ -7,6 +7,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 #include "chrome/browser/ui/website_settings/permission_menu_model.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 #include "chrome/grit/generated_resources.h"
@@ -20,15 +21,6 @@
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
-
-namespace {
-
-// Left icon margin.
-const int kPermissionIconMarginLeft = 6;
-// The width of the column that contains the permissions icons.
-const int kPermissionIconColumnWidth = 20;
-
-}  // namespace
 
 namespace internal {
 

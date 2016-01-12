@@ -182,7 +182,8 @@ void ConnectionInfoPopupAndroid::SetCookieInfo(
 }
 
 void ConnectionInfoPopupAndroid::SetPermissionInfo(
-    const PermissionInfoList& permission_info_list) {
+    const PermissionInfoList& permission_info_list,
+    const ChosenObjectInfoList& chosen_object_info_list) {
   NOTIMPLEMENTED();
 }
 

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/website_settings/website_settings.h"
 
+#include <string>
+#include <vector>
+
 #include "base/at_exit.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string16.h"
@@ -12,6 +15,8 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -20,6 +25,9 @@
 #include "components/infobars/core/infobar.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/common/ssl_status.h"
+#include "device/core/device_client.h"
+#include "device/usb/mock_usb_device.h"
+#include "device/usb/mock_usb_service.h"
 #include "grit/theme_resources.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
@@ -32,6 +40,7 @@ using content::SSLStatus;
 using security_state::SecurityStateModel;
 using testing::_;
 using testing::AnyNumber;
+using testing::Invoke;
 using testing::Return;
 using testing::SetArgPointee;
 
@@ -55,6 +64,19 @@ int SetSSLCipherSuite(int connection_status, int cipher_suite) {
   return cipher_suite | connection_status;
 }
 
+class TestDeviceClient : public device::DeviceClient {
+ public:
+  TestDeviceClient() {}
+  ~TestDeviceClient() override {}
+
+  device::MockUsbService& usb_service() { return usb_service_; }
+
+ private:
+  device::UsbService* GetUsbService() override { return &usb_service_; }
+
+  device::MockUsbService usb_service_;
+};
+
 class MockCertStore : public content::CertStore {
  public:
   virtual ~MockCertStore() {}
@@ -66,8 +88,9 @@ class MockWebsiteSettingsUI : public WebsiteSettingsUI {
  public:
   virtual ~MockWebsiteSettingsUI() {}
   MOCK_METHOD1(SetCookieInfo, void(const CookieInfoList& cookie_info_list));
-  MOCK_METHOD1(SetPermissionInfo,
-               void(const PermissionInfoList& permission_info_list));
+  MOCK_METHOD2(SetPermissionInfo,
+               void(const PermissionInfoList& permission_info_list,
+                    const ChosenObjectInfoList& chosen_object_info_list));
   MOCK_METHOD1(SetIdentityInfo, void(const IdentityInfo& identity_info));
   MOCK_METHOD1(SetSelectedTab, void(TabId tab_id));
 };
@@ -103,6 +126,8 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
     // Setup mock ui.
     mock_ui_.reset(new MockWebsiteSettingsUI());
+    ON_CALL(*mock_ui_, SetPermissionInfo(_, _))
+        .WillByDefault(Invoke(this, &WebsiteSettingsTest::SetPermissionInfo));
   }
 
   void TearDown() override {
@@ -114,12 +139,20 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
 
   void SetDefaultUIExpectations(MockWebsiteSettingsUI* mock_ui) {
     // During creation |WebsiteSettings| makes the following calls to the ui.
-    EXPECT_CALL(*mock_ui, SetPermissionInfo(_));
+    EXPECT_CALL(*mock_ui, SetPermissionInfo(_, _));
     EXPECT_CALL(*mock_ui, SetIdentityInfo(_));
     EXPECT_CALL(*mock_ui, SetCookieInfo(_));
   }
 
   void SetURL(const std::string& url) { url_ = GURL(url); }
+
+  void SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                         const ChosenObjectInfoList& chosen_object_info_list) {
+    last_chosen_object_info_.clear();
+    for (WebsiteSettingsUI::ChosenObjectInfo* chosen_object_info :
+         chosen_object_info_list)
+      last_chosen_object_info_.push_back(make_scoped_ptr(chosen_object_info));
+  }
 
   const GURL& url() const { return url_; }
   MockCertStore* cert_store() { return &cert_store_; }
@@ -127,6 +160,10 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   MockWebsiteSettingsUI* mock_ui() { return mock_ui_.get(); }
   const SecurityStateModel::SecurityInfo& security_info() {
     return security_info_;
+  }
+  const std::vector<scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>>&
+  last_chosen_object_info() {
+    return last_chosen_object_info_;
   }
   TabSpecificContentSettings* tab_specific_content_settings() {
     return TabSpecificContentSettings::FromWebContents(web_contents());
@@ -144,15 +181,20 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
     return website_settings_.get();
   }
 
+  device::MockUsbService& usb_service() { return device_client_.usb_service(); }
+
   SecurityStateModel::SecurityInfo security_info_;
 
  private:
+  TestDeviceClient device_client_;
   scoped_ptr<WebsiteSettings> website_settings_;
   scoped_ptr<MockWebsiteSettingsUI> mock_ui_;
   int cert_id_;
   scoped_refptr<net::X509Certificate> cert_;
   MockCertStore cert_store_;
   GURL url_;
+  std::vector<scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>>
+      last_chosen_object_info_;
 };
 
 }  // namespace
@@ -187,7 +229,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(7);
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(7);
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
@@ -241,7 +283,7 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
 
   // SetPermissionInfo() is called once initially, and then again every time
   // OnSitePermissionChanged() is called.
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(3);
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(3);
 
   // Execute code under tests.
   website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_FULLSCREEN,
@@ -269,13 +311,40 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged_Fullscreen) {
 }
 
 TEST_F(WebsiteSettingsTest, OnSiteDataAccessed) {
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_));
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _));
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_)).Times(2);
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
 
   website_settings()->OnSiteDataAccessed();
+}
+
+TEST_F(WebsiteSettingsTest, OnChosenObjectDeleted) {
+  scoped_refptr<device::UsbDevice> device =
+      new device::MockUsbDevice(0, 0, "Google", "Gizmo", "1234567890");
+  usb_service().AddDevice(device);
+  UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile());
+  store->GrantDevicePermission(url(), url(), device->guid());
+
+  EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
+  EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
+  EXPECT_CALL(*mock_ui(),
+              SetSelectedTab(WebsiteSettingsUI::TAB_ID_PERMISSIONS));
+
+  // Access WebsiteSettings so that SetPermissionInfo is called once to populate
+  // |last_chosen_object_info_|. It will be called again by
+  // OnSiteChosenObjectDeleted.
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(2);
+  website_settings();
+
+  ASSERT_EQ(1u, last_chosen_object_info().size());
+  const WebsiteSettingsUI::ChosenObjectInfo* info =
+      last_chosen_object_info()[0].get();
+  website_settings()->OnSiteChosenObjectDeleted(info->ui_info, *info->object);
+
+  EXPECT_FALSE(store->HasDevicePermission(url(), url(), device->guid()));
+  EXPECT_EQ(0u, last_chosen_object_info().size());
 }
 
 TEST_F(WebsiteSettingsTest, HTTPConnection) {
@@ -692,7 +761,7 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
 
-  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_)).Times(2);
+  EXPECT_CALL(*mock_ui(), SetPermissionInfo(_, _)).Times(2);
 
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));

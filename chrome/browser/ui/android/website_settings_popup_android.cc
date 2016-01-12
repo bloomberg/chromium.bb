@@ -93,7 +93,10 @@ void WebsiteSettingsPopupAndroid::SetCookieInfo(
 }
 
 void WebsiteSettingsPopupAndroid::SetPermissionInfo(
-    const PermissionInfoList& permission_info_list) {
+    const PermissionInfoList& permission_info_list,
+    const ChosenObjectInfoList& chosen_object_info_list) {
+  // TODO(reillyg): Display the contents of |chosen_object_info_list|.
+  // https://crbug.com/424667.
   JNIEnv* env = base::android::AttachCurrentThread();
 
   // On Android, we only want to display a subset of the available options in a

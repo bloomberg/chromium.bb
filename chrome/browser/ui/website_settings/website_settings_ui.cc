@@ -125,6 +125,13 @@ WebsiteSettingsUI::PermissionInfo::PermissionInfo()
       source(content_settings::SETTING_SOURCE_NONE) {
 }
 
+WebsiteSettingsUI::ChosenObjectInfo::ChosenObjectInfo(
+    const WebsiteSettings::ChooserUIInfo& ui_info,
+    scoped_ptr<base::DictionaryValue> object)
+    : ui_info(ui_info), object(std::move(object)) {}
+
+WebsiteSettingsUI::ChosenObjectInfo::~ChosenObjectInfo() {}
+
 WebsiteSettingsUI::IdentityInfo::IdentityInfo()
     : identity_status(WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN),
       cert_id(0),
@@ -262,6 +269,23 @@ const gfx::Image& WebsiteSettingsUI::GetPermissionIcon(
     setting = info.default_setting;
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   return rb.GetNativeImageNamed(GetPermissionIconID(info.type, setting));
+}
+
+// static
+base::string16 WebsiteSettingsUI::ChosenObjectToUIString(
+    const ChosenObjectInfo& object) {
+  base::string16 name;
+  object.object->GetString(object.ui_info.ui_name_key, &name);
+  return name;
+}
+
+// static
+const gfx::Image& WebsiteSettingsUI::GetChosenObjectIcon(
+    const ChosenObjectInfo& object,
+    bool deleted) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  return rb.GetNativeImageNamed(deleted ? object.ui_info.blocked_icon_id
+                                        : object.ui_info.allowed_icon_id);
 }
 
 // static

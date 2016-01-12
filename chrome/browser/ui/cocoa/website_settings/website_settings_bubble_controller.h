@@ -131,7 +131,8 @@ class WebsiteSettingsUIBridge : public content::WebContentsObserver,
   // WebsiteSettingsUI implementations.
   void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
   void SetPermissionInfo(
-      const PermissionInfoList& permission_info_list) override;
+      const PermissionInfoList& permission_info_list,
+      const ChosenObjectInfoList& chosen_object_info_list) override;
   void SetIdentityInfo(const IdentityInfo& identity_info) override;
   void SetSelectedTab(TabId tab_id) override;
 

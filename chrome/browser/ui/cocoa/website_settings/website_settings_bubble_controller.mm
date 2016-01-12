@@ -28,19 +28,25 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "content/public/browser/cert_store.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/controls/hyperlink_button_cell.h"
 #import "ui/base/cocoa/flipped_view.h"
+#import "ui/base/cocoa/hover_image_button.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
+#include "ui/resources/grit/ui_resources.h"
+
+using ChosenObjectInfoPtr = scoped_ptr<WebsiteSettingsUI::ChosenObjectInfo>;
+using ChosenObjectDeleteCallback =
+    base::Callback<void(const WebsiteSettingsUI::ChosenObjectInfo&)>;
 
 namespace {
 
@@ -71,6 +77,9 @@ const CGFloat kConnectionImageSize = 30;
 
 // Square size of the permission images.
 const CGFloat kPermissionImageSize = 19;
+
+// Square size of the permission delete button image.
+const CGFloat kPermissionDeleteImageSize = 16;
 
 // Vertical adjustment for the permission images. They have an extra pixel of
 // padding on the bottom edge.
@@ -325,6 +334,51 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   return NSMakeSize([super cellSize].width,
                     [tabstripCenterImage_ size].height);
 }
+@end
+
+@interface ChosenObjectDeleteButton : HoverImageButton {
+ @private
+  ChosenObjectInfoPtr objectInfo_;
+  ChosenObjectDeleteCallback callback_;
+}
+
+// Designated initializer. Takes ownership of |objectInfo|.
+- (instancetype)initWithChosenObject:(ChosenObjectInfoPtr)objectInfo
+                             atPoint:(NSPoint)point
+                        withCallback:(ChosenObjectDeleteCallback)callback;
+
+// Action when the button is clicked.
+- (void)deleteClicked:(id)sender;
+
+@end
+
+@implementation ChosenObjectDeleteButton
+
+- (instancetype)initWithChosenObject:(ChosenObjectInfoPtr)objectInfo
+                             atPoint:(NSPoint)point
+                        withCallback:(ChosenObjectDeleteCallback)callback {
+  NSRect frame = NSMakeRect(point.x, point.y, kPermissionDeleteImageSize,
+                            kPermissionDeleteImageSize);
+  if (self = [super initWithFrame:frame]) {
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    [self setDefaultImage:rb.GetNativeImageNamed(IDR_CLOSE_2).ToNSImage()];
+    [self setHoverImage:rb.GetNativeImageNamed(IDR_CLOSE_2_H).ToNSImage()];
+    [self setPressedImage:rb.GetNativeImageNamed(IDR_CLOSE_2_P).ToNSImage()];
+    [self setBordered:NO];
+    [self setToolTip:l10n_util::GetNSString(
+                         objectInfo->ui_info.delete_tooltip_string_id)];
+    [self setTarget:self];
+    [self setAction:@selector(deleteClicked:)];
+    objectInfo_ = std::move(objectInfo);
+    callback_ = callback;
+  }
+  return self;
+}
+
+- (void)deleteClicked:(id)sender {
+  callback_.Run(*objectInfo_);
+}
+
 @end
 
 @implementation WebsiteSettingsBubbleController
@@ -950,11 +1004,42 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   return button.get();
 }
 
+// Add a delete button for |objectInfo| to the given view.
+- (NSButton*)addDeleteButtonForChosenObject:(ChosenObjectInfoPtr)objectInfo
+                                     toView:(NSView*)view
+                                    atPoint:(NSPoint)point {
+  __block WebsiteSettingsBubbleController* weakSelf = self;
+  auto callback =
+      base::BindBlock(^(const WebsiteSettingsUI::ChosenObjectInfo& objectInfo) {
+        [weakSelf onChosenObjectDeleted:objectInfo];
+      });
+  base::scoped_nsobject<ChosenObjectDeleteButton> button(
+      [[ChosenObjectDeleteButton alloc]
+          initWithChosenObject:std::move(objectInfo)
+                       atPoint:point
+                  withCallback:callback]);
+
+  // Ensure the containing view is large enough to contain the button.
+  NSRect containerFrame = [view frame];
+  containerFrame.size.width =
+      std::max(NSWidth(containerFrame),
+               point.x + kPermissionDeleteImageSize + kFramePadding);
+  [view setFrame:containerFrame];
+  [view addSubview:button.get()];
+  return button.get();
+}
+
 // Called when the user changes the setting of a permission.
 - (void)onPermissionChanged:(ContentSettingsType)permissionType
                          to:(ContentSetting)newSetting {
   if (presenter_)
     presenter_->OnSitePermissionChanged(permissionType, newSetting);
+}
+
+// Called when the user revokes permission for a previously chosen object.
+- (void)onChosenObjectDeleted:(const WebsiteSettingsUI::ChosenObjectInfo&)info {
+  if (presenter_)
+    presenter_->OnSiteChosenObjectDeleted(info.ui_info, *info.object);
 }
 
 // Called when the user changes the selected segment in the segmented control.
@@ -1061,6 +1146,90 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
       permissionInfo.source == content_settings::SETTING_SOURCE_POLICY) {
     [button setEnabled:NO];
   }
+
+  NSRect buttonFrame = [button frame];
+  return NSMakePoint(NSMaxX(buttonFrame), NSMaxY(buttonFrame));
+}
+
+// Adds a new row to the UI listing the permissions. Returns the NSPoint of the
+// last UI element added (either the permission button, in LTR, or the text
+// label, in RTL).
+- (NSPoint)addChosenObject:(ChosenObjectInfoPtr)objectInfo
+                    toView:(NSView*)view
+                   atPoint:(NSPoint)point {
+  base::string16 labelText = l10n_util::GetStringFUTF16(
+      objectInfo->ui_info.label_string_id,
+      WebsiteSettingsUI::ChosenObjectToUIString(*objectInfo));
+  bool isRTL =
+      base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(labelText);
+  base::scoped_nsobject<NSImage> image(
+      [WebsiteSettingsUI::GetChosenObjectIcon(*objectInfo, false)
+              .ToNSImage() retain]);
+
+  NSPoint position;
+  NSImageView* imageView;
+  NSButton* button;
+  NSTextField* label;
+
+  CGFloat viewWidth = NSWidth([view frame]);
+
+  if (isRTL) {
+    point.x = NSWidth([view frame]) - kPermissionImageSize -
+              kPermissionImageSpacing - kFramePadding;
+    imageView = [self addImageWithSize:[image size] toView:view atPoint:point];
+    [imageView setImage:image];
+    point.x -= kPermissionImageSpacing;
+
+    label = [self addText:labelText
+                 withSize:[NSFont smallSystemFontSize]
+                     bold:NO
+                   toView:view
+                  atPoint:point];
+    [label sizeToFit];
+    point.x -= NSWidth([label frame]);
+    [label setFrameOrigin:point];
+
+    position = NSMakePoint(point.x, point.y);
+    button = [self addDeleteButtonForChosenObject:std::move(objectInfo)
+                                           toView:view
+                                          atPoint:position];
+    position.x -= NSWidth([button frame]);
+    [button setFrameOrigin:position];
+  } else {
+    imageView = [self addImageWithSize:[image size] toView:view atPoint:point];
+    [imageView setImage:image];
+    point.x += kPermissionImageSize + kPermissionImageSpacing;
+
+    label = [self addText:labelText
+                 withSize:[NSFont smallSystemFontSize]
+                     bold:NO
+                   toView:view
+                  atPoint:point];
+    [label sizeToFit];
+
+    position = NSMakePoint(NSMaxX([label frame]), point.y);
+    button = [self addDeleteButtonForChosenObject:std::move(objectInfo)
+                                           toView:view
+                                          atPoint:position];
+  }
+
+  [view setFrameSize:NSMakeSize(viewWidth, NSHeight([view frame]))];
+
+  // Adjust the vertical position of the button so that its title text is
+  // aligned with the label. Assumes that the text is the same size in both.
+  // Also adjust the horizontal position to remove excess space due to the
+  // invisible bezel.
+  NSRect titleRect = [[button cell] titleRectForBounds:[button bounds]];
+  if (isRTL) {
+    position.x += kPermissionPopUpXSpacing;
+  } else {
+    position.x -= titleRect.origin.x - kPermissionPopUpXSpacing;
+  }
+  position.y -= titleRect.origin.y;
+  [button setFrameOrigin:position];
+
+  // Align the icon with the text.
+  [self alignPermissionIcon:imageView withTextField:label];
 
   NSRect buttonFrame = [button frame];
   return NSMakePoint(NSMaxX(buttonFrame), NSMaxY(buttonFrame));
@@ -1241,11 +1410,12 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   [self performLayout];
 }
 
-- (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList {
+- (void)setPermissionInfo:(const PermissionInfoList&)permissionInfoList
+         andChosenObjects:(const ChosenObjectInfoList&)chosenObjectInfoList {
   [permissionsView_ setSubviews:[NSArray array]];
   NSPoint controlOrigin = NSMakePoint(kFramePadding, 0);
 
-  if (permissionInfoList.size() > 0) {
+  if (permissionInfoList.size() > 0 || chosenObjectInfoList.size() > 0) {
     base::string16 sectionTitle = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
     bool isRTL = base::i18n::RIGHT_TO_LEFT ==
@@ -1263,16 +1433,22 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
     }
     controlOrigin.y += NSHeight([header frame]) + kPermissionsHeadlineSpacing;
 
-    for (PermissionInfoList::const_iterator permission =
-             permissionInfoList.begin();
-         permission != permissionInfoList.end();
-         ++permission) {
+    for (const auto& permission : permissionInfoList) {
       controlOrigin.y += kPermissionsTabSpacing;
-      NSPoint rowBottomRight = [self addPermission:*permission
+      NSPoint rowBottomRight = [self addPermission:permission
                                             toView:permissionsView_
                                            atPoint:controlOrigin];
       controlOrigin.y = rowBottomRight.y;
     }
+
+    for (auto object : chosenObjectInfoList) {
+      controlOrigin.y += kPermissionsTabSpacing;
+      NSPoint rowBottomRight = [self addChosenObject:make_scoped_ptr(object)
+                                              toView:permissionsView_
+                                             atPoint:controlOrigin];
+      controlOrigin.y = rowBottomRight.y;
+    }
+
     controlOrigin.y += kFramePadding;
   }
 
@@ -1360,8 +1536,10 @@ void WebsiteSettingsUIBridge::SetCookieInfo(
 }
 
 void WebsiteSettingsUIBridge::SetPermissionInfo(
-    const PermissionInfoList& permission_info_list) {
-  [bubble_controller_ setPermissionInfo:permission_info_list];
+    const PermissionInfoList& permission_info_list,
+    const ChosenObjectInfoList& chosen_object_info_list) {
+  [bubble_controller_ setPermissionInfo:permission_info_list
+                       andChosenObjects:chosen_object_info_list];
 }
 
 void WebsiteSettingsUIBridge::SetSelectedTab(TabId tab_id) {

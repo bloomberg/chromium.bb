@@ -30,16 +30,20 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/browser/local_shared_objects_counter.h"
@@ -163,6 +167,19 @@ base::string16 GetSimpleSiteName(const GURL& url, Profile* profile) {
   return url_formatter::FormatUrlForSecurityDisplayOmitScheme(url, languages);
 }
 
+ChooserContextBase* GetUsbChooserContext(Profile* profile) {
+  return UsbChooserContextFactory::GetForProfile(profile);
+}
+
+// The list of chooser types that need to display entries in the Website
+// Settings UI. THE ORDER OF THESE ITEMS IS IMPORTANT. To propose changing it,
+// email security-dev@chromium.org.
+WebsiteSettings::ChooserUIInfo kChooserUIInfo[] = {
+    {&GetUsbChooserContext, IDR_BLOCKED_USB, IDR_ALLOWED_USB,
+     IDS_WEBSITE_SETTINGS_USB_DEVICE_LABEL,
+     IDS_WEBSITE_SETTINGS_DELETE_USB_DEVICE, "name"},
+};
+
 }  // namespace
 
 WebsiteSettings::WebsiteSettings(
@@ -281,6 +298,19 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
   show_info_bar_ = true;
 
   // Refresh the UI to reflect the new setting.
+  PresentSitePermissions();
+}
+
+void WebsiteSettings::OnSiteChosenObjectDeleted(
+    const ChooserUIInfo& ui_info,
+    const base::DictionaryValue& object) {
+  // TODO(reillyg): Create metrics for revocations. crbug.com/556845
+  ChooserContextBase* context = ui_info.get_context(profile_);
+  context->RevokeObjectPermission(site_url_, site_url_, object);
+
+  show_info_bar_ = true;
+
+  // Refresh the UI to reflect the changed settings.
   PresentSitePermissions();
 }
 
@@ -627,6 +657,7 @@ void WebsiteSettings::Init(
 
 void WebsiteSettings::PresentSitePermissions() {
   PermissionInfoList permission_info_list;
+  ChosenObjectInfoList chosen_object_info_list;
 
   WebsiteSettingsUI::PermissionInfo permission_info;
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
@@ -662,7 +693,16 @@ void WebsiteSettings::PresentSitePermissions() {
     }
   }
 
-  ui_->SetPermissionInfo(permission_info_list);
+  for (const ChooserUIInfo& ui_info : kChooserUIInfo) {
+    ChooserContextBase* context = ui_info.get_context(profile_);
+    auto chosen_objects = context->GetGrantedObjects(site_url_, site_url_);
+    for (scoped_ptr<base::DictionaryValue>& object : chosen_objects) {
+      chosen_object_info_list.push_back(
+          new WebsiteSettingsUI::ChosenObjectInfo(ui_info, std::move(object)));
+    }
+  }
+
+  ui_->SetPermissionInfo(permission_info_list, chosen_object_info_list);
 }
 
 void WebsiteSettings::PresentSiteData() {

@@ -20,6 +20,7 @@ class WebContents;
 }
 
 class ChromeSSLHostStateDelegate;
+class ChooserContextBase;
 class HostContentSettingsMap;
 class Profile;
 class WebsiteSettingsUI;
@@ -93,6 +94,15 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     WEBSITE_SETTINGS_COUNT
   };
 
+  struct ChooserUIInfo {
+    ChooserContextBase* (*get_context)(Profile*);
+    int blocked_icon_id;
+    int allowed_icon_id;
+    int label_string_id;
+    int delete_tooltip_string_id;
+    const char* ui_name_key;
+  };
+
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status
   // object to determine the status of the site's connection. The
   // |WebsiteSettings| takes ownership of the |ui|.
@@ -111,6 +121,10 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
   // This method is called when ever a permission setting is changed.
   void OnSitePermissionChanged(ContentSettingsType type,
                                ContentSetting value);
+
+  // This method is called whenever access to an object is revoked.
+  void OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
+                                 const base::DictionaryValue& object);
 
   // This method is called by the UI when the UI is closing.
   void OnUIClosing();

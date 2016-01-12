@@ -279,6 +279,12 @@ are declared in build/common.gypi.
       <message name="IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT" desc="The Website Settings popup contains several buttons for opening dropdown menus and changing site permissions. This is the text of such a button if the permission controlled by the button is set to the default setting and the default settings is detect important content.">
         Detect important content by default
       </message>
+      <message name="IDS_WEBSITE_SETTINGS_USB_DEVICE_LABEL" desc="The label used to describe a USB device that the user has granted the site permission to access.">
+        <ph name="DEVICE_NAME">$1<ex>Android Phone</ex></ph>
+      </message>
+      <message name="IDS_WEBSITE_SETTINGS_DELETE_USB_DEVICE" desc="The tooltip displayed when hovering over the button that will remove permission to access a USB device that the user previously granted to the site.">
+        Revoke access
+      </message>
       <message name="IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS" desc="Title of the permissions section of the website settings popup.">
         Permissions
       </message>

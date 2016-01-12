@@ -42,6 +42,7 @@
         <structure type="chrome_scaled_image" name="IDR_ALLOWED_PLUGINS" file="common/allowed_plugins.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_POPUPS" file="common/allowed_popups.png" />
+      <structure type="chrome_scaled_image" name="IDR_ALLOWED_USB" file="common/allowed_usb.png" />
       <if expr="enable_app_list and is_win and not _google_chrome">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="chromium/app_list_48.png" />
       </if>
@@ -111,6 +112,7 @@
       </if>
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_POPUPS" file="common/blocked_popups.png" />
       <structure type="chrome_scaled_image" name="IDR_BLOCKED_PPAPI_BROKER" file="common/blocked_pepper_broker.png" />
+      <structure type="chrome_scaled_image" name="IDR_BLOCKED_USB" file="common/blocked_usb.png" />
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_KEYBOARD" file="cros/bluetooth_pairing_keyboard.png" />
         <structure type="chrome_scaled_image" name="IDR_BLUETOOTH_MOUSE" file="cros/bluetooth_pairing_mouse.png" />

@@ -1612,6 +1612,7 @@ test("unit_tests") {
       "//content/app/resources",
       "//device/bluetooth:mocks",
       "//device/core:mocks",
+      "//device/usb:mocks",
       "//gpu:test_support",
       "//media:test_support",
 
@@ -1706,7 +1707,6 @@ test("unit_tests") {
     deps += [
       "//chrome/common/extensions/api",
       "//components/audio_modem:test_support",
-      "//device/usb:mocks",
       "//extensions:extensions_resources",
       "//extensions/strings",
     ]

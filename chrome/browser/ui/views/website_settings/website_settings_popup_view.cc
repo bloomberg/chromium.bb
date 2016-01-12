@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/website_settings/chosen_object_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_view.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
 #include "chrome/browser/ui/website_settings/website_settings_utils.h"
@@ -463,6 +464,11 @@ void WebsiteSettingsPopupView::OnPermissionChanged(
   presenter_->OnSitePermissionChanged(permission.type, permission.setting);
 }
 
+void WebsiteSettingsPopupView::OnChosenObjectDeleted(
+    const WebsiteSettingsUI::ChosenObjectInfo& info) {
+  presenter_->OnSiteChosenObjectDeleted(info.ui_info, *info.object);
+}
+
 void WebsiteSettingsPopupView::OnWidgetDestroying(views::Widget* widget) {
   is_popup_showing = false;
   presenter_->OnUIClosing();
@@ -604,14 +610,18 @@ void WebsiteSettingsPopupView::SetCookieInfo(
 }
 
 void WebsiteSettingsPopupView::SetPermissionInfo(
-    const PermissionInfoList& permission_info_list) {
+    const PermissionInfoList& permission_info_list,
+    const ChosenObjectInfoList& chosen_object_info_list) {
   // When a permission is changed, WebsiteSettings::OnSitePermissionChanged()
   // calls this method with updated permissions. However, PermissionSelectorView
   // will have already updated its state, so it's already reflected in the UI.
   // In addition, if a permission is set to the default setting, WebsiteSettings
   // removes it from |permission_info_list|, but the button should remain.
-  if (permissions_content_)
+  if (permissions_content_) {
+    STLDeleteContainerPointers(chosen_object_info_list.begin(),
+                               chosen_object_info_list.end());
     return;
+  }
 
   permissions_content_ = new views::View();
   views::GridLayout* layout = new views::GridLayout(permissions_content_);
@@ -634,19 +644,26 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  for (PermissionInfoList::const_iterator permission =
-           permission_info_list.begin();
-       permission != permission_info_list.end();
-       ++permission) {
+  for (const auto& permission : permission_info_list) {
     layout->StartRow(1, content_column);
     PermissionSelectorView* selector = new PermissionSelectorView(
         web_contents_ ? web_contents_->GetURL() : GURL::EmptyGURL(),
-        *permission);
+        permission);
     selector->AddObserver(this);
     layout->AddView(selector,
                     1,
                     1,
                     views::GridLayout::LEADING,
+                    views::GridLayout::CENTER);
+    layout->AddPaddingRow(1, kPermissionsSectionRowSpacing);
+  }
+
+  for (auto object : chosen_object_info_list) {
+    layout->StartRow(1, content_column);
+    // The view takes ownership of the object info.
+    auto object_view = new ChosenObjectView(make_scoped_ptr(object));
+    object_view->AddObserver(this);
+    layout->AddView(object_view, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
     layout->AddPaddingRow(1, kPermissionsSectionRowSpacing);
   }

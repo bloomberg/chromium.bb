@@ -2084,6 +2084,8 @@
       'browser/ui/views/login_view.h',
       'browser/ui/views/sync/bubble_sync_promo_view.cc',
       'browser/ui/views/sync/bubble_sync_promo_view.h',
+      'browser/ui/views/website_settings/chosen_object_view.cc',
+      'browser/ui/views/website_settings/chosen_object_view.h',
       'browser/ui/views/website_settings/permission_selector_view.cc',
       'browser/ui/views/website_settings/permission_selector_view.h',
       'browser/ui/views/website_settings/permission_selector_view_observer.h',
