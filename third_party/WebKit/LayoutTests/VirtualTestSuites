@@ -192,5 +192,20 @@
     "prefix": "spv2",
     "base": "paint",
     "args": ["--enable-slimming-paint-v2"]
+  },
+  {
+    "prefix": "scalefactor200",
+    "base": "fast/hidpi/static",
+    "args": ["--force-device-scale-factor=2"]
+  },
+  {
+    "prefix": "scalefactor150",
+    "base": "fast/hidpi/static",
+    "args": ["--force-device-scale-factor=1.5"]
+  },
+  {
+    "prefix": "scalefactor200withzoom",
+    "base": "fast/hidpi/static",
+    "args": ["--force-device-scale-factor=2", "--enable-use-zoom-for-dsf"]
   }
 ]

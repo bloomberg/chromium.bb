@@ -208,7 +208,6 @@ void Internals::resetToConsistentState(Page* page)
     if (!sFeaturesBackup)
         sFeaturesBackup = new RuntimeEnabledFeatures::Backup;
     sFeaturesBackup->restore();
-    page->setDeviceScaleFactor(1);
     page->setIsCursorVisible(true);
     page->setPageScaleFactor(1);
     page->deprecatedLocalMainFrame()->view()->layoutViewportScrollableArea()->setScrollPosition(IntPoint(0, 0), ProgrammaticScroll);

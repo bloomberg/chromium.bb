@@ -2180,6 +2180,10 @@ gfx::RectF RenderViewImpl::ElementBoundsInWindow(
   return gfx::RectF(bounding_box_in_window);
 }
 
+float RenderViewImpl::GetDeviceScaleFactorForTest() const {
+  return device_scale_factor_;
+}
+
 void RenderViewImpl::didChangeIcon(WebLocalFrame* frame,
                                    WebIconURL::Type icon_type) {
   if (frame->parent())

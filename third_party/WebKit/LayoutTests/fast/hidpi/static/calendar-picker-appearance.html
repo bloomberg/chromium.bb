@@ -4,17 +4,6 @@
 <script>
   window.enablePixelTesting = true;
   function startTest() {
-    if (window.testRunner) {
-      testRunner.setBackingScaleFactor(2.0, function() {});
-    }
-  }
-  window.matchMedia('screen and (min-resolution: 2dppx)').
-     addListener(function(e) {
-       if (e.matches) {
-         doOpenPopup();
-       }
-     });
-  function doOpenPopup() {
     openPicker(document.getElementById('date'),
                finishJSTest,
                function () {
@@ -23,9 +12,9 @@
     });
   }
 </script>
-<script src="../../resources/js-test.js"></script>
-<script src="../forms/resources/picker-common.js"></script>
-<script src="../forms/calendar-picker/resources/calendar-picker-common.js"></script>
+<script src="../../../resources/js-test.js"></script>
+<script src="../../forms/resources/picker-common.js"></script>
+<script src="../../forms/calendar-picker/resources/calendar-picker-common.js"></script>
 </head>
 <body onLoad="startTest()">
 <input type=date id=date value="10000-12-31"> </input>

@@ -8,8 +8,10 @@
 #include <limits>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/test_runner/mock_credential_manager_client.h"
@@ -56,6 +58,7 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gfx/switches.h"
 
 #if defined(__linux__) || defined(ANDROID)
 #include "third_party/WebKit/public/web/linux/WebFontRendering.h"
@@ -72,6 +75,18 @@ WebString V8StringToWebString(v8::Local<v8::String> v8_str) {
   scoped_ptr<char[]> chars(new char[length]);
   v8_str->WriteUtf8(chars.get(), length);
   return WebString::fromUTF8(chars.get());
+}
+
+double GetDefaultDeviceScaleFactor() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kForceDeviceScaleFactor)) {
+    double scale;
+    std::string value =
+        command_line->GetSwitchValueASCII(switches::kForceDeviceScaleFactor);
+    if (base::StringToDouble(value, &scale))
+      return scale;
+  }
+  return 1.f;
 }
 
 class HostMethodTask : public WebMethodTask<TestRunner> {
@@ -1701,7 +1716,7 @@ void TestRunner::Reset() {
     // Reset the default quota for each origin to 5MB
     delegate_->SetDatabaseQuota(5 * 1024 * 1024);
     delegate_->SetDeviceColorProfile("reset");
-    delegate_->SetDeviceScaleFactor(1);
+    delegate_->SetDeviceScaleFactor(GetDefaultDeviceScaleFactor());
     delegate_->SetAcceptAllCookies(false);
     delegate_->SetLocale("");
     delegate_->UseUnfortunateSynchronousResizeMode(false);

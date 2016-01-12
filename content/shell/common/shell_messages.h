@@ -89,8 +89,6 @@ IPC_MESSAGE_ROUTED0(ShellViewHostMsg_Reload)
 IPC_MESSAGE_ROUTED2(ShellViewHostMsg_LoadURLForFrame,
                     GURL /* url */,
                     std::string /* frame_name */)
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_SetDeviceScaleFactor,
-                    float /* factor */)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CaptureSessionHistory)
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_CloseRemainingWindows)
 

@@ -151,6 +151,8 @@ class BlinkTestRunner : public RenderViewObserver,
     blink::WebLocalFrame* frame,
     const blink::WebPluginParams& params) override;
   void OnWebTestProxyBaseDestroy(test_runner::WebTestProxyBase* proxy) override;
+  blink::WebPoint ConvertDIPToNative(
+      const blink::WebPoint& point_in_dip) const override;
 
   void Reset();
 

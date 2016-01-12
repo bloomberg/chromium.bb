@@ -815,7 +815,7 @@ void RenderWidget::Resize(const gfx::Size& new_size,
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
   Resize(new_window_rect.size(),
-         new_window_rect.size(),
+         gfx::ScaleToCeiledSize(new_window_rect.size(), device_scale_factor_),
          top_controls_shrink_blink_size_,
          top_controls_height_,
          new_window_rect.size(),
