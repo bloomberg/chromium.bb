@@ -6,10 +6,11 @@
 
 SRCDIR = ..\liblouis
 CC = cl.exe
-CFLAGS =  /nologo /O2 /W3 /c /D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_WARNINGS
+CFLAGS = /nologo /O2 /W3 /c /D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_WARNINGS
 CFLAGS = $(CFLAGS) /Iinclude
 HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
 DLLFLAGS = /dll /nologo /DEF:liblouis.def /OUT:liblouis.dll
+LIBFLAGS = /nologo
 OBJ = compileTranslationTable.obj lou_translateString.obj \
     lou_backTranslateString.obj wrappers.obj logging.obj
 !if "$(UCS)" == "2"
@@ -21,9 +22,9 @@ CFLAGS = $(CFLAGS) /DUNICODEBITS=32
 !endif
 
 all: liblouis.lib liblouis.def
-    link  $(DLLFLAGS) $(OBJ)  
+    link $(DLLFLAGS) $(OBJ)  
 liblouis.lib: $(OBJ)
-    lib /nologo  $(OBJ) /out:liblouis.lib
+    lib $(LIBFLAGS) $(OBJ) /out:liblouis.lib
 
 compileTranslationTable.obj: $(SRCDIR)\compileTranslationTable.c \
     $(HEADERS)
