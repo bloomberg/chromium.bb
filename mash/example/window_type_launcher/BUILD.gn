@@ -21,6 +21,7 @@ executable("window_type_launcher") {
     ":window_type_launcher_resources",
     "//base",
     "//base:base_static",
+    "//build/config/sanitizers:deps",
     "//components/mus/public/interfaces",
     "//mojo/common:common_base",
     "//mojo/converters/geometry",

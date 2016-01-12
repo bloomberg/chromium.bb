@@ -110,6 +110,7 @@ executable("native_target") {
     ":lib",
     ":test_native_main",
     "//base",
+    "//build/config/sanitizers:deps",
     "//mojo/common:common_base",
     "//mojo/shell/public/cpp",
   ]

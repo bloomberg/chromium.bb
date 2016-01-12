@@ -151,6 +151,7 @@ executable("application_manager_apptest_driver") {
     ":test_bindings",
     "//base",
     "//base:base_static",
+    "//build/config/sanitizers:deps",
     "//mojo/common:common_base",
     "//mojo/converters/network",
     "//mojo/runner:init",
@@ -171,6 +172,7 @@ executable("application_manager_apptest_target") {
   deps = [
     ":test_bindings",
     "//base",
+    "//build/config/sanitizers:deps",
     "//mojo/common:common_base",
     "//mojo/converters/network",
     "//mojo/runner/child:test_native_main",
