@@ -115,7 +115,7 @@ struct BattOrEEPROM {
 struct BattOrFrameHeader {
   // The number of frames that have preceded this one.
   uint32_t sequence_no;
-  // The number of samples in this frame.
+  // The number of bytes of raw samples in this frame.
   uint16_t length;
 };
 

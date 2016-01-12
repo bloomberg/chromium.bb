@@ -429,7 +429,7 @@ TEST_F(BattOrAgentTest, StopTracing) {
   RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
   // Send the calibration frame.
-  BattOrFrameHeader cal_frame_header{0, 2};
+  BattOrFrameHeader cal_frame_header{0, 2 * sizeof(RawBattOrSample)};
   RawBattOrSample cal_frame[] = {
       RawBattOrSample{1, 1}, RawBattOrSample{2, 2},
   };
@@ -437,20 +437,20 @@ TEST_F(BattOrAgentTest, StopTracing) {
                             CreateFrame(cal_frame_header, cal_frame, 2));
 
   // Send the two real data frames.
-  BattOrFrameHeader frame_header1{0, 3};
+  BattOrFrameHeader frame_header1{0, 3 * sizeof(RawBattOrSample)};
   RawBattOrSample frame1[] = {
       RawBattOrSample{1, 1}, RawBattOrSample{2, 2}, RawBattOrSample{3, 3},
   };
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header1, frame1, 3));
 
-  BattOrFrameHeader frame_header2{0, 1};
+  BattOrFrameHeader frame_header2{0, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample frame2[] = {RawBattOrSample{1, 1}};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header2, frame2, 1));
 
   // Send an empty last frame to indicate that we're done.
-  BattOrFrameHeader frame_header3{0, 0};
+  BattOrFrameHeader frame_header3{0, 0 * sizeof(RawBattOrSample)};
   RawBattOrSample frame3[] = {};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header3, frame3, 0));
@@ -531,7 +531,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameHasWrongLength) {
 
   // Send a calibration frame with a mismatch between the frame length in the
   // header and the actual frame length.
-  BattOrFrameHeader cal_frame_header{0, 1};
+  BattOrFrameHeader cal_frame_header{0, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample cal_frame[] = {
       RawBattOrSample{1, 1}, RawBattOrSample{2, 2},
   };
@@ -545,7 +545,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameHasWrongLength) {
 TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
   RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
-  BattOrFrameHeader cal_frame_header{0, 1};
+  BattOrFrameHeader cal_frame_header{0, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample cal_frame[] = {
       RawBattOrSample{1, 1},
   };
@@ -554,7 +554,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
 
   // Send a data frame with a mismatch between the frame length in the
   // header and the actual frame length.
-  BattOrFrameHeader frame_header{0, 2};
+  BattOrFrameHeader frame_header{0, 2 * sizeof(RawBattOrSample)};
   RawBattOrSample frame[] = {RawBattOrSample{1, 1}};
   GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_SAMPLES,
                             CreateFrame(frame_header, frame, 1));
@@ -567,7 +567,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameHasWrongLength) {
 TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
   RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
-  BattOrFrameHeader cal_frame_header{0, 2};
+  BattOrFrameHeader cal_frame_header{0, 2 * sizeof(RawBattOrSample)};
   RawBattOrSample cal_frame[] = {
       RawBattOrSample{1, 1}, RawBattOrSample{2, 2},
   };
@@ -587,7 +587,7 @@ TEST_F(BattOrAgentTest, StopTracingFailsIfCalibrationFrameMissingByte) {
 TEST_F(BattOrAgentTest, StopTracingFailsIfDataFrameMissingByte) {
   RunStopTracingTo(BattOrAgentState::SAMPLES_REQUEST_SENT);
 
-  BattOrFrameHeader cal_frame_header{0, 1};
+  BattOrFrameHeader cal_frame_header{0, 1 * sizeof(RawBattOrSample)};
   RawBattOrSample cal_frame[] = {
       RawBattOrSample{1, 1},
   };

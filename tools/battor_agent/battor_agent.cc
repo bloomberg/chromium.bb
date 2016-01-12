@@ -71,18 +71,12 @@ bool ParseSampleFrame(BattOrMessageType type,
   memcpy(frame_header, frame_ptr, sizeof(BattOrFrameHeader));
   frame_ptr += sizeof(BattOrFrameHeader);
 
-  // The remaining bytes in the frame contain an array of raw samples.
-  // Therefore, the number of samples in the frame should correspond to number
-  // of total bytes remaining in the frame.
-  uint8_t samples_in_frame =
-      (msg.size() - sizeof(BattOrFrameHeader)) / sizeof(RawBattOrSample);
-
-  if (samples_in_frame != frame_header->length)
+  size_t remaining_bytes = msg.size() - sizeof(BattOrFrameHeader);
+  if (remaining_bytes != frame_header->length)
     return false;
 
-  samples->resize(samples_in_frame);
-  memcpy(samples->data(), frame_ptr,
-         samples_in_frame * sizeof(RawBattOrSample));
+  samples->resize(remaining_bytes / sizeof(RawBattOrSample));
+  memcpy(samples->data(), frame_ptr, remaining_bytes);
 
   return true;
 }
