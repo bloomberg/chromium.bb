@@ -613,31 +613,47 @@ static const GLenum kSupportedInternalFormatsEXTsRGB[] = {
     GL_SRGB_ALPHA_EXT,
 };
 
-// ES3 enums
+// ES3 enums supported by both CopyTexImage and TexImage.
 static const GLenum kSupportedInternalFormatsES3[] = {
     GL_R8,
+    GL_RG8,
+    GL_RGB565,
+    GL_RGB8,
+    GL_RGBA4,
+    GL_RGB5_A1,
+    GL_RGBA8,
+    GL_RGB10_A2,
+    GL_RGB10_A2UI,
+    GL_SRGB8,
+    GL_SRGB8_ALPHA8,
+    GL_R8I,
+    GL_R8UI,
+    GL_R16I,
+    GL_R16UI,
+    GL_R32I,
+    GL_R32UI,
+    GL_RG8I,
+    GL_RG8UI,
+    GL_RG16I,
+    GL_RG16UI,
+    GL_RG32I,
+    GL_RG32UI,
+    GL_RGBA8I,
+    GL_RGBA8UI,
+    GL_RGBA16I,
+    GL_RGBA16UI,
+    GL_RGBA32I,
+    GL_RGBA32UI,
+};
+
+// ES3 enums only supported by TexImage
+static const GLenum kSupportedInternalFormatsTexImageES3[] = {
     GL_R8_SNORM,
     GL_R16F,
     GL_R32F,
-    GL_R8UI,
-    GL_R8I,
-    GL_R16UI,
-    GL_R16I,
-    GL_R32UI,
-    GL_R32I,
-    GL_RG8,
     GL_RG8_SNORM,
     GL_RG16F,
     GL_RG32F,
-    GL_RG8UI,
-    GL_RG8I,
-    GL_RG16UI,
-    GL_RG16I,
-    GL_RG32UI,
-    GL_RG32I,
-    GL_RGB8,
-    GL_SRGB8,
-    GL_RGB565,
     GL_RGB8_SNORM,
     GL_R11F_G11F_B10F,
     GL_RGB9_E5,
@@ -649,21 +665,9 @@ static const GLenum kSupportedInternalFormatsES3[] = {
     GL_RGB16I,
     GL_RGB32UI,
     GL_RGB32I,
-    GL_RGBA8,
-    GL_SRGB8_ALPHA8,
     GL_RGBA8_SNORM,
-    GL_RGB5_A1,
-    GL_RGBA4,
-    GL_RGB10_A2,
     GL_RGBA16F,
     GL_RGBA32F,
-    GL_RGBA8UI,
-    GL_RGBA8I,
-    GL_RGB10_A2UI,
-    GL_RGBA16UI,
-    GL_RGBA16I,
-    GL_RGBA32I,
-    GL_RGBA32UI,
     GL_DEPTH_COMPONENT16,
     GL_DEPTH_COMPONENT24,
     GL_DEPTH_COMPONENT32F,
@@ -950,6 +954,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_multisamplingObserverRegistered(false)
     , m_onePlusMaxNonDefaultTextureUnit(0)
     , m_isWebGL2FormatsTypesAdded(false)
+    , m_isWebGL2InternalFormatsCopyTexImageAdded(false)
     , m_isOESTextureFloatFormatsTypesAdded(false)
     , m_isOESTextureHalfFloatFormatsTypesAdded(false)
     , m_isWebGLDepthTextureFormatsTypesAdded(false)
@@ -980,6 +985,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     }
 
     ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+    ADD_VALUES_TO_SET(m_supportedInternalFormatsCopyTexImage, kSupportedInternalFormatsES2);
     ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
     ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES2);
     ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesES2);
@@ -1092,6 +1098,7 @@ void WebGLRenderingContextBase::initializeNewContext()
         m_extensionEnabled[i] = false;
 
     m_isWebGL2FormatsTypesAdded = false;
+    m_isWebGL2InternalFormatsCopyTexImageAdded = false;
     m_isOESTextureFloatFormatsTypesAdded = false;
     m_isOESTextureHalfFloatFormatsTypesAdded = false;
     m_isWebGLDepthTextureFormatsTypesAdded = false;
@@ -1099,6 +1106,8 @@ void WebGLRenderingContextBase::initializeNewContext()
 
     m_supportedInternalFormats.clear();
     ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES2);
+    m_supportedInternalFormatsCopyTexImage.clear();
+    ADD_VALUES_TO_SET(m_supportedInternalFormatsCopyTexImage, kSupportedInternalFormatsES2);
     m_supportedFormats.clear();
     ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES2);
     m_supportedTypes.clear();
@@ -1902,23 +1911,47 @@ bool WebGLRenderingContextBase::validateSettableTexFormat(const char* functionNa
     return true;
 }
 
+bool WebGLRenderingContextBase::validateCopyTexFormat(const char* functionName, GLenum internalformat)
+{
+    if (!m_isWebGL2InternalFormatsCopyTexImageAdded && isWebGL2OrHigher()) {
+        ADD_VALUES_TO_SET(m_supportedInternalFormatsCopyTexImage, kSupportedInternalFormatsES3);
+        m_isWebGL2InternalFormatsCopyTexImageAdded = true;
+    }
+
+    if (m_supportedInternalFormatsCopyTexImage.find(internalformat) == m_supportedInternalFormatsCopyTexImage.end()) {
+        synthesizeGLError(GL_INVALID_ENUM, functionName, "invalid internalformat");
+        return false;
+    }
+
+    return true;
+}
+
 void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height, GLint border)
 {
     if (isContextLost())
         return;
-    if (!validateTexFuncLevel("copyTexImage2D", target, level))
-        return;
-    if (!validateTexFuncParameters("copyTexImage2D", CopyTexImage, target, level, internalformat, width, height, 1, border, internalformat, GL_UNSIGNED_BYTE))
-        return;
-    if (!validateSettableTexFormat("copyTexImage2D", internalformat))
-        return;
     WebGLTexture* tex = validateTextureBinding("copyTexImage2D", target, true);
     if (!tex)
+        return;
+    if (!validateTexFuncLevel("copyTexImage2D", target, level))
+        return;
+    if (!validateCopyTexFormat("copyTexImage2D", internalformat))
+        return;
+    if (!validateTexFuncDimensions("copyTexImage2D", CopyTexImage, target, level, width, height, 1))
+        return;
+    if (border) {
+        synthesizeGLError(GL_INVALID_VALUE, "copyTexImage2D", "border != 0");
+        return;
+    }
+    if (!validateSettableTexFormat("copyTexImage2D", internalformat))
         return;
     if (tex->isImmutable()) {
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "attempted to modify immutable texture");
         return;
     }
+    WebGLFramebuffer* readFramebufferBinding = nullptr;
+    if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding, nullptr, nullptr))
+        return;
     if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
         synthesizeGLError(GL_INVALID_OPERATION, "copyTexImage2D", "framebuffer is incompatible format");
         return;
@@ -1927,25 +1960,27 @@ void WebGLRenderingContextBase::copyTexImage2D(GLenum target, GLint level, GLenu
         synthesizeGLError(GL_INVALID_VALUE, "copyTexImage2D", "level > 0 not power of 2");
         return;
     }
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
-    if (!validateReadBufferAndGetInfo("copyTexImage2D", readFramebufferBinding, nullptr, nullptr))
-        return;
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexImage2D(target, level, internalformat, x, y, width, height, border);
-    // FIXME: if the framebuffer is not complete, none of the below should be executed.
-    tex->setLevelInfo(target, level, internalformat, width, height, 1, GL_UNSIGNED_BYTE);
+    tex->setLevelInfo(target, level, internalformat, width, height, 1, WebGLTexture::getValidTypeForInternalFormat(internalformat));
 }
 
 void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
 {
     if (isContextLost())
         return;
+    WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateCopyTexSubImage("copyTexSubImage2D", target, level, xoffset, yoffset, 0, x, y, width, height))
         return;
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateReadBufferAndGetInfo("copyTexSubImage2D", readFramebufferBinding, nullptr, nullptr))
         return;
+    WebGLTexture* tex = validateTextureBinding("copyTexSubImage2D", target, true);
+    ASSERT(tex);
+    if (!isTexInternalFormatColorBufferCombinationValid(tex->getInternalFormat(target, level), boundFramebufferColorFormat())) {
+        synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage2D", "framebuffer is incompatible format");
+        return;
+    }
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -5628,6 +5663,7 @@ bool WebGLRenderingContextBase::validateTexFuncFormatAndType(const char* functio
 {
     if (!m_isWebGL2FormatsTypesAdded && isWebGL2OrHigher()) {
         ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsES3);
+        ADD_VALUES_TO_SET(m_supportedInternalFormats, kSupportedInternalFormatsTexImageES3);
         ADD_VALUES_TO_SET(m_supportedFormats, kSupportedFormatsES3);
         ADD_VALUES_TO_SET(m_supportedTypes, kSupportedTypesES3);
         ADD_VALUES_TO_SET(m_supportedFormatTypeCombinations, kSupportedFormatTypesES3);
@@ -5912,10 +5948,6 @@ bool WebGLRenderingContextBase::validateCopyTexSubImage(const char* functionName
     GLenum internalformat = tex->getInternalFormat(target, level);
     if (!validateSettableTexFormat(functionName, internalformat))
         return false;
-    if (!isTexInternalFormatColorBufferCombinationValid(internalformat, boundFramebufferColorFormat())) {
-        synthesizeGLError(GL_INVALID_OPERATION, functionName, "framebuffer is incompatible format");
-        return false;
-    }
 
     return true;
 }

@@ -1020,11 +1020,17 @@ void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, G
 {
     if (isContextLost())
         return;
+    WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateCopyTexSubImage("copyTexSubImage3D", target, level, xoffset, yoffset, zoffset, x, y, width, height))
         return;
-    WebGLFramebuffer* readFramebufferBinding = nullptr;
     if (!validateReadBufferAndGetInfo("copyTexSubImage3D", readFramebufferBinding, nullptr, nullptr))
         return;
+    WebGLTexture* tex = validateTextureBinding("copyTexSubImage3D", target, true);
+    ASSERT(tex);
+    if (!isTexInternalFormatColorBufferCombinationValid(tex->getInternalFormat(target, level), boundFramebufferColorFormat())) {
+        synthesizeGLError(GL_INVALID_OPERATION, "copyTexSubImage3D", "framebuffer is incompatible format");
+        return;
+    }
     clearIfComposited();
     ScopedDrawingBufferBinder binder(drawingBuffer(), readFramebufferBinding);
     webContext()->copyTexSubImage3D(target, level, xoffset, yoffset, zoffset, x, y, width, height);

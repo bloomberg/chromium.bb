@@ -768,12 +768,14 @@ protected:
     Vector<GLenum> m_lostContextErrors;
 
     bool m_isWebGL2FormatsTypesAdded;
+    bool m_isWebGL2InternalFormatsCopyTexImageAdded;
     bool m_isOESTextureFloatFormatsTypesAdded;
     bool m_isOESTextureHalfFloatFormatsTypesAdded;
     bool m_isWebGLDepthTextureFormatsTypesAdded;
     bool m_isEXTsRGBFormatsTypesAdded;
 
     std::set<GLenum> m_supportedInternalFormats;
+    std::set<GLenum> m_supportedInternalFormatsCopyTexImage;
     std::set<GLenum> m_supportedFormats;
     std::set<GLenum> m_supportedTypes;
     std::set<FormatType, FormatTypeCompare> m_supportedFormatTypeCombinations;
@@ -935,6 +937,9 @@ protected:
     // copyTexSubImage2D.
     // Generates GL error and returns false if the format is not settable.
     bool validateSettableTexFormat(const char* functionName, GLenum format);
+
+    // Helper function to validate format for CopyTexImage.
+    bool validateCopyTexFormat(const char* functionName, GLenum format);
 
     // Helper function to validate compressed texture data is correct size
     // for the given format and dimensions.
