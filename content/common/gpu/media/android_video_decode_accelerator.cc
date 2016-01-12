@@ -437,26 +437,22 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         return false;
 
       case media::MEDIA_CODEC_OUTPUT_FORMAT_CHANGED: {
+        if (!output_picture_buffers_.empty()) {
+          // TODO(chcunningham): This will likely dismiss a handful of decoded
+          // frames that have not yet been drawn and returned to us for re-use.
+          // Consider a more complicated design that would wait for them to be
+          // drawn before dismissing.
+          DismissPictureBuffers();
+        }
+
+        picturebuffers_requested_ = true;
         int32_t width, height;
         media_codec_->GetOutputFormat(&width, &height);
-
-        if (!picturebuffers_requested_) {
-          picturebuffers_requested_ = true;
-          size_ = gfx::Size(width, height);
-          base::MessageLoop::current()->PostTask(
-              FROM_HERE,
-              base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
-                         weak_this_factory_.GetWeakPtr()));
-        } else {
-          // Dynamic resolution change support is not specified by the Android
-          // platform at and before JB-MR1, so it's not possible to smoothly
-          // continue playback at this point.  Instead, error out immediately,
-          // expecting clients to Flush() or Reset() as appropriate to avoid
-          // this. b/7093648
-          RETURN_ON_FAILURE(this, size_ == gfx::Size(width, height),
-                            "Dynamic resolution change is not supported.",
-                            PLATFORM_FAILURE, false);
-        }
+        size_ = gfx::Size(width, height);
+        base::MessageLoop::current()->PostTask(
+            FROM_HERE,
+            base::Bind(&AndroidVideoDecodeAccelerator::RequestPictureBuffers,
+                       weak_this_factory_.GetWeakPtr()));
         return false;
       }
 
@@ -487,7 +483,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
                 : bitstream_buffers_in_decoder_.find(presentation_timestamp);
 
   if (eos) {
-    DVLOG(3) << "AVDA::DequeueOutput: Resetting output state after EOS";
+    DVLOG(3) << "AVDA::DequeueOutput: Resetting codec state after EOS";
     ResetCodecState();
 
     base::MessageLoop::current()->PostTask(
@@ -672,21 +668,14 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 }
 
 void AndroidVideoDecodeAccelerator::ResetCodecState() {
-  // TODO(chcunningham): This will likely dismiss a handful of decoded frames
-  // that have not yet been drawn and returned to us for re-use. Consider
-  // a more complicated design that would wait for these to be drawn before
-  // dismissing.
-  for (const auto& it : output_picture_buffers_) {
-    strategy_->DismissOnePictureBuffer(it.second);
-    client_->DismissPictureBuffer(it.first);
-    dismissed_picture_ids_.insert(it.first);
-  }
-  output_picture_buffers_.clear();
-  std::queue<int32_t> empty;
-  std::swap(free_picture_ids_, empty);
-  CHECK(free_picture_ids_.empty());
-  picturebuffers_requested_ = false;
+  DCHECK(thread_checker_.CalledOnValidThread());
   bitstream_buffers_in_decoder_.clear();
+  // The MediaCodec buffers will be invalidated so tell the backing strategy to
+  // stop referring to them. We don't tell the client to dismiss our assigned
+  // picture buffers because after flushing MediaCodec we need to reuse them if
+  // the size doesn't change.
+  for (const auto& pb : output_picture_buffers_)
+    strategy_->DismissOnePictureBuffer(pb.second);
 
   // When codec is not in error state we can quickly reset (internally calls
   // flush()) for JB-MR2 and beyond. Prior to JB-MR2, flush() had several bugs
@@ -705,6 +694,21 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
     ConfigureMediaCodec();
     state_ = NO_ERROR;
   }
+}
+
+void AndroidVideoDecodeAccelerator::DismissPictureBuffers() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(3) << __FUNCTION__;
+
+  for (const auto& pb : output_picture_buffers_) {
+    strategy_->DismissOnePictureBuffer(pb.second);
+    client_->DismissPictureBuffer(pb.first);
+    dismissed_picture_ids_.insert(pb.first);
+  }
+  output_picture_buffers_.clear();
+  std::queue<int32_t> empty;
+  std::swap(free_picture_ids_, empty);
+  picturebuffers_requested_ = false;
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {

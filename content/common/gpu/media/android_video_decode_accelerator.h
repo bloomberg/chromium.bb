@@ -193,6 +193,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // is still valid and should be processed.
   void ResetCodecState();
 
+  // Dismiss all |output_picture_buffers_| in preparation for requesting new
+  // ones.
+  void DismissPictureBuffers();
+
   // Return true if and only if we should use deferred rendering.
   static bool UseDeferredRenderingStrategy();
 
