@@ -19,16 +19,15 @@ InputHandlerWrapper::InputHandlerWrapper(
     int routing_id,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
     const base::WeakPtr<cc::InputHandler>& input_handler,
-    const base::WeakPtr<RenderViewImpl>& render_view_impl)
+    const base::WeakPtr<RenderViewImpl>& render_view_impl,
+    bool enable_smooth_scrolling)
     : input_handler_manager_(input_handler_manager),
       routing_id_(routing_id),
       input_handler_proxy_(input_handler.get(), this),
       main_task_runner_(main_task_runner),
       render_view_impl_(render_view_impl) {
   DCHECK(input_handler);
-  input_handler_proxy_.set_smooth_scroll_enabled(
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-                  switches::kDisableSmoothScrolling));
+  input_handler_proxy_.set_smooth_scroll_enabled(enable_smooth_scrolling);
 }
 
 InputHandlerWrapper::~InputHandlerWrapper() {

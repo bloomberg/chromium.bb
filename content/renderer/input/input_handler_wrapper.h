@@ -27,7 +27,8 @@ class InputHandlerWrapper : public ui::InputHandlerProxyClient {
       int routing_id,
       const scoped_refptr<base::SingleThreadTaskRunner>& main_task_runner,
       const base::WeakPtr<cc::InputHandler>& input_handler,
-      const base::WeakPtr<RenderViewImpl>& render_view_impl);
+      const base::WeakPtr<RenderViewImpl>& render_view_impl,
+      bool enable_smooth_scrolling);
   ~InputHandlerWrapper() override;
 
   int routing_id() const { return routing_id_; }

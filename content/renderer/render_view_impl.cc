@@ -2132,7 +2132,8 @@ void RenderViewImpl::initializeLayerTreeView() {
         render_thread ? render_thread->input_handler_manager() : NULL;
     if (input_handler_manager) {
       input_handler_manager->AddInputHandler(
-          routing_id(), rwc->GetInputHandler(), AsWeakPtr());
+          routing_id(), rwc->GetInputHandler(), AsWeakPtr(),
+          webkit_preferences_.enable_scroll_animator);
     }
   }
 }

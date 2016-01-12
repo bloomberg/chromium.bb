@@ -99,10 +99,6 @@ bool Animation::ShouldRenderRichAnimation() {
     BOOL result;
     // Get "Turn off all unnecessary animations" value.
     if (::SystemParametersInfo(SPI_GETCLIENTAREAANIMATION, 0, &result, 0)) {
-      // There seems to be a typo in the MSDN document (as of May 2009):
-      //   http://msdn.microsoft.com/en-us/library/ms724947(VS.85).aspx
-      // The document states that the result is TRUE when animations are
-      // _disabled_, but in fact, it is TRUE when they are _enabled_.
       return !!result;
     }
   }

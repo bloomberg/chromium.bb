@@ -81,6 +81,7 @@
 #include "ui/base/touch/touch_device.h"
 #include "ui/base/touch/touch_enabled.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/native_theme/native_theme_switches.h"
@@ -480,8 +481,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.slimming_paint_v2_enabled =
       command_line.HasSwitch(switches::kEnableSlimmingPaintV2);
 
-  prefs.enable_scroll_animator = !command_line.HasSwitch(
-      switches::kDisableSmoothScrolling);
+  prefs.enable_scroll_animator =
+      !command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
+      gfx::Animation::ShouldRenderRichAnimation();
 
   // Certain GPU features might have been blacklisted.
   GpuDataManagerImpl::GetInstance()->UpdateRendererWebPrefs(&prefs);
