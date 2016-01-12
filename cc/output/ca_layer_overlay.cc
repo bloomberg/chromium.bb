@@ -136,6 +136,7 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
   }
 
   // Enable edge anti-aliasing only on layer boundaries.
+  ca_layer_overlay->edge_aa_mask = 0;
   if (quad->IsLeftEdge())
     ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_LEFT_CHROMIUM;
   if (quad->IsRightEdge())
@@ -210,11 +211,7 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
 
 }  // namespace
 
-CALayerOverlay::CALayerOverlay()
-    : contents_resource_id(0),
-      opacity(1),
-      background_color(SK_ColorTRANSPARENT),
-      transform(SkMatrix44::kIdentity_Constructor) {}
+CALayerOverlay::CALayerOverlay() {}
 
 CALayerOverlay::~CALayerOverlay() {}
 

@@ -22,19 +22,19 @@ class CC_EXPORT CALayerOverlay {
 
   // Texture that corresponds to an IOSurface to set as the content of the
   // CALayer. If this is 0 then the CALayer is a solid color.
-  unsigned contents_resource_id;
+  unsigned contents_resource_id = 0;
   // The contents rect property for the CALayer.
   gfx::RectF contents_rect;
   // The opacity property for the CAayer.
-  float opacity;
+  float opacity = 1;
   // The background color property for the CALayer.
-  SkColor background_color;
+  SkColor background_color = SK_ColorTRANSPARENT;
   // The edge anti-aliasing mask property for the CALayer.
-  unsigned edge_aa_mask;
+  unsigned edge_aa_mask = 0;
   // The bounds for the CALayer in pixels.
   gfx::SizeF bounds_size;
   // The transform to apply to the CALayer.
-  SkMatrix44 transform;
+  SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
 };
 
 typedef std::vector<CALayerOverlay> CALayerOverlayList;
