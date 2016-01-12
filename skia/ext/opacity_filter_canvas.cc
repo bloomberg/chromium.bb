@@ -15,24 +15,28 @@ OpacityFilterCanvas::OpacityFilterCanvas(SkCanvas* canvas,
       alpha_(SkScalarRoundToInt(opacity * 255)),
       disable_image_filtering_(disable_image_filtering) { }
 
-void OpacityFilterCanvas::onFilterPaint(SkPaint* paint, Type) const {
-  if (alpha_ < 255)
-    paint->setAlpha(alpha_);
+bool OpacityFilterCanvas::onFilter(SkTCopyOnFirstWrite<SkPaint>* paint, Type) const {
+  // TODO(fmalita): with the new onFilter() API we could override alpha even
+  // when the original paint is null; is this something we should do?
+  if (*paint) {
+    if (alpha_ < 255)
+      paint->writable()->setAlpha(alpha_);
 
-  if (disable_image_filtering_)
-    paint->setFilterQuality(kNone_SkFilterQuality);
+    if (disable_image_filtering_)
+      paint->writable()->setFilterQuality(kNone_SkFilterQuality);
+  }
+
+  return true;
 }
 
 void OpacityFilterCanvas::onDrawPicture(const SkPicture* picture,
                                         const SkMatrix* matrix,
                                         const SkPaint* paint) {
-  SkTLazy<SkPaint> filteredPaint;
-  if (paint) {
-    this->onFilterPaint(filteredPaint.set(*paint), kPicture_Type);
+  SkTCopyOnFirstWrite<SkPaint> filteredPaint(paint);
+  if (this->onFilter(&filteredPaint, kPicture_Type)) {
+    // Unfurl pictures in order to filter nested paints.
+    this->SkCanvas::onDrawPicture(picture, matrix, filteredPaint);
   }
-
-  // Unfurl pictures in order to filter nested paints.
-  this->SkCanvas::onDrawPicture(picture, matrix, filteredPaint.getMaybeNull());
 }
 
 }  // namespace skia
