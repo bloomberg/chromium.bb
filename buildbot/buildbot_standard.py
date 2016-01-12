@@ -283,6 +283,10 @@ def BuildScript(status, context):
         }[context['arch']]
 
     gn_gen_args = [
+      # The Chromium GN definitions might default enable_nacl to false
+      # in some circumstances, but various BUILD.gn files involved in
+      # the standalone NaCl build assume enable_nacl==true.
+      'enable_nacl=true',
       'target_cpu="%s"' % gn_arch_name,
       'is_debug=' + context['gn_is_debug'],
       'use_gcc_glibc=' + gn_glibc,
