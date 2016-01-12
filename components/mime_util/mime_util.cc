@@ -21,20 +21,6 @@ namespace mime_util {
 
 namespace {
 
-// Dictionary of cryptographic file mime types.
-struct CertificateMimeTypeInfo {
-  const char* const mime_type;
-  net::CertificateMimeType cert_type;
-};
-
-const CertificateMimeTypeInfo kSupportedCertificateTypes[] = {
-    {"application/x-x509-user-cert", net::CERTIFICATE_MIME_TYPE_X509_USER_CERT},
-#if defined(OS_ANDROID)
-    {"application/x-x509-ca-cert", net::CERTIFICATE_MIME_TYPE_X509_CA_CERT},
-    {"application/x-pkcs12", net::CERTIFICATE_MIME_TYPE_PKCS12_ARCHIVE},
-#endif
-};
-
 // From WebKit's WebCore/platform/MIMETypeRegistry.cpp:
 
 const char* const kSupportedImageTypes[] = {"image/jpeg",
@@ -149,8 +135,6 @@ MimeUtil::MimeUtil() {
     javascript_types_.insert(kSupportedJavascriptTypes[i]);
     non_image_types_.insert(kSupportedJavascriptTypes[i]);
   }
-  for (size_t i = 0; i < arraysize(kSupportedCertificateTypes); ++i)
-    non_image_types_.insert(kSupportedCertificateTypes[i].mime_type);
 }
 
 bool MimeUtil::IsSupportedImageMimeType(const std::string& mime_type) const {
@@ -210,28 +194,8 @@ bool IsSupportedJavascriptMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedJavascriptMimeType(mime_type);
 }
 
-bool IsSupportedCertificateMimeType(const std::string& mime_type) {
-  net::CertificateMimeType file_type =
-      GetCertificateMimeTypeForMimeType(mime_type);
-  return file_type != net::CERTIFICATE_MIME_TYPE_UNKNOWN;
-}
-
 bool IsSupportedMimeType(const std::string& mime_type) {
   return g_mime_util.Get().IsSupportedMimeType(mime_type);
-}
-
-net::CertificateMimeType GetCertificateMimeTypeForMimeType(
-    const std::string& mime_type) {
-  // Don't create a map, there is only one entry in the table,
-  // except on Android.
-  for (size_t i = 0; i < arraysize(kSupportedCertificateTypes); ++i) {
-    if (base::EqualsCaseInsensitiveASCII(
-            mime_type, kSupportedCertificateTypes[i].mime_type)) {
-      return kSupportedCertificateTypes[i].cert_type;
-    }
-  }
-
-  return net::CERTIFICATE_MIME_TYPE_UNKNOWN;
 }
 
 }  // namespace mime_util

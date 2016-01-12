@@ -916,8 +916,6 @@
       'browser/loader/async_revalidation_driver.h',
       'browser/loader/async_revalidation_manager.cc',
       'browser/loader/async_revalidation_manager.h',
-      'browser/loader/certificate_resource_handler.cc',
-      'browser/loader/certificate_resource_handler.h',
       'browser/loader/cross_site_resource_handler.cc',
       'browser/loader/cross_site_resource_handler.h',
       'browser/loader/detachable_resource_handler.cc',

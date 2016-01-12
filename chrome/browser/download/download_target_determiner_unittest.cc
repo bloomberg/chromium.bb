@@ -1914,6 +1914,22 @@ TEST_F(DownloadTargetDeterminerTest,
       },
       ""
     },
+    {
+      {
+        // 5: x-x509-user-cert mime-type.
+        AUTOMATIC,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.notarealext", "application/x-x509-user-cert",
+        FILE_PATH_LITERAL(""),
+
+        FILE_PATH_LITERAL("user.crt"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      ""
+    },
+
   };
 
   ON_CALL(*delegate(), GetFileMimeType(

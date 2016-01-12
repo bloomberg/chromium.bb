@@ -51910,6 +51910,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UserCert.ContentDisposition" enum="UserCertContentDisposition">
+  <owner>rsleevi@chromium.org</owner>
+  <owner>svaldez@chromium.org</owner>
+  <summary>
+    Distribution of Content-Disposition headers sent with x-x509-user-cert
+    content types.
+  </summary>
+</histogram>
+
 <histogram name="UserImage.ChangeChoice" enum="ChromeOSUserImageId">
   <owner>achuith@chromium.org</owner>
   <summary>
@@ -79365,6 +79374,11 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="UsedInDraw" type="int">
   <int value="0" label="Was not used in draw"/>
   <int value="1" label="Was used in draw"/>
+</enum>
+
+<enum name="UserCertContentDisposition" type="int">
+  <int value="0" label="No Content-Disposition"/>
+  <int value="1" label="Content-Disposition"/>
 </enum>
 
 <enum name="UserChannels" type="int">

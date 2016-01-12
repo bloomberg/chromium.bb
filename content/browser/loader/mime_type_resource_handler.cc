@@ -17,7 +17,6 @@
 #include "components/mime_util/mime_util.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/download_stats.h"
-#include "content/browser/loader/certificate_resource_handler.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/stream_resource_handler.h"
@@ -341,12 +340,14 @@ bool MimeTypeResourceHandler::SelectNextHandler(bool* defer) {
   ResourceRequestInfoImpl* info = GetRequestInfo();
   const std::string& mime_type = response_->head.mime_type;
 
-  if (mime_util::IsSupportedCertificateMimeType(mime_type)) {
-    // Install certificate file.
-    info->set_is_download(true);
-    scoped_ptr<ResourceHandler> handler(
-        new CertificateResourceHandler(request()));
-    return UseAlternateNextHandler(std::move(handler), std::string());
+  // https://crbug.com/568184 - Temporary hack to track servers that aren't
+  // setting Content-Disposition when sending x-x509-user-cert and expecting
+  // the browser to automatically install certificates; this is being
+  // deprecated and will be removed upon full <keygen> removal.
+  if (mime_type == "application/x-x509-user-cert") {
+    UMA_HISTOGRAM_BOOLEAN(
+        "UserCert.ContentDisposition",
+        response_->head.headers->HasHeader("Content-Disposition"));
   }
 
   // Allow requests for object/embed tags to be intercepted as streams.

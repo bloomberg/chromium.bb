@@ -26,14 +26,11 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedNonImageMimeType("text/vcard"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/virus"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("Application/VIRUS"));
-  EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-x509-user-cert"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/json"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/+json"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-suggestions+json"));
   EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-s+json;x=2"));
 #if defined(OS_ANDROID)
-  EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-x509-ca-cert"));
-  EXPECT_TRUE(IsSupportedNonImageMimeType("application/x-pkcs12"));
 #if 0  // Disabled until http://crbug.com/318217 is resolved.
   EXPECT_TRUE(IsSupportedMediaMimeType("application/vnd.apple.mpegurl"));
   EXPECT_TRUE(IsSupportedMediaMimeType("application/x-mpegurl"));
@@ -53,27 +50,6 @@ TEST(MimeUtilTest, LookupTypes) {
   EXPECT_FALSE(IsSupportedMimeType("Application/X-JSON"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("application/vnd.doc;x=y+json"));
   EXPECT_FALSE(IsSupportedNonImageMimeType("Application/VND.DOC;X=Y+JSON"));
-}
-
-TEST(MimeUtilTest, TestGetCertificateMimeTypeForMimeType) {
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_X509_USER_CERT,
-            GetCertificateMimeTypeForMimeType("application/x-x509-user-cert"));
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_X509_USER_CERT,
-            GetCertificateMimeTypeForMimeType("Application/X-X509-USER-CERT"));
-#if defined(OS_ANDROID)
-  // Only Android supports CA Certs and PKCS12 archives.
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_X509_CA_CERT,
-            GetCertificateMimeTypeForMimeType("application/x-x509-ca-cert"));
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_PKCS12_ARCHIVE,
-            GetCertificateMimeTypeForMimeType("application/x-pkcs12"));
-#else
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_UNKNOWN,
-            GetCertificateMimeTypeForMimeType("application/x-x509-ca-cert"));
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_UNKNOWN,
-            GetCertificateMimeTypeForMimeType("application/x-pkcs12"));
-#endif
-  EXPECT_EQ(net::CERTIFICATE_MIME_TYPE_UNKNOWN,
-            GetCertificateMimeTypeForMimeType("text/plain"));
 }
 
 }  // namespace mime_util

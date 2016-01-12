@@ -39,6 +39,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/features.h"
@@ -467,7 +468,12 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
       NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK,
       false);
-  browser->OpenURL(params);
+
+  if (download->GetMimeType() == "application/x-x509-user-cert")
+    chrome::ShowSettingsSubPage(browser, "certificates");
+  else
+    browser->OpenURL(params);
+
   RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER);
 #else
   // ShouldPreferOpeningInBrowser() should never be true on Android.
@@ -721,6 +727,11 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
         IsOpenInBrowserPreferreredForFile(target_info->target_path) &&
         target_info->is_filetype_handled_safely)
       DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
+
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+    if (item->GetOriginalMimeType() == "application/x-x509-user-cert")
+      DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
+#endif
 
     if (target_info->is_dangerous_file)
       DownloadItemModel(item).SetIsDangerousFileBasedOnType(true);

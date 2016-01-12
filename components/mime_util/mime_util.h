@@ -17,7 +17,6 @@ bool IsSupportedImageMimeType(const std::string& mime_type);
 bool IsSupportedNonImageMimeType(const std::string& mime_type);
 bool IsUnsupportedTextMimeType(const std::string& mime_type);
 bool IsSupportedJavascriptMimeType(const std::string& mime_type);
-bool IsSupportedCertificateMimeType(const std::string& mime_type);
 
 // Convenience function.
 bool IsSupportedMimeType(const std::string& mime_type);
