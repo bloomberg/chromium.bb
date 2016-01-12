@@ -109,16 +109,17 @@ AudioDeviceType AudioDevice::GetAudioType(
 AudioDevice::AudioDevice()
     : is_input(false),
       id(0),
+      stable_device_id(0),
       display_name(""),
       type(AUDIO_TYPE_OTHER),
       priority(0),
       active(false),
-      plugged_time(0) {
-}
+      plugged_time(0) {}
 
 AudioDevice::AudioDevice(const AudioNode& node) {
   is_input = node.is_input;
   id = node.id;
+  stable_device_id = node.stable_device_id;
   type = GetAudioType(node.type);
   if (!node.name.empty() && node.name != "(default)")
     display_name = node.name;
@@ -139,6 +140,9 @@ std::string AudioDevice::ToString() const {
   base::StringAppendF(&result,
                       "id = 0x%" PRIx64 " ",
                       id);
+  base::StringAppendF(&result,
+                      "stable_device_id = 0x%" PRIx64 " ",
+                      stable_device_id);
   base::StringAppendF(&result,
                       "display_name = %s ",
                       display_name.c_str());

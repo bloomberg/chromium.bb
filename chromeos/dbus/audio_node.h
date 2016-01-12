@@ -18,6 +18,7 @@ namespace chromeos {
 struct CHROMEOS_EXPORT AudioNode {
   bool is_input;
   uint64_t id;
+  uint64_t stable_device_id;
   std::string device_name;
   std::string type;
   std::string name;
@@ -29,6 +30,7 @@ struct CHROMEOS_EXPORT AudioNode {
   AudioNode();
   AudioNode(bool is_input,
             uint64_t id,
+            uint64_t stable_device_id,
             std::string device_name,
             std::string type,
             std::string name,

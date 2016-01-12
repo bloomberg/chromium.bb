@@ -35,6 +35,10 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   bool GetMuteValue(const AudioDevice& device) override;
   void SetMuteValue(const AudioDevice& device, bool mute_on) override;
 
+  AudioDeviceState GetDeviceState(const AudioDevice& device) override;
+  void SetDeviceState(const AudioDevice& device,
+                      AudioDeviceState state) override;
+
   bool GetAudioOutputAllowedValue() override;
 
   void AddAudioPrefObserver(AudioPrefObserver* observer) override;
@@ -50,13 +54,17 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
   // Initializes the observers for the policy prefs.
   void InitializePrefObservers();
 
-  // Update and save methods for the mute preferences for all devices.
-  void UpdateDevicesMutePref();
+  // Load and save methods for the mute preferences for all devices.
+  void LoadDevicesMutePref();
   void SaveDevicesMutePref();
 
-  // Update and save methods for the volume preferences for all devices.
-  void UpdateDevicesVolumePref();
+  // Load and save methods for the volume preferences for all devices.
+  void LoadDevicesVolumePref();
   void SaveDevicesVolumePref();
+
+  // Load and save methods for the active state for all devices.
+  void LoadDevicesStatePref();
+  void SaveDevicesStatePref();
 
   double GetVolumeGainPrefValue(const AudioDevice& device);
   double GetDeviceDefaultOutputVolume(const AudioDevice& device);
@@ -73,6 +81,7 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandlerImpl
 
   scoped_ptr<base::DictionaryValue> device_mute_settings_;
   scoped_ptr<base::DictionaryValue> device_volume_settings_;
+  scoped_ptr<base::DictionaryValue> device_state_settings_;
 
   PrefService* local_state_;  // not owned
 

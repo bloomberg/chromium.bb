@@ -42,87 +42,80 @@ const uint64_t kUSBJabraSpeakerInputId1 = 90005;
 const uint64_t kUSBJabraSpeakerInputId2 = 90006;
 const uint64_t kUSBCameraInputId = 90007;
 
-const AudioNode kInternalSpeaker(
-    false,
-    kInternalSpeakerId,
-    "Fake Speaker",
-    "INTERNAL_SPEAKER",
-    "Speaker",
-    false,
-    0
-);
+const AudioNode kInternalSpeaker(false,
+                                 kInternalSpeakerId,
+                                 kInternalSpeakerId,
+                                 "Fake Speaker",
+                                 "INTERNAL_SPEAKER",
+                                 "Speaker",
+                                 false,
+                                 0);
 
-const AudioNode kHeadphone(
-    false,
-    kHeadphoneId,
-    "Fake Headphone",
-    "HEADPHONE",
-    "Headphone",
-    false,
-    0
-);
+const AudioNode kHeadphone(false,
+                           kHeadphoneId,
+                           kHeadphoneId,
+                           "Fake Headphone",
+                           "HEADPHONE",
+                           "Headphone",
+                           false,
+                           0);
 
-const AudioNode kInternalMic(
-    true,
-    kInternalMicId,
-    "Fake Mic",
-    "INTERNAL_MIC",
-    "Internal Mic",
-    false,
-    0
-);
+const AudioNode kInternalMic(true,
+                             kInternalMicId,
+                             kInternalMicId,
+                             "Fake Mic",
+                             "INTERNAL_MIC",
+                             "Internal Mic",
+                             false,
+                             0);
 
-const AudioNode kMicJack(
-    true,
-    kMicJackId,
-    "Fake Mic Jack",
-    "MIC",
-    "Mic Jack",
-    false,
-    0
-);
+const AudioNode kMicJack(true,
+                         kMicJackId,
+                         kMicJackId,
+                         "Fake Mic Jack",
+                         "MIC",
+                         "Mic Jack",
+                         false,
+                         0);
 
-const AudioNode kUSBMic(
-    true,
-    kUSBMicId,
-    "Fake USB Mic",
-    "USB",
-    "USB Microphone",
-    false,
-    0
-);
+const AudioNode kUSBMic(true,
+                        kUSBMicId,
+                        kUSBMicId,
+                        "Fake USB Mic",
+                        "USB",
+                        "USB Microphone",
+                        false,
+                        0);
 
-const AudioNode kKeyboardMic(
-    true,
-    kKeyboardMicId,
-    "Fake Keyboard Mic",
-    "KEYBOARD_MIC",
-    "Keyboard Mic",
-    false,
-    0
-);
+const AudioNode kKeyboardMic(true,
+                             kKeyboardMicId,
+                             kKeyboardMicId,
+                             "Fake Keyboard Mic",
+                             "KEYBOARD_MIC",
+                             "Keyboard Mic",
+                             false,
+                             0);
 
-const AudioNode kOtherTypeOutput(
-    false,
-    kOtherTypeOutputId,
-    "Output Device",
-    "SOME_OTHER_TYPE",
-    "Other Type Output Device",
-    false,
-    0
-);
+const AudioNode kOtherTypeOutput(false,
+                                 kOtherTypeOutputId,
+                                 kOtherTypeOutputId,
+                                 "Output Device",
+                                 "SOME_OTHER_TYPE",
+                                 "Other Type Output Device",
+                                 false,
+                                 0);
 
-const AudioNode kOtherTypeInput(
-    true,
-    kOtherTypeInputId,
-    "Input Device",
-    "SOME_OTHER_TYPE",
-    "Other Type Input Device",
-    false,
-    0
-);
+const AudioNode kOtherTypeInput(true,
+                                kOtherTypeInputId,
+                                kOtherTypeInputId,
+                                "Input Device",
+                                "SOME_OTHER_TYPE",
+                                "Other Type Input Device",
+                                false,
+                                0);
 
 const AudioNode kBluetoothHeadset(false,
+                                  kBluetoothHeadsetId,
                                   kBluetoothHeadsetId,
                                   "Bluetooth Headset",
                                   "BLUETOOTH",
@@ -132,6 +125,7 @@ const AudioNode kBluetoothHeadset(false,
 
 const AudioNode kHDMIOutput(false,
                             kHDMIOutputId,
+                            kHDMIOutputId,
                             "HDMI output",
                             "HDMI",
                             "HDMI output",
@@ -139,6 +133,7 @@ const AudioNode kHDMIOutput(false,
                             0);
 
 const AudioNode kUSBHeadphone1(false,
+                               kUSBHeadphoneId1,
                                kUSBHeadphoneId1,
                                "USB Headphone",
                                "USB",
@@ -148,6 +143,7 @@ const AudioNode kUSBHeadphone1(false,
 
 const AudioNode kUSBHeadphone2(false,
                                kUSBHeadphoneId2,
+                               kUSBHeadphoneId2,
                                "USB Headphone",
                                "USB",
                                "USB Headphone 1",
@@ -155,6 +151,7 @@ const AudioNode kUSBHeadphone2(false,
                                0);
 
 const AudioNode kUSBJabraSpeakerOutput1(false,
+                                        kUSBJabraSpeakerOutputId1,
                                         kUSBJabraSpeakerOutputId1,
                                         "Jabra Speaker 1",
                                         "USB",
@@ -164,6 +161,7 @@ const AudioNode kUSBJabraSpeakerOutput1(false,
 
 const AudioNode kUSBJabraSpeakerOutput2(false,
                                         kUSBJabraSpeakerOutputId2,
+                                        kUSBJabraSpeakerOutputId2,
                                         "Jabra Speaker 2",
                                         "USB",
                                         "Jabra Speaker 2",
@@ -171,6 +169,7 @@ const AudioNode kUSBJabraSpeakerOutput2(false,
                                         0);
 
 const AudioNode kUSBJabraSpeakerInput1(true,
+                                       kUSBJabraSpeakerInputId1,
                                        kUSBJabraSpeakerInputId1,
                                        "Jabra Speaker 1",
                                        "USB",
@@ -180,6 +179,7 @@ const AudioNode kUSBJabraSpeakerInput1(true,
 
 const AudioNode kUSBJabraSpeakerInput2(true,
                                        kUSBJabraSpeakerInputId2,
+                                       kUSBJabraSpeakerInputId2,
                                        "Jabra Speaker 2",
                                        "USB",
                                        "Jabra Speaker 2",
@@ -187,6 +187,7 @@ const AudioNode kUSBJabraSpeakerInput2(true,
                                        0);
 
 const AudioNode kUSBCameraInput(true,
+                                kUSBCameraInputId,
                                 kUSBCameraInputId,
                                 "USB Camera",
                                 "USB",
@@ -2041,6 +2042,84 @@ TEST_F(CrasAudioHandlerTest, HandleOtherDeviceType) {
   AudioDevice active_input;
   EXPECT_EQ(kInternalMic.id, cras_audio_handler_->GetPrimaryActiveInputNode());
   EXPECT_TRUE(cras_audio_handler_->has_alternative_input());
+}
+
+TEST_F(CrasAudioHandlerTest, ActiveDeviceSelectionWithStableDeviceId) {
+  AudioNodeList audio_nodes;
+  AudioNode internal_speaker(kInternalSpeaker);
+  audio_nodes.push_back(internal_speaker);
+  AudioNode usb_headset(kUSBHeadphone1);
+  usb_headset.plugged_time = 80000000;
+  audio_nodes.push_back(usb_headset);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the audio devices size.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+
+  // Initially active node is selected base on priority, so USB headphone
+  // is selected.
+  EXPECT_EQ(kUSBHeadphone1.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Change the active device to internal speaker, now USB headphone becomes
+  // inactive.
+  AudioDevice speaker(kInternalSpeaker);
+  cras_audio_handler_->SwitchToDevice(speaker, true);
+  EXPECT_NE(kUSBHeadphone1.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Unplug USB headset.
+  audio_nodes.clear();
+  internal_speaker.active = true;
+  audio_nodes.push_back(internal_speaker);
+  ChangeAudioNodes(audio_nodes);
+  EXPECT_EQ(kInternalSpeaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Plug the same USB headset back, id is different, but stable_device_id
+  // remains the same.
+  usb_headset.active = false;
+  usb_headset.id = 98765;
+  audio_nodes.push_back(usb_headset);
+  ChangeAudioNodes(audio_nodes);
+
+  // Since USB headset was inactive before it was unplugged, it won't be
+  // selected as active after it's plugged in again.
+  EXPECT_EQ(kInternalSpeaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Plug the second USB headset.
+  AudioNode usb_headset2(kUSBHeadphone2);
+  usb_headset2.plugged_time = 80000001;
+  audio_nodes.push_back(usb_headset2);
+  ChangeAudioNodes(audio_nodes);
+
+  // Since the second USB device is new, it's selected as the active device
+  // by its priority.
+  EXPECT_EQ(kUSBHeadphone2.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Unplug the second USB headset.
+  audio_nodes.clear();
+  internal_speaker.active = false;
+  audio_nodes.push_back(internal_speaker);
+  audio_nodes.push_back(usb_headset);
+  ChangeAudioNodes(audio_nodes);
+
+  // There is no active node after USB2 unplugged, the 1st USB got selected
+  // by its priority.
+  EXPECT_EQ(usb_headset.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  usb_headset2.active = false;
+  usb_headset2.plugged_time = 80000002;
+  audio_nodes.push_back(usb_headset2);
+  ChangeAudioNodes(audio_nodes);
+
+  // Plug the second USB again. Since it was the active node before it got
+  // unplugged, it is now selected as the active node.
+  EXPECT_EQ(usb_headset2.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
 }
 
 TEST_F(CrasAudioHandlerTest, ChangeActiveNodesHotrodInit) {

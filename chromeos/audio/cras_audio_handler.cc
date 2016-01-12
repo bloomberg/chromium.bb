@@ -46,14 +46,6 @@ bool IsInNodeList(uint64_t node_id,
   return std::find(id_list.begin(), id_list.end(), node_id) != id_list.end();
 }
 
-bool IsNodeInTheList(uint64_t node_id, const AudioNodeList& node_list) {
-  for (size_t i = 0; i < node_list.size(); ++i) {
-    if (node_id == node_list[i].id)
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 CrasAudioHandler::AudioObserver::AudioObserver() {
@@ -301,7 +293,10 @@ void CrasAudioHandler::ChangeActiveNodes(const NodeIdList& new_active_ids) {
     }
   }
 
-  // Adds the new active devices.
+  // Adds the new active devices. Note that this function is used by audio
+  // extension to manage multiple active nodes, in which case the devices
+  // selection preference is controlled by the app, we intentionally exclude
+  // the additional nodes from saving their device states as a result.
   for (size_t i = 0; i < nodes_to_activate.size(); ++i)
     AddActiveNode(nodes_to_activate[i], false);  // no notification.
 
@@ -398,6 +393,16 @@ void CrasAudioHandler::SetActiveOutputNode(uint64_t node_id, bool notify) {
       SetActiveOutputNode(node_id);
   if (notify)
     NotifyActiveNodeChanged(false);
+
+  // Save state for all output nodes.
+  for (AudioDeviceMap::iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it) {
+    if (it->second.is_input)
+      continue;
+    audio_pref_handler_->SetDeviceState(it->second, it->second.active
+                                                        ? AUDIO_STATE_ACTIVE
+                                                        : AUDIO_STATE_INACTIVE);
+  }
 }
 
 void CrasAudioHandler::SetActiveInputNode(uint64_t node_id, bool notify) {
@@ -405,6 +410,16 @@ void CrasAudioHandler::SetActiveInputNode(uint64_t node_id, bool notify) {
       SetActiveInputNode(node_id);
   if (notify)
     NotifyActiveNodeChanged(true);
+
+  // Save state for all input nodes.
+  for (AudioDeviceMap::iterator it = audio_devices_.begin();
+       it != audio_devices_.end(); ++it) {
+    if (!it->second.is_input)
+      continue;
+    audio_pref_handler_->SetDeviceState(it->second, it->second.active
+                                                        ? AUDIO_STATE_ACTIVE
+                                                        : AUDIO_STATE_INACTIVE);
+  }
 }
 
 void CrasAudioHandler::SetVolumeGainPercentForDevice(uint64_t device_id,
@@ -781,9 +796,10 @@ void CrasAudioHandler::SwitchToDevice(const AudioDevice& device, bool notify) {
   }
 }
 
-bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
-                                       bool is_input,
-                                       AudioNodeList* new_discovered) {
+bool CrasAudioHandler::HasDeviceChange(
+    const AudioNodeList& new_nodes,
+    bool is_input,
+    AudioDevicePriorityQueue* new_discovered) {
   size_t num_old_devices = 0;
   size_t num_new_devices = 0;
   for (AudioDeviceMap::const_iterator it = audio_devices_.begin();
@@ -793,7 +809,8 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
   }
 
   bool new_or_changed_device = false;
-  new_discovered->clear();
+  while (!new_discovered->empty())
+    new_discovered->pop();
   for (AudioNodeList::const_iterator it = new_nodes.begin();
        it != new_nodes.end(); ++it) {
     if (is_input == it->is_input) {
@@ -802,7 +819,7 @@ bool CrasAudioHandler::HasDeviceChange(const AudioNodeList& new_nodes,
       AudioDevice device(*it);
       DeviceStatus status = CheckDeviceStatus(device);
       if (status == NEW_DEVICE)
-        new_discovered->push_back(*it);
+        new_discovered->push(device);
       if (status == NEW_DEVICE || status == CHANGED_DEVICE) {
         new_or_changed_device = true;
       }
@@ -848,8 +865,8 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       ++old_output_device_size;
   }
 
-  AudioNodeList hotplug_output_nodes;
-  AudioNodeList hotplug_input_nodes;
+  AudioDevicePriorityQueue hotplug_output_nodes;
+  AudioDevicePriorityQueue hotplug_input_nodes;
   bool output_devices_changed =
       HasDeviceChange(nodes, false, &hotplug_output_nodes);
   bool input_devices_changed =
@@ -900,8 +917,7 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
     active_input_node_id_ = 0;
 
   // If audio nodes change is caused by unplugging some non-active audio
-  // devices, the previously set active audio device will stay active.
-  // Otherwise, switch to a new active audio device according to their priority.
+  // devices, we wont't change the current active audio devices.
   if (input_devices_changed &&
       !NonActiveDeviceUnplugged(old_input_device_size,
                                 new_input_device_size,
@@ -912,13 +928,35 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       active_input_node_id_ = 0;
       NotifyActiveNodeChanged(true);
     } else {
-      // If user has hot plugged a new node, we should change to the active
-      // device to the new node if it has the highest priority; otherwise,
-      // we should keep the existing active node chosen by user.
-      // For all other cases, we will choose the node with highest priority.
-      if (!active_input_node_id_ || hotplug_input_nodes.empty() ||
-          IsNodeInTheList(input_devices_pq_.top().id, hotplug_input_nodes)) {
+      // If there is no current active node, or, no new hot plugged node, select
+      // the active node by their priorities.
+      if (!active_input_node_id_ || hotplug_input_nodes.empty()) {
         SwitchToDevice(input_devices_pq_.top(), true);
+      } else {
+        // If user has hot plugged any input nodes, look at the one with highest
+        // priority (normally, there is only one hot plugged input node), and
+        // consider switch to it depend on its last state stored in preference.
+        AudioDeviceState last_state =
+            audio_pref_handler_->GetDeviceState(hotplug_input_nodes.top());
+        switch (last_state) {
+          case AUDIO_STATE_ACTIVE:
+            // This node was plugged in before and was selected as the active
+            // one
+            // before it was unplugged last time, switch to this device.
+            SwitchToDevice(hotplug_input_nodes.top(), true);
+            break;
+          case AUDIO_STATE_NOT_AVAILABLE:
+            // This is a new node, not plugged in before, with the highest
+            // priority. Switch to this device.
+            if (input_devices_pq_.top().id == hotplug_input_nodes.top().id)
+              SwitchToDevice(hotplug_input_nodes.top(), true);
+            break;
+          case AUDIO_STATE_INACTIVE:
+          // This node was NOT selected as the active one last time before it
+          // got unplugged, so don't switch to it.
+          default:
+            break;
+        }
       }
     }
   }
@@ -926,16 +964,28 @@ void CrasAudioHandler::UpdateDevicesAndSwitchActive(
       !NonActiveDeviceUnplugged(old_output_device_size,
                                 new_output_device_size,
                                 active_output_node_id_)) {
-    // This is really unlikely to happen because all ChromeOS devices have the
-    // internal audio output.
+    // ditto input node logic.
     if (output_devices_pq_.empty()) {
       active_output_node_id_ = 0;
       NotifyActiveNodeChanged(false);
     } else {
-      // ditto input node case.
-      if (!active_output_node_id_ || hotplug_output_nodes.empty() ||
-          IsNodeInTheList(output_devices_pq_.top().id, hotplug_output_nodes)) {
+      if (!active_output_node_id_ || hotplug_output_nodes.empty()) {
         SwitchToDevice(output_devices_pq_.top(), true);
+      } else {
+        AudioDeviceState last_state =
+            audio_pref_handler_->GetDeviceState(hotplug_output_nodes.top());
+        switch (last_state) {
+          case AUDIO_STATE_ACTIVE:
+            SwitchToDevice(hotplug_output_nodes.top(), true);
+            break;
+          case AUDIO_STATE_NOT_AVAILABLE:
+            if (output_devices_pq_.top().id == hotplug_output_nodes.top().id)
+              SwitchToDevice(hotplug_output_nodes.top(), true);
+            break;
+          case AUDIO_STATE_INACTIVE:
+          default:
+            break;
+        }
       }
     }
   }

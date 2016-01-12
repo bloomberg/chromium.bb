@@ -15,6 +15,20 @@ namespace chromeos {
 
 struct AudioDevice;
 
+// Used to represent an audio device's state. This state should be updated
+// to AUDIO_STATE_ACTIVE when it is selected as active or set to
+// AUDIO_STATE_INACTIVE when selected to a different device. When the audio
+// device is unplugged, its last active/inactive state should be stored.
+// The default value of device state will be AUDIO_STATE_NOT_AVAILABLE if
+// the device is not found in the pref settings.
+// Note that these states enum can't be renumbered or it would break existing
+// preference.
+enum AudioDeviceState {
+  AUDIO_STATE_ACTIVE = 0,
+  AUDIO_STATE_INACTIVE = 1,
+  AUDIO_STATE_NOT_AVAILABLE = 2,
+};
+
 // Interface that handles audio preference related work, reads and writes
 // audio preferences, and notifies AudioPrefObserver for audio preference
 // changes.
@@ -37,6 +51,10 @@ class CHROMEOS_EXPORT AudioDevicesPrefHandler
   virtual bool GetMuteValue(const AudioDevice& device) = 0;
   // Sets the audio mute value to prefs for a device.
   virtual void SetMuteValue(const AudioDevice& device, bool mute_on) = 0;
+
+  virtual AudioDeviceState GetDeviceState(const AudioDevice& device) = 0;
+  virtual void SetDeviceState(const AudioDevice& device,
+                              AudioDeviceState state) = 0;
 
   // Reads the audio output allowed value from prefs.
   virtual bool GetAudioOutputAllowedValue() = 0;

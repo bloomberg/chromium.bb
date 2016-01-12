@@ -33,6 +33,11 @@ const char kAudioOutputAllowed[] = "hardware.audio_output_enabled";
 // |kAudioDevicesVolumePercent| setting.
 const char kAudioVolumePercent[] = "settings.audio.volume_percent";
 
+// A dictionary pref that maps stable device id string to |AudioDeviceState|.
+// Different state values indicate whether or not a device has been selected
+// as the active one for audio I/O, or it's a new plugged device.
+const char kAudioDevicesState[] = "settings.audio.device_state";
+
 }  // namespace prefs
 }  // namespace chromeos
 

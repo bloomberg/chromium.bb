@@ -15,6 +15,7 @@ CHROMEOS_EXPORT extern const char kAudioDevicesVolumePercent[];
 CHROMEOS_EXPORT extern const char kAudioMute[];
 CHROMEOS_EXPORT extern const char kAudioOutputAllowed[];
 CHROMEOS_EXPORT extern const char kAudioVolumePercent[];
+CHROMEOS_EXPORT extern const char kAudioDevicesState[];
 
 }  // namespace prefs
 }  // namespace chromeos

@@ -25,6 +25,7 @@ const uint64_t kOtherTypeInputId = 90002;
 
 const AudioDevice kInternalMic(AudioNode(true,
                                          kInternalMicId,
+                                         kInternalMicId,
                                          "Fake Mic",
                                          "INTERNAL_MIC",
                                          "Internal Mic",
@@ -33,6 +34,7 @@ const AudioDevice kInternalMic(AudioNode(true,
 
 const AudioDevice kHeadphone(AudioNode(false,
                                        kHeadphoneId,
+                                       kHeadphoneId,
                                        "Fake Headphone",
                                        "HEADPHONE",
                                        "Headphone",
@@ -40,6 +42,7 @@ const AudioDevice kHeadphone(AudioNode(false,
                                        0));
 
 const AudioDevice kHDMIOutput(AudioNode(false,
+                                        kHDMIOutputId,
                                         kHDMIOutputId,
                                         "HDMI output",
                                         "HDMI",
@@ -50,6 +53,7 @@ const AudioDevice kHDMIOutput(AudioNode(false,
 const AudioDevice kInputDeviceWithSpecialCharacters(
     AudioNode(true,
               kOtherTypeInputId,
+              kOtherTypeInputId,
               "Fake ~!@#$%^&*()_+`-=<>?,./{}|[]\\\\Mic",
               "SOME_OTHER_TYPE",
               "Other Type Input Device",
@@ -58,6 +62,7 @@ const AudioDevice kInputDeviceWithSpecialCharacters(
 
 const AudioDevice kOutputDeviceWithSpecialCharacters(
     AudioNode(false,
+              kOtherTypeOutputId,
               kOtherTypeOutputId,
               "Fake ~!@#$%^&*()_+`-=<>?,./{}|[]\\\\Headphone",
               "SOME_OTHER_TYPE",
@@ -92,6 +97,12 @@ TEST_F(AudioDevicesPrefHandlerTest, TestDefaultValues) {
   EXPECT_EQ(75.0, audio_pref_handler_->GetInputGainValue(&kInternalMic));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHeadphone));
   EXPECT_EQ(75.0, audio_pref_handler_->GetOutputVolumeValue(&kHDMIOutput));
+  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
+            audio_pref_handler_->GetDeviceState(kInternalMic));
+  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
+            audio_pref_handler_->GetDeviceState(kHeadphone));
+  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
+            audio_pref_handler_->GetDeviceState(kHDMIOutput));
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, PrefsRegistered) {
@@ -101,6 +112,7 @@ TEST_F(AudioDevicesPrefHandlerTest, PrefsRegistered) {
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioOutputAllowed));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioVolumePercent));
   EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioMute));
+  EXPECT_TRUE(pref_service_->FindPreference(prefs::kAudioDevicesState));
 }
 
 TEST_F(AudioDevicesPrefHandlerTest, TestBasicInputOutputDevices) {
@@ -120,6 +132,18 @@ TEST_F(AudioDevicesPrefHandlerTest, TestSpecialCharactersInDeviceNames) {
       &kInputDeviceWithSpecialCharacters));
   EXPECT_EQ(85.92, audio_pref_handler_->GetOutputVolumeValue(
       &kOutputDeviceWithSpecialCharacters));
+}
+
+TEST_F(AudioDevicesPrefHandlerTest, TestDeviceStates) {
+  audio_pref_handler_->SetDeviceState(kInternalMic, AUDIO_STATE_NOT_AVAILABLE);
+  EXPECT_EQ(AUDIO_STATE_NOT_AVAILABLE,
+            audio_pref_handler_->GetDeviceState(kInternalMic));
+  audio_pref_handler_->SetDeviceState(kHeadphone, AUDIO_STATE_ACTIVE);
+  EXPECT_EQ(AUDIO_STATE_ACTIVE,
+            audio_pref_handler_->GetDeviceState(kHeadphone));
+  audio_pref_handler_->SetDeviceState(kHDMIOutput, AUDIO_STATE_INACTIVE);
+  EXPECT_EQ(AUDIO_STATE_INACTIVE,
+            audio_pref_handler_->GetDeviceState(kHDMIOutput));
 }
 
 }  // namespace chromeos

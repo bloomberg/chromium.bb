@@ -291,7 +291,7 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // The new discovered nodes are returned in |new_discovered|.
   bool HasDeviceChange(const AudioNodeList& new_nodes,
                        bool is_input,
-                       AudioNodeList* new_discovered);
+                       AudioDevicePriorityQueue* new_discovered);
 
   // Handles dbus callback for GetNodes.
   void HandleGetNodes(const chromeos::AudioNodeList& node_list, bool success);

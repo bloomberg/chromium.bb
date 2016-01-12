@@ -414,6 +414,9 @@ class CrasAudioClientImpl : public CrasAudioClient {
       } else if (key == cras::kMicPositionsProperty) {
         if (!value_reader.PopString(&node->mic_positions))
           return false;
+      } else if (key == cras::kStableDeviceIdProperty) {
+        if (!value_reader.PopUint64(&node->stable_device_id))
+          return false;
       }
     }
 

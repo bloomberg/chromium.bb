@@ -33,6 +33,7 @@ const uint64_t kWebcamMicId = 40003;
 
 const AudioNode kJabraSpeaker1(false,
                                kJabraSpeaker1Id,
+                               kJabraSpeaker1Id,
                                "Jabra Speaker",
                                "USB",
                                "Jabra Speaker 1",
@@ -40,6 +41,7 @@ const AudioNode kJabraSpeaker1(false,
                                0);
 
 const AudioNode kJabraSpeaker2(false,
+                               kJabraSpeaker2Id,
                                kJabraSpeaker2Id,
                                "Jabra Speaker",
                                "USB",
@@ -49,19 +51,33 @@ const AudioNode kJabraSpeaker2(false,
 
 const AudioNode kHDMIOutput(false,
                             kHDMIOutputId,
+                            kHDMIOutputId,
                             "HDMI output",
                             "HDMI",
                             "HDA Intel MID",
                             false,
                             0);
 
-const AudioNode
-    kJabraMic1(true, kJabraMic1Id, "Jabra Mic", "USB", "Jabra Mic 1", false, 0);
+const AudioNode kJabraMic1(true,
+                           kJabraMic1Id,
+                           kJabraMic1Id,
+                           "Jabra Mic",
+                           "USB",
+                           "Jabra Mic 1",
+                           false,
+                           0);
 
-const AudioNode
-    kJabraMic2(true, kJabraMic2Id, "Jabra Mic", "USB", "Jabra Mic 2", false, 0);
+const AudioNode kJabraMic2(true,
+                           kJabraMic2Id,
+                           kJabraMic2Id,
+                           "Jabra Mic",
+                           "USB",
+                           "Jabra Mic 2",
+                           false,
+                           0);
 
 const AudioNode kUSBCameraMic(true,
+                              kWebcamMicId,
                               kWebcamMicId,
                               "Webcam Mic",
                               "USB",
