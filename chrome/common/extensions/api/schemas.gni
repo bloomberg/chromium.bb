@@ -16,6 +16,8 @@ gypi_values = exec_script("//build/gypi_to_gn.py",
 sources = gypi_values.main_schema_files
 if (is_chromeos) {
   sources += gypi_values.chromeos_schema_files
+} else if (is_linux || is_win) {
+  sources += gypi_values.input_ime_schema_file
 }
 if (enable_service_discovery) {
   sources += gypi_values.service_discovery_schema_files

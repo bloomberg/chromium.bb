@@ -150,6 +150,12 @@ source_set("extensions") {
         "//ui/events/platform/x11",
       ]
     }
+    if (!is_chromeos) {
+      sources += rebase_path(
+              gypi_values.chrome_browser_extensions_input_ime_linux_win_sources,
+              ".",
+              "//chrome")
+    }
   }
 
   if (enable_configuration_policy) {
@@ -200,6 +206,10 @@ source_set("extensions") {
       "//third_party/iaccessible2",
       "//third_party/isimpledom",
     ]
+    sources += rebase_path(
+            gypi_values.chrome_browser_extensions_input_ime_linux_win_sources,
+            ".",
+            "//chrome")
   } else if (use_aura && !is_chromeos) {
     sources += [
       "display_info_provider_aura.cc",

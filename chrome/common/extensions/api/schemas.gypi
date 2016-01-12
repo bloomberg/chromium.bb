@@ -146,6 +146,11 @@
       'cast_streaming_udp_transport.idl',
     ],
 
+    # Input IME schema.
+    'input_ime_schema_file': [
+      'input_ime.json',
+    ],
+
     'non_compiled_schema_files': [
       '<@(main_non_compiled_schema_files)',
     ],
@@ -170,11 +175,14 @@
         'non_compiled_schema_files': [
           '<@(chromeos_non_compiled_schema_files)',
         ],
-      }],
-      ['OS=="linux" or OS=="win"', {
-        'schema_files': [
-	  'input_ime.json',
-	],
+      }, { # chromeos==0
+        'conditions': [
+          ['OS=="linux" or OS=="win"', {
+            'schema_files': [
+              '<@(input_ime_schema_file)',
+            ],
+          }],
+        ],
       }],
       ['enable_service_discovery==1', {
         'schema_files': [
