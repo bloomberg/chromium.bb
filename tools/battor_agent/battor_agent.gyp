@@ -35,6 +35,8 @@
         'battor_connection_impl.cc',
         'battor_connection_impl.h',
         'battor_error.h',
+        'battor_sample_converter.cc',
+        'battor_sample_converter.h',
       ],
       'dependencies': [
         '../../base/base.gyp:base',
@@ -61,6 +63,7 @@
 	'battor_agent_unittest.cc',
         'battor_connection_impl_unittest.cc',
         'battor_protocol_types_unittest.cc',
+        'battor_sample_converter_unittest.cc',
       ],
     },
   ],

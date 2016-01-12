@@ -85,7 +85,8 @@ std::string SamplesToString(const vector<RawBattOrSample>& samples) {
   // TODO(charliea): Print the samples in a better trace format.
   std::stringstream trace_stream;
   for (auto sample : samples)
-    trace_stream << sample.voltage << "/" << sample.current << std::endl;
+    trace_stream << sample.voltage_raw << "/" << sample.current_raw
+                 << std::endl;
 
   return trace_stream.str();
 }

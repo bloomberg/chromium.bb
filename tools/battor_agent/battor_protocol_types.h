@@ -119,11 +119,18 @@ struct BattOrFrameHeader {
   uint16_t length;
 };
 
-// The RawBattOrSample is what's sent back from the BattOr to give the voltage
-// and current measurements.
+// A single BattOr sample. These samples are raw because they come directly from
+// the BattOr's analog to digital converter and comprise only part of the
+// equation to calculate meaningful voltage and current measurements.
 struct RawBattOrSample {
-  uint16_t voltage;
-  uint16_t current;
+  int16_t voltage_raw;
+  int16_t current_raw;
+};
+
+// A single BattOr sample after conversion to a real number with units.
+struct BattOrSample {
+  double voltage_mV;
+  double current_mA;
 };
 
 #pragma pack(pop)
