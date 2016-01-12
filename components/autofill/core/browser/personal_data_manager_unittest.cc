@@ -203,17 +203,22 @@ class PersonalDataManagerTest : public testing::Test {
                             "347666888555" /* American Express */, "04",
                             "2015");
     credit_card0.set_use_count(3);
+    credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
     personal_data_->AddCreditCard(credit_card0);
 
     CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
                             "https://www.example.com");
-    credit_card1.set_use_count(5);
-    test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
+    credit_card1.set_use_count(300);
+    credit_card1.set_use_date(base::Time::Now() -
+                              base::TimeDelta::FromDays(10));
+    test::SetCreditCardInfo(&credit_card1, "John Dillinger",
+                            "423456789012" /* Visa */, "01", "2010");
     personal_data_->AddCreditCard(credit_card1);
 
     CreditCard credit_card2("002149C1-EE28-4213-A3B9-DA243FFF021B",
                             "https://www.example.com");
     credit_card2.set_use_count(1);
+    credit_card2.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
     test::SetCreditCardInfo(&credit_card2, "Bonnie Parker",
                             "518765432109" /* Mastercard */, "", "");
     personal_data_->AddCreditCard(credit_card2);
@@ -2815,7 +2820,8 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_LocalCardsRanking) {
 
   // Ordered by MFU.
   EXPECT_EQ(ASCIIToUTF16("John Dillinger"), suggestions[0].value);
-  EXPECT_EQ(base::string16(), suggestions[0].label);
+  EXPECT_TRUE(suggestions[0].label.find(ASCIIToUTF16("9012")) !=
+              base::string16::npos);
   EXPECT_EQ(ASCIIToUTF16("Clyde Barrow"), suggestions[1].value);
   EXPECT_TRUE(suggestions[1].label.find(ASCIIToUTF16("8555")) !=
               base::string16::npos);
@@ -2836,12 +2842,16 @@ TEST_F(PersonalDataManagerTest,
   test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
                           "2012");
   server_cards.back().set_use_count(2);
+  server_cards.back().set_use_date(base::Time::Now() -
+                                   base::TimeDelta::FromDays(1));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
   test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
                           "2012");
   server_cards.back().set_use_count(6);
+  server_cards.back().set_use_date(base::Time::Now() -
+                                   base::TimeDelta::FromDays(1));
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -2866,7 +2876,29 @@ TEST_F(PersonalDataManagerTest,
 // Test that a card that doesn't have a number is not shown in the suggestions
 // when querying credit cards by their number.
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
-  SetupReferenceLocalCreditCards();
+  // Create one normal credit card and one credit card with the number missing.
+  ASSERT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  CreditCard credit_card0("287151C8-6AB1-487C-9095-28E80BE5DA15",
+                          "https://www.example.com");
+  test::SetCreditCardInfo(&credit_card0, "Clyde Barrow",
+                          "347666888555" /* American Express */, "04", "2015");
+  credit_card0.set_use_count(3);
+  credit_card0.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(1));
+  personal_data_->AddCreditCard(credit_card0);
+
+  CreditCard credit_card1("1141084B-72D7-4B73-90CF-3D6AC154673B",
+                          "https://www.example.com");
+  credit_card1.set_use_count(300);
+  credit_card1.set_use_date(base::Time::Now() - base::TimeDelta::FromDays(10));
+  test::SetCreditCardInfo(&credit_card1, "John Dillinger", "", "01", "2010");
+  personal_data_->AddCreditCard(credit_card1);
+
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged())
+      .WillOnce(QuitMainMessageLoop());
+  base::MessageLoop::current()->Run();
+
+  ASSERT_EQ(2U, personal_data_->GetCreditCards().size());
 
   // Sublabel is expiration date when filling card number. The second card
   // doesn't have a number so it should not be included in the suggestions.
@@ -2874,15 +2906,11 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
       personal_data_->GetCreditCardSuggestions(
           AutofillType(CREDIT_CARD_NUMBER),
           /* field_contents= */ base::string16());
-  ASSERT_EQ(2U, suggestions.size());
+  ASSERT_EQ(1U, suggestions.size());
   EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
                         "8555"),
             suggestions[0].value);
   EXPECT_EQ(ASCIIToUTF16("04/15"), suggestions[0].label);
-  EXPECT_EQ(UTF8ToUTF16("MasterCard\xC2\xA0\xE2\x8B\xAF"
-                        "2109"),
-            suggestions[1].value);
-  EXPECT_EQ(base::string16(), suggestions[1].label);
 }
 
 // Tests the suggestions of duplicate local and server credit cards.
@@ -2899,6 +2927,9 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "a123"));
   test::SetCreditCardInfo(&server_cards.back(), "John Dillinger",
                           "9012" /* Visa */, "01", "2010");
+  server_cards.back().set_use_count(2);
+  server_cards.back().set_use_date(base::Time::Now() -
+                                   base::TimeDelta::FromDays(15));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   // This server card is identical to a local card, but has a different
@@ -2906,13 +2937,20 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b456"));
   test::SetCreditCardInfo(&server_cards.back(), "Bonnie Parker", "2109", "12",
                           "2012");
+  server_cards.back().set_use_count(3);
+  server_cards.back().set_use_date(base::Time::Now() -
+                                   base::TimeDelta::FromDays(15));
   server_cards.back().SetTypeForMaskedCard(kVisaCard);
 
   // This unmasked server card is an exact dupe of a local card. Therefore only
-  // the local card should appear in the suggestions.
+  // this card should appear in the suggestions as full server cards have
+  // precedence over local cards.
   server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "c789"));
   test::SetCreditCardInfo(&server_cards.back(), "Clyde Barrow",
                           "347666888555" /* American Express */, "04", "2015");
+  server_cards.back().set_use_count(1);
+  server_cards.back().set_use_date(base::Time::Now() -
+                                   base::TimeDelta::FromDays(15));
 
   test::SetServerCreditCards(autofill_table_, server_cards);
   personal_data_->Refresh();
@@ -2933,14 +2971,14 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
   suggestions = personal_data_->GetCreditCardSuggestions(
       AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16());
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
-                        "8555"),
-            suggestions[0].value);
-  EXPECT_EQ(UTF8ToUTF16("MasterCard\xC2\xA0\xE2\x8B\xAF"
-                        "2109"),
-            suggestions[1].value);
   EXPECT_EQ(UTF8ToUTF16("Visa\xC2\xA0\xE2\x8B\xAF"
                         "9012"),
+            suggestions[0].value);
+  EXPECT_EQ(UTF8ToUTF16("Amex\xC2\xA0\xE2\x8B\xAF"
+                        "8555"),
+            suggestions[1].value);
+  EXPECT_EQ(UTF8ToUTF16("MasterCard\xC2\xA0\xE2\x8B\xAF"
+                        "2109"),
             suggestions[2].value);
   EXPECT_EQ(UTF8ToUTF16("Visa\xC2\xA0\xE2\x8B\xAF"
                         "2109"),

@@ -246,6 +246,8 @@ class TestPersonalDataManager : public PersonalDataManager {
                             "4234567890123456",  // Visa
                             "04", "2012");
     credit_card->set_guid("00000000-0000-0000-0000-000000000004");
+    credit_card->set_use_count(10);
+    credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(5));
     credit_cards->push_back(credit_card);
 
     credit_card = new CreditCard;
@@ -253,6 +255,8 @@ class TestPersonalDataManager : public PersonalDataManager {
                             "5187654321098765",  // Mastercard
                             "10", "2014");
     credit_card->set_guid("00000000-0000-0000-0000-000000000005");
+    credit_card->set_use_count(5);
+    credit_card->set_use_date(base::Time::Now() - base::TimeDelta::FromDays(4));
     credit_cards->push_back(credit_card);
 
     credit_card = new CreditCard;

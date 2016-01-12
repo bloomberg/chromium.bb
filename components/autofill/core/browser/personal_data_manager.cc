@@ -191,18 +191,6 @@ static bool CompareVotes(const std::pair<std::string, int>& a,
   return a.second < b.second;
 }
 
-// Ranks two data models according to their recency of use. Currently this will
-// place all server (Wallet) cards and addresses below all locally saved ones,
-// which is probably not what we want. TODO(estade): figure out relative ranking
-// of server data.
-bool RankByMfu(const AutofillDataModel* a, const AutofillDataModel* b) {
-  if (a->use_count() != b->use_count())
-    return a->use_count() > b->use_count();
-
-  // Ties are broken by MRU.
-  return a->use_date() > b->use_date();
-}
-
 }  // namespace
 
 const char kFrecencyFieldTrialName[] = "AutofillProfileOrderByFrecency";
@@ -927,16 +915,25 @@ std::vector<Suggestion> PersonalDataManager::GetCreditCardSuggestions(
     }
   }
 
-  cards_to_suggest.sort(RankByMfu);
+  // Rank the suggestions by frecency (see AutofillDataModel for details).
+  base::Time comparison_time = base::Time::Now();
+  cards_to_suggest.sort([comparison_time](const AutofillDataModel* a,
+                                          const AutofillDataModel* b) {
+    return a->CompareFrecency(b, comparison_time);
+  });
 
   // Prefix matches should precede other token matches.
   if (IsFeatureSubstringMatchEnabled()) {
-    substring_matched_cards.sort(RankByMfu);
+    substring_matched_cards.sort([comparison_time](const AutofillDataModel* a,
+                                                   const AutofillDataModel* b) {
+      return a->CompareFrecency(b, comparison_time);
+    });
     cards_to_suggest.insert(cards_to_suggest.end(),
                             substring_matched_cards.begin(),
                             substring_matched_cards.end());
   }
 
+  // TODO(crbug.com/576300) Refactor the credit card deduping logic.
   // De-dupe card suggestions. Full server cards shadow local cards, and
   // local cards shadow masked server cards.
   for (auto outer_it = cards_to_suggest.begin();
