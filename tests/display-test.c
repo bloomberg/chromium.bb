@@ -37,6 +37,7 @@
 #include <sys/stat.h>
 #include <pthread.h>
 #include <poll.h>
+#include <stdbool.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
@@ -102,16 +103,48 @@ TEST(tc_leaks_tests)
 	display_destroy(d);
 }
 
+/* This is how pre proxy-version registry binds worked,
+ * this should create a proxy that shares the display's
+ * version number: 0 */
+static void *
+old_registry_bind(struct wl_registry *wl_registry,
+		  uint32_t name,
+		  const struct wl_interface *interface,
+		  uint32_t version)
+{
+	struct wl_proxy *id;
+
+	id = wl_proxy_marshal_constructor(
+		(struct wl_proxy *) wl_registry, WL_REGISTRY_BIND,
+		interface, name, interface->name, version, NULL);
+
+	return (void *) id;
+}
+
+struct handler_info {
+	struct wl_seat *seat;
+	uint32_t bind_version;
+	bool use_unversioned;
+};
+
 static void
 registry_handle_globals(void *data, struct wl_registry *registry,
 			uint32_t id, const char *intf, uint32_t ver)
 {
-	struct wl_seat **seat = data;
+	struct handler_info *hi = data;
+
+	/* This is only for the proxy version test */
+	if (hi->bind_version)
+		ver = hi->bind_version;
 
 	if (strcmp(intf, "wl_seat") == 0) {
-		*seat = wl_registry_bind(registry, id,
-					 &wl_seat_interface, ver);
-		assert(*seat);
+		if (hi->use_unversioned)
+			hi->seat = old_registry_bind(registry, id,
+						     &wl_seat_interface, ver);
+		else
+			hi->seat = wl_registry_bind(registry, id,
+						    &wl_seat_interface, ver);
+		assert(hi->seat);
 	}
 }
 
@@ -121,19 +154,31 @@ static const struct wl_registry_listener registry_listener = {
 };
 
 static struct wl_seat *
-client_get_seat(struct client *c)
+client_get_seat_with_info(struct client *c, struct handler_info *hi)
 {
-	struct wl_seat *seat;
 	struct wl_registry *reg = wl_display_get_registry(c->wl_display);
 	assert(reg);
 
-	wl_registry_add_listener(reg, &registry_listener, &seat);
+	assert(hi);
+	hi->seat = NULL;
+	wl_registry_add_listener(reg, &registry_listener, hi);
 	wl_display_roundtrip(c->wl_display);
-	assert(seat);
+	assert(hi->seat);
 
 	wl_registry_destroy(reg);
 
-	return seat;
+	return hi->seat;
+}
+
+static struct wl_seat *
+client_get_seat(struct client *c)
+{
+	struct handler_info hi;
+
+	hi.use_unversioned = false;
+	hi.bind_version = 0;
+
+	return client_get_seat_with_info(c, &hi);
 }
 
 static void
@@ -766,6 +811,68 @@ TEST(error_code_after_epipe)
 	use_dispatch_helpers = false;
 	client_create(d, check_error_after_epipe, &use_dispatch_helpers);
 	display_run(d);
+
+	display_destroy(d);
+}
+
+static void
+check_seat_versions(struct wl_seat *seat, uint32_t ev)
+{
+	struct wl_pointer *pointer;
+
+	assert(wl_proxy_get_version((struct wl_proxy *) seat) == ev);
+	assert(wl_seat_get_version(seat) == ev);
+
+	pointer = wl_seat_get_pointer(seat);
+	assert(wl_pointer_get_version(pointer) == ev);
+	assert(wl_proxy_get_version((struct wl_proxy *) pointer) == ev);
+	wl_proxy_destroy((struct wl_proxy *) pointer);
+}
+
+/* Normal client with proxy versions available. */
+static void
+seat_version(void *data)
+{
+	struct handler_info *hi = data;
+	struct client *c = client_connect();
+	struct wl_seat *seat;
+
+	/* display proxy should always be version 0 */
+	assert(wl_proxy_get_version((struct wl_proxy *) c->wl_display) == 0);
+
+	seat = client_get_seat_with_info(c, hi);
+	if (hi->use_unversioned)
+		check_seat_versions(seat, 0);
+	else
+		check_seat_versions(seat, hi->bind_version);
+
+	wl_proxy_destroy((struct wl_proxy *) seat);
+
+	client_disconnect_nocheck(c);
+}
+
+TEST(versions)
+{
+	struct display *d = display_create();
+	struct wl_global *global;
+	int i;
+
+	global = wl_global_create(d->wl_display, &wl_seat_interface,
+				  5, d, bind_seat);
+
+	for (i = 1; i <= 5; i++) {
+		struct handler_info hi;
+
+		hi.bind_version = i;
+		hi.use_unversioned = false;
+		client_create(d, seat_version, &hi);
+		hi.use_unversioned = true;
+		client_create(d, seat_version, &hi);
+	}
+
+	display_run(d);
+
+	wl_global_destroy(global);
 
 	display_destroy(d);
 }
