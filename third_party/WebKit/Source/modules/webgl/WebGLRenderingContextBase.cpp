@@ -4541,14 +4541,10 @@ void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint int
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target, GLint level, GLint internalformat,
-    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap)
+    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
 {
     ASSERT(bitmap->bitmapImage());
-    if (bitmap->isNeutered()) {
-        synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
-        return;
-    }
-    if (isContextLost() || !validateTexFunc("texImage2D", TexImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
+    if (isContextLost() || !validateImageBitmap("texImage2D", bitmap.get(), exceptionState) || !validateTexFunc("texImage2D", TexImage, SourceImageBitmap, target, level, internalformat, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
         return;
     StaticBitmapImage* imageForRender = bitmap->bitmapImage();
     texImage2DImpl(target, level, internalformat, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -4767,14 +4763,10 @@ void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint 
 }
 
 void WebGLRenderingContextBase::texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
-    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap)
+    GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
 {
     ASSERT(bitmap->bitmapImage());
-    if (bitmap->isNeutered()) {
-        synthesizeGLError(GL_INVALID_VALUE, "texSubImage2D", "The source data has been neutered.");
-        return;
-    }
-    if (isContextLost() || !validateTexFunc("texSubImage2D", TexSubImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
+    if (isContextLost() || !validateImageBitmap("texSubImage2D", bitmap.get(), exceptionState) || !validateTexFunc("texSubImage2D", TexSubImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, 0, 0, 0))
         return;
     StaticBitmapImage* imageForRender = bitmap->bitmapImage();
     texSubImage2DImpl(target, level, xoffset, yoffset, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
@@ -6531,6 +6523,19 @@ bool WebGLRenderingContextBase::validateHTMLVideoElement(const char* functionNam
 
     if (wouldTaintOrigin(video)) {
         exceptionState.throwSecurityError("The video element contains cross-origin data, and may not be loaded.");
+        return false;
+    }
+    return true;
+}
+
+bool WebGLRenderingContextBase::validateImageBitmap(const char* functionName, ImageBitmap* bitmap, ExceptionState& exceptionState)
+{
+    if (bitmap->isNeutered()) {
+        synthesizeGLError(GL_INVALID_VALUE, "texImage2D", "The source data has been neutered.");
+        return false;
+    }
+    if (!bitmap->originClean()) {
+        exceptionState.throwSecurityError("The ImageBitmap contains cross-origin data, and may not be loaded.");
         return false;
     }
     return true;
