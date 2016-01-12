@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 import os
+import sys
 import time
 
 from gpu_tests import context_lost_expectations
@@ -343,8 +344,10 @@ class ContextLost(gpu_test_base.TestBase):
     ps = story_set_module.StorySet(
       base_dir=data_path,
       serving_dirs=set(['']))
-    ps.AddStory(GPUProcessCrashesExactlyOnce(
-        ps, ps.base_dir, self.GetExpectations()))
+    # The following test is disabled on Mac OSX - see crbug.com/576896
+    if sys.platform != 'darwin':
+      ps.AddStory(GPUProcessCrashesExactlyOnce(
+          ps, ps.base_dir, self.GetExpectations()))
     ps.AddStory(WebGLContextLostFromGPUProcessExitPage(
         ps, ps.base_dir, self.GetExpectations()))
     ps.AddStory(WebGLContextLostFromLoseContextExtensionPage(
