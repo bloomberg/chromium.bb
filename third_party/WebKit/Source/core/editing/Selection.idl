@@ -30,6 +30,8 @@
 // http://w3c.github.io/selection-api/#idl-def-Selection
 
 // TODO(yoichio): All long types should be unsigned long. crbug.com/391673
+// TODO(philipj): No arguments are optional in the spec, but some should be:
+// https://github.com/w3c/selection-api/issues/30
 [
     ImplementedAs=DOMSelection,
     WillBeGarbageCollected,
@@ -47,19 +49,14 @@
     //void removeRange(Range range);
     [MeasureAs=SelectionRemoveAllRanges] void removeAllRanges();
     [MeasureAs=SelectionEmpty] void empty();
-    // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
-    // TODO(philipj): The offset argument should not have a default value.
     [MeasureAs=SelectionCollapse, RaisesException, LegacyInterfaceTypeChecking] void collapse(Node? node, optional long offset = 0);
-    // TODO(yoichio): The node argument should not be nullable. crbug.com/391673
-    // TODO(philipj): The offset argument should not have a default value.
     [ImplementedAs=collapse, MeasureAs=SelectionSetPosition, RaisesException, LegacyInterfaceTypeChecking] void setPosition(Node? node, optional long offset = 0);
     [MeasureAs=SelectionCollapseToStart, RaisesException] void collapseToStart();
     [MeasureAs=SelectionCollapseToEnd, RaisesException] void collapseToEnd();
-    // TODO(philipj): The offset argument should not have a default value.
     [MeasureAs=SelectionExtend, RaisesException] void extend(Node node, optional long offset = 0);
     // TODO(philipj): The arguments should be anchorNode, anchorOffset,
-    // focusNode and focusOffset, and none of them should be optional or
-    // nullable.
+    // focusNode and focusOffset, and none of them are optional or nullable in
+    // the spec.
     [MeasureAs=SelectionSetBaseAndExtent, RaisesException, LegacyInterfaceTypeChecking] void setBaseAndExtent([Default=Undefined] optional Node? baseNode,
                                                                                                               [Default=Undefined] optional long baseOffset,
                                                                                                               [Default=Undefined] optional Node? extentNode,
