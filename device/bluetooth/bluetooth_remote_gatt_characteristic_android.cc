@@ -21,12 +21,12 @@ namespace device {
 // static
 scoped_ptr<BluetoothRemoteGattCharacteristicAndroid>
 BluetoothRemoteGattCharacteristicAndroid::Create(
-    const std::string& instanceId,
+    const std::string& instance_id,
     jobject /* BluetoothGattCharacteristicWrapper */
     bluetooth_gatt_characteristic_wrapper,
     jobject /* ChromeBluetoothDevice */ chrome_bluetooth_device) {
   scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> characteristic(
-      new BluetoothRemoteGattCharacteristicAndroid(instanceId));
+      new BluetoothRemoteGattCharacteristicAndroid(instance_id));
 
   characteristic->j_characteristic_.Reset(
       Java_ChromeBluetoothRemoteGattCharacteristic_create(
@@ -236,7 +236,7 @@ void BluetoothRemoteGattCharacteristicAndroid::OnWrite(
 }
 
 BluetoothRemoteGattCharacteristicAndroid::
-    BluetoothRemoteGattCharacteristicAndroid(const std::string& instanceId)
-    : instance_id_(instanceId) {}
+    BluetoothRemoteGattCharacteristicAndroid(const std::string& instance_id)
+    : instance_id_(instance_id) {}
 
 }  // namespace device

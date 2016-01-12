@@ -440,9 +440,9 @@ class Fakes {
             mValue = new byte[0];
         }
 
-        // Simulate a value being read from a characteristic.
+        // Implements BluetoothTestAndroid::RememberCharacteristicForSubsequentAction.
         @CalledByNative("FakeBluetoothGattCharacteristic")
-        private static void rememberCharacteristic(
+        private static void rememberCharacteristicForSubsequentAction(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
             sRememberedCharacteristic =
                     (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
@@ -481,7 +481,7 @@ class Fakes {
                     fakeCharacteristic, status);
         }
 
-        // Cause subsequent value reads of a characteristic to fail synchronously.
+        // Cause subsequent notification of a characteristic to fail synchronously.
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void setCharacteristicNotificationWillFailSynchronouslyOnce(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
@@ -492,7 +492,7 @@ class Fakes {
                     .mSetCharacteristicNotificationWillFailSynchronouslyOnce = true;
         }
 
-        // Cause subsequent value reads of a characteristic to fail synchronously.
+        // Cause subsequent value read of a characteristic to fail synchronously.
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void setReadCharacteristicWillFailSynchronouslyOnce(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {
@@ -503,7 +503,7 @@ class Fakes {
                     true;
         }
 
-        // Cause subsequent value writes of a characteristic to fail synchronously.
+        // Cause subsequent value write of a characteristic to fail synchronously.
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void setWriteCharacteristicWillFailSynchronouslyOnce(
                 ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic) {

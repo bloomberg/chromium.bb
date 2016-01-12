@@ -86,5 +86,5 @@ final class ChromeBluetoothRemoteGattService {
     // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
     private native void nativeCreateGattRemoteCharacteristic(
             long nativeBluetoothRemoteGattServiceAndroid, String instanceId,
-            Object bluetoothGattCarachteristicWrapper, Object chromeBluetoothDevice);
+            Object bluetoothGattCharacteristicWrapper, Object chromeBluetoothDevice);
 }

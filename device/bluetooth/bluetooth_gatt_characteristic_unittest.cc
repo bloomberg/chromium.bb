@@ -23,7 +23,7 @@ namespace device {
 #if defined(OS_ANDROID) || defined(OS_MACOSX)
 class BluetoothGattCharacteristicTest : public BluetoothTest {
  public:
-  // Create adapter_, device_, service, and provides.
+  // Creates adapter_, device_, service_, characteristic1_, & characteristic2_.
   void FakeCharacteristicBoilerplate() {
     InitWithFakeAdapter();
     StartLowEnergyDiscoverySession();
@@ -39,9 +39,9 @@ class BluetoothGattCharacteristicTest : public BluetoothTest {
     service_ = device_->GetGattServices()[0];
     SimulateGattCharacteristic(service_, uuid, /* properties */ 0);
     SimulateGattCharacteristic(service_, uuid, /* properties */ 0);
+    ASSERT_EQ(2u, service_->GetCharacteristics().size());
     characteristic1_ = service_->GetCharacteristics()[0];
     characteristic2_ = service_->GetCharacteristics()[1];
-    ASSERT_EQ(2u, service_->GetCharacteristics().size());
     ResetEventCounts();
   }
 

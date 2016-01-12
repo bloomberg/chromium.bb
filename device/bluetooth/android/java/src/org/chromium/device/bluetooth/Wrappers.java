@@ -43,7 +43,7 @@ import java.util.UUID;
 @JNINamespace("device")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
 class Wrappers {
-    private static final String TAG = "cr.Bluetooth";
+    private static final String TAG = "Bluetooth";
 
     /**
      * Wraps android.bluetooth.BluetoothAdapter.
