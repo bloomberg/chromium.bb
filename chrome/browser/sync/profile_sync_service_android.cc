@@ -34,6 +34,7 @@
 #include "google/cacheinvalidation/types.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "grit/components_strings.h"
 #include "jni/ProfileSyncService_jni.h"
 #include "sync/internal_api/public/network_resources.h"
 #include "sync/internal_api/public/read_transaction.h"
