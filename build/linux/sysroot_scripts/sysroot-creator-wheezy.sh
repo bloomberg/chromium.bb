@@ -25,6 +25,8 @@ DEBIAN_PACKAGES="\
   libattr1
   libavahi-client3
   libavahi-common3
+  libbrlapi0.5
+  libbrlapi-dev
   libc6
   libc6-dev
   libcairo2

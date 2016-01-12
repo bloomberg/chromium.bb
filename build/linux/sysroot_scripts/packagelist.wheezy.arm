@@ -5,6 +5,8 @@ main/a/atk1.0/libatk1.0-dev_2.4.0-2_armhf.deb
 main/a/attr/libattr1_2.4.46-8_armhf.deb
 main/a/avahi/libavahi-client3_0.6.31-2_armhf.deb
 main/a/avahi/libavahi-common3_0.6.31-2_armhf.deb
+main/b/brltty/libbrlapi0.5_4.4-10+deb7u1_armhf.deb
+main/b/brltty/libbrlapi-dev_4.4-10+deb7u1_armhf.deb
 main/c/cairo/libcairo2_1.12.2-3_armhf.deb
 main/c/cairo/libcairo2-dev_1.12.2-3_armhf.deb
 main/c/cairo/libcairo-gobject2_1.12.2-3_armhf.deb
