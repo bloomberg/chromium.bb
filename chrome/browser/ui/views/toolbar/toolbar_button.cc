@@ -202,15 +202,6 @@ void ToolbarButton::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   SetPaintToLayer(false);
 }
 
-bool ToolbarButton::ShouldEnterPushedState(const ui::Event& event) {
-  // Enter PUSHED state on press with Left or Right mouse button or on taps.
-  // Remain in this state while the context menu is open.
-  return event.type() == ui::ET_GESTURE_TAP ||
-         event.type() == ui::ET_GESTURE_TAP_DOWN ||
-         (event.IsMouseEvent() && ((ui::EF_LEFT_MOUSE_BUTTON |
-             ui::EF_RIGHT_MOUSE_BUTTON) & event.flags()) != 0);
-}
-
 bool ToolbarButton::ShouldShowMenu() {
   return model_ != nullptr;
 }

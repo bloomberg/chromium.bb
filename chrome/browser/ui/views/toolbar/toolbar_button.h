@@ -67,9 +67,6 @@ class ToolbarButton : public views::LabelButton,
   void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
 
  protected:
-  // views::LabelButton:
-  bool ShouldEnterPushedState(const ui::Event& event) override;
-
   // Returns if menu should be shown. Override this to change default behavior.
   virtual bool ShouldShowMenu();
 
