@@ -28,6 +28,7 @@
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "third_party/skia/include/effects/SkColorMatrixFilter.h"
 #include "third_party/skia/include/effects/SkImageSource.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/geometry/rect.h"
@@ -185,7 +186,7 @@ TEST(DisplayItemListTest, SerializeCompositingItem) {
 
   // Build the CompositingDisplayItem.
   skia::RefPtr<SkColorFilter> filter = skia::AdoptRef(
-      SkColorFilter::CreateLightingFilter(SK_ColorRED, SK_ColorGREEN));
+      SkColorMatrixFilter::CreateLightingFilter(SK_ColorRED, SK_ColorGREEN));
   list->CreateAndAppendItem<CompositingDisplayItem>(
       kVisualRect, 150, SkXfermode::Mode::kDst_Mode, nullptr, filter, false);
 
