@@ -1706,9 +1706,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 <dom-module id="downloads-item" assetpath="chrome://downloads/">
   <template>
-    <template is="dom-if" if="[[!hideDate]]">
-      <h3 id="date">[[computeDate_(hideDate, data.since_string, data.date_string)]]</h3>
-    </template>
+    <h3 id="date">[[computeDate_(data.hideDate, data.since_string, data.date_string)]]</h3>
 
     <div id="content" on-dragstart="onDragStart_" class$="[[computeClass_(isActive_, isDangerous_, showProgress_)]]">
       <div id="file-icon-wrapper" class="icon-wrapper">
@@ -1839,6 +1837,10 @@ paper-button {
   font-weight: 500;
   margin: 24px auto 10px;
   width: var(--downloads-item-width);
+}
+
+#date:empty {
+  display: none;
 }
 
 #content {

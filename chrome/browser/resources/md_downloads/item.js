@@ -24,11 +24,6 @@ cr.define('downloads', function() {
         type: Object,
       },
 
-      hideDate: {
-        type: Boolean,
-        value: true,
-      },
-
       completelyOnDisk_: {
         computed: 'computeCompletelyOnDisk_(' +
             'data.state, data.file_externally_removed)',
@@ -159,7 +154,8 @@ cr.define('downloads', function() {
 
     /** @private */
     computeDate_: function() {
-      if (this.hideDate)
+      assert(typeof this.data.hideDate == 'boolean');
+      if (this.data.hideDate)
         return '';
       return assert(this.data.since_string || this.data.date_string);
     },
