@@ -1184,7 +1184,7 @@ ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedNa
 static inline AtomicString makeIdForStyleResolution(const AtomicString& value, bool inQuirksMode)
 {
     if (inQuirksMode)
-        return value.lower();
+        return value.lowerASCII();
     return value;
 }
 

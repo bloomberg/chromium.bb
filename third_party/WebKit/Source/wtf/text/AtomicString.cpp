@@ -460,6 +460,18 @@ AtomicString AtomicString::lower() const
     return AtomicString(newImpl.release());
 }
 
+AtomicString AtomicString::lowerASCII() const
+{
+    StringImpl* impl = this->impl();
+    if (UNLIKELY(!impl))
+        return *this;
+    RefPtr<StringImpl> newImpl = impl->lowerASCII();
+    if (LIKELY(newImpl == impl))
+        return *this;
+    return AtomicString(newImpl.release());
+}
+
+
 AtomicString AtomicString::fromUTF8Internal(const char* charactersStart, const char* charactersEnd)
 {
     HashAndUTF8Characters buffer;

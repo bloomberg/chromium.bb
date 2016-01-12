@@ -60,7 +60,7 @@ public:
 #endif
 
     void clearClass() const { m_classNames.clear(); }
-    void setClass(const AtomicString& className, bool shouldFoldCase) const { m_classNames.set(className, shouldFoldCase ? SpaceSplitString::ShouldFoldCase : SpaceSplitString::ShouldNotFoldCase); }
+    void setClass(const AtomicString& className, bool shouldFoldCase) const { m_classNames.set(shouldFoldCase ? className.lowerASCII() : className , SpaceSplitString::ShouldNotFoldCase); }
     const SpaceSplitString& classNames() const { return m_classNames; }
 
     const AtomicString& idForStyleResolution() const { return m_idForStyleResolution; }

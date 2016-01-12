@@ -484,6 +484,61 @@ UChar32 StringImpl::characterStartingAt(unsigned i)
     return 0;
 }
 
+PassRefPtr<StringImpl> StringImpl::lowerASCII()
+{
+
+    // First scan the string for uppercase and non-ASCII characters:
+    if (is8Bit()) {
+        unsigned firstIndexToBeLowered = m_length;
+        for (unsigned i = 0; i < m_length; ++i) {
+            LChar ch = characters8()[i];
+            if (isASCIIUpper(ch)) {
+                firstIndexToBeLowered = i;
+                break;
+            }
+        }
+
+        // Nothing to do if the string is all ASCII with no uppercase.
+        if (firstIndexToBeLowered == m_length) {
+            return this;
+        }
+
+        LChar* data8;
+        RefPtr<StringImpl> newImpl = createUninitialized(m_length, data8);
+        memcpy(data8, characters8(), firstIndexToBeLowered);
+
+        for (unsigned i = firstIndexToBeLowered; i < m_length; ++i) {
+            LChar ch = characters8()[i];
+            data8[i] = isASCIIUpper(ch) ? toASCIILower(ch) : ch;
+        }
+        return newImpl.release();
+    }
+    bool noUpper = true;
+    UChar ored = 0;
+
+    const UChar* end = characters16() + m_length;
+    for (const UChar* chp = characters16(); chp != end; ++chp) {
+        if (isASCIIUpper(*chp))
+            noUpper = false;
+        ored |= *chp;
+    }
+    // Nothing to do if the string is all ASCII with no uppercase.
+    if (noUpper && !(ored & ~0x7F))
+        return this;
+
+    RELEASE_ASSERT(m_length <= static_cast<unsigned>(numeric_limits<unsigned>::max()));
+    unsigned length = m_length;
+
+    UChar* data16;
+    RefPtr<StringImpl> newImpl = createUninitialized(m_length, data16);
+
+    for (unsigned i = 0; i < length; ++i) {
+        UChar c = characters16()[i];
+        data16[i] = isASCIIUpper(c) ? toASCIILower(c) : c;
+    }
+    return newImpl.release();
+}
+
 PassRefPtr<StringImpl> StringImpl::lower()
 {
     // Note: This is a hot function in the Dromaeo benchmark, specifically the

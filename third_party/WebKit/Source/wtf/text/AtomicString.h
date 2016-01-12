@@ -119,6 +119,7 @@ public:
         { return m_string.endsWith<matchLength>(prefix, caseSensitivity); }
 
     AtomicString lower() const;
+    AtomicString lowerASCII() const;
     AtomicString upper() const { return AtomicString(impl()->upper()); }
 
     int toInt(bool* ok = 0) const { return m_string.toInt(ok); }

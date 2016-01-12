@@ -402,7 +402,7 @@ inline void CSSSelector::setValue(const AtomicString& value, bool matchLowerCase
         m_data.m_value->ref();
         return;
     }
-    m_data.m_rareData->m_matchingValue = matchLowerCase ? value.lower() : value;
+    m_data.m_rareData->m_matchingValue = matchLowerCase ? value.lowerASCII() : value;
     m_data.m_rareData->m_serializingValue = value;
 }
 

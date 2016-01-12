@@ -346,6 +346,7 @@ public:
     float toFloat(bool* ok = 0);
 
     PassRefPtr<StringImpl> lower();
+    PassRefPtr<StringImpl> lowerASCII();
     PassRefPtr<StringImpl> upper();
     PassRefPtr<StringImpl> lower(const AtomicString& localeIdentifier);
     PassRefPtr<StringImpl> upper(const AtomicString& localeIdentifier);
