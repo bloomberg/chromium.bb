@@ -189,6 +189,7 @@
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
+#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "content/common/font_cache_dispatcher_win.h"
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -937,6 +938,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
 #if defined(OS_MACOSX)
   AddFilter(new TextInputClientMessageFilter(GetID()));
 #elif defined(OS_WIN)
+  AddFilter(new DWriteFontProxyMessageFilter());
+
   // The FontCacheDispatcher is required only when we're using GDI rendering.
   // TODO(scottmg): pdf/ppapi still require the renderer to be able to precache
   // GDI fonts (http://crbug.com/383227), even when using DirectWrite. This

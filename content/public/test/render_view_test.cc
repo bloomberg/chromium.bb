@@ -53,6 +53,11 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #endif
 
+#if defined(OS_WIN)
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
+#include "content/test/dwrite_font_fake_sender_win.h"
+#endif
+
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
@@ -218,6 +223,15 @@ void RenderViewTest::SetUp() {
   SetContentClient(content_client_.get());
   SetBrowserClientForTesting(content_browser_client_.get());
   SetRendererClientForTesting(content_renderer_client_.get());
+
+#if defined(OS_WIN)
+  // This needs to happen sometime before PlatformInitialize.
+  // This isn't actually necessary for most tests: most tests are able to
+  // connect to their browser process which runs the real proxy host. However,
+  // some tests route IPCs to MockRenderThread, which is unable to process the
+  // font IPCs, causing all font loading to fail.
+  SetDWriteFontProxySenderForTesting(CreateFakeCollectionSender());
+#endif
 
   // Subclasses can set render_thread_ with their own implementation before
   // calling RenderViewTest::SetUp().

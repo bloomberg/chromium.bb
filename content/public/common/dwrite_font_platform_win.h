@@ -36,6 +36,12 @@ CONTENT_EXPORT bool LoadFontCache(const base::FilePath& path);
 // Added in header mainly for unittest
 CONTENT_EXPORT bool ValidateFontCacheFile(base::File* file);
 
+// Determines whether code should use the DirectWrite font proxy codepath.
+// Note that this function only checks whether the field trial is enabled.
+// Callers are still expected to take appropriate action based on the return
+// value.
+CONTENT_EXPORT bool ShouldUseDirectWriteFontProxyFieldTrial();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_DWRITE_FONT_PLATFORM_WIN_H_

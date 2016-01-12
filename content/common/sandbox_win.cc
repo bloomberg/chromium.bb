@@ -738,21 +738,23 @@ base::Process StartSandboxedProcess(
                   sandbox::TargetPolicy::FILES_ALLOW_READONLY,
                   policy);
 
-      // If DirectWrite is enabled for font rendering then open the font cache
-      // section which is created by the browser and pass the handle to the
-      // renderer process. This is needed because renderer processes on
-      // Windows 8+ may be running in an AppContainer sandbox and hence their
-      // kernel object namespace may be partitioned.
-      std::string name(content::kFontCacheSharedSectionName);
-      name.append(base::UintToString(base::GetCurrentProcId()));
+      if (!ShouldUseDirectWriteFontProxyFieldTrial()) {
+        // If DirectWrite is enabled for font rendering then open the font
+        // cache section which is created by the browser and pass the handle to
+        // the renderer process. This is needed because renderer processes on
+        // Windows 8+ may be running in an AppContainer sandbox and hence their
+        // kernel object namespace may be partitioned.
+        std::string name(content::kFontCacheSharedSectionName);
+        name.append(base::UintToString(base::GetCurrentProcId()));
 
-      base::SharedMemory direct_write_font_cache_section;
-      if (direct_write_font_cache_section.Open(name, true)) {
-        void* shared_handle = policy->AddHandleToShare(
-            direct_write_font_cache_section.handle().GetHandle());
-        cmd_line->AppendSwitchASCII(
-            switches::kFontCacheSharedHandle,
-            base::UintToString(base::win::HandleToUint32(shared_handle)));
+        base::SharedMemory direct_write_font_cache_section;
+        if (direct_write_font_cache_section.Open(name, true)) {
+          void* shared_handle = policy->AddHandleToShare(
+              direct_write_font_cache_section.handle().GetHandle());
+          cmd_line->AppendSwitchASCII(
+              switches::kFontCacheSharedHandle,
+              base::UintToString(base::win::HandleToUint32(shared_handle)));
+        }
       }
     }
   }

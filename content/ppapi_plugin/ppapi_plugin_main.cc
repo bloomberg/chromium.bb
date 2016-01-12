@@ -20,6 +20,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/plugin/content_plugin_client.h"
+#include "ipc/ipc_sender.h"
 #include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/proxy_module.h"
 #include "ui/base/ui_base_switches.h"
@@ -27,7 +28,9 @@
 #if defined(OS_WIN)
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "content/child/dwrite_font_proxy/dwrite_font_proxy_init_win.h"
 #include "content/common/font_warmup_win.h"
+#include "content/public/common/dwrite_font_platform_win.h"
 #include "sandbox/win/src/sandbox.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
 #include "third_party/skia/include/ports/SkTypeface_win.h"
@@ -139,7 +142,13 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
     gfx::win::MaybeInitializeDirectWrite();
   bool use_direct_write = gfx::win::IsDirectWriteEnabled();
   if (use_direct_write) {
-    WarmupDirectWrite();
+    if (ShouldUseDirectWriteFontProxyFieldTrial()) {
+      InitializeDWriteFontProxy(
+          base::Bind(&ppapi::proxy::PluginGlobals::GetBrowserSender,
+                     base::Unretained(ppapi::proxy::PluginGlobals::Get())));
+    } else {
+      WarmupDirectWrite();
+    }
   } else {
     SkTypeface_SetEnsureLOGFONTAccessibleProc(SkiaPreCacheFont);
   }
@@ -149,6 +158,11 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
   main_message_loop.Run();
+
+#if defined(OS_WIN)
+  if (ShouldUseDirectWriteFontProxyFieldTrial())
+    UninitializeDWriteFontProxy();
+#endif
   return 0;
 }
 

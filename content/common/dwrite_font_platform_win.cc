@@ -1273,4 +1273,10 @@ bool BuildFontCache(const base::FilePath& file) {
   return BuildFontCacheInternal(file.value().c_str());
 }
 
+bool ShouldUseDirectWriteFontProxyFieldTrial() {
+  return base::StartsWith(
+      base::FieldTrialList::FindFullName("DirectWriteFontProxy"),
+      "UseDirectWriteFontProxy", base::CompareCase::SENSITIVE);
+}
+
 }  // namespace content

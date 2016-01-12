@@ -23,6 +23,7 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/dwrite_font_platform_win.h"
+#include "ppapi/shared_impl/proxy_lock.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "skia/ext/refptr.h"
 #include "third_party/WebKit/public/web/win/WebFontRendering.h"
@@ -35,6 +36,7 @@ namespace content {
 
 namespace {
 
+// The Skia font manager, used for the life of the process (leaked at the end).
 SkFontMgr* g_warmup_fontmgr = nullptr;
 
 base::win::IATPatchFunction g_iat_patch_open_sc_manager;
@@ -255,6 +257,7 @@ skia::RefPtr<SkTypeface> GetTypefaceFromLOGFONT(const LOGFONTW* log_font) {
                                        : SkFontStyle::kUpright_Slant);
 
   std::string family_name = base::WideToUTF8(log_font->lfFaceName);
+  ppapi::ProxyAutoLock lock;  // Needed for DirectWrite font proxy.
   return skia::AdoptRef(
       g_warmup_fontmgr->matchFamilyStyle(family_name.c_str(), style));
 }
@@ -486,7 +489,10 @@ SkFontMgr* GetPreSandboxWarmupFontMgr() {
 }
 
 GdiFontPatchData* PatchGdiFontEnumeration(const base::FilePath& path) {
-  // We assume the fontmgr is already warmed up before calling this.
+  if (ShouldUseDirectWriteFontProxyFieldTrial() && !g_warmup_fontmgr)
+    g_warmup_fontmgr = SkFontMgr_New_DirectWrite();
+  // If not using the font proxy, we assume |g_warmup_fontmgr| is already
+  // initialized before this function is called.
   DCHECK(g_warmup_fontmgr);
   return new GdiFontPatchDataImpl(path);
 }

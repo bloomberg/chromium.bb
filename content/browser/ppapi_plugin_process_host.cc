@@ -36,6 +36,7 @@
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_WIN)
+#include "content/browser/renderer_host/dwrite_font_proxy_message_filter_win.h"
 #include "content/common/sandbox_win.h"
 #include "sandbox/win/src/process_mitigations.h"
 #include "sandbox/win/src/sandbox_policy.h"
@@ -299,6 +300,9 @@ PpapiPluginProcessHost::PpapiPluginProcessHost(
   filter_ = new PepperMessageFilter();
   process_->AddFilter(filter_.get());
   process_->GetHost()->AddFilter(host_impl_->message_filter().get());
+#if defined(OS_WIN)
+  process_->AddFilter(new DWriteFontProxyMessageFilter());
+#endif
 
   GetContentClient()->browser()->DidCreatePpapiPlugin(host_impl_.get());
 
