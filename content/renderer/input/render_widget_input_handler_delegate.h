@@ -22,6 +22,8 @@ class Vector2dF;
 
 namespace content {
 
+class RenderWidgetInputHandler;
+
 enum class ShowIme { IF_NEEDED, HIDE_IME };
 
 enum class ChangeSource {
@@ -55,6 +57,9 @@ class CONTENT_EXPORT RenderWidgetInputHandlerDelegate {
 
   // Called when an ACK is ready to be sent to the input event provider.
   virtual void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) = 0;
+
+  // Notifies the delegate of the |input_handler| managing it.
+  virtual void SetInputHandler(RenderWidgetInputHandler* input_handler) = 0;
 
   // |show_ime| should be ShowIme::IF_NEEDED iff the update may cause the ime to
   // be displayed, e.g. after a tap on an input field on mobile.

@@ -84,11 +84,69 @@ RenderWidgetMusConnection* RenderWidgetMusConnection::GetOrCreate(
 }
 
 RenderWidgetMusConnection::RenderWidgetMusConnection(int routing_id)
-    : routing_id_(routing_id) {
+    : routing_id_(routing_id), input_handler_(nullptr) {
   DCHECK(routing_id);
 }
 
 RenderWidgetMusConnection::~RenderWidgetMusConnection() {}
+
+void RenderWidgetMusConnection::FocusChangeComplete() {
+  NOTIMPLEMENTED();
+}
+
+bool RenderWidgetMusConnection::HasTouchEventHandlersAt(
+    const gfx::Point& point) const {
+  return true;
+}
+
+void RenderWidgetMusConnection::ObserveWheelEventAndResult(
+    const blink::WebMouseWheelEvent& wheel_event,
+    const gfx::Vector2dF& wheel_unused_delta,
+    bool event_processed) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetMusConnection::OnDidHandleKeyEvent() {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetMusConnection::OnDidOverscroll(
+    const DidOverscrollParams& params) {
+  NOTIMPLEMENTED();
+}
+
+void RenderWidgetMusConnection::OnInputEventAck(
+    scoped_ptr<InputEventAck> input_event_ack) {
+  DCHECK(!pending_ack_.is_null());
+  // TODO(fsamuel): Use the state in |input_event_ack|.
+  pending_ack_.Run();
+  pending_ack_.Reset();
+}
+
+void RenderWidgetMusConnection::SetInputHandler(
+    RenderWidgetInputHandler* input_handler) {
+  DCHECK(!input_handler_);
+  input_handler_ = input_handler;
+}
+
+void RenderWidgetMusConnection::UpdateTextInputState(
+    ShowIme show_ime,
+    ChangeSource change_source) {
+  NOTIMPLEMENTED();
+}
+
+bool RenderWidgetMusConnection::WillHandleGestureEvent(
+    const blink::WebGestureEvent& event) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
+bool RenderWidgetMusConnection::WillHandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  // TODO(fsamuel): NOTIMPLEMENTED() is too noisy.
+  // NOTIMPLEMENTED();
+  return false;
+}
 
 void RenderWidgetMusConnection::OnConnectionLost() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -100,12 +158,20 @@ void RenderWidgetMusConnection::OnWindowInputEvent(
     scoped_ptr<blink::WebInputEvent> input_event,
     const base::Closure& ack) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // TODO(fsamuel): Implement this once the following is complete:
-  // 1. The Mus client lib supports manual event ACKing.
-  // 2. Mus supports event coalescing.
-  // 3. RenderWidget is refactored so that we don't send ACKs to the browser
-  //    process.
-  ack.Run();
+  // If we don't yet have a RenderWidgetInputHandler then we don't yet have
+  // an initialized RenderWidget.
+  if (!input_handler_) {
+    ack.Run();
+    return;
+  }
+  // TODO(fsamuel): It would be nice to add this DCHECK but the reality is an
+  // event could timeout and we could receive the next event before we ack the
+  // previous event.
+  // DCHECK(pending_ack_.is_null());
+  pending_ack_ = ack;
+  // TODO(fsamuel, sadrul): Track real latency info.
+  ui::LatencyInfo latency_info;
+  input_handler_->HandleInputEvent(*input_event, latency_info);
 }
 
 }  // namespace content

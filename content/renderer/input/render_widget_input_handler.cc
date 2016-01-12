@@ -184,6 +184,7 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
       ignore_ack_for_mouse_move_from_debugger_(false) {
   DCHECK(delegate);
   DCHECK(widget);
+  delegate->SetInputHandler(this);
 }
 
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}

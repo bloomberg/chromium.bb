@@ -43,15 +43,19 @@ class TestRenderWidget : public RenderWidget {
                      false,
                      false) {
     webwidget_ = &mock_webwidget_;
+    SetRoutingID(++next_routing_id_);
   }
 
   MockWebWidget mock_webwidget_;
 
  protected:
   ~TestRenderWidget() override { webwidget_ = NULL; }
+  static int next_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderWidget);
 };
+
+int TestRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetCompositorTest : public testing::Test {
  public:

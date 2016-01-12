@@ -126,6 +126,8 @@ class CONTENT_EXPORT RenderWidget
   virtual void CloseForFrame();
 
   int32_t routing_id() const { return routing_id_; }
+  void SetRoutingID(int32_t routing_id);
+
   CompositorDependencies* compositor_deps() const { return compositor_deps_; }
   blink::WebWidget* webwidget() const { return webwidget_; }
   gfx::Size size() const { return size_; }
@@ -175,6 +177,7 @@ class CONTENT_EXPORT RenderWidget
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const DidOverscrollParams& params) override;
   void OnInputEventAck(scoped_ptr<InputEventAck> input_event_ack) override;
+  void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void UpdateTextInputState(ShowIme show_ime,
                             ChangeSource change_source) override;
   bool WillHandleGestureEvent(const blink::WebGestureEvent& event) override;
@@ -239,7 +242,7 @@ class CONTENT_EXPORT RenderWidget
   RenderWidgetCompositor* compositor() const;
 
   const RenderWidgetInputHandler& input_handler() const {
-    return input_handler_;
+    return *input_handler_;
   }
 
   void SetHandlingInputEventForTesting(bool handling_input_event);
@@ -343,6 +346,7 @@ class CONTENT_EXPORT RenderWidget
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
   friend class base::RefCounted<RenderWidget>;
+
   // For unit tests.
   friend class RenderWidgetTest;
 
@@ -687,7 +691,7 @@ class CONTENT_EXPORT RenderWidget
   gfx::Rect view_screen_rect_;
   gfx::Rect window_screen_rect_;
 
-  RenderWidgetInputHandler input_handler_;
+  scoped_ptr<RenderWidgetInputHandler> input_handler_;
 
   // The time spent in input handlers this frame. Used to throttle input acks.
   base::TimeDelta total_input_handling_time_this_frame_;

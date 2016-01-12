@@ -28,7 +28,10 @@ class InteractiveRenderWidget : public RenderWidget {
                      false,
                      false,
                      false),
-        always_overscroll_(false) {}
+        always_overscroll_(false) {
+    // A RenderWidget is not fully initialized until it has a routing ID.
+    SetRoutingID(++next_routing_id_);
+  }
 
   void SetTouchRegion(const std::vector<gfx::Rect>& rects) {
     rects_ = rects;
@@ -83,9 +86,12 @@ class InteractiveRenderWidget : public RenderWidget {
   std::vector<gfx::Rect> rects_;
   IPC::TestSink sink_;
   bool always_overscroll_;
+  static int next_routing_id_;
 
   DISALLOW_COPY_AND_ASSIGN(InteractiveRenderWidget);
 };
+
+int InteractiveRenderWidget::next_routing_id_ = 0;
 
 class RenderWidgetUnittest : public testing::Test {
  public:
