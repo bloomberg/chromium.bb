@@ -71,7 +71,7 @@ public:
 
 private:
     // RawResourceClient
-    void dataReceived(Resource*, const char* data, unsigned length) override;
+    void dataReceived(Resource*, const char* data, size_t length) override;
     void notifyFinished(Resource*) override;
     String debugName() const override { return "TextTrackLoader"; }
 

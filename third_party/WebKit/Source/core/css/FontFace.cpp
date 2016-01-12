@@ -602,7 +602,7 @@ void FontFace::initCSSFontFace(Document* document, PassRefPtrWillBeRawPtr<CSSVal
     }
 }
 
-void FontFace::initCSSFontFace(const unsigned char* data, unsigned size)
+void FontFace::initCSSFontFace(const unsigned char* data, size_t size)
 {
     m_cssFontFace = createCSSFontFace(this, m_unicodeRange.get());
     if (m_error)

@@ -89,7 +89,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         void dataSent(Resource*, unsigned long long bytesSent, unsigned long long totalBytesToBeSent) override;
         void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
         void setSerializedCachedMetadata(Resource*, const char*, size_t) override;
-        void dataReceived(Resource*, const char* data, unsigned dataLength) override;
+        void dataReceived(Resource*, const char* data, size_t dataLength) override;
         void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) override;
         void dataDownloaded(Resource*, int) override;
         void didReceiveResourceTiming(Resource*, const ResourceTimingInfo&) override;
@@ -106,7 +106,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         //
         // |this| may be dead after calling these method in async mode.
         void handleResponse(unsigned long identifier, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>);
-        void handleReceivedData(const char* data, unsigned dataLength);
+        void handleReceivedData(const char* data, size_t dataLength);
         void handleSuccessfulFinish(unsigned long identifier, double finishTime);
 
         // |this| may be dead after calling this method.

@@ -97,7 +97,7 @@ protected:
 
     void addNewData(bool allDataReceived = false)
     {
-        m_data->append("g", 1);
+        m_data->append("g", 1u);
         m_generator->setData(m_data, allDataReceived);
     }
 

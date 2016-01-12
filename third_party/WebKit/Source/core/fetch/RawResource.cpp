@@ -91,7 +91,7 @@ RawResource::RawResource(const ResourceRequest& resourceRequest, Type type)
 {
 }
 
-void RawResource::appendData(const char* data, unsigned length)
+void RawResource::appendData(const char* data, size_t length)
 {
     Resource::appendData(data, length);
 

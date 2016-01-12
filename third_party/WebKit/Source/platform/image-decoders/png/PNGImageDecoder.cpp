@@ -87,7 +87,7 @@ class PNGImageReader final {
     USING_FAST_MALLOC(PNGImageReader);
     WTF_MAKE_NONCOPYABLE(PNGImageReader);
 public:
-    PNGImageReader(PNGImageDecoder* decoder, unsigned readOffset)
+    PNGImageReader(PNGImageDecoder* decoder, size_t readOffset)
         : m_decoder(decoder)
         , m_readOffset(readOffset)
         , m_currentBufferSize(0)
@@ -123,7 +123,7 @@ public:
             return m_decoder->setFailed();
 
         const char* segment;
-        while (unsigned segmentLength = data.getSomeData(segment, m_readOffset)) {
+        while (size_t segmentLength = data.getSomeData(segment, m_readOffset)) {
             m_readOffset += segmentLength;
             m_currentBufferSize = m_readOffset;
             png_process_data(m_png, m_info, reinterpret_cast<png_bytep>(const_cast<char*>(segment)), segmentLength);
@@ -137,8 +137,8 @@ public:
     png_structp pngPtr() const { return m_png; }
     png_infop infoPtr() const { return m_info; }
 
-    void setReadOffset(unsigned offset) { m_readOffset = offset; }
-    unsigned currentBufferSize() const { return m_currentBufferSize; }
+    void setReadOffset(size_t offset) { m_readOffset = offset; }
+    size_t currentBufferSize() const { return m_currentBufferSize; }
     bool decodingSizeOnly() const { return m_decodingSizeOnly; }
     void setHasAlpha(bool hasAlpha) { m_hasAlpha = hasAlpha; }
     bool hasAlpha() const { return m_hasAlpha; }
@@ -194,8 +194,8 @@ private:
     png_structp m_png;
     png_infop m_info;
     PNGImageDecoder* m_decoder;
-    unsigned m_readOffset;
-    unsigned m_currentBufferSize;
+    size_t m_readOffset;
+    size_t m_currentBufferSize;
     bool m_decodingSizeOnly;
     bool m_hasAlpha;
     OwnPtr<png_byte[]> m_interlaceBuffer;
@@ -205,7 +205,7 @@ private:
 #endif
 };
 
-PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes, unsigned offset)
+PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption, GammaAndColorProfileOption colorOptions, size_t maxDecodedBytes, size_t offset)
     : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes)
     , m_hasColorProfile(false)
     , m_offset(offset)

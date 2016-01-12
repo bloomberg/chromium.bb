@@ -50,7 +50,7 @@ public:
         {
         }
 
-        virtual void appendData(const char* data, unsigned len)
+        virtual void appendData(const char* data, size_t len)
         {
             Resource::appendData(data, len);
             setDecodedSize(this->size());

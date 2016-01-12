@@ -35,7 +35,7 @@ class PNGImageReader;
 class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
     WTF_MAKE_NONCOPYABLE(PNGImageDecoder);
 public:
-    PNGImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes, unsigned offset = 0);
+    PNGImageDecoder(AlphaOption, GammaAndColorProfileOption, size_t maxDecodedBytes, size_t offset = 0);
     ~PNGImageDecoder() override;
 
     // ImageDecoder:

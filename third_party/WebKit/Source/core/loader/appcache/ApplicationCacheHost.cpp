@@ -134,7 +134,7 @@ void ApplicationCacheHost::didReceiveResponseForMainResource(const ResourceRespo
     }
 }
 
-void ApplicationCacheHost::mainResourceDataReceived(const char* data, unsigned length)
+void ApplicationCacheHost::mainResourceDataReceived(const char* data, size_t length)
 {
     if (m_host)
         m_host->didReceiveDataForMainResource(data, length);

@@ -104,7 +104,7 @@ public:
     static PassRefPtrWillBeRawPtr<DocumentFragment> createDocumentFragmentFromCueText(Document&, const String&);
 
     // Input data to the parser to parse.
-    void parseBytes(const char* data, unsigned length);
+    void parseBytes(const char* data, size_t length);
     void flush();
 
     // Transfers ownership of last parsed cues to caller.

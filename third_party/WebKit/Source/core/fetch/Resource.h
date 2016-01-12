@@ -108,7 +108,7 @@ public:
 
     virtual void setEncoding(const String&) { }
     virtual String encoding() const { return String(); }
-    virtual void appendData(const char*, unsigned);
+    virtual void appendData(const char*, size_t);
     virtual void error(Resource::Status);
     virtual void setCORSFailed() { }
 

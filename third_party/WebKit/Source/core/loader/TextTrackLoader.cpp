@@ -68,7 +68,7 @@ void TextTrackLoader::cancelLoad()
     clearResource();
 }
 
-void TextTrackLoader::dataReceived(Resource* resource, const char* data, unsigned length)
+void TextTrackLoader::dataReceived(Resource* resource, const char* data, size_t length)
 {
     ASSERT(this->resource() == resource);
 

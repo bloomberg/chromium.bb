@@ -56,7 +56,7 @@ public:
     ~ScriptResource() override;
 
     void didAddClient(ResourceClient*) override;
-    void appendData(const char*, unsigned) override;
+    void appendData(const char*, size_t) override;
 
     void onMemoryDump(WebMemoryDumpLevelOfDetail, WebProcessMemoryDump*) const override;
 

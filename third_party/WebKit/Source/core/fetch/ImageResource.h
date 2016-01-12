@@ -90,7 +90,7 @@ public:
 
     void allClientsRemoved() override;
 
-    void appendData(const char*, unsigned) override;
+    void appendData(const char*, size_t) override;
     void error(Resource::Status) override;
     void responseReceived(const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) override;
     void finishOnePart() override;

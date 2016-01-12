@@ -81,7 +81,7 @@ public:
     void clearCache();
 
 private:
-    void getSomeDataInternal(unsigned dataPosition) const;
+    void getSomeDataInternal(size_t dataPosition) const;
 
     RefPtr<SharedBuffer> m_data;
 

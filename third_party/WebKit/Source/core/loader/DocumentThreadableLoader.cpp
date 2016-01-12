@@ -647,7 +647,7 @@ void DocumentThreadableLoader::setSerializedCachedMetadata(Resource*, const char
     // |this| may be dead here.
 }
 
-void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, unsigned dataLength)
+void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data, size_t dataLength)
 {
     ASSERT_UNUSED(resource, resource == this->resource());
     ASSERT(m_async);
@@ -655,11 +655,13 @@ void DocumentThreadableLoader::dataReceived(Resource* resource, const char* data
     if (m_isUsingDataConsumerHandle)
         return;
 
-    handleReceivedData(data, dataLength);
+    // TODO(junov): Fix the ThreadableLoader ecosystem to use size_t.
+    // Until then, we use safeCast to trap potential overflows.
+    handleReceivedData(data, safeCast<unsigned>(dataLength));
     // |this| may be dead here.
 }
 
-void DocumentThreadableLoader::handleReceivedData(const char* data, unsigned dataLength)
+void DocumentThreadableLoader::handleReceivedData(const char* data, size_t dataLength)
 {
     ASSERT(m_client);
 

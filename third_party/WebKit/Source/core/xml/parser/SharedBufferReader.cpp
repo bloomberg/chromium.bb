@@ -49,18 +49,18 @@ SharedBufferReader::~SharedBufferReader()
 {
 }
 
-int SharedBufferReader::readData(char* outputBuffer, unsigned askedToRead)
+int SharedBufferReader::readData(char* outputBuffer, int askedToRead)
 {
     if (!m_buffer || m_currentOffset > m_buffer->size())
         return 0;
 
-    unsigned bytesCopied = 0;
-    unsigned bytesLeft = m_buffer->size() - m_currentOffset;
-    unsigned lenToCopy = std::min(askedToRead, bytesLeft);
+    size_t bytesCopied = 0;
+    size_t bytesLeft = m_buffer->size() - m_currentOffset;
+    size_t lenToCopy = std::min(safeCast<size_t>(askedToRead), bytesLeft);
 
     while (bytesCopied < lenToCopy) {
         const char* data;
-        unsigned segmentSize = m_buffer->getSomeData(data, m_currentOffset);
+        size_t segmentSize = m_buffer->getSomeData(data, m_currentOffset);
         if (!segmentSize)
             break;
 
@@ -70,7 +70,7 @@ int SharedBufferReader::readData(char* outputBuffer, unsigned askedToRead)
         m_currentOffset += segmentSize;
     }
 
-    return bytesCopied;
+    return safeCast<int>(bytesCopied);
 }
 
 } // namespace blink

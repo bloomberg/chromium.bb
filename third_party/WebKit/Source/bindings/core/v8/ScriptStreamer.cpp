@@ -297,11 +297,11 @@ private:
         // Get as much data from the ResourceBuffer as we can.
         const char* data = 0;
         Vector<const char*> chunks;
-        Vector<unsigned> chunkLengths;
+        Vector<size_t> chunkLengths;
         size_t dataLength = 0;
 
         if (!m_cancelled) {
-            while (unsigned length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
+            while (size_t length = m_resourceBuffer->getSomeData(data, m_queueTailPosition)) {
                 // FIXME: Here we can limit based on the total length, if it turns
                 // out that we don't want to give all the data we have (memory
                 // vs. speed).
@@ -322,7 +322,7 @@ private:
         if (dataLength > lengthOfBOM) {
             dataLength -= lengthOfBOM;
             uint8_t* copiedData = new uint8_t[dataLength];
-            unsigned offset = 0;
+            size_t offset = 0;
             for (size_t i = 0; i < chunks.size(); ++i) {
                 memcpy(copiedData + offset, chunks[i] + lengthOfBOM, chunkLengths[i] - lengthOfBOM);
                 offset += chunkLengths[i] - lengthOfBOM;
@@ -352,9 +352,9 @@ private:
     //   queueTailPosition: end of data we have enqued in the queue.
     //   bookmarkPosition: position of the bookmark.
     SourceStreamDataQueue m_dataQueue; // Thread safe.
-    unsigned m_queueLeadPosition; // Only used by v8 thread.
-    unsigned m_queueTailPosition; // Used by both threads; guarded by m_mutex.
-    unsigned m_bookmarkPosition; // Only used by v8 thread.
+    size_t m_queueLeadPosition; // Only used by v8 thread.
+    size_t m_queueTailPosition; // Used by both threads; guarded by m_mutex.
+    size_t m_bookmarkPosition; // Only used by v8 thread.
 
     // BOM (Unicode Byte Order Mark) handling:
     // This class is responsible for stripping out the BOM, since Chrome
@@ -370,7 +370,7 @@ private:
     // streaming case).
     // We store this separately, to avoid having to guard all
     // m_queueLeadPosition references with a mutex.
-    unsigned m_lengthOfBOM; // Used by both threads; guarded by m_mutex.
+    size_t m_lengthOfBOM; // Used by both threads; guarded by m_mutex.
 
     OwnPtr<WebTaskRunner> m_loadingTaskRunner;
 };
@@ -483,7 +483,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource)
         // that have at least kSmallScriptThreshold worth of data, which is more
         // than enough for detecting a BOM.
         const char* data = 0;
-        unsigned length = resource->resourceBuffer()->getSomeData(data, 0);
+        size_t length = resource->resourceBuffer()->getSomeData(data, static_cast<size_t>(0));
 
         OwnPtr<TextResourceDecoder> decoder(TextResourceDecoder::create("application/javascript", resource->encoding()));
         lengthOfBOM = decoder->checkForBOM(data, length);

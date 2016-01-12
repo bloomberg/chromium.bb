@@ -75,8 +75,8 @@ void testByteByByteDecode(DecoderCreator createDecoder, const char* file, size_t
     const char* source = data->data();
 
     for (size_t length = 1; length <= data->size() && !decoder->failed(); ++length) {
-        sourceData[0]->append(source, 1);
-        sourceData[1]->append(source++, 1);
+        sourceData[0]->append(source, 1u);
+        sourceData[1]->append(source++, 1u);
         // Alternate the buffers to cover the JPEGImageDecoder::onSetData restart code.
         decoder->setData(sourceData[length & 1].get(), length == data->size());
 

@@ -70,7 +70,7 @@ private:
     };
 
     void didAddClient(ResourceClient*) override;
-    void appendData(const char*, unsigned) override;
+    void appendData(const char*, size_t) override;
 
     bool shouldIgnoreHTTPStatusCodeErrors() const override { return true; }
 
@@ -105,7 +105,7 @@ public:
     virtual void dataSent(Resource*, unsigned long long /* bytesSent */, unsigned long long /* totalBytesToBeSent */) { }
     virtual void responseReceived(Resource*, const ResourceResponse&, PassOwnPtr<WebDataConsumerHandle>) { }
     virtual void setSerializedCachedMetadata(Resource*, const char*, size_t) { }
-    virtual void dataReceived(Resource*, const char* /* data */, unsigned /* length */) { }
+    virtual void dataReceived(Resource*, const char* /* data */, size_t /* length */) { }
     virtual void redirectReceived(Resource*, ResourceRequest&, const ResourceResponse&) { }
     virtual void updateRequest(Resource*, const ResourceRequest&) { }
     virtual void dataDownloaded(Resource*, int) { }

@@ -50,7 +50,7 @@ TEST(SharedBufferTest, getAsBytes)
     sharedBuffer->append(testData1, strlen(testData1));
     sharedBuffer->append(testData2, strlen(testData2));
 
-    const unsigned size = sharedBuffer->size();
+    const size_t size = sharedBuffer->size();
     OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
     ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
@@ -75,7 +75,7 @@ TEST(SharedBufferTest, getAsBytesLargeSegments)
     sharedBuffer->append(vector1);
     sharedBuffer->append(vector2);
 
-    const unsigned size = sharedBuffer->size();
+    const size_t size = sharedBuffer->size();
     OwnPtr<char[]> data = adoptArrayPtr(new char[size]);
     ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
 
@@ -100,7 +100,7 @@ TEST(SharedBufferTest, copy)
     Vector<char> testData(10000);
     std::generate(testData.begin(), testData.end(), &std::rand);
 
-    unsigned length = testData.size();
+    size_t length = testData.size();
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(testData.data(), length);
     sharedBuffer->append(testData.data(), length);
     sharedBuffer->append(testData.data(), length);
@@ -118,14 +118,14 @@ TEST(SharedBufferTest, copy)
 
 TEST(SharedBufferTest, constructorWithSizeOnly)
 {
-    unsigned length = 10000;
+    size_t length = 10000;
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::create(length);
     ASSERT_EQ(length, sharedBuffer->size());
 
     // The internal flat buffer should have been resized to |length| therefore getSomeData() should
     // directly return the full size.
     const char* data;
-    ASSERT_EQ(length, sharedBuffer->getSomeData(data, 0));
+    ASSERT_EQ(length, sharedBuffer->getSomeData(data, static_cast<size_t>(0u)));
 }
 
 TEST(SharedBufferTest, createPurgeable)
@@ -137,7 +137,7 @@ TEST(SharedBufferTest, createPurgeable)
     config.hasDiscardableMemorySupport = true;
     TestingPlatformSupport platformWithDiscardableMemorySupport(config);
 
-    unsigned length = testData.size();
+    size_t length = testData.size();
     RefPtr<SharedBuffer> sharedBuffer = SharedBuffer::createPurgeable(testData.data(), length);
     ASSERT_EQ(length, sharedBuffer->size());
     // Merge the segments into a single vector.

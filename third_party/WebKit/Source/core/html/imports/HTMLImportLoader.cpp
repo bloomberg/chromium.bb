@@ -85,7 +85,7 @@ void HTMLImportLoader::responseReceived(Resource* resource, const ResourceRespon
     setState(startWritingAndParsing(response));
 }
 
-void HTMLImportLoader::dataReceived(Resource*, const char* data, unsigned length)
+void HTMLImportLoader::dataReceived(Resource*, const char* data, size_t length)
 {
     RefPtrWillBeRawPtr<DocumentWriter> protectingWriter(m_writer.get());
     m_writer->addData(data, length);

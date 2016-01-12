@@ -202,7 +202,7 @@ void MHTMLArchive::generateMHTMLPart(
         if (!strcmp(contentEncoding, quotedPrintable)) {
             quotedPrintableEncode(data, dataLength, encodedData);
             outputBuffer.append(encodedData.data(), encodedData.size());
-            outputBuffer.append("\r\n", 2);
+            outputBuffer.append("\r\n", 2u);
         } else {
             ASSERT(!strcmp(contentEncoding, base64));
             // We are not specifying insertLFs = true below as it would cut the lines with LFs and MHTML requires CRLFs.
@@ -213,7 +213,7 @@ void MHTMLArchive::generateMHTMLPart(
             do {
                 size_t lineLength = std::min(encodedDataLength - index, maximumLineLength);
                 outputBuffer.append(encodedData.data() + index, lineLength);
-                outputBuffer.append("\r\n", 2);
+                outputBuffer.append("\r\n", 2u);
                 index += maximumLineLength;
             } while (index < encodedDataLength);
         }

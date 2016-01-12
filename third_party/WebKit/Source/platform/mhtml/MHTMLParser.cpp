@@ -341,7 +341,7 @@ PassRefPtrWillBeRawPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHea
             content->append(line.utf8().data(), line.length());
             if (contentTransferEncoding == MIMEHeader::QuotedPrintable) {
                 // The line reader removes the \r\n, but we need them for the content in this case as the QuotedPrintable decoder expects CR-LF terminated lines.
-                content->append("\r\n", 2);
+                content->append("\r\n", 2u);
             }
         }
     }

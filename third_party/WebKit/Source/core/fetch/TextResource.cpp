@@ -36,8 +36,8 @@ String TextResource::decodedText() const
 
     StringBuilder builder;
     const char* data;
-    unsigned position = 0;
-    while (unsigned length = m_data->getSomeData(data, position)) {
+    size_t position = 0;
+    while (size_t length = m_data->getSomeData(data, position)) {
         builder.append(m_decoder->decode(data, length));
         position += length;
     }

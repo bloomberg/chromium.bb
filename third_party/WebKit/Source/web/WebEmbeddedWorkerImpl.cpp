@@ -248,8 +248,7 @@ void WebEmbeddedWorkerImpl::loadShadowPage()
     // Construct substitute data source for the 'shadow page'. We only need it
     // to have same origin as the worker so the loading checks work correctly.
     CString content("");
-    int length = static_cast<int>(content.length());
-    RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), length));
+    RefPtr<SharedBuffer> buffer(SharedBuffer::create(content.data(), content.length()));
     m_loadingShadowPage = true;
     m_mainFrame->frame()->loader().load(FrameLoadRequest(0, ResourceRequest(m_workerStartData.scriptURL), SubstituteData(buffer, "text/html", "UTF-8", KURL())));
 }

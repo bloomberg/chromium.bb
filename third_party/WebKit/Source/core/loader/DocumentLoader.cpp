@@ -539,7 +539,7 @@ void DocumentLoader::commitData(const char* bytes, size_t length)
     m_writer->addData(bytes, length);
 }
 
-void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned length)
+void DocumentLoader::dataReceived(Resource* resource, const char* data, size_t length)
 {
     ASSERT(data);
     ASSERT(length);
@@ -571,8 +571,8 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned
     // invocations of processData() may queue more data in reentrant
     // invocations, so iterate until it's empty.
     const char* segment;
-    unsigned pos = 0;
-    while (unsigned length = m_dataBuffer->getSomeData(segment, pos)) {
+    size_t pos = 0;
+    while (size_t length = m_dataBuffer->getSomeData(segment, pos)) {
         processData(segment, length);
         pos += length;
     }
@@ -580,7 +580,7 @@ void DocumentLoader::dataReceived(Resource* resource, const char* data, unsigned
     m_dataBuffer->clear();
 }
 
-void DocumentLoader::processData(const char* data, unsigned length)
+void DocumentLoader::processData(const char* data, size_t length)
 {
     m_applicationCacheHost->mainResourceDataReceived(data, length);
     m_timeOfLastDataReceived = monotonicallyIncreasingTime();

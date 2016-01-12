@@ -70,7 +70,7 @@ public:
     }
     String debugName() const override { return "DummyClient"; }
 
-    void dataReceived(Resource*, const char* data, unsigned length) override
+    void dataReceived(Resource*, const char* data, size_t length) override
     {
         m_data.append(data, length);
     }

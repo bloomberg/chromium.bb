@@ -44,11 +44,34 @@ public:
     enum : unsigned { kSegmentSize = 0x1000 };
 
     static PassRefPtr<SharedBuffer> create() { return adoptRef(new SharedBuffer); }
-    static PassRefPtr<SharedBuffer> create(size_t size) { return adoptRef(new SharedBuffer(size)); }
-    static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
-    static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
 
-    static PassRefPtr<SharedBuffer> createPurgeable(const char* c, unsigned size) { return adoptRef(new SharedBuffer(c, size, PurgeableVector::Purgeable)); }
+    HAS_STRICTLY_TYPED_ARG
+    static PassRefPtr<SharedBuffer> create(STRICTLY_TYPED_ARG(size))
+    {
+        STRICT_ARG_TYPE(size_t);
+        return adoptRef(new SharedBuffer(size));
+    }
+
+    HAS_STRICTLY_TYPED_ARG
+    static PassRefPtr<SharedBuffer> create(const char* data, STRICTLY_TYPED_ARG(size))
+    {
+        STRICT_ARG_TYPE(size_t);
+        return adoptRef(new SharedBuffer(data, size));
+    }
+
+    HAS_STRICTLY_TYPED_ARG
+    static PassRefPtr<SharedBuffer> create(const unsigned char* data, STRICTLY_TYPED_ARG(size))
+    {
+        STRICT_ARG_TYPE(size_t);
+        return adoptRef(new SharedBuffer(data, size));
+    }
+
+    HAS_STRICTLY_TYPED_ARG
+    static PassRefPtr<SharedBuffer> createPurgeable(const char* data, STRICTLY_TYPED_ARG(size))
+    {
+        STRICT_ARG_TYPE(size_t);
+        return adoptRef(new SharedBuffer(data, size, PurgeableVector::Purgeable));
+    }
 
     static PassRefPtr<SharedBuffer> adoptVector(Vector<char>&);
 
@@ -59,12 +82,18 @@ public:
     // performance.
     const char* data() const;
 
-    unsigned size() const;
+    size_t size() const;
 
     bool isEmpty() const { return !size(); }
 
     void append(PassRefPtr<SharedBuffer>);
-    void append(const char*, unsigned);
+
+    HAS_STRICTLY_TYPED_ARG
+    void append(const char* data, STRICTLY_TYPED_ARG(size))
+    {
+        ALLOW_NUMERIC_ARG_TYPES_PROMOTABLE_TO(size_t);
+        appendInternal(data, size);
+    }
     void append(const Vector<char>&);
 
     void clear();
@@ -78,17 +107,27 @@ public:
     // repeat calling it until it returns 0.
     // Usage:
     //      const char* segment;
-    //      unsigned pos = 0;
-    //      while (unsigned length = sharedBuffer->getSomeData(segment, pos)) {
+    //      size_t pos = 0;
+    //      while (size_t length = sharedBuffer->getSomeData(segment, pos)) {
     //          // Use the data. for example: decoder->decode(segment, length);
     //          pos += length;
     //      }
-    unsigned getSomeData(const char*& data, unsigned position = 0) const;
+    HAS_STRICTLY_TYPED_ARG
+    size_t getSomeData(const char*& data, STRICTLY_TYPED_ARG(position) = static_cast<size_t>(0)) const
+    {
+        STRICT_ARG_TYPE(size_t);
+        return getSomeDataInternal(data, position);
+    }
 
     // Returns the content data into "dest" as a flat buffer. "byteLength" must
     // exactly match with size(). Returns true on success, otherwise the content
     // of "dest" is not guaranteed.
-    bool getAsBytes(void* dest, unsigned byteLength) const;
+    HAS_STRICTLY_TYPED_ARG
+    bool getAsBytes(void* dest, STRICTLY_TYPED_ARG(byteLength)) const
+    {
+        STRICT_ARG_TYPE(size_t);
+        return getAsBytesInternal(dest, byteLength);
+    }
 
     // Creates an SkData and copies this SharedBuffer's contents to that
     // SkData without merging segmented buffers into a flat buffer.
@@ -109,14 +148,18 @@ public:
 private:
     SharedBuffer();
     explicit SharedBuffer(size_t);
-    SharedBuffer(const char*, int);
-    SharedBuffer(const unsigned char*, int);
-    SharedBuffer(const char*, unsigned, PurgeableVector::PurgeableOption);
+    SharedBuffer(const char*, size_t);
+    SharedBuffer(const unsigned char*, size_t);
+    SharedBuffer(const char*, size_t, PurgeableVector::PurgeableOption);
 
     // See SharedBuffer::data().
     void mergeSegmentsIntoBuffer() const;
 
-    unsigned m_size;
+    void appendInternal(const char* data, size_t);
+    bool getAsBytesInternal(void* dest, size_t) const;
+    size_t getSomeDataInternal(const char*& data, size_t position) const;
+
+    size_t m_size;
     mutable PurgeableVector m_buffer;
     mutable Vector<char*> m_segments;
 };

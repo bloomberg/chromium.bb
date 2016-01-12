@@ -121,7 +121,7 @@ private:
     FontFace(ExecutionContext*, const AtomicString& family, const FontFaceDescriptors&);
 
     void initCSSFontFace(Document*, PassRefPtrWillBeRawPtr<CSSValue> src);
-    void initCSSFontFace(const unsigned char* data, unsigned size);
+    void initCSSFontFace(const unsigned char* data, size_t);
     void setPropertyFromString(const Document*, const String&, CSSPropertyID, ExceptionState* = 0);
     bool setPropertyFromStyle(const StylePropertySet&, CSSPropertyID);
     bool setPropertyValue(PassRefPtrWillBeRawPtr<CSSValue>, CSSPropertyID);

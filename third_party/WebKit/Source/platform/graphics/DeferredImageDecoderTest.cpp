@@ -248,7 +248,7 @@ TEST_F(DeferredImageDecoderTest, singleFrameImageLoading)
     EXPECT_TRUE(m_actualDecoder);
 
     m_status = ImageFrame::FrameComplete;
-    m_data->append(" ", 1);
+    m_data->append(" ", 1u);
     m_lazyDecoder->setData(*m_data, true);
     EXPECT_FALSE(m_actualDecoder);
     EXPECT_TRUE(m_lazyDecoder->frameIsCompleteAtIndex(0));
@@ -277,7 +277,7 @@ TEST_F(DeferredImageDecoderTest, multiFrameImageLoading)
     m_frameCount = 2;
     m_frameDuration = 20;
     m_status = ImageFrame::FrameComplete;
-    m_data->append(" ", 1);
+    m_data->append(" ", 1u);
     m_lazyDecoder->setData(*m_data, false);
 
     image = m_lazyDecoder->createFrameAtIndex(0);

@@ -295,7 +295,7 @@ inline void ImageResource::clearImage()
     m_image.clear();
 }
 
-void ImageResource::appendData(const char* data, unsigned length)
+void ImageResource::appendData(const char* data, size_t length)
 {
     Resource::appendData(data, length);
     if (!loadingMultipartContent())

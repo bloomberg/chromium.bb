@@ -378,7 +378,7 @@ public:
         }
 
         const char* segment;
-        const unsigned bytes = m_data->getSomeData(segment, m_nextReadPosition);
+        const size_t bytes = m_data->getSomeData(segment, m_nextReadPosition);
         if (bytes == 0) {
             // We had to suspend. When we resume, we will need to start from the restart position.
             m_needsRestart = true;
@@ -706,9 +706,9 @@ private:
     // Input reading: True if we need to back up to m_restartPosition.
     bool m_needsRestart;
     // If libjpeg needed to restart, this is the position to restart from.
-    unsigned m_restartPosition;
+    size_t m_restartPosition;
     // This is the position where we will read from, unless there is a restart.
-    unsigned m_nextReadPosition;
+    size_t m_nextReadPosition;
     // This is how we know to update the restart position. It is the last value
     // we set to next_input_byte. libjpeg will update next_input_byte when it
     // has found the next restart position, so if it no longer matches this

@@ -49,11 +49,12 @@ public:
     ~SharedBufferReader();
 
     // Returns the number of bytes that were read (i.e. written to |outputBuffer|).
-    int readData(char* outputBuffer, unsigned askedToRead);
+    // TODO(junov): use size_t instead of int. Until then, readData uses safeCast internally.
+    int readData(char* outputBuffer, int askedToRead);
 
 private:
     RefPtr<SharedBuffer> m_buffer;
-    unsigned m_currentOffset;
+    size_t m_currentOffset;
 };
 
 } // namespace blink

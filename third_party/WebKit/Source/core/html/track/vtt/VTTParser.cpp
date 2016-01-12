@@ -101,7 +101,7 @@ void VTTParser::getNewRegions(HeapVector<Member<VTTRegion>>& outputRegions)
     outputRegions.swap(m_regionList);
 }
 
-void VTTParser::parseBytes(const char* data, unsigned length)
+void VTTParser::parseBytes(const char* data, size_t length)
 {
     String textData = m_decoder->decode(data, length);
     m_lineReader.append(textData);
