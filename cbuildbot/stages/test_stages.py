@@ -302,7 +302,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       A tuple, first element is the pass subsystem set; the second is the fail
       subsystem set
     """
-    if not subsystems:
+    if not subsystems or not json_dump_dict:
       return None
 
     pass_subsystems = set()

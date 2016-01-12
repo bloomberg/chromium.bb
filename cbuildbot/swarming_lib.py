@@ -107,9 +107,8 @@ def SwarmingRetriableErrorCheck(exception):
     return False
   if result.task_summary_json:
     try:
-      internal_failure = result.task_summary_json[
-          'shards'][0]['internal_failure']
-      state = result.task_summary_json['shards'][0]['state']
+      internal_failure = result.GetValue('internal_failure')
+      state = result.GetValue('state')
       if internal_failure and state in RETRIABLE_INTERNAL_FAILURE_STATES:
         logging.warning(
             'Encountered retriable swarming internal failure: %s',
@@ -117,7 +116,8 @@ def SwarmingRetriableErrorCheck(exception):
         return True
     except (IndexError, KeyError) as e:
       logging.warning(
-          "Could not determine if %s is retriable, error: %s. json: %s",
+          "Could not determine if exception is retriable. Exception: %s. "
+          "Error: %s. Swarming summary json: %s",
           str(exception), str(e),
           json.dumps(result.task_summary_json, indent=2))
   return False
@@ -186,3 +186,27 @@ class SwarmingCommandResult(cros_build_lib.CommandResult):
                                   error=command_result.error,
                                   output=command_result.output,
                                   returncode=command_result.returncode)
+
+  def HasValidSummary(self):
+    """Check whether the result has valid summary json.
+
+    Returns:
+      True if the summary is valid else False.
+    """
+    return (self.task_summary_json and self.task_summary_json.get('shards')
+            and self.task_summary_json.get('shards')[0])
+
+
+  def GetValue(self, field, default=None):
+    """Get the value of |field| from the json summary.
+
+    Args:
+      field: Name of the field.
+      default: Default value if field does not exist.
+
+    Returns:
+      Value of the field.
+    """
+    if self.HasValidSummary():
+      return self.task_summary_json.get('shards')[0].get(field)
+    return default

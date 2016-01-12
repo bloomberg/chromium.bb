@@ -910,13 +910,17 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     return HWTestSuiteResult(None, json_dump_result)
   except cros_build_lib.RunCommandError as e:
     result = e.result
-    if not result.task_summary_json:
+    if not result.HasValidSummary():
       # swarming client has failed.
-      logging.error('No task summary json generated, output:%s', result.output)
+      logging.error('No valid task summary json generated, output:%s',
+                    result.output)
+      if result.task_summary_json:
+        logging.error('Invalid task summary json:\n%s',
+                      json.dumps(result.task_summary_json, indent=2))
       to_raise = failures_lib.SwarmingProxyFailure(
           '** Failed to fullfill request with proxy server, code(%d) **'
           % result.returncode)
-    elif result.task_summary_json['shards'][0]['internal_failure']:
+    elif result.GetValue('internal_failure'):
       logging.error('Encountered swarming internal error:\n'
                     'stdout: \n%s\n'
                     'summary json content:\n%s',
@@ -926,20 +930,21 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
           % result.returncode)
     else:
       logging.debug('swarming info: name: %s, bot_id: %s, created_ts: %s',
-                    result.task_summary_json['shards'][0]['name'],
-                    result.task_summary_json['shards'][0]['bot_id'],
-                    result.task_summary_json['shards'][0]['created_ts'])
+                    result.GetValue('name'),
+                    result.GetValue('bot_id'),
+                    result.GetValue('created_ts'))
       # If running json_dump cmd, write the pass/fail subsys dict into console,
       # otherwise, write the cmd output to the console.
+      outputs = result.GetValue('outputs', '')
       if running_json_dump_flag:
-        s = ''.join(result.task_summary_json['shards'][0]['outputs'])
+        s = ''.join(outputs)
         sys.stdout.write(s)
         sys.stdout.write('\n')
         i = s.find(JSON_DICT_START) + len(JSON_DICT_START)
         j = s.find(JSON_DICT_END)
         json_dump_result = json.loads(s[i:j])
       else:
-        for output in result.task_summary_json['shards'][0]['outputs']:
+        for output in outputs:
           sys.stdout.write(output)
         sys.stdout.flush()
       # swarming client has submitted task and returned task information.
@@ -1099,7 +1104,7 @@ def _HWTestCreate(cmd, debug=False, **kwargs):
         **kwargs)
     # If the command succeeds, result.task_summary_json
     # should have the right content.
-    for output in result.task_summary_json['shards'][0]['outputs']:
+    for output in result.GetValue('outputs', ''):
       sys.stdout.write(output)
     sys.stdout.flush()
     m = re.search(r'Created suite job:.*object_id=(?P<job_id>\d*)',
@@ -1128,13 +1133,13 @@ def _HWTestWait(cmd, job_id, **kwargs):
     result = e.result
     # Delay the lab-related exceptions, since those will be raised in the next
     # json_dump cmd run.
-    if (not result.task_summary_json or
-        result.task_summary_json['shards'][0]['internal_failure']):
+    if (not result.task_summary_json or not result.GetValue('outputs') or
+        result.GetValue('internal_failure')):
       raise
     else:
       logging.error('wait_cmd has lab failures: %s.\nException will be raised '
                     'in the next json_dump run.', e.msg)
-  for output in result.task_summary_json['shards'][0]['outputs']:
+  for output in result.GetValue('outputs', ''):
     sys.stdout.write(output)
   sys.stdout.flush()
 
@@ -1156,13 +1161,15 @@ def _HWTestDumpJson(cmd, job_id, **kwargs):
       error_check=swarming_lib.SwarmingRetriableErrorCheck,
       cmd=dump_json_cmd, capture_output=True, combine_stdout_stderr=True,
       **kwargs)
-  for output in result.task_summary_json['shards'][0]['outputs']:
+  for output in result.GetValue('outputs', ''):
     sys.stdout.write(output)
   sys.stdout.write('\n')
   sys.stdout.flush()
-  dump_output = ''.join(result.task_summary_json['shards'][0]['outputs'])
+  dump_output = ''.join(result.GetValue('outputs', ''))
   i = dump_output.find(JSON_DICT_START) + len(JSON_DICT_START)
   j = dump_output.find(JSON_DICT_END)
+  if i == -1 or j == -1 or i > j:
+    raise ValueError('Invalid swarming output: %s' % dump_output)
   return json.loads(dump_output[i:j])
 
 
