@@ -29,6 +29,11 @@ class InlineLoginUI : public ui::WebDialogUI {
       content::WebContents* web_contents,
       const GURL& parent_origin,
       const std::string& parent_frame_name);
+
+  static content::WebContents* GetAuthFrameWebContents(
+      content::WebContents* web_contents,
+      const GURL& parent_origin,
+      const std::string& parent_frame_name);
  private:
   ScopedGaiaAuthExtension auth_extension_;
 

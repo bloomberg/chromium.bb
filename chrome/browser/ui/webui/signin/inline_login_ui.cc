@@ -81,12 +81,12 @@ content::WebUIDataSource* CreateWebUIDataSource() {
   return source;
 }
 
-bool AddToSet(std::set<content::RenderFrameHost*>* frame_set,
-              const std::string& web_view_name,
-              content::WebContents* web_contents) {
+bool AddWebContentsToSet(std::set<content::WebContents*>* frame_set,
+                         const std::string& web_view_name,
+                         content::WebContents* web_contents) {
   auto* web_view = extensions::WebViewGuest::FromWebContents(web_contents);
   if (web_view && web_view->name() == web_view_name)
-    frame_set->insert(web_contents->GetMainFrame());
+    frame_set->insert(web_contents);
   return false;
 }
 
@@ -125,13 +125,23 @@ content::RenderFrameHost* InlineLoginUI::GetAuthFrame(
     content::WebContents* web_contents,
     const GURL& parent_origin,
     const std::string& parent_frame_name) {
-  std::set<content::RenderFrameHost*> frame_set;
+  content::WebContents* auth_web_contents = GetAuthFrameWebContents(
+      web_contents, parent_origin, parent_frame_name);
+  return auth_web_contents ? auth_web_contents->GetMainFrame() : nullptr;
+}
+
+content::WebContents* InlineLoginUI::GetAuthFrameWebContents(
+    content::WebContents* web_contents,
+    const GURL& parent_origin,
+    const std::string& parent_frame_name) {
+  std::set<content::WebContents*> frame_set;
   auto* manager =
       guest_view::GuestViewManager::FromBrowserContext(
           web_contents->GetBrowserContext());
   if (manager) {
-    manager->ForEachGuest(web_contents,
-                          base::Bind(&AddToSet, &frame_set, parent_frame_name));
+    manager->ForEachGuest(
+        web_contents,
+        base::Bind(&AddWebContentsToSet, &frame_set, parent_frame_name));
   }
   DCHECK_GE(1U, frame_set.size());
   if (!frame_set.empty())
