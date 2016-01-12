@@ -26,6 +26,12 @@ extern "C" {
 void* _crtheap = reinterpret_cast<void*>(1);
 }
 
+namespace base {
+namespace allocator {
+bool g_is_win_shim_layer_initialized = false;
+}  // namespace allocator
+}  // namespace base
+
 namespace {
 
 const size_t kWindowsPageSize = 4096;
@@ -211,6 +217,7 @@ intptr_t _get_heap_handle() {
 
 // heapinit.c
 int _heap_init() {
+  base::allocator::g_is_win_shim_layer_initialized = true;
   return win_heap_init() ? 1 : 0;
 }
 

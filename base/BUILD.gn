@@ -118,6 +118,8 @@ component("base") {
   component_never_use_source_set = !is_nacl_nonsfi
 
   sources = [
+    "allocator/allocator_check.cc",
+    "allocator/allocator_check.h",
     "allocator/allocator_extension.cc",
     "allocator/allocator_extension.h",
     "android/animation_frame_time_histogram.cc",
@@ -946,6 +948,7 @@ component("base") {
   configs += [
     ":base_flags",
     ":base_implementation",
+    "//base/allocator:allocator_shim_define",  # for allocator_check.cc.
     "//build/config:precompiled_headers",
   ]
 

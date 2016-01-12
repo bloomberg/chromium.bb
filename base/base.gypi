@@ -16,6 +16,8 @@
       ['base_target==1', {
         'sources': [
           '../build/build_config.h',
+          'allocator/allocator_check.cc',
+          'allocator/allocator_check.h',
           'allocator/allocator_extension.cc',
           'allocator/allocator_extension.h',
           'android/animation_frame_time_histogram.cc',

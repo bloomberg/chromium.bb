@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/allocator/allocator_check.h"
 #include "base/allocator/allocator_extension.h"
 #include "base/at_exit.h"
 #include "base/command_line.h"
@@ -653,6 +654,12 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #elif defined(OS_WIN)
     base::win::SetupCRT(command_line);
 #endif
+
+    // If we are on a platform where the default allocator is overridden (shim
+    // layer on windows, tcmalloc on Linux Desktop) smoke-tests that the
+    // overriding logic is working correctly. If not causes a hard crash, as its
+    // unexpected absence has security implications.
+    CHECK(base::allocator::IsAllocatorInitialized());
 
 #if defined(OS_POSIX)
     if (!process_type.empty()) {

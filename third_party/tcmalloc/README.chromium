@@ -101,3 +101,4 @@ Modifications:
 - Add "ARMv8-a" to the supporting list of ARM architecture
 - Add generic.total_physical_bytes property to MallocExtension
 - Conditionally define HAVE_VDSO_SUPPORT only on linux_x86 to avoid static initializers
+- Add TC_MALLOPT_IS_OVERRIDDEN_BY_TCMALLOC mallopt() arg
