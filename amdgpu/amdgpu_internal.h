@@ -111,8 +111,23 @@ struct amdgpu_bo_list {
 
 struct amdgpu_context {
 	struct amdgpu_device *dev;
+	/** Mutex for accessing fences and to maintain command submissions
+	    in good sequence. */
+	pthread_mutex_t sequence_mutex;
 	/* context id*/
 	uint32_t id;
+	uint64_t last_seq[AMDGPU_HW_IP_NUM][AMDGPU_HW_IP_INSTANCE_MAX_COUNT][AMDGPU_CS_MAX_RINGS];
+	struct list_head sem_list[AMDGPU_HW_IP_NUM][AMDGPU_HW_IP_INSTANCE_MAX_COUNT][AMDGPU_CS_MAX_RINGS];
+};
+
+/**
+ * Structure describing sw semaphore based on scheduler
+ *
+ */
+struct amdgpu_semaphore {
+	atomic_t refcount;
+	struct list_head list;
+	struct amdgpu_cs_fence signal_fence;
 };
 
 /**

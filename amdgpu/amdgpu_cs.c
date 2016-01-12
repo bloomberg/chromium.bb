@@ -40,6 +40,9 @@
 #include "amdgpu_drm.h"
 #include "amdgpu_internal.h"
 
+static int amdgpu_cs_unreference_sem(amdgpu_semaphore_handle sem);
+static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem);
+
 /**
  * Create command submission context
  *
@@ -53,6 +56,7 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 {
 	struct amdgpu_context *gpu_context;
 	union drm_amdgpu_ctx args;
+	int i, j, k;
 	int r;
 
 	if (NULL == dev)
@@ -66,6 +70,10 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 
 	gpu_context->dev = dev;
 
+	r = pthread_mutex_init(&gpu_context->sequence_mutex, NULL);
+	if (r)
+		goto error;
+
 	/* Create the context */
 	memset(&args, 0, sizeof(args));
 	args.in.op = AMDGPU_CTX_OP_ALLOC_CTX;
@@ -74,11 +82,16 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 		goto error;
 
 	gpu_context->id = args.out.alloc.ctx_id;
+	for (i = 0; i < AMDGPU_HW_IP_NUM; i++)
+		for (j = 0; j < AMDGPU_HW_IP_INSTANCE_MAX_COUNT; j++)
+			for (k = 0; k < AMDGPU_CS_MAX_RINGS; k++)
+				list_inithead(&gpu_context->sem_list[i][j][k]);
 	*context = (amdgpu_context_handle)gpu_context;
 
 	return 0;
 
 error:
+	pthread_mutex_destroy(&gpu_context->sequence_mutex);
 	free(gpu_context);
 	return r;
 }
@@ -94,10 +107,13 @@ error:
 int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 {
 	union drm_amdgpu_ctx args;
+	int i, j, k;
 	int r;
 
 	if (NULL == context)
 		return -EINVAL;
+
+	pthread_mutex_destroy(&context->sequence_mutex);
 
 	/* now deal with kernel side */
 	memset(&args, 0, sizeof(args));
@@ -105,7 +121,18 @@ int amdgpu_cs_ctx_free(amdgpu_context_handle context)
 	args.in.ctx_id = context->id;
 	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CTX,
 				&args, sizeof(args));
-
+	for (i = 0; i < AMDGPU_HW_IP_NUM; i++) {
+		for (j = 0; j < AMDGPU_HW_IP_INSTANCE_MAX_COUNT; j++) {
+			for (k = 0; k < AMDGPU_CS_MAX_RINGS; k++) {
+				amdgpu_semaphore_handle sem;
+				LIST_FOR_EACH_ENTRY(sem, &context->sem_list[i][j][k], list) {
+					list_del(&sem->list);
+					amdgpu_cs_reset_sem(sem);
+					amdgpu_cs_unreference_sem(sem);
+				}
+			}
+		}
+	}
 	free(context);
 
 	return r;
@@ -150,7 +177,10 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 	struct drm_amdgpu_cs_chunk *chunks;
 	struct drm_amdgpu_cs_chunk_data *chunk_data;
 	struct drm_amdgpu_cs_chunk_dep *dependencies = NULL;
-	uint32_t i, size;
+	struct drm_amdgpu_cs_chunk_dep *sem_dependencies = NULL;
+	struct list_head *sem_list;
+	amdgpu_semaphore_handle sem;
+	uint32_t i, size, sem_count = 0;
 	bool user_fence;
 	int r = 0;
 
@@ -162,7 +192,7 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		return -EINVAL;
 	user_fence = (ibs_request->fence_info.handle != NULL);
 
-	size = ibs_request->number_of_ibs + (user_fence ? 2 : 1);
+	size = ibs_request->number_of_ibs + (user_fence ? 2 : 1) + 1;
 
 	chunk_array = alloca(sizeof(uint64_t) * size);
 	chunks = alloca(sizeof(struct drm_amdgpu_cs_chunk) * size);
@@ -195,6 +225,8 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunk_data[i].ib_data.ring = ibs_request->ring;
 		chunk_data[i].ib_data.flags = ib->flags;
 	}
+
+	pthread_mutex_lock(&context->sequence_mutex);
 
 	if (user_fence) {
 		i = cs.in.num_chunks++;
@@ -240,15 +272,49 @@ static int amdgpu_cs_submit_one(amdgpu_context_handle context,
 		chunks[i].chunk_data = (uint64_t)(uintptr_t)dependencies;
 	}
 
+	sem_list = &context->sem_list[ibs_request->ip_type][ibs_request->ip_instance][ibs_request->ring];
+	LIST_FOR_EACH_ENTRY(sem, sem_list, list)
+		sem_count++;
+	if (sem_count) {
+		sem_dependencies = malloc(sizeof(struct drm_amdgpu_cs_chunk_dep) * sem_count);
+		if (!sem_dependencies) {
+			r = -ENOMEM;
+			goto error_unlock;
+		}
+		sem_count = 0;
+		LIST_FOR_EACH_ENTRY(sem, sem_list, list) {
+			struct amdgpu_cs_fence *info = &sem->signal_fence;
+			struct drm_amdgpu_cs_chunk_dep *dep = &sem_dependencies[sem_count++];
+			dep->ip_type = info->ip_type;
+			dep->ip_instance = info->ip_instance;
+			dep->ring = info->ring;
+			dep->ctx_id = info->context->id;
+			dep->handle = info->fence;
+
+			list_del(&sem->list);
+			amdgpu_cs_reset_sem(sem);
+			amdgpu_cs_unreference_sem(sem);
+		}
+		i = cs.in.num_chunks++;
+
+		/* dependencies chunk */
+		chunk_array[i] = (uint64_t)(uintptr_t)&chunks[i];
+		chunks[i].chunk_id = AMDGPU_CHUNK_ID_DEPENDENCIES;
+		chunks[i].length_dw = sizeof(struct drm_amdgpu_cs_chunk_dep) / 4 * sem_count;
+		chunks[i].chunk_data = (uint64_t)(uintptr_t)sem_dependencies;
+	}
+
 	r = drmCommandWriteRead(context->dev->fd, DRM_AMDGPU_CS,
 				&cs, sizeof(cs));
 	if (r)
 		goto error_unlock;
 
 	ibs_request->seq_no = cs.out.handle;
-
+	context->last_seq[ibs_request->ip_type][ibs_request->ip_instance][ibs_request->ring] = ibs_request->seq_no;
 error_unlock:
+	pthread_mutex_unlock(&context->sequence_mutex);
 	free(dependencies);
+	free(sem_dependencies);
 	return r;
 }
 
@@ -369,3 +435,102 @@ int amdgpu_cs_query_fence_status(struct amdgpu_cs_fence *fence,
 	return r;
 }
 
+int amdgpu_cs_create_semaphore(amdgpu_semaphore_handle *sem)
+{
+	struct amdgpu_semaphore *gpu_semaphore;
+
+	if (NULL == sem)
+		return -EINVAL;
+
+	gpu_semaphore = calloc(1, sizeof(struct amdgpu_semaphore));
+	if (NULL == gpu_semaphore)
+		return -ENOMEM;
+
+	atomic_set(&gpu_semaphore->refcount, 1);
+	*sem = gpu_semaphore;
+
+	return 0;
+}
+
+int amdgpu_cs_signal_semaphore(amdgpu_context_handle ctx,
+			       uint32_t ip_type,
+			       uint32_t ip_instance,
+			       uint32_t ring,
+			       amdgpu_semaphore_handle sem)
+{
+	if (NULL == ctx)
+		return -EINVAL;
+	if (ip_type >= AMDGPU_HW_IP_NUM)
+		return -EINVAL;
+	if (ring >= AMDGPU_CS_MAX_RINGS)
+		return -EINVAL;
+	if (NULL == sem)
+		return -EINVAL;
+	/* sem has been signaled */
+	if (sem->signal_fence.context)
+		return -EINVAL;
+	pthread_mutex_lock(&ctx->sequence_mutex);
+	sem->signal_fence.context = ctx;
+	sem->signal_fence.ip_type = ip_type;
+	sem->signal_fence.ip_instance = ip_instance;
+	sem->signal_fence.ring = ring;
+	sem->signal_fence.fence = ctx->last_seq[ip_type][ip_instance][ring];
+	update_references(NULL, &sem->refcount);
+	pthread_mutex_unlock(&ctx->sequence_mutex);
+	return 0;
+}
+
+int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
+			     uint32_t ip_type,
+			     uint32_t ip_instance,
+			     uint32_t ring,
+			     amdgpu_semaphore_handle sem)
+{
+	if (NULL == ctx)
+		return -EINVAL;
+	if (ip_type >= AMDGPU_HW_IP_NUM)
+		return -EINVAL;
+	if (ring >= AMDGPU_CS_MAX_RINGS)
+		return -EINVAL;
+	if (NULL == sem)
+		return -EINVAL;
+	/* must signal first */
+	if (NULL == sem->signal_fence.context)
+		return -EINVAL;
+
+	pthread_mutex_lock(&ctx->sequence_mutex);
+	list_add(&sem->list, &ctx->sem_list[ip_type][ip_instance][ring]);
+	pthread_mutex_unlock(&ctx->sequence_mutex);
+	return 0;
+}
+
+static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem)
+{
+	if (NULL == sem)
+		return -EINVAL;
+	if (NULL == sem->signal_fence.context)
+		return -EINVAL;
+
+	sem->signal_fence.context = NULL;;
+	sem->signal_fence.ip_type = 0;
+	sem->signal_fence.ip_instance = 0;
+	sem->signal_fence.ring = 0;
+	sem->signal_fence.fence = 0;
+
+	return 0;
+}
+
+static int amdgpu_cs_unreference_sem(amdgpu_semaphore_handle sem)
+{
+	if (NULL == sem)
+		return -EINVAL;
+
+	if (update_references(&sem->refcount, NULL))
+		free(sem);
+	return 0;
+}
+
+int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem)
+{
+	return amdgpu_cs_unreference_sem(sem);
+}

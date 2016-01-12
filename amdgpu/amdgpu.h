@@ -124,6 +124,11 @@ typedef struct amdgpu_bo_list *amdgpu_bo_list_handle;
  */
 typedef struct amdgpu_va *amdgpu_va_handle;
 
+/**
+ * Define handle for semaphore
+ */
+typedef struct amdgpu_semaphore *amdgpu_semaphore_handle;
+
 /*--------------------------------------------------------------------------*/
 /* -------------------------- Structures ---------------------------------- */
 /*--------------------------------------------------------------------------*/
@@ -1179,5 +1184,65 @@ int amdgpu_bo_va_op(amdgpu_bo_handle bo,
 		    uint64_t addr,
 		    uint64_t flags,
 		    uint32_t ops);
+
+/**
+ *  create semaphore
+ *
+ * \param   sem	   - \c [out] semaphore handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_create_semaphore(amdgpu_semaphore_handle *sem);
+
+/**
+ *  signal semaphore
+ *
+ * \param   context        - \c [in] GPU Context
+ * \param   ip_type        - \c [in] Hardware IP block type = AMDGPU_HW_IP_*
+ * \param   ip_instance    - \c [in] Index of the IP block of the same type
+ * \param   ring           - \c [in] Specify ring index of the IP
+ * \param   sem	           - \c [in] semaphore handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_signal_semaphore(amdgpu_context_handle ctx,
+			       uint32_t ip_type,
+			       uint32_t ip_instance,
+			       uint32_t ring,
+			       amdgpu_semaphore_handle sem);
+
+/**
+ *  wait semaphore
+ *
+ * \param   context        - \c [in] GPU Context
+ * \param   ip_type        - \c [in] Hardware IP block type = AMDGPU_HW_IP_*
+ * \param   ip_instance    - \c [in] Index of the IP block of the same type
+ * \param   ring           - \c [in] Specify ring index of the IP
+ * \param   sem	           - \c [in] semaphore handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_wait_semaphore(amdgpu_context_handle ctx,
+			     uint32_t ip_type,
+			     uint32_t ip_instance,
+			     uint32_t ring,
+			     amdgpu_semaphore_handle sem);
+
+/**
+ *  destroy semaphore
+ *
+ * \param   sem	    - \c [in] semaphore handle
+ *
+ * \return   0 on success\n
+ *          <0 - Negative POSIX Error code
+ *
+*/
+int amdgpu_cs_destroy_semaphore(amdgpu_semaphore_handle sem);
 
 #endif /* #ifdef _AMDGPU_H_ */
