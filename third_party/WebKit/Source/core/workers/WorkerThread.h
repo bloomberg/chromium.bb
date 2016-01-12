@@ -167,7 +167,7 @@ private:
     RefPtrWillBePersistent<WorkerInspectorController> m_workerInspectorController;
     Mutex m_workerInspectorControllerMutex;
 
-    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_isolate| and |m_microtaskRunner|.
+    // This lock protects |m_workerGlobalScope|, |m_terminated|, |m_shutdown|, |m_isolate| and |m_microtaskRunner|.
     Mutex m_threadStateMutex;
 
     RefPtrWillBePersistent<WorkerGlobalScope> m_workerGlobalScope;
