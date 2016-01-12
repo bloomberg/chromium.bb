@@ -2888,6 +2888,41 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumePerspective(CSSParserTok
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValueList> consumePositionList(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSValueList> positions = CSSValueList::createCommaSeparated();
+    do {
+        RefPtrWillBeRawPtr<CSSValue> position = consumePosition(range, cssParserMode, UnitlessQuirk::Forbid);
+        if (!position)
+            return nullptr;
+        positions->append(position);
+    } while (consumeCommaIncludingWhitespace(range));
+    return positions.release();
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeScrollSnapCoordinate(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    return consumePositionList(range, cssParserMode);
+}
+
+static PassRefPtrWillBeRawPtr<CSSValue> consumeScrollSnapPoints(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    if (range.peek().id() == CSSValueNone)
+        return consumeIdent(range);
+    if (range.peek().functionId() == CSSValueRepeat) {
+        CSSParserTokenRange args = consumeFunction(range);
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeLengthOrPercent(args, cssParserMode, ValueRangeNonNegative);
+        if (args.atEnd() && parsedValue && (parsedValue->isCalculated() || parsedValue->getDoubleValue() > 0)) {
+            RefPtrWillBeRawPtr<CSSFunctionValue> result = CSSFunctionValue::create(CSSValueRepeat);
+            result->append(parsedValue.release());
+            return result.release();
+        }
+    }
+    return nullptr;
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3135,6 +3170,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
         return consumeImage(m_range, m_context);
     case CSSPropertyPerspective:
         return consumePerspective(m_range, m_context.mode(), unresolvedProperty);
+    case CSSPropertyScrollSnapCoordinate:
+        return consumeScrollSnapCoordinate(m_range, m_context.mode());
+    case CSSPropertyScrollSnapPointsX:
+    case CSSPropertyScrollSnapPointsY:
+        return consumeScrollSnapPoints(m_range, m_context.mode());
     default:
         return nullptr;
     }

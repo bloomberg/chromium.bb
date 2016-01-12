@@ -222,9 +222,6 @@ private:
 
     bool consumeFlex(bool important);
 
-    PassRefPtrWillBeRawPtr<CSSValue> parsePosition(CSSParserValueList*);
-    PassRefPtrWillBeRawPtr<CSSValueList> parsePositionList(CSSParserValueList*);
-
     // Image generators
     bool parseDeprecatedGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&);
     bool parseDeprecatedLinearGradient(CSSParserValueList*, RefPtrWillBeRawPtr<CSSValue>&, CSSGradientRepeat repeating);
@@ -311,11 +308,6 @@ private:
     PassRefPtrWillBeRawPtr<CSSValue> parseDeprecatedGradientStopColor(const CSSParserValue*);
 
     void commitBorderImageProperty(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>, bool important);
-
-    PassRefPtrWillBeRawPtr<CSSValue> parseScrollSnapPoints();
-    PassRefPtrWillBeRawPtr<CSSValue> parseScrollSnapDestination();
-    PassRefPtrWillBeRawPtr<CSSValue> parseScrollSnapCoordinate();
-    PassRefPtrWillBeRawPtr<CSSValue> parseScrollSnapPosition();
 
 private:
     // Inputs:
