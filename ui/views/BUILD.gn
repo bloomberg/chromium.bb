@@ -264,14 +264,9 @@ test("views_unittests") {
       }
     }
   }
+
   if (!is_chromeos) {
     sources += gypi_values.views_unittests_desktop_sources
-  }
-  if (use_x11) {
-    deps += [
-      "//ui/events/platform/x11",
-      "//ui/gfx/x",
-    ]
   }
 
   if (is_mac) {
