@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/ResourceFetcher.h"
 #include "platform/CrossOriginAttributeValue.h"
 
 namespace blink {
@@ -33,6 +34,7 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     initiatorInfo.position = m_initiatorPosition;
     ResourceRequest resourceRequest(completeURL(document));
     resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(m_referrerPolicy, resourceRequest.url(), document->outgoingReferrer()));
+    ResourceFetcher::determineRequestContext(resourceRequest, m_resourceType, false);
     FetchRequest request(resourceRequest, initiatorInfo);
 
     if (m_resourceType == Resource::ImportResource) {
@@ -46,6 +48,8 @@ FetchRequest PreloadRequest::resourceRequest(Document* document)
     request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
     request.setIntegrityMetadata(m_integrityMetadata);
 
+    if (m_requestType == RequestTypeLinkRelPreload)
+        request.setAvoidBlockingOnLoad(true);
     return request;
 }
 

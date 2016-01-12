@@ -164,7 +164,7 @@ static void preconnectIfNeeded(const LinkRelAttribute& relAttribute, const KURL&
     }
 }
 
-static Resource::Type getTypeFromAsAttribute(const String& as, Document& document)
+Resource::Type LinkLoader::getTypeFromAsAttribute(const String& as, Document* document)
 {
     if (equalIgnoringCase(as, "image"))
         return Resource::Image;
@@ -178,8 +178,9 @@ static Resource::Type getTypeFromAsAttribute(const String& as, Document& documen
         return Resource::Font;
     if (equalIgnoringCase(as, "track"))
         return Resource::TextTrack;
-    if (!as.isEmpty())
-        document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
+    if (document && !as.isEmpty())
+        document->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> must have a valid `as` value")));
+    // TODO(yoav): Is this correct? If as is missing or invalid, it should be subject to "connect-src" CSP directives.
     return Resource::LinkSubresource;
 }
 
@@ -195,7 +196,7 @@ static void preloadIfNeeded(const LinkRelAttribute& relAttribute, const KURL& hr
             document.addConsoleMessage(ConsoleMessage::create(OtherMessageSource, WarningMessageLevel, String("<link rel=preload> has an invalid `href` value")));
             return;
         }
-        Resource::Type type = getTypeFromAsAttribute(as, document);
+        Resource::Type type = LinkLoader::getTypeFromAsAttribute(as, &document);
         ResourceRequest resourceRequest(document.completeURL(href));
         ResourceFetcher::determineRequestContext(resourceRequest, type, false);
         FetchRequest linkRequest(resourceRequest, FetchInitiatorTypeNames::link);

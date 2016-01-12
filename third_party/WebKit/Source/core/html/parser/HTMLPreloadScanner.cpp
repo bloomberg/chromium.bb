@@ -44,6 +44,7 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
+#include "core/loader/LinkLoader.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/TraceEvent.h"
 #include "wtf/MainThread.h"
@@ -116,6 +117,7 @@ public:
         : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_linkIsPreconnect(false)
+        , m_linkIsPreload(false)
         , m_linkIsImport(false)
         , m_matchedMediaAttribute(true)
         , m_inputIsImage(false)
@@ -182,6 +184,8 @@ public:
         PreloadRequest::RequestType requestType = PreloadRequest::RequestTypePreload;
         if (shouldPreconnect())
             requestType = PreloadRequest::RequestTypePreconnect;
+        else if (isLinkRelPreload())
+            requestType = PreloadRequest::RequestTypeLinkRelPreload;
         else if (!shouldPreload() || !m_matchedMediaAttribute)
             return nullptr;
 
@@ -268,11 +272,14 @@ private:
             LinkRelAttribute rel(attributeValue);
             m_linkIsStyleSheet = rel.isStyleSheet() && !rel.isAlternate() && rel.iconType() == InvalidIcon && !rel.isDNSPrefetch();
             m_linkIsPreconnect = rel.isPreconnect();
+            m_linkIsPreload = rel.isLinkPreload();
             m_linkIsImport = rel.isImport();
         } else if (match(attributeName, mediaAttr)) {
             m_matchedMediaAttribute = mediaAttributeMatches(*m_mediaValues, attributeValue);
         } else if (match(attributeName, crossoriginAttr)) {
             setCrossOrigin(attributeValue);
+        } else if (match(attributeName, asAttr)) {
+            m_asAttributeValue = attributeValue;
         }
     }
 
@@ -361,6 +368,8 @@ private:
             return Resource::CSSStyleSheet;
         if (m_linkIsPreconnect)
             return Resource::Raw;
+        if (m_linkIsPreload)
+            return LinkLoader::getTypeFromAsAttribute(m_asAttributeValue, nullptr);
         if (match(m_tagImpl, linkTag) && m_linkIsImport)
             return Resource::ImportResource;
         ASSERT_NOT_REACHED();
@@ -372,11 +381,16 @@ private:
         return match(m_tagImpl, linkTag) && m_linkIsPreconnect && !m_urlToLoad.isEmpty();
     }
 
+    bool isLinkRelPreload() const
+    {
+        return match(m_tagImpl, linkTag) && m_linkIsPreload && !m_urlToLoad.isEmpty();
+    }
+
     bool shouldPreload() const
     {
         if (m_urlToLoad.isEmpty())
             return false;
-        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport)
+        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet && !m_linkIsImport && !m_linkIsPreload)
             return false;
         if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
@@ -403,11 +417,13 @@ private:
     String m_charset;
     bool m_linkIsStyleSheet;
     bool m_linkIsPreconnect;
+    bool m_linkIsPreload;
     bool m_linkIsImport;
     bool m_matchedMediaAttribute;
     bool m_inputIsImage;
     String m_imgSrcUrl;
     String m_srcsetAttributeValue;
+    String m_asAttributeValue;
     float m_sourceSize;
     bool m_sourceSizeSet;
     FetchRequest::DeferOption m_defer;

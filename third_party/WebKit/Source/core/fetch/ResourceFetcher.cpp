@@ -326,10 +326,10 @@ ResourcePtr<Resource> ResourceFetcher::preCacheData(const FetchRequest& request,
     return resource;
 }
 
-void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource)
+void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource, const FetchRequest& request)
 {
     // TODO(yoav): Test that non-blocking resources (video/audio/track) continue to not-block even after being preloaded and discovered.
-    if (resource && resource->loader() && resource->isNonBlockingResourceType() && resource->avoidBlockingOnLoad()) {
+    if (resource && resource->loader() && resource->isNonBlockingResourceType() && resource->avoidBlockingOnLoad() && !request.forPreload()) {
         if (m_nonBlockingLoaders)
             m_nonBlockingLoaders->remove(resource->loader());
         if (!m_loaders)
@@ -383,7 +383,7 @@ ResourcePtr<Resource> ResourceFetcher::requestResource(FetchRequest& request, co
         resource = memoryCache()->resourceForURL(url, getCacheIdentifier());
 
     // See if we can use an existing resource from the cache. If so, we need to move it to be load blocking.
-    moveCachedNonBlockingResourceToBlocking(resource.get());
+    moveCachedNonBlockingResourceToBlocking(resource.get(), request);
 
     const RevalidationPolicy policy = determineRevalidationPolicy(factory.type(), request, resource.get(), isStaticData);
     switch (policy) {
