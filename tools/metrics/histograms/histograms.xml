@@ -19257,6 +19257,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Session.RequestAudioFocusResult" enum="BooleanSuccess">
+  <owner>avayvod@chromium.org</owner>
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Indicate whether the native requestAudioFocus() call was successful.
+  </summary>
+</histogram>
+
 <histogram name="Media.Session.Stop" enum="MediaSessionActionSource">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>

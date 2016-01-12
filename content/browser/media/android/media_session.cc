@@ -288,8 +288,10 @@ bool MediaSession::RequestSystemAudioFocus(Type type) {
 
   JNIEnv* env = base::android::AttachCurrentThread();
   DCHECK(env);
-  return Java_MediaSession_requestAudioFocus(env, j_media_session_.obj(),
-                                             type == Type::Transient);
+  bool result = Java_MediaSession_requestAudioFocus(env, j_media_session_.obj(),
+                                                    type == Type::Transient);
+  uma_helper_.RecordRequestAudioFocusResult(result);
+  return result;
 }
 
 void MediaSession::AbandonSystemAudioFocusIfNeeded() {

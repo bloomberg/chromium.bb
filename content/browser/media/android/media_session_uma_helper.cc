@@ -29,6 +29,10 @@ void MediaSessionUmaHelper::RecordSessionSuspended(
       static_cast<HistogramBase::Sample>(MediaSessionSuspendedSource::Count));
 }
 
+void MediaSessionUmaHelper::RecordRequestAudioFocusResult(bool result) const {
+  UMA_HISTOGRAM_BOOLEAN("Media.Session.RequestAudioFocusResult", result);
+}
+
 void MediaSessionUmaHelper::OnSessionActive() {
   current_active_time_ = clock_->Now();
 }

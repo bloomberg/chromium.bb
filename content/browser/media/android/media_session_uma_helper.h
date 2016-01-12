@@ -32,6 +32,9 @@ class CONTENT_EXPORT MediaSessionUmaHelper {
 
   void RecordSessionSuspended(MediaSessionSuspendedSource source) const;
 
+  // Record the result of calling the native requestAudioFocus().
+  void RecordRequestAudioFocusResult(bool result) const;
+
   void OnSessionActive();
   void OnSessionSuspended();
   void OnSessionInactive();
