@@ -159,7 +159,8 @@ class CertificateProviderApiTest : public ExtensionApiTest {
 
 }  // namespace
 
-#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// See crbug.com/576364 for details
+#if defined(OS_CHROMEOS)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic
