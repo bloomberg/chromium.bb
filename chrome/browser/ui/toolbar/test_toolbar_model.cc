@@ -11,8 +11,13 @@ TestToolbarModel::TestToolbarModel()
     : ChromeToolbarModel(),
       perform_search_term_replacement_(false),
       security_level_(security_state::SecurityStateModel::NONE),
+#if defined(TOOLKIT_VIEWS)
+      icon_(gfx::VectorIconId::LOCATION_BAR_HTTP),
+#else
       icon_(gfx::VectorIconId::VECTOR_ICON_NONE),
-      should_display_url_(true) {}
+#endif
+      should_display_url_(true) {
+}
 
 TestToolbarModel::~TestToolbarModel() {}
 
