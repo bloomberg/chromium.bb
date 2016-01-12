@@ -78,9 +78,8 @@ CSSSelectorList CSSSelectorParser::parseSelector(CSSParserTokenRange range, cons
 }
 
 CSSSelectorParser::CSSSelectorParser(const CSSParserContext& context, StyleSheetContents* styleSheet)
-: m_context(context)
-, m_styleSheet(styleSheet)
-, m_failedParsing(false)
+    : m_context(context)
+    , m_styleSheet(styleSheet)
 {
 }
 
@@ -334,6 +333,9 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     bool hasArguments = token.type() == FunctionToken;
     selector->updatePseudoType(AtomicString(value.is8Bit() ? value.lower() : value), hasArguments);
 
+    if (selector->match() == CSSSelector::PseudoElement && m_disallowPseudoElements)
+        return nullptr;
+
     if (token.type() == IdentToken) {
         range.consume();
         if (selector->pseudoType() == CSSSelector::PseudoUnknown)
@@ -352,6 +354,8 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
     case CSSSelector::PseudoAny:
     case CSSSelector::PseudoCue:
         {
+            DisallowPseudoElementsScope scope(this);
+
             OwnPtr<CSSSelectorList> selectorList = adoptPtr(new CSSSelectorList());
             *selectorList = consumeCompoundSelectorList(block);
             if (!selectorList->isValid() || !block.atEnd())

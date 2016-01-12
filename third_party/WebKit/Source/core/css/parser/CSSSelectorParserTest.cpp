@@ -133,4 +133,29 @@ TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound)
     }
 }
 
+TEST(CSSSelectorParserTest, PseudoElementsInCompoundLists)
+{
+    const char* testCases[] = {
+        ":not(::before)",
+        ":not(::content)",
+        ":not(::shadow)",
+        ":host(::before)",
+        ":host(::content)",
+        ":host(::shadow)",
+        ":host-context(::before)",
+        ":host-context(::content)",
+        ":host-context(::shadow)",
+        ":-webkit-any(::after, ::before)",
+        ":-webkit-any(::content, span)",
+        ":-webkit-any(div, ::shadow)"
+    };
+
+    for (auto testCase : testCases) {
+        CSSTokenizer::Scope scope(testCase);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        EXPECT_FALSE(list.isValid());
+    }
+}
+
 } // namespace

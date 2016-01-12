@@ -58,7 +58,28 @@ private:
     const CSSParserContext& m_context;
     RawPtrWillBeMember<StyleSheetContents> m_styleSheet; // FIXME: Should be const
 
-    bool m_failedParsing;
+    bool m_failedParsing = false;
+    bool m_disallowPseudoElements = false;
+
+    class DisallowPseudoElementsScope {
+        STACK_ALLOCATED();
+        WTF_MAKE_NONCOPYABLE(DisallowPseudoElementsScope);
+    public:
+        DisallowPseudoElementsScope(CSSSelectorParser* parser)
+            : m_parser(parser), m_wasDisallowed(m_parser->m_disallowPseudoElements)
+        {
+            m_parser->m_disallowPseudoElements = true;
+        }
+
+        ~DisallowPseudoElementsScope()
+        {
+            m_parser->m_disallowPseudoElements = m_wasDisallowed;
+        }
+
+    private:
+        CSSSelectorParser* m_parser;
+        bool m_wasDisallowed;
+    };
 };
 
 } // namespace
