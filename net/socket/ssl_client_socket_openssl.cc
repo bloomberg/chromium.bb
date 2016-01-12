@@ -986,13 +986,7 @@ int SSLClientSocketOpenSSL::Init() {
     command.append(":!RC4");
   }
 
-  if (ssl_config_.deprecated_cipher_suites_enabled) {
-    // Add TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384 under a fallback. This is
-    // believed to work around a bug in some out-of-date Microsoft IIS servers
-    // which cause them to require the version downgrade
-    // (https://crbug.com/433406).
-    command.append(":ECDHE-RSA-AES256-SHA384");
-  } else {
+  if (!ssl_config_.deprecated_cipher_suites_enabled) {
     // Only offer DHE on the second handshake. https://crbug.com/538690
     command.append(":!kDHE");
   }
