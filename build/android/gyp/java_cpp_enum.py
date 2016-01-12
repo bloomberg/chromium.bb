@@ -229,10 +229,7 @@ class HeaderParser(object):
       self._in_enum = True
 
 def GetScriptName():
-  script_components = os.path.abspath(sys.argv[0]).split(os.path.sep)
-  build_index = script_components.index('build')
-  return os.sep.join(script_components[build_index:])
-
+  return os.path.basename(os.path.abspath(sys.argv[0]))
 
 def DoGenerate(source_paths):
   for source_path in source_paths:
