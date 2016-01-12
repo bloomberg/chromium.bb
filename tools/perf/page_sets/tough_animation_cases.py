@@ -229,6 +229,10 @@ class ToughAnimationCasesPageSet(story.StorySet):
       # Why: Tests simple transform animations using Web Animations.
       # pylint: disable=line-too-long
       'file://tough_animation_cases/css_value_type_transform_simple.html?api=web_animations&N=0316',
+
+      # Why: Test to update and then draw many times a large set of textures
+      # to compare one-copy and zero-copy.
+      'file://tough_animation_cases/compositor_heavy_animation.html?N=0200',
     ]
 
     for url in urls_list_one:
