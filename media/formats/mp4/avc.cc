@@ -29,7 +29,7 @@ static bool ConvertAVCToAnnexBInPlaceForLengthSize4(std::vector<uint8_t>* buf) {
     nal_length = (nal_length << 8) + (*buf)[pos+3];
 
     if (nal_length == 0) {
-      DVLOG(1) << "nal_length is 0";
+      DVLOG(3) << "nal_length is 0";
       return false;
     }
 
@@ -79,7 +79,7 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
     pos += length_size;
 
     if (nal_length == 0) {
-      DVLOG(1) << "nal_length is 0";
+      DVLOG(3) << "nal_length is 0";
       return false;
     }
 
@@ -180,7 +180,7 @@ bool AVC::IsValidAnnexB(const std::vector<uint8_t>& buffer,
 bool AVC::IsValidAnnexB(const uint8_t* buffer,
                         size_t size,
                         const std::vector<SubsampleEntry>& subsamples) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(3) << __FUNCTION__;
   DCHECK(buffer);
 
   if (size == 0)
@@ -204,7 +204,7 @@ bool AVC::IsValidAnnexB(const uint8_t* buffer,
   while (!done) {
     switch (parser.AdvanceToNextNALU(&nalu)) {
       case H264Parser::kOk:
-        DVLOG(1) << "nal_unit_type " << nalu.nal_unit_type;
+        DVLOG(3) << "nal_unit_type " << nalu.nal_unit_type;
 
         switch (nalu.nal_unit_type) {
           case H264NALU::kAUD:
