@@ -53,7 +53,10 @@ def case_insensitive_matching(name):
             or name == 'Events'
             or name.startswith('UIEvent')
             or name.startswith('CustomEvent')
-            or name.startswith('MouseEvent'))
+            or name == 'KeyboardEvent'
+            or name == 'MessageEvent'
+            or name.startswith('MouseEvent')
+            or name == 'TouchEvent')
 
 
 class EventFactoryWriter(in_generator.Writer):
