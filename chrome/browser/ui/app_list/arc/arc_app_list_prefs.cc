@@ -115,6 +115,8 @@ ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
   }
 
   bridge_service->AddObserver(this);
+  if (bridge_service->app_instance())
+    OnAppInstanceReady();
   OnStateChanged(bridge_service->state());
 }
 
