@@ -973,7 +973,7 @@ void MessagePipeDispatcher::OnError(Error error) {
       DVLOG(1) << "MessagePipeDispatcher read error (shutdown)";
       break;
     case ERROR_READ_BROKEN:
-      LOG(ERROR) << "MessagePipeDispatcher read error (connection broken)";
+      DVLOG(1) << "MessagePipeDispatcher read error (connection broken)";
       break;
     case ERROR_READ_BAD_MESSAGE:
       // Receiving a bad message means either a bug, data corruption, or
