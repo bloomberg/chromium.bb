@@ -20,6 +20,7 @@
 class ChromeBrowserStateIOData;
 class PrefProxyConfigTracker;
 class PrefService;
+class TestChromeBrowserState;
 
 namespace base {
 class SequencedTaskRunner;
@@ -128,6 +129,10 @@ class ChromeBrowserState : public web::BrowserState {
   // per partition_path per browser state object.
   virtual net::URLRequestContextGetter* CreateIsolatedRequestContext(
       const base::FilePath& partition_path) = 0;
+
+  // Returns the current ChromeBrowserState casted as a TestChromeBrowserState
+  // or null if it is not a TestChromeBrowserState.
+  virtual TestChromeBrowserState* AsTestChromeBrowserState() = 0;
 
  protected:
   ChromeBrowserState() {}
