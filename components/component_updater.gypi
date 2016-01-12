@@ -38,5 +38,22 @@
         'component_updater/timer.h',
       ],
     },
+    {
+      # GN version: //components/component_updater:test_support
+      'target_name': 'component_updater_test_support',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../testing/gmock.gyp:gmock',
+        'component_updater',
+      ],
+      'include_dirs': [
+        '..',
+      ],
+      'sources': [
+        'component_updater/mock_component_updater_service.cc',
+        'component_updater/mock_component_updater_service.h',
+      ],
+    },
   ],
 }

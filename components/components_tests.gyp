@@ -1009,6 +1009,7 @@
         'components.gyp:certificate_reporting',
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',
+        'components.gyp:component_updater_test_support',
         'components.gyp:compression',
         'components.gyp:content_settings_core_browser',
         'components.gyp:content_settings_core_common',

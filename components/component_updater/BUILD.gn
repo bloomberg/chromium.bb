@@ -32,6 +32,20 @@ source_set("component_updater") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "mock_component_updater_service.cc",
+    "mock_component_updater_service.h",
+  ]
+
+  public_deps = [
+    ":component_updater",
+    "//base",
+    "//testing/gmock",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
