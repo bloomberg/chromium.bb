@@ -11,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
 /**
@@ -35,10 +34,7 @@ import org.chromium.chrome.R;
  * | PRIMARY------------------ |
  * | SECONDARY---------------- |
  * -----------------------------
- *
- * TODO(dfalcantara): Remove the VisibleForTesting annotations when controls that this land.
  */
-@VisibleForTesting
 public final class InfoBarDualControlLayout extends ViewGroup {
     public static final int ALIGN_START = 0;
     public static final int ALIGN_END = 1;
@@ -58,7 +54,6 @@ public final class InfoBarDualControlLayout extends ViewGroup {
      *
      * See {@link ViewGroup} for parameter details.  attrs may be null if constructed dynamically.
      */
-    @VisibleForTesting
     public InfoBarDualControlLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -73,7 +68,6 @@ public final class InfoBarDualControlLayout extends ViewGroup {
      *
      * @param alignment One of ALIGN_START, ALIGN_APART, ALIGN_END.
      */
-    @VisibleForTesting
     void setAlignment(int alignment) {
         mAlignment = alignment;
     }
@@ -81,7 +75,6 @@ public final class InfoBarDualControlLayout extends ViewGroup {
     /**
      * Sets the margin between the controls when they're stacked.  By default, there is no margin.
      */
-    @VisibleForTesting
     void setStackedMargin(int stackedMargin) {
         mStackedMargin = stackedMargin;
     }

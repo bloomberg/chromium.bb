@@ -6,12 +6,14 @@ package org.chromium.chrome.browser.infobar;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Paint;
 import android.support.v7.widget.SwitchCompat;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RatingBar;
@@ -35,12 +37,88 @@ import org.chromium.chrome.R;
  * InfoBar, convince Chrome for Android's UX team to amend the master spec and then change the
  * layout algorithm to match.
  *
- * TODO(dfalcantara): Standardize all the possible control types.
  * TODO(dfalcantara): The line spacing multiplier is applied to all lines in JB & KK, even if the
  *                    TextView has only one line.  This throws off vertical alignment.  Find a
  *                    solution that hopefully doesn't involve subclassing the TextView.
  */
 public final class InfoBarControlLayout extends ViewGroup {
+    /**
+     * ArrayAdapter that automatically determines what size make its Views to accommodate all of
+     * its potential values.
+     */
+    public static final class InfoBarArrayAdapter<T> extends ArrayAdapter<T> {
+        private final String mLabel;
+        private int mMinWidthRequiredForValues;
+
+        public InfoBarArrayAdapter(Context context, String label) {
+            super(context, R.layout.infobar_control_spinner_drop_down);
+            mLabel = label;
+        }
+
+        @Override
+        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+            TextView view;
+            if (convertView instanceof TextView) {
+                view = (TextView) convertView;
+            } else {
+                view = (TextView) LayoutInflater.from(getContext())
+                        .inflate(R.layout.infobar_control_spinner_drop_down, parent, false);
+            }
+
+            view.setText(getItem(position).toString());
+            return view;
+        }
+
+        @Override
+        public InfoBarDualControlLayout getView(int position, View convertView, ViewGroup parent) {
+            InfoBarDualControlLayout view;
+            if (convertView instanceof InfoBarDualControlLayout) {
+                view = (InfoBarDualControlLayout) convertView;
+            } else {
+                view = (InfoBarDualControlLayout) LayoutInflater.from(getContext())
+                        .inflate(R.layout.infobar_control_spinner_view, parent, false);
+            }
+
+            // Set up the spinner label.  The text it displays won't change.
+            TextView labelView = (TextView) view.getChildAt(0);
+            labelView.setText(mLabel);
+
+            // Because the values can be of different widths, the TextView may expand or shrink.
+            // Enforcing a minimum width prevents the layout from doing so as the user swaps values,
+            // preventing unwanted layout passes.
+            TextView valueView = (TextView) view.getChildAt(1);
+            valueView.setText(getItem(position).toString());
+            valueView.setMinimumWidth(mMinWidthRequiredForValues);
+
+            return view;
+        }
+
+        /**
+         * Computes and records the minimum width required to display any of the values without
+         * causing another layout pass when switching values.
+         */
+        int computeMinWidthRequiredForValues() {
+            InfoBarDualControlLayout layout = getView(0, null, null);
+            TextView container = (TextView) layout.getChildAt(1);
+
+            Paint textPaint = container.getPaint();
+            float longestLanguageWidth = 0;
+            for (int i = 0; i < getCount(); i++) {
+                float width = textPaint.measureText(getItem(i).toString());
+                longestLanguageWidth = Math.max(longestLanguageWidth, width);
+            }
+
+            mMinWidthRequiredForValues = (int) Math.ceil(longestLanguageWidth);
+            return mMinWidthRequiredForValues;
+        }
+
+        /**
+         * Explicitly sets the minimum width required to display all of the values.
+         */
+        void setMinWidthRequiredForValues(int requiredWidth) {
+            mMinWidthRequiredForValues = requiredWidth;
+        }
+    }
 
     /**
      * Extends the regular LayoutParams by determining where a control should be located.
@@ -261,16 +339,11 @@ public final class InfoBarControlLayout extends ViewGroup {
 
     /**
      * Creates a standard spinner and adds it to the layout.
-     *
-     * The layout currently consists of just the Spinner control, but this may change as the spec
-     * is updated.
-     *
-     * TODO(dfalcantara): Standardize the spinner text colors and spacings by standardizing the
-     *                    ArrayAdapter that gets attached to the spinner.  https://crbug.com/543205
      */
-    public View addSpinner(int spinnerId) {
+    public <T> Spinner addSpinner(int spinnerId, ArrayAdapter<T> arrayAdapter) {
         Spinner spinner = (Spinner) LayoutInflater.from(getContext()).inflate(
                 R.layout.infobar_control_spinner, this, false);
+        spinner.setAdapter(arrayAdapter);
         addView(spinner, new ControlLayoutParams());
         spinner.setId(spinnerId);
         return spinner;

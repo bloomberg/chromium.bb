@@ -1174,10 +1174,10 @@ You are signing in with a managed account and giving its administrator control o
         Try again
       </message>
       <message name="IDS_TRANSLATE_OPTIONS_SOURCE_HINT" desc="Language drop down text for the source language. [CHAR-LIMIT=64]">
-        Page Language: <ph name="SOURCE_LANGUAGE">^1<ex>FRENCH</ex></ph>
+        Page Language:
       </message>
       <message name="IDS_TRANSLATE_OPTIONS_TARGET_HINT" desc="Language drop down text for the target language. [CHAR-LIMIT=64]">
-        Translation Language: <ph name="SOURCE_LANGUAGE">^1<ex>FRENCH</ex></ph>
+        Translation Language:
       </message>
       <message name="IDS_TRANSLATE_BUTTON_DONE" desc="Text to display on the translate infobar button to apply new languages. [CHAR-LIMIT=24]">
         Done
