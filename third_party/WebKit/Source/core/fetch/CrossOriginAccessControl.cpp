@@ -160,6 +160,10 @@ bool passesAccessControlCheck(const ResourceResponse& response, StoredCredential
             return true;
         if (response.isHTTP()) {
             errorDescription = buildAccessControlFailureMessage("A wildcard '*' cannot be used in the 'Access-Control-Allow-Origin' header when the credentials flag is true.", securityOrigin);
+
+            if (context == WebURLRequest::RequestContextXMLHttpRequest)
+                errorDescription.append(" The credentials mode of an XMLHttpRequest is controlled by the withCredentials attribute.");
+
             return false;
         }
     } else if (allowOriginHeaderValue != securityOrigin->toAtomicString()) {
