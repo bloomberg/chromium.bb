@@ -654,15 +654,10 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   std::string use_gl =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kUseGL);
-  base::FilePath swiftshader_path =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-          switches::kSwiftShaderPath);
   if (gpu_driver_bugs_.find(gpu::DISABLE_D3D11) != gpu_driver_bugs_.end())
     command_line->AppendSwitch(switches::kDisableD3D11);
   if (use_swiftshader_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
-    if (swiftshader_path.empty())
-      swiftshader_path = swiftshader_path_;
   } else if ((IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_WEBGL) ||
               IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_GPU_COMPOSITING) ||
               IsFeatureBlacklisted(
@@ -678,9 +673,9 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
   else
     command_line->AppendSwitchASCII(switches::kSupportsDualGpus, "false");
 
-  if (!swiftshader_path.empty()) {
+  if (!swiftshader_path_.empty()) {
     command_line->AppendSwitchPath(switches::kSwiftShaderPath,
-                                   swiftshader_path);
+                                   swiftshader_path_);
   }
 
   if (!gpu_driver_bugs_.empty()) {
@@ -1009,6 +1004,9 @@ GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(
   DCHECK(owner_);
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
+  swiftshader_path_ =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+          switches::kSwiftShaderPath);
   if (command_line->HasSwitch(switches::kDisableGpu))
     DisableHardwareAcceleration();
 
