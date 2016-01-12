@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
@@ -32,10 +33,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
-#endif
-
 using ::testing::ElementsAre;
 using ::testing::Pointee;
 
@@ -44,7 +41,6 @@ namespace {
 // Number of dismissals that for sure supresses the bubble.
 const int kGreatDissmisalCount = 10;
 
-#if !defined(OS_ANDROID)
 class TestManagePasswordsIconView : public ManagePasswordsIconView {
  public:
   TestManagePasswordsIconView() {}
@@ -59,7 +55,6 @@ class TestManagePasswordsIconView : public ManagePasswordsIconView {
 
   DISALLOW_COPY_AND_ASSIGN(TestManagePasswordsIconView);
 };
-#endif
 
 // This sublass is used to disable some code paths which are not essential for
 // testing.
