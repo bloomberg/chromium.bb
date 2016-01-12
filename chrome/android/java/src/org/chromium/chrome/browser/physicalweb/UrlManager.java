@@ -113,6 +113,7 @@ class UrlManager {
      * This method additionally updates the Physical Web notification.
      * @param url The URL to remove.
      */
+    @VisibleForTesting
     public void removeUrl(String url) {
         Log.d(TAG, "URL lost: " + url);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);

@@ -115,4 +115,50 @@ public class UrlManagerTest extends InstrumentationTestCase {
         List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
         assertEquals(1, notifications.size());
     }
+
+    @SmallTest
+    public void testRemoveOnlyUrlClearsNotification() throws Exception {
+        ArrayList<PwsResult> results = new ArrayList<>();
+        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
+        mMockPwsClient.addPwsResults(results);
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that a notification was shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(1, notifications.size());
+
+        mUrlManager.removeUrl(URL1);
+
+        // Make sure the URL was removed.
+        Set<String> urls = mUrlManager.getUrls(true);
+        assertEquals(0, urls.size());
+
+        // Make sure no notification is shown.
+        notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(0, notifications.size());
+    }
+
+    @SmallTest
+    public void testClearUrlsClearsNotification() throws Exception {
+        ArrayList<PwsResult> results = new ArrayList<>();
+        results.add(new PwsResult(URL1, URL1, null, TITLE1, DESC1));
+        mMockPwsClient.addPwsResults(results);
+        mUrlManager.addUrl(URL1);
+        getInstrumentation().waitForIdleSync();
+
+        // Make sure that a notification was shown.
+        List<NotificationEntry> notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(1, notifications.size());
+
+        mUrlManager.clearUrls();
+
+        // Make sure all URLs were removed.
+        Set<String> urls = mUrlManager.getUrls(true);
+        assertEquals(0, urls.size());
+
+        // Make sure no notification is shown.
+        notifications = mMockNotificationManagerProxy.getNotifications();
+        assertEquals(0, notifications.size());
+    }
 }
