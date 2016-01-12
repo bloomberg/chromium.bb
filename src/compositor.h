@@ -751,6 +751,8 @@ struct weston_compositor {
 	int32_t kb_repeat_rate;
 	int32_t kb_repeat_delay;
 
+	bool vt_switching;
+
 	clockid_t presentation_clock;
 	int32_t repaint_msec;
 

@@ -455,6 +455,12 @@ sets the default state of the numlock on weston startup for the backends which
 support it.
 .RE
 .RE
+.TP 7
+.BI "vt-switching=" "true"
+Whether to allow the use of Ctrl+Alt+Fn key combinations to switch away from
+the compositor's virtual console.
+.RE
+.RE
 .SH "TERMINAL SECTION"
 Contains settings for the weston terminal application (weston-terminal). It
 allows to customize the font and shell of the command line interface.

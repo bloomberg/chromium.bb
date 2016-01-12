@@ -499,6 +499,7 @@ weston_compositor_init_config(struct weston_compositor *ec,
 	struct xkb_rule_names xkb_names;
 	struct weston_config_section *s;
 	int repaint_msec;
+	int vt_switching;
 
 	s = weston_config_get_section(config, "keyboard", NULL, NULL);
 	weston_config_section_get_string(s, "keymap_rules",
@@ -519,6 +520,10 @@ weston_compositor_init_config(struct weston_compositor *ec,
 				      &ec->kb_repeat_rate, 40);
 	weston_config_section_get_int(s, "repeat-delay",
 				      &ec->kb_repeat_delay, 400);
+
+	weston_config_section_get_bool(s, "vt-switching",
+				       &vt_switching, true);
+	ec->vt_switching = vt_switching;
 
 	s = weston_config_get_section(config, "core", NULL, NULL);
 	weston_config_section_get_int(s, "repaint-window", &repaint_msec,

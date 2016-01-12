@@ -37,7 +37,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#include <linux/input.h>
 #include <libudev.h>
 
 #ifdef HAVE_BCM_HOST
@@ -448,15 +447,6 @@ rpi_restore(struct weston_compositor *compositor)
 	weston_launcher_restore(compositor->launcher);
 }
 
-static void
-switch_vt_binding(struct weston_keyboard *keyboard, uint32_t time,
-		  uint32_t key, void *data)
-{
-	struct weston_compositor *compositor = data;
-
-	weston_launcher_activate_vt(compositor->launcher, key - KEY_F1 + 1);
-}
-
 struct rpi_parameters {
 	int tty;
 	struct rpi_renderer_parameters renderer;
@@ -468,7 +458,6 @@ rpi_backend_create(struct weston_compositor *compositor,
 		   struct rpi_parameters *param)
 {
 	struct rpi_backend *backend;
-	uint32_t key;
 
 	weston_log("initializing Raspberry Pi backend\n");
 
@@ -506,10 +495,7 @@ rpi_backend_create(struct weston_compositor *compositor,
 	weston_log("Dispmanx planes are %s buffered.\n",
 		   backend->single_buffer ? "single" : "double");
 
-	for (key = KEY_F1; key < KEY_F9; key++)
-		weston_compositor_add_key_binding(compositor, key,
-						  MODIFIER_CTRL | MODIFIER_ALT,
-						  switch_vt_binding, compositor);
+	weston_setup_vt_switch_bindings(compositor);
 
 	/*
 	 * bcm_host_init() creates threads.
