@@ -1845,20 +1845,9 @@
         # iOS only needs a small portion of content; exclude all the
         # implementation, and re-include what is used.
         ['exclude', '\\.(cc|mm)$'],
-        ['include', '_ios\\.(cc|mm)$'],
-        ['include', '^public/browser/content_browser_client\\.cc$'],
         ['include', '^public/browser/navigation_details\\.cc$'],
-        ['include', '^public/browser/notification_registrar\\.cc$'],
         ['include', '^public/browser/page_navigator\\.cc$'],
-        ['include', '^public/browser/web_ui_controller\\.cc'],
         ['include', '^browser/browser_context\\.cc$'],
-        ['include', '^browser/browser_url_handler_impl\\.cc$'],
-        ['include', '^browser/cert_store_impl\\.cc$'],
-        ['include', '^browser/download/download_create_info\\.cc$'],
-        ['include', '^browser/notification_service_impl\\.cc$'],
-        ['include', '^browser/signed_certificate_timestamp_store_impl\\.cc$'],
-        ['include', '^browser/user_metrics\\.cc$'],
-        ['include', '^browser/web_contents/navigation_entry_impl\\.cc$'],
       ],
     }, {  # OS!="ios"
       'dependencies': [

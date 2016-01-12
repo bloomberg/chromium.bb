@@ -251,29 +251,21 @@ const NavigationManagerImpl& WebStateImpl::GetNavigationManagerImpl() const {
 // it as the first, and then fall back to the latter if necessary.
 void WebStateImpl::CreateWebUI(const GURL& url) {
   web_ui_.reset(CreateWebUIIOS(url));
-  if (!web_ui_ && facade_delegate_)
-    facade_delegate_->CreateLegacyWebUI(url);
 }
 
 void WebStateImpl::ClearWebUI() {
-  if (facade_delegate_)
-    facade_delegate_->ClearLegacyWebUI();
   web_ui_.reset();
 }
 
 bool WebStateImpl::HasWebUI() {
-  return web_ui_ || (facade_delegate_ && facade_delegate_->HasLegacyWebUI());
+  return web_ui_;
 }
 
 void WebStateImpl::ProcessWebUIMessage(const GURL& source_url,
                                        const std::string& message,
                                        const base::ListValue& args) {
-  if (web_ui_) {
-    DCHECK(!facade_delegate_ || !facade_delegate_->HasLegacyWebUI());
+  if (web_ui_)
     web_ui_->ProcessWebUIIOSMessage(source_url, message, args);
-  } else if (facade_delegate_) {
-    facade_delegate_->ProcessLegacyWebUIMessage(source_url, message, args);
-  }
 }
 
 void WebStateImpl::LoadWebUIHtml(const base::string16& html, const GURL& url) {
