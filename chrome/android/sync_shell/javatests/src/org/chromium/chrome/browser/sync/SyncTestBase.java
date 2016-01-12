@@ -25,6 +25,7 @@ import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,25 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 ModelType.PROXY_TABS,
                 ModelType.TYPED_URLS,
             }));
+
+    protected abstract class DataCriteria<T> extends Criteria {
+        public DataCriteria() {
+            super("Sync data criteria not met.");
+        }
+
+        public abstract boolean isSatisfied(List<T> data);
+
+        public abstract List<T> getData() throws Exception;
+
+        @Override
+        public boolean isSatisfied() {
+            try {
+                return isSatisfied(getData());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
 
     protected Context mContext;
     protected FakeServerHelper mFakeServerHelper;
@@ -212,5 +232,9 @@ public class SyncTestBase extends ChromeActivityTestCaseBase<ChromeActivity> {
                 mProfileSyncService.setPreferredDataTypes(false, preferredTypes);
             }
         });
+    }
+
+    protected void pollForCriteria(Criteria criteria) throws InterruptedException {
+        CriteriaHelper.pollForCriteria(criteria, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 }

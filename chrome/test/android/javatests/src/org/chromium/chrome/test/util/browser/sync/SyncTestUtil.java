@@ -62,7 +62,11 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Triggers a sync and waits till it is complete.
+     * Triggers a sync and tries to wait until it is complete.
+     *
+     * This method polls until *a* sync cycle completes, but there is no guarantee it is the same
+     * one that it triggered. Therefore this method should only be used where it can result in
+     * false positives (e.g. checking that something doesn't sync), not false negatives.
      */
     public static void triggerSyncAndWaitForCompletion() throws InterruptedException {
         final long oldSyncTime = getCurrentSyncTime();

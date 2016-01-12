@@ -71,7 +71,8 @@ public class TypedUrlsTest extends SyncTestBase {
     @Feature({"Sync"})
     public void testDownloadTypedUrl() throws Exception {
         addServerTypedUrl(URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion();
+        SyncTestUtil.triggerSync();
+        waitForClientTypedUrlCount(1);
 
         // Verify data synced to client.
         List<TypedUrl> typedUrls = getClientTypedUrls();
@@ -87,15 +88,13 @@ public class TypedUrlsTest extends SyncTestBase {
     public void testDownloadDeletedTypedUrl() throws Exception {
         // Add the entity to test deleting.
         addServerTypedUrl(URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion();
-        assertServerTypedUrlCountWithName(1, URL);
-        assertClientTypedUrlCount(1);
+        SyncTestUtil.triggerSync();
+        waitForClientTypedUrlCount(1);
 
         // Delete on server, sync, and verify deleted locally.
         TypedUrl typedUrl = getClientTypedUrls().get(0);
         mFakeServerHelper.deleteEntity(typedUrl.id);
-        waitForServerTypedUrlCountWithName(0, URL);
-        SyncTestUtil.triggerSyncAndWaitForCompletion();
+        SyncTestUtil.triggerSync();
         waitForClientTypedUrlCount(0);
     }
 
