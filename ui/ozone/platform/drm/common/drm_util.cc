@@ -216,12 +216,14 @@ DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode) {
 DisplaySnapshot_Params CreateDisplaySnapshotParams(
     HardwareDisplayControllerInfo* info,
     int fd,
+    const base::FilePath& sys_path,
     size_t device_index,
     const gfx::Point& origin) {
   DisplaySnapshot_Params params;
   int64_t connector_index = ConnectorIndex(device_index, info->index());
   params.display_id = connector_index;
   params.origin = origin;
+  params.sys_path = sys_path;
   params.physical_size =
       gfx::Size(info->connector()->mmWidth, info->connector()->mmHeight);
   params.type = GetDisplayType(info->connector());

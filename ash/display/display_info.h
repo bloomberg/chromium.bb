@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "base/files/file_path.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/insets.h"
@@ -100,6 +101,10 @@ class ASH_EXPORT DisplayInfo {
 
   // The name of the display.
   const std::string& name() const { return name_; }
+
+  // The path to the display device in the sysfs filesystem.
+  void set_sys_path(const base::FilePath& sys_path) { sys_path_ = sys_path; }
+  const base::FilePath& sys_path() const { return sys_path_; }
 
   // True if the display EDID has the overscan flag. This does not create the
   // actual overscan automatically, but used in the message.
@@ -250,6 +255,7 @@ class ASH_EXPORT DisplayInfo {
 
   int64_t id_;
   std::string name_;
+  base::FilePath sys_path_;
   bool has_overscan_;
   std::map<gfx::Display::RotationSource, gfx::Display::Rotation> rotations_;
   gfx::Display::TouchSupport touch_support_;

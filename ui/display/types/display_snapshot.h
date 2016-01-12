@@ -9,6 +9,7 @@
 
 #include <vector>
 
+#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/display_mode.h"
@@ -29,6 +30,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
                   bool is_aspect_preserving_scaling,
                   bool has_overscan,
                   std::string display_name,
+                  const base::FilePath& sys_path,
                   const std::vector<const DisplayMode*>& modes,
                   const DisplayMode* current_mode,
                   const DisplayMode* native_mode);
@@ -42,6 +44,7 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   }
   bool has_overscan() const { return has_overscan_; }
   std::string display_name() const { return display_name_; }
+  const base::FilePath& sys_path() const { return sys_path_; }
 
   int64_t display_id() const { return display_id_; }
 
@@ -77,6 +80,8 @@ class DISPLAY_TYPES_EXPORT DisplaySnapshot {
   bool has_overscan_;
 
   std::string display_name_;
+
+  base::FilePath sys_path_;
 
   std::vector<const DisplayMode*> modes_;  // Not owned.
 

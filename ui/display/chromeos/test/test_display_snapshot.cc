@@ -13,6 +13,7 @@ TestDisplaySnapshot::TestDisplaySnapshot()
                       false,
                       false,
                       std::string(),
+                      base::FilePath(),
                       std::vector<const DisplayMode*>(),
                       NULL,
                       NULL) {}
@@ -34,6 +35,7 @@ TestDisplaySnapshot::TestDisplaySnapshot(
                       is_aspect_preserving_scaling,
                       false,
                       std::string(),
+                      base::FilePath(),
                       modes,
                       current_mode,
                       native_mode) {

@@ -30,6 +30,9 @@ DisplaySnapshotX11::DisplaySnapshotX11(
                       is_aspect_preserving_scaling,
                       has_overscan,
                       display_name,
+                      // TODO(jdufault): Figure out if we can get the file
+                      //                 descriptor that maps to the device.
+                      base::FilePath(),
                       modes,
                       current_mode,
                       native_mode),

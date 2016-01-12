@@ -5,6 +5,7 @@
 #ifndef UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_HANDLE_H_
 #define UI_OZONE_PLATFORM_DRM_HOST_DRM_DEVICE_HANDLE_H_
 
+#include "base/files/file_path.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 
@@ -20,13 +21,16 @@ class DrmDeviceHandle {
   ~DrmDeviceHandle();
 
   int fd() const { return file_.get(); }
+  const base::FilePath& sys_path() { return sys_path_; }
 
-  bool Initialize(const base::FilePath& path);
+  bool Initialize(const base::FilePath& dev_path,
+                  const base::FilePath& sys_path);
 
   bool IsValid() const;
   base::ScopedFD PassFD();
 
  private:
+  base::FilePath sys_path_;
   base::ScopedFD file_;
 
   DISALLOW_COPY_AND_ASSIGN(DrmDeviceHandle);

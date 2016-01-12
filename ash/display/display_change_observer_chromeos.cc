@@ -239,6 +239,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
 
     displays.push_back(DisplayInfo(id, name, has_overscan));
     DisplayInfo& new_info = displays.back();
+    new_info.set_sys_path(state->sys_path());
     new_info.set_device_scale_factor(device_scale_factor);
     new_info.SetBounds(display_bounds);
     new_info.set_native(true);

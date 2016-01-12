@@ -35,29 +35,35 @@ DrmDeviceHandle::~DrmDeviceHandle() {
     base::ThreadRestrictions::AssertIOAllowed();
 }
 
-bool DrmDeviceHandle::Initialize(const base::FilePath& path) {
-  CHECK(path.DirName() == base::FilePath("/dev/dri"));
+bool DrmDeviceHandle::Initialize(const base::FilePath& dev_path,
+                                 const base::FilePath& sys_path) {
+  // Security folks have requested that we assert the graphics device has the
+  // expected path, so use a CHECK instead of a DCHECK. The sys_path is only
+  // used a label and is otherwise unvalidated.
+  CHECK(dev_path.DirName() == base::FilePath("/dev/dri"));
   base::ThreadRestrictions::AssertIOAllowed();
   bool print_warning = true;
   while (true) {
     file_.reset();
-    int fd = HANDLE_EINTR(open(path.value().c_str(), O_RDWR | O_CLOEXEC));
+    int fd = HANDLE_EINTR(open(dev_path.value().c_str(), O_RDWR | O_CLOEXEC));
     if (fd < 0) {
-      PLOG(ERROR) << "Failed to open " << path.value();
+      PLOG(ERROR) << "Failed to open " << dev_path.value();
       return false;
     }
 
     file_.reset(fd);
+    sys_path_ = sys_path;
 
     if (Authenticate(file_.get()))
       break;
 
-    LOG_IF(WARNING, print_warning) << "Failed to authenticate " << path.value();
+    LOG_IF(WARNING, print_warning) << "Failed to authenticate "
+                                   << dev_path.value();
     print_warning = false;
     usleep(100000);
   }
 
-  VLOG(1) << "Succeeded authenticating " << path.value();
+  VLOG(1) << "Succeeded authenticating " << dev_path.value();
   return true;
 }
 

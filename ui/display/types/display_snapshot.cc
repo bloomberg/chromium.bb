@@ -13,6 +13,7 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
                                  bool is_aspect_preserving_scaling,
                                  bool has_overscan,
                                  std::string display_name,
+                                 const base::FilePath& sys_path,
                                  const std::vector<const DisplayMode*>& modes,
                                  const DisplayMode* current_mode,
                                  const DisplayMode* native_mode)
@@ -23,11 +24,11 @@ DisplaySnapshot::DisplaySnapshot(int64_t display_id,
       is_aspect_preserving_scaling_(is_aspect_preserving_scaling),
       has_overscan_(has_overscan),
       display_name_(display_name),
+      sys_path_(sys_path),
       modes_(modes),
       current_mode_(current_mode),
       native_mode_(native_mode),
-      product_id_(kInvalidProductID) {
-}
+      product_id_(kInvalidProductID) {}
 
 DisplaySnapshot::~DisplaySnapshot() {}
 

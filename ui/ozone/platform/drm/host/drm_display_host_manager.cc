@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/files/file_enumerator.h"
+#include "base/files/file_util.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
@@ -28,7 +29,9 @@ namespace ui {
 
 namespace {
 
-typedef base::Callback<void(const base::FilePath&, scoped_ptr<DrmDeviceHandle>)>
+typedef base::Callback<void(const base::FilePath&,
+                            const base::FilePath&,
+                            scoped_ptr<DrmDeviceHandle>)>
     OnOpenDeviceReplyCallback;
 
 const char kDefaultGraphicsCardPattern[] = "/dev/dri/card%d";
@@ -41,14 +44,28 @@ const char* kDisplayActionString[] = {
     "CHANGE",
 };
 
+// Find sysfs device path for the given device path.
+base::FilePath MapDevPathToSysPath(const base::FilePath& device_path) {
+  // |device_path| looks something like /dev/dri/card0. We take the basename of
+  // that (card0) and append it to /sys/class/drm. /sys/class/drm/card0 is a
+  // symlink that points to something like
+  // /sys/devices/pci0000:00/0000:00:02.0/0000:05:00.0/drm/card0, which exposes
+  // some metadata about the attached device.
+  return base::MakeAbsoluteFilePath(
+      base::FilePath("/sys/class/drm").Append(device_path.BaseName()));
+}
+
 void OpenDeviceOnWorkerThread(
-    const base::FilePath& path,
+    const base::FilePath& device_path,
     const scoped_refptr<base::TaskRunner>& reply_runner,
     const OnOpenDeviceReplyCallback& callback) {
+  base::FilePath sys_path = MapDevPathToSysPath(device_path);
+
   scoped_ptr<DrmDeviceHandle> handle(new DrmDeviceHandle());
-  handle->Initialize(path);
-  reply_runner->PostTask(
-      FROM_HERE, base::Bind(callback, path, base::Passed(std::move(handle))));
+  handle->Initialize(device_path, sys_path);
+  reply_runner->PostTask(FROM_HERE,
+                         base::Bind(callback, device_path, sys_path,
+                                    base::Passed(std::move(handle))));
 }
 
 base::FilePath GetPrimaryDisplayCardPath() {
@@ -124,12 +141,18 @@ DrmDisplayHostManager::DrmDisplayHostManager(
     // synchronously since the GPU process will need it to initialize the
     // graphics state.
     base::ThreadRestrictions::ScopedAllowIO allow_io;
+
+    base::FilePath primary_graphics_card_path_sysfs =
+        MapDevPathToSysPath(primary_graphics_card_path_);
+
     primary_drm_device_handle_.reset(new DrmDeviceHandle());
-    if (!primary_drm_device_handle_->Initialize(primary_graphics_card_path_)) {
+    if (!primary_drm_device_handle_->Initialize(
+            primary_graphics_card_path_, primary_graphics_card_path_sysfs)) {
       LOG(FATAL) << "Failed to open primary graphics card";
       return;
     }
-    drm_devices_.insert(primary_graphics_card_path_);
+    drm_devices_[primary_graphics_card_path_] =
+        primary_graphics_card_path_sysfs;
 
     vgem_card_path_ = GetVgemCardPath();
   }
@@ -142,9 +165,9 @@ DrmDisplayHostManager::DrmDisplayHostManager(
   has_dummy_display_ = !display_infos.empty();
   for (size_t i = 0; i < display_infos.size(); ++i) {
     displays_.push_back(make_scoped_ptr(new DrmDisplayHost(
-        proxy_, CreateDisplaySnapshotParams(display_infos[i],
-                                            primary_drm_device_handle_->fd(), 0,
-                                            gfx::Point()),
+        proxy_, CreateDisplaySnapshotParams(
+                    display_infos[i], primary_drm_device_handle_->fd(),
+                    primary_drm_device_handle_->sys_path(), 0, gfx::Point()),
         true /* is_dummy */)));
   }
 }
@@ -268,7 +291,7 @@ void DrmDisplayHostManager::ProcessEvent() {
           task_pending_ = base::ThreadTaskRunnerHandle::Get()->PostTask(
               FROM_HERE,
               base::Bind(&DrmDisplayHostManager::OnRemoveGraphicsDevice,
-                         weak_ptr_factory_.GetWeakPtr(), event.path));
+                         weak_ptr_factory_.GetWeakPtr(), it->second));
           drm_devices_.erase(it);
         }
         break;
@@ -277,12 +300,13 @@ void DrmDisplayHostManager::ProcessEvent() {
 }
 
 void DrmDisplayHostManager::OnAddGraphicsDevice(
-    const base::FilePath& path,
+    const base::FilePath& dev_path,
+    const base::FilePath& sys_path,
     scoped_ptr<DrmDeviceHandle> handle) {
   if (handle->IsValid()) {
-    drm_devices_.insert(path);
+    drm_devices_[dev_path] = sys_path;
     proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-        path, base::FileDescriptor(handle->PassFD())));
+        sys_path, base::FileDescriptor(handle->PassFD())));
     NotifyDisplayDelegate();
   }
 
@@ -296,8 +320,9 @@ void DrmDisplayHostManager::OnUpdateGraphicsDevice() {
   ProcessEvent();
 }
 
-void DrmDisplayHostManager::OnRemoveGraphicsDevice(const base::FilePath& path) {
-  proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(path));
+void DrmDisplayHostManager::OnRemoveGraphicsDevice(
+    const base::FilePath& sys_path) {
+  proxy_->Send(new OzoneGpuMsg_RemoveGraphicsDevice(sys_path));
   NotifyDisplayDelegate();
   task_pending_ = false;
   ProcessEvent();
@@ -328,20 +353,27 @@ void DrmDisplayHostManager::OnChannelEstablished(
   if (!relinquish_display_control_callback_.is_null())
     OnRelinquishDisplayControl(false);
 
-  drm_devices_.clear();
-  drm_devices_.insert(primary_graphics_card_path_);
   scoped_ptr<DrmDeviceHandle> handle = std::move(primary_drm_device_handle_);
-  if (!handle) {
+  {
     base::ThreadRestrictions::ScopedAllowIO allow_io;
-    handle.reset(new DrmDeviceHandle());
-    if (!handle->Initialize(primary_graphics_card_path_))
-      LOG(FATAL) << "Failed to open primary graphics card";
+
+    drm_devices_.clear();
+    drm_devices_[primary_graphics_card_path_] =
+        MapDevPathToSysPath(primary_graphics_card_path_);
+
+    if (!handle) {
+      handle.reset(new DrmDeviceHandle());
+      if (!handle->Initialize(primary_graphics_card_path_,
+                              drm_devices_[primary_graphics_card_path_]))
+        LOG(FATAL) << "Failed to open primary graphics card";
+    }
   }
 
   // Send the primary device first since this is used to initialize graphics
   // state.
   proxy_->Send(new OzoneGpuMsg_AddGraphicsDevice(
-      primary_graphics_card_path_, base::FileDescriptor(handle->PassFD())));
+      drm_devices_[primary_graphics_card_path_],
+      base::FileDescriptor(handle->PassFD())));
 
   device_manager_->ScanDevices(this);
   NotifyDisplayDelegate();

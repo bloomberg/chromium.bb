@@ -49,6 +49,7 @@ IPC_STRUCT_TRAITS_BEGIN(ui::DisplaySnapshot_Params)
   IPC_STRUCT_TRAITS_MEMBER(is_aspect_preserving_scaling)
   IPC_STRUCT_TRAITS_MEMBER(has_overscan)
   IPC_STRUCT_TRAITS_MEMBER(display_name)
+  IPC_STRUCT_TRAITS_MEMBER(sys_path)
   IPC_STRUCT_TRAITS_MEMBER(modes)
   IPC_STRUCT_TRAITS_MEMBER(has_current_mode)
   IPC_STRUCT_TRAITS_MEMBER(current_mode)
@@ -118,6 +119,8 @@ IPC_MESSAGE_CONTROL3(OzoneGpuMsg_ConfigureNativeDisplay,
 IPC_MESSAGE_CONTROL1(OzoneGpuMsg_DisableNativeDisplay,
                      int64_t)  // display ID
 
+// |device_path| is inside of the /sys filesystem, since UDL display/input
+// association logic needs to access the path components.
 IPC_MESSAGE_CONTROL2(OzoneGpuMsg_AddGraphicsDevice,
                      base::FilePath /* device_path */,
                      base::FileDescriptor /* device_fd */)

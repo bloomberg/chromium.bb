@@ -88,8 +88,8 @@ DrmDisplay::~DrmDisplay() {
 
 DisplaySnapshot_Params DrmDisplay::Update(HardwareDisplayControllerInfo* info,
                                           size_t device_index) {
-  DisplaySnapshot_Params params =
-      CreateDisplaySnapshotParams(info, drm_->get_fd(), device_index, origin_);
+  DisplaySnapshot_Params params = CreateDisplaySnapshotParams(
+      info, drm_->get_fd(), drm_->device_path(), device_index, origin_);
   crtc_ = info->crtc()->crtc_id;
   connector_ = info->connector()->connector_id;
   display_id_ = params.display_id;

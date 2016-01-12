@@ -29,6 +29,7 @@ DisplaySnapshotVirtual::DisplaySnapshotVirtual(int64_t display_id,
                       false,
                       false,
                       "Virtual display",
+                      base::FilePath(),
                       std::vector<const DisplayMode*>(),
                       nullptr,
                       nullptr) {

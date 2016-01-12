@@ -188,7 +188,7 @@ class OZONE_EXPORT DrmDevice : public base::RefCountedThreadSafe<DrmDevice> {
   class IOWatcher;
   class PageFlipManager;
 
-  // Path to DRM device.
+  // Path to the DRM device (in sysfs).
   const base::FilePath device_path_;
 
   // DRM device.
