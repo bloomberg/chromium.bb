@@ -27,6 +27,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/devtools_messages.h"
+#include "content/common/geofencing_messages.h"
 #include "content/common/message_port_messages.h"
 #include "content/common/mojo/service_registry_impl.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -773,8 +774,8 @@ void ServiceWorkerContextClient::OnGeofencingEvent(
                "ServiceWorkerContextClient::OnGeofencingEvent");
   proxy_->dispatchGeofencingEvent(
       request_id, event_type, blink::WebString::fromUTF8(region_id), region);
-  Send(new ServiceWorkerHostMsg_GeofencingEventFinished(GetRoutingID(),
-                                                        request_id));
+  Send(new ServiceWorkerHostMsg_GeofencingEventFinished(
+      GetRoutingID(), request_id, blink::WebServiceWorkerEventResultCompleted));
 }
 
 void ServiceWorkerContextClient::OnPostMessage(

@@ -680,46 +680,6 @@ void ServiceWorkerVersion::DispatchPushEvent(const StatusCallback& callback,
   }
 }
 
-void ServiceWorkerVersion::DispatchGeofencingEvent(
-    const StatusCallback& callback,
-    blink::WebGeofencingEventType event_type,
-    const std::string& region_id,
-    const blink::WebCircularGeofencingRegion& region) {
-  OnBeginEvent();
-  DCHECK_EQ(ACTIVATED, status()) << status();
-
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    callback.Run(SERVICE_WORKER_ERROR_ABORT);
-    return;
-  }
-
-  if (running_status() != RUNNING) {
-    // Schedule calling this method after starting the worker.
-    StartWorker(base::Bind(&RunTaskAfterStartWorker,
-                           weak_factory_.GetWeakPtr(),
-                           callback,
-                           base::Bind(&self::DispatchGeofencingEvent,
-                                      weak_factory_.GetWeakPtr(),
-                                      callback,
-                                      event_type,
-                                      region_id,
-                                      region)));
-    return;
-  }
-
-  int request_id =
-      AddRequest(callback, &geofencing_requests_, REQUEST_GEOFENCING,
-                 ServiceWorkerMetrics::EventType::GEOFENCING);
-  ServiceWorkerStatusCode status =
-      embedded_worker_->SendMessage(ServiceWorkerMsg_GeofencingEvent(
-          request_id, event_type, region_id, region));
-  if (status != SERVICE_WORKER_OK) {
-    geofencing_requests_.Remove(request_id);
-    RunSoon(base::Bind(callback, status));
-  }
-}
-
 void ServiceWorkerVersion::DispatchCrossOriginMessageEvent(
     const NavigatorConnectClient& client,
     const base::string16& message,
@@ -896,10 +856,6 @@ ServiceWorkerVersion::PendingRequest<CallbackType>::PendingRequest(
     ServiceWorkerMetrics::EventType event_type)
     : callback(callback), start_time(time), event_type(event_type) {}
 
-template <typename CallbackType>
-ServiceWorkerVersion::PendingRequest<CallbackType>::~PendingRequest() {
-}
-
 ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
     ServiceWorkerVersion* worker,
     const char* service_name)
@@ -1030,8 +986,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnNotificationClickEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PushEventFinished,
                         OnPushEventFinished)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_GeofencingEventFinished,
-                        OnGeofencingEventFinished)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_OpenWindow,
                         OnOpenWindow)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_SetCachedMetadata,
@@ -1242,23 +1196,6 @@ void ServiceWorkerVersion::OnPushEventFinished(
   scoped_refptr<ServiceWorkerVersion> protect(this);
   request->callback.Run(status);
   RemoveCallbackAndStopIfRedundant(&push_requests_, request_id);
-}
-
-void ServiceWorkerVersion::OnGeofencingEventFinished(int request_id) {
-  TRACE_EVENT1("ServiceWorker",
-               "ServiceWorkerVersion::OnGeofencingEventFinished",
-               "Request id",
-               request_id);
-  PendingRequest<StatusCallback>* request =
-      geofencing_requests_.Lookup(request_id);
-  if (!request) {
-    NOTREACHED() << "Got unexpected message: " << request_id;
-    return;
-  }
-
-  scoped_refptr<ServiceWorkerVersion> protect(this);
-  request->callback.Run(SERVICE_WORKER_OK);
-  RemoveCallbackAndStopIfRedundant(&geofencing_requests_, request_id);
 }
 
 void ServiceWorkerVersion::OnOpenWindow(int request_id, GURL url) {
@@ -1797,8 +1734,7 @@ bool ServiceWorkerVersion::HasInflightRequests() const {
   return !activate_requests_.IsEmpty() || !install_requests_.IsEmpty() ||
          !fetch_requests_.IsEmpty() ||
          !notification_click_requests_.IsEmpty() || !push_requests_.IsEmpty() ||
-         !geofencing_requests_.IsEmpty() || !custom_requests_.IsEmpty() ||
-         !streaming_url_request_jobs_.empty();
+         !custom_requests_.IsEmpty() || !streaming_url_request_jobs_.empty();
 }
 
 void ServiceWorkerVersion::RecordStartWorkerResult(
@@ -1897,9 +1833,6 @@ bool ServiceWorkerVersion::MaybeTimeOutRequest(const RequestInfo& info) {
                               SERVICE_WORKER_ERROR_TIMEOUT);
     case REQUEST_PUSH:
       return RunIDMapCallback(&push_requests_, info.id,
-                              SERVICE_WORKER_ERROR_TIMEOUT);
-    case REQUEST_GEOFENCING:
-      return RunIDMapCallback(&geofencing_requests_, info.id,
                               SERVICE_WORKER_ERROR_TIMEOUT);
     case REQUEST_CUSTOM:
       return RunIDMapCallback(&custom_requests_, info.id,
@@ -2021,7 +1954,6 @@ void ServiceWorkerVersion::OnStoppedInternal(
                     ServiceWorkerResponse());
   RunIDMapCallbacks(&notification_click_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&push_requests_, SERVICE_WORKER_ERROR_FAILED);
-  RunIDMapCallbacks(&geofencing_requests_, SERVICE_WORKER_ERROR_FAILED);
   RunIDMapCallbacks(&custom_requests_, SERVICE_WORKER_ERROR_FAILED);
 
   // Close all mojo services. This will also fire and clear all callbacks

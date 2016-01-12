@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
@@ -29,7 +30,7 @@
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/common/service_registry.h"
-#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
+#include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerEventResult.h"
 
 // Windows headers will redefine SendMessage.
@@ -38,10 +39,6 @@
 #endif
 
 class GURL;
-
-namespace blink {
-struct WebCircularGeofencingRegion;
-}
 
 namespace net {
 class HttpResponseInfo;
@@ -216,6 +213,17 @@ class CONTENT_EXPORT ServiceWorkerVersion
   template <typename Interface>
   base::WeakPtr<Interface> GetMojoServiceForRequest(int request_id);
 
+  // Dispatches an event. If dispatching the event fails, the error callback
+  // associated with the |request_id| is called. Any messages sent back in
+  // response to this event are passed on to the response |callback|.
+  // ResponseMessage is the type of the IPC message that is used for the
+  // response, and its first argument MUST be the request_id.
+  // This must be called when the worker is running.
+  template <typename ResponseMessage, typename ResponseCallbackType>
+  void DispatchEvent(int request_id,
+                     const IPC::Message& message,
+                     const ResponseCallbackType& callback);
+
   // Sends a message event to the associated embedded worker.
   void DispatchMessageEvent(
       const base::string16& message,
@@ -269,17 +277,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // This must be called when the status() is ACTIVATED.
   void DispatchPushEvent(const StatusCallback& callback,
                          const std::string& data);
-
-  // Sends geofencing event to the associated embedded worker and asynchronously
-  // calls |callback| when it errors out or it gets a response from the worker
-  // to notify completion.
-  //
-  // This must be called when the status() is ACTIVATED.
-  void DispatchGeofencingEvent(
-      const StatusCallback& callback,
-      blink::WebGeofencingEventType event_type,
-      const std::string& region_id,
-      const blink::WebCircularGeofencingRegion& region);
 
   // Sends a cross origin message event to the associated embedded worker and
   // asynchronously calls |callback| when the message was sent (or failed to
@@ -408,7 +405,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     REQUEST_FETCH,
     REQUEST_NOTIFICATION_CLICK,
     REQUEST_PUSH,
-    REQUEST_GEOFENCING,
     REQUEST_CUSTOM,
     NUM_REQUEST_TYPES
   };
@@ -433,7 +429,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     PendingRequest(const CallbackType& callback,
                    const base::TimeTicks& time,
                    ServiceWorkerMetrics::EventType event_type);
-    ~PendingRequest();
+    ~PendingRequest() {}
 
     CallbackType callback;
     base::TimeTicks start_time;
@@ -443,6 +439,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     // Compared as pointer, so should only contain static strings. Typically
     // this would be Interface::Name_ for some mojo interface.
     const char* mojo_service = nullptr;
+    scoped_ptr<EmbeddedWorkerInstance::Listener> listener;
   };
 
   // Base class to enable storing a list of mojo interface pointers for
@@ -487,6 +484,30 @@ class CONTENT_EXPORT ServiceWorkerVersion
       std::priority_queue<RequestInfo,
                           std::vector<RequestInfo>,
                           std::greater<RequestInfo>>;
+
+  // EmbeddedWorkerInstance Listener implementation which calls a callback
+  // on receiving a particular IPC message. ResponseMessage is the type of
+  // the IPC message to listen for, while CallbackType should be a callback
+  // with same arguments as the IPC message.
+  // Additionally only calls the callback for messages with a specific request
+  // id, which must be the first argument of the IPC message.
+  template <typename ResponseMessage, typename CallbackType>
+  class EventResponseHandler : public EmbeddedWorkerInstance::Listener {
+   public:
+    EventResponseHandler(EmbeddedWorkerInstance* worker,
+                         int request_id,
+                         const CallbackType& callback)
+        : worker_(worker), request_id_(request_id), callback_(callback) {
+      worker_->AddListener(this);
+    }
+    ~EventResponseHandler() override { worker_->RemoveListener(this); }
+    bool OnMessageReceived(const IPC::Message& message) override;
+
+   private:
+    EmbeddedWorkerInstance* const worker_;
+    const int request_id_;
+    const CallbackType callback_;
+  };
 
   // The timeout timer interval.
   static const int kTimeoutTimerDelaySeconds;
@@ -547,7 +568,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnNotificationClickEventFinished(int request_id);
   void OnPushEventFinished(int request_id,
                            blink::WebServiceWorkerEventResult result);
-  void OnGeofencingEventFinished(int request_id);
   void OnOpenWindow(int request_id, GURL url);
   void OnOpenWindowFinished(int request_id,
                             ServiceWorkerStatusCode status,
@@ -677,7 +697,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer>
       notification_click_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> push_requests_;
-  IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> geofencing_requests_;
   IDMap<PendingRequest<StatusCallback>, IDMapOwnPointer> custom_requests_;
 
   // Stores all open connections to mojo services. Maps the service name to
@@ -766,6 +785,46 @@ base::WeakPtr<Interface> ServiceWorkerVersion::GetMojoServiceForRequest(
   }
   request->mojo_service = Interface::Name_;
   return service->GetWeakPtr();
+}
+
+template <typename ResponseMessage, typename ResponseCallbackType>
+void ServiceWorkerVersion::DispatchEvent(int request_id,
+                                         const IPC::Message& message,
+                                         const ResponseCallbackType& callback) {
+  DCHECK_EQ(RUNNING, running_status());
+  PendingRequest<StatusCallback>* request = custom_requests_.Lookup(request_id);
+  DCHECK(request) << "Invalid request id";
+  DCHECK(!request->listener) << "Request already dispatched an IPC event";
+
+  ServiceWorkerStatusCode status = embedded_worker_->SendMessage(message);
+  if (status != SERVICE_WORKER_OK) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(request->callback, status));
+    custom_requests_.Remove(request_id);
+  } else {
+    request->listener.reset(
+        new EventResponseHandler<ResponseMessage, ResponseCallbackType>(
+            embedded_worker(), request_id, callback));
+  }
+}
+
+template <typename ResponseMessage, typename CallbackType>
+bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
+    OnMessageReceived(const IPC::Message& message) {
+  if (message.type() != ResponseMessage::ID)
+    return false;
+  int received_request_id;
+  bool result = base::PickleIterator(message).ReadInt(&received_request_id);
+  if (!result || received_request_id != request_id_)
+    return false;
+
+  // Essentially same code as what IPC_MESSAGE_FORWARD expands to.
+  void* param = nullptr;
+  if (!ResponseMessage::Dispatch(&message, &callback_, this, param,
+                                 &CallbackType::Run))
+    message.set_dispatch_error();
+
+  return true;
 }
 
 }  // namespace content

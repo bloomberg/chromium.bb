@@ -10,6 +10,8 @@
 #include "content/browser/geofencing/geofencing_service.h"
 #include "content/browser/geofencing/mock_geofencing_service.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/common/geofencing_messages.h"
+#include "content/common/service_worker/service_worker_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -385,28 +387,54 @@ void GeofencingManager::DeliverGeofencingEvent(
     return;
   }
 
-  // Hold on to the service worker registration in the callback to keep it alive
-  // until the callback dies. Otherwise the registration could be released when
-  // this method returns - before the event is delivered to the service worker.
-  base::Callback<void(ServiceWorkerStatusCode)> dispatch_event_callback =
-      base::Bind(&GeofencingManager::DeliverGeofencingEventEnd,
-                 this,
-                 service_worker_registration);
-
   ServiceWorkerVersion* active_version =
       service_worker_registration->active_version();
   DCHECK(active_version);
-  active_version->DispatchGeofencingEvent(dispatch_event_callback,
-                                          event_type,
-                                          registration->region_id,
-                                          registration->region);
+
+  // Hold on to the service worker registration in the callback to keep it alive
+  // until the callback dies. Otherwise the registration could be released when
+  // this method returns - before the event is delivered to the service worker.
+  active_version->RunAfterStartWorker(
+      base::Bind(&GeofencingManager::OnEventError, this),
+      base::Bind(&GeofencingManager::DeliverEventToRunningWorker, this,
+                 service_worker_registration, event_type,
+                 registration->region_id, registration->region,
+                 make_scoped_refptr(active_version)));
 }
 
-void GeofencingManager::DeliverGeofencingEventEnd(
+void GeofencingManager::DeliverEventToRunningWorker(
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
+    blink::WebGeofencingEventType event_type,
+    const std::string& region_id,
+    const blink::WebCircularGeofencingRegion& region,
+    const scoped_refptr<ServiceWorkerVersion>& worker) {
+  int request_id =
+      worker->StartRequest(ServiceWorkerMetrics::EventType::GEOFENCING,
+                           base::Bind(&GeofencingManager::OnEventError, this));
+
+  worker->DispatchEvent<ServiceWorkerHostMsg_GeofencingEventFinished>(
+      request_id, ServiceWorkerMsg_GeofencingEvent(request_id, event_type,
+                                                   region_id, region),
+      base::Bind(&GeofencingManager::OnEventResponse, this, worker,
+                 service_worker_registration));
+}
+
+void GeofencingManager::OnEventResponse(
+    const scoped_refptr<ServiceWorkerVersion>& worker,
+    const scoped_refptr<ServiceWorkerRegistration>& registration,
+    int request_id,
+    blink::WebServiceWorkerEventResult result) {
+  bool finish_result = worker->FinishRequest(request_id);
+  DCHECK(finish_result)
+      << "No messages should be passed to handler if request had "
+         "already finished";
+  // TODO(mek): log/check result.
+}
+
+void GeofencingManager::OnEventError(
     ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // TODO(mek): log/check result.
+  // TODO(mek): log/check errors.
 }
 
 }  // namespace content

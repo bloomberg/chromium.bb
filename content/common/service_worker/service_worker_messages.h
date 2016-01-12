@@ -238,8 +238,9 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_NotificationClickEventFinished,
 IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_PushEventFinished,
                     int /* request_id */,
                     blink::WebServiceWorkerEventResult)
-IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_GeofencingEventFinished,
-                    int /* request_id */)
+IPC_MESSAGE_ROUTED2(ServiceWorkerHostMsg_GeofencingEventFinished,
+                    int /* request_id */,
+                    blink::WebServiceWorkerEventResult)
 
 // Responds to a Ping from the browser.
 // Routed to the target ServiceWorkerVersion.

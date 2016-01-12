@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/common/geofencing_types.h"
 #include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/WebKit/public/platform/WebGeofencingEventType.h"
 
 namespace base {
 template <typename T>
@@ -171,11 +172,25 @@ class CONTENT_EXPORT GeofencingManager
                               const scoped_refptr<ServiceWorkerRegistration>&
                                   service_worker_registration);
 
-  // Called when delivery of a geofence event to a service worker has finished
-  // (or failed to finish).
-  void DeliverGeofencingEventEnd(const scoped_refptr<ServiceWorkerRegistration>&
-                                     service_worker_registration,
-                                 ServiceWorkerStatusCode service_worker_status);
+  // Delivers an event to a specific service worker version. Called as callback
+  // after the worker has started.
+  void DeliverEventToRunningWorker(
+      const scoped_refptr<ServiceWorkerRegistration>&
+          service_worker_registration,
+      blink::WebGeofencingEventType event_type,
+      const std::string& region_id,
+      const blink::WebCircularGeofencingRegion& region,
+      const scoped_refptr<ServiceWorkerVersion>& worker);
+
+  // Called for every response received for an event. There should only be one.
+  void OnEventResponse(const scoped_refptr<ServiceWorkerVersion>& worker,
+                       const scoped_refptr<ServiceWorkerRegistration>&
+                           service_worker_registration,
+                       int request_id,
+                       blink::WebServiceWorkerEventResult result);
+
+  // Called when dispatching an event failed.
+  void OnEventError(ServiceWorkerStatusCode service_worker_status);
 
   // Map of all registered regions for a particular service worker registration.
   typedef std::map<std::string, Registration> RegionIdRegistrationMap;
