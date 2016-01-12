@@ -243,6 +243,9 @@ public:
     // Get the security origin for this audio context.
     SecurityOrigin* securityOrigin() const;
 
+    // Get the PeriodicWave for the specified oscillator type.  The table is initialized internally
+    // if necessary.
+    PeriodicWave* periodicWave(int type);
 protected:
     explicit AbstractAudioContext(Document*);
     AbstractAudioContext(Document*, unsigned numberOfChannels, size_t numberOfFrames, float sampleRate);
@@ -315,6 +318,14 @@ private:
     AudioContextState m_contextState;
 
     AsyncAudioDecoder m_audioDecoder;
+
+    // PeriodicWave's for the builtin oscillator types.  These only depend on the sample rate. so
+    // they can be shared with all OscillatorNodes in the context.  To conserve memory, these are
+    // lazily initiialized on first use.
+    Member<PeriodicWave> m_periodicWaveSine;
+    Member<PeriodicWave> m_periodicWaveSquare;
+    Member<PeriodicWave> m_periodicWaveSawtooth;
+    Member<PeriodicWave> m_periodicWaveTriangle;
 
     // This is considering 32 is large enough for multiple channels audio.
     // It is somewhat arbitrary and could be increased if necessary.

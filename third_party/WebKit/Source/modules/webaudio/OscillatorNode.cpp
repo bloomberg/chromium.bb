@@ -106,32 +106,23 @@ void OscillatorHandler::setType(const String& type, ExceptionState& exceptionSta
 bool OscillatorHandler::setType(unsigned type)
 {
     PeriodicWave* periodicWave = nullptr;
-    float sampleRate = this->sampleRate();
 
     switch (type) {
-    case SINE: {
-        DEFINE_STATIC_LOCAL(Persistent<PeriodicWave>, periodicWaveSine, (PeriodicWave::createSine(sampleRate)));
-        periodicWave = periodicWaveSine;
+    case SINE:
+        periodicWave = context()->periodicWave(SINE);
         break;
-    }
-    case SQUARE: {
-        DEFINE_STATIC_LOCAL(Persistent<PeriodicWave>, periodicWaveSquare, (PeriodicWave::createSquare(sampleRate)));
-        periodicWave = periodicWaveSquare;
+    case SQUARE:
+        periodicWave = context()->periodicWave(SQUARE);
         break;
-    }
-    case SAWTOOTH: {
-        DEFINE_STATIC_LOCAL(Persistent<PeriodicWave>, periodicWaveSawtooth, (PeriodicWave::createSawtooth(sampleRate)));
-        periodicWave = periodicWaveSawtooth;
+    case SAWTOOTH:
+        periodicWave = context()->periodicWave(SAWTOOTH);
         break;
-    }
-    case TRIANGLE: {
-        DEFINE_STATIC_LOCAL(Persistent<PeriodicWave>, periodicWaveTriangle, (PeriodicWave::createTriangle(sampleRate)));
-        periodicWave = periodicWaveTriangle;
+    case TRIANGLE:
+        periodicWave = context()->periodicWave(TRIANGLE);
         break;
-    }
     case CUSTOM:
     default:
-        // Return error for invalid types, including CUSTOM since setPeriodicWave() method must be
+        // Return false for invalid types, including CUSTOM since setPeriodicWave() method must be
         // called explicitly.
         ASSERT_NOT_REACHED();
         return false;

@@ -86,6 +86,10 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
     , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
+    , m_periodicWaveSine(nullptr)
+    , m_periodicWaveSquare(nullptr)
+    , m_periodicWaveSawtooth(nullptr)
+    , m_periodicWaveTriangle(nullptr)
 {
     m_didInitializeContextGraphMutex = true;
     m_destinationNode = DefaultAudioDestinationNode::create(this);
@@ -103,6 +107,10 @@ AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOf
     , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
+    , m_periodicWaveSine(nullptr)
+    , m_periodicWaveSquare(nullptr)
+    , m_periodicWaveSawtooth(nullptr)
+    , m_periodicWaveTriangle(nullptr)
 {
     m_didInitializeContextGraphMutex = true;
 }
@@ -550,6 +558,35 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
     return PeriodicWave::create(sampleRate(), real, imag, isNormalizationDisabled);
 }
 
+PeriodicWave* AbstractAudioContext::periodicWave(int type)
+{
+    switch (type) {
+    case OscillatorHandler::SINE:
+        // Initialize the table if necessary
+        if (!m_periodicWaveSine)
+            m_periodicWaveSine = PeriodicWave::createSine(sampleRate());
+        return m_periodicWaveSine;
+    case OscillatorHandler::SQUARE:
+        // Initialize the table if necessary
+        if (!m_periodicWaveSquare)
+            m_periodicWaveSquare = PeriodicWave::createSquare(sampleRate());
+        return m_periodicWaveSquare;
+    case OscillatorHandler::SAWTOOTH:
+        // Initialize the table if necessary
+        if (!m_periodicWaveSawtooth)
+            m_periodicWaveSawtooth = PeriodicWave::createSawtooth(sampleRate());
+        return m_periodicWaveSawtooth;
+    case OscillatorHandler::TRIANGLE:
+        // Initialize the table if necessary
+        if (!m_periodicWaveTriangle)
+            m_periodicWaveTriangle = PeriodicWave::createTriangle(sampleRate());
+        return m_periodicWaveTriangle;
+    default:
+        ASSERT_NOT_REACHED();
+        return nullptr;
+    }
+}
+
 String AbstractAudioContext::state() const
 {
     // These strings had better match the strings for AudioContextState in AudioContext.idl.
@@ -774,6 +811,11 @@ DEFINE_TRACE(AbstractAudioContext)
         visitor->trace(m_activeSourceNodes);
     }
     visitor->trace(m_resumeResolvers);
+
+    visitor->trace(m_periodicWaveSine);
+    visitor->trace(m_periodicWaveSquare);
+    visitor->trace(m_periodicWaveSawtooth);
+    visitor->trace(m_periodicWaveTriangle);
     RefCountedGarbageCollectedEventTargetWithInlineData<AbstractAudioContext>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }
