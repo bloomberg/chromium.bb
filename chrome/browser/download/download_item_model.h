@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/download/download_target_info.h"
 
 class SavePackage;
 
@@ -139,15 +140,13 @@ class DownloadItemModel {
   // Change what's returned by ShouldPreferOpeningInBrowser to |preference|.
   void SetShouldPreferOpeningInBrowser(bool preference);
 
-  // Mark that the download should be considered dangerous based on the file
-  // type. This value may differ from the download's danger type in cases where
-  // the SafeBrowsing service hasn't returned a verdict about the download. If
-  // SafeBrowsing fails to return a decision, then the download should be
-  // considered dangerous based on this flag. Defaults to false.
-  bool IsDangerousFileBasedOnType() const;
+  // Return the danger level determined during download target determination.
+  // The value returned here is independent of the danger level as determined by
+  // the Safe Browsing.
+  download_util::DownloadDangerLevel GetDangerLevel() const;
 
-  // Change what's returned by IsDangerousFileBasedOnType().
-  void SetIsDangerousFileBasedOnType(bool dangerous);
+  // Change what's returned by GetDangerLevel().
+  void SetDangerLevel(download_util::DownloadDangerLevel danger_level);
 
   // Open the download using the platform handler for the download. The behavior
   // of this method will be different from DownloadItem::OpenDownload() if

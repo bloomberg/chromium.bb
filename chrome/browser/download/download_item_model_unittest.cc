@@ -375,6 +375,16 @@ TEST_F(DownloadItemModelTest, ShouldShowInShelf) {
   EXPECT_TRUE(model().ShouldShowInShelf());
 }
 
+TEST_F(DownloadItemModelTest, DangerLevel) {
+  SetupDownloadItemDefaults();
+
+  // Default danger level is NOT_DANGEROUS.
+  EXPECT_EQ(download_util::NOT_DANGEROUS, model().GetDangerLevel());
+
+  model().SetDangerLevel(download_util::ALLOW_ON_USER_GESTURE);
+  EXPECT_EQ(download_util::ALLOW_ON_USER_GESTURE, model().GetDangerLevel());
+}
+
 TEST_F(DownloadItemModelTest, ShouldRemoveFromShelfWhenComplete) {
   const struct TestCase {
     DownloadItem::DownloadState state;

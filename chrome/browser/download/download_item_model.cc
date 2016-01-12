@@ -59,9 +59,9 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // for the file type.
   bool should_prefer_opening_in_browser_;
 
-  // Whether the download should be considered dangerous if SafeBrowsing doesn't
-  // come up with a verdict.
-  bool is_dangerous_file_based_on_type_;
+  // Danger level of the file determined based on the file type and whether
+  // there was a user action associated with the download.
+  download_util::DownloadDangerLevel danger_level_;
 
   // Whether the download is currently being revived.
   bool is_being_revived_;
@@ -98,9 +98,8 @@ DownloadItemModelData::DownloadItemModelData()
     : should_show_in_shelf_(true),
       was_ui_notified_(false),
       should_prefer_opening_in_browser_(false),
-      is_dangerous_file_based_on_type_(false),
-      is_being_revived_(false) {
-}
+      danger_level_(download_util::NOT_DANGEROUS),
+      is_being_revived_(false) {}
 
 base::string16 InterruptReasonStatusMessage(
     content::DownloadInterruptReason reason) {
@@ -609,14 +608,15 @@ void DownloadItemModel::SetShouldPreferOpeningInBrowser(bool preference) {
   data->should_prefer_opening_in_browser_ = preference;
 }
 
-bool DownloadItemModel::IsDangerousFileBasedOnType() const {
+download_util::DownloadDangerLevel DownloadItemModel::GetDangerLevel() const {
   const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data && data->is_dangerous_file_based_on_type_;
+  return data ? data->danger_level_ : download_util::NOT_DANGEROUS;
 }
 
-void DownloadItemModel::SetIsDangerousFileBasedOnType(bool dangerous) {
+void DownloadItemModel::SetDangerLevel(
+    download_util::DownloadDangerLevel danger_level) {
   DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->is_dangerous_file_based_on_type_ = dangerous;
+  data->danger_level_ = danger_level;
 }
 
 bool DownloadItemModel::IsBeingRevived() const {

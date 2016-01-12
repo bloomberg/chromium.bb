@@ -126,7 +126,7 @@ class DownloadTargetDeterminer
     COMPLETE
   };
 
-  // Used with IsDangerousFile to indicate whether the user has visited the
+  // Used with GetDangerLevel to indicate whether the user has visited the
   // referrer URL for the download prior to today.
   enum PriorVisitsToReferrer {
     NO_VISITS_TO_REFERRER,
@@ -272,7 +272,7 @@ class DownloadTargetDeterminer
 
   void CancelOnFailureAndDeleteSelf();
 
-  Profile* GetProfile();
+  Profile* GetProfile() const;
 
   // Determine whether to prompt the user for the download location. For regular
   // downloads, this determination is based on the target disposition, auto-open
@@ -294,7 +294,11 @@ class DownloadTargetDeterminer
   // Various factors are considered, such as the type of the file, whether a
   // user action initiated the download, and whether the user has explicitly
   // marked the file type as "auto open". Protected virtual for testing.
-  bool IsDangerousFile(PriorVisitsToReferrer visits);
+  //
+  // If |require_explicit_consent| is non-null then the pointed bool will be set
+  // to true if the download requires explicit user consent.
+  download_util::DownloadDangerLevel GetDangerLevel(
+      PriorVisitsToReferrer visits) const;
 
   // content::DownloadItem::Observer
   void OnDownloadDestroyed(content::DownloadItem* download) override;
@@ -306,7 +310,7 @@ class DownloadTargetDeterminer
   bool create_target_directory_;
   DownloadPathReservationTracker::FilenameConflictAction conflict_action_;
   content::DownloadDangerType danger_type_;
-  bool is_dangerous_file_;  // See DownloadTargetInfo::is_dangerous_file
+  download_util::DownloadDangerLevel danger_level_;
   base::FilePath virtual_path_;
   base::FilePath local_path_;
   base::FilePath intermediate_path_;

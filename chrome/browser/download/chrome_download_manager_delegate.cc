@@ -324,7 +324,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
     // In case the service was disabled between the download starting and now,
     // we need to restore the danger state.
     content::DownloadDangerType danger_type = item->GetDangerType();
-    if (DownloadItemModel(item).IsDangerousFileBasedOnType() &&
+    if (DownloadItemModel(item).GetDangerLevel() !=
+            download_util::NOT_DANGEROUS &&
         (danger_type == content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
          danger_type ==
              content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)) {
@@ -332,8 +333,8 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
                << "() SB service disabled. Marking download as DANGEROUS FILE";
       item->OnContentCheckCompleted(
           content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
-      content::BrowserThread::PostTask(
-          content::BrowserThread::UI, FROM_HERE, internal_complete_callback);
+      content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                       internal_complete_callback);
       return false;
     }
   } else if (!state->is_complete()) {
@@ -667,11 +668,17 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     switch (result) {
       case DownloadProtectionService::UNKNOWN:
         // The check failed or was inconclusive.
-        if (DownloadItemModel(item).IsDangerousFileBasedOnType())
+        if (DownloadItemModel(item).GetDangerLevel() !=
+            download_util::NOT_DANGEROUS)
           danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
         break;
       case DownloadProtectionService::SAFE:
-        // Do nothing.
+        // If this file type require explicit consent, then set the danger type
+        // to DANGEROUS_FILE so that the user be required to manually vet
+        // whether the download is intended or not.
+        if (DownloadItemModel(item).GetDangerLevel() ==
+            download_util::DANGEROUS)
+          danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE;
         break;
       case DownloadProtectionService::DANGEROUS:
         danger_type = content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT;
@@ -686,6 +693,8 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         danger_type = content::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
         break;
     }
+    DCHECK_NE(danger_type,
+              content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
 
     if (danger_type != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
       item->OnContentCheckCompleted(danger_type);
@@ -733,8 +742,7 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
       DownloadItemModel(item).SetShouldPreferOpeningInBrowser(true);
 #endif
 
-    if (target_info->is_dangerous_file)
-      DownloadItemModel(item).SetIsDangerousFileBasedOnType(true);
+    DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
   callback.Run(target_info->target_path,
                target_info->target_disposition,

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TARGET_INFO_H_
 
 #include "base/files/file_path.h"
+#include "chrome/browser/download/download_extensions.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 
@@ -29,13 +30,28 @@ struct DownloadTargetInfo {
   // The danger type of the download could be set to MAYBE_DANGEROUS_CONTENT if
   // the file type is handled by SafeBrowsing. However, if the SafeBrowsing
   // service is unable to verify whether the file is safe or not, we are on our
-  // own. This flag indicates whether the download should be considered
-  // dangerous if SafeBrowsing returns an unknown verdict.
+  // own. The value of |danger_level| indicates whether the download should be
+  // considered dangerous if SafeBrowsing returns an unknown verdict.
   //
   // Note that some downloads (e.g. "Save link as" on a link to a binary) would
   // not be considered 'Dangerous' even if SafeBrowsing came back with an
-  // unknown verdict. So we can't always show a warning when SB fails.
-  bool is_dangerous_file;
+  // unknown verdict. So we can't always show a warning when SafeBrowsing fails.
+  //
+  // The value of |danger_level| should be interpreted as follows:
+  //
+  //   NOT_DANGEROUS : Unless flagged by SafeBrowsing, the file should be
+  //       considered safe.
+  //
+  //   ALLOW_ON_USER_GESTURE : If SafeBrowsing claims the file is safe, then the
+  //       file is safe. An UNKOWN verdict results in the file being marked as
+  //       DANGEROUS_FILE.
+  //
+  //   DANGEROUS : This type of file shouldn't be allowed to download witout any
+  //       user action. Hence, if SafeBrowsing marks the file as SAFE, or
+  //       UNKONWN, the file will still be conisdered a DANGEROUS_FILE. However,
+  //       SafeBrowsing may flag the file as being malicious, in which case the
+  //       malicious classification should take precedence.
+  download_util::DownloadDangerLevel danger_level;
 
   // Suggested intermediate path. The downloaded bytes should be written to this
   // path until all the bytes are available and the user has accepted a

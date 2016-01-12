@@ -3198,10 +3198,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_GZipWithNoContent) {
 
 #if defined(FULL_SAFE_BROWSING)
 
-// The following two tests are only meaningful on OS_WIN since that's the only
-// platform where client download checks are currently performed.
-// TODO(asanka): Relax this restriction as other platforms are added.
-#if defined(OS_WIN)
 namespace {
 
 // This is a custom DownloadTestObserver for
@@ -3236,7 +3232,8 @@ class DisableSafeBrowsingOnInProgressDownload
     EXPECT_EQ(content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT,
               download->GetDangerType());
     EXPECT_FALSE(download->IsDangerous());
-    EXPECT_TRUE(DownloadItemModel(download).IsDangerousFileBasedOnType());
+    EXPECT_NE(download_util::NOT_DANGEROUS,
+              DownloadItemModel(download).GetDangerLevel());
     return true;
   }
 
@@ -3245,18 +3242,23 @@ class DisableSafeBrowsingOnInProgressDownload
   bool final_state_seen_;
 };
 
+#if defined(OS_WIN)
+const char kDangerousMockFilePath[] = "downloads/dangerous/dangerous.exe";
+#elif defined(OS_POSIX)
+const char kDangerousMockFilePath[] = "downloads/dangerous/dangerous.sh";
+#endif
+
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(DownloadTest,
                        DangerousFileWithSBDisabledBeforeCompletion) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                true);
-  GURL download_url = net::URLRequestMockHTTPJob::GetMockUrl(
-      "downloads/dangerous/dangerous.exe");
+  GURL download_url =
+      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath);
   scoped_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
-          browser(),
-          1,
+          browser(), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
   scoped_ptr<content::DownloadTestObserver> in_progress_observer(
       new DisableSafeBrowsingOnInProgressDownload(browser()));
@@ -3288,12 +3290,11 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, DangerousFileWithSBDisabledBeforeStart) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
                                                false);
 
-  GURL download_url = net::URLRequestMockHTTPJob::GetMockUrl(
-      "downloads/dangerous/dangerous.exe");
+  GURL download_url =
+      net::URLRequestMockHTTPJob::GetMockUrl(kDangerousMockFilePath);
   scoped_ptr<content::DownloadTestObserver> dangerous_observer(
       DangerousDownloadWaiter(
-          browser(),
-          1,
+          browser(), 1,
           content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_QUIT));
   ui_test_utils::NavigateToURLWithDisposition(browser(),
                                               download_url,
@@ -3329,8 +3330,6 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, SafeSupportedFile) {
 
   download->Cancel(true);
 }
-
-#endif  // OS_WIN
 
 IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
   // Make a dangerous file.
@@ -3383,7 +3382,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, FeedbackService) {
   GetDownloads(browser(), &updated_downloads);
   ASSERT_TRUE(updated_downloads.empty());
 }
-#endif
+#endif  // FULL_SAFE_BROWSING
 
 class DownloadTestWithShelf : public DownloadTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
