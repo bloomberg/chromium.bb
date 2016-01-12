@@ -85,9 +85,9 @@ void IntersectionObserverController::removeTrackedObserversForRoot(const Element
 
 DEFINE_TRACE(IntersectionObserverController)
 {
-    ActiveDOMObject::trace(visitor);
     visitor->trace(m_trackedIntersectionObservers);
     visitor->trace(m_pendingIntersectionObservers);
+    ActiveDOMObject::trace(visitor);
 }
 
 } // namespace blink
