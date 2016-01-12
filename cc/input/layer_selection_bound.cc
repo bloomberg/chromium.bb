@@ -10,35 +10,35 @@
 namespace cc {
 namespace {
 
-proto::SelectionBoundType SelectionBoundTypeToProtobuf(
+proto::LayerSelectionBound::SelectionBoundType SelectionBoundTypeToProtobuf(
     const SelectionBoundType& type) {
   switch (type) {
     case SELECTION_BOUND_LEFT:
-      return proto::SelectionBoundType::LEFT;
+      return proto::LayerSelectionBound_SelectionBoundType_LEFT;
     case SELECTION_BOUND_RIGHT:
-      return proto::SelectionBoundType::RIGHT;
+      return proto::LayerSelectionBound_SelectionBoundType_RIGHT;
     case SELECTION_BOUND_CENTER:
-      return proto::SelectionBoundType::CENTER;
+      return proto::LayerSelectionBound_SelectionBoundType_CENTER;
     case SELECTION_BOUND_EMPTY:
-      return proto::SelectionBoundType::EMPTY;
+      return proto::LayerSelectionBound_SelectionBoundType_EMPTY;
   }
-  NOTREACHED() << "proto::SelectionBoundType::UNKNOWN";
-  return proto::SelectionBoundType::UNKNOWN;
+  NOTREACHED() << "proto::LayerSelectionBound_SelectionBoundType_UNKNOWN";
+  return proto::LayerSelectionBound_SelectionBoundType_UNKNOWN;
 }
 
 SelectionBoundType SelectionBoundTypeFromProtobuf(
-    const proto::SelectionBoundType& type) {
+    const proto::LayerSelectionBound::SelectionBoundType& type) {
   switch (type) {
-    case proto::SelectionBoundType::LEFT:
+    case proto::LayerSelectionBound_SelectionBoundType_LEFT:
       return SELECTION_BOUND_LEFT;
-    case proto::SelectionBoundType::RIGHT:
+    case proto::LayerSelectionBound_SelectionBoundType_RIGHT:
       return SELECTION_BOUND_RIGHT;
-    case proto::SelectionBoundType::CENTER:
+    case proto::LayerSelectionBound_SelectionBoundType_CENTER:
       return SELECTION_BOUND_CENTER;
-    case proto::SelectionBoundType::EMPTY:
+    case proto::LayerSelectionBound_SelectionBoundType_EMPTY:
       return SELECTION_BOUND_EMPTY;
-    case proto::SelectionBoundType::UNKNOWN:
-      NOTREACHED() << "proto::SelectionBoundType::UNKNOWN";
+    case proto::LayerSelectionBound_SelectionBoundType_UNKNOWN:
+      NOTREACHED() << "proto::LayerSelectionBound_SelectionBoundType_UNKNOWN";
       return SELECTION_BOUND_EMPTY;
   }
   return SELECTION_BOUND_EMPTY;

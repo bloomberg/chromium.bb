@@ -10,15 +10,15 @@ option optimize_for = LITE_RUNTIME;
 
 package cc.proto;
 
-enum SelectionBoundType {
-  UNKNOWN = 0;
-  LEFT = 1;
-  RIGHT = 2;
-  CENTER = 3;
-  EMPTY = 4;
-}
-
 message LayerSelectionBound {
+  enum SelectionBoundType {
+    UNKNOWN = 0;
+    LEFT = 1;
+    RIGHT = 2;
+    CENTER = 3;
+    EMPTY = 4;
+  }
+
   optional SelectionBoundType type = 1;
   optional Point edge_top = 2;
   optional Point edge_bottom = 3;
