@@ -296,12 +296,18 @@ void ShowDefaultBrowserPrompt(Profile* profile, HostDesktopType desktop_type) {
     return;
   }
 
+  PrefService* prefs = profile->GetPrefs();
+  // Reset preferences if kResetCheckDefaultBrowser is true.
+  if (prefs->GetBoolean(prefs::kResetCheckDefaultBrowser)) {
+    prefs->SetBoolean(prefs::kResetCheckDefaultBrowser, false);
+    prefs->SetBoolean(prefs::kCheckDefaultBrowser, true);
+  }
+
   // Check if Chrome is the default browser but do not prompt if:
   // - The user said "don't ask me again" on the infobar earlier.
   // - The "suppress_default_browser_prompt_for_version" master preference is
   //     set to the current version.
-  bool show_prompt =
-      profile->GetPrefs()->GetBoolean(prefs::kCheckDefaultBrowser);
+  bool show_prompt = prefs->GetBoolean(prefs::kCheckDefaultBrowser);
   if (show_prompt) {
     const std::string disable_version_string =
         g_browser_process->local_state()->GetString(

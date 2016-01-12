@@ -949,6 +949,10 @@ const char kPluginsResourceCacheUpdate[] = "plugins.resource_cache_update";
 // Boolean that indicates whether we should check if we are the default browser
 // on start-up.
 const char kCheckDefaultBrowser[] = "browser.check_default_browser";
+// Boolean that indicates whether the kCheckDefaultBrowser preference should be
+// reset on start-up.
+const char kResetCheckDefaultBrowser[] =
+    "browser.should_reset_check_default_browser";
 
 // Policy setting whether default browser check should be disabled and default
 // browser registration should take place.
