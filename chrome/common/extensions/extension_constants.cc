@@ -54,7 +54,7 @@ const char kSettingsAppId[] = "ennkphjdgehloodpbhlhldgbnhmacadg";
 const char kYoutubeAppId[] = "blpcfgokakmgnkcojhhkbfbldkacnbeo";
 const char kInAppPaymentsSupportAppId[] = "nmmhkkegccagdldgiimedpiccmgmieda";
 #if defined(ENABLE_MEDIA_ROUTER)
-const char kMediaRouterStableExtensionId[] = "fjhoaacokmgbjemoflkofnenfaiekifl";
+const char kMediaRouterStableExtensionId[] = "pkedcjkdefgpdelpbcmbmeomcjbeemfm";
 #endif  // defined(ENABLE_MEDIA_ROUTER)
 
 #if defined(OS_CHROMEOS)

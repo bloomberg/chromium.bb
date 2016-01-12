@@ -125,7 +125,8 @@ bool MediaCaptureDevicesDispatcher::IsOriginForCasting(const GURL& origin) {
       origin.spec() == "chrome-extension://boadgeojelhgndaghljhdicfkmllpafd/" ||
       // http://crbug.com/457908
       origin.spec() == "chrome-extension://ekpaaapppgpmolpcldedioblbkmijaca/" ||
-      origin.spec() == "chrome-extension://fjhoaacokmgbjemoflkofnenfaiekifl/";
+      // http://crbug.com/574889
+      origin.spec() == "chrome-extension://pkedcjkdefgpdelpbcmbmeomcjbeemfm/";
 }
 
 void MediaCaptureDevicesDispatcher::AddObserver(Observer* observer) {

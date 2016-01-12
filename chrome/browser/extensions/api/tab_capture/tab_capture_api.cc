@@ -155,7 +155,7 @@ const char* const kChromecastExtensionIds[] = {
 };
 
 const char* const kMediaRouterExtensionIds[] = {
-    "fjhoaacokmgbjemoflkofnenfaiekifl",  // Stable
+    "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // Stable
     "ekpaaapppgpmolpcldedioblbkmijaca",  // Beta
 };
 

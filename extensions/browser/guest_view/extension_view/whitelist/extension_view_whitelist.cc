@@ -22,7 +22,7 @@ namespace {
 const char* const kWhitelist[] = {
     "pemeknaakobkocgmimdeamlcklioagkh",  // Used in browser tests
     "dppcjffonoklmpdmljnpdojmoaefcabf",  // Used in browser tests
-    "fjhoaacokmgbjemoflkofnenfaiekifl",  // http://crbug.com/552208
+    "pkedcjkdefgpdelpbcmbmeomcjbeemfm",  // http://crbug.com/574889
     "ekpaaapppgpmolpcldedioblbkmijaca",  // http://crbug.com/552208
     "lhkfccafpkdlaodkicmokbmfapjadkij",  // http://crbug.com/552208
     "ibiljbkambkbohapfhoonkcpcikdglop",  // http://crbug.com/552208
