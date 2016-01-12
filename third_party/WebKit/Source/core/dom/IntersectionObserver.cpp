@@ -160,7 +160,6 @@ void IntersectionObserver::disconnect()
     for (auto& observation : observationsToDisconnect)
         observation->disconnect();
     ASSERT(m_observations.isEmpty());
-    m_root.clear();
 }
 
 void IntersectionObserver::removeObservation(IntersectionObservation& observation)

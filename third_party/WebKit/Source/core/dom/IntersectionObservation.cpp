@@ -116,6 +116,11 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
 
 void IntersectionObservation::computeIntersectionObservations(double timestamp)
 {
+    // Pre-oilpan, there will be a delay between the time when the target Element gets deleted
+    // (because its ref count dropped to zero) and when this IntersectionObservation gets
+    // deleted (during the next gc run, because the target Element is the only thing keeping
+    // the IntersectionObservation alive).  During that interval, we need to check that m_target
+    // hasn't been cleared.
     Element* targetElement = target();
     if (!targetElement || !isActive())
         return;

@@ -72,8 +72,6 @@ void ElementIntersectionObserverData::dispose()
     for (auto& observer : observersToDisconnect)
         observer->disconnect();
     ASSERT(m_intersectionObservers.isEmpty());
-
-    m_weakPointerFactory.clear();
 }
 #endif
 
