@@ -3333,3 +3333,38 @@
    fun:_ZN3net14BrotliUnitTest19DecodeAllWithFilterEPNS_6FilterEPKciPcPi
    fun:_ZN3net37BrotliUnitTest_DecodeMissingData_Test8TestBodyEv
 }
+{
+   bug_576259_a
+   Memcheck:Uninitialized
+   fun:_ZN7GrGLGpu11bindTextureEiRK15GrTextureParamsP11GrGLTexture
+   fun:_ZN7GrGLGpu12flushGLStateERKN5GrGpu8DrawArgsE
+   fun:_ZN7GrGLGpu6onDrawERKN5GrGpu8DrawArgsERK22GrNonInstancedVertices
+   fun:_ZN5GrGpu4drawERKNS_8DrawArgsERK10GrVertices
+   fun:_ZN13GrVertexBatch6onDrawEP17GrBatchFlushState
+   fun:_ZN7GrBatch4drawEP17GrBatchFlushState
+   fun:_ZN12GrDrawTarget11drawBatchesEP17GrBatchFlushState
+   fun:_ZN16GrDrawingManager5flushEv
+   fun:_ZN9GrContext5flushEi
+   ...
+   fun:_ZN2cc10GLRenderer18DrawRenderPassQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_18RenderPassDrawQuadEPKN3gfx5QuadFE
+   fun:_ZN2cc10GLRenderer10DoDrawQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadEPKN3gfx5QuadFE
+}
+{
+   bug_576259_b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN8GrGLCaps4initERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
+   fun:_ZN8GrGLCapsC1ERK16GrContextOptionsRK15GrGLContextInfoPK13GrGLInterface
+   fun:_ZN15GrGLContextInfoC1ERKNS_15ConstructorArgsE
+   fun:_ZN11GrGLContextC2ERKN15GrGLContextInfo15ConstructorArgsE
+   ...
+   fun:_ZN7GrGLGpu6CreateElRK16GrContextOptionsP9GrContext
+   fun:_ZN5GrGpu6CreateE9GrBackendlRK16GrContextOptionsP9GrContext
+   fun:_ZN9GrContext4initE9GrBackendlRK16GrContextOptions
+   fun:_ZN9GrContext6CreateE9GrBackendlRK16GrContextOptions
+   fun:_ZN9GrContext6CreateE9GrBackendl
+   ...
+   fun:_ZN2cc10GLRenderer18DrawRenderPassQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_18RenderPassDrawQuadEPKN3gfx5QuadFE
+   fun:_ZN2cc10GLRenderer10DoDrawQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadEPKN3gfx5QuadFE
+}
+
