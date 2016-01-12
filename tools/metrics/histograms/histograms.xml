@@ -50521,6 +50521,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Toolbar.AppMenuTimeToAction" units="ms">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    The number of millseconds between when the user opens the app menu and when
+    the app menu is closed. Logged once per app menu run when the menu closes.
+    Not recorded for menu runs that are initiated by a drag-and-drop sequence.
+  </summary>
+</histogram>
+
 <histogram name="TopSites.NumberOfApplyBlacklist">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>The number of times TopSitesImpl::ApplyBlacklist is called.</summary>

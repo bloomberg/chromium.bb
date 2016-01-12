@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 
 #include "base/location.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
@@ -104,7 +105,17 @@ void AppMenuButton::ShowMenu(bool for_drop) {
   destroyed_ = &destroyed;
 
   ink_drop_delegate()->OnAction(views::InkDropState::ACTIVATED);
+
+  base::TimeTicks menu_open_time = base::TimeTicks::Now();
   menu_->RunMenu(this);
+
+  if (!for_drop) {
+    // Record the time-to-action for the menu. We don't record in the case of a
+    // drag-and-drop command because menus opened for drag-and-drop don't block
+    // the message loop.
+    UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
+                        base::TimeTicks::Now() - menu_open_time);
+  }
 
   if (!destroyed) {
     ink_drop_delegate()->OnAction(views::InkDropState::DEACTIVATED);
