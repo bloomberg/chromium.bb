@@ -529,10 +529,11 @@ public:
 
     struct AttachContext {
         STACK_ALLOCATED();
-        ComputedStyle* resolvedStyle;
-        bool performingReattach;
+        ComputedStyle* resolvedStyle = nullptr;
+        bool performingReattach = false;
+        bool clearInvalidation = false;
 
-        AttachContext() : resolvedStyle(nullptr), performingReattach(false) { }
+        AttachContext() { }
     };
 
     // Attaches this node to the layout tree. This calculates the style to be applied to the node and creates an

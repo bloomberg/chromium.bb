@@ -604,8 +604,10 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
 
     ASSERT(oldChild.parentNode() == this);
 
-    if (!oldChild.needsAttach())
-        oldChild.detach();
+    AttachContext context;
+    context.clearInvalidation = true;
+    if (!needsAttach() || !oldChild.needsAttach())
+        oldChild.detach(context);
 
     if (nextChild)
         nextChild->setPreviousSibling(previousChild);
@@ -885,6 +887,7 @@ void ContainerNode::detach(const AttachContext& context)
 {
     AttachContext childrenContext(context);
     childrenContext.resolvedStyle = nullptr;
+    childrenContext.clearInvalidation = true;
 
     for (Node* child = firstChild(); child; child = child->nextSibling())
         child->detach(childrenContext);

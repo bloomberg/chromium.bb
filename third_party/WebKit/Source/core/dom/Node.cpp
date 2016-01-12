@@ -907,7 +907,6 @@ void Node::detach(const AttachContext& context)
     if (layoutObject())
         layoutObject()->destroyAndCleanupAnonymousWrappers();
     setLayoutObject(nullptr);
-
     setStyleChange(NeedsReattachStyleChange);
     clearChildNeedsStyleInvalidation();
 }
