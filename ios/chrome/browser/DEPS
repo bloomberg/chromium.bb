@@ -31,6 +31,7 @@ include_rules = [
   "+components/invalidation",
   "+components/keyed_service/core",
   "+components/keyed_service/ios",
+  "+components/language_usage_metrics",
   "+components/leveldb_proto",
   "+components/metrics",
   "+components/metrics_services_manager",
