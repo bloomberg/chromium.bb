@@ -10,6 +10,7 @@ struct PresentationSessionInfo {
 };
 
 enum PresentationConnectionState {
+  CONNECTING,
   CONNECTED,
   CLOSED,
   TERMINATED

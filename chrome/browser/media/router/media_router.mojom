@@ -240,6 +240,7 @@ interface MediaRouter {
 
   // Keep in sync with content/public/browser/presentation_session.h.
   enum PresentationConnectionState {
+    CONNECTING,
     CONNECTED,
     CLOSED,
     TERMINATED

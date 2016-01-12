@@ -107,6 +107,8 @@ define('media_router_bindings', [
     var PresentationConnectionState =
         mediaRouterMojom.MediaRouter.PresentationConnectionState;
     switch (state) {
+      case 'connecting':
+        return PresentationConnectionState.CONNECTING;
       case 'connected':
         return PresentationConnectionState.CONNECTED;
       case 'closed':

@@ -27,6 +27,8 @@ presentation::PresentationErrorType PresentationErrorTypeToMojo(
 presentation::PresentationConnectionState PresentationConnectionStateToMojo(
     content::PresentationConnectionState state) {
   switch (state) {
+    case content::PRESENTATION_CONNECTION_STATE_CONNECTING:
+      return presentation::PRESENTATION_CONNECTION_STATE_CONNECTING;
     case content::PRESENTATION_CONNECTION_STATE_CONNECTED:
       return presentation::PRESENTATION_CONNECTION_STATE_CONNECTED;
     case content::PRESENTATION_CONNECTION_STATE_CLOSED:

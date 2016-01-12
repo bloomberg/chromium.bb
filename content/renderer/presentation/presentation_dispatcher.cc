@@ -42,16 +42,17 @@ blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
 blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
     presentation::PresentationConnectionState mojoSessionState) {
   switch (mojoSessionState) {
+    // TODO(imcheng): Add Connecting state to Blink (crbug.com/575351).
     case presentation::PRESENTATION_CONNECTION_STATE_CONNECTED:
       return blink::WebPresentationConnectionState::Connected;
     case presentation::PRESENTATION_CONNECTION_STATE_CLOSED:
       return blink::WebPresentationConnectionState::Closed;
     case presentation::PRESENTATION_CONNECTION_STATE_TERMINATED:
       return blink::WebPresentationConnectionState::Terminated;
+    default:
+      NOTREACHED();
+      return blink::WebPresentationConnectionState::Terminated;
   }
-
-  NOTREACHED();
-  return blink::WebPresentationConnectionState::Terminated;
 }
 
 }  // namespace

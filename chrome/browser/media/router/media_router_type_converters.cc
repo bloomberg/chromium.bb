@@ -138,6 +138,8 @@ media_router::Issue TypeConverter<media_router::Issue, IssuePtr>::Convert(
 content::PresentationConnectionState PresentationConnectionStateFromMojo(
     PresentationConnectionState state) {
   switch (state) {
+    case PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CONNECTING:
+      return content::PRESENTATION_CONNECTION_STATE_CONNECTING;
     case PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CONNECTED:
       return content::PRESENTATION_CONNECTION_STATE_CONNECTED;
     case PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED:

@@ -35,7 +35,6 @@ namespace media_router {
 class MediaRoute;
 class MediaSinksObserver;
 class PresentationFrameManager;
-class PresentationSessionStateObserver;
 
 // Implementation of PresentationServiceDelegate that interfaces an
 // instance of WebContents with the Chrome Media Router. It uses the Media
