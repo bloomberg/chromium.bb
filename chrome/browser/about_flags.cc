@@ -1841,11 +1841,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin,
      SINGLE_VALUE_TYPE(switches::kTrySupportedChannelLayouts)},
 #endif
-    {"emphasize-titles-in-omnibox-dropdown",
-     IDS_FLAGS_EMPHASIZE_TITLES_IN_OMNIBOX_DROPDOWN_NAME,
-     IDS_FLAGS_EMPHASIZE_TITLES_IN_OMNIBOX_DROPDOWN_DESCRIPTION,
-     kOsAll,
-     SINGLE_VALUE_TYPE(switches::kEmphasizeTitlesInOmniboxDropdown)},
 #if defined(ENABLE_WEBRTC)
     {"enable-webrtc-dtls12",
      IDS_FLAGS_WEBRTC_DTLS12_NAME,

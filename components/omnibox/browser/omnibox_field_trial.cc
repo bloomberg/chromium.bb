@@ -488,6 +488,31 @@ bool OmniboxFieldTrial::HQPAllowDupMatchesForScoring() {
       kHQPAllowDupMatchesForScoringRule) == "true";
 }
 
+OmniboxFieldTrial::EmphasizeTitlesCondition
+OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
+    metrics::OmniboxInputType::Type input_type) {
+  // Look up the parameter named kEmphasizeTitlesRule + ":" + input_type,
+  // find its value, and return that value as an enum.  If the parameter
+  // isn't redefined, fall back to the generic rule kEmphasizeTitlesRule + ":*"
+  std::string value_str(variations::GetVariationParamValue(
+      kBundledExperimentFieldTrialName,
+      std::string(kEmphasizeTitlesRule) + "_" +
+      base::IntToString(static_cast<int>(input_type))));
+  if (value_str.empty()) {
+    value_str = variations::GetVariationParamValue(
+        kBundledExperimentFieldTrialName,
+        std::string(kEmphasizeTitlesRule) + "_*");
+  }
+  if (value_str.empty())
+    return EMPHASIZE_NEVER;
+  // This is a best-effort conversion; we trust the hand-crafted parameters
+  // downloaded from the server to be perfect.  There's no need for handle
+  // errors smartly.
+  int value;
+  base::StringToInt(value_str, &value);
+  return static_cast<EmphasizeTitlesCondition>(value);
+}
+
 const char OmniboxFieldTrial::kBundledExperimentFieldTrialName[] =
     "OmniboxBundledExperimentV1";
 const char OmniboxFieldTrial::kDisableProvidersRule[] = "DisableProviders";
@@ -528,6 +553,7 @@ const char OmniboxFieldTrial::kKeywordScoreForSufficientlyCompleteMatchRule[] =
     "KeywordScoreForSufficientlyCompleteMatch";
 const char OmniboxFieldTrial::kHQPAllowDupMatchesForScoringRule[] =
     "HQPAllowDupMatchesForScoring";
+const char OmniboxFieldTrial::kEmphasizeTitlesRule[] = "EmphasizeTitles";
 
 const char OmniboxFieldTrial::kHUPNewScoringEnabledParam[] =
     "HUPExperimentalScoringEnabled";

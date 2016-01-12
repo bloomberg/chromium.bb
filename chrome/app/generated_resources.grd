@@ -6980,12 +6980,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- Omnibox -->
-      <message name="IDS_FLAGS_EMPHASIZE_TITLES_IN_OMNIBOX_DROPDOWN_NAME" desc="Name for the flag that causes the omnibox dropdown to emphasize the titles of URLs">
-        Emphasize titles in the omnibox dropdown
-      </message>
-      <message name="IDS_FLAGS_EMPHASIZE_TITLES_IN_OMNIBOX_DROPDOWN_DESCRIPTION" desc="Description for the flag that causes the omnibox dropdown to emphasize the titles of URLs">
-        Causes the omnibox dropdown to sometimes display suggestion titles more prominently than URLs.
-      </message>
       <if expr="not use_titlecase">
         <message name="IDS_PASTE_AND_GO" desc="The text label of the Paste And Go menu item when the clipboard contains a URL">
           Pa&amp;ste and go

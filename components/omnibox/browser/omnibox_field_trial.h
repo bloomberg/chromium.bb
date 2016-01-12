@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
+#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
 
 namespace base {
@@ -100,6 +101,15 @@ class OmniboxFieldTrial {
   // specified type should have their relevance score multiplied by the
   // given number.  Omitted types are assumed to have multipliers of 1.0.
   typedef std::map<AutocompleteMatchType::Type, float> DemotionMultipliers;
+
+  // Do not change these values as they need to be in sync with values
+  // specified in experiment configs on the variations server.
+  enum EmphasizeTitlesCondition {
+    EMPHASIZE_WHEN_NONEMPTY = 0,
+    EMPHASIZE_WHEN_TITLE_MATCHES = 1,
+    EMPHASIZE_WHEN_ONLY_TITLE_MATCHES = 2,
+    EMPHASIZE_NEVER = 3
+  };
 
   // Activates all dynamic field trials.  The main difference between
   // the autocomplete dynamic and static field trials is that the former
@@ -365,6 +375,17 @@ class OmniboxFieldTrial {
   static bool HQPAllowDupMatchesForScoring();
 
   // ---------------------------------------------------------
+  // For the EmphasizeTitles experiment that's part of the bundled omnibox
+  // field trial.
+
+  // Returns the conditions under which the UI code should display the title
+  // of a URL more prominently than the URL for an input of type |input_type|.
+  // Normally the URL is displayed more prominently.  Returns NEVER_EMPHASIZE
+  // if the experiment isn't active.
+  static EmphasizeTitlesCondition GetEmphasizeTitlesConditionForInput(
+      metrics::OmniboxInputType::Type input_type);
+
+  // ---------------------------------------------------------
   // Exposed publicly for the sake of unittests.
   static const char kBundledExperimentFieldTrialName[];
   // Rule names used by the bundled experiment.
@@ -392,6 +413,7 @@ class OmniboxFieldTrial {
   static const char kKeywordRequiresPrefixMatchRule[];
   static const char kKeywordScoreForSufficientlyCompleteMatchRule[];
   static const char kHQPAllowDupMatchesForScoringRule[];
+  static const char kEmphasizeTitlesRule[];
 
   // Parameter names used by the HUP new scoring experiments.
   static const char kHUPNewScoringEnabledParam[];

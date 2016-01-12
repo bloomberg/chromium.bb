@@ -173,13 +173,29 @@ void AutocompleteResult::AppendMatches(const AutocompleteInput& input,
               i.description);
 #endif
     matches_.push_back(i);
-    if (!AutocompleteMatch::IsSearchType(i.type) && !i.description.empty() &&
-        base::CommandLine::ForCurrentProcess()->
-            HasSwitch(switches::kEmphasizeTitlesInOmniboxDropdown) &&
-        ((input.type() == metrics::OmniboxInputType::QUERY) ||
-         (input.type() == metrics::OmniboxInputType::FORCED_QUERY)) &&
-        AutocompleteMatch::HasMatchStyle(i.description_class)) {
-      matches_.back().swap_contents_and_description = true;
+    if (!AutocompleteMatch::IsSearchType(i.type)) {
+      const OmniboxFieldTrial::EmphasizeTitlesCondition condition(
+          OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(input.type()));
+      bool emphasize = false;
+      switch (condition) {
+        case OmniboxFieldTrial::EMPHASIZE_WHEN_NONEMPTY:
+          emphasize = !i.description.empty();
+          break;
+        case OmniboxFieldTrial::EMPHASIZE_WHEN_TITLE_MATCHES:
+          emphasize = !i.description.empty() &&
+              AutocompleteMatch::HasMatchStyle(i.description_class);
+          break;
+        case OmniboxFieldTrial::EMPHASIZE_WHEN_ONLY_TITLE_MATCHES:
+          emphasize = !i.description.empty() &&
+              AutocompleteMatch::HasMatchStyle(i.description_class) &&
+              !AutocompleteMatch::HasMatchStyle(i.contents_class);
+          break;
+        case OmniboxFieldTrial::EMPHASIZE_NEVER:
+          break;
+        default:
+          NOTREACHED();
+      }
+      matches_.back().swap_contents_and_description = emphasize;
     }
   }
   default_match_ = end();
