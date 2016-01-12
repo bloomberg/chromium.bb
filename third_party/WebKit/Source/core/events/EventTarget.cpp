@@ -52,6 +52,7 @@ namespace {
 void setDefaultEventListenerOptionsLegacy(EventListenerOptions& options, bool useCapture)
 {
     options.setCapture(useCapture);
+    options.setPassive(false);
 }
 
 void setDefaultEventListenerOptions(EventListenerOptions& options)
@@ -63,6 +64,8 @@ void setDefaultEventListenerOptions(EventListenerOptions& options)
     // capture is true; with the setting on capture is false.
     if (!options.hasCapture())
         options.setCapture(!RuntimeEnabledFeatures::eventListenerOptionsEnabled());
+    if (!options.hasPassive())
+        options.setPassive(false);
 }
 
 } // namespace
@@ -428,11 +431,15 @@ void EventTarget::fireEventListeners(Event* event, EventTargetData* d, EventList
         if (!context)
             break;
 
+        event->setHandlingPassive(registeredListener.passive);
+
         InspectorInstrumentationCookie cookie = InspectorInstrumentation::willHandleEvent(this, event, registeredListener.listener.get(), registeredListener.useCapture);
 
         // To match Mozilla, the AT_TARGET phase fires both capturing and bubbling
         // event listeners, even though that violates some versions of the DOM spec.
         registeredListener.listener->handleEvent(context, event);
+        event->setHandlingPassive(false);
+
         RELEASE_ASSERT(i <= size);
 
         InspectorInstrumentation::didHandleEvent(cookie);

@@ -35,6 +35,7 @@ public:
     RegisteredEventListener(PassRefPtrWillBeRawPtr<EventListener> listener, const EventListenerOptions& options)
         : listener(listener)
         , useCapture(options.capture())
+        , passive(options.passive())
     {
     }
 
@@ -47,11 +48,13 @@ public:
     {
         EventListenerOptions result;
         result.setCapture(useCapture);
+        result.setPassive(passive);
         return result;
     }
 
     RefPtrWillBeMember<EventListener> listener;
     unsigned useCapture : 1;
+    unsigned passive : 1;
 };
 
 inline bool operator==(const RegisteredEventListener& a, const RegisteredEventListener& b)
@@ -59,7 +62,7 @@ inline bool operator==(const RegisteredEventListener& a, const RegisteredEventLi
 
     ASSERT(a.listener);
     ASSERT(b.listener);
-    return *a.listener == *b.listener && a.useCapture == b.useCapture;
+    return *a.listener == *b.listener && a.useCapture == b.useCapture && a.passive == b.passive;
 }
 
 } // namespace blink

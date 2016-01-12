@@ -11,4 +11,5 @@ dictionary EventListenerOptions {
     // whether it was set manually or by default. See EventTarget.cpp
     // where it is populated. crbug.com/543685
     [RuntimeEnabled=EventListenerOptions] boolean capture;
+    [RuntimeEnabled=PassiveEventListeners] boolean passive;
 };

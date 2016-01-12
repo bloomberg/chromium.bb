@@ -54,6 +54,7 @@ Event::Event(const AtomicString& eventType, bool canBubbleArg, bool cancelableAr
     , m_defaultHandled(false)
     , m_cancelBubble(false)
     , m_isTrusted(false)
+    , m_handlingPassive(false)
     , m_eventPhase(0)
     , m_currentTarget(nullptr)
     , m_createTime(convertSecondsToDOMTimeStamp(currentTime()))
@@ -177,6 +178,19 @@ bool Event::isBeforeTextInsertedEvent() const
 bool Event::isBeforeUnloadEvent() const
 {
     return false;
+}
+
+void Event::preventDefault()
+{
+    if (m_handlingPassive) {
+        const LocalDOMWindow* window = m_currentTarget ? m_currentTarget->toDOMWindow() : 0;
+        if (window)
+            window->printErrorMessage("Unable to preventDefault inside passive event listener invocation.");
+        return;
+    }
+
+    if (m_cancelable)
+        m_defaultPrevented = true;
 }
 
 void Event::setTarget(PassRefPtrWillBeRawPtr<EventTarget> target)

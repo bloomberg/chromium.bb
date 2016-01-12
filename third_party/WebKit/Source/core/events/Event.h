@@ -169,11 +169,7 @@ public:
     bool immediatePropagationStopped() const { return m_immediatePropagationStopped; }
 
     bool defaultPrevented() const { return m_defaultPrevented; }
-    virtual void preventDefault()
-    {
-        if (m_cancelable)
-            m_defaultPrevented = true;
-    }
+    virtual void preventDefault();
     void setDefaultPrevented(bool defaultPrevented) { m_defaultPrevented = defaultPrevented; }
 
     bool defaultHandled() const { return m_defaultHandled; }
@@ -201,6 +197,8 @@ public:
     bool isTrusted() const { return m_isTrusted; }
     void setTrusted(bool value) { m_isTrusted = value; }
 
+    void setHandlingPassive(bool value) { m_handlingPassive = value; }
+
     DECLARE_VIRTUAL_TRACE();
 
 protected:
@@ -225,6 +223,7 @@ private:
     unsigned m_defaultHandled:1;
     unsigned m_cancelBubble:1;
     unsigned m_isTrusted : 1;
+    unsigned m_handlingPassive : 1;
 
     unsigned short m_eventPhase;
     RefPtrWillBeMember<EventTarget> m_currentTarget;
