@@ -891,7 +891,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     RefPtrWillBeRawPtr<Document> document = toLocalFrame(webViewImpl->page()->mainFrame())->document();
     RefPtrWillBeRawPtr<WheelEvent> event = WheelEvent::create(FloatPoint(1, 3), FloatPoint(5, 10),
         WheelEvent::DOM_DELTA_PAGE, document.get()->domWindow(), IntPoint(2, 6), IntPoint(10, 30),
-        PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */, true, Event::RailsModeHorizontal);
+        PlatformEvent::CtrlKey, 0, 0, true, -1 /* null plugin id */, true /* hasPreciseScrollingDeltas */, Event::RailsModeHorizontal);
     WebMouseWheelEventBuilder webMouseWheel(toLocalFrame(webViewImpl->page()->mainFrame())->view(), document.get()->layoutView(), *event);
     EXPECT_EQ(1, webMouseWheel.wheelTicksX);
     EXPECT_EQ(3, webMouseWheel.wheelTicksY);
@@ -905,6 +905,7 @@ TEST(WebInputEventConversionTest, WebMouseWheelEventBuilder)
     EXPECT_EQ(WebInputEvent::ControlKey, webMouseWheel.modifiers);
     EXPECT_TRUE(webMouseWheel.canScroll);
     EXPECT_EQ(WebInputEvent::RailsModeHorizontal, webMouseWheel.railsMode);
+    EXPECT_TRUE(webMouseWheel.hasPreciseScrollingDeltas);
 }
 
 TEST(WebInputEventConversionTest, PlatformWheelEventBuilder)

@@ -560,6 +560,7 @@ WebMouseWheelEventBuilder::WebMouseWheelEventBuilder(const Widget* widget, const
     canScroll = event.canScroll();
     resendingPluginId = event.resendingPluginId();
     railsMode = static_cast<RailsMode>(event.railsMode());
+    hasPreciseScrollingDeltas = event.hasPreciseScrollingDeltas();
 }
 
 WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event)
