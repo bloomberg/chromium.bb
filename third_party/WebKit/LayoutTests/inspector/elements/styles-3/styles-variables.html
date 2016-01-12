@@ -28,7 +28,7 @@ function test()
     function step1(node)
     {
         InspectorTest.addResult("==== Computed style for ID1 ====");
-        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.dumpSelectedElementStyles(false, false);
         InspectorTest.cssModel.computedStylePromise(node.id).then(
             function(style) {
                 InspectorTest.addResult("value of --a: " + style.get("--a"));
@@ -39,7 +39,7 @@ function test()
     function step2(node)
     {
         InspectorTest.addResult("==== Computed style for ID2 ====");
-        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.dumpSelectedElementStyles(false, false);
         InspectorTest.cssModel.computedStylePromise(node.id).then(
             function(style) {
                 InspectorTest.addResult("value of --b: " + style.get("--b"));
@@ -50,7 +50,7 @@ function test()
     function step3(node)
     {
         InspectorTest.addResult("==== Computed style for ID3 ====");
-        InspectorTest.dumpSelectedElementStyles(false, true);
+        InspectorTest.dumpSelectedElementStyles(false, false);
         InspectorTest.cssModel.computedStylePromise(node.id).then(
             function(style) {
                 InspectorTest.addResult("value of --a: " + style.get("--a"));

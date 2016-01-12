@@ -709,29 +709,24 @@ void CSSParserImpl::consumeDeclaration(CSSParserTokenRange range, StyleRule::Typ
             declarationValueEnd = last;
         }
     }
+
+    size_t propertiesCount = m_parsedProperties.size();
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && unresolvedProperty == CSSPropertyInvalid && CSSVariableParser::isValidVariableName(token)) {
         AtomicString variableName = token.value();
         consumeVariableValue(range.makeSubRange(&range.peek(), declarationValueEnd), variableName, important);
-        return;
     }
 
     if (important && (ruleType == StyleRule::FontFace || ruleType == StyleRule::Keyframe))
         return;
 
+    if (unresolvedProperty != CSSPropertyInvalid)
+        consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
+
     if (m_observerWrapper && (ruleType == StyleRule::Style || ruleType == StyleRule::Keyframe)) {
-        size_t propertiesCount = m_parsedProperties.size();
-        if (unresolvedProperty != CSSPropertyInvalid)
-            consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
         m_observerWrapper->observer().observeProperty(
             m_observerWrapper->startOffset(rangeCopy), m_observerWrapper->endOffset(rangeCopy),
             important, m_parsedProperties.size() != propertiesCount);
-        return;
     }
-
-    if (unresolvedProperty == CSSPropertyInvalid)
-        return;
-
-    consumeDeclarationValue(range.makeSubRange(&range.peek(), declarationValueEnd), unresolvedProperty, important, ruleType);
 }
 
 void CSSParserImpl::consumeVariableValue(CSSParserTokenRange range, const AtomicString& variableName, bool important)
