@@ -45,6 +45,7 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
     if (rootLayoutObject->hasOverflowClip()) {
         LayoutBox* rootLayoutBox = toLayoutBox(rootLayoutObject);
         LayoutRect clipRect(LayoutPoint(), LayoutSize(rootLayoutBox->layer()->size()));
+        m_observer->applyRootMargin(clipRect);
         rootLayoutBox->flipForWritingMode(rect);
         rect.intersect(clipRect);
         rootLayoutBox->flipForWritingMode(rect);
@@ -57,12 +58,14 @@ void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry)
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
     if (rootElement == rootElement->document().documentElement()) {
         geometry.rootRect = LayoutRect(rootElement->document().view()->visibleContentRect());
+        m_observer->applyRootMargin(geometry.rootRect);
         geometry.intersectionRect.intersect(geometry.rootRect);
     } else {
         if (rootLayoutObject->isBox())
             geometry.rootRect = LayoutRect(toLayoutBox(rootLayoutObject)->absoluteContentBox());
         else
             geometry.rootRect = LayoutRect(rootLayoutObject->absoluteBoundingBoxRect());
+        m_observer->applyRootMargin(geometry.rootRect);
     }
 
     LayoutPoint scrollPosition(rootElement->document().view()->scrollPosition());

@@ -8,5 +8,6 @@
     RuntimeEnabled=IntersectionObserver
 ] dictionary IntersectionObserverInit {
     Element? root;
+    DOMString rootMargin;
     (double or double[]) threshold = 0;
 };

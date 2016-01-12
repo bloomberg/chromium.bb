@@ -34,9 +34,15 @@ public:
 
     Element* root() { return m_root.get(); }
     LayoutObject* rootLayoutObject();
+    bool hasPercentMargin() const;
+    const Length& topMargin() const { return m_topMargin; }
+    const Length& rightMargin() const { return m_rightMargin; }
+    const Length& bottomMargin() const { return m_bottomMargin; }
+    const Length& leftMargin() const { return m_leftMargin; }
     bool isDescendantOfRoot(const Element*) const;
     void computeIntersectionObservations(double timestamp);
     void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
+    void applyRootMargin(LayoutRect&) const;
     unsigned firstThresholdGreaterThan(float ratio) const;
     void deliver();
     void setActive(bool);
@@ -47,7 +53,7 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit IntersectionObserver(IntersectionObserverCallback&, Element&, const Vector<float>& thresholds);
+    explicit IntersectionObserver(IntersectionObserverCallback&, Element&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
 
     void checkRootAndDetachIfNeeded();
 
@@ -56,6 +62,10 @@ private:
     HeapHashSet<WeakMember<IntersectionObservation>> m_observations;
     HeapVector<Member<IntersectionObserverEntry>> m_entries;
     Vector<float> m_thresholds;
+    Length m_topMargin;
+    Length m_rightMargin;
+    Length m_bottomMargin;
+    Length m_leftMargin;
 };
 
 } // namespace blink
