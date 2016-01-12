@@ -179,7 +179,8 @@
       {
         "args": [
           "--enable-browser-side-navigation",
-          "--test-launcher-filter-file=src/testing/buildbot/filters/browser-side-navigation.linux.browser_tests.filter"
+          "--test-launcher-filter-file=src/testing/buildbot/filters/browser-side-navigation.linux.browser_tests.filter",
+          "--test-launcher-retry-limit=6"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
