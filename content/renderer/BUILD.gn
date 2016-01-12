@@ -57,7 +57,7 @@ source_set("renderer") {
     "//media",
     "//media/blink",
     "//media/midi",
-    "//mojo/common:url_type_converters",
+    "//mojo/common",
     "//mojo/converters/geometry",
     "//mojo/environment:chromium",
     "//mojo/public/cpp/bindings",
