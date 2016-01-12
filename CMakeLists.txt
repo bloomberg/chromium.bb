@@ -11,6 +11,14 @@ include("${CMAKE_CURRENT_SOURCE_DIR}/build/msvc_runtime.cmake")
 
 set(LIBWEBM_SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 
+# Test configuration flags. Defined here for visibility.
+option(ENABLE_TESTS "Enables tests." OFF)
+set(GTEST_SRC_DIR "${LIBWEBM_SRC_DIR}/../googletest" CACHE PATH
+    "Path to Googletest git repository.")
+
+# This directory is where libwebm will build googletest dependencies.
+set(GTEST_BUILD_DIR "${CMAKE_BINARY_DIR}/googletest_build")
+
 # Libwebm section.
 add_library(webm STATIC
             "${LIBWEBM_SRC_DIR}/mkvmuxer.cpp"
@@ -65,3 +73,21 @@ add_executable(webm2pes
                "${LIBWEBM_SRC_DIR}/webm2pes.h"
                "${LIBWEBM_SRC_DIR}/webm2pes_main.cc")
 target_link_libraries(webm2pes LINK_PUBLIC webm)
+
+# tests section.
+if (ENABLE_TESTS)
+  add_subdirectory("${GTEST_SRC_DIR}" "${GTEST_BUILD_DIR}")
+  include_directories("${GTEST_SRC_DIR}/googletest/include")
+
+  add_executable(muxer_tests
+                 "${LIBWEBM_SRC_DIR}/testing/muxer_tests.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.h")
+  target_link_libraries(muxer_tests LINK_PUBLIC webm gtest)
+
+  add_executable(parser_tests
+                 "${LIBWEBM_SRC_DIR}/testing/parser_tests.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.h")
+  target_link_libraries(parser_tests LINK_PUBLIC webm gtest)
+endif (ENABLE_TESTS)

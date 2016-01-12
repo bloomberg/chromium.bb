@@ -55,3 +55,28 @@ $ cmake path/to/libwebm -DCMAKE_BUILD_TYPE=relwithdebinfo
 
 And your standard debug build will be produced using:
 $ cmake path/to/libwebm -DCMAKE_BUILD_TYPE=debug
+
+
+Tests
+
+To enable libwebm tests add -DENABLE_TESTS=ON CMake generation command line. For
+example:
+
+$ cmake path/to/libwebm -G Xcode -DENABLE_TESTS=ON
+
+Libwebm tests depend on googletest. By default googletest is expected to be a
+sibling directory of the Libwebm repository. To change that, update your CMake
+command to be similar to the following:
+
+$ cmake path/to/libwebm -G Xcode -DENABLE_TESTS=ON \
+  -DGTEST_SRC_DIR=/path/to/googletest
+
+The tests rely upon the LIBWEBM_TEST_DATA_PATH environment variable to locate
+test input. The following example demonstrates running the muxer tests from the
+build directory:
+
+$ LIBWEBM_TEST_DATA_PATH=path/to/libwebm/testing/testdata ./muxer_tests
+
+Note: Libwebm Googletest integration was built with googletest at git revision
+      ddb8012eb48bc203aa93dcc2b22c1db516302b29.
+
