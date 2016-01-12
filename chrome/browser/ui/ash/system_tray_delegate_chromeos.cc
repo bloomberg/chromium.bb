@@ -198,7 +198,7 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
       have_session_length_limit_(false),
       should_run_bluetooth_discovery_(false),
       session_started_(false),
-      cast_config_delegate_(CreateCastConfigDelegate()),
+      cast_config_delegate_(nullptr),
       networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
       volume_control_delegate_(new VolumeController()),
       vpn_delegate_(new VPNDelegateChromeOS),
@@ -789,8 +789,9 @@ void SystemTrayDelegateChromeOS::ChangeProxySettings() {
   LoginDisplayHostImpl::default_host()->OpenProxySettings();
 }
 
-ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate()
-    const {
+ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {
+  if (!cast_config_delegate_)
+    cast_config_delegate_ = CreateCastConfigDelegate();
   return cast_config_delegate_.get();
 }
 

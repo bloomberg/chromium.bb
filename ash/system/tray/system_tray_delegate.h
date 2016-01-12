@@ -284,7 +284,7 @@ class ASH_EXPORT SystemTrayDelegate {
   virtual void ChangeProxySettings();
 
   // Returns CastConfigDelegate. May return nullptr.
-  virtual CastConfigDelegate* GetCastConfigDelegate() const;
+  virtual CastConfigDelegate* GetCastConfigDelegate();
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;
