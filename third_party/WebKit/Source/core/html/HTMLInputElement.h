@@ -112,7 +112,7 @@ public:
 
     String value() const override;
     void setValue(const String&, ExceptionState&, TextFieldEventBehavior = DispatchNoEvent);
-    void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
+    void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent) override;
     void setValueForUser(const String&);
     // Checks if the specified string would be a valid value.
     // We should not call this for types with no string value such as CHECKBOX and RADIO.

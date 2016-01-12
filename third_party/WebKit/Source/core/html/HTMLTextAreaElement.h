@@ -43,7 +43,7 @@ public:
     bool shouldWrapText() const { return m_wrap != NoWrap; }
 
     String value() const override;
-    void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent);
+    void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent) override;
     String defaultValue() const;
     void setDefaultValue(const String&);
     int textLength() const { return value().length(); }

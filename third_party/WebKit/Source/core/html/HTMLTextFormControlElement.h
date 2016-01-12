@@ -89,6 +89,7 @@ public:
     void dispatchFormControlChangeEvent() final;
 
     virtual String value() const = 0;
+    virtual void setValue(const String&, TextFieldEventBehavior = DispatchNoEvent) = 0;
 
     HTMLElement* innerEditorElement() const;
 

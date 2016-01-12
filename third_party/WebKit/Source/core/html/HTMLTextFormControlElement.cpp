@@ -235,8 +235,7 @@ void HTMLTextFormControlElement::setRangeText(const String& replacement, unsigne
     else
         text.insert(replacement, start);
 
-    setInnerEditorValue(text);
-    subtreeHasChanged();
+    setValue(text, TextFieldEventBehavior::DispatchNoEvent);
 
     if (selectionMode == "select") {
         newSelectionStart = start;
