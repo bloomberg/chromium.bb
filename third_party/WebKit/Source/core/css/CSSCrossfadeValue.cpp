@@ -28,6 +28,7 @@
 #include "core/css/CSSImageValue.h"
 #include "core/layout/LayoutObject.h"
 #include "core/style/StyleFetchedImage.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 #include "platform/graphics/CrossfadeGeneratedImage.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -215,7 +216,18 @@ PassRefPtr<Image> CSSCrossfadeValue::image(const LayoutObject* layoutObject, con
     if (!fromImage || !toImage)
         return Image::nullImage();
 
-    m_generatedImage = CrossfadeGeneratedImage::create(fromImage, toImage, m_percentageValue->getFloatValue(), fixedSize(layoutObject), size);
+    RefPtr<Image> fromImageRef(fromImage);
+    RefPtr<Image> toImageRef(toImage);
+
+    // TODO(davve): Pass along proper URL to the SVG wrappers
+
+    if (fromImage->isSVGImage())
+        fromImageRef = SVGImageForContainer::create(toSVGImage(fromImage), size, 1, KURL());
+
+    if (toImage->isSVGImage())
+        toImageRef = SVGImageForContainer::create(toSVGImage(toImage), size, 1, KURL());
+
+    m_generatedImage = CrossfadeGeneratedImage::create(fromImageRef, toImageRef, m_percentageValue->getFloatValue(), fixedSize(layoutObject), size);
 
     return m_generatedImage.release();
 }

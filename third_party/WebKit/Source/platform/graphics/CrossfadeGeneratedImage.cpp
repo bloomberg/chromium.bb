@@ -30,7 +30,7 @@
 
 namespace blink {
 
-CrossfadeGeneratedImage::CrossfadeGeneratedImage(Image* fromImage, Image* toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
+CrossfadeGeneratedImage::CrossfadeGeneratedImage(PassRefPtr<Image> fromImage, PassRefPtr<Image> toImage, float percentage, IntSize crossfadeSize, const IntSize& size)
     : GeneratedImage(size)
     , m_fromImage(fromImage)
     , m_toImage(toImage)
