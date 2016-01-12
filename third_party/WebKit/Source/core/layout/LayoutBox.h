@@ -301,6 +301,9 @@ public:
         frameRectChanged();
     }
 
+    // This function is in the container's coordinate system, meaning
+    // that it includes the logical top/left offset and the
+    // inline-start/block-start margins.
     LayoutRect frameRect() const { return m_frameRect; }
     void setFrameRect(const LayoutRect& rect)
     {
@@ -310,6 +313,8 @@ public:
         frameRectChanged();
     }
 
+    // Note that those functions have their origin at this box's CSS border box.
+    // As such their location doesn't account for 'top'/'left'.
     LayoutRect borderBoxRect() const { return LayoutRect(LayoutPoint(), size()); }
     LayoutRect paddingBoxRect() const { return LayoutRect(borderLeft(), borderTop(), clientWidth(), clientHeight()); }
     IntRect pixelSnappedBorderBoxRect() const { return IntRect(IntPoint(), m_frameRect.pixelSnappedSize()); }
@@ -963,7 +968,14 @@ private:
 
     void updateBackgroundAttachmentFixedStatusAfterStyleChange();
 
-    // The width/height of the contents + borders + padding.  The x/y location is relative to our container (which is not always our parent).
+    // The CSS border box rect for this box.
+    //
+    // The rectangle is in this box's physical coordinates but with a
+    // flipped block-flow direction (see the COORDINATE SYSTEMS section
+    // in LayoutBoxModelObject). The location is the distance from this
+    // object's border edge to the container's border edge (which is not
+    // always the parent). Thus it includes any logical top/left along
+    // with this box's margins.
     LayoutRect m_frameRect;
 
     // Our intrinsic height, used for min-height: min-content etc. Maintained by
