@@ -55,8 +55,6 @@ class BlinkPlatformImpl : public blink::Platform {
   blink::WebBlobRegistry* blobRegistry() override;
   double currentTimeSeconds() override;
   double monotonicallyIncreasingTimeSeconds() override;
-  void cryptographicallyRandomValues(unsigned char* buffer,
-                                     size_t length) override;
   bool isThreadedCompositingEnabled() override;
   blink::WebCompositorSupport* compositorSupport() override;
   uint32_t getUniqueIdForProcess() override;

@@ -153,11 +153,6 @@ static void histogramEnumerationFunction(const char* name, int sample, int bound
     Platform::current()->histogramEnumeration(name, sample, boundaryValue);
 }
 
-static void cryptographicallyRandomValues(unsigned char* buffer, size_t length)
-{
-    Platform::current()->cryptographicallyRandomValues(buffer, length);
-}
-
 static void callOnMainThreadFunction(WTF::MainThreadFunction function, void* context)
 {
     Platform::current()->mainThread()->taskRunner()->postTask(BLINK_FROM_HERE, new MainThreadTaskRunner(function, context));
@@ -176,7 +171,6 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(platform);
     Platform::initialize(platform);
 
-    WTF::setRandomSource(cryptographicallyRandomValues);
     WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, systemTraceTimeFunction, histogramEnumerationFunction, adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();

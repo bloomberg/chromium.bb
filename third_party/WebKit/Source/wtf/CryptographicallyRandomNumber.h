@@ -32,10 +32,7 @@
 
 namespace WTF {
 
-typedef void (*RandomNumberSource)(unsigned char*, size_t);
-
-// The RandomNumberSource function MUST be threadsafe.
-WTF_EXPORT void setRandomSource(RandomNumberSource);
+WTF_EXPORT void setAlwaysZeroRandomSourceForTesting();
 
 // These functions are threadsafe.
 WTF_EXPORT uint32_t cryptographicallyRandomNumber();

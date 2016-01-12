@@ -89,11 +89,6 @@ WebDiscardableMemory* TestingPlatformSupport::allocateAndLockDiscardableMemory(s
     return !m_config.hasDiscardableMemorySupport ? 0 : new TestingDiscardableMemory(bytes);
 }
 
-void TestingPlatformSupport::cryptographicallyRandomValues(unsigned char* buffer, size_t length)
-{
-    RELEASE_ASSERT_NOT_REACHED();
-}
-
 const unsigned char* TestingPlatformSupport::getTraceCategoryEnabledFlag(const char* categoryName)
 {
     static const unsigned char tracingIsDisabled = 0;

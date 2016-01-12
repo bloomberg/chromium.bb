@@ -48,11 +48,6 @@ static double CurrentTime()
     return 0.0;
 }
 
-static void AlwaysZeroNumberSource(unsigned char* buf, size_t len)
-{
-    memset(buf, '\0', len);
-}
-
 static int runTestSuite(base::TestSuite* testSuite)
 {
     int result = testSuite->Run();
@@ -62,7 +57,7 @@ static int runTestSuite(base::TestSuite* testSuite)
 
 int main(int argc, char** argv)
 {
-    WTF::setRandomSource(AlwaysZeroNumberSource);
+    WTF::setAlwaysZeroRandomSourceForTesting();
     WTF::initialize(CurrentTime, CurrentTime, CurrentTime, nullptr, nullptr);
     WTF::initializeMainThread(0);
 

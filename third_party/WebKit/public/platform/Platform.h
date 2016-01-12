@@ -427,9 +427,6 @@ public:
     // synchronized with ftrace timestamps.
     virtual double systemTraceTime() { return 0; }
 
-    // WebKit clients must implement this funcion if they use cryptographic randomness.
-    virtual void cryptographicallyRandomValues(unsigned char* buffer, size_t length) = 0;
-
     // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
     BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
 

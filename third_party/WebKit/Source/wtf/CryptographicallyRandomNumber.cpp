@@ -17,13 +17,16 @@
 
 #include "wtf/CryptographicallyRandomNumber.h"
 
+#include "base/rand_util.h"
+#include <string.h>
+
 namespace WTF {
 
-static RandomNumberSource sourceFunction;
+static bool s_shouldUseAlwaysZeroRandomSourceForTesting = false;
 
-void setRandomSource(RandomNumberSource source)
+void setAlwaysZeroRandomSourceForTesting()
 {
-    sourceFunction = source;
+    s_shouldUseAlwaysZeroRandomSourceForTesting = true;
 }
 
 uint32_t cryptographicallyRandomNumber()
@@ -35,7 +38,14 @@ uint32_t cryptographicallyRandomNumber()
 
 void cryptographicallyRandomValues(void* buffer, size_t length)
 {
-    (*sourceFunction)(reinterpret_cast<unsigned char*>(buffer), length);
+    if (s_shouldUseAlwaysZeroRandomSourceForTesting) {
+        memset(buffer, '\0', length);
+        return;
+    }
+
+    // This should really be crypto::RandBytes(), but WTF can't depend on crypto. The implementation of
+    // crypto::RandBytes() is just calling base::RandBytes(), so both are actually same.
+    base::RandBytes(buffer, length);
 }
 
 }

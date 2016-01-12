@@ -129,11 +129,6 @@ double BlinkPlatformImpl::monotonicallyIncreasingTimeSeconds() {
       static_cast<double>(base::Time::kMicrosecondsPerSecond);
 }
 
-void BlinkPlatformImpl::cryptographicallyRandomValues(unsigned char* buffer,
-                                                      size_t length) {
-  base::RandBytes(buffer, length);
-}
-
 bool BlinkPlatformImpl::isThreadedCompositingEnabled() {
   return true;
 }

@@ -114,7 +114,6 @@ public:
 
     // Platform:
     WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
-    void cryptographicallyRandomValues(unsigned char* buffer, size_t length) override;
     const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
