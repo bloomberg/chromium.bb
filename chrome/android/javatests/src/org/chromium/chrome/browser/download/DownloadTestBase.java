@@ -5,10 +5,7 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Environment;
 import android.os.Handler;
@@ -104,6 +101,10 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         assertTrue(hasDownload(lastDownload, null));
     }
 
+    public EnqueueHttpGetDownloadCallbackHelper getHttpGetDownloadCallbackHelper() {
+        return mEnqueueHttpGetDownloadCallbackHelper;
+    }
+
     /**
      * Delete all download entries in DownloadManager and delete the corresponding files.
      */
@@ -157,7 +158,21 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         }
     }
 
-    private CallbackHelper mHttpGetDownloadFinished;
+    protected static class EnqueueHttpGetDownloadCallbackHelper extends CallbackHelper {
+        private DownloadInfo mDownloadInfo;
+
+        public void notifyCalled(DownloadInfo downloadInfo, boolean notifyCompleted) {
+            mDownloadInfo = downloadInfo;
+            super.notifyCalled();
+        }
+
+        public DownloadInfo getDownloadInfo() {
+            return mDownloadInfo;
+        }
+    }
+
+    private final EnqueueHttpGetDownloadCallbackHelper mEnqueueHttpGetDownloadCallbackHelper =
+            new EnqueueHttpGetDownloadCallbackHelper();
     private String mLastDownloadFilePath;
     private CallbackHelper mHttpDownloadFinished;
     private DownloadManagerService mSavedDownloadManagerService;
@@ -181,18 +196,6 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         return downloadName.startsWith(fileName) && downloadName.endsWith(extension);
     }
 
-    public boolean waitForGetDownloadToFinish() throws InterruptedException {
-        mLastDownloadFilePath = null;
-        boolean eventReceived = true;
-        try {
-            mHttpGetDownloadFinished.waitForCallback(0);
-        } catch (TimeoutException e) {
-            eventReceived = false;
-        }
-        mHttpGetDownloadFinished = new CallbackHelper();
-        return eventReceived;
-    }
-
     public boolean waitForChromeDownloadToFinish() throws InterruptedException {
         boolean eventReceived = true;
         try {
@@ -202,6 +205,28 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         }
         mHttpDownloadFinished = new CallbackHelper();
         return eventReceived;
+    }
+
+    private class TestDownloadManagerService extends DownloadManagerService {
+        public TestDownloadManagerService(Context context, DownloadNotifier downloadNotifier,
+                Handler handler, long updateDelayInMillis) {
+            super(context, downloadNotifier, handler, updateDelayInMillis);
+        }
+
+        @Override
+        public void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {
+            super.broadcastDownloadSuccessful(downloadInfo);
+            mLastDownloadFilePath = downloadInfo.getFilePath();
+            mHttpDownloadFinished.notifyCalled();
+        }
+
+        @Override
+        public void enqueueDownloadManagerRequest(
+                final DownloadInfo info, boolean notifyCompleted) {
+            // Intentionally do not call super, since DownloadManager does not work in test
+            // environment.
+            mEnqueueHttpGetDownloadCallbackHelper.notifyCalled(info, notifyCompleted);
+        }
     }
 
     @Override
@@ -220,40 +245,14 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
             @Override
             public void run() {
                 mSavedDownloadManagerService = DownloadManagerService.setDownloadManagerService(
-                        new DownloadManagerService(context,
-                                new SystemDownloadNotifier(context), new Handler(),
-                                UPDATE_DELAY_MILLIS) {
-                            @Override
-                            protected void broadcastDownloadSuccessful(DownloadInfo downloadInfo) {
-                                super.broadcastDownloadSuccessful(downloadInfo);
-                                mLastDownloadFilePath = downloadInfo.getFilePath();
-                                mHttpDownloadFinished.notifyCalled();
-                            }
-                        });
+                        new TestDownloadManagerService(context, new SystemDownloadNotifier(context),
+                                new Handler(), UPDATE_DELAY_MILLIS));
                 DownloadController.setDownloadNotificationService(
                         DownloadManagerService.getDownloadManagerService(context));
             }
         });
 
-        mHttpGetDownloadFinished = new CallbackHelper();
         mHttpDownloadFinished = new CallbackHelper();
-
-        context.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                String action = intent.getAction();
-                if (DownloadManager.ACTION_DOWNLOAD_COMPLETE.equals(action)) {
-                    // The name of the download does not seem to always be what we asked for
-                    // (ex: google.png becomes google-23.png). Probably a bug in the Android
-                    // DownloadManager.  Make sure we always retrieve the actual download name.
-                    long downloadId = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1);
-                    assertTrue("No download id with download finished intent", downloadId != -1);
-                    mLastDownloadFilePath = getPathForDownload(downloadId);
-                    assertNotNull("Download path not found", mLastDownloadFilePath);
-                    mHttpGetDownloadFinished.notifyCalled();
-                }
-            }
-        }, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
     }
 
     @Override

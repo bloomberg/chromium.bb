@@ -10,6 +10,7 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -39,39 +40,37 @@ public class DownloadTest extends DownloadTestBase {
         startMainActivityOnBlankPage();
     }
 
-    /**
-     * Bug http://crbug.com/253711
-     *
-     * @MediumTest
-     * @Feature({"Downloads"})
-     */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Downloads"})
     public void testHttpGetDownload() throws Exception {
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
+        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
+        int callCount = callbackHelper.getCallCount();
         singleClickView(currentView);
-        assertTrue(waitForGetDownloadToFinish());
-        checkLastDownload("test.gzip");
+        callbackHelper.waitForCallback(callCount);
+
+        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"),
+                callbackHelper.getDownloadInfo().getUrl());
     }
 
-    /**
-     * Bug http://crbug/286315
-     *
-     * @MediumTest
-     * @Feature({"Downloads"})
-     */
-    @FlakyTest
+    @MediumTest
+    @Feature({"Downloads"})
     public void testDangerousDownload() throws Exception {
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/dangerous.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
         singleClickView(currentView);
         assertPollForInfoBarSize(1);
+
+        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
+        int callCount = callbackHelper.getCallCount();
         assertTrue("OK button wasn't found", InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
-        assertTrue(waitForGetDownloadToFinish());
-        checkLastDownload("test.apk");
+        callbackHelper.waitForCallback(callCount);
+        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.apk"),
+                callbackHelper.getDownloadInfo().getUrl());
     }
 
     /**
@@ -91,27 +90,33 @@ public class DownloadTest extends DownloadTestBase {
         assertTrue(hasDownload("superbo.txt", SUPERBO_CONTENTS));
     }
 
-    /**
-     * Bug 5431234
-     *
-     * @MediumTest
-     * @Feature({"Downloads"})
-     */
-    @FlakyTest
+    /*
+    Empty tab not closed.
+    @MediumTest
+    @Feature({"Downloads"})
+    */
+    @DisabledTest
     public void testCloseEmptyDownloadTab() throws Exception {
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html"));
         waitForFocus();
-        int initialTabCount = getActivity().getCurrentTabModel().getCount();
+        final int initialTabCount = getActivity().getCurrentTabModel().getCount();
         View currentView = getActivity().getActivityTab().getView();
         TouchCommon.longPressView(currentView);
 
+        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
+        int callCount = callbackHelper.getCallCount();
         getInstrumentation().invokeContextMenuAction(getActivity(),
                 R.id.contextmenu_open_in_new_tab, 0);
-        assertTrue(waitForGetDownloadToFinish());
-        checkLastDownload("test.gzip");
+        callbackHelper.waitForCallback(callCount);
+        assertEquals(TestHttpServerClient.getUrl("chrome/test/data/android/download/test.gzip"),
+                callbackHelper.getDownloadInfo().getUrl());
 
-        assertEquals("Did not close new blank tab for download", initialTabCount,
-                getActivity().getCurrentTabModel().getCount());
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getActivity().getCurrentTabModel().getCount() == initialTabCount;
+            }
+        });
     }
 
     /*
@@ -300,9 +305,6 @@ public class DownloadTest extends DownloadTestBase {
         });
     }
 
-    /*
-    Bug http://crbug/481758
-    */
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
     @MediumTest
     @Feature({"Downloads"})
@@ -334,27 +336,22 @@ public class DownloadTest extends DownloadTestBase {
         // Now create two new files by clicking on the infobars.
         assertTrue("OVERWRITE button wasn't found",
                 InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
-
-        // Try to wait for download to finish. This will fail if there is no external Internet
-        // connection. Android's DownloadManager will abort download request when there is
-        // no Internet connection, even though we are connecting to a local host.
-        waitForGetDownloadToFinish();
     }
 
-    /*
     @MediumTest
     @Feature({"Downloads"})
-    Bug http://crbug/253711
-    */
-    @FlakyTest
     public void testUrlEscaping() throws Exception {
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/urlescaping.html"));
         waitForFocus();
         View currentView = getActivity().getActivityTab().getView();
 
+        EnqueueHttpGetDownloadCallbackHelper callbackHelper = getHttpGetDownloadCallbackHelper();
+        int callCount = callbackHelper.getCallCount();
         singleClickView(currentView);
-        assertTrue(waitForGetDownloadToFinish());
-        checkLastDownload("[large]wallpaper.dm");
+        callbackHelper.waitForCallback(callCount);
+        assertEquals(TestHttpServerClient.getUrl(
+                             "chrome/test/data/android/download/[large]wallpaper.dm"),
+                callbackHelper.getDownloadInfo().getUrl());
     }
 
     private void waitForFocus() {
