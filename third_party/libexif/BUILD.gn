@@ -84,16 +84,18 @@ if (!is_linux || is_chromeos) {
   }
 }
 
-# used by libfuzzer fuzzers only atm.
-source_set("libexif_fuzzers") {
-  sources = libexif_sources
+if (is_linux) {
+  # used by libfuzzer fuzzers only atm.
+  source_set("libexif_fuzzers") {
+    sources = libexif_sources
 
-  include_dirs = [ "sources" ]
+    include_dirs = [ "sources" ]
 
-  libs = [ "m" ]
+    libs = [ "m" ]
 
-  configs -= [ "//build/config/compiler:chromium_code" ]
-  configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs -= [ "//build/config/compiler:chromium_code" ]
+    configs += [ "//build/config/compiler:no_chromium_code" ]
 
-  public_configs = [ ":libexif_config" ]
+    public_configs = [ ":libexif_config" ]
+  }
 }
