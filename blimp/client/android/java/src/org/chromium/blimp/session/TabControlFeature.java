@@ -32,6 +32,7 @@ public class TabControlFeature implements View.OnLayoutChangeListener {
      */
     public TabControlFeature(BlimpClientSession blimpClientSession, View contentAreaView) {
         mContentAreaView = contentAreaView;
+        mContentAreaView.addOnLayoutChangeListener(this);
         mDpToPx = mContentAreaView.getContext().getResources().getDisplayMetrics().density;
         mNativeTabControlFeatureAndroidPtr = nativeInit(blimpClientSession);
 
