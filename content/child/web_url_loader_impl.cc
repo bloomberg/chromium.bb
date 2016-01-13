@@ -823,8 +823,10 @@ bool WebURLLoaderImpl::Context::CanHandleDataURLRequestLocally() const {
 
 #if defined(OS_ANDROID)
   // For compatibility reasons on Android we need to expose top-level data://
-  // to the browser.
-  if (request_.frameType() == WebURLRequest::FrameTypeTopLevel)
+  // to the browser. In tests resource_dispatcher_ can be null, and test pages
+  // need to be loaded locally.
+  if (resource_dispatcher_ &&
+      request_.frameType() == WebURLRequest::FrameTypeTopLevel)
     return false;
 #endif
 

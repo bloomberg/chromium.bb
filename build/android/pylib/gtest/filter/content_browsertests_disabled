@@ -30,7 +30,12 @@ DumpAccessibilityTreeTest.AccessibilityModalDialogInIframeOpened
 RendererAccessibilityTest.EventOnObjectNotInTree
 
 # http://crbug.com/187500
-RenderViewImplTest.*
+RenderViewImplTest.ImeComposition
+RenderViewImplTest.InsertCharacters
+RenderViewImplTest.OnHandleKeyboardEvent
+RenderViewImplTest.OnNavStateChanged
+# ZoomLevel is not used on Android
+RenderViewImplTest.ZoomLimit
 RendererAccessibilityTest.SendFullAccessibilityTreeOnReload
 RendererAccessibilityTest.HideAccessibilityObject
 RendererAccessibilityTest.ShowAccessibilityObject
