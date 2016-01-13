@@ -16,9 +16,9 @@ import org.chromium.content.browser.ContentViewCore;
  * This class implements auto scrolling and panning for gamepad left joystick motion event.
  */
 public class JoystickScrollProvider {
-    private static final String TAG = "JoystickScrollProvider";
+    private static final String TAG = "JoystickScroll";
 
-    private static final float JOYSTICK_SCROLL_FACTOR_MULTIPLIER = 25f;
+    private static final float JOYSTICK_SCROLL_FACTOR_MULTIPLIER = 20f;
     // Joystick produces "noise", 0.20f has proven a safe value to
     // remove noise and still allow reasonable input range.
     private static final float JOYSTICK_SCROLL_DEADZONE = 0.2f;
@@ -32,8 +32,6 @@ public class JoystickScrollProvider {
 
     private long mLastAnimateTimeMillis;
 
-    private boolean mAutoScrollActive;
-
     private boolean mEnabled;
 
     private Runnable mScrollRunnable;
@@ -45,7 +43,6 @@ public class JoystickScrollProvider {
      */
     public JoystickScrollProvider(ContentViewCore contentView) {
         mView = contentView;
-        mAutoScrollActive = false;
         mEnabled = true;
     }
 
@@ -72,6 +69,8 @@ public class JoystickScrollProvider {
     public boolean onMotion(MotionEvent event) {
         if (!mEnabled) return false;
         if ((event.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) == 0) return false;
+        Log.d(TAG, "Joystick left stick axis: " + event.getAxisValue(MotionEvent.AXIS_X) + ","
+                + event.getAxisValue(MotionEvent.AXIS_Y));
 
         computeNewScrollVelocity(event);
         if (mScrollVelocityX == 0 && mScrollVelocityY == 0) {
@@ -86,37 +85,28 @@ public class JoystickScrollProvider {
                 }
             };
         }
-        if (!mAutoScrollActive) {
+        if (mLastAnimateTimeMillis == 0) {
             mView.getContainerView().postOnAnimation(mScrollRunnable);
-            mAutoScrollActive = true;
+            mLastAnimateTimeMillis = AnimationUtils.currentAnimationTimeMillis();
         }
         return true;
     }
 
     private void animateScroll() {
-        if (!mEnabled || !mView.getContainerView().hasFocus()) {
-            stop();
+        if (mLastAnimateTimeMillis == 0) {
             return;
         }
-
         final long timeMillis = AnimationUtils.currentAnimationTimeMillis();
-        if (mLastAnimateTimeMillis != 0 && timeMillis > mLastAnimateTimeMillis) {
-            final long dt = timeMillis - mLastAnimateTimeMillis;
-            final float dx = (mScrollVelocityX * dt / 1000.f);
-            final float dy = (mScrollVelocityY * dt / 1000.f);
-            mView.scrollBy(dx, dy, true);
-        }
-        assert mAutoScrollActive;
+        final long dt = timeMillis - mLastAnimateTimeMillis;
+        final float dx = (mScrollVelocityX * dt / 1000.f);
+        final float dy = (mScrollVelocityY * dt / 1000.f);
+        mView.scrollBy(dx, dy, true);
         mLastAnimateTimeMillis = timeMillis;
         mView.getContainerView().postOnAnimation(mScrollRunnable);
     }
 
     private void stop() {
         mLastAnimateTimeMillis = 0;
-        if (mAutoScrollActive) {
-            mAutoScrollActive = false;
-            mView.getContainerView().removeCallbacks(mScrollRunnable);
-        }
     }
 
     /**
@@ -130,7 +120,7 @@ public class JoystickScrollProvider {
                 mScrollFactor = outValue.getDimension(
                         mView.getContext().getResources().getDisplayMetrics());
             } else {
-                Log.w(TAG, "Theme attribute listPreferredItemHeight not defined"
+                Log.d(TAG, "Theme attribute listPreferredItemHeight not defined"
                                 + "switching to fallback scroll factor ");
                 mScrollFactor = SCROLL_FACTOR_FALLBACK
                         * mView.getRenderCoordinates().getDeviceScaleFactor();
@@ -147,10 +137,9 @@ public class JoystickScrollProvider {
      */
     private float getFilteredAxisValue(MotionEvent event, int axis) {
         float axisValWithNoise = event.getAxisValue(axis);
-        if (axisValWithNoise > JOYSTICK_SCROLL_DEADZONE) {
-            return axisValWithNoise - JOYSTICK_SCROLL_DEADZONE;
-        } else if (axisValWithNoise < -JOYSTICK_SCROLL_DEADZONE) {
-            return axisValWithNoise + JOYSTICK_SCROLL_DEADZONE;
+        if (axisValWithNoise > JOYSTICK_SCROLL_DEADZONE
+                || axisValWithNoise < -JOYSTICK_SCROLL_DEADZONE) {
+            return axisValWithNoise;
         }
         return 0f;
     }

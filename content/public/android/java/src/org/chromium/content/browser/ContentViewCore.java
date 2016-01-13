@@ -1576,6 +1576,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
 
     public void onFocusChanged(boolean gainFocus) {
         mImeAdapter.onViewFocusChanged(gainFocus);
+        mJoystickScrollProvider.setEnabled(gainFocus && !mFocusedNodeEditable);
 
         if (gainFocus) {
             restoreSelectionPopupsIfNecessary();

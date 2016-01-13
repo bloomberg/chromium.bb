@@ -13,7 +13,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentViewCore.InternalAccessDelegate;
@@ -263,55 +262,32 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         assertWaitForScroll(false, false);
     }
 
-    /*
     @SmallTest
-    @RerunWithUpdatedContainerView
     @Feature({"Main"})
-    crbug.com/538781
-    */
-    @DisabledTest
     public void testJoystickScroll() throws Throwable {
         scrollTo(0, 0);
         assertWaitForScroll(true, true);
 
-        // No scroll
-        scrollWithJoystick(0f, 0f);
-        assertWaitForScroll(true, true);
-
-        // Verify no scrolling when X axis motion falls in deadzone.
-        // TODO(jdduke): Make the deadzone scroll checks non-racy.
-        scrollWithJoystick(0.2f, 0f);
-        assertWaitForScroll(true, true);
-
-        // Verify no scrolling when Y axis motion falls in deadzone.
-        scrollWithJoystick(0f, 0.2f);
-        assertWaitForScroll(true, true);
-
-        // Vertical scroll to lower-left.
-        scrollWithJoystick(0, 0.5f);
+        // Scroll with X axis in deadzone and the Y axis active.
+        // Only the Y axis should have an effect, arriving at lower-left.
+        scrollWithJoystick(0.1f, 1f);
         assertWaitForScroll(true, false);
-        // Send joystick event at origin to stop scrolling.
-        scrollWithJoystick(0f, 0f);
 
-        // Horizontal scroll to lower-right.
-        scrollWithJoystick(0.5f, 0);
+        // Scroll with Y axis in deadzone and the X axis active.
+        scrollWithJoystick(1f, -0.1f);
         assertWaitForScroll(false, false);
-        scrollWithJoystick(0f, 0f);
 
         // Vertical scroll to upper-right.
         scrollWithJoystick(0, -0.75f);
         assertWaitForScroll(false, true);
-        scrollWithJoystick(0f, 0f);
 
         // Horizontal scroll to top-left.
         scrollWithJoystick(-0.75f, 0);
         assertWaitForScroll(true, true);
-        scrollWithJoystick(0f, 0f);
 
         // Diagonal scroll to bottom-right.
         scrollWithJoystick(1f, 1f);
         assertWaitForScroll(false, false);
-        scrollWithJoystick(0f, 0f);
     }
 
     /**
