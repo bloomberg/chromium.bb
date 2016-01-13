@@ -4,6 +4,7 @@ URL: http://support.googlecode.com/svn/trunk/scripts/googlecode_upload.py
 Version: r681
 Security Critical: no
 License: Apache 2
+License File: NOT_SHIPPED
 
 Description:
 A simple script from Google Code support for automating uploads.

@@ -86,6 +86,9 @@ PRUNE_PATHS = set([
 
     # For testing only, presents on some bots.
     os.path.join('isolate_deps_dir'),
+
+    # Overrides some WebRTC files, same license. Skip this one.
+    os.path.join('third_party', 'webrtc_overrides'),
 ])
 
 # Directories we don't scan through.

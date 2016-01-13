@@ -1,6 +1,5 @@
-Short Name: libcxx
-Name: Descriptive name of the package
-Short Name: Name the package is distributed under (ex. libxml, openssl, etc)
+Name: libcxx
+Short Name: libc++
 Security Critical: Yes
 License: MIT
 License File: LICENSE.TXT

@@ -3,7 +3,7 @@ URL: https://www.sourceware.org/pthreads-win32/
 Version: 2.9.1.0
 Date: 2012-08-21
 License: LGPL 2.1
-License File: COPYING
+License File: NOT_SHIPPED
 Security Critical: no
 
 This library is included only to allow external users of the Native Client SDK
