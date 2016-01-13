@@ -23,6 +23,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "net/cert_net/nss_ocsp.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
@@ -79,10 +80,6 @@ class IOThreadPeer {
       net::HttpNetworkSession::Params* params) {
     IOThread::InitializeNetworkSessionParamsFromGlobals(globals, params);
   }
-
-  static void InitIOThread(IOThread* io_thread) { io_thread->Init(); }
-
-  static void CleanUpIOThread(IOThread* io_thread) { io_thread->CleanUp(); }
 
   static net::HttpAuthPreferences* GetAuthPreferences(IOThread* io_thread) {
     return io_thread->globals()->http_auth_preferences.get();
@@ -624,7 +621,8 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 
  protected:
   IOThreadTestWithIOThreadObject()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
+      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD |
+                       content::TestBrowserThreadBundle::DONT_START_THREADS) {
 #if defined(ENABLE_EXTENSIONS)
     event_router_forwarder_ = new extensions::EventRouterForwarder;
 #endif
@@ -644,21 +642,28 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
     chromeos::DBusThreadManager::Initialize();
     chromeos::NetworkHandler::Initialize();
 #endif
-    io_thread_.reset(new IOThread(&pref_service_, &policy_service_, nullptr,
+    // The IOThread constructor registers the IOThread object with as the
+    // BrowserThreadDelegate for the io thread.
+    io_thread_.reset(new IOThread(&pref_service_, &policy_service_,
+                                         nullptr,
 #if defined(ENABLE_EXTENSIONS)
-                                  event_router_forwarder_.get()
+                                         event_router_forwarder_.get()
 #else
-                                  nullptr
+                                         nullptr
 #endif
-                                      ));
-    // Init must be run on the IO thread.
-    RunOnIOThreadBlocking(
-        base::Bind(&IOThreadPeer::InitIOThread, io_thread_.get()));
+                                             ));
+    // Now that IOThread object is registered starting the threads will
+    // call the IOThread::Init(). This sets up the environment needed for
+    // these tests.
+    thread_bundle_.Start();
   }
 
   ~IOThreadTestWithIOThreadObject() override {
-    RunOnIOThreadBlocking(
-        base::Bind(&IOThreadPeer::CleanUpIOThread, io_thread_.get()));
+#if defined(USE_NSS_CERTS) || defined(OS_IOS)
+    // Reset OCSPIOLoop thread checks, so that the test runner can run
+    // futher tests in the same process.
+    RunOnIOThreadBlocking(base::Bind(&net::ResetNSSHttpIOForTesting));
+#endif
 #if defined(OS_CHROMEOS)
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -675,19 +680,23 @@ class IOThreadTestWithIOThreadObject : public testing::Test {
 
  private:
   base::ShadowingAtExitManager at_exit_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
   TestingPrefServiceSimple pref_service_;
 #if defined(ENABLE_EXTENSIONS)
   scoped_refptr<extensions::EventRouterForwarder> event_router_forwarder_;
 #endif
   policy::PolicyMap policy_map_;
   policy::MockPolicyService policy_service_;
+  // The ordering of the declarations of |io_thread_object_| and
+  // |thread_bundle_| matters. An IOThread cannot be deleted until all of
+  // the globals have been reset to their initial state via CleanUp. As
+  // TestBrowserThreadBundle's destructor is responsible for calling
+  // CleanUp(), the IOThread must be declared before the bundle, so that
+  // the bundle is deleted first.
   scoped_ptr<IOThread> io_thread_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
-// https://crbug.com/570703
-TEST_F(IOThreadTestWithIOThreadObject,
-       DISABLED_UpdateNegotiateDisableCnameLookup) {
+TEST_F(IOThreadTestWithIOThreadObject, UpdateNegotiateDisableCnameLookup) {
   // This test uses the kDisableAuthNegotiateCnameLookup to check that
   // the HttpAuthPreferences are correctly initialized and running on the
   // IO thread. The other preferences are tested by the HttpAuthPreferences
@@ -702,8 +711,7 @@ TEST_F(IOThreadTestWithIOThreadObject,
                  base::Unretained(this), true));
 }
 
-// https://crbug.com/570703
-TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateEnableAuthNegotiatePort) {
+TEST_F(IOThreadTestWithIOThreadObject, UpdateEnableAuthNegotiatePort) {
   pref_service()->SetBoolean(prefs::kEnableAuthNegotiatePort, false);
   RunOnIOThreadBlocking(
       base::Bind(&IOThreadTestWithIOThreadObject::CheckNegotiateEnablePort,
@@ -714,9 +722,7 @@ TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateEnableAuthNegotiatePort) {
                  base::Unretained(this), true));
 }
 
-// Flaky: https://crbug.com/570605.
-// https://crbug.com/570703
-TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateServerWhitelist) {
+TEST_F(IOThreadTestWithIOThreadObject, UpdateServerWhitelist) {
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthServerWhitelist, "xxx");
@@ -730,8 +736,7 @@ TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateServerWhitelist) {
                  base::Unretained(this), true, url));
 }
 
-// https://crbug.com/570703
-TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateDelegateWhitelist) {
+TEST_F(IOThreadTestWithIOThreadObject, UpdateDelegateWhitelist) {
   GURL url("http://test.example.com");
 
   pref_service()->SetString(prefs::kAuthNegotiateDelegateWhitelist, "");
@@ -747,9 +752,7 @@ TEST_F(IOThreadTestWithIOThreadObject, DISABLED_UpdateDelegateWhitelist) {
 
 #if defined(OS_ANDROID)
 // AuthAndroidNegotiateAccountType is only used on Android.
-// https://crbug.com/570703
-TEST_F(IOThreadTestWithIOThreadObject,
-       DISABLED_UpdateAuthAndroidNegotiateAccountType) {
+TEST_F(IOThreadTestWithIOThreadObject, UpdateAuthAndroidNegotiateAccountType) {
   pref_service()->SetString(prefs::kAuthAndroidNegotiateAccountType, "acc1");
   RunOnIOThreadBlocking(base::Bind(
       &IOThreadTestWithIOThreadObject::CheckAuthAndroidNegoitateAccountType,

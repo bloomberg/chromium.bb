@@ -11,12 +11,12 @@
 
 namespace content {
 
-TestBrowserThreadBundle::TestBrowserThreadBundle() {
-  Init(DEFAULT);
-}
+TestBrowserThreadBundle::TestBrowserThreadBundle()
+    : TestBrowserThreadBundle(DEFAULT) {}
 
-TestBrowserThreadBundle::TestBrowserThreadBundle(int options) {
-  Init(options);
+TestBrowserThreadBundle::TestBrowserThreadBundle(int options)
+    : options_(options), threads_started_(false) {
+  Init();
 }
 
 TestBrowserThreadBundle::~TestBrowserThreadBundle() {
@@ -52,67 +52,93 @@ TestBrowserThreadBundle::~TestBrowserThreadBundle() {
   base::RunLoop().RunUntilIdle();
 }
 
-void TestBrowserThreadBundle::Init(int options) {
-  if (options & IO_MAINLOOP) {
+void TestBrowserThreadBundle::Init() {
+  // Check for conflicting options can't have two IO threads.
+  CHECK(!(options_ & IO_MAINLOOP) || !(options_ & REAL_IO_THREAD));
+  // There must be a thread to start to use DONT_START_THREADS
+  CHECK((options_ & ~IO_MAINLOOP) != DONT_START_THREADS);
+
+  if (options_ & IO_MAINLOOP) {
     message_loop_.reset(new base::MessageLoopForIO());
   } else {
     message_loop_.reset(new base::MessageLoopForUI());
   }
 
-  ui_thread_.reset(new TestBrowserThread(BrowserThread::UI,
-                                         message_loop_.get()));
+  ui_thread_.reset(
+      new TestBrowserThread(BrowserThread::UI, message_loop_.get()));
 
-  if (options & REAL_DB_THREAD) {
+  if (options_ & REAL_DB_THREAD) {
     db_thread_.reset(new TestBrowserThread(BrowserThread::DB));
-    db_thread_->Start();
   } else {
-    db_thread_.reset(new TestBrowserThread(BrowserThread::DB,
-                                           message_loop_.get()));
+    db_thread_.reset(
+        new TestBrowserThread(BrowserThread::DB, message_loop_.get()));
   }
 
-  if (options & REAL_FILE_THREAD) {
+  if (options_ & REAL_FILE_THREAD) {
     file_thread_.reset(new TestBrowserThread(BrowserThread::FILE));
-    file_thread_->Start();
   } else {
-    file_thread_.reset(new TestBrowserThread(BrowserThread::FILE,
-                                             message_loop_.get()));
+    file_thread_.reset(
+        new TestBrowserThread(BrowserThread::FILE, message_loop_.get()));
   }
 
-  if (options & REAL_FILE_USER_BLOCKING_THREAD) {
+  if (options_ & REAL_FILE_USER_BLOCKING_THREAD) {
     file_user_blocking_thread_.reset(
         new TestBrowserThread(BrowserThread::FILE_USER_BLOCKING));
-    file_user_blocking_thread_->Start();
   } else {
     file_user_blocking_thread_.reset(
         new TestBrowserThread(BrowserThread::FILE_USER_BLOCKING,
                               message_loop_.get()));
   }
 
-  if (options & REAL_PROCESS_LAUNCHER_THREAD) {
+  if (options_ & REAL_PROCESS_LAUNCHER_THREAD) {
     process_launcher_thread_.reset(
         new TestBrowserThread(BrowserThread::PROCESS_LAUNCHER));
-    process_launcher_thread_->Start();
   } else {
     process_launcher_thread_.reset(
         new TestBrowserThread(BrowserThread::PROCESS_LAUNCHER,
                               message_loop_.get()));
   }
 
-  if (options & REAL_CACHE_THREAD) {
+  if (options_ & REAL_CACHE_THREAD) {
     cache_thread_.reset(new TestBrowserThread(BrowserThread::CACHE));
-    cache_thread_->Start();
   } else {
-    cache_thread_.reset(new TestBrowserThread(BrowserThread::CACHE,
-                                              message_loop_.get()));
+    cache_thread_.reset(
+        new TestBrowserThread(BrowserThread::CACHE, message_loop_.get()));
   }
 
-  if (options & REAL_IO_THREAD) {
+  if (options_ & REAL_IO_THREAD) {
     io_thread_.reset(new TestBrowserThread(BrowserThread::IO));
-    io_thread_->StartIOThread();
   } else {
     io_thread_.reset(
         new TestBrowserThread(BrowserThread::IO, message_loop_.get()));
   }
+
+  if (!(options_ & DONT_START_THREADS))
+    Start();
+}
+
+void TestBrowserThreadBundle::Start() {
+  DCHECK(!threads_started_);
+
+  if (options_ & REAL_DB_THREAD)
+    db_thread_->Start();
+
+  if (options_ & REAL_FILE_THREAD)
+    file_thread_->Start();
+
+  if (options_ & REAL_FILE_USER_BLOCKING_THREAD)
+    file_user_blocking_thread_->Start();
+
+  if (options_ & REAL_PROCESS_LAUNCHER_THREAD)
+    process_launcher_thread_->Start();
+
+  if (options_ & REAL_CACHE_THREAD)
+    cache_thread_->Start();
+
+  if (options_ & REAL_IO_THREAD)
+    io_thread_->StartIOThread();
+
+  threads_started_ = true;
 }
 
 }  // namespace content
