@@ -28,28 +28,61 @@
 
 namespace blink {
 
-/*
- *  The painting of a layer occurs in three distinct phases.  Each phase involves
- *  a recursive descent into the layer's layout objects. The first phase is the background phase.
- *  The backgrounds and borders of all blocks are painted.  Inlines are not painted at all.
- *  Floats must paint above block backgrounds but entirely below inline content that can overlap them.
- *  In the foreground phase, all inlines are fully painted.  Inline replaced elements will get all
- *  three phases invoked on them during this phase.
- */
+//  The painting of a layer occurs in 4 phases, Each involves a recursive descent
+// into the layer's layout objects in painting order:
+//  1. Background phase: backgrounds and borders of all blocks are painted.
+//     Inlines are not painted at all.
+//  2. Float phase: floating objects are painted above block backgrounds but entirely
+//     below inline content that can overlap them.
+//  3. Foreground phase: all inlines are fully painted. Atomic inline elements will
+//     get all 4 phases invoked on them during this phase, as if they were stacking
+//     contexts (see ObjectPainter::paintAsPseudoStackingContext()).
+//  4. Outline phase: outlines are painted over the foreground.
 
 enum PaintPhase {
+    // Background phase
+    //
+    // Paint background of the current object and non-self-painting descendants.
     PaintPhaseBlockBackground = 0,
-    PaintPhaseChildBlockBackground = 1,
-    PaintPhaseChildBlockBackgrounds = 2,
+    //
+    // The following two values are added besides the normal PaintPhaseBlockBackground
+    // to distinguish backgrounds for the object itself and for descendants, because
+    // the two backgrounds are often painted with different scroll offsets and clips.
+    //
+    // Paint background of the current object only.
+    PaintPhaseSelfBlockBackground = 1,
+    // Paint backgrounds of non-self-painting descendants only. The painter should call
+    // each non-self-painting child's paint method by passing paintInfo.forDescendants() which
+    // converts PaintPhaseDescendantsBlockBackgrounds to PaintPhaseBlockBackground.
+    PaintPhaseDescendantBlockBackgrounds = 2,
+
+    // Float phase
     PaintPhaseFloat = 3,
+
+    // Foreground phase
     PaintPhaseForeground = 4,
+
+    // Outline phase
+    //
+    // Paint outline for the current object and non-self-painting descendants.
     PaintPhaseOutline = 5,
-    PaintPhaseChildOutlines = 6,
-    PaintPhaseSelfOutline = 7,
+    //
+    // Similar to the background phase, the following two values are added for painting
+    // outlines of the object itself and for descendants.
+    //
+    // Paint outline for the current object only.
+    PaintPhaseSelfOutline = 6,
+    // Paint outlines of non-self-painting descendants only. The painter should call each
+    // non-self-painting child's paint method by passing paintInfo.forDescendants() which
+    // converts PaintPhaseDescendantsOutliness to PaintPhaseBlockOutline.
+    PaintPhaseDescendantOutlines = 7,
+
+    // The below are auxiliary phases which are used to paint special effects.
     PaintPhaseSelection = 8,
     PaintPhaseTextClip = 9,
     PaintPhaseMask = 10,
     PaintPhaseClippingMask = 11,
+
     PaintPhaseMax = PaintPhaseClippingMask,
     // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
 };

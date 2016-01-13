@@ -19,7 +19,7 @@ BoxClipper::BoxClipper(const LayoutBox& box, const PaintInfo& paintInfo, const L
     , m_paintInfo(paintInfo)
     , m_clipType(DisplayItem::UninitializedType)
 {
-    if (m_paintInfo.phase == PaintPhaseBlockBackground || m_paintInfo.phase == PaintPhaseSelfOutline || m_paintInfo.phase == PaintPhaseMask)
+    if (m_paintInfo.phase == PaintPhaseSelfBlockBackground || m_paintInfo.phase == PaintPhaseSelfOutline || m_paintInfo.phase == PaintPhaseMask)
         return;
 
     bool isControlClip = m_box.hasControlClip();

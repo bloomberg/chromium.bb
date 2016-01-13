@@ -23,13 +23,13 @@ static WTF::String paintPhaseAsDebugString(int paintPhase)
     // Must be kept in sync with PaintPhase.
     switch (paintPhase) {
     case 0: return "PaintPhaseBlockBackground";
-    case 1: return "PaintPhaseChildBlockBackground";
+    case 1: return "PaintPhaseSelfBlockBackground";
     case 2: return "PaintPhaseChildBlockBackgrounds";
     case 3: return "PaintPhaseFloat";
     case 4: return "PaintPhaseForeground";
     case 5: return "PaintPhaseOutline";
-    case 6: return "PaintPhaseChildOutlines";
-    case 7: return "PaintPhaseSelfOutline";
+    case 6: return "PaintPhaseSelfOutline";
+    case 7: return "PaintPhaseChildOutlines";
     case 8: return "PaintPhaseSelection";
     case 9: return "PaintPhaseTextClip";
     case 10: return "PaintPhaseMask";

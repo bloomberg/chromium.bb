@@ -241,10 +241,10 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
 void ObjectPainter::paintInlineChildrenOutlines(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseChildOutlines);
+    ASSERT(paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseDescendantOutlines);
 
     PaintInfo childPaintInfo(paintInfo);
-    childPaintInfo.phase = paintInfo.phase == PaintPhaseChildOutlines ? PaintPhaseOutline : paintInfo.phase;
+    childPaintInfo.phase = paintInfo.phase == PaintPhaseDescendantOutlines ? PaintPhaseOutline : paintInfo.phase;
 
     for (LayoutObject* child = m_layoutObject.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isLayoutInline() && !toLayoutInline(child)->hasSelfPaintingLayer())
@@ -541,10 +541,10 @@ void ObjectPainter::paintAsPseudoStackingContext(const PaintInfo& paintInfo, con
         return;
 
     PaintInfo info(paintInfo);
-    info.phase = preservePhase ? paintInfo.phase : PaintPhaseBlockBackground;
+    info.phase = preservePhase ? paintInfo.phase : PaintPhaseSelfBlockBackground;
     m_layoutObject.paint(info, paintOffset);
     if (!preservePhase) {
-        info.phase = PaintPhaseChildBlockBackgrounds;
+        info.phase = PaintPhaseDescendantBlockBackgrounds;
         m_layoutObject.paint(info, paintOffset);
         info.phase = PaintPhaseFloat;
         m_layoutObject.paint(info, paintOffset);

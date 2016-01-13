@@ -73,6 +73,19 @@ struct CORE_EXPORT PaintInfo {
         , m_globalPaintFlags(copyOtherFieldsFrom.m_globalPaintFlags)
     { }
 
+    // Creates a PaintInfo for painting descendants. See comments about the paint phases
+    // in PaintPhase.h for details.
+    // TODO(wangxianzhu): Actually use this method.
+    PaintInfo forDescendants() const
+    {
+        PaintInfo result(*this);
+        if (phase == PaintPhaseDescendantOutlines)
+            result.phase = PaintPhaseOutline;
+        else if (phase == PaintPhaseDescendantBlockBackgrounds)
+            result.phase = PaintPhaseBlockBackground;
+        return result;
+    }
+
     void updatePaintingRootForChildren(const LayoutObject*);
 
     bool shouldPaintWithinRoot(const LayoutObject*) const;

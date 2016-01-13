@@ -20,7 +20,7 @@ void TableRowPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     paintOutlineForRowIfNeeded(paintInfo, paintOffset);
     for (LayoutTableCell* cell = m_layoutTableRow.firstCell(); cell; cell = cell->nextCell()) {
         // Paint the row background behind the cell.
-        if (paintInfo.phase == PaintPhaseBlockBackground || paintInfo.phase == PaintPhaseChildBlockBackground) {
+        if (paintInfo.phase == PaintPhaseSelfBlockBackground || paintInfo.phase == PaintPhaseBlockBackground) {
             if (m_layoutTableRow.hasBackground())
                 TableCellPainter(*cell).paintBackgroundsBehindCell(paintInfo, paintOffset, &m_layoutTableRow, DisplayItem::TableCellBackgroundFromRow);
         }

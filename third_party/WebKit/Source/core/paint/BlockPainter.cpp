@@ -43,11 +43,11 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
         contentsClipBehavior = SkipContentsClipIfPossible;
 
     if (localPaintInfo.phase == PaintPhaseOutline) {
-        localPaintInfo.phase = PaintPhaseChildOutlines;
-    } else if (localPaintInfo.phase == PaintPhaseChildBlockBackground) {
-        localPaintInfo.phase = PaintPhaseBlockBackground;
+        localPaintInfo.phase = PaintPhaseDescendantOutlines;
+    } else if (localPaintInfo.phase == PaintPhaseBlockBackground) {
+        localPaintInfo.phase = PaintPhaseSelfBlockBackground;
         m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
-        localPaintInfo.phase = PaintPhaseChildBlockBackgrounds;
+        localPaintInfo.phase = PaintPhaseDescendantBlockBackgrounds;
     }
 
     {
@@ -59,7 +59,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
         localPaintInfo.phase = PaintPhaseSelfOutline;
         m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
         localPaintInfo.phase = originalPhase;
-    } else if (originalPhase == PaintPhaseChildBlockBackground) {
+    } else if (originalPhase == PaintPhaseBlockBackground) {
         localPaintInfo.phase = originalPhase;
     }
 
@@ -72,7 +72,7 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
 void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase phase = paintInfo.phase;
-    if (m_layoutBlock.hasOverflowClip() && m_layoutBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseBlockBackground || phase == PaintPhaseChildBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_layoutBlock) && !paintInfo.paintRootBackgroundOnly()) {
+    if (m_layoutBlock.hasOverflowClip() && m_layoutBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseSelfBlockBackground || phase == PaintPhaseBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_layoutBlock) && !paintInfo.paintRootBackgroundOnly()) {
         Optional<ClipRecorder> clipRecorder;
         if (!m_layoutBlock.layer()->isSelfPaintingLayer()) {
             LayoutRect clipRect = m_layoutBlock.borderBoxRect();
@@ -136,7 +136,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     const PaintPhase paintPhase = paintInfo.phase;
 
-    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground)
+    if ((paintPhase == PaintPhaseSelfBlockBackground || paintPhase == PaintPhaseBlockBackground)
         && m_layoutBlock.style()->visibility() == VISIBLE
         && m_layoutBlock.hasBoxDecorationBackground())
         m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
@@ -171,7 +171,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         }
 
         // We're done. We don't bother painting any children.
-        if (paintPhase == PaintPhaseBlockBackground || paintInfo.paintRootBackgroundOnly())
+        if (paintPhase == PaintPhaseSelfBlockBackground || paintInfo.paintRootBackgroundOnly())
             return;
 
         const PaintInfo& contentsPaintInfo = scrolledPaintInfo ? *scrolledPaintInfo : paintInfo;
@@ -231,13 +231,13 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (m_layoutBlock.childrenInline()) {
-        if (paintInfo.phase == PaintPhaseChildOutlines)
+        if (paintInfo.phase == PaintPhaseDescendantOutlines)
             ObjectPainter(m_layoutBlock).paintInlineChildrenOutlines(paintInfo, paintOffset);
         else
             LineBoxListPainter(m_layoutBlock.lineBoxes()).paint(m_layoutBlock, paintInfo, paintOffset);
     } else {
-        PaintPhase newPhase = (paintInfo.phase == PaintPhaseChildOutlines) ? PaintPhaseOutline : paintInfo.phase;
-        newPhase = (newPhase == PaintPhaseChildBlockBackgrounds) ? PaintPhaseChildBlockBackground : newPhase;
+        PaintPhase newPhase = (paintInfo.phase == PaintPhaseDescendantOutlines) ? PaintPhaseOutline : paintInfo.phase;
+        newPhase = (newPhase == PaintPhaseDescendantBlockBackgrounds) ? PaintPhaseBlockBackground : newPhase;
 
         // We don't paint our own background, but we do let the kids paint their backgrounds.
         PaintInfo paintInfoForChild(paintInfo);

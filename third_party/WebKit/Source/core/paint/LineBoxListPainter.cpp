@@ -29,7 +29,7 @@ static void addPDFURLRectsForInlineChildrenRecursively(const LayoutObject& layou
 
 void LineBoxListPainter::paint(const LayoutBoxModelObject& layoutObject, const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
-    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseDescendantOutlines);
 
     // Only paint during the foreground/selection phases.
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseTextClip && paintInfo.phase != PaintPhaseMask)

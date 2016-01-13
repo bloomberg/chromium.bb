@@ -32,7 +32,7 @@ protected:
 
     PaintInfo createPaintInfo(bool usesTextAsClip, bool isPrinting)
     {
-        return PaintInfo(m_context, IntRect(), usesTextAsClip ? PaintPhaseTextClip : PaintPhaseBlockBackground, isPrinting ? GlobalPaintPrinting : GlobalPaintNormalPhase, 0);
+        return PaintInfo(m_context, IntRect(), usesTextAsClip ? PaintPhaseTextClip : PaintPhaseSelfBlockBackground, isPrinting ? GlobalPaintPrinting : GlobalPaintNormalPhase, 0);
     }
 
 private:

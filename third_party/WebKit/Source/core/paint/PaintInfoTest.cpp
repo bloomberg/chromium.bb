@@ -22,7 +22,7 @@ protected:
 
 TEST_F(PaintInfoTest, intersectsCullRect)
 {
-    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(IntRect(0, 0, 1, 1)));
     EXPECT_FALSE(paintInfo.cullRect().intersectsCullRect(IntRect(51, 51, 1, 1)));
@@ -30,7 +30,7 @@ TEST_F(PaintInfoTest, intersectsCullRect)
 
 TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect)
 {
-    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0, 0, 1, 1)));
     EXPECT_TRUE(paintInfo.cullRect().intersectsCullRect(LayoutRect(0.1, 0.1, 0.1, 0.1)));
@@ -38,7 +38,7 @@ TEST_F(PaintInfoTest, intersectsCullRectWithLayoutRect)
 
 TEST_F(PaintInfoTest, intersectsCullRectWithTransform)
 {
-    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 50), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
     AffineTransform transform;
     transform.translate(-2, -2);
 
@@ -48,7 +48,7 @@ TEST_F(PaintInfoTest, intersectsCullRectWithTransform)
 
 TEST_F(PaintInfoTest, updateCullRect)
 {
-    PaintInfo paintInfo(m_context, IntRect(1, 1, 50, 50), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(1, 1, 50, 50), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
     AffineTransform transform;
     transform.translate(1, 1);
     paintInfo.updateCullRect(transform);
@@ -59,7 +59,7 @@ TEST_F(PaintInfoTest, updateCullRect)
 
 TEST_F(PaintInfoTest, intersectsVerticalRange)
 {
-    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsVerticalRange(0, 1));
     EXPECT_FALSE(paintInfo.cullRect().intersectsVerticalRange(100, 101));
@@ -67,7 +67,7 @@ TEST_F(PaintInfoTest, intersectsVerticalRange)
 
 TEST_F(PaintInfoTest, intersectsHorizontalRange)
 {
-    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
+    PaintInfo paintInfo(m_context, IntRect(0, 0, 50, 100), PaintPhaseSelfBlockBackground, GlobalPaintNormalPhase, PaintLayerNoFlag);
 
     EXPECT_TRUE(paintInfo.cullRect().intersectsHorizontalRange(0, 1));
     EXPECT_FALSE(paintInfo.cullRect().intersectsHorizontalRange(50, 51));

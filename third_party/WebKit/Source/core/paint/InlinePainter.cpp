@@ -36,11 +36,11 @@ void InlinePainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOf
     if (paintInfo.phase == PaintPhaseForeground && paintInfo.isPrinting())
         ObjectPainter(m_layoutInline).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
-    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline || paintInfo.phase == PaintPhaseChildOutlines) {
+    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline || paintInfo.phase == PaintPhaseDescendantOutlines) {
         ObjectPainter painter(m_layoutInline);
         if (paintInfo.phase != PaintPhaseSelfOutline)
             painter.paintInlineChildrenOutlines(paintInfo, paintOffset);
-        if (paintInfo.phase != PaintPhaseChildOutlines && !m_layoutInline.isElementContinuation())
+        if (paintInfo.phase != PaintPhaseDescendantOutlines && !m_layoutInline.isElementContinuation())
             painter.paintOutline(paintInfo, paintOffset);
         return;
     }

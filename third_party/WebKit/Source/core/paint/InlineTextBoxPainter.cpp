@@ -58,7 +58,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
     if (!shouldPaintTextBox(paintInfo))
         return;
 
-    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseDescendantOutlines);
 
     LayoutRect logicalVisualOverflow = m_inlineTextBox.logicalOverflowRect();
     LayoutUnit logicalStart = logicalVisualOverflow.x() + (m_inlineTextBox.isHorizontal() ? paintOffset.x() : paintOffset.y());

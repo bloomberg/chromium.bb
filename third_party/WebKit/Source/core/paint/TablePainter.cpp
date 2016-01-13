@@ -20,7 +20,7 @@ namespace blink {
 void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
-    if ((paintPhase == PaintPhaseBlockBackground || paintPhase == PaintPhaseChildBlockBackground) && m_layoutTable.hasBoxDecorationBackground() && m_layoutTable.style()->visibility() == VISIBLE)
+    if ((paintPhase == PaintPhaseSelfBlockBackground || paintPhase == PaintPhaseBlockBackground) && m_layoutTable.hasBoxDecorationBackground() && m_layoutTable.style()->visibility() == VISIBLE)
         paintBoxDecorationBackground(paintInfo, paintOffset);
 
     if (paintPhase == PaintPhaseMask) {
@@ -29,12 +29,12 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     }
 
     // We're done. We don't bother painting any children.
-    if (paintPhase == PaintPhaseBlockBackground)
+    if (paintPhase == PaintPhaseSelfBlockBackground)
         return;
 
     // We don't paint our own background, but we do let the kids paint their backgrounds.
-    if (paintPhase == PaintPhaseChildBlockBackgrounds)
-        paintPhase = PaintPhaseChildBlockBackground;
+    if (paintPhase == PaintPhaseDescendantBlockBackgrounds)
+        paintPhase = PaintPhaseBlockBackground;
 
     PaintInfo info(paintInfo);
     info.phase = paintPhase;
@@ -47,7 +47,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         }
     }
 
-    if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseChildBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
+    if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
         // Using our cached sorted styles, we then do individual passes,
         // painting each style of border from lowest precedence to highest precedence.
         LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();

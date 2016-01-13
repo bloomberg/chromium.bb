@@ -21,7 +21,7 @@ namespace blink {
 
 void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutUnit lineTop, const LayoutUnit lineBottom)
 {
-    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseChildOutlines);
+    ASSERT(paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline && paintInfo.phase != PaintPhaseDescendantOutlines);
 
     LayoutRect overflowRect(m_inlineFlowBox.visualOverflowRect(lineTop, lineBottom));
     m_inlineFlowBox.flipForWritingMode(overflowRect);

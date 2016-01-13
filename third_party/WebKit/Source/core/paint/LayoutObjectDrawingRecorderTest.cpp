@@ -65,25 +65,25 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached)
     rootPaintController().invalidateAll();
     GraphicsContext context(rootPaintController());
     LayoutRect bound = layoutView().viewRect();
-    drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
+    drawNothing(context, layoutView(), PaintPhaseSelfBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
     rootPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 
-    drawNothing(context, layoutView(), PaintPhaseBlockBackground, bound);
+    drawNothing(context, layoutView(), PaintPhaseSelfBlockBackground, bound);
     drawRect(context, layoutView(), PaintPhaseForeground, bound);
 
     EXPECT_DISPLAY_LIST(rootPaintController().newDisplayItemList(), 2,
-        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground))),
+        TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackground))),
         TestDisplayItem(layoutView(), DisplayItem::drawingTypeToCachedDrawingType(DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground))));
 
     rootPaintController().commitNewDisplayItems();
 
     EXPECT_DISPLAY_LIST(rootPaintController().displayItemList(), 2,
-        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseBlockBackground)),
+        TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseSelfBlockBackground)),
         TestDisplayItem(layoutView(), DisplayItem::paintPhaseToDrawingType(PaintPhaseForeground)));
 }
 
