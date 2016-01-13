@@ -122,6 +122,10 @@ bool AUAudioInputStream::Open() {
   // Start by obtaining an AudioOuputUnit using an AUHAL component description.
 
   // Description for the Audio Unit we want to use (AUHAL in this case).
+  // The kAudioUnitSubType_HALOutput audio unit interfaces to any audio device.
+  // The user specifies which audio device to track. The audio unit can do
+  // input from the device as well as output to the device. Bus 0 is used for
+  // the output side, bus 1 is used to get audio input from the device.
   AudioComponentDescription desc = {
       kAudioUnitType_Output,
       kAudioUnitSubType_HALOutput,
@@ -140,7 +144,22 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
+  // Initialize the AUHAL before making any changes or using it. The audio unit
+  // will be initialized once more as last operation in this method but that is
+  // intentional. This approach is based on a comment in the CAPlayThrough
+  // example from Apple, which states that "AUHAL needs to be initialized
+  // *before* anything is done to it".
+  // TODO(henrika): remove this extra call if we are unable to see any positive
+  // effects of it in our UMA stats.
+  result = AudioUnitInitialize(audio_unit_);
+  if (result != noErr) {
+    HandleError(result);
+    return false;
+  }
+
   // Enable IO on the input scope of the Audio Unit.
+  // Note that, these changes must be done *before* setting the AUHAL's
+  // current device.
 
   // After creating the AUHAL object, we must enable IO on the input scope
   // of the Audio Unit to obtain the device input. Input must be explicitly
@@ -188,17 +207,41 @@ bool AUAudioInputStream::Open() {
     return false;
   }
 
-  // Set up the the desired (output) format.
-  // For obtaining input from a device, the device format is always expressed
-  // on the output scope of the AUHAL's Element 1.
-  result = AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
-                                kAudioUnitScope_Output, 1, &format_,
-                                sizeof(format_));
+  // Register the input procedure for the AUHAL.
+  // This procedure will be called when the AUHAL has received new data
+  // from the input device.
+  AURenderCallbackStruct callback;
+  callback.inputProc = InputProc;
+  callback.inputProcRefCon = this;
+  result = AudioUnitSetProperty(
+      audio_unit_, kAudioOutputUnitProperty_SetInputCallback,
+      kAudioUnitScope_Global, 0, &callback, sizeof(callback));
   if (result != noErr) {
     HandleError(result);
     return false;
   }
 
+  // Get the stream format for the selected input device and ensure that the
+  // sample rate of the selected input device matches the desired (given at
+  // construction) sample rate. We should not rely on sample rate conversion
+  // in the AUHAL, only *simple* conversions, e.g., 32-bit float to 16-bit
+  // signed integer format.
+  AudioStreamBasicDescription input_device_format = {0};
+  UInt32 property_size = sizeof(input_device_format);
+  result = AudioUnitGetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
+                                kAudioUnitScope_Input, 1, &input_device_format,
+                                &property_size);
+  DVLOG(1) << "Input device format: " << input_device_format;
+  if (input_device_format.mSampleRate != format_.mSampleRate) {
+    LOG(ERROR)
+        << "Input device's sample rate does not match the client's sample rate";
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
+    return false;
+  }
+
+  // Modify the IO buffer size if not already set correctly for the selected
+  // device.
   if (!manager_->MaybeChangeBufferSize(input_device_id_, audio_unit_, 1,
                                        number_of_frames_,
                                        &buffer_size_was_changed_)) {
@@ -209,15 +252,33 @@ bool AUAudioInputStream::Open() {
   DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
                                              << number_of_frames_;
 
-  // Register the input procedure for the AUHAL.
-  // This procedure will be called when the AUHAL has received new data
-  // from the input device.
-  AURenderCallbackStruct callback;
-  callback.inputProc = InputProc;
-  callback.inputProcRefCon = this;
-  result = AudioUnitSetProperty(
-      audio_unit_, kAudioOutputUnitProperty_SetInputCallback,
-      kAudioUnitScope_Global, 0, &callback, sizeof(callback));
+  // Verify that the IO buffer size is set correctly.
+  // TODO(henrika): perhaps add to UMA stat to track if this can happen.
+  UInt32 io_buffer_size_frames;
+  property_size = sizeof(io_buffer_size_frames);
+  result = AudioUnitGetProperty(
+      audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
+      0, &io_buffer_size_frames, &property_size);
+  if (io_buffer_size_frames != number_of_frames_) {
+    LOG(ERROR) << "AUHAL uses an invalid IO buffer size: "
+               << io_buffer_size_frames;
+    result = kAudioUnitErr_FormatNotSupported;
+    HandleError(result);
+    return false;
+  }
+
+  // Channel mapping should be supported but add a warning just in case.
+  // TODO(henrika): perhaps add to UMA stat to track if this can happen.
+  DLOG_IF(WARNING,
+          input_device_format.mChannelsPerFrame != format_.mChannelsPerFrame)
+      << "AUHAL's audio converter must do channel conversion";
+
+  // Set up the the desired (output) format.
+  // For obtaining input from a device, the device format is always expressed
+  // on the output scope of the AUHAL's Element 1.
+  result = AudioUnitSetProperty(audio_unit_, kAudioUnitProperty_StreamFormat,
+                                kAudioUnitScope_Output, 1, &format_,
+                                sizeof(format_));
   if (result != noErr) {
     HandleError(result);
     return false;
@@ -761,6 +822,7 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
 
 void AUAudioInputStream::CloseAudioUnit() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "CloseAudioUnit";
   if (!audio_unit_)
     return;
   OSStatus result = AudioUnitUninitialize(audio_unit_);

@@ -755,17 +755,25 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             AudioUnitElement element,
                                             size_t desired_buffer_size,
                                             bool* size_was_changed) {
+  const bool is_input = (element == 1);
+  DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
+           << ", is_input=" << is_input << ", buffer_size=" << std::dec
+           << desired_buffer_size << ")";
+
   *size_was_changed = false;
+
+  // Get the current size of the I/O buffer for the specified device and scope.
   UInt32 buffer_size = 0;
   UInt32 property_size = sizeof(buffer_size);
   OSStatus result = AudioUnitGetProperty(
-      audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Output,
+      audio_unit, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
       element, &buffer_size, &property_size);
   if (result != noErr) {
     OSSTATUS_DLOG(ERROR, result)
         << "AudioUnitGetProperty(kAudioDevicePropertyBufferFrameSize) failed.";
     return false;
   }
+  DVLOG(1) << "Current IO buffer size: " << buffer_size;
 
   // The lowest buffer size always wins.  For larger buffer sizes, we have
   // to perform some checks to see if the size can actually be changed.
@@ -801,14 +809,16 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   if (buffer_size == desired_buffer_size)
     return true;
 
+  // Set new I/O buffer size for the specified device and scope.
   buffer_size = desired_buffer_size;
   result = AudioUnitSetProperty(audio_unit, kAudioDevicePropertyBufferFrameSize,
-                                kAudioUnitScope_Output, element, &buffer_size,
+                                kAudioUnitScope_Global, element, &buffer_size,
                                 sizeof(buffer_size));
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioUnitSetProperty(kAudioDevicePropertyBufferFrameSize) failed.  "
       << "Size:: " << buffer_size;
   *size_was_changed = (result == noErr);
+  DVLOG_IF(1, result == noErr) << "IO buffer size changed to: " << buffer_size;
   return (result == noErr);
 }
 
