@@ -10,7 +10,7 @@ import android.app.Instrumentation.ActivityMonitor;
 import android.graphics.Rect;
 import android.view.View;
 
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.HostDrivenTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.util.ActivityUtils;
@@ -37,7 +37,7 @@ public class CastReconnectTest extends CastTestBase {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    @DisabledTest
+    @HostDrivenTest
     public void testReconnectSetup() throws InterruptedException, TimeoutException {
         castAndPauseDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
     }
@@ -48,7 +48,7 @@ public class CastReconnectTest extends CastTestBase {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    @DisabledTest
+    @HostDrivenTest
     public void testVideoContinuing() throws InterruptedException, TimeoutException {
         // TODO(aberent) Check that the notification is still present. Will fail at
         // the moment, and is difficult to do with the way the notification service
@@ -85,7 +85,7 @@ public class CastReconnectTest extends CastTestBase {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    @DisabledTest
+    @HostDrivenTest
     public void testNewVideo() throws InterruptedException, TimeoutException {
 
         // Load a new video on the page
@@ -124,7 +124,7 @@ public class CastReconnectTest extends CastTestBase {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    @DisabledTest
+    @HostDrivenTest
     public void testVideoFinishedSetup() throws InterruptedException, TimeoutException {
         castDefaultVideoFromPage(DEFAULT_VIDEO_PAGE);
 
@@ -138,7 +138,7 @@ public class CastReconnectTest extends CastTestBase {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    @DisabledTest
+    @HostDrivenTest
     public void testVideoFinished() throws InterruptedException, TimeoutException {
         // Give the video time to finish (actually will probably have already finished,
         // but this makes sure)
