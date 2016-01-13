@@ -145,6 +145,21 @@ void ValidateAllIconsWithURLsArePresent(const WebApplicationInfo& info_to_check,
 }
 
 std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator
+FindLargestBitmapAndSourceVector(
+    const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmap_vector) {
+  auto result = bitmap_vector.end();
+  int largest = -1;
+  for (std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator it =
+           bitmap_vector.begin();
+       it != bitmap_vector.end(); ++it) {
+    if (it->bitmap.width() > largest) {
+      result = it;
+    }
+  }
+  return result;
+}
+
+std::vector<BookmarkAppHelper::BitmapAndSource>::const_iterator
 FindMatchingBitmapAndSourceVector(
     const std::vector<BookmarkAppHelper::BitmapAndSource>& bitmap_vector,
     int size) {
@@ -188,48 +203,58 @@ void ValidateIconsGeneratedAndResizedCorrectly(
     std::vector<BookmarkAppHelper::BitmapAndSource> downloaded,
     std::map<int, BookmarkAppHelper::BitmapAndSource> size_map,
     std::set<int> sizes_to_generate,
-    int expected_generated) {
+    int expected_generated,
+    int expected_resized) {
   GURL empty_url("");
   int number_generated = 0;
+  int number_resized = 0;
 
+  auto icon_largest = FindLargestBitmapAndSourceVector(downloaded);
   for (const auto& size : sizes_to_generate) {
     auto icon_downloaded = FindMatchingBitmapAndSourceVector(downloaded, size);
     auto icon_larger = FindEqualOrLargerBitmapAndSourceVector(downloaded, size);
     if (icon_downloaded == downloaded.end()) {
       auto icon_resized = size_map.find(size);
-      if (icon_larger == downloaded.end()) {
-        // There is no larger downloaded icon. Expect an icon to be generated.
-        EXPECT_NE(icon_resized, size_map.end());
-        EXPECT_EQ(icon_resized->second.bitmap.width(), size);
-        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-        EXPECT_EQ(icon_resized->second.source_url, empty_url);
+      if (icon_largest == downloaded.end()) {
+        // There are no downloaded icons. Expect an icon to be generated.
+        EXPECT_NE(size_map.end(), icon_resized);
+        EXPECT_EQ(size, icon_resized->second.bitmap.width());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(empty_url, icon_resized->second.source_url);
         ++number_generated;
       } else {
-        // There is a larger downloaded icon. Expect the larger icon to be
-        // resized down to fit this size.
-        EXPECT_NE(icon_resized, size_map.end());
-        EXPECT_EQ(icon_resized->second.bitmap.width(), size);
-        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-        EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-        EXPECT_EQ(icon_resized->second.source_url, icon_larger->source_url);
+        // If there is a larger downloaded icon, it should be resized. Otherwise
+        // the largest downloaded icon should be resized.
+        auto icon_to_resize = icon_largest;
+        if (icon_larger != downloaded.end())
+          icon_to_resize = icon_larger;
+        EXPECT_NE(size_map.end(), icon_resized);
+        EXPECT_EQ(size, icon_resized->second.bitmap.width());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(size, icon_resized->second.bitmap.height());
+        EXPECT_EQ(icon_to_resize->source_url, icon_resized->second.source_url);
+        ++number_resized;
       }
     } else {
       // There is an icon of exactly this size downloaded. Expect no icon to be
       // generated, and the existing downloaded icon to be used.
       auto icon_resized = size_map.find(size);
-      EXPECT_NE(icon_resized, size_map.end());
-      EXPECT_EQ(icon_resized->second.bitmap.width(), size);
-      EXPECT_EQ(icon_resized->second.bitmap.height(), size);
-      EXPECT_EQ(icon_downloaded->bitmap.width(), size);
-      EXPECT_EQ(icon_downloaded->bitmap.height(), size);
-      EXPECT_EQ(icon_resized->second.source_url, icon_downloaded->source_url);
+      EXPECT_NE(size_map.end(), icon_resized);
+      EXPECT_EQ(size, icon_resized->second.bitmap.width());
+      EXPECT_EQ(size, icon_resized->second.bitmap.height());
+      EXPECT_EQ(size, icon_downloaded->bitmap.width());
+      EXPECT_EQ(size, icon_downloaded->bitmap.height());
+      EXPECT_EQ(icon_downloaded->source_url, icon_resized->second.source_url);
     }
   }
-  EXPECT_EQ(number_generated, expected_generated);
+  EXPECT_EQ(expected_generated, number_generated);
+  EXPECT_EQ(expected_resized, number_resized);
 }
 
-void TestIconGeneration(int icon_size, int expected_generated) {
+void TestIconGeneration(int icon_size,
+                        int expected_generated,
+                        int expected_resized) {
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
 
   // Add an icon with a URL and bitmap. 'Download' it.
@@ -247,7 +272,8 @@ void TestIconGeneration(int icon_size, int expected_generated) {
 
   ValidateIconsGeneratedAndResizedCorrectly(downloaded, size_map,
                                             TestSizesToGenerate(),
-                                            expected_generated);
+                                            expected_generated,
+                                            expected_resized);
 }
 
 }  // namespace
@@ -559,12 +585,13 @@ TEST_F(BookmarkAppHelperTest, ConstrainBitmapsToSizes) {
     std::map<int, BookmarkAppHelper::BitmapAndSource> results(
         BookmarkAppHelper::ConstrainBitmapsToSizes(bitmaps, desired_sizes));
 
-    EXPECT_EQ(5u, results.size());
+    EXPECT_EQ(6u, results.size());
     ValidateBitmapSizeAndColor(results[16].bitmap, 16, SK_ColorRED);
     ValidateBitmapSizeAndColor(results[32].bitmap, 32, SK_ColorGREEN);
     ValidateBitmapSizeAndColor(results[48].bitmap, 48, SK_ColorYELLOW);
     ValidateBitmapSizeAndColor(results[96].bitmap, 96, SK_ColorYELLOW);
     ValidateBitmapSizeAndColor(results[128].bitmap, 128, SK_ColorYELLOW);
+    ValidateBitmapSizeAndColor(results[256].bitmap, 256, SK_ColorYELLOW);
   }
   {
     std::vector<BookmarkAppHelper::BitmapAndSource> bitmaps;
@@ -606,7 +633,7 @@ TEST_F(BookmarkAppHelperTest, IsValidBookmarkAppUrl) {
   EXPECT_FALSE(IsValidBookmarkAppUrl(GURL("chrome://extensions")));
 }
 
-TEST_F(BookmarkAppHelperTest, IconsGeneratedOnlyWhenNoneLarger) {
+TEST_F(BookmarkAppHelperTest, IconsResizedFromOddSizes) {
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
 
   // Add three icons with a URL and bitmap. 'Download' each of them.
@@ -634,13 +661,12 @@ TEST_F(BookmarkAppHelperTest, IconsGeneratedOnlyWhenNoneLarger) {
       BookmarkAppHelper::ResizeIconsAndGenerateMissing(
           downloaded, TestSizesToGenerate(), &web_app_info);
 
-  // The largest icon downloaded is smaller than EXTENSION_ICON_LARGE, so one
-  // icon should be generated.
+  // No icons should be generated. The LARGE and MEDIUM sizes should be resized.
   ValidateIconsGeneratedAndResizedCorrectly(
-      downloaded, size_map, TestSizesToGenerate(), 1);
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
 }
 
-TEST_F(BookmarkAppHelperTest, IconsGeneratedWhenNotDownloaded) {
+TEST_F(BookmarkAppHelperTest, IconsResizedFromLarger) {
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
 
   // Add three icons with a URL and bitmap. 'Download' two of them and pretend
@@ -665,15 +691,10 @@ TEST_F(BookmarkAppHelperTest, IconsGeneratedWhenNotDownloaded) {
       BookmarkAppHelper::ResizeIconsAndGenerateMissing(
           downloaded, TestSizesToGenerate(), &web_app_info);
 
-  // Expect icon for EXTENSION_ICON_LARGE to be resized from the gigantor icon
+  // Expect icon for MEDIUM and LARGE to be resized from the gigantor icon
   // as it was not downloaded.
   ValidateIconsGeneratedAndResizedCorrectly(
-      downloaded, size_map, TestSizesToGenerate(), 0);
-
-  // Verify specifically that the EXTENSION_ICON_LARGE icon was resized.
-  const auto it = size_map.find(kIconSizeLarge);
-  EXPECT_NE(it, size_map.end());
-  EXPECT_EQ(it->second.source_url, GURL(kAppIconURL3));
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
 }
 
 TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenNotDownloaded) {
@@ -698,11 +719,11 @@ TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenNotDownloaded) {
 
   // Expect all icons to be generated.
   ValidateIconsGeneratedAndResizedCorrectly(
-      downloaded, size_map, TestSizesToGenerate(), 3);
+      downloaded, size_map, TestSizesToGenerate(), 3, 0);
 }
 
 
-TEST_F(BookmarkAppHelperTest, LargeIconGeneratedWhenNotDownloaded) {
+TEST_F(BookmarkAppHelperTest, IconResizedFromLargerAndSmaller) {
   std::vector<BookmarkAppHelper::BitmapAndSource> downloaded;
 
   // Pretend the huge icon wasn't downloaded but two smaller ones were.
@@ -726,27 +747,27 @@ TEST_F(BookmarkAppHelperTest, LargeIconGeneratedWhenNotDownloaded) {
       BookmarkAppHelper::ResizeIconsAndGenerateMissing(
           downloaded, TestSizesToGenerate(), &web_app_info);
 
-  // Expect icon for EXTENSION_ICON_LARGE to be generated as the gigantor icon
-  // was not downloaded.
+  // Expect no icons to be generated, but the LARGE and SMALL icons to be
+  // resized from the MEDIUM icon.
   ValidateIconsGeneratedAndResizedCorrectly(
-      downloaded, size_map, TestSizesToGenerate(), 1);
+      downloaded, size_map, TestSizesToGenerate(), 0, 2);
 
-  // Verify specifically that the LARGE icons was generated.
+  // Verify specifically that the LARGE icons was resized from the medium icon.
   const auto it = size_map.find(kIconSizeLarge);
-  EXPECT_NE(it, size_map.end());
-  EXPECT_EQ(it->second.source_url, GURL());
+  EXPECT_NE(size_map.end(), it);
+  EXPECT_EQ(GURL(kAppIconURL2), it->second.source_url);
 }
 
-TEST_F(BookmarkAppHelperTest, AllIconsGeneratedWhenOnlyASmallOneIsProvided) {
+TEST_F(BookmarkAppHelperTest, IconsResizedWhenOnlyATinyOneIsProvided) {
   // When only a tiny icon is downloaded (smaller than the three desired
-  // sizes), 3 icons should be generated.
-  TestIconGeneration(kIconSizeTiny, 3);
+  // sizes), 3 icons should be resized.
+  TestIconGeneration(kIconSizeTiny, 0, 3);
 }
 
-TEST_F(BookmarkAppHelperTest, NoIconsGeneratedWhenAVeryLargeOneIsProvided) {
-  // When an enormous icon is provided, each desired icon size should fall back
-  // to it, and no icons should be generated.
-  TestIconGeneration(kIconSizeGigantor, 0);
+TEST_F(BookmarkAppHelperTest, IconsResizedWhenOnlyAGigantorOneIsProvided) {
+  // When an enormous icon is provided, each desired icon size should be resized
+  // from it, and no icons should be generated.
+  TestIconGeneration(kIconSizeGigantor, 0, 3);
 }
 
 }  // namespace extensions

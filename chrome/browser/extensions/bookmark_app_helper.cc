@@ -156,8 +156,11 @@ std::set<int> SizesToGenerate() {
   // Generate container icons from smaller icons.
   const int kIconSizesToGenerate[] = {
       extension_misc::EXTENSION_ICON_SMALL,
+      extension_misc::EXTENSION_ICON_SMALL * 2,
       extension_misc::EXTENSION_ICON_MEDIUM,
+      extension_misc::EXTENSION_ICON_MEDIUM * 2,
       extension_misc::EXTENSION_ICON_LARGE,
+      extension_misc::EXTENSION_ICON_LARGE * 2,
   };
   return std::set<int>(kIconSizesToGenerate,
                        kIconSizesToGenerate + arraysize(kIconSizesToGenerate));
@@ -189,9 +192,6 @@ void GenerateIcons(
        it != generate_sizes.end(); ++it) {
     extensions::BookmarkAppHelper::GenerateIcon(
         bitmap_map, *it, generated_icon_color, icon_letter);
-    // Also generate the 2x resource for this size.
-    extensions::BookmarkAppHelper::GenerateIcon(
-        bitmap_map, *it * 2, generated_icon_color, icon_letter);
   }
 }
 
@@ -377,11 +377,16 @@ BookmarkAppHelper::ConstrainBitmapsToSizes(
     ordered_bitmaps[it->bitmap.width()] = *it;
   }
 
-  for (const auto& size : sizes) {
-    // Find the closest not-smaller bitmap.
-    auto bitmaps_it = ordered_bitmaps.lower_bound(size);
-    if (bitmaps_it != ordered_bitmaps.end()) {
-      output_bitmaps[size] = bitmaps_it->second;
+  if (ordered_bitmaps.size() > 0) {
+    for (const auto& size : sizes) {
+      // Find the closest not-smaller bitmap, or failing that use the largest
+      // icon available.
+      auto bitmaps_it = ordered_bitmaps.lower_bound(size);
+      if (bitmaps_it != ordered_bitmaps.end())
+        output_bitmaps[size] = bitmaps_it->second;
+      else
+        output_bitmaps[size] = ordered_bitmaps.rbegin()->second;
+
       // Resize the bitmap if it does not exactly match the desired size.
       if (output_bitmaps[size].bitmap.width() != size) {
         output_bitmaps[size].bitmap = skia::ImageOperations::Resize(
