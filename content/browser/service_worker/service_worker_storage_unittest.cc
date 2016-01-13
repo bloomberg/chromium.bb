@@ -16,6 +16,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/browser_thread_impl.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_disk_cache.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -276,17 +277,12 @@ class ServiceWorkerStorageTest : public testing::Test {
       : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
   }
 
-  void SetUp() override {
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
-        new MockServiceWorkerDatabaseTaskManager(
-            base::ThreadTaskRunnerHandle::Get()));
-    context_.reset(new ServiceWorkerContextCore(
-        GetUserDataDirectory(), std::move(database_task_manager),
-        base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
-    context_ptr_ = context_->AsWeakPtr();
-  }
+  void SetUp() override { InitializeTestHelper(); }
 
-  void TearDown() override { context_.reset(); }
+  void TearDown() override {
+    helper_.reset();
+    base::RunLoop().RunUntilIdle();
+  }
 
   base::FilePath GetUserDataDirectory() { return user_data_directory_.path(); }
 
@@ -294,7 +290,13 @@ class ServiceWorkerStorageTest : public testing::Test {
     return user_data_directory_.CreateUniqueTempDir();
   }
 
-  ServiceWorkerStorage* storage() { return context_->storage(); }
+  void InitializeTestHelper() {
+    helper_.reset(new EmbeddedWorkerTestHelper(GetUserDataDirectory()));
+    base::RunLoop().RunUntilIdle();
+  }
+
+  ServiceWorkerContextCore* context() { return helper_->context(); }
+  ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
 
   // A static class method for friendliness.
   static void VerifyPurgeableListStatusCallback(
@@ -487,8 +489,7 @@ class ServiceWorkerStorageTest : public testing::Test {
 
   // user_data_directory_ must be declared first to preserve destructor order.
   base::ScopedTempDir user_data_directory_;
-  scoped_ptr<ServiceWorkerContextCore> context_;
-  base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle browser_thread_bundle_;
 };
 
@@ -530,11 +531,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Store something.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          kScope, kRegistrationId, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version =
-      new ServiceWorkerVersion(
-          live_registration.get(), kScript, kVersionId, context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::INSTALLED);
   live_version->script_cache_map()->SetResources(resources);
   live_version->set_foreign_fetch_scopes(
@@ -644,8 +644,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
 
   // Trying to update a unstored registration to active should fail.
   scoped_refptr<ServiceWorkerRegistration> unstored_registration =
-      new ServiceWorkerRegistration(
-          kScope, kRegistrationId + 1, context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId + 1,
+                                    context()->AsWeakPtr());
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
             UpdateToActiveState(unstored_registration));
   unstored_registration = NULL;
@@ -664,10 +664,10 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   EXPECT_EQ(kToday, found_registration->last_update_check());
 
   // Delete from storage but with a instance still live.
-  EXPECT_TRUE(context_->GetLiveVersion(kRegistrationId));
+  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
   EXPECT_EQ(SERVICE_WORKER_OK,
             DeleteRegistration(kRegistrationId, kScope.GetOrigin()));
-  EXPECT_TRUE(context_->GetLiveVersion(kRegistrationId));
+  EXPECT_TRUE(context()->GetLiveVersion(kRegistrationId));
 
   // Should no longer be found.
   EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
@@ -694,11 +694,10 @@ TEST_F(ServiceWorkerStorageTest, InstallingRegistrationsAreFindable) {
 
   // Create an unstored registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          kScope, kRegistrationId, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version =
-      new ServiceWorkerVersion(
-          live_registration.get(), kScript, kVersionId, context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::INSTALLING);
   live_registration->SetWaitingVersion(live_version);
 
@@ -814,11 +813,10 @@ TEST_F(ServiceWorkerStorageTest, StoreUserData) {
 
   // Store a registration.
   scoped_refptr<ServiceWorkerRegistration> live_registration =
-      new ServiceWorkerRegistration(
-          kScope, kRegistrationId, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version =
-      new ServiceWorkerVersion(
-          live_registration.get(), kScript, kVersionId, context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
+      live_registration.get(), kScript, kVersionId, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records;
   records.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version->script_url(), 100));
@@ -892,9 +890,8 @@ class ServiceWorkerResourceStorageTest : public ServiceWorkerStorageTest {
  public:
   void SetUp() override {
     ServiceWorkerStorageTest::SetUp();
+    LazyInitialize();
 
-    storage()->LazyInitialize(base::Bind(&base::DoNothing));
-    base::RunLoop().RunUntilIdle();
     scope_ = GURL("http://www.test.not/scope/");
     script_ = GURL("http://www.test.not/script.js");
     import_ = GURL("http://www.test.not/import.js");
@@ -1112,7 +1109,7 @@ TEST_F(ServiceWorkerResourceStorageTest, DeleteRegistration_ActiveVersion) {
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      context_->AsWeakPtr(), NULL));
+      context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1163,7 +1160,7 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      context_->AsWeakPtr(), NULL));
+      context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1206,15 +1203,8 @@ TEST_F(ServiceWorkerResourceStorageDiskTest, CleanupOnRestart) {
 
   // Simulate browser shutdown. The purgeable and uncommitted resources are now
   // stale.
-  context_.reset();
-  scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
-      new MockServiceWorkerDatabaseTaskManager(
-          base::ThreadTaskRunnerHandle::Get()));
-  context_.reset(new ServiceWorkerContextCore(
-      GetUserDataDirectory(), std::move(database_task_manager),
-      base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
-  storage()->LazyInitialize(base::Bind(&base::DoNothing));
-  base::RunLoop().RunUntilIdle();
+  InitializeTestHelper();
+  LazyInitialize();
 
   // Store a new uncommitted resource. This triggers stale resource cleanup.
   int64_t kNewResourceId = storage()->NewResourceId();
@@ -1329,7 +1319,7 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
   scoped_ptr<ServiceWorkerProviderHost> host(new ServiceWorkerProviderHost(
       33 /* dummy render process id */, MSG_ROUTING_NONE,
       1 /* dummy provider_id */, SERVICE_WORKER_PROVIDER_FOR_WINDOW,
-      context_->AsWeakPtr(), NULL));
+      context()->AsWeakPtr(), NULL));
   registration_->active_version()->AddControllee(host.get());
 
   bool was_called = false;
@@ -1338,7 +1328,8 @@ TEST_F(ServiceWorkerResourceStorageTest, UpdateRegistration) {
 
   // Make an updated registration.
   scoped_refptr<ServiceWorkerVersion> live_version = new ServiceWorkerVersion(
-      registration_.get(), script_, storage()->NewVersionId(), context_ptr_);
+      registration_.get(), script_, storage()->NewVersionId(),
+      context()->AsWeakPtr());
   live_version->SetStatus(ServiceWorkerVersion::NEW);
   registration_->SetWaitingVersion(live_version);
   std::vector<ServiceWorkerDatabase::ResourceRecord> records;
@@ -1392,11 +1383,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId1 = 1;
   const int64_t kVersionId1 = 1;
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      new ServiceWorkerRegistration(
-          kScope1, kRegistrationId1, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version1 =
-      new ServiceWorkerVersion(
-          live_registration1.get(), kScript1, kVersionId1, context_ptr_);
+      new ServiceWorkerRegistration(kScope1, kRegistrationId1,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
+      live_registration1.get(), kScript1, kVersionId1, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
   records1.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version1->script_url(), 100));
@@ -1410,11 +1400,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId2 = 2;
   const int64_t kVersionId2 = 2;
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      new ServiceWorkerRegistration(
-          kScope2, kRegistrationId2, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version2 =
-      new ServiceWorkerVersion(
-          live_registration2.get(), kScript2, kVersionId2, context_ptr_);
+      new ServiceWorkerRegistration(kScope2, kRegistrationId2,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
+      live_registration2.get(), kScript2, kVersionId2, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
   records2.push_back(ServiceWorkerDatabase::ResourceRecord(
       2, live_version2->script_url(), 100));
@@ -1428,11 +1417,10 @@ TEST_F(ServiceWorkerStorageTest, FindRegistration_LongestScopeMatch) {
   const int64_t kRegistrationId3 = 3;
   const int64_t kVersionId3 = 3;
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      new ServiceWorkerRegistration(
-          kScope3, kRegistrationId3, context_ptr_);
-  scoped_refptr<ServiceWorkerVersion> live_version3 =
-      new ServiceWorkerVersion(
-          live_registration3.get(), kScript3, kVersionId3, context_ptr_);
+      new ServiceWorkerRegistration(kScope3, kRegistrationId3,
+                                    context()->AsWeakPtr());
+  scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
+      live_registration3.get(), kScript3, kVersionId3, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
   records3.push_back(ServiceWorkerDatabase::ResourceRecord(
       3, live_version3->script_url(), 100));
@@ -1490,9 +1478,10 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId1 = 1;
   const int64_t kVersionId1 = 1;
   scoped_refptr<ServiceWorkerRegistration> live_registration1 =
-      new ServiceWorkerRegistration(kScope1, kRegistrationId1, context_ptr_);
+      new ServiceWorkerRegistration(kScope1, kRegistrationId1,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version1 = new ServiceWorkerVersion(
-      live_registration1.get(), kScript1, kVersionId1, context_ptr_);
+      live_registration1.get(), kScript1, kVersionId1, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records1;
   records1.push_back(ServiceWorkerDatabase::ResourceRecord(
       1, live_version1->script_url(), 100));
@@ -1507,9 +1496,10 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId2 = 2;
   const int64_t kVersionId2 = 2;
   scoped_refptr<ServiceWorkerRegistration> live_registration2 =
-      new ServiceWorkerRegistration(kScope2, kRegistrationId2, context_ptr_);
+      new ServiceWorkerRegistration(kScope2, kRegistrationId2,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version2 = new ServiceWorkerVersion(
-      live_registration2.get(), kScript2, kVersionId2, context_ptr_);
+      live_registration2.get(), kScript2, kVersionId2, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records2;
   records2.push_back(ServiceWorkerDatabase::ResourceRecord(
       2, live_version2->script_url(), 100));
@@ -1524,9 +1514,10 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   const int64_t kRegistrationId3 = 3;
   const int64_t kVersionId3 = 3;
   scoped_refptr<ServiceWorkerRegistration> live_registration3 =
-      new ServiceWorkerRegistration(kScope3, kRegistrationId3, context_ptr_);
+      new ServiceWorkerRegistration(kScope3, kRegistrationId3,
+                                    context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> live_version3 = new ServiceWorkerVersion(
-      live_registration3.get(), kScript3, kVersionId3, context_ptr_);
+      live_registration3.get(), kScript3, kVersionId3, context()->AsWeakPtr());
   std::vector<ServiceWorkerDatabase::ResourceRecord> records3;
   records3.push_back(ServiceWorkerDatabase::ResourceRecord(
       3, live_version3->script_url(), 100));
@@ -1567,13 +1558,7 @@ TEST_F(ServiceWorkerStorageDiskTest, OriginHasForeignFetchRegistrations) {
   live_version2 = nullptr;
   live_registration3 = nullptr;
   live_version3 = nullptr;
-  context_.reset();
-  scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
-      new MockServiceWorkerDatabaseTaskManager(
-          base::ThreadTaskRunnerHandle::Get()));
-  context_.reset(new ServiceWorkerContextCore(
-      GetUserDataDirectory(), std::move(database_task_manager),
-      base::ThreadTaskRunnerHandle::Get(), nullptr, nullptr, nullptr, nullptr));
+  InitializeTestHelper();
   LazyInitialize();
 
   // First origin should still have a registration left.

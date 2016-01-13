@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/thread_task_runner_handle.h"
+#include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration_handle.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -25,19 +26,15 @@ class ServiceWorkerRegistrationTest : public testing::Test {
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   void SetUp() override {
-    scoped_ptr<ServiceWorkerDatabaseTaskManager> database_task_manager(
-        new MockServiceWorkerDatabaseTaskManager(
-            base::ThreadTaskRunnerHandle::Get()));
-    context_.reset(new ServiceWorkerContextCore(
-        base::FilePath(), std::move(database_task_manager),
-        base::ThreadTaskRunnerHandle::Get(), NULL, NULL, NULL, NULL));
-    context_ptr_ = context_->AsWeakPtr();
+    helper_.reset(new EmbeddedWorkerTestHelper(base::FilePath()));
   }
 
   void TearDown() override {
-    context_.reset();
+    helper_.reset();
     base::RunLoop().RunUntilIdle();
   }
+
+  ServiceWorkerContextCore* context() { return helper_->context(); }
 
   class RegistrationListener : public ServiceWorkerRegistration::Listener {
    public:
@@ -76,9 +73,8 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     ServiceWorkerRegistrationInfo observed_info_;
   };
 
- protected:
-  scoped_ptr<ServiceWorkerContextCore> context_;
-  base::WeakPtr<ServiceWorkerContextCore> context_ptr_;
+ private:
+  scoped_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle thread_bundle_;
 };
 
@@ -87,17 +83,15 @@ TEST_F(ServiceWorkerRegistrationTest, SetAndUnsetVersions) {
   const GURL kScript("http://www.example.not/service_worker.js");
   int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(
-          kScope,
-          kRegistrationId,
-          context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
 
   const int64_t version_1_id = 1L;
   const int64_t version_2_id = 2L;
   scoped_refptr<ServiceWorkerVersion> version_1 = new ServiceWorkerVersion(
-      registration.get(), kScript, version_1_id, context_ptr_);
+      registration.get(), kScript, version_1_id, context()->AsWeakPtr());
   scoped_refptr<ServiceWorkerVersion> version_2 = new ServiceWorkerVersion(
-      registration.get(), kScript, version_2_id, context_ptr_);
+      registration.get(), kScript, version_2_id, context()->AsWeakPtr());
 
   RegistrationListener listener;
   registration->AddListener(&listener);
@@ -156,14 +150,11 @@ TEST_F(ServiceWorkerRegistrationTest, FailedRegistrationNoCrash) {
   const GURL kScope("http://www.example.not/");
   int64_t kRegistrationId = 1L;
   scoped_refptr<ServiceWorkerRegistration> registration =
-      new ServiceWorkerRegistration(
-          kScope,
-          kRegistrationId,
-          context_ptr_);
+      new ServiceWorkerRegistration(kScope, kRegistrationId,
+                                    context()->AsWeakPtr());
   scoped_ptr<ServiceWorkerRegistrationHandle> handle(
       new ServiceWorkerRegistrationHandle(
-          context_ptr_,
-          base::WeakPtr<ServiceWorkerProviderHost>(),
+          context()->AsWeakPtr(), base::WeakPtr<ServiceWorkerProviderHost>(),
           registration.get()));
   registration->NotifyRegistrationFailed();
   // Don't crash when handle gets destructed.
