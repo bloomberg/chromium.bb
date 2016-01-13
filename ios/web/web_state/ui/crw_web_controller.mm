@@ -1561,19 +1561,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     // processed.
     _containerView.reset(
         [[CRWWebControllerContainerView alloc] initWithDelegate:self]);
-
-    // Compute and set the frame of the containerView.
-    UIViewController* rootController =
-        [[UIApplication sharedApplication] keyWindow].rootViewController;
-    DCHECK(rootController);
-    CGFloat statusBarHeight = [rootController.topLayoutGuide length];
-    CGRect containerViewFrame =
+    self.containerView.frame =
         [UIApplication sharedApplication].keyWindow.bounds;
-    containerViewFrame.origin.y += statusBarHeight;
-    containerViewFrame.size.height -= statusBarHeight;
-    self.containerView.frame = containerViewFrame;
     DCHECK(!CGRectIsEmpty(self.containerView.frame));
-
     [self.containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     [self.containerView setAccessibilityIdentifier:web::kContainerViewID];
     // Is |currentUrl| a web scheme or native chrome scheme.
