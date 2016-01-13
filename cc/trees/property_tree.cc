@@ -595,8 +595,9 @@ bool TransformTree::CombineTransformsBetween(int source_id,
     combined_transform = current->data.to_target;
     // The stored target space transform has sublayer scale baked in, but we
     // need the unscaled transform.
-    combined_transform.Scale(1.0f / dest->data.sublayer_scale.x(),
-                             1.0f / dest->data.sublayer_scale.y());
+    combined_transform.matrix().postScale(1.0f / dest->data.sublayer_scale.x(),
+                                          1.0f / dest->data.sublayer_scale.y(),
+                                          1.0f);
   } else if (current->id < dest_id) {
     // We have reached the lowest common ancestor of the source and destination
     // nodes. This case can occur when we are transforming between a node

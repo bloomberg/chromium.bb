@@ -1074,6 +1074,46 @@ TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
                                   grand_child->DrawTransform());
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceWithSublayerScale) {
+  const gfx::Transform identity_matrix;
+  LayerImpl* root = root_layer();
+  LayerImpl* render_surface = AddChild<LayerImpl>(root);
+  LayerImpl* child = AddChild<LayerImpl>(render_surface);
+  LayerImpl* grand_child = AddChild<LayerImpl>(child);
+
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  gfx::Transform translate;
+  translate.Translate3d(5, 5, 5);
+  SetLayerPropertiesForTesting(render_surface, translate, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(child, translate, gfx::Point3F(), gfx::PointF(),
+                               gfx::Size(100, 100), true, false, false);
+  SetLayerPropertiesForTesting(grand_child, translate, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               false);
+  grand_child->SetDrawsContent(true);
+
+  // render_surface will have a sublayer scale because of device scale factor.
+  float device_scale_factor = 2.0f;
+  LayerImplList render_surface_layer_list_impl;
+  root->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, root->bounds(), translate, &render_surface_layer_list_impl,
+      root->layer_tree_impl()->current_render_surface_list_id());
+  inputs.device_scale_factor = device_scale_factor;
+  inputs.property_trees->needs_rebuild = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  // Between grand_child and render_surface, we translate by (10, 10) and scale
+  // by a factor of 2.
+  gfx::Vector2dF expected_translation(20.0f, 20.0f);
+  EXPECT_EQ(grand_child->DrawTransform().To2dTranslation(),
+            expected_translation);
+}
+
 TEST_F(LayerTreeHostCommonTest, TransformAboveRootLayer) {
   // Transformations applied at the root of the tree should be forwarded
   // to child layers instead of applied to the root RenderSurface.
