@@ -254,6 +254,77 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashBackOffTimes) {
   EXPECT_TRUE(pm->next_gethash_time_== now + TimeDelta::FromMinutes(480));
 }
 
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashBackOffTimes) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  // No errors or back off time yet.
+  EXPECT_EQ(0U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(1U, pm->gethash_v4_back_off_mult_);
+  Time now = Time::Now();
+  EXPECT_TRUE(pm->next_gethash_v4_time_ < now);
+
+  // 1 error.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(1U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(1U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(15), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(30), pm->next_gethash_v4_time_);
+
+  // 2 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(2U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(2U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(30), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(60), pm->next_gethash_v4_time_);
+
+  // 3 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(3U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(4U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(60), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(120), pm->next_gethash_v4_time_);
+
+  // 4 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(4U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(8U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(120), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(240), pm->next_gethash_v4_time_);
+
+  // 5 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(5U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(16U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(240), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(480), pm->next_gethash_v4_time_);
+
+  // 6 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(6U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(32U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(480), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(960), pm->next_gethash_v4_time_);
+
+  // 7 errors.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(7U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(64U, pm->gethash_v4_back_off_mult_);
+  EXPECT_LE(now + TimeDelta::FromMinutes(960), pm->next_gethash_v4_time_);
+  EXPECT_GE(now + TimeDelta::FromMinutes(1920), pm->next_gethash_v4_time_);
+
+  // 8 errors, reached max backoff.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(8U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(128U, pm->gethash_v4_back_off_mult_);
+  EXPECT_EQ(now + TimeDelta::FromHours(24), pm->next_gethash_v4_time_);
+
+  // 9 errors, reached max backoff and multiplier capped.
+  pm->HandleGetHashV4Error(now);
+  EXPECT_EQ(9U, pm->gethash_v4_error_count_);
+  EXPECT_EQ(128U, pm->gethash_v4_back_off_mult_);
+  EXPECT_EQ(now + TimeDelta::FromHours(24), pm->next_gethash_v4_time_);
+}
+
 TEST_F(SafeBrowsingProtocolManagerTest, TestGetHashUrl) {
   scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
 
@@ -329,6 +400,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestParseV4HashResponse) {
 
   FindFullHashesResponse res;
   res.mutable_negative_cache_duration()->set_seconds(600);
+  res.mutable_minimum_wait_duration()->set_seconds(400);
   ThreatMatch* m = res.add_matches();
   m->set_threat_type(API_ABUSE);
   m->set_platform_type(CHROME_PLATFORM);
@@ -345,6 +417,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestParseV4HashResponse) {
   std::string res_data;
   res.SerializeToString(&res_data);
 
+  Time now = Time::Now();
   std::vector<SBFullHashResult> full_hashes;
   base::TimeDelta cache_lifetime;
   pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
@@ -355,6 +428,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestParseV4HashResponse) {
       SBFullHashForString("Everything's shiny, Cap'n."), full_hashes[0].hash));
   EXPECT_EQ("NOTIFICATIONS,", full_hashes[0].metadata);
   EXPECT_EQ(base::TimeDelta::FromSeconds(300), full_hashes[0].cache_duration);
+  EXPECT_LE(now + base::TimeDelta::FromSeconds(400), pm->next_gethash_v4_time_);
 }
 
 // Adds an entry with an ignored ThreatEntryType.
