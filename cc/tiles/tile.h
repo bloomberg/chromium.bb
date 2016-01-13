@@ -104,6 +104,8 @@ class CC_EXPORT Tile {
     return invalidated_content_rect_;
   }
 
+  bool HasRasterTask() const { return !!raster_task_.get(); }
+
  private:
   friend class TileManager;
   friend class FakeTileManager;
@@ -116,8 +118,6 @@ class CC_EXPORT Tile {
        int source_frame_number,
        int flags);
   ~Tile();
-
-  bool HasRasterTask() const { return !!raster_task_.get(); }
 
   TileManager* const tile_manager_;
   const gfx::Rect content_rect_;

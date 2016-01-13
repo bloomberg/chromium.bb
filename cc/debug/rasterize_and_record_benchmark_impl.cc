@@ -43,19 +43,18 @@ void RunBenchmark(DisplayListRasterSource* raster_source,
     LapTimer timer(kWarmupRuns,
                    base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                    kTimeCheckInterval);
+    SkColor color = SK_ColorTRANSPARENT;
+    *is_solid_color = raster_source->PerformSolidColorAnalysis(
+        content_rect, contents_scale, &color);
+
     do {
       SkBitmap bitmap;
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
-      DisplayListRasterSource::SolidColorAnalysis analysis;
 
-      raster_source->PerformSolidColorAnalysis(content_rect, contents_scale,
-                                               &analysis);
       raster_source->PlaybackToCanvas(&canvas, content_rect, content_rect,
                                       contents_scale);
-
-      *is_solid_color = analysis.is_solid_color;
 
       timer.NextLap();
     } while (!timer.HasTimeLimitExpired());

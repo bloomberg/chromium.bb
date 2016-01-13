@@ -219,11 +219,10 @@ size_t DisplayListRasterSource::GetPictureMemoryUsage() const {
          painter_reported_memory_usage_;
 }
 
-void DisplayListRasterSource::PerformSolidColorAnalysis(
+bool DisplayListRasterSource::PerformSolidColorAnalysis(
     const gfx::Rect& content_rect,
     float contents_scale,
-    DisplayListRasterSource::SolidColorAnalysis* analysis) const {
-  DCHECK(analysis);
+    SkColor* color) const {
   TRACE_EVENT0("cc", "DisplayListRasterSource::PerformSolidColorAnalysis");
 
   gfx::Rect layer_rect =
@@ -232,7 +231,7 @@ void DisplayListRasterSource::PerformSolidColorAnalysis(
   layer_rect.Intersect(gfx::Rect(size_));
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
   RasterForAnalysis(&canvas, layer_rect, 1.0f);
-  analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
+  return canvas.GetColorIfSolid(color);
 }
 
 void DisplayListRasterSource::GetDiscardableImagesInRect(

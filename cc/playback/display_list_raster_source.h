@@ -25,15 +25,6 @@ class DrawImage;
 class CC_EXPORT DisplayListRasterSource
     : public base::RefCountedThreadSafe<DisplayListRasterSource> {
  public:
-  struct CC_EXPORT SolidColorAnalysis {
-    SolidColorAnalysis()
-        : is_solid_color(false), solid_color(SK_ColorTRANSPARENT) {}
-    ~SolidColorAnalysis() {}
-
-    bool is_solid_color;
-    SkColor solid_color;
-  };
-
   static scoped_refptr<DisplayListRasterSource>
   CreateFromDisplayListRecordingSource(const DisplayListRecordingSource* other,
                                        bool can_use_lcd_text);
@@ -57,11 +48,11 @@ class CC_EXPORT DisplayListRasterSource
                               const gfx::Rect& canvas_rect,
                               float contents_scale) const;
 
-  // Analyze to determine if the given rect at given scale is of solid color in
-  // this raster source.
-  void PerformSolidColorAnalysis(const gfx::Rect& content_rect,
+  // Returns whether the given rect at given scale is of solid color in
+  // this raster source, as well as the solid color value.
+  bool PerformSolidColorAnalysis(const gfx::Rect& content_rect,
                                  float contents_scale,
-                                 SolidColorAnalysis* analysis) const;
+                                 SkColor* color) const;
 
   // Returns true iff the whole raster source is of solid color.
   bool IsSolidColor() const;

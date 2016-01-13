@@ -243,12 +243,7 @@ class CC_EXPORT TileManager {
   void OnRasterTaskCompleted(
       Tile::Id tile,
       Resource* resource,
-      const DisplayListRasterSource::SolidColorAnalysis& analysis,
       bool was_canceled);
-  void UpdateTileDrawInfo(
-      Tile* tile,
-      Resource* resource,
-      const DisplayListRasterSource::SolidColorAnalysis& analysis);
 
   void FreeResourcesForTile(Tile* tile);
   void FreeResourcesForTileAndNotifyClientIfTileWasReadyToDraw(Tile* tile);

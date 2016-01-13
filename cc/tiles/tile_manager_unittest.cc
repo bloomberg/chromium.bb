@@ -1452,6 +1452,65 @@ TEST_F(TileManagerTilePriorityQueueTest, RasterQueueAllUsesCorrectTileBounds) {
   }
 }
 
+TEST_F(TileManagerTilePriorityQueueTest, NoRasterTasksforSolidColorTiles) {
+  gfx::Size size(10, 10);
+  const gfx::Size layer_bounds(1000, 1000);
+
+  scoped_ptr<FakeDisplayListRecordingSource> recording_source =
+      FakeDisplayListRecordingSource::CreateFilledRecordingSource(layer_bounds);
+
+  SkPaint solid_paint;
+  SkColor solid_color = SkColorSetARGB(255, 12, 23, 34);
+  solid_paint.setColor(solid_color);
+  recording_source->add_draw_rect_with_paint(gfx::Rect(layer_bounds),
+                                             solid_paint);
+
+  // Create non solid tile as well, otherwise tilings wouldnt be created.
+  SkColor non_solid_color = SkColorSetARGB(128, 45, 56, 67);
+  SkPaint non_solid_paint;
+  non_solid_paint.setColor(non_solid_color);
+
+  recording_source->add_draw_rect_with_paint(gfx::Rect(0, 0, 10, 10),
+                                             non_solid_paint);
+  recording_source->Rerecord();
+
+  scoped_refptr<DisplayListRasterSource> raster_source =
+      DisplayListRasterSource::CreateFromDisplayListRecordingSource(
+          recording_source.get(), false);
+
+  FakePictureLayerTilingClient tiling_client;
+  tiling_client.SetTileSize(size);
+
+  scoped_ptr<PictureLayerImpl> layer_impl =
+      PictureLayerImpl::Create(host_impl_.active_tree(), 1, false, nullptr);
+  PictureLayerTilingSet* tiling_set = layer_impl->picture_layer_tiling_set();
+
+  PictureLayerTiling* tiling = tiling_set->AddTiling(1.0f, raster_source);
+  tiling->set_resolution(HIGH_RESOLUTION);
+  tiling->CreateAllTilesForTesting();
+  tiling->SetTilePriorityRectsForTesting(
+      gfx::Rect(layer_bounds),   // Visible rect.
+      gfx::Rect(layer_bounds),   // Skewport rect.
+      gfx::Rect(layer_bounds),   // Soon rect.
+      gfx::Rect(layer_bounds));  // Eventually rect.
+
+  host_impl_.tile_manager()->PrepareTiles(host_impl_.global_tile_state());
+
+  std::vector<Tile*> tiles = tiling->AllTilesForTesting();
+  for (size_t tile_idx = 0; tile_idx < tiles.size(); ++tile_idx) {
+    Tile* tile = tiles[tile_idx];
+    if (tile->id() == 1) {
+      // Non-solid tile.
+      EXPECT_TRUE(tile->HasRasterTask());
+      EXPECT_EQ(TileDrawInfo::RESOURCE_MODE, tile->draw_info().mode());
+    } else {
+      EXPECT_FALSE(tile->HasRasterTask());
+      EXPECT_EQ(TileDrawInfo::SOLID_COLOR_MODE, tile->draw_info().mode());
+      EXPECT_EQ(solid_color, tile->draw_info().solid_color());
+    }
+  }
+}
+
 // TODO(vmpstr): Merge TileManagerTest and TileManagerTilePriorityQueueTest.
 class TileManagerTest : public testing::Test {
  public:

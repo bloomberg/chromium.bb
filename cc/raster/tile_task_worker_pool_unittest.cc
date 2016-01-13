@@ -53,9 +53,7 @@ enum TileTaskWorkerPoolType {
 
 class TestRasterTaskImpl : public RasterTask {
  public:
-  typedef base::Callback<void(
-      const DisplayListRasterSource::SolidColorAnalysis& analysis,
-      bool was_canceled)> Reply;
+  typedef base::Callback<void(bool was_canceled)> Reply;
 
   TestRasterTaskImpl(const Resource* resource,
                      const Reply& reply,
@@ -81,8 +79,7 @@ class TestRasterTaskImpl : public RasterTask {
   }
   void CompleteOnOriginThread(TileTaskClient* client) override {
     client->ReleaseBufferForRaster(std::move(raster_buffer_));
-    reply_.Run(DisplayListRasterSource::SolidColorAnalysis(),
-               !HasFinishedRunning());
+    reply_.Run(!HasFinishedRunning());
   }
 
  protected:
@@ -273,7 +270,6 @@ class TileTaskWorkerPoolTest
   void OnTaskCompleted(
       scoped_ptr<ScopedResource> resource,
       unsigned id,
-      const DisplayListRasterSource::SolidColorAnalysis& analysis,
       bool was_canceled) {
     RasterTaskResult result;
     result.id = id;
