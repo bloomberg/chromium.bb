@@ -247,6 +247,32 @@ const char kRestoreStartupURLsMigrationTime[] =
 // Deprecated 12/2015.
 const char kRestoreOnStartupMigrated[] = "session.restore_on_startup_migrated";
 
+#if defined(USE_AURA)
+// Deprecated 1/2016.
+const char kMaxSeparationForGestureTouchesInPixels[] =
+    "gesture.max_separation_for_gesture_touches_in_pixels";
+const char kSemiLongPressTimeInMs[] = "gesture.semi_long_press_time_in_ms";
+const char kTabScrubActivationDelayInMs[] =
+    "gesture.tab_scrub_activation_delay_in_ms";
+const char kFlingMaxCancelToDownTimeInMs[] =
+    "gesture.fling_max_cancel_to_down_time_in_ms";
+const char kFlingMaxTapGapTimeInMs[] = "gesture.fling_max_tap_gap_time_in_ms";
+const char kOverscrollHorizontalThresholdComplete[] =
+    "overscroll.horizontal_threshold_complete";
+const char kOverscrollVerticalThresholdComplete[] =
+    "overscroll.vertical_threshold_complete";
+const char kOverscrollMinimumThresholdStart[] =
+    "overscroll.minimum_threshold_start";
+const char kOverscrollMinimumThresholdStartTouchpad[] =
+    "overscroll.minimum_threshold_start_touchpad";
+const char kOverscrollVerticalThresholdStart[] =
+    "overscroll.vertical_threshold_start";
+const char kOverscrollHorizontalResistThreshold[] =
+    "overscroll.horizontal_resist_threshold";
+const char kOverscrollVerticalResistThreshold[] =
+    "overscroll.vertical_resist_threshold";
+#endif  // defined(USE_AURA)
+
 }  // namespace
 
 namespace chrome {
@@ -539,6 +565,22 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(kShownAutoLaunchInfobarDeprecated, 0);
 #endif  // defined(OS_WIN)
 
+#if defined(USE_AURA)
+  registry->RegisterIntegerPref(kFlingMaxCancelToDownTimeInMs, 0);
+  registry->RegisterIntegerPref(kFlingMaxTapGapTimeInMs, 0);
+  registry->RegisterIntegerPref(kTabScrubActivationDelayInMs, 0);
+  registry->RegisterIntegerPref(kSemiLongPressTimeInMs, 0);
+  registry->RegisterDoublePref(kMaxSeparationForGestureTouchesInPixels, 0);
+
+  registry->RegisterDoublePref(kOverscrollHorizontalThresholdComplete, 0);
+  registry->RegisterDoublePref(kOverscrollVerticalThresholdComplete, 0);
+  registry->RegisterDoublePref(kOverscrollMinimumThresholdStart, 0);
+  registry->RegisterDoublePref(kOverscrollMinimumThresholdStartTouchpad, 0);
+  registry->RegisterDoublePref(kOverscrollVerticalThresholdStart, 0);
+  registry->RegisterDoublePref(kOverscrollHorizontalResistThreshold, 0);
+  registry->RegisterDoublePref(kOverscrollVerticalResistThreshold, 0);
+#endif  // defined(USE_AURA)
+
   registry->RegisterListPref(kURLsToRestoreOnStartupOld);
   registry->RegisterInt64Pref(kRestoreStartupURLsMigrationTime, 0);
   registry->RegisterBooleanPref(kRestoreOnStartupMigrated, false);
@@ -566,19 +608,11 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
-#if defined(TOOLKIT_VIEWS)
-  // Added 05/2014.
-  MigrateBrowserTabStripPrefs(local_state);
-#endif
 }
 
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-  // Added 07/2014.
-  translate::TranslatePrefs::MigrateUserPrefs(profile_prefs,
-                                              prefs::kAcceptLanguages);
 
 #if defined(OS_CHROMEOS) && defined(ENABLE_APP_LIST)
   // Added 02/2015.
@@ -596,6 +630,22 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 12/2015.
   profile_prefs->ClearPref(kRestoreOnStartupMigrated);
+
+#if defined(USE_AURA)
+  // Added 1/2016
+  profile_prefs->ClearPref(kFlingMaxCancelToDownTimeInMs);
+  profile_prefs->ClearPref(kFlingMaxTapGapTimeInMs);
+  profile_prefs->ClearPref(kTabScrubActivationDelayInMs);
+  profile_prefs->ClearPref(kMaxSeparationForGestureTouchesInPixels);
+  profile_prefs->ClearPref(kSemiLongPressTimeInMs);
+  profile_prefs->ClearPref(kOverscrollHorizontalThresholdComplete);
+  profile_prefs->ClearPref(kOverscrollVerticalThresholdComplete);
+  profile_prefs->ClearPref(kOverscrollMinimumThresholdStart);
+  profile_prefs->ClearPref(kOverscrollMinimumThresholdStartTouchpad);
+  profile_prefs->ClearPref(kOverscrollVerticalThresholdStart);
+  profile_prefs->ClearPref(kOverscrollHorizontalResistThreshold);
+  profile_prefs->ClearPref(kOverscrollVerticalResistThreshold);
+#endif  // defined(USE_AURA)
 }
 
 }  // namespace chrome

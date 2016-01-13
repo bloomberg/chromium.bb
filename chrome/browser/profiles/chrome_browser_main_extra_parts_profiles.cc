@@ -111,10 +111,6 @@
 #endif
 #endif
 
-#if defined(USE_AURA)
-#include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
-#endif
-
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
 #else
@@ -232,9 +228,6 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   FaviconServiceFactory::GetInstance();
   FindBarStateFactory::GetInstance();
   GAIAInfoUpdateServiceFactory::GetInstance();
-#if defined(USE_AURA)
-  GesturePrefsObserverFactoryAura::GetInstance();
-#endif
 #if !defined(OS_ANDROID)
   GlobalErrorServiceFactory::GetInstance();
 #endif

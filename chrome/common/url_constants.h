@@ -106,7 +106,6 @@ extern const char kChromeUINfcDebugURL[];
 extern const char kChromeUIOobeURL[];
 extern const char kChromeUIOSCreditsURL[];
 extern const char kChromeUIProxySettingsURL[];
-extern const char kChromeUISalsaURL[];
 extern const char kChromeUIScreenlockIconURL[];
 extern const char kChromeUISetTimeURL[];
 extern const char kChromeUISimUnlockURL[];
@@ -118,11 +117,6 @@ extern const char kChromeUIUserImageURL[];
 
 #if defined(OS_WIN)
 extern const char kChromeUIMetroFlowURL[];
-#endif
-
-#if defined(USE_AURA)
-extern const char kChromeUIGestureConfigURL[];
-extern const char kChromeUIGestureConfigHost[];
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
@@ -277,7 +271,6 @@ extern const char kChromeUIOSCreditsHost[];
 extern const char kChromeUIPowerHost[];
 extern const char kChromeUIProxySettingsHost[];
 extern const char kChromeUIRotateHost[];
-extern const char kChromeUISalsaHost[];
 extern const char kChromeUIScreenlockIconHost[];
 extern const char kChromeUISetTimeHost[];
 extern const char kChromeUISimUnlockHost[];

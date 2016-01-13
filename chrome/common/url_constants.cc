@@ -112,7 +112,6 @@ const char kChromeUINfcDebugURL[] = "chrome://nfc-debug/";
 const char kChromeUIOobeURL[] = "chrome://oobe/";
 const char kChromeUIOSCreditsURL[] = "chrome://os-credits/";
 const char kChromeUIProxySettingsURL[] = "chrome://proxy-settings/";
-const char kChromeUISalsaURL[] = "chrome://salsa/";
 const char kChromeUIScreenlockIconURL[] = "chrome://screenlock-icon/";
 const char kChromeUISetTimeURL[] = "chrome://set-time/";
 const char kChromeUISimUnlockURL[] = "chrome://sim-unlock/";
@@ -124,11 +123,6 @@ const char kChromeUIUserImageURL[] = "chrome://userimage/";
 
 #if defined(OS_WIN)
 const char kChromeUIMetroFlowURL[] = "chrome://make-metro/";
-#endif
-
-#if defined(USE_AURA)
-const char kChromeUIGestureConfigURL[] = "chrome://gesture/";
-const char kChromeUIGestureConfigHost[] = "gesture";
 #endif
 
 #if (defined(OS_LINUX) && defined(TOOLKIT_VIEWS)) || defined(USE_AURA)
@@ -290,7 +284,6 @@ const char kChromeUIOSCreditsHost[] = "os-credits";
 const char kChromeUIPowerHost[] = "power";
 const char kChromeUIProxySettingsHost[] = "proxy-settings";
 const char kChromeUIRotateHost[] = "rotate";
-const char kChromeUISalsaHost[] = "salsa";
 const char kChromeUIScreenlockIconHost[] = "screenlock-icon";
 const char kChromeUISetTimeHost[] = "set-time";
 const char kChromeUISimUnlockHost[] = "sim-unlock";

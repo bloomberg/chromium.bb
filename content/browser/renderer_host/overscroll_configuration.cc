@@ -22,42 +22,6 @@ float g_vert_resist_after = 30.f;
 
 namespace content {
 
-void SetOverscrollConfig(OverscrollConfig config, float value) {
-  switch (config) {
-    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE:
-      g_horiz_threshold_complete = value;
-      break;
-
-    case OVERSCROLL_CONFIG_VERT_THRESHOLD_COMPLETE:
-      g_vert_threshold_complete = value;
-      break;
-
-    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN:
-      g_horiz_threshold_start_touchscreen = value;
-      break;
-
-    case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD:
-      g_horiz_threshold_start_touchpad = value;
-      break;
-
-    case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
-      g_vert_threshold_start = value;
-      break;
-
-    case OVERSCROLL_CONFIG_HORIZ_RESIST_AFTER:
-      g_horiz_resist_after = value;
-      break;
-
-    case OVERSCROLL_CONFIG_VERT_RESIST_AFTER:
-      g_vert_resist_after = value;
-      break;
-
-    case OVERSCROLL_CONFIG_NONE:
-    case OVERSCROLL_CONFIG_COUNT:
-      NOTREACHED();
-  }
-}
-
 float GetOverscrollConfig(OverscrollConfig config) {
   switch (config) {
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_COMPLETE:

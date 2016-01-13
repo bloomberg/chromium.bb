@@ -1999,32 +1999,6 @@ const char kPolicyPinnedLauncherApps[] = "policy_pinned_launcher_apps";
 const char kShowLogoutButtonInTray[] = "show_logout_button_in_tray";
 #endif
 
-#if defined(USE_AURA)
-// Tuning settings for gestures.
-const char kMaxSeparationForGestureTouchesInPixels[] =
-    "gesture.max_separation_for_gesture_touches_in_pixels";
-const char kSemiLongPressTimeInMs[] = "gesture.semi_long_press_time_in_ms";
-const char kTabScrubActivationDelayInMs[] =
-    "gesture.tab_scrub_activation_delay_in_ms";
-const char kFlingMaxCancelToDownTimeInMs[] =
-    "gesture.fling_max_cancel_to_down_time_in_ms";
-const char kFlingMaxTapGapTimeInMs[] = "gesture.fling_max_tap_gap_time_in_ms";
-const char kOverscrollHorizontalThresholdComplete[] =
-    "overscroll.horizontal_threshold_complete";
-const char kOverscrollVerticalThresholdComplete[] =
-    "overscroll.vertical_threshold_complete";
-const char kOverscrollMinimumThresholdStart[] =
-    "overscroll.minimum_threshold_start";
-const char kOverscrollMinimumThresholdStartTouchpad[] =
-    "overscroll.minimum_threshold_start_touchpad";
-const char kOverscrollVerticalThresholdStart[] =
-    "overscroll.vertical_threshold_start";
-const char kOverscrollHorizontalResistThreshold[] =
-    "overscroll.horizontal_resist_threshold";
-const char kOverscrollVerticalResistThreshold[] =
-    "overscroll.vertical_resist_threshold";
-#endif
-
 #if defined(OS_WIN)
 // Counts how many more times the 'profile on a network share' warning should be
 // shown to the user before the next silence period.

@@ -141,7 +141,6 @@
 #include "chrome/browser/ui/webui/chromeos/nfc_debug_ui.h"
 #include "chrome/browser/ui/webui/chromeos/power_ui.h"
 #include "chrome/browser/ui/webui/chromeos/proxy_settings_ui.h"
-#include "chrome/browser/ui/webui/chromeos/salsa_ui.h"
 #include "chrome/browser/ui/webui/chromeos/set_time_ui.h"
 #include "chrome/browser/ui/webui/chromeos/sim_unlock_ui.h"
 #include "chrome/browser/ui/webui/chromeos/slow_trace_ui.h"
@@ -157,10 +156,6 @@
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/app_launcher_page_ui.h"
-#endif
-
-#if defined(USE_AURA)
-#include "chrome/browser/ui/webui/gesture_config_ui.h"
 #endif
 
 #if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
@@ -474,8 +469,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<proximity_auth::ProximityAuthUI>;
   if (url.host() == chrome::kChromeUIProxySettingsHost)
     return &NewWebUI<chromeos::ProxySettingsUI>;
-  if (url.host() == chrome::kChromeUISalsaHost)
-    return &NewWebUI<SalsaUI>;
   if (url.host() == chrome::kChromeUISetTimeHost)
     return &NewWebUI<chromeos::SetTimeUI>;
   if (url.host() == chrome::kChromeUISimUnlockHost)
@@ -530,10 +523,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   if (url.host() == chrome::kChromeUITabModalConfirmDialogHost) {
     return &NewWebUI<ConstrainedWebDialogUI>;
   }
-#endif
-#if defined(USE_AURA)
-  if (url.host() == chrome::kChromeUIGestureConfigHost)
-    return &NewWebUI<GestureConfigUI>;
 #endif
 #if (defined(USE_NSS_CERTS) || defined(USE_OPENSSL_CERTS)) && defined(USE_AURA)
   if (url.host() == chrome::kChromeUICertificateViewerHost)

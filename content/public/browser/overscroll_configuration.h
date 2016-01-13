@@ -22,8 +22,6 @@ enum OverscrollConfig {
   OVERSCROLL_CONFIG_COUNT
 };
 
-CONTENT_EXPORT void SetOverscrollConfig(OverscrollConfig config, float value);
-
 CONTENT_EXPORT float GetOverscrollConfig(OverscrollConfig config);
 
 }  // namespace content
