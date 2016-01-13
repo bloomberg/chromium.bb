@@ -23,15 +23,10 @@ IntersectionObservation::IntersectionObservation(IntersectionObserver& observer,
 {
 }
 
-Element* IntersectionObservation::target() const
-{
-    return toElement(m_target.get());
-}
-
 void IntersectionObservation::initializeGeometry(IntersectionGeometry& geometry)
 {
     ASSERT(m_target);
-    LayoutObject* targetLayoutObject = target()->layoutObject();
+    LayoutObject* targetLayoutObject = m_target->layoutObject();
     if (targetLayoutObject->isBoxModelObject())
         geometry.targetRect = toLayoutBoxModelObject(targetLayoutObject)->visualOverflowRect();
     else
@@ -45,7 +40,7 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
     // TODO(szager): the writing mode flipping needs a test.
     ASSERT(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
-    LayoutObject* targetLayoutObject = target()->layoutObject();
+    LayoutObject* targetLayoutObject = m_target->layoutObject();
     targetLayoutObject->mapToVisibleRectInAncestorSpace(toLayoutBoxModelObject(rootLayoutObject), rect, nullptr);
     if (rootLayoutObject->hasOverflowClip()) {
         LayoutBox* rootLayoutBox = toLayoutBox(rootLayoutObject);
@@ -59,10 +54,10 @@ void IntersectionObservation::clipToRoot(LayoutRect& rect)
 
 void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry)
 {
-    Node* rootNode = m_observer->root();
+    Element* rootElement = m_observer->root();
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
-    if (rootLayoutObject->isLayoutView()) {
-        geometry.rootRect = LayoutRect(toLayoutView(rootLayoutObject)->frameView()->visibleContentRect());
+    if (rootElement == rootElement->document().documentElement()) {
+        geometry.rootRect = LayoutRect(rootElement->document().view()->visibleContentRect());
         m_observer->applyRootMargin(geometry.rootRect);
         geometry.intersectionRect.intersect(geometry.rootRect);
     } else {
@@ -73,7 +68,7 @@ void IntersectionObservation::clipToFrameView(IntersectionGeometry& geometry)
         m_observer->applyRootMargin(geometry.rootRect);
     }
 
-    LayoutPoint scrollPosition(rootNode->document().view()->scrollPosition());
+    LayoutPoint scrollPosition(rootElement->document().view()->scrollPosition());
     geometry.targetRect.moveBy(-scrollPosition);
     geometry.intersectionRect.moveBy(-scrollPosition);
     geometry.rootRect.moveBy(-scrollPosition);
@@ -88,7 +83,7 @@ bool IntersectionObservation::computeGeometry(IntersectionGeometry& geometry)
 {
     ASSERT(m_target);
     LayoutObject* rootLayoutObject = m_observer->rootLayoutObject();
-    LayoutObject* targetLayoutObject = target()->layoutObject();
+    LayoutObject* targetLayoutObject = m_target->layoutObject();
     if (!rootLayoutObject->isBoxModelObject())
         return false;
     if (!targetLayoutObject->isBoxModelObject() && !targetLayoutObject->isText())
@@ -162,7 +157,7 @@ void IntersectionObservation::computeIntersectionObservations(double timestamp)
 void IntersectionObservation::disconnect()
 {
     if (m_target)
-        target()->ensureIntersectionObserverData().removeObservation(this->observer());
+        m_target->ensureIntersectionObserverData().removeObservation(this->observer());
     m_observer->removeObservation(*this);
     m_observer.clear();
 }

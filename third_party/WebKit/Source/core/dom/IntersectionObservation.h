@@ -12,7 +12,6 @@ namespace blink {
 
 class Element;
 class IntersectionObserver;
-class Node;
 
 class IntersectionObservation : public GarbageCollectedFinalized<IntersectionObservation> {
 public:
@@ -25,7 +24,7 @@ public:
     };
 
     IntersectionObserver& observer() const { return *m_observer; }
-    Element* target() const;
+    Element* target() const { return m_target.get(); }
     bool isActive() const { return m_active; }
     void setActive(bool active) { m_active = active; }
     unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
@@ -44,12 +43,7 @@ private:
     bool computeGeometry(IntersectionGeometry&);
 
     Member<IntersectionObserver> m_observer;
-
-    // TODO(szager): Why Node instead of Element?  Because NodeIntersectionObserverData::createWeakPtr()
-    // returns a WeakPtr<Node>, which cannot be coerced into a WeakPtr<Element>.  When oilpan rolls out,
-    // this can be changed to WeakMember<Element>.
-    WeakPtrWillBeWeakMember<Node> m_target;
-
+    WeakPtrWillBeWeakMember<Element> m_target;
     unsigned m_active : 1;
     unsigned m_shouldReportRootBounds : 1;
     unsigned m_lastThresholdIndex : 30;

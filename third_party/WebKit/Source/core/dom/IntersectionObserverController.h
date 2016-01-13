@@ -28,7 +28,7 @@ public:
     void deliverIntersectionObservations(Timer<IntersectionObserverController>*);
     void computeTrackedIntersectionObservations();
     void addTrackedObserver(IntersectionObserver&);
-    void removeTrackedObserversForRoot(const Node&);
+    void removeTrackedObserversForRoot(const Element&);
 
     DECLARE_TRACE();
 

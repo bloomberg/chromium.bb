@@ -2,30 +2,31 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/NodeIntersectionObserverData.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/dom/IntersectionObservation.h"
 #include "core/dom/IntersectionObserver.h"
 #include "core/dom/IntersectionObserverController.h"
 
 namespace blink {
 
-NodeIntersectionObserverData::NodeIntersectionObserverData() { }
+ElementIntersectionObserverData::ElementIntersectionObserverData() { }
 
-NodeIntersectionObserverData::~NodeIntersectionObserverData() { }
+ElementIntersectionObserverData::~ElementIntersectionObserverData() { }
 
-bool NodeIntersectionObserverData::hasIntersectionObserver() const
+bool ElementIntersectionObserverData::hasIntersectionObserver() const
 {
     return !m_intersectionObservers.isEmpty();
 }
 
-bool NodeIntersectionObserverData::hasIntersectionObservation() const
+bool ElementIntersectionObserverData::hasIntersectionObservation() const
 {
     return !m_intersectionObservations.isEmpty();
 }
 
-IntersectionObservation* NodeIntersectionObserverData::getObservationFor(IntersectionObserver& observer)
+IntersectionObservation* ElementIntersectionObserverData::getObservationFor(IntersectionObserver& observer)
 {
     auto i = m_intersectionObservations.find(&observer);
     if (i == m_intersectionObservations.end())
@@ -33,35 +34,30 @@ IntersectionObservation* NodeIntersectionObserverData::getObservationFor(Interse
     return i->value;
 }
 
-void NodeIntersectionObserverData::addObservation(IntersectionObservation& observation)
+void ElementIntersectionObserverData::addObservation(IntersectionObservation& observation)
 {
     m_intersectionObservations.add(&observation.observer(), &observation);
 }
 
-void NodeIntersectionObserverData::removeObservation(IntersectionObserver& observer)
+void ElementIntersectionObserverData::removeObservation(IntersectionObserver& observer)
 {
     m_intersectionObservations.remove(&observer);
 }
 
-void NodeIntersectionObserverData::activateValidIntersectionObservers(Node& node)
+void ElementIntersectionObserverData::activateValidIntersectionObservers(Element& element)
 {
-    IntersectionObserverController& controller = node.document().ensureIntersectionObserverController();
-    // Activate observers for which node is root.
+    IntersectionObserverController& controller = element.document().ensureIntersectionObserverController();
     for (auto& observer : m_intersectionObservers) {
         controller.addTrackedObserver(*observer);
         observer->setActive(true);
     }
-    // A document can be root, but not target.
-    if (node.isDocumentNode())
-        return;
-    // Active observers for which node is target.
     for (auto& observation : m_intersectionObservations)
-        observation.value->setActive(observation.key->isDescendantOfRoot(&toElement(node)));
+        observation.value->setActive(observation.key->isDescendantOfRoot(&element));
 }
 
-void NodeIntersectionObserverData::deactivateAllIntersectionObservers(Node& node)
+void ElementIntersectionObserverData::deactivateAllIntersectionObservers(Element& element)
 {
-    node.document().ensureIntersectionObserverController().removeTrackedObserversForRoot(node);
+    element.document().ensureIntersectionObserverController().removeTrackedObserversForRoot(element);
     for (auto& observer : m_intersectionObservers)
         observer->setActive(false);
     for (auto& observation : m_intersectionObservations)
@@ -69,7 +65,7 @@ void NodeIntersectionObserverData::deactivateAllIntersectionObservers(Node& node
 }
 
 #if !ENABLE(OILPAN)
-void NodeIntersectionObserverData::dispose()
+void ElementIntersectionObserverData::dispose()
 {
     HeapVector<Member<IntersectionObserver>> observersToDisconnect;
     copyToVector(m_intersectionObservers, observersToDisconnect);
@@ -79,20 +75,18 @@ void NodeIntersectionObserverData::dispose()
 }
 #endif
 
-WeakPtrWillBeRawPtr<Node> NodeIntersectionObserverData::createWeakPtr(Node* node)
+WeakPtrWillBeRawPtr<Element> ElementIntersectionObserverData::createWeakPtr(Element* element)
 {
 #if ENABLE(OILPAN)
-    return node;
+    return element;
 #else
     if (!m_weakPointerFactory)
-        m_weakPointerFactory = adoptPtrWillBeNoop(new WeakPtrFactory<Node>(node));
-    WeakPtr<Node> result = m_weakPointerFactory->createWeakPtr();
-    ASSERT(result.get() == node);
-    return result;
+        m_weakPointerFactory = adoptPtrWillBeNoop(new WeakPtrFactory<Element>(element));
+    return m_weakPointerFactory->createWeakPtr();
 #endif
 }
 
-DEFINE_TRACE(NodeIntersectionObserverData)
+DEFINE_TRACE(ElementIntersectionObserverData)
 {
     visitor->trace(m_intersectionObservers);
     visitor->trace(m_intersectionObservations);

@@ -52,6 +52,7 @@ class CustomElementDefinition;
 class DOMStringMap;
 class DOMTokenList;
 class Dictionary;
+class ElementIntersectionObserverData;
 class ElementRareData;
 class ElementShadow;
 class ExceptionState;
@@ -59,7 +60,6 @@ class Image;
 class IntSize;
 class Locale;
 class MutableStylePropertySet;
-class NodeIntersectionObserverData;
 class PropertySetCSSStyleDeclaration;
 class PseudoElement;
 class ScrollState;
@@ -554,8 +554,8 @@ public:
 
     SpellcheckAttributeState spellcheckAttributeState() const;
 
-    NodeIntersectionObserverData* intersectionObserverData() const;
-    NodeIntersectionObserverData& ensureIntersectionObserverData();
+    ElementIntersectionObserverData* intersectionObserverData() const;
+    ElementIntersectionObserverData& ensureIntersectionObserverData();
 
 protected:
     Element(const QualifiedName& tagName, Document*, ConstructionType);

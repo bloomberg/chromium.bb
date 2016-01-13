@@ -26,8 +26,8 @@
 #include "core/dom/Attr.h"
 #include "core/dom/CompositorProxiedPropertySet.h"
 #include "core/dom/DatasetDOMStringMap.h"
+#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/NamedNodeMap.h"
-#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/custom/CustomElementDefinition.h"
@@ -125,11 +125,11 @@ public:
     AttrNodeList* attrNodeList() { return m_attrNodeList.get(); }
     void removeAttrNodeList() { m_attrNodeList.clear(); }
 
-    NodeIntersectionObserverData* intersectionObserverData() const { return m_intersectionObserverData.get(); }
-    NodeIntersectionObserverData& ensureIntersectionObserverData()
+    ElementIntersectionObserverData* intersectionObserverData() const { return m_intersectionObserverData.get(); }
+    ElementIntersectionObserverData& ensureIntersectionObserverData()
     {
         if (!m_intersectionObserverData)
-            m_intersectionObserverData = new NodeIntersectionObserverData();
+            m_intersectionObserverData = new ElementIntersectionObserverData();
         return *m_intersectionObserverData;
     }
 
@@ -153,7 +153,7 @@ private:
     OwnPtr<CompositorProxiedPropertySet> m_proxiedProperties;
 
     PersistentWillBeMember<ElementAnimations> m_elementAnimations;
-    PersistentWillBeMember<NodeIntersectionObserverData> m_intersectionObserverData;
+    PersistentWillBeMember<ElementIntersectionObserverData> m_intersectionObserverData;
 
     RefPtr<ComputedStyle> m_computedStyle;
     RefPtrWillBeMember<CustomElementDefinition> m_customElementDefinition;
