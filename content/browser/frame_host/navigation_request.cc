@@ -92,10 +92,9 @@ scoped_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
   }
 
   scoped_ptr<NavigationRequest> navigation_request(new NavigationRequest(
-      frame_tree_node,
-      entry.ConstructCommonNavigationParams(dest_url, dest_referrer,
-                                            frame_entry, navigation_type,
-                                            LOFI_UNSPECIFIED, navigation_start),
+      frame_tree_node, entry.ConstructCommonNavigationParams(
+                           dest_url, dest_referrer, navigation_type,
+                           LOFI_UNSPECIFIED, navigation_start),
       BeginNavigationParams(method, headers.ToString(),
                             LoadFlagFromNavigationType(navigation_type),
                             false,  // has_user_gestures

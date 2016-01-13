@@ -155,7 +155,6 @@ class CONTENT_EXPORT NavigationEntryImpl
   CommonNavigationParams ConstructCommonNavigationParams(
       const GURL& dest_url,
       const Referrer& dest_referrer,
-      const FrameNavigationEntry& frame_entry,
       FrameMsg_Navigate_Type::Value navigation_type,
       LoFiState lofi_state,
       const base::TimeTicks& navigation_start) const;

@@ -560,7 +560,6 @@ scoped_ptr<NavigationEntryImpl> NavigationEntryImpl::CloneAndReplace(
 CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
     const GURL& dest_url,
     const Referrer& dest_referrer,
-    const FrameNavigationEntry& frame_entry,
     FrameMsg_Navigate_Type::Value navigation_type,
     LoFiState lofi_state,
     const base::TimeTicks& navigation_start) const {
