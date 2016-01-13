@@ -26,6 +26,7 @@
 #ifndef CString_h
 #define CString_h
 
+#include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WTFExport.h"
@@ -57,6 +58,7 @@ private:
 // A container for a null-terminated char array supporting copy-on-write
 // assignment.  The contained char array may be null.
 class WTF_EXPORT CString {
+    USING_FAST_MALLOC(CString);
 public:
     CString() { }
     CString(const char*);

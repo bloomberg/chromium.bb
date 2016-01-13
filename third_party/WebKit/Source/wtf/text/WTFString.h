@@ -25,6 +25,7 @@
 // This file would be called String.h, but that conflicts with <string.h>
 // on systems without case-sensitive file systems.
 
+#include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
 #include "wtf/testing/WTFUnitTestHelpersExport.h"
@@ -96,6 +97,7 @@ bool isAllSpecialCharacters(const CharacterType*, size_t);
 // You can find documentation about this class in this doc:
 // https://docs.google.com/document/d/1kOCUlJdh2WJMJGDf-WoEQhmnjKLaOYRbiHz5TiGJl14/edit?usp=sharing
 class WTF_EXPORT String {
+    USING_FAST_MALLOC(String);
 public:
     // Construct a null string, distinguishable from an empty string.
     String() { }

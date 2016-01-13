@@ -21,6 +21,7 @@
 #ifndef AtomicString_h
 #define AtomicString_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/WTFExport.h"
 #include "wtf/testing/WTFUnitTestHelpersExport.h"
@@ -33,6 +34,7 @@ namespace WTF {
 struct AtomicStringHash;
 
 class WTF_EXPORT AtomicString {
+    USING_FAST_MALLOC(AtomicString);
 public:
     static void init();
     static void reserveTableCapacity(size_t);
