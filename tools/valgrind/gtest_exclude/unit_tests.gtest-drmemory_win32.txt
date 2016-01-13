@@ -81,3 +81,6 @@ SafeBrowsingModuleVerifierWinTest.VerifyModuleUnmodified
 
 # http://crbug.com/467004
 SigninErrorNotifierTest.NoErrorAuthStatusProviders
+
+# https://crbug.com/577410
+PluginInfoMessageFilterTest.FindEnabledPlugin
