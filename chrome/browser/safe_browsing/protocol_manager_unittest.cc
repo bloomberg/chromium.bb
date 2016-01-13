@@ -313,13 +313,136 @@ TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashRequest) {
   req.SerializeToString(&req_data);
   base::Base64Encode(req_data, &req_base64);
 
+  std::vector<PlatformType> platform;
+  platform.push_back(CHROME_PLATFORM);
   std::vector<SBPrefix> prefixes;
   prefixes.push_back(one);
   prefixes.push_back(two);
   prefixes.push_back(three);
   EXPECT_EQ(
       req_base64,
-      pm->GetV4HashRequest(prefixes, API_ABUSE));
+      pm->GetV4HashRequest(prefixes, platform, API_ABUSE));
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestParseV4HashResponse) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesResponse res;
+  res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* m = res.add_matches();
+  m->set_threat_type(API_ABUSE);
+  m->set_platform_type(CHROME_PLATFORM);
+  m->set_threat_entry_type(URL_EXPRESSION);
+  m->mutable_cache_duration()->set_seconds(300);
+  m->mutable_threat()->set_hash(SBFullHashToString(
+      SBFullHashForString("Everything's shiny, Cap'n.")));
+  ThreatEntryMetadata::MetadataEntry* e =
+      m->mutable_threat_entry_metadata()->add_entries();
+  e->set_key("permission");
+  e->set_value("NOTIFICATIONS");
+
+  // Serialize.
+  std::string res_data;
+  res.SerializeToString(&res_data);
+
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
+  EXPECT_EQ(1ul, full_hashes.size());
+  EXPECT_TRUE(SBFullHashEqual(
+      SBFullHashForString("Everything's shiny, Cap'n."), full_hashes[0].hash));
+  EXPECT_EQ("NOTIFICATIONS,", full_hashes[0].metadata);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(300), full_hashes[0].cache_duration);
+}
+
+// Adds an entry with an ignored ThreatEntryType.
+TEST_F(SafeBrowsingProtocolManagerTest,
+    TestParseV4HashResponseWrongThreatEntryType) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesResponse res;
+  res.mutable_negative_cache_duration()->set_seconds(600);
+  res.add_matches()->set_threat_entry_type(BINARY_DIGEST);
+
+  // Serialize.
+  std::string res_data;
+  res.SerializeToString(&res_data);
+
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
+  // THere should be no hash results.
+  EXPECT_EQ(0ul, full_hashes.size());
+}
+
+// Adds an entry with an SOCIAL_ENGINEERING threat type.
+TEST_F(SafeBrowsingProtocolManagerTest,
+    TestParseV4HashResponseSocialEngineeringThreatType) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesResponse res;
+  res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* m = res.add_matches();
+  m->set_threat_type(SOCIAL_ENGINEERING);
+  m->set_platform_type(CHROME_PLATFORM);
+  m->set_threat_entry_type(URL_EXPRESSION);
+  m->mutable_threat()->set_hash(
+      SBFullHashToString(SBFullHashForString("Not to fret.")));
+  ThreatEntryMetadata::MetadataEntry* e =
+      m->mutable_threat_entry_metadata()->add_entries();
+  e->set_key("permission");
+  e->set_value("IGNORED");
+
+  // Serialize.
+  std::string res_data;
+  res.SerializeToString(&res_data);
+
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
+  EXPECT_EQ(0ul, full_hashes.size());
+}
+
+// Adds metadata with a key value that is not "permission".
+TEST_F(SafeBrowsingProtocolManagerTest,
+    TestParseV4HashResponseNonPermissionMetadata) {
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  FindFullHashesResponse res;
+  res.mutable_negative_cache_duration()->set_seconds(600);
+  ThreatMatch* m = res.add_matches();
+  m->set_threat_type(API_ABUSE);
+  m->set_platform_type(CHROME_PLATFORM);
+  m->set_threat_entry_type(URL_EXPRESSION);
+  m->mutable_threat()->set_hash(
+      SBFullHashToString(SBFullHashForString("Not to fret.")));
+  ThreatEntryMetadata::MetadataEntry* e =
+      m->mutable_threat_entry_metadata()->add_entries();
+  e->set_key("notpermission");
+  e->set_value("NOTGEOLOCATION");
+
+  // Serialize.
+  std::string res_data;
+  res.SerializeToString(&res_data);
+
+  std::vector<SBFullHashResult> full_hashes;
+  base::TimeDelta cache_lifetime;
+  pm->ParseV4HashResponse(res_data, &full_hashes, &cache_lifetime);
+
+  EXPECT_EQ(base::TimeDelta::FromSeconds(600), cache_lifetime);
+  EXPECT_EQ(1ul, full_hashes.size());
+
+  EXPECT_TRUE(SBFullHashEqual(
+      SBFullHashForString("Not to fret."), full_hashes[0].hash));
+  // Metadata should be empty.
+  EXPECT_EQ("", full_hashes[0].metadata);
+  EXPECT_EQ(base::TimeDelta::FromSeconds(0), full_hashes[0].cache_duration);
 }
 
 TEST_F(SafeBrowsingProtocolManagerTest, TestUpdateUrl) {

@@ -65,6 +65,9 @@ struct SBFullHashResult {
   // TODO(shess): Refactor to allow ListType here.
   int list_id;
   std::string metadata;
+  // Used only for V4 results. The cache lifetime for this result. The response
+  // must not be cached for more than this duration to avoid false positives.
+  base::TimeDelta cache_duration;
 };
 
 // Caches individual response from GETHASH request.

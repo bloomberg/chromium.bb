@@ -91,6 +91,7 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // argument when the results are retrieved. The callback may be invoked
   // synchronously. Uses the V4 Safe Browsing protocol.
   virtual void GetV4FullHashes(const std::vector<SBPrefix>& prefixes,
+                               const std::vector<PlatformType>& platforms,
                                ThreatType threat_type,
                                FullHashCallback callback);
 
@@ -206,6 +207,14 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetV4HashRequest);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestParseV4HashResponse);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestParseV4HashResponseWrongThreatEntryType);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestParseV4HashResponseSocialEngineeringThreatType);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestParseV4HashResponseNonPermissionMetadata);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetHashBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
@@ -246,10 +255,20 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
   // encoded in base 64.
   GURL GetV4HashUrl(const std::string& request_base64) const;
 
-  // Fills a FindFullHashesRequest protocol buffer for an API_ABUSE request.
+  // Fills a FindFullHashesRequest protocol buffer for a V4 request.
   // Returns the serialized and base 64 encoded request as a string.
   std::string GetV4HashRequest(const std::vector<SBPrefix>& prefixes,
+                               const std::vector<PlatformType>& platforms,
                                ThreatType threat_type);
+
+  // Parses a FindFullHashesResponse protocol buffer and fills the results in
+  // |full_hashes| and |negative_cache_duration|. |data| is a serialized
+  // FindFullHashes protocol buffer. |negative_cache_duration| is the duration
+  // to cache the response for entities that did not match the threat list.
+  // Returns true if parsing is successful, false otherwise.
+  bool ParseV4HashResponse(const std::string& data_base64,
+                           std::vector<SBFullHashResult>* full_hashes,
+                           base::TimeDelta* negative_cache_duration);
 
   // Composes a ChunkUrl based on input string.
   GURL NextChunkUrl(const std::string& input) const;
