@@ -72,7 +72,8 @@ PepperPortAllocatorSession::PepperPortAllocatorSession(
                                component,
                                ice_username_fragment,
                                ice_password),
-      pp_instance_(allocator->pp_instance()) {}
+      pp_instance_(allocator->pp_instance()),
+      callback_factory_(this) {}
 
 PepperPortAllocatorSession::~PepperPortAllocatorSession() {}
 
