@@ -898,7 +898,7 @@ void StartupTimeBomb::DeleteStartupWatchdog() {
   if (startup_watchdog_->IsJoinable()) {
     // Allow the watchdog thread to shutdown on UI. Watchdog thread shutdowns
     // very fast.
-    base::ThreadRestrictions::SetIOAllowed(true);
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
     delete startup_watchdog_;
     startup_watchdog_ = nullptr;
     return;
