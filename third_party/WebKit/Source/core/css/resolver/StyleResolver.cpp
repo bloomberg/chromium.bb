@@ -1012,8 +1012,10 @@ StyleRuleKeyframes* StyleResolver::findKeyframesRule(const Element* element, con
 template <CSSPropertyPriority priority>
 void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const ActiveInterpolationsMap& activeInterpolationsMap)
 {
+    // TODO(alancutter): Don't apply presentation attribute animations here,
+    // they should instead apply in SVGElement::collectStyleForPresentationAttribute().
     for (const auto& entry : activeInterpolationsMap) {
-        CSSPropertyID property = entry.key.cssProperty();
+        CSSPropertyID property = entry.key.isCSSProperty() ? entry.key.cssProperty() : entry.key.presentationAttribute();
         if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
             continue;
         const Interpolation& interpolation = *entry.value.first();

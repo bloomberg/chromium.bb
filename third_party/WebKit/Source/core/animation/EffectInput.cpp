@@ -107,9 +107,10 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
         for (const auto& property : keyframeProperties) {
             String value;
             DictionaryHelper::get(keyframeDictionary, property, value);
-            CSSPropertyID id = AnimationInputHelpers::keyframeAttributeToCSSPropertyID(property, *element);
-            if (id != CSSPropertyInvalid) {
-                keyframe->setPropertyValue(id, value, element, styleSheetContents);
+
+            CSSPropertyID cssProperty = AnimationInputHelpers::keyframeAttributeToCSSProperty(property);
+            if (cssProperty != CSSPropertyInvalid) {
+                keyframe->setCSSPropertyValue(cssProperty, value, element, styleSheetContents);
                 continue;
             }
 
@@ -119,22 +120,35 @@ EffectModel* EffectInput::convert(Element* element, const Vector<Dictionary>& ke
                 continue;
             }
 
-            const QualifiedName* qualifiedName = AnimationInputHelpers::keyframeAttributeToQualifiedName(property, *element);
-            if (qualifiedName) {
-                keyframe->setPropertyValue(*qualifiedName, value);
+            cssProperty = AnimationInputHelpers::keyframeAttributeToPresentationAttribute(property, *element);
+            if (cssProperty != CSSPropertyInvalid) {
+                keyframe->setPresentationAttributeValue(cssProperty, value, element, styleSheetContents);
+                continue;
             }
+
+            const QualifiedName* svgAttribute = AnimationInputHelpers::keyframeAttributeToSVGAttribute(property, *element);
+            if (svgAttribute)
+                keyframe->setSVGAttributeValue(*svgAttribute, value);
         }
     }
 
     StringKeyframeEffectModel* keyframeEffectModel = StringKeyframeEffectModel::create(keyframes);
-    if (!RuntimeEnabledFeatures::additiveAnimationsEnabled()) {
-        if (keyframeEffectModel->hasSyntheticKeyframes()) {
-            exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
-            return nullptr;
-        }
-        if (!keyframeEffectModel->isReplaceOnly()) {
-            exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
-            return nullptr;
+    if (!RuntimeEnabledFeatures::cssAdditiveAnimationsEnabled()) {
+        for (const auto& keyframeGroup : keyframeEffectModel->getPropertySpecificKeyframeGroups()) {
+            PropertyHandle property = keyframeGroup.key;
+            if (!property.isCSSProperty())
+                continue;
+
+            for (const auto& keyframe : keyframeGroup.value->keyframes()) {
+                if (keyframe->isNeutral()) {
+                    exceptionState.throwDOMException(NotSupportedError, "Partial keyframes are not supported.");
+                    return nullptr;
+                }
+                if (keyframe->composite() != EffectModel::CompositeReplace) {
+                    exceptionState.throwDOMException(NotSupportedError, "Additive animations are not supported.");
+                    return nullptr;
+                }
+            }
         }
     }
     keyframeEffectModel->forceConversionsToAnimatableValues(*element, element->computedStyle());

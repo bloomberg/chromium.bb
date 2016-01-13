@@ -29,7 +29,7 @@ static String removeSVGPrefix(const String& property)
     return property.substring(kSVGPrefixLength);
 }
 
-CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSPropertyID(const String& property, const Element& element)
+CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(const String& property)
 {
     // Disallow prefixed properties.
     if (property[0] == '-' || isASCIIUpper(property[0]))
@@ -42,14 +42,14 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSPropertyID(const Stri
             builder.append('-');
         builder.append(property[i]);
     }
+    return cssPropertyID(builder.toString());
+}
 
-    CSSPropertyID result = cssPropertyID(builder.toString());
-    if (result != CSSPropertyInvalid || !RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element.isSVGElement() || !isSVGPrefixed(property))
-        return result;
+CSSPropertyID AnimationInputHelpers::keyframeAttributeToPresentationAttribute(const String& property, const Element& element)
+{
+    if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element.isSVGElement() || !isSVGPrefixed(property))
+        return CSSPropertyInvalid;
 
-    // TODO(alancutter): Don't alias these as their CSS property counterparts.
-    // Treat them as their own type of PropertyHandle so they can be applied in
-    // SVGElement::collectStyleForPresentationAttribute() instead of StyleResolver::applyAnimatedProperties().
     String unprefixedProperty = removeSVGPrefix(property);
     if (SVGElement::isAnimatableCSSProperty(QualifiedName(nullAtom, AtomicString(unprefixedProperty), nullAtom)))
         return cssPropertyID(unprefixedProperty);
@@ -179,7 +179,7 @@ QualifiedName svgAttributeName(const String& property)
     return QualifiedName(nullAtom, AtomicString(property), nullAtom);
 }
 
-const QualifiedName* AnimationInputHelpers::keyframeAttributeToQualifiedName(const String& property, Element& element)
+const QualifiedName* AnimationInputHelpers::keyframeAttributeToSVGAttribute(const String& property, Element& element)
 {
     if (!RuntimeEnabledFeatures::webAnimationsSVGEnabled() || !element.isSVGElement() || !isSVGPrefixed(property))
         return nullptr;

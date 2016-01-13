@@ -8,14 +8,15 @@ namespace blink {
 
 bool PropertyHandle::operator==(const PropertyHandle& other) const
 {
-    if (handleType != other.handleType)
+    if (m_handleType != other.m_handleType)
         return false;
 
-    switch (handleType) {
+    switch (m_handleType) {
     case HandleCSSProperty:
-        return property == other.property;
+    case HandlePresentationAttribute:
+        return m_cssProperty == other.m_cssProperty;
     case HandleSVGAttribute:
-        return attribute == other.attribute;
+        return m_svgAttribute == other.m_svgAttribute;
     default:
         return true;
     }
@@ -23,11 +24,13 @@ bool PropertyHandle::operator==(const PropertyHandle& other) const
 
 unsigned PropertyHandle::hash() const
 {
-    switch (handleType) {
+    switch (m_handleType) {
     case HandleCSSProperty:
-        return property;
+        return m_cssProperty;
+    case HandlePresentationAttribute:
+        return -m_cssProperty;
     case HandleSVGAttribute:
-        return QualifiedNameHash::hash(*attribute);
+        return QualifiedNameHash::hash(*m_svgAttribute);
     default:
         ASSERT_NOT_REACHED();
         return 0;

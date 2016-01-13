@@ -106,7 +106,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
                 // they would otherwise run on the compositor.
                 continue;
             } else if (CSSAnimations::isAnimatableProperty(property)) {
-                keyframe->setPropertyValue(property, properties.propertyAt(j).value());
+                keyframe->setCSSPropertyValue(property, properties.propertyAt(j).value());
             }
         }
         keyframes.append(keyframe);
@@ -127,7 +127,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(StyleResolver* resol
     for (size_t i = 1; i < keyframes.size(); i++) {
         if (keyframes[i]->offset() == keyframes[targetIndex]->offset()) {
             for (const auto& property : keyframes[i]->properties())
-                keyframes[targetIndex]->setPropertyValue(property.cssProperty(), keyframes[i]->cssPropertyValue(property.cssProperty()));
+                keyframes[targetIndex]->setCSSPropertyValue(property.cssProperty(), keyframes[i]->cssPropertyValue(property.cssProperty()));
         } else {
             targetIndex++;
             keyframes[targetIndex] = keyframes[i];
@@ -646,9 +646,9 @@ void CSSAnimations::cancel()
     clearPendingUpdate();
 }
 
-static bool isCSSPropertyHandle(const PropertyHandle& propertyHandle)
+static bool isStylePropertyHandle(const PropertyHandle& propertyHandle)
 {
-    return propertyHandle.isCSSProperty();
+    return propertyHandle.isCSSProperty() || propertyHandle.isPresentationAttribute();
 }
 
 void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& update, const Element* animatingElement)
@@ -657,7 +657,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& u
     AnimationStack* animationStack = elementAnimations ? &elementAnimations->animationStack() : nullptr;
 
     if (update.newAnimations().isEmpty() && update.suppressedAnimations().isEmpty()) {
-        ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, nullptr, nullptr, KeyframeEffect::DefaultPriority, isCSSPropertyHandle));
+        ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, nullptr, nullptr, KeyframeEffect::DefaultPriority, isStylePropertyHandle));
         update.adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
         return;
     }
@@ -668,7 +668,7 @@ void CSSAnimations::calculateAnimationActiveInterpolations(CSSAnimationUpdate& u
     for (const auto& updatedAnimation : update.animationsWithUpdates())
         newEffects.append(updatedAnimation.effect); // Animations with updates use a temporary InertEffect for the current frame.
 
-    ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update.suppressedAnimations(), KeyframeEffect::DefaultPriority, isCSSPropertyHandle));
+    ActiveInterpolationsMap activeInterpolationsForAnimations(AnimationStack::activeInterpolations(animationStack, &newEffects, &update.suppressedAnimations(), KeyframeEffect::DefaultPriority, isStylePropertyHandle));
     update.adoptActiveInterpolationsForAnimations(activeInterpolationsForAnimations);
 }
 
@@ -679,7 +679,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate& 
 
     ActiveInterpolationsMap activeInterpolationsForTransitions;
     if (update.newTransitions().isEmpty() && update.cancelledTransitions().isEmpty()) {
-        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, nullptr, nullptr, KeyframeEffect::TransitionPriority, isCSSPropertyHandle);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, nullptr, nullptr, KeyframeEffect::TransitionPriority, isStylePropertyHandle);
     } else {
         HeapVector<Member<const InertEffect>> newTransitions;
         for (const auto& entry : update.newTransitions())
@@ -695,7 +695,7 @@ void CSSAnimations::calculateTransitionActiveInterpolations(CSSAnimationUpdate& 
             }
         }
 
-        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, &newTransitions, &cancelledAnimations, KeyframeEffect::TransitionPriority, isCSSPropertyHandle);
+        activeInterpolationsForTransitions = AnimationStack::activeInterpolations(animationStack, &newTransitions, &cancelledAnimations, KeyframeEffect::TransitionPriority, isStylePropertyHandle);
     }
 
     // Properties being animated by animations don't get values from transitions applied.

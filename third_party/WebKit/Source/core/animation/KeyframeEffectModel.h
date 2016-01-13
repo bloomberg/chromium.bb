@@ -84,6 +84,13 @@ public:
         return m_keyframeGroups->get(property)->keyframes();
     }
 
+    using KeyframeGroupMap = HashMap<PropertyHandle, OwnPtr<PropertySpecificKeyframeGroup>>;
+    const KeyframeGroupMap& getPropertySpecificKeyframeGroups() const
+    {
+        ensureKeyframeGroups();
+        return *m_keyframeGroups;
+    }
+
     // EffectModel implementation.
     bool sample(int iteration, double fraction, double iterationDuration, Vector<RefPtr<Interpolation>>&) const override;
 
@@ -137,7 +144,6 @@ protected:
     // The spec describes filtering the normalized keyframes at sampling time
     // to get the 'property-specific keyframes'. For efficiency, we cache the
     // property-specific lists.
-    using KeyframeGroupMap = HashMap<PropertyHandle, OwnPtr<PropertySpecificKeyframeGroup>>;
     mutable OwnPtr<KeyframeGroupMap> m_keyframeGroups;
     mutable RefPtr<InterpolationEffect> m_interpolationEffect;
     mutable int m_lastIteration;

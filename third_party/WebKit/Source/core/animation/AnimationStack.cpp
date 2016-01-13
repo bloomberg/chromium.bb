@@ -45,12 +45,13 @@ namespace {
 void copyToActiveInterpolationsMap(const Vector<RefPtr<Interpolation>>& source, AnimationStack::PropertyHandleFilter propertyHandleFilter, ActiveInterpolationsMap& target)
 {
     for (const auto& interpolation : source) {
-        if (propertyHandleFilter && !propertyHandleFilter(interpolation->property()))
+        PropertyHandle property = interpolation->property();
+        if (propertyHandleFilter && !propertyHandleFilter(property))
             continue;
-        ActiveInterpolationsMap::AddResult entry = target.add(interpolation->property(), ActiveInterpolations(1));
+        ActiveInterpolationsMap::AddResult entry = target.add(property, ActiveInterpolations(1));
         ActiveInterpolations& activeInterpolations = entry.storedValue->value;
         if (!entry.isNewEntry
-            && RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled()
+            && (RuntimeEnabledFeatures::stackedCSSPropertyAnimationsEnabled() || !property.isCSSProperty() || property.isPresentationAttribute())
             && interpolation->isInvalidatableInterpolation()
             && toInvalidatableInterpolation(*interpolation).dependsOnUnderlyingValue()) {
             activeInterpolations.append(interpolation.get());

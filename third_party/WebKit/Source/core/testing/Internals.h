@@ -112,6 +112,7 @@ public:
     void pauseAnimations(double pauseTime, ExceptionState&);
     bool isCompositedAnimation(Animation*);
     void disableCompositedAnimation(Animation*);
+    void disableCSSAdditiveAnimations();
 
     // Modifies m_desiredFrameStartTime in BitmapImage to advance the next frame time
     // for testing whether animated images work properly.

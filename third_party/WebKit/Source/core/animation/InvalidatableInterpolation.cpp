@@ -130,7 +130,7 @@ const InterpolationValue* InvalidatableInterpolation::ensureValidInterpolation(c
 
 void InvalidatableInterpolation::setFlagIfInheritUsed(InterpolationEnvironment& environment) const
 {
-    if (!property().isCSSProperty())
+    if (!m_property.isCSSProperty() && !m_property.isPresentationAttribute())
         return;
     if (!environment.state().parentStyle())
         return;

@@ -21,18 +21,28 @@ public:
         return adoptRef(new StringKeyframe);
     }
 
-    void setPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
-    void setPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
-    void setPropertyValue(const QualifiedName&, const String& value);
+    void setCSSPropertyValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
+    void setCSSPropertyValue(CSSPropertyID, PassRefPtrWillBeRawPtr<CSSValue>);
+    void setPresentationAttributeValue(CSSPropertyID, const String& value, Element*, StyleSheetContents*);
+    void setSVGAttributeValue(const QualifiedName&, const String& value);
+
     CSSValue* cssPropertyValue(CSSPropertyID property) const
     {
-        int index = m_propertySet->findPropertyIndex(property);
+        int index = m_cssPropertyMap->findPropertyIndex(property);
         RELEASE_ASSERT(index >= 0);
-        return m_propertySet->propertyAt(static_cast<unsigned>(index)).value();
+        return m_cssPropertyMap->propertyAt(static_cast<unsigned>(index)).value();
     }
+
+    CSSValue* presentationAttributeValue(CSSPropertyID property) const
+    {
+        int index = m_presentationAttributeMap->findPropertyIndex(property);
+        RELEASE_ASSERT(index >= 0);
+        return m_presentationAttributeMap->propertyAt(static_cast<unsigned>(index)).value();
+    }
+
     String svgPropertyValue(const QualifiedName& attributeName) const
     {
-        return m_svgPropertyMap.get(&attributeName);
+        return m_svgAttributeMap.get(&attributeName);
     }
 
     PropertyHandleSet properties() const override;
@@ -90,7 +100,8 @@ public:
 
 private:
     StringKeyframe()
-        : m_propertySet(MutableStylePropertySet::create(HTMLStandardMode))
+        : m_cssPropertyMap(MutableStylePropertySet::create(HTMLStandardMode))
+        , m_presentationAttributeMap(MutableStylePropertySet::create(HTMLStandardMode))
     { }
 
     StringKeyframe(const StringKeyframe& copyFrom);
@@ -100,8 +111,9 @@ private:
 
     bool isStringKeyframe() const override { return true; }
 
-    RefPtrWillBePersistent<MutableStylePropertySet> m_propertySet;
-    HashMap<const QualifiedName*, String> m_svgPropertyMap;
+    RefPtrWillBePersistent<MutableStylePropertySet> m_cssPropertyMap;
+    RefPtrWillBePersistent<MutableStylePropertySet> m_presentationAttributeMap;
+    HashMap<const QualifiedName*, String> m_svgAttributeMap;
 };
 
 using CSSPropertySpecificKeyframe = StringKeyframe::CSSPropertySpecificKeyframe;

@@ -15,16 +15,16 @@ namespace blink {
 class CORE_EXPORT PropertyHandle {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
-    explicit PropertyHandle(CSSPropertyID property)
-        : handleType(HandleCSSProperty)
-        , property(property)
+    explicit PropertyHandle(CSSPropertyID property, bool isPresentationAttribute = false)
+        : m_handleType(isPresentationAttribute ? HandlePresentationAttribute : HandleCSSProperty)
+        , m_cssProperty(property)
     {
         ASSERT(property != CSSPropertyInvalid);
     }
 
     explicit PropertyHandle(const QualifiedName& attributeName)
-        : handleType(HandleSVGAttribute)
-        , attribute(&attributeName)
+        : m_handleType(HandleSVGAttribute)
+        , m_svgAttribute(&attributeName)
     {
     }
 
@@ -33,23 +33,27 @@ public:
 
     unsigned hash() const;
 
-    bool isCSSProperty() const { return handleType == HandleCSSProperty; }
-    CSSPropertyID cssProperty() const { ASSERT(isCSSProperty()); return property; }
+    bool isCSSProperty() const { return m_handleType == HandleCSSProperty; }
+    CSSPropertyID cssProperty() const { ASSERT(isCSSProperty()); return m_cssProperty; }
 
-    bool isSVGAttribute() const { return handleType == HandleSVGAttribute; }
-    const QualifiedName& svgAttribute() const { ASSERT(isSVGAttribute()); return *attribute; }
+    bool isPresentationAttribute() const { return m_handleType == HandlePresentationAttribute; }
+    CSSPropertyID presentationAttribute() const { ASSERT(isPresentationAttribute()); return m_cssProperty; }
+
+    bool isSVGAttribute() const { return m_handleType == HandleSVGAttribute; }
+    const QualifiedName& svgAttribute() const { ASSERT(isSVGAttribute()); return *m_svgAttribute; }
 
 private:
     enum HandleType {
         HandleEmptyValueForHashTraits,
         HandleDeletedValueForHashTraits,
         HandleCSSProperty,
+        HandlePresentationAttribute,
         HandleSVGAttribute,
     };
 
     explicit PropertyHandle(HandleType handleType)
-        : handleType(handleType)
-        , attribute(nullptr)
+        : m_handleType(handleType)
+        , m_svgAttribute(nullptr)
     {
     }
 
@@ -57,12 +61,12 @@ private:
 
     static PropertyHandle deletedValueForHashTraits() { return PropertyHandle(HandleDeletedValueForHashTraits); }
 
-    bool isDeletedValueForHashTraits() { return handleType == HandleDeletedValueForHashTraits; }
+    bool isDeletedValueForHashTraits() { return m_handleType == HandleDeletedValueForHashTraits; }
 
-    HandleType handleType;
+    HandleType m_handleType;
     union {
-        CSSPropertyID property;
-        const QualifiedName* attribute;
+        CSSPropertyID m_cssProperty;
+        const QualifiedName* m_svgAttribute;
     };
 
     friend struct ::WTF::HashTraits<blink::PropertyHandle>;

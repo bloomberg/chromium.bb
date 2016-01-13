@@ -484,6 +484,11 @@ void Internals::disableCompositedAnimation(Animation* animation)
     animation->disableCompositedAnimationForTesting();
 }
 
+void Internals::disableCSSAdditiveAnimations()
+{
+    RuntimeEnabledFeatures::setCSSAdditiveAnimationsEnabled(false);
+}
+
 void Internals::advanceTimeForImage(Element* image, double deltaTimeInSeconds, ExceptionState& exceptionState)
 {
     ASSERT(image);
