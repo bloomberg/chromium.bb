@@ -1067,7 +1067,7 @@ void ContentDecryptorDelegate::DeliverSamples(
 
   Decryptor::AudioDecodeCB audio_decode_cb = audio_decode_cb_.ResetAndReturn();
 
-  const Decryptor::AudioFrames empty_frames = Decryptor::AudioFrames();
+  const Decryptor::AudioFrames empty_frames;
 
   Decryptor::Status status =
       PpDecryptResultToMediaDecryptorStatus(sample_info->result);
@@ -1279,7 +1279,7 @@ void ContentDecryptorDelegate::SatisfyAllPendingCallbacksOnError() {
     video_decrypt_cb_.ResetAndReturn().Run(media::Decryptor::kError, NULL);
 
   if (!audio_decode_cb_.is_null()) {
-    const media::Decryptor::AudioFrames empty_frames = Decryptor::AudioFrames();
+    const media::Decryptor::AudioFrames empty_frames;
     audio_decode_cb_.ResetAndReturn().Run(media::Decryptor::kError,
                                           empty_frames);
   }
