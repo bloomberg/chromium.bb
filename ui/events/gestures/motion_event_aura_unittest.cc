@@ -255,6 +255,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(0) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(0) * 180 / M_PI + 90);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(0));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
 
   // Test case: radius_x < radius_y, rotation_angle < 90
   radius_x = 67.89f;
@@ -270,6 +271,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
 
   // Test cloning of tap params
   // TODO(mustaq): Make a separate clone test, crbug.com/450655
@@ -281,6 +283,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_x, clone->GetTouchMinor(1) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, clone->GetOrientation(1) * 180 / M_PI);
   EXPECT_FLOAT_EQ(pressure, clone->GetPressure(1));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, clone->GetToolType(1));
 
   // TODO(mustaq): The move test seems out-of-scope here, crbug.com/450655
   radius_x = 76.98f;
@@ -297,6 +300,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(1) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(1) * 180 / M_PI);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(1));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(1));
 
   // Test case: radius_x > radius_y, rotation_angle > 90
   radius_x = 123.45f;
@@ -312,6 +316,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_y, event.GetTouchMinor(2) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(2) * 180 / M_PI + 90);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(2));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(2));
 
   // Test case: radius_x < radius_y, rotation_angle > 90
   radius_x = 67.89f;
@@ -327,6 +332,7 @@ TEST(MotionEventAuraTest, TapParams) {
   EXPECT_FLOAT_EQ(radius_x, event.GetTouchMinor(3) / 2);
   EXPECT_FLOAT_EQ(rotation_angle, event.GetOrientation(3) * 180 / M_PI + 180);
   EXPECT_FLOAT_EQ(pressure, event.GetPressure(3));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(3));
 }
 
 TEST(MotionEventAuraTest, Timestamps) {
@@ -421,12 +427,13 @@ TEST(MotionEventAuraTest, Cancel) {
 TEST(MotionEventAuraTest, ToolType) {
   MotionEventAura event;
 
-  // For now, all pointers have an unknown tool type.
-  // TODO(jdduke): Expand this test when ui::TouchEvent identifies the source
-  // touch type, crbug.com/404128.
   EXPECT_TRUE(event.OnTouch(TouchWithType(ET_TOUCH_PRESSED, 7)));
   ASSERT_EQ(1U, event.GetPointerCount());
-  EXPECT_EQ(MotionEvent::TOOL_TYPE_UNKNOWN, event.GetToolType(0));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_FINGER, event.GetToolType(0));
+
+  // TODO(robert.bradford): crbug.com/575162: Test TOOL_TYPE_PEN when
+  // TouchEvents can have their PointerDetails::pointer_type() something other
+  // than POINTER_TYPE_TOUCH
 }
 
 TEST(MotionEventAuraTest, Flags) {
