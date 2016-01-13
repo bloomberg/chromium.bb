@@ -40,6 +40,12 @@ enum BattOrMessageType : uint8_t {
 enum BattOrControlMessageType : uint8_t {
   // Tells the BattOr to initialize itself.
   BATTOR_CONTROL_MESSAGE_TYPE_INIT = 0x00,
+  // Tells the BattOr to reset itself.
+  BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+  // Tells the BattOr to run a self test.
+  BATTOR_CONTROL_MESSAGE_TYPE_SELF_TEST,
+  // Tells the BattOr to send its EEPROM contents over the serial connection.
+  BATTOR_CONTROL_MESSAGE_TYPE_READ_EEPROM,
   // Sets the current measurement's gain.
   BATTOR_CONTROL_MESSAGE_TYPE_SET_GAIN,
   // Tells the BattOr to start taking samples and sending them over the
@@ -50,12 +56,6 @@ enum BattOrControlMessageType : uint8_t {
   // Tells the BattOr to start streaming the samples stored on its SD card over
   // the connection.
   BATTOR_CONTROL_MESSAGE_TYPE_READ_SD_UART,
-  // Tells the BattOr to send its EEPROM contents over the serial connection.
-  BATTOR_CONTROL_MESSAGE_TYPE_READ_EEPROM,
-  // Tells the BattOr to reset itself.
-  BATTOR_CONTROL_MESSAGE_TYPE_RESET,
-  // Tells the BattOr to run a self test.
-  BATTOR_CONTROL_MESSAGE_TYPE_SELF_TEST,
 };
 
 // The gain level for the BattOr to use.
