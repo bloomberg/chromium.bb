@@ -950,8 +950,11 @@ const std::string CountryNames::GetCountryCode(const base::string16& country,
     return country_code;
 
   icu::Locale default_locale("en_US");
-  // Finally, check country names localized to US English.
-  return GetCountryCodeForLocalizedName(country, default_locale);
+  // Finally, check country names localized to US English, unless done already.
+  if (default_locale != locale)
+    return GetCountryCodeForLocalizedName(country, default_locale);
+
+  return std::string();
 }
 
 void CountryNames::AddLocalizedNamesForLocale(const std::string& locale,
