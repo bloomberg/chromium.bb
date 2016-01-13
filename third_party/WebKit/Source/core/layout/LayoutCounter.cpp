@@ -270,7 +270,8 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
                         previousSiblingProtector = currentCounter;
                         // We are no longer interested in previous siblings of the currentLayoutObject or their children
                         // as counters they may have attached cannot be the previous sibling of the counter we are placing.
-                        currentLayoutObject = parentElement(*currentLayoutObject)->layoutObject();
+                        Element* parent = parentElement(*currentLayoutObject);
+                        currentLayoutObject = parent ? parent->layoutObject() : nullptr;
                         continue;
                     }
                 } else {
