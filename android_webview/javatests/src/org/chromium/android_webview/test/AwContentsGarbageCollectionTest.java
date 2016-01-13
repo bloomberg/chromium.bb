@@ -7,12 +7,12 @@ package org.chromium.android_webview.test;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.SmallTest;
 
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.annotations.SuppressFBWarnings;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -82,13 +82,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         }
     }
 
-    /**
-     * @DisableHardwareAccelerationForTest
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * Bug 576334
-     */
-    @DisabledTest
+    @DisableHardwareAccelerationForTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testCreateAndGcOneTime() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -104,13 +100,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    /**
-     * @DisableHardwareAccelerationForTest
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * Bug 576334
-     */
-    @DisabledTest
+    @DisableHardwareAccelerationForTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testReferenceFromClient() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
@@ -126,13 +118,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
         gcAndCheckAllAwContentsDestroyed();
     }
 
-    /**
-     * @DisableHardwareAccelerationForTest
-     * @SmallTest
-     * @Feature({"AndroidWebView"})
-     * Bug 576334
-     */
-    @DisabledTest
+    @DisableHardwareAccelerationForTest
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testReferenceFromContext() throws Throwable {
         gcAndCheckAllAwContentsDestroyed();
 
