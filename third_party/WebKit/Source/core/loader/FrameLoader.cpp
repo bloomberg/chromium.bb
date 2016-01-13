@@ -684,10 +684,10 @@ void FrameLoader::detachDocumentLoader(RefPtrWillBeMember<DocumentLoader>& loade
     loader = nullptr;
 }
 
-void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType type, ClientRedirectPolicy clientRedirect)
+void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScriptValue> stateObject, FrameLoadType frameLoadType, HistoryLoadType historyLoadType, ClientRedirectPolicy clientRedirect)
 {
     // If we have a state object, we cannot also be a new navigation.
-    ASSERT(!stateObject || type == FrameLoadTypeBackForward);
+    ASSERT(!stateObject || frameLoadType == FrameLoadTypeBackForward);
 
     // If we have a provisional request for a different document, a fragment scroll should cancel it.
     if (m_provisionalDocumentLoader) {
@@ -696,24 +696,31 @@ void FrameLoader::loadInSameDocument(const KURL& url, PassRefPtr<SerializedScrip
         if (!m_frame->host())
             return;
     }
-    m_loadType = type;
+    TemporaryChange<FrameLoadType> loadTypeChange(m_loadType, frameLoadType);
     saveScrollState();
 
     KURL oldURL = m_frame->document()->url();
-    // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
     bool hashChange = equalIgnoringFragmentIdentifier(url, oldURL) && url.fragmentIdentifier() != oldURL.fragmentIdentifier();
     if (hashChange) {
+        // If we were in the autoscroll/panScroll mode we want to stop it before following the link to the anchor
         m_frame->eventHandler().stopAutoscroll();
         m_frame->localDOMWindow()->enqueueHashchangeEvent(oldURL, url);
     }
     m_documentLoader->setIsClientRedirect(clientRedirect == ClientRedirect);
-    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, ScrollRestorationAuto, type);
+    updateForSameDocumentNavigation(url, SameDocumentNavigationDefault, nullptr, ScrollRestorationAuto, frameLoadType);
 
     m_documentLoader->initialScrollState().wasScrolledByUser = false;
 
     checkCompleted();
 
     m_frame->localDOMWindow()->statePopped(stateObject ? stateObject : SerializedScriptValue::nullValue());
+
+    if (historyLoadType == HistorySameDocumentLoad)
+        restoreScrollPositionAndViewState();
+
+    // We need to scroll to the fragment whether or not a hash change occurred, since
+    // the user might have scrolled since the previous navigation.
+    processFragment(url, NavigationWithinSameDocument);
 }
 
 void FrameLoader::setReferrerForFrameRequest(ResourceRequest& request, ShouldSendReferrer shouldSendReferrer, Document* originDocument)
@@ -933,14 +940,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest, FrameLoadType fram
                 newLoadType = FrameLoadTypeReplaceCurrentItem;
         }
 
-        loadInSameDocument(url, stateObject, newLoadType, request.clientRedirect());
-
-        if (sameDocumentHistoryNavigation)
-            restoreScrollPositionAndViewState();
-
-        // We need to scroll to the fragment whether or not a hash change occurred, since
-        // the user might have scrolled since the previous navigation.
-        processFragment(url, NavigationWithinSameDocument);
+        loadInSameDocument(url, stateObject, newLoadType, historyLoadType, request.clientRedirect());
         return;
     }
 
