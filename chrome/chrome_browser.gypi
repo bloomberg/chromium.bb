@@ -2764,6 +2764,8 @@
       'browser/signin/chrome_signin_status_metrics_provider_delegate.h',
       'browser/signin/gaia_cookie_manager_service_factory.cc',
       'browser/signin/gaia_cookie_manager_service_factory.h',
+      'browser/signin/investigator_dependency_provider.cc',
+      'browser/signin/investigator_dependency_provider.h',
       'browser/signin/local_auth.cc',
       'browser/signin/local_auth.h',
       'browser/signin/mutable_profile_oauth2_token_service_delegate.cc',

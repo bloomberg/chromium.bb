@@ -5,10 +5,9 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_METRICS_H_
 
-#include "base/time/time.h"
-
 #include <limits.h>
 
+#include "base/time/time.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
 namespace signin_metrics {
@@ -209,6 +208,26 @@ enum AccountReconcilorState {
   ACCOUNT_RECONCILOR_HISTOGRAM_COUNT,
 };
 
+// Values of histogram comparing account id and email.
+enum class AccountEquality : int {
+  // Expected case when the user is not switching accounts.
+  BOTH_EQUAL = 0,
+  // Expected case when the user is switching accounts.
+  BOTH_DIFFERENT,
+  // The user has changed at least two email account names. This is actually
+  // a different account, even though the email matches.
+  ONLY_SAME_EMAIL,
+  // The user has changed the email of their account, but the account is
+  // actually the same.
+  ONLY_SAME_ID,
+  // The last account id was not present, email equality was used. This should
+  // happen once to all old clients. Does not differentiate between same and
+  // different accounts.
+  EMAIL_FALLBACK,
+  // Always the last enumerated type.
+  HISTOGRAM_COUNT,
+};
+
 // Tracks the access point of sign in.
 void LogSigninAccessPointStarted(AccessPoint access_point);
 void LogSigninAccessPointCompleted(AccessPoint access_point);
@@ -274,6 +293,10 @@ void LogBrowsingSessionDuration(const base::Time& previous_activity_time);
 // If |state| is different than ACCOUNT_RECONCILOR_OK it means the user will
 // be shown a different set of accounts in the content-area and the settings UI.
 void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state);
+
+// Records the AccountEquality metric when an investigator compares the current
+// and previous id/emails during a signin.
+void LogAccountEquality(AccountEquality equality);
 
 }  // namespace signin_metrics
 

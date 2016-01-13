@@ -12,7 +12,7 @@
 
 // Type that contains enough information to identify user.
 //
-// TODO (alemate): we are in the process of moving away from std::string as a
+// TODO(alemate): we are in the process of moving away from std::string as a
 // type for storing user identifier to AccountId. At this time GaiaId is mostly
 // empty, so this type is used as a replacement for e-mail string.
 // But in near future AccountId will become full feature user identifier.

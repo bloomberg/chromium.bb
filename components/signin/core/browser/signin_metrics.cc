@@ -155,4 +155,10 @@ void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state) {
                             state, ACCOUNT_RECONCILOR_HISTOGRAM_COUNT);
 }
 
+void LogAccountEquality(AccountEquality equality) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.AccountEquality",
+                            static_cast<int>(equality),
+                            static_cast<int>(AccountEquality::HISTOGRAM_COUNT));
+}
+
 }  // namespace signin_metrics

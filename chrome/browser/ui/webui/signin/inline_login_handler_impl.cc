@@ -27,6 +27,7 @@
 #include "chrome/browser/signin/about_signin_internals_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
+#include "chrome/browser/signin/investigator_dependency_provider.h"
 #include "chrome/browser/signin/local_auth.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -52,6 +53,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_error_controller.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
@@ -372,12 +374,17 @@ bool InlineSigninHelper::HandleCrossAccountError(
     const std::string& refresh_token,
     OneClickSigninSyncStarter::ConfirmationRequired confirmation_required,
     OneClickSigninSyncStarter::StartSyncMode start_mode) {
-  // TODO(skym): Use last account id for equality check, crbug.com/571698.
   std::string last_email =
       profile_->GetPrefs()->GetString(prefs::kGoogleServicesLastUsername);
 
-  if (last_email.empty() || gaia::AreEmailsSame(last_email, email_))
+  InvestigatorDependencyProvider provider(profile_);
+  InvestigatedScenario scenario =
+      SigninInvestigator(email_, gaia_id_, &provider).Investigate();
+
+  // TODO(skym): Warn for high risk upgrade scenario, crbug.com/572754.
+  if (scenario != InvestigatedScenario::DIFFERENT_ACCOUNT) {
     return false;
+  }
 
   Browser* browser = chrome::FindLastActiveWithProfile(
       profile_, chrome::GetActiveDesktop());

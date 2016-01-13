@@ -44810,6 +44810,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Signin.AccountEquality" enum="SigninAccountEquality">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    There are two separate ways to test for account equality, using the account
+    id or the email. Historically the email was always used, but going forward
+    email will be modifiable. Now when we check account equality we use both
+    approaches and emit this metric to capture if they agreed or not.
+  </summary>
+</histogram>
+
 <histogram name="Signin.AccountReconcilorState.OnGaiaResponse"
     enum="SigninAccountReconcilorState">
   <owner>bzanotti@chromium.org</owner>
@@ -44861,6 +44871,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Track how many minutes of local system time elapsed from when Chrome was
     installed to when Signin occured for this profile.
+  </summary>
+</histogram>
+
+<histogram name="Signin.InvestigatedScenario" enum="SigninInvestigatedScenario">
+  <owner>skym@chromium.org</owner>
+  <summary>
+    Records the general type of signin that is occuring in relation to previous
+    signin and local data.
   </summary>
 </histogram>
 
@@ -76729,6 +76747,14 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="17" label="Typed URL with unknown access point"/>
 </enum>
 
+<enum name="SigninAccountEquality" type="int">
+  <int value="0" label="Both Equal"/>
+  <int value="1" label="Both Different"/>
+  <int value="2" label="Only Same Email"/>
+  <int value="3" label="Only Same Id"/>
+  <int value="4" label="Email Fallback"/>
+</enum>
+
 <enum name="SigninAccountReconcilorState" type="int">
   <int value="0" label="OK">
     The account reconcilor has finished running and is up-to-date.
@@ -76791,6 +76817,13 @@ To add a new entry, add it with any value and run test to compute valid value.
     The sync was started through auto-accept with advanced settings.
   </int>
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
+</enum>
+
+<enum name="SigninInvestigatedScenario" type="int">
+  <int value="0" label="Upgrade low risk"/>
+  <int value="1" label="Upgrade high risk"/>
+  <int value="2" label="Same account"/>
+  <int value="3" label="Different account"/>
 </enum>
 
 <enum name="SigninReason" type="int">

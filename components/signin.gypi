@@ -103,6 +103,8 @@
         'signin/core/browser/signin_header_helper.h',
         'signin/core/browser/signin_internals_util.cc',
         'signin/core/browser/signin_internals_util.h',
+        'signin/core/browser/signin_investigator.cc',
+        'signin/core/browser/signin_investigator.h',
         'signin/core/browser/signin_manager.cc',
         'signin/core/browser/signin_manager.h',
         'signin/core/browser/signin_manager_base.cc',

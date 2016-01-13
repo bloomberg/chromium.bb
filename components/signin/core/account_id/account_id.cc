@@ -46,8 +46,8 @@ AccountId::AccountId() {}
 
 AccountId::AccountId(const std::string& gaia_id, const std::string& user_email)
     : gaia_id_(gaia_id), user_email_(user_email) {
-  // TODO (alemate): DCHECK(!email.empty());
-  // TODO (alemate): check gaia_id is not empty once it is required.
+  // TODO(alemate): DCHECK(!email.empty());
+  // TODO(alemate): check gaia_id is not empty once it is required.
 }
 
 AccountId::AccountId(const AccountId& other)
@@ -65,7 +65,7 @@ bool AccountId::operator!=(const AccountId& other) const {
 }
 
 bool AccountId::operator<(const AccountId& right) const {
-  // TODO (alemate): update this once all AccountId members are filled.
+  // TODO(alemate): update this once all AccountId members are filled.
   return user_email_ < right.user_email_;
 }
 
@@ -106,7 +106,7 @@ void AccountId::SetUserEmail(const std::string& email) {
 
 // static
 AccountId AccountId::FromUserEmail(const std::string& email) {
-  // TODO (alemate): DCHECK(!email.empty());
+  // TODO(alemate): DCHECK(!email.empty());
   return AccountId(std::string() /* gaia_id */, email);
 }
 
@@ -173,4 +173,4 @@ std::size_t hash<AccountId>::operator()(const AccountId& user_id) const {
   return hash<std::string>()(user_id.GetUserEmail());
 }
 
-}  // namespace BASE_HASH_NAMESPAC
+}  // namespace BASE_HASH_NAMESPACE
