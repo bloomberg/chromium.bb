@@ -852,7 +852,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::appendBlockPlacehold
     // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(container->layoutObject());
 
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     appendNode(placeholder, container);
     return placeholder.release();
 }
@@ -865,7 +865,7 @@ PassRefPtrWillBeRawPtr<HTMLBRElement> CompositeEditCommand::insertBlockPlacehold
     // Should assert isLayoutBlockFlow || isInlineFlow when deletion improves. See 4244964.
     ASSERT(pos.anchorNode()->layoutObject());
 
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = createBlockPlaceholderElement(document());
+    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
     insertNodeAt(placeholder, pos);
     return placeholder.release();
 }

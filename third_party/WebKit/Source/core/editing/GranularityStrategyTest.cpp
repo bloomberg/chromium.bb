@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
-#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Text.h"
@@ -12,6 +11,7 @@
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -228,7 +228,7 @@ void GranularityStrategyTest::setupTextSpan(String str1, String str2, String str
     RefPtrWillBeRawPtr<Text> text1 = document().createTextNode(str1);
     RefPtrWillBeRawPtr<Text> text2 = document().createTextNode(str2);
     RefPtrWillBeRawPtr<Text> text3 = document().createTextNode(str3);
-    RefPtrWillBeRawPtr<Element> span = document().createElement(HTMLNames::spanTag, true);
+    RefPtrWillBeRawPtr<Element> span = HTMLSpanElement::create(document());
     Element* div = document().getElementById("mytext");
     div->appendChild(text1);
     div->appendChild(span);

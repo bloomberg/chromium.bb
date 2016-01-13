@@ -386,7 +386,7 @@ static void fillContainerFromString(ContainerNode* paragraph, const String& stri
     Document& document = paragraph->document();
 
     if (string.isEmpty()) {
-        paragraph->appendChild(createBlockPlaceholderElement(document));
+        paragraph->appendChild(HTMLBRElement::create(document));
         return;
     }
 

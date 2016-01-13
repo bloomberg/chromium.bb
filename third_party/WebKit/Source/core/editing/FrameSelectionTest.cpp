@@ -70,7 +70,7 @@ TEST_F(FrameSelectionTest, SetInvalidSelection)
     // Create a new document without frame by using DOMImplementation.
     DocumentInit dummy;
     RefPtrWillBeRawPtr<Document> documentWithoutFrame = Document::create();
-    RefPtrWillBeRawPtr<Element> body = documentWithoutFrame->createElement(HTMLNames::bodyTag, false);
+    RefPtrWillBeRawPtr<Element> body = HTMLBodyElement::create(*documentWithoutFrame);
     documentWithoutFrame->appendChild(body);
     RefPtrWillBeRawPtr<Text> anotherText = documentWithoutFrame->createTextNode("Hello, another world");
     body->appendChild(anotherText);

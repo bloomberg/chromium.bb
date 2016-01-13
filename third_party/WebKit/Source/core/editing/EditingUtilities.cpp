@@ -1275,7 +1275,7 @@ static PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& do
     RefPtrWillBeRawPtr<Text> tabTextNode = prpTabTextNode;
 
     // Make the span to hold the tab.
-    RefPtrWillBeRawPtr<HTMLSpanElement> spanElement = toHTMLSpanElement(document.createElement(spanTag, false).get());
+    RefPtrWillBeRawPtr<HTMLSpanElement> spanElement = HTMLSpanElement::create(document);
     spanElement->setAttribute(classAttr, AppleTabSpanClass);
     spanElement->setAttribute(styleAttr, "white-space:pre");
 
@@ -1296,11 +1296,6 @@ PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document,
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document& document)
 {
     return createTabSpanElement(document, PassRefPtrWillBeRawPtr<Text>(nullptr));
-}
-
-PassRefPtrWillBeRawPtr<HTMLBRElement> createBlockPlaceholderElement(Document& document)
-{
-    return toHTMLBRElement(document.createElement(brTag, false).get());
 }
 
 bool isNodeRendered(const Node& node)
