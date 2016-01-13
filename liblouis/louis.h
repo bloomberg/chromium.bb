@@ -791,9 +791,8 @@ PatternCodes;
 /* Checks tables for errors and compiles shem. returns a pointer to the 
 * table.  */
 
-  void getEmphClasses(const char* tableList, const char ** emphClasses);
-  /* Get the emphasis classes declared in table. The emphClasses array
-     must be at least (MAX_EMPH_CLASSES + 1) long. */
+  const char ** getEmphClasses(const char* tableList);
+  /* Return the emphasis classes declared in tableList. */
 
   int stringHash (const widechar * c);
 /* Hash function for character strings */

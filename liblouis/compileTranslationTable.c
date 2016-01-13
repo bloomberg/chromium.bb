@@ -5877,16 +5877,17 @@ getLastTableList ()
   return scratchBuf;
 }
 
-/* Get the emphasis classes declared in table. The emphClasses array
-   must be at least (MAX_EMPH_CLASSES + 1) long. */
-void
-getEmphClasses(const char* tableList, const char ** emphClasses)
+/* Return the emphasis classes declared in tableList. */
+const char **
+getEmphClasses(const char* tableList)
 {
+  const char **emphClasses = malloc(sizeof(char*) * (MAX_EMPH_CLASSES + 1));
   int i = 0;
   if (getTable(tableList))
     for (; table->emphClasses[i]; i++)
       emphClasses[i] = strdup(table->emphClasses[i]);
   emphClasses[i] = NULL;
+  return emphClasses;
 }
 
 void *EXPORT_CALL

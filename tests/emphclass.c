@@ -4,7 +4,7 @@
 #include "louis.h"
 #include "brl_checks.h"
 
-static const char* emph_classes [11];
+static const char** emph_classes = NULL;
 
 static formtype *
 typeform(const char* class, const char* fromString)
@@ -58,7 +58,7 @@ main (int argc, char **argv)
 		fprintf(stderr, "%s should be valid\n", table);
 		return 1;
 	}
-	getEmphClasses(table, emph_classes);
+	emph_classes = getEmphClasses(table);
 	result |= check_translation(table,
 	                            "foobar",
 	                            typeform("foo", "+++++"),

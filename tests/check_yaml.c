@@ -46,6 +46,8 @@ int translation_mode = 0;
 int errors = 0;
 int count = 0;
 
+static const char** emph_classes = NULL;
+
 void
 simple_error (const char *msg, yaml_parser_t *parser, yaml_event_t *event) {
   error_at_line(EXIT_FAILURE, 0, file_name, event->start_mark.line ? event->start_mark.line : parser->problem_mark.line, "%s", msg);
@@ -95,6 +97,7 @@ read_tables (yaml_parser_t *parser, char *tables_list) {
     }
     yaml_event_delete(&event);
   }
+  emph_classes = getEmphClasses(tables_list); // get declared emphasis classes
 }
 
 void
@@ -248,7 +251,7 @@ read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, 
 }
 
 formtype*
-read_typeforms (yaml_parser_t *parser, char *tables_list, int len) {
+read_typeforms (yaml_parser_t *parser, int len) {
   yaml_event_t event;
   formtype *typeform = calloc(len, sizeof(formtype));
   int parse_error = 1;
@@ -271,9 +274,7 @@ read_typeforms (yaml_parser_t *parser, char *tables_list, int len) {
       read_typeform_string(parser, typeform, word_reset, len);
     } else {
       int i;
-      static const char* emph_classes [MAX_EMPH_CLASSES + 1];
       typeforms kind = plain_text;
-      getEmphClasses(tables_list, emph_classes); // get declared emphasis classes
       for (i = 0; emph_classes[i]; i++) {
         if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
           yaml_event_delete(&event);
@@ -311,7 +312,7 @@ read_typeforms (yaml_parser_t *parser, char *tables_list, int len) {
 }
 
 void
-read_options (yaml_parser_t *parser, char *tables_list, int len,
+read_options (yaml_parser_t *parser, int len,
 	      int *xfail, translationModes *mode,
 	      formtype **typeform, int **cursorPos) {
   yaml_event_t event;
@@ -335,7 +336,7 @@ read_options (yaml_parser_t *parser, char *tables_list, int len,
       *mode = read_mode(parser);
     } else if (!strcmp(option_name, "typeform")) {
       yaml_event_delete(&event);
-      *typeform = read_typeforms(parser, tables_list, len);
+      *typeform = read_typeforms(parser, len);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
@@ -403,7 +404,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
-    read_options(parser, tables_list, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
+    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
 
     if (!yaml_parser_parse(parser, &event) ||
 	(event.type != YAML_SEQUENCE_END_EVENT))
@@ -582,6 +583,7 @@ main(int argc, char *argv[]) {
 
   yaml_parser_delete(&parser);
 
+  free(emph_classes);
   lou_free();
 
   assert(!fclose(file));
