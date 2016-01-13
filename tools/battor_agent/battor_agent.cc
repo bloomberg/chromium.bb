@@ -17,6 +17,12 @@ namespace {
 // The number of seconds that it takes a BattOr to reset.
 const uint8_t kBattOrResetTimeSeconds = 2;
 
+// The maximum number of times to retry when reading a message.
+const uint8_t kMaxReadAttempts = 20;
+
+// The number of milliseconds to wait before trying to read a message again.
+const uint8_t kReadRetryDelayMilliseconds = 1;
+
 // Returns true if the specified vector of bytes decodes to a message that is an
 // ack for the specified control message type.
 bool IsAckOfControlCommand(BattOrMessageType message_type,
@@ -104,7 +110,8 @@ BattOrAgent::BattOrAgent(
                                            ui_thread_task_runner)),
       listener_(listener),
       last_action_(Action::INVALID),
-      command_(Command::INVALID) {
+      command_(Command::INVALID),
+      num_read_attempts_(0) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
@@ -174,9 +181,11 @@ void BattOrAgent::OnBytesSent(bool success) {
       PerformAction(Action::READ_START_TRACING_ACK);
       return;
     case Action::SEND_EEPROM_REQUEST:
+      num_read_attempts_ = 1;
       PerformAction(Action::READ_EEPROM);
       return;
     case Action::SEND_SAMPLES_REQUEST:
+      num_read_attempts_ = 1;
       PerformAction(Action::READ_CALIBRATION_FRAME);
       return;
 
@@ -189,8 +198,23 @@ void BattOrAgent::OnMessageRead(bool success,
                                 BattOrMessageType type,
                                 scoped_ptr<vector<char>> bytes) {
   if (!success) {
-    CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
-    return;
+    switch (last_action_) {
+      case Action::READ_EEPROM:
+      case Action::READ_CALIBRATION_FRAME:
+      case Action::READ_DATA_FRAME:
+        if (++num_read_attempts_ > kMaxReadAttempts) {
+          CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
+          return;
+        }
+
+        PerformDelayedAction(last_action_, base::TimeDelta::FromMilliseconds(
+                                               kReadRetryDelayMilliseconds));
+        return;
+
+      default:
+        CompleteCommand(BATTOR_ERROR_RECEIVE_ERROR);
+        return;
+    }
   }
 
   switch (last_action_) {
@@ -247,6 +271,7 @@ void BattOrAgent::OnMessageRead(bool success,
         return;
       }
 
+      num_read_attempts_ = 1;
       PerformAction(Action::READ_DATA_FRAME);
       return;
     }

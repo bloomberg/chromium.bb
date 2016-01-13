@@ -135,6 +135,9 @@ class BattOrAgent : public BattOrConnection::Listener,
   // The actual data samples recorded.
   std::vector<RawBattOrSample> samples_;
 
+  // The number of times that we've attempted to read the last message.
+  uint8_t num_read_attempts_;
+
   DISALLOW_COPY_AND_ASSIGN(BattOrAgent);
 };
 
