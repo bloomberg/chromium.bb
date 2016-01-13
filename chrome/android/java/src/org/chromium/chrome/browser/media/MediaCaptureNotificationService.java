@@ -274,7 +274,7 @@ public class MediaCaptureNotificationService extends Service {
             URL url = new URL(fullUrl);
             baseUrl = url.getProtocol() + "://" + url.getHost();
         } catch (MalformedURLException e) {
-            Log.w(TAG, "Error parsing the webrtc url " + fullUrl);
+            Log.w(TAG, "Error parsing the webrtc url, %s ", fullUrl);
         }
         intent.putExtra(NOTIFICATION_MEDIA_URL_EXTRA, baseUrl);
         intent.putExtra(NOTIFICATION_MEDIA_TYPE_EXTRA, mediaType);

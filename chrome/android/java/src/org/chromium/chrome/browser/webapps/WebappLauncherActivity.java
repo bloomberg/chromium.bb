@@ -73,7 +73,7 @@ public class WebappLauncherActivity extends Activity {
                 launchIntent.setAction(Intent.ACTION_VIEW);
                 launchIntent.setData(Uri.parse(WebappActivity.WEBAPP_SCHEME + "://" + webappId));
             } else {
-                Log.e(TAG, "Shortcut (" + webappUrl + ") opened in Chrome.");
+                Log.e(TAG, "Shortcut (%s) opened in Chrome.", webappUrl);
 
                 // The shortcut data doesn't match the current encoding.  Change the intent action
                 // launch the URL with a VIEW Intent in the regular browser.

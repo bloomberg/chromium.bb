@@ -87,7 +87,7 @@ class UrlManager {
      */
     @VisibleForTesting
     public void addUrl(String url) {
-        Log.d(TAG, "URL found: " + url);
+        Log.d(TAG, "URL found: %s", url);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
         Set<String> nearbyUrls = getCachedNearbyUrls();
 
@@ -115,7 +115,7 @@ class UrlManager {
      */
     @VisibleForTesting
     public void removeUrl(String url) {
-        Log.d(TAG, "URL lost: " + url);
+        Log.d(TAG, "URL lost: %s", url);
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
         Set<String> nearbyUrls = getCachedNearbyUrls();
         nearbyUrls.remove(url);
@@ -148,9 +148,8 @@ class UrlManager {
         Set<String> resolvedUrls = getCachedResolvedUrls();
         Set<String> intersection = new HashSet<String>(nearbyUrls);
         intersection.retainAll(resolvedUrls);
-        Log.d(TAG, "Get URLs With: " + nearbyUrls.size() + " nearby, "
-                      + resolvedUrls.size() + " resolved, and "
-                      + intersection.size() + " in intersection.");
+        Log.d(TAG, "Get URLs With: %d nearby, %d resolved, and %d in intersection.",
+                nearbyUrls.size(), resolvedUrls.size(), intersection.size());
 
         if (allowUnresolved && resolvedUrls.isEmpty()) {
             intersection = nearbyUrls;
@@ -170,7 +169,7 @@ class UrlManager {
     }
 
     private void addResolvedUrl(String url) {
-        Log.d(TAG, "PWS resolved: " + url);
+        Log.d(TAG, "PWS resolved: %s", url);
         Set<String> resolvedUrls = getCachedResolvedUrls();
 
         boolean wasUrlListEmpty = getUrls().isEmpty();
@@ -186,7 +185,7 @@ class UrlManager {
     }
 
     private void removeResolvedUrl(String url) {
-        Log.d(TAG, "PWS unresolved: " + url);
+        Log.d(TAG, "PWS unresolved: %s", url);
         Set<String> resolvedUrls = getCachedResolvedUrls();
         resolvedUrls.remove(url);
         putCachedResolvedUrls(resolvedUrls);

@@ -41,7 +41,7 @@ import java.util.HashMap;
  * i.e.: all methods in this class should either be final, or abstract.
  */
 public abstract class AwContentsClient {
-    private static final String TAG = "cr.AwContentsClient";
+    private static final String TAG = "AwContentsClient";
     private final AwContentsClientCallbackHelper mCallbackHelper;
 
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
@@ -174,7 +174,7 @@ public abstract class AwContentsClient {
     private static boolean sendBrowsingIntent(Context context, String url, boolean hasUserGesture,
             boolean isRedirect) {
         if (!hasUserGesture && !isRedirect) {
-            Log.w(TAG, "Denied starting an intent without a user gesture, URI " + url);
+            Log.w(TAG, "Denied starting an intent without a user gesture, URI %s", url);
             return true;
         }
         Intent intent;
@@ -182,7 +182,7 @@ public abstract class AwContentsClient {
         try {
             intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
         } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + url, ex);
+            Log.w(TAG, "Bad URI %s", url, ex);
             return false;
         }
         // Sanitize the Intent, ensuring web pages can not bypass browser
@@ -202,7 +202,7 @@ public abstract class AwContentsClient {
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException ex) {
-            Log.w(TAG, "No application can handle " + url);
+            Log.w(TAG, "No application can handle %s", url);
             return false;
         }
 

@@ -91,7 +91,7 @@ public class ExternalNavigationHandler {
         try {
             intent = Intent.parseUri(params.getUrl(), Intent.URI_INTENT_SCHEME);
         } catch (Exception ex) {
-            Log.w(TAG, "Bad URI " + params.getUrl(), ex);
+            Log.w(TAG, "Bad URI %s", params.getUrl(), ex);
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
@@ -437,7 +437,7 @@ public class ExternalNavigationHandler {
                     || mDelegate.queryIntentActivities(intent).size() > 0;
         } catch (Exception ex) {
             // Ignore the error.
-            Log.w(TAG, "Bad URI " + url, ex);
+            Log.w(TAG, "Bad URI %s", url, ex);
         }
         return false;
     }

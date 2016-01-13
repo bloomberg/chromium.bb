@@ -28,7 +28,7 @@ public class PlatformUtil {
         try {
             context.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "cannot find activity to launch " + url, e);
+            Log.e(TAG, "cannot find activity to launch %s", url, e);
         }
     }
 }

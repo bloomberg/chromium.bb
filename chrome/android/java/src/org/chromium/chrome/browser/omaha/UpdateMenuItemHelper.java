@@ -217,7 +217,7 @@ public class UpdateMenuItemHelper {
             recordItemClickedHistogram(ITEM_CLICKED_INTENT_LAUNCHED);
             PrefServiceBridge.getInstance().setClickedUpdateMenuItem(true);
         } catch (ActivityNotFoundException e) {
-            Log.e(TAG, "Failed to launch Activity for: " + mUpdateUrl);
+            Log.e(TAG, "Failed to launch Activity for: %s", mUpdateUrl);
             recordItemClickedHistogram(ITEM_CLICKED_INTENT_FAILED);
         }
     }

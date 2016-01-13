@@ -223,7 +223,7 @@ public class ConnectionInfoPopup implements OnClickListener {
                 mContext.startActivity(i);
             } catch (Exception ex) {
                 // Do nothing intentionally.
-                Log.w(TAG, "Bad URI " + mLinkUrl, ex);
+                Log.w(TAG, "Bad URI %s", mLinkUrl, ex);
             }
         }
     }

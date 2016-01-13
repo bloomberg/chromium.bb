@@ -273,7 +273,7 @@ public class CronetTestFramework {
 
     @SuppressWarnings("deprecation")
     public void startWithURL(String url) {
-        Log.i(TAG, "Cronet started: " + url);
+        Log.i(TAG, "Cronet started: %s", url);
         mUrl = url;
 
         HashMap<String, String> headers = new HashMap<String, String>();
