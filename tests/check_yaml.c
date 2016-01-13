@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 #include <assert.h>
 #include "error.h"
 #include "liblouis.h"
+#include "louis.h"
 #include "brl_checks.h"
 
 #define EXIT_SKIPPED 77
@@ -543,7 +544,8 @@ main(int argc, char *argv[]) {
   }
   yaml_event_delete(&event);
 
-  char *tables_list = malloc(sizeof(char) * 512);
+  char *tables_list = malloc(sizeof(char) * MAXSTRING);
+  tables_list[0] = '\0';
   read_tables(&parser, tables_list);
 
   if (!yaml_parser_parse(&parser, &event) ||
