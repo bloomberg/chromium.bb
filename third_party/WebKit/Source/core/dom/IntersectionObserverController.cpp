@@ -28,7 +28,9 @@ IntersectionObserverController::~IntersectionObserverController() { }
 
 void IntersectionObserverController::scheduleIntersectionObserverForDelivery(IntersectionObserver& observer)
 {
-    // TODO(szager): use idle callback with a timeout
+    // TODO(szager): use idle callback with a timeout.  Until we do that, there is no
+    // reliable way to write a test for takeRecords, because it's impossible to guarantee
+    // that javascript will get a chance to run before the timer fires.
     if (!m_timer.isActive())
         m_timer.startOneShot(0, BLINK_FROM_HERE);
     m_pendingIntersectionObservers.add(&observer);

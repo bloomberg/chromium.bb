@@ -19,9 +19,6 @@
   });
   observer.observe(target);
 
-  // TODO(szager): It shouldn't be necessary to RAF after the call to observer()
-  // and before changing the scroll position, but it is.
-
   function step0() {
     setTimeout(function() {
       shouldBeEqualToNumber("entries.length", 0);
@@ -184,5 +181,6 @@
       document.scrollingElement.scrollTop = 0;
     });
   }
-  requestAnimationFrame(step0);
+
+  step0();
 </script>

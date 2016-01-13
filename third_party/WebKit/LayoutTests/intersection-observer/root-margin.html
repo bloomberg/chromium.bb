@@ -24,22 +24,15 @@
   });
   observer.observe(target);
 
-  // TODO(szager): It shouldn't be necessary to RAF after the call to observer()
-  // and before changing the scroll position, but it is.
-
-  setTimeout(function() {
-    shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1' })");
-    shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1em' })");
-    shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: 'auto' })");
-    shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px' })");
-    shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px' })");
-    shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3%' })");
-    shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3% 40px junk junk junk' })");
-    requestAnimationFrame(step0);
-  }, 0);
-
   function step0() {
     setTimeout(function() {
+      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1' })");
+      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: '1em' })");
+      shouldThrow("new IntersectionObserver(observer_callback, { rootMargin: 'auto' })");
+      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px' })");
+      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px' })");
+      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3%' })");
+      shouldNotThrow("new IntersectionObserver(observer_callback, { rootMargin: '1.4px 2px 3% 40px junk junk junk' })");
       shouldBeEqualToNumber("entries.length", 0);
       document.scrollingElement.scrollLeft = 100;
       requestAnimationFrame(step1);
@@ -91,9 +84,12 @@
       shouldBeEqualToNumber("entries[1].rootBounds.top", -10);
       shouldBeEqualToNumber("entries[1].rootBounds.bottom", 819);
       shouldEvaluateToSameObject("entries[1].target", target);
+
       finishTest();
       document.scrollingElement.scrollLeft = 0;
       document.scrollingElement.scrollTop = 0;
     });
   }
+
+  step0();
 </script>

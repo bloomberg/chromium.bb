@@ -25,9 +25,6 @@ targetIframe.onload = function() {
   var observer = new IntersectionObserver(observer_callback, {"root": document.getElementById("root")});
   observer.observe(target);
 
-  // TODO(szager): It shouldn't be necessary to RAF after the call to observer()
-  // and before changing the scroll position, but it is.
-
   function step0() {
     setTimeout(function() {
       shouldBeEqualToNumber("entries.length", 0);
@@ -102,6 +99,6 @@ targetIframe.onload = function() {
     });
   }
 
-  requestAnimationFrame(step0);
+  step0();
 }
 </script>
