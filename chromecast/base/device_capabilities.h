@@ -130,6 +130,7 @@ class DeviceCapabilities {
   // Default Capability keys
   static const char kKeyBluetoothSupported[];
   static const char kKeyDisplaySupported[];
+  static const char kKeyHiResAudioSupported[];
 
   // This class should get destroyed after all Validators have been
   // unregistered, all Observers have been removed, and the class is no longer
@@ -175,6 +176,7 @@ class DeviceCapabilities {
   // accessors are called.
   virtual bool BluetoothSupported() const = 0;
   virtual bool DisplaySupported() const = 0;
+  virtual bool HiResAudioSupported() const = 0;
 
   // Returns a deep copy of the value at |path|. If the capability at |path|
   // does not exist, a null scoped_ptr is returned.

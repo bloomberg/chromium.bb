@@ -347,6 +347,20 @@ TEST_F(DeviceCapabilitiesImplTest, DisplaySupportedAndSetCapability) {
   EXPECT_FALSE(capabilities()->DisplaySupported());
 }
 
+// Tests HiResAudioSupported() and updating this value through SetCapability()
+TEST_F(DeviceCapabilitiesImplTest, HiResAudioSupportedAndSetCapability) {
+  FakeCapabilityManagerSimple manager(
+      capabilities(), DeviceCapabilities::kKeyHiResAudioSupported,
+      make_scoped_ptr(new base::FundamentalValue(true)), true);
+
+  EXPECT_TRUE(capabilities()->HiResAudioSupported());
+  capabilities()->SetCapability(
+      DeviceCapabilities::kKeyHiResAudioSupported,
+      make_scoped_ptr(new base::FundamentalValue(false)));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(capabilities()->HiResAudioSupported());
+}
+
 // Tests SetCapability() for a default capability when the capability's manager
 // rejects the proposed change.
 TEST_F(DeviceCapabilitiesImplTest, SetCapabilityInvalid) {

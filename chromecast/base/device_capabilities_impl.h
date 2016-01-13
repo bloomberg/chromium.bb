@@ -28,6 +28,7 @@ class DeviceCapabilitiesImpl : public DeviceCapabilities {
   Validator* GetValidator(const std::string& key) const override;
   bool BluetoothSupported() const override;
   bool DisplaySupported() const override;
+  bool HiResAudioSupported() const override;
   scoped_ptr<base::Value> GetCapability(const std::string& path) const override;
   scoped_refptr<Data> GetData() const override;
   void SetCapability(const std::string& path,
