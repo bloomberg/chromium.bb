@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'boringssl.gypi',
+  ],
   'targets': [
     {
       'target_name': 'boringssl',
       'type': '<(component)',
-      'includes': [
-        'boringssl.gypi',
-      ],
       'sources': [
         '<@(boringssl_crypto_sources)',
         '<@(boringssl_ssl_sources)',
@@ -18,6 +18,7 @@
         'BORINGSSL_IMPLEMENTATION',
         'BORINGSSL_NO_STATIC_INITIALIZER',
       ],
+      'dependencies': [ 'boringssl_asm' ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
       # https://crbug.com/429039
       'msvs_disabled_warnings': [ 4267, ],
@@ -27,12 +28,42 @@
             'BORINGSSL_SHARED_LIBRARY',
           ],
         }],
+      ],
+      'include_dirs': [
+        'src/include',
+      ],
+      'direct_dependent_settings': {
+        'defines': [
+          'OPENSSL_SMALL',
+        ],
+        'include_dirs': [
+          'src/include',
+        ],
+        'conditions': [
+          ['component == "shared_library"', {
+            'defines': [
+              'BORINGSSL_SHARED_LIBRARY',
+            ],
+          }],
+        ],
+      },
+    },
+    {
+      # boringssl_asm is a separate target to allow for ASM-specific cflags.
+      'target_name': 'boringssl_asm',
+      'type': 'static_library',
+      'include_dirs': [
+        'src/include',
+      ],
+      'conditions': [
         ['target_arch == "arm" and msan == 0', {
           'conditions': [
             ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_arm_sources)' ],
             }, {
-              'defines': [ 'OPENSSL_NO_ASM' ],
+              'direct_dependent_settings': {
+                'defines': [ 'OPENSSL_NO_ASM' ],
+              },
             }],
           ],
         }],
@@ -50,8 +81,13 @@
           'conditions': [
             ['OS == "linux" or OS == "android"', {
               'sources': [ '<@(boringssl_linux_aarch64_sources)' ],
+              # TODO(davidben): Remove explicit arch flag once
+              # https://crbug.com/576858 is fixed.
+              'cflags': [ '-march=armv8-a+crypto' ],
             }, {
-              'defines': [ 'OPENSSL_NO_ASM' ],
+              'direct_dependent_settings': {
+                'defines': [ 'OPENSSL_NO_ASM' ],
+              },
             }],
           ],
         }],
@@ -75,7 +111,9 @@
               ],
             }],
             ['OS != "mac" and OS != "ios" and OS != "linux" and OS != "win" and OS != "android"', {
-              'defines': [ 'OPENSSL_NO_ASM' ],
+              'direct_dependent_settings': {
+                'defines': [ 'OPENSSL_NO_ASM' ],
+              },
             }],
           ]
         }],
@@ -99,32 +137,18 @@
               ],
             }],
             ['OS != "mac" and OS != "ios" and OS != "linux" and OS != "win" and OS != "android"', {
-              'defines': [ 'OPENSSL_NO_ASM' ],
+              'direct_dependent_settings': {
+                'defines': [ 'OPENSSL_NO_ASM' ],
+              },
             }],
           ]
         }],
         ['msan == 1 or (target_arch != "arm" and target_arch != "ia32" and target_arch != "x64" and target_arch != "arm64")', {
-          'defines': [ 'OPENSSL_NO_ASM' ],
+          'direct_dependent_settings': {
+            'defines': [ 'OPENSSL_NO_ASM' ],
+          },
         }],
       ],
-      'include_dirs': [
-        'src/include',
-      ],
-      'direct_dependent_settings': {
-        'defines': [
-          'OPENSSL_SMALL',
-        ],
-        'include_dirs': [
-          'src/include',
-        ],
-        'conditions': [
-          ['component == "shared_library"', {
-            'defines': [
-              'BORINGSSL_SHARED_LIBRARY',
-            ],
-          }],
-        ],
-      },
     },
   ],
 }

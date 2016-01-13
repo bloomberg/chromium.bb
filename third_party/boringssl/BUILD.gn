@@ -106,6 +106,10 @@ component("boringssl") {
     sources += gypi_values.boringssl_linux_arm_sources
   } else if (current_cpu == "arm64" && (is_linux || is_android)) {
     sources += gypi_values.boringssl_linux_aarch64_sources
+
+    # TODO(davidben): Remove explicit arch flag once https://crbug.com/576858
+    # is fixed.
+    asmflags += [ "-march=armv8-a+crypto" ]
   } else {
     defines += [ "OPENSSL_NO_ASM" ]
   }
