@@ -27,6 +27,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
@@ -210,6 +211,13 @@ public class NewTabPage
     }
 
     private final NewTabPageManager mNewTabPageManager = new NewTabPageManager() {
+        private static final String NTP_OFFLINE_PAGES_FEATURE_NAME = "NTPOfflinePages";
+
+        private boolean isNtpOfflinePagesEnabled() {
+            return OfflinePageBridge.isEnabled()
+                    && ChromeFeatureList.isEnabled(NTP_OFFLINE_PAGES_FEATURE_NAME);
+        }
+
         @Override
         public boolean isLocationBarShownInNTP() {
             if (mIsDestroyed) return false;
@@ -444,7 +452,7 @@ public class NewTabPage
 
         @Override
         public boolean isOfflineAvailable(String pageUrl) {
-            if (mIsDestroyed || !OfflinePageBridge.isEnabled()) return false;
+            if (mIsDestroyed || !isNtpOfflinePagesEnabled()) return false;
             if (mOfflinePageBridge == null) mOfflinePageBridge = new OfflinePageBridge(mProfile);
             return mOfflinePageBridge.getPageByOnlineURL(pageUrl) != null;
         }

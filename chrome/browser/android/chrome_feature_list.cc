@@ -24,10 +24,15 @@ namespace {
 // this array may either refer to features defined in this file (above) or in
 // other locations in the code base (e.g. chrome/, components/, etc).
 const base::Feature* kFeaturesExposedToJava[] = {
+    &kNTPOfflinePagesFeature,
     &kPhysicalWebFeature,
 };
 
 }  // namespace
+
+const base::Feature kNTPOfflinePagesFeature {
+  "NTPOfflinePages", base::FEATURE_DISABLED_BY_DEFAULT
+};
 
 const base::Feature kPhysicalWebFeature {
   "PhysicalWeb", base::FEATURE_DISABLED_BY_DEFAULT
