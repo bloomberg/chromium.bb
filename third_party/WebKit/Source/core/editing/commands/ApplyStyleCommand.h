@@ -137,7 +137,6 @@ enum ShouldStyleAttributeBeEmpty { AllowNonEmptyStyleAttribute, StyleAttributeSh
 bool isEmptyFontTag(const Element*, ShouldStyleAttributeBeEmpty = StyleAttributeShouldBeEmpty);
 bool isLegacyAppleHTMLSpanElement(const Node*);
 bool isStyleSpanOrSpanWithOnlyStyleAttribute(const Element*);
-PassRefPtrWillBeRawPtr<HTMLSpanElement> createStyleSpanElement(Document&);
 
 } // namespace blink
 

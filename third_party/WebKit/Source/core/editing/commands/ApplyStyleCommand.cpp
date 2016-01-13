@@ -112,16 +112,6 @@ bool isEmptyFontTag(const Element* element, ShouldStyleAttributeBeEmpty shouldSt
     return hasNoAttributeOrOnlyStyleAttribute(toHTMLFontElement(element), shouldStyleAttributeBeEmpty);
 }
 
-static PassRefPtrWillBeRawPtr<HTMLFontElement> createFontElement(Document& document)
-{
-    return toHTMLFontElement(createHTMLElement(document, fontTag).get());
-}
-
-PassRefPtrWillBeRawPtr<HTMLSpanElement> createStyleSpanElement(Document& document)
-{
-    return toHTMLSpanElement(createHTMLElement(document, spanTag).get());
-}
-
 ApplyStyleCommand::ApplyStyleCommand(Document& document, const EditingStyle* style, EditAction editingAction, EPropertyLevel propertyLevel)
     : CompositeEditCommand(document)
     , m_style(style->copy())
@@ -404,7 +394,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
         } else if (node->isTextNode() && node->layoutObject() && node->parentNode() != lastStyledNode) {
             // Last styled node was not parent node of this text node, but we wish to style this
             // text node. To make this possible, add a style span to surround this text node.
-            RefPtrWillBeRawPtr<HTMLSpanElement> span = createStyleSpanElement(document());
+            RefPtrWillBeRawPtr<HTMLSpanElement> span = HTMLSpanElement::create(document());
             surroundNodeRangeWithElement(node, node, span.get());
             element = span.release();
         }  else {
@@ -1444,7 +1434,7 @@ Position ApplyStyleCommand::positionToComputeInlineStyleChange(PassRefPtrWillBeR
 {
     // It's okay to obtain the style at the startNode because we've removed all relevant styles from the current run.
     if (!startNode->isElementNode()) {
-        dummyElement = createStyleSpanElement(document());
+        dummyElement = HTMLSpanElement::create(document());
         insertNodeAt(dummyElement, positionBeforeNode(startNode.get()));
         return positionBeforeNode(dummyElement.get());
     }
@@ -1487,7 +1477,7 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
             if (styleChange.applyFontSize())
                 setNodeAttribute(fontContainer, sizeAttr, AtomicString(styleChange.fontSize()));
         } else {
-            RefPtrWillBeRawPtr<HTMLFontElement> fontElement = createFontElement(document());
+            RefPtrWillBeRawPtr<HTMLFontElement> fontElement = HTMLFontElement::create(document());
             if (styleChange.applyFontColor())
                 fontElement->setAttribute(colorAttr, AtomicString(styleChange.fontColor()));
             if (styleChange.applyFontFace())
@@ -1512,28 +1502,28 @@ void ApplyStyleCommand::applyInlineStyleChange(PassRefPtrWillBeRawPtr<Node> pass
                 setNodeAttribute(styleContainer, styleAttr, AtomicString(styleChange.cssStyle()));
             }
         } else {
-            RefPtrWillBeRawPtr<HTMLSpanElement> styleElement = createStyleSpanElement(document());
+            RefPtrWillBeRawPtr<HTMLSpanElement> styleElement = HTMLSpanElement::create(document());
             styleElement->setAttribute(styleAttr, AtomicString(styleChange.cssStyle()));
             surroundNodeRangeWithElement(startNode, endNode, styleElement.release());
         }
     }
 
     if (styleChange.applyBold())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), bTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(bTag, document()));
 
     if (styleChange.applyItalic())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), iTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(iTag, document()));
 
     if (styleChange.applyUnderline())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), uTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(uTag, document()));
 
     if (styleChange.applyLineThrough())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), strikeTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(strikeTag, document()));
 
     if (styleChange.applySubscript())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), subTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(subTag, document()));
     else if (styleChange.applySuperscript())
-        surroundNodeRangeWithElement(startNode, endNode, createHTMLElement(document(), supTag));
+        surroundNodeRangeWithElement(startNode, endNode, HTMLElement::create(supTag, document()));
 
     if (m_styledInlineElement && addStyledElement == AddStyledElement)
         surroundNodeRangeWithElement(startNode, endNode, m_styledInlineElement->cloneElementWithoutChildren());
