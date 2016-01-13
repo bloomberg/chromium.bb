@@ -14,22 +14,6 @@ std::string StringProvider::GetOmniboxCopyUrlString() {
   return std::string();
 }
 
-int StringProvider::GetUnsafePortTitleID() {
-  return 0;
-}
-
-int StringProvider::GetUnsafePortHeadlineID() {
-  return 0;
-}
-
-int StringProvider::GetUnsafePortMessageID() {
-  return 0;
-}
-
-int StringProvider::GetUnsafePortDetailsID() {
-  return 0;
-}
-
 base::string16 StringProvider::GetProductName() {
   return base::string16();
 }

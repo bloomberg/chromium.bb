@@ -30,12 +30,6 @@ class StringProvider {
   // copy the URL for the current search query into the pasteboard.
   virtual std::string GetOmniboxCopyUrlString() = 0;
 
-  // Return the resource IDs used to display unsafe port errors.
-  virtual int GetUnsafePortTitleID();
-  virtual int GetUnsafePortHeadlineID();
-  virtual int GetUnsafePortMessageID();
-  virtual int GetUnsafePortDetailsID();
-
   // Returns the product name (e.g. "Google Chrome").
   virtual base::string16 GetProductName();
 };
