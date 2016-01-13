@@ -70,11 +70,19 @@
       <arg name="surface" type="object" interface="wl_surface"/>
     </request>
 
+    <request name="pong">
+      <description summary="respond to a ping event">
+	A client must respond to a ping event with a pong request or
+	the client may be deemed unresponsive. See xdg_shell.ping.
+      </description>
+      <arg name="serial" type="uint" summary="serial of the ping event"/>
+    </request>
+
     <event name="ping">
       <description summary="check if the client is alive">
 	The ping event asks the client if it's still alive. Pass the
 	serial specified in the event back to the compositor by sending
-	a "pong" request back with the specified serial.
+	a "pong" request back with the specified serial. See xdg_shell.ping.
 
 	Compositors can use this to determine if the client is still
 	alive. It's unspecified what will happen if the client doesn't
@@ -86,14 +94,6 @@
       </description>
       <arg name="serial" type="uint" summary="pass this to the pong request"/>
     </event>
-
-    <request name="pong">
-      <description summary="respond to a ping event">
-	A client must respond to a ping event with a pong request or
-	the client may be deemed unresponsive.
-      </description>
-      <arg name="serial" type="uint" summary="serial of the ping event"/>
-    </request>
   </interface>
 
   <interface name="zxdg_surface_v6" version="1">
@@ -471,34 +471,6 @@
       </entry>
     </enum>
 
-    <event name="configure">
-      <description summary="suggest a surface change">
-	This configure event asks the client to resize its toplevel surface or
-	to change its state. The configured state should not be applied
-	immediately. See xdg_surface.configure for details.
-
-	The width and height arguments specify a hint to the window
-	about how its surface should be resized in window geometry
-	coordinates. See set_window_geometry.
-
-	If the width or height arguments are zero, it means the client
-	should decide its own window dimension. This may happen when the
-	compositor need to configure the state of the surface but doesn't
-	have any information about any previous or expected dimension.
-
-	The states listed in the event specify how the width/height
-	arguments should be interpreted, and possibly how it should be
-	drawn.
-
-	Clients must send an ack_configure in response to this event. See
-	xdg_surface.configure and xdg_surface.ack_configure for details.
-      </description>
-
-      <arg name="width" type="int"/>
-      <arg name="height" type="int"/>
-      <arg name="states" type="array"/>
-    </event>
-
     <request name="set_max_size">
       <description summary="set the maximum size">
 	Set a maximum size for the window.
@@ -652,6 +624,34 @@
 	similar compositor features.
       </description>
     </request>
+
+    <event name="configure">
+      <description summary="suggest a surface change">
+	This configure event asks the client to resize its toplevel surface or
+	to change its state. The configured state should not be applied
+	immediately. See xdg_surface.configure for details.
+
+	The width and height arguments specify a hint to the window
+	about how its surface should be resized in window geometry
+	coordinates. See set_window_geometry.
+
+	If the width or height arguments are zero, it means the client
+	should decide its own window dimension. This may happen when the
+	compositor need to configure the state of the surface but doesn't
+	have any information about any previous or expected dimension.
+
+	The states listed in the event specify how the width/height
+	arguments should be interpreted, and possibly how it should be
+	drawn.
+
+	Clients must send an ack_configure in response to this event. See
+	xdg_surface.configure and xdg_surface.ack_configure for details.
+      </description>
+
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="states" type="array"/>
+    </event>
 
     <event name="close">
       <description summary="surface wants to be closed">
