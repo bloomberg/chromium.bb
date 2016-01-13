@@ -436,6 +436,10 @@ const char kEnableMaterialDesignPolicyPage[]  = "enable-md-policy-page";
 // (internally adds lEnableGpuPlugin to the command line).
 const char kEnableNaCl[]                    = "enable-nacl";
 
+// Enables the use of native notifications instead of using the Chrome based
+// ones.
+const char kEnableNativeNotifications[] = "enable-native-notifications";
+
 // Enables tracing for each navigation. It will attempt to trace each navigation
 // for 10s, until the buffer is full, or until the next navigation.
 // It only works if a URL was provided by --trace-upload-url.

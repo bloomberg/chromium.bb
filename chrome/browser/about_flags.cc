@@ -1400,6 +1400,13 @@ const FeatureEntry kFeatureEntries[] = {
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTranslateNewUX,
                                switches::kDisableTranslateNewUX)},
 #endif
+#if defined(OS_MACOSX)
+    {"enable-native-notifications",
+     IDS_NOTIFICATIONS_NATIVE_FLAG,
+     IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION,
+     kOsMac,
+     SINGLE_VALUE_TYPE(switches::kEnableNativeNotifications)},
+#endif
 #if defined(TOOLKIT_VIEWS)
     {"disable-views-rect-based-targeting",  // FLAGS:RECORD_UMA
      IDS_FLAGS_VIEWS_RECT_BASED_TARGETING_NAME,

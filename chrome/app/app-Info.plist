@@ -348,5 +348,7 @@
 			</dict>
 		</dict>
 	</array>
+        <key>NSUserNotificationAlertStyle</key>
+        <string>alert</string>
 </dict>
 </plist>

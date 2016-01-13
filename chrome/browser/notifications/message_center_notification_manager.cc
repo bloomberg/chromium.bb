@@ -43,6 +43,16 @@
 #include "ash/system/web_notification/web_notification_tray.h"
 #endif
 
+// Mac does support native notifications and defines this method
+// in notification_ui_manager_mac.mm
+#if !defined(OS_MACOSX)
+// static
+NotificationUIManager*
+NotificationUIManager::CreateNativeNotificationManager() {
+  return nullptr;
+}
+#endif
+
 MessageCenterNotificationManager::MessageCenterNotificationManager(
     message_center::MessageCenter* message_center,
     scoped_ptr<message_center::NotifierSettingsProvider> settings_provider)
@@ -50,8 +60,7 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
       settings_provider_(std::move(settings_provider)),
       system_observer_(this),
       stats_collector_(message_center),
-      google_now_stats_collector_(message_center)
-{
+      google_now_stats_collector_(message_center) {
   message_center_->AddObserver(this);
   message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 

@@ -67,6 +67,12 @@ NotificationUIManager* NotificationUIManager::Create(PrefService* local_state) {
   return new NotificationUIManagerAndroid();
 }
 
+// static
+NotificationUIManager*
+NotificationUIManager::CreateNativeNotificationManager() {
+  return nullptr;
+}
+
 NotificationUIManagerAndroid::NotificationUIManagerAndroid() {
   java_object_.Reset(
       Java_NotificationUIManager_create(

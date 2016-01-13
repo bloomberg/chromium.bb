@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
@@ -124,6 +125,10 @@ class PlatformNotificationServiceImpl
   // Returns a display name for an origin, to be used in the context message
   base::string16 DisplayNameForContextMessage(Profile* profile,
                                               const GURL& origin) const;
+
+  // Platforms that display native notification interact with them through this
+  // object.
+  scoped_ptr<NotificationUIManager> native_notification_ui_manager_;
 
   // Weak reference. Ownership maintains with the test.
   NotificationUIManager* notification_ui_manager_for_tests_;

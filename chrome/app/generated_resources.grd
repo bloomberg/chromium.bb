@@ -7987,6 +7987,12 @@ I don't think this site should be blocked!
       <message name="IDS_NOTIFICATIONS_ASK_RADIO" desc="A radio button in Content Settings dialog to configure notifications per-site.">
         Ask when a site wants to show notifications (recommended)
       </message>
+      <message name="IDS_NOTIFICATIONS_NATIVE_FLAG" desc="Name of the flag to enable native notifications.">
+        Enable native notifications.
+      </message>
+      <message name="IDS_NOTIFICATIONS_NATIVE_FLAG_DESCRIPTION" desc="Description of the flag to enable native notifications.">
+        Enable support for using the native notification toasts and notification center on platforms where these are available.
+      </message>
       <message name="IDS_FULLSCREEN_TAB_LABEL" desc="Label for Fullscreen tab on Content Settings dialog">
         Fullscreen
       </message>

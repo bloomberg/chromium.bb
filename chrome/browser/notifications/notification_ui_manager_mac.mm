@@ -1,0 +1,260 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/notifications/notification_ui_manager_mac.h"
+
+#include <utility>
+
+#include "base/command_line.h"
+#include "base/mac/foundation_util.h"
+#include "base/mac/mac_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/persistent_notification_delegate.h"
+#include "chrome/browser/notifications/platform_notification_service_impl.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/common/chrome_switches.h"
+#include "url/gurl.h"
+
+@class NSUserNotification;
+@class NSUserNotificationCenter;
+
+// The mapping from web notifications to NsUserNotification works as follows
+
+// notification#title in NSUserNotification.title
+// notification#message in NSUserNotification.subtitle
+// notification#context_message in NSUserNotification.informativeText
+// notification#tag in NSUserNotification.identifier (10.9)
+// notification#icon in NSUserNotification.contentImage (10.9)
+
+// TODO(miguelg) implement the following features
+// - Sound names can be implemented by setting soundName in NSUserNotification
+//   NSUserNotificationDefaultSoundName gives you the platform default.
+// - notification.requireInteraction can be implemented by removing the
+//   notification and adding it again in "notification center only mode" in
+//   the shouldPresentNotification delegate method.
+//   This also requires refactoring the popup_timer class so it does not require
+//   a notification center.
+// - One Action can be implemented using the actionButton
+// - more than one action is only possible in 10.10 and using a private API.
+
+namespace {
+
+// Keys in NSUserNotification.userInfo to map chrome notifications to
+// native ones.
+NSString* const kNotificationOriginKey = @"notification_origin";
+NSString* const kNotificationPersistentIdKey = @"notification_persistent_id";
+NSString* const kNotificationDelegateIdKey = @"notification_delegate_id";
+NSString* const kNotificationProfileIdKey = @"notification_profile_id";
+
+}  // namespace
+
+// Only use native notifications for web, behind a flag and on 10.8+
+// static
+NotificationUIManager*
+NotificationUIManager::CreateNativeNotificationManager() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableNativeNotifications) &&
+      base::mac::IsOSMountainLionOrLater()) {
+    return new NotificationUIManagerMac();
+  }
+  return nullptr;
+}
+
+// A Cocoa class that represents the delegate of NSUserNotificationCenter and
+// can forward commands to C++.
+@interface NotificationCenterDelegate
+    : NSObject<NSUserNotificationCenterDelegate> {
+ @private
+  NotificationUIManagerMac* manager_;  // Weak, owns self.
+}
+- (id)initWithManager:(NotificationUIManagerMac*)manager;
+@end
+
+// /////////////////////////////////////////////////////////////////////////////
+
+NotificationUIManagerMac::NotificationUIManagerMac()
+    : delegate_([[NotificationCenterDelegate alloc] initWithManager:this]) {
+  [[NSUserNotificationCenter defaultUserNotificationCenter]
+      setDelegate:delegate_.get()];
+}
+
+NotificationUIManagerMac::~NotificationUIManagerMac() {
+  [[NSUserNotificationCenter defaultUserNotificationCenter] setDelegate:nil];
+  CancelAll();
+}
+
+void NotificationUIManagerMac::Add(const Notification& notification,
+                                   Profile* profile) {
+  // The Mac notification UI manager only supports Web Notifications, which
+  // have a PersistentNotificationDelegate. The persistent id of the
+  // notification is exposed through it's interface.
+  PersistentNotificationDelegate* delegate =
+      static_cast<PersistentNotificationDelegate*>(notification.delegate());
+  DCHECK(delegate);
+
+  base::scoped_nsobject<NSUserNotification> toast(
+      [[NSUserNotification alloc] init]);
+  [toast setTitle:base::SysUTF16ToNSString(notification.title())];
+  [toast setSubtitle:base::SysUTF16ToNSString(notification.message())];
+
+  // TODO(miguelg): try to elide the origin perhaps See NSString
+  // stringWithFormat. It seems that the informativeText font is constant.
+  NSString* informativeText =
+      notification.context_message().empty()
+          ? base::SysUTF8ToNSString(notification.origin_url().spec())
+          : base::SysUTF16ToNSString(notification.context_message());
+  [toast setInformativeText:informativeText];
+
+  // TODO(miguelg): Implement support for buttons
+  toast.get().hasActionButton = NO;
+
+  // Some functionality is only available in 10.9+
+  // Icon
+  if ([toast respondsToSelector:@selector(setContentImage:)]) {
+    [toast setValue:notification.icon().ToNSImage() forKey:@"contentImage"];
+  }
+
+  // Tag
+  if ([toast respondsToSelector:@selector(setIdentifier:)] &&
+      !notification.tag().empty()) {
+    [toast setValue:base::SysUTF8ToNSString(notification.tag())
+             forKey:@"identifier"];
+  }
+
+  int64_t persistent_notification_id = delegate->persistent_notification_id();
+  int64_t profile_id = reinterpret_cast<int64_t>(GetProfileID(profile));
+
+  toast.get().userInfo = @{
+    kNotificationOriginKey :
+        base::SysUTF8ToNSString(notification.origin_url().spec()),
+    kNotificationPersistentIdKey :
+        [NSNumber numberWithLongLong:persistent_notification_id],
+    kNotificationDelegateIdKey :
+        base::SysUTF8ToNSString(notification.delegate_id()),
+    kNotificationProfileIdKey : [NSNumber numberWithLongLong:profile_id]
+  };
+
+  [[NSUserNotificationCenter defaultUserNotificationCenter]
+      deliverNotification:toast];
+}
+
+bool NotificationUIManagerMac::Update(const Notification& notification,
+                                      Profile* profile) {
+  NOTREACHED();
+  return false;
+}
+
+const Notification* NotificationUIManagerMac::FindById(
+    const std::string& delegate_id,
+    ProfileID profile_id) const {
+  NOTREACHED();
+  return nil;
+}
+
+bool NotificationUIManagerMac::CancelById(const std::string& delegate_id,
+                                          ProfileID profile_id) {
+  int64_t persistent_notification_id = 0;
+  // TODO(peter): Use the |delegate_id| directly when notification ids are being
+  // generated by content/ instead of us.
+  if (!base::StringToInt64(delegate_id, &persistent_notification_id))
+    return false;
+
+  NSUserNotificationCenter* notificationCenter =
+      [NSUserNotificationCenter defaultUserNotificationCenter];
+  for (NSUserNotification* toast in
+       [notificationCenter deliveredNotifications]) {
+    NSNumber* toast_id =
+        [toast.userInfo objectForKey:kNotificationPersistentIdKey];
+    if (toast_id.longLongValue == persistent_notification_id) {
+      [notificationCenter removeDeliveredNotification:toast];
+      return true;
+    }
+  }
+
+  return false;
+}
+
+std::set<std::string>
+NotificationUIManagerMac::GetAllIdsByProfileAndSourceOrigin(
+    ProfileID profile_id,
+    const GURL& source) {
+  NOTREACHED();
+  return std::set<std::string>();
+}
+
+std::set<std::string> NotificationUIManagerMac::GetAllIdsByProfile(
+    ProfileID profile_id) {
+  // ProfileID in mac is not safe to use across browser restarts
+  // Therefore because when chrome quits we cancel all pending notifications.
+  std::set<std::string> delegate_ids;
+  NSUserNotificationCenter* notificationCenter =
+      [NSUserNotificationCenter defaultUserNotificationCenter];
+  for (NSUserNotification* toast in
+       [notificationCenter deliveredNotifications]) {
+    NSNumber* toast_profile_id =
+        [toast.userInfo objectForKey:kNotificationProfileIdKey];
+    if (toast_profile_id.longLongValue ==
+        reinterpret_cast<int64_t>(profile_id)) {
+      delegate_ids.insert(base::SysNSStringToUTF8(
+          [toast.userInfo objectForKey:kNotificationDelegateIdKey]));
+    }
+  }
+  return delegate_ids;
+}
+
+bool NotificationUIManagerMac::CancelAllBySourceOrigin(
+    const GURL& source_origin) {
+  NOTREACHED();
+  return false;
+}
+
+bool NotificationUIManagerMac::CancelAllByProfile(ProfileID profile_id) {
+  NOTREACHED();
+  return false;
+}
+
+void NotificationUIManagerMac::CancelAll() {
+  [[NSUserNotificationCenter defaultUserNotificationCenter]
+      removeAllDeliveredNotifications];
+}
+
+// /////////////////////////////////////////////////////////////////////////////
+
+@implementation NotificationCenterDelegate
+
+- (id)initWithManager:(NotificationUIManagerMac*)manager {
+  if ((self = [super init])) {
+    DCHECK(manager);
+    manager_ = manager;
+  }
+  return self;
+}
+
+- (void)userNotificationCenter:(NSUserNotificationCenter*)center
+       didActivateNotification:(NSUserNotification*)notification {
+  std::string notificationOrigin = base::SysNSStringToUTF8(
+      [notification.userInfo objectForKey:kNotificationOriginKey]);
+  NSNumber* persistentNotificationId =
+      [notification.userInfo objectForKey:kNotificationPersistentIdKey];
+
+  GURL origin(notificationOrigin);
+
+  // TODO(miguelg):We cannot ship like this since we could be
+  // delivering messages to the wrong profile.
+  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
+      ProfileManager::GetLastUsedProfile(),
+      persistentNotificationId.longLongValue, origin,
+      -1 /* buttons not yet implemented */);
+}
+
+- (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center
+     shouldPresentNotification:(NSUserNotification*)nsNotification {
+  // Always display notifications, regardless of whether the app is foreground.
+  return YES;
+}
+
+@end
