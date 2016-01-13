@@ -59,7 +59,6 @@ class ChromeBrowserStateManager;
 class ChromeIdentityService;
 class GeolocationUpdaterProvider;
 class SigninResourcesProvider;
-class StringProvider;
 class LiveTabContextProvider;
 class UpdatableResourceProvider;
 
@@ -97,8 +96,6 @@ class ChromeBrowserProvider {
   virtual SigninResourcesProvider* GetSigninResourcesProvider();
   // Returns an instance of a Chrome identity service.
   virtual ChromeIdentityService* GetChromeIdentityService();
-  // Returns an instance of a string provider.
-  virtual StringProvider* GetStringProvider();
   // Returns an instance of a LiveTabContextProvider.
   virtual LiveTabContextProvider* GetLiveTabContextProvider();
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();

@@ -28,8 +28,6 @@
         '../public/provider/chrome/browser/signin/signin_error_provider.mm',
         '../public/provider/chrome/browser/signin/signin_resources_provider.h',
         '../public/provider/chrome/browser/signin/signin_resources_provider.mm',
-        '../public/provider/chrome/browser/string_provider.cc',
-        '../public/provider/chrome/browser/string_provider.h',
         '../public/provider/chrome/browser/ui/infobar_view_delegate.h',
         '../public/provider/chrome/browser/ui/infobar_view_protocol.h',
         '../public/provider/chrome/browser/updatable_resource_provider.h',

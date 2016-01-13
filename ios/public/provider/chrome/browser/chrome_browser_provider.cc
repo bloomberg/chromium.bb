@@ -65,10 +65,6 @@ ChromeIdentityService* ChromeBrowserProvider::GetChromeIdentityService() {
   return nullptr;
 }
 
-StringProvider* ChromeBrowserProvider::GetStringProvider() {
-  return nullptr;
-}
-
 LiveTabContextProvider* ChromeBrowserProvider::GetLiveTabContextProvider() {
   return nullptr;
 }
