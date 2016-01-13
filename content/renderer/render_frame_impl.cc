@@ -20,6 +20,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/process/process.h"
 #include "base/stl_util.h"
@@ -2364,13 +2365,29 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
 #if defined(OS_ANDROID)
   // We must use WMPA in when accelerated video decode is disabled becuase WMPI
   // is unlikely to have a fallback decoder.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnifiedMediaPipeline) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableAcceleratedVideoDecode) ||
       !media::MediaCodecUtil::IsMediaCodecAvailable() ||
       media::MediaCodecUtil::IsHLSPath(url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
+  } else {
+    // TODO(dalecurtis): This experiment is temporary and should be removed once
+    // we have enough data to support the primacy of the unified media pipeline;
+    // see http://crbug.com/533190 for details.
+    //
+    // Note: It's important to query the field trial state first, to ensure that
+    // UMA reports the correct group.
+    const std::string group_name =
+        base::FieldTrialList::FindFullName("UnifiedMediaPipelineTrial");
+    const bool enabled_via_cli =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableUnifiedMediaPipeline);
+    const bool enable_unified_media_pipeline =
+        enabled_via_cli ||
+        base::StartsWith(group_name, "Enabled", base::CompareCase::SENSITIVE);
+
+    if (!enable_unified_media_pipeline)
+      return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   }
 #endif  // defined(OS_ANDROID)
 
