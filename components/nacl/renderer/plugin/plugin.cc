@@ -17,7 +17,6 @@
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_io.h"
 #include "ppapi/c/pp_errors.h"

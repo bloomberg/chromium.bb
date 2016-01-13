@@ -307,7 +307,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   for (int i = 0; i < split_module_count_; i++) {
     PP_FileHandle obj_handle =
         plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
-    nacl::scoped_ptr<TempFile> temp_file(new TempFile(plugin_, obj_handle));
+    scoped_ptr<TempFile> temp_file(new TempFile(plugin_, obj_handle));
     int32_t pp_error = temp_file->CheckValidity();
     if (pp_error != PP_OK) {
       ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,

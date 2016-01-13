@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -102,7 +102,7 @@ class PnaclTranslateThread {
   // Callback to run when tasks are completed or an error has occurred.
   pp::CompletionCallback report_translate_finished_;
 
-  nacl::scoped_ptr<NaClThread> translate_thread_;
+  scoped_ptr<NaClThread> translate_thread_;
 
   // Used to guard compiler_subprocess, ld_subprocess,
   // compiler_subprocess_active_, and ld_subprocess_active_

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
@@ -148,7 +149,7 @@ class PnaclCoordinator {
                                 pp::ThreadSafeThreadTraits> callback_factory_;
 
   // An auxiliary class that manages downloaded resources (llc and ld nexes).
-  nacl::scoped_ptr<PnaclResources> resources_;
+  scoped_ptr<PnaclResources> resources_;
   NaClSubprocess compiler_subprocess_;
   NaClSubprocess ld_subprocess_;
 
@@ -169,7 +170,7 @@ class PnaclCoordinator {
   int num_threads_;
 
   // Translated nexe file, produced by the linker.
-  nacl::scoped_ptr<TempFile> temp_nexe_file_;
+  scoped_ptr<TempFile> temp_nexe_file_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;
@@ -186,7 +187,7 @@ class PnaclCoordinator {
   // The helper thread used to do translations via SRPC.
   // It accesses fields of PnaclCoordinator so it must have a
   // shorter lifetime.
-  nacl::scoped_ptr<PnaclTranslateThread> translate_thread_;
+  scoped_ptr<PnaclTranslateThread> translate_thread_;
 };
 
 //----------------------------------------------------------------------

@@ -14,6 +14,7 @@
 #include <stdarg.h>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
@@ -52,7 +53,7 @@ class NaClSubprocess {
   std::string description_;
 
   // The service runtime representing the NaCl module instance.
-  nacl::scoped_ptr<ServiceRuntime> service_runtime_;
+  scoped_ptr<ServiceRuntime> service_runtime_;
 };
 
 }  // namespace plugin
