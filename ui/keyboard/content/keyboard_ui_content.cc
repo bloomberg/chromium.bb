@@ -161,7 +161,8 @@ void KeyboardUIContent::LoadSystemKeyboard() {
 }
 
 void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
-  aura::Window* keyboard_window = GetKeyboardWindow();
+  aura::Window* keyboard_container =
+      keyboard_controller()->GetContainerWindow();
   if (!ShouldWindowOverscroll(window))
     return;
 
@@ -172,7 +173,7 @@ void KeyboardUIContent::UpdateInsetsForWindow(aura::Window* window) {
     if (view && window->Contains(view->GetNativeView())) {
       gfx::Rect window_bounds = view->GetNativeView()->GetBoundsInScreen();
       gfx::Rect intersect =
-          gfx::IntersectRects(window_bounds, keyboard_window->bounds());
+          gfx::IntersectRects(window_bounds, keyboard_container->bounds());
       int overlap = ShouldEnableInsets(window) ? intersect.height() : 0;
       if (overlap > 0 && overlap < window_bounds.height())
         view->SetInsets(gfx::Insets(0, 0, overlap, 0));
