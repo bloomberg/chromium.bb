@@ -4,7 +4,7 @@
 
 :host {
   color: #fff;
-  font-size: 88.8%;
+  font-size: 94.4%;
 }
 
 :host ::selection {
@@ -48,5 +48,5 @@
 
 #slash,
 #pagelength {
-  font-size: 81.25%;
+  font-size: 76.5%;
 }
