@@ -467,6 +467,7 @@ public class ChromeDownloadDelegate
     private void enqueueDownloadManagerRequest(final DownloadInfo info) {
         DownloadManagerService.getDownloadManagerService(
                 mContext.getApplicationContext()).enqueueDownloadManagerRequest(info, true);
+        closeBlankTab();
     }
 
     /**

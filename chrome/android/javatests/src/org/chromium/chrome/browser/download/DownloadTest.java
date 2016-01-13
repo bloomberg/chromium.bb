@@ -10,7 +10,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -90,12 +89,8 @@ public class DownloadTest extends DownloadTestBase {
         assertTrue(hasDownload("superbo.txt", SUPERBO_CONTENTS));
     }
 
-    /*
-    Empty tab not closed.
     @MediumTest
     @Feature({"Downloads"})
-    */
-    @DisabledTest
     public void testCloseEmptyDownloadTab() throws Exception {
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/download/get.html"));
         waitForFocus();
