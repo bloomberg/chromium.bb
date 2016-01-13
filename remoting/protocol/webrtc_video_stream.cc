@@ -41,7 +41,7 @@ bool WebrtcVideoStream::Start(
         peer_connection_factory) {
   scoped_ptr<WebrtcVideoCapturerAdapter> capturer_adapter(
       new WebrtcVideoCapturerAdapter(std::move(desktop_capturer)));
-  capturer_adapter_ = capturer_adapter_->GetWeakPtr();
+  capturer_adapter_ = capturer_adapter->GetWeakPtr();
 
   connection_ = connection;
 
