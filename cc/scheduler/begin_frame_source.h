@@ -60,6 +60,8 @@ class CC_EXPORT BeginFrameObserver {
   // preventing "double dropping" and other bad side effects.
   virtual const BeginFrameArgs LastUsedBeginFrameArgs() const = 0;
 
+  virtual void OnBeginFrameSourcePausedChanged(bool paused) = 0;
+
   // Tracing support
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const = 0;
 };
@@ -168,6 +170,7 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
   // These methods should be used by subclasses to make the call to the
   // observers.
   void CallOnBeginFrame(const BeginFrameArgs& args);
+  void SetBeginFrameSourcePaused(bool paused);
 
   // This method should be overridden if you want to change some behaviour on
   // needs_begin_frames change.
@@ -175,6 +178,7 @@ class CC_EXPORT BeginFrameSourceBase : public BeginFrameSource {
 
   BeginFrameObserver* observer_;
   bool needs_begin_frames_;
+  bool paused_;
 
  private:
   bool inside_as_value_into_;
@@ -273,6 +277,7 @@ class CC_EXPORT BeginFrameSourceMultiplexer : public BeginFrameSourceBase,
   // sources.
   void OnBeginFrame(const BeginFrameArgs& args) override;
   const BeginFrameArgs LastUsedBeginFrameArgs() const override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   // BeginFrameSource
   void DidFinishFrame(size_t remaining_frames) override;

@@ -111,6 +111,8 @@ class FakeBeginFrameSource : public BeginFrameSourceBase {
   void DidFinishFrame(size_t remaining_frames) override;
   void AsValueInto(base::trace_event::TracedValue* dict) const override;
 
+  using BeginFrameSourceBase::SetBeginFrameSourcePaused;
+
  private:
   bool remaining_frames_;
 

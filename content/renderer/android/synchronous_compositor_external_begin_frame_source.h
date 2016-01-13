@@ -33,8 +33,8 @@ class SynchronousCompositorExternalBeginFrameSource
   ~SynchronousCompositorExternalBeginFrameSource() override;
 
   void BeginFrame(const cc::BeginFrameArgs& args);
-  void SetClient(
-      SynchronousCompositorExternalBeginFrameSourceClient* client);
+  void SetClient(SynchronousCompositorExternalBeginFrameSourceClient* client);
+  using cc::BeginFrameSourceBase::SetBeginFrameSourcePaused;
 
   // cc::BeginFrameSourceBase implementation.
   void OnNeedsBeginFramesChange(bool needs_begin_frames) override;

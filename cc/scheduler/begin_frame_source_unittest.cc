@@ -13,6 +13,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::Mock;
+
 namespace cc {
 namespace {
 
@@ -20,6 +22,7 @@ namespace {
 class MockMinimalBeginFrameObserverBase : public BeginFrameObserverBase {
  public:
   MOCK_METHOD1(OnBeginFrameDerivedImpl, bool(const BeginFrameArgs&));
+  MOCK_METHOD1(OnBeginFrameSourcePausedChanged, void(bool));
   int64_t dropped_begin_frame_args() const { return dropped_begin_frame_args_; }
 };
 
@@ -73,6 +76,7 @@ TEST(BeginFrameSourceBaseTest, ObserverManipulation) {
   MockBeginFrameObserver otherObs;
   FakeBeginFrameSource source;
 
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   source.AddObserver(&obs);
   EXPECT_EQ(&obs, source.GetObserver());
 
@@ -92,6 +96,7 @@ TEST(BeginFrameSourceBaseTest, ObserverManipulation) {
 #endif
   source.RemoveObserver(&obs);
 
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(otherObs, false);
   source.AddObserver(&otherObs);
   EXPECT_EQ(&otherObs, source.GetObserver());
   source.RemoveObserver(&otherObs);
@@ -100,6 +105,7 @@ TEST(BeginFrameSourceBaseTest, ObserverManipulation) {
 TEST(BeginFrameSourceBaseTest, Observer) {
   FakeBeginFrameSource source;
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   source.AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 100, 200, 300);
   EXPECT_BEGIN_FRAME_DROP(obs, 400, 600, 300);
@@ -126,6 +132,18 @@ TEST(BeginFrameSourceBaseTest, NeedsBeginFrames) {
   EXPECT_FALSE(source.NeedsBeginFrames());
 }
 
+TEST(BeginFrameSourceBaseTest, SetBeginFrameSourcePaused) {
+  FakeBeginFrameSource source;
+  MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  source.AddObserver(&obs);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  source.SetBeginFrameSourcePaused(true);
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  source.SetBeginFrameSourcePaused(false);
+}
+
 class LoopingBeginFrameObserver : public BeginFrameObserverBase {
  public:
   BeginFrameSource* source_;
@@ -142,6 +160,8 @@ class LoopingBeginFrameObserver : public BeginFrameObserverBase {
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override {
     return true;
   }
+
+  void OnBeginFrameSourcePausedChanged(bool paused) override {}
 };
 
 TEST(BeginFrameSourceBaseTest, DetectAsValueIntoLoop) {
@@ -196,6 +216,7 @@ class BackToBackBeginFrameSourceTest : public ::testing::Test {
     source_ = TestBackToBackBeginFrameSource::Create(now_src_.get(),
                                                      task_runner_.get());
     obs_ = make_scoped_ptr(new ::testing::StrictMock<MockBeginFrameObserver>());
+    EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
     source_->AddObserver(obs_.get());
   }
 
@@ -363,6 +384,7 @@ class SyntheticBeginFrameSourceTest : public ::testing::Test {
         now_src_.get(), task_runner_.get(),
         base::TimeDelta::FromMicroseconds(10000));
     obs_ = make_scoped_ptr(new MockBeginFrameObserver());
+    EXPECT_BEGIN_FRAME_SOURCE_PAUSED(*obs_, false);
     source_->AddObserver(obs_.get());
   }
 
@@ -524,6 +546,7 @@ TEST_F(BeginFrameSourceMultiplexerTest, BeginFramesSimple) {
   mux_->SetActiveSource(source1_);
 
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   mux_->AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 100, 200, 300);
   EXPECT_BEGIN_FRAME_USED(obs, 400, 600, 300);
@@ -543,6 +566,7 @@ TEST_F(BeginFrameSourceMultiplexerTest, BeginFramesBackwardsProtection) {
   mux_->AddSource(source2_);
 
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   mux_->AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 400, 600, 300);
   EXPECT_BEGIN_FRAME_USED(obs, 700, 900, 300);
@@ -574,6 +598,7 @@ TEST_F(BeginFrameSourceMultiplexerTest, MinimumIntervalZero) {
   mux_->AddSource(source1_);
 
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   mux_->AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 100, 200, 300);
   EXPECT_BEGIN_FRAME_USED(obs, 400, 600, 300);
@@ -589,6 +614,7 @@ TEST_F(BeginFrameSourceMultiplexerTest, MinimumIntervalBasic) {
   mux_->AddSource(source1_);
 
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   mux_->AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 100, 200, 300);
   EXPECT_BEGIN_FRAME_USED(obs, 700, 900, 300);
@@ -604,6 +630,7 @@ TEST_F(BeginFrameSourceMultiplexerTest, MinimumIntervalWithMultipleSources) {
   mux_->AddSource(source2_);
 
   MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
   mux_->AddObserver(&obs);
   EXPECT_BEGIN_FRAME_USED(obs, 400, 600, 300);
   EXPECT_BEGIN_FRAME_USED(obs, 700, 900, 300);
@@ -619,6 +646,72 @@ TEST_F(BeginFrameSourceMultiplexerTest, MinimumIntervalWithMultipleSources) {
 
   mux_->SetActiveSource(source1_);
   SEND_BEGIN_FRAME_DROP(*source2_, 1100, 1400, 300);
+}
+
+TEST_F(BeginFrameSourceMultiplexerTest, BeginFrameSourcePaused) {
+  mux_->AddSource(source1_);
+  mux_->AddSource(source2_);
+  mux_->SetActiveSource(source1_);
+
+  MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  mux_->AddObserver(&obs);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  source1_->SetBeginFrameSourcePaused(true);
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  source1_->SetBeginFrameSourcePaused(false);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  mux_->SetActiveSource(source2_);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  source2_->SetBeginFrameSourcePaused(true);
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  source2_->SetBeginFrameSourcePaused(false);
+}
+
+TEST_F(BeginFrameSourceMultiplexerTest,
+       BeginFrameSourcePausedUpdateOnSourceTransition) {
+  mux_->AddSource(source1_);
+  mux_->AddSource(source2_);
+  source1_->SetBeginFrameSourcePaused(true);
+  source2_->SetBeginFrameSourcePaused(false);
+  mux_->SetActiveSource(source1_);
+
+  MockBeginFrameObserver obs;
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  mux_->AddObserver(&obs);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  // Paused to not paused.
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  mux_->SetActiveSource(source2_);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  // Not paused to paused.
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  mux_->SetActiveSource(source1_);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, false);
+  source1_->SetBeginFrameSourcePaused(false);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  // Not paused to not paused.
+  mux_->SetActiveSource(source2_);
+  Mock::VerifyAndClearExpectations(&obs);
+
+  EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, true);
+  source2_->SetBeginFrameSourcePaused(true);
+  Mock::VerifyAndClearExpectations(&obs);
+  source1_->SetBeginFrameSourcePaused(true);
+
+  // Paused to paused.
+  mux_->SetActiveSource(source1_);
+  Mock::VerifyAndClearExpectations(&obs);
 }
 
 }  // namespace

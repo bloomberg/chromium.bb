@@ -48,6 +48,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase {
 
   // BeginFrameObserverBase implementation
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
 
   BeginFrameSource* begin_frame_source_for_children() {
     return begin_frame_source_for_children_.get();

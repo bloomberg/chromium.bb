@@ -152,6 +152,12 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
   return true;
 }
 
+void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
+  // BeginFrameSources used with DisplayScheduler do not make use of this
+  // feature.
+  NOTIMPLEMENTED();
+}
+
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
   if (output_surface_lost_) {
     TRACE_EVENT_INSTANT0("cc", "Lost output surface", TRACE_EVENT_SCOPE_THREAD);

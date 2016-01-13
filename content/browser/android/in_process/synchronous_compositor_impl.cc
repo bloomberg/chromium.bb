@@ -130,6 +130,7 @@ void SynchronousCompositorImpl::DidInitializeRendererObjects(
 
   output_surface_->SetSyncClient(this);
   begin_frame_source_->SetClient(this);
+  begin_frame_source_->SetBeginFrameSourcePaused(!is_active_);
 }
 
 void SynchronousCompositorImpl::DidDestroyRendererObjects() {
@@ -244,8 +245,13 @@ void SynchronousCompositorImpl::DidChangeRootLayerScrollOffset(
 void SynchronousCompositorImpl::SetIsActive(bool is_active) {
   TRACE_EVENT1("cc", "SynchronousCompositorImpl::SetIsActive", "is_active",
                is_active);
+  if (is_active_ == is_active)
+    return;
+
   is_active_ = is_active;
   UpdateNeedsBeginFrames();
+  if (begin_frame_source_)
+    begin_frame_source_->SetBeginFrameSourcePaused(!is_active_);
 }
 
 void SynchronousCompositorImpl::OnComputeScroll(

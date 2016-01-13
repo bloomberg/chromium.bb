@@ -390,6 +390,8 @@ void SynchronousCompositorProxy::ProcessCommonParams(
     input_handler_proxy_->SynchronouslySetRootScrollOffset(
         total_scroll_offset_);
   }
+  begin_frame_source_->SetBeginFrameSourcePaused(
+      common_params.begin_frame_source_paused);
   if (!common_params.ack.resources.empty()) {
     output_surface_->ReturnResources(common_params.ack);
   }

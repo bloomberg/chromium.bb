@@ -48,6 +48,8 @@ SynchronousCompositorHost::SynchronousCompositorHost(
 
 SynchronousCompositorHost::~SynchronousCompositorHost() {
   client_->DidDestroyCompositor(this);
+  if (weak_ptr_factory_.HasWeakPtrs())
+    UpdateStateTask();
 }
 
 bool SynchronousCompositorHost::OnMessageReceived(const IPC::Message& message) {
@@ -260,8 +262,11 @@ void SynchronousCompositorHost::UpdateStateTask() {
 }
 
 void SynchronousCompositorHost::SetIsActive(bool is_active) {
+  if (is_active_ == is_active)
+    return;
   is_active_ = is_active;
   UpdateNeedsBeginFrames();
+  SendAsyncCompositorStateIfNeeded();
 }
 
 void SynchronousCompositorHost::OnComputeScroll(
@@ -331,6 +336,7 @@ void SynchronousCompositorHost::PopulateCommonParams(
     params->update_root_scroll_offset = root_scroll_offset_updated_by_browser_;
     root_scroll_offset_updated_by_browser_ = false;
   }
+  params->begin_frame_source_paused = !is_active_;
 
   weak_ptr_factory_.InvalidateWeakPtrs();
 }

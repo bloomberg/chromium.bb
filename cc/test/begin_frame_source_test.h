@@ -26,6 +26,11 @@
       .InSequence((obs).sequence)                                         \
       .WillOnce(::testing::SaveArg<0>(&((obs).last_begin_frame_args)))
 
+#define EXPECT_BEGIN_FRAME_SOURCE_PAUSED(obs, paused)         \
+  EXPECT_CALL((obs), OnBeginFrameSourcePausedChanged(paused)) \
+      .Times(1)                                               \
+      .InSequence((obs).sequence)
+
 // Macros to send BeginFrameArgs on a FakeBeginFrameSink (and verify resulting
 // observer behaviour).
 #define SEND_BEGIN_FRAME(args_equal_to, source, frame_time, deadline, \
@@ -53,6 +58,7 @@ class MockBeginFrameObserver : public BeginFrameObserver {
  public:
   MOCK_METHOD1(OnBeginFrame, void(const BeginFrameArgs&));
   MOCK_CONST_METHOD0(LastUsedBeginFrameArgs, const BeginFrameArgs());
+  MOCK_METHOD1(OnBeginFrameSourcePausedChanged, void(bool));
 
   virtual void AsValueInto(base::trace_event::TracedValue* dict) const;
 

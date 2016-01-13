@@ -1208,6 +1208,21 @@ TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenInvisible) {
   state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
   state.SetVisible(false);
   state.SetNeedsBeginMainFrame();
+  EXPECT_FALSE(state.CouldSendBeginMainFrame());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
+TEST(SchedulerStateMachineTest, TestNoRequestCommitWhenBeginFrameSourcePaused) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetVisible(true);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetBeginFrameSourcePaused(true);
+  state.SetNeedsBeginMainFrame();
+  EXPECT_FALSE(state.CouldSendBeginMainFrame());
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
@@ -1754,6 +1769,32 @@ TEST(SchedulerStateMachineTest, TestFinishCommitWhenCommitInProgress) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
+TEST(SchedulerStateMachineTest,
+     TestFinishCommitWhenCommitInProgressAndBeginFrameSourcePaused) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  state.SetVisible(true);
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  state.CreateAndInitializeOutputSurfaceWithActivatedCommit();
+  state.SetBeginFrameSourcePaused(true);
+  state.SetBeginMainFrameState(
+      SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_SENT);
+  state.SetNeedsBeginMainFrame();
+
+  // After the commit completes, activation and draw happen immediately
+  // because we are not visible.
+  state.NotifyBeginMainFrameStarted();
+  state.NotifyReadyToCommit();
+  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_COMMIT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_ACTIVATE_SYNC_TREE);
+  EXPECT_TRUE(state.active_tree_needs_first_draw());
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_AND_SWAP_ABORT);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+}
+
 TEST(SchedulerStateMachineTest, TestInitialActionsWhenContextLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
@@ -1797,6 +1838,10 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
 
   state.SetCanDraw(true);
   state.SetVisible(true);
+  state.SetBeginFrameSourcePaused(true);
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+
+  state.SetBeginFrameSourcePaused(false);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
 }
 
@@ -1815,6 +1860,17 @@ TEST(SchedulerStateMachineTest, ForceDrawForResourcelessSoftwareDraw) {
 
   state.SetResourcelessSoftareDraw(true);
   EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+  state.SetVisible(true);
+
+  state.SetBeginFrameSourcePaused(true);
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+
+  state.SetResourcelessSoftareDraw(false);
+  EXPECT_TRUE(state.PendingDrawsShouldBeAborted());
+
+  state.SetResourcelessSoftareDraw(true);
+  EXPECT_FALSE(state.PendingDrawsShouldBeAborted());
+  state.SetBeginFrameSourcePaused(false);
 
   state.SetVisible(false);
   state.DidLoseOutputSurface();
@@ -1980,6 +2036,27 @@ TEST(SchedulerStateMachineTest, TestTriggerDeadlineImmediatelyWhenInvisible) {
 
   state.SetVisible(false);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
+  EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+}
+
+TEST(SchedulerStateMachineTest,
+     TestTriggerDeadlineImmediatelyWhenBeginFrameSourcePaused) {
+  SchedulerSettings default_scheduler_settings;
+  StateMachine state(default_scheduler_settings);
+  SET_UP_STATE(state)
+
+  state.SetNeedsBeginMainFrame();
+
+  state.OnBeginImplFrame();
+  EXPECT_ACTION_UPDATE_STATE(
+      SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_FALSE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
+
+  state.SetBeginFrameSourcePaused(true);
+  EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
+  EXPECT_TRUE(state.PendingActivationsShouldBeForced());
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
 }
 

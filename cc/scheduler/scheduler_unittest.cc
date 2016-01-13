@@ -232,6 +232,11 @@ class FakeExternalBeginFrameSource : public BeginFrameSourceBase {
     return CallOnBeginFrame(args);
   }
 
+  void SetPaused(bool paused) {
+    DCHECK(observer_);
+    observer_->OnBeginFrameSourcePausedChanged(paused);
+  }
+
  private:
   FakeSchedulerClient* client_;
 };
@@ -2922,6 +2927,34 @@ TEST_F(SchedulerTest, ScheduledActionActivateAfterBecomingInvisible) {
   EXPECT_ACTION("ScheduledActionActivateSyncTree", client_, 0, 3);
   EXPECT_ACTION("SetNeedsBeginFrames(false)", client_, 1, 3);
   EXPECT_ACTION("SendBeginMainFrameNotExpectedSoon", client_, 2, 3);
+}
+
+TEST_F(SchedulerTest, ScheduledActionActivateAfterBeginFrameSourcePaused) {
+  scheduler_settings_.use_external_begin_frame_source = true;
+  SetUpScheduler(true);
+
+  // SetNeedsBeginMainFrame should begin the frame.
+  scheduler_->SetNeedsBeginMainFrame();
+  EXPECT_SINGLE_ACTION("SetNeedsBeginFrames(true)", client_);
+
+  client_->Reset();
+  EXPECT_SCOPED(AdvanceFrame());
+  EXPECT_ACTION("WillBeginImplFrame", client_, 0, 2);
+  EXPECT_ACTION("ScheduledActionSendBeginMainFrame", client_, 1, 2);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+
+  client_->Reset();
+  scheduler_->NotifyBeginMainFrameStarted(base::TimeTicks());
+  scheduler_->NotifyReadyToCommit();
+  EXPECT_SINGLE_ACTION("ScheduledActionCommit", client_);
+  EXPECT_TRUE(scheduler_->BeginImplFrameDeadlinePending());
+
+  client_->Reset();
+  fake_external_begin_frame_source_->SetPaused(true);
+  task_runner().RunPendingTasks();  // Run posted deadline.
+
+  // Sync tree should be forced to activate.
+  EXPECT_SINGLE_ACTION("ScheduledActionActivateSyncTree", client_);
 }
 
 // Tests to ensure frame sources can be successfully changed while drawing.

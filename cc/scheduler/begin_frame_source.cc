@@ -53,6 +53,7 @@ void BeginFrameObserverBase::AsValueInto(
 BeginFrameSourceBase::BeginFrameSourceBase()
     : observer_(NULL),
       needs_begin_frames_(false),
+      paused_(false),
       inside_as_value_into_(false) {
   DCHECK(!observer_);
   DCHECK_EQ(inside_as_value_into_, false);
@@ -82,6 +83,8 @@ void BeginFrameSourceBase::AddObserver(BeginFrameObserver* obs) {
                obs);
   DCHECK(!observer_);
   observer_ = obs;
+  if (observer_)
+    return observer_->OnBeginFrameSourcePausedChanged(paused_);
 }
 
 void BeginFrameSourceBase::RemoveObserver(BeginFrameObserver* obs) {
@@ -103,6 +106,14 @@ void BeginFrameSourceBase::CallOnBeginFrame(const BeginFrameArgs& args) {
   if (observer_) {
     return observer_->OnBeginFrame(args);
   }
+}
+
+void BeginFrameSourceBase::SetBeginFrameSourcePaused(bool paused) {
+  if (paused_ == paused)
+    return;
+  paused_ = paused;
+  if (observer_)
+    return observer_->OnBeginFrameSourcePausedChanged(paused_);
 }
 
 // Tracing support
@@ -379,6 +390,10 @@ const BeginFrameArgs BeginFrameSourceMultiplexer::LastUsedBeginFrameArgs()
     return observer_->LastUsedBeginFrameArgs();
   else
     return BeginFrameArgs();
+}
+
+void BeginFrameSourceMultiplexer::OnBeginFrameSourcePausedChanged(bool paused) {
+  BeginFrameSourceBase::SetBeginFrameSourcePaused(paused);
 }
 
 // BeginFrameSource support

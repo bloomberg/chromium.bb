@@ -66,6 +66,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   ~Scheduler() override;
 
   // BeginFrameObserverBase
+  void OnBeginFrameSourcePausedChanged(bool paused) override;
   bool OnBeginFrameDerivedImpl(const BeginFrameArgs& args) override;
 
   void OnDrawForOutputSurface(bool resourceless_software_draw);

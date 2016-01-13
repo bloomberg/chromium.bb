@@ -174,6 +174,9 @@ class CC_EXPORT SchedulerStateMachine {
   void SetVisible(bool visible);
   bool visible() const { return visible_; }
 
+  void SetBeginFrameSourcePaused(bool paused);
+  bool begin_frame_source_paused() const { return begin_frame_source_paused_; }
+
   // Indicates that a redraw is required, either due to the impl tree changing
   // or the screen being damaged and simply needing redisplay.
   void SetNeedsRedraw();
@@ -336,6 +339,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_begin_main_frame_;
   bool needs_one_begin_impl_frame_;
   bool visible_;
+  bool begin_frame_source_paused_;
   bool resourceless_draw_;
   bool can_draw_;
   bool has_pending_tree_;

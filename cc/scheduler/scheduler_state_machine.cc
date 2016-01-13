@@ -42,6 +42,7 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       needs_begin_main_frame_(false),
       needs_one_begin_impl_frame_(false),
       visible_(false),
+      begin_frame_source_paused_(false),
       resourceless_draw_(false),
       can_draw_(false),
       has_pending_tree_(false),
@@ -235,6 +236,7 @@ void SchedulerStateMachine::AsValueInto(
   state->SetBoolean("needs_begin_main_frame", needs_begin_main_frame_);
   state->SetBoolean("needs_one_begin_impl_frame", needs_one_begin_impl_frame_);
   state->SetBoolean("visible", visible_);
+  state->SetBoolean("begin_frame_source_paused", begin_frame_source_paused_);
   state->SetBoolean("can_draw", can_draw_);
   state->SetBoolean("resourceless_draw", resourceless_draw_);
   state->SetBoolean("has_pending_tree", has_pending_tree_);
@@ -264,10 +266,10 @@ void SchedulerStateMachine::AsValueInto(
 }
 
 bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
-  // Normally when |visible_| is false, pending activations will be forced and
-  // draws will be aborted. However, when the embedder is Android WebView,
-  // software draws could be scheduled by the Android OS at any time and draws
-  // should not be aborted in this case.
+  // Normally when |visible_| is false or |begin_frame_source_paused_| is true,
+  // pending activations will be forced and draws will be aborted. However,
+  // when the embedder is Android WebView, software draws could be scheduled by
+  // the Android OS at any time and draws should not be aborted in this case.
   bool is_output_surface_lost = (output_surface_state_ == OUTPUT_SURFACE_NONE);
   if (resourceless_draw_)
     return is_output_surface_lost || !can_draw_;
@@ -278,7 +280,8 @@ bool SchedulerStateMachine::PendingDrawsShouldBeAborted() const {
   // This should be a superset of PendingActivationsShouldBeForced() since
   // activation of the pending tree is blocked by drawing of the active tree and
   // the main thread might be blocked on activation of the most recent commit.
-  return is_output_surface_lost || !can_draw_ || !visible_;
+  return is_output_surface_lost || !can_draw_ || !visible_ ||
+         begin_frame_source_paused_;
 }
 
 bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
@@ -296,6 +299,11 @@ bool SchedulerStateMachine::PendingActivationsShouldBeForced() const {
   // we can simply activate on becoming invisible since we don't need to draw
   // the active tree when we're in this state.
   if (!visible_)
+    return true;
+
+  // Force pending activations when BeginFrameSource is paused to avoid
+  // deadlocking the main thread.
+  if (begin_frame_source_paused_)
     return true;
 
   return false;
@@ -387,6 +395,11 @@ bool SchedulerStateMachine::CouldSendBeginMainFrame() const {
 
   // We can not perform commits if we are not visible.
   if (!visible_)
+    return false;
+
+  // There are no BeginImplFrames while BeginFrameSource is paused,
+  // so should also stop BeginMainFrames.
+  if (begin_frame_source_paused_)
     return false;
 
   // Do not make a new commits when it is deferred.
@@ -554,6 +567,7 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
 void SchedulerStateMachine::WillSendBeginMainFrame() {
   DCHECK(!has_pending_tree_ || settings_.main_frame_before_activation_enabled);
   DCHECK(visible_);
+  DCHECK(!begin_frame_source_paused_);
   DCHECK(!send_begin_main_frame_funnel_);
   begin_main_frame_state_ = BEGIN_MAIN_FRAME_STATE_SENT;
   needs_begin_main_frame_ = false;
@@ -959,6 +973,10 @@ void SchedulerStateMachine::SetVisible(bool visible) {
   // TODO(sunnyps): Change the funnel to a bool to avoid hacks like this.
   prepare_tiles_funnel_ = 0;
   wait_for_ready_to_draw_ = false;
+}
+
+void SchedulerStateMachine::SetBeginFrameSourcePaused(bool paused) {
+  begin_frame_source_paused_ = paused;
 }
 
 void SchedulerStateMachine::SetResourcelessSoftareDraw(bool resourceless_draw) {

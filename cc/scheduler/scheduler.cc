@@ -297,6 +297,15 @@ void Scheduler::SetupNextBeginFrameIfNeeded() {
   PostBeginRetroFrameIfNeeded();
 }
 
+void Scheduler::OnBeginFrameSourcePausedChanged(bool paused) {
+  if (state_machine_.begin_frame_source_paused() == paused)
+    return;
+  TRACE_EVENT_INSTANT1("cc", "Scheduler::SetBeginFrameSourcePaused",
+                       TRACE_EVENT_SCOPE_THREAD, "paused", paused);
+  state_machine_.SetBeginFrameSourcePaused(paused);
+  ProcessScheduledActions();
+}
+
 // BeginFrame is the mechanism that tells us that now is a good time to start
 // making a frame. Usually this means that user input for the frame is complete.
 // If the scheduler is busy, we queue the BeginFrame to be handled later as
