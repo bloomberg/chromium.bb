@@ -5,3 +5,6 @@ DiskCacheEntryTest.SimpleCacheSizeChanges
 
 # Flaky. crbug.com/548006
 Spdy_SpdyNetworkTransactionTest.StartTransactionOnReadCallback_0
+
+# Failing. crbug.com/577346
+Tests_QuicSimpleServerSessionTest.TestPromisePushResources_0
