@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_image/default_user_images.h"
+#include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace user_manager {
@@ -154,7 +154,7 @@ std::string User::GetAccountName(bool use_display_email) const {
 }
 
 bool User::HasDefaultImage() const {
-  return image_index_ >= 0 && image_index_ < kDefaultImagesCount;
+  return UserManager::Get()->IsValidDefaultUserImageId(image_index_);
 }
 
 bool User::CanSyncImage() const {

@@ -23,6 +23,7 @@
 #include "chrome/browser/chromeos/login/screens/user_image_view.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -32,7 +33,6 @@
 #include "components/policy/core/common/policy_namespace.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -172,7 +172,7 @@ void UserImageScreen::OnImageSelected(const std::string& image_type,
     return;
   int user_image_index = user_manager::User::USER_IMAGE_INVALID;
   if (image_type == "default" &&
-      user_manager::IsDefaultImageUrl(image_url, &user_image_index)) {
+      default_user_image::IsDefaultImageUrl(image_url, &user_image_index)) {
     selected_image_ = user_image_index;
   } else if (image_type == "camera") {
     selected_image_ = user_manager::User::USER_IMAGE_EXTERNAL;
@@ -195,23 +195,23 @@ void UserImageScreen::OnImageAccepted() {
       }
       image_manager->SaveUserImage(
           user_manager::UserImage::CreateAndEncode(user_photo_));
-      uma_index = user_manager::kHistogramImageFromCamera;
+      uma_index = default_user_image::kHistogramImageFromCamera;
       break;
     case user_manager::User::USER_IMAGE_PROFILE:
       image_manager->SaveUserImageFromProfileImage();
-      uma_index = user_manager::kHistogramImageFromProfile;
+      uma_index = default_user_image::kHistogramImageFromProfile;
       break;
     default:
       DCHECK(selected_image_ >= 0 &&
-             selected_image_ < user_manager::kDefaultImagesCount);
+             selected_image_ < default_user_image::kDefaultImagesCount);
       image_manager->SaveUserDefaultImageIndex(selected_image_);
-      uma_index = user_manager::GetDefaultImageHistogramValue(selected_image_);
+      uma_index =
+          default_user_image::GetDefaultImageHistogramValue(selected_image_);
       break;
   }
   if (user_has_selected_image_) {
-    UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice",
-                              uma_index,
-                              user_manager::kHistogramImagesCount);
+    UMA_HISTOGRAM_ENUMERATION("UserImage.FirstTimeChoice", uma_index,
+                              default_user_image::kHistogramImagesCount);
   }
   ExitScreen();
 }
@@ -291,7 +291,7 @@ void UserImageScreen::Show() {
   selected_image_ = GetUser()->image_index();
   GetContextEditor().SetString(
       kContextKeySelectedImageURL,
-      user_manager::GetDefaultImageUrl(selected_image_));
+      default_user_image::GetDefaultImageUrl(selected_image_));
 
   // Start fetching the profile image.
   GetUserImageManager()->DownloadProfileImage(kProfileDownloadReason);
@@ -336,7 +336,7 @@ void UserImageScreen::Observe(int type,
     case chrome::NOTIFICATION_LOGIN_USER_IMAGE_CHANGED: {
       GetContextEditor().SetString(
           kContextKeySelectedImageURL,
-          user_manager::GetDefaultImageUrl(GetUser()->image_index()));
+          default_user_image::GetDefaultImageUrl(GetUser()->image_index()));
       break;
     }
     default:

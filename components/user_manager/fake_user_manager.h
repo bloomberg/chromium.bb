@@ -112,9 +112,12 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
                               AccountId* out_account_id) const override;
   void AsyncRemoveCryptohome(const AccountId& account_id) const override;
   bool IsSupervisedAccountId(const AccountId& account_id) const override;
+  const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;
+  base::string16 GetResourceStringUTF16(int string_id) const override;
   void ScheduleResolveLocale(const std::string& locale,
                              const base::Closure& on_resolved_callback,
                              std::string* out_resolved_locale) const override;
+  bool IsValidDefaultUserImageId(int image_index) const override;
 
   // UserManagerBase overrides:
   bool AreEphemeralUsersEnabled() const override;
@@ -151,6 +154,9 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
 
   // stub, always empty.
   AccountId owner_account_id_ = EmptyAccountId();
+
+  // stub. Always empty.
+  gfx::ImageSkia empty_image_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeUserManager);
 };

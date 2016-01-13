@@ -7,10 +7,10 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_split.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_manager.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_chromeos_resources.h"
@@ -59,7 +59,8 @@ base::RefCountedMemory* GetUserImageInternal(const AccountId& account_id) {
           IDR_PROFILE_PICTURE_LOADING, ui::SCALE_FACTOR_100P);
     } else if (user->HasDefaultImage()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-          user_manager::kDefaultImageResourceIDs[user->image_index()],
+          chromeos::default_user_image::kDefaultImageResourceIDs
+              [user->image_index()],
           ui::SCALE_FACTOR_100P);
     } else {
       NOTREACHED() << "User with custom image missing raw data";

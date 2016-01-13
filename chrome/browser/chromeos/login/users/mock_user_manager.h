@@ -109,10 +109,13 @@ class MockUserManager : public ChromeUserManager {
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));
+  MOCK_CONST_METHOD1(GetResourceImagekiaNamed, const gfx::ImageSkia&(int));
+  MOCK_CONST_METHOD1(GetResourceStringUTF16, base::string16(int));
   MOCK_CONST_METHOD3(ScheduleResolveLocale,
                      void(const std::string&,
                           const base::Closure&,
                           std::string*));
+  MOCK_CONST_METHOD1(IsValidDefaultUserImageId, bool(int));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.

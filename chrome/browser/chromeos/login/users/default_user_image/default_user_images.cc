@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/user_manager/user_image/default_user_images.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 
 #include "base/logging.h"
 #include "base/macros.h"
@@ -17,112 +17,8 @@
 #include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace user_manager {
-
-namespace {
-
-const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
-const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
-
-// IDs of default user image descriptions.
-const int kDefaultImageDescriptions[] = {
-    0,  // No description for deprecated user image 0.
-    0,  // No description for deprecated user image 1.
-    0,  // No description for deprecated user image 2.
-    0,  // No description for deprecated user image 3.
-    0,  // No description for deprecated user image 4.
-    0,  // No description for deprecated user image 5.
-    0,  // No description for deprecated user image 6.
-    0,  // No description for deprecated user image 7.
-    0,  // No description for deprecated user image 8.
-    0,  // No description for deprecated user image 9.
-    0,  // No description for deprecated user image 10.
-    0,  // No description for deprecated user image 11.
-    0,  // No description for deprecated user image 12.
-    0,  // No description for deprecated user image 13.
-    0,  // No description for deprecated user image 14.
-    0,  // No description for deprecated user image 15.
-    0,  // No description for deprecated user image 16.
-    0,  // No description for deprecated user image 17.
-    0,  // No description for deprecated user image 18.
-    IDS_LOGIN_DEFAULT_USER_DESC_19,
-    IDS_LOGIN_DEFAULT_USER_DESC_20,
-    IDS_LOGIN_DEFAULT_USER_DESC_21,
-    IDS_LOGIN_DEFAULT_USER_DESC_22,
-    IDS_LOGIN_DEFAULT_USER_DESC_23,
-    IDS_LOGIN_DEFAULT_USER_DESC_24,
-    IDS_LOGIN_DEFAULT_USER_DESC_25,
-    IDS_LOGIN_DEFAULT_USER_DESC_26,
-    IDS_LOGIN_DEFAULT_USER_DESC_27,
-    IDS_LOGIN_DEFAULT_USER_DESC_28,
-    IDS_LOGIN_DEFAULT_USER_DESC_29,
-    IDS_LOGIN_DEFAULT_USER_DESC_30,
-    IDS_LOGIN_DEFAULT_USER_DESC_31,
-    IDS_LOGIN_DEFAULT_USER_DESC_32,
-    IDS_LOGIN_DEFAULT_USER_DESC_33,
-};
-
-// Returns a string consisting of the prefix specified and the index of the
-// image if its valid.
-std::string GetDefaultImageString(int index, const std::string& prefix) {
-  if (index < 0 || index >= kDefaultImagesCount) {
-    DCHECK(!base::SysInfo::IsRunningOnChromeOS());
-    return std::string();
-  }
-  return base::StringPrintf("%s%d", prefix.c_str(), index);
-}
-
-// Returns true if the string specified consists of the prefix and one of
-// the default images indices. Returns the index of the image in |image_id|
-// variable.
-bool IsDefaultImageString(const std::string& s,
-                          const std::string& prefix,
-                          int* image_id) {
-  DCHECK(image_id);
-  if (!base::StartsWith(s, prefix, base::CompareCase::SENSITIVE))
-    return false;
-
-  int image_index = -1;
-  if (base::StringToInt(base::StringPiece(s.begin() + prefix.length(), s.end()),
-                        &image_index)) {
-    if (image_index < 0 || image_index >= kDefaultImagesCount)
-      return false;
-    *image_id = image_index;
-    return true;
-  }
-
-  return false;
-}
-}  // namespace
-
-std::string GetDefaultImageUrl(int index) {
-  if (index == 0)
-    return kZeroDefaultUrl;
-  return GetDefaultImageString(index, kDefaultUrlPrefix);
-}
-
-bool IsDefaultImageUrl(const std::string& url, int* image_id) {
-  if (url == kZeroDefaultUrl) {
-    *image_id = 0;
-    return true;
-  }
-  return IsDefaultImageString(url, kDefaultUrlPrefix, image_id);
-}
-
-const gfx::ImageSkia& GetDefaultImage(int index) {
-  DCHECK(index >= 0 && index < kDefaultImagesCount);
-  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-      kDefaultImageResourceIDs[index]);
-}
-
-base::string16 GetDefaultImageDescription(int index) {
-  DCHECK(index >= 0 && index < kDefaultImagesCount);
-  int string_id = kDefaultImageDescriptions[index];
-  if (string_id)
-    return l10n_util::GetStringUTF16(string_id);
-  else
-    return base::string16();
-}
+namespace chromeos {
+namespace default_user_image {
 
 // Resource IDs of default user images.
 const int kDefaultImageResourceIDs[] = {
@@ -250,6 +146,112 @@ const int kHistogramVideoFromCamera = 23;
 const int kHistogramVideoFromFile = 24;
 const int kHistogramImagesCount = kDefaultImagesCount + 6;
 
+namespace {
+
+const char kDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
+const char kZeroDefaultUrl[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER";
+
+// IDs of default user image descriptions.
+const int kDefaultImageDescriptions[] = {
+    0,  // No description for deprecated user image 0.
+    0,  // No description for deprecated user image 1.
+    0,  // No description for deprecated user image 2.
+    0,  // No description for deprecated user image 3.
+    0,  // No description for deprecated user image 4.
+    0,  // No description for deprecated user image 5.
+    0,  // No description for deprecated user image 6.
+    0,  // No description for deprecated user image 7.
+    0,  // No description for deprecated user image 8.
+    0,  // No description for deprecated user image 9.
+    0,  // No description for deprecated user image 10.
+    0,  // No description for deprecated user image 11.
+    0,  // No description for deprecated user image 12.
+    0,  // No description for deprecated user image 13.
+    0,  // No description for deprecated user image 14.
+    0,  // No description for deprecated user image 15.
+    0,  // No description for deprecated user image 16.
+    0,  // No description for deprecated user image 17.
+    0,  // No description for deprecated user image 18.
+    IDS_LOGIN_DEFAULT_USER_DESC_19,
+    IDS_LOGIN_DEFAULT_USER_DESC_20,
+    IDS_LOGIN_DEFAULT_USER_DESC_21,
+    IDS_LOGIN_DEFAULT_USER_DESC_22,
+    IDS_LOGIN_DEFAULT_USER_DESC_23,
+    IDS_LOGIN_DEFAULT_USER_DESC_24,
+    IDS_LOGIN_DEFAULT_USER_DESC_25,
+    IDS_LOGIN_DEFAULT_USER_DESC_26,
+    IDS_LOGIN_DEFAULT_USER_DESC_27,
+    IDS_LOGIN_DEFAULT_USER_DESC_28,
+    IDS_LOGIN_DEFAULT_USER_DESC_29,
+    IDS_LOGIN_DEFAULT_USER_DESC_30,
+    IDS_LOGIN_DEFAULT_USER_DESC_31,
+    IDS_LOGIN_DEFAULT_USER_DESC_32,
+    IDS_LOGIN_DEFAULT_USER_DESC_33,
+};
+
+// Returns a string consisting of the prefix specified and the index of the
+// image if its valid.
+std::string GetDefaultImageString(int index, const std::string& prefix) {
+  if (index < 0 || index >= kDefaultImagesCount) {
+    DCHECK(!base::SysInfo::IsRunningOnChromeOS());
+    return std::string();
+  }
+  return base::StringPrintf("%s%d", prefix.c_str(), index);
+}
+
+// Returns true if the string specified consists of the prefix and one of
+// the default images indices. Returns the index of the image in |image_id|
+// variable.
+bool IsDefaultImageString(const std::string& s,
+                          const std::string& prefix,
+                          int* image_id) {
+  DCHECK(image_id);
+  if (!base::StartsWith(s, prefix, base::CompareCase::SENSITIVE))
+    return false;
+
+  int image_index = -1;
+  if (base::StringToInt(base::StringPiece(s.begin() + prefix.length(), s.end()),
+                        &image_index)) {
+    if (image_index < 0 || image_index >= kDefaultImagesCount)
+      return false;
+    *image_id = image_index;
+    return true;
+  }
+
+  return false;
+}
+
+}  // namespace
+
+std::string GetDefaultImageUrl(int index) {
+  if (index == 0)
+    return kZeroDefaultUrl;
+  return GetDefaultImageString(index, kDefaultUrlPrefix);
+}
+
+bool IsDefaultImageUrl(const std::string& url, int* image_id) {
+  if (url == kZeroDefaultUrl) {
+    *image_id = 0;
+    return true;
+  }
+  return IsDefaultImageString(url, kDefaultUrlPrefix, image_id);
+}
+
+const gfx::ImageSkia& GetDefaultImage(int index) {
+  DCHECK(index >= 0 && index < kDefaultImagesCount);
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+      kDefaultImageResourceIDs[index]);
+}
+
+base::string16 GetDefaultImageDescription(int index) {
+  DCHECK(index >= 0 && index < kDefaultImagesCount);
+  int string_id = kDefaultImageDescriptions[index];
+  if (string_id)
+    return l10n_util::GetStringUTF16(string_id);
+  else
+    return base::string16();
+}
+
 int GetDefaultImageHistogramValue(int index) {
   DCHECK(index >= 0 && index < kDefaultImagesCount);
   // Create a gap in histogram values for
@@ -259,4 +261,5 @@ int GetDefaultImageHistogramValue(int index) {
   return index + 6;
 }
 
-}  // namespace user_manager
+}  // namespace default_user_image
+}  // namespace chromeos

@@ -356,12 +356,21 @@ class USER_MANAGER_EXPORT UserManager {
   // user's session.
   virtual bool HasBrowserRestarted() const = 0;
 
+  // Returns image from resources bundle.
+  virtual const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const = 0;
+
+  // Returns string from resources bundle.
+  virtual base::string16 GetResourceStringUTF16(int string_id) const = 0;
+
   // Schedules CheckAndResolveLocale using given task runner and
   // |on_resolved_callback| as reply callback.
   virtual void ScheduleResolveLocale(
       const std::string& locale,
       const base::Closure& on_resolved_callback,
       std::string* out_resolved_locale) const = 0;
+
+  // Returns true if |image_index| is a valid default user image index.
+  virtual bool IsValidDefaultUserImageId(int image_index) const = 0;
 
  protected:
   // Sets UserManager instance.

@@ -19,6 +19,7 @@
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace chromeos {
 
@@ -245,12 +246,27 @@ bool FakeChromeUserManager::HasBrowserRestarted() const {
          command_line->HasSwitch(chromeos::switches::kLoginUser);
 }
 
+const gfx::ImageSkia& FakeChromeUserManager::GetResourceImagekiaNamed(
+    int id) const {
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+}
+
+base::string16 FakeChromeUserManager::GetResourceStringUTF16(
+    int string_id) const {
+  return base::string16();
+}
+
 void FakeChromeUserManager::ScheduleResolveLocale(
     const std::string& locale,
     const base::Closure& on_resolved_callback,
     std::string* out_resolved_locale) const {
   NOTIMPLEMENTED();
   return;
+}
+
+bool FakeChromeUserManager::IsValidDefaultUserImageId(int image_index) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace chromeos

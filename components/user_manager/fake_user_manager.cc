@@ -336,12 +336,26 @@ bool FakeUserManager::HasBrowserRestarted() const {
          command_line->HasSwitch(chromeos::switches::kLoginUser);
 }
 
+const gfx::ImageSkia& FakeUserManager::GetResourceImagekiaNamed(int id) const {
+  NOTIMPLEMENTED();
+  return empty_image_;
+}
+
+base::string16 FakeUserManager::GetResourceStringUTF16(int string_id) const {
+  return base::string16();
+}
+
 void FakeUserManager::ScheduleResolveLocale(
     const std::string& locale,
     const base::Closure& on_resolved_callback,
     std::string* out_resolved_locale) const {
   NOTIMPLEMENTED();
   return;
+}
+
+bool FakeUserManager::IsValidDefaultUserImageId(int image_index) const {
+  NOTIMPLEMENTED();
+  return false;
 }
 
 }  // namespace user_manager

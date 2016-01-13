@@ -655,6 +655,8 @@
         'browser/chromeos/login/users/chrome_user_manager.h',
         'browser/chromeos/login/users/chrome_user_manager_impl.cc',
         'browser/chromeos/login/users/chrome_user_manager_impl.h',
+        'browser/chromeos/login/users/default_user_image/default_user_images.cc',
+        'browser/chromeos/login/users/default_user_image/default_user_images.h',
         'browser/chromeos/login/users/multi_profile_user_controller.cc',
         'browser/chromeos/login/users/multi_profile_user_controller.h',
         'browser/chromeos/login/users/multi_profile_user_controller_delegate.h',

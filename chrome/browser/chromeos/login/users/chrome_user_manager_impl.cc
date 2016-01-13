@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/login/users/supervised_user_manager_impl.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
@@ -72,6 +73,9 @@
 #include "policy/policy_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
+#include "ui/chromeos/strings/grit/ui_chromeos_strings.h"
+#include "ui/gfx/image/image_skia.h"
 #include "ui/wm/core/wm_core_switches.h"
 
 using content::BrowserThread;
@@ -1271,6 +1275,16 @@ bool ChromeUserManagerImpl::HasBrowserRestarted() const {
          command_line->HasSwitch(chromeos::switches::kLoginUser);
 }
 
+const gfx::ImageSkia& ChromeUserManagerImpl::GetResourceImagekiaNamed(
+    int id) const {
+  return *ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
+}
+
+base::string16 ChromeUserManagerImpl::GetResourceStringUTF16(
+    int string_id) const {
+  return l10n_util::GetStringUTF16(string_id);
+}
+
 void ChromeUserManagerImpl::ScheduleResolveLocale(
     const std::string& locale,
     const base::Closure& on_resolved_callback,
@@ -1279,6 +1293,11 @@ void ChromeUserManagerImpl::ScheduleResolveLocale(
       FROM_HERE,
       base::Bind(ResolveLocale, locale, base::Unretained(out_resolved_locale)),
       on_resolved_callback);
+}
+
+bool ChromeUserManagerImpl::IsValidDefaultUserImageId(int image_index) const {
+  return image_index >= 0 &&
+         image_index < chromeos::default_user_image::kDefaultImagesCount;
 }
 
 }  // namespace chromeos

@@ -36,6 +36,10 @@ class PrefRegistrySimple;
 class PrefService;
 class ProfileSyncService;
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace policy {
 struct DeviceLocalAccount;
 }
@@ -106,9 +110,12 @@ class ChromeUserManagerImpl
   bool IsStubAccountId(const AccountId& account_id) const override;
   bool IsSupervisedAccountId(const AccountId& account_id) const override;
   bool HasBrowserRestarted() const override;
+  const gfx::ImageSkia& GetResourceImagekiaNamed(int id) const override;
+  base::string16 GetResourceStringUTF16(int string_id) const override;
   void ScheduleResolveLocale(const std::string& locale,
                              const base::Closure& on_resolved_callback,
                              std::string* out_resolved_locale) const override;
+  bool IsValidDefaultUserImageId(int image_index) const override;
 
   // content::NotificationObserver implementation.
   void Observe(int type,

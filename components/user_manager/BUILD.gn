@@ -29,8 +29,6 @@ component("user_manager") {
       "remove_user_delegate.h",
       "user.cc",
       "user.h",
-      "user_image/default_user_images.cc",
-      "user_image/default_user_images.h",
       "user_image/user_image.cc",
       "user_image/user_image.h",
       "user_manager.cc",
@@ -43,9 +41,6 @@ component("user_manager") {
       "//base:prefs",
       "//components/session_manager/core",
       "//google_apis",
-      "//ui/base",
-      "//ui/chromeos/resources",
-      "//ui/chromeos/strings",
       "//url",
     ]
   }

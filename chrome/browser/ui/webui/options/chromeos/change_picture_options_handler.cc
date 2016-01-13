@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/camera_presence_notifier.h"
 #include "chrome/browser/chromeos/login/users/avatar/user_image_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/default_user_image/default_user_images.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -27,7 +28,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/audio/chromeos_sounds.h"
 #include "components/user_manager/user.h"
-#include "components/user_manager/user_image/default_user_images.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -165,18 +165,18 @@ void ChangePictureOptionsHandler::RegisterMessages() {
 
 void ChangePictureOptionsHandler::SendDefaultImages() {
   base::ListValue image_urls;
-  for (int i = user_manager::kFirstDefaultImageIndex;
-       i < user_manager::kDefaultImagesCount;
-       ++i) {
+  for (int i = default_user_image::kFirstDefaultImageIndex;
+       i < default_user_image::kDefaultImagesCount; ++i) {
     scoped_ptr<base::DictionaryValue> image_data(new base::DictionaryValue);
-    image_data->SetString("url", user_manager::GetDefaultImageUrl(i));
-    image_data->SetString(
-        "author",
-        l10n_util::GetStringUTF16(user_manager::kDefaultImageAuthorIDs[i]));
-    image_data->SetString(
-        "website",
-        l10n_util::GetStringUTF16(user_manager::kDefaultImageWebsiteIDs[i]));
-    image_data->SetString("title", user_manager::GetDefaultImageDescription(i));
+    image_data->SetString("url", default_user_image::GetDefaultImageUrl(i));
+    image_data->SetString("author",
+                          l10n_util::GetStringUTF16(
+                              default_user_image::kDefaultImageAuthorIDs[i]));
+    image_data->SetString("website",
+                          l10n_util::GetStringUTF16(
+                              default_user_image::kDefaultImageWebsiteIDs[i]));
+    image_data->SetString("title",
+                          default_user_image::GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
   web_ui()->CallJavascriptFunction("ChangePictureOptions.setDefaultImages",
@@ -279,17 +279,19 @@ void ChangePictureOptionsHandler::SendSelectedImage() {
     }
     default: {
       DCHECK(previous_image_index_ >= 0 &&
-             previous_image_index_ < user_manager::kDefaultImagesCount);
-      if (previous_image_index_ >= user_manager::kFirstDefaultImageIndex) {
+             previous_image_index_ < default_user_image::kDefaultImagesCount);
+      if (previous_image_index_ >=
+          default_user_image::kFirstDefaultImageIndex) {
         // User has image from the current set of default images.
         base::StringValue image_url(
-            user_manager::GetDefaultImageUrl(previous_image_index_));
+            default_user_image::GetDefaultImageUrl(previous_image_index_));
         web_ui()->CallJavascriptFunction(
             "ChangePictureOptions.setSelectedImage", image_url);
       } else {
         // User has an old default image, so present it in the same manner as a
         // previous image from file.
-        SendOldImage(user_manager::GetDefaultImageUrl(previous_image_index_));
+        SendOldImage(
+            default_user_image::GetDefaultImageUrl(previous_image_index_));
       }
     }
   }
@@ -347,18 +349,18 @@ void ChangePictureOptionsHandler::HandleSelectImage(
         user_manager::UserImage::CreateAndEncode(previous_image_));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                              user_manager::kHistogramImageOld,
-                              user_manager::kHistogramImagesCount);
+                              default_user_image::kHistogramImageOld,
+                              default_user_image::kHistogramImagesCount);
     VLOG(1) << "Selected old user image";
   } else if (image_type == "default" &&
-             user_manager::IsDefaultImageUrl(image_url, &image_index)) {
+             default_user_image::IsDefaultImageUrl(image_url, &image_index)) {
     // One of the default user images.
     user_image_manager->SaveUserDefaultImageIndex(image_index);
 
     UMA_HISTOGRAM_ENUMERATION(
         "UserImage.ChangeChoice",
-        user_manager::GetDefaultImageHistogramValue(image_index),
-        user_manager::kHistogramImagesCount);
+        default_user_image::GetDefaultImageHistogramValue(image_index),
+        default_user_image::kHistogramImagesCount);
     VLOG(1) << "Selected default user image: " << image_index;
   } else if (image_type == "camera") {
     // Camera image is selected.
@@ -374,13 +376,13 @@ void ChangePictureOptionsHandler::HandleSelectImage(
 
     if (previous_image_index_ == user_manager::User::USER_IMAGE_PROFILE) {
       UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                                user_manager::kHistogramImageOld,
-                                user_manager::kHistogramImagesCount);
+                                default_user_image::kHistogramImageOld,
+                                default_user_image::kHistogramImagesCount);
       VLOG(1) << "Selected old (profile) user image";
     } else {
       UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                                user_manager::kHistogramImageFromProfile,
-                                user_manager::kHistogramImagesCount);
+                                default_user_image::kHistogramImageFromProfile,
+                                default_user_image::kHistogramImagesCount);
       VLOG(1) << "Selected profile image";
     }
   } else {
@@ -399,8 +401,8 @@ void ChangePictureOptionsHandler::FileSelected(const base::FilePath& path,
       ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImageFromFile(path);
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            user_manager::kHistogramImageFromFile,
-                            user_manager::kHistogramImagesCount);
+                            default_user_image::kHistogramImageFromFile,
+                            default_user_image::kHistogramImagesCount);
   VLOG(1) << "Selected image from file";
 }
 
@@ -410,8 +412,8 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
       ->GetUserImageManager(GetUser()->GetAccountId())
       ->SaveUserImage(user_manager::UserImage::CreateAndEncode(photo));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
-                            user_manager::kHistogramImageFromCamera,
-                            user_manager::kHistogramImagesCount);
+                            default_user_image::kHistogramImageFromCamera,
+                            default_user_image::kHistogramImagesCount);
   VLOG(1) << "Selected camera photo";
 }
 
