@@ -515,6 +515,16 @@ void SpellChecker::chunkAndMarkAllMisspellingsAndBadGrammar(TextCheckingTypeMask
 
     // Since the text may be quite big chunk it up and adjust to the sentence boundary.
     const int kChunkSize = 16 * 1024;
+
+    // Check the full paragraph instead if the paragraph is short, which saves
+    // the cost on sentence boundary finding.
+    if (fullParagraphToCheck.rangeLength() <= kChunkSize) {
+        RefPtrWillBeRawPtr<SpellCheckRequest> request = SpellCheckRequest::create(resolveTextCheckingTypeMask(textCheckingOptions), TextCheckingProcessBatch, paragraphRange, paragraphRange, 0);
+        if (request)
+            m_spellCheckRequester->requestCheckingFor(request);
+        return;
+    }
+
     CharacterIterator checkRangeIterator(fullParagraphToCheck.checkingRange(), TextIteratorEmitsObjectReplacementCharacter);
     for (int requestNum = 0; !checkRangeIterator.atEnd(); requestNum++) {
         EphemeralRange chunkRange = checkRangeIterator.calculateCharacterSubrange(0, kChunkSize);
