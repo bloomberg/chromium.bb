@@ -221,7 +221,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // This function is called by the RendererMediaPlayerManager to pause the
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
-  virtual void ReleaseMediaResources();
+  void SuspendAndReleaseResources();
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;

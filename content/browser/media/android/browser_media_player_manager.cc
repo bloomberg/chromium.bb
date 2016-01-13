@@ -313,7 +313,8 @@ void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
 void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
   // Tell WebKit that the audio should be paused, then release all resources
   Send(new MediaPlayerMsg_MediaPlayerReleased(RoutingID(), player_id));
-  OnReleaseResources(player_id);
+  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+  ReleaseResources(player_id);
 }
 
 void BrowserMediaPlayerManager::OnBufferingUpdate(int player_id,
@@ -615,18 +616,9 @@ void BrowserMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
   // To be overridden by subclasses.
 }
 
-void BrowserMediaPlayerManager::OnReleaseResources(int player_id) {
-  MediaPlayerAndroid* player = GetPlayer(player_id);
-  if (player) {
-    // Videos can't play in the background, so are removed from the media
-    // session.
-    if (player->GetVideoWidth() > 0)
-      MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
-
-    ReleasePlayer(player);
-  }
-  if (player_id == fullscreen_player_id_)
-    fullscreen_player_is_released_ = true;
+void BrowserMediaPlayerManager::OnSuspendAndReleaseResources(int player_id) {
+  MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
+  ReleaseResources(player_id);
 }
 
 void BrowserMediaPlayerManager::OnDestroyPlayer(int player_id) {
@@ -663,6 +655,14 @@ void BrowserMediaPlayerManager::DestroyPlayer(int player_id) {
     }
   }
   active_players_.erase(player_id);
+}
+
+void BrowserMediaPlayerManager::ReleaseResources(int player_id) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (player)
+    ReleasePlayer(player);
+  if (player_id == fullscreen_player_id_)
+    fullscreen_player_is_released_ = true;
 }
 
 scoped_ptr<media::MediaPlayerAndroid> BrowserMediaPlayerManager::SwapPlayer(

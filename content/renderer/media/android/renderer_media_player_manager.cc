@@ -60,7 +60,14 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RendererMediaPlayerManager::WasHidden() {
-  ReleaseVideoResources();
+  // Suspend and release resources of all playing video.
+  for (auto& player_it : media_players_) {
+    WebMediaPlayerAndroid* player = player_it.second;
+    if (!player || player->paused() || !player->hasVideo())
+      continue;
+
+    player->SuspendAndReleaseResources();
+  }
 }
 
 void RendererMediaPlayerManager::Initialize(
@@ -108,8 +115,8 @@ void RendererMediaPlayerManager::SetPoster(int player_id, const GURL& poster) {
   Send(new MediaPlayerHostMsg_SetPoster(routing_id(), player_id, poster));
 }
 
-void RendererMediaPlayerManager::ReleaseResources(int player_id) {
-  Send(new MediaPlayerHostMsg_Release(routing_id(), player_id));
+void RendererMediaPlayerManager::SuspendAndReleaseResources(int player_id) {
+  Send(new MediaPlayerHostMsg_SuspendAndRelease(routing_id(), player_id));
 }
 
 void RendererMediaPlayerManager::DestroyPlayer(int player_id) {
@@ -259,18 +266,6 @@ int RendererMediaPlayerManager::RegisterMediaPlayer(
 
 void RendererMediaPlayerManager::UnregisterMediaPlayer(int player_id) {
   media_players_.erase(player_id);
-}
-
-void RendererMediaPlayerManager::ReleaseVideoResources() {
-  std::map<int, WebMediaPlayerAndroid*>::iterator player_it;
-  for (player_it = media_players_.begin(); player_it != media_players_.end();
-       ++player_it) {
-    WebMediaPlayerAndroid* player = player_it->second;
-
-    // Do not release if an audio track is still playing
-    if (player && (player->paused() || player->hasVideo()))
-      player->ReleaseMediaResources();
-  }
 }
 
 WebMediaPlayerAndroid* RendererMediaPlayerManager::GetMediaPlayer(

@@ -53,10 +53,10 @@ void RemoteMediaPlayerManager::OnDestroyPlayer(int player_id) {
   BrowserMediaPlayerManager::OnDestroyPlayer(player_id);
 }
 
-void RemoteMediaPlayerManager::OnReleaseResources(int player_id) {
+void RemoteMediaPlayerManager::OnSuspendAndReleaseResources(int player_id) {
   // We only want to release resources of local players.
   if (!IsPlayingRemotely(player_id))
-    BrowserMediaPlayerManager::OnReleaseResources(player_id);
+    BrowserMediaPlayerManager::OnSuspendAndReleaseResources(player_id);
 }
 
 void RemoteMediaPlayerManager::OnRequestRemotePlayback(int player_id) {
@@ -103,6 +103,12 @@ void RemoteMediaPlayerManager::OnSetPoster(int player_id, const GURL& url) {
         false, // normal cache policy.
         callback);
   }
+}
+
+void RemoteMediaPlayerManager::ReleaseResources(int player_id) {
+  if (IsPlayingRemotely(player_id))
+    return;
+  BrowserMediaPlayerManager::ReleaseResources(player_id);
 }
 
 void RemoteMediaPlayerManager::DidDownloadPoster(

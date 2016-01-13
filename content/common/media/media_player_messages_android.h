@@ -214,8 +214,8 @@ IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Pause,
                     int /* player_id */,
                     bool /* is_media_related_action */)
 
-// Release player resources, but keep the object for future usage.
-IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_Release, int /* player_id */)
+// Release player resources after it was suspended.
+IPC_MESSAGE_ROUTED1(MediaPlayerHostMsg_SuspendAndRelease, int /* player_id */)
 
 // Perform a seek.
 IPC_MESSAGE_ROUTED2(MediaPlayerHostMsg_Seek,

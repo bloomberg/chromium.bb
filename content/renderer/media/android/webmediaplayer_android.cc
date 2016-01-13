@@ -1084,7 +1084,7 @@ void WebMediaPlayerAndroid::OnPlayerReleased() {
 #endif  // defined(VIDEO_HOLE)
 }
 
-void WebMediaPlayerAndroid::ReleaseMediaResources() {
+void WebMediaPlayerAndroid::SuspendAndReleaseResources() {
   switch (network_state_) {
     // Pause the media player and inform WebKit if the player is in a good
     // shape.
@@ -1103,7 +1103,7 @@ void WebMediaPlayerAndroid::ReleaseMediaResources() {
     case WebMediaPlayer::NetworkStateDecodeError:
       break;
   }
-  player_manager_->ReleaseResources(player_id_);
+  player_manager_->SuspendAndReleaseResources(player_id_);
   if (!needs_external_surface_)
     SetNeedsEstablishPeer(true);
 }

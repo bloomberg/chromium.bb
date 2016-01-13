@@ -52,6 +52,8 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
  protected:
   void OnSetPoster(int player_id, const GURL& url) override;
 
+  void ReleaseResources(int player_id) override;
+
  private:
   // Returns a MediaPlayerAndroid implementation for playing the media remotely.
   RemoteMediaPlayerBridge* CreateRemoteMediaPlayer(
@@ -66,7 +68,7 @@ class RemoteMediaPlayerManager : public content::BrowserMediaPlayerManager {
   void OnInitialize(
       const MediaPlayerHostMsg_Initialize_Params& media_player_params) override;
   void OnDestroyPlayer(int player_id) override;
-  void OnReleaseResources(int player_id) override;
+  void OnSuspendAndReleaseResources(int player_id) override;
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnRequestRemotePlayback(int player_id) override;

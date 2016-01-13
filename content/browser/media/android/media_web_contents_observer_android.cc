@@ -125,9 +125,9 @@ bool MediaWebContentsObserverAndroid::OnMediaPlayerMessageReceived(
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SetPoster,
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnSetPoster)
-    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_Release,
+    IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_SuspendAndRelease,
                         GetMediaPlayerManager(render_frame_host),
-                        BrowserMediaPlayerManager::OnReleaseResources)
+                        BrowserMediaPlayerManager::OnSuspendAndReleaseResources)
     IPC_MESSAGE_FORWARD(MediaPlayerHostMsg_DestroyMediaPlayer,
                         GetMediaPlayerManager(render_frame_host),
                         BrowserMediaPlayerManager::OnDestroyPlayer)

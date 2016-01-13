@@ -125,7 +125,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void OnPause(int player_id, bool is_media_related_action);
   virtual void OnSetVolume(int player_id, double volume);
   virtual void OnSetPoster(int player_id, const GURL& poster);
-  virtual void OnReleaseResources(int player_id);
+  virtual void OnSuspendAndReleaseResources(int player_id);
   virtual void OnDestroyPlayer(int player_id);
   virtual void OnRequestRemotePlayback(int player_id);
   virtual void OnRequestRemotePlaybackControl(int player_id);
@@ -146,6 +146,9 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
   // Removes the player with the specified id.
   void DestroyPlayer(int player_id);
+
+  // Release resources associated to a player.
+  virtual void ReleaseResources(int player_id);
 
   // Replaces a player with the specified id with a given MediaPlayerAndroid
   // object. This will also return the original MediaPlayerAndroid object that
