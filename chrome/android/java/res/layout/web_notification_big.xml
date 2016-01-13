@@ -137,7 +137,8 @@
                 android:layout_alignParentTop="true"
                 android:contentDescription="@null"
                 android:src="@drawable/settings_cog"
-                android:scaleType="centerInside"/>
+                android:scaleType="centerInside"
+                style="@style/WebNotificationSettingsIcon"/>
 
             <Button
                 android:id="@+id/origin"
@@ -149,7 +150,6 @@
                 android:layout_toStartOf="@+id/small_icon_footer"
                 android:minHeight="40dp"
                 android:gravity="start|center_vertical"
-                android:paddingStart="32dp"
                 android:singleLine="true"
                 android:ellipsize="start"
                 style="@style/WebNotificationSettingsButton"/>

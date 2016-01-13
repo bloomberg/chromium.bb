@@ -323,6 +323,10 @@
     <style name="WebNotificationSettingsButton"
         parent="@style/WebNotificationButton">
         <item name="android:textAppearance">@style/TextAppearance.StatusBar.EventContent.Line2</item>
+        <item name="android:paddingStart">40dp</item>
+    </style>
+    <style name="WebNotificationSettingsIcon">
+        <item name="android:layout_marginStart">8dp</item>
     </style>
     <style name="WebNotificationLargeIcon">
         <item name="android:background">@drawable/notification_template_icon_bg</item>

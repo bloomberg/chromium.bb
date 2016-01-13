@@ -87,6 +87,10 @@
     <style name="WebNotificationSettingsButton"
         parent="@style/WebNotificationButton">
         <item name="android:textAppearance">@android:style/TextAppearance.Material.Notification.Info</item>
+        <item name="android:paddingStart">32dp</item>
+    </style>
+    <style name="WebNotificationSettingsIcon">
+        <!-- This is a blank override of the v17 style. -->
     </style>
     <style name="WebNotificationLargeIcon">
         <item name="android:padding">12dp</item>
