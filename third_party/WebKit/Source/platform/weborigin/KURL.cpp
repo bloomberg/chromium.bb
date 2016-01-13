@@ -101,7 +101,7 @@ public:
     {
     }
 
-    void ConvertFromUTF16(const url::UTF16Char* input, int inputLength, url::CanonOutput* output) override
+    void ConvertFromUTF16(const base::char16* input, int inputLength, url::CanonOutput* output) override
     {
         CString encoded = m_encoding->encode(String(input, inputLength), WTF::URLEncodedEntitiesForUnencodables);
         output->Append(encoded.data(), static_cast<int>(encoded.length()));
@@ -676,7 +676,7 @@ String decodeURLEscapeSequences(const String& string, const WTF::TextEncoding& e
     // sucks, and we don't use the encoding properly, which will make some
     // obscure anchor navigations fail.
     StringUTF8Adaptor stringUTF8(string);
-    url::RawCanonOutputT<url::UTF16Char> unescaped;
+    url::RawCanonOutputT<base::char16> unescaped;
     url::DecodeURLEscapeSequences(stringUTF8.data(), stringUTF8.length(), &unescaped);
     return StringImpl::create8BitIfPossible(reinterpret_cast<UChar*>(unescaped.data()), unescaped.length());
 }
