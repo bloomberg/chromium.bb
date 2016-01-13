@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_observer.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/debug/crash_logging.h"
@@ -87,8 +89,7 @@ ConfirmInstallDialogDelegate::ConfirmInstallDialogDelegate(
     : TabModalConfirmDialogDelegate(web_contents),
       WeakPluginInstallerObserver(installer),
       web_contents_(web_contents),
-      plugin_metadata_(plugin_metadata.Pass()) {
-}
+      plugin_metadata_(std::move(plugin_metadata)) {}
 
 base::string16 ConfirmInstallDialogDelegate::GetTitle() {
   return l10n_util::GetStringFUTF16(
@@ -379,8 +380,9 @@ void PluginObserver::OnBlockedOutdatedPlugin(int placeholder_id,
   if (finder->FindPluginWithIdentifier(identifier, &installer, &plugin)) {
     plugin_placeholders_[placeholder_id] = new PluginPlaceholderHost(
         this, placeholder_id, plugin->name(), installer);
-    OutdatedPluginInfoBarDelegate::Create(InfoBarService::FromWebContents(
-        web_contents()), installer, plugin.Pass());
+    OutdatedPluginInfoBarDelegate::Create(
+        InfoBarService::FromWebContents(web_contents()), installer,
+        std::move(plugin));
   } else {
     NOTREACHED();
   }

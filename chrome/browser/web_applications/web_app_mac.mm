@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -309,7 +311,7 @@ void UpdateAndLaunchShimOnFileThread(
       shortcut_info->profile_path, shortcut_info->extension_id, GURL());
   UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
                                   *shortcut_info, file_handlers_info);
-  LaunchShimOnFileThread(shortcut_info.Pass(), true);
+  LaunchShimOnFileThread(std::move(shortcut_info), true);
 }
 
 void UpdateAndLaunchShim(

@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -367,7 +369,7 @@ void NativeWidgetMac::CloseNow() {
   // Notify observers while |bridged_| is still valid.
   delegate_->OnNativeWidgetDestroying();
   // Reset |bridge_| to NULL before destroying it.
-  scoped_ptr<BridgedNativeWidget> bridge(bridge_.Pass());
+  scoped_ptr<BridgedNativeWidget> bridge(std::move(bridge_));
 }
 
 void NativeWidgetMac::Show() {

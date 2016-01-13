@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <numeric>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/mac/bundle_locations.h"
@@ -1674,11 +1675,11 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
           sourceLanguage,
           targetLanguage));
   scoped_ptr<TranslateBubbleModel> model(
-      new TranslateBubbleModelImpl(step, uiDelegate.Pass()));
-  translateBubbleController_ = [[TranslateBubbleController alloc]
-                                 initWithParentWindow:self
-                                                model:model.Pass()
-                                          webContents:contents];
+      new TranslateBubbleModelImpl(step, std::move(uiDelegate)));
+  translateBubbleController_ =
+      [[TranslateBubbleController alloc] initWithParentWindow:self
+                                                        model:std::move(model)
+                                                  webContents:contents];
   [translateBubbleController_ showWindow:nil];
 
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];

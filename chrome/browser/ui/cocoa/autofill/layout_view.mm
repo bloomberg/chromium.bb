@@ -4,12 +4,14 @@
 
 #import "chrome/browser/ui/cocoa/autofill/layout_view.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/cocoa/autofill/simple_grid_layout.h"
 
 @implementation LayoutView
 
 - (void)setLayoutManager:(scoped_ptr<SimpleGridLayout>)layout {
-  layout_ = layout.Pass();
+  layout_ = std::move(layout);
 }
 
 - (SimpleGridLayout*)layoutManager {

@@ -6,6 +6,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
@@ -62,7 +64,8 @@ TEST_F(InfoBarContainerControllerTest, AddAndRemoveInfoBars) {
 
   scoped_ptr<infobars::InfoBarDelegate> confirm_delegate(
       new MockConfirmInfoBarDelegate(NULL));
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(confirm_delegate.Pass()));
+  scoped_ptr<InfoBarCocoa> infobar(
+      new InfoBarCocoa(std::move(confirm_delegate)));
   base::scoped_nsobject<ConfirmInfoBarController> controller(
       [[ConfirmInfoBarController alloc] initWithInfoBar:infobar.get()]);
   infobar->set_controller(controller);

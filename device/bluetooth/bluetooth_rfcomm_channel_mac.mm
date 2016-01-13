@@ -94,7 +94,7 @@ scoped_ptr<BluetoothRfcommChannelMac> BluetoothRfcommChannelMac::OpenAsync(
     channel.reset();
   }
 
-  return channel.Pass();
+  return channel;
 }
 
 void BluetoothRfcommChannelMac::SetSocket(BluetoothSocketMac* socket) {

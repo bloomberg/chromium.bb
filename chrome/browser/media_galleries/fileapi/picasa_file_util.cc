@@ -5,6 +5,7 @@
 #include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -92,7 +93,7 @@ void PicasaFileUtil::GetFileInfoOnTaskRunnerThread(
   // |data_provider| may be NULL if the file system was revoked before this
   // operation had a chance to run.
   if (!data_provider) {
-    GetFileInfoWithFreshDataProvider(context.Pass(), url, callback, false);
+    GetFileInfoWithFreshDataProvider(std::move(context), url, callback, false);
   } else {
     data_provider->RefreshData(
         GetDataTypeForURL(url),
@@ -112,7 +113,8 @@ void PicasaFileUtil::ReadDirectoryOnTaskRunnerThread(
   // |data_provider| may be NULL if the file system was revoked before this
   // operation had a chance to run.
   if (!data_provider) {
-    ReadDirectoryWithFreshDataProvider(context.Pass(), url, callback, false);
+    ReadDirectoryWithFreshDataProvider(std::move(context), url, callback,
+                                       false);
   } else {
     data_provider->RefreshData(
         GetDataTypeForURL(url),
@@ -374,8 +376,8 @@ void PicasaFileUtil::GetFileInfoWithFreshDataProvider(
         base::Bind(callback, base::File::FILE_ERROR_IO, base::File::Info()));
     return;
   }
-  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(
-      context.Pass(), url, callback);
+  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(std::move(context), url,
+                                                     callback);
 }
 
 void PicasaFileUtil::ReadDirectoryWithFreshDataProvider(
@@ -390,8 +392,8 @@ void PicasaFileUtil::ReadDirectoryWithFreshDataProvider(
         base::Bind(callback, base::File::FILE_ERROR_IO, EntryList(), false));
     return;
   }
-  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(
-      context.Pass(), url, callback);
+  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(std::move(context), url,
+                                                       callback);
 }
 
 PicasaDataProvider* PicasaFileUtil::GetDataProvider() {

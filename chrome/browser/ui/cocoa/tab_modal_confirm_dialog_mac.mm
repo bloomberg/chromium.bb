@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/tab_modal_confirm_dialog_mac.h"
 
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
@@ -120,7 +122,7 @@ void TabModalConfirmDialogMac::OnConstrainedWindowClosed(
   // prevent a double-delete by moving delegate_ to a stack variable.
   if (!delegate_)
     return;
-  scoped_ptr<TabModalConfirmDialogDelegate> delegate(delegate_.Pass());
+  scoped_ptr<TabModalConfirmDialogDelegate> delegate(std::move(delegate_));
   // Provide a disposition in case the dialog was closed without accepting or
   // cancelling.
   delegate->Close();

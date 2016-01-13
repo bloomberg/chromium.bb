@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -197,7 +199,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // This is necessary for CoreAnimation layers hosted in the GPU process to be
   // drawn. See http://crbug.com/312462.
   scoped_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
-  base::MessageLoop main_message_loop(pump.Pass());
+  base::MessageLoop main_message_loop(std::move(pump));
 #else
   base::MessageLoop main_message_loop(base::MessageLoop::TYPE_IO);
 #endif

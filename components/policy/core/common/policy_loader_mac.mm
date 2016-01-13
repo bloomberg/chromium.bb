@@ -100,7 +100,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   // Load policy for the registered components.
   LoadPolicyForDomain(POLICY_DOMAIN_EXTENSIONS, "extensions", bundle.get());
 
-  return bundle.Pass();
+  return bundle;
 }
 
 base::Time PolicyLoaderMac::LastModificationTime() {

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "base/i18n/rtl.h"
 #include "base/mac/bundle_locations.h"
@@ -248,7 +250,7 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
     profile_ = profile;
     navigator_ = navigator;
     delegate_ = delegate;
-    prompt_ = prompt.Pass();
+    prompt_ = std::move(prompt);
     warnings_.reset([[self buildWarnings:*prompt_] retain]);
   }
   return self;

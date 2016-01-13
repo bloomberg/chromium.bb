@@ -5,6 +5,7 @@
 #include "components/policy/core/common/mac_util.h"
 
 #include <string>
+#include <utility>
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -77,7 +78,7 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
   if (CFDictionaryRef dict = CFCast<CFDictionaryRef>(property)) {
     scoped_ptr<base::DictionaryValue> dict_value(new base::DictionaryValue());
     CFDictionaryApplyFunction(dict, DictionaryEntryToValue, dict_value.get());
-    return dict_value.Pass();
+    return std::move(dict_value);
   }
 
   if (CFArrayRef array = CFCast<CFArrayRef>(property)) {
@@ -86,7 +87,7 @@ scoped_ptr<base::Value> PropertyToValue(CFPropertyListRef property) {
                          CFRangeMake(0, CFArrayGetCount(array)),
                          ArrayEntryToValue,
                          list_value.get());
-    return list_value.Pass();
+    return std::move(list_value);
   }
 
   return nullptr;

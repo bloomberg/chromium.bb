@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -276,7 +277,7 @@ class ExtensionPopupNotificationBridge : public content::NotificationObserver {
                 anchoredAt:anchoredAt
              arrowLocation:arrowLocation
                    devMode:devMode];
-  [gPopup setExtensionViewHost:host.Pass()];
+  [gPopup setExtensionViewHost:std::move(host)];
   return gPopup;
 }
 

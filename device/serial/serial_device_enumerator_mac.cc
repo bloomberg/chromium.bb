@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -106,13 +107,13 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
   CFMutableDictionaryRef matchingDict =
       IOServiceMatching(kIOSerialBSDServiceValue);
   if (!matchingDict)
-    return devices.Pass();
+    return devices;
 
   io_iterator_t it;
   kern_return_t kr =
       IOServiceGetMatchingServices(kIOMasterPortDefault, matchingDict, &it);
   if (kr != KERN_SUCCESS)
-    return devices.Pass();
+    return devices;
 
   base::mac::ScopedIOObject<io_iterator_t> scoped_it(it);
   base::mac::ScopedIOObject<io_service_t> scoped_device;
@@ -148,18 +149,18 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesNew() {
                           &dialinDevice)) {
       serial::DeviceInfoPtr dialin_info = callout_info.Clone();
       dialin_info->path = dialinDevice;
-      devices.push_back(dialin_info.Pass());
+      devices.push_back(std::move(dialin_info));
     }
 
     mojo::String calloutDevice;
     if (GetStringProperty(scoped_device.get(), CFSTR(kIOCalloutDeviceKey),
                           &calloutDevice)) {
       callout_info->path = calloutDevice;
-      devices.push_back(callout_info.Pass());
+      devices.push_back(std::move(callout_info));
     }
   }
 
-  return devices.Pass();
+  return devices;
 }
 
 // Returns an array of devices as retrieved through the old method of
@@ -192,12 +193,12 @@ mojo::Array<serial::DeviceInfoPtr> GetDevicesOld() {
       if (base::MatchPattern(next_device, *i)) {
         serial::DeviceInfoPtr info(serial::DeviceInfo::New());
         info->path = next_device;
-        devices.push_back(info.Pass());
+        devices.push_back(std::move(info));
         break;
       }
     }
   } while (true);
-  return devices.Pass();
+  return devices;
 }
 
 }  // namespace
@@ -236,7 +237,7 @@ mojo::Array<serial::DeviceInfoPtr> SerialDeviceEnumeratorMac::GetDevices() {
   mojo::Array<serial::DeviceInfoPtr> devices;
   deviceMap.DecomposeMapTo(&paths, &devices);
 
-  return devices.Pass();
+  return devices;
 }
 
 }  // namespace device

@@ -57,7 +57,7 @@ scoped_ptr<base::DictionaryValue> PopulatePosition(
                        static_cast<int>(node_position.x - root_left));
   position->SetInteger(kYCoordDictAttr,
       static_cast<int>(-node_position.y - node_size.height - root_top));
-  return position.Pass();
+  return position;
 }
 
 scoped_ptr<base::DictionaryValue>
@@ -66,14 +66,14 @@ PopulateSize(const BrowserAccessibilityCocoa* cocoa_node) {
   NSSize node_size = [[cocoa_node size] sizeValue];
   size->SetInteger(kHeightDictAttr, static_cast<int>(node_size.height));
   size->SetInteger(kWidthDictAttr, static_cast<int>(node_size.width));
-  return size.Pass();
+  return size;
 }
 
 scoped_ptr<base::DictionaryValue> PopulateRange(NSRange range) {
   scoped_ptr<base::DictionaryValue> rangeDict(new base::DictionaryValue);
   rangeDict->SetInteger(kRangeLocDictAttr, static_cast<int>(range.location));
   rangeDict->SetInteger(kRangeLenDictAttr, static_cast<int>(range.length));
-  return rangeDict.Pass();
+  return rangeDict;
 }
 
 // Returns true if |value| is an NSValue containing a NSRange.
@@ -89,7 +89,7 @@ scoped_ptr<base::ListValue> PopulateArray(NSArray* array) {
   scoped_ptr<base::ListValue> list(new base::ListValue);
   for (NSUInteger i = 0; i < [array count]; i++)
     list->Append(PopulateObject([array objectAtIndex:i]).release());
-  return list.Pass();
+  return list;
 }
 
 scoped_ptr<base::StringValue> StringForBrowserAccessibility(
@@ -123,7 +123,7 @@ scoped_ptr<base::StringValue> StringForBrowserAccessibility(
 
   NSString* result = [tokens componentsJoinedByString:@" "];
   return scoped_ptr<base::StringValue>(
-      new base::StringValue(SysNSStringToUTF16(result))).Pass();
+      new base::StringValue(SysNSStringToUTF16(result)));
 }
 
 scoped_ptr<base::Value> PopulateObject(id value) {
@@ -138,9 +138,8 @@ scoped_ptr<base::Value> PopulateObject(id value) {
         (BrowserAccessibilityCocoa*) value));
   }
 
-  return scoped_ptr<base::Value>(
-      new base::StringValue(
-          SysNSStringToUTF16([NSString stringWithFormat:@"%@", value]))).Pass();
+  return scoped_ptr<base::Value>(new base::StringValue(
+      SysNSStringToUTF16([NSString stringWithFormat:@"%@", value])));
 }
 
 NSArray* BuildAllAttributesArray() {

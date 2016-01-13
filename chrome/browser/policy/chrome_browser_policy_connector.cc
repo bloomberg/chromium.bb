@@ -103,7 +103,7 @@ ConfigurationPolicyProvider*
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
       GetManagedPolicyPath(),
       new MacPreferences()));
-  return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());
+  return new AsyncPolicyProvider(GetSchemaRegistry(), std::move(loader));
 #elif defined(OS_POSIX) && !defined(OS_ANDROID)
   base::FilePath config_dir_path;
   if (PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {

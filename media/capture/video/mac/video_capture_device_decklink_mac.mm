@@ -4,6 +4,8 @@
 
 #include "media/capture/video/mac/video_capture_device_decklink_mac.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -477,7 +479,7 @@ void VideoCaptureDeviceDeckLinkMac::AllocateAndStart(
     const VideoCaptureParams& params,
     scoped_ptr<VideoCaptureDevice::Client> client) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  client_ = client.Pass();
+  client_ = std::move(client);
   if (decklink_capture_delegate_.get())
     decklink_capture_delegate_->AllocateAndStart(params);
 }

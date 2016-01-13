@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
+
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
-#import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #import "testing/gtest_mac.h"
 #import "ui/gfx/geometry/point.h"
@@ -107,7 +110,7 @@ class ConfirmBubbleControllerTest : public CocoaTest {
     controller_ =
         [[ConfirmBubbleController alloc] initWithParent:view
                                                  origin:origin.ToCGPoint()
-                                                  model:model_.Pass()];
+                                                  model:std::move(model_)];
     [view addSubview:[controller_ view]
           positioned:NSWindowAbove
           relativeTo:nil];

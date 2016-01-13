@@ -4,6 +4,8 @@
 
 #import "ui/message_center/cocoa/popup_collection.h"
 
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -54,14 +56,14 @@ class PopupCollectionTest : public ui::CocoaTest {
                      " be displayed"),
         gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
         message_center::RichNotificationData(), NULL));
-    center_->AddNotification(notification.Pass());
+    center_->AddNotification(std::move(notification));
 
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, "2", ASCIIToUTF16("Two"),
         ASCIIToUTF16("This is the second notification."), gfx::Image(),
         base::string16(), GURL(), DummyNotifierId(),
         message_center::RichNotificationData(), NULL));
-    center_->AddNotification(notification.Pass());
+    center_->AddNotification(std::move(notification));
 
     notification.reset(new message_center::Notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, "3", ASCIIToUTF16("Three"),
@@ -73,7 +75,7 @@ class PopupCollectionTest : public ui::CocoaTest {
                      "if the notification is way too big"),
         gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
         message_center::RichNotificationData(), NULL));
-    center_->AddNotification(notification.Pass());
+    center_->AddNotification(std::move(notification));
     WaitForAnimationEnded();
   }
 
@@ -123,7 +125,7 @@ TEST_F(PopupCollectionTest, AttemptFourOneOffscreen) {
       ASCIIToUTF16("This is the fourth notification."), gfx::Image(),
       base::string16(), GURL(), DummyNotifierId(),
       message_center::RichNotificationData(), NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
   WaitForAnimationEnded();
 
   // Remove "1" and "3" should fit on screen.
@@ -166,7 +168,7 @@ TEST_F(PopupCollectionTest, LayoutSpacing) {
       message_center::NOTIFICATION_TYPE_SIMPLE, "4", ASCIIToUTF16("Four"),
       ASCIIToUTF16("This is the fourth notification."), gfx::Image(),
       base::string16(), GURL(), DummyNotifierId(), optional, NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
   WaitForAnimationEnded();
   EXPECT_TRUE(CheckSpacingBetween([popups objectAtIndex:2],
                                   [popups objectAtIndex:3]));
@@ -199,7 +201,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                    " be displayed"),
       gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
       message_center::RichNotificationData(), NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
   WaitForAnimationEnded();
   EXPECT_EQ(1u, [[collection_ popups] count]);
 
@@ -216,7 +218,7 @@ TEST_F(PopupCollectionTest, TinyScreen) {
                    "long notification."),
       gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
       message_center::RichNotificationData(), NULL));
-  center_->UpdateNotification("1", notification.Pass());
+  center_->UpdateNotification("1", std::move(notification));
   WaitForAnimationEnded();
   EXPECT_EQ(0u, [[collection_ popups] count]);
 }
@@ -256,7 +258,7 @@ TEST_F(PopupCollectionTest, UpdateIconAndBody) {
                    "longer body"),
       gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
       message_center::RichNotificationData(), NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
   WaitForAnimationEnded();
   EXPECT_GT(NSHeight([[controller view] frame]), NSHeight(old_frame));
 
@@ -280,7 +282,7 @@ TEST_F(PopupCollectionTest, UpdatePriority) {
       message_center::RichNotificationData(), NULL));
   notification->set_priority(-1);
 
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
   WaitForAnimationEnded();
   NSArray* popups = [collection_ popups];
   EXPECT_EQ(0u, [popups count]);
@@ -293,7 +295,7 @@ TEST_F(PopupCollectionTest, UpdatePriority) {
       message_center::RichNotificationData(), NULL));
   notification->set_priority(1);
 
-  center_->UpdateNotification("1", notification.Pass());
+  center_->UpdateNotification("1", std::move(notification));
   WaitForAnimationEnded();
   EXPECT_EQ(1u, [popups count]);
 }
@@ -307,7 +309,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeNewPopupAnimationEnds) {
                    " be displayed"),
       gfx::Image(), base::string16(), GURL(), DummyNotifierId(),
       message_center::RichNotificationData(), NULL));
-  center_->AddNotification(notification.Pass());
+  center_->AddNotification(std::move(notification));
 
   // Release the popup collection before the animation ends. No crash should
   // be expected.
@@ -334,7 +336,7 @@ TEST_F(PopupCollectionTest, CloseCollectionBeforeUpdatePopupAnimationEnds) {
       message_center::NOTIFICATION_TYPE_SIMPLE, "1", ASCIIToUTF16("One"),
       ASCIIToUTF16("New message."), gfx::Image(), base::string16(), GURL(),
       DummyNotifierId(), message_center::RichNotificationData(), NULL));
-  center_->UpdateNotification("1", notification.Pass());
+  center_->UpdateNotification("1", std::move(notification));
 
   // Release the popup collection before the animation ends. No crash should
   // be expected.

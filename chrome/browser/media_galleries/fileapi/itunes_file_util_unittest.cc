@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
+
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -17,7 +20,6 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/media_galleries/fileapi/itunes_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/itunes_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
@@ -181,11 +183,8 @@ class ItunesFileUtilTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy.get(),
-        NULL,
-        additional_providers.Pass(),
-        std::vector<storage::URLRequestAutoMountHandler>(),
-        profile_dir_.path(),
+        storage_policy.get(), NULL, std::move(additional_providers),
+        std::vector<storage::URLRequestAutoMountHandler>(), profile_dir_.path(),
         content::CreateAllowFileAccessOptions());
   }
 

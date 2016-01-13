@@ -8,6 +8,8 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
@@ -151,7 +153,7 @@ void CreateAppListShim(const base::FilePath& profile_path) {
   if (installed_version == 0)
     shortcut_locations.in_quick_launch_bar = true;
 
-  web_app::CreateNonAppShortcut(shortcut_locations, shortcut_info.Pass());
+  web_app::CreateNonAppShortcut(shortcut_locations, std::move(shortcut_info));
 
   local_state->SetInteger(prefs::kAppLauncherShortcutVersion,
                           kShortcutVersion);

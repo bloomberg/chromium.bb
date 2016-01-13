@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 
+#include <utility>
+
 #import "base/callback_helpers.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/message_loop/message_loop.h"
@@ -39,7 +41,7 @@ WindowedInstallDialogController::WindowedInstallDialogController(
       initWithProfile:show_params->profile()
             navigator:show_params->GetParentWebContents()
              delegate:this
-               prompt:prompt.Pass()]);
+               prompt:std::move(prompt)]);
   [[install_controller_ window] makeKeyAndOrderFront:nil];
 }
 
@@ -98,7 +100,7 @@ void WindowedInstallDialogController::OnStoreLinkClicked() {
         initWithProfile:profile
               navigator:navigator
                delegate:delegate
-                 prompt:prompt.Pass()]);
+                 prompt:std::move(prompt)]);
     NSWindow* window = [self window];
 
     // Ensure the window does not display behind the app launcher window, and is

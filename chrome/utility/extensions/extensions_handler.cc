@@ -165,7 +165,7 @@ void ExtensionsHandler::OnParseIPhotoLibraryXmlFile(
     const IPC::PlatformFileForTransit& iphoto_library_file) {
   iphoto::IPhotoLibraryParser parser;
   base::File file = IPC::PlatformFileForTransitToFile(iphoto_library_file);
-  bool result = parser.Parse(iapps::ReadFileAsString(file.Pass()));
+  bool result = parser.Parse(iapps::ReadFileAsString(std::move(file)));
   Send(new ChromeUtilityHostMsg_GotIPhotoLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }
@@ -176,7 +176,7 @@ void ExtensionsHandler::OnParseITunesLibraryXmlFile(
     const IPC::PlatformFileForTransit& itunes_library_file) {
   itunes::ITunesLibraryParser parser;
   base::File file = IPC::PlatformFileForTransitToFile(itunes_library_file);
-  bool result = parser.Parse(iapps::ReadFileAsString(file.Pass()));
+  bool result = parser.Parse(iapps::ReadFileAsString(std::move(file)));
   Send(new ChromeUtilityHostMsg_GotITunesLibrary(result, parser.library()));
   ReleaseProcessIfNeeded();
 }
@@ -199,7 +199,7 @@ void ExtensionsHandler::OnParsePicasaPMPDatabase(
   files.uid_file =
       IPC::PlatformFileForTransitToFile(album_table_files.uid_file);
 
-  picasa::PicasaAlbumTableReader reader(files.Pass());
+  picasa::PicasaAlbumTableReader reader(std::move(files));
   bool parse_success = reader.Init();
   Send(new ChromeUtilityHostMsg_ParsePicasaPMPDatabase_Finished(
       parse_success, reader.albums(), reader.folders()));

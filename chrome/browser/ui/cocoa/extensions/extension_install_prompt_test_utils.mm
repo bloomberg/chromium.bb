@@ -70,7 +70,7 @@ scoped_ptr<ExtensionInstallPrompt::Prompt> BuildExtensionInstallPrompt(
           ExtensionInstallPrompt::INSTALL_PROMPT));
   prompt->set_extension(extension);
   prompt->set_icon(LoadInstallPromptIcon());
-  return prompt.Pass();
+  return prompt;
 }
 
 scoped_ptr<ExtensionInstallPrompt::Prompt>
@@ -80,7 +80,7 @@ BuildExtensionPostInstallPermissionsPrompt(Extension* extension) {
           ExtensionInstallPrompt::POST_INSTALL_PERMISSIONS_PROMPT));
   prompt->set_extension(extension);
   prompt->set_icon(LoadInstallPromptIcon());
-  return prompt.Pass();
+  return prompt;
 }
 
 }  // namespace chrome

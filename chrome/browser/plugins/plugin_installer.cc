@@ -4,6 +4,8 @@
 
 #include "chrome/browser/plugins/plugin_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/process/process.h"
@@ -107,7 +109,7 @@ void PluginInstaller::StartInstallingWithDownloadManager(
   download_parameters->set_callback(
       base::Bind(&PluginInstaller::DownloadStarted, base::Unretained(this)));
   RecordDownloadSource(DOWNLOAD_INITIATED_BY_PLUGIN_INSTALLER);
-  download_manager->DownloadUrl(download_parameters.Pass());
+  download_manager->DownloadUrl(std::move(download_parameters));
 }
 
 void PluginInstaller::DownloadStarted(

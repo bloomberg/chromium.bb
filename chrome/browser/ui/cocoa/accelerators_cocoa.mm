@@ -7,6 +7,8 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -127,7 +129,7 @@ ui::Accelerator AcceleratorFromKeyCode(ui::KeyboardCode key_code,
 
   scoped_ptr<ui::PlatformAccelerator> platform_accelerator =
       PlatformAcceleratorFromKeyCode(key_code, cocoa_modifiers);
-  accelerator.set_platform_accelerator(platform_accelerator.Pass());
+  accelerator.set_platform_accelerator(std::move(platform_accelerator));
   return accelerator;
 }
 

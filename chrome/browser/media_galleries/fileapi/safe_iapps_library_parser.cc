@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media_galleries/fileapi/safe_iapps_library_parser.h"
 
+#include <utility>
+
 #include "build/build_config.h"
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/common/chrome_utility_messages.h"
@@ -89,18 +91,16 @@ void SafeIAppsLibraryParser::OnUtilityProcessStarted() {
   }
 
   if (!itunes_callback_.is_null()) {
-    utility_process_host_->Send(
-        new ChromeUtilityMsg_ParseITunesLibraryXmlFile(
-            IPC::TakeFileHandleForProcess(
-                library_file_.Pass(),
-                utility_process_host_->GetData().handle)));
+    utility_process_host_->Send(new ChromeUtilityMsg_ParseITunesLibraryXmlFile(
+        IPC::TakeFileHandleForProcess(
+            std::move(library_file_),
+            utility_process_host_->GetData().handle)));
   } else if (!iphoto_callback_.is_null()) {
 #if defined(OS_MACOSX)
-    utility_process_host_->Send(
-        new ChromeUtilityMsg_ParseIPhotoLibraryXmlFile(
-            IPC::TakeFileHandleForProcess(
-                library_file_.Pass(),
-                utility_process_host_->GetData().handle)));
+    utility_process_host_->Send(new ChromeUtilityMsg_ParseIPhotoLibraryXmlFile(
+        IPC::TakeFileHandleForProcess(
+            std::move(library_file_),
+            utility_process_host_->GetData().handle)));
 #endif
   }
 

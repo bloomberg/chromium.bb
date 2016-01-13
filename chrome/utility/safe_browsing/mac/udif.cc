@@ -4,12 +4,13 @@
 
 #include "chrome/utility/safe_browsing/mac/udif.h"
 
-#include <bzlib.h>
 #include <CoreFoundation/CoreFoundation.h>
+#include <bzlib.h>
 #include <libkern/OSByteOrder.h>
 #include <uuid/uuid.h>
 
 #include <algorithm>
+#include <utility>
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
@@ -470,7 +471,7 @@ bool UDIFParser::ParseBlkx() {
       }
     }
 
-    blocks_.push_back(block.Pass());
+    blocks_.push_back(std::move(block));
     partition_names_.push_back(partition_name);
   }
 

@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -32,7 +34,7 @@ using InfoBarUtilities::AddMenuItem;
 
 scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
-  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(delegate.Pass()));
+  scoped_ptr<InfoBarCocoa> infobar(new InfoBarCocoa(std::move(delegate)));
   base::scoped_nsobject<TranslateInfoBarControllerBase> infobar_controller;
   switch (infobar->delegate()->AsTranslateInfoBarDelegate()->translate_step()) {
     case translate::TRANSLATE_STEP_BEFORE_TRANSLATE:
@@ -52,7 +54,7 @@ scoped_ptr<infobars::InfoBar> ChromeTranslateClient::CreateInfoBar(
       NOTREACHED();
   }
   infobar->set_controller(infobar_controller);
-  return infobar.Pass();
+  return std::move(infobar);
 }
 
 @implementation TranslateInfoBarControllerBase (FrameChangeObserver)

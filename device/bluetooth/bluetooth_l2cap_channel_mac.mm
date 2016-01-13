@@ -99,7 +99,7 @@ scoped_ptr<BluetoothL2capChannelMac> BluetoothL2capChannelMac::OpenAsync(
   else
     channel.reset();
 
-  return channel.Pass();
+  return channel;
 }
 
 void BluetoothL2capChannelMac::SetSocket(BluetoothSocketMac* socket) {

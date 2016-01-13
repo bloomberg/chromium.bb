@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/lazy_instance.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -76,8 +78,8 @@ void BrowserCompositorMac::OnCompositingDidCommit(
 scoped_ptr<BrowserCompositorMac> BrowserCompositorMac::Create() {
   DCHECK(ui::WindowResizeHelperMac::Get()->task_runner());
   if (g_recyclable_browser_compositor.Get())
-    return g_recyclable_browser_compositor.Get().Pass();
-  return scoped_ptr<BrowserCompositorMac>(new BrowserCompositorMac).Pass();
+    return std::move(g_recyclable_browser_compositor.Get());
+  return scoped_ptr<BrowserCompositorMac>(new BrowserCompositorMac);
 }
 
 // static

@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
 
+#include <utility>
+
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
@@ -73,7 +75,7 @@ CGFloat kMinWidth = 320.0;
                        parentWindow:parentWindow
                          anchoredAt:anchorPoint])) {
     acknowledged_ = NO;
-    delegate_ = delegate.Pass();
+    delegate_ = std::move(delegate);
 
     ui::NativeTheme* nativeTheme = ui::NativeThemeMac::instance();
     [[self bubble] setAlignment:info_bubble::kAlignArrowToAnchor];

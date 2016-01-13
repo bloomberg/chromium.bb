@@ -6,6 +6,8 @@
 
 #include <sys/param.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
@@ -313,14 +315,11 @@ void PromiseWriterHelper(const DropData& drop_data,
     return nil;
 
   if (downloadURL_.is_valid() && contents_) {
-    scoped_refptr<DragDownloadFile> dragFileDownloader(new DragDownloadFile(
-        filePath,
-        file.Pass(),
-        downloadURL_,
-        content::Referrer(contents_->GetLastCommittedURL(),
-                          dropData_->referrer_policy),
-        contents_->GetEncoding(),
-        contents_));
+    scoped_refptr<DragDownloadFile> dragFileDownloader(
+        new DragDownloadFile(filePath, std::move(file), downloadURL_,
+                             content::Referrer(contents_->GetLastCommittedURL(),
+                                               dropData_->referrer_policy),
+                             contents_->GetEncoding(), contents_));
 
     // The finalizer will take care of closing and deletion.
     dragFileDownloader->Start(new PromiseFileFinalizer(

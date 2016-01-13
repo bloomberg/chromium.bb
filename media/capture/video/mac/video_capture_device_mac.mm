@@ -11,6 +11,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -377,7 +378,7 @@ void VideoCaptureDeviceMac::AllocateAndStart(
   if (!AVFoundationGlue::IsAVFoundationSupported())
     GetBestMatchSupportedResolution(&resolution);
 
-  client_ = client.Pass();
+  client_ = std::move(client);
   if (device_name_.capture_api_type() == Name::AVFOUNDATION)
     LogMessage("Using AVFoundation for device: " + device_name_.name());
   else

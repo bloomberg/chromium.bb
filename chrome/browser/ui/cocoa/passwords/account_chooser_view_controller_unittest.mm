@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
 
+#include <utility>
+
 #include "base/mac/foundation_util.h"
 #include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
@@ -57,7 +59,7 @@ namespace {
 scoped_ptr<autofill::PasswordForm> Credential(const char* username) {
   scoped_ptr<autofill::PasswordForm> credential(new autofill::PasswordForm);
   credential->username_value = base::ASCIIToUTF16(username);
-  return credential.Pass();
+  return credential;
 }
 
 // Tests for the account chooser view of the password management bubble.
@@ -102,7 +104,7 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
   local_forms.push_back(Credential("pizza"));
   ScopedVector<const autofill::PasswordForm> federated_forms;
   federated_forms.push_back(Credential("taco"));
-  SetUpAccountChooser(local_forms.Pass(), federated_forms.Pass());
+  SetUpAccountChooser(std::move(local_forms), std::move(federated_forms));
   // Trigger creation of controller and check the views.
   NSTableView* view = controller().credentialsView;
   ASSERT_NSNE(nil, view);
@@ -127,8 +129,8 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
   ScopedVector<const autofill::PasswordForm> local_forms;
   scoped_ptr<autofill::PasswordForm> form = Credential("taco");
   form->icon_url = GURL("http://foo");
-  local_forms.push_back(form.Pass());
-  SetUpAccountChooser(local_forms.Pass(),
+  local_forms.push_back(std::move(form));
+  SetUpAccountChooser(std::move(local_forms),
                       ScopedVector<const autofill::PasswordForm>());
   // Trigger creation of the controller and check the fetched URLs.
   controller();
@@ -145,7 +147,7 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
   local_forms.push_back(Credential("pizza"));
   ScopedVector<const autofill::PasswordForm> federated_forms;
   federated_forms.push_back(Credential("taco"));
-  SetUpAccountChooser(local_forms.Pass(), federated_forms.Pass());
+  SetUpAccountChooser(std::move(local_forms), std::move(federated_forms));
   EXPECT_CALL(*ui_controller(),
               ChooseCredential(
                   *Credential("taco"),
@@ -160,7 +162,7 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
        SelectingNopeDismissesDialog) {
   ScopedVector<const autofill::PasswordForm> local_forms;
   local_forms.push_back(Credential("pizza"));
-  SetUpAccountChooser(local_forms.Pass(),
+  SetUpAccountChooser(std::move(local_forms),
                       ScopedVector<const autofill::PasswordForm>());
   [controller().cancelButton performClick:nil];
   EXPECT_TRUE(delegate().dismissed);

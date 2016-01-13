@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/infobars/confirm_infobar_controller.h"
 
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -93,7 +95,7 @@ class ConfirmInfoBarControllerTest : public CocoaProfileTest,
 
    scoped_ptr<infobars::InfoBarDelegate> delegate(
        new MockConfirmInfoBarDelegate(this));
-    infobar_ = new InfoBarCocoa(delegate.Pass());
+   infobar_ = new InfoBarCocoa(std::move(delegate));
     infobar_->SetOwner(InfoBarService::FromWebContents(web_contents_.get()));
 
     controller_.reset([[TestConfirmInfoBarController alloc]

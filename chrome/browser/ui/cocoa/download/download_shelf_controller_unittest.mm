@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
+
 #import <Cocoa/Cocoa.h>
+
+#include <utility>
 
 #import "base/mac/scoped_block.h"
 #import "base/mac/scoped_nsobject.h"
@@ -10,7 +14,6 @@
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
-#import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "content/public/test/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,7 +39,7 @@ using ::testing::AnyNumber;
 @implementation WrappedMockDownloadItem
 - (id)initWithMockDownload:(scoped_ptr<content::MockDownloadItem>)download {
   if ((self = [super init])) {
-    download_ = download.Pass();
+    download_ = std::move(download);
   }
   return self;
 }
@@ -143,7 +146,8 @@ id DownloadShelfControllerTest::CreateItemController() {
       .WillByDefault(Return(content::DownloadItem::IN_PROGRESS));
 
   base::scoped_nsobject<WrappedMockDownloadItem> wrappedMockDownload(
-      [[WrappedMockDownloadItem alloc] initWithMockDownload:download.Pass()]);
+      [[WrappedMockDownloadItem alloc]
+          initWithMockDownload:std::move(download)]);
 
   id item_controller =
       [OCMockObject mockForClass:[DownloadItemController class]];

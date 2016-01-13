@@ -75,7 +75,7 @@ class SpellCheckTest : public testing::Test {
     spell_check_->languages_.push_back(new SpellcheckLanguage());
     spell_check_->languages_.front()->platform_spelling_engine_.reset(
         new HunspellEngine);
-    spell_check_->languages_.front()->Init(file.Pass(), language);
+    spell_check_->languages_.front()->Init(std::move(file), language);
 #else
     spell_check_->AddSpellcheckLanguage(std::move(file), language);
 #endif

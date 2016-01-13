@@ -171,8 +171,8 @@ PasswordStoreFactory::BuildServiceInstanceFor(
           os_crypt::switches::kUseMockKeychain)
           ? new crypto::MockAppleKeychain()
           : new crypto::AppleKeychain());
-  ps = new PasswordStoreProxyMac(main_thread_runner, keychain.Pass(),
-                                 login_db.Pass(), profile->GetPrefs());
+  ps = new PasswordStoreProxyMac(main_thread_runner, std::move(keychain),
+                                 std::move(login_db), profile->GetPrefs());
 #elif defined(OS_CHROMEOS) || defined(OS_ANDROID)
   // For now, we use PasswordStoreDefault. We might want to make a native
   // backend for PasswordStoreX (see below) in the future though.

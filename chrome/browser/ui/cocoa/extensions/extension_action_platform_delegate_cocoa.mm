@@ -73,7 +73,7 @@ void ExtensionActionPlatformDelegateCocoa::ShowPopup(
     ExtensionActionViewController::PopupShowAction show_action) {
   BOOL devMode =
       show_action == ExtensionActionViewController::SHOW_POPUP_AND_INSPECT;
-  [ExtensionPopupController host:host.Pass()
+  [ExtensionPopupController host:std::move(host)
                        inBrowser:controller_->browser()
                       anchoredAt:GetPopupPoint()
                    arrowLocation:info_bubble::kTopRight

@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/utility/media_galleries/picasa_album_table_reader.h"
+
 #include <stdint.h>
+
+#include <utility>
 
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/common/media_galleries/picasa_test_util.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
-#include "chrome/utility/media_galleries/picasa_album_table_reader.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace picasa {
@@ -59,7 +62,7 @@ TEST(PicasaAlbumTableReaderTest, FoldersAndAlbums) {
                   filename_vector, name_vector, token_vector, uid_vector);
 
   AlbumTableFiles album_table_files(temp_dir.path());
-  PicasaAlbumTableReader reader(album_table_files.Pass());
+  PicasaAlbumTableReader reader(std::move(album_table_files));
 
   ASSERT_TRUE(reader.Init());
 

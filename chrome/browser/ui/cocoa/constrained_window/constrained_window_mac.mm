@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet.h"
@@ -29,7 +31,8 @@ ConstrainedWindowMac::ConstrainedWindowMac(
   auto manager = WebContentsModalDialogManager::FromWebContents(web_contents);
   scoped_ptr<SingleWebContentsDialogManagerCocoa> native_manager(
       new SingleWebContentsDialogManagerCocoa(this, sheet, manager));
-  manager->ShowDialogWithManager([sheet sheetWindow], native_manager.Pass());
+  manager->ShowDialogWithManager([sheet sheetWindow],
+                                 std::move(native_manager));
 }
 
 ConstrainedWindowMac::~ConstrainedWindowMac() {

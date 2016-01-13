@@ -59,7 +59,7 @@ scoped_ptr<base::DictionaryValue> NetworkProperties::ToValue(
   }
   value->Set(onc::network_type::kWiFi, wifi.release());
 
-  return value.Pass();
+  return value;
 }
 
 bool NetworkProperties::UpdateFromValue(const base::DictionaryValue& value) {

@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -289,10 +290,10 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   extensions::ExtensionMessageBubbleController* weak_controller =
       bubble_controller.get();
   scoped_ptr<ExtensionMessageBubbleBridge> bridge(
-      new ExtensionMessageBubbleBridge(bubble_controller.Pass(),
+      new ExtensionMessageBubbleBridge(std::move(bubble_controller),
                                        anchor_action != nullptr));
   ToolbarActionsBarBubbleMac* bubble =
-      [controller_ createMessageBubble:bridge.Pass()
+      [controller_ createMessageBubble:std::move(bridge)
                           anchorToSelf:anchor_action != nil];
   weak_controller->OnShown();
   [bubble showWindow:nil];
@@ -570,7 +571,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
       highlight.reset(
           new ui::NinePartImageIds(IMAGE_GRID(IDR_DEVELOPER_MODE_HIGHLIGHT)));
   }
-  [containerView_ setHighlight:highlight.Pass()];
+  [containerView_ setHighlight:std::move(highlight)];
 
   std::vector<ToolbarActionViewController*> toolbar_actions =
       toolbarActionsBar_->GetActions();
@@ -812,8 +813,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
     scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
         new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
     ToolbarActionsBarBubbleMac* bubble =
-        [self createMessageBubble:delegate.Pass()
-                     anchorToSelf:YES];
+        [self createMessageBubble:std::move(delegate) anchorToSelf:YES];
     [bubble showWindow:nil];
   }
   [containerView_ setTrackingEnabled:NO];
@@ -1034,7 +1034,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
   activeBubble_ = [[ToolbarActionsBarBubbleMac alloc]
       initWithParentWindow:[containerView_ window]
                anchorPoint:anchor
-                  delegate:delegate.Pass()];
+                  delegate:std::move(delegate)];
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(bubbleWindowClosing:)

@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 
+#include <utility>
+
 #include "base/memory/weak_ptr.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
 #include "chrome/browser/ui/passwords/account_avatar_fetcher.h"
@@ -69,7 +71,7 @@ void AccountAvatarFetcherBridge::UpdateAvatar(const gfx::ImageSkia& image) {
       new AccountAvatarFetcherBridge(self, view));
   AccountAvatarFetcher* fetcher =
       new AccountAvatarFetcher(avatarURL, bridge->AsWeakPtr());
-  bridges_.push_back(bridge.Pass());
+  bridges_.push_back(std::move(bridge));
   [self startRequestWithFetcher:fetcher];
 }
 

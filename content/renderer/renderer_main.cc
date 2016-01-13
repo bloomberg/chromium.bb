@@ -147,7 +147,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // http://crbug.com/306348#c24 for details.
   scoped_ptr<base::MessagePump> pump(new base::MessagePumpNSRunLoop());
   scoped_ptr<base::MessageLoop> main_message_loop(
-      new base::MessageLoop(pump.Pass()));
+      new base::MessageLoop(std::move(pump)));
 #else
   // The main message loop of the renderer services doesn't have IO or UI tasks.
   scoped_ptr<base::MessageLoop> main_message_loop(new base::MessageLoop());
@@ -206,8 +206,8 @@ int RendererMain(const MainFunctionParams& parameters) {
     // TODO(markus): Check if it is OK to unconditionally move this
     // instruction down.
     RenderProcessImpl render_process;
-    RenderThreadImpl::Create(main_message_loop.Pass(),
-                             renderer_scheduler.Pass());
+    RenderThreadImpl::Create(std::move(main_message_loop),
+                             std::move(renderer_scheduler));
 #endif
     bool run_loop = true;
     if (!no_sandbox)

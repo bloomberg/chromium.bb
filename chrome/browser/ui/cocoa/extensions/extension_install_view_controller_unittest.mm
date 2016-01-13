@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
+
 #import <Cocoa/Cocoa.h>
+
+#include <utility>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -11,7 +15,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_prompt_test_utils.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,10 +87,11 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalCancel) {
   base::string16 permissionString = prompt->GetPermission(0, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
-      [[ExtensionInstallViewController alloc] initWithProfile:profile()
-                                                    navigator:browser()
-                                                     delegate:&delegate
-                                                       prompt:prompt.Pass()]);
+      [[ExtensionInstallViewController alloc]
+          initWithProfile:profile()
+                navigator:browser()
+                 delegate:&delegate
+                   prompt:std::move(prompt)]);
 
   [controller view];  // Force nib load.
 
@@ -140,10 +144,11 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsNormalOK) {
   prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
-      [[ExtensionInstallViewController alloc] initWithProfile:profile()
-                                                    navigator:browser()
-                                                     delegate:&delegate
-                                                       prompt:prompt.Pass()]);
+      [[ExtensionInstallViewController alloc]
+          initWithProfile:profile()
+                navigator:browser()
+                 delegate:&delegate
+                   prompt:std::move(prompt)]);
 
   [controller view];  // Force nib load.
   [controller ok:nil];
@@ -179,7 +184,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
           initWithProfile:profile()
                 navigator:browser()
                  delegate:&delegate1
-                   prompt:one_warning_prompt.Pass()]);
+                   prompt:std::move(one_warning_prompt)]);
 
   [controller1 view];  // Force nib load.
 
@@ -188,7 +193,7 @@ TEST_F(ExtensionInstallViewControllerTest, MultipleWarnings) {
           initWithProfile:profile()
                 navigator:browser()
                  delegate:&delegate2
-                   prompt:two_warnings_prompt.Pass()]);
+                   prompt:std::move(two_warnings_prompt)]);
 
   [controller2 view];  // Force nib load.
 
@@ -216,7 +221,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsSkinny) {
           initWithProfile:profile()
                 navigator:browser()
                  delegate:&delegate
-                   prompt:no_warnings_prompt.Pass()]);
+                   prompt:std::move(no_warnings_prompt)]);
 
   [controller view];  // Force nib load.
 
@@ -262,7 +267,7 @@ TEST_F(ExtensionInstallViewControllerTest, BasicsInline) {
           initWithProfile:profile()
                 navigator:browser()
                  delegate:&delegate
-                   prompt:inline_prompt.Pass()]);
+                   prompt:std::move(inline_prompt)]);
 
   [controller view];  // Force nib load.
 
@@ -320,10 +325,11 @@ TEST_F(ExtensionInstallViewControllerTest, PostInstallPermissionsPrompt) {
   prompt->SetPermissions(permissions, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
-      [[ExtensionInstallViewController alloc] initWithProfile:profile()
-                                                    navigator:browser()
-                                                     delegate:&delegate
-                                                       prompt:prompt.Pass()]);
+      [[ExtensionInstallViewController alloc]
+          initWithProfile:profile()
+                navigator:browser()
+                 delegate:&delegate
+                   prompt:std::move(prompt)]);
 
   [controller view];  // Force nib load.
 
@@ -355,10 +361,11 @@ TEST_F(ExtensionInstallViewControllerTest, PermissionsDetails) {
   base::string16 permissionString = prompt->GetPermissionsDetails(0, type);
 
   base::scoped_nsobject<ExtensionInstallViewController> controller(
-      [[ExtensionInstallViewController alloc] initWithProfile:profile()
-                                                    navigator:browser()
-                                                     delegate:&delegate
-                                                       prompt:prompt.Pass()]);
+      [[ExtensionInstallViewController alloc]
+          initWithProfile:profile()
+                navigator:browser()
+                 delegate:&delegate
+                   prompt:std::move(prompt)]);
 
   [controller view];  // Force nib load.
 

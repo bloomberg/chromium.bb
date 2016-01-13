@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
 
 #include <algorithm>
+#include <utility>
 
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #include "grit/theme_resources.h"
@@ -167,7 +168,7 @@ const CGFloat kMinimumContainerWidth = 3.0;
 
 - (void)setHighlight:(scoped_ptr<ui::NinePartImageIds>)highlight {
   if (highlight || highlight_) {
-    highlight_ = highlight.Pass();
+    highlight_ = std::move(highlight);
     // We don't allow resizing when the container is highlighting.
     resizable_ = highlight.get() == nullptr;
     [self setNeedsDisplay:YES];

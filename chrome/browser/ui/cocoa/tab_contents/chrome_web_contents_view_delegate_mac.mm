@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/tab_contents/chrome_web_contents_view_delegate_mac.h"
 
+#include <utility>
+
 #include "base/profiler/scoped_tracker.h"
 #import "chrome/browser/renderer_host/chrome_render_widget_host_view_mac_delegate.h"
 #include "chrome/browser/ui/browser.h"
@@ -61,7 +63,7 @@ void ChromeWebContentsViewDelegateMac::ShowMenu(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "458401 ChromeWebContentsViewDelegateMac::ShowMenu"));
 
-  context_menu_ = menu.Pass();
+  context_menu_ = std::move(menu);
   if (!context_menu_.get())
     return;
 
@@ -113,7 +115,7 @@ ChromeWebContentsViewDelegateMac::BuildMenu(
     menu->Init();
   }
 
-  return menu.Pass();
+  return menu;
 }
 
 content::RenderWidgetHostView*

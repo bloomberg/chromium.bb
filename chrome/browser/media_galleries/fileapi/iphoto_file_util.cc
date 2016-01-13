@@ -6,6 +6,7 @@
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -84,7 +85,7 @@ void IPhotoFileUtil::GetFileInfoOnTaskRunnerThread(
   // |data_provider| may be NULL if the file system was revoked before this
   // operation had a chance to run.
   if (!data_provider) {
-    GetFileInfoWithFreshDataProvider(context.Pass(), url, callback, false);
+    GetFileInfoWithFreshDataProvider(std::move(context), url, callback, false);
   } else {
     data_provider->RefreshData(
         base::Bind(&IPhotoFileUtil::GetFileInfoWithFreshDataProvider,
@@ -101,7 +102,8 @@ void IPhotoFileUtil::ReadDirectoryOnTaskRunnerThread(
   // |data_provider| may be NULL if the file system was revoked before this
   // operation had a chance to run.
   if (!data_provider) {
-    ReadDirectoryWithFreshDataProvider(context.Pass(), url, callback, false);
+    ReadDirectoryWithFreshDataProvider(std::move(context), url, callback,
+                                       false);
   } else {
     data_provider->RefreshData(
         base::Bind(&IPhotoFileUtil::ReadDirectoryWithFreshDataProvider,
@@ -118,7 +120,7 @@ void IPhotoFileUtil::CreateSnapshotFileOnTaskRunnerThread(
   // |data_provider| may be NULL if the file system was revoked before this
   // operation had a chance to run.
   if (!data_provider) {
-    CreateSnapshotFileWithFreshDataProvider(context.Pass(), url, callback,
+    CreateSnapshotFileWithFreshDataProvider(std::move(context), url, callback,
                                             false);
   } else {
     data_provider->RefreshData(
@@ -142,7 +144,7 @@ void IPhotoFileUtil::GetFileInfoWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(context.Pass(), url,
+  NativeMediaFileUtil::GetFileInfoOnTaskRunnerThread(std::move(context), url,
                                                      callback);
 }
 
@@ -160,7 +162,7 @@ void IPhotoFileUtil::ReadDirectoryWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(context.Pass(), url,
+  NativeMediaFileUtil::ReadDirectoryOnTaskRunnerThread(std::move(context), url,
                                                        callback);
 }
 
@@ -182,8 +184,8 @@ void IPhotoFileUtil::CreateSnapshotFileWithFreshDataProvider(
     }
     return;
   }
-  NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(context.Pass(), url,
-                                                            callback);
+  NativeMediaFileUtil::CreateSnapshotFileOnTaskRunnerThread(std::move(context),
+                                                            url, callback);
 }
 
 // Begin actual implementation.

@@ -51,7 +51,7 @@ PluginInstallerTest::CreateMockDownloadItem() {
       new testing::StrictMock<content::MockDownloadItem>());
   ON_CALL(*mock_download_item, GetState())
       .WillByDefault(testing::Return(content::DownloadItem::IN_PROGRESS));
-  return mock_download_item.Pass();
+  return mock_download_item;
 }
 
 class TestPluginInstallerObserver : public PluginInstallerObserver {

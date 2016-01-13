@@ -5,6 +5,8 @@
 #import <Cocoa/Cocoa.h>
 #include <stddef.h>
 
+#include <utility>
+
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "base/strings/string_util.h"
@@ -104,7 +106,7 @@ class TranslationInfoBarTest : public CocoaProfileTest {
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate(
         new MockTranslateInfoBarDelegate(web_contents_.get(), type, error));
     scoped_ptr<infobars::InfoBar> infobar(
-        chrome_translate_client->CreateInfoBar(delegate.Pass()));
+        chrome_translate_client->CreateInfoBar(std::move(delegate)));
     if (infobar_)
       infobar_->CloseSoon();
     infobar_ = static_cast<InfoBarCocoa*>(infobar.release());

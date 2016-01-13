@@ -294,7 +294,7 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_OpenInvalidDevice) {
     capture_params.requested_format.frame_size.SetSize(640, 480);
     capture_params.requested_format.frame_rate = 30;
     capture_params.requested_format.pixel_format = PIXEL_FORMAT_I420;
-    device->AllocateAndStart(capture_params, client_.Pass());
+    device->AllocateAndStart(capture_params, std::move(client_));
     device->StopAndDeAllocate();
   }
 #endif

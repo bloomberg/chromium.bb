@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind_helpers.h"
@@ -25,7 +28,6 @@
 #include "chrome/browser/media_galleries/fileapi/media_file_system_backend.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/picasa_data_provider.h"
-#include "chrome/browser/media_galleries/fileapi/picasa_file_util.h"
 #include "chrome/browser/media_galleries/imported_media_gallery_registry.h"
 #include "chrome/common/media_galleries/picasa_types.h"
 #include "chrome/common/media_galleries/pmp_constants.h"
@@ -251,11 +253,8 @@ class PicasaFileUtilTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get().get(),
         base::ThreadTaskRunnerHandle::Get().get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
-        storage_policy.get(),
-        NULL,
-        additional_providers.Pass(),
-        std::vector<storage::URLRequestAutoMountHandler>(),
-        profile_dir_.path(),
+        storage_policy.get(), NULL, std::move(additional_providers),
+        std::vector<storage::URLRequestAutoMountHandler>(), profile_dir_.path(),
         content::CreateAllowFileAccessOptions());
   }
 

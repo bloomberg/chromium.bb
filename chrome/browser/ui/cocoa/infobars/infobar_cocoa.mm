@@ -4,12 +4,12 @@
 
 #include "chrome/browser/ui/cocoa/infobars/infobar_cocoa.h"
 
+#include <utility>
+
 #import "chrome/browser/ui/cocoa/infobars/infobar_controller.h"
 
 InfoBarCocoa::InfoBarCocoa(scoped_ptr<infobars::InfoBarDelegate> delegate)
-    : infobars::InfoBar(delegate.Pass()),
-      weak_ptr_factory_(this) {
-}
+    : infobars::InfoBar(std::move(delegate)), weak_ptr_factory_(this) {}
 
 InfoBarCocoa::~InfoBarCocoa() {
   if (controller())

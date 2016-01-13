@@ -4,6 +4,8 @@
 
 #include "chrome/browser/password_manager/password_store_proxy_mac.h"
 
+#include <utility>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -145,7 +147,7 @@ PasswordStoreProxyMacTest::~PasswordStoreProxyMacTest() {
 void PasswordStoreProxyMacTest::SetUp() {
   scoped_ptr<password_manager::LoginDatabase> login_db(
       new password_manager::LoginDatabase(test_login_db_file_path()));
-  CreateAndInitPasswordStore(login_db.Pass());
+  CreateAndInitPasswordStore(std::move(login_db));
 }
 
 void PasswordStoreProxyMacTest::TearDown() {
@@ -156,7 +158,7 @@ void PasswordStoreProxyMacTest::CreateAndInitPasswordStore(
     scoped_ptr<password_manager::LoginDatabase> login_db) {
   store_ = new PasswordStoreProxyMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      make_scoped_ptr(new crypto::MockAppleKeychain), login_db.Pass(),
+      make_scoped_ptr(new crypto::MockAppleKeychain), std::move(login_db),
       &testing_prefs_);
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
 }
@@ -445,7 +447,7 @@ void PasswordStoreProxyMacMigrationTest::TestMigration(bool lock_keychain) {
     keychain_->set_locked(true);
   store_ = new PasswordStoreProxyMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::UI),
-      keychain_.Pass(), login_db_.Pass(), &testing_prefs_);
+      std::move(keychain_), std::move(login_db_), &testing_prefs_);
   ASSERT_TRUE(store_->Init(syncer::SyncableService::StartSyncFlare()));
   FinishAsyncProcessing();
 

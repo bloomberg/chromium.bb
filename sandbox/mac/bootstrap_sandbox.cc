@@ -68,7 +68,7 @@ scoped_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
   if (kr != KERN_SUCCESS) {
     BOOTSTRAP_LOG(ERROR, kr)
         << "Failed to bootstrap_check_in the sandbox server.";
-    return null.Pass();
+    return null;
   }
   sandbox->check_in_port_.reset(port);
 
@@ -81,9 +81,9 @@ scoped_ptr<BootstrapSandbox> BootstrapSandbox::Create() {
 
   // Start the sandbox server.
   if (!sandbox->launchd_server_->Initialize(MACH_PORT_NULL))
-    return null.Pass();
+    return null;
 
-  return sandbox.Pass();
+  return sandbox;
 }
 
 // Warning: This function must be safe to call in

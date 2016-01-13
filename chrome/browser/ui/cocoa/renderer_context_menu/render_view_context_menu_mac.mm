@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.h"
 
+#include <utility>
+
 #include "base/compiler_specific.h"
 #import "base/mac/scoped_sending_event.h"
 #include "base/macros.h"
@@ -88,7 +90,7 @@ RenderViewContextMenuMac::RenderViewContextMenuMac(
       bidi_submenu_model_(this),
       parent_view_(parent_view) {
   scoped_ptr<ToolkitDelegate> delegate(new ToolkitDelegateMac(this));
-  set_toolkit_delegate(delegate.Pass());
+  set_toolkit_delegate(std::move(delegate));
 }
 
 RenderViewContextMenuMac::~RenderViewContextMenuMac() {

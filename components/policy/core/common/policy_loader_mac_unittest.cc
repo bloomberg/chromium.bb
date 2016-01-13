@@ -2,7 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/policy/core/common/policy_loader_mac.h"
+
 #include <CoreFoundation/CoreFoundation.h>
+
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -14,7 +18,6 @@
 #include "components/policy/core/common/configuration_policy_provider_test.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/policy_bundle.h"
-#include "components/policy/core/common/policy_loader_mac.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/core/common/policy_types.h"
@@ -73,7 +76,7 @@ ConfigurationPolicyProvider* TestHarness::CreateProvider(
   prefs_ = new MockPreferences();
   scoped_ptr<AsyncPolicyLoader> loader(
       new PolicyLoaderMac(task_runner, base::FilePath(), prefs_));
-  return new AsyncPolicyProvider(registry, loader.Pass());
+  return new AsyncPolicyProvider(registry, std::move(loader));
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -144,7 +147,8 @@ class PolicyLoaderMacTest : public PolicyTestBase {
     PolicyTestBase::SetUp();
     scoped_ptr<AsyncPolicyLoader> loader(
         new PolicyLoaderMac(loop_.task_runner(), base::FilePath(), prefs_));
-    provider_.reset(new AsyncPolicyProvider(&schema_registry_, loader.Pass()));
+    provider_.reset(
+        new AsyncPolicyProvider(&schema_registry_, std::move(loader)));
     provider_->Init(&schema_registry_);
   }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/password_manager/password_store_proxy_mac.h"
 
 #include <string>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/password_manager/password_store_mac.h"
@@ -21,7 +22,7 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
     scoped_ptr<password_manager::LoginDatabase> login_db,
     PrefService* prefs)
     : PasswordStore(main_thread_runner, nullptr),
-      login_metadata_db_(login_db.Pass()) {
+      login_metadata_db_(std::move(login_db)) {
   DCHECK(login_metadata_db_);
   migration_status_.Init(password_manager::prefs::kKeychainMigrationStatus,
                          prefs);
@@ -32,7 +33,7 @@ PasswordStoreProxyMac::PasswordStoreProxyMac(
         new SimplePasswordStoreMac(main_thread_runner, nullptr, nullptr);
   } else {
     password_store_mac_ =
-        new PasswordStoreMac(main_thread_runner, nullptr, keychain.Pass());
+        new PasswordStoreMac(main_thread_runner, nullptr, std::move(keychain));
   }
 }
 
@@ -96,7 +97,7 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
 
   if (status == MigrationStatus::MIGRATED) {
     password_store_simple_->InitWithTaskRunner(GetBackgroundTaskRunner(),
-                                               login_metadata_db_.Pass());
+                                               std::move(login_metadata_db_));
   } else {
     password_store_mac_->set_login_metadata_db(login_metadata_db_.get());
     password_store_mac_->InitWithTaskRunner(GetBackgroundTaskRunner());
@@ -114,7 +115,7 @@ void PasswordStoreProxyMac::InitOnBackgroundThread(MigrationStatus status) {
         DCHECK(!password_store_simple_);
         password_store_simple_ = new SimplePasswordStoreMac(
             main_thread_runner_, GetBackgroundTaskRunner(),
-            login_metadata_db_.Pass());
+            std::move(login_metadata_db_));
       } else {
         status = (status == MigrationStatus::FAILED_ONCE
                       ? MigrationStatus::FAILED_TWICE

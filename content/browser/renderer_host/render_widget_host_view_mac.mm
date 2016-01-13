@@ -657,7 +657,7 @@ void RenderWidgetHostViewMac::DestroyBrowserCompositorView() {
     browser_compositor_->accelerated_widget_mac()->ResetNSView();
     browser_compositor_->compositor()->SetScaleAndSize(1.0, gfx::Size(0, 0));
     browser_compositor_->compositor()->SetRootLayer(nullptr);
-    BrowserCompositorMac::Recycle(browser_compositor_.Pass());
+    BrowserCompositorMac::Recycle(std::move(browser_compositor_));
     browser_compositor_state_ = BrowserCompositorDestroyed;
   }
 }
@@ -1250,7 +1250,7 @@ bool RenderWidgetHostViewMac::CanCopyToVideoFrame() const {
 void RenderWidgetHostViewMac::BeginFrameSubscription(
     scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber) {
   DCHECK(delegated_frame_host_);
-  delegated_frame_host_->BeginFrameSubscription(subscriber.Pass());
+  delegated_frame_host_->BeginFrameSubscription(std::move(subscriber));
 }
 
 void RenderWidgetHostViewMac::EndFrameSubscription() {

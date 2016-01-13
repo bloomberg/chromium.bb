@@ -248,8 +248,7 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
       BootstrapSandboxManager* sandbox_manager =
           BootstrapSandboxManager::GetInstance();
       if (sandbox_manager->EnabledForSandbox(sandbox_type)) {
-        pre_exec_delegate =
-            sandbox_manager->sandbox()->NewClient(sandbox_type).Pass();
+        pre_exec_delegate = sandbox_manager->sandbox()->NewClient(sandbox_type);
       }
     }
     options.pre_exec_delegate = pre_exec_delegate.get();

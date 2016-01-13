@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+
 #include <string>
+#include <utility>
 
 #include "base/at_exit.h"
 #include "base/bind.h"
@@ -177,8 +179,8 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       std::string new_network_guid;
       properties->SetString("WiFi.SSID", network_guid);
       VLOG(0) << "Creating Network: " << *properties;
-      wifi_service_->CreateNetwork(
-          false, properties.Pass(), &new_network_guid, &error);
+      wifi_service_->CreateNetwork(false, std::move(properties),
+                                   &new_network_guid, &error);
       VLOG(0) << error << ":\n" << new_network_guid;
       return true;
     }
@@ -189,7 +191,8 @@ bool WiFiTest::ParseCommandLine(int argc, const char* argv[]) {
       std::string error;
       if (!properties->empty()) {
         VLOG(0) << "Using connect properties: " << *properties;
-        wifi_service_->SetProperties(network_guid, properties.Pass(), &error);
+        wifi_service_->SetProperties(network_guid, std::move(properties),
+                                     &error);
       }
 
       wifi_service_->SetEventObservers(

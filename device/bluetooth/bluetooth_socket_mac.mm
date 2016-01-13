@@ -10,6 +10,7 @@
 #include <limits>
 #include <sstream>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -648,7 +649,7 @@ void BluetoothSocketMac::OnChannelOpenComplete(
   DVLOG(1) << device_address << " " << uuid_.canonical_value()
            << ": channel open complete.";
 
-  scoped_ptr<ConnectCallbacks> temp = connect_callbacks_.Pass();
+  scoped_ptr<ConnectCallbacks> temp = std::move(connect_callbacks_);
   if (status != kIOReturnSuccess) {
     ReleaseChannel();
     std::stringstream error;
@@ -724,7 +725,7 @@ void BluetoothSocketMac::OnChannelDataReceived(void* data, size_t length) {
 
   // If there is a pending read callback, call it now.
   if (receive_callbacks_) {
-    scoped_ptr<ReceiveCallbacks> temp = receive_callbacks_.Pass();
+    scoped_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
     temp->success_callback.Run(buffer->size(), buffer);
     return;
   }
@@ -834,7 +835,7 @@ void BluetoothSocketMac::OnChannelClosed() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (receive_callbacks_) {
-    scoped_ptr<ReceiveCallbacks> temp = receive_callbacks_.Pass();
+    scoped_ptr<ReceiveCallbacks> temp = std::move(receive_callbacks_);
     temp->error_callback.Run(BluetoothSocket::kDisconnected,
                              kSocketNotConnected);
   }

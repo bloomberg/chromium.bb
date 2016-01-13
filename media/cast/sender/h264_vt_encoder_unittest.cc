@@ -231,9 +231,8 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
         new base::PowerMonitor(scoped_ptr<TestPowerSource>(power_source_)));
 
     cast_environment_ = new CastEnvironment(
-        scoped_ptr<base::TickClock>(clock_).Pass(),
-        message_loop_.task_runner(), message_loop_.task_runner(),
-        message_loop_.task_runner());
+        scoped_ptr<base::TickClock>(clock_), message_loop_.task_runner(),
+        message_loop_.task_runner(), message_loop_.task_runner());
     encoder_.reset(new H264VideoToolboxEncoder(
         cast_environment_, video_sender_config_,
         base::Bind(&SaveOperationalStatus, &operational_status_)));

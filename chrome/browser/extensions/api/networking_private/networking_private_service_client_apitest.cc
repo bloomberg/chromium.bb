@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -89,7 +91,7 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
     scoped_ptr<wifi::FakeWiFiService> wifi_service(new wifi::FakeWiFiService());
     scoped_ptr<CryptoVerifyStub> crypto_verify(new CryptoVerifyStub);
     return scoped_ptr<KeyedService>(new NetworkingPrivateServiceClient(
-        wifi_service.Pass(), crypto_verify.Pass()));
+        std::move(wifi_service), std::move(crypto_verify)));
   }
 
   void SetUpOnMainThread() override {

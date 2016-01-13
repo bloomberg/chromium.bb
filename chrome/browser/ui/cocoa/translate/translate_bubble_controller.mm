@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
 
+#include <utility>
+
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
@@ -124,7 +126,7 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
                        parentWindow:parentWindow
                          anchoredAt:NSZeroPoint])) {
     webContents_ = webContents;
-    model_ = model.Pass();
+    model_ = std::move(model);
     if (model_->GetViewState() !=
         TranslateBubbleModel::VIEW_STATE_BEFORE_TRANSLATE) {
       translateExecuted_ = YES;

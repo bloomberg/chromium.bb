@@ -4,6 +4,8 @@
 
 #import "chrome/browser/ui/cocoa/confirm_bubble_cocoa.h"
 
+#include <utility>
+
 #include "base/strings/string16.h"
 #include "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
@@ -51,7 +53,7 @@ void ShowConfirmBubble(gfx::NativeWindow window,
   ConfirmBubbleController* controller =
       [[ConfirmBubbleController alloc] initWithParent:anchor_view
                                                origin:origin.ToCGPoint()
-                                                model:model.Pass()];
+                                                model:std::move(model)];
   [anchor_view addSubview:[controller view]
                positioned:NSWindowAbove
                relativeTo:nil];

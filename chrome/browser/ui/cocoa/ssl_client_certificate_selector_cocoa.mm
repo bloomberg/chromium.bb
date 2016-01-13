@@ -7,6 +7,8 @@
 #import <SecurityInterface/SFChooseIdentityPanel.h>
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/strings/string_util.h"
@@ -51,7 +53,7 @@ class SSLClientAuthObserverCocoaBridge : public SSLClientAuthObserver,
       SSLClientCertificateSelectorCocoa* controller)
       : SSLClientAuthObserver(browser_context,
                               cert_request_info,
-                              delegate.Pass()),
+                              std::move(delegate)),
         controller_(controller) {}
 
   // SSLClientAuthObserver implementation:
@@ -97,7 +99,7 @@ void ShowSSLClientCertificateSelector(
       [[SSLClientCertificateSelectorCocoa alloc]
           initWithBrowserContext:contents->GetBrowserContext()
                  certRequestInfo:cert_request_info
-                        delegate:delegate.Pass()];
+                        delegate:std::move(delegate)];
   [selector displayForWebContents:contents];
 }
 
@@ -113,7 +115,7 @@ void ShowSSLClientCertificateSelector(
   DCHECK(certRequestInfo);
   if ((self = [super init])) {
     observer_.reset(new SSLClientAuthObserverCocoaBridge(
-        browserContext, certRequestInfo, delegate.Pass(), self));
+        browserContext, certRequestInfo, std::move(delegate), self));
   }
   return self;
 }

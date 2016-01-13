@@ -4,12 +4,15 @@
 
 #include "chrome/browser/password_manager/simple_password_store_mac.h"
 
+#include <utility>
+
 SimplePasswordStoreMac::SimplePasswordStoreMac(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_runner,
     scoped_refptr<base::SingleThreadTaskRunner> background_thread_runner,
     scoped_ptr<password_manager::LoginDatabase> login_db)
-    : PasswordStoreDefault(main_thread_runner, background_thread_runner,
-                           login_db.Pass()) {
+    : PasswordStoreDefault(main_thread_runner,
+                           background_thread_runner,
+                           std::move(login_db)) {
   if (this->login_db())
     this->login_db()->set_clear_password_values(false);
 }
@@ -22,7 +25,7 @@ void SimplePasswordStoreMac::InitWithTaskRunner(
     scoped_ptr<password_manager::LoginDatabase> login_db) {
   db_thread_runner_ = background_task_runner;
   DCHECK(GetBackgroundTaskRunner()->BelongsToCurrentThread());
-  set_login_db(login_db.Pass());
+  set_login_db(std::move(login_db));
   if (this->login_db())
     this->login_db()->set_clear_password_values(false);
 }

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,9 +30,7 @@ base::Time TimeFromMicrosoftVariantTime(double variant_time) {
 }  // namespace
 
 PicasaAlbumTableReader::PicasaAlbumTableReader(AlbumTableFiles table_files)
-    : table_files_(table_files.Pass()),
-      initialized_(false) {
-}
+    : table_files_(std::move(table_files)), initialized_(false) {}
 
 PicasaAlbumTableReader::~PicasaAlbumTableReader() {
 }
