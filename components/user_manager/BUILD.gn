@@ -41,7 +41,6 @@ component("user_manager") {
     ]
     deps += [
       "//base:prefs",
-      "//chromeos:chromeos",
       "//components/session_manager/core",
       "//google_apis",
       "//ui/base",
@@ -62,6 +61,7 @@ source_set("test_support") {
     deps = [
       ":user_manager",
       "//base",
+      "//chromeos:chromeos",
       "//components/signin/core/account_id",
       "//skia",
       "//ui/base",

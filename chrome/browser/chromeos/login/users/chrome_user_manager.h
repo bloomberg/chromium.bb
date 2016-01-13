@@ -18,8 +18,7 @@ namespace chromeos {
 class ChromeUserManager : public user_manager::UserManagerBase,
                           public UserManagerInterface {
  public:
-  ChromeUserManager(scoped_refptr<base::TaskRunner> task_runner,
-                    scoped_refptr<base::TaskRunner> blocking_task_runner);
+  explicit ChromeUserManager(scoped_refptr<base::TaskRunner> task_runner);
   ~ChromeUserManager() override;
 
   // Returns current ChromeUserManager or NULL if instance hasn't been

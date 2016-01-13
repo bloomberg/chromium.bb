@@ -5,7 +5,6 @@
 #include "components/user_manager/user_manager.h"
 
 #include "base/logging.h"
-#include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
 
 namespace user_manager {

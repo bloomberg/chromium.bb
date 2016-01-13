@@ -5,9 +5,12 @@
 #include "components/user_manager/fake_user_manager.h"
 
 #include "base/callback.h"
+#include "base/command_line.h"
+#include "base/sys_info.h"
 #include "base/task_runner.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_type.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace {
 
@@ -30,8 +33,7 @@ class FakeTaskRunner : public base::TaskRunner {
 namespace user_manager {
 
 FakeUserManager::FakeUserManager()
-    : UserManagerBase(new FakeTaskRunner(), new FakeTaskRunner()),
-      primary_user_(nullptr) {}
+    : UserManagerBase(new FakeTaskRunner()), primary_user_(nullptr) {}
 
 FakeUserManager::~FakeUserManager() {
 }
@@ -282,6 +284,64 @@ bool FakeUserManager::IsKioskApp(const AccountId& account_id) const {
 bool FakeUserManager::IsPublicAccountMarkedForRemoval(
     const AccountId& account_id) const {
   return false;
+}
+
+void FakeUserManager::UpdateLoginState(const user_manager::User* active_user,
+                                       const user_manager::User* primary_user,
+                                       bool is_current_user_owner) const {}
+
+bool FakeUserManager::GetPlatformKnownUserId(const std::string& user_email,
+                                             const std::string& gaia_id,
+                                             AccountId* out_account_id) const {
+  if (user_email == chromeos::login::kStubUser) {
+    *out_account_id = chromeos::login::StubAccountId();
+    return true;
+  }
+
+  if (user_email == chromeos::login::kGuestUserName) {
+    *out_account_id = chromeos::login::GuestAccountId();
+    return true;
+  }
+  return false;
+}
+
+const AccountId& FakeUserManager::GetGuestAccountId() const {
+  return chromeos::login::GuestAccountId();
+}
+
+bool FakeUserManager::IsFirstExecAfterBoot() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+}
+
+void FakeUserManager::AsyncRemoveCryptohome(const AccountId& account_id) const {
+  NOTIMPLEMENTED();
+}
+
+bool FakeUserManager::IsGuestAccountId(const AccountId& account_id) const {
+  return account_id == chromeos::login::GuestAccountId();
+}
+
+bool FakeUserManager::IsStubAccountId(const AccountId& account_id) const {
+  return account_id == chromeos::login::StubAccountId();
+}
+
+bool FakeUserManager::IsSupervisedAccountId(const AccountId& account_id) const {
+  return false;
+}
+
+bool FakeUserManager::HasBrowserRestarted() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return base::SysInfo::IsRunningOnChromeOS() &&
+         command_line->HasSwitch(chromeos::switches::kLoginUser);
+}
+
+void FakeUserManager::ScheduleResolveLocale(
+    const std::string& locale,
+    const base::Closure& on_resolved_callback,
+    std::string* out_resolved_locale) const {
+  NOTIMPLEMENTED();
+  return;
 }
 
 }  // namespace user_manager

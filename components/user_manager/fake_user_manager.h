@@ -51,6 +51,11 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void SwitchActiveUser(const AccountId& account_id) override;
   void SaveUserDisplayName(const AccountId& account_id,
                            const base::string16& display_name) override;
+  const AccountId& GetGuestAccountId() const override;
+  bool IsFirstExecAfterBoot() const override;
+  bool IsGuestAccountId(const AccountId& account_id) const override;
+  bool IsStubAccountId(const AccountId& account_id) const override;
+  bool HasBrowserRestarted() const override;
 
   // Not implemented.
   void UpdateUserAccountData(const AccountId& account_id,
@@ -99,6 +104,17 @@ class USER_MANAGER_EXPORT FakeUserManager : public UserManagerBase {
   void RemoveSessionStateObserver(UserSessionStateObserver* obs) override {}
   void NotifyLocalStateChanged() override {}
   bool AreSupervisedUsersAllowed() const override;
+  void UpdateLoginState(const user_manager::User* active_user,
+                        const user_manager::User* primary_user,
+                        bool is_current_user_owner) const override;
+  bool GetPlatformKnownUserId(const std::string& user_email,
+                              const std::string& gaia_id,
+                              AccountId* out_account_id) const override;
+  void AsyncRemoveCryptohome(const AccountId& account_id) const override;
+  bool IsSupervisedAccountId(const AccountId& account_id) const override;
+  void ScheduleResolveLocale(const std::string& locale,
+                             const base::Closure& on_resolved_callback,
+                             std::string* out_resolved_locale) const override;
 
   // UserManagerBase overrides:
   bool AreEphemeralUsersEnabled() const override;

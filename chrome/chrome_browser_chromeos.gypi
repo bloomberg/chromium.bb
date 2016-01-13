@@ -649,6 +649,8 @@
         'browser/chromeos/login/users/avatar/user_image_manager_impl.h',
         'browser/chromeos/login/users/avatar/user_image_sync_observer.cc',
         'browser/chromeos/login/users/avatar/user_image_sync_observer.h',
+        'browser/chromeos/login/users/chrome_user_manager_util.cc',
+        'browser/chromeos/login/users/chrome_user_manager_util.h',
         'browser/chromeos/login/users/chrome_user_manager.cc',
         'browser/chromeos/login/users/chrome_user_manager.h',
         'browser/chromeos/login/users/chrome_user_manager_impl.cc',

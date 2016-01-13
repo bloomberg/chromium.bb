@@ -9,10 +9,8 @@
 namespace chromeos {
 
 ChromeUserManager::ChromeUserManager(
-    scoped_refptr<base::TaskRunner> task_runner,
-    scoped_refptr<base::TaskRunner> blocking_task_runner)
-    : UserManagerBase(task_runner, blocking_task_runner) {
-}
+    scoped_refptr<base::TaskRunner> task_runner)
+    : UserManagerBase(task_runner) {}
 
 ChromeUserManager::~ChromeUserManager() {
 }

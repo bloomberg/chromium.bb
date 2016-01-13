@@ -75,6 +75,19 @@ class MockUserManager : public ChromeUserManager {
                void(UserManager::UserSessionStateObserver*));
   MOCK_METHOD0(NotifyLocalStateChanged, void(void));
   MOCK_CONST_METHOD0(AreSupervisedUsersAllowed, bool(void));
+  MOCK_CONST_METHOD3(UpdateLoginState,
+                     void(const user_manager::User*,
+                          const user_manager::User*,
+                          bool));
+  MOCK_CONST_METHOD1(AsyncRemoveCryptohome, void(const AccountId&));
+  MOCK_CONST_METHOD3(GetPlatformKnownUserId,
+                     bool(const std::string&, const std::string&, AccountId*));
+  MOCK_CONST_METHOD0(GetGuestAccountId, const AccountId&());
+  MOCK_CONST_METHOD0(IsFirstExecAfterBoot, bool(void));
+  MOCK_CONST_METHOD1(IsGuestAccountId, bool(const AccountId&));
+  MOCK_CONST_METHOD1(IsStubAccountId, bool(const AccountId&));
+  MOCK_CONST_METHOD1(IsSupervisedAccountId, bool(const AccountId&));
+  MOCK_CONST_METHOD0(HasBrowserRestarted, bool(void));
 
   // UserManagerBase overrides:
   MOCK_CONST_METHOD0(AreEphemeralUsersEnabled, bool(void));
@@ -96,6 +109,10 @@ class MockUserManager : public ChromeUserManager {
   MOCK_METHOD1(PublicAccountUserLoggedIn, void(user_manager::User*));
   MOCK_METHOD1(SupervisedUserLoggedIn, void(const AccountId&));
   MOCK_METHOD1(OnUserRemoved, void(const AccountId&));
+  MOCK_CONST_METHOD3(ScheduleResolveLocale,
+                     void(const std::string&,
+                          const base::Closure&,
+                          std::string*));
 
   // You can't mock these functions easily because nobody can create
   // User objects but the ChromeUserManager and us.

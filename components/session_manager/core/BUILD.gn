@@ -11,8 +11,5 @@ component("core") {
   deps = [
     "//base",
   ]
-  if (is_chromeos) {
-    deps += [ "//chromeos" ]
-  }
   defines = [ "SESSION_IMPLEMENTATION" ]
 }

@@ -7,7 +7,9 @@
 
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager_export.h"
 #include "components/user_manager/user_type.h"
@@ -20,7 +22,12 @@ class DictionaryValue;
 }
 
 namespace chromeos {
+class LoginState;
 class ScopedUserManagerEnabler;
+}
+
+namespace cryptohome {
+class AsyncMethodCaller;
 }
 
 namespace user_manager {
@@ -90,7 +97,7 @@ class USER_MANAGER_EXPORT UserManager {
   // after creation so that user_manager::UserManager::Get() doesn't fail.
   // Tests could call this method if they are replacing existing UserManager
   // instance with their own test instance.
-  void Initialize();
+  virtual void Initialize();
 
   // Checks whether the UserManager instance has been created already.
   // This method is not thread-safe and must be called from the main UI thread.
@@ -319,6 +326,42 @@ class USER_MANAGER_EXPORT UserManager {
 
   // Returns "Local State" PrefService instance.
   virtual PrefService* GetLocalState() const = 0;
+
+  // Checks for platform-specific known users matching given |user_email| and
+  // |gaia_id|. If data matches a known account, fills |out_account_id| with
+  // account id and returns true.
+  virtual bool GetPlatformKnownUserId(const std::string& user_email,
+                                      const std::string& gaia_id,
+                                      AccountId* out_account_id) const = 0;
+
+  // Returns account id of the Guest user.
+  virtual const AccountId& GetGuestAccountId() const = 0;
+
+  // Returns true if this is first exec after boot.
+  virtual bool IsFirstExecAfterBoot() const = 0;
+
+  // Actually removes cryptohome.
+  virtual void AsyncRemoveCryptohome(const AccountId& account_id) const = 0;
+
+  // Returns true if |account_id| is Guest user.
+  virtual bool IsGuestAccountId(const AccountId& account_id) const = 0;
+
+  // Returns true if |account_id| is Stub user.
+  virtual bool IsStubAccountId(const AccountId& account_id) const = 0;
+
+  // Returns true if |account_id| is supervised.
+  virtual bool IsSupervisedAccountId(const AccountId& account_id) const = 0;
+
+  // Returns true when the browser has crashed and restarted during the current
+  // user's session.
+  virtual bool HasBrowserRestarted() const = 0;
+
+  // Schedules CheckAndResolveLocale using given task runner and
+  // |on_resolved_callback| as reply callback.
+  virtual void ScheduleResolveLocale(
+      const std::string& locale,
+      const base::Closure& on_resolved_callback,
+      std::string* out_resolved_locale) const = 0;
 
  protected:
   // Sets UserManager instance.

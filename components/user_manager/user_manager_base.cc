@@ -25,16 +25,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner.h"
 #include "base/values.h"
-#include "chromeos/chromeos_switches.h"
-#include "chromeos/cryptohome/async_method_caller.h"
-#include "chromeos/login/login_state.h"
-#include "chromeos/login/user_names.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/remove_user_delegate.h"
 #include "components/user_manager/user_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace user_manager {
 namespace {
@@ -76,23 +71,6 @@ const char kLastActiveUser[] = "LastActiveUser";
 // one regular user logging out and a different regular user logging in.
 const int kLogoutToLoginDelayMaxSec = 1800;
 
-// Callback that is called after user removal is complete.
-void OnRemoveUserComplete(const AccountId& account_id,
-                          bool success,
-                          cryptohome::MountError return_code) {
-  // Log the error, but there's not much we can do.
-  if (!success) {
-    LOG(ERROR) << "Removal of cryptohome for " << account_id.Serialize()
-               << " failed, return code: " << return_code;
-  }
-}
-
-// Runs on SequencedWorkerPool thread. Passes resolved locale to UI thread.
-void ResolveLocale(const std::string& raw_locale,
-                   std::string* resolved_locale) {
-  ignore_result(l10n_util::CheckAndResolveLocale(raw_locale, resolved_locale));
-}
-
 }  // namespace
 
 // static
@@ -110,14 +88,8 @@ void UserManagerBase::RegisterPrefs(PrefRegistrySimple* registry) {
   known_user::RegisterPrefs(registry);
 }
 
-UserManagerBase::UserManagerBase(
-    scoped_refptr<base::TaskRunner> task_runner,
-    scoped_refptr<base::TaskRunner> blocking_task_runner)
-    : task_runner_(task_runner),
-      blocking_task_runner_(blocking_task_runner),
-      weak_factory_(this) {
-  UpdateLoginState();
-}
+UserManagerBase::UserManagerBase(scoped_refptr<base::TaskRunner> task_runner)
+    : task_runner_(task_runner), weak_factory_(this) {}
 
 UserManagerBase::~UserManagerBase() {
   // Can't use STLDeleteElements because of the private destructor of User.
@@ -178,7 +150,7 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
     return;
   }
 
-  if (account_id == chromeos::login::GuestAccountId()) {
+  if (IsGuestAccountId(account_id)) {
     GuestUserLoggedIn();
   } else if (IsKioskApp(account_id)) {
     KioskAppLoggedIn(account_id);
@@ -190,9 +162,7 @@ void UserManagerBase::UserLoggedIn(const AccountId& account_id,
     if (user && user->GetType() == USER_TYPE_PUBLIC_ACCOUNT) {
       PublicAccountUserLoggedIn(user);
     } else if ((user && user->GetType() == USER_TYPE_SUPERVISED) ||
-               (!user &&
-                gaia::ExtractDomainName(account_id.GetUserEmail()) ==
-                    chromeos::login::kSupervisedUserDomain)) {
+               (!user && IsSupervisedAccountId(account_id))) {
       SupervisedUserLoggedIn(account_id);
     } else if (browser_restart && IsPublicAccountMarkedForRemoval(account_id)) {
       PublicAccountUserLoggedIn(User::CreatePublicAccountUser(account_id));
@@ -282,7 +252,7 @@ void UserManagerBase::SessionStarted() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   session_started_ = true;
 
-  UpdateLoginState();
+  CallUpdateLoginState();
   session_manager::SessionManager::Get()->SetSessionState(
       session_manager::SESSION_STATE_ACTIVE);
 
@@ -312,8 +282,7 @@ void UserManagerBase::RemoveNonOwnerUserInternal(const AccountId& account_id,
   if (delegate)
     delegate->OnBeforeUserRemoved(account_id);
   RemoveUserFromList(account_id);
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      account_id.GetUserEmail(), base::Bind(&OnRemoveUserComplete, account_id));
+  AsyncRemoveCryptohome(account_id);
 
   if (delegate)
     delegate->OnUserRemoved(account_id);
@@ -325,8 +294,7 @@ void UserManagerBase::RemoveUserFromList(const AccountId& account_id) {
   if (user_loading_stage_ == STAGE_LOADED) {
     DeleteUser(RemoveRegularOrSupervisedUserFromList(account_id));
   } else if (user_loading_stage_ == STAGE_LOADING) {
-    DCHECK(gaia::ExtractDomainName(account_id.GetUserEmail()) ==
-               chromeos::login::kSupervisedUserDomain ||
+    DCHECK(IsSupervisedAccountId(account_id) ||
            HasPendingBootstrap(account_id));
     // Special case, removing partially-constructed supervised user or
     // boostrapping user during user list loading.
@@ -552,7 +520,7 @@ void UserManagerBase::SetCurrentUserIsOwner(bool is_current_user_owner) {
     base::AutoLock lk(is_current_user_owner_lock_);
     is_current_user_owner_ = is_current_user_owner;
   }
-  UpdateLoginState();
+  CallUpdateLoginState();
 }
 
 bool UserManagerBase::IsCurrentUserNew() const {
@@ -609,8 +577,7 @@ bool UserManagerBase::IsLoggedInAsKioskApp() const {
 
 bool UserManagerBase::IsLoggedInAsStub() const {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  return IsUserLoggedIn() &&
-         active_user_->email() == chromeos::login::kStubUser;
+  return IsUserLoggedIn() && IsStubAccountId(active_user_->GetAccountId());
 }
 
 bool UserManagerBase::IsSessionStarted() const {
@@ -621,10 +588,8 @@ bool UserManagerBase::IsSessionStarted() const {
 bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
     const AccountId& account_id) const {
   // Data belonging to the guest and stub users is always ephemeral.
-  if (account_id == chromeos::login::GuestAccountId() ||
-      account_id == chromeos::login::StubAccountId()) {
+  if (IsGuestAccountId(account_id) || IsStubAccountId(account_id))
     return true;
-  }
 
   // Data belonging to the owner, anyone found on the user list and obsolete
   // public accounts whose data has not been removed yet is not ephemeral.
@@ -649,8 +614,7 @@ bool UserManagerBase::IsUserNonCryptohomeDataEphemeral(
   //    enabled.
   //    - or -
   // b) The browser is restarting after a crash.
-  return AreEphemeralUsersEnabled() ||
-         session_manager::SessionManager::HasBrowserRestarted();
+  return AreEphemeralUsersEnabled() || HasBrowserRestarted();
 }
 
 void UserManagerBase::AddObserver(UserManager::Observer* obs) {
@@ -772,8 +736,7 @@ void UserManagerBase::EnsureUsersLoaded() {
   for (std::vector<AccountId>::const_iterator it = regular_users.begin();
        it != regular_users.end(); ++it) {
     User* user = nullptr;
-    const std::string domain = gaia::ExtractDomainName(it->GetUserEmail());
-    if (domain == chromeos::login::kSupervisedUserDomain) {
+    if (IsSupervisedAccountId(*it)) {
       user = User::CreateSupervisedUser(*it);
     } else {
       user = User::CreateRegularUser(*it);
@@ -849,7 +812,7 @@ User* UserManagerBase::FindUserInListAndModify(const AccountId& account_id) {
 
 void UserManagerBase::GuestUserLoggedIn() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
-  active_user_ = User::CreateGuestUser();
+  active_user_ = User::CreateGuestUser(GetGuestAccountId());
 }
 
 void UserManagerBase::AddUserRecord(User* user) {
@@ -891,7 +854,7 @@ void UserManagerBase::NotifyOnLogin() {
 
   NotifyActiveUserHashChanged(active_user_->username_hash());
   NotifyActiveUserChanged(active_user_);
-  UpdateLoginState();
+  CallUpdateLoginState();
 }
 
 User::OAuthTokenStatus UserManagerBase::LoadUserOAuthStatus(
@@ -1012,37 +975,13 @@ void UserManagerBase::ChangeUserChildStatus(User* user, bool is_child) {
                     UserChangedChildStatus(user));
 }
 
-void UserManagerBase::UpdateLoginState() {
-  if (!chromeos::LoginState::IsInitialized())
-    return;  // LoginState may not be initialized in tests.
+void UserManagerBase::Initialize() {
+  UserManager::Initialize();
+  CallUpdateLoginState();
+}
 
-  chromeos::LoginState::LoggedInState logged_in_state;
-  logged_in_state = active_user_ ? chromeos::LoginState::LOGGED_IN_ACTIVE
-                                 : chromeos::LoginState::LOGGED_IN_NONE;
-
-  chromeos::LoginState::LoggedInUserType login_user_type;
-  if (logged_in_state == chromeos::LoginState::LOGGED_IN_NONE)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_NONE;
-  else if (is_current_user_owner_)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_OWNER;
-  else if (active_user_->GetType() == USER_TYPE_GUEST)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_GUEST;
-  else if (active_user_->GetType() == USER_TYPE_PUBLIC_ACCOUNT)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_PUBLIC_ACCOUNT;
-  else if (active_user_->GetType() == USER_TYPE_SUPERVISED)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_SUPERVISED;
-  else if (active_user_->GetType() == USER_TYPE_KIOSK_APP)
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_KIOSK_APP;
-  else
-    login_user_type = chromeos::LoginState::LOGGED_IN_USER_REGULAR;
-
-  if (primary_user_) {
-    chromeos::LoginState::Get()->SetLoggedInStateAndPrimaryUser(
-        logged_in_state, login_user_type, primary_user_->username_hash());
-  } else {
-    chromeos::LoginState::Get()->SetLoggedInState(logged_in_state,
-                                                  login_user_type);
-  }
+void UserManagerBase::CallUpdateLoginState() {
+  UpdateLoginState(active_user_, primary_user_, is_current_user_owner_);
 }
 
 void UserManagerBase::SetLRUUser(User* user) {
@@ -1059,21 +998,19 @@ void UserManagerBase::SetLRUUser(User* user) {
 void UserManagerBase::SendGaiaUserLoginMetrics(const AccountId& account_id) {
   // If this isn't the first time Chrome was run after the system booted,
   // assume that Chrome was restarted because a previous session ended.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kFirstExecAfterBoot)) {
-    const std::string last_email =
-        GetLocalState()->GetString(kLastLoggedInGaiaUser);
-    const base::TimeDelta time_to_login =
-        base::TimeTicks::Now() - manager_creation_time_;
-    if (!last_email.empty() &&
-        account_id != AccountId::FromUserEmail(last_email) &&
-        time_to_login.InSeconds() <= kLogoutToLoginDelayMaxSec) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("UserManager.LogoutToLoginDelay",
-                                  time_to_login.InSeconds(),
-                                  0,
-                                  kLogoutToLoginDelayMaxSec,
-                                  50);
-    }
+  if (IsFirstExecAfterBoot())
+    return;
+
+  const std::string last_email =
+      GetLocalState()->GetString(kLastLoggedInGaiaUser);
+  const base::TimeDelta time_to_login =
+      base::TimeTicks::Now() - manager_creation_time_;
+  if (!last_email.empty() &&
+      account_id != AccountId::FromUserEmail(last_email) &&
+      time_to_login.InSeconds() <= kLogoutToLoginDelayMaxSec) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("UserManager.LogoutToLoginDelay",
+                                time_to_login.InSeconds(), 0,
+                                kLogoutToLoginDelayMaxSec, 50);
   }
 }
 
@@ -1081,15 +1018,14 @@ void UserManagerBase::UpdateUserAccountLocale(const AccountId& account_id,
                                               const std::string& locale) {
   scoped_ptr<std::string> resolved_locale(new std::string());
   if (!locale.empty() && locale != GetApplicationLocale()) {
-    // base::Pased will nullptr out |resolved_locale|, so cache the underlying
+    // base::Passed will nullptr out |resolved_locale|, so cache the underlying
     // ptr.
     std::string* raw_resolved_locale = resolved_locale.get();
-    blocking_task_runner_->PostTaskAndReply(
-        FROM_HERE, base::Bind(ResolveLocale, locale,
-                              base::Unretained(raw_resolved_locale)),
-        base::Bind(&UserManagerBase::DoUpdateAccountLocale,
-                   weak_factory_.GetWeakPtr(), account_id,
-                   base::Passed(&resolved_locale)));
+    ScheduleResolveLocale(locale,
+                          base::Bind(&UserManagerBase::DoUpdateAccountLocale,
+                                     weak_factory_.GetWeakPtr(), account_id,
+                                     base::Passed(&resolved_locale)),
+                          raw_resolved_locale);
   } else {
     resolved_locale.reset(new std::string(locale));
     DoUpdateAccountLocale(account_id, std::move(resolved_locale));

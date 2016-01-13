@@ -11,11 +11,9 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
-#include "chromeos/login/user_names.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/user_manager/user_image/default_user_images.h"
 #include "google_apis/gaia/gaia_auth_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace user_manager {
 
@@ -61,7 +59,7 @@ class RegularUser : public User {
 
 class GuestUser : public User {
  public:
-  GuestUser();
+  explicit GuestUser(const AccountId& guest_account_id);
   ~GuestUser() override;
 
   // Overridden from User:
@@ -187,8 +185,8 @@ User* User::CreateRegularUser(const AccountId& account_id) {
   return new RegularUser(account_id);
 }
 
-User* User::CreateGuestUser() {
-  return new GuestUser;
+User* User::CreateGuestUser(const AccountId& guest_account_id) {
+  return new GuestUser(guest_account_id);
 }
 
 User* User::CreateKioskAppUser(const AccountId& kiosk_app_account_id) {
@@ -255,7 +253,8 @@ void RegularUser::SetIsChild(bool is_child) {
   is_child_ = is_child;
 }
 
-GuestUser::GuestUser() : User(chromeos::login::GuestAccountId()) {
+GuestUser::GuestUser(const AccountId& guest_account_id)
+    : User(guest_account_id) {
   set_display_email(std::string());
 }
 

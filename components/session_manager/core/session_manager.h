@@ -57,10 +57,6 @@ class SESSION_EXPORT SessionManager {
   // current session type / state.
   void Start();
 
-  // Returns true when the browser has crashed and restarted during the current
-  // user's session.
-  static bool HasBrowserRestarted();
-
  protected:
   // Initializes SessionManager with delegate.
   void Initialize(SessionManagerDelegate* delegate);

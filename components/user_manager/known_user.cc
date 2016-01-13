@@ -11,7 +11,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/values.h"
-#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
@@ -216,11 +215,12 @@ AccountId GetAccountId(const std::string& user_email,
   if (user_email.empty() && gaia_id.empty())
     return EmptyAccountId();
 
-  if (user_email == chromeos::login::kStubUser)
-    return chromeos::login::StubAccountId();
-
-  if (user_email == chromeos::login::kGuestUserName)
-    return chromeos::login::GuestAccountId();
+  AccountId result(EmptyAccountId());
+  UserManager* user_manager = UserManager::Get();
+  if (user_manager &&
+      user_manager->GetPlatformKnownUserId(user_email, gaia_id, &result)) {
+    return result;
+  }
 
   // We can have several users with the same gaia_id but different e-mails.
   // The opposite case is not possible.

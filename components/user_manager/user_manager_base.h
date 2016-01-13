@@ -39,8 +39,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
  public:
   // Creates UserManagerBase with |task_runner| for UI thread and
   // |blocking_task_runner| for SequencedWorkerPool.
-  UserManagerBase(scoped_refptr<base::TaskRunner> task_runner,
-                  scoped_refptr<base::TaskRunner> blocking_task_runner);
+  explicit UserManagerBase(scoped_refptr<base::TaskRunner> task_runner);
   ~UserManagerBase() override;
 
   // Registers UserManagerBase preferences.
@@ -106,6 +105,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       UserManager::UserSessionStateObserver* obs) override;
   void NotifyLocalStateChanged() override;
   void ChangeUserChildStatus(User* user, bool is_child) override;
+  void Initialize() override;
 
   // This method updates "User was added to the device in this session nad is
   // not full initialized yet" flag.
@@ -240,6 +240,11 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Should be called when regular user was removed.
   virtual void OnUserRemoved(const AccountId& account_id) = 0;
 
+  // Update the global LoginState.
+  virtual void UpdateLoginState(const User* active_user,
+                                const User* primary_user,
+                                bool is_current_user_owner) const = 0;
+
   // Getters/setters for private members.
 
   virtual void SetCurrentUserIsOwner(bool is_current_user_owner);
@@ -312,8 +317,8 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // Notifies observers that active account_id hash has changed.
   void NotifyActiveUserHashChanged(const std::string& hash);
 
-  // Update the global LoginState.
-  void UpdateLoginState();
+  // Call UpdateLoginState.
+  void CallUpdateLoginState();
 
   // Insert |user| at the front of the LRU user list.
   void SetLRUUser(User* user);
@@ -381,9 +386,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
 
   // TaskRunner for UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;
-
-  // TaskRunner for SequencedWorkerPool.
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
 
   base::WeakPtrFactory<UserManagerBase> weak_factory_;
 

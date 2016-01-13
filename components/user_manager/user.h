@@ -184,7 +184,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
 
   // Do not allow anyone else to create new User instances.
   static User* CreateRegularUser(const AccountId& account_id);
-  static User* CreateGuestUser();
+  static User* CreateGuestUser(const AccountId& guest_account_id);
   static User* CreateKioskAppUser(const AccountId& kiosk_app_account_id);
   static User* CreateSupervisedUser(const AccountId& account_id);
   static User* CreatePublicAccountUser(const AccountId& account_id);

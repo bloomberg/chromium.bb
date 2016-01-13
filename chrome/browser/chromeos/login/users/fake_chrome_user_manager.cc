@@ -4,12 +4,18 @@
 
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 
+#include "base/command_line.h"
+#include "base/sys_info.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager_util.h"
 #include "chrome/browser/chromeos/login/users/fake_supervised_user_manager.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/grit/theme_resources.h"
+#include "chromeos/chromeos_switches.h"
+#include "chromeos/login/login_state.h"
+#include "chromeos/login/user_names.h"
 #include "components/user_manager/user_image/user_image.h"
 #include "components/user_manager/user_type.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -186,6 +192,65 @@ UserFlow* FakeChromeUserManager::GetDefaultUserFlow() const {
   if (!default_flow_.get())
     default_flow_.reset(new DefaultUserFlow());
   return default_flow_.get();
+}
+
+void FakeChromeUserManager::UpdateLoginState(
+    const user_manager::User* active_user,
+    const user_manager::User* primary_user,
+    bool is_current_user_owner) const {
+  chrome_user_manager_util::UpdateLoginState(active_user, primary_user,
+                                             is_current_user_owner);
+}
+
+bool FakeChromeUserManager::GetPlatformKnownUserId(
+    const std::string& user_email,
+    const std::string& gaia_id,
+    AccountId* out_account_id) const {
+  return chrome_user_manager_util::GetPlatformKnownUserId(user_email, gaia_id,
+                                                          out_account_id);
+}
+
+const AccountId& FakeChromeUserManager::GetGuestAccountId() const {
+  return login::GuestAccountId();
+}
+
+bool FakeChromeUserManager::IsFirstExecAfterBoot() const {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kFirstExecAfterBoot);
+}
+
+void FakeChromeUserManager::AsyncRemoveCryptohome(
+    const AccountId& account_id) const {
+  NOTIMPLEMENTED();
+}
+
+bool FakeChromeUserManager::IsGuestAccountId(
+    const AccountId& account_id) const {
+  return account_id == login::GuestAccountId();
+}
+
+bool FakeChromeUserManager::IsStubAccountId(const AccountId& account_id) const {
+  return account_id == login::StubAccountId();
+}
+
+bool FakeChromeUserManager::IsSupervisedAccountId(
+    const AccountId& account_id) const {
+  return gaia::ExtractDomainName(account_id.GetUserEmail()) ==
+         chromeos::login::kSupervisedUserDomain;
+}
+
+bool FakeChromeUserManager::HasBrowserRestarted() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return base::SysInfo::IsRunningOnChromeOS() &&
+         command_line->HasSwitch(chromeos::switches::kLoginUser);
+}
+
+void FakeChromeUserManager::ScheduleResolveLocale(
+    const std::string& locale,
+    const base::Closure& on_resolved_callback,
+    std::string* out_resolved_locale) const {
+  NOTIMPLEMENTED();
+  return;
 }
 
 }  // namespace chromeos

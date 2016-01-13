@@ -29,7 +29,7 @@ class FakeTaskRunner : public base::TaskRunner {
 namespace chromeos {
 
 MockUserManager::MockUserManager()
-    : ChromeUserManager(new FakeTaskRunner(), new FakeTaskRunner()),
+    : ChromeUserManager(new FakeTaskRunner()),
       user_flow_(new DefaultUserFlow()),
       supervised_user_manager_(new FakeSupervisedUserManager()) {
   ProfileHelper::SetProfileToUserForTestingEnabled(true);
