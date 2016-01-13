@@ -16,7 +16,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "content/browser/devtools/devtools_netlog_observer.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_buffer.h"
@@ -33,10 +32,6 @@
 #include "net/base/net_util.h"
 #include "net/log/net_log.h"
 #include "net/url_request/redirect_info.h"
-
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
 
 using base::TimeDelta;
 using base::TimeTicks;
@@ -327,13 +322,6 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
 
     // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
     CHECK_LE(size, kBufferSize);
-#if defined(OS_WIN)
-    int handle_int = static_cast<int>(HandleToLong(handle.GetHandle()));
-    filter->Send(
-        new ResourceMsg_SetDataBufferDebug1(GetRequestID(), handle_int));
-    filter->Send(
-        new ResourceMsg_SetDataBufferDebug2(GetRequestID(), handle_int + 3));
-#endif
     filter->Send(new ResourceMsg_SetDataBuffer(
         GetRequestID(), handle, size, filter->peer_pid()));
     sent_first_data_msg_ = true;

@@ -12,7 +12,6 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/process/process.h"
-#include "build/build_config.h"
 #include "content/common/content_param_traits_macros.h"
 #include "content/common/navigation_params.h"
 #include "content/common/resource_request_body.h"
@@ -334,22 +333,6 @@ IPC_MESSAGE_CONTROL3(ResourceMsg_ReceivedRedirect,
                      net::RedirectInfo /* redirect_info */,
                      content::ResourceResponseHead)
 
-#if defined(OS_WIN)
-// A message that always precedes ResourceMsg_SetDataBuffer. |shm_handle| is the
-// underlying HANDLE of base::SharedMemoryHandle converted to an int. Exists to
-// help debug https://code.google.com/p/chromium/issues/detail?id=527588.
-IPC_MESSAGE_CONTROL2(ResourceMsg_SetDataBufferDebug1,
-                     int /* request_id */,
-                     int /* shm_handle */)
-
-// A message that always precedes ResourceMsg_SetDataBuffer. |shm_handle| is the
-// underlying HANDLE of base::SharedMemoryHandle converted to an int + 3. Exists
-// to help debug https://code.google.com/p/chromium/issues/detail?id=527588.
-IPC_MESSAGE_CONTROL2(ResourceMsg_SetDataBufferDebug2,
-                     int /* request_id */,
-                     int /* shm_handle */)
-#endif
-
 // Sent to set the shared memory buffer to be used to transmit response data to
 // the renderer.  Subsequent DataReceived messages refer to byte ranges in the
 // shared memory buffer.  The shared memory buffer should be retained by the
@@ -360,6 +343,7 @@ IPC_MESSAGE_CONTROL2(ResourceMsg_SetDataBufferDebug2,
 //
 // TODO(darin): The |renderer_pid| parameter is just a temporary parameter,
 // added to help in debugging crbug/160401.
+//
 IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
                      int /* request_id */,
                      base::SharedMemoryHandle /* shm_handle */,

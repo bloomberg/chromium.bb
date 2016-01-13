@@ -40,10 +40,6 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 
-#if defined(OS_WIN)
-#include <windows.h>
-#endif
-
 namespace content {
 
 namespace {
@@ -190,22 +186,6 @@ void ResourceDispatcher::OnReceivedCachedMetadata(
     request_info->peer->OnReceivedCachedMetadata(&data.front(), data.size());
 }
 
-#if defined(OS_WIN)
-void ResourceDispatcher::OnSetDataBufferDebug1(int request_id, int handle) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-  request_info->handle1 = handle;
-}
-
-void ResourceDispatcher::OnSetDataBufferDebug2(int request_id, int handle) {
-  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
-  if (!request_info)
-    return;
-  request_info->handle2 = handle - 3;
-}
-#endif
-
 void ResourceDispatcher::OnSetDataBuffer(int request_id,
                                          base::SharedMemoryHandle shm_handle,
                                          int shm_size,
@@ -217,11 +197,6 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 
   bool shm_valid = base::SharedMemory::IsHandleValid(shm_handle);
   CHECK((shm_valid && shm_size > 0) || (!shm_valid && !shm_size));
-#if defined(OS_WIN)
-  int handle_int = static_cast<int>(HandleToLong(shm_handle.GetHandle()));
-  CHECK(request_info->handle2 != -2 && request_info->handle2 == handle_int);
-  CHECK(request_info->handle1 != -2 && request_info->handle1 == handle_int);
-#endif
 
   request_info->buffer.reset(
       new base::SharedMemory(shm_handle, true));  // read only
@@ -561,7 +536,8 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       frame_origin(frame_origin),
       response_url(request_url),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()) {}
+      request_start(base::TimeTicks::Now()) {
+}
 
 ResourceDispatcher::PendingRequestInfo::~PendingRequestInfo() {
   if (threaded_data_provider)
@@ -575,10 +551,6 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedCachedMetadata,
                         OnReceivedCachedMetadata)
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBufferDebug1, OnSetDataBufferDebug1)
-    IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBufferDebug2, OnSetDataBufferDebug2)
-#endif
     IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug, OnReceivedDataDebug)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
@@ -763,10 +735,6 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ResourceMsg_ReceivedResponse::ID:
     case ResourceMsg_ReceivedCachedMetadata::ID:
     case ResourceMsg_ReceivedRedirect::ID:
-#if defined(OS_WIN)
-    case ResourceMsg_SetDataBufferDebug1::ID:
-    case ResourceMsg_SetDataBufferDebug2::ID:
-#endif
     case ResourceMsg_SetDataBuffer::ID:
     case ResourceMsg_DataReceivedDebug::ID:
     case ResourceMsg_DataReceived::ID:
