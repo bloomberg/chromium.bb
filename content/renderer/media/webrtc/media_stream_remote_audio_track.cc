@@ -62,9 +62,10 @@ class MediaStreamRemoteAudioSource::AudioSink
 
  private:
   void OnData(const void* audio_data, int bits_per_sample, int sample_rate,
-              int number_of_channels, size_t number_of_frames) override {
-    if (!audio_bus_ || audio_bus_->channels() != number_of_channels ||
-        audio_bus_->frames() != static_cast<int>(number_of_frames)) {
+              size_t number_of_channels, size_t number_of_frames) override {
+    if (!audio_bus_ ||
+        static_cast<size_t>(audio_bus_->channels()) != number_of_channels ||
+        static_cast<size_t>(audio_bus_->frames()) != number_of_frames) {
       audio_bus_ = media::AudioBus::Create(number_of_channels,
                                            number_of_frames);
     }
@@ -74,9 +75,9 @@ class MediaStreamRemoteAudioSource::AudioSink
 
     bool format_changed = false;
     if (params_.format() != media::AudioParameters::AUDIO_PCM_LOW_LATENCY ||
-        params_.channels() != number_of_channels ||
+        static_cast<size_t>(params_.channels()) != number_of_channels ||
         params_.sample_rate() != sample_rate ||
-        params_.frames_per_buffer() != static_cast<int>(number_of_frames)) {
+        static_cast<size_t>(params_.frames_per_buffer()) != number_of_frames) {
       params_ = media::AudioParameters(
           media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
           media::GuessChannelLayout(number_of_channels),

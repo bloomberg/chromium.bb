@@ -26,7 +26,7 @@ class MockWebRtcAudioSink : public webrtc::AudioTrackSinkInterface {
   MOCK_METHOD5(OnData, void(const void* audio_data,
                             int bits_per_sample,
                             int sample_rate,
-                            int number_of_channels,
+                            size_t number_of_channels,
                             size_t number_of_frames));
 };
 
