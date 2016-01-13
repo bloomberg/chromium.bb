@@ -24,16 +24,11 @@ class MockVideoRenderer : public cricket::VideoRenderer {
  public:
   MockVideoRenderer();
   ~MockVideoRenderer() override;
-  bool SetSize(int width, int height, int reserved) override;
   bool RenderFrame(const cricket::VideoFrame* frame) override;
 
-  int width() const { return width_; }
-  int height() const { return height_; }
   int num() const { return num_; }
 
  private:
-  int width_;
-  int height_;
   int num_;
 };
 

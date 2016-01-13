@@ -158,17 +158,9 @@ class MockRtcVideoCapturer : public WebRtcVideoCapturerAdapter {
 };
 
 MockVideoRenderer::MockVideoRenderer()
-    : width_(0),
-      height_(0),
-      num_(0) {}
+    : num_(0) {}
 
 MockVideoRenderer::~MockVideoRenderer() {}
-
-bool MockVideoRenderer::SetSize(int width, int height, int reserved) {
-  width_ = width;
-  height_ = height;
-  return true;
-}
 
 bool MockVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
   ++num_;
