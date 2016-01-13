@@ -10,6 +10,7 @@
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
 #import "ui/base/cocoa/menu_controller.h"
 
@@ -81,6 +82,9 @@ class ZoomLevelObserver;
 
   // The menu item containing the browser actions overflow container.
   NSMenuItem* browserActionsMenuItem_;
+
+  // The time at which the menu was opened.
+  base::TimeTicks menuOpenTime_;
 }
 
 // Designated initializer.

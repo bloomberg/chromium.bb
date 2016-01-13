@@ -50598,6 +50598,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The number of millseconds between when the user opens the app menu and when
     the app menu is closed. Logged once per app menu run when the menu closes.
     Not recorded for menu runs that are initiated by a drag-and-drop sequence.
+    Note that the code paths for Views-platforms vs Mac are different, so cross-
+    platform comparison may not always be reasonable.
   </summary>
 </histogram>
 

@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "base/strings/sys_string_conversions.h"
@@ -366,6 +367,8 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
                       ? [NSImage imageNamed:NSImageNameExitFullScreenTemplate]
                       : [NSImage imageNamed:NSImageNameEnterFullScreenTemplate];
   [[buttonViewController_ zoomFullScreen] setImage:icon];
+
+  menuOpenTime_ = base::TimeTicks::Now();
 }
 
 - (void)menuDidClose:(NSMenu*)menu {
@@ -376,6 +379,9 @@ class ToolbarActionsBarObserverHelper : public ToolbarActionsBarObserver {
   // menu is about to be displayed at the start of a tracking session.)
   zoom_level_observer_.reset();
   toolbar_actions_bar_observer_.reset();
+  UMA_HISTOGRAM_TIMES("Toolbar.AppMenuTimeToAction",
+                      base::TimeTicks::Now() - menuOpenTime_);
+  menuOpenTime_ = base::TimeTicks();
 }
 
 - (void)menuNeedsUpdate:(NSMenu*)menu {
