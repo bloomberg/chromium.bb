@@ -144,7 +144,8 @@ class LoadingModelTestCase(unittest.TestCase):
         'http://afae61024b33032ef.profile.sfo20.cloudfront.net/tst.png'))
 
     self.assertTrue(loading_model.ResourceGraph._IsAdUrl(
-        'http://ums.adtechus.com/mapuser?providerid=1003;userid=RUmecco4z3o===='))
+        'http://ums.adtechus.com/mapuser?providerid=1003;'
+        'userid=RUmecco4z3o===='))
     self.assertTrue(loading_model.ResourceGraph._IsAdUrl(
         'http://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'))
 

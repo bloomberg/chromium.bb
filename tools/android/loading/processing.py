@@ -10,25 +10,26 @@ import log_parser
 import loading_model
 
 
-def SitesFromDir(dir):
-  """Extract sites from a data dir.
+def SitesFromDir(directory):
+  """Extract sites from a data directory.
 
   Based on ./analyze.py fetch file name conventions. We assume each site
   corresponds to two files, <site>.json and <site>.json.cold, and that no other
   kind of file appears in the data directory.
 
   Args:
-    dir: the directory to process.
+    directory: the directory to process.
 
   Returns:
     A list of sites as strings.
 
   """
-  files = set(os.listdir(dir))
+  files = set(os.listdir(directory))
   assert files
   sites = []
   for f in files:
-    if f.endswith('.png'): continue
+    if f.endswith('.png'):
+      continue
     assert f.endswith('.json') or f.endswith('.json.cold'), f
     if f.endswith('.json'):
       assert f + '.cold' in files

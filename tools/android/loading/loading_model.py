@@ -131,7 +131,8 @@ class ResourceGraph(object):
     node_filter = self._node_filter if node_filter is None else node_filter
     total = 0
     for n in self._node_info:
-      if not node_filter(n.Node()): continue
+      if not node_filter(n.Node()):
+        continue
       for s in n.Node().Successors():
         if node_filter(s):
           total += self._EdgeCost(n.Node(), s)
@@ -391,7 +392,7 @@ class ResourceGraph(object):
       new_parent.Node().AddSuccessor(self.Node())
       new_parent.SetEdgeCost(self, edge_cost)
       for a in edge_annotations:
-        new_parent.AddEdgeAnnotation(self, edge_annotations)
+        new_parent.AddEdgeAnnotation(self, a)
 
     def __eq__(self, o):
       return self.Node().Index() == o.Node().Index()
@@ -481,12 +482,13 @@ class ResourceGraph(object):
                 and urlparse.urlparse(r.url).hostname == request_hostname)]
         most_recent = None
         # Linear search is bad, but this shouldn't matter here.
-        for request in sorted_script_requests_from_hostname:
-          if request.timestamp < r.timing.requestTime:
-            most_recent = request
+        for r in sorted_script_requests_from_hostname:
+          if r.timestamp < request.timing.requestTime:
+            most_recent = r
           else:
             break
         if most_recent is not None:
+          url = most_recent.url
           if url in indicies_by_url:
             predecessor_url = url
             predecessor_type = 'script_inferred'
@@ -495,7 +497,8 @@ class ResourceGraph(object):
         predecessor = self._FindBestPredecessor(
             current_node_info, indicies_by_url[predecessor_url])
         edge_cost = current_node_info.StartTime() - predecessor.EndTime()
-        if edge_cost < 0: edge_cost = 0
+        if edge_cost < 0:
+          edge_cost = 0
         if current_node_info.StartTime() < predecessor.StartTime():
           logging.error('Inverted dependency: %s->%s',
                         predecessor.ShortName(), current_node_info.ShortName())

@@ -59,7 +59,7 @@ class DevToolsConnection(object):
     Args:
       listener: (Listener) listener to unregister.
     """
-    keys = [k for (k, v) in self._listeners if k == name]
+    keys = [k for (k, v) in self._listeners if v is listener]
     assert keys, "Removing non-existent listener"
     for key in keys:
       del(self._listeners[key])
@@ -104,7 +104,7 @@ class DevToolsConnection(object):
     while not self._please_stop:
       try:
         self._ws.DispatchNotifications()
-      except websocket.WebSocketTimeoutException as e:
+      except websocket.WebSocketTimeoutException:
         break
     if not self._please_stop:
       logging.warning('Monitoring stopped on a timeout.')

@@ -96,10 +96,7 @@ def TopologicalSort(nodes, node_filter=None):
   sorted_nodes = []
   sources = []
   remaining_in_edges = {}
-  valid_node_count = 0
   for n in nodes:
-    if node_filter(n):
-      valid_node_count += 1
     if n.Predecessors():
       remaining_in_edges[n] = len(n.Predecessors())
     elif node_filter(n):
