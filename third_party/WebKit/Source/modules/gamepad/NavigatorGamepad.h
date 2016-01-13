@@ -83,7 +83,7 @@ private:
 
     Member<GamepadList> m_gamepads;
     HeapDeque<Member<Gamepad>> m_pendingEvents;
-    AsyncMethodRunner<NavigatorGamepad> m_dispatchOneEventRunner;
+    Member<AsyncMethodRunner<NavigatorGamepad>> m_dispatchOneEventRunner;
 };
 
 } // namespace blink

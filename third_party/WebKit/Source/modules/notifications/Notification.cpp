@@ -116,7 +116,7 @@ Notification::Notification(ExecutionContext* context, const WebNotificationData&
     , m_data(data)
     , m_persistentId(kInvalidPersistentId)
     , m_state(NotificationStateIdle)
-    , m_asyncRunner(this, &Notification::show)
+    , m_asyncRunner(AsyncMethodRunner<Notification>::create(this, &Notification::show))
 {
     ASSERT(notificationManager());
 }
@@ -128,9 +128,9 @@ Notification::~Notification()
 void Notification::scheduleShow()
 {
     ASSERT(m_state == NotificationStateIdle);
-    ASSERT(!m_asyncRunner.isActive());
+    ASSERT(!m_asyncRunner->isActive());
 
-    m_asyncRunner.runAsync();
+    m_asyncRunner->runAsync();
 }
 
 void Notification::show()
@@ -354,16 +354,17 @@ void Notification::stop()
 
     m_state = NotificationStateClosed;
 
-    m_asyncRunner.stop();
+    m_asyncRunner->stop();
 }
 
 bool Notification::hasPendingActivity() const
 {
-    return m_state == NotificationStateShowing || m_asyncRunner.isActive();
+    return m_state == NotificationStateShowing || m_asyncRunner->isActive();
 }
 
 DEFINE_TRACE(Notification)
 {
+    visitor->trace(m_asyncRunner);
     RefCountedGarbageCollectedEventTargetWithInlineData<Notification>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

@@ -175,7 +175,7 @@ private:
     FontFaceArray m_failedFonts;
     WillBeHeapListHashSet<RefPtrWillBeMember<FontFace>> m_nonCSSConnectedFaces;
 
-    AsyncMethodRunner<FontFaceSet> m_asyncRunner;
+    PersistentWillBeMember<AsyncMethodRunner<FontFaceSet>> m_asyncRunner;
 
     FontLoadHistogram m_histogram;
 };

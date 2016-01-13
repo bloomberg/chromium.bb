@@ -147,15 +147,15 @@ private:
 
     Vector<unsigned char> m_pendingAppendData;
     size_t m_pendingAppendDataOffset;
-    AsyncMethodRunner<SourceBuffer> m_appendBufferAsyncPartRunner;
+    Member<AsyncMethodRunner<SourceBuffer>> m_appendBufferAsyncPartRunner;
 
     double m_pendingRemoveStart;
     double m_pendingRemoveEnd;
-    AsyncMethodRunner<SourceBuffer> m_removeAsyncPartRunner;
+    Member<AsyncMethodRunner<SourceBuffer>> m_removeAsyncPartRunner;
 
     bool m_streamMaxSizeValid;
     unsigned long long m_streamMaxSize;
-    AsyncMethodRunner<SourceBuffer> m_appendStreamAsyncPartRunner;
+    Member<AsyncMethodRunner<SourceBuffer>> m_appendStreamAsyncPartRunner;
     Member<Stream> m_stream;
     OwnPtr<FileReaderLoader> m_loader;
 };

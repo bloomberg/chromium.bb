@@ -98,7 +98,7 @@ private:
 
     OwnPtr<WebMediaRecorderHandler> m_recorderHandler;
 
-    AsyncMethodRunner<MediaRecorder> m_dispatchScheduledEventRunner;
+    Member<AsyncMethodRunner<MediaRecorder>> m_dispatchScheduledEventRunner;
     WillBeHeapVector<RefPtrWillBeMember<Event>> m_scheduledEvents;
 };
 

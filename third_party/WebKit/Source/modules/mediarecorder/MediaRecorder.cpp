@@ -59,7 +59,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, con
     , m_stopped(true)
     , m_ignoreMutedMedia(true)
     , m_state(State::Inactive)
-    , m_dispatchScheduledEventRunner(this, &MediaRecorder::dispatchScheduledEvent)
+    , m_dispatchScheduledEventRunner(AsyncMethodRunner<MediaRecorder>::create(this, &MediaRecorder::dispatchScheduledEvent))
 {
     ASSERT(m_stream->getTracks().size());
 
@@ -181,12 +181,12 @@ ExecutionContext* MediaRecorder::executionContext() const
 
 void MediaRecorder::suspend()
 {
-    m_dispatchScheduledEventRunner.suspend();
+    m_dispatchScheduledEventRunner->suspend();
 }
 
 void MediaRecorder::resume()
 {
-    m_dispatchScheduledEventRunner.resume();
+    m_dispatchScheduledEventRunner->resume();
 }
 
 void MediaRecorder::stop()
@@ -251,7 +251,7 @@ void MediaRecorder::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> event)
 {
     m_scheduledEvents.append(event);
 
-    m_dispatchScheduledEventRunner.runAsync();
+    m_dispatchScheduledEventRunner->runAsync();
 }
 
 void MediaRecorder::dispatchScheduledEvent()
@@ -266,6 +266,7 @@ void MediaRecorder::dispatchScheduledEvent()
 DEFINE_TRACE(MediaRecorder)
 {
     visitor->trace(m_stream);
+    visitor->trace(m_dispatchScheduledEventRunner);
     visitor->trace(m_scheduledEvents);
     RefCountedGarbageCollectedEventTargetWithInlineData<MediaRecorder>::trace(visitor);
     ActiveDOMObject::trace(visitor);

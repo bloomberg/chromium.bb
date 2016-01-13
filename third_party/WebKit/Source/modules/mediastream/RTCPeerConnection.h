@@ -203,7 +203,7 @@ private:
 
     OwnPtr<WebRTCPeerConnectionHandler> m_peerHandler;
 
-    AsyncMethodRunner<RTCPeerConnection> m_dispatchScheduledEventRunner;
+    Member<AsyncMethodRunner<RTCPeerConnection>> m_dispatchScheduledEventRunner;
     HeapVector<Member<EventWrapper>> m_scheduledEvents;
 
     bool m_stopped;

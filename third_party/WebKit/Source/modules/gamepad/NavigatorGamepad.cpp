@@ -105,6 +105,7 @@ DEFINE_TRACE(NavigatorGamepad)
 {
     visitor->trace(m_gamepads);
     visitor->trace(m_pendingEvents);
+    visitor->trace(m_dispatchOneEventRunner);
     HeapSupplement<Navigator>::trace(visitor);
     DOMWindowProperty::trace(visitor);
     PlatformEventController::trace(visitor);
@@ -147,7 +148,7 @@ void NavigatorGamepad::didUpdateData()
     m_gamepads->set(change.index, gamepad);
 
     m_pendingEvents.append(gamepad);
-    m_dispatchOneEventRunner.runAsync();
+    m_dispatchOneEventRunner->runAsync();
 }
 
 void NavigatorGamepad::dispatchOneEvent()
@@ -161,14 +162,14 @@ void NavigatorGamepad::dispatchOneEvent()
     frame()->domWindow()->dispatchEvent(GamepadEvent::create(eventName, false, true, gamepad));
 
     if (!m_pendingEvents.isEmpty())
-        m_dispatchOneEventRunner.runAsync();
+        m_dispatchOneEventRunner->runAsync();
 }
 
 NavigatorGamepad::NavigatorGamepad(LocalFrame* frame)
     : DOMWindowProperty(frame)
     , PlatformEventController(frame ? frame->page() : 0)
     , DOMWindowLifecycleObserver(frame ? frame->localDOMWindow() : 0)
-    , m_dispatchOneEventRunner(this, &NavigatorGamepad::dispatchOneEvent)
+    , m_dispatchOneEventRunner(AsyncMethodRunner<NavigatorGamepad>::create(this, &NavigatorGamepad::dispatchOneEvent))
 {
 }
 
@@ -196,12 +197,12 @@ void NavigatorGamepad::willDetachGlobalObjectFromFrame()
 void NavigatorGamepad::registerWithDispatcher()
 {
     GamepadDispatcher::instance().addController(this);
-    m_dispatchOneEventRunner.resume();
+    m_dispatchOneEventRunner->resume();
 }
 
 void NavigatorGamepad::unregisterWithDispatcher()
 {
-    m_dispatchOneEventRunner.suspend();
+    m_dispatchOneEventRunner->suspend();
     GamepadDispatcher::instance().removeController(this);
 }
 
@@ -242,7 +243,7 @@ void NavigatorGamepad::didRemoveAllEventListeners(LocalDOMWindow*)
 void NavigatorGamepad::didRemoveGamepadEventListeners()
 {
     m_hasEventListener = false;
-    m_dispatchOneEventRunner.stop();
+    m_dispatchOneEventRunner->stop();
     m_pendingEvents.clear();
 }
 
@@ -281,7 +282,7 @@ void NavigatorGamepad::pageVisibilityChanged()
     }
 
     if (!m_pendingEvents.isEmpty())
-        m_dispatchOneEventRunner.runAsync();
+        m_dispatchOneEventRunner->runAsync();
 }
 
 } // namespace blink

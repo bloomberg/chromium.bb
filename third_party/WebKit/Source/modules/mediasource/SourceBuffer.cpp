@@ -111,13 +111,13 @@ SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSou
     , m_appendWindowEnd(std::numeric_limits<double>::infinity())
     , m_firstInitializationSegmentReceived(false)
     , m_pendingAppendDataOffset(0)
-    , m_appendBufferAsyncPartRunner(this, &SourceBuffer::appendBufferAsyncPart)
+    , m_appendBufferAsyncPartRunner(AsyncMethodRunner<SourceBuffer>::create(this, &SourceBuffer::appendBufferAsyncPart))
     , m_pendingRemoveStart(-1)
     , m_pendingRemoveEnd(-1)
-    , m_removeAsyncPartRunner(this, &SourceBuffer::removeAsyncPart)
+    , m_removeAsyncPartRunner(AsyncMethodRunner<SourceBuffer>::create(this, &SourceBuffer::removeAsyncPart))
     , m_streamMaxSizeValid(false)
     , m_streamMaxSize(0)
-    , m_appendStreamAsyncPartRunner(this, &SourceBuffer::appendStreamAsyncPart)
+    , m_appendStreamAsyncPartRunner(AsyncMethodRunner<SourceBuffer>::create(this, &SourceBuffer::appendStreamAsyncPart))
 {
     ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
@@ -394,7 +394,7 @@ void SourceBuffer::remove(double start, double end, ExceptionState& exceptionSta
     // 7.5. Return control to the caller and run the rest of the steps asynchronously.
     m_pendingRemoveStart = start;
     m_pendingRemoveEnd = end;
-    m_removeAsyncPartRunner.runAsync();
+    m_removeAsyncPartRunner->runAsync();
 }
 
 void SourceBuffer::setTrackDefaults(TrackDefaultList* trackDefaults, ExceptionState& exceptionState)
@@ -433,15 +433,15 @@ void SourceBuffer::abortIfUpdating()
     }
 
     // 3.1. Abort the buffer append and stream append loop algorithms if they are running.
-    m_appendBufferAsyncPartRunner.stop();
+    m_appendBufferAsyncPartRunner->stop();
     m_pendingAppendData.clear();
     m_pendingAppendDataOffset = 0;
 
-    m_removeAsyncPartRunner.stop();
+    m_removeAsyncPartRunner->stop();
     m_pendingRemoveStart = -1;
     m_pendingRemoveEnd = -1;
 
-    m_appendStreamAsyncPartRunner.stop();
+    m_appendStreamAsyncPartRunner->stop();
     clearAppendStreamState();
 
     // 3.2. Set the updating attribute to false.
@@ -501,23 +501,23 @@ bool SourceBuffer::hasPendingActivity() const
 
 void SourceBuffer::suspend()
 {
-    m_appendBufferAsyncPartRunner.suspend();
-    m_removeAsyncPartRunner.suspend();
-    m_appendStreamAsyncPartRunner.suspend();
+    m_appendBufferAsyncPartRunner->suspend();
+    m_removeAsyncPartRunner->suspend();
+    m_appendStreamAsyncPartRunner->suspend();
 }
 
 void SourceBuffer::resume()
 {
-    m_appendBufferAsyncPartRunner.resume();
-    m_removeAsyncPartRunner.resume();
-    m_appendStreamAsyncPartRunner.resume();
+    m_appendBufferAsyncPartRunner->resume();
+    m_removeAsyncPartRunner->resume();
+    m_appendStreamAsyncPartRunner->resume();
 }
 
 void SourceBuffer::stop()
 {
-    m_appendBufferAsyncPartRunner.stop();
-    m_removeAsyncPartRunner.stop();
-    m_appendStreamAsyncPartRunner.stop();
+    m_appendBufferAsyncPartRunner->stop();
+    m_removeAsyncPartRunner->stop();
+    m_appendStreamAsyncPartRunner->stop();
 }
 
 ExecutionContext* SourceBuffer::executionContext() const
@@ -622,7 +622,7 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     scheduleEvent(EventTypeNames::updatestart);
 
     // 5. Asynchronously run the buffer append algorithm.
-    m_appendBufferAsyncPartRunner.runAsync();
+    m_appendBufferAsyncPartRunner->runAsync();
 
     TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "initialDelay");
 }
@@ -663,7 +663,7 @@ void SourceBuffer::appendBufferAsyncPart()
     m_pendingAppendDataOffset += appendSize;
 
     if (m_pendingAppendDataOffset < m_pendingAppendData.size()) {
-        m_appendBufferAsyncPartRunner.runAsync();
+        m_appendBufferAsyncPartRunner->runAsync();
         TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "nextPieceDelay");
         return;
     }
@@ -736,7 +736,7 @@ void SourceBuffer::appendStreamInternal(Stream* stream, ExceptionState& exceptio
     stream->neuter();
     m_loader = FileReaderLoader::create(FileReaderLoader::ReadByClient, this);
     m_stream = stream;
-    m_appendStreamAsyncPartRunner.runAsync();
+    m_appendStreamAsyncPartRunner->runAsync();
 }
 
 void SourceBuffer::appendStreamAsyncPart()
@@ -866,9 +866,12 @@ void SourceBuffer::didFail(FileError::ErrorCode errorCode)
 DEFINE_TRACE(SourceBuffer)
 {
     visitor->trace(m_source);
-    visitor->trace(m_stream);
     visitor->trace(m_trackDefaults);
     visitor->trace(m_asyncEventQueue);
+    visitor->trace(m_appendBufferAsyncPartRunner);
+    visitor->trace(m_removeAsyncPartRunner);
+    visitor->trace(m_appendStreamAsyncPartRunner);
+    visitor->trace(m_stream);
     RefCountedGarbageCollectedEventTargetWithInlineData<SourceBuffer>::trace(visitor);
     ActiveDOMObject::trace(visitor);
 }

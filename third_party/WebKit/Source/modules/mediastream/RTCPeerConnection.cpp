@@ -347,7 +347,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context, RTCConfiguration
     , m_signalingState(SignalingStateStable)
     , m_iceGatheringState(ICEGatheringStateNew)
     , m_iceConnectionState(ICEConnectionStateNew)
-    , m_dispatchScheduledEventRunner(this, &RTCPeerConnection::dispatchScheduledEvent)
+    , m_dispatchScheduledEventRunner(AsyncMethodRunner<RTCPeerConnection>::create(this, &RTCPeerConnection::dispatchScheduledEvent))
     , m_stopped(false)
     , m_closed(false)
 {
@@ -939,12 +939,12 @@ ExecutionContext* RTCPeerConnection::executionContext() const
 
 void RTCPeerConnection::suspend()
 {
-    m_dispatchScheduledEventRunner.suspend();
+    m_dispatchScheduledEventRunner->suspend();
 }
 
 void RTCPeerConnection::resume()
 {
-    m_dispatchScheduledEventRunner.resume();
+    m_dispatchScheduledEventRunner->resume();
 }
 
 void RTCPeerConnection::stop()
@@ -961,7 +961,7 @@ void RTCPeerConnection::stop()
         (*i)->stop();
     m_dataChannels.clear();
 
-    m_dispatchScheduledEventRunner.stop();
+    m_dispatchScheduledEventRunner->stop();
 
     m_peerHandler.clear();
 }
@@ -1017,7 +1017,7 @@ void RTCPeerConnection::scheduleDispatchEvent(PassRefPtrWillBeRawPtr<Event> even
 {
     m_scheduledEvents.append(new EventWrapper(event, setupFunction));
 
-    m_dispatchScheduledEventRunner.runAsync();
+    m_dispatchScheduledEventRunner->runAsync();
 }
 
 void RTCPeerConnection::dispatchScheduledEvent()
@@ -1043,6 +1043,7 @@ DEFINE_TRACE(RTCPeerConnection)
     visitor->trace(m_localStreams);
     visitor->trace(m_remoteStreams);
     visitor->trace(m_dataChannels);
+    visitor->trace(m_dispatchScheduledEventRunner);
     visitor->trace(m_scheduledEvents);
     RefCountedGarbageCollectedEventTargetWithInlineData<RTCPeerConnection>::trace(visitor);
     ActiveDOMObject::trace(visitor);

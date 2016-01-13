@@ -153,7 +153,7 @@ private:
 
     NotificationState m_state;
 
-    AsyncMethodRunner<Notification> m_asyncRunner;
+    Member<AsyncMethodRunner<Notification>> m_asyncRunner;
 };
 
 } // namespace blink

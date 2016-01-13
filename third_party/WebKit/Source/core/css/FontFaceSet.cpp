@@ -118,13 +118,16 @@ FontFaceSet::FontFaceSet(Document& document)
     , m_shouldFireLoadingEvent(false)
     , m_isLoading(false)
     , m_ready(new ReadyProperty(executionContext(), this, ReadyProperty::Ready))
-    , m_asyncRunner(this, &FontFaceSet::handlePendingEventsAndPromises)
+    , m_asyncRunner(AsyncMethodRunner<FontFaceSet>::create(this, &FontFaceSet::handlePendingEventsAndPromises))
 {
     suspendIfNeeded();
 }
 
 FontFaceSet::~FontFaceSet()
 {
+#if !ENABLE(OILPAN)
+    stop();
+#endif
 }
 
 Document* FontFaceSet::document() const
@@ -164,7 +167,7 @@ AtomicString FontFaceSet::status() const
 void FontFaceSet::handlePendingEventsAndPromisesSoon()
 {
     // m_asyncRunner will be automatically stopped on destruction.
-    m_asyncRunner.runAsync();
+    m_asyncRunner->runAsync();
 }
 
 void FontFaceSet::didLayout()
@@ -199,17 +202,17 @@ void FontFaceSet::fireLoadingEvent()
 
 void FontFaceSet::suspend()
 {
-    m_asyncRunner.suspend();
+    m_asyncRunner->suspend();
 }
 
 void FontFaceSet::resume()
 {
-    m_asyncRunner.resume();
+    m_asyncRunner->resume();
 }
 
 void FontFaceSet::stop()
 {
-    m_asyncRunner.stop();
+    m_asyncRunner->stop();
 }
 
 void FontFaceSet::beginFontLoading(FontFace* fontFace)
@@ -539,6 +542,7 @@ DEFINE_TRACE(FontFaceSet)
     visitor->trace(m_loadedFonts);
     visitor->trace(m_failedFonts);
     visitor->trace(m_nonCSSConnectedFaces);
+    visitor->trace(m_asyncRunner);
     HeapSupplement<Document>::trace(visitor);
 #endif
     EventTargetWithInlineData::trace(visitor);
