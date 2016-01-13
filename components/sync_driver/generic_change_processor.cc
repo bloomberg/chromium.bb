@@ -154,8 +154,7 @@ void GenericChangeProcessor::ApplyChangesFromSyncModel(
         specifics->mutable_password()->mutable_client_only_encrypted_data()->
             CopyFrom(it->extra->unencrypted());
       }
-      const syncer::AttachmentIdList empty_list_of_attachment_ids =
-          syncer::AttachmentIdList();
+      const syncer::AttachmentIdList empty_list_of_attachment_ids;
       syncer_changes_.push_back(syncer::SyncChange(
           FROM_HERE, syncer::SyncChange::ACTION_DELETE,
           syncer::SyncData::CreateRemoteData(
