@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/prerender/prerender_contents.h"
@@ -321,6 +322,8 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
+  TRACE_EVENT1("SafeBrowsing", "SafeBrowsingResourceThrottle::CheckUrl", "url",
+               url.spec());
   CHECK_EQ(state_, STATE_NONE);
   // To reduce aggregate latency on mobile, check only the most dangerous
   // resource types.

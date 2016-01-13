@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
+#include "base/trace_event/trace_event.h"
 #include "crypto/sha2.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
@@ -302,6 +303,10 @@ void CanonicalizeUrl(const GURL& url,
 void UrlToFullHashes(const GURL& url,
                      bool include_whitelist_hashes,
                      std::vector<SBFullHash>* full_hashes) {
+  // Include this function in traces because it's not cheap so it should be
+  // called sparingly.
+  TRACE_EVENT2("SafeBrowsing", "UrlToFullHashes", "url", url.spec(),
+               "include_whitelist_hashes", include_whitelist_hashes);
   std::vector<std::string> hosts;
   if (url.HostIsIPAddress()) {
     hosts.push_back(url.host());

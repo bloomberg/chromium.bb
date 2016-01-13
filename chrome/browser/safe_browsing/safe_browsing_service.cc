@@ -22,6 +22,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -371,6 +372,8 @@ void SafeBrowsingService::AddDownloadManager(
 
 void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
 #if defined(FULL_SAFE_BROWSING)
+  TRACE_EVENT1("SafeBrowsing", "SafeBrowsingServer::OnResourceRequest", "url",
+               request->url().spec());
   if (off_domain_inclusion_detector_)
     off_domain_inclusion_detector_->OnResourceRequest(request);
   if (resource_request_detector_)
