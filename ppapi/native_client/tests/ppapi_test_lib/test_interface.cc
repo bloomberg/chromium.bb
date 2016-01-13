@@ -8,7 +8,6 @@
 #include <map>
 #include <new>
 
-#include "base/macros.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_check.h"
 
