@@ -500,6 +500,8 @@ const FeatureEntry::Choice kUpdateMenuItemSummaryChoices[] = {
     {IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY, "", ""},
     {IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY,
         switches::kForceShowUpdateMenuItemSummary, ""},
+    {IDS_FLAGS_UPDATE_MENU_ITEM_NEW_FEATURES_SUMMARY,
+        switches::kForceShowUpdateMenuItemNewFeaturesSummary, ""},
     {IDS_FLAGS_UPDATE_MENU_ITEM_CUSTOM_SUMMARY,
         switches::kForceShowUpdateMenuItemCustomSummary, "Custom summary"},
 };

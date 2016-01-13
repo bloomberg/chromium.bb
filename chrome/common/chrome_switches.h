@@ -309,6 +309,7 @@ extern const char kEnableTabSwitcherInDocumentMode[];
 extern const char kNtpSwitchToExistingTab[];
 extern const char kForceShowUpdateMenuItem[];
 extern const char kForceShowUpdateMenuItemSummary[];
+extern const char kForceShowUpdateMenuItemNewFeaturesSummary[];
 extern const char kForceShowUpdateMenuItemCustomSummary[];
 extern const char kForceShowUpdateMenuBadge[];
 extern const char kMarketUrlForTesting[];

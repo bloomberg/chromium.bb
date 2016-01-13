@@ -48,6 +48,7 @@ public class UpdateMenuItemHelper {
     private static final String ENABLE_UPDATE_MENU_ITEM = "enable_update_menu_item";
     private static final String ENABLE_UPDATE_BADGE = "enable_update_badge";
     private static final String SHOW_SUMMARY = "show_summary";
+    private static final String USE_NEW_FEATURES_SUMMARY = "use_new_features_summary";
     private static final String CUSTOM_SUMMARY = "custom_summary";
 
     // UMA constants for logging whether the menu item was clicked.
@@ -169,13 +170,18 @@ public class UpdateMenuItemHelper {
      * @return The string to use for summary text or the empty string if no summary should be shown.
      */
     public String getMenuItemSummaryText(Context context) {
-        if (!getBooleanParam(SHOW_SUMMARY) && !getBooleanParam(CUSTOM_SUMMARY)) {
+        if (!getBooleanParam(SHOW_SUMMARY) && !getBooleanParam(USE_NEW_FEATURES_SUMMARY)
+                && !getBooleanParam(CUSTOM_SUMMARY)) {
             return "";
         }
 
         String customSummary = getStringParamValue(CUSTOM_SUMMARY);
         if (!TextUtils.isEmpty(customSummary)) {
             return customSummary;
+        }
+
+        if (getBooleanParam(USE_NEW_FEATURES_SUMMARY)) {
+            return context.getResources().getString(R.string.menu_update_summary_new_features);
         }
 
         return context.getResources().getString(R.string.menu_update_summary_default);

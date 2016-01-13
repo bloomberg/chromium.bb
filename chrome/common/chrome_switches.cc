@@ -1316,6 +1316,10 @@ const char kForceShowUpdateMenuItem[] = "force-show-update-menu-item";
 // Forces a summary to be displayed below the update menu item.
 const char kForceShowUpdateMenuItemSummary[] = "show_summary";
 
+// Forces the new features summary to be displayed below the update menu item.
+const char kForceShowUpdateMenuItemNewFeaturesSummary[] =
+    "use_new_features_summary";
+
 // Forces a custom summary to be displayed below the update menu item.
 const char kForceShowUpdateMenuItemCustomSummary[] = "custom_summary";
 
