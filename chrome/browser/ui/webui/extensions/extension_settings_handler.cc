@@ -193,6 +193,13 @@ void ExtensionSettingsHandler::GetLocalizedValues(
                     l10n_util::GetStringUTF16(
                         IDS_EXTENSIONS_DISABLED_UPDATE_REQUIRED_BY_POLICY));
 
+  source->AddLocalizedString("extensionLogLevelInfo",
+                             IDS_EXTENSIONS_LOG_LEVEL_INFO);
+  source->AddLocalizedString("extensionLogLevelWarn",
+                             IDS_EXTENSIONS_LOG_LEVEL_WARN);
+  source->AddLocalizedString("extensionLogLevelError",
+                             IDS_EXTENSIONS_LOG_LEVEL_ERROR);
+
   // TODO(estade): comb through the above strings to find ones no longer used in
   // uber extensions.
   source->AddString("extensionUninstall",

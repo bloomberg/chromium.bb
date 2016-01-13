@@ -67,18 +67,21 @@ cr.define('extensions', function() {
        * @type {(ManifestError|RuntimeError)}
        */
       this.error = error;
+      var iconAltTextKey = 'extensionLogLevelWarn';
 
       // Add an additional class for the severity level.
       if (error.type == chrome.developerPrivate.ErrorType.RUNTIME) {
         switch (error.severity) {
           case chrome.developerPrivate.ErrorLevel.LOG:
             this.classList.add('extension-error-severity-info');
+            iconAltTextKey = 'extensionLogLevelInfo';
             break;
           case chrome.developerPrivate.ErrorLevel.WARN:
             this.classList.add('extension-error-severity-warning');
             break;
           case chrome.developerPrivate.ErrorLevel.ERROR:
             this.classList.add('extension-error-severity-fatal');
+            iconAltTextKey = 'extensionLogLevelError';
             break;
           default:
             assertNotReached();
@@ -90,9 +93,7 @@ cr.define('extensions', function() {
 
       var iconNode = document.createElement('img');
       iconNode.className = 'extension-error-icon';
-      // TODO(hcarmona): Populate alt text with a proper description since this
-      // icon conveys the severity of the error. (info, warning, fatal).
-      iconNode.alt = '';
+      iconNode.alt = loadTimeData.getString(iconAltTextKey);
       this.insertBefore(iconNode, this.firstChild);
 
       var messageSpan = this.querySelector('.extension-error-message');

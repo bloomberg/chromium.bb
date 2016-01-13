@@ -4451,6 +4451,15 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSIONS_SHOW_BUTTON" desc="The text for the Show link.">
           Show button
         </message>
+        <message name="IDS_EXTENSIONS_LOG_LEVEL_INFO" desc="Alt-text indicating a low severity level for the error icon in the chrome://extensions page.">
+          Log
+        </message>
+        <message name="IDS_EXTENSIONS_LOG_LEVEL_WARN" desc="Alt-text indicating a medium severity level for the error icon in the chrome://extensions page.">
+          Warning
+        </message>
+        <message name="IDS_EXTENSIONS_LOG_LEVEL_ERROR" desc="Alt-text indicating a high severity level for the error icon in the chrome://extensions page.">
+          Error
+        </message>
         <message name="IDS_MD_EXTENSIONS_ITEM_ID" desc="The text for the label next to the extension id.">
           &lt;span&gt;ID:&lt;/span&gt;<ph name="EXTENSION_ID">$1<ex>cfhdojbkjhnklbpkdaibdccddilifddb</ex></ph>
         </message>
