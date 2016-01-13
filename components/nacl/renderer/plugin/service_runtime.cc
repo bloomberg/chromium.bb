@@ -13,14 +13,11 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
-#include "components/nacl/renderer/plugin/plugin_error.h"
-#include "components/nacl/renderer/plugin/sel_ldr_launcher_chrome.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
-#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -41,19 +38,6 @@ ServiceRuntime::ServiceRuntime(Plugin* plugin,
 
 void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
                                  pp::CompletionCallback callback) {
-  nacl::scoped_ptr<SelLdrLauncherChrome>
-      tmp_subprocess(new SelLdrLauncherChrome());
-  if (NULL == tmp_subprocess.get()) {
-    LOG(ERROR) << "ServiceRuntime::Start (subprocess create failed)";
-    ErrorInfo error_info;
-    error_info.SetReport(
-        PP_NACL_ERROR_SEL_LDR_CREATE_LAUNCHER,
-        "ServiceRuntime: failed to create sel_ldr launcher");
-    ReportLoadError(error_info);
-    pp::Module::Get()->core()->CallOnMainThread(0, callback, PP_ERROR_FAILED);
-    return;
-  }
-
   GetNaClInterface()->LaunchSelLdr(
       pp_instance_,
       PP_FromBool(main_service_runtime_),
@@ -64,30 +48,13 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       &translator_channel_,
       &process_id_,
       callback.pp_completion_callback());
-  subprocess_.reset(tmp_subprocess.release());
 }
 
-void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {
-  if (main_service_runtime_) {
-    plugin_->ReportLoadError(error_info);
-  }
-}
-
+// TODO(mseaborn): Remove this method, since it is a no-op.
 void ServiceRuntime::Shutdown() {
-  // Abandon callbacks, tell service threads to quit if they were
-  // blocked waiting for main thread operations to finish.  Note that
-  // some callbacks must still await their completion event, e.g.,
-  // CallOnMainThread must still wait for the time out, or I/O events
-  // must finish, so resources associated with pending events cannot
-  // be deallocated.
-
-  // Note that this does waitpid() to get rid of any zombie subprocess.
-  subprocess_.reset(NULL);
 }
 
 ServiceRuntime::~ServiceRuntime() {
-  // We do this just in case Shutdown() was not called.
-  subprocess_.reset(NULL);
 }
 
 }  // namespace plugin

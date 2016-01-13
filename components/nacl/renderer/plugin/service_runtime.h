@@ -23,9 +23,7 @@
 
 namespace plugin {
 
-class ErrorInfo;
 class Plugin;
-class SelLdrLauncherChrome;
 class ServiceRuntime;
 
 // Struct of params used by StartSelLdr.  Use a struct so that callback
@@ -73,13 +71,10 @@ class ServiceRuntime {
  private:
   NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
 
-  void ReportLoadError(const ErrorInfo& error_info);
-
   Plugin* plugin_;
   PP_Instance pp_instance_;
   bool main_service_runtime_;
   bool uses_nonsfi_mode_;
-  nacl::scoped_ptr<SelLdrLauncherChrome> subprocess_;
 
   scoped_ptr<IPC::SyncChannel> translator_channel_;
   base::ProcessId process_id_;
