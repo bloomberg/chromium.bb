@@ -88,7 +88,7 @@ class MemoryValidator(gpu_test_base.ValidatorBase):
     config = tracing_config.TracingConfig()
     for c in ['webkit.console', 'blink.console', 'gpu']:
       config.tracing_category_filter.AddIncludedCategory(c)
-    config.enable_chrome_trace = True
+    config.tracing_options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config, 60)
 
   def _FormatException(self, low_or_high, mb_used):

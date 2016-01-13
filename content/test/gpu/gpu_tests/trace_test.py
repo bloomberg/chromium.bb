@@ -64,7 +64,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
     config = tracing_config.TracingConfig()
     for cat in TOPLEVEL_CATEGORIES:
       config.tracing_category_filter.AddDisabledByDefault(cat)
-    config.enable_chrome_trace = True
+    config.tracing_options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config, 60)
 
   def _FormatException(self, category):

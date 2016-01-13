@@ -37,7 +37,7 @@ class TimelineController(object):
     config.tracing_category_filter.AddFilterString(self.trace_categories)
     for delay in page.GetSyntheticDelayCategories():
       config.tracing_category_filter.AddSyntheticDelay(delay)
-    config.enable_chrome_trace = True
+    config.tracing_options.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config)
 
   def Start(self, tab):
