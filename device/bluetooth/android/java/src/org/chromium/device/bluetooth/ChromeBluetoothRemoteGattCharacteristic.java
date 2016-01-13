@@ -8,6 +8,8 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
+import java.util.List;
+
 /**
  * Exposes android.bluetooth.BluetoothGattCharacteristic as necessary
  * for C++ device::BluetoothRemoteGattCharacteristicAndroid.
@@ -21,15 +23,17 @@ final class ChromeBluetoothRemoteGattCharacteristic {
 
     private long mNativeBluetoothRemoteGattCharacteristicAndroid;
     final Wrappers.BluetoothGattCharacteristicWrapper mCharacteristic;
+    final String mInstanceId;
     final ChromeBluetoothDevice mChromeDevice;
 
     private ChromeBluetoothRemoteGattCharacteristic(
             long nativeBluetoothRemoteGattCharacteristicAndroid,
-            Wrappers.BluetoothGattCharacteristicWrapper characteristicWrapper,
+            Wrappers.BluetoothGattCharacteristicWrapper characteristicWrapper, String instanceId,
             ChromeBluetoothDevice chromeDevice) {
         mNativeBluetoothRemoteGattCharacteristicAndroid =
                 nativeBluetoothRemoteGattCharacteristicAndroid;
         mCharacteristic = characteristicWrapper;
+        mInstanceId = instanceId;
         mChromeDevice = chromeDevice;
 
         mChromeDevice.mWrapperToChromeCharacteristicsMap.put(characteristicWrapper, this);
@@ -72,11 +76,12 @@ final class ChromeBluetoothRemoteGattCharacteristic {
     @CalledByNative
     private static ChromeBluetoothRemoteGattCharacteristic create(
             long nativeBluetoothRemoteGattCharacteristicAndroid,
-            Object bluetoothGattCarachteristicWrapper, Object chromeDevice) {
+            Object bluetoothGattCharacteristicWrapper, String instanceId,
+            ChromeBluetoothDevice chromeDevice) {
         return new ChromeBluetoothRemoteGattCharacteristic(
                 nativeBluetoothRemoteGattCharacteristicAndroid,
-                (Wrappers.BluetoothGattCharacteristicWrapper) bluetoothGattCarachteristicWrapper,
-                (ChromeBluetoothDevice) chromeDevice);
+                (Wrappers.BluetoothGattCharacteristicWrapper) bluetoothGattCharacteristicWrapper,
+                instanceId, chromeDevice);
     }
 
     // Implements BluetoothRemoteGattCharacteristicAndroid::GetUUID.
@@ -127,6 +132,21 @@ final class ChromeBluetoothRemoteGattCharacteristic {
         return true;
     }
 
+    // Creates objects for all descriptors. Designed only to be called by
+    // BluetoothRemoteGattCharacteristicAndroid::EnsureDescriptorsCreated.
+    @CalledByNative
+    private void createDescriptors() {
+        List<Wrappers.BluetoothGattDescriptorWrapper> descriptors =
+                mCharacteristic.getDescriptors();
+        for (Wrappers.BluetoothGattDescriptorWrapper descriptor : descriptors) {
+            // Create an adapter unique descriptor ID.
+            // TODO(crbug.com/576900) Unique descriptorInstanceId duplicate UUID values.
+            String descriptorInstanceId = mInstanceId + "/" + descriptor.getUuid().toString();
+            nativeCreateGattRemoteDescriptor(mNativeBluetoothRemoteGattCharacteristicAndroid,
+                    descriptorInstanceId, descriptor, mChromeDevice);
+        }
+    }
+
     // ---------------------------------------------------------------------------------------------
     // BluetoothAdapterDevice C++ methods declared for access from java:
 
@@ -136,4 +156,10 @@ final class ChromeBluetoothRemoteGattCharacteristic {
 
     // Binds to BluetoothRemoteGattCharacteristicAndroid::OnWrite.
     native void nativeOnWrite(long nativeBluetoothRemoteGattCharacteristicAndroid, int status);
+
+    // Binds to BluetoothRemoteGattCharacteristicAndroid::CreateGattRemoteDescriptor.
+    // TODO(http://crbug.com/505554): Replace 'Object' with specific type when JNI fixed.
+    private native void nativeCreateGattRemoteDescriptor(
+            long nativeBluetoothRemoteGattCharacteristicAndroid, String instanceId,
+            Object bluetoothGattDescriptorWrapper, Object chromeBluetoothDevice);
 }

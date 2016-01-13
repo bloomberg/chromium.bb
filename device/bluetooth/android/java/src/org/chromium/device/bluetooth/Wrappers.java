@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanCallback;
@@ -251,11 +252,15 @@ class Wrappers {
         private final BluetoothDevice mDevice;
         private final HashMap<BluetoothGattCharacteristic, BluetoothGattCharacteristicWrapper>
                 mCharacteristicsToWrappers;
+        private final HashMap<BluetoothGattDescriptor, BluetoothGattDescriptorWrapper>
+                mDescriptorsToWrappers;
 
         public BluetoothDeviceWrapper(BluetoothDevice device) {
             mDevice = device;
             mCharacteristicsToWrappers =
                     new HashMap<BluetoothGattCharacteristic, BluetoothGattCharacteristicWrapper>();
+            mDescriptorsToWrappers =
+                    new HashMap<BluetoothGattDescriptor, BluetoothGattDescriptorWrapper>();
         }
 
         public BluetoothGattWrapper connectGatt(
@@ -410,7 +415,8 @@ class Wrappers {
                 BluetoothGattCharacteristicWrapper characteristicWrapper =
                         mDeviceWrapper.mCharacteristicsToWrappers.get(characteristic);
                 if (characteristicWrapper == null) {
-                    characteristicWrapper = new BluetoothGattCharacteristicWrapper(characteristic);
+                    characteristicWrapper =
+                            new BluetoothGattCharacteristicWrapper(characteristic, mDeviceWrapper);
                     mDeviceWrapper.mCharacteristicsToWrappers.put(
                             characteristic, characteristicWrapper);
                 }
@@ -432,10 +438,31 @@ class Wrappers {
      * Wraps android.bluetooth.BluetoothGattCharacteristic.
      */
     static class BluetoothGattCharacteristicWrapper {
-        private final BluetoothGattCharacteristic mCharacteristic;
+        final BluetoothGattCharacteristic mCharacteristic;
+        final BluetoothDeviceWrapper mDeviceWrapper;
 
-        public BluetoothGattCharacteristicWrapper(BluetoothGattCharacteristic characteristic) {
+        public BluetoothGattCharacteristicWrapper(
+                BluetoothGattCharacteristic characteristic, BluetoothDeviceWrapper deviceWrapper) {
             mCharacteristic = characteristic;
+            mDeviceWrapper = deviceWrapper;
+        }
+
+        public List<BluetoothGattDescriptorWrapper> getDescriptors() {
+            List<BluetoothGattDescriptor> descriptors = mCharacteristic.getDescriptors();
+
+            ArrayList<BluetoothGattDescriptorWrapper> descriptorsWrapped =
+                    new ArrayList<BluetoothGattDescriptorWrapper>(descriptors.size());
+
+            for (BluetoothGattDescriptor descriptor : descriptors) {
+                BluetoothGattDescriptorWrapper descriptorWrapper =
+                        mDeviceWrapper.mDescriptorsToWrappers.get(descriptor);
+                if (descriptorWrapper == null) {
+                    descriptorWrapper = new BluetoothGattDescriptorWrapper(descriptor);
+                    mDeviceWrapper.mDescriptorsToWrappers.put(descriptor, descriptorWrapper);
+                }
+                descriptorsWrapped.add(descriptorWrapper);
+            }
+            return descriptorsWrapped;
         }
 
         public int getInstanceId() {
@@ -456,6 +483,21 @@ class Wrappers {
 
         public boolean setValue(byte[] value) {
             return mCharacteristic.setValue(value);
+        }
+    }
+
+    /**
+     * Wraps android.bluetooth.BluetoothGattDescriptor.
+     */
+    static class BluetoothGattDescriptorWrapper {
+        private final BluetoothGattDescriptor mDescriptor;
+
+        public BluetoothGattDescriptorWrapper(BluetoothGattDescriptor descriptor) {
+            mDescriptor = descriptor;
+        }
+
+        public UUID getUuid() {
+            return mDescriptor.getUuid();
         }
     }
 }

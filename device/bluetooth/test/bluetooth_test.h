@@ -15,6 +15,7 @@
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
+#include "device/bluetooth/bluetooth_gatt_descriptor.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -169,6 +170,11 @@ class BluetoothTestBase : public testing::Test {
   // an unknown reason.
   virtual void SimulateGattCharacteristicWriteWillFailSynchronouslyOnce(
       BluetoothGattCharacteristic* characteristic) {}
+
+  // Simulates a Descriptor on a service.
+  virtual void SimulateGattDescriptor(
+      BluetoothGattCharacteristic* characteristic,
+      const std::string& uuid) {}
 
   // Removes the device from the adapter and deletes it.
   virtual void DeleteDevice(BluetoothDevice* device);

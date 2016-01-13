@@ -429,15 +429,17 @@ class Fakes {
         final UUID mUuid;
         byte[] mValue;
         static FakeBluetoothGattCharacteristic sRememberedCharacteristic;
+        final ArrayList<Wrappers.BluetoothGattDescriptorWrapper> mDescriptors;
 
         public FakeBluetoothGattCharacteristic(
                 FakeBluetoothGattService service, int instanceId, int properties, UUID uuid) {
-            super(null);
+            super(null, null);
             mService = service;
             mInstanceId = instanceId;
             mProperties = properties;
             mUuid = uuid;
             mValue = new byte[0];
+            mDescriptors = new ArrayList<Wrappers.BluetoothGattDescriptorWrapper>();
         }
 
         // Implements BluetoothTestAndroid::RememberCharacteristicForSubsequentAction.
@@ -514,8 +516,33 @@ class Fakes {
                     .mWriteCharacteristicWillFailSynchronouslyOnce = true;
         }
 
+        // Create a descriptor and add it to this characteristic.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void addDescriptor(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, String uuidString) {
+            FakeBluetoothGattCharacteristic fakeCharacteristic =
+                    (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+            UUID uuid = UUID.fromString(uuidString);
+
+            // Check for duplicates
+            for (Wrappers.BluetoothGattDescriptorWrapper descriptor :
+                    fakeCharacteristic.mDescriptors) {
+                if (descriptor.getUuid().equals(uuid)) {
+                    throw new IllegalArgumentException(
+                            "FakeBluetoothGattCharacteristic addDescriptor called with uuid '"
+                            + uuidString + "' that has already been added to this characteristic.");
+                }
+            }
+            fakeCharacteristic.mDescriptors.add(new FakeBluetoothGattDescriptor(uuid));
+        }
+
         // -----------------------------------------------------------------------------------------
         // Wrappers.BluetoothGattCharacteristicWrapper overrides:
+
+        @Override
+        public List<Wrappers.BluetoothGattDescriptorWrapper> getDescriptors() {
+            return mDescriptors;
+        }
 
         @Override
         public int getInstanceId() {
@@ -541,6 +568,26 @@ class Fakes {
         public boolean setValue(byte[] value) {
             mValue = value;
             return true;
+        }
+    }
+
+    /**
+     * Fakes android.bluetooth.BluetoothGattDescriptor.
+     */
+    static class FakeBluetoothGattDescriptor extends Wrappers.BluetoothGattDescriptorWrapper {
+        final UUID mUuid;
+
+        public FakeBluetoothGattDescriptor(UUID uuid) {
+            super(null);
+            mUuid = uuid;
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // Wrappers.BluetoothGattDescriptorWrapper overrides:
+
+        @Override
+        public UUID getUuid() {
+            return mUuid;
         }
     }
 

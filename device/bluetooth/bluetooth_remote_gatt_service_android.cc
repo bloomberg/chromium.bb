@@ -192,7 +192,7 @@ void BluetoothRemoteGattServiceAndroid::CreateGattRemoteCharacteristic(
   characteristics_.set(
       instance_id_string,
       BluetoothRemoteGattCharacteristicAndroid::Create(
-          instance_id_string, bluetooth_gatt_characteristic_wrapper,
+          adapter_, instance_id_string, bluetooth_gatt_characteristic_wrapper,
           chrome_bluetooth_device));
 }
 
@@ -207,7 +207,7 @@ void BluetoothRemoteGattServiceAndroid::EnsureCharacteristicsCreated() const {
     return;
 
   // Java call
-  Java_ChromeBluetoothRemoteGattService_ensureCharacteristicsCreated(
+  Java_ChromeBluetoothRemoteGattService_createCharacteristics(
       AttachCurrentThread(), j_service_.obj());
 }
 

@@ -701,4 +701,57 @@ TEST_F(BluetoothGattCharacteristicTest, StartNotifySession_Multiple) {
 }
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_FindNone) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  EXPECT_EQ(0u, characteristic1_->GetDescriptors().size());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
+TEST_F(BluetoothGattCharacteristicTest, GetDescriptors_and_GetDescriptor) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  // Add several Descriptors:
+  BluetoothUUID uuid1("11111111-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID uuid2("22222222-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID uuid3("33333333-0000-1000-8000-00805f9b34fb");
+  BluetoothUUID uuid4("44444444-0000-1000-8000-00805f9b34fb");
+  SimulateGattDescriptor(characteristic1_, uuid1.canonical_value());
+  SimulateGattDescriptor(characteristic1_, uuid2.canonical_value());
+  SimulateGattDescriptor(characteristic2_, uuid3.canonical_value());
+  SimulateGattDescriptor(characteristic2_, uuid4.canonical_value());
+
+  // Verify that GetDescriptor can retrieve descriptors again by ID,
+  // and that the same Descriptor is returned when searched by ID.
+  EXPECT_EQ(2u, characteristic1_->GetDescriptors().size());
+  EXPECT_EQ(2u, characteristic2_->GetDescriptors().size());
+  std::string c1_id1 = characteristic1_->GetDescriptors()[0]->GetIdentifier();
+  std::string c1_id2 = characteristic1_->GetDescriptors()[1]->GetIdentifier();
+  std::string c2_id1 = characteristic2_->GetDescriptors()[0]->GetIdentifier();
+  std::string c2_id2 = characteristic2_->GetDescriptors()[1]->GetIdentifier();
+  BluetoothUUID c1_uuid1 = characteristic1_->GetDescriptors()[0]->GetUUID();
+  BluetoothUUID c1_uuid2 = characteristic1_->GetDescriptors()[1]->GetUUID();
+  BluetoothUUID c2_uuid1 = characteristic2_->GetDescriptors()[0]->GetUUID();
+  BluetoothUUID c2_uuid2 = characteristic2_->GetDescriptors()[1]->GetUUID();
+  EXPECT_EQ(c1_uuid1, characteristic1_->GetDescriptor(c1_id1)->GetUUID());
+  EXPECT_EQ(c1_uuid2, characteristic1_->GetDescriptor(c1_id2)->GetUUID());
+  EXPECT_EQ(c2_uuid1, characteristic2_->GetDescriptor(c2_id1)->GetUUID());
+  EXPECT_EQ(c2_uuid2, characteristic2_->GetDescriptor(c2_id2)->GetUUID());
+
+  // GetDescriptors & GetDescriptor return the same object for the same ID:
+  EXPECT_EQ(characteristic1_->GetDescriptors()[0],
+            characteristic1_->GetDescriptor(c1_id1));
+  EXPECT_EQ(characteristic1_->GetDescriptor(c1_id1),
+            characteristic1_->GetDescriptor(c1_id1));
+
+  // Characteristic 1 has descriptor uuids 1 and 2 (we don't know the order).
+  EXPECT_TRUE(c1_uuid1 == uuid1 || c1_uuid2 == uuid1);
+  EXPECT_TRUE(c1_uuid1 == uuid2 || c1_uuid2 == uuid2);
+  // ... but not uuid 3
+  EXPECT_FALSE(c1_uuid1 == uuid3 || c1_uuid2 == uuid3);
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace device

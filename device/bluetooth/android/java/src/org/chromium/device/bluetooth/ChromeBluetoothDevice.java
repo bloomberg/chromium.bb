@@ -37,6 +37,8 @@ final class ChromeBluetoothDevice {
     private final BluetoothGattCallbackImpl mBluetoothGattCallbackImpl;
     final HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
             ChromeBluetoothRemoteGattCharacteristic> mWrapperToChromeCharacteristicsMap;
+    final HashMap<Wrappers.BluetoothGattDescriptorWrapper, ChromeBluetoothRemoteGattDescriptor>
+            mWrapperToChromeDescriptorsMap;
 
     private ChromeBluetoothDevice(
             long nativeBluetoothDeviceAndroid, Wrappers.BluetoothDeviceWrapper deviceWrapper) {
@@ -47,6 +49,8 @@ final class ChromeBluetoothDevice {
         mWrapperToChromeCharacteristicsMap =
                 new HashMap<Wrappers.BluetoothGattCharacteristicWrapper,
                         ChromeBluetoothRemoteGattCharacteristic>();
+        mWrapperToChromeDescriptorsMap = new HashMap<Wrappers.BluetoothGattDescriptorWrapper,
+                ChromeBluetoothRemoteGattDescriptor>();
         Log.v(TAG, "ChromeBluetoothDevice created.");
     }
 
@@ -164,6 +168,8 @@ final class ChromeBluetoothDevice {
                 @Override
                 public void run() {
                     if (mNativeBluetoothDeviceAndroid != 0) {
+                        // TODO(crbug.com/576906): Update or replace existing GATT objects if they
+                        //                         change after initial discovery.
                         for (Wrappers.BluetoothGattServiceWrapper service :
                                 mBluetoothGatt.getServices()) {
                             // Create an adapter unique service ID. getInstanceId only differs

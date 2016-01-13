@@ -8,10 +8,14 @@
 #include <stdint.h>
 
 #include "base/android/jni_android.h"
+#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
 #include "device/bluetooth/bluetooth_gatt_characteristic.h"
 
 namespace device {
+
+class BluetoothAdapterAndroid;
+class BluetoothRemoteGattDescriptorAndroid;
 
 // BluetoothRemoteGattCharacteristicAndroid along with its owned Java class
 // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattCharacteristic
@@ -31,6 +35,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   // reference
   // to |bluetooth_gatt_characteristic_wrapper|.
   static scoped_ptr<BluetoothRemoteGattCharacteristicAndroid> Create(
+      BluetoothAdapterAndroid* adapter,
       const std::string& instance_id,
       jobject /* BluetoothGattCharacteristicWrapper */
       bluetooth_gatt_characteristic_wrapper,
@@ -77,8 +82,29 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
                const base::android::JavaParamRef<jobject>& jcaller,
                int32_t status);
 
+  // Creates a Bluetooth GATT descriptor object and adds it to |descriptors_|,
+  // DCHECKing that it has not already been created.
+  void CreateGattRemoteDescriptor(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& caller,
+      const base::android::JavaParamRef<jstring>& instanceId,
+      const base::android::JavaParamRef<
+          jobject>& /* BluetoothGattDescriptorWrapper */
+      bluetooth_gatt_descriptor_wrapper,
+      const base::android::JavaParamRef<
+          jobject>& /* ChromeBluetoothCharacteristic */
+      chrome_bluetooth_characteristic);
+
  private:
-  BluetoothRemoteGattCharacteristicAndroid(const std::string& instance_id);
+  BluetoothRemoteGattCharacteristicAndroid(BluetoothAdapterAndroid* adapter,
+                                           const std::string& instance_id);
+
+  // Populates |descriptors_| from Java objects if necessary.
+  void EnsureDescriptorsCreated() const;
+
+  // The adapter associated with this service. It's ok to store a raw pointer
+  // here since |adapter_| indirectly owns this instance.
+  BluetoothAdapterAndroid* adapter_;
 
   // Java object
   // org.chromium.device.bluetooth.ChromeBluetoothRemoteGattCharacteristic.
@@ -98,6 +124,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristicAndroid
   ErrorCallback write_error_callback_;
 
   std::vector<uint8_t> value_;
+
+  // Map of descriptors, keyed by descriptor identifier.
+  base::ScopedPtrHashMap<std::string,
+                         scoped_ptr<BluetoothRemoteGattDescriptorAndroid>>
+      descriptors_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattCharacteristicAndroid);
 };

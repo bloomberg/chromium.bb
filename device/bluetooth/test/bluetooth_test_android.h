@@ -62,6 +62,8 @@ class BluetoothTestAndroid : public BluetoothTestBase {
       BluetoothGattService::GattErrorCode) override;
   void SimulateGattCharacteristicWriteWillFailSynchronouslyOnce(
       BluetoothGattCharacteristic* characteristic) override;
+  void SimulateGattDescriptor(BluetoothGattCharacteristic* characteristic,
+                              const std::string& uuid) override;
 
   // Records that Java FakeBluetoothDevice connectGatt was called.
   void OnFakeBluetoothDeviceConnectGattCalled(
