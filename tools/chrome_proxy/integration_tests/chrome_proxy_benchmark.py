@@ -202,6 +202,17 @@ class ChromeProxyReenableAfterBypass(ChromeProxyBenchmark):
     return 'chrome_proxy_benchmark.reenable_after_bypass.reenable_after_bypass'
 
 
+class ChromeProxyReenableAfterSetBypass(ChromeProxyBenchmark):
+  tag = 'reenable_after_set_bypass'
+  test = measurements.ChromeProxyReenableAfterSetBypass
+  page_set = pagesets.ReenableAfterSetBypassStorySet
+
+  @classmethod
+  def Name(cls):
+    return ('chrome_proxy_benchmark.reenable_after_set_bypass' +
+            '.reenable_after_set_bypass')
+
+
 class ChromeProxySmoke(ChromeProxyBenchmark):
   tag = 'smoke'
   test = measurements.ChromeProxySmoke

@@ -673,6 +673,83 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     results.AddValue(scalar.ScalarValue(
         results.current_page, 'via', 'count', via_count))
 
+  def AddResultsForReenableAfterSetBypass(
+      self, tab, results, bypass_seconds):
+    """Verify results for a re-enable after bypass test.
+
+    Args:
+        tab: the tab for the test.
+        results: the results object to add the results values to.
+        bypass_seconds: the duration of the bypass
+    """
+    bypass_count = 0
+    via_count = 0
+
+    # Verify the bypass url was bypassed.
+    for resp in self.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            'Response for %s should not have via header.\n'
+            'Reponse: status=(%d, %s)\nHeaders:\n %s' % (
+                r.url, r.status, r.status_text, r.headers))
+      else:
+        bypass_count += 1
+
+    # Navigate to a test page and verify it's being bypassed.
+    tab.ClearCache(force=True)
+    before_metrics = ChromeProxyMetric()
+    before_metrics.Start(results.current_page, tab)
+    tab.Navigate('http://chromeproxy-test.appspot.com/default')
+    tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 10)
+    before_metrics.Stop(results.current_page, tab)
+
+    for resp in before_metrics.IterResponses(tab):
+      if resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            'Response for %s should not have via header; proxy should still '
+            'be bypassed.\nReponse: status=(%d, %s)\nHeaders:\n %s' % (
+                r.url, r.status, r.status_text, r.headers))
+      else:
+        bypass_count += 1
+    if bypass_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one response to be bypassed before the bypass '
+          'expired, but zero such responses were received.')
+
+    # Wait for the bypass to expire, with the overhead of the previous steps
+    # the bypass duration will have been exceeded after this delay.
+    time.sleep(bypass_seconds)
+
+    # Navigate to the test pass again and verify data saver is no longer
+    # bypassed.
+    tab.ClearCache(force=True)
+    after_metrics = ChromeProxyMetric()
+    after_metrics.Start(results.current_page, tab)
+    tab.Navigate('http://chromeproxy-test.appspot.com/default')
+    tab.WaitForJavaScriptExpression('performance.timing.loadEventStart', 10)
+    after_metrics.Stop(results.current_page, tab)
+
+    for resp in after_metrics.IterResponses(tab):
+      if not resp.HasChromeProxyViaHeader():
+        r = resp.response
+        raise ChromeProxyMetricException, (
+            'Response for %s should have via header; proxy should no longer '
+            'be bypassed.\nReponse: status=(%d, %s)\nHeaders:\n %s' % (
+                r.url, r.status, r.status_text, r.headers))
+      else:
+        via_count += 1
+    if via_count == 0:
+      raise ChromeProxyMetricException, (
+          'Expected at least one response through the proxy after the bypass '
+          'expired, but zero such responses were received.')
+
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'bypass', 'count', bypass_count))
+    results.AddValue(scalar.ScalarValue(
+        results.current_page, 'via', 'count', via_count))
+
   def AddResultsForClientConfig(self, tab, results):
     resources_with_old_auth = 0
     resources_with_new_auth = 0

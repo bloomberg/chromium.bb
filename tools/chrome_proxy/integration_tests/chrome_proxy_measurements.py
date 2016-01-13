@@ -407,6 +407,23 @@ class ChromeProxyReenableAfterBypass(ChromeProxyValidation):
         self._page.bypass_seconds_max)
 
 
+class ChromeProxyReenableAfterSetBypass(ChromeProxyValidation):
+  """Correctness test for re-enabling proxies after bypasses with set duration.
+
+  This test loads a page that causes all data reduction proxies to be bypassed
+  for 20 seconds.
+  """
+
+  def __init__(self):
+    super(ChromeProxyReenableAfterSetBypass, self).__init__(
+        restart_after_each_page=True,
+        metrics=metrics.ChromeProxyMetric())
+
+  def AddResults(self, tab, results):
+    self._metrics.AddResultsForReenableAfterSetBypass(
+        tab, results, self._page.BYPASS_SECONDS)
+
+
 class ChromeProxySmoke(ChromeProxyValidation):
   """Smoke measurement for basic chrome proxy correctness."""
 
