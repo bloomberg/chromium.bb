@@ -172,25 +172,6 @@ bool ProcessLaunchNotification(
   return true;
 }
 
-// Returns true if Chrome needs to be relaunched into Windows 8 immersive mode.
-// Following conditions apply:-
-// 1. Windows 8 or greater.
-// 2. Not in Windows 8 immersive mode.
-// 3. Chrome is default browser.
-// 4. Process integrity level is not high.
-// 5. The profile data directory is the default directory.
-// 6. Last used mode was immersive/machine is a tablet.
-// TODO(ananta)
-// Move this function to a common place as the Windows 8 delegate_execute
-// handler can possibly use this.
-bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
-  // Returning false from this function doesn't mean we don't launch immersive
-  // mode in Aura. This function is specifically called in case when we need
-  // to relaunch desktop launched chrome into immersive mode through 'relaunch'
-  // menu. In case of Aura, we will use delegate_execute to do the relaunch.
-  return false;
-}
-
 bool DisplayShouldKillMessageBox() {
   return chrome::ShowMessageBox(
              NULL, l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
