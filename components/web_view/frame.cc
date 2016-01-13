@@ -25,12 +25,12 @@
 
 using mus::Window;
 
-DECLARE_WINDOW_PROPERTY_TYPE(web_view::Frame*);
+MUS_DECLARE_WINDOW_PROPERTY_TYPE(web_view::Frame*);
 
 namespace web_view {
 
 // Used to find the Frame associated with a Window.
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Frame*, kFrame, nullptr);
+MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Frame*, kFrame, nullptr);
 
 namespace {
 

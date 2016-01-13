@@ -130,8 +130,8 @@ TEST_F(WindowTest, DrawnAndVisible) {
 }
 
 namespace {
-DEFINE_WINDOW_PROPERTY_KEY(int, kIntKey, -2);
-DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
+MUS_DEFINE_WINDOW_PROPERTY_KEY(int, kIntKey, -2);
+MUS_DEFINE_WINDOW_PROPERTY_KEY(const char*, kStringKey, "squeamish");
 }
 
 TEST_F(WindowTest, Property) {
@@ -179,7 +179,7 @@ class TestProperty {
 
 TestProperty* TestProperty::last_deleted_ = NULL;
 
-DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
+MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(TestProperty, kOwnedKey, NULL);
 
 }  // namespace
 

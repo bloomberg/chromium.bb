@@ -14,31 +14,33 @@
 //
 //  #include "components/mus/public/cpp/window_property.h"
 //
-//  DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType);
+//  MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType);
 //  namespace foo {
 //    // Use this to define an exported property that is primitive,
 //    // or a pointer you don't want automatically deleted.
-//    DEFINE_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
+//    MUS_DEFINE_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //
 //    // Use this to define an exported property whose value is a heap
 //    // allocated object, and has to be owned and freed by the window.
-//    DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
+//    MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey,
+//        nullptr);
 //
 //    // Use this to define a non exported property that is primitive,
 //    // or a pointer you don't want to automatically deleted, and is used
 //    // only in a specific file. This will define the property in an unnamed
 //    // namespace which cannot be accessed from another file.
-//    DEFINE_LOCAL_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
+//    MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(MyType, kMyKey, MyDefault);
 //
 //  }  // foo namespace
 //
 // To define a new type used for WindowProperty.
 //
 //  // outside all namespaces:
-//  DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType)
+//  MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(FOO_EXPORT, MyType)
 //
-// If a property type is not exported, use DECLARE_WINDOW_PROPERTY_TYPE(MyType)
-// which is a shorthand for DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, MyType).
+// If a property type is not exported, use
+// MUS_DECLARE_WINDOW_PROPERTY_TYPE(MyType) which is a shorthand for
+// MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, MyType).
 
 namespace mus {
 
@@ -118,17 +120,17 @@ void Window::ClearLocalProperty(const WindowProperty<T>* property) {
 }  // namespace mus
 
 // Macros to instantiate the property getter/setter template functions.
-#define DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(EXPORT, T) \
-  template EXPORT void mus::Window::SetLocalProperty(    \
-      const mus::WindowProperty<T>*, T);                 \
-  template EXPORT T mus::Window::GetLocalProperty(       \
-      const mus::WindowProperty<T>*) const;              \
-  template EXPORT void mus::Window::ClearLocalProperty(  \
+#define MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(EXPORT, T) \
+  template EXPORT void mus::Window::SetLocalProperty(        \
+      const mus::WindowProperty<T>*, T);                     \
+  template EXPORT T mus::Window::GetLocalProperty(           \
+      const mus::WindowProperty<T>*) const;                  \
+  template EXPORT void mus::Window::ClearLocalProperty(      \
       const mus::WindowProperty<T>*);
-#define DECLARE_WINDOW_PROPERTY_TYPE(T) \
-  DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
+#define MUS_DECLARE_WINDOW_PROPERTY_TYPE(T) \
+  MUS_DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(, T)
 
-#define DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                     \
+#define MUS_DEFINE_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)                 \
   static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
                 "Property type must fit in 64 bits");                       \
   namespace {                                                               \
@@ -136,7 +138,7 @@ void Window::ClearLocalProperty(const WindowProperty<T>* property) {
   }                                                                         \
   const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;
 
-#define DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)               \
+#define MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)           \
   static_assert(sizeof(TYPE) <= sizeof(int64_t),                            \
                 "Property type must fit in 64 bits");                       \
   namespace {                                                               \
@@ -144,7 +146,7 @@ void Window::ClearLocalProperty(const WindowProperty<T>* property) {
   const mus::WindowProperty<TYPE>* const NAME = &NAME##_Value;              \
   }
 
-#define DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)           \
+#define MUS_DEFINE_OWNED_WINDOW_PROPERTY_KEY(TYPE, NAME, DEFAULT)       \
   namespace {                                                           \
   void Deallocator##NAME(int64_t p) {                                   \
     enum { type_must_be_complete = sizeof(TYPE) };                      \

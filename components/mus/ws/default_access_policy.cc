@@ -37,18 +37,18 @@ bool DefaultAccessPolicy::CanAddWindow(const ServerWindow* parent,
 bool DefaultAccessPolicy::CanAddTransientWindow(
     const ServerWindow* parent,
     const ServerWindow* child) const {
-  return WasCreatedByThisConnection(child) &&
+  return (delegate_->HasRootForAccessPolicy(child) ||
+          WasCreatedByThisConnection(child)) &&
          (delegate_->HasRootForAccessPolicy(parent) ||
           WasCreatedByThisConnection(parent));
 }
 
 bool DefaultAccessPolicy::CanRemoveTransientWindowFromParent(
     const ServerWindow* window) const {
-  if (!WasCreatedByThisConnection(window))
-    return false;  // Can only unparent windows we created.
-
-  return delegate_->HasRootForAccessPolicy(window->transient_parent()) ||
-         WasCreatedByThisConnection(window->transient_parent());
+  return (delegate_->HasRootForAccessPolicy(window) ||
+          WasCreatedByThisConnection(window)) &&
+         (delegate_->HasRootForAccessPolicy(window->transient_parent()) ||
+          WasCreatedByThisConnection(window->transient_parent()));
 }
 
 bool DefaultAccessPolicy::CanReorderWindow(

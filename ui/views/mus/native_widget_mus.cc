@@ -16,6 +16,7 @@
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/mus/mus_util.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme_aura.h"
@@ -30,8 +31,12 @@
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/focus_controller.h"
 
+DECLARE_WINDOW_PROPERTY_TYPE(mus::Window*);
+
 namespace views {
 namespace {
+
+DEFINE_WINDOW_PROPERTY_KEY(mus::Window*, kMusWindow, nullptr);
 
 // TODO: figure out what this should be.
 class FocusRulesImpl : public wm::BaseFocusRules {
@@ -288,6 +293,7 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   window_tree_host_->AddObserver(this);
   window_tree_host_->InitHost();
   aura::Env::GetInstance()->set_context_factory(default_context_factory);
+  window_tree_host_->window()->SetProperty(kMusWindow, window_);
 
   focus_client_.reset(new wm::FocusController(new FocusRulesImpl));
 
@@ -308,8 +314,16 @@ void NativeWidgetMus::InitNativeWidget(const Widget::InitParams& params) {
   content_->Show();
   content_->SetTransparent(true);
   content_->SetFillsBoundsCompletely(false);
-
   window_tree_host_->window()->AddChild(content_);
+
+  // Set-up transiency if appropriate.
+  if (params.parent && !params.child) {
+    aura::Window* parent_root = params.parent->GetRootWindow();
+    mus::Window* parent_mus = parent_root->GetProperty(kMusWindow);
+    if (parent_mus)
+      parent_mus->AddTransientWindow(window_);
+  }
+
   // TODO(beng): much else, see [Desktop]NativeWidgetAura.
 
   native_widget_delegate_->OnNativeWidgetCreated(false);

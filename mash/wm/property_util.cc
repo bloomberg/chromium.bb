@@ -16,7 +16,7 @@ namespace mash {
 namespace wm {
 namespace {
 
-DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Shadow*, kLocalShadowProperty, nullptr);
+MUS_DEFINE_LOCAL_WINDOW_PROPERTY_KEY(Shadow*, kLocalShadowProperty, nullptr);
 
 }  // namespace
 
