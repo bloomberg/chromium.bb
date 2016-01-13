@@ -2576,6 +2576,9 @@
   "SupervisedUserCreationEnabled": {
   },
 
+  "SupervisedUserContentProviderEnabled": {
+  },
+
   "AutoCleanUpStrategy": {
   },
 

@@ -59,6 +59,11 @@ public class WebRestrictionsContentProviderTest {
             protected boolean requestInsert(String url) {
                 return false;
             }
+
+            @Override
+            protected boolean contentProviderEnabled() {
+                return false;
+            }
         });
         mContentProvider.onCreate();
         ShadowContentResolver.registerProvider(AUTHORITY, mContentProvider);
@@ -74,6 +79,10 @@ public class WebRestrictionsContentProviderTest {
 
     @Test
     public void testQuery() {
+        when(mContentProvider.contentProviderEnabled()).thenReturn(false);
+        assertThat(mContentResolver.query(mUri.buildUpon().appendPath("authorized").build(), null,
+                "url = 'dummy'", null, null), is(nullValue()));
+        when(mContentProvider.contentProviderEnabled()).thenReturn(true);
         when(mContentProvider.shouldProceed(anyString()))
                 .thenReturn(new Pair<Boolean, String>(false, "Error Message"));
         Cursor cursor = mContentResolver.query(mUri.buildUpon().appendPath("authorized").build(),
@@ -94,6 +103,7 @@ public class WebRestrictionsContentProviderTest {
     public void testInsert() {
         ContentValues values = new ContentValues();
         values.put("url", "dummy2");
+        when(mContentProvider.contentProviderEnabled()).thenReturn(true);
         when(mContentProvider.requestInsert(anyString())).thenReturn(false);
         assertThat(
                 mContentResolver.insert(mUri.buildUpon().appendPath("requested").build(), values),
@@ -105,10 +115,15 @@ public class WebRestrictionsContentProviderTest {
                 mContentResolver.insert(mUri.buildUpon().appendPath("requested").build(), values),
                 is(not(nullValue())));
         verify(mContentProvider).requestInsert("dummy3");
+        when(mContentProvider.contentProviderEnabled()).thenReturn(false);
+        assertThat(
+                mContentResolver.insert(mUri.buildUpon().appendPath("requested").build(), values),
+                is(nullValue()));
     }
 
     @Test
     public void testGetType() {
+        when(mContentProvider.contentProviderEnabled()).thenReturn(true);
         assertThat(mContentResolver.getType(mUri.buildUpon().appendPath("junk").build()),
                 is(nullValue()));
         when(mContentProvider.canInsert()).thenReturn(false);
@@ -117,5 +132,8 @@ public class WebRestrictionsContentProviderTest {
         when(mContentProvider.canInsert()).thenReturn(true);
         assertThat(mContentResolver.getType(mUri.buildUpon().appendPath("requested").build()),
                 is(not(nullValue())));
+        when(mContentProvider.contentProviderEnabled()).thenReturn(false);
+        assertThat(mContentResolver.getType(mUri.buildUpon().appendPath("junk").build()),
+                is(nullValue()));
     }
 }

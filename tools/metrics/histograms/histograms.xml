@@ -61463,6 +61463,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="309" label="Allow Dinosaur Easter Egg Game"/>
   <int value="310" label="Whether RC4 cipher suites in TLS are enabled"/>
   <int value="311" label="Default value for Display Rotation"/>
+  <int value="312" label="Allow export of supervised user data"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">

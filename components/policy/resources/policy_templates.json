@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 311
+#   For your editing convenience: highest ID currently used: 312
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -7324,6 +7324,27 @@
           'desc': '''If set to false, supervised-user creation by this user will be disabled. Any existing supervised users will still be available.
 
           If set to true or not configured, supervised users can be created and managed by this user.'''
+        },
+        {
+          # SupervisedUserContentProviderEnabled is never accessed through the policy framework, but is
+          # instead directly accessed as an Android App Restriction (see SupervisedUserContentProvider.java).
+          # It, however, needs to be here both because this is the source of the list of Chrome's App
+          # Restrictions on Android, and to avoid possible future naming conflicts with policies.
+          'name': 'SupervisedUserContentProviderEnabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['android:49-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile' : True,
+          },
+          'example_value': True,
+          'id': 312,
+          'caption': '''Enable the supervised user content provider''',
+          'tags': [],
+          'desc': '''If true and the user is a supervised user then other Android apps can query the user's web restrictions through a content provider.
+
+          If false or unset then the content provider returns no information.'''
         },
       ],
     },

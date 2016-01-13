@@ -58,6 +58,7 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
+        if (!contentProviderEnabled()) return null;
         // Check that this is the a query on the 'authorized' table
         // TODO(aberent): Provide useful queries on the 'requested' table.
         if (mContentUriMatcher.match(uri) != AUTHORIZED) return null;
@@ -76,7 +77,9 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
 
             @Override
             public String[] getColumnNames() {
-                return new String[] {"Should Proceed", "Error message"};
+                return new String[] {
+                        "Should Proceed", "Error message"
+                };
             }
 
             @Override
@@ -121,12 +124,14 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
     @Override
     public String getType(Uri uri) {
         // Abused to return whether we can insert
+        if (!contentProviderEnabled()) return null;
         if (mContentUriMatcher.match(uri) != REQUESTED) return null;
         return canInsert() ? "text/plain" : null;
     }
 
     @Override
     public Uri insert(Uri uri, ContentValues values) {
+        if (!contentProviderEnabled()) return null;
         if (mContentUriMatcher.match(uri) != REQUESTED) return null;
         String url = values.getAsString("url");
         if (requestInsert(url)) {
@@ -167,6 +172,11 @@ public abstract class WebRestrictionsContentProvider extends ContentProvider {
      * @param url the URL that is wanted.
      */
     protected abstract boolean requestInsert(final String url);
+
+    /**
+     * @return true if the content provider is enabled, false if not
+     */
+    protected abstract boolean contentProviderEnabled();
 
     /**
      * Call to tell observers that the filter has changed.

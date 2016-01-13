@@ -4,7 +4,14 @@
 
 package org.chromium.chrome.browser.superviseduser;
 
+import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.UserManager;
 import android.util.Pair;
 
 import org.chromium.base.ThreadUtils;
@@ -21,7 +28,13 @@ import java.util.concurrent.CountDownLatch;
  * Content provider for telling other apps (e.g. WebView apps) about the supervised user URL filter.
  */
 public class SupervisedUserContentProvider extends WebRestrictionsContentProvider {
+    private static final String SUPERVISED_USER_CONTENT_PROVIDER_ENABLED =
+            "SupervisedUserContentProviderEnabled";
     private long mNativeSupervisedUserContentProvider = 0;
+    private static Object sEnabledLock = new Object();
+
+    // Three value "boolean" caching enabled state, null if not yet known.
+    private static Boolean sEnabled = null;
 
     private long getSupervisedUserContentProvider() throws ProcessInitException {
         if (mNativeSupervisedUserContentProvider != 0) {
@@ -162,6 +175,59 @@ public class SupervisedUserContentProvider extends WebRestrictionsContentProvide
     @CalledByNative
     void onSupervisedUserFilterUpdated() {
         onFilterChanged();
+    }
+
+    private static Boolean getEnabled() {
+        synchronized (sEnabledLock) {
+            return sEnabled;
+        }
+    }
+
+    private static void setEnabled(boolean enabled) {
+        synchronized (sEnabledLock) {
+            sEnabled = enabled;
+        }
+    }
+
+    @Override
+    protected boolean contentProviderEnabled() {
+        if (getEnabled() != null) return getEnabled();
+        // There wasn't a fully functional App Restrictions system in Android (including the
+        // broadcast intent for updates) until Lollipop.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return false;
+        updateEnabledState();
+        createEnabledBroadcastReceiver();
+        return getEnabled();
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private void createEnabledBroadcastReceiver() {
+        IntentFilter restrictionsFilter = new IntentFilter(
+                Intent.ACTION_APPLICATION_RESTRICTIONS_CHANGED);
+        BroadcastReceiver restrictionsReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                updateEnabledState();
+            }
+        };
+        getContext().registerReceiver(restrictionsReceiver, restrictionsFilter);
+    }
+
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
+    private void updateEnabledState() {
+        // This method uses AppRestrictions directly, rather than using the Policy interface,
+        // because it must be callable in contexts in which the native library hasn't been
+        // loaded. It will always be called from a background thread (except possibly in tests)
+        // so can get the App Restrictions synchronously.
+        UserManager userManager = (UserManager) getContext().getSystemService(Context.USER_SERVICE);
+        Bundle appRestrictions = userManager
+                .getApplicationRestrictions(getContext().getPackageName());
+        setEnabled(appRestrictions.getBoolean(SUPERVISED_USER_CONTENT_PROVIDER_ENABLED));
+    };
+
+    @VisibleForTesting
+    public static void enableContentProviderForTesting() {
+        setEnabled(true);
     }
 
     @VisibleForTesting native long nativeCreateSupervisedUserContentProvider();

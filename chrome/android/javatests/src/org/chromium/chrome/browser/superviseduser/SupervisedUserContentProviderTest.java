@@ -68,6 +68,14 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
     }
 
     @SmallTest
+    public void testSupervisedUserDisabled() throws RemoteException, ExecutionException {
+        ContentProviderClient client = mResolver.acquireContentProviderClient(mAuthority);
+        assertNotNull(client);
+        Cursor cursor = client.query(mUri, null, "url = 'http://google.com'", null, null);
+        assertNull(cursor);
+    }
+
+    @SmallTest
     public void testNoSupervisedUser() throws RemoteException, ExecutionException {
         assertFalse(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
 
@@ -80,6 +88,7 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
         }));
         ContentProviderClient client = mResolver.acquireContentProviderClient(mAuthority);
         assertNotNull(client);
+        SupervisedUserContentProvider.enableContentProviderForTesting();
         Cursor cursor = client.query(mUri, null, "url = 'http://google.com'", null, null);
         assertNotNull(cursor);
         assertEquals(WebRestrictionsContentProvider.PROCEED, cursor.getInt(0));
@@ -103,6 +112,7 @@ public class SupervisedUserContentProviderTest extends ChromeActivityTestCaseBas
         }));
         ContentProviderClient client = mResolver.acquireContentProviderClient(mAuthority);
         assertNotNull(client);
+        SupervisedUserContentProvider.enableContentProviderForTesting();
         // setFilter for testing sets a default filter that blocks by default.
         mResolver.call(mUri, "setFilterForTesting", null, null);
         Cursor cursor = client.query(mUri, null, "url = 'http://www.google.com'", null, null);
