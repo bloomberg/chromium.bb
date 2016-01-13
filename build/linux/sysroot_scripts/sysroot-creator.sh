@@ -261,7 +261,7 @@ HacksAndPatchesAmd64() {
   sed -i -e 's|/lib/x86_64-linux-gnu/||g' ${lscripts}
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
-  # which overwrites PKG_CONFIG_PATH internally
+  # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
   mv ${INSTALL_ROOT}/usr/lib/x86_64-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
 
@@ -284,7 +284,7 @@ HacksAndPatchesI386() {
   sed -i -e 's|/lib/i386-linux-gnu/||g' ${lscripts}
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
-  # which overwrites PKG_CONFIG_PATH internally
+  # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig scripts"
   mv ${INSTALL_ROOT}/usr/lib/i386-linux-gnu/pkgconfig ${INSTALL_ROOT}/usr/lib/
 
@@ -307,7 +307,7 @@ HacksAndPatchesARM() {
   sed -i -e 's|/lib/arm-linux-gnueabihf/||g' ${lscripts}
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
-  # which overwrites PKG_CONFIG_PATH internally
+  # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig files"
   mv ${INSTALL_ROOT}/usr/lib/arm-linux-gnueabihf/pkgconfig \
       ${INSTALL_ROOT}/usr/lib/
@@ -326,7 +326,7 @@ HacksAndPatchesMips() {
   sed -i -e 's|/lib/mipsel-linux-gnu/||g' ${lscripts}
 
   # This is for chrome's ./build/linux/pkg-config-wrapper
-  # which overwrites PKG_CONFIG_PATH internally
+  # which overwrites PKG_CONFIG_LIBDIR internally
   SubBanner "Move pkgconfig files"
   mv ${INSTALL_ROOT}/usr/lib/mipsel-linux-gnu/pkgconfig \
       ${INSTALL_ROOT}/usr/lib/

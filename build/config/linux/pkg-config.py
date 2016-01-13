@@ -42,9 +42,11 @@ from optparse import OptionParser
 
 
 def SetConfigPath(options):
-  """Set the PKG_CONFIG_PATH environment variable.
+  """Set the PKG_CONFIG_LIBDIR environment variable.
+
   This takes into account any sysroot and architecture specification from the
-  options on the given command line."""
+  options on the given command line.
+  """
 
   sysroot = options.sysroot
   assert sysroot
@@ -55,19 +57,18 @@ def SetConfigPath(options):
     print "You must specify an architecture via -a if using a sysroot."
     sys.exit(1)
 
-  # Add the sysroot path to the environment's PKG_CONFIG_PATH
-  config_path = sysroot + '/usr/' + options.system_libdir + '/pkgconfig'
-  config_path += ':' + sysroot + '/usr/share/pkgconfig'
-  if 'PKG_CONFIG_PATH' in os.environ:
-    os.environ['PKG_CONFIG_PATH'] += ':' + config_path
-  else:
-    os.environ['PKG_CONFIG_PATH'] = config_path
+  libdir = sysroot + '/usr/' + options.system_libdir + '/pkgconfig'
+  libdir += ':' + sysroot + '/usr/share/pkgconfig'
+  os.environ['PKG_CONFIG_LIBDIR'] = libdir
+  return libdir
 
 
 def GetPkgConfigPrefixToStrip(args):
   """Returns the prefix from pkg-config where packages are installed.
+
   This returned prefix is the one that should be stripped from the beginning of
-  directory names to take into account sysroots."""
+  directory names to take into account sysroots.
+  """
   # Some sysroots, like the Chromium OS ones, may generate paths that are not
   # relative to the sysroot. For example,
   # /path/to/chroot/build/x86-generic/usr/lib/pkgconfig/pkg.pc may have all
@@ -131,9 +132,9 @@ def main():
       strip_out.append(re.compile(regexp))
 
   if options.sysroot:
-    SetConfigPath(options)
+    libdir = SetConfigPath(options)
     if options.debug:
-      sys.stderr.write('PKG_CONFIG_PATH=%s\n' % os.environ['PKG_CONFIG_PATH'])
+      sys.stderr.write('PKG_CONFIG_LIBDIR=%s\n' % libdir)
     prefix = GetPkgConfigPrefixToStrip(args)
   else:
     prefix = ''
@@ -150,27 +151,31 @@ def main():
     return 0
 
   if options.libdir:
+    cmd = [options.pkg_config, "--variable=libdir"] + args
+    if options.debug:
+      sys.stderr.write('Running: %s\n' % cmd)
     try:
-      libdir = subprocess.check_output([options.pkg_config,
-                                        "--variable=libdir"] +
-                                       args)
+      libdir = subprocess.check_output(cmd)
     except:
       print "Error from pkg-config."
       return 1
     sys.stdout.write(libdir.strip())
     return 0
 
+  cmd = [options.pkg_config, "--cflags", "--libs"] + args
+  if options.debug:
+    sys.stderr.write('Running: %s\n' % ' '.join(cmd))
+
   try:
-    flag_string = subprocess.check_output(
-        [ options.pkg_config, "--cflags", "--libs" ] +
-        args)
-    # For now just split on spaces to get the args out. This will break if
-    # pkgconfig returns quoted things with spaces in them, but that doesn't seem
-    # to happen in practice.
-    all_flags = flag_string.strip().split(' ')
+    flag_string = subprocess.check_output(cmd)
   except:
-    print "Could not run pkg-config."
+    sys.stderr.write('Could not run pkg-config.\n')
     return 1
+
+  # For now just split on spaces to get the args out. This will break if
+  # pkgconfig returns quoted things with spaces in them, but that doesn't seem
+  # to happen in practice.
+  all_flags = flag_string.strip().split(' ')
 
 
   sysroot = options.sysroot
