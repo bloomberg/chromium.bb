@@ -1024,6 +1024,11 @@ void RenderWidgetHostImpl::ForwardWheelEventWithLatencyInfo(
   input_router_->SendWheelEvent(wheel_with_latency);
 }
 
+void RenderWidgetHostImpl::ForwardEmulatedGestureEvent(
+    const blink::WebGestureEvent& gesture_event) {
+  ForwardGestureEvent(gesture_event);
+}
+
 void RenderWidgetHostImpl::ForwardGestureEvent(
     const blink::WebGestureEvent& gesture_event) {
   ForwardGestureEventWithLatencyInfo(gesture_event, ui::LatencyInfo());

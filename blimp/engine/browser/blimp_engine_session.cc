@@ -331,7 +331,19 @@ void BlimpEngineSession::OnWebInputEvent(
   if (!web_contents_ || !web_contents_->GetRenderViewHost())
     return;
 
-  // TODO(dtrainor): Send the input event directly to the render process?
+  content::RenderWidgetHost* host =
+      web_contents_->GetRenderViewHost()->GetWidget();
+
+  if (!host)
+    return;
+
+  if (blink::WebInputEvent::isGestureEventType(event->type)) {
+    const blink::WebGestureEvent& gesture_event =
+            *static_cast<const blink::WebGestureEvent*>(event.get());
+    host->ForwardGestureEvent(gesture_event);
+  } else {
+    NOTIMPLEMENTED() << "Dropping event of type " << event->type;
+  }
 }
 
 void BlimpEngineSession::OnCompositorMessageReceived(

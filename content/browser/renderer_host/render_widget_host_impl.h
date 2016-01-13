@@ -148,6 +148,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event) override;
   void ForwardWheelEvent(const blink::WebMouseWheelEvent& wheel_event) override;
   void ForwardKeyboardEvent(const NativeWebKeyboardEvent& key_event) override;
+  void ForwardGestureEvent(
+      const blink::WebGestureEvent& gesture_event) override;
   RenderProcessHost* GetProcess() const override;
   int GetRoutingID() const override;
   RenderWidgetHostViewBase* GetView() const override;
@@ -303,7 +305,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
       bool enabled, ui::GestureProviderConfigType config_type);
 
   // TouchEmulatorClient implementation.
-  void ForwardGestureEvent(
+  void ForwardEmulatedGestureEvent(
       const blink::WebGestureEvent& gesture_event) override;
   void ForwardEmulatedTouchEvent(
       const blink::WebTouchEvent& touch_event) override;

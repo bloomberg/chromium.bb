@@ -52,7 +52,8 @@ class TouchEmulatorTest : public testing::Test,
     EXPECT_EQ("", ExpectedEvents());
   }
 
-  void ForwardGestureEvent(const blink::WebGestureEvent& event) override {
+  void ForwardEmulatedGestureEvent(
+      const blink::WebGestureEvent& event) override {
     forwarded_events_.push_back(event.type);
   }
 
