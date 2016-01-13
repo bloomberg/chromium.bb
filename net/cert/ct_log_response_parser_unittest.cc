@@ -33,7 +33,7 @@ TEST(CTLogResponseParserTest, ParsesValidJsonSTH) {
   EXPECT_TRUE(FillSignedTreeHead(*sample_sth_json.get(), &tree_head));
 
   SignedTreeHead sample_sth;
-  GetSampleSignedTreeHead(&sample_sth);
+  ASSERT_TRUE(GetSampleSignedTreeHead(&sample_sth));
 
   ASSERT_EQ(SignedTreeHead::V1, tree_head.version);
   ASSERT_EQ(sample_sth.timestamp, tree_head.timestamp);
