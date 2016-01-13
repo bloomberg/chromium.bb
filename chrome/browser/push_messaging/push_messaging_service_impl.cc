@@ -9,6 +9,7 @@
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -247,10 +248,12 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     content::PushDeliveryStatus status) {
   DCHECK_GE(in_flight_message_deliveries_.count(app_id), 1u);
 
-  // TODO(mvanouwerkerk): Use ScopedClosureRunner for this.
   base::Closure completion_closure =
       base::Bind(&PushMessagingServiceImpl::DidHandleMessage,
                  weak_factory_.GetWeakPtr(), app_id, message_handled_closure);
+  // The completion_closure should run by default at the end of this function,
+  // unless it is explicitly passed to another function.
+  base::ScopedClosureRunner completion_closure_runner(completion_closure);
 
   // TODO(mvanouwerkerk): Show a warning in the developer console of the
   // Service Worker corresponding to app_id (and/or on an internals page).
@@ -268,23 +271,19 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
       if (in_flight_message_deliveries_.count(app_id) == 1) {
         notification_manager_.EnforceUserVisibleOnlyRequirements(
             requesting_origin, service_worker_registration_id,
-            completion_closure);
-      } else {
-        completion_closure.Run();
+            completion_closure_runner.Release());
       }
-#else
-      completion_closure.Run();
 #endif
       break;
     case content::PUSH_DELIVERY_STATUS_INVALID_MESSAGE:
     case content::PUSH_DELIVERY_STATUS_SERVICE_WORKER_ERROR:
-      completion_closure.Run();
       break;
     case content::PUSH_DELIVERY_STATUS_UNKNOWN_APP_ID:
     case content::PUSH_DELIVERY_STATUS_PERMISSION_DENIED:
     case content::PUSH_DELIVERY_STATUS_NO_SERVICE_WORKER:
       Unsubscribe(app_id, message.sender_id,
-                  base::Bind(&UnregisterCallbackToClosure, completion_closure));
+                  base::Bind(&UnregisterCallbackToClosure,
+                             completion_closure_runner.Release()));
       break;
   }
 
