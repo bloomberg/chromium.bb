@@ -2795,8 +2795,6 @@
       'browser/ui/webui/local_discovery/local_discovery_ui_handler.h',
     ],
     'chrome_browser_ui_toolbar_model_sources': [
-      'browser/ui/toolbar/chrome_toolbar_model.cc',
-      'browser/ui/toolbar/chrome_toolbar_model.h',
       'browser/ui/toolbar/toolbar_model_delegate.h',
       'browser/ui/toolbar/toolbar_model_impl.cc',
       'browser/ui/toolbar/toolbar_model_impl.h',

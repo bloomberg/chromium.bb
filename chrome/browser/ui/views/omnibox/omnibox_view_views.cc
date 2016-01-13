@@ -31,6 +31,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/search/search.h"
+#include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
@@ -436,9 +437,7 @@ void OmniboxViewViews::AccessibilitySetValue(const base::string16& new_value) {
 }
 
 void OmniboxViewViews::UpdateSecurityLevel() {
-  ChromeToolbarModel* chrome_toolbar_model =
-      static_cast<ChromeToolbarModel*>(controller()->GetToolbarModel());
-  security_level_ = chrome_toolbar_model->GetSecurityLevel(false);
+  security_level_ = controller()->GetToolbarModel()->GetSecurityLevel(false);
 }
 
 void OmniboxViewViews::SetWindowTextAndCaretPos(const base::string16& text,

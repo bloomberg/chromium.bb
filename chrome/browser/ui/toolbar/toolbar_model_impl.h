@@ -12,7 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
+#include "components/toolbar/toolbar_model.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -30,7 +30,7 @@ class X509Certificate;
 // This class is the model used by the toolbar, location bar and autocomplete
 // edit.  It populates its states from the current navigation entry retrieved
 // from the navigation controller returned by GetNavigationController().
-class ToolbarModelImpl : public ChromeToolbarModel {
+class ToolbarModelImpl : public ToolbarModel {
  public:
   explicit ToolbarModelImpl(ToolbarModelDelegate* delegate);
   ~ToolbarModelImpl() override;

@@ -58,6 +58,7 @@
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/toolbar/toolbar_model.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/ui/zoom/zoom_controller.h"
 #include "components/ui/zoom/zoom_event_manager.h"
@@ -1040,9 +1041,7 @@ bool LocationBarView::ShouldShowKeywordBubble() const {
 }
 
 bool LocationBarView::ShouldShowEVBubble() const {
-  const ChromeToolbarModel* chrome_toolbar_model =
-      static_cast<const ChromeToolbarModel*>(GetToolbarModel());
-  return (chrome_toolbar_model->GetSecurityLevel(false) ==
+  return (GetToolbarModel()->GetSecurityLevel(false) ==
           security_state::SecurityStateModel::EV_SECURE);
 }
 

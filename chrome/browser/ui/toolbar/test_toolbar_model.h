@@ -10,7 +10,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/toolbar/chrome_toolbar_model.h"
+#include "components/toolbar/toolbar_model.h"
 
 namespace gfx {
 enum class VectorIconId;
@@ -19,7 +19,7 @@ enum class VectorIconId;
 // A ToolbarModel that is backed by instance variables, which are initialized
 // with some basic values that can be changed with the provided setters. This
 // should be used only for testing.
-class TestToolbarModel : public ChromeToolbarModel {
+class TestToolbarModel : public ToolbarModel {
  public:
   TestToolbarModel();
   ~TestToolbarModel() override;

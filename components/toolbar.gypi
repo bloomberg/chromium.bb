@@ -11,6 +11,7 @@
       'dependencies': [
         '../base/base.gyp:base',
         '../url/url.gyp:url_lib',
+        'security_state',
       ],
       'include_dirs': [
         '..',

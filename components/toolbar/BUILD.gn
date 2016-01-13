@@ -10,6 +10,7 @@ source_set("toolbar") {
 
   deps = [
     "//base",
+    "//components/security_state",
     "//url",
   ]
 }

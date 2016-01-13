@@ -8,8 +8,7 @@
 #include "ui/gfx/vector_icons_public.h"
 
 TestToolbarModel::TestToolbarModel()
-    : ChromeToolbarModel(),
-      perform_search_term_replacement_(false),
+    : perform_search_term_replacement_(false),
       security_level_(security_state::SecurityStateModel::NONE),
 #if defined(TOOLKIT_VIEWS)
       icon_(gfx::VectorIconId::LOCATION_BAR_HTTP),

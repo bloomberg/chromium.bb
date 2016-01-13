@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/security_state/security_state_model.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -59,6 +60,13 @@ class ToolbarModel {
   // underlying state of the page without regard to any user edits that may be
   // in progress in the omnibox.
   virtual bool WouldPerformSearchTermReplacement(bool ignore_editing) const = 0;
+
+  // Returns the security level that the toolbar should display.  If
+  // |ignore_editing| is true, the result reflects the underlying state of the
+  // page without regard to any user edits that may be in progress in the
+  // omnibox.
+  virtual security_state::SecurityStateModel::SecurityLevel GetSecurityLevel(
+      bool ignore_editing) const = 0;
 
   // Returns true if a call to GetText() would return something other than the
   // URL because of search term replacement.
