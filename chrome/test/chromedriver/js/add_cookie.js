@@ -14,7 +14,7 @@ function isDomainValid(domain) {
   document.cookie = dummyCookie + '; domain=' + domain;
   if (document.cookie.indexOf(dummyCookie) != -1) {
     // Expire the dummy cookie if it is added successfully.
-    document.cookie = dummyCookie + '; Max-Age=0';
+    document.cookie = dummyCookie + '; Max-Age=0; domain=' + domain;
     return true;
   }
   return false;
