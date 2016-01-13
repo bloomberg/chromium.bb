@@ -200,18 +200,6 @@ class AutofillTest : public InProcessBrowserTest {
       base::RunLoop().RunUntilIdle();
   }
 
-  void SubmitCreditCard(const char* name,
-                        const char* number,
-                        const char* exp_month,
-                        const char* exp_year) {
-    FormMap data;
-    data["CREDIT_CARD_NAME"] = name;
-    data["CREDIT_CARD_NUMBER"] = number;
-    data["CREDIT_CARD_EXP_MONTH"] = exp_month;
-    data["CREDIT_CARD_EXP_4_DIGIT_YEAR"] = exp_year;
-    FillFormAndSubmit("autofill_creditcard_form.html", data);
-  }
-
   // Aggregate profiles from forms into Autofill preferences. Returns the number
   // of parsed profiles.
   int AggregateProfilesIntoAutofillPrefs(const std::string& filename) {
@@ -254,32 +242,9 @@ class AutofillTest : public InProcessBrowserTest {
     return parsed_profiles;
   }
 
-  void ExpectFieldValue(const std::string& field_name,
-                        const std::string& expected_value) {
-    std::string value;
-    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-        browser()->tab_strip_model()->GetActiveWebContents(),
-        "window.domAutomationController.send("
-        "    document.getElementById('" + field_name + "').value);",
-        &value));
-    EXPECT_EQ(expected_value, value);
-  }
-
   content::RenderViewHost* render_view_host() {
     return browser()->tab_strip_model()->GetActiveWebContents()->
         GetRenderViewHost();
-  }
-
-  void ExpectFilledTestForm() {
-    ExpectFieldValue("firstname", "Milton");
-    ExpectFieldValue("lastname", "Waddams");
-    ExpectFieldValue("address1", "4120 Freidrich Lane");
-    ExpectFieldValue("address2", "Basement");
-    ExpectFieldValue("city", "Austin");
-    ExpectFieldValue("state", "TX");
-    ExpectFieldValue("zip", "78744");
-    ExpectFieldValue("country", "US");
-    ExpectFieldValue("phone", "5125551234");
   }
 
  private:
