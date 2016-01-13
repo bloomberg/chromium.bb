@@ -425,8 +425,7 @@ TEST_F(StreamMixerAlsaTest, OneStreamIsScaledDownProperly) {
 
   // Populate the stream with data.
   const int kNumFrames = 32;
-  ASSERT_EQ((int)sizeof(kTestData[0]),
-            kNumChannels * kNumFrames * kBytesPerSample);
+  ASSERT_EQ(sizeof(kTestData[0]), kNumChannels * kNumFrames * kBytesPerSample);
   auto data = GetTestData(0);
   input->SetData(std::move(data));
 
