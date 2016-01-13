@@ -1854,7 +1854,7 @@ void WebViewImpl::performResize()
     // (see MediaQueryExp::isViewportDependent), since they are only viewport-dependent in emulation mode,
     // and thus will not be invalidated in |FrameView::performPreLayoutTasks|.
     // Therefore we should force explicit media queries invalidation here.
-    if (m_devToolsEmulator->deviceEmulationEnabled()) {
+    if (m_devToolsEmulator->resizeIsDeviceSizeChange()) {
         if (Document* document = mainFrameImpl()->frame()->document())
             document->mediaQueryAffectingValueChanged();
     }

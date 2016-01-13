@@ -10,7 +10,6 @@
 #include "core/page/Page.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/WebLayerTreeView.h"
-#include "public/web/WebDeviceEmulationParams.h"
 #include "web/InspectorEmulationAgent.h"
 #include "web/WebInputEventConversion.h"
 #include "web/WebLocalFrameImpl.h"
@@ -192,6 +191,17 @@ void DevToolsEmulator::setPrimaryHoverType(HoverType hoverType)
 
 void DevToolsEmulator::enableDeviceEmulation(const WebDeviceEmulationParams& params)
 {
+    if (m_deviceMetricsEnabled
+        && m_emulationParams.viewSize == params.viewSize
+        && m_emulationParams.screenPosition == params.screenPosition
+        && m_emulationParams.deviceScaleFactor == params.deviceScaleFactor
+        && m_emulationParams.offset == params.offset
+        && m_emulationParams.scale == params.scale) {
+        return;
+    }
+
+    m_emulationParams = params;
+
     if (!m_deviceMetricsEnabled) {
         m_deviceMetricsEnabled = true;
         if (params.viewSize.width || params.viewSize.height)
@@ -227,6 +237,11 @@ void DevToolsEmulator::disableDeviceEmulation()
     m_webViewImpl->setPageScaleFactor(1.f);
     if (Document* document = m_webViewImpl->mainFrameImpl()->frame()->document())
         document->mediaQueryAffectingValueChanged();
+}
+
+bool DevToolsEmulator::resizeIsDeviceSizeChange()
+{
+    return m_deviceMetricsEnabled && m_emulateMobileEnabled;
 }
 
 void DevToolsEmulator::enableMobileEmulation()
