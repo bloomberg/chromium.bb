@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PorterDuff;
@@ -22,6 +23,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeApplication;
 
@@ -39,6 +41,7 @@ public class ListUrlsActivity extends AppCompatActivity
     public static final int OPTIN_REFERER = 2;
     private static final String TAG = "PhysicalWeb";
 
+    private Context mContext;
     private NearbyUrlsAdapter mAdapter;
     private PwsClient mPwsClient;
     private ListView mListView;
@@ -52,6 +55,7 @@ public class ListUrlsActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
         setContentView(R.layout.physical_web_list_urls_activity);
 
         mAdapter = new NearbyUrlsAdapter(this);
@@ -163,7 +167,7 @@ public class ListUrlsActivity extends AppCompatActivity
         PhysicalWebUma.onUrlSelected(this);
         PwsResult pwsResult = mAdapter.getItem(position);
         Intent intent = createNavigateToUrlIntent(pwsResult);
-        startActivity(intent);
+        mContext.startActivity(intent);
     }
 
     private void startRefresh(boolean isUserInitiated, boolean isSwipeInitiated) {
@@ -244,5 +248,15 @@ public class ListUrlsActivity extends AppCompatActivity
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
         intent.setData(Uri.parse(url));
         return intent;
+    }
+
+    @VisibleForTesting
+    void overridePwsClientForTesting(PwsClient pwsClient) {
+        mPwsClient = pwsClient;
+    }
+
+    @VisibleForTesting
+    void overrideContextForTesting(Context context) {
+        mContext = context;
     }
 }
