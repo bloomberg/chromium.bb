@@ -181,6 +181,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                base::Bind(&WebMediaPlayerImpl::SetCdm,
                                           AsWeakPtr(),
                                           base::Bind(&IgnoreCdmAttached))),
+      is_cdm_attached_(false),
       renderer_factory_(std::move(renderer_factory)) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
 
@@ -648,11 +649,9 @@ void WebMediaPlayerImpl::paint(blink::WebCanvas* canvas,
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl:paint");
 
-  // TODO(scherkus): Clarify paint() API contract to better understand when and
-  // why it's being called. For example, today paint() is called when:
-  //   - We haven't reached HAVE_CURRENT_DATA and need to paint black
-  //   - We're painting to a canvas
-  // See http://crbug.com/341225 http://crbug.com/342621 for details.
+  if (is_cdm_attached_)
+    return;
+
   scoped_refptr<VideoFrame> video_frame = GetCurrentFrameFromCompositor();
 
   gfx::Rect gfx_rect(rect);
@@ -837,15 +836,20 @@ void WebMediaPlayerImpl::OnWaitingForDecryptionKey() {
 
 void WebMediaPlayerImpl::SetCdm(const CdmAttachedCB& cdm_attached_cb,
                                 CdmContext* cdm_context) {
+  if (!cdm_context) {
+    cdm_attached_cb.Run(false);
+    return;
+  }
+
   // If CDM initialization succeeded, tell the pipeline about it.
-  if (cdm_context)
-    pipeline_.SetCdm(cdm_context, cdm_attached_cb);
+  pipeline_.SetCdm(cdm_context, cdm_attached_cb);
 }
 
 void WebMediaPlayerImpl::OnCdmAttached(bool success) {
   if (success) {
     set_cdm_result_->complete();
     set_cdm_result_.reset();
+    is_cdm_attached_ = true;
     return;
   }
 

@@ -45,6 +45,9 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
     if (displayingPoster) {
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
     } else if ((paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers) || !m_layoutVideo.acceleratedRenderingInUse()) {
+        // TODO(chrishtr): Fix the !m_layoutVideo.acceleratedRenderingInUse()
+        // case and update the comment about paint() in webmediaplayer_impl.h.
+        // See http://crbug.com/527579 for details.
         SkPaint videoPaint = context.fillPaint();
         videoPaint.setColor(SK_ColorBLACK);
         m_layoutVideo.videoElement()->paintCurrentFrame(context.canvas(), pixelSnappedIntRect(rect), &videoPaint);
