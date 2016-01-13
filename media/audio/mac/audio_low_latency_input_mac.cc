@@ -252,20 +252,17 @@ bool AUAudioInputStream::Open() {
   DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
                                              << number_of_frames_;
 
-  // Verify that the IO buffer size is set correctly.
+  // Verify that the IO buffer size is set correctly. We just log a warning if
+  // this happens since there is logic in AUAudioInputStream::InputProc() which
+  // us able to compensate for minor differences.
   // TODO(henrika): perhaps add to UMA stat to track if this can happen.
   UInt32 io_buffer_size_frames;
   property_size = sizeof(io_buffer_size_frames);
   result = AudioUnitGetProperty(
       audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
-      0, &io_buffer_size_frames, &property_size);
-  if (io_buffer_size_frames != number_of_frames_) {
-    LOG(ERROR) << "AUHAL uses an invalid IO buffer size: "
-               << io_buffer_size_frames;
-    result = kAudioUnitErr_FormatNotSupported;
-    HandleError(result);
-    return false;
-  }
+      1, &io_buffer_size_frames, &property_size);
+  LOG_IF(WARNING, io_buffer_size_frames != number_of_frames_)
+      << "AUHAL uses an invalid IO buffer size: " << io_buffer_size_frames;
 
   // Channel mapping should be supported but add a warning just in case.
   // TODO(henrika): perhaps add to UMA stat to track if this can happen.
