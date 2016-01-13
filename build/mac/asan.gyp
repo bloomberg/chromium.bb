@@ -13,7 +13,7 @@
          'prune_self_dependency': 1,
          # Path is relative to this GYP file.
          'asan_rtl_mask_path':
-             '../../third_party/llvm-build/Release+Asserts/lib/clang/*/lib/darwin',
+             '../../third_party/llvm-build/Release+Asserts/lib/clang/<!(python ../../tools/clang/scripts/update.py --print-clang-version)/lib/darwin',
          'asan_osx_dynamic':
              '<(asan_rtl_mask_path)/libclang_rt.asan_osx_dynamic.dylib',
          'asan_iossim_dynamic':
