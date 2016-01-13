@@ -50,6 +50,7 @@ class SiteEngagementMetrics {
   static const char kOriginsWithMaxDailyEngagementHistogram[];
   static const char kPercentOriginsWithMaxEngagementHistogram[];
   static const char kEngagementTypeHistogram[];
+  static const char kEngagementBucketHistogramBase[];
 };
 
 #endif  // CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_METRICS_H_
