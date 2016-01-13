@@ -13,12 +13,16 @@ import sys
 import tempfile
 import time
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(file_dir, '..', '..', '..', 'build', 'android'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+from devil.android.sdk import intent
+
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
+import devil_chromium
 from pylib import constants
-from pylib.device import device_utils
-from pylib.device import intent
 
 import log_parser
 import log_requests
@@ -37,7 +41,7 @@ def _SetupAndGetDevice():
   """Gets an android device, set up the way we like it.
 
   Returns:
-    An AdbWrapper for the first device found.
+    An instance of DeviceUtils for the first device found.
   """
   device = device_utils.DeviceUtils.HealthyDevices()[0]
   device.EnableRoot()
@@ -354,6 +358,7 @@ def main():
   parser.add_argument('command')
   parser.add_argument('rest', nargs=argparse.REMAINDER)
   args = parser.parse_args()
+  devil_chromium.Initialize()
   COMMAND_MAP.get(args.command,
                   lambda _: InvalidCommand(args.command))(args.rest)
 

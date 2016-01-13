@@ -7,13 +7,15 @@ import os
 import sys
 import time
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(file_dir, '..', '..', '..', 'build', 'android'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android.sdk import intent
+
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 from pylib import flag_changer
-from pylib.device import device_utils
-from pylib.device import intent
 
 DEVTOOLS_PORT = 9222
 DEVTOOLS_HOSTNAME = 'localhost'

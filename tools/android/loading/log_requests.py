@@ -15,15 +15,21 @@ import optparse
 import os
 import sys
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(file_dir, '..', '..', '..', 'build', 'android'))
-sys.path.append(os.path.join(file_dir, '..', '..', 'telemetry'))
-sys.path.append(os.path.join(file_dir, '..', '..', 'chrome_proxy'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 
-from pylib.device import device_utils
-from common import inspector_network
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
+import devil_chromium
+
+sys.path.append(os.path.join(_SRC_DIR, 'tools', 'telemetry'))
 from telemetry.internal.backends.chrome_inspector import inspector_websocket
 from telemetry.internal.backends.chrome_inspector import websocket
+
+sys.path.append(os.path.join(_SRC_DIR, 'tools', 'chrome_proxy'))
+from common import inspector_network
 
 import device_setup
 
@@ -210,11 +216,15 @@ def main():
   logging.basicConfig(level=logging.WARNING)
   parser = _CreateOptionParser()
   options, _ = parser.parse_args()
+
+  devil_chromium.Initialize()
+
   if options.local:
     device = None
   else:
     devices = device_utils.DeviceUtils.HealthyDevices()
     device = devices[0]
+
   request_logger = AndroidRequestsLogger(device)
   response_data = request_logger.LogPageLoad(
       options.url, options.clear_cache, options.package)

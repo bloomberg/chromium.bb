@@ -8,10 +8,14 @@
 import os
 import sys
 
-file_dir = os.path.dirname(__file__)
-sys.path.append(os.path.join(file_dir, '..', '..', '..', 'build', 'android'))
+_SRC_DIR = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..'))
 
-from pylib.device import device_utils
+sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+
+sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
+import devil_chromium
 
 import device_setup
 import devtools_monitor
@@ -64,6 +68,7 @@ class AndroidTraceRecorder(object):
 
 
 def DoIt(url):
+  devil_chromium.Initialize()
   devices = device_utils.DeviceUtils.HealthyDevices()
   device = devices[0]
   trace_recorder = AndroidTraceRecorder(url)
