@@ -88,6 +88,13 @@ class TestPermissionContext : public PermissionContextBase {
     variations::testing::ClearAllVariationParams();
   }
 
+  ContentSetting GetContentSettingFromMap(const GURL& url_a,
+                                          const GURL& url_b) {
+    return HostContentSettingsMapFactory::GetForProfile(profile())
+        ->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
+                            content_settings_type(), std::string());
+  }
+
  protected:
   void UpdateTabContext(const PermissionRequestID& id,
                         const GURL& requesting_origin,
@@ -149,14 +156,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.permission_set());
     EXPECT_TRUE(permission_context.permission_granted());
     EXPECT_TRUE(permission_context.tab_context_updated());
-
-    ContentSetting setting =
-        HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(),
-                                url.GetOrigin(),
-                                CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-                                std::string());
-    EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              permission_context.GetContentSettingFromMap(url, url));
   }
 
   void TestAskAndDismiss_TestContent() {
@@ -180,14 +181,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.permission_set());
     EXPECT_FALSE(permission_context.permission_granted());
     EXPECT_TRUE(permission_context.tab_context_updated());
-
-    ContentSetting setting =
-        HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(),
-                                url.GetOrigin(),
-                                CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
-                                std::string());
-    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              permission_context.GetContentSettingFromMap(url, url));
   }
 
   void TestRequestPermissionInvalidUrl(
@@ -212,12 +207,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.permission_set());
     EXPECT_FALSE(permission_context.permission_granted());
     EXPECT_TRUE(permission_context.tab_context_updated());
-
-    ContentSetting setting =
-        HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
-                                content_settings_type, std::string());
-    EXPECT_EQ(CONTENT_SETTING_ASK, setting);
+    EXPECT_EQ(CONTENT_SETTING_ASK,
+              permission_context.GetContentSettingFromMap(url, url));
   }
 
   void TestGrantAndRevoke_TestContent(content::PermissionType permission_type,
@@ -242,19 +233,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(permission_context.permission_set());
     EXPECT_TRUE(permission_context.permission_granted());
     EXPECT_TRUE(permission_context.tab_context_updated());
-
-    ContentSetting setting =
-        HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
-                                content_settings_type, std::string());
-    EXPECT_EQ(CONTENT_SETTING_ALLOW, setting);
+    EXPECT_EQ(CONTENT_SETTING_ALLOW,
+              permission_context.GetContentSettingFromMap(url, url));
 
     // Try to reset permission.
     permission_context.ResetPermission(url.GetOrigin(), url.GetOrigin());
     ContentSetting setting_after_reset =
-        HostContentSettingsMapFactory::GetForProfile(profile())
-            ->GetContentSetting(url.GetOrigin(), url.GetOrigin(),
-                                content_settings_type, std::string());
+        permission_context.GetContentSettingFromMap(url, url);
     ContentSetting default_setting =
         HostContentSettingsMapFactory::GetForProfile(profile())
             ->GetDefaultContentSetting(content_settings_type, nullptr);

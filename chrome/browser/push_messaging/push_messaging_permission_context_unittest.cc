@@ -194,7 +194,6 @@ TEST_F(PushMessagingPermissionContextTest, DecidePermission) {
   EXPECT_FALSE(context.was_granted());
 
   // Insecure origin
-  SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL(kInsecureOrigin));
   context.RequestPermission(web_contents(), request_id, GURL(kInsecureOrigin),
                             true /* user_gesture */, callback);
@@ -221,7 +220,6 @@ TEST_F(PushMessagingPermissionContextTest, RequestPermission) {
 
   // If a website already has notifications permission, push permission is
   // silently granted once the website requests it.
-  SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
                             true /* user_gesture */, callback);
@@ -246,7 +244,6 @@ TEST_F(PushMessagingPermissionContextTest, RequestAfterRevokingNotifications) {
   SetContentSetting(&profile, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
                     CONTENT_SETTING_ALLOW);
 
-  SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL(kOriginA));
   context.RequestPermission(web_contents(), request_id, GURL(kOriginA),
                             true /* user_gesture */, callback);
