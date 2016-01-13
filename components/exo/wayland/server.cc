@@ -120,8 +120,8 @@ void surface_damage(wl_client* client,
   GetUserDataAs<Surface>(resource)->Damage(gfx::Rect(x, y, width, height));
 }
 
-void handle_surface_frame_callback(wl_resource* resource,
-                                   base::TimeTicks frame_time) {
+void HandleSurfaceFrameCallback(wl_resource* resource,
+                                base::TimeTicks frame_time) {
   if (!frame_time.is_null()) {
     wl_callback_send_done(resource,
                           (frame_time - base::TimeTicks()).InMilliseconds());
@@ -144,9 +144,9 @@ void surface_frame(wl_client* client,
 
   // base::Unretained is safe as the resource owns the callback.
   scoped_ptr<base::CancelableCallback<void(base::TimeTicks)>>
-  cancelable_callback(new base::CancelableCallback<void(base::TimeTicks)>(
-      base::Bind(&handle_surface_frame_callback,
-                 base::Unretained(callback_resource))));
+  cancelable_callback(
+      new base::CancelableCallback<void(base::TimeTicks)>(base::Bind(
+          &HandleSurfaceFrameCallback, base::Unretained(callback_resource))));
 
   GetUserDataAs<Surface>(resource)
       ->RequestFrameCallback(cancelable_callback->callback());
@@ -638,7 +638,7 @@ void shell_surface_resize(wl_client* client,
 }
 
 void shell_surface_set_toplevel(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetToplevel();
+  GetUserDataAs<ShellSurface>(resource)->Init();
 }
 
 void shell_surface_set_transient(wl_client* client,
@@ -655,7 +655,8 @@ void shell_surface_set_fullscreen(wl_client* client,
                                   uint32_t method,
                                   uint32_t framerate,
                                   wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetFullscreen();
+  GetUserDataAs<ShellSurface>(resource)->Init();
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
 }
 
 void shell_surface_set_popup(wl_client* client,
@@ -672,7 +673,8 @@ void shell_surface_set_popup(wl_client* client,
 void shell_surface_set_maximized(wl_client* client,
                                  wl_resource* resource,
                                  wl_resource* output_resource) {
-  GetUserDataAs<ShellSurface>(resource)->SetMaximized();
+  GetUserDataAs<ShellSurface>(resource)->Init();
+  GetUserDataAs<ShellSurface>(resource)->Maximize();
 }
 
 void shell_surface_set_title(wl_client* client,
@@ -698,6 +700,12 @@ const struct wl_shell_surface_interface shell_surface_implementation = {
 ////////////////////////////////////////////////////////////////////////////////
 // wl_shell_interface:
 
+void HandleShellSurfaceConfigureCallback(wl_resource* resource,
+                                         const gfx::Size& size) {
+  wl_shell_surface_send_configure(resource, WL_SHELL_SURFACE_RESIZE_NONE,
+                                  size.width(), size.height());
+}
+
 void shell_get_shell_surface(wl_client* client,
                              wl_resource* resource,
                              uint32_t id,
@@ -719,6 +727,10 @@ void shell_get_shell_surface(wl_client* client,
 
   shell_surface->set_surface_destroyed_callback(base::Bind(
       &wl_resource_destroy, base::Unretained(shell_surface_resource)));
+
+  shell_surface->set_configure_callback(
+      base::Bind(&HandleShellSurfaceConfigureCallback,
+                 base::Unretained(shell_surface_resource)));
 
   SetImplementation(shell_surface_resource, &shell_surface_implementation,
                     std::move(shell_surface));
@@ -851,7 +863,7 @@ void xdg_surface_set_window_geometry(wl_client* client,
 }
 
 void xdg_surface_set_maximized(wl_client* client, wl_resource* resource) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->Maximize();
 }
 
 void xdg_surface_unset_maximized(wl_client* client, wl_resource* resource) {
@@ -861,11 +873,11 @@ void xdg_surface_unset_maximized(wl_client* client, wl_resource* resource) {
 void xdg_surface_set_fullscreen(wl_client* client,
                                 wl_resource* resource,
                                 wl_resource* output) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(true);
 }
 
 void xdg_surface_unset_fullscreen(wl_client* client, wl_resource* resource) {
-  NOTIMPLEMENTED();
+  GetUserDataAs<ShellSurface>(resource)->SetFullscreen(false);
 }
 
 void xdg_surface_set_minimized(wl_client* client, wl_resource* resource) {
@@ -909,6 +921,18 @@ void xdg_shell_use_unstable_version(wl_client* client,
   }
 }
 
+void HandleXdgSurfaceConfigureCallback(wl_resource* resource,
+                                       const gfx::Size& size) {
+  // TODO(reveman): Include the shell surface state (maximized, active, etc.)
+  // and make sure this configure callback is called when any of that state
+  // changes.
+  wl_array states;
+  wl_array_init(&states);
+  xdg_surface_send_configure(resource, size.width(), size.height(), &states,
+                             wl_display_next_serial(wl_client_get_display(
+                                 wl_resource_get_client(resource))));
+}
+
 void xdg_shell_get_xdg_surface(wl_client* client,
                                wl_resource* resource,
                                uint32_t id,
@@ -929,10 +953,14 @@ void xdg_shell_get_xdg_surface(wl_client* client,
   }
 
   // An XdgSurface is a toplevel shell surface.
-  shell_surface->SetToplevel();
+  shell_surface->Init();
 
   shell_surface->set_close_callback(base::Bind(
       &xdg_surface_send_close, base::Unretained(xdg_surface_resource)));
+
+  shell_surface->set_configure_callback(
+      base::Bind(&HandleXdgSurfaceConfigureCallback,
+                 base::Unretained(xdg_surface_resource)));
 
   SetImplementation(xdg_surface_resource, &xdg_surface_implementation,
                     std::move(shell_surface));

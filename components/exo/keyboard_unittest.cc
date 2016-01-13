@@ -39,7 +39,7 @@ class MockKeyboardDelegate : public KeyboardDelegate {
 TEST_F(KeyboardTest, OnKeyboardEnter) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -78,7 +78,7 @@ TEST_F(KeyboardTest, OnKeyboardEnter) {
 TEST_F(KeyboardTest, OnKeyboardLeave) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -107,7 +107,7 @@ TEST_F(KeyboardTest, OnKeyboardLeave) {
 TEST_F(KeyboardTest, OnKeyboardKey) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -145,7 +145,7 @@ TEST_F(KeyboardTest, OnKeyboardKey) {
 TEST_F(KeyboardTest, OnKeyboardModifiers) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));

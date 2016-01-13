@@ -36,7 +36,7 @@ class MockPointerDelegate : public PointerDelegate {
 TEST_F(PointerTest, OnPointerEnter) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -59,7 +59,7 @@ TEST_F(PointerTest, OnPointerEnter) {
 TEST_F(PointerTest, OnPointerLeave) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -85,7 +85,7 @@ TEST_F(PointerTest, OnPointerLeave) {
 TEST_F(PointerTest, OnPointerMotion) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -112,7 +112,7 @@ TEST_F(PointerTest, OnPointerMotion) {
 TEST_F(PointerTest, OnPointerButton) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
@@ -141,7 +141,7 @@ TEST_F(PointerTest, OnPointerButton) {
 TEST_F(PointerTest, OnPointerWheel) {
   scoped_ptr<Surface> surface(new Surface);
   scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  shell_surface->SetToplevel();
+  shell_surface->Init();
   gfx::Size buffer_size(10, 10);
   scoped_ptr<Buffer> buffer(new Buffer(
       exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));

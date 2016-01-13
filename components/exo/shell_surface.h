@@ -46,14 +46,23 @@ class ShellSurface : public SurfaceDelegate,
     surface_destroyed_callback_ = surface_destroyed_callback;
   }
 
-  // Show surface as a toplevel window.
-  void SetToplevel();
+  // Set the callback to run when the client is asked to resize the surface.
+  // The size is a hint, in the sense that the client is free to ignore it if
+  // it doesn't resize, pick a smaller size (to satisfy aspect ratio or resize
+  // in steps of NxM pixels).
+  using ConfigureCallback = base::Callback<void(const gfx::Size& size)>;
+  void set_configure_callback(const ConfigureCallback& configure_callback) {
+    configure_callback_ = configure_callback;
+  }
 
-  // Maximize or show surface as a maximized window.
-  void SetMaximized();
+  // Initialize shell surface as a toplevel window.
+  void Init();
 
-  // Fullscreen or show surface as a fullscreen window.
-  void SetFullscreen();
+  // Maximizes the shell surface.
+  void Maximize();
+
+  // Set fullscreen state for shell surface.
+  void SetFullscreen(bool fullscreen);
 
   // Set title for surface.
   void SetTitle(const base::string16& title);
@@ -107,6 +116,7 @@ class ShellSurface : public SurfaceDelegate,
   gfx::Rect geometry_;
   base::Closure close_callback_;
   base::Closure surface_destroyed_callback_;
+  ConfigureCallback configure_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);
 };
