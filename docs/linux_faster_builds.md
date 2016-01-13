@@ -44,6 +44,10 @@ Icecc doesn't support clang yet.
 
 Icecc doesn't work with sysroot.
 
+    linux_use_bundled_gold=0
+
+Using the system linker is necessary since a recent binutils upgrade.
+
 ## Build only specific targets
 
 If you specify just the target(s) you want built, the build will only walk that
