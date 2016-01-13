@@ -74,7 +74,7 @@ ForceDisplayList2dCanvas
 EncryptedMedia status=stable
 ExecCommandInJavaScript status=test
 ComputedAccessibilityInfo status=experimental
-EventListenerOptions status=experimental
+EventListenerOptions status=stable
 ExperimentalCanvasFeatures status=test
 ExperimentalContentSecurityPolicyFeatures status=experimental
 ExperimentalFramework status=test
