@@ -291,6 +291,7 @@ void ScaleCursor(float scaleFactor, int hotspotX, int hotspotY) {
 
   info.custom_image = SkBitmap();
   info.custom_image.allocN32Pixels(10, 10);
+  info.custom_image.eraseColor(0);
 
   WebCursor cursor;
   cursor.SetDisplayInfo(display);
