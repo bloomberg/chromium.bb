@@ -23,8 +23,6 @@
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/history/core/browser/url_database.h"
 #include "components/omnibox/browser/autocomplete_match.h"
-#include "components/omnibox/browser/autocomplete_result.h"
-#include "components/omnibox/browser/omnibox_log.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -42,63 +40,43 @@ struct TestUrlInfo {
   int number_of_hits;
   int number_of_misses;
   AutocompleteActionPredictor::Action expected_action;
-  AutocompleteActionPredictor::Action expected_action_with_additional_hit;
 } test_url_db[] = {
   { GURL("http://www.testsite.com/a.html"),
     ASCIIToUTF16("Test - site - just a test"), 1,
     ASCIIToUTF16("j"), 5, 0,
-    AutocompleteActionPredictor::ACTION_PRERENDER,
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/b.html"),
     ASCIIToUTF16("Test - site - just a test"), 1,
     ASCIIToUTF16("ju"), 3, 0,
-    AutocompleteActionPredictor::ACTION_PRERENDER,
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/c.html"),
     ASCIIToUTF16("Test - site - just a test"), 5,
     ASCIIToUTF16("just"), 3, 1,
-    AutocompleteActionPredictor::ACTION_PRECONNECT,
-    AutocompleteActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/d.html"),
     ASCIIToUTF16("Test - site - just a test"), 5,
     ASCIIToUTF16("just"), 3, 0,
-    AutocompleteActionPredictor::ACTION_PRERENDER,
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/e.html"),
     ASCIIToUTF16("Test - site - just a test"), 8,
     ASCIIToUTF16("just"), 3, 1,
-    AutocompleteActionPredictor::ACTION_PRECONNECT,
-    AutocompleteActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_PRECONNECT },
   { GURL("http://www.testsite.com/f.html"),
     ASCIIToUTF16("Test - site - just a test"), 8,
     ASCIIToUTF16("just"), 3, 0,
-    AutocompleteActionPredictor::ACTION_PRERENDER,
     AutocompleteActionPredictor::ACTION_PRERENDER },
   { GURL("http://www.testsite.com/g.html"),
     ASCIIToUTF16("Test - site - just a test"), 12,
     base::string16(), 5, 0,
-    AutocompleteActionPredictor::ACTION_NONE,
     AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/h.html"),
     ASCIIToUTF16("Test - site - just a test"), 21,
     ASCIIToUTF16("just a test"), 2, 0,
-    AutocompleteActionPredictor::ACTION_NONE,
-    AutocompleteActionPredictor::ACTION_PRERENDER },
+    AutocompleteActionPredictor::ACTION_NONE },
   { GURL("http://www.testsite.com/i.html"),
     ASCIIToUTF16("Test - site - just a test"), 28,
     ASCIIToUTF16("just a test"), 2, 0,
-    AutocompleteActionPredictor::ACTION_NONE,
-    AutocompleteActionPredictor::ACTION_PRERENDER },
-  { GURL("http://www.testsite.com/j.html"),
-    ASCIIToUTF16("Test - site - just a test"), 28,
-    ASCIIToUTF16("just a test"), 0, 0,
-    AutocompleteActionPredictor::ACTION_NONE,
-    AutocompleteActionPredictor::ACTION_NONE },
-  { GURL("http://www.testsite.com/k.html"),
-    ASCIIToUTF16("Test - site - just a test"), 5,
-    ASCIIToUTF16("just"), 3, 4,
-    AutocompleteActionPredictor::ACTION_NONE,
-    AutocompleteActionPredictor::ACTION_PRECONNECT },
+    AutocompleteActionPredictor::ACTION_NONE }
 };
 
 }  // end namespace
@@ -403,58 +381,6 @@ TEST_F(AutocompleteActionPredictorTest, RecommendActionSearch) {
         test_url_db[i].expected_action;
     EXPECT_EQ(expected_action,
               predictor()->RecommendAction(test_url_db[i].user_text, match))
-        << "Unexpected action for " << match.destination_url;
-  }
-}
-
-TEST_F(AutocompleteActionPredictorTest, UpdateDatabase) {
-  ASSERT_NO_FATAL_FAILURE(AddAllRows());
-
-  for (size_t i = 0; i < arraysize(test_url_db); ++i) {
-    const base::string16& user_text = test_url_db[i].user_text;
-
-    AutocompleteMatch match;
-    match.type = AutocompleteMatchType::HISTORY_URL;
-    match.destination_url = GURL(test_url_db[i].url);
-    ACMatches matches = {match};
-    AutocompleteResult result;
-    result.AppendMatches(AutocompleteInput(), matches);
-    OmniboxLog log(
-        /* text = */ user_text,
-        /* just_deleted_text = */ false,
-        /* input_type = */ metrics::OmniboxInputType::URL,
-        /* is_popup_open = */ true,
-        /* selected_index = */ 0,
-        /* is_paste_and_go = */ false,
-        /* tab_id = */ 0,
-        /* current_page_classification = */
-            metrics::OmniboxEventProto_PageClassification_BLANK,
-        /* elapsed_time_since_user_first_modified_omnibox = */
-            base::TimeDelta(),
-        /* completed_length = */ 0,
-        /* elapsed_time_since_last_change_to_default_match = */
-            base::TimeDelta(),
-        /* result = */ result);
-
-    // Simulate opened URL but without updating the database that should lead to
-    // an unchanged recommendation afterwards.
-    predictor()->RegisterTransitionalMatches(user_text, result);
-    predictor()->OnOmniboxOpenedUrl(log, false);
-    EXPECT_EQ(test_url_db[i].expected_action,
-            predictor()->RecommendAction(user_text, match))
-        << "Unexpected action for " << match.destination_url;
-
-    // Simulate opened URL with updating the database to that could change the
-    // recommended action afterwards. Updating the database twice to avoid test
-    // failures because of floating point precision when computing the
-    // AutocompleteActionPredictor's DB entry's confidence that determine the
-    // recommendation.
-    predictor()->RegisterTransitionalMatches(user_text, result);
-    predictor()->OnOmniboxOpenedUrl(log, true);
-    predictor()->RegisterTransitionalMatches(user_text, result);
-    predictor()->OnOmniboxOpenedUrl(log, true);
-    EXPECT_EQ(test_url_db[i].expected_action_with_additional_hit,
-            predictor()->RecommendAction(user_text, match))
         << "Unexpected action for " << match.destination_url;
   }
 }
