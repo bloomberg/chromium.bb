@@ -1365,3 +1365,10 @@ crbug.com/572723 [ Mac Release ] inspector/sources/debugger/debugger-uncaught-pr
 
 crbug.com/572726 inspector/tracing/timeline-node-reference.html [ Timeout Pass Crash ]
 
+crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
+crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/fetch-request-redirect.html [ Failure ]
+
+crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/encoding/api-invalid-label.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_entities01.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
