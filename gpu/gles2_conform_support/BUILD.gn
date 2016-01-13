@@ -200,11 +200,12 @@ test("gles2_conform_test") {
   ]
 
   if (internal_gles2_conform_tests) {
-    deps += [
-      ":generate_gles2_conform_tests",
+    data_deps = [
       ":gles2_conform_test_windowless",
     ]
+    deps += [ ":generate_gles2_conform_tests" ]
     sources += [ "$target_gen_dir/gles2_conform_test_autogen.cc" ]
+    data += [ "//third_party/gles2_conform/GTF_ES/" ]
 
     # TODO: Make these tests pull in the correct data dependencies once they
     # are exported in GN. Maybe from  //third_party/gles2_conform/GTF_ES/

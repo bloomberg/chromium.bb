@@ -96,6 +96,21 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -376,6 +391,21 @@
             }
           ]
         },
+        "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        },
         "test": "angle_unittests"
       },
       {
@@ -437,6 +467,21 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       },
       {
         "override_compile_targets": [
@@ -1628,6 +1673,21 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -1954,6 +2014,21 @@
             }
           ]
         },
+        "test": "angle_end2end_tests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
         "test": "angle_unittests"
       },
       {
@@ -2015,6 +2090,21 @@
           ]
         },
         "test": "gl_unittests"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       },
       {
         "override_compile_targets": [
