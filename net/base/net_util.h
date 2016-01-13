@@ -5,16 +5,6 @@
 #ifndef NET_BASE_NET_UTIL_H_
 #define NET_BASE_NET_UTIL_H_
 
-#include "build/build_config.h"
-
-#if defined(OS_POSIX)
-#include <sys/socket.h>
-#include <sys/types.h>
-#elif defined(OS_WIN)
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#endif
-
 #include <stddef.h>
 #include <stdint.h>
 
@@ -70,18 +60,6 @@ NET_EXPORT std::string GetHostAndOptionalPort(const GURL& url);
 // domain name (eg: a gTLD that has not been assigned by IANA) or an IP address
 // that falls in an IANA-reserved range.
 NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
-
-// Convenience struct for when you need a |struct sockaddr|.
-struct SockaddrStorage {
-  SockaddrStorage() : addr_len(sizeof(addr_storage)),
-                      addr(reinterpret_cast<struct sockaddr*>(&addr_storage)) {}
-  SockaddrStorage(const SockaddrStorage& other);
-  void operator=(const SockaddrStorage& other);
-
-  struct sockaddr_storage addr_storage;
-  socklen_t addr_len;
-  struct sockaddr* const addr;
-};
 
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();

@@ -14,7 +14,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/base/ip_endpoint.h"
-#include "net/base/net_util.h"
+#include "net/base/sockaddr_storage.h"
 #include "testing/gtest_mac.h"
 
 @interface TestNSNetService : NSNetService {

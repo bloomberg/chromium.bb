@@ -60,6 +60,8 @@
       'base/rand_callback.h',
       'base/registry_controlled_domains/registry_controlled_domain.cc',
       'base/registry_controlled_domains/registry_controlled_domain.h',
+      'base/sockaddr_storage.cc',
+      'base/sockaddr_storage.h',
       'base/socket_performance_watcher.cc',
       'base/socket_performance_watcher.h',
       'base/socket_performance_watcher_factory.h',

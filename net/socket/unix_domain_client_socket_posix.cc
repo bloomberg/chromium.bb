@@ -12,7 +12,7 @@
 #include "base/posix/eintr_wrapper.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/net_util.h"
+#include "net/base/sockaddr_storage.h"
 #include "net/socket/socket_posix.h"
 
 namespace net {

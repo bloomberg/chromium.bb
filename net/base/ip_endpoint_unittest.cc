@@ -15,7 +15,7 @@
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"
-#include "net/base/net_util.h"
+#include "net/base/sockaddr_storage.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

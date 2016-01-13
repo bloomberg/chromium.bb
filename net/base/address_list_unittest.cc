@@ -6,7 +6,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/sys_byteorder.h"
-#include "net/base/net_util.h"
+#include "net/base/sockaddr_storage.h"
 #include "net/base/sys_addrinfo.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
