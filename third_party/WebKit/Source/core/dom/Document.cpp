@@ -83,6 +83,7 @@
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeFilter.h"
+#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -608,6 +609,9 @@ void Document::dispose()
 
     if (svgExtensions())
         accessSVGExtensions().pauseAnimations();
+
+    if (m_intersectionObserverData)
+        m_intersectionObserverData->dispose();
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     DocumentLifecycleNotifier::notifyDocumentWasDisposed();
@@ -5079,6 +5083,13 @@ IntersectionObserverController& Document::ensureIntersectionObserverController()
     if (!m_intersectionObserverController)
         m_intersectionObserverController = IntersectionObserverController::create(this);
     return *m_intersectionObserverController;
+}
+
+NodeIntersectionObserverData& Document::ensureIntersectionObserverData()
+{
+    if (!m_intersectionObserverData)
+        m_intersectionObserverData = new NodeIntersectionObserverData();
+    return *m_intersectionObserverData;
 }
 
 void Document::reportBlockedScriptExecutionToInspector(const String& directiveText)

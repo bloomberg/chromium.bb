@@ -75,7 +75,7 @@ void IntersectionObserverController::addTrackedObserver(IntersectionObserver& ob
     m_trackedIntersectionObservers.add(&observer);
 }
 
-void IntersectionObserverController::removeTrackedObserversForRoot(const Element& root)
+void IntersectionObserverController::removeTrackedObserversForRoot(const Node& root)
 {
     HeapVector<Member<IntersectionObserver>> toRemove;
     for (auto& observer : m_trackedIntersectionObservers) {

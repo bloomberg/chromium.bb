@@ -2,48 +2,48 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ElementIntersectionObserverData_h
-#define ElementIntersectionObserverData_h
+#ifndef NodeIntersectionObserverData_h
+#define NodeIntersectionObserverData_h
 
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class Element;
+class Node;
 class IntersectionObservation;
 class IntersectionObserver;
 
-class ElementIntersectionObserverData : public GarbageCollectedFinalized<ElementIntersectionObserverData> {
+class NodeIntersectionObserverData : public GarbageCollectedFinalized<NodeIntersectionObserverData> {
 public:
     DECLARE_TRACE();
-    ElementIntersectionObserverData();
-    ~ElementIntersectionObserverData();
+    NodeIntersectionObserverData();
+    ~NodeIntersectionObserverData();
 
     bool hasIntersectionObserver() const;
     bool hasIntersectionObservation() const;
     IntersectionObservation* getObservationFor(IntersectionObserver&);
     void addObservation(IntersectionObservation&);
     void removeObservation(IntersectionObserver&);
-    void activateValidIntersectionObservers(Element&);
-    void deactivateAllIntersectionObservers(Element&);
+    void activateValidIntersectionObservers(Node&);
+    void deactivateAllIntersectionObservers(Node&);
 
 #if !ENABLE(OILPAN)
     void dispose();
 #endif
 
-    WeakPtrWillBeRawPtr<Element> createWeakPtr(Element*);
+    WeakPtrWillBeRawPtr<Node> createWeakPtr(Node*);
 
 private:
-    // IntersectionObservers for which the Element owning this data is root.
+    // IntersectionObservers for which the Node owning this data is root.
     HeapHashSet<WeakMember<IntersectionObserver>> m_intersectionObservers;
-    // IntersectionObservations for which the Element owning this data is target.
+    // IntersectionObservations for which the Node owning this data is target.
     HeapHashMap<Member<IntersectionObserver>, Member<IntersectionObservation>> m_intersectionObservations;
 
 #if !ENABLE(OILPAN)
-    OwnPtr<WeakPtrFactory<Element>> m_weakPointerFactory;
+    OwnPtr<WeakPtrFactory<Node>> m_weakPointerFactory;
 #endif
 };
 
 } // namespace blink
 
-#endif // ElementIntersectionObserverData_h
+#endif // NodeIntersectionObserverData_h

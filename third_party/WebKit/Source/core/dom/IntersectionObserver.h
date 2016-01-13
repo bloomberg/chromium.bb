@@ -32,8 +32,8 @@ public:
     void unobserve(Element*, ExceptionState&);
     HeapVector<Member<IntersectionObserverEntry>> takeRecords();
 
-    Element* root() { return m_root.get(); }
-    LayoutObject* rootLayoutObject();
+    Node* root() const { return m_root.get(); }
+    LayoutObject* rootLayoutObject() const;
     bool hasPercentMargin() const;
     const Length& topMargin() const { return m_topMargin; }
     const Length& rightMargin() const { return m_rightMargin; }
@@ -53,12 +53,12 @@ public:
     DECLARE_TRACE();
 
 private:
-    explicit IntersectionObserver(IntersectionObserverCallback&, Element&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
+    explicit IntersectionObserver(IntersectionObserverCallback&, Node&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
 
     void checkRootAndDetachIfNeeded();
 
     Member<IntersectionObserverCallback> m_callback;
-    WeakPtrWillBeWeakMember<Element> m_root;
+    WeakPtrWillBeWeakMember<Node> m_root;
     HeapHashSet<WeakMember<IntersectionObservation>> m_observations;
     HeapVector<Member<IntersectionObserverEntry>> m_entries;
     Vector<float> m_thresholds;
