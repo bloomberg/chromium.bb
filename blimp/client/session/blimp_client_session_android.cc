@@ -4,10 +4,14 @@
 
 #include "blimp/client/session/blimp_client_session_android.h"
 
+#include "blimp/client/session/tab_control_feature.h"
 #include "jni/BlimpClientSession_jni.h"
 
 namespace blimp {
 namespace client {
+namespace {
+const int kDummyTabId = 0;
+}  // namespace
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& jobj) {
   return reinterpret_cast<intptr_t>(new BlimpClientSessionAndroid(env, jobj));
@@ -31,6 +35,10 @@ BlimpClientSessionAndroid::BlimpClientSessionAndroid(
     const base::android::JavaParamRef<jobject>& jobj)
     : BlimpClientSession() {
   java_obj_.Reset(env, jobj);
+
+  // Create a single tab's WebContents.
+  // TODO(kmarshall): Remove this once we add tab-literacy to Blimp.
+  GetTabControlFeature()->CreateTab(kDummyTabId);
 }
 
 BlimpClientSessionAndroid::~BlimpClientSessionAndroid() {}

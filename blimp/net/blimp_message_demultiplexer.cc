@@ -39,6 +39,7 @@ void BlimpMessageDemultiplexer::ProcessMessage(
     return;
   }
 
+  DVLOG(2) << "Routed message " << *message << ".";
   receiver_iter->second->ProcessMessage(std::move(message), callback);
 }
 

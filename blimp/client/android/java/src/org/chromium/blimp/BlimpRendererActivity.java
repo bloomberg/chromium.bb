@@ -124,6 +124,7 @@ public class BlimpRendererActivity extends Activity implements BlimpLibraryLoade
         mToolbar.initialize(mBlimpClientSession);
 
         mTabControlFeature = new TabControlFeature(mBlimpClientSession, mBlimpView);
+        mToolbar.loadUrl("http://www.google.com/");
     }
 
     // TokenSource.Callback implementation.
