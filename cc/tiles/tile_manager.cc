@@ -24,6 +24,7 @@
 #include "cc/debug/traced_value.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/raster/raster_buffer.h"
+#include "cc/raster/task_category.h"
 #include "cc/raster/tile_task_runner.h"
 #include "cc/tiles/tile.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -169,23 +170,41 @@ size_t kTileTaskPriorityBase = 10u;
 
 void InsertNodeForTask(TaskGraph* graph,
                        TileTask* task,
-                       size_t priority,
+                       uint16_t category,
+                       uint16_t priority,
                        size_t dependencies) {
   DCHECK(std::find_if(graph->nodes.begin(), graph->nodes.end(),
                       [task](const TaskGraph::Node& node) {
                         return node.task == task;
                       }) == graph->nodes.end());
-
-  // TODO(ericrk): Add in more logic around category selection.
   graph->nodes.push_back(
-      TaskGraph::Node(task, 0 /* category */, priority, dependencies));
+      TaskGraph::Node(task, category, priority, dependencies));
 }
 
 void InsertNodesForRasterTask(TaskGraph* graph,
                               RasterTask* raster_task,
                               const ImageDecodeTask::Vector& decode_tasks,
-                              size_t priority) {
+                              size_t priority,
+                              bool use_gpu_rasterization,
+                              bool high_priority) {
   size_t dependencies = 0u;
+
+  // Determine the TaskCategory for raster tasks - if a task uses GPU, it
+  // cannot run concurrently and is assigned
+  // TASK_CATEGORY_NONCONCURRENT_FOREGROUND, regardless of its priority.
+  // Otherwise its category is based on its priority.
+  TaskCategory raster_task_category;
+  if (use_gpu_rasterization) {
+    raster_task_category = TASK_CATEGORY_NONCONCURRENT_FOREGROUND;
+  } else {
+    raster_task_category =
+        high_priority ? TASK_CATEGORY_FOREGROUND : TASK_CATEGORY_BACKGROUND;
+  }
+
+  // Determine the TaskCategory for decode tasks. This category is based on
+  // the priority of the raster task which depends on it.
+  TaskCategory decode_task_category =
+      high_priority ? TASK_CATEGORY_FOREGROUND : TASK_CATEGORY_BACKGROUND;
 
   // Insert image decode tasks.
   for (ImageDecodeTask::Vector::const_iterator it = decode_tasks.begin();
@@ -204,13 +223,22 @@ void InsertNodesForRasterTask(TaskGraph* graph,
                      [decode_task](const TaskGraph::Node& node) {
                        return node.task == decode_task;
                      });
-    if (decode_it == graph->nodes.end())
-      InsertNodeForTask(graph, decode_task, priority, 0u);
+
+    // Tasks are inserted in priority order, so existing decode tasks should
+    // already be FOREGROUND if this is a high priority task.
+    DCHECK(decode_it == graph->nodes.end() || !high_priority ||
+           static_cast<uint16_t>(TASK_CATEGORY_FOREGROUND) ==
+               decode_it->category);
+
+    if (decode_it == graph->nodes.end()) {
+      InsertNodeForTask(graph, decode_task, decode_task_category, priority, 0u);
+    }
 
     graph->edges.push_back(TaskGraph::Edge(decode_task, raster_task));
   }
 
-  InsertNodeForTask(graph, raster_task, priority, dependencies);
+  InsertNodeForTask(graph, raster_task, raster_task_category, priority,
+                    dependencies);
 }
 
 class TaskSetFinishedTaskImpl : public TileTask {
@@ -282,6 +310,7 @@ TileManager::TileManager(
       tile_task_runner_(nullptr),
       scheduled_raster_task_limit_(scheduled_raster_task_limit),
       use_partial_raster_(use_partial_raster),
+      use_gpu_rasterization_(false),
       all_tiles_that_need_to_be_rasterized_are_scheduled_(true),
       did_check_for_completed_tasks_since_last_schedule_tasks_(true),
       did_oom_on_last_assign_(false),
@@ -329,10 +358,12 @@ void TileManager::FinishTasksAndCleanUp() {
 
 void TileManager::SetResources(ResourcePool* resource_pool,
                                TileTaskRunner* tile_task_runner,
-                               size_t scheduled_raster_task_limit) {
+                               size_t scheduled_raster_task_limit,
+                               bool use_gpu_rasterization) {
   DCHECK(!tile_task_runner_);
   DCHECK(tile_task_runner);
 
+  use_gpu_rasterization_ = use_gpu_rasterization;
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
   tile_task_runner_ = tile_task_runner;
@@ -752,16 +783,24 @@ void TileManager::ScheduleTasks(
     all_count++;
     graph_.edges.push_back(TaskGraph::Edge(task, all_done_task.get()));
 
-    InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++);
+    bool high_priority =
+        tile->required_for_draw() || tile->required_for_activation();
+    InsertNodesForRasterTask(&graph_, task, task->dependencies(), priority++,
+                             use_gpu_rasterization_, high_priority);
   }
 
+  // Insert nodes for our task completion tasks. We enqueue these using
+  // FOREGROUND priority as they are relatively quick tasks and we'd like
+  // to trigger our callbacks quickly to aid in scheduling.
   InsertNodeForTask(&graph_, required_for_activation_done_task.get(),
+                    TASK_CATEGORY_FOREGROUND,
                     kRequiredForActivationDoneTaskPriority,
                     required_for_activate_count);
   InsertNodeForTask(&graph_, required_for_draw_done_task.get(),
-                    kRequiredForDrawDoneTaskPriority, required_for_draw_count);
-  InsertNodeForTask(&graph_, all_done_task.get(), kAllDoneTaskPriority,
-                    all_count);
+                    TASK_CATEGORY_FOREGROUND, kRequiredForDrawDoneTaskPriority,
+                    required_for_draw_count);
+  InsertNodeForTask(&graph_, all_done_task.get(), TASK_CATEGORY_FOREGROUND,
+                    kAllDoneTaskPriority, all_count);
 
   // We must reduce the amount of unused resoruces before calling
   // ScheduleTasks to prevent usage from rising above limits.

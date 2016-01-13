@@ -2203,7 +2203,8 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   tile_manager_->SetResources(
       resource_pool_.get(), tile_task_worker_pool_->AsTileTaskRunner(),
       is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
-                                      : settings_.scheduled_raster_task_limit);
+                                      : settings_.scheduled_raster_task_limit,
+      use_gpu_rasterization_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 

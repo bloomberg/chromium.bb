@@ -431,6 +431,7 @@
         'raster/one_copy_tile_task_worker_pool.h',
         'raster/raster_buffer.cc',
         'raster/raster_buffer.h',
+        'raster/task_category.h',
         'raster/scoped_gpu_raster.cc',
         'raster/scoped_gpu_raster.h',
         'raster/single_thread_task_graph_runner.cc',

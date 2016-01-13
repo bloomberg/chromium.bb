@@ -77,7 +77,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */) {
   SetResources(nullptr, g_fake_tile_task_runner.Pointer(),
-               std::numeric_limits<size_t>::max());
+               std::numeric_limits<size_t>::max(),
+               false /* use_gpu_rasterization */);
 }
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
@@ -87,7 +88,8 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */) {
   SetResources(resource_pool, g_fake_tile_task_runner.Pointer(),
-               std::numeric_limits<size_t>::max());
+               std::numeric_limits<size_t>::max(),
+               false /* use_gpu_rasterization */);
 }
 
 FakeTileManager::~FakeTileManager() {}
