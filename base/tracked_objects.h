@@ -333,13 +333,25 @@ class BASE_EXPORT DeathData {
 
   // Metrics and past snapshots accessors, used only for serialization and in
   // tests.
-  int count() const { return count_; }
-  int32_t run_duration_sum() const { return run_duration_sum_; }
-  int32_t run_duration_max() const { return run_duration_max_; }
-  int32_t run_duration_sample() const { return run_duration_sample_; }
-  int32_t queue_duration_sum() const { return queue_duration_sum_; }
-  int32_t queue_duration_max() const { return queue_duration_max_; }
-  int32_t queue_duration_sample() const { return queue_duration_sample_; }
+  int count() const { return base::subtle::NoBarrier_Load(&count_); }
+  int32_t run_duration_sum() const {
+    return base::subtle::NoBarrier_Load(&run_duration_sum_);
+  }
+  int32_t run_duration_max() const {
+    return base::subtle::NoBarrier_Load(&run_duration_max_);
+  }
+  int32_t run_duration_sample() const {
+    return base::subtle::NoBarrier_Load(&run_duration_sample_);
+  }
+  int32_t queue_duration_sum() const {
+    return base::subtle::NoBarrier_Load(&queue_duration_sum_);
+  }
+  int32_t queue_duration_max() const {
+    return base::subtle::NoBarrier_Load(&queue_duration_max_);
+  }
+  int32_t queue_duration_sample() const {
+    return base::subtle::NoBarrier_Load(&queue_duration_sample_);
+  }
   const DeathDataPhaseSnapshot* last_phase_snapshot() const {
     return last_phase_snapshot_;
   }
@@ -354,28 +366,28 @@ class BASE_EXPORT DeathData {
   // frequently used.  This might help a bit with cache lines.
   // Number of runs seen (divisor for calculating averages).
   // Can be incremented only on the death thread.
-  int count_;
+  base::subtle::Atomic32 count_;
 
   // Count used in determining probability of selecting exec/queue times from a
   // recorded death as samples.
   // Gets incremented only on the death thread, but can be set to 0 by
   // OnProfilingPhaseCompleted() on the snapshot thread.
-  int sample_probability_count_;
+  base::subtle::Atomic32 sample_probability_count_;
 
   // Basic tallies, used to compute averages.  Can be incremented only on the
   // death thread.
-  int32_t run_duration_sum_;
-  int32_t queue_duration_sum_;
+  base::subtle::Atomic32 run_duration_sum_;
+  base::subtle::Atomic32 queue_duration_sum_;
   // Max values, used by local visualization routines.  These are often read,
   // but rarely updated.  The max values get assigned only on the death thread,
   // but these fields can be set to 0 by OnProfilingPhaseCompleted() on the
   // snapshot thread.
-  int32_t run_duration_max_;
-  int32_t queue_duration_max_;
+  base::subtle::Atomic32 run_duration_max_;
+  base::subtle::Atomic32 queue_duration_max_;
   // Samples, used by crowd sourcing gatherers.  These are almost never read,
   // and rarely updated.  They can be modified only on the death thread.
-  int32_t run_duration_sample_;
-  int32_t queue_duration_sample_;
+  base::subtle::Atomic32 run_duration_sample_;
+  base::subtle::Atomic32 queue_duration_sample_;
 
   // Snapshot of this death data made at the last profiling phase completion, if
   // any.  DeathData owns the whole list starting with this pointer.

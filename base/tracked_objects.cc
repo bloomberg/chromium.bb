@@ -139,20 +139,24 @@ void DeathData::RecordDeath(const int32_t queue_duration,
                             const uint32_t random_number) {
   // We'll just clamp at INT_MAX, but we should note this in the UI as such.
   if (count_ < INT_MAX)
-    ++count_;
+    base::subtle::NoBarrier_Store(&count_, count_ + 1);
 
-  int sample_probability_count = sample_probability_count_;
+  int sample_probability_count =
+      base::subtle::NoBarrier_Load(&sample_probability_count_);
   if (sample_probability_count < INT_MAX)
     ++sample_probability_count;
-  sample_probability_count_ = sample_probability_count;
+  base::subtle::NoBarrier_Store(&sample_probability_count_,
+                                sample_probability_count);
 
-  queue_duration_sum_ += queue_duration;
-  run_duration_sum_ += run_duration;
+  base::subtle::NoBarrier_Store(&queue_duration_sum_,
+                                queue_duration_sum_ + queue_duration);
+  base::subtle::NoBarrier_Store(&run_duration_sum_,
+                                run_duration_sum_ + run_duration);
 
-  if (queue_duration_max_ < queue_duration)
-    queue_duration_max_ = queue_duration;
-  if (run_duration_max_ < run_duration)
-    run_duration_max_ = run_duration;
+  if (queue_duration_max() < queue_duration)
+    base::subtle::NoBarrier_Store(&queue_duration_max_, queue_duration);
+  if (run_duration_max() < run_duration)
+    base::subtle::NoBarrier_Store(&run_duration_max_, run_duration);
 
   // Take a uniformly distributed sample over all durations ever supplied during
   // the current profiling phase.
@@ -164,17 +168,17 @@ void DeathData::RecordDeath(const int32_t queue_duration,
   // used them to generate random_number).
   CHECK_GT(sample_probability_count, 0);
   if (0 == (random_number % sample_probability_count)) {
-    queue_duration_sample_ = queue_duration;
-    run_duration_sample_ = run_duration;
+    base::subtle::NoBarrier_Store(&queue_duration_sample_, queue_duration);
+    base::subtle::NoBarrier_Store(&run_duration_sample_, run_duration);
   }
 }
 
 void DeathData::OnProfilingPhaseCompleted(int profiling_phase) {
   // Snapshotting and storing current state.
   last_phase_snapshot_ = new DeathDataPhaseSnapshot(
-      profiling_phase, count_, run_duration_sum_, run_duration_max_,
-      run_duration_sample_, queue_duration_sum_, queue_duration_max_,
-      queue_duration_sample_, last_phase_snapshot_);
+      profiling_phase, count(), run_duration_sum(), run_duration_max(),
+      run_duration_sample(), queue_duration_sum(), queue_duration_max(),
+      queue_duration_sample(), last_phase_snapshot_);
 
   // Not touching fields for which a delta can be computed by comparing with a
   // snapshot from the previous phase. Resetting other fields.  Sample values
@@ -193,15 +197,17 @@ void DeathData::OnProfilingPhaseCompleted(int profiling_phase) {
   // resets.
   // sample_probability_count_ is incrementable, but must be reset to 0 at the
   // phase end, so that we start a new uniformly randomized sample selection
-  // after the reset.  Corruptions due to race conditions are possible, but the
-  // damage is limited to selecting a wrong sample, which is not something that
-  // can cause accumulating or cascading effects.
-  // If there were no corruptions caused by race conditions, we never send a
+  // after the reset. These fields are updated using atomics. However, race
+  // conditions are possible since these are updated individually and not
+  // together atomically, resulting in the values being mutually inconsistent.
+  // The damage is limited to selecting a wrong sample, which is not something
+  // that can cause accumulating or cascading effects.
+  // If there were no inconsistencies caused by race conditions, we never send a
   // sample for the previous phase in the next phase's snapshot because
   // ThreadData::SnapshotExecutedTasks doesn't send deltas with 0 count.
-  sample_probability_count_ = 0;
-  run_duration_max_ = 0;
-  queue_duration_max_ = 0;
+  base::subtle::NoBarrier_Store(&sample_probability_count_, 0);
+  base::subtle::NoBarrier_Store(&run_duration_max_, 0);
+  base::subtle::NoBarrier_Store(&queue_duration_max_, 0);
 }
 
 //------------------------------------------------------------------------------
