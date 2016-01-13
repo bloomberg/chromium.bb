@@ -336,6 +336,9 @@ def main():
         device_list.GetPersistentDeviceList(last_devices_path))
   except IOError:
     expected_devices = set()
+  logging.info('Expected devices:')
+  for device in expected_devices:
+    logging.info('  %s', device)
 
   usb_devices = set(lsusb.get_android_devices())
   devices = [device_utils.DeviceUtils(s)
