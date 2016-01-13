@@ -90,6 +90,7 @@ public:
         const unsigned long long argValues[],
         unsigned flags);
     static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
+    static double systemTraceTime();
 };
 
 } // namespace blink

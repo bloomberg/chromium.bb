@@ -30,6 +30,7 @@
 
 #include "platform/EventTracer.h"
 
+#include "base/time/time.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebConvertableToTraceFormat.h"
 #include "wtf/Assertions.h"
@@ -99,6 +100,11 @@ TraceEvent::TraceEventHandle EventTracer::addTraceEvent(char phase, const unsign
 void EventTracer::updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle handle)
 {
     Platform::current()->updateTraceEventDuration(categoryEnabledFlag, name, handle);
+}
+
+double EventTracer::systemTraceTime()
+{
+    return (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
 }
 
 } // namespace blink

@@ -423,10 +423,6 @@ public:
     // it is recommended that the fixed point be no further in the past than the epoch.
     virtual double monotonicallyIncreasingTimeSeconds() { return 0; }
 
-    // System trace time in seconds. For example, on Chrome OS, this timestamp should be
-    // synchronized with ftrace timestamps.
-    virtual double systemTraceTime() { return 0; }
-
     // Returns an interface to the main thread. Can be null if blink was initialized on a thread without a message loop.
     BLINK_PLATFORM_EXPORT WebThread* mainThread() const;
 

@@ -3,6 +3,7 @@ include_rules = [
     "+base/location.h",
     "+base/memory",
     "+base/sys_info.h",
+    "+base/time",
     "+base/trace_event",
     "+base/values.h",
     "+mozilla",

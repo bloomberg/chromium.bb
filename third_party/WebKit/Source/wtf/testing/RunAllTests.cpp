@@ -42,7 +42,7 @@ static double CurrentTime()
 int main(int argc, char** argv)
 {
     WTF::setAlwaysZeroRandomSourceForTesting();
-    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr, nullptr);
+    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr);
     WTF::initializeMainThread(0);
     return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }

@@ -34,7 +34,6 @@
 #include "platform/TraceEventCommon.h"
 
 #include "wtf/Allocator.h"
-#include "wtf/CurrentTime.h"
 #include "wtf/DynamicAnnotations.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
@@ -186,7 +185,7 @@
                 TRACE_EVENT_PHASE_COMPLETE, \
                 INTERNALTRACEEVENTUID(categoryGroupEnabled), \
                 name, blink::TraceEvent::noEventId, traceEventBindId.data(), \
-                systemTraceTime(), traceEventFlags, ##__VA_ARGS__); \
+                EventTracer::systemTraceTime(), traceEventFlags, ##__VA_ARGS__); \
         INTERNALTRACEEVENTUID(scopedTracer).initialize( \
             INTERNALTRACEEVENTUID(categoryGroupEnabled), name, h); \
     }
@@ -499,7 +498,7 @@ static inline TraceEventHandle addTraceEvent(
     unsigned flags)
 {
     return addTraceEvent(phase, categoryEnabled, name, id, blink::TraceEvent::noBindId,
-        systemTraceTime(), flags);
+        EventTracer::systemTraceTime(), flags);
 }
 
 template<typename ARG1_TYPE>
@@ -513,7 +512,7 @@ static inline TraceEventHandle addTraceEvent(
     const ARG1_TYPE& arg1Val)
 {
     return addTraceEvent(phase, categoryEnabled, name, id, blink::TraceEvent::noBindId,
-        systemTraceTime(), flags, arg1Name, arg1Val);
+        EventTracer::systemTraceTime(), flags, arg1Name, arg1Val);
 }
 
 
@@ -530,7 +529,7 @@ static inline TraceEventHandle addTraceEvent(
     const ARG2_TYPE& arg2Val)
 {
     return addTraceEvent(phase, categoryEnabled, name, id, blink::TraceEvent::noBindId,
-        systemTraceTime(), flags, arg1Name, arg1Val, arg2Name, arg2Val);
+        EventTracer::systemTraceTime(), flags, arg1Name, arg1Val, arg2Name, arg2Val);
 }
 
 // Used by TRACE_EVENTx macro. Do not use directly.

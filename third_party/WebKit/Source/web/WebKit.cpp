@@ -143,11 +143,6 @@ static double monotonicallyIncreasingTimeFunction()
     return Platform::current()->monotonicallyIncreasingTimeSeconds();
 }
 
-static double systemTraceTimeFunction()
-{
-    return Platform::current()->systemTraceTime();
-}
-
 static void histogramEnumerationFunction(const char* name, int sample, int boundaryValue)
 {
     Platform::current()->histogramEnumeration(name, sample, boundaryValue);
@@ -171,7 +166,7 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(platform);
     Platform::initialize(platform);
 
-    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, systemTraceTimeFunction, histogramEnumerationFunction, adjustAmountOfExternalAllocatedMemory);
+    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, histogramEnumerationFunction, adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();
 
