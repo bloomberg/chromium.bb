@@ -103,6 +103,8 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "appearancePageTitle", IDS_SETTINGS_APPEARANCE);
   html_source->AddLocalizedString(
+      "exampleDotCom", IDS_SETTINGS_EXAMPLE_DOT_COM);
+  html_source->AddLocalizedString(
       "setWallpaper", IDS_SETTINGS_SET_WALLPAPER);
   html_source->AddLocalizedString(
       "getThemes", IDS_SETTINGS_THEMES);
@@ -115,7 +117,7 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString(
       "homePageNtp", IDS_SETTINGS_HOME_PAGE_NTP);
   html_source->AddLocalizedString(
-      "openThisPage", IDS_SETTINGS_OPEN_THIS_PAGE);
+      "other", IDS_SETTINGS_OTHER);
   html_source->AddLocalizedString(
       "changeHomePage", IDS_SETTINGS_CHANGE_HOME_PAGE);
   html_source->AddLocalizedString(

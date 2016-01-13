@@ -73,6 +73,9 @@
   <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
   </message>
+  <message name="IDS_SETTINGS_EXAMPLE_DOT_COM" desc="Placeholder text for URL input example.">
+    www.example.com
+  </message>
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
     Set wallpaper
   </message>
@@ -91,8 +94,8 @@
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
     New Tab Page
   </message>
-  <message name="IDS_SETTINGS_OPEN_THIS_PAGE" desc="Label of the input box for the home page.">
-    Open this page:
+  <message name="IDS_SETTINGS_OTHER" desc="Label of the input box for the home page.">
+    Other
   </message>
   <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
     Change
