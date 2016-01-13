@@ -352,14 +352,12 @@ bool EasyUnlockPrivateGetStringsFunction::RunSync() {
   strings->SetString(
       "setupErrorFindingPhone",
       l10n_util::GetStringUTF16(IDS_EASY_UNLOCK_SETUP_ERROR_FINDING_PHONE));
-  strings->SetString(
-      "setupErrorSyncPhoneState",
-       l10n_util::GetStringUTF16(
-           IDS_EASY_UNLOCK_SETUP_ERROR_SYNC_PHONE_STATE_FAILED));
-  strings->SetString(
-      "setupErrorConnectingToPhone",
-      l10n_util::GetStringFUTF16(
-          IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE, device_type));
+  strings->SetString("setupErrorSyncPhoneState",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_ERROR_SYNC_PHONE_STATE_FAILED));
+  strings->SetString("setupErrorConnectingToPhone",
+                     l10n_util::GetStringUTF16(
+                         IDS_EASY_UNLOCK_SETUP_ERROR_CONNECTING_TO_PHONE));
 
   SetResult(strings.release());
   return true;
