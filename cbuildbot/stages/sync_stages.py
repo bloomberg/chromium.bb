@@ -195,13 +195,7 @@ class BootstrapStage(PatchChangesStage):
 
     patch_series = validation_pool.PatchSeries.WorkOnSingleRepo(
         checkout_dir, tracking_branch=self._run.manifest_branch)
-
     self._ApplyPatchSeries(patch_series, patch_pool)
-    # Create the branch that 'repo init -b <target_branch> -u <patched_repo>'
-    # will look for.
-    cmd = ['branch', '-f', self._run.manifest_branch,
-           constants.PATCH_BRANCH]
-    git.RunGit(checkout_dir, cmd)
 
     # Verify that the patched manifest loads properly. Propagate any errors as
     # exceptions.
