@@ -333,7 +333,15 @@ void ChromeViewsDelegate::OnBeforeWidgetInit(
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)
   bool use_non_toplevel_window =
       params->parent &&
+#if defined(OS_WIN)
+      // Check the force_software_compositing flag only on Windows. If this
+      // flag is on, it means that the widget being created wants to use the
+      // software compositor which requires a top level window. We cannot have
+      // a mixture of compositors active in one view hierarchy.
       !params->force_software_compositing &&
+#else
+      params->type != views::Widget::InitParams::TYPE_MENU &&
+#endif
       params->type != views::Widget::InitParams::TYPE_TOOLTIP;
 
 #if defined(OS_WIN)
