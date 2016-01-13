@@ -16,7 +16,7 @@ namespace {
 scoped_ptr<KeyedService> BuildBookmarkClientImpl(web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
       ios::ChromeBrowserState::FromBrowserState(context);
-  return make_scoped_ptr(new BookmarkClientImpl(browser_state, nullptr));
+  return make_scoped_ptr(new BookmarkClientImpl(browser_state));
 }
 
 }  // namespace

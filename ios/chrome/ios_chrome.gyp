@@ -52,7 +52,6 @@
         '../../components/components.gyp:autofill_core_common',
         '../../components/components.gyp:autofill_ios_browser',
         '../../components/components.gyp:bookmarks_browser',
-        '../../components/components.gyp:bookmarks_managed',
         '../../components/components.gyp:browser_sync_browser',
         '../../components/components.gyp:browser_sync_common',
         '../../components/components.gyp:certificate_reporting',

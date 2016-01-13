@@ -8,8 +8,6 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
-#include "components/bookmarks/managed/managed_bookmark_service.h"
-#include "components/bookmarks/managed/managed_bookmark_util.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service.h"
@@ -19,23 +17,10 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/user_metrics.h"
 
-BookmarkClientImpl::BookmarkClientImpl(
-    ios::ChromeBrowserState* browser_state,
-    bookmarks::ManagedBookmarkService* managed_bookmark_service)
-    : browser_state_(browser_state),
-      managed_bookmark_service_(managed_bookmark_service) {}
+BookmarkClientImpl::BookmarkClientImpl(ios::ChromeBrowserState* browser_state)
+    : browser_state_(browser_state) {}
 
 BookmarkClientImpl::~BookmarkClientImpl() {}
-
-void BookmarkClientImpl::Init(bookmarks::BookmarkModel* bookmark_model) {
-  if (managed_bookmark_service_)
-    managed_bookmark_service_->BookmarkModelCreated(bookmark_model);
-}
-
-void BookmarkClientImpl::Shutdown() {
-  managed_bookmark_service_ = nullptr;
-  bookmarks::BookmarkClient::Shutdown();
-}
 
 bool BookmarkClientImpl::PreferTouchIcon() {
   return true;
@@ -81,9 +66,6 @@ void BookmarkClientImpl::GetTypedCountForNodes(
 
 bool BookmarkClientImpl::IsPermanentNodeVisible(
     const bookmarks::BookmarkPermanentNode* node) {
-  DCHECK(bookmarks::IsPermanentNode(node, managed_bookmark_service_));
-  if (bookmarks::IsManagedNode(node, managed_bookmark_service_))
-    return false;
   return node->type() == bookmarks::BookmarkNode::MOBILE;
 }
 
@@ -92,29 +74,19 @@ void BookmarkClientImpl::RecordAction(const base::UserMetricsAction& action) {
 }
 
 bookmarks::LoadExtraCallback BookmarkClientImpl::GetLoadExtraNodesCallback() {
-  if (!managed_bookmark_service_)
-    return bookmarks::LoadExtraCallback();
-
-  return managed_bookmark_service_->GetLoadExtraNodesCallback();
+  return bookmarks::LoadExtraCallback();
 }
 
 bool BookmarkClientImpl::CanSetPermanentNodeTitle(
     const bookmarks::BookmarkNode* permanent_node) {
-  return !managed_bookmark_service_
-             ? true
-             : managed_bookmark_service_->CanSetPermanentNodeTitle(
-                   permanent_node);
+  return true;
 }
 
 bool BookmarkClientImpl::CanSyncNode(const bookmarks::BookmarkNode* node) {
-  return !managed_bookmark_service_
-             ? true
-             : managed_bookmark_service_->CanSyncNode(node);
+  return true;
 }
 
 bool BookmarkClientImpl::CanBeEditedByUser(
     const bookmarks::BookmarkNode* node) {
-  return !managed_bookmark_service_
-             ? true
-             : managed_bookmark_service_->CanBeEditedByUser(node);
+  return true;
 }

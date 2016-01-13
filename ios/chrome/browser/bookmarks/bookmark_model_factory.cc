@@ -66,7 +66,6 @@ scoped_ptr<KeyedService> BookmarkModelFactory::BuildServiceInstanceFor(
       BookmarkClientFactory::GetForBrowserState(browser_state);
   scoped_ptr<bookmarks::BookmarkModel> bookmark_model(
       new bookmarks::BookmarkModel(bookmark_client));
-  bookmark_client->Init(bookmark_model.get());
   bookmark_model->Load(
       browser_state->GetPrefs(),
       browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),

@@ -496,7 +496,6 @@ source_set("browser") {
     "//components/autofill/core/common",
     "//components/autofill/ios/browser",
     "//components/bookmarks/browser",
-    "//components/bookmarks/managed",
     "//components/browser_sync/browser",
     "//components/browser_sync/common",
     "//components/certificate_reporting",

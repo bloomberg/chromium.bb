@@ -22,7 +22,6 @@ namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
-class ManagedBookmarkService;
 }
 
 namespace ios {
@@ -31,15 +30,8 @@ class ChromeBrowserState;
 
 class BookmarkClientImpl : public bookmarks::BookmarkClient {
  public:
-  BookmarkClientImpl(
-      ios::ChromeBrowserState* browser_state,
-      bookmarks::ManagedBookmarkService* managed_bookmark_service);
+  BookmarkClientImpl(ios::ChromeBrowserState* browser_state);
   ~BookmarkClientImpl() override;
-
-  void Init(bookmarks::BookmarkModel* bookmark_model);
-
-  // KeyedService:
-  void Shutdown() override;
 
   // bookmarks::BookmarkClient:
   bool PreferTouchIcon() override;
@@ -65,10 +57,6 @@ class BookmarkClientImpl : public bookmarks::BookmarkClient {
   // Pointer to the associated ios::ChromeBrowserState. Must outlive
   // BookmarkClientImpl.
   ios::ChromeBrowserState* browser_state_;
-
-  // Pointer to the ManagedBookmarkService responsible for bookmark policy. May
-  // be null during testing.
-  bookmarks::ManagedBookmarkService* managed_bookmark_service_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkClientImpl);
 };
