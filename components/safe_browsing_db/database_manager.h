@@ -5,8 +5,8 @@
 // The Safe Browsing service is responsible for downloading anti-phishing and
 // anti-malware tables and checking urls against them.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_DATABASE_MANAGER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_DATABASE_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_DATABASE_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_DATABASE_MANAGER_H_
 
 #include <deque>
 #include <map>
@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "chrome/browser/safe_browsing/hit_report.h"
+#include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
@@ -57,7 +57,7 @@ class SafeBrowsingDatabaseManager
   virtual bool IsSupported() const = 0;
 
   // Returns the ThreatSource for this implementation.
-  virtual safe_browsing::ThreatSource GetThreatSource() const = 0;
+  virtual ThreatSource GetThreatSource() const = 0;
 
   // Returns true if checks are never done synchronously, and therefore
   // always have some latency.
@@ -153,4 +153,4 @@ class SafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_DATABASE_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_DATABASE_MANAGER_H_

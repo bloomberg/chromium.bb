@@ -2494,8 +2494,6 @@
     'chrome_browser_safe_browsing_basic_sources': [
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.cc',
       'browser/renderer_host/data_reduction_proxy_resource_throttle_android.h',
-      'browser/safe_browsing/hit_report.cc',
-      'browser/safe_browsing/hit_report.h',
       'browser/safe_browsing/ping_manager.cc',
       'browser/safe_browsing/ping_manager.h',
       'browser/safe_browsing/protocol_manager_helper.cc',
@@ -2520,8 +2518,6 @@
     'chrome_browser_safe_browsing_mobile_sources': [
       'browser/renderer_host/safe_browsing_resource_throttle.cc',
       'browser/renderer_host/safe_browsing_resource_throttle.h',
-      'browser/safe_browsing/database_manager.cc',
-      'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/remote_database_manager.cc',
       'browser/safe_browsing/remote_database_manager.h',
       'browser/safe_browsing/safe_browsing_api_handler.cc',
@@ -2548,8 +2544,6 @@
       'browser/safe_browsing/client_side_detection_service.h',
       'browser/safe_browsing/client_side_model_loader.cc',
       'browser/safe_browsing/client_side_model_loader.h',
-      'browser/safe_browsing/database_manager.cc',
-      'browser/safe_browsing/database_manager.h',
       'browser/safe_browsing/download_feedback.cc',
       'browser/safe_browsing/download_feedback.h',
       'browser/safe_browsing/download_feedback_service.cc',
@@ -3555,6 +3549,7 @@
             'safe_browsing_chunk_proto',
             'safe_browsing_metadata_proto',
             'safe_browsing_proto',
+            '../components/components.gyp:safe_browsing_db',
           ],
           'conditions': [
             ['safe_browsing == 1', {

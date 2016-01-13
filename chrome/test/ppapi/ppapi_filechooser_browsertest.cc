@@ -16,7 +16,7 @@
 
 #if defined(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/safe_browsing/test_database_manager.h"
+#include "components/safe_browsing_db/test_database_manager.h"
 #endif
 
 using safe_browsing::SafeBrowsingService;

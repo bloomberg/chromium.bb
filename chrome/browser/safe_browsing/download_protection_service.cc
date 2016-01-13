@@ -29,6 +29,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
@@ -194,7 +195,7 @@ class DownloadSBClient
     hit_report.post_data = post_data;
     hit_report.is_extended_reporting = is_extended_reporting_;
     hit_report.is_metrics_reporting_active =
-        safe_browsing::IsMetricsReportingActive();
+        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
     ui_manager_->MaybeReportSafeBrowsingHit(hit_report);
   }

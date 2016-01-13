@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_SAFE_BROWSING_TEST_DATABASE_MANAGER_H_
-#define CHROME_BROWSER_SAFE_BROWSING_TEST_DATABASE_MANAGER_H_
+#ifndef COMPONENTS_SAFE_BROWSING_DB_TEST_DATABASE_MANAGER_H_
+#define COMPONENTS_SAFE_BROWSING_DB_TEST_DATABASE_MANAGER_H_
 
 #include <set>
 #include <string>
 #include <vector>
 
-#include "chrome/browser/safe_browsing/database_manager.h"
+#include "components/safe_browsing_db/database_manager.h"
 
 namespace safe_browsing {
 
@@ -49,4 +49,4 @@ class TestSafeBrowsingDatabaseManager
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_BROWSER_SAFE_BROWSING_TEST_DATABASE_MANAGER_H_
+#endif  // COMPONENTS_SAFE_BROWSING_DB_TEST_DATABASE_MANAGER_H_

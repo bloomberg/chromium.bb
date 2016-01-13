@@ -49,7 +49,10 @@ bool IsOmniboxEnabled(Profile* profile);
 }
 
 namespace safe_browsing {
+class DownloadSBClient;
 class IncidentReportingService;
+class SafeBrowsingService;
+class SafeBrowsingUIManager;
 class SRTFetcher;
 }
 
@@ -88,6 +91,9 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class system_logs::ChromeInternalLogSource;
   friend class UmaSessionStats;
   friend class safe_browsing::SRTFetcher;
+  friend class safe_browsing::DownloadSBClient;
+  friend class safe_browsing::SafeBrowsingService;
+  friend class safe_browsing::SafeBrowsingUIManager;
 
   FRIEND_TEST_ALL_PREFIXES(ChromeMetricsServiceAccessorTest,
                            MetricsReportingEnabled);

@@ -21,8 +21,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/gurl.h"
 

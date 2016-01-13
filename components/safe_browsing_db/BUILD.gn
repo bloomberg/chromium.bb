@@ -12,9 +12,37 @@ proto_library("proto") {
 
 group("safe_browsing_db") {
   deps = [
+    ":database_manager",
+    ":hit_report",
     ":prefix_set",
     ":proto",
     ":util",
+  ]
+}
+
+source_set("database_manager") {
+  sources = [
+    "database_manager.cc",
+    "database_manager.h",
+  ]
+  deps = [
+    ":hit_report",
+    ":util",
+    "//base:base",
+    "//content/public/common",
+    "//url:url",
+  ]
+}
+
+source_set("hit_report") {
+  sources = [
+    "hit_report.cc",
+    "hit_report.h",
+  ]
+  deps = [
+    ":util",
+    "//components/metrics:metrics",
+    "//url:url",
   ]
 }
 
@@ -43,6 +71,17 @@ source_set("util") {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
   }
+}
+
+source_set("test_database_manager") {
+  sources = [
+    "test_database_manager.cc",
+    "test_database_manager.h",
+  ]
+  deps = [
+    ":database_manager",
+    "//base:base",
+  ]
 }
 
 source_set("unit_tests") {

@@ -7,7 +7,7 @@
 #ifndef CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
 #define CHROME_BROWSER_SAFE_BROWSING_HIT_REPORT_H_
 
-#include "chrome/browser/safe_browsing/safe_browsing_util.h"
+#include "components/safe_browsing_db/util.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -40,10 +40,6 @@ struct HitReport {
 
   std::string post_data;
 };
-
-// Return true if the user has opted in to UMA metrics reporting.
-// Used when filling out a HitReport.
-bool IsMetricsReportingActive();
 
 }  // namespace safe_browsing
 

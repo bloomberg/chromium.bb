@@ -9,12 +9,12 @@
 #include "base/files/file_path.h"
 #include "base/metrics/sparse_histogram.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/unverified_download_field_trial.h"
 #include "chrome/common/safe_browsing/download_protection_util.h"
 #include "components/rappor/rappor_service.h"
 #include "components/rappor/rappor_utils.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {

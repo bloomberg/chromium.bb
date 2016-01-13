@@ -10,11 +10,16 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../components/components.gyp:metrics',
         '../crypto/crypto.gyp:crypto',
         ':safebrowsing_proto',
       ],
       'sources': [
         # Note: sources list duplicated in GN build.
+        'safe_browsing_db/database_manager.h',
+        'safe_browsing_db/database_manager.cc',
+        'safe_browsing_db/hit_report.h',
+        'safe_browsing_db/hit_report.cc',
         'safe_browsing_db/prefix_set.h',
         'safe_browsing_db/prefix_set.cc',
         'safe_browsing_db/util.h',
@@ -37,6 +42,23 @@
         'proto_out_dir': 'components/safe_browsing_db',
       },
       'includes': [ '../build/protoc.gypi' ]
+    },
+    {
+      # GN version: //components/safe_browsing_db:test_database_manager
+      'target_name': 'test_database_manager',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        ':safe_browsing_db',
+      ],
+      'sources': [
+        # Note: sources list duplicated in GN build.
+        'safe_browsing_db/test_database_manager.h',
+        'safe_browsing_db/test_database_manager.cc',
+      ],
+      'include_dirs': [
+        '..',
+      ],
     },
   ],
 }

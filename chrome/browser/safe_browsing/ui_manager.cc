@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
-#include "chrome/browser/browser_process.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/metadata.pb.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
@@ -223,7 +223,7 @@ void SafeBrowsingUIManager::DisplayBlockingPage(
         profile->GetPrefs()->GetBoolean(
             prefs::kSafeBrowsingExtendedReportingEnabled);
     hit_report.is_metrics_reporting_active =
-        safe_browsing::IsMetricsReportingActive();
+        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled();
 
     MaybeReportSafeBrowsingHit(hit_report);
   }

@@ -818,8 +818,6 @@
       'browser/safe_browsing/sandboxed_dmg_analyzer_mac_unittest.cc',
       'browser/safe_browsing/sandboxed_zip_analyzer_unittest.cc',
       'browser/safe_browsing/signature_evaluator_mac_unittest.cc',
-      'browser/safe_browsing/test_database_manager.cc',
-      'browser/safe_browsing/test_database_manager.h',
       'browser/safe_browsing/two_phase_uploader_unittest.cc',
       'browser/safe_browsing/unverified_download_field_trial_unittest.cc',
       'browser/safe_browsing/unverified_download_policy_unittest.cc',
@@ -2508,6 +2506,7 @@
                        '<@(chrome_unit_tests_shared_safe_browsing_sources)',
                      ],
           'dependencies': [
+            '../components/components.gyp:test_database_manager',
             'ipc_protobuf_message_test_proto',
           ],
         }],

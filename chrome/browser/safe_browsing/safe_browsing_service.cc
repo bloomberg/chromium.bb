@@ -26,10 +26,10 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
-#include "chrome/browser/safe_browsing/database_manager.h"
 #include "chrome/browser/safe_browsing/download_protection_service.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
@@ -39,6 +39,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/safe_browsing_db/database_manager.h"
 #include "components/user_prefs/tracked/tracked_preference_validation_delegate.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
@@ -313,7 +314,7 @@ bool SafeBrowsingService::DownloadBinHashNeeded() const {
 
 #if defined(FULL_SAFE_BROWSING)
   return (database_manager_->download_protection_enabled() &&
-          safe_browsing::IsMetricsReportingActive()) ||
+          ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled()) ||
          (download_protection_service() &&
           download_protection_service()->enabled());
 #else
