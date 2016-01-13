@@ -701,6 +701,8 @@ if (!is_android) {
     ]
 
     data = [
+      "//tools/perf/run_telemetry_tests",
+
       # For isolate contract.
       "//testing/scripts/common.py",
       "//testing/xvfb.py",

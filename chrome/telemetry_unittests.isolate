@@ -9,6 +9,7 @@
     ['OS=="mac" or OS=="win"', {
       'variables': {
         'files': [
+          '../tools/perf/run_telemetry_tests',
           # Other dependencies of the tests and their harness.
           '../testing/test_env.py',
           '../testing/xvfb.py',
@@ -21,7 +22,7 @@
       'variables': {
         'command': [
           '../testing/scripts/run_telemetry_as_googletest.py',
-          '../tools/telemetry/run_tests',
+          '../tools/perf/run_telemetry_tests',
           '-v',
           '--chrome-root',
           '..',
@@ -32,7 +33,7 @@
       'variables': {
         'command': [
           '../testing/scripts/run_telemetry_as_googletest.py',
-          '../tools/telemetry/run_tests',
+          '../tools/perf/run_telemetry_tests',
           '-v',
           '--chrome-root',
           '..',

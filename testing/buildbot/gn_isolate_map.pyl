@@ -429,7 +429,7 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "args": [
       "--xvfb",
-      "../../tools/telemetry/run_tests",
+      "../../tools/perf/run_telemetry_tests",
       "-v",
       "--chrome-root",
       "../../",

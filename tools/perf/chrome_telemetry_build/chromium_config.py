@@ -6,24 +6,30 @@ import logging
 import os
 import sys
 
-CHROMIUM_SRC_DIR = os.path.join(
-    os.path.dirname(__file__), os.path.pardir, os.path.pardir, os.path.pardir)
 
-sys.path.append(os.path.join(CHROMIUM_SRC_DIR, 'tools', 'telemetry'))
+def GetChromiumSrcDir():
+  return os.path.abspath(
+      os.path.join(os.path.abspath(__file__), '..', '..', '..', '..'))
 
-from telemetry import project_config
+
+def GetTelemetryDir():
+  return os.path.join(GetChromiumSrcDir(), 'tools', 'telemetry')
 
 
 CLIENT_CONFIG_PATH = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 'binary_dependencies.json')
 
+sys.path.insert(1, os.path.join(GetTelemetryDir()))
+
+from telemetry import project_config
+
 
 class ChromiumConfig(project_config.ProjectConfig):
   def __init__(self, top_level_dir=None, benchmark_dirs=None,
                client_config=CLIENT_CONFIG_PATH,
-               default_chrome_root=CHROMIUM_SRC_DIR):
+               default_chrome_root=GetChromiumSrcDir()):
 
-    perf_dir = os.path.join(CHROMIUM_SRC_DIR, 'tools', 'perf')
+    perf_dir = os.path.join(GetChromiumSrcDir(), 'tools', 'perf')
     if not benchmark_dirs:
       benchmark_dirs = [os.path.join(perf_dir, 'benchmarks')]
       logging.info('No benchmark directories specified. Defaulting to %s',
