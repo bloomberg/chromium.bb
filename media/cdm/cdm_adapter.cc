@@ -635,7 +635,7 @@ void CdmAdapter::DecryptAndDecodeAudio(
   cdm::Status status =
       cdm_->DecryptAndDecodeSamples(input_buffer, audio_frames.get());
 
-  const Decryptor::AudioFrames empty_frames = Decryptor::AudioFrames();
+  const Decryptor::AudioFrames empty_frames;
   if (status != cdm::kSuccess) {
     DVLOG(1) << __FUNCTION__ << " failed with cdm::Error " << status;
     audio_decode_cb.Run(ToMediaDecryptorStatus(status), empty_frames);
