@@ -28,6 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 
 #ifdef _WIN32
 char *program_name = "check_yaml";
+char *strndup (char const *s, size_t n);
 #endif
 
 #ifdef HAVE_LIBYAML

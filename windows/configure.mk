@@ -1,3 +1,4 @@
+# Unicode bits
 UCS=2
 
 # Directories
@@ -7,5 +8,5 @@ TESTSDIR=..\tests
 
 # Location of the libyaml sources
 # You will have to download these separately and put them here.
-# You will also have to put yaml.dll and yaml.lib in this directory.
+# libyaml is linked statically, so you will also have to provide the appropriate yaml.lib.
 LIBYAMLDIR=libyaml
