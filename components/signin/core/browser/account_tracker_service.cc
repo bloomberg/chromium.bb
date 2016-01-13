@@ -485,22 +485,24 @@ std::string AccountTrackerService::SeedAccountInfo(const std::string& gaia,
   return account_id;
 }
 
-void AccountTrackerService::SeedAccountInfo(AccountInfo info) {
+std::string AccountTrackerService::SeedAccountInfo(AccountInfo info) {
   info.account_id = PickAccountIdForAccount(info.gaia, info.email);
-  if (info.hosted_domain.empty()) {
-    info.hosted_domain = kNoHostedDomainFound;
+
+  if (!ContainsKey(accounts_, info.account_id)) {
+    StartTrackingAccount(info.account_id);
   }
 
-  if(info.IsValid()) {
-    if(!ContainsKey(accounts_, info.account_id)) {
-      SeedAccountInfo(info.gaia, info.email);
+  AccountState& state = accounts_[info.account_id];
+  // Update the missing fields in |state.info| with |info|.
+  if (state.info.UpdateWith(info)) {
+    if (state.info.IsValid()) {
+      // Notify only if the account info is fully updated, as it is equivalent
+      // to having the account fully fetched.
+      NotifyAccountUpdated(state);
     }
-
-    AccountState& state = accounts_[info.account_id];
-    state.info = info;
-    NotifyAccountUpdated(state);
     SaveToPrefs(state);
   }
+  return info.account_id;
 }
 
 void AccountTrackerService::RemoveAccount(const std::string& account_id) {

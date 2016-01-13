@@ -237,7 +237,7 @@ class UserImageManagerTest : public LoginManagerTest,
     info.email = account_id.GetUserEmail();
     info.full_name = account_id.GetUserEmail();
     info.given_name = account_id.GetUserEmail();
-    info.hosted_domain = std::string();
+    info.hosted_domain = AccountTrackerService::kNoHostedDomainFound;
     info.locale = account_id.GetUserEmail();
     info.picture_url = "http://localhost/avatar.jpg";
     info.is_child_account = false;

@@ -665,6 +665,50 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {
   EXPECT_EQ(email, infos[0].email);
 }
 
+TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
+  AccountTrackerObserver observer;
+  account_tracker()->AddObserver(&observer);
+
+  AccountInfo info;
+  info.gaia = AccountIdToGaiaId("alpha");
+  info.email = AccountIdToEmail("alpha");
+  info.full_name = AccountIdToFullName("alpha");
+  info.account_id = account_tracker()->SeedAccountInfo(info);
+
+  // Validate that seeding an unexisting account works and doesn't send a
+  // notification if the info isn't full.
+  AccountInfo stored_info = account_tracker()->GetAccountInfo(info.account_id);
+  EXPECT_EQ(info.gaia, stored_info.gaia);
+  EXPECT_EQ(info.email, stored_info.email);
+  EXPECT_EQ(info.full_name, stored_info.full_name);
+  EXPECT_TRUE(observer.CheckEvents());
+
+  // Validate that seeding new full informations to an existing account works
+  // and sends a notification.
+  info.given_name = AccountIdToGivenName("alpha");
+  info.hosted_domain = AccountTrackerService::kNoHostedDomainFound;
+  info.locale = AccountIdToLocale("alpha");
+  info.picture_url = AccountIdToPictureURL("alpha");
+  account_tracker()->SeedAccountInfo(info);
+  stored_info = account_tracker()->GetAccountInfo(info.account_id);
+  EXPECT_EQ(info.gaia, stored_info.gaia);
+  EXPECT_EQ(info.email, stored_info.email);
+  EXPECT_EQ(info.given_name, stored_info.given_name);
+  EXPECT_TRUE(
+      observer.CheckEvents(TrackingEvent(UPDATED, info.account_id, info.gaia)));
+
+  // Validate that seeding invalid information to an existing account doesn't
+  // work and doesn't send a notification.
+  info.given_name = AccountIdToGivenName("beta");
+  account_tracker()->SeedAccountInfo(info);
+  stored_info = account_tracker()->GetAccountInfo(info.account_id);
+  EXPECT_EQ(info.gaia, stored_info.gaia);
+  EXPECT_NE(info.given_name, stored_info.given_name);
+  EXPECT_TRUE(observer.CheckEvents());
+
+  account_tracker()->RemoveObserver(&observer);
+}
+
 TEST_F(AccountTrackerServiceTest, UpgradeToFullAccountInfo) {
   // Start by simulating an incomplete account info and let it be saved to
   // prefs.

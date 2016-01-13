@@ -23,6 +23,9 @@ struct AccountInfo {
   bool is_child_account;
 
   bool IsValid() const;
+  // Updates the empty fields of |this| with |other|. Returns whether at least
+  // one field was updated.
+  bool UpdateWith(const AccountInfo& other);
 };
 
 #endif  // COMPONENTS_SIGNIN_CORE_BROWSER_ACCOUNT_INFO_H_

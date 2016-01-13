@@ -107,7 +107,11 @@ class AccountTrackerService : public KeyedService,
   // value PickAccountIdForAccount() when given the same arguments.
   std::string SeedAccountInfo(const std::string& gaia,
                               const std::string& email);
-  void SeedAccountInfo(AccountInfo info);
+
+  // Seeds the account represented by |info|. If the account is already tracked
+  // and compatible, the empty fields will be updated with values from |info|.
+  // If after the update IsValid() is true, OnAccountUpdated will be fired.
+  std::string SeedAccountInfo(AccountInfo info);
 
   void RemoveAccount(const std::string& account_id);
 

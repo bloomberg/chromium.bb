@@ -674,6 +674,7 @@
       'sessions/ios/ios_serialized_navigation_driver_unittest.cc',
     ],
     'signin_unittest_sources': [
+      'signin/core/browser/account_info_unittest.cc',
       'signin/core/browser/account_tracker_service_unittest.cc',
       'signin/core/browser/gaia_cookie_manager_service_unittest.cc',
       'signin/core/browser/refresh_token_annotation_request_unittest.cc',
