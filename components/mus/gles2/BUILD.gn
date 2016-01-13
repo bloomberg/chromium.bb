@@ -13,6 +13,8 @@ source_set("gles2") {
   sources = [
     "command_buffer_driver.cc",
     "command_buffer_driver.h",
+    "command_buffer_driver_manager.cc",
+    "command_buffer_driver_manager.h",
     "command_buffer_impl.cc",
     "command_buffer_impl.h",
     "command_buffer_impl_observer.h",

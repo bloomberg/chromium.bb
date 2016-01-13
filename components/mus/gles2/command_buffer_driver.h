@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/time.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/common/constants.h"
@@ -84,9 +85,29 @@ class CommandBufferDriver : base::NonThreadSafe {
   gpu::SyncPointOrderData* sync_point_order_data() {
     return sync_point_order_data_.get();
   }
+  uint32_t GetUnprocessedOrderNum() const;
+  uint32_t GetProcessedOrderNum() const;
 
  private:
   bool MakeCurrent();
+
+  // Process pending queries and call |ScheduleDelayedWork| to schedule
+  // processing of delayed work.
+  void ProcessPendingAndIdleWork();
+
+  // Schedule processing of delayed work. This updates the time at which
+  // delayed work should be processed. |process_delayed_work_time_| is
+  // updated to current time + delay. Call this after processing some amount
+  // of delayed work.
+  void ScheduleDelayedWork(base::TimeDelta delay);
+
+  // Poll the command buffer to execute work.
+  void PollWork();
+  void PerformWork();
+
+  void DestroyDecoder();
+
+  // Callbacks:
   void OnUpdateVSyncParameters(const base::TimeTicks timebase,
                                const base::TimeDelta interval);
   bool OnWaitSyncPoint(uint32_t sync_point);
@@ -96,7 +117,6 @@ class CommandBufferDriver : base::NonThreadSafe {
                        uint64_t release);
   void OnParseError();
   void OnContextLost(uint32_t reason);
-  void DestroyDecoder();
 
   const gpu::CommandBufferNamespace command_buffer_namespace_;
   const uint64_t command_buffer_id_;
@@ -113,6 +133,10 @@ class CommandBufferDriver : base::NonThreadSafe {
 
   scoped_refptr<base::SingleThreadTaskRunner> context_lost_task_runner_;
   base::Callback<void(int32_t)> context_lost_callback_;
+
+  base::TimeTicks process_delayed_work_time_;
+  uint32_t previous_processed_num_;
+  base::TimeTicks last_idle_time_;
 
   base::WeakPtrFactory<CommandBufferDriver> weak_factory_;
 

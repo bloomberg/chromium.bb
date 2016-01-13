@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -36,6 +35,19 @@
 
 namespace mus {
 
+namespace {
+
+// The first time polling a fence, delay some extra time to allow other
+// stubs to process some work, or else the timing of the fences could
+// allow a pattern of alternating fast and slow frames to occur.
+const int64_t kHandleMoreWorkPeriodMs = 2;
+const int64_t kHandleMoreWorkPeriodBusyMs = 1;
+
+// Prevents idle work from being starved.
+const int64_t kMaxTimeSinceIdleMs = 10;
+
+}  // namespace
+
 CommandBufferDriver::Client::~Client() {}
 
 CommandBufferDriver::CommandBufferDriver(
@@ -48,6 +60,7 @@ CommandBufferDriver::CommandBufferDriver(
       widget_(widget),
       client_(nullptr),
       gpu_state_(gpu_state),
+      previous_processed_num_(0),
       weak_factory_(this) {
   DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(),
             gpu_state_->command_buffer_task_runner()->task_runner());
@@ -145,6 +158,7 @@ bool CommandBufferDriver::Initialize(
     return false;
 
   command_buffer_->SetSharedStateBuffer(std::move(backing));
+  gpu_state_->driver_manager()->AddDriver(this);
   return true;
 }
 
@@ -159,6 +173,7 @@ void CommandBufferDriver::Flush(int32_t put_offset) {
     return;
 
   command_buffer_->Flush(put_offset);
+  ProcessPendingAndIdleWork();
 }
 
 void CommandBufferDriver::RegisterTransferBuffer(
@@ -287,6 +302,16 @@ gpu::CommandBuffer::State CommandBufferDriver::GetLastState() const {
   return command_buffer_->GetLastState();
 }
 
+uint32_t CommandBufferDriver::GetUnprocessedOrderNum() const {
+  DCHECK(CalledOnValidThread());
+  return sync_point_order_data_->unprocessed_order_num();
+}
+
+uint32_t CommandBufferDriver::GetProcessedOrderNum() const {
+  DCHECK(CalledOnValidThread());
+  return sync_point_order_data_->processed_order_num();
+}
+
 bool CommandBufferDriver::MakeCurrent() {
   DCHECK(CalledOnValidThread());
   if (!decoder_)
@@ -301,6 +326,111 @@ bool CommandBufferDriver::MakeCurrent() {
   command_buffer_->SetParseError(gpu::error::kLostContext);
   OnContextLost(reason);
   return false;
+}
+
+void CommandBufferDriver::ProcessPendingAndIdleWork() {
+  DCHECK(CalledOnValidThread());
+  scheduler_->ProcessPendingQueries();
+  ScheduleDelayedWork(
+      base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodMs));
+}
+
+void CommandBufferDriver::ScheduleDelayedWork(base::TimeDelta delay) {
+  DCHECK(CalledOnValidThread());
+  const bool has_more_work =
+      scheduler_->HasPendingQueries() || scheduler_->HasMoreIdleWork();
+  if (!has_more_work) {
+    last_idle_time_ = base::TimeTicks();
+    return;
+  }
+
+  const base::TimeTicks current_time = base::TimeTicks();
+  // |process_delayed_work_time_| is set if processing of delayed work is
+  // already scheduled. Just update the time if already scheduled.
+  if (!process_delayed_work_time_.is_null()) {
+    process_delayed_work_time_ = current_time + delay;
+    return;
+  }
+
+  // Idle when no messages are processed between now and when PollWork is
+  // called.
+  previous_processed_num_ =
+      gpu_state_->driver_manager()->GetProcessedOrderNum();
+
+  if (last_idle_time_.is_null())
+    last_idle_time_ = current_time;
+
+    // scheduled() returns true after passing all unschedule fences and this is
+    // when we can start performing idle work. Idle work is done synchronously
+    // so we can set delay to 0 and instead poll for more work at the rate idle
+    // work is performed. This also ensures that idle work is done as
+    // efficiently as possible without any unnecessary delays.
+  if (scheduler_->scheduled() && scheduler_->HasMoreIdleWork())
+    delay = base::TimeDelta();
+
+  process_delayed_work_time_ = current_time + delay;
+  gpu_state_->command_buffer_task_runner()->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CommandBufferDriver::PollWork, weak_factory_.GetWeakPtr()),
+      delay);
+}
+
+void CommandBufferDriver::PollWork() {
+  DCHECK(CalledOnValidThread());
+  // Post another delayed task if we have not yet reached the time at which
+  // we should process delayed work.
+  base::TimeTicks current_time = base::TimeTicks::Now();
+  DCHECK(!process_delayed_work_time_.is_null());
+  if (process_delayed_work_time_ > current_time) {
+    gpu_state_->command_buffer_task_runner()->task_runner()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&CommandBufferDriver::PollWork, weak_factory_.GetWeakPtr()),
+      process_delayed_work_time_ - current_time);
+    return;
+  }
+  process_delayed_work_time_ = base::TimeTicks();
+  PerformWork();
+}
+
+void CommandBufferDriver::PerformWork() {
+  DCHECK(CalledOnValidThread());
+  if (!MakeCurrent())
+    return;
+
+  if (scheduler_) {
+    const uint32_t current_unprocessed_num =
+        gpu_state_->driver_manager()->GetUnprocessedOrderNum();
+    // We're idle when no messages were processed or scheduled.
+    bool is_idle = (previous_processed_num_ == current_unprocessed_num);
+    if (!is_idle && !last_idle_time_.is_null()) {
+      base::TimeDelta time_since_idle =
+          base::TimeTicks::Now() - last_idle_time_;
+      base::TimeDelta max_time_since_idle =
+          base::TimeDelta::FromMilliseconds(kMaxTimeSinceIdleMs);
+      // Force idle when it's been too long since last time we were idle.
+      if (time_since_idle > max_time_since_idle)
+        is_idle = true;
+    }
+
+    if (is_idle) {
+      last_idle_time_ = base::TimeTicks::Now();
+      scheduler_->PerformIdleWork();
+    }
+    scheduler_->ProcessPendingQueries();
+  }
+
+  ScheduleDelayedWork(
+      base::TimeDelta::FromMilliseconds(kHandleMoreWorkPeriodBusyMs));
+}
+
+void CommandBufferDriver::DestroyDecoder() {
+  DCHECK(CalledOnValidThread());
+  if (decoder_) {
+    gpu_state_->driver_manager()->RemoveDriver(this);
+    bool have_context = decoder_->MakeCurrent();
+    decoder_->Destroy(have_context);
+    decoder_.reset();
+  }
 }
 
 void CommandBufferDriver::OnUpdateVSyncParameters(
@@ -367,15 +497,6 @@ void CommandBufferDriver::OnContextLost(uint32_t reason) {
   DCHECK(CalledOnValidThread());
   if (client_)
     client_->DidLoseContext(reason);
-}
-
-void CommandBufferDriver::DestroyDecoder() {
-  DCHECK(CalledOnValidThread());
-  if (decoder_) {
-    bool have_context = decoder_->MakeCurrent();
-    decoder_->Destroy(have_context);
-    decoder_.reset();
-  }
 }
 
 }  // namespace mus

@@ -37,6 +37,7 @@ void GpuState::StopThreads() {
 
 void GpuState::InitializeOnGpuThread(base::WaitableEvent* event) {
   command_buffer_task_runner_ = new CommandBufferTaskRunner;
+  driver_manager_.reset(new CommandBufferDriverManager);
   sync_point_manager_.reset(new gpu::SyncPointManager(true));
   share_group_ = new gfx::GLShareGroup;
   mailbox_manager_ = new gpu::gles2::MailboxManagerImpl;
