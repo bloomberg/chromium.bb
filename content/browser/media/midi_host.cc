@@ -59,10 +59,19 @@ MidiHost::MidiHost(int renderer_process_id,
   DCHECK(midi_manager_);
 }
 
-MidiHost::~MidiHost() {
-  // Close an open session, or abort opening a session.
-  if (is_session_requested_ && midi_manager_)
+MidiHost::~MidiHost() = default;
+
+void MidiHost::OnChannelClosing() {
+  // If we get here the MidiHost is going to be destroyed soon. Prevent any
+  // subsequent calls from MidiManager by closing our session.
+  // If Send() is called from a different thread (e.g. a separate thread owned
+  // by the MidiManager implementation), it will get posted to the IO thread.
+  // There is a race condition here if our refcount is 0 and we're about to or
+  // have already entered OnDestruct().
+  if (is_session_requested_ && midi_manager_) {
     midi_manager_->EndSession(this);
+    is_session_requested_ = false;
+  }
 }
 
 void MidiHost::OnDestruct() const {

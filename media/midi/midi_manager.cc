@@ -126,11 +126,14 @@ void MidiManager::StartSession(MidiManagerClient* client) {
         pending_clients_.insert(client);
       }
     }
+
+    if (completion == Completion::COMPLETE_SYNCHRONOUSLY) {
+      client->CompleteStartSession(result);
+      return;
+    }
   }
 
-  if (completion == Completion::COMPLETE_SYNCHRONOUSLY) {
-    client->CompleteStartSession(result);
-  } else if (completion == Completion::INVOKE_INITIALIZATION) {
+  if (completion == Completion::INVOKE_INITIALIZATION) {
     // Lazily initialize the MIDI back-end.
     TRACE_EVENT0("midi", "MidiManager::StartInitialization");
     // CompleteInitialization() will be called asynchronously when platform
@@ -143,7 +146,8 @@ void MidiManager::EndSession(MidiManagerClient* client) {
   ReportUsage(Usage::SESSION_ENDED);
 
   // At this point, |client| can be in the destruction process, and calling
-  // any method of |client| is dangerous.
+  // any method of |client| is dangerous. Calls on clients *must* be protected
+  // by |lock_| to prevent race conditions.
   base::AutoLock auto_lock(lock_);
   clients_.erase(client);
   pending_clients_.erase(client);
@@ -156,9 +160,6 @@ void MidiManager::AccumulateMidiBytesSent(MidiManagerClient* client, size_t n) {
 
   // Continue to hold lock_ here in case another thread is currently doing
   // EndSession.
-  // Note that if we are in EndSession, then a destructor is being called and
-  // it isn't really safe to call this method. But we don't have another way to
-  // check this right now.
   client->AccumulateMidiBytesSent(n);
 }
 

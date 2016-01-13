@@ -38,6 +38,7 @@ class CONTENT_EXPORT MidiHost : public BrowserMessageFilter,
   MidiHost(int renderer_process_id, media::midi::MidiManager* midi_manager);
 
   // BrowserMessageFilter implementation.
+  void OnChannelClosing() override;
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
