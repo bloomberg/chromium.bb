@@ -53,7 +53,7 @@ void URLRequestFilter::AddHostnameInterceptor(
   DCHECK(OnMessageLoopForInterceptorAddition());
   DCHECK_EQ(0u, hostname_interceptor_map_.count(make_pair(scheme, hostname)));
   hostname_interceptor_map_[make_pair(scheme, hostname)] =
-      interceptor.release();
+      std::move(interceptor);
 
 #ifndef NDEBUG
   // Check to see if we're masking URLs in the url_interceptor_map_.
@@ -71,12 +71,9 @@ void URLRequestFilter::AddHostnameInterceptor(
 void URLRequestFilter::RemoveHostnameHandler(const std::string& scheme,
                                              const std::string& hostname) {
   DCHECK(OnMessageLoopForInterceptorRemoval());
-  HostnameInterceptorMap::iterator it =
-      hostname_interceptor_map_.find(make_pair(scheme, hostname));
-  DCHECK(it != hostname_interceptor_map_.end());
+  int removed = hostname_interceptor_map_.erase(make_pair(scheme, hostname));
+  DCHECK(removed);
 
-  delete it->second;
-  hostname_interceptor_map_.erase(it);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would leave no protocol factory for the remaining hostname and URL
   // handlers.
@@ -89,7 +86,7 @@ bool URLRequestFilter::AddUrlInterceptor(
   if (!url.is_valid())
     return false;
   DCHECK_EQ(0u, url_interceptor_map_.count(url.spec()));
-  url_interceptor_map_[url.spec()] = interceptor.release();
+  url_interceptor_map_.set(url.spec(), std::move(interceptor));
 
   // Check to see if this URL is masked by a hostname handler.
   DCHECK_EQ(0u, hostname_interceptor_map_.count(make_pair(url.scheme(),
@@ -100,11 +97,8 @@ bool URLRequestFilter::AddUrlInterceptor(
 
 void URLRequestFilter::RemoveUrlHandler(const GURL& url) {
   DCHECK(OnMessageLoopForInterceptorRemoval());
-  URLInterceptorMap::iterator it = url_interceptor_map_.find(url.spec());
-  DCHECK(it != url_interceptor_map_.end());
-
-  delete it->second;
-  url_interceptor_map_.erase(it);
+  int removed = url_interceptor_map_.erase(url.spec());
+  DCHECK(removed);
   // Note that we don't unregister from the URLRequest ProtocolFactory as
   // this would leave no protocol factory for the remaining hostname and URL
   // handlers.
@@ -112,8 +106,8 @@ void URLRequestFilter::RemoveUrlHandler(const GURL& url) {
 
 void URLRequestFilter::ClearHandlers() {
   DCHECK(OnMessageLoopForInterceptorRemoval());
-  STLDeleteValues(&url_interceptor_map_);
-  STLDeleteValues(&hostname_interceptor_map_);
+  url_interceptor_map_.clear();
+  hostname_interceptor_map_.clear();
   hit_count_ = 0;
 }
 
