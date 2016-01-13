@@ -182,6 +182,16 @@ TEST_F(BluetoothGattCharacteristicTest, GetProperties) {
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+// Tests GetService.
+TEST_F(BluetoothGattCharacteristicTest, GetService) {
+  ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
+
+  EXPECT_EQ(service_, characteristic1_->GetService());
+  EXPECT_EQ(service_, characteristic2_->GetService());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
 // Tests ReadRemoteCharacteristic and GetValue with empty value buffer.
 TEST_F(BluetoothGattCharacteristicTest, ReadRemoteCharacteristic_Empty) {
   ASSERT_NO_FATAL_FAILURE(FakeCharacteristicBoilerplate());
