@@ -9,6 +9,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_action_test_util.h"
@@ -174,13 +175,17 @@ void MoveMouseToCenter(NSView* view) {
 }
 
 - (void)menuDidClose:(NSNotification*)notification {
-  if (!closeClosure_.is_null())
-    base::ResetAndReturn(&closeClosure_).Run();
+  if (!closeClosure_.is_null()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::ResetAndReturn(&closeClosure_));
+  }
 }
 
 - (void)menuDidOpen:(NSNotification*)notification {
-  if (!openClosure_.is_null())
-    base::ResetAndReturn(&openClosure_).Run();
+  if (!openClosure_.is_null()) {
+    base::MessageLoop::current()->PostTask(
+        FROM_HERE, base::ResetAndReturn(&openClosure_));
+  }
 }
 
 @end
@@ -273,9 +278,8 @@ void CheckActionIsPoppedOut(BrowserActionsController* actionsController,
 
 // Test that opening a context menu works for both actions on the main bar and
 // actions in the overflow menu.
-// Flaky: http://crbug.com/561461
 IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
-                       DISABLED_ContextMenusOnMainAndOverflow) {
+                       ContextMenusOnMainAndOverflow) {
   // Add an extension with a browser action.
   scoped_refptr<const extensions::Extension> extension =
       extensions::extension_action_test_util::CreateActionExtension(
@@ -335,12 +339,16 @@ IN_PROC_BROWSER_TEST_F(BrowserActionButtonUiTest,
     // Click on the app menu, and pass in a callback to continue the test in
     // ClickOnOverflowedAction (Due to the blocking nature of Cocoa menus,
     // passing in runLoop.QuitClosure() is not sufficient here.)
-    ui_controls::SendMouseEventsNotifyWhenDone(
-        ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+    base::scoped_nsobject<MenuWatcher> menuWatcher(
+        [[MenuWatcher alloc] initWithController:appMenuController()]);
+    [menuWatcher setOpenClosure:
         base::Bind(&ClickOnOverflowedAction,
                    base::Unretained(toolbarController()),
-                   runLoop.QuitClosure()));
+                   runLoop.QuitClosure())];
+    ui_controls::SendMouseEvents(ui_controls::LEFT,
+                                 ui_controls::DOWN | ui_controls::UP);
     runLoop.Run();
+
     // The menu should have opened. Note that the menu opened on the main bar's
     // action button, not the overflow's. Since Cocoa doesn't support running
     // a menu-within-a-menu, this is what has to happen.
