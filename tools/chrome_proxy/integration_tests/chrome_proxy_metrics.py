@@ -469,8 +469,12 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
   def AddResultsForBlockOnce(self, tab, results):
     eligible_response_count = 0
     via_proxy = 0
+    visited_urls = []
 
     for resp in self.IterResponses(tab):
+      # Add debug information in case of failure
+      visited_urls.append(resp.response.url)
+
       # Block-once test URLs (Data Reduction Proxy always returns
       # block-once) should not have the Chrome-Compression-Proxy Via header.
       if (IsTestUrlForBlockOnce(resp.response.url)):
@@ -494,10 +498,13 @@ class ChromeProxyMetric(network_metrics.NetworkMetric):
     if (eligible_response_count != 2):
       raise ChromeProxyMetricException, (
           'Did not make expected number of requests to whitelisted block-once'
-          ' test URLs. Expected: 2, Actual: ' + str(eligible_response_count))
+          ' test URLs. Expected: 2, Actual: %s, Visited URLs: %s' %
+          (eligible_response_count, visited_urls))
 
     results.AddValue(scalar.ScalarValue(results.current_page,
                                         'eligible_responses', 'count', 2))
+    results.AddValue(scalar.ScalarValue(results.current_page,
+                                        'via_proxy', 'count', via_proxy))
 
   def AddResultsForSafebrowsingOn(self, tab, results):
     results.AddValue(scalar.ScalarValue(
