@@ -379,6 +379,9 @@ void DownloadManagerImpl::StartDownloadWithId(
       info->request_handle->CancelRequest();
       if (!on_started.is_null())
         on_started.Run(NULL, DOWNLOAD_INTERRUPT_REASON_USER_CANCELED);
+      // The ByteStreamReader lives and dies on the FILE thread.
+      BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
+                                stream.release());
       return;
     }
     download = item_iterator->second;
