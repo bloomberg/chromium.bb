@@ -1077,4 +1077,27 @@ Polymer({
       this.fire('navigate-to-cast-mode-list');
     }
   },
+
+  /**
+   * Compute the new maximum height of the sink list and update the style.
+   *
+   * @param {number} dialogHeight The height of the Media Router dialog.
+   */
+  updateMaxSinkListHeight: function(dialogHeight) {
+    var headerHeight = this.$$('#container-header').offsetHeight;
+    var firstRunFlowHeight =
+        this.computeShowFirstRunFlow_(this.showFirstRunFlow,
+                                      this.currentView_) ?
+        this.$$('#first-run-flow').offsetHeight : 0;
+    this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
+    this.$['sink-list-view'].style.marginTop =
+        firstRunFlowHeight + headerHeight + 'px';
+
+    // TODO(apacible): After non-fatal issue banner has been updated to appear
+    // below the sink list rather than overlapping, take into account the
+    // banner height when calculating the sink list height.
+    // crbug.com/567362
+    this.$['sink-list'].style.maxHeight =
+        dialogHeight - headerHeight - firstRunFlowHeight + 'px';
+  },
 });

@@ -536,4 +536,8 @@ void MediaRouterUI::OnUIInitialDataReceived() {
   }
 }
 
+void MediaRouterUI::UpdateMaxDialogHeight(int height) {
+  handler_->UpdateMaxDialogHeight(height);
+}
+
 }  // namespace media_router

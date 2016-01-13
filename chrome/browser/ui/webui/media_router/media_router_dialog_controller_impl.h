@@ -39,6 +39,8 @@ class MediaRouterDialogControllerImpl :
   // MediaRouterDialogController:
   bool IsShowingMediaRouterDialog() const override;
 
+  void UpdateMaxDialogSize();
+
  private:
   class DialogWebContentsObserver;
   friend class content::WebContentsUserData<MediaRouterDialogControllerImpl>;
@@ -72,6 +74,8 @@ class MediaRouterDialogControllerImpl :
   // a browser window. The overflow menu's MediaRouterAction is only created
   // when the overflow menu is opened and destroyed when the menu is closed.
   base::WeakPtr<MediaRouterAction> action_;
+
+  base::WeakPtrFactory<MediaRouterDialogControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterDialogControllerImpl);
 };

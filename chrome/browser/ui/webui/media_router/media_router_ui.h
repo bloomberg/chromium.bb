@@ -138,6 +138,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   void OnUIInitiallyLoaded();
   void OnUIInitialDataReceived();
 
+  void UpdateMaxDialogHeight(int height);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,

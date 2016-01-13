@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_sink_with_cast_modes.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace base {
 class DictionaryValue;
@@ -42,6 +43,10 @@ class MediaRouterWebUIMessageHandler : public content::WebUIMessageHandler {
   // Does not take ownership of |issue|. Note that |issue| can be nullptr, when
   // there are no more issues.
   void UpdateIssue(const Issue* issue);
+
+  // Updates the maximum dialog height to allow the WebUI properly scale when
+  // the browser window changes.
+  void UpdateMaxDialogHeight(int height);
 
   // Notifies the dialog that the route creation attempt timed out.
   void NotifyRouteCreationTimeout();

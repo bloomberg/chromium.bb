@@ -12,6 +12,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "chrome/browser/media/router/issue.h"
 #include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/profiles/profile.h"
@@ -56,6 +57,7 @@ const char kSetIssue[] = "media_router.ui.setIssue";
 const char kSetSinkList[] = "media_router.ui.setSinkList";
 const char kSetRouteList[] = "media_router.ui.setRouteList";
 const char kSetCastModeList[] = "media_router.ui.setCastModeList";
+const char kUpdateMaxHeight[] = "media_router.ui.updateMaxHeight";
 const char kWindowOpen[] = "window.open";
 
 scoped_ptr<base::ListValue> SinksToValue(
@@ -240,6 +242,12 @@ void MediaRouterWebUIMessageHandler::UpdateIssue(const Issue* issue) {
   DVLOG(2) << "UpdateIssue";
   web_ui()->CallJavascriptFunction(kSetIssue,
       issue ? *IssueToValue(*issue) : *base::Value::CreateNullValue());
+}
+
+void MediaRouterWebUIMessageHandler::UpdateMaxDialogHeight(int height) {
+  DVLOG(2) << "UpdateMaxDialogHeight";
+  web_ui()->CallJavascriptFunction(kUpdateMaxHeight,
+                                   base::FundamentalValue(height));
 }
 
 void MediaRouterWebUIMessageHandler::NotifyRouteCreationTimeout() {

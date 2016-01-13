@@ -61,6 +61,17 @@ class ConstrainedWebDialogBrowserTestObserver
   bool contents_destroyed_;
 };
 
+class AutoResizingTestWebDialogDelegate
+    : public ui::test::TestWebDialogDelegate {
+ public:
+  explicit AutoResizingTestWebDialogDelegate(const GURL& url)
+      : TestWebDialogDelegate(url) {}
+  ~AutoResizingTestWebDialogDelegate() override {}
+
+  // Dialog delegates for auto-resizing dialogs are expected not to set |size|.
+  void GetDialogSize(gfx::Size* size) const override {}
+};
+
 }  // namespace
 
 class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
@@ -150,7 +161,7 @@ IN_PROC_BROWSER_TEST_F(ConstrainedWebDialogBrowserTest,
 
   // The delegate deletes itself.
   WebDialogDelegate* delegate =
-      new ui::test::TestWebDialogDelegate(GURL(kTestDataURL));
+      new AutoResizingTestWebDialogDelegate(GURL(kTestDataURL));
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_TRUE(web_contents);

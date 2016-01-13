@@ -99,6 +99,15 @@ cr.define('media_router.ui', function() {
     container.allSinks = sinkList;
   }
 
+  /**
+   * Updates the max height of the dialog
+   *
+   * @param {number} height
+   */
+  function updateMaxHeight(height) {
+    container.updateMaxSinkListHeight(height);
+  }
+
   return {
     onNotifyRouteCreationTimeout: onNotifyRouteCreationTimeout,
     onCreateRouteResponseReceived: onCreateRouteResponseReceived,
@@ -108,6 +117,7 @@ cr.define('media_router.ui', function() {
     setIssue: setIssue,
     setRouteList: setRouteList,
     setSinkList: setSinkList,
+    updateMaxHeight: updateMaxHeight,
   };
 });
 
