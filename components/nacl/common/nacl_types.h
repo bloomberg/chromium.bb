@@ -73,7 +73,6 @@ struct NaClStartParams {
   // Used only as a key for validation caching.
   base::FilePath nexe_file_path_metadata;
 
-  IPC::PlatformFileForTransit imc_bootstrap_handle;
   IPC::PlatformFileForTransit irt_handle;
 #if defined(OS_MACOSX)
   IPC::PlatformFileForTransit mac_shm_fd;
@@ -150,7 +149,6 @@ struct NaClLaunchParams {
 struct NaClLaunchResult {
   NaClLaunchResult();
   NaClLaunchResult(
-      const IPC::PlatformFileForTransit& imc_channel_handle,
       const IPC::ChannelHandle& ppapi_ipc_channel_handle,
       const IPC::ChannelHandle& trusted_ipc_channel_handle,
       const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
@@ -158,9 +156,6 @@ struct NaClLaunchResult {
       int plugin_child_id,
       base::SharedMemoryHandle crash_info_shmem_handle);
   ~NaClLaunchResult();
-
-  // For plugin loader <-> renderer IMC communication.
-  IPC::PlatformFileForTransit imc_channel_handle;
 
   // For plugin <-> renderer PPAPI communication.
   IPC::ChannelHandle ppapi_ipc_channel_handle;

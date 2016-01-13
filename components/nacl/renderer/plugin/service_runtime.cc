@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/files/file.h"
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
@@ -21,7 +20,6 @@
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
-#include "native_client/src/public/imc_types.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_errors.h"
@@ -56,7 +54,6 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
     return;
   }
 
-  NaClHandle bootstrap_channel;
   GetNaClInterface()->LaunchSelLdr(
       pp_instance_,
       PP_FromBool(main_service_runtime_),
@@ -64,15 +61,10 @@ void ServiceRuntime::StartSelLdr(const SelLdrStartParams& params,
       &params.file_info,
       PP_FromBool(uses_nonsfi_mode_),
       params.process_type,
-      &bootstrap_channel,
       &translator_channel_,
       &process_id_,
       callback.pp_completion_callback());
   subprocess_.reset(tmp_subprocess.release());
-
-  // TODO(mseaborn): Remove the bootstrap channel entirely, since we no
-  // longer use it.  For now, ensure this handle/FD does not get leaked.
-  base::File closer(bootstrap_channel);
 }
 
 void ServiceRuntime::ReportLoadError(const ErrorInfo& error_info) {

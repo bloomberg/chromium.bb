@@ -112,7 +112,6 @@ void NonSfiListener::OnStart(const nacl::NaClStartParams& params) {
   CHECK(!params.enable_debug_stub);
   CHECK(params.debug_stub_server_bound_socket.fd == -1);
 
-  CHECK(params.imc_bootstrap_handle == IPC::InvalidPlatformFileForTransit());
   CHECK(params.irt_handle == IPC::InvalidPlatformFileForTransit());
   CHECK(params.debug_stub_server_bound_socket ==
         IPC::InvalidPlatformFileForTransit());

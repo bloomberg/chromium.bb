@@ -53,7 +53,6 @@
 #include "content/public/common/sandboxed_process_launcher_delegate.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_switches.h"
-#include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "net/socket/socket_descriptor.h"
 #include "ppapi/host/host_factory.h"
 #include "ppapi/host/ppapi_host.h"
@@ -190,15 +189,6 @@ class NaClSandboxedProcessLauncherDelegate
   base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX
 };
-
-void SetCloseOnExec(NaClHandle fd) {
-#if defined(OS_POSIX)
-  int flags = fcntl(fd, F_GETFD);
-  CHECK_NE(flags, -1);
-  int rc = fcntl(fd, F_SETFD, flags | FD_CLOEXEC);
-  CHECK_EQ(rc, 0);
-#endif
-}
 
 void CloseFile(base::File file) {
   // The base::File destructor will close the file for us.
@@ -353,16 +343,10 @@ NaClProcessHost::~NaClProcessHost() {
         FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(file))));
   }
 #endif
-  base::File files_to_close[] = {
-      std::move(nexe_file_), std::move(socket_for_renderer_),
-      std::move(socket_for_sel_ldr_),
-  };
   // Open files need to be closed on the blocking pool.
-  for (auto& file : files_to_close) {
-    if (file.IsValid()) {
-      content::BrowserThread::GetBlockingPool()->PostTask(
-          FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(file))));
-    }
+  if (nexe_file_.IsValid()) {
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE, base::Bind(&CloseFile, base::Passed(std::move(nexe_file_))));
   }
 
   if (reply_msg_) {
@@ -492,27 +476,6 @@ void NaClProcessHost::Launch(
       delete this;
       return;
     }
-  } else {
-    // Rather than creating a socket pair in the renderer, and passing
-    // one side through the browser to sel_ldr, socket pairs are created
-    // in the browser and then passed to the renderer and sel_ldr.
-    //
-    // This is mainly for the benefit of Windows, where sockets cannot
-    // be passed in messages, but are copied via DuplicateHandle().
-    // This means the sandboxed renderer cannot send handles to the
-    // browser process.
-
-    NaClHandle pair[2];
-    // Create a connected socket
-    if (NaClSocketPair(pair) == -1) {
-      SendErrorToRenderer("NaClSocketPair() failed");
-      delete this;
-      return;
-    }
-    socket_for_renderer_ = base::File(pair[0]);
-    socket_for_sel_ldr_ = base::File(pair[1]);
-    SetCloseOnExec(pair[0]);
-    SetCloseOnExec(pair[1]);
   }
 
   // Create a shared memory region that the renderer and plugin share for
@@ -746,18 +709,8 @@ void NaClProcessHost::ReplyToRenderer(
   }
 #endif
 
-  // First, create an |imc_channel_handle| for the renderer.
-  IPC::PlatformFileForTransit imc_handle_for_renderer =
-      IPC::TakeFileHandleForProcess(std::move(socket_for_renderer_),
-                                    nacl_host_message_filter_->PeerHandle());
-  if (imc_handle_for_renderer == IPC::InvalidPlatformFileForTransit()) {
-    // Failed to create the handle.
-    SendErrorToRenderer("imc_channel_handle creation failed.");
-    return;
-  }
-
-  // Hereafter, we always send an IPC message with handles including imc_handle
-  // created above which, on Windows, are not closable in this process.
+  // Hereafter, we always send an IPC message with handles created above
+  // which, on Windows, are not closable in this process.
   std::string error_message;
   base::SharedMemoryHandle crash_info_shmem_renderer_handle;
   if (!crash_info_shmem_.ShareToProcess(nacl_host_message_filter_->PeerHandle(),
@@ -773,8 +726,7 @@ void NaClProcessHost::ReplyToRenderer(
 
   const ChildProcessData& data = process_->GetData();
   SendMessageToRenderer(
-      NaClLaunchResult(imc_handle_for_renderer,
-                       ppapi_channel_handle.release(),
+      NaClLaunchResult(ppapi_channel_handle.release(),
                        trusted_channel_handle.release(),
                        manifest_service_channel_handle.release(),
                        base::GetProcId(data.handle),
@@ -897,11 +849,6 @@ bool NaClProcessHost::StartNaClExecution() {
       NaClBrowser::GetDelegate()->URLMatchesDebugPatterns(manifest_url_);
   if (uses_nonsfi_mode_) {
     // Currently, non-SFI mode is supported only on Linux.
-#if defined(OS_LINUX)
-    // In non-SFI mode, we do not use SRPC. Make sure that the socketpair is
-    // not created.
-    DCHECK(!socket_for_sel_ldr_.IsValid());
-#endif
     if (enable_nacl_debug) {
       base::ProcessId pid = base::GetProcId(process_->GetData().handle);
       LOG(WARNING) << "nonsfi nacl plugin running in " << pid;
@@ -913,12 +860,6 @@ bool NaClProcessHost::StartNaClExecution() {
     params.enable_debug_stub = enable_nacl_debug;
 
     const ChildProcessData& data = process_->GetData();
-    params.imc_bootstrap_handle = IPC::TakeFileHandleForProcess(
-        std::move(socket_for_sel_ldr_), data.handle);
-    if (params.imc_bootstrap_handle == IPC::InvalidPlatformFileForTransit()) {
-      return false;
-    }
-
     const base::File& irt_file = nacl_browser->IrtFile();
     CHECK(irt_file.IsValid());
     // Send over the IRT file handle.  We don't close our own copy!

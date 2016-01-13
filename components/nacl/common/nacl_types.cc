@@ -10,7 +10,6 @@ namespace nacl {
 
 NaClStartParams::NaClStartParams()
     : nexe_file(IPC::InvalidPlatformFileForTransit()),
-      imc_bootstrap_handle(IPC::InvalidPlatformFileForTransit()),
       irt_handle(IPC::InvalidPlatformFileForTransit()),
 #if defined(OS_MACOSX)
       mac_shm_fd(IPC::InvalidPlatformFileForTransit()),
@@ -88,8 +87,7 @@ NaClLaunchParams::~NaClLaunchParams() {
 }
 
 NaClLaunchResult::NaClLaunchResult()
-    : imc_channel_handle(IPC::InvalidPlatformFileForTransit()),
-      ppapi_ipc_channel_handle(),
+    : ppapi_ipc_channel_handle(),
       trusted_ipc_channel_handle(),
       plugin_pid(base::kNullProcessId),
       plugin_child_id(0),
@@ -97,15 +95,13 @@ NaClLaunchResult::NaClLaunchResult()
 }
 
 NaClLaunchResult::NaClLaunchResult(
-    const IPC::PlatformFileForTransit& imc_channel_handle,
     const IPC::ChannelHandle& ppapi_ipc_channel_handle,
     const IPC::ChannelHandle& trusted_ipc_channel_handle,
     const IPC::ChannelHandle& manifest_service_ipc_channel_handle,
     base::ProcessId plugin_pid,
     int plugin_child_id,
     base::SharedMemoryHandle crash_info_shmem_handle)
-    : imc_channel_handle(imc_channel_handle),
-      ppapi_ipc_channel_handle(ppapi_ipc_channel_handle),
+    : ppapi_ipc_channel_handle(ppapi_ipc_channel_handle),
       trusted_ipc_channel_handle(trusted_ipc_channel_handle),
       manifest_service_ipc_channel_handle(manifest_service_ipc_channel_handle),
       plugin_pid(plugin_pid),

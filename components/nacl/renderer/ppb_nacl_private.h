@@ -209,9 +209,8 @@ struct PP_NaClFileInfo {
  * @{
  */
 struct PPB_NaCl_Private {
-  /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success
-   * and writes a NaClHandle to imc_handle. Returns PP_EXTERNAL_PLUGIN_FAILED on
-   * failure.
+  /* Launches NaCl's sel_ldr process.  Returns PP_EXTERNAL_PLUGIN_OK on success.
+   * Returns PP_EXTERNAL_PLUGIN_FAILED on failure.
    * The |nexe_file_info| is currently used only in non-SFI mode. It is the
    * file handle for the main nexe file, which should be initially loaded.
    * LaunchSelLdr takes the ownership of the file handle.
@@ -226,7 +225,6 @@ struct PPB_NaCl_Private {
                        const struct PP_NaClFileInfo* nexe_file_info,
                        PP_Bool uses_nonsfi_mode,
                        PP_NaClAppProcessType process_type,
-                       void* imc_handle,
                        scoped_ptr<IPC::SyncChannel>* translator_channel,
                        base::ProcessId* process_id,
                        struct PP_CompletionCallback callback);

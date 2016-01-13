@@ -260,9 +260,6 @@ class NaClProcessHost : public content::BrowserChildProcessHostDelegate {
   // reporting crash information.
   base::SharedMemory crash_info_shmem_;
 
-  base::File socket_for_renderer_;
-  base::File socket_for_sel_ldr_;
-
   base::WeakPtrFactory<NaClProcessHost> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);

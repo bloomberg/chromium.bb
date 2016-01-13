@@ -39,7 +39,6 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(nacl::NaClLaunchResult)
-  IPC_STRUCT_TRAITS_MEMBER(imc_channel_handle)
   IPC_STRUCT_TRAITS_MEMBER(ppapi_ipc_channel_handle)
   IPC_STRUCT_TRAITS_MEMBER(trusted_ipc_channel_handle)
   IPC_STRUCT_TRAITS_MEMBER(manifest_service_ipc_channel_handle)
