@@ -4,6 +4,7 @@
 
 #include "android_webview/native/aw_settings.h"
 
+#include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/renderer_host/aw_render_view_host_ext.h"
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/native/aw_contents.h"
@@ -218,6 +219,12 @@ void AwSettings::UpdateRendererPreferencesLocked(
       force_video_overlay != prefs->use_view_overlay_for_all_video) {
     prefs->use_video_overlay_for_embedded_encrypted_video = video_overlay;
     prefs->use_view_overlay_for_all_video = force_video_overlay;
+    update_prefs = true;
+  }
+
+  if (prefs->accept_languages.compare(
+          AwContentBrowserClient::GetAcceptLangsImpl())) {
+    prefs->accept_languages = AwContentBrowserClient::GetAcceptLangsImpl();
     update_prefs = true;
   }
 

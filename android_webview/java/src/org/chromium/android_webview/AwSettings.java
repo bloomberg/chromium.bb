@@ -1731,6 +1731,20 @@ public class AwSettings {
         }
     }
 
+    @VisibleForTesting
+    public void updateAcceptLanguages() {
+        synchronized (mAwSettingsLock) {
+            mEventHandler.runOnUiThreadBlockingAndLocked(new Runnable() {
+                @Override
+                public void run() {
+                    if (mNativeAwSettings != 0) {
+                        nativeUpdateRendererPreferencesLocked(mNativeAwSettings);
+                    }
+                }
+            });
+        }
+    }
+
     @CalledByNative
     private boolean getForceVideoOverlayForTests() {
         assert Thread.holdsLock(mAwSettingsLock);
