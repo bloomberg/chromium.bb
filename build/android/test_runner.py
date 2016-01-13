@@ -393,7 +393,7 @@ def AddInstrumentationTestOptions(parser):
                      help='Delete stale test data on the device.')
   group.add_argument('--timeout-scale', type=float,
                      help='Factor by which timeouts should be scaled.')
-  group.add_argument('--strict-mode', dest='strict_mode', default='testing',
+  group.add_argument('--strict-mode', dest='strict_mode', default='off',
                      help='StrictMode command-line flag set on the device, '
                           'death/testing to kill the process, off to stop '
                           'checking, flash to flash only. Default testing.')
