@@ -35,6 +35,9 @@ function testElement(element) {
     if (element.id in preRunHandlerForTest)
         preRunHandlerForTest[element.id](element);
 
+    if (window.internals)
+        internals.forceCompositingUpdate(document);
+
     logRects(element.id);
 
     // If we're running manually, leave the handlers in place so the user
@@ -106,21 +109,6 @@ function logRects(testName, opt_noOverlay) {
     }
 
     log('');
-}
-
-function checkForRectUpdate(expectUpdate, operation) {
-    if (window.internals)
-        var oldCount = window.internals
-                .touchEventTargetLayerRectsUpdateCount(document);
-
-    operation();
-
-    if (window.internals) {
-        var newCount = window.internals
-                .touchEventTargetLayerRectsUpdateCount(document);
-        if ((oldCount != newCount) != !!expectUpdate)
-            log('FAIL: ' + (expectUpdate ? 'rects not updated' : 'rects updated unexpectedly'));
-    }
 }
 
 // Set this to true in order to visualize the results in an image.

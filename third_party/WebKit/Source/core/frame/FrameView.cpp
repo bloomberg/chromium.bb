@@ -1972,7 +1972,7 @@ void FrameView::performPostLayoutTasks()
     scheduleUpdateWidgetsIfNecessary();
 
     if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
-        scrollingCoordinator->notifyLayoutUpdated();
+        scrollingCoordinator->notifyGeometryChanged();
 
     scrollToAnchor();
 

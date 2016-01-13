@@ -16,35 +16,39 @@
 <div id="layer" class="composited">A layer that may or may not be composited</div>
 <p id="description"></p>
 <div id="console"></div>
+
+<script src="../../../resources/js-test.js"></script>
 <script>
-    description("Make sure we don't crash when a layer with a touch event handler becomes non-composited");
+  jsTestIsAsync = true;
+  description("Make sure we don't crash when a layer with a touch event handler becomes non-composited");
 
-    var layer = document.getElementById('layer');
-    layer.addEventListener('touchstart', function() {});
+  var layer = document.getElementById('layer');
+  layer.addEventListener('touchstart', function() {});
 
+
+  var rects;
+  if (window.internals) {
     // Ensure we've done a layout, updated compositing, and we have a hit rect on this composited layer.
-    var x = layer.offsetTop;
+    window.internals.forceCompositingUpdate(document);
+    rects = window.internals.touchEventTargetLayerRects(document);
+    shouldBe("rects.length", "1");
+    shouldBeEqualToString("rects[0].layerAssociatedNode.id", "layer");
+  }
 
-    if (window.internals)
-        window.internals.forceCompositingUpdate(document);
+  // Make the layer non-composited
+  layer.className = '';
 
-    var rects;
-    if (window.internals) {
-      rects = window.internals.touchEventTargetLayerRects(document);
-      shouldBe("rects.length", "1");
-      shouldBeEqualToString("rects[0].layerAssociatedNode.id", "layer");
-    }
-
-    // Make the layer non-composited
-    layer.className = '';
-
-    // Verify we now have a hit rect on the document.
-    // (layout and compositing update are done by touchEventTargetLayerRects().)
-    if (window.internals) {
-      rects = window.internals.touchEventTargetLayerRects(document);
-      shouldBe("rects.length", "1");
-      shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
-    }
+  // Verify we now have a hit rect on the document after waiting a frame.
+  setTimeout(function() {
+    window.requestAnimationFrame(function() {
+      if (window.internals) {
+        rects = window.internals.touchEventTargetLayerRects(document);
+        shouldBe("rects.length", "1");
+        shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
+      }
+      finishJSTest();
+    });
+  }, 0);
 </script>
 </body>
 </html>

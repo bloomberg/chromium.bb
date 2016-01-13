@@ -68,8 +68,8 @@ public:
     // Return whether this scrolling coordinator handles scrolling for the given frame view.
     bool coordinatesScrollingForFrameView(FrameView*) const;
 
-    // Called when any frame has done its layout.
-    void notifyLayoutUpdated();
+    // Called when any frame has done its layout or compositing has changed.
+    void notifyGeometryChanged();
     // Called when any frame recalculates its overflows after style change.
     void notifyOverflowUpdated();
 

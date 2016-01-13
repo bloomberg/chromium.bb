@@ -41,6 +41,8 @@ function runIFrameTest(id) {
   }
 
   elem.addHandlers();
+  if (window.internals)
+    internals.forceCompositingUpdate(document);
   logRects(id);
   elem.removeHandlers();
 }

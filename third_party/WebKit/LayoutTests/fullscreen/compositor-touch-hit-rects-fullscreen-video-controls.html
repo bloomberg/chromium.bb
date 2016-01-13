@@ -21,6 +21,7 @@ window.onload = function () {
     document.addEventListener('touchstart', function() { });
 
     consoleWrite("Should have single rect on document before fullscreen");
+    window.internals.forceCompositingUpdate(document);
     logRects('handler');
 
     waitForEvent(document, 'webkitfullscreenchange', function() {
@@ -28,6 +29,7 @@ window.onload = function () {
             consoleWrite("Should report another rect which is not on the document");
         else
             consoleWrite("Should keep rect on document");
+        window.internals.forceCompositingUpdate(document);
         logRects('handler');
         endTest();
     });

@@ -385,8 +385,11 @@ void PaintLayerCompositor::updateIfNeeded()
             }
         }
 
-        if (layersChanged)
+        if (layersChanged) {
             updateType = std::max(updateType, CompositingUpdateRebuildTree);
+            if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
+                scrollingCoordinator->notifyGeometryChanged();
+        }
     }
 
     if (updateType != CompositingUpdateNone) {

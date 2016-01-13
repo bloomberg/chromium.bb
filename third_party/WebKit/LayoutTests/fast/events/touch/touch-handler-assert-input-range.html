@@ -18,12 +18,14 @@
     document.getElementById('frame').addEventListener('load', function() {
         // Verify we actually have a hit rect on the page.
         if (window.internals) {
+          internals.forceCompositingUpdate(document);
           rects = window.internals.touchEventTargetLayerRects(document);
           shouldBe("rects.length", "1");
         }
 
         document.getElementById("frame").remove();
         if (window.internals) {
+            internals.forceCompositingUpdate(document);
             rects = window.internals.touchEventTargetLayerRects(document);
             shouldBe("rects.length", "0");
         }

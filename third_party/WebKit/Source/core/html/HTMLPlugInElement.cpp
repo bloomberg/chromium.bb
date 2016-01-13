@@ -528,7 +528,7 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url, const String& mimeType, cons
     // Make sure any input event handlers introduced by the plugin are taken into account.
     if (Page* page = document().frame()->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())
-            scrollingCoordinator->notifyLayoutUpdated();
+            scrollingCoordinator->notifyGeometryChanged();
     }
     return true;
 }

@@ -41,6 +41,10 @@ const kMaxRects = 100;
 const kFixedRects = 1;
 
 function verifyRectCount(expectedRects) {
+  if (!window.internals)
+    log('Missing window.internals');
+
+  internals.forceCompositingUpdate(document);
   var rects = window.internals.touchEventTargetLayerRects(document);
   log('Test node has ' + document.querySelectorAll('.child').length + ' children with ' + rects.length + ' rects');
   if (rects.length != expectedRects) {

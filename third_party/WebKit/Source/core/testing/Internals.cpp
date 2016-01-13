@@ -1409,11 +1409,8 @@ LayerRectList* Internals::touchEventTargetLayerRects(Document* document, Excepti
         return nullptr;
     }
 
-    // Do any pending layout and compositing update (which may call touchEventTargetRectsChange) to ensure this
-    // really takes any previous changes into account.
-    forceCompositingUpdate(document, exceptionState);
-    if (exceptionState.hadException())
-        return nullptr;
+    if (ScrollingCoordinator* scrollingCoordinator = document->page()->scrollingCoordinator())
+        scrollingCoordinator->updateAfterCompositingChangeIfNeeded();
 
     if (LayoutView* view = document->layoutView()) {
         if (PaintLayerCompositor* compositor = view->compositor()) {

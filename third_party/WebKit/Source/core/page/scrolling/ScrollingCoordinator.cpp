@@ -122,7 +122,7 @@ void ScrollingCoordinator::setShouldHandleScrollGestureOnMainThreadRegion(const 
     }
 }
 
-void ScrollingCoordinator::notifyLayoutUpdated()
+void ScrollingCoordinator::notifyGeometryChanged()
 {
     m_scrollGestureRegionIsDirty = true;
     m_touchEventTargetRectsAreDirty = true;
@@ -141,7 +141,7 @@ void ScrollingCoordinator::scrollableAreasDidChange()
         return;
 
     // Layout may update scrollable area bounding boxes. It also sets the same dirty
-    // flag making this one redundant (See |ScrollingCoordinator::notifyLayoutUpdated|).
+    // flag making this one redundant (See |ScrollingCoordinator::notifyGeometryChanged|).
     // So if layout is expected, ignore this call allowing scrolling coordinator
     // to be notified post-layout to recompute gesture regions.
     if (m_page->deprecatedLocalMainFrame()->view()->needsLayout())
@@ -963,7 +963,7 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView)
     if (!coordinatesScrollingForFrameView(frameView))
         return;
 
-    notifyLayoutUpdated();
+    notifyGeometryChanged();
     updateHaveWheelEventHandlers();
     updateHaveScrollEventHandlers();
 }
