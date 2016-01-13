@@ -351,6 +351,8 @@ cr.define('options', function() {
       }
 
       var bubbleControls = [];
+      var pageMatchesForMetrics = 0;
+      var subpageMatchesForMetrics = 0;
 
       // Generate search text by applying lowercase and escaping any characters
       // that would be problematic for regular expressions.
@@ -368,8 +370,10 @@ cr.define('options', function() {
           for (var i = 0, node; node = elements[i]; i++) {
             if (this.highlightMatches_(regExp, node)) {
               node.classList.remove('search-hidden');
-              if (!node.hidden)
+              if (!node.hidden) {
                 foundMatches = true;
+                pageMatchesForMetrics += 1;
+              }
             }
           }
         }
@@ -387,6 +391,7 @@ cr.define('options', function() {
                 bubbleControls.concat(this.getAssociatedControls_(page));
 
             foundMatches = true;
+            subpageMatchesForMetrics += 1;
           }
         }
       }
@@ -395,15 +400,19 @@ cr.define('options', function() {
       $('searchPageNoMatches').hidden = foundMatches;
 
       // Create search balloons for sub-page results.
-      var matchCount = bubbleControls.length;
-      for (var i = 0; i < matchCount; i++)
+      var bubbleCount = bubbleControls.length;
+      for (var i = 0; i < bubbleCount; i++)
         this.createSearchBubble_(bubbleControls[i], text);
 
       // If the search doesn't change for a couple seconds, send some metrics.
       clearTimeout(this.delayedSearchMetric_);
       this.delayedSearchMetric_ = setTimeout(function() {
+        chrome.metricsPrivate.recordUserAction('Settings.Searching');
         chrome.metricsPrivate.recordSmallCount(
-            'Settings.SearchMatchCount', matchCount);
+            'Settings.SearchLength', text.length);
+        chrome.metricsPrivate.recordSmallCount(
+            'Settings.SearchMatchCount',
+            Math.max(pageMatchesForMetrics, subpageMatchesForMetrics));
       }, 2000);
 
       // Cleanup the recursion-prevention variable.

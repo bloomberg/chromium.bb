@@ -44440,6 +44440,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Settings.SearchLength">
+  <owner>dschuyler@chromium.org</owner>
+  <summary>
+    The number of characters typed in the chrome://settings page search box.
+    Intended to determine if we are making the user type too much to find what
+    they are looking for (the search is incremental).
+  </summary>
+</histogram>
+
 <histogram name="Settings.SearchMatchCount">
   <owner>dschuyler@chromium.org</owner>
   <summary>
