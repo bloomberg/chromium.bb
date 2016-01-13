@@ -5,8 +5,6 @@
 source_set("test") {
   testonly = true
   sources = [
-    "fake_string_provider.cc",
-    "fake_string_provider.h",
     "fake_sync_service_factory.cc",
     "fake_sync_service_factory.h",
     "test_chrome_browser_provider.h",

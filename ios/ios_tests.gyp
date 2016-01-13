@@ -13,8 +13,6 @@
       'sources': [
         # TODO(crbug.com/437333): Move most of these files to
         # //ios/chrome/ios_chrome_tests.gyp.
-        'public/test/fake_string_provider.cc',
-        'public/test/fake_string_provider.h',
         'public/test/fake_sync_service_factory.cc',
         'public/test/fake_sync_service_factory.h',
         'public/test/test_chrome_browser_provider.h',

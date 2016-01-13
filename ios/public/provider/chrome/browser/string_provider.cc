@@ -10,10 +10,6 @@ StringProvider::StringProvider() {}
 
 StringProvider::~StringProvider() {}
 
-std::string StringProvider::GetOmniboxCopyUrlString() {
-  return std::string();
-}
-
 base::string16 StringProvider::GetProductName() {
   return base::string16();
 }

@@ -26,10 +26,6 @@ class StringProvider {
   StringProvider();
   virtual ~StringProvider();
 
-  // Returns the string to display in the omnibox context menu for the user to
-  // copy the URL for the current search query into the pasteboard.
-  virtual std::string GetOmniboxCopyUrlString();
-
   // Returns the product name (e.g. "Google Chrome").
   virtual base::string16 GetProductName();
 };
