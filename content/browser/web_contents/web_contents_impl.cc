@@ -123,6 +123,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/content_video_view.h"
 #include "content/browser/media/android/media_session.h"
+#include "content/browser/media/android/media_web_contents_observer_android.h"
 #endif  // OS_ANDROID
 
 #if defined(OS_ANDROID) && !defined(USE_AURA)
@@ -415,7 +416,11 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   frame_tree_.SetFrameRemoveListener(
       base::Bind(&WebContentsImpl::OnFrameRemoved,
                  base::Unretained(this)));
+#if defined(OS_ANDROID)
+  media_web_contents_observer_.reset(new MediaWebContentsObserverAndroid(this));
+#else
   media_web_contents_observer_.reset(new MediaWebContentsObserver(this));
+#endif
   wake_lock_service_context_.reset(new WakeLockServiceContext(this));
 }
 

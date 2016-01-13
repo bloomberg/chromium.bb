@@ -12,7 +12,7 @@
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/media/android/media_session.h"
 #include "content/browser/media/android/media_throttler.h"
-#include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/media/media_player_messages_android.h"
@@ -103,10 +103,10 @@ void BrowserMediaPlayerManager::SetSurfacePeer(
     return;
   }
 
-  WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(WebContents::FromRenderFrameHost(frame));
   BrowserMediaPlayerManager* player_manager =
-      web_contents->media_web_contents_observer()->GetMediaPlayerManager(frame);
+      MediaWebContentsObserverAndroid::FromWebContents(
+          WebContents::FromRenderFrameHost(frame))
+          ->GetMediaPlayerManager(frame);
   if (!player_manager) {
     DVLOG(1) << "Cannot find the media player manager for frame " << frame;
     return;

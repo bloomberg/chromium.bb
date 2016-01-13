@@ -20,7 +20,7 @@
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
-#include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/devtools_messages.h"
@@ -185,9 +185,8 @@ void AXTreeSnapshotCallback(const ScopedJavaGlobalRef<jobject>& callback,
 void ReleaseAllMediaPlayers(WebContents* web_contents,
                             RenderFrameHost* render_frame_host) {
   BrowserMediaPlayerManager* manager =
-      static_cast<WebContentsImpl*>(web_contents)->
-          media_web_contents_observer()->GetMediaPlayerManager(
-              render_frame_host);
+      MediaWebContentsObserverAndroid::FromWebContents(web_contents)
+          ->GetMediaPlayerManager(render_frame_host);
   if (manager)
     manager->ReleaseAllMediaPlayers();
 }

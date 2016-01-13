@@ -11,19 +11,13 @@
 #include <set>
 #include <vector>
 
-#include "base/compiler_specific.h"
-#include "base/containers/scoped_ptr_hash_map.h"
 #include "base/macros.h"
-#include "build/build_config.h"
-#include "content/browser/power_save_blocker_impl.h"
+#include "base/memory/scoped_ptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
-
-class BrowserCdmManager;
-class BrowserMediaPlayerManager;
-class BrowserMediaSessionManager;
+class PowerSaveBlocker;
 
 // This class manages all RenderFrame based media related managers at the
 // browser side. It receives IPC messages from media RenderFrameObservers and
@@ -45,20 +39,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void WasShown() override;
   void WasHidden() override;
 
-#if defined(OS_ANDROID)
-  // Gets the media player manager associated with |render_frame_host|. Creates
-  // a new one if it doesn't exist. The caller doesn't own the returned pointer.
-  BrowserMediaPlayerManager* GetMediaPlayerManager(
-      RenderFrameHost* render_frame_host);
-
-  BrowserMediaSessionManager* GetMediaSessionManager(
-      RenderFrameHost* render_frame_host);
-
-#if defined(VIDEO_HOLE)
-  void OnFrameInfoUpdated();
-#endif  // defined(VIDEO_HOLE)
-#endif  // defined(OS_ANDROID)
-
   bool has_audio_power_save_blocker_for_testing() const {
     return audio_power_save_blocker_;
   }
@@ -68,9 +48,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   }
 
  private:
-  bool OnMediaPlayerDelegateMessageReceived(const IPC::Message& message,
-                                            RenderFrameHost* render_frame_host);
-
   void OnMediaPlayingNotification(RenderFrameHost* render_frame_host,
                                   int64_t player_cookie,
                                   bool has_video,
@@ -104,30 +81,6 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void RemoveAllMediaPlayerEntries(RenderFrameHost* render_frame_host,
                                    ActiveMediaPlayerMap* player_map,
                                    std::set<MediaPlayerId>* removed_players);
-
-#if defined(OS_ANDROID)
-  // Helper functions to handle media player IPC messages. Returns whether the
-  // |message| is handled in the function.
-  bool OnMediaPlayerMessageReceived(const IPC::Message& message,
-                                    RenderFrameHost* render_frame_host);
-
-  bool OnMediaPlayerSetCdmMessageReceived(const IPC::Message& message,
-                                          RenderFrameHost* render_frame_host);
-
-  void OnSetCdm(RenderFrameHost* render_frame_host, int player_id, int cdm_id);
-
-  // Map from RenderFrameHost* to BrowserMediaPlayerManager.
-  using MediaPlayerManagerMap =
-      base::ScopedPtrHashMap<RenderFrameHost*,
-                             scoped_ptr<BrowserMediaPlayerManager>>;
-  MediaPlayerManagerMap media_player_managers_;
-
-  // Map from RenderFrameHost* to BrowserMediaSessionManager.
-  using MediaSessionManagerMap =
-      base::ScopedPtrHashMap<RenderFrameHost*,
-                             scoped_ptr<BrowserMediaSessionManager>>;
-  MediaSessionManagerMap media_session_managers_;
-#endif  // defined(OS_ANDROID)
 
   // Tracking variables and associated power save blockers for media playback.
   ActiveMediaPlayerMap active_audio_players_;

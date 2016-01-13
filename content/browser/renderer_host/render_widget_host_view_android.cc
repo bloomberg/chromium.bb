@@ -45,7 +45,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host_ui_shim.h"
-#include "content/browser/media/media_web_contents_observer.h"
+#include "content/browser/media/android/media_web_contents_observer_android.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
@@ -1367,11 +1367,12 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
       is_mobile_optimized);
 #if defined(VIDEO_HOLE)
   if (host_) {
-    RenderViewHostImpl* rvhi = RenderViewHostImpl::From(host_);
-    WebContentsImpl* web_contents_impl =
-        static_cast<WebContentsImpl*>(WebContents::FromRenderViewHost(rvhi));
-    if (web_contents_impl)
-      web_contents_impl->media_web_contents_observer()->OnFrameInfoUpdated();
+    WebContents* web_contents =
+        WebContents::FromRenderViewHost(RenderViewHostImpl::From(host_));
+    if (web_contents) {
+      MediaWebContentsObserverAndroid::FromWebContents(web_contents)
+          ->OnFrameInfoUpdated();
+    }
   }
 #endif  // defined(VIDEO_HOLE)
 }

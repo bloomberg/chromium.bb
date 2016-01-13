@@ -992,6 +992,8 @@
       'browser/media/android/media_session_uma_helper.h',
       'browser/media/android/media_throttler.cc',
       'browser/media/android/media_throttler.h',
+      'browser/media/android/media_web_contents_observer_android.cc',
+      'browser/media/android/media_web_contents_observer_android.h',
       'browser/media/android/provision_fetcher_impl.cc',
       'browser/media/android/provision_fetcher_impl.h',
       'browser/media/android/url_provision_fetcher.cc',
