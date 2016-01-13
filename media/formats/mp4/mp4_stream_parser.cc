@@ -349,6 +349,9 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
     }
   }
 
+  if (!moov_->pssh.empty())
+    OnEncryptedMediaInitData(moov_->pssh);
+
   RCHECK(config_cb_.Run(audio_config, video_config, TextTrackConfigMap()));
 
   StreamParser::InitParameters params(kInfiniteDuration());
@@ -375,9 +378,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 
   if (!init_cb_.is_null())
     base::ResetAndReturn(&init_cb_).Run(params);
-
-  if (!moov_->pssh.empty())
-    OnEncryptedMediaInitData(moov_->pssh);
 
   return true;
 }
