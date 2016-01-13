@@ -10,7 +10,6 @@
 #include "grit/components_strings.h"
 #include "ios/chrome/browser/translate/translate_infobar_tags.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/string_provider.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_delegate.h"
 #import "ios/public/provider/chrome/browser/ui/infobar_view_protocol.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -45,7 +44,6 @@
       translateInfoBarDelegate->original_language_name();
   [infoBarView addLabel:l10n_util::GetNSStringF(
                             IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS,
-                            provider->GetStringProvider()->GetProductName(),
                             originalLanguage)];
   // Close button.
   [infoBarView addCloseButtonWithTag:TranslateInfoBarIOSTag::CLOSE
