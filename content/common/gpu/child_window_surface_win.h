@@ -22,13 +22,20 @@ class ChildWindowSurfaceWin : public gfx::NativeViewGLSurfaceEGL {
               float scale_factor,
               bool has_alpha) override;
   bool InitializeNativeWindow() override;
+  gfx::SwapResult SwapBuffers() override;
+  gfx::SwapResult PostSubBuffer(int x, int y, int width, int height) override;
+
+  void InvalidateWindowRect(const gfx::Rect& rect);
 
  protected:
   ~ChildWindowSurfaceWin() override;
 
  private:
+  void ClearInvalidContents();
+
   HWND parent_window_;
   GpuChannelManager* manager_;
+  gfx::Rect rect_to_clear_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildWindowSurfaceWin);
 };

@@ -5,11 +5,13 @@
 #include "content/common/gpu/child_window_surface_win.h"
 
 #include "base/compiler_specific.h"
+#include "base/win/scoped_hdc.h"
 #include "base/win/wrapped_window_proc.h"
 #include "content/common/gpu/gpu_channel_manager.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "ui/base/win/hidden_window.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/gfx/win/hwnd_util.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
@@ -30,15 +32,17 @@ LRESULT CALLBACK IntermediateWindowProc(HWND window,
       // Prevent windows from erasing the background.
       return 1;
     case WM_PAINT:
-      // Do not paint anything.
       PAINTSTRUCT paint;
       if (BeginPaint(window, &paint)) {
-        // DirectComposition composites with the contents under the SwapChain,
-        // so ensure that's cleared.
-        if (!IsRectEmpty(&paint.rcPaint)) {
-          FillRect(paint.hdc, &paint.rcPaint,
-                   (HBRUSH)GetStockObject(BLACK_BRUSH));
-        }
+        ChildWindowSurfaceWin* window_surface =
+            reinterpret_cast<ChildWindowSurfaceWin*>(
+                gfx::GetWindowUserData(window));
+        DCHECK(window_surface);
+
+        // Wait to clear the contents until a GL draw occurs, as otherwise an
+        // unsightly black flash may happen if the GL contents are still
+        // transparent.
+        window_surface->InvalidateWindowRect(gfx::Rect(paint.rcPaint));
         EndPaint(window, &paint);
       }
       return 0;
@@ -119,6 +123,7 @@ bool ChildWindowSurfaceWin::InitializeNativeWindow() {
       WS_CHILDWINDOW | WS_DISABLED | WS_VISIBLE, 0, 0,
       windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
       ui::GetHiddenWindow(), NULL, NULL, NULL);
+  gfx::SetWindowUserData(window_, this);
   manager_->Send(new GpuHostMsg_AcceleratedSurfaceCreatedChildWindow(
       parent_window_, window_));
   return true;
@@ -168,7 +173,41 @@ bool ChildWindowSurfaceWin::Resize(const gfx::Size& size,
   }
 }
 
+gfx::SwapResult ChildWindowSurfaceWin::SwapBuffers() {
+  gfx::SwapResult result = NativeViewGLSurfaceEGL::SwapBuffers();
+  ClearInvalidContents();
+  return result;
+}
+
+gfx::SwapResult ChildWindowSurfaceWin::PostSubBuffer(int x,
+                                                     int y,
+                                                     int width,
+                                                     int height) {
+  gfx::SwapResult result =
+      NativeViewGLSurfaceEGL::PostSubBuffer(x, y, width, height);
+  ClearInvalidContents();
+  return result;
+}
+
+void ChildWindowSurfaceWin::InvalidateWindowRect(const gfx::Rect& rect) {
+  rect_to_clear_.Union(rect);
+}
+
+void ChildWindowSurfaceWin::ClearInvalidContents() {
+  if (!rect_to_clear_.IsEmpty()) {
+    base::win::ScopedGetDC dc(window_);
+
+    RECT rect = rect_to_clear_.ToRECT();
+
+    // DirectComposition composites with the contents under the SwapChain,
+    // so ensure that's cleared. GDI treats black as transparent.
+    FillRect(dc, &rect, reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+    rect_to_clear_ = gfx::Rect();
+  }
+}
+
 ChildWindowSurfaceWin::~ChildWindowSurfaceWin() {
+  gfx::SetWindowUserData(window_, nullptr);
   DestroyWindow(window_);
 }
 
