@@ -330,6 +330,10 @@ class Wrappers {
         boolean writeCharacteristic(BluetoothGattCharacteristicWrapper characteristic) {
             return mGatt.writeCharacteristic(characteristic.mCharacteristic);
         }
+
+        boolean writeDescriptor(BluetoothGattDescriptorWrapper descriptor) {
+            return mGatt.writeDescriptor(descriptor.mDescriptor);
+        }
     }
 
     /**
@@ -498,6 +502,14 @@ class Wrappers {
 
         public UUID getUuid() {
             return mDescriptor.getUuid();
+        }
+
+        public byte[] getValue() {
+            return mDescriptor.getValue();
+        }
+
+        public boolean setValue(byte[] value) {
+            return mDescriptor.setValue(value);
         }
     }
 }

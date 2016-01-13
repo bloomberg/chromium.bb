@@ -176,6 +176,11 @@ class BluetoothTestBase : public testing::Test {
       BluetoothGattCharacteristic* characteristic,
       const std::string& uuid) {}
 
+  // Simulates a Descriptor Write operation failing synchronously once for
+  // an unknown reason.
+  virtual void SimulateGattDescriptorWriteWillFailSynchronouslyOnce(
+      BluetoothGattDescriptor* descriptor) {}
+
   // Removes the device from the adapter and deletes it.
   virtual void DeleteDevice(BluetoothDevice* device);
 
@@ -232,6 +237,7 @@ class BluetoothTestBase : public testing::Test {
   int gatt_notify_characteristic_attempts_ = 0;
   int gatt_read_characteristic_attempts_ = 0;
   int gatt_write_characteristic_attempts_ = 0;
+  int gatt_write_descriptor_attempts_ = 0;
 
   // The following values are used to make sure the correct callbacks
   // have been called. They are not reset when calling ResetEventCounts().

@@ -306,6 +306,7 @@ class Fakes {
         boolean mReadCharacteristicWillFailSynchronouslyOnce = false;
         boolean mSetCharacteristicNotificationWillFailSynchronouslyOnce = false;
         boolean mWriteCharacteristicWillFailSynchronouslyOnce = false;
+        boolean mWriteDescriptorWillFailSynchronouslyOnce = false;
 
         public FakeBluetoothGatt(FakeBluetoothDevice device) {
             super(null, null);
@@ -359,6 +360,17 @@ class Fakes {
             }
             nativeOnFakeBluetoothGattWriteCharacteristic(
                     mDevice.mAdapter.mNativeBluetoothTestAndroid, characteristic.getValue());
+            return true;
+        }
+
+        @Override
+        boolean writeDescriptor(Wrappers.BluetoothGattDescriptorWrapper descriptor) {
+            if (mWriteDescriptorWillFailSynchronouslyOnce) {
+                mWriteDescriptorWillFailSynchronouslyOnce = false;
+                return false;
+            }
+            nativeOnFakeBluetoothGattWriteDescriptor(
+                    mDevice.mAdapter.mNativeBluetoothTestAndroid, descriptor.getValue());
             return true;
         }
     }
@@ -533,7 +545,8 @@ class Fakes {
                             + uuidString + "' that has already been added to this characteristic.");
                 }
             }
-            fakeCharacteristic.mDescriptors.add(new FakeBluetoothGattDescriptor(uuid));
+            fakeCharacteristic.mDescriptors.add(
+                    new FakeBluetoothGattDescriptor(fakeCharacteristic, uuid));
         }
 
         // -----------------------------------------------------------------------------------------
@@ -575,11 +588,27 @@ class Fakes {
      * Fakes android.bluetooth.BluetoothGattDescriptor.
      */
     static class FakeBluetoothGattDescriptor extends Wrappers.BluetoothGattDescriptorWrapper {
+        final FakeBluetoothGattCharacteristic mCharacteristic;
         final UUID mUuid;
+        byte[] mValue;
 
-        public FakeBluetoothGattDescriptor(UUID uuid) {
+        public FakeBluetoothGattDescriptor(
+                FakeBluetoothGattCharacteristic characteristic, UUID uuid) {
             super(null);
+            mCharacteristic = characteristic;
             mUuid = uuid;
+            mValue = new byte[0];
+        }
+
+        // Cause subsequent value write of a descriptor to fail synchronously.
+        @CalledByNative("FakeBluetoothGattDescriptor")
+        private static void setWriteDescriptorWillFailSynchronouslyOnce(
+                ChromeBluetoothRemoteGattDescriptor chromeDescriptor) {
+            FakeBluetoothGattDescriptor fakeDescriptor =
+                    (FakeBluetoothGattDescriptor) chromeDescriptor.mDescriptor;
+
+            fakeDescriptor.mCharacteristic.mService.mDevice.mGatt
+                    .mWriteDescriptorWillFailSynchronouslyOnce = true;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -588,6 +617,17 @@ class Fakes {
         @Override
         public UUID getUuid() {
             return mUuid;
+        }
+
+        @Override
+        public byte[] getValue() {
+            return mValue;
+        }
+
+        @Override
+        public boolean setValue(byte[] value) {
+            mValue = value;
+            return true;
         }
     }
 
@@ -615,5 +655,9 @@ class Fakes {
 
     // Binds to BluetoothTestAndroid::OnFakeBluetoothGattWriteCharacteristic.
     private static native void nativeOnFakeBluetoothGattWriteCharacteristic(
+            long nativeBluetoothTestAndroid, byte[] value);
+
+    // Binds to BluetoothTestAndroid::OnFakeBluetoothGattWriteDescriptor.
+    private static native void nativeOnFakeBluetoothGattWriteDescriptor(
             long nativeBluetoothTestAndroid, byte[] value);
 }
