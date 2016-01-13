@@ -65074,6 +65074,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1097" label="V8RegExpPrototypeToString"/>
   <int value="1098"
       label="V8InputDeviceCapabilities_FiresTouchEvents_AttributeGetter"/>
+  <int value="1099" label="DataElement"/>
+  <int value="1100" label="TimeElement"/>
+  <int value="1101" label="SVG1DOMUriReference"/>
+  <int value="1102" label="SVG1DOMZoomAndPan"/>
+  <int value="1103" label="V8SVGGraphicsElement_Transform_AttributeGetter"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

@@ -31,7 +31,7 @@
 // http://www.w3.org/TR/SVG2/types.html#InterfaceSVGGraphicsElement
 
 interface SVGGraphicsElement : SVGElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedTransformList transform;
+    [Measure] readonly attribute SVGAnimatedTransformList transform;
 
     [MeasureAs=SVGLocatableNearestViewportElement] readonly attribute SVGElement nearestViewportElement;
     [MeasureAs=SVGLocatableFarthestViewportElement] readonly attribute SVGElement farthestViewportElement;
