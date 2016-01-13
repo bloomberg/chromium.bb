@@ -432,7 +432,12 @@ IntPoint PaintLayerScrollableArea::maximumScrollPosition() const
     IntSize visibleSize;
     if (box().hasOverflowClip()) {
         contentSize = IntSize(pixelSnappedScrollWidth(), pixelSnappedScrollHeight());
-        visibleSize = enclosingIntRect(box().overflowClipRect(LayoutPoint())).size();
+        visibleSize = pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
+
+        // TODO(skobes): We should really ASSERT that contentSize >= visibleSize
+        // when we are not the root layer, but we can't because contentSize is
+        // based on stale layout overflow data (http://crbug.com/576933).
+        contentSize = contentSize.expandedTo(visibleSize);
     }
     return -scrollOrigin() + (contentSize - visibleSize);
 }
