@@ -789,25 +789,21 @@ int LayoutTableSection::calcRowLogicalHeight()
 
                         rowSpanCells.append(cell);
                         lastRowSpanCell = cell;
-
-                        // Find out the baseline. The baseline is set on the first row in a rowSpan.
-                        updateBaselineForCell(cell, r, baselineDescent);
                     }
-                    continue;
                 }
 
-                ASSERT(cell->rowSpan() == 1);
-
-                if (cell->hasOverrideLogicalContentHeight()) {
+                if (cell->rowIndex() == r && cell->hasOverrideLogicalContentHeight()) {
                     cell->clearIntrinsicPadding();
                     cell->clearOverrideSize();
                     cell->forceChildLayout();
                 }
 
-                m_rowPos[r + 1] = std::max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
+                if (cell->rowSpan() == 1)
+                    m_rowPos[r + 1] = std::max(m_rowPos[r + 1], m_rowPos[r] + cell->logicalHeightForRowSizing());
 
-                // Find out the baseline.
-                updateBaselineForCell(cell, r, baselineDescent);
+                // Find out the baseline. The baseline is set on the first row in a rowSpan.
+                if (cell->rowIndex() == r)
+                    updateBaselineForCell(cell, r, baselineDescent);
             }
         }
 
