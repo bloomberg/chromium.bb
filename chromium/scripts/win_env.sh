@@ -71,21 +71,21 @@ function add_lib_path {
 
 case "$2" in
   "x86")
-    add_path $VSPATH/win8sdk/bin/x86
+    add_path $VSPATH/win_sdk/bin/x86
     add_path $VSPATH/VC/bin/amd64_x86
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib
-    add_lib_path $VSPATH/win8sdk/Lib/winv6.3/um/x86
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10240.0/um/x86
     add_lib_path $VSPATH/VC/atlmfc/lib
     ;;
 
   "x64")
-    add_path $VSPATH/win8sdk/bin/x64
+    add_path $VSPATH/win_sdk/bin/x64
     add_path $VSPATH/VC/bin/amd64
 
     add_lib_path $VSPATH/VC/lib/amd64
-    add_lib_path $VSPATH/win8sdk/Lib/winv6.3/um/x64
+    add_lib_path $VSPATH/win_sdk/Lib/10.0.10240.0/um/x64
     add_lib_path $VSPATH/VC/atlmfc/lib/amd64
     ;;
 
@@ -97,8 +97,8 @@ esac
 
 # Common for x86 and x64.
 add_path $(dirname $(readlink -f "$0")) # For cygwin-wrapper.
-add_include_path $VSPATH/win8sdk/Include/um
-add_include_path $VSPATH/win8sdk/Include/shared
+add_include_path $VSPATH/win_sdk/Include/10.0.10240.0/um
+add_include_path $VSPATH/win_sdk/Include/10.0.10240.0/shared
 add_include_path $VSPATH/VC/include
 add_include_path $VSPATH/VC/atlmfc/include
 

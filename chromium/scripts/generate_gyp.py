@@ -759,6 +759,7 @@ IGNORED_INCLUDE_FILES = [
 # licenses are okay to add.
 LICENSE_WHITELIST = [
     'BSD (3 clause) LGPL (v2.1 or later)',
+    'BSL (v1) LGPL (v2.1 or later)',
     'ISC GENERATED FILE',
     'LGPL (v2.1 or later)',
     'LGPL (v2.1 or later) GENERATED FILE',

@@ -5045,8 +5045,10 @@ elif enabled mips; then
         add_cflags "-mips64r2"
         add_asflags "-mips64r2"
     elif enabled mips64 && enabled mipsfpu && disabled loongson2 && disabled loongson3; then
-        add_cflags "-mips64"
-        add_asflags "-mips64"
+        # Conflicts with --extra-cflags=-mips64r6
+        # add_cflags "-mips64"
+        # add_asflags "-mips64"
+        true
     elif enabled mipsdsp || enabled mipsdspr2; then
         add_cflags "-mips32r2 -mfp32"
         add_asflags "-mips32r2 -mfp32"

@@ -8,6 +8,12 @@ Autorename:
 Current patches:
   .gitignore has a "Chromium stuff" section.
 
+  Remove add_cflags "-mips64" from configure
+    This conflicts with --extra-cflags=-mips64r6 for mips64el. There are a
+    series of upstream patches changing how mips arch selection works, this may
+    be resolved shortly. (Those patches are not by Google though, and are also
+    the reason it broke.)
+
   Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
   Changes/additions to compat/{strtod.c,strtod.h}
     Commit b5269bfb48c71fe17c02eee00c71b1e9762497db changes these files and
