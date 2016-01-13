@@ -123,10 +123,10 @@ if (!is_chromeos && use_gconf) {
     pkg_config("atk") {
       packages = [ "atk" ]
       atk_lib_dir = exec_script(pkg_config_script,
-                                [
-                                  "--libdir",
-                                  "atk",
-                                ],
+                                pkg_config_args + [
+                                      "--libdir",
+                                      "atk",
+                                    ],
                                 "string")
       defines = [ "ATK_LIB_DIR=\"$atk_lib_dir\"" ]
     }
