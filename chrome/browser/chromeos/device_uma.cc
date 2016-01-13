@@ -67,10 +67,10 @@ void DeviceUMA::CheckTouchpadEvent(XEvent* native_event) {
 
   // Check for the CrOS touchpad metrics gesture
   ui::DeviceDataManagerX11 *manager = ui::DeviceDataManagerX11::GetInstance();
-  if (manager->IsCMTMetricsEvent(native_event)) {
+  if (manager->IsCMTMetricsEvent(*native_event)) {
     ui::GestureMetricsType type;
     float data1, data2;
-    manager->GetMetricsData(native_event, &type, &data1, &data2);
+    manager->GetMetricsData(*native_event, &type, &data1, &data2);
 
     // We currently track only the noisy ground issue. Please see
     // http://crbug.com/237683.
@@ -87,8 +87,8 @@ void DeviceUMA::CheckIncomingEvent(XEvent* event) {
     case GenericEvent: {
       ui::DeviceDataManagerX11* devices =
           ui::DeviceDataManagerX11::GetInstance();
-      if (devices->IsXIDeviceEvent(event) &&
-          devices->IsTouchpadXInputEvent(event)) {
+      if (devices->IsXIDeviceEvent(*event) &&
+          devices->IsTouchpadXInputEvent(*event)) {
         CheckTouchpadEvent(event);
       }
       break;

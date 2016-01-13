@@ -403,9 +403,9 @@ int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
     if (next_event.type == GenericEvent &&
         next_event.xgeneric.evtype == event_type &&
         !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
-            &next_event) &&
+            next_event) &&
         ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
-            &next_event) == SCROLL_TYPE_NO_SCROLL) {
+            next_event) == SCROLL_TYPE_NO_SCROLL) {
       XIDeviceEvent* next_xievent =
           static_cast<XIDeviceEvent*>(next_event.xcookie.data);
       // Confirm that the motion event is targeted at the same window

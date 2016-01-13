@@ -149,9 +149,9 @@ void ScopedDisableInternalMouseAndKeyboardX11::DidProcessEvent(
       static_cast<ui::DeviceDataManagerX11*>(
           ui::DeviceDataManager::GetInstance());
   if (xievent->evtype != XI_Motion ||
-      device_data_manager->IsFlingEvent(event) ||
-      device_data_manager->IsScrollEvent(event) ||
-      device_data_manager->IsCMTMetricsEvent(event)) {
+      device_data_manager->IsFlingEvent(*event) ||
+      device_data_manager->IsScrollEvent(*event) ||
+      device_data_manager->IsCMTMetricsEvent(*event)) {
     return;
   }
   if (xievent->sourceid == touchpad_device_id_) {

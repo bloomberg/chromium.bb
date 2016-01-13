@@ -338,7 +338,7 @@ unsigned int UpdateX11EventButton(int ui_flag, unsigned int old_x_button) {
 bool GetGestureTimes(const base::NativeEvent& native_event,
                      double* start_time,
                      double* end_time) {
-  if (!ui::DeviceDataManagerX11::GetInstance()->HasGestureTimes(native_event))
+  if (!ui::DeviceDataManagerX11::GetInstance()->HasGestureTimes(*native_event))
     return false;
 
   double start_time_, end_time_;
@@ -348,7 +348,7 @@ bool GetGestureTimes(const base::NativeEvent& native_event,
     end_time = &end_time_;
 
   ui::DeviceDataManagerX11::GetInstance()->GetGestureTimes(
-      native_event, start_time, end_time);
+      *native_event, start_time, end_time);
   return true;
 }
 
@@ -368,8 +368,8 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   // ET_UNKNOWN as the type so this event will not be further processed.
   // NOTE: During some events unittests there is no device data manager.
   if (DeviceDataManager::HasInstance() &&
-      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance())->
-          IsEventBlocked(native_event)) {
+      static_cast<DeviceDataManagerX11*>(DeviceDataManager::GetInstance())
+          ->IsEventBlocked(*native_event)) {
     return ET_UNKNOWN;
   }
 
@@ -440,14 +440,15 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
           DeviceDataManagerX11* devices = DeviceDataManagerX11::GetInstance();
           if (GetFlingData(native_event, NULL, NULL, NULL, NULL, &is_cancel))
             return is_cancel ? ET_SCROLL_FLING_CANCEL : ET_SCROLL_FLING_START;
-          if (devices->IsScrollEvent(native_event)) {
-            return devices->IsTouchpadXInputEvent(native_event) ? ET_SCROLL
-                                                                : ET_MOUSEWHEEL;
+          if (devices->IsScrollEvent(*native_event)) {
+            return devices->IsTouchpadXInputEvent(*native_event)
+                       ? ET_SCROLL
+                       : ET_MOUSEWHEEL;
           }
-          if (devices->GetScrollClassEventDetail(native_event) !=
+          if (devices->GetScrollClassEventDetail(*native_event) !=
               SCROLL_TYPE_NO_SCROLL)
             return ET_MOUSEWHEEL;
-          if (devices->IsCMTMetricsEvent(native_event))
+          if (devices->IsCMTMetricsEvent(*native_event))
             return ET_UMA_DATA;
           if (GetButtonMaskForX2Event(xievent))
             return ET_MOUSE_DRAGGED;
@@ -790,7 +791,7 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                       float* x_offset_ordinal,
                       float* y_offset_ordinal,
                       int* finger_count) {
-  if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(native_event)) {
+  if (DeviceDataManagerX11::GetInstance()->IsScrollEvent(*native_event)) {
     // Temp values to prevent passing NULLs to DeviceDataManager.
     float x_offset_, y_offset_;
     float x_offset_ordinal_, y_offset_ordinal_;
@@ -807,16 +808,16 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
       finger_count = &finger_count_;
 
     DeviceDataManagerX11::GetInstance()->GetScrollOffsets(
-        native_event, x_offset, y_offset, x_offset_ordinal, y_offset_ordinal,
+        *native_event, x_offset, y_offset, x_offset_ordinal, y_offset_ordinal,
         finger_count);
     return true;
   }
 
   if (DeviceDataManagerX11::GetInstance()->GetScrollClassDeviceDetail(
-          native_event) != SCROLL_TYPE_NO_SCROLL) {
+          *native_event) != SCROLL_TYPE_NO_SCROLL) {
     double x_scroll_offset, y_scroll_offset;
     DeviceDataManagerX11::GetInstance()->GetScrollClassOffsets(
-        native_event, &x_scroll_offset, &y_scroll_offset);
+        *native_event, &x_scroll_offset, &y_scroll_offset);
     *x_offset = x_scroll_offset * kWheelScrollAmount;
     *y_offset = y_scroll_offset * kWheelScrollAmount;
     return true;
@@ -830,7 +831,7 @@ bool GetFlingData(const base::NativeEvent& native_event,
                   float* vx_ordinal,
                   float* vy_ordinal,
                   bool* is_cancel) {
-  if (!DeviceDataManagerX11::GetInstance()->IsFlingEvent(native_event))
+  if (!DeviceDataManagerX11::GetInstance()->IsFlingEvent(*native_event))
     return false;
 
   float vx_, vy_;
@@ -848,7 +849,7 @@ bool GetFlingData(const base::NativeEvent& native_event,
     is_cancel = &is_cancel_;
 
   DeviceDataManagerX11::GetInstance()->GetFlingData(
-      native_event, vx, vy, vx_ordinal, vy_ordinal, is_cancel);
+      *native_event, vx, vy, vx_ordinal, vy_ordinal, is_cancel);
   return true;
 }
 
