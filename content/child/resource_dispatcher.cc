@@ -239,7 +239,6 @@ void ResourceDispatcher::OnReceivedData(int request_id,
   bool send_ack = true;
   if (request_info && data_length > 0) {
     CHECK(base::SharedMemory::IsHandleValid(request_info->buffer->handle()));
-    CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
     // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
     CHECK_GE(request_info->buffer_size, 0);
@@ -252,6 +251,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
       base::debug::Alias(&cached_data_offset);
       CHECK(false);
     }
+
+    CHECK_GE(request_info->buffer_size, data_offset + data_length);
 
     // Ensure that the SHM buffer remains valid for the duration of this scope.
     // It is possible for Cancel() to be called before we exit this scope.
