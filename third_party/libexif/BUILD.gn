@@ -3,8 +3,12 @@
 # found in the LICENSE file.
 
 # Linux should use system libexif
-config("libexif_config") {
+
+config("libexif_public_config") {
   include_dirs = [ "sources" ]
+}
+
+config("libexif_warnings") {
   if (is_clang) {
     cflags = [
       "-Wno-enum-conversion",
@@ -78,9 +82,14 @@ if (!is_linux || is_chromeos) {
     }
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
 
-    public_configs = [ ":libexif_config" ]
+      # Must be after no_chromium_code for warning flags to be ordered properly.
+      ":libexif_warnings",
+    ]
+
+    public_configs = [ ":libexif_public_config" ]
   }
 }
 
@@ -94,8 +103,13 @@ if (is_linux) {
     libs = [ "m" ]
 
     configs -= [ "//build/config/compiler:chromium_code" ]
-    configs += [ "//build/config/compiler:no_chromium_code" ]
+    configs += [
+      "//build/config/compiler:no_chromium_code",
 
-    public_configs = [ ":libexif_config" ]
+      # Must be after no_chromium_code for warning flags to be ordered properly.
+      ":libexif_warnings",
+    ]
+
+    public_configs = [ ":libexif_public_config" ]
   }
 }
