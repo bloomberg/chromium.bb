@@ -574,6 +574,64 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_DOUBLE_EQ(0.4, service->GetTotalEngagementPoints());
 }
 
+TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
+  base::SimpleTestClock* clock = new base::SimpleTestClock();
+  scoped_ptr<SiteEngagementService> service(
+      new SiteEngagementService(profile(), make_scoped_ptr(clock)));
+
+  base::HistogramTester histograms;
+
+  base::Time current_day = GetReferenceTime();
+  clock->SetNow(current_day - base::TimeDelta::FromDays(5));
+
+  // The https and http versions of www.google.com should be separate. But
+  // different paths on the same origin should be treated the same.
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("http://www.google.com/maps");
+
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  service->SetLastShortcutLaunchTime(url2);
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram, 0);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 1);
+
+  service->AddPoints(url1, 2.0);
+  service->AddPoints(url2, 2.0);
+  clock->SetNow(current_day);
+  service->SetLastShortcutLaunchTime(url2);
+
+  histograms.ExpectTotalCount(
+      SiteEngagementMetrics::kDaysSinceLastShortcutLaunchHistogram, 1);
+  histograms.ExpectUniqueSample(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH, 2);
+
+  EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(7.0, service->GetScore(url2));
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(1));
+  EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(7.0, service->GetScore(url2));
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(7));
+  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(5.0, service->GetScore(url2));
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(10));
+  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(5.0, service->GetScore(url2));
+
+  clock->SetNow(GetReferenceTime() + base::TimeDelta::FromDays(11));
+  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(0.0, service->GetScore(url2));
+}
+
 TEST_F(SiteEngagementServiceTest, CheckHistograms) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   scoped_ptr<SiteEngagementService> service(

@@ -13,6 +13,7 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/apps/per_app_settings_service.h"
 #include "chrome/browser/apps/per_app_settings_service_factory.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -340,17 +341,23 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
                             params.container,
                             extensions::NUM_LAUNCH_CONTAINERS);
 
+  GURL url = UrlForExtension(extension, params.override_url);
   if (extension->from_bookmark()) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.BookmarkAppLaunchContainer",
                               params.container,
                               extensions::NUM_LAUNCH_CONTAINERS);
+
+    // Record the launch time in the site engagement service. A recent bookmark
+    // app launch will provide an engagement boost to the origin.
+    SiteEngagementService* service = SiteEngagementService::Get(profile);
+    if (service)
+      service->SetLastShortcutLaunchTime(url);
   }
 
   // Record v1 app launch. Platform app launch is recorded when dispatching
   // the onLaunched event.
   prefs->SetLastLaunchTime(extension->id(), base::Time::Now());
 
-  GURL url = UrlForExtension(extension, params.override_url);
   switch (params.container) {
     case extensions::LAUNCH_CONTAINER_NONE: {
       NOTREACHED();

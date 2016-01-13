@@ -51,6 +51,11 @@ class SiteEngagementScore {
     VISIBLE_MEDIA_POINTS,
     HIDDEN_MEDIA_POINTS,
 
+    // The number of points added to engagement when a site is launched from
+    // homescreen or added as a bookmark app. This bonus will apply for ten days
+    // following a launch; each new launch resets the ten days.
+    WEB_APP_INSTALLED_POINTS,
+
     MAX_VARIATION
   };
 
@@ -64,6 +69,7 @@ class SiteEngagementScore {
   static double GetUserInputPoints();
   static double GetVisibleMediaPoints();
   static double GetHiddenMediaPoints();
+  static double GetWebAppInstalledPoints();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations();
@@ -81,6 +87,12 @@ class SiteEngagementScore {
   // Returns true if the maximum number of points today has been added.
   bool MaxPointsPerDayAdded();
 
+  // Get/set the last time this origin was launched from an installed shortcut.
+  base::Time last_shortcut_launch_time() { return last_shortcut_launch_time_; }
+  void set_last_shortcut_launch_time(const base::Time& time) {
+    last_shortcut_launch_time_ = time;
+  }
+
   // Updates the content settings dictionary |score_dict| with the current score
   // fields. Returns true if |score_dict| changed, otherwise return false.
   bool UpdateScoreDict(base::DictionaryValue* score_dict);
@@ -97,12 +109,16 @@ class SiteEngagementScore {
   static const char* kRawScoreKey;
   static const char* kPointsAddedTodayKey;
   static const char* kLastEngagementTimeKey;
+  static const char* kLastShortcutLaunchTimeKey;
 
   // This version of the constructor is used in unit tests.
   explicit SiteEngagementScore(base::Clock* clock);
 
   // Determine the score, accounting for any decay.
   double DecayedScore() const;
+
+  // Determine any score bonus from having installed shortcuts.
+  double BonusScore() const;
 
   // The clock used to vend times. Enables time travelling in tests. Owned by
   // the SiteEngagementService.
@@ -119,6 +135,10 @@ class SiteEngagementScore {
   // with |points_added_today_| to avoid adding more than kMaxPointsPerDay on
   // any one day.
   base::Time last_engagement_time_;
+
+  // The last time the site with this score was launched from an installed
+  // shortcut.
+  base::Time last_shortcut_launch_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteEngagementScore);
 };
@@ -181,6 +201,10 @@ class SiteEngagementService : public KeyedService,
                      const history::URLRows& deleted_rows,
                      const std::set<GURL>& favicon_urls) override;
 
+  // Update the last time |url| was opened from an installed shortcut to be
+  // clock_->Now().
+  void SetLastShortcutLaunchTime(const GURL& url);
+
   // Overridden from SiteEngagementScoreProvider:
   double GetScore(const GURL& url) override;
   double GetTotalEngagementPoints() override;
@@ -192,6 +216,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupOriginsOnHistoryDeletion);
   FRIEND_TEST_ALL_PREFIXES(AppBannerSettingsHelperTest, SiteEngagementTrigger);

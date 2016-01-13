@@ -7,9 +7,12 @@
 #include "base/android/jni_string.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/LaunchMetrics_jni.h"
@@ -45,6 +48,13 @@ static void RecordLaunch(JNIEnv* env,
         web_contents, url, url.spec(),
         AppBannerSettingsHelper::APP_BANNER_EVENT_DID_ADD_TO_HOMESCREEN,
         base::Time::Now());
+
+    // Tell the Site Engagement Service about this launch as sites recently
+    // launched from a shortcut receive a boost to their engagement.
+    SiteEngagementService* service = SiteEngagementService::Get(
+        Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+    if (service)
+      service->SetLastShortcutLaunchTime(url);
   }
 
   std::string rappor_metric_source;

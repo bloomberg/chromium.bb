@@ -24,6 +24,7 @@ class SiteEngagementMetrics {
     ENGAGEMENT_WHEEL,
     ENGAGEMENT_MEDIA_HIDDEN,
     ENGAGEMENT_MEDIA_VISIBLE,
+    ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
     ENGAGEMENT_LAST,
   };
 
@@ -36,9 +37,11 @@ class SiteEngagementMetrics {
   static void RecordOriginsWithMaxDailyEngagement(int total_origins);
   static void RecordPercentOriginsWithMaxEngagement(double percentage);
   static void RecordEngagement(EngagementType type);
+  static void RecordDaysSinceLastShortcutLaunch(int days);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementHelperTest,
                            MixedInputEngagementAccumulation);
   static const char kTotalEngagementHistogram[];
@@ -51,6 +54,7 @@ class SiteEngagementMetrics {
   static const char kPercentOriginsWithMaxEngagementHistogram[];
   static const char kEngagementTypeHistogram[];
   static const char kEngagementBucketHistogramBase[];
+  static const char kDaysSinceLastShortcutLaunchHistogram[];
 };
 
 #endif  // CHROME_BROWSER_ENGAGEMENT_SITE_ENGAGEMENT_METRICS_H_

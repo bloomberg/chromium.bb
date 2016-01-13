@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -46,6 +47,7 @@ const char* kVariationNames[] = {
   "user_input_points",
   "visible_media_playing_points",
   "hidden_media_playing_points",
+  "web_app_installed_points"
 };
 
 // Length of time between metrics logging.
@@ -57,6 +59,10 @@ const double kScoreDelta = 0.001;
 // Delta within which to consider internal time values equal. Internal time
 // values are in microseconds, so this delta comes out at one second.
 const double kTimeDelta = 1000000;
+
+// Number of days after the last launch of an origin from an installed shortcut
+// for which WEB_APP_INSTALLED_POINTS will be added to the engagement score.
+const int kMaxDaysSinceShortcutLaunch = 10;
 
 scoped_ptr<ContentSettingsForOneType> GetEngagementContentSettings(
     HostContentSettingsMap* settings_map) {
@@ -117,11 +123,14 @@ double SiteEngagementScore::param_values[] = {
     0.05,  // USER_INPUT_POINTS
     0.02,  // VISIBLE_MEDIA_POINTS
     0.01,  // HIDDEN_MEDIA_POINTS
+    5,     // WEB_APP_INSTALLED_POINTS
 };
 
 const char* SiteEngagementScore::kRawScoreKey = "rawScore";
 const char* SiteEngagementScore::kPointsAddedTodayKey = "pointsAddedToday";
 const char* SiteEngagementScore::kLastEngagementTimeKey = "lastEngagementTime";
+const char* SiteEngagementScore::kLastShortcutLaunchTimeKey =
+    "lastShortcutLaunchTime";
 
 double SiteEngagementScore::GetMaxPointsPerDay() {
   return param_values[MAX_POINTS_PER_DAY];
@@ -149,6 +158,10 @@ double SiteEngagementScore::GetVisibleMediaPoints() {
 
 double SiteEngagementScore::GetHiddenMediaPoints() {
   return param_values[HIDDEN_MEDIA_POINTS];
+}
+
+double SiteEngagementScore::GetWebAppInstalledPoints() {
+  return param_values[WEB_APP_INSTALLED_POINTS];
 }
 
 void SiteEngagementScore::UpdateFromVariations() {
@@ -179,16 +192,19 @@ SiteEngagementScore::SiteEngagementScore(
     : SiteEngagementScore(clock) {
   score_dict.GetDouble(kRawScoreKey, &raw_score_);
   score_dict.GetDouble(kPointsAddedTodayKey, &points_added_today_);
+
   double internal_time;
   if (score_dict.GetDouble(kLastEngagementTimeKey, &internal_time))
     last_engagement_time_ = base::Time::FromInternalValue(internal_time);
+  if (score_dict.GetDouble(kLastShortcutLaunchTimeKey, &internal_time))
+    last_shortcut_launch_time_ = base::Time::FromInternalValue(internal_time);
 }
 
 SiteEngagementScore::~SiteEngagementScore() {
 }
 
 double SiteEngagementScore::Score() const {
-  return DecayedScore();
+  return std::min(DecayedScore() + BonusScore(), kMaxPoints);
 }
 
 void SiteEngagementScore::AddPoints(double points) {
@@ -225,17 +241,23 @@ bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
   double raw_score_orig = 0;
   double points_added_today_orig = 0;
   double last_engagement_time_internal_orig = 0;
+  double last_shortcut_launch_time_internal_orig = 0;
 
   score_dict->GetDouble(kRawScoreKey, &raw_score_orig);
   score_dict->GetDouble(kPointsAddedTodayKey, &points_added_today_orig);
   score_dict->GetDouble(kLastEngagementTimeKey,
-                      &last_engagement_time_internal_orig);
+                        &last_engagement_time_internal_orig);
+  score_dict->GetDouble(kLastShortcutLaunchTimeKey,
+                        &last_shortcut_launch_time_internal_orig);
   bool changed =
       DoublesConsideredDifferent(raw_score_orig, raw_score_, kScoreDelta) ||
       DoublesConsideredDifferent(points_added_today_orig, points_added_today_,
                                  kScoreDelta) ||
       DoublesConsideredDifferent(last_engagement_time_internal_orig,
                                  last_engagement_time_.ToInternalValue(),
+                                 kTimeDelta) ||
+      DoublesConsideredDifferent(last_shortcut_launch_time_internal_orig,
+                                 last_shortcut_launch_time_.ToInternalValue(),
                                  kTimeDelta);
 
   if (!changed)
@@ -244,7 +266,9 @@ bool SiteEngagementScore::UpdateScoreDict(base::DictionaryValue* score_dict) {
   score_dict->SetDouble(kRawScoreKey, raw_score_);
   score_dict->SetDouble(kPointsAddedTodayKey, points_added_today_);
   score_dict->SetDouble(kLastEngagementTimeKey,
-                      last_engagement_time_.ToInternalValue());
+                        last_engagement_time_.ToInternalValue());
+  score_dict->SetDouble(kLastShortcutLaunchTimeKey,
+                        last_shortcut_launch_time_.ToInternalValue());
 
   return true;
 }
@@ -253,7 +277,8 @@ SiteEngagementScore::SiteEngagementScore(base::Clock* clock)
     : clock_(clock),
       raw_score_(0),
       points_added_today_(0),
-      last_engagement_time_() {}
+      last_engagement_time_(),
+      last_shortcut_launch_time_() {}
 
 double SiteEngagementScore::DecayedScore() const {
   // Note that users can change their clock, so from this system's perspective
@@ -267,6 +292,15 @@ double SiteEngagementScore::DecayedScore() const {
   int periods = days_since_engagement / GetDecayPeriodInDays();
   double decayed_score = raw_score_ - periods * GetDecayPoints();
   return std::max(0.0, decayed_score);
+}
+
+double SiteEngagementScore::BonusScore() const {
+  int days_since_shortcut_launch =
+      (clock_->Now() - last_shortcut_launch_time_).InDays();
+  if (days_since_shortcut_launch <= kMaxDaysSinceShortcutLaunch)
+    return GetWebAppInstalledPoints();
+
+  return 0;
 }
 
 const char SiteEngagementService::kEngagementParams[] = "SiteEngagement";
@@ -360,6 +394,32 @@ void SiteEngagementService::OnURLsDeleted(
   hs->GetCountsForOrigins(
       origins, base::Bind(&SiteEngagementService::GetCountsForOriginsComplete,
                           weak_factory_.GetWeakPtr()));
+}
+
+void SiteEngagementService::SetLastShortcutLaunchTime(const GURL& url) {
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
+  scoped_ptr<base::DictionaryValue> score_dict =
+      GetScoreDictForOrigin(settings_map, url);
+  SiteEngagementScore score(clock_.get(), *score_dict);
+
+  // Record the number of days since the last launch in UMA. If the user's clock
+  // has changed back in time, set this to 0.
+  base::Time now = clock_->Now();
+  base::Time last_launch = score.last_shortcut_launch_time();
+  if (!last_launch.is_null()) {
+    SiteEngagementMetrics::RecordDaysSinceLastShortcutLaunch(
+        std::max(0, (now - last_launch).InDays()));
+  }
+  SiteEngagementMetrics::RecordEngagement(
+      SiteEngagementMetrics::ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH);
+
+  score.set_last_shortcut_launch_time(now);
+  if (score.UpdateScoreDict(score_dict.get())) {
+    settings_map->SetWebsiteSettingDefaultScope(
+        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+        score_dict.release());
+  }
 }
 
 double SiteEngagementService::GetScore(const GURL& url) {

@@ -45639,6 +45639,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Number of retries until the final response was recorded.</summary>
 </histogram>
 
+<histogram name="SiteEngagementService.DaysSinceLastShortcutLaunch"
+    units="days">
+  <owner>calamity@chromium.org</owner>
+  <owner>dominickn@chromium.org</owner>
+  <summary>
+    The number of days between launches of an origin saved to homescreen or as a
+    bookmark app shortcut. Recorded at the second and each following launch of a
+    specific origin from a shortcut, independently per origin.
+  </summary>
+</histogram>
+
 <histogram name="SiteEngagementService.EngagementScore">
   <owner>calamity@chromium.org</owner>
   <owner>dominickn@chromium.org</owner>
@@ -77068,6 +77079,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="4" label="Mouse wheel"/>
   <int value="5" label="Media (foreground tab)"/>
   <int value="6" label="Media (background tab)"/>
+  <int value="7" label="Webapp shortcut launch"/>
 </enum>
 
 <enum name="SiteIsolationMimeType" type="int">
