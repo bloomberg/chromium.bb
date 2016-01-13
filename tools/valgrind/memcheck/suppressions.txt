@@ -3360,3 +3360,15 @@
    fun:_ZN3net14BrotliUnitTest19DecodeAllWithFilterEPNS_6FilterEPKciPcPi
    fun:_ZN3net37BrotliUnitTest_DecodeMissingData_Test8TestBodyEv
 }
+{
+   bug_577333a
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN47AccountInfoTest_UpdateWithSuccessfulUpdate_Test8TestBodyEv
+}
+{
+   bug_577333b
+   Memcheck:Uninitialized
+   ...
+   fun:_ZN50AccountTrackerServiceTest_SeedAccountInfoFull_Test8TestBodyEv
+}
