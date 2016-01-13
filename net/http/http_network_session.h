@@ -10,7 +10,6 @@
 
 #include <set>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "base/memory/ref_counted.h"
@@ -182,9 +181,6 @@ class NET_EXPORT HttpNetworkSession
     int quic_idle_connection_timeout_seconds;
     // If true, disable preconnections if QUIC can do 0RTT.
     bool quic_disable_preconnect_if_0rtt;
-    // List of hosts for which QUIC is explicitly whitelisted.
-    std::unordered_set<std::string> quic_host_whitelist;
-
     ProxyDelegate* proxy_delegate;
   };
 

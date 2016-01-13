@@ -431,12 +431,6 @@ class QuicNetworkTransactionTest
     params_.http_auth_handler_factory = auth_handler_factory_.get();
     params_.http_server_properties = http_server_properties_.GetWeakPtr();
     params_.quic_supported_versions = SupportedVersions(GetParam());
-    for (const char* host :
-         {kDefaultServerHostName, "www.example.com", "news.example.com",
-          "bar.example.com", "foo.example.com", "www.example.org",
-          "invalid.example.org", "docs.example.org"}) {
-      params_.quic_host_whitelist.insert(host);
-    }
 
     test_network_quality_estimator_->AddRTTObserver(&rtt_observer_);
 
