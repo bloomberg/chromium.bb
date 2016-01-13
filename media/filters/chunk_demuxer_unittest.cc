@@ -1199,7 +1199,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   MockDemuxerHost host_;
 
   scoped_ptr<ChunkDemuxer> demuxer_;
-  ChunkDemuxer::InitSegmentReceivedCB init_segment_received_cb_;
+  MediaSourceState::InitSegmentReceivedCB init_segment_received_cb_;
 
   base::TimeDelta append_window_start_for_next_append_;
   base::TimeDelta append_window_end_for_next_append_;

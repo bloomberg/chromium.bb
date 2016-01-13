@@ -588,6 +588,8 @@
         'filters/in_memory_url_protocol.h',
         'filters/jpeg_parser.cc',
         'filters/jpeg_parser.h',
+        'filters/media_source_state.cc',
+        'filters/media_source_state.h',
         'filters/opus_audio_decoder.cc',
         'filters/opus_audio_decoder.h',
         'filters/opus_constants.cc',

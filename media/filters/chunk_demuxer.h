@@ -21,12 +21,12 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/ranges.h"
 #include "media/base/stream_parser.h"
+#include "media/filters/media_source_state.h"
 #include "media/filters/source_buffer_stream.h"
 
 namespace media {
 
 class FFmpegURLProtocol;
-class SourceState;
 
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
@@ -157,8 +157,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
     kReachedIdLimit,  // Reached ID limit. We can't handle any more IDs.
   };
 
-  typedef base::Closure InitSegmentReceivedCB;
-
   // |open_cb| Run when Initialize() is called to signal that the demuxer
   //   is ready to receive media data via AppenData().
   // |encrypted_media_init_data_cb| Run when the demuxer determines that an
@@ -237,13 +235,14 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // processing.
   // |init_segment_received_cb| is run for each newly successfully parsed
   // initialization segment.
-  void AppendData(const std::string& id,
-                  const uint8_t* data,
-                  size_t length,
-                  base::TimeDelta append_window_start,
-                  base::TimeDelta append_window_end,
-                  base::TimeDelta* timestamp_offset,
-                  const InitSegmentReceivedCB& init_segment_received_cb);
+  void AppendData(
+      const std::string& id,
+      const uint8_t* data,
+      size_t length,
+      base::TimeDelta append_window_start,
+      base::TimeDelta append_window_end,
+      base::TimeDelta* timestamp_offset,
+      const MediaSourceState::InitSegmentReceivedCB& init_segment_received_cb);
 
   // Aborts parsing the current segment and reset the parser to a state where
   // it can accept a new segment.
@@ -333,7 +332,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // false if any can not.
   bool CanEndOfStream_Locked() const;
 
-  // SourceState callbacks.
+  // MediaSourceState callbacks.
   void OnSourceInitDone(const StreamParser::InitParameters& params);
 
   // Creates a DemuxerStream for the specified |type|.
@@ -411,8 +410,8 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   base::Time timeline_offset_;
   DemuxerStream::Liveness liveness_;
 
-  typedef std::map<std::string, SourceState*> SourceStateMap;
-  SourceStateMap source_state_map_;
+  typedef std::map<std::string, MediaSourceState*> MediaSourceStateMap;
+  MediaSourceStateMap source_state_map_;
 
   // Used to ensure that (1) config data matches the type and codec provided in
   // AddId(), (2) only 1 audio and 1 video sources are added, and (3) ids may be
