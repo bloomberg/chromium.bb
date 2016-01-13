@@ -16,6 +16,10 @@
 
 class PrefService;
 
+namespace base {
+class FilePath;
+}
+
 namespace metrics {
 struct ClientInfo;
 class MetricsStateManager;
@@ -40,7 +44,8 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient {
   static AwMetricsServiceClient* GetInstance();
 
   void Initialize(PrefService* pref_service,
-                  net::URLRequestContextGetter* request_context);
+                  net::URLRequestContextGetter* request_context,
+                  const base::FilePath guid_file_path);
   void Finalize();
   void SetMetricsEnabled(bool enabled);
 
@@ -65,6 +70,8 @@ class AwMetricsServiceClient : public metrics::MetricsServiceClient {
  private:
   AwMetricsServiceClient();
   ~AwMetricsServiceClient() override;
+
+  void InitializeWithGUID(std::string* guid);
 
   // Callback for metrics::MetricsStateManager::Create
   bool is_reporting_enabled();

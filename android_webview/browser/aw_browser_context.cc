@@ -256,8 +256,15 @@ void AwBrowserContext::PreMainMessageLoopRun() {
 
   blacklist_manager_.reset(CreateURLBlackListManager(user_pref_service_.get()));
 
+  // UMA uses randomly-generated GUIDs (globally unique identifiers) to
+  // anonymously identify logs. Every WebView-using app on every device
+  // is given a GUID, stored in this file in the app's data directory.
+  const FilePath guid_file_path =
+      GetPath().Append(FILE_PATH_LITERAL("metrics_guid"));
+
   AwMetricsServiceClient::GetInstance()->Initialize(user_pref_service_.get(),
-                                                    GetRequestContext());
+                                                    GetRequestContext(),
+                                                    guid_file_path);
 }
 
 void AwBrowserContext::PostMainMessageLoopRun() {

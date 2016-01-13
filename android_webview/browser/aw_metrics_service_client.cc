@@ -6,10 +6,13 @@
 
 #include "android_webview/common/aw_version_info_values.h"
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/guid.h"
 #include "base/i18n/rtl.h"
 #include "base/prefs/pref_service.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/gpu/gpu_metrics_provider.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
 #include "components/metrics/net/net_metrics_log_uploader.h"
@@ -36,6 +39,27 @@ scoped_ptr<metrics::ClientInfo> LoadClientInfo() {
   return client_info;
 }
 
+// A GUID in text form is composed of 32 hex digits and 4 hyphens.
+const size_t GUID_SIZE = 32 + 4;
+
+void GetOrCreateGUID(const base::FilePath guid_file_path, std::string* guid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  // Try to read an existing GUID.
+  if (base::ReadFileToString(guid_file_path, guid, GUID_SIZE)) {
+    if (base::IsValidGUID(*guid))
+      return;
+    else
+      LOG(ERROR) << "Found invalid GUID";
+  }
+
+  // We must write a new GUID.
+  *guid = base::GenerateGUID();
+  if (!base::WriteFile(guid_file_path, guid->c_str(), guid->size()))
+    LOG(ERROR) << "Failed to write new GUID";
+  return;
+}
+
 }  // namespace
 
 // static
@@ -43,14 +67,32 @@ AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
   return g_lazy_instance_.Pointer();
 }
 
-// static
 void AwMetricsServiceClient::Initialize(
     PrefService* pref_service,
-    net::URLRequestContextGetter* request_context) {
+    net::URLRequestContextGetter* request_context,
+    const base::FilePath guid_file_path) {
   DCHECK(!is_initialized_);
 
   pref_service_ = pref_service;
   request_context_ = request_context;
+
+  std::string* guid = new std::string;
+  // Initialization happens on the UI thread, but getting the GUID should happen
+  // on the file I/O thread. So we start to initialize, then post to get the
+  // GUID, and then pick up where we left off, back on the UI thread, in
+  // InitializeWithGUID.
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::FILE,
+      FROM_HERE,
+      base::Bind(&GetOrCreateGUID, guid_file_path, guid),
+      base::Bind(&AwMetricsServiceClient::InitializeWithGUID,
+                 base::Unretained(this), base::Owned(guid)));
+}
+
+void AwMetricsServiceClient::InitializeWithGUID(std::string* guid) {
+  DCHECK(!is_initialized_);
+
+  pref_service_->SetString(metrics::prefs::kMetricsClientID, *guid);
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
       pref_service_, base::Bind(&AwMetricsServiceClient::is_reporting_enabled,
