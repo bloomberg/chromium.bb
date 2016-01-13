@@ -4,7 +4,7 @@
 #include "louis.h"
 #include "brl_checks.h"
 
-static const char** emph_classes = NULL;
+static char** emph_classes = NULL;
 
 static formtype *
 typeform(const char* class, const char* fromString)

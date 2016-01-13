@@ -5878,10 +5878,10 @@ getLastTableList ()
 }
 
 /* Return the emphasis classes declared in tableList. */
-const char **
+char **
 getEmphClasses(const char* tableList)
 {
-  const char **emphClasses = malloc(sizeof(char*) * (MAX_EMPH_CLASSES + 1));
+  char **emphClasses = malloc(sizeof(char*) * (MAX_EMPH_CLASSES + 1));
   int i = 0;
   if (getTable(tableList))
     for (; table->emphClasses[i]; i++)
