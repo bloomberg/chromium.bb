@@ -15,6 +15,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "sql/connection.h"
+#include "sql/connection_memory_dump_provider.h"
 #include "sql/correct_sql_test_base.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
@@ -1308,7 +1309,7 @@ TEST_F(SQLConnectionTest, OnMemoryDump) {
   base::trace_event::ProcessMemoryDump pmd(nullptr);
   base::trace_event::MemoryDumpArgs args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-  ASSERT_TRUE(db().OnMemoryDump(args, &pmd));
+  ASSERT_TRUE(db().memory_dump_provider_->OnMemoryDump(args, &pmd));
   EXPECT_GE(pmd.allocator_dumps().size(), 1u);
 }
 

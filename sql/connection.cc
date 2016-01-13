@@ -27,7 +27,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/process_memory_dump.h"
+#include "sql/connection_memory_dump_provider.h"
 #include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -254,44 +254,6 @@ bool Connection::ShouldIgnoreSqliteCompileError(int error) {
       basic_error == SQLITE_CORRUPT;
 }
 
-bool Connection::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
-                              base::trace_event::ProcessMemoryDump* pmd) {
-  if (args.level_of_detail ==
-          base::trace_event::MemoryDumpLevelOfDetail::LIGHT ||
-      !db_) {
-    return true;
-  }
-
-  // The high water mark is not tracked for the following usages.
-  int cache_size, dummy_int;
-  sqlite3_db_status(db_, SQLITE_DBSTATUS_CACHE_USED, &cache_size, &dummy_int,
-                    0 /* resetFlag */);
-  int schema_size;
-  sqlite3_db_status(db_, SQLITE_DBSTATUS_SCHEMA_USED, &schema_size, &dummy_int,
-                    0 /* resetFlag */);
-  int statement_size;
-  sqlite3_db_status(db_, SQLITE_DBSTATUS_STMT_USED, &statement_size, &dummy_int,
-                    0 /* resetFlag */);
-
-  std::string name = base::StringPrintf(
-      "sqlite/%s_connection/%p",
-      histogram_tag_.empty() ? "Unknown" : histogram_tag_.c_str(), this);
-  base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(name);
-  dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  cache_size + schema_size + statement_size);
-  dump->AddScalar("cache_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  cache_size);
-  dump->AddScalar("schema_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  schema_size);
-  dump->AddScalar("statement_size",
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-                  statement_size);
-  return true;
-}
-
 void Connection::ReportDiagnosticInfo(int extended_error, Statement* stmt) {
   AssertIOAllowed();
 
@@ -386,13 +348,9 @@ Connection::Connection()
       update_time_histogram_(NULL),
       query_time_histogram_(NULL),
       clock_(new TimeSource()) {
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "sql::Connection", nullptr);
 }
 
 Connection::~Connection() {
-  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
-      this);
   Close();
 }
 
@@ -510,6 +468,17 @@ void Connection::CloseInternal(bool forced) {
     // TODO(paivanof@gmail.com): This should move to the beginning
     // of the function. http://crbug.com/136655.
     AssertIOAllowed();
+
+    // Reseting acquires a lock to ensure no dump is happening on the database
+    // at the same time. Unregister takes ownership of provider and it is safe
+    // since the db is reset. memory_dump_provider_ could be null if db_ was
+    // poisoned.
+    if (memory_dump_provider_) {
+      memory_dump_provider_->ResetDatabase();
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->UnregisterAndDeleteDumpProviderSoon(
+              std::move(memory_dump_provider_));
+    }
 
     int rc = sqlite3_close(db_);
     if (rc != SQLITE_OK) {
@@ -1847,6 +1816,12 @@ bool Connection::OpenInternal(const std::string& file_name,
     if (s.Step() && s.ColumnInt64(0) > 0)
       mmap_enabled_ = true;
   }
+
+  DCHECK(!memory_dump_provider_);
+  memory_dump_provider_.reset(
+      new ConnectionMemoryDumpProvider(db_, histogram_tag_));
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      memory_dump_provider_.get(), "sql::Connection", nullptr);
 
   return true;
 }

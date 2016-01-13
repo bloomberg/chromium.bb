@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SQL_PROCESS_MEMORY_DUMP_PROVIDER_H
-#define SQL_PROCESS_MEMORY_DUMP_PROVIDER_H
+#ifndef SQL_SQL_MEMORY_DUMP_PROVIDER_H
+#define SQL_SQL_MEMORY_DUMP_PROVIDER_H
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -34,4 +34,4 @@ class SQL_EXPORT SqlMemoryDumpProvider
 
 }  // namespace sql
 
-#endif  // SQL_PROCESS_MEMORY_DUMP_PROVIDER_H
+#endif  // SQL_SQL_MEMORY_DUMP_PROVIDER_H

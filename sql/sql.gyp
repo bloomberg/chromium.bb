@@ -22,6 +22,8 @@
       'sources': [
         'connection.cc',
         'connection.h',
+        'connection_memory_dump_provider.cc',
+        'connection_memory_dump_provider.h',
         'error_delegate_util.cc',
         'error_delegate_util.h',
         'init_status.h',
