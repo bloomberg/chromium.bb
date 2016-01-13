@@ -23,6 +23,10 @@ const base::Feature kDownloadResumption{"DownloadResumption",
 const base::Feature kExperimentalFramework{"ExperimentalFramework",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
+// An experimental User Agent Intervention on WebFonts loading.
+const base::Feature kWebFontsIntervention{"WebFontsIntervention",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",

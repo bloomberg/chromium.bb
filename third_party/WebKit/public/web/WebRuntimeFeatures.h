@@ -163,6 +163,8 @@ public:
     BLINK_EXPORT static void enableNewMediaPlaybackUi(bool);
 
     BLINK_EXPORT static void enablePresentationAPI(bool);
+
+    BLINK_EXPORT static void enableWebFontsIntervention(bool);
 private:
     WebRuntimeFeatures();
 };

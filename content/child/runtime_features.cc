@@ -10,6 +10,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -21,7 +22,6 @@
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 #include "base/android/build_info.h"
-#include "base/metrics/field_trial.h"
 #include "media/base/android/media_codec_util.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -206,6 +206,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
 
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
+
+  if (base::FeatureList::IsEnabled(features::kWebFontsIntervention))
+    WebRuntimeFeatures::enableWebFontsIntervention(true);
 
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.

@@ -2118,6 +2118,11 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEBGL2_DESCRIPTION,
      kOsAll,
      SINGLE_VALUE_TYPE(switches::kEnableUnsafeES3APIs)},
+    {"enable-webfonts-intervention",
+      IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_NAME,
+      IDS_FLAGS_ENABLE_WEBFONTS_INTERVENTION_DESCRIPTION,
+      kOsAll,
+      FEATURE_VALUE_TYPE(features::kWebFontsIntervention)},
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.
