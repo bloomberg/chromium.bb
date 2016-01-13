@@ -148,13 +148,13 @@ base::string16 SRTGlobalError::GetBubbleViewCancelButtonLabel() {
 }
 
 void SRTGlobalError::OnBubbleViewDidClose(Browser* browser) {
-  // This won't happen when user interacted with the bubble since DestroySelf is
-  // called in those cases and will prevent the base class from calling virtual
-  // methods. This DCHECK makes sure that behavior won't change.
-  DCHECK(!interacted_);
-  RecordSRTPromptHistogram(SRT_PROMPT_CLOSED);
-  g_browser_process->local_state()->SetBoolean(prefs::kSwReporterPendingPrompt,
-                                               true);
+  if (!interacted_) {
+    // If user didn't interact with the bubble, it means they used the generic
+    // close bubble button.
+    RecordSRTPromptHistogram(SRT_PROMPT_CLOSED);
+    g_browser_process->local_state()->SetBoolean(
+        prefs::kSwReporterPendingPrompt, true);
+  }
 }
 
 void SRTGlobalError::BubbleViewAcceptButtonPressed(Browser* browser) {
@@ -171,7 +171,7 @@ void SRTGlobalError::BubbleViewCancelButtonPressed(Browser* browser) {
 
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
-  DestroySelf();
+  OnUserinteractionDone();
 }
 
 bool SRTGlobalError::ShouldCloseOnDeactivate() const {
@@ -189,7 +189,7 @@ void SRTGlobalError::MaybeExecuteSRT() {
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&MaybeExecuteSRTFromBlockingPool, downloaded_path_,
                             base::ThreadTaskRunnerHandle::Get(),
-                            base::Bind(&SRTGlobalError::DestroySelf,
+                            base::Bind(&SRTGlobalError::OnUserinteractionDone,
                                        base::Unretained(this)),
                             base::Bind(&SRTGlobalError::FallbackToDownloadPage,
                                        base::Unretained(this))));
@@ -208,12 +208,13 @@ void SRTGlobalError::FallbackToDownloadPage() {
 
   BrowserThread::PostBlockingPoolTask(
       FROM_HERE, base::Bind(&DeleteFilesFromBlockingPool, downloaded_path_));
-  DestroySelf();
+  OnUserinteractionDone();
 }
 
-void SRTGlobalError::DestroySelf() {
-  // This should only happen when user interacted with the bubble.
+void SRTGlobalError::OnUserinteractionDone() {
   DCHECK(interacted_);
+  // Once the user interacted with the bubble, we can forget about any pending
+  // prompt.
   g_browser_process->local_state()->SetBoolean(prefs::kSwReporterPendingPrompt,
                                                false);
   delete this;
