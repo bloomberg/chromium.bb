@@ -37,6 +37,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerMac
       bool root_changed,
       const std::vector<ui::AXTreeDelegate::Change>& changes) override;
 
+  // Returns an autoreleased object.
+  NSDictionary* GetUserInfoForSelectedTextChangedNotification();
+
   // This gives BrowserAccessibilityManager::Create access to the class
   // constructor.
   friend class BrowserAccessibilityManager;

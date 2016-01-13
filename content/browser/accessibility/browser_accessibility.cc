@@ -51,7 +51,7 @@ bool BrowserAccessibility::PlatformIsLeaf() const {
     return true;
 
   // Roles whose children are only presentational according to the ARIA and
-  // HTML5 Specs.
+  // HTML5 Specs should be hidden from screen readers.
   // (Note that whilst ARIA buttons can have only presentational children, HTML5
   // buttons are allowed to have content.)
   switch (GetRole()) {
@@ -682,10 +682,7 @@ bool BrowserAccessibility::HasCaret() const {
   if (!focus_object)
     return false;
 
-  if (!focus_object->IsDescendantOf(this))
-    return false;
-
-  return true;
+  return focus_object->IsDescendantOf(this);
 }
 
 bool BrowserAccessibility::IsEditableText() const {

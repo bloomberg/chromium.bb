@@ -415,6 +415,11 @@ BASE_EXPORT extern NSString* const NSAppearanceNameVibrantDark;
 + (CBUUID*)UUIDWithString:(NSString*)theString;
 @end
 
+BASE_EXPORT extern "C" void NSAccessibilityPostNotificationWithUserInfo(
+    id object,
+    NSString* notification,
+    NSDictionary* user_info);
+
 #endif  // MAC_OS_X_VERSION_10_7
 
 // Once Chrome no longer supports OSX 10.7, everything within this preprocessor

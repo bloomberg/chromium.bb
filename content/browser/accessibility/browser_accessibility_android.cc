@@ -63,7 +63,7 @@ void BrowserAccessibilityAndroid::OnLocationChanged() {
 }
 
 bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
-  if (InternalChildCount() == 0)
+  if (BrowserAccessibility::PlatformIsLeaf())
     return true;
 
   // Iframes are always allowed to contain children.
@@ -78,8 +78,14 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
     return false;
 
   // Date and time controls should drop their children.
-  if (GetRole() == ui::AX_ROLE_DATE || GetRole() == ui::AX_ROLE_INPUT_TIME)
-    return true;
+  switch (GetRole()) {
+    case ui::AX_ROLE_DATE:
+    case ui::AX_ROLE_DATE_TIME:
+    case ui::AX_ROLE_INPUT_TIME:
+      return true;
+    default:
+      break;
+  }
 
   BrowserAccessibilityManagerAndroid* manager_android =
       static_cast<BrowserAccessibilityManagerAndroid*>(manager());
@@ -98,7 +104,7 @@ bool BrowserAccessibilityAndroid::PlatformIsLeaf() const {
       return true;
   }
 
-  return BrowserAccessibility::PlatformIsLeaf();
+  return false;
 }
 
 bool BrowserAccessibilityAndroid::IsCheckable() const {

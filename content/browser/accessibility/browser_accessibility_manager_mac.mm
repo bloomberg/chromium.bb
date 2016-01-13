@@ -6,10 +6,71 @@
 
 #include <stddef.h>
 
-#import "base/logging.h"
+#import "base/mac/mac_util.h"
+#import "base/mac/sdk_forward_declarations.h"
+#include "base/logging.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 #include "content/common/accessibility_messages.h"
+
+
+namespace {
+
+// Declare accessibility constants and enums only present in WebKit.
+
+enum AXTextStateChangeType {
+  AXTextStateChangeTypeUnknown,
+  AXTextStateChangeTypeEdit,
+  AXTextStateChangeTypeSelectionMove,
+  AXTextStateChangeTypeSelectionExtend
+};
+
+enum AXTextSelectionDirection {
+  AXTextSelectionDirectionUnknown,
+  AXTextSelectionDirectionBeginning,
+  AXTextSelectionDirectionEnd,
+  AXTextSelectionDirectionPrevious,
+  AXTextSelectionDirectionNext,
+  AXTextSelectionDirectionDiscontiguous
+};
+
+enum AXTextSelectionGranularity {
+  AXTextSelectionGranularityUnknown,
+  AXTextSelectionGranularityCharacter,
+  AXTextSelectionGranularityWord,
+  AXTextSelectionGranularityLine,
+  AXTextSelectionGranularitySentence,
+  AXTextSelectionGranularityParagraph,
+  AXTextSelectionGranularityPage,
+  AXTextSelectionGranularityDocument,
+  AXTextSelectionGranularityAll
+};
+
+NSString* const NSAccessibilityAutocorrectionOccurredNotification =
+    @"AXAutocorrectionOccurred";
+NSString* const NSAccessibilityLayoutCompleteNotification =
+    @"AXLayoutComplete";
+NSString* const NSAccessibilityLoadCompleteNotification =
+    @"AXLoadComplete";
+NSString* const NSAccessibilityInvalidStatusChangedNotification =
+    @"AXInvalidStatusChanged";
+NSString* const NSAccessibilityLiveRegionChangedNotification =
+    @"AXLiveRegionChanged";
+NSString* const NSAccessibilityMenuItemSelectedNotification =
+    @"AXMenuItemSelected";
+NSString* const NSAccessibilityTextStateChangeTypeKey =
+    @"AXTextStateChangeType";
+NSString* const NSAccessibilityTextStateSyncKey = @"AXTextStateSync";
+NSString* const NSAccessibilityTextSelectionDirection =
+    @"AXTextSelectionDirection";
+NSString* const NSAccessibilityTextSelectionGranularity =
+    @"AXTextSelectionGranularity";
+NSString* const NSAccessibilityTextSelectionChangedFocus =
+    @"AXTextSelectionChangedFocus";
+NSString* const NSAccessibilityTextChangeElement =
+    @"AXAccessibilityTextChangeElement";
+
+}  // namespace
 
 namespace content {
 
@@ -63,107 +124,124 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   if (!node->IsNative())
     return;
 
-  if (event_type == ui::AX_EVENT_FOCUS &&
-      node->GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
-      node->HasState(ui::AX_STATE_SELECTED) &&
-      node->GetParent() &&
-      node->GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
-    node = node->GetParent();
-    SetFocus(node, false);
+  if (event_type == ui::AX_EVENT_FOCUS) {
+    BrowserAccessibility* active_descendant = GetActiveDescendantFocus(
+        GetRoot());
+    if (active_descendant)
+      node = active_descendant;
+
+    if (node->GetRole() == ui::AX_ROLE_LIST_BOX_OPTION &&
+        node->HasState(ui::AX_STATE_SELECTED) &&
+        node->GetParent() &&
+        node->GetParent()->GetRole() == ui::AX_ROLE_LIST_BOX) {
+      node = node->GetParent();
+      SetFocus(node, false);
+    }
   }
 
-  // Refer to AXObjectCache.mm (webkit).
-  NSString* event_id = @"";
+  auto native_node = node->ToBrowserAccessibilityCocoa();
+  DCHECK(native_node);
+
+  // Refer to |AXObjectCache::postPlatformNotification| in WebKit source code.
+  NSString* mac_notification;
   switch (event_type) {
     case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
       if (node->GetRole() == ui::AX_ROLE_TREE) {
-        event_id = NSAccessibilitySelectedRowsChangedNotification;
+        mac_notification = NSAccessibilitySelectedRowsChangedNotification;
+      } else if (node->GetRole() == ui::AX_ROLE_COMBO_BOX) {
+        // Even though the selected item in the combo box has changed, we don't
+        // want to post a focus change because this will take the focus out of
+        // the combo box where the user might be typing.
+        mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
       } else {
-        event_id = NSAccessibilityFocusedUIElementChangedNotification;
-        BrowserAccessibility* active_descendant_focus =
-            GetActiveDescendantFocus(GetRoot());
-        if (active_descendant_focus)
-          node = active_descendant_focus;
+        mac_notification = NSAccessibilityFocusedUIElementChangedNotification;
       }
-
       break;
-    case ui::AX_EVENT_ALERT:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_BLUR:
-      // A no-op on Mac.
-      return;
-    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_CHILDREN_CHANGED:
-      // TODO(dtseng): no clear equivalent on Mac.
-      return;
-    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED:
-      // Not used on Mac.
-      return;
+    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
+      mac_notification = NSAccessibilityAutocorrectionOccurredNotification;
+      break;
     case ui::AX_EVENT_FOCUS:
-      event_id = NSAccessibilityFocusedUIElementChangedNotification;
+      mac_notification = NSAccessibilityFocusedUIElementChangedNotification;
       break;
     case ui::AX_EVENT_LAYOUT_COMPLETE:
-      event_id = @"AXLayoutComplete";
-      break;
-    case ui::AX_EVENT_LIVE_REGION_CHANGED:
-      event_id = @"AXLiveRegionChanged";
+      mac_notification = NSAccessibilityLayoutCompleteNotification;
       break;
     case ui::AX_EVENT_LOAD_COMPLETE:
-      event_id = @"AXLoadComplete";
+      mac_notification = NSAccessibilityLoadCompleteNotification;
       break;
-    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
-      // Not used on Mac.
-      return;
+    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
+      mac_notification = NSAccessibilityInvalidStatusChangedNotification;
+      break;
+    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
+      if (node->GetRole() == ui::AX_ROLE_GRID ||
+          node->GetRole() == ui::AX_ROLE_TABLE) {
+        mac_notification = NSAccessibilitySelectedRowsChangedNotification;
+      } else {
+        mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
+      }
+      break;
+    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
+      mac_notification = NSAccessibilitySelectedTextChangedNotification;
+      if (base::mac::IsOSElCapitanOrLater()) {
+        // |NSAccessibilityPostNotificationWithUserInfo| should be used on OS X
+        // 10.11 or later to notify Voiceover about text selection changes. This
+        // API has been present on versions of OS X since 10.7 but doesn't
+        // appear to be needed by Voiceover before version 10.11.
+        NSDictionary* user_info =
+            GetUserInfoForSelectedTextChangedNotification();
+        NSAccessibilityPostNotificationWithUserInfo(
+            native_node, mac_notification, user_info);
+        return;
+      }
+      break;
+    }
+    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
+    case ui::AX_EVENT_VALUE_CHANGED:
+      mac_notification = NSAccessibilityValueChangedNotification;
+      break;
+    // TODO(nektar): Need to add an event for live region created.
+    case ui::AX_EVENT_LIVE_REGION_CHANGED:
+      mac_notification = NSAccessibilityLiveRegionChangedNotification;
+      break;
     case ui::AX_EVENT_ROW_COUNT_CHANGED:
-      event_id = NSAccessibilityRowCountChangedNotification;
-      break;
-    case ui::AX_EVENT_ROW_COLLAPSED:
-      event_id = @"AXRowCollapsed";
+      mac_notification = NSAccessibilityRowCountChangedNotification;
       break;
     case ui::AX_EVENT_ROW_EXPANDED:
-      event_id = @"AXRowExpanded";
+      mac_notification = NSAccessibilityRowExpandedNotification;
       break;
-    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
-      event_id = NSAccessibilitySelectedChildrenChangedNotification;
+    case ui::AX_EVENT_ROW_COLLAPSED:
+      mac_notification = NSAccessibilityRowCollapsedNotification;
       break;
-    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
-      event_id = NSAccessibilitySelectedTextChangedNotification;
-      break;
-    case ui::AX_EVENT_VALUE_CHANGED:
-      event_id = NSAccessibilityValueChangedNotification;
-      break;
-    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
-      // Not used on Mac.
-      return;
-    case ui::AX_EVENT_LOCATION_CHANGED:
-      // Not used on Mac.
-      return;
+    // TODO(nektar): Add events for busy and expanded changed.
+    // TODO(nektar): Support menu open/close notifications.
     case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
-      // Not used on Mac.
-      return;
+      mac_notification = NSAccessibilityMenuItemSelectedNotification;
+      break;
+
+    // These events are not used on Mac for now.
+    case ui::AX_EVENT_ALERT:
     case ui::AX_EVENT_TEXT_CHANGED:
-      // Not used on Mac.
+    case ui::AX_EVENT_CHILDREN_CHANGED:
+    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
+    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
+    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
+    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
+    case ui::AX_EVENT_LOCATION_CHANGED:
+      return;
+
+    // Deprecated events.
+    case ui::AX_EVENT_BLUR:
+    case ui::AX_EVENT_HIDE:
+    case ui::AX_EVENT_HOVER:
+    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
+    case ui::AX_EVENT_SHOW:
       return;
     default:
-      LOG(WARNING) << "Unknown accessibility event: " << event_type;
+      DLOG(WARNING) << "Unknown accessibility event: " << event_type;
       return;
   }
 
-  BrowserAccessibilityCocoa* native_node = node->ToBrowserAccessibilityCocoa();
-  DCHECK(native_node);
-  NSAccessibilityPostNotification(native_node, event_id);
+  NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
 void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
@@ -201,6 +279,37 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
     root->RecreateNativeObject();
     NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, root);
   }
+}
+
+// Returns an autoreleased object.
+NSDictionary* BrowserAccessibilityManagerMac::
+    GetUserInfoForSelectedTextChangedNotification() {
+  NSMutableDictionary* user_info = [[[NSMutableDictionary alloc] init]
+      autorelease];
+  [user_info setObject:[NSNumber numberWithBool:YES]
+                forKey:NSAccessibilityTextStateSyncKey];
+  [user_info setObject:[NSNumber numberWithInt:AXTextStateChangeTypeUnknown]
+                forKey:NSAccessibilityTextStateChangeTypeKey];
+  [user_info
+      setObject:[NSNumber numberWithInt:AXTextSelectionDirectionUnknown]
+         forKey:NSAccessibilityTextSelectionDirection];
+  [user_info
+      setObject:[NSNumber numberWithInt:AXTextSelectionGranularityUnknown]
+         forKey:NSAccessibilityTextSelectionGranularity];
+  [user_info setObject:[NSNumber numberWithBool:YES]
+                forKey:NSAccessibilityTextSelectionChangedFocus];
+  // TODO(nektar): Set selected text marker range.
+
+  int32_t focus_id = GetTreeData().sel_focus_object_id;
+  BrowserAccessibility* focus_object = GetFromID(focus_id);
+  if (focus_object) {
+    auto native_focus_object = focus_object->ToBrowserAccessibilityCocoa();
+    if (native_focus_object)
+      [user_info setObject:native_focus_object
+                    forKey:NSAccessibilityTextChangeElement];
+  }
+
+  return user_info;
 }
 
 }  // namespace content
