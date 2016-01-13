@@ -104,6 +104,24 @@ def set_commit(obj, issue, flag):
     return 0
   _apply_on_issue(_set_commit, obj, issue)
 
+
+def get_master_builder_map(config_path):
+  """Returns a map of master -> [builders] from cq config."""
+  with open(config_path) as config_file:
+    cq_config = config_file.read()
+
+  config = cq_pb2.Config()
+  text_format.Merge(cq_config, config)
+  masters = {}
+  if config.HasField('verifiers') and config.verifiers.HasField('try_job'):
+    for bucket in config.verifiers.try_job.buckets:
+      masters.setdefault(bucket.name, [])
+      for builder in bucket.builders:
+        if not builder.HasField('experiment_percentage'):
+          masters[bucket.name].append(builder.name)
+  return masters
+
+
 @need_issue
 def CMDset(parser, args):
   """Sets the commit bit."""
@@ -147,20 +165,7 @@ def CMDbuilders(parser, args):
   if len(args) != 1:
     parser.error('Expected a single path to CQ config. Got: %s' %
                  ' '.join(args))
-
-  with open(args[0]) as config_file:
-    cq_config = config_file.read()
-
-  config = cq_pb2.Config()
-  text_format.Merge(cq_config, config)
-  masters = {}
-  if config.HasField('verifiers') and config.verifiers.HasField('try_job'):
-    for bucket in config.verifiers.try_job.buckets:
-      masters.setdefault(bucket.name, [])
-      for builder in bucket.builders:
-        if not builder.HasField('experiment_percentage'):
-          masters[bucket.name].append(builder.name)
-  print json.dumps(masters)
+  print json.dumps(get_master_builder_map(args[0]))
 
 CMDbuilders.func_usage_more = '<path-to-cq-config>'
 

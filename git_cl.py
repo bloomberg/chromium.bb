@@ -42,6 +42,7 @@ import auth
 from luci_hacks import trigger_luci_job as luci_trigger
 import breakpad  # pylint: disable=W0611
 import clang_format
+import commit_queue
 import dart_format
 import fix_encoding
 import gclient_utils
@@ -3205,6 +3206,24 @@ def CMDtry(parser, args):
           None,
           options.verbose,
           sys.stdout)
+
+      if not options.bot:
+        # Get try masters from cq.cfg if any.
+        # TODO(tandrii): some (but very few) projects store cq.cfg in different
+        # location.
+        cq_cfg = os.path.join(change.RepositoryRoot(),
+                              'infra', 'config', 'cq.cfg')
+        if os.path.exists(cq_cfg):
+          masters = {}
+          cq_masters = commit_queue.get_master_builder_map(cq_cfg)
+          for master, builders in cq_masters.iteritems():
+            for builder in builders:
+              # Skip presubmit builders, because these will fail without LGTM.
+              if 'presubmit' not in builder.lower():
+                masters.setdefault(master, {})[builder] = ['defaulttests']
+          if masters:
+            return masters
+
     if not options.bot:
       parser.error('No default try builder to try, use --bot')
 
