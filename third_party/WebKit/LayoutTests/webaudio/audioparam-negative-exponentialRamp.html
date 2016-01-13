@@ -111,6 +111,40 @@
         }).then(done);
       });
 
+      audit.defineTask("propagate", function (done) {
+        // Test propagation of ramp if the exponential ramp start and end values have opposite sign.
+        var renderDuration = 0.125;
+        var linearRampEnd = renderDuration / 4;
+        var exponentialRampEnd = renderDuration / 2;
+
+        var context = new OfflineAudioContext(1, renderDuration * sampleRate, sampleRate);
+        var source = context.createBufferSource();
+        source.buffer = createConstantBuffer(context, 1, 1);
+        source.loop = true;
+
+        var g = context.createGain();
+        
+        g.gain.setValueAtTime(2, 0);
+        g.gain.linearRampToValueAtTime(-1, linearRampEnd);
+        g.gain.exponentialRampToValueAtTime(1, exponentialRampEnd);
+
+        source.connect(g)
+              .connect(context.destination);
+        source.start();
+
+        context.startRendering().then(function (resultBuffer) {
+          var actual = resultBuffer.getChannelData(0);
+
+          // Since the start value of the exponential ramp is -1 and the end value is 1, the ramp
+          // should just propagate -1 from the end of the linear ramp "forever".
+          var endFrame = Math.ceil(linearRampEnd * sampleRate);
+          Should("Exponential ramp from -1 to 1 after the end of the linear ramp",
+             actual.slice(endFrame))
+            .beConstantValueOf(-1);
+        }).then(done);
+        
+      });
+
       audit.defineTask("finish", function (done) {
         finishJSTest();
         done();

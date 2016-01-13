@@ -408,11 +408,6 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         float value1 = event.value();
         double time1 = event.time();
 
-        // If the current event is SetValue, set the default value too so that it appears as if
-        // SetValue were actually run for any corner caes where we want to use the default value.
-        if (event.type() == ParamEvent::SetValue)
-            value = value1;
-
         float value2 = nextEvent ? nextEvent->value() : value1;
         double time2 = nextEvent ? nextEvent->time() : endFrame / sampleRate + 1;
 
@@ -475,7 +470,9 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
         } else if (nextEventType == ParamEvent::ExponentialRampToValue) {
             if (value1 * value2 <= 0) {
                 // It's an error if value1 and value2 have opposite signs or if one of them is zero.
-                // Handle this by propagating the previous value.
+                // Handle this by propagating the previous value, and making it the default.
+                value = value1;
+
                 for (; writeIndex < fillToFrame; ++writeIndex)
                     values[writeIndex] = value;
             } else {
@@ -519,13 +516,25 @@ float AudioParamTimeline::valuesForFrameRangeImpl(
             switch (event.type()) {
             case ParamEvent::SetValue:
             case ParamEvent::LinearRampToValue:
-            case ParamEvent::ExponentialRampToValue:
                 {
                     currentFrame = fillToEndFrame;
 
                     // Simply stay at a constant value.
                     value = event.value();
 
+                    for (; writeIndex < fillToFrame; ++writeIndex)
+                        values[writeIndex] = value;
+
+                    break;
+                }
+
+            case ParamEvent::ExponentialRampToValue:
+                {
+                    currentFrame = fillToEndFrame;
+
+                    // Simply stay at a constant value from the last time.  We don't want to use the
+                    // value of the event in case value1 * value2 < 0.  In this case we should
+                    // propagate the previous value, which is in |value|.
                     for (; writeIndex < fillToFrame; ++writeIndex)
                         values[writeIndex] = value;
 
