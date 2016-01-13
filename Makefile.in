@@ -227,6 +227,7 @@ noinst_PROGRAMS =
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_pthread.m4 \
+	$(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -294,13 +295,14 @@ am__src_client_linux_libbreakpad_client_a_SOURCES_DIST =  \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
 	src/client/linux/microdump_writer/microdump_writer.cc \
+	src/client/linux/minidump_writer/linux_core_dumper.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
 	src/client/minidump_file_writer.cc src/common/convert_UTF.c \
 	src/common/md5.cc src/common/string_conversion.cc \
-	src/common/linux/elfutils.cc src/common/linux/file_id.cc \
-	src/common/linux/guid_creator.cc \
+	src/common/linux/elf_core_dump.cc src/common/linux/elfutils.cc \
+	src/common/linux/file_id.cc src/common/linux/guid_creator.cc \
 	src/common/linux/linux_libc_support.cc \
 	src/common/linux/memory_mapped_file.cc \
 	src/common/linux/safe_readlink.cc \
@@ -315,6 +317,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.$(OBJEXT) \
@@ -322,6 +325,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @LINUX_HOST_TRUE@	src/common/convert_UTF.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/md5.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/string_conversion.$(OBJEXT) \
+@LINUX_HOST_TRUE@	src/common/linux/elf_core_dump.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/linux/elfutils.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/linux/file_id.$(OBJEXT) \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.$(OBJEXT) \
@@ -1393,12 +1397,8 @@ src_processor_synth_minidump_unittest_OBJECTS =  \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1) \
 @DISABLE_PROCESSOR_FALSE@	$(am__DEPENDENCIES_1)
 am__src_tools_linux_core2md_core2md_SOURCES_DIST =  \
-	src/tools/linux/core2md/core2md.cc \
-	src/client/linux/minidump_writer/linux_core_dumper.cc \
-	src/common/linux/elf_core_dump.cc
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_core2md_core2md_OBJECTS = src/tools/linux/core2md/core2md.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.$(OBJEXT) \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_core_dump.$(OBJEXT)
+	src/tools/linux/core2md/core2md.cc
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_core2md_core2md_OBJECTS = src/tools/linux/core2md/core2md.$(OBJEXT)
 src_tools_linux_core2md_core2md_OBJECTS =  \
 	$(am_src_tools_linux_core2md_core2md_OBJECTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_core2md_core2md_DEPENDENCIES = src/client/linux/libbreakpad_client.a
@@ -1935,6 +1935,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 GREP = @GREP@
+HAVE_CXX11 = @HAVE_CXX11@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -2066,12 +2067,14 @@ lib_LIBRARIES = $(am__append_5) $(am__append_8)
 @LINUX_HOST_TRUE@	src/client/linux/handler/minidump_descriptor.cc \
 @LINUX_HOST_TRUE@	src/client/linux/log/log.cc \
 @LINUX_HOST_TRUE@	src/client/linux/microdump_writer/microdump_writer.cc \
+@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 @LINUX_HOST_TRUE@	src/client/linux/minidump_writer/minidump_writer.cc \
 @LINUX_HOST_TRUE@	src/client/minidump_file_writer.cc \
 @LINUX_HOST_TRUE@	src/common/convert_UTF.c src/common/md5.cc \
 @LINUX_HOST_TRUE@	src/common/string_conversion.cc \
+@LINUX_HOST_TRUE@	src/common/linux/elf_core_dump.cc \
 @LINUX_HOST_TRUE@	src/common/linux/elfutils.cc \
 @LINUX_HOST_TRUE@	src/common/linux/file_id.cc \
 @LINUX_HOST_TRUE@	src/common/linux/guid_creator.cc \
@@ -2324,9 +2327,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @LINUX_HOST_TRUE@	src/client/linux/linux_client_unittest_shlib
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_core2md_core2md_SOURCES = \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/core2md/core2md.cc \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/client/linux/minidump_writer/linux_core_dumper.cc \
-@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/elf_core_dump.cc
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/core2md/core2md.cc
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_core2md_core2md_LDADD = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/client/linux/libbreakpad_client.a
@@ -3434,6 +3435,9 @@ src/client/linux/minidump_writer/$(am__dirstamp):
 src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/client/linux/minidump_writer/$(DEPDIR)
 	@: > src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
+src/client/linux/minidump_writer/linux_core_dumper.$(OBJEXT):  \
+	src/client/linux/minidump_writer/$(am__dirstamp) \
+	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
 src/client/linux/minidump_writer/linux_dumper.$(OBJEXT):  \
 	src/client/linux/minidump_writer/$(am__dirstamp) \
 	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
@@ -3469,6 +3473,9 @@ src/common/linux/$(am__dirstamp):
 src/common/linux/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) src/common/linux/$(DEPDIR)
 	@: > src/common/linux/$(DEPDIR)/$(am__dirstamp)
+src/common/linux/elf_core_dump.$(OBJEXT):  \
+	src/common/linux/$(am__dirstamp) \
+	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/elfutils.$(OBJEXT): src/common/linux/$(am__dirstamp) \
 	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 src/common/linux/file_id.$(OBJEXT): src/common/linux/$(am__dirstamp) \
@@ -4502,12 +4509,6 @@ src/tools/linux/core2md/$(DEPDIR)/$(am__dirstamp):
 src/tools/linux/core2md/core2md.$(OBJEXT):  \
 	src/tools/linux/core2md/$(am__dirstamp) \
 	src/tools/linux/core2md/$(DEPDIR)/$(am__dirstamp)
-src/client/linux/minidump_writer/linux_core_dumper.$(OBJEXT):  \
-	src/client/linux/minidump_writer/$(am__dirstamp) \
-	src/client/linux/minidump_writer/$(DEPDIR)/$(am__dirstamp)
-src/common/linux/elf_core_dump.$(OBJEXT):  \
-	src/common/linux/$(am__dirstamp) \
-	src/common/linux/$(DEPDIR)/$(am__dirstamp)
 
 src/tools/linux/core2md/core2md$(EXEEXT): $(src_tools_linux_core2md_core2md_OBJECTS) $(src_tools_linux_core2md_core2md_DEPENDENCIES) $(EXTRA_src_tools_linux_core2md_core2md_DEPENDENCIES) src/tools/linux/core2md/$(am__dirstamp)
 	@rm -f src/tools/linux/core2md/core2md$(EXEEXT)

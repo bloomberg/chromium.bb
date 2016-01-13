@@ -137,6 +137,7 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/client/linux/handler/minidump_descriptor.cc \
 	src/client/linux/log/log.cc \
 	src/client/linux/microdump_writer/microdump_writer.cc \
+	src/client/linux/minidump_writer/linux_core_dumper.cc \
 	src/client/linux/minidump_writer/linux_dumper.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper.cc \
 	src/client/linux/minidump_writer/minidump_writer.cc \
@@ -144,6 +145,7 @@ src_client_linux_libbreakpad_client_a_SOURCES = \
 	src/common/convert_UTF.c \
 	src/common/md5.cc \
 	src/common/string_conversion.cc \
+	src/common/linux/elf_core_dump.cc \
 	src/common/linux/elfutils.cc \
 	src/common/linux/file_id.cc \
 	src/common/linux/guid_creator.cc \
@@ -507,9 +509,7 @@ src_client_linux_linux_client_unittest_DEPENDENCIES = \
 
 if !DISABLE_TOOLS
 src_tools_linux_core2md_core2md_SOURCES = \
-	src/tools/linux/core2md/core2md.cc \
-	src/client/linux/minidump_writer/linux_core_dumper.cc \
-	src/common/linux/elf_core_dump.cc
+	src/tools/linux/core2md/core2md.cc
 
 src_tools_linux_core2md_core2md_LDADD = \
 	src/client/linux/libbreakpad_client.a
