@@ -841,12 +841,6 @@ void GLES2DecoderTestBase::DoBindBuffer(
     EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, _))
         .Times(1)
         .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_PIXELS, _))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_ROWS, _))
-        .Times(1)
-        .RetiresOnSaturation();
   }
   cmds::BindBuffer cmd;
   cmd.Init(target, client_id);
@@ -1825,6 +1819,15 @@ void GLES2DecoderTestBase::DoScissor(GLint x,
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
+void GLES2DecoderTestBase::DoPixelStorei(GLenum pname, GLint param) {
+  EXPECT_CALL(*gl_, PixelStorei(pname, param))
+      .Times(1)
+      .RetiresOnSaturation();
+  cmds::PixelStorei cmd;
+  cmd.Init(pname, param);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
 void GLES2DecoderTestBase::SetupVertexBuffer() {
   DoEnableVertexAttribArray(1);
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
@@ -1927,12 +1930,6 @@ void GLES2DecoderTestBase::SetupMockGLBehaviors() {
 void GLES2DecoderTestBase::SetupInitStateManualExpectations(bool es3_capable) {
   if (es3_capable) {
     EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_PIXELS, 0))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, PixelStorei(GL_PACK_SKIP_ROWS, 0))
         .Times(1)
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, PixelStorei(GL_UNPACK_ROW_LENGTH, 0))

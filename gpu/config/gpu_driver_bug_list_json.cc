@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.38",
+  "version": "8.39",
   "entries": [
     {
       "id": 1,
@@ -1683,6 +1683,19 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_discard_framebuffer"
+      ]
+    },
+    {
+      "id": 142,
+      "cr_bugs": [563714],
+      "description": "Pack parameters work incorrectly with pack buffer bound",
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x10de",
+      "gl_vendor": "NVIDIA.*",
+      "features": [
+        "pack_parameters_workaround_with_pack_buffer"
       ]
     }
   ]

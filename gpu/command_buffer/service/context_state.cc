@@ -451,12 +451,8 @@ void ContextState::UpdatePackParameters() const {
     return;
   if (bound_pixel_pack_buffer.get()) {
     glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, pack_skip_pixels);
-    glPixelStorei(GL_PACK_SKIP_ROWS, pack_skip_rows);
   } else {
     glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_PACK_SKIP_PIXELS, 0);
-    glPixelStorei(GL_PACK_SKIP_ROWS, 0);
   }
 }
 

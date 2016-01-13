@@ -9130,17 +9130,19 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   uint32_t unpadded_row_size = 0;
   uint32_t padded_row_size = 0;
   uint32_t skip_size = 0;
+  uint32_t padding = 0;
   if (!GLES2Util::ComputeImageDataSizesES3(width, height, 1,
                                            format, type,
                                            params,
                                            &pixels_size,
                                            &unpadded_row_size,
                                            &padded_row_size,
-                                           &skip_size)) {
+                                           &skip_size,
+                                           &padding)) {
     return error::kOutOfBounds;
   }
 
-  void* pixels = nullptr;
+  uint8_t* pixels = nullptr;
   Buffer* buffer = state_.bound_pixel_pack_buffer.get();
   if (pixels_shm_id == 0) {
     if (buffer) {
@@ -9150,7 +9152,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         return error::kNoError;
       }
       uint32_t size = 0;
-      if (!SafeAddUint32(pixels_size, pixels_shm_offset, &size)) {
+      if (!SafeAddUint32(pixels_size + skip_size, pixels_shm_offset, &size)) {
         LOCAL_SET_GL_ERROR(
             GL_INVALID_VALUE, "glReadPixels", "size + offset overflow");
         return error::kNoError;
@@ -9160,7 +9162,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
             "pixel pack buffer is not large enough");
         return error::kNoError;
       }
-      pixels = reinterpret_cast<void *>(pixels_shm_offset);
+      pixels = reinterpret_cast<uint8_t *>(pixels_shm_offset);
+      pixels += skip_size;
     } else {
       return error::kInvalidArguments;
     }
@@ -9168,7 +9171,8 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
     if (buffer) {
       return error::kInvalidArguments;
     } else {
-      pixels = GetSharedMemoryAs<void*>(
+      DCHECK_EQ(0u, skip_size);
+      pixels = GetSharedMemoryAs<uint8_t*>(
           pixels_shm_id, pixels_shm_offset, pixels_size);
       if (!pixels) {
         return error::kOutOfBounds;
@@ -9318,27 +9322,17 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
   if (!max_rect.Contains(rect)) {
     rect.Intersect(max_rect);
     if (!rect.IsEmpty()) {
-      // TODO(yunchao): need to handle the out-of-bounds case for reading pixels
-      // into PIXEL_PACK buffer.
-      if (pixels_shm_id == 0) {
-        LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glReadPixels",
-            "read pixels out of bounds into PIXEL_PACK buffer");
-        return error::kNoError;
-      }
-
-      int8_t* dst = static_cast<int8_t*>(pixels);
       if (y < 0) {
-        uint32_t skip_rows_bytes = static_cast<uint32_t>(-y) * padded_row_size;
-        dst += skip_rows_bytes;
+        pixels += static_cast<uint32_t>(-y) * padded_row_size;;
       }
       if (x < 0) {
         uint32_t group_size = GLES2Util::ComputeImageGroupSize(format, type);
         uint32_t leading_bytes = static_cast<uint32_t>(-x) * group_size;
-        dst += leading_bytes;
+        pixels += leading_bytes;
       }
       for (GLint iy = rect.y(); iy < rect.bottom(); ++iy) {
-        glReadPixels(rect.x(), iy, rect.width(), 1, format, type, dst);
-        dst += padded_row_size;
+        glReadPixels(rect.x(), iy, rect.width(), 1, format, type, pixels);
+        pixels += padded_row_size;
       }
     }
   } else {
@@ -9373,7 +9367,34 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         glDeleteBuffersARB(1, &buffer);
       }
     }
-    glReadPixels(x, y, width, height, format, type, pixels);
+    if (pixels_shm_id == 0 &&
+        workarounds().pack_parameters_workaround_with_pack_buffer) {
+      if (state_.pack_row_length > 0 && state_.pack_row_length < width) {
+        // Some drivers (for example, NVidia Linux) reset in this case.
+        for (GLint iy = y; iy < y + height; ++iy) {
+          // Need to set PACK_ALIGNMENT for last row. See comment below.
+          if (iy + 1 == y + height && padding > 0)
+            glPixelStorei(GL_PACK_ALIGNMENT, 1);
+          glReadPixels(x, iy, width, 1, format, type, pixels);
+          if (iy + 1 == y + height && padding > 0)
+            glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
+          pixels += padded_row_size;
+        }
+      } else if (padding > 0) {
+        // Some drivers (for example, NVidia Linux) incorrectly require the
+        // pack buffer to have padding for the last row.
+        if (height > 1)
+          glReadPixels(x, y, width, height - 1, format, type, pixels);
+        glPixelStorei(GL_PACK_ALIGNMENT, 1);
+        pixels += padded_row_size * (height - 1);
+        glReadPixels(x, y + height - 1, width, 1, format, type, pixels);
+        glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
+      } else {
+        glReadPixels(x, y, width, height, format, type, pixels);
+      }
+    } else {
+      glReadPixels(x, y, width, height, format, type, pixels);
+    }
   }
   if (pixels_shm_id != 0) {
     GLenum error = LOCAL_PEEK_GL_ERROR("glReadPixels");
@@ -9425,15 +9446,19 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(uint32_t immediate_data_size,
     default:
       break;
   }
-  // For pack and unpack parameters (except for alignment), we don't apply them
-  // if no buffer is bound at PIXEL_PACK or PIXEL_UNPACK. We will handle pack
-  // and unpack according to the user specified parameters on the client side.
+  // For pack skip parameters, we don't apply them and handle them in command
+  // buffer.
+  // For alignment parameters, we always apply them.
+  // For other parameters, we don't apply them if no buffer is bound at
+  // PIXEL_PACK or PIXEL_UNPACK. We will handle pack and unpack according to
+  // the user specified parameters on the client side.
   switch (pname) {
     case GL_PACK_ROW_LENGTH:
-    case GL_PACK_SKIP_PIXELS:
-    case GL_PACK_SKIP_ROWS:
       if (state_.bound_pixel_pack_buffer.get())
         glPixelStorei(pname, param);
+      break;
+    case GL_PACK_SKIP_PIXELS:
+    case GL_PACK_SKIP_ROWS:
       break;
     case GL_UNPACK_ROW_LENGTH:
     case GL_UNPACK_IMAGE_HEIGHT:

@@ -3564,7 +3564,8 @@ void GLES2Implementation::ReadPixels(
                                            &size,
                                            &unpadded_row_size,
                                            &padded_row_size,
-                                           &skip_size)) {
+                                           &skip_size,
+                                           nullptr)) {
     SetGLError(GL_INVALID_VALUE, "glReadPixels", "size too large.");
     return;
   }

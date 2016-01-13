@@ -818,6 +818,166 @@ TEST_P(GLES3DecoderTest, ReadPixelsPixelPackBufferIsNotLargeEnough) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
+TEST_P(GLES2DecoderManualInitTest, ReadPixels2RowLengthWorkaround) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::PACK_PARAMETERS_WORKAROUND_WITH_PACK_BUFFER));
+  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoderWithCommandLine(init, &command_line);
+
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 4;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kRowLength = 4;
+  GLint size = (kRowLength * (kHeight - 1) + kWidth) * kBytesPerPixel;
+
+  DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoBufferData(GL_PIXEL_PACK_BUFFER, size);
+
+  DoPixelStorei(GL_PACK_ROW_LENGTH, kRowLength);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  for (GLint ii = 0; ii < kHeight; ++ii) {
+    void* offset = reinterpret_cast<void*>(ii * kRowLength * kBytesPerPixel);
+    EXPECT_CALL(*gl_, ReadPixels(0, ii, kWidth, 1, kFormat, kType, offset))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight,
+           kFormat, kType,
+           0, 0, 0, 0,
+           false);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderManualInitTest, ReadPixels2AlignmentWorkaround) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::PACK_PARAMETERS_WORKAROUND_WITH_PACK_BUFFER));
+  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoderWithCommandLine(init, &command_line);
+
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 4;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kAlignment = 8;
+  const GLint kPadding = 4;
+  GLint size = kWidth * kBytesPerPixel * kHeight + kPadding * (kHeight - 1);
+
+  DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoBufferData(GL_PIXEL_PACK_BUFFER, size);
+
+  DoPixelStorei(GL_PACK_ALIGNMENT, kAlignment);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  uint8_t* offset = reinterpret_cast<uint8_t*>(0);
+  EXPECT_CALL(*gl_,
+              ReadPixels(0, 0, kWidth, kHeight - 1, kFormat, kType, offset))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  offset += (kWidth * kBytesPerPixel + kPadding) * (kHeight - 1);
+  EXPECT_CALL(*gl_,
+              ReadPixels(0, kHeight - 1, kWidth, 1, kFormat, kType, offset))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, kAlignment))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight,
+           kFormat, kType,
+           0, 0, 0, 0,
+           false);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_P(GLES2DecoderManualInitTest,
+       ReadPixels2RowLengthAndAlignmentWorkarounds) {
+  base::CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::PACK_PARAMETERS_WORKAROUND_WITH_PACK_BUFFER));
+  command_line.AppendSwitch(switches::kEnableUnsafeES3APIs);
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoderWithCommandLine(init, &command_line);
+
+  const GLsizei kWidth = 5;
+  const GLsizei kHeight = 3;
+  const GLint kBytesPerPixel = 4;
+  const GLenum kFormat = GL_RGBA;
+  const GLenum kType = GL_UNSIGNED_BYTE;
+  const GLint kAlignment = 8;
+  const GLint kRowLength = 3;
+  const GLint kPadding = 4;
+  GLint padded_row_size = kRowLength * kBytesPerPixel + kPadding;
+  GLint unpadded_row_size = kWidth * kBytesPerPixel;
+  GLint size = padded_row_size * (kHeight - 1) + unpadded_row_size;
+
+  DoBindBuffer(GL_PIXEL_PACK_BUFFER, client_buffer_id_, kServiceBufferId);
+  DoBufferData(GL_PIXEL_PACK_BUFFER, size);
+
+  DoPixelStorei(GL_PACK_ALIGNMENT, kAlignment);
+  DoPixelStorei(GL_PACK_ROW_LENGTH, kRowLength);
+
+  EXPECT_CALL(*gl_, GetError())
+      .WillOnce(Return(GL_NO_ERROR))
+      .RetiresOnSaturation();
+  for (GLint ii = 0; ii < kHeight - 1; ++ii) {
+    void* offset = reinterpret_cast<void*>(ii * padded_row_size);
+    EXPECT_CALL(*gl_, ReadPixels(0, ii, kWidth, 1, kFormat, kType, offset))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 1))
+      .Times(1)
+      .RetiresOnSaturation();
+  void* offset = reinterpret_cast<void*>((kHeight - 1) * padded_row_size);
+  EXPECT_CALL(*gl_,
+              ReadPixels(0, kHeight - 1, kWidth, 1, kFormat, kType, offset))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, kAlignment))
+      .Times(1)
+      .RetiresOnSaturation();
+
+  ReadPixels cmd;
+  cmd.Init(0, 0, kWidth, kHeight,
+           kFormat, kType,
+           0, 0, 0, 0,
+           false);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
 TEST_P(GLES2DecoderRGBBackbufferTest, ReadPixelsNoAlphaBackbuffer) {
   const GLsizei kWidth = 3;
   const GLsizei kHeight = 3;

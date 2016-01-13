@@ -356,6 +356,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool> {
 
   void DoScissor(GLint x, GLint y, GLsizei width, GLsizei height);
 
+  void DoPixelStorei(GLenum pname, GLint param);
+
   void SetupVertexBuffer();
   void SetupAllNeededVertexBuffers();
 

@@ -511,22 +511,30 @@ bool GLES2Util::ComputeImageRowSizeHelper(int width,
                                           uint32_t bytes_per_group,
                                           int alignment,
                                           uint32_t* rt_unpadded_row_size,
-                                          uint32_t* rt_padded_row_size) {
+                                          uint32_t* rt_padded_row_size,
+                                          uint32_t* rt_padding) {
   DCHECK(alignment == 1 || alignment == 2 ||
          alignment == 4 || alignment == 8);
   uint32_t unpadded_row_size;
   if (!SafeMultiplyUint32(width, bytes_per_group, &unpadded_row_size)) {
     return false;
   }
-  uint32_t temp;
-  if (!SafeAddUint32(unpadded_row_size, alignment - 1, &temp)) {
-    return false;
+  uint32_t residual = unpadded_row_size % alignment;
+  uint32_t padding = 0;
+  uint32_t padded_row_size = unpadded_row_size;
+  if (residual > 0) {
+    padding = alignment - residual;
+    if (!SafeAddUint32(unpadded_row_size, padding, &padded_row_size)) {
+      return false;
+    }
   }
-  uint32_t padded_row_size = (temp / alignment) * alignment;
+
   if (rt_unpadded_row_size)
     *rt_unpadded_row_size = unpadded_row_size;
   if (rt_padded_row_size)
     *rt_padded_row_size = padded_row_size;
+  if (rt_padding)
+    *rt_padding = padding;
   return true;
 }
 
@@ -537,7 +545,7 @@ bool GLES2Util::ComputeImagePaddedRowSize(int width,
                                           uint32_t* padded_row_size) {
   uint32_t bytes_per_group = ComputeImageGroupSize(format, type);
   return ComputeImageRowSizeHelper(
-      width, bytes_per_group, alignment, nullptr, padded_row_size);
+      width, bytes_per_group, alignment, nullptr, padded_row_size, nullptr);
 }
 
 // Returns the amount of data glTexImage*D or glTexSubImage*D will access.
@@ -554,14 +562,15 @@ bool GLES2Util::ComputeImageDataSizes(int width,
   params.alignment = alignment;
   return ComputeImageDataSizesES3(
       width, height, depth, format, type, params,
-      size, opt_unpadded_row_size, opt_padded_row_size, nullptr);
+      size, opt_unpadded_row_size, opt_padded_row_size, nullptr, nullptr);
 }
 
 bool GLES2Util::ComputeImageDataSizesES3(
     int width, int height, int depth, int format, int type,
     const PixelStoreParams& params,
     uint32_t* size, uint32_t* opt_unpadded_row_size,
-    uint32_t* opt_padded_row_size, uint32_t* opt_skip_size) {
+    uint32_t* opt_padded_row_size, uint32_t* opt_skip_size,
+    uint32_t* opt_padding) {
   DCHECK(width >= 0 && height >= 0 && depth >= 0);
 
   uint32_t bytes_per_group = ComputeImageGroupSize(format, type);
@@ -569,12 +578,14 @@ bool GLES2Util::ComputeImageDataSizesES3(
   uint32_t unpadded_row_size;
   uint32_t padded_row_size;
   if (!ComputeImageRowSizeHelper(width, bytes_per_group, params.alignment,
-                                 &unpadded_row_size, &padded_row_size)) {
+                                 &unpadded_row_size, &padded_row_size,
+                                 opt_padding)) {
     return false;
   }
   if (params.row_length > 0 &&
       !ComputeImageRowSizeHelper(params.row_length, bytes_per_group,
-                                 params.alignment, nullptr, &padded_row_size)) {
+                                 params.alignment, nullptr, &padded_row_size,
+                                 opt_padding)) {
     // Here we re-compute the padded_row_size, but the unpadded_row_size
     // isn't affected. That is, the last row isn't affected by ROW_LENGTH.
     return false;

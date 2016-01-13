@@ -143,7 +143,8 @@ class GLES2_UTILS_EXPORT GLES2Util {
       int width, int height, int depth, int format, int type,
       const PixelStoreParams& params,
       uint32_t* size, uint32_t* opt_unpadded_row_size,
-      uint32_t* opt_padded_row_size, uint32_t* opt_skip_size);
+      uint32_t* opt_padded_row_size, uint32_t* opt_skip_size,
+      uint32_t* opt_padding);
 
   static size_t RenderbufferBytesPerPixel(int format);
 
@@ -224,7 +225,8 @@ class GLES2_UTILS_EXPORT GLES2Util {
                                         uint32_t bytes_per_group,
                                         int alignment,
                                         uint32_t* rt_unpadded_row_size,
-                                        uint32_t* rt_padded_row_size);
+                                        uint32_t* rt_padded_row_size,
+                                        uint32_t* rt_padding);
 
   static const EnumToString* const enum_to_string_table_;
   static const size_t enum_to_string_table_len_;
