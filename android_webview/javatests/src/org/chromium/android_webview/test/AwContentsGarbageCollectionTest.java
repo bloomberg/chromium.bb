@@ -95,6 +95,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
         }
 
+        for (int i = 0; i < containerViews.length; i++) {
+            containerViews[i] = null;
+        }
         containerViews = null;
         removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
@@ -113,6 +116,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
         }
 
+        for (int i = 0; i < containerViews.length; i++) {
+            containerViews[i] = null;
+        }
         containerViews = null;
         removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
@@ -134,6 +140,9 @@ public class AwContentsGarbageCollectionTest extends AwTestBase {
             loadUrlAsync(containerViews[i].getAwContents(), "about:blank");
         }
 
+        for (int i = 0; i < containerViews.length; i++) {
+            containerViews[i] = null;
+        }
         containerViews = null;
         removeAllViews();
         gcAndCheckAllAwContentsDestroyed();
