@@ -15,7 +15,6 @@ namespace autofill {
 bool WalletIntegrationAvailableForProfile(Profile* profile) {
   return WalletIntegrationAvailable(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile),
-      *profile->GetPrefs(),
       *PersonalDataManagerFactory::GetForProfile(profile));
 }
 

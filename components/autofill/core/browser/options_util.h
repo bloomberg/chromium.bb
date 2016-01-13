@@ -5,8 +5,6 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_OPTIONS_UTIL_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_OPTIONS_UTIL_H_
 
-class PrefService;
-
 namespace sync_driver {
 class SyncService;
 }
@@ -19,7 +17,6 @@ class PersonalDataManager;
 // enabled or disabled by the user).
 bool WalletIntegrationAvailable(
     sync_driver::SyncService* sync_service,
-    const PrefService& pref_service,
     const PersonalDataManager& personal_data_manager);
 
 }  // namespace autofill

@@ -9524,7 +9524,7 @@ I don't think this site should be blocked!
           Add a credit card
         </message>
         <message name="IDS_AUTOFILL_USE_WALLET_DATA" desc="The text for the checkbox that controls the Autofill/Wallet integration feature.">
-          Show addresses and credit cards from Google Payments
+          Sync credit cards and addresses using Google Payments
         </message>
 
         <message name="IDS_AUTOFILL_FIELD_LABEL_EMAIL" desc="The label of the Email entry.">
