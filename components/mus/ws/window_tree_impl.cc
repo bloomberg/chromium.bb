@@ -409,9 +409,16 @@ void WindowTreeImpl::ProcessWindowReorder(const ServerWindow* window,
                                           const ServerWindow* relative_window,
                                           mojom::OrderDirection direction,
                                           bool originated_change) {
+  DCHECK_EQ(window->parent(), relative_window->parent());
   if (originated_change || !IsWindowKnown(window) ||
       !IsWindowKnown(relative_window) ||
       connection_manager_->DidConnectionMessageClient(id_))
+    return;
+
+  // Do not notify ordering changes of the root windows, since the client
+  // doesn't know about the ancestors of the roots, and so can't do anything
+  // about this ordering change of the root.
+  if (HasRoot(window) || HasRoot(relative_window))
     return;
 
   client_->OnWindowReordered(MapWindowIdToClient(window),

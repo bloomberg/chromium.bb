@@ -778,6 +778,7 @@ bool Window::ReorderImpl(Window* window,
   DCHECK(relative);
   DCHECK_NE(window, relative);
   DCHECK_EQ(window->parent(), relative->parent());
+  DCHECK(window->parent());
 
   if (!AdjustStackingForTransientWindows(&window, &relative, &direction,
                                          window->stacking_target_))
