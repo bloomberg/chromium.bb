@@ -55,7 +55,7 @@ void CSSVariableResolver::resolveVariableTokensRecursive(CSSParserTokenRange ran
         Vector<CSSParserToken> tokens;
         if (variableData->needsVariableResolution()) {
             m_variablesSeen.add(variableName);
-            resolveVariableReferencesFromTokens(variableData->tokens(), result, context);
+            resolveVariableReferencesFromTokens(variableData->tokens(), tokens, context);
             m_variablesSeen.remove(variableName);
 
             // The old variable data holds onto the backing string the new resolved CSSVariableData
