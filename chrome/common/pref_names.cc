@@ -1201,6 +1201,11 @@ const char kToolbarIconSurfacingBubbleAcknowledged[] =
     "toolbar_icon_surfacing_bubble_acknowledged";
 const char kToolbarIconSurfacingBubbleLastShowTime[] =
     "toolbar_icon_surfacing_bubble_show_time";
+
+// Used to track component actions in the toolbar that were migrated from
+// extensions.
+const char kToolbarMigratedComponentActionStatus[] =
+    "toolbar_migrated_component_action_status";
 #endif
 
 #if defined(ENABLE_WEBRTC)

@@ -16,6 +16,10 @@ class Browser;
 class Profile;
 class ToolbarActionViewController;
 
+namespace extensions {
+class ComponentMigrationHelper;
+}  // extensions
+
 // The registry for all component toolbar actions. Component toolbar actions
 // are actions that live in the toolbar (like extension actions), but are
 // components of chrome, such as ChromeCast.
@@ -37,6 +41,15 @@ class ComponentToolbarActionsFactory {
   virtual scoped_ptr<ToolbarActionViewController>
   GetComponentToolbarActionForId(const std::string& id, Browser* browser,
                                  ToolbarActionsBar* bar);
+
+  // Registers component actions that are migrating from extensions.
+  virtual void RegisterComponentMigrations(
+      extensions::ComponentMigrationHelper* helper) const;
+
+  // Synchronizes component action visibility and extension install status.
+  virtual void HandleComponentMigrations(
+      extensions::ComponentMigrationHelper* helper,
+      Profile* profile) const;
 
   // Sets the factory to use for testing purposes.
   // Ownership remains with the caller.

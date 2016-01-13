@@ -406,6 +406,7 @@ extern const char kCopresenceAuthenticatedDeviceId[];
 extern const char kCopresenceAnonymousDeviceId[];
 extern const char kToolbarIconSurfacingBubbleAcknowledged[];
 extern const char kToolbarIconSurfacingBubbleLastShowTime[];
+extern const char kToolbarMigratedComponentActionStatus[];
 #endif
 
 #if defined(ENABLE_WEBRTC)

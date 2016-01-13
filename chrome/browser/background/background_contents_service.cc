@@ -478,6 +478,7 @@ void BackgroundContentsService::OnExtensionUnloaded(
     case UnloadedExtensionInfo::REASON_UNINSTALL:  // Fall through.
     case UnloadedExtensionInfo::REASON_BLACKLIST:  // Fall through.
     case UnloadedExtensionInfo::REASON_LOCK_ALL:   // Fall through.
+    case UnloadedExtensionInfo::REASON_MIGRATED_TO_COMPONENT:  // Fall through.
     case UnloadedExtensionInfo::REASON_PROFILE_SHUTDOWN:
       ShutdownAssociatedBackgroundContents(base::ASCIIToUTF16(extension->id()));
       SendChangeNotification(Profile::FromBrowserContext(browser_context));

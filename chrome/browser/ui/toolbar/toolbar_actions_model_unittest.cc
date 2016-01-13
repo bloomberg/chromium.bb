@@ -4,10 +4,13 @@
 
 #include <stddef.h>
 
+#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/prefs/scoped_user_pref_update.h"
+#include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
@@ -26,6 +29,7 @@
 #include "chrome/browser/ui/toolbar/test_toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_model.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
+#include "chrome/common/pref_names.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -34,6 +38,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/pref_names.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/feature_switch.h"
@@ -119,6 +124,25 @@ class ToolbarActionsModelUnitTest
   // ExtensionSystem.
   void Init();
 
+  enum class MigrationStatus {
+    // The feature is enabled without any extension to migrate.
+    FEATURE_ENABLED_NO_EXTENSION,
+    // The feature is enabled and the user has installed an extension.
+    FEATURE_ENABLED_EXTENSION_INSTALLED,
+    // Feature is enabled with extension and a pref of false.
+    FEATURE_ENABLED_WITH_PREF_FALSE,
+    // Feature is enabled with extension and a pref of true.
+    FEATURE_ENABLED_WITH_PREF_TRUE,
+    // The feature is now disabled after previously being enabled, and the user
+    // has a pref reflecting a previous migration.
+    FEATURE_DISABLED_WITH_PREF_TRUE,
+  };
+
+  // Initialize the ExtensionService, ToolbarActionsModel, and ExtensionSystem,
+  // and an action extension to migrate to a component.  |migration_status|
+  // is used to configure the user's initial migration status.
+  void InitForMigrationTest(MigrationStatus migration_status);
+
   void TearDown() override;
 
   // Adds or removes the given |extension| and verify success.
@@ -135,6 +159,9 @@ class ToolbarActionsModelUnitTest
   // Adds three extensions, one each for browser action, page action, and no
   // action, and are added in that order.
   testing::AssertionResult AddActionExtensions() WARN_UNUSED_RESULT;
+
+  // Creates an extension that is to be migrated to a component action.
+  void CreateMigratedActionExtension();
 
   // Returns the action's id at the given index in the toolbar model, or empty
   // if one does not exist.
@@ -166,6 +193,9 @@ class ToolbarActionsModelUnitTest
   const extensions::Extension* browser_action() const {
     return browser_action_extension_.get();
   }
+  const extensions::Extension* browser_action_migrated() const {
+    return browser_action_migrated_.get();
+  }
   const extensions::Extension* page_action() const {
     return page_action_extension_.get();
   }
@@ -194,6 +224,7 @@ class ToolbarActionsModelUnitTest
   scoped_refptr<const extensions::Extension> browser_action_a_;
   scoped_refptr<const extensions::Extension> browser_action_b_;
   scoped_refptr<const extensions::Extension> browser_action_c_;
+  scoped_refptr<const extensions::Extension> browser_action_migrated_;
 
   // Sample extensions with different kinds of actions.
   scoped_refptr<const extensions::Extension> browser_action_extension_;
@@ -207,6 +238,47 @@ class ToolbarActionsModelUnitTest
 
 void ToolbarActionsModelUnitTest::Init() {
   InitializeEmptyExtensionService();
+  toolbar_model_ =
+      extensions::extension_action_test_util::CreateToolbarModelForProfile(
+          profile());
+  model_observer_.reset(new ToolbarActionsModelTestObserver(toolbar_model_));
+}
+
+void ToolbarActionsModelUnitTest::InitForMigrationTest(
+    MigrationStatus migration_status) {
+  InitializeEmptyExtensionService();
+  SetMockActionsFactory(new MockComponentToolbarActionsFactory(nullptr));
+  CreateMigratedActionExtension();
+
+  {
+    DictionaryPrefUpdate update(profile()->GetPrefs(),
+                                ::prefs::kToolbarMigratedComponentActionStatus);
+    switch (migration_status) {
+      case MigrationStatus::FEATURE_ENABLED_EXTENSION_INSTALLED:
+        mock_actions_factory_->set_migrated_feature_enabled(true);
+        ASSERT_TRUE(AddExtension(browser_action_migrated()));
+        break;
+      case MigrationStatus::FEATURE_ENABLED_NO_EXTENSION:
+        mock_actions_factory_->set_migrated_feature_enabled(true);
+        break;
+      case MigrationStatus::FEATURE_ENABLED_WITH_PREF_TRUE:
+        mock_actions_factory_->set_migrated_feature_enabled(true);
+        ASSERT_TRUE(AddExtension(browser_action_migrated()));
+        update->SetBoolean(component_action_id(), true);
+        break;
+      case MigrationStatus::FEATURE_ENABLED_WITH_PREF_FALSE:
+        mock_actions_factory_->set_migrated_feature_enabled(true);
+        ASSERT_TRUE(AddExtension(browser_action_migrated()));
+        update->SetBoolean(component_action_id(), false);
+        break;
+      case MigrationStatus::FEATURE_DISABLED_WITH_PREF_TRUE:
+        mock_actions_factory_->set_migrated_feature_enabled(false);
+        ASSERT_TRUE(AddExtension(browser_action_migrated()));
+        update->SetBoolean(component_action_id(), true);
+        break;
+    }
+  }
+
   toolbar_model_ =
       extensions::extension_action_test_util::CreateToolbarModelForProfile(
           profile());
@@ -288,6 +360,15 @@ ToolbarActionsModelUnitTest::AddBrowserActionExtensions() {
   extensions.push_back(browser_action_c_);
 
   return AddAndVerifyExtensions(extensions);
+}
+
+void ToolbarActionsModelUnitTest::CreateMigratedActionExtension() {
+  browser_action_migrated_ =
+      extensions::extension_action_test_util::CreateActionExtension(
+          "browser_actionMigrated",
+          extensions::extension_action_test_util::BROWSER_ACTION);
+  mock_actions_factory_->set_migrated_extension_id(
+      browser_action_migrated_->id());
 }
 
 const std::string ToolbarActionsModelUnitTest::GetActionIdAtIndex(
@@ -1252,6 +1333,7 @@ TEST_F(ToolbarActionsModelUnitTest,
   // One component action was added when the model was initialized.
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+  EXPECT_TRUE(toolbar_model()->HasComponentAction(component_action_id()));
 
   // Add the three browser action extensions.
   ASSERT_TRUE(AddBrowserActionExtensions());
@@ -1341,11 +1423,13 @@ TEST_F(ToolbarActionsModelUnitTest,
   toolbar_model()->RemoveComponentAction(component_action_id());
   EXPECT_EQ(4u, observer()->removed_count());
   EXPECT_EQ(0u, num_toolbar_items());
+  EXPECT_FALSE(toolbar_model()->HasComponentAction(component_action_id()));
 
   // Add MCA again.
   toolbar_model()->AddComponentAction(component_action_id());
   EXPECT_EQ(1u, num_toolbar_items());
   EXPECT_EQ(4u, observer()->inserted_count());
+  EXPECT_TRUE(toolbar_model()->HasComponentAction(component_action_id()));
   // Newly added component actions get put at the end of the visible area.
   EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
   EXPECT_EQ(1u, toolbar_model()->visible_icon_count());
@@ -1357,4 +1441,61 @@ TEST_F(ToolbarActionsModelUnitTest,
   EXPECT_EQ(2u, num_toolbar_items());
   EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
   EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(1u));
+}
+
+TEST_F(ToolbarActionsModelUnitTest,
+       NoMigrationToComponentActionWithoutExtension) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), true);
+  InitForMigrationTest(MigrationStatus::FEATURE_ENABLED_NO_EXTENSION);
+
+  EXPECT_EQ(0u, num_toolbar_items());
+}
+
+TEST_F(ToolbarActionsModelUnitTest, MigrationFromExtensionToComponentAction) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), true);
+  InitForMigrationTest(MigrationStatus::FEATURE_ENABLED_EXTENSION_INSTALLED);
+
+  // Initialization disables the extension and adds the migrated component
+  // action.
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+}
+
+TEST_F(ToolbarActionsModelUnitTest, MigratedComponentActionAddedWithPrefTrue) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), true);
+  InitForMigrationTest(MigrationStatus::FEATURE_ENABLED_WITH_PREF_TRUE);
+
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(0u));
+}
+
+TEST_F(ToolbarActionsModelUnitTest, NoMigratedComponentActionWithPrefFalse) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), true);
+  InitForMigrationTest(MigrationStatus::FEATURE_ENABLED_WITH_PREF_FALSE);
+
+  EXPECT_EQ(0u, num_toolbar_items());
+}
+
+TEST_F(ToolbarActionsModelUnitTest, MigrationFromComponentActionToExtension) {
+  extensions::FeatureSwitch::ScopedOverride enable_redesign(
+      extensions::FeatureSwitch::extension_action_redesign(), true);
+  InitForMigrationTest(MigrationStatus::FEATURE_DISABLED_WITH_PREF_TRUE);
+
+  // Initialization re-enables the extension and removes the migrated component
+  // action.
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(browser_action_migrated()->id(), GetActionIdAtIndex(0u));
+}
+
+TEST_F(ToolbarActionsModelUnitTest,
+       MigrationToExtensionWithoutExtensionActionRedesign) {
+  InitForMigrationTest(MigrationStatus::FEATURE_DISABLED_WITH_PREF_TRUE);
+
+  // Initialization re-enables the extension.
+  EXPECT_EQ(1u, num_toolbar_items());
+  EXPECT_EQ(browser_action_migrated()->id(), GetActionIdAtIndex(0u));
 }

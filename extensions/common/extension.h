@@ -554,6 +554,8 @@ struct UnloadedExtensionInfo {
     REASON_BLACKLIST,         // Extension has been blacklisted.
     REASON_PROFILE_SHUTDOWN,  // Profile is being shut down.
     REASON_LOCK_ALL,          // All extensions for the profile are blocked.
+    REASON_MIGRATED_TO_COMPONENT,  // Extension is being migrated to a component
+                                   // action.
   };
 
   Reason reason;

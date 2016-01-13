@@ -131,7 +131,11 @@ class ExtensionServiceInterface
   virtual void FinishDelayedInstallation(const std::string& extension_id) = 0;
 
   // Returns true if the extension with the given |extension_id| is enabled.
-  // This will return a valid answer even if the extension is not loaded yet.
+  // This will only return a valid answer for installed extensions (regardless
+  // of whether it is currently loaded or not).  Loaded extensions return true
+  // if they are currently loaded or terminated.  Unloaded extensions will
+  // return true if they are not blocked, disabled, blacklisted or uninstalled
+  // (for external extensions).
   virtual bool IsExtensionEnabled(const std::string& extension_id) const = 0;
 
   // Go through each extension and unload those that are not allowed to run by

@@ -471,6 +471,7 @@
       'browser/extensions/chrome_component_extension_resource_manager_unittest.cc',
       'browser/extensions/chrome_info_map_unittest.cc',
       'browser/extensions/component_loader_unittest.cc',
+      'browser/extensions/component_migration_helper_unittest.cc',
       'browser/extensions/convert_user_script_unittest.cc',
       'browser/extensions/convert_web_app_unittest.cc',
       'browser/extensions/default_apps_unittest.cc',

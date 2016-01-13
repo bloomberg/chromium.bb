@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,6 +23,9 @@ ComponentToolbarActionsFactory* testing_factory_ = nullptr;
 
 base::LazyInstance<ComponentToolbarActionsFactory> lazy_factory =
     LAZY_INSTANCE_INITIALIZER;
+
+const char kCastExtensionId[] = "boadgeojelhgndaghljhdicfkmllpafd";
+const char kCastBetaExtensionId[] = "dliochdbjfkdbacpmhlcpmleaejidimm";
 
 }  // namespace
 
@@ -40,15 +44,6 @@ ComponentToolbarActionsFactory* ComponentToolbarActionsFactory::GetInstance() {
 std::set<std::string> ComponentToolbarActionsFactory::GetInitialComponentIds(
     Profile* profile) {
   std::set<std::string> component_ids;
-
-  // This is currently behind the extension-action-redesign flag, as it is
-  // designed for the new toolbar.
-  if (!extensions::FeatureSwitch::extension_action_redesign()->IsEnabled())
-    return component_ids;
-
-  if (!profile->IsOffTheRecord() && media_router::MediaRouterEnabled(profile))
-    component_ids.insert(kMediaRouterActionId);
-
   return component_ids;
 }
 
@@ -60,7 +55,6 @@ ComponentToolbarActionsFactory::GetComponentToolbarActionForId(
   // This is currently behind the extension-action-redesign flag, as it is
   // designed for the new toolbar.
   DCHECK(extensions::FeatureSwitch::extension_action_redesign()->IsEnabled());
-  DCHECK(GetInitialComponentIds(browser->profile()).count(id));
 
   // Add component toolbar actions here.
   // This current design means that the ComponentToolbarActionsFactory is aware
@@ -83,3 +77,20 @@ void ComponentToolbarActionsFactory::SetTestingFactory(
     ComponentToolbarActionsFactory* factory) {
   testing_factory_ = factory;
 }
+
+void ComponentToolbarActionsFactory::RegisterComponentMigrations(
+    extensions::ComponentMigrationHelper* helper) const {
+  helper->Register(kMediaRouterActionId, kCastExtensionId);
+  helper->Register(kMediaRouterActionId, kCastBetaExtensionId);
+}
+
+void ComponentToolbarActionsFactory::HandleComponentMigrations(
+    extensions::ComponentMigrationHelper* helper,
+    Profile* profile) const {
+  if (media_router::MediaRouterEnabled(profile) && !profile->IsOffTheRecord()) {
+    helper->OnFeatureEnabled(kMediaRouterActionId);
+  } else {
+    helper->OnFeatureDisabled(kMediaRouterActionId);
+  }
+}
+

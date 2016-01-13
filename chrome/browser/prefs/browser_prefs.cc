@@ -115,6 +115,7 @@
 #include "chrome/browser/extensions/api/commands/command_service.h"
 #include "chrome/browser/extensions/api/copresence/copresence_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
+#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/signin/easy_unlock_service.h"
@@ -453,13 +454,14 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 
 #if defined(ENABLE_EXTENSIONS)
   EasyUnlockService::RegisterProfilePrefs(registry);
-  extensions::ActivityLog::RegisterProfilePrefs(registry);
-  extensions::launch_util::RegisterProfilePrefs(registry);
   ExtensionWebUI::RegisterProfilePrefs(registry);
-  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
-  ToolbarActionsBar::RegisterProfilePrefs(registry);
-  extensions::CopresenceService::RegisterProfilePrefs(registry);
   RegisterAnimationPolicyPrefs(registry);
+  ToolbarActionsBar::RegisterProfilePrefs(registry);
+  extensions::ActivityLog::RegisterProfilePrefs(registry);
+  extensions::ComponentMigrationHelper::RegisterPrefs(registry);
+  extensions::CopresenceService::RegisterProfilePrefs(registry);
+  extensions::ExtensionPrefs::RegisterProfilePrefs(registry);
+  extensions::launch_util::RegisterProfilePrefs(registry);
 #endif  // defined(ENABLE_EXTENSIONS)
 
 #if defined(ENABLE_NOTIFICATIONS)

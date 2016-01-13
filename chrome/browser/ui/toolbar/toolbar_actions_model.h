@@ -14,6 +14,7 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
+#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_action.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -39,9 +40,11 @@ class ExtensionSet;
 // overflow menu on a per-window basis. Callers interested in the arrangement of
 // actions in a particular window should check that window's instance of
 // ToolbarActionsBar, which is responsible for the per-window layout.
-class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
-                            public extensions::ExtensionRegistryObserver,
-                            public KeyedService {
+class ToolbarActionsModel
+    : public extensions::ExtensionActionAPI::Observer,
+      public extensions::ExtensionRegistryObserver,
+      public KeyedService,
+      public extensions::ComponentMigrationHelper::ComponentActionDelegate {
  public:
   // The different options for highlighting.
   enum HighlightType {
@@ -167,6 +170,11 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   void SetActionVisibility(const std::string& action_id, bool visible);
 
+  // ComponentMigrationHelper::ComponentActionDelegate:
+  void AddComponentAction(const std::string& action_id) override;
+  void RemoveComponentAction(const std::string& action_id) override;
+  bool HasComponentAction(const std::string& action_id) const override;
+
   void OnActionToolbarPrefChange();
 
   // Highlights the actions specified by |action_ids|. This will cause
@@ -184,11 +192,6 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
   // Returns true if the toolbar model is running with the redesign and is
   // showing new icons as a result.
   bool RedesignIsShowingNewIcons() const;
-
-  // Adds or removes the component action labeled by |action_id| from the
-  // toolbar model.  The caller must not add the same action twice.
-  void AddComponentAction(const std::string& action_id);
-  void RemoveComponentAction(const std::string& action_id);
 
  private:
   // Callback when actions are ready.
@@ -276,6 +279,9 @@ class ToolbarActionsModel : public extensions::ExtensionActionAPI::Observer,
 
   // The ExtensionActionManager, cached for convenience.
   extensions::ExtensionActionManager* extension_action_manager_;
+
+  // The ComponentMigrationHelper.
+  scoped_ptr<extensions::ComponentMigrationHelper> component_migration_helper_;
 
   // True if we've handled the initial EXTENSIONS_READY notification.
   bool actions_initialized_;

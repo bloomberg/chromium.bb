@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/component_migration_helper.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -48,6 +49,8 @@ ToolbarActionsModel::ToolbarActionsModel(
       extension_registry_(extensions::ExtensionRegistry::Get(profile_)),
       extension_action_manager_(
           extensions::ExtensionActionManager::Get(profile_)),
+      component_migration_helper_(
+          new extensions::ComponentMigrationHelper(profile_, this)),
       actions_initialized_(false),
       use_redesign_(extensions::FeatureSwitch::extension_action_redesign()
                         ->IsEnabled()),
@@ -55,6 +58,8 @@ ToolbarActionsModel::ToolbarActionsModel(
       extension_action_observer_(this),
       extension_registry_observer_(this),
       weak_ptr_factory_(this) {
+  ComponentToolbarActionsFactory::GetInstance()->RegisterComponentMigrations(
+      component_migration_helper_.get());
   extensions::ExtensionSystem::Get(profile_)->ready().Post(
       FROM_HERE, base::Bind(&ToolbarActionsModel::OnReady,
                             weak_ptr_factory_.GetWeakPtr()));
@@ -263,6 +268,12 @@ void ToolbarActionsModel::OnReady() {
 
   actions_initialized_ = true;
   FOR_EACH_OBSERVER(Observer, observers_, OnToolbarModelInitialized());
+
+  // Handle component action migrations.  We must make sure that observers are
+  // notified of initialization first, so that the associated widgets are
+  // created.
+  ComponentToolbarActionsFactory::GetInstance()->HandleComponentMigrations(
+      component_migration_helper_.get(), profile_);
 }
 
 size_t ToolbarActionsModel::FindNewPositionFromLastKnownGood(
@@ -565,6 +576,12 @@ void ToolbarActionsModel::Populate() {
 bool ToolbarActionsModel::HasItem(const ToolbarItem& item) const {
   return std::find(toolbar_items_.begin(), toolbar_items_.end(), item) !=
          toolbar_items_.end();
+}
+
+bool ToolbarActionsModel::HasComponentAction(
+    const std::string& action_id) const {
+  DCHECK(use_redesign_);
+  return HasItem(ToolbarItem(action_id, COMPONENT_ACTION));
 }
 
 void ToolbarActionsModel::AddComponentAction(const std::string& action_id) {
