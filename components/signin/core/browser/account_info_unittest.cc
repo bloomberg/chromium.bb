@@ -57,6 +57,12 @@ TEST_F(AccountInfoTest, UpdateWithNoModification) {
 }
 
 // Tests that UpdateWith() correctly updates its fields that were not set.
+// Fails under MSan. crbug.com/577333
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_UpdateWithSuccessfulUpdate DISABLED_UpdateWithSuccessfulUpdate
+#else
+#define MAYBE_UpdateWithSuccessfulUpdate
+#endif
 TEST_F(AccountInfoTest, UpdateWithSuccessfulUpdate) {
   AccountInfo info;
   info.account_id = info.gaia = info.email = "test_id";
