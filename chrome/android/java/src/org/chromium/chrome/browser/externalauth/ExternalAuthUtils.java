@@ -12,6 +12,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Binder;
+import android.os.StrictMode;
 import android.text.TextUtils;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -238,7 +239,14 @@ public class ExternalAuthUtils {
      * @return The code produced by calling the external code
      */
     protected int checkGooglePlayServicesAvailable(final Context context) {
-        return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577190
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            return GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(context);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     /**

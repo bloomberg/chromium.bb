@@ -13,6 +13,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
@@ -487,7 +488,14 @@ public class NotificationUIManager {
         }
 
         String platformTag = makePlatformTag(persistentNotificationId, origin, tag);
-        mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577185
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        StrictMode.allowThreadDiskWrites();
+        try {
+            mNotificationManager.notify(platformTag, PLATFORM_ID, notificationBuilder.build());
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
     }
 
     private NotificationBuilder createNotificationBuilder() {

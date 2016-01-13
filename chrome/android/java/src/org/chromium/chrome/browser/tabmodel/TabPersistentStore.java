@@ -905,7 +905,14 @@ public class TabPersistentStore extends TabPersister {
     }
 
     private void cleanupAllEncryptedPersistentData() {
-        String[] files = getStateDirectory().list();
+        String[] files = null;
+        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/473357
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            files = getStateDirectory().list();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
+        }
         if (files != null) {
             for (String file : files) {
                 if (file.startsWith(TabState.SAVED_TAB_STATE_FILE_PREFIX_INCOGNITO)) {
