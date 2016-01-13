@@ -154,6 +154,8 @@ bool CoreWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       AccessPointData access_point_data;
       NSData* mac = [network bssidData];
       DCHECK([mac length] == 6);
+      if (![mac bytes])
+        continue;  // crbug.com/545501
       access_point_data.mac_address =
           MacAddressAsString16(static_cast<const uint8_t*>([mac bytes]));
       access_point_data.radio_signal_strength = [[network rssi] intValue];
