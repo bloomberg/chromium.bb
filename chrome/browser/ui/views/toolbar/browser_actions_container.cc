@@ -256,6 +256,10 @@ void BrowserActionsContainer::Redraw(bool order_changed) {
     return;
   }
 
+  // Don't allow resizing if the bar is highlighting.
+  if (resize_area_)
+    resize_area_->SetEnabled(!toolbar_actions_bar()->is_highlighting());
+
   std::vector<ToolbarActionViewController*> actions =
       toolbar_actions_bar_->GetActions();
   if (order_changed) {
