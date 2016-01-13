@@ -246,14 +246,19 @@ public class CustomTabActivity extends ChromeActivity {
 
             @Override
             public boolean updateCustomButton(int id, Bitmap bitmap, String description) {
-                List<CustomButtonParams> list = mIntentDataProvider.getAllCustomButtons();
-                for (CustomButtonParams params : list) {
-                    if (params.getId() == id) {
-                        params.update(bitmap, description);
+                CustomButtonParams params = mIntentDataProvider.getButtonParamsForId(id);
+                if (params == null) return false;
+
+                params.update(bitmap, description);
+                if (params.showOnToolbar()) {
+                    if (!CustomButtonParams.doesIconFitToolbar(CustomTabActivity.this, bitmap)) {
+                        return false;
                     }
+                    showCustomButtonOnToolbar();
+                } else {
+                    updateBottomBarButton(params);
                 }
-                // TODO(ianwen): support bottom bar here.
-                return showCustomButtonOnToolbar();
+                return true;
             }
         };
         DataUseTabUIManager.onCustomTabInitialNavigation(mainTab,
@@ -447,9 +452,9 @@ public class CustomTabActivity extends ChromeActivity {
     /**
      * Configures the custom button on toolbar. Does nothing if invalid data is provided by clients.
      */
-    private boolean showCustomButtonOnToolbar() {
+    private void showCustomButtonOnToolbar() {
         CustomButtonParams params = mIntentDataProvider.getCustomButtonOnToolbar();
-        if (params == null) return false;
+        if (params == null) return;
         getToolbarManager().setCustomActionButton(
                 params.getIcon(getResources()),
                 params.getDescription(),
@@ -461,7 +466,16 @@ public class CustomTabActivity extends ChromeActivity {
                         RecordUserAction.record("CustomTabsCustomActionButtonClick");
                     }
                 });
-        return true;
+    }
+
+    /**
+     * Updates the button on the bottom bar that corresponds to the given {@link CustomButtonParams}
+     */
+    private void updateBottomBarButton(CustomButtonParams params) {
+        ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
+        ImageButton button = (ImageButton) bottomBar.findViewById(params.getId());
+        button.setContentDescription(params.getDescription());
+        button.setImageDrawable(params.getIcon(getResources()));
     }
 
     /**

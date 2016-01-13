@@ -237,6 +237,19 @@ public class CustomTabIntentDataProvider {
     }
 
     /**
+     * @return The {@link CustomButtonParams} having the given id. Returns null if no such params
+     *         can be found.
+     */
+    public CustomButtonParams getButtonParamsForId(int id) {
+        for (CustomButtonParams params : mCustomButtonParams) {
+            // A custom button params will always carry an ID. If the client calls updateVisuals()
+            // without an id, we will assign the toolbar action button id to it.
+            if (id == params.getId()) return params;
+        }
+        return null;
+    }
+
+    /**
      * @return Titles of menu items that were passed from client app via intent.
      */
     public List<String> getMenuTitles() {

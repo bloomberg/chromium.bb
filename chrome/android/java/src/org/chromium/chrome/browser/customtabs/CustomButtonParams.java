@@ -106,7 +106,7 @@ class CustomButtonParams {
 
     /**
      * Builds an {@link ImageButton} from the data in this params. Generated buttons should be
-     * placed on the bottom bar.
+     * placed on the bottom bar. The button's tag will be its id.
      * @param parent The parent that the inflated {@link ImageButton}.
      * @return Parsed list of {@link CustomButtonParams}, which is empty if the input is invalid.
      */
@@ -115,6 +115,7 @@ class CustomButtonParams {
 
         ImageButton button = (ImageButton) LayoutInflater.from(context)
                 .inflate(R.layout.custom_tabs_bottombar_item, parent, false);
+        button.setId(mId);
         button.setImageBitmap(mIcon);
         button.setContentDescription(mDescription);
         if (mPendingIntent == null) {
@@ -239,7 +240,10 @@ class CustomButtonParams {
         return description;
     }
 
-    private static boolean doesIconFitToolbar(Context context, Bitmap bitmap) {
+    /**
+     * @return Whether the given icon's size is suitable to put on toolbar.
+     */
+    static boolean doesIconFitToolbar(Context context, Bitmap bitmap) {
         int height = context.getResources().getDimensionPixelSize(R.dimen.toolbar_icon_height);
         if (bitmap.getHeight() < height) return false;
         int scaledWidth = bitmap.getWidth() / bitmap.getHeight() * height;
