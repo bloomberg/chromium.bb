@@ -1,3 +1,5 @@
+emphclass foo
+
 uplow Aa 1
 uplow Bb 12
 uplow Cc 14
@@ -25,8 +27,7 @@ uplow Xx 1346
 uplow Yy 13456
 uplow Zz 1356
 
-sign . 46
-emphclass italic
-emphword italic 46
+sign ~ 45
+sign , 2
 
-correct "foo" "foobar"
+emphword foo 45-2

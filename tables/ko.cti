@@ -69,15 +69,18 @@ numsign 3456  number sign, just a dots operand
 capsign 6
 begcaps 6-6
 endcaps 6-3
-firstwordital 46-46
-lastworditalbefore 46
-lenitalphrase 4
-firstletterital 46-3
-lastletterital 46-36
-singleletterital 46-25
-firstwordbold 456-456
-lastwordboldbefore 456
-lenboldphrase 4
+emphclass italic
+emphclass underline
+emphclass bold
+firstwordemph italic 46-46
+lastwordemphbefore italic 46
+lenemphphrase italic 4
+firstletteremph italic 46-3
+lastletteremph italic 46-36
+singleletteremph italic 46-25
+firstwordemph bold 456-456
+lastwordemphbefore bold 456
+lenemphphrase bold 4
 begcomp 456-346
 endcomp 456-156
 

@@ -145,72 +145,83 @@ firstwordcaps 6-6-6
 firstlettercaps 6-6-6
 lastlettercaps 6-3
 
-singleletterital 46-23
-italword 46-2
-italwordstop 46-3
-lenitalphrase 3
-firstletterital 46-2356
-lastletterital 46-3
+emphclass italic
+emphclass underline
+emphclass bold
+emphclass script
+emphclass transnote
+emphclass trans1
+emphclass trans2
+emphclass trans3
+emphclass trans4
+emphclass trans5
 
-singleletterbold 45-23
-boldword 45-2
-boldwordstop 45-3
-lenboldphrase 3
-firstletterbold 45-2356
-lastletterbold 45-3
+singleletteremph italic 46-23
+emphword italic 46-2
+emphwordstop italic 46-3
+lenemphphrase italic 3
+firstletteremph italic 46-2356
+lastletteremph italic 46-3
 
-singleletterunder 456-23
-underword 456-2
-underwordstop 456-3
-lenunderphrase 3
-firstletterunder 456-2356
-lastletterunder 456-3
+singleletteremph bold 45-23
+emphword bold 45-2
+emphwordstop bold 45-3
+lenemphphrase bold 3
+firstletteremph bold 45-2356
+lastletteremph bold 45-3
 
-singleletterscript 4-23
-scriptword 4-2
-scriptwordstop 4-3
-lenscriptphrase 3
-firstletterscript 4-2356
-lastletterscript 4-3
+singleletteremph underline 456-23
+emphword underline 456-2
+emphwordstop underline 456-3
+lenemphphrase underline 3
+firstletteremph underline 456-2356
+lastletteremph underline 456-3
 
-firstlettertransnote 4-46-126
-lastlettertransnote 4-46-354
+singleletteremph script 4-23
+emphword script 4-2
+emphwordstop script 4-3
+lenemphphrase script 3
+firstletteremph script 4-2356
+lastletteremph script 4-3
+
+firstletteremph transnote 4-46-126
+lastletteremph transnote 4-46-354
 
 
-singlelettertrans1 4-3456-23
-trans1word 4-3456-2
-trans1wordstop 4-3456-3
-lentrans1phrase 3
-firstlettertrans1 4-3456-2356
-lastlettertrans1 4-3456-3
+singleletteremph trans1 4-3456-23
+emphword trans1 4-3456-2
+emphwordstop trans1 4-3456-3
+lenemphphrase trans1 3
+firstletteremph trans1 4-3456-2356
+lastletteremph trans1 4-3456-3
 
-singlelettertrans2 45-3456-23
-trans2word 45-3456-2
-trans2wordstop 45-3456-3
-lentrans2phrase 3
-firstlettertrans2 45-3456-2356
-lastlettertrans2 45-3456-3
+singleletteremph trans2 45-3456-23
+emphword trans2 45-3456-2
+emphwordstop trans2 45-3456-3
+lenemphphrase trans2 3
+firstletteremph trans2 45-3456-2356
+lastletteremph trans2 45-3456-3
 
-singlelettertrans3 456-3456-23
-trans3word 456-3456-2
-trans3wordstop 456-3456-3
-lentrans3phrase 3
-firstlettertrans3 456-3456-2356
-lastlettertrans3 456-3456-3
+singleletteremph trans3 456-3456-23
+emphword trans3 456-3456-2
+emphwordstop trans3 456-3456-3
+lenemphphrase trans3 3
+firstletteremph trans3 456-3456-2356
+lastletteremph trans3 456-3456-3
 
-singlelettertrans4 5-3456-23
-trans4word 5-3456-2
-trans4wordstop 5-3456-3
-lentrans4phrase 3
-firstlettertrans4 5-3456-2356
-lastlettertrans4 5-3456-3
+singleletteremph trans4 5-3456-23
+emphword trans4 5-3456-2
+emphwordstop trans4 5-3456-3
+lenemphphrase trans4 3
+firstletteremph trans4 5-3456-2356
+lastletteremph trans4 5-3456-3
 
-singlelettertrans5 46-3456-23
-trans5word 46-3456-2
-trans5wordstop 46-3456-3
-lentrans5phrase 3
-firstlettertrans5 46-3456-2356
-lastlettertrans5 46-3456-3
+singleletteremph trans5 46-3456-23
+emphword trans5 46-3456-2
+emphwordstop trans5 46-3456-3
+lenemphphrase trans5 3
+firstletteremph trans5 46-3456-2356
+lastletteremph trans5 46-3456-3
 
 # display/passthrough for unicode braille
 include braille-patterns.cti

@@ -20,8 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
-#include "error.h"
-#include "liblouis.h"
+#include <error.h>
+#include "louis.h"
 #include "brl_checks.h"
 
 #define EXIT_SKIPPED 77
@@ -248,7 +248,7 @@ read_typeform_string(yaml_parser_t *parser, formtype* typeform, typeforms kind, 
 }
 
 formtype*
-read_typeforms (yaml_parser_t *parser, int len) {
+read_typeforms (yaml_parser_t *parser, char *tables_list, int len) {
   yaml_event_t event;
   formtype *typeform = calloc(len, sizeof(formtype));
   int parse_error = 1;
@@ -260,16 +260,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
 
   while ((parse_error = yaml_parser_parse(parser, &event)) &&
 	 (event.type == YAML_SCALAR_EVENT)) {
-    if (!strcmp(event.data.scalar.value, "italic")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, italic, len);
-    } else if (!strcmp(event.data.scalar.value, "underline")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, underline, len);
-    } else if (!strcmp(event.data.scalar.value, "bold")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, bold, len);
-    } else if (!strcmp(event.data.scalar.value, "computer_braille")) {
+    if (!strcmp(event.data.scalar.value, "computer_braille")) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, computer_braille, len);
     } else if (!strcmp(event.data.scalar.value, "passage_break")) {
@@ -278,30 +269,36 @@ read_typeforms (yaml_parser_t *parser, int len) {
     } else if (!strcmp(event.data.scalar.value, "word_reset")) {
       yaml_event_delete(&event);
       read_typeform_string(parser, typeform, word_reset, len);
-    } else if (!strcmp(event.data.scalar.value, "script")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, script, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_1")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_1, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_2")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_2, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_3")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_3, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_4")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_4, len);
-    } else if (!strcmp(event.data.scalar.value, "trans_note_5")) {
-      yaml_event_delete(&event);
-      read_typeform_string(parser, typeform, trans_note_5, len);
     } else {
-      error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
-		    "Typeform '%s' not supported\n", event.data.scalar.value);
+      int i;
+      static const char* emph_classes [MAX_EMPH_CLASSES + 1];
+      typeforms kind = plain_text;
+      getEmphClasses(tables_list, emph_classes); // get declared emphasis classes
+      for (i = 0; emph_classes[i]; i++) {
+        if (strcmp(event.data.scalar.value, emph_classes[i]) == 0) {
+          yaml_event_delete(&event);
+          switch (i) {
+          case 0: kind = italic; break;
+          case 1: kind = underline; break;
+          case 2: kind = bold; break;
+          case 3: kind = script; break;
+          case 4: kind = trans_note; break;
+          case 5: kind = trans_note_1; break;
+          case 6: kind = trans_note_2; break;
+          case 7: kind = trans_note_3; break;
+          case 8: kind = trans_note_4; break;
+          case 9: kind = trans_note_5; break;
+          default:
+            fprintf(stderr, "CODING ERROR\n");
+            exit(1);
+          }
+          read_typeform_string(parser, typeform, kind, len);
+          break;
+        }
+      }
+      if (kind == plain_text)
+        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+                      "Typeform '%s' was not declared\n", event.data.scalar.value);
     }
   }
   if (!parse_error)
@@ -314,7 +311,7 @@ read_typeforms (yaml_parser_t *parser, int len) {
 }
 
 void
-read_options (yaml_parser_t *parser, int len,
+read_options (yaml_parser_t *parser, char *tables_list, int len,
 	      int *xfail, translationModes *mode,
 	      formtype **typeform, int **cursorPos) {
   yaml_event_t event;
@@ -338,7 +335,7 @@ read_options (yaml_parser_t *parser, int len,
       *mode = read_mode(parser);
     } else if (!strcmp(option_name, "typeform")) {
       yaml_event_delete(&event);
-      *typeform = read_typeforms(parser, len);
+      *typeform = read_typeforms(parser, tables_list, len);
     } else if (!strcmp(option_name, "cursorPos")) {
       yaml_event_delete(&event);
       *cursorPos = read_cursorPos(parser, len);
@@ -406,7 +403,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
 
   if (event.type == YAML_MAPPING_START_EVENT) {
     yaml_event_delete(&event);
-    read_options(parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
+    read_options(parser, tables_list, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
 
     if (!yaml_parser_parse(parser, &event) ||
 	(event.type != YAML_SEQUENCE_END_EVENT))
@@ -462,7 +459,7 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
     yaml_error(YAML_SEQUENCE_START_EVENT, &event);
 
   yaml_event_delete(&event);
-
+  
   int done = 0;
   while (!done) {
     if (!yaml_parser_parse(parser, &event)) {

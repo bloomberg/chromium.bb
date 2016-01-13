@@ -16,22 +16,26 @@ capsign 6                    # single capital letter indicator
 begcaps 6-6                  # a block of consecutive capital letters indicator
 endcaps 56                   # TODO
 
-lenitalphrase 1
-lenboldphrase 1
+emphclass italic
+emphclass underline
+emphclass bold
 
-firstwordital 23
-firstletterital 23
-firstwordbold 6-3
-firstletterbold 6-3
-firstwordunder 456
-firstletterunder 456
+lenemphphrase italic 1
+lenemphphrase bold 1
 
-lastworditalafter 56
-lastletterital 56
-lastwordboldafter 6-3
-lastletterbold 6-3
-lastwordunderafter 456
-lastletterunder 456
+firstwordemph italic 23
+firstletteremph italic 23
+firstwordemph bold 6-3
+firstletteremph bold 6-3
+firstwordemph underline 456
+firstletteremph underline 456
+
+lastwordemphafter italic 56
+lastletteremph italic 56
+lastwordemphafter bold 6-3
+lastletteremph bold 6-3
+lastwordemphafter underline 456
+lastletteremph underline 456
 
 midnum , 2
 midnum . 3

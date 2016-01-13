@@ -1,3 +1,8 @@
+emphclass italic     // typeform 0x1
+emphclass underline  // typeform 0x2
+emphclass bold       // typeform 0x4
+emphclass foo        // typeform 0x40
+
 uplow Aa 1
 uplow Bb 12
 uplow Cc 14
@@ -25,8 +30,7 @@ uplow Xx 1346
 uplow Yy 13456
 uplow Zz 1356
 
-sign . 46
-emphclass italic
-emphword italic 46
+sign ~ 45
+sign , 2
 
-correct "foo" "foobar"
+emphword foo 45-2

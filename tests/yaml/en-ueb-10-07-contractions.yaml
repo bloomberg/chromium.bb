@@ -655,7 +655,7 @@ tests:
 - - In the table …
   - '`.<,9 ! table 444`.>'
   - typeform:
-      trans_note: ++++++++++++++
+      transnote: ++++++++++++++
 - - <in file>
   - '`<9 file`>'
 - - in/out

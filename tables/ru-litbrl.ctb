@@ -27,10 +27,13 @@ include chardefs.cti
 numsign 3456  number sign, just a dots operand
 
 # Emphasis indication signs:
-firstwordital 456
-lastworditalafter 456
-firstwordbold 34
-lastwordboldafter 34
+emphclass italic
+emphclass underline
+emphclass bold
+firstwordemph italic 456
+lastwordemphafter italic 456
+firstwordemph bold 34
+lastwordemphafter bold 34
 
 # The decimal digits:
 include litdigits6Dots.uti

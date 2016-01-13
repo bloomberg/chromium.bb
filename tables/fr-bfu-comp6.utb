@@ -224,12 +224,15 @@ endnum # 3456
 numsign 6  number sign, just a dots operand
 capsign 46
 begcaps 46-46
-firstwordital 456-456
-lastworditalbefore 456
-firstletterital 456
-singleletterital 456
-firstwordbold 456-456
-lastwordboldbefore 456
+emphclass italic
+emphclass underline
+emphclass bold
+firstwordemph italic 456-456
+lastwordemphbefore italic 456
+firstletteremph italic 456
+singleletteremph italic 456
+firstwordemph bold 456-456
+lastwordemphbefore bold 456
 
 litdigit 0 3456				zéro
 litdigit 1 16					un
