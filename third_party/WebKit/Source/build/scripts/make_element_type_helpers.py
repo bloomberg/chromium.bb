@@ -42,7 +42,6 @@ class MakeElementTypeHelpersWriter(in_generator.Writer):
         'namespaceURI': '',
     }
     filters = {
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'hash': hasher.hash,
         'symbol': _symbol,
     }

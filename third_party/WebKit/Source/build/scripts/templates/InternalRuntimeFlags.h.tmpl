@@ -28,9 +28,7 @@ public:
     If we do that, we also need to respect Internals::resetToConsistentState.
 #}
     {% for feature in standard_features %}
-    {% filter enable_conditional(feature.condition) %}
     bool {{feature.first_lowered_name}}Enabled() { return RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled(); }
-    {% endfilter %}
     {% endfor %}
 
     DEFINE_INLINE_TRACE() { }

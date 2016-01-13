@@ -84,13 +84,3 @@ def script_name(entry):
 
 def cpp_name(entry):
     return entry['ImplementedAs'] or script_name(entry)
-
-
-def enable_conditional_if_endif(code, feature):
-    # Jinja2 filter to generate if/endif directive blocks based on a feature
-    if not feature:
-        return code
-    condition = 'ENABLE(%s)' % feature
-    return ('#if %s\n' % condition +
-            code +
-            '#endif // %s\n' % condition)

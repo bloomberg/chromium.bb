@@ -62,7 +62,6 @@ def case_insensitive_matching(name):
 class EventFactoryWriter(in_generator.Writer):
     defaults = {
         'ImplementedAs': None,
-        'Conditional': None,
         'RuntimeEnabled': None,
     }
     default_parameters = {
@@ -72,7 +71,6 @@ class EventFactoryWriter(in_generator.Writer):
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'lower_first': name_utilities.lower_first,
         'case_insensitive_matching': case_insensitive_matching,
         'script_name': name_utilities.script_name,
@@ -126,12 +124,11 @@ class EventFactoryWriter(in_generator.Writer):
                 subdir_name = 'modules'
             else:
                 subdir_name = 'core'
-            include = '#include "%(path)s"\n#include "bindings/%(subdir_name)s/v8/V8%(script_name)s.h"' % {
+            includes[cpp_name] = '#include "%(path)s"\n#include "bindings/%(subdir_name)s/v8/V8%(script_name)s.h"' % {
                 'path': self._headers_header_include_path(entry),
                 'script_name': name_utilities.script_name(entry),
                 'subdir_name': subdir_name,
             }
-            includes[cpp_name] = self.wrap_with_condition(include, entry['Conditional'])
         return includes.values()
 
     def generate_headers_header(self):

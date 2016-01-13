@@ -57,7 +57,6 @@ class MakeNamesWriter(in_generator.Writer):
     }
     filters = {
         'cpp_name': name_utilities.cpp_name,
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'hash': hasher.hash,
         'script_name': name_utilities.script_name,
         'symbol': _symbol,

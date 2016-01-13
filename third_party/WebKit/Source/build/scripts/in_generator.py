@@ -50,11 +50,6 @@ class Writer(object):
             self.in_file = None
         self._outputs = {}  # file_name -> generator
 
-    def wrap_with_condition(self, string, condition):
-        if not condition:
-            return string
-        return "#if ENABLE(%(condition)s)\n%(string)s\n#endif" % { 'condition' : condition, 'string' : string }
-
     def _write_file_if_changed(self, output_dir, contents, file_name):
         path = os.path.join(output_dir, file_name)
 

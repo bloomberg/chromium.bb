@@ -33,7 +33,6 @@ typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 static FunctionMap* g_constructors = 0;
 
 {% for tag in tags|sort if not tag.noConstructor %}
-{% filter enable_conditional(tag.Conditional) %}
 static PassRefPtrWillBeRawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     Document& document,
     {% if namespace == 'HTML' %}
@@ -52,7 +51,6 @@ static PassRefPtrWillBeRawPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
         {%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
     );
 }
-{% endfilter %}
 {% endfor %}
 
 struct Create{{namespace}}FunctionMapData {
@@ -68,9 +66,7 @@ static void create{{namespace}}FunctionMap()
     // compile in MSVC. If tags list is empty, add check to skip this.
     static const Create{{namespace}}FunctionMapData data[] = {
     {% for tag in tags|sort if not tag.noConstructor %}
-    {% filter enable_conditional(tag.Conditional) %}
         { {{tag|symbol}}Tag, {{tag|symbol}}Constructor },
-    {% endfilter %}
     {% endfor %}
     };
     for (size_t i = 0; i < WTF_ARRAY_LENGTH(data); i++)

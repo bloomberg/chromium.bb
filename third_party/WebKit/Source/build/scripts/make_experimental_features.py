@@ -39,9 +39,6 @@ import template_expander
 # but generate different files.
 class ExperimentalFeatureWriter(make_runtime_features.RuntimeFeatureWriter):
     class_name = 'ExperimentalFeatures'
-    filters = {
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
-    }
 
     def __init__(self, in_file_path):
         super(ExperimentalFeatureWriter, self).__init__(in_file_path)
@@ -56,7 +53,7 @@ class ExperimentalFeatureWriter(make_runtime_features.RuntimeFeatureWriter):
             'features': self._features,
         }
 
-    @template_expander.use_jinja(class_name + '.h.tmpl', filters=filters)
+    @template_expander.use_jinja(class_name + '.h.tmpl')
     def generate_header(self):
         return {
             'features': self._features,

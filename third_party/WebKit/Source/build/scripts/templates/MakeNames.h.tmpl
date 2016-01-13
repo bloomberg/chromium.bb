@@ -27,9 +27,7 @@ namespace blink {
 namespace {{namespace}}Names {
 
 {% for entry in entries|sort %}
-{% filter enable_conditional(entry.Conditional) %}
 {{symbol_export}}extern const WTF::AtomicString& {{entry|symbol}};
-{% endfilter %}
 {% endfor %}
 
 const unsigned {{namespace}}{{suffix}}NamesCount = {{entries|length}};

@@ -56,7 +56,6 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
     }
     filters = {
         'hash': hasher.hash,
-        'enable_conditional': name_utilities.enable_conditional_if_endif,
         'symbol': _symbol,
         'to_macro_style': name_utilities.to_macro_style,
     }

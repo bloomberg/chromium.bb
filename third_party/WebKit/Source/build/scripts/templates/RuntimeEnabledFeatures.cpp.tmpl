@@ -26,9 +26,7 @@ namespace blink {
 RuntimeEnabledFeatures::Backup::Backup()
     :
     {% for feature in standard_features %}
-    {% filter enable_conditional(feature.condition) %}
     {%+ if not loop.first %}, {% endif -%}m_{{feature.first_lowered_name}}(RuntimeEnabledFeatures::{{feature.first_lowered_name}}Enabled())
-    {% endfilter %}
     {% endfor %}
 {
 }
@@ -36,9 +34,7 @@ RuntimeEnabledFeatures::Backup::Backup()
 void RuntimeEnabledFeatures::Backup::restore()
 {
     {% for feature in standard_features %}
-    {% filter enable_conditional(feature.condition) %}
     RuntimeEnabledFeatures::set{{feature.name}}Enabled(m_{{feature.first_lowered_name}});
-    {% endfilter %}
     {% endfor %}
 }
 
@@ -55,20 +51,16 @@ void RuntimeEnabledFeatures::set{{feature_set|capitalize}}FeaturesEnabled(bool e
 void RuntimeEnabledFeatures::setFeatureEnabledFromString(const std::string& name, bool isEnabled)
 {
     {% for feature in standard_features %}
-    {% filter enable_conditional(feature.condition) %}
     if (caseInsensitiveEqual(name, "{{feature.name}}")) {
         set{{feature.name}}Enabled(isEnabled);
         return;
     }
-    {% endfilter %}
     {% endfor %}
     WTF_LOG_ERROR("RuntimeEnabledFeature not recognized: %s", name.c_str());
 }
 
 {% for feature in standard_features %}
-{% filter enable_conditional(feature.condition) %}
 bool RuntimeEnabledFeatures::is{{feature.name}}Enabled = {{'true' if feature.status == 'stable' else 'false'}};
-{% endfilter %}
 {% endfor %}
 
 } // namespace blink
