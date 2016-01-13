@@ -551,10 +551,10 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
       }
       UpdateFinished(false);
     }
-  }
 
-  // Get the next chunk if available.
-  IssueChunkRequest();
+    // Get the next chunk if available.
+    IssueChunkRequest();
+  }
 }
 
 bool SafeBrowsingProtocolManager::HandleServiceResponse(const GURL& url,
