@@ -54,6 +54,10 @@ const char kConfigServiceURLParam[] = "url";
 const char kClientConfigURL[] =
     "https://datasaver.googleapis.com/v1/clientConfigs";
 
+// The name of the server side experiment field trial.
+const char kServerExperimentsFieldTrial[] =
+    "DataReductionProxyServerExperiments";
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -258,6 +262,10 @@ bool GetOverrideProxiesForHttpFromCommandLine(
   }
 
   return true;
+}
+
+std::string GetServerExperimentsFieldTrialName() {
+  return kServerExperimentsFieldTrial;
 }
 
 }  // namespace params

@@ -135,6 +135,9 @@ int GetFieldTrialParameterAsInteger(const std::string& group,
 bool GetOverrideProxiesForHttpFromCommandLine(
     std::vector<net::ProxyServer>* override_proxies_for_http);
 
+// Returns the name of the server side experiment field trial.
+std::string GetServerExperimentsFieldTrialName();
+
 }  // namespace params
 
 // Contains information about a given proxy server. |proxies_for_http| and

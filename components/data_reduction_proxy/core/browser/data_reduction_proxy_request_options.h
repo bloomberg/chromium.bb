@@ -147,9 +147,12 @@ class DataReductionProxyRequestOptions {
   // Updates client type, build, and patch.
   void UpdateVersion();
 
-  // Update the value of the experiments to be run and regenerate the header if
+  // Updates the value of the experiments to be run and regenerate the header if
   // necessary.
   void UpdateExperiments();
+
+  // Adds the server-side experiment from the field trial.
+  void AddExperimentFromFieldTrial();
 
   // Generates a session ID and credentials suitable for authenticating with
   // the data reduction proxy.

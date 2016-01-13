@@ -5,6 +5,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
 #include <algorithm>
+#include <map>
 #include <vector>
 
 #include "base/bind.h"
@@ -23,6 +24,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/data_reduction_proxy/core/common/version.h"
+#include "components/variations/variations_associated_data.h"
 #include "crypto/random.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -139,15 +141,24 @@ void DataReductionProxyRequestOptions::UpdateExperiments() {
   std::string experiments =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           data_reduction_proxy::switches::kDataReductionProxyExperiment);
-  if (experiments.empty())
-    return;
-  base::StringTokenizer experiment_tokenizer(experiments, ", ");
-  experiment_tokenizer.set_quote_chars("\"");
-  while (experiment_tokenizer.GetNext()) {
-    if (!experiment_tokenizer.token().empty())
-      experiments_.push_back(experiment_tokenizer.token());
+  if (!experiments.empty()) {
+    base::StringTokenizer experiment_tokenizer(experiments, ", ");
+    experiment_tokenizer.set_quote_chars("\"");
+    while (experiment_tokenizer.GetNext()) {
+      if (!experiment_tokenizer.token().empty())
+        experiments_.push_back(experiment_tokenizer.token());
+    }
+  } else {
+    AddExperimentFromFieldTrial();
   }
   RegenerateRequestHeaderValue();
+}
+
+void DataReductionProxyRequestOptions::AddExperimentFromFieldTrial() {
+  std::string server_experiment = variations::GetVariationParamValue(
+      params::GetServerExperimentsFieldTrialName(), "exp");
+  if (!server_experiment.empty())
+    experiments_.push_back(server_experiment);
 }
 
 // static

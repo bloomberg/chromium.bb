@@ -4,6 +4,7 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
+#include "components/variations/variations_associated_data.h"
 #include "net/base/auth.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
@@ -294,6 +296,63 @@ TEST_F(DataReductionProxyRequestOptionsTest, ParseExperiments) {
 
   CreateRequestOptions(kBogusVersion);
   VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+}
+
+TEST_F(DataReductionProxyRequestOptionsTest, ParseExperimentsFromFieldTrial) {
+  const char kFieldTrialGroupFoo[] = "enabled_foo";
+  const char kFieldTrialGroupBar[] = "enabled_bar";
+  const char kExperimentFoo[] = "foo";
+  const char kExperimentBar[] = "bar";
+  const struct {
+    std::string field_trial_group;
+    std::string command_line_experiment;
+    std::string expected_experiment;
+  } tests[] = {
+      // Disabled field trial groups.
+      {"disabled_group", std::string(), std::string()},
+      {"disabled_group", kExperimentFoo, kExperimentFoo},
+      // Valid field trial groups should pick from field trial.
+      {kFieldTrialGroupFoo, std::string(), kExperimentFoo},
+      {kFieldTrialGroupBar, std::string(), kExperimentBar},
+      // Experiments from command line switch should override.
+      {kFieldTrialGroupFoo, kExperimentBar, kExperimentBar},
+      {kFieldTrialGroupBar, kExperimentFoo, kExperimentFoo},
+  };
+
+  std::map<std::string, std::string> server_experiment_foo,
+      server_experiment_bar;
+
+  server_experiment_foo["exp"] = kExperimentFoo;
+  server_experiment_bar["exp"] = kExperimentBar;
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetServerExperimentsFieldTrialName(), kFieldTrialGroupFoo,
+      server_experiment_foo));
+  ASSERT_TRUE(variations::AssociateVariationParams(
+      params::GetServerExperimentsFieldTrialName(), kFieldTrialGroupBar,
+      server_experiment_bar));
+
+  for (const auto& test : tests) {
+    std::vector<std::string> expected_experiments;
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        data_reduction_proxy::switches::kDataReductionProxyExperiment,
+        test.command_line_experiment);
+
+    std::string expected_header;
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        params::GetServerExperimentsFieldTrialName(), test.field_trial_group);
+
+    if (!test.expected_experiment.empty())
+      expected_experiments.push_back(test.expected_experiment);
+
+    SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
+                          kClientStr, std::string(), std::string(),
+                          expected_experiments, &expected_header);
+
+    CreateRequestOptions(kBogusVersion);
+    VerifyExpectedHeader(params()->DefaultOrigin(), expected_header);
+  }
 }
 
 }  // namespace data_reduction_proxy
