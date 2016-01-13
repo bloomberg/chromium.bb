@@ -60,7 +60,6 @@
 #include "content/common/content_switches_internal.h"
 #include "content/common/host_discardable_shared_memory_manager.h"
 #include "content/common/host_shared_bitmap_manager.h"
-#include "content/common/resource_messages.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -69,7 +68,6 @@
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/result_codes.h"
 #include "device/battery/battery_status_service.h"
-#include "ipc/ipc_channel.h"
 #include "ipc/mojo/scoped_ipc_support.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media.h"
@@ -1175,9 +1173,6 @@ void BrowserMainLoop::InitializeMainThread() {
   // Register the main thread by instantiating it, but don't call any methods.
   main_thread_.reset(
       new BrowserThreadImpl(BrowserThread::UI, base::MessageLoop::current()));
-
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  IPC::Channel::SetMessageVerifier(&content::CheckContentsOfResourceMessage);
 }
 
 int BrowserMainLoop::BrowserThreadsStarted() {

@@ -4,24 +4,8 @@
 
 #include "content/common/resource_messages.h"
 
-#include "base/debug/alias.h"
-#include "ipc/ipc_message.h"
 #include "net/base/load_timing_info.h"
 #include "net/http/http_response_headers.h"
-
-namespace content {
-// TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-void CheckContentsOfResourceMessage(const IPC::Message* message) {
-  if (message->type() == ResourceMsg_DataReceivedDebug::ID) {
-    ResourceMsg_DataReceivedDebug::Schema::Param arg;
-    bool success = ResourceMsg_DataReceivedDebug::Read(message, &arg);
-    CHECK(success);
-    int data_offset = base::get<1>(arg);
-    CHECK_LE(data_offset, 512 * 1024);
-    base::debug::Alias(&data_offset);
-  }
-}
-}
 
 namespace IPC {
 

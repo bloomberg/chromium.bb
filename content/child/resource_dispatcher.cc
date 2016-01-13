@@ -86,9 +86,6 @@ ResourceDispatcher::~ResourceDispatcher() {
 }
 
 bool ResourceDispatcher::OnMessageReceived(const IPC::Message& message) {
-  // TODO(erikchen): Temporary code to help track http://crbug.com/527588.
-  content::CheckContentsOfResourceMessage(&message);
-
   if (!IsResourceDispatcherMessage(message)) {
     return false;
   }
