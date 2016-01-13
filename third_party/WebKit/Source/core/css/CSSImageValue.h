@@ -55,7 +55,7 @@ public:
     StyleFetchedImage* cachedImage() const { ASSERT(!isCachePending()); return m_cachedImage.get(); }
     StyleFetchedImage* cacheImage(Document*, CrossOriginAttributeValue = CrossOriginAttributeNotSet);
 
-    const String& url() { return m_absoluteURL; }
+    const String& url() const { return m_absoluteURL; }
 
     void setReferrer(const Referrer& referrer) { m_referrer = referrer; }
     const Referrer& referrer() const { return m_referrer; }
