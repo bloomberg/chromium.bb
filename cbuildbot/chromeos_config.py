@@ -437,6 +437,7 @@ _x86_internal_release_boards = frozenset([
     'reks',
     'rikku',
     'samus',
+    'samus-cheets',
     'sentry',
     'setzer',
     'slippy',
@@ -555,6 +556,7 @@ _no_unittest_boards = frozenset((
 
 _no_vmtest_boards = _arm_boards | _brillo_boards | frozenset((
     'cyan-cheets',
+    'samus-cheets',
 ))
 
 # This is a list of configs that should be included on the main waterfall, but
@@ -595,6 +597,7 @@ _waterfall_config_map = {
 
         # Experimental Canaries
         'amd64-generic-goofy-release',
+        'auron-release',
         'kayle-release',
         'kunimitsu-release-group',
         'lakitu_next-release',
@@ -2337,6 +2340,11 @@ def GetConfig():
   )
 
   site_config.Add(
+      'samus-cheets-release', cheets_release,
+      _base_configs['samus-cheets'],
+  )
+
+  site_config.Add(
       'veyron_minnie-cheets-release', cheets_release,
       _base_configs['veyron_minnie-cheets'],
   )
@@ -2580,7 +2588,9 @@ def GetConfig():
       'auron', 'auron', (
           'auron_yuna',
           'auron_paine',
-      )
+          'samus-cheets',
+      ),
+      important=False,
   )
 
   _AddGroupConfig(
