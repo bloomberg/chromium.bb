@@ -1964,10 +1964,10 @@ void LayoutBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildre
     LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, child);
 }
 
-void LayoutBlockFlow::updateStaticInlinePositionForChild(LayoutBox& child, LayoutUnit logicalTop)
+void LayoutBlockFlow::updateStaticInlinePositionForChild(LayoutBox& child, LayoutUnit logicalTop, bool shouldIndentText)
 {
     if (child.style()->isOriginalDisplayInlineType())
-        setStaticInlinePositionForChild(child, startAlignedOffsetForLine(logicalTop, false));
+        setStaticInlinePositionForChild(child, startAlignedOffsetForLine(logicalTop, shouldIndentText));
     else
         setStaticInlinePositionForChild(child, startOffsetForContent());
 }

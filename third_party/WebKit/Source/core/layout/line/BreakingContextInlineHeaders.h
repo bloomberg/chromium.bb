@@ -214,7 +214,7 @@ inline bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     return notJustWhitespace || isEmptyInline(it.object());
 }
 
-inline void setStaticPositions(LineLayoutBlockFlow block, LineLayoutBox child)
+inline void setStaticPositions(LineLayoutBlockFlow block, LineLayoutBox child, bool shouldIndentText)
 {
     ASSERT(child.isOutOfFlowPositioned());
     // FIXME: The math here is actually not really right. It's a best-guess approximation that
@@ -225,14 +225,14 @@ inline void setStaticPositions(LineLayoutBlockFlow block, LineLayoutBox child)
         // A relative positioned inline encloses us. In this case, we also have to determine our
         // position as though we were an inline. Set |staticInlinePosition| and |staticBlockPosition| on the relative positioned
         // inline so that we can obtain the value later.
-        LineLayoutInline(containerBlock).layer()->setStaticInlinePosition(block.startAlignedOffsetForLine(blockHeight, false));
+        LineLayoutInline(containerBlock).layer()->setStaticInlinePosition(block.startAlignedOffsetForLine(blockHeight, shouldIndentText));
         LineLayoutInline(containerBlock).layer()->setStaticBlockPosition(blockHeight);
 
         // If |child| is a leading or trailing positioned object this is its only opportunity to ensure it moves with an inline
         // container changing width.
         child.moveWithEdgeOfInlineContainerIfNecessary(child.isHorizontalWritingMode());
     }
-    block.updateStaticInlinePositionForChild(child, blockHeight);
+    block.updateStaticInlinePositionForChild(child, blockHeight, shouldIndentText);
     child.layer()->setStaticBlockPosition(blockHeight);
 }
 
@@ -247,7 +247,7 @@ inline void BreakingContext::skipTrailingWhitespace(InlineIterator& iterator, co
     while (!iterator.atEnd() && !requiresLineBox(iterator, lineInfo, TrailingWhitespace)) {
         LineLayoutItem item = iterator.object();
         if (item.isOutOfFlowPositioned())
-            setStaticPositions(m_block, LineLayoutBox(item));
+            setStaticPositions(m_block, LineLayoutBox(item), false);
         else if (item.isFloating())
             m_block.insertFloatingObject(LineLayoutBox(item));
         iterator.increment();

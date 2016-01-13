@@ -931,7 +931,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
         if (!logicalWidthIsAvailable) {
             for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-                setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]));
+                setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]), false);
 
             if (!layoutState.lineInfo().isEmpty())
                 layoutState.lineInfo().setFirstLine(false);

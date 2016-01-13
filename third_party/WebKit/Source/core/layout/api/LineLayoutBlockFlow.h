@@ -108,9 +108,9 @@ public:
         toBlockFlow()->setStaticInlinePositionForChild(*toLayoutBox(box), inlinePosition);
     }
 
-    void updateStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit logicalTop)
+    void updateStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit logicalTop, bool shouldIndentText = false)
     {
-        toBlockFlow()->updateStaticInlinePositionForChild(*toLayoutBox(box), logicalTop);
+        toBlockFlow()->updateStaticInlinePositionForChild(*toLayoutBox(box), logicalTop, shouldIndentText);
     }
 
     FloatingObject* insertFloatingObject(LayoutBox& box)

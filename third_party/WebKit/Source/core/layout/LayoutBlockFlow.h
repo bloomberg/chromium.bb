@@ -186,7 +186,7 @@ public:
     LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
 
     void setStaticInlinePositionForChild(LayoutBox&, LayoutUnit inlinePosition);
-    void updateStaticInlinePositionForChild(LayoutBox&, LayoutUnit logicalTop);
+    void updateStaticInlinePositionForChild(LayoutBox&, LayoutUnit logicalTop, bool shouldIndentText = false);
 
     static bool shouldSkipCreatingRunsForObject(LayoutObject* obj)
     {
