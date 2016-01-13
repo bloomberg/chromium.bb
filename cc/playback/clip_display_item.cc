@@ -60,14 +60,16 @@ void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
 void ClipDisplayItem::Raster(SkCanvas* canvas,
                              const gfx::Rect& canvas_target_playback_rect,
                              SkPicture::AbortCallback* callback) const {
+  bool antialiased = true;
   canvas->save();
   canvas->clipRect(SkRect::MakeXYWH(clip_rect_.x(), clip_rect_.y(),
-                                    clip_rect_.width(), clip_rect_.height()));
+                                    clip_rect_.width(), clip_rect_.height()),
+                   SkRegion::kIntersect_Op, antialiased);
   for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
     if (rounded_clip_rects_[i].isRect()) {
-      canvas->clipRect(rounded_clip_rects_[i].rect());
+      canvas->clipRect(rounded_clip_rects_[i].rect(), SkRegion::kIntersect_Op,
+                       antialiased);
     } else {
-      bool antialiased = true;
       canvas->clipRRect(rounded_clip_rects_[i], SkRegion::kIntersect_Op,
                         antialiased);
     }

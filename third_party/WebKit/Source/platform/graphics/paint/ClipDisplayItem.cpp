@@ -14,10 +14,10 @@ namespace blink {
 void ClipDisplayItem::replay(GraphicsContext& context) const
 {
     context.save();
-    context.clipRect(m_clipRect, NotAntiAliased, SkRegion::kIntersect_Op);
+    context.clipRect(m_clipRect, AntiAliased);
 
     for (const FloatRoundedRect& roundedRect : m_roundedRectClips)
-        context.clipRoundedRect(roundedRect, SkRegion::kIntersect_Op);
+        context.clipRoundedRect(roundedRect);
 }
 
 void ClipDisplayItem::appendToWebDisplayItemList(const IntRect& visualRect, WebDisplayItemList* list) const

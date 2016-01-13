@@ -1068,17 +1068,17 @@ void GraphicsContext::strokeEllipse(const FloatRect& ellipse)
     drawOval(ellipse, immutableState()->strokePaint());
 }
 
-void GraphicsContext::clipRoundedRect(const FloatRoundedRect& rrect, SkRegion::Op regionOp)
+void GraphicsContext::clipRoundedRect(const FloatRoundedRect& rrect, SkRegion::Op regionOp, AntiAliasingMode shouldAntialias)
 {
     if (contextDisabled())
         return;
 
     if (!rrect.isRounded()) {
-        clipRect(rrect.rect(), NotAntiAliased, regionOp);
+        clipRect(rrect.rect(), shouldAntialias, regionOp);
         return;
     }
 
-    clipRRect(rrect, AntiAliased, regionOp);
+    clipRRect(rrect, shouldAntialias, regionOp);
 }
 
 void GraphicsContext::clipOut(const Path& pathToClip)
