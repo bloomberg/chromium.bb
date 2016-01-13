@@ -4,12 +4,14 @@
 
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 
+#include "base/command_line.h"
 #include "content/common/media/media_player_messages_android.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/cdm/renderer_cdm_manager.h"
 #include "content/renderer/render_view_impl.h"
 #include "media/base/cdm_context.h"
+#include "media/base/media_switches.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace content {
@@ -60,6 +62,11 @@ bool RendererMediaPlayerManager::OnMessageReceived(const IPC::Message& msg) {
 }
 
 void RendererMediaPlayerManager::WasHidden() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableMediaSuspend)) {
+    return;
+  }
+
   // Suspend and release resources of all playing video.
   for (auto& player_it : media_players_) {
     WebMediaPlayerAndroid* player = player_it.second;
