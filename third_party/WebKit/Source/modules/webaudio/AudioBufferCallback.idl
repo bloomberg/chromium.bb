@@ -24,4 +24,5 @@
 
 callback interface AudioBufferCallback {
     void handleEvent(AudioBuffer audioBuffer);
+    void handleEvent(DOMException exception);
 };

@@ -86,6 +86,7 @@ AbstractAudioContext::AbstractAudioContext(Document* document)
     , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
+    , m_closedContextSampleRate(-1)
     , m_periodicWaveSine(nullptr)
     , m_periodicWaveSquare(nullptr)
     , m_periodicWaveSawtooth(nullptr)
@@ -107,6 +108,7 @@ AbstractAudioContext::AbstractAudioContext(Document* document, unsigned numberOf
     , m_didInitializeContextGraphMutex(false)
     , m_deferredTaskHandler(DeferredTaskHandler::create())
     , m_contextState(Suspended)
+    , m_closedContextSampleRate(-1)
     , m_periodicWaveSine(nullptr)
     , m_periodicWaveSquare(nullptr)
     , m_periodicWaveSawtooth(nullptr)
@@ -196,14 +198,44 @@ AudioBuffer* AbstractAudioContext::createBuffer(unsigned numberOfChannels, size_
     return AudioBuffer::create(numberOfChannels, numberOfFrames, sampleRate, exceptionState);
 }
 
-void AbstractAudioContext::decodeAudioData(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
+ScriptPromise AbstractAudioContext::decodeAudioData(ScriptState* scriptState, DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState& exceptionState)
 {
-    if (isContextClosed()) {
-        throwExceptionForClosedState(exceptionState);
-        return;
+    ASSERT(isMainThread());
+    ASSERT(audioData);
+
+    ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+    ScriptPromise promise = resolver->promise();
+
+    float rate = isContextClosed() ? closedContextSampleRate() : sampleRate();
+
+    ASSERT(rate > 0);
+
+    m_decodeAudioResolvers.add(resolver);
+    m_audioDecoder.decodeAsync(audioData, rate, successCallback, errorCallback, resolver, this);
+
+    return promise;
+}
+
+void AbstractAudioContext::handleDecodeAudioData(AudioBuffer* audioBuffer, ScriptPromiseResolver* resolver, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback)
+{
+    ASSERT(isMainThread());
+
+    if (audioBuffer) {
+        // Resolve promise successfully and run the success callback
+        resolver->resolve(audioBuffer);
+        if (successCallback)
+            successCallback->handleEvent(audioBuffer);
+    } else {
+        // Reject the promise and run the error callback
+        DOMException* error = DOMException::create(EncodingError, "Unable to decode audio data");
+        resolver->reject(error);
+        if (errorCallback)
+            errorCallback->handleEvent(error);
     }
 
-    m_audioDecoder.decodeAsync(audioData, sampleRate(), successCallback, errorCallback);
+    // We've resolved the promise.  Remove it now.
+    ASSERT(m_decodeAudioResolvers.contains(resolver));
+    m_decodeAudioResolvers.remove(resolver);
 }
 
 AudioBufferSourceNode* AbstractAudioContext::createBufferSource(ExceptionState& exceptionState)
@@ -774,6 +806,11 @@ void AbstractAudioContext::rejectPendingResolvers()
     }
     m_resumeResolvers.clear();
     m_isResolvingResumePromises = false;
+
+    // Now reject any pending decodeAudioData resolvers
+    for (auto& resolver : m_decodeAudioResolvers)
+        resolver->reject(DOMException::create(InvalidStateError, "Audio context is going away"));
+    m_decodeAudioResolvers.clear();
 }
 
 const AtomicString& AbstractAudioContext::interfaceName() const
@@ -811,6 +848,7 @@ DEFINE_TRACE(AbstractAudioContext)
         visitor->trace(m_activeSourceNodes);
     }
     visitor->trace(m_resumeResolvers);
+    visitor->trace(m_decodeAudioResolvers);
 
     visitor->trace(m_periodicWaveSine);
     visitor->trace(m_periodicWaveSquare);

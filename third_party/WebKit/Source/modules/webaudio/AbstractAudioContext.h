@@ -132,7 +132,10 @@ public:
     AudioBuffer* createBuffer(unsigned numberOfChannels, size_t numberOfFrames, float sampleRate, ExceptionState&);
 
     // Asynchronous audio file data decoding.
-    void decodeAudioData(DOMArrayBuffer*, AudioBufferCallback*, AudioBufferCallback*, ExceptionState&);
+    ScriptPromise decodeAudioData(ScriptState*, DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ExceptionState&);
+
+    // Handles the promise and callbacks when |decodeAudioData| is finished decoding.
+    void handleDecodeAudioData(AudioBuffer*, ScriptPromiseResolver*, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
 
     AudioListener* listener() { return m_listener.get(); }
 
@@ -270,6 +273,8 @@ protected:
     // the promises here until they can be resolved or rejected.
     HeapVector<Member<ScriptPromiseResolver>> m_resumeResolvers;
 
+    void setClosedContextSampleRate(float newSampleRate) { m_closedContextSampleRate = newSampleRate; }
+    float closedContextSampleRate() const { return m_closedContextSampleRate; }
 private:
     bool m_isCleared;
     void clear();
@@ -318,6 +323,15 @@ private:
     AudioContextState m_contextState;
 
     AsyncAudioDecoder m_audioDecoder;
+
+    // When a context is closed, the sample rate is cleared.  But decodeAudioData can be called
+    // after the context has been closed and it needs the sample rate.  When the context is closed,
+    // the sample rate is saved here.
+    float m_closedContextSampleRate;
+
+    // Vector of promises created by decodeAudioData.  This keeps the resolvers alive until
+    // decodeAudioData finishes decoding and can tell the main thread to resolve them.
+    HeapHashSet<Member<ScriptPromiseResolver>> m_decodeAudioResolvers;
 
     // PeriodicWave's for the builtin oscillator types.  These only depend on the sample rate. so
     // they can be shared with all OscillatorNodes in the context.  To conserve memory, these are

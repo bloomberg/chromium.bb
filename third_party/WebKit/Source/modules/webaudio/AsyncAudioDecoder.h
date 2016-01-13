@@ -32,10 +32,12 @@
 
 namespace blink {
 
+class AbstractAudioContext;
 class AudioBuffer;
 class AudioBufferCallback;
 class AudioBus;
 class DOMArrayBuffer;
+class ScriptPromiseResolver;
 
 // AsyncAudioDecoder asynchronously decodes audio file data from a DOMArrayBuffer in a worker thread.
 // Upon successful decoding, a completion callback will be invoked with the decoded PCM data in an AudioBuffer.
@@ -47,13 +49,15 @@ public:
     AsyncAudioDecoder();
     ~AsyncAudioDecoder();
 
-    // Must be called on the main thread.
-    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
+    // Must be called on the main thread.  |decodeAsync| and callees must not modify any of the
+    // parameters except |audioData|.  They are used to associate this decoding instance with the
+    // caller to process the decoding appropriately when finished.
+    void decodeAsync(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver* , AbstractAudioContext*);
 
 private:
     AudioBuffer* createAudioBufferFromAudioBus(AudioBus*);
-    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback);
-    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*);
+    static void decode(DOMArrayBuffer* audioData, float sampleRate, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, ScriptPromiseResolver*, AbstractAudioContext*);
+    static void notifyComplete(DOMArrayBuffer* audioData, AudioBufferCallback* successCallback, AudioBufferCallback* errorCallback, AudioBus*, ScriptPromiseResolver*, AbstractAudioContext*);
 
     OwnPtr<WebThread> m_thread;
 };
