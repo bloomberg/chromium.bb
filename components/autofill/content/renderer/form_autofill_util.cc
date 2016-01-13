@@ -1133,7 +1133,7 @@ bool UnownedFormElementsAndFieldSetsToFormData(
     ExtractMask extract_mask,
     FormData* form,
     FormFieldData* field) {
-  form->origin = document.url();
+  form->origin = GetCanonicalOriginForDocument(document);
   form->is_form_tag = false;
 
   return FormOrFieldsetsToFormData(nullptr, element, fieldsets,
@@ -1165,7 +1165,7 @@ bool IsFormVisible(blink::WebFrame* frame,
                    const GURL& canonical_action,
                    const GURL& canonical_origin,
                    const FormData& form_data) {
-  const GURL frame_url = GURL(frame->document().url().string().utf8());
+  const GURL frame_origin = GetCanonicalOriginForDocument(frame->document());
   blink::WebVector<WebFormElement> forms;
   frame->document().forms(forms);
 
@@ -1189,9 +1189,8 @@ bool IsFormVisible(blink::WebFrame* frame,
 
     GURL iter_canonical_action = GetCanonicalActionForForm(form);
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-    bool form_action_is_empty = iter_canonical_action.is_empty()
-                                || iter_canonical_action == frame_url;
-
+    bool form_action_is_empty = iter_canonical_action.is_empty() ||
+                                iter_canonical_action == frame_origin;
     if (action_is_empty != form_action_is_empty)
       continue;
 
@@ -1414,7 +1413,7 @@ bool WebFormElementToFormData(
     return false;
 
   form->name = GetFormIdentifier(form_element);
-  form->origin = frame->document().url();
+  form->origin = GetCanonicalOriginForDocument(frame->document());
   form->action = frame->document().completeURL(form_element.action());
 
   // If the completed URL is not valid, just use the action we get from

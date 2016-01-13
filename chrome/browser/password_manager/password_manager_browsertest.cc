@@ -1574,6 +1574,52 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
+
+// Current and target URLs contain different parameters and references. This
+// test checks that parameters and references in origins are ignored for
+// form origin comparison.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    PromptForPushStateWhenFormDisappears_ParametersInOrigins) {
+  NavigateToFile("/password/password_push_state.html?login#r");
+
+  NavigationObserver observer(WebContents());
+  observer.set_quit_on_entry_committed(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "add_parameters_to_target_url = true;"
+      "document.getElementById('pa_username_field').value = 'temp';"
+      "document.getElementById('pa_password_field').value = 'random';"
+      "document.getElementById('pa_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(prompt_observer->IsShowingPrompt());
+}
+
+// Similar to the case above, but this time the form persists after
+// 'history.pushState()'. The password manager should find the login form even
+// if target and current URLs contain different parameters or references.
+// Save password prompt should not show up.
+IN_PROC_BROWSER_TEST_F(
+    PasswordManagerBrowserTestBase,
+    PromptForPushStateWhenFormPersists_ParametersInOrigins) {
+  NavigateToFile("/password/password_push_state.html?login#r");
+
+  NavigationObserver observer(WebContents());
+  observer.set_quit_on_entry_committed(true);
+  scoped_ptr<PromptObserver> prompt_observer(
+      PromptObserver::Create(WebContents()));
+  std::string fill_and_submit =
+      "should_delete_testform = false;"
+      "add_parameters_to_target_url = true;"
+      "document.getElementById('pa_username_field').value = 'temp';"
+      "document.getElementById('pa_password_field').value = 'random';"
+      "document.getElementById('pa_submit_button').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsShowingPrompt());
+}
 #endif  // !OS_MACOSX && !OS_ANDROID
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,

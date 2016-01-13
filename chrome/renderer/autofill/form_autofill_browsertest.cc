@@ -217,7 +217,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
 
     const FormData& form = forms[0];
     EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
     const std::vector<FormFieldData>& fields = form.fields;
@@ -520,7 +521,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -576,7 +578,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(textarea_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -636,7 +639,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -677,7 +681,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field2;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
-    EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
       EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -724,7 +729,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -757,7 +763,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field2;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
-    EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
       EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -796,7 +803,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -829,7 +837,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field2;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
-    EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
       EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -872,7 +881,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_TRUE(form.name.empty());
       EXPECT_EQ(GURL("http://abc.com"), form.action);
@@ -912,7 +922,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field2;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
-    EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form2.origin);
     if (!unowned) {
       EXPECT_TRUE(form2.name.empty());
       EXPECT_EQ(GURL("http://abc.com"), form2.action);
@@ -957,7 +968,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
       EXPECT_EQ(GURL("http://buh.com"), form.action);
@@ -1004,7 +1016,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field2;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(input_element, &form2, &field2));
-    EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form2.origin);
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form2.name);
       EXPECT_EQ(GURL("http://buh.com"), form2.action);
@@ -1067,7 +1080,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(firstname, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
@@ -1167,7 +1181,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     FormFieldData field;
     EXPECT_TRUE(
         FindFormAndFieldForFormControlElement(firstname, &form, &field));
-    EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+              form.origin);
     EXPECT_FALSE(form.origin.is_empty());
     if (!unowned) {
       EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
@@ -1987,7 +2002,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
                                        &form,
                                        &field));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(frame->document()), form.origin);
   EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
@@ -2185,7 +2200,8 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   // First form.
   const FormData& form = forms[0];
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+            form.origin);
   EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
@@ -2214,7 +2230,8 @@ TEST_F(FormAutofillTest, ExtractMultipleForms) {
   // Second form.
   const FormData& form2 = forms[1];
   EXPECT_EQ(ASCIIToUTF16("TestForm2"), form2.name);
-  EXPECT_EQ(GURL(web_frame->document().url()), form2.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->document()),
+            form2.origin);
   EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://zoo.com"), form2.action);
 
@@ -3655,7 +3672,7 @@ TEST_F(FormAutofillTest, ThreePartPhone) {
                                        &form,
                                        nullptr));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(frame->document()), form.origin);
   EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
@@ -3714,7 +3731,7 @@ TEST_F(FormAutofillTest, MaxLengthFields) {
                                        &form,
                                        nullptr));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(frame->document()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -4034,7 +4051,7 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
       static_cast<ExtractMask>(EXTRACT_VALUE | EXTRACT_OPTION_TEXT), &form,
       nullptr));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(frame->document()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   const std::vector<FormFieldData>& fields = form.fields;
@@ -4071,7 +4088,7 @@ TEST_F(FormAutofillTest, SelectOneAsText) {
                                        &form,
                                        nullptr));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
-  EXPECT_EQ(GURL(frame->document().url()), form.origin);
+  EXPECT_EQ(GetCanonicalOriginForDocument(frame->document()), form.origin);
   EXPECT_EQ(GURL("http://cnn.com"), form.action);
 
   ASSERT_EQ(3U, fields.size());
