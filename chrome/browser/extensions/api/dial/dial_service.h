@@ -51,9 +51,6 @@ class DialDeviceData;
 // Calling Discover() again between T1 and Tf has no effect.
 //
 // All relevant constants are defined in dial_service.cc.
-//
-// TODO(mfoltz): Port this into net/.
-// See https://code.google.com/p/chromium/issues/detail?id=164473
 class DialService {
  public:
   enum DialServiceErrorCode {

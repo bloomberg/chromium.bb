@@ -129,8 +129,11 @@ class DialRegistry : public DialService::Observer,
   // active set.
   bool IsDeviceExpired(const DialDeviceData& device) const;
 
-  // Notify clients with the current device list if necessary.
+  // Notify listeners with the current device list if the list has changed.
   void MaybeSendEvent();
+
+  // Notify listeners with the current device list.
+  void SendEvent();
 
   // Returns the next label to use for a newly-seen device.
   std::string NextLabel();
@@ -138,15 +141,8 @@ class DialRegistry : public DialService::Observer,
   // The current number of event listeners attached to this registry.
   int num_listeners_;
 
-  // Incremented each time we DoDiscovery().
-  int discovery_generation_;
-
   // Incremented each time we modify the registry of active devices.
   int registry_generation_;
-
-  // The discovery generation associated with the last time we sent an event.
-  // Used to ensure that we generate at least one event per round of discovery.
-  int last_event_discovery_generation_;
 
   // The registry generation associated with the last time we sent an event.
   // Used to suppress events with duplicate device lists.
@@ -180,6 +176,8 @@ class DialRegistry : public DialService::Observer,
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestAddRemoveListeners);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestNoDevicesDiscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDevicesDiscovered);
+  FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
+                           TestDevicesDiscoveredWithTwoListeners);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestDeviceExpires);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest, TestExpiredDeviceIsRediscovered);
   FRIEND_TEST_ALL_PREFIXES(DialRegistryTest,
