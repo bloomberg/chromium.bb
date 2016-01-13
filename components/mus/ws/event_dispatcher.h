@@ -52,13 +52,15 @@ class EventDispatcher : public ServerWindowObserver {
   bool AddAccelerator(uint32_t id, mojom::EventMatcherPtr event_matcher);
   void RemoveAccelerator(uint32_t id);
 
-  void OnEvent(mojom::EventPtr event);
+  // Processes the supplied event, informing the delegate as approriate. This
+  // may result in generating any number of events.
+  void ProcessEvent(mojom::EventPtr event);
 
  private:
-  // Keeps track of state associated with a pointer down until the
-  // corresponding up/cancel.
+  // Keeps track of state associated with an active pointer.
   struct PointerTarget {
-    PointerTarget() : window(nullptr), in_nonclient_area(false) {}
+    PointerTarget()
+        : window(nullptr), in_nonclient_area(false), is_pointer_down(false) {}
 
     // NOTE: this is set to null if the window is destroyed before a
     // corresponding release/cancel.
@@ -66,9 +68,15 @@ class EventDispatcher : public ServerWindowObserver {
 
     // Did the pointer event start in the non-client area.
     bool in_nonclient_area;
+
+    bool is_pointer_down;
   };
 
   void ProcessKeyEvent(mojom::EventPtr event);
+
+  bool IsTrackingPointer(int32_t pointer_id) const {
+    return pointer_targets_.count(pointer_id) > 0;
+  }
 
   // EventDispatcher provides the following logic for pointer events:
   // . wheel events go to the current target of the associated pointer. If
@@ -77,7 +85,27 @@ class EventDispatcher : public ServerWindowObserver {
   // . when a pointer goes down all events until the corresponding up or
   //   cancel go to the deepest target. For mouse events the up only occurs
   //   when no buttons on the mouse are down.
+  // This also generates exit events as appropriate. For example, if the mouse
+  // moves between one window to another an exit is generated on the first.
   void ProcessPointerEvent(mojom::EventPtr event);
+
+  // Adds |pointer_target| to |pointer_targets_|.
+  void StartTrackingPointer(int32_t pointer_id,
+                            const PointerTarget& pointer_target);
+
+  // Removes a PointerTarget from |pointer_targets_|.
+  void StopTrackingPointer(int32_t pointer_id);
+
+  // Starts tracking the pointer for |event|, or if already tracking the
+  // pointer sends the appropriate event to the delegate and updates the
+  // currently tracked PointerTarget appropriately.
+  void UpdateTargetForPointer(const mojom::Event& event);
+
+  // Returns a PointerTarget from the supplied Event.
+  PointerTarget PointerTargetForEvent(const mojom::Event& event) const;
+
+  // Returns true if any pointers are in the pressed/down state.
+  bool AreAnyPointersDown() const;
 
   // If |target->window| is valid, then passes the event to the delegate.
   void DispatchToPointerTarget(const PointerTarget& target,
@@ -121,6 +149,10 @@ class EventDispatcher : public ServerWindowObserver {
   std::map<uint32_t, EventMatcher> accelerators_;
 
   using PointerIdToTargetMap = std::map<int32_t, PointerTarget>;
+  // |pointer_targets_| contains the active pointers. For a mouse based pointer
+  // a PointerTarget is always active (and present in |pointer_targets_|). For
+  // touch based pointers the pointer is active while down and removed on
+  // cancel or up.
   PointerIdToTargetMap pointer_targets_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);

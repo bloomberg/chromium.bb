@@ -100,6 +100,9 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
     case mus::mojom::EVENT_TYPE_POINTER_MOVE:
       web_event->type = blink::WebInputEvent::MouseMove;
       break;
+    case mus::mojom::EVENT_TYPE_MOUSE_EXIT:
+      web_event->type = blink::WebInputEvent::MouseLeave;
+      break;
     default:
       NOTIMPLEMENTED() << "Received unexpected event: " << event->action;
       break;
@@ -204,6 +207,7 @@ TypeConverter<scoped_ptr<blink::WebInputEvent>, mus::mojom::EventPtr>::Convert(
     case mus::mojom::EVENT_TYPE_POINTER_UP:
     case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
     case mus::mojom::EVENT_TYPE_POINTER_MOVE:
+    case mus::mojom::EVENT_TYPE_MOUSE_EXIT:
       if (event->pointer_data &&
           event->pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE) {
         return BuildWebMouseEventFrom(event);

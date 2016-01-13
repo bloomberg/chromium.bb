@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <queue>
+
 #include "base/macros.h"
 #include "components/mus/public/cpp/event_matcher.h"
 #include "components/mus/ws/event_dispatcher_delegate.h"
@@ -21,19 +23,20 @@ namespace mus {
 namespace ws {
 namespace {
 
+// Identifies a generated event.
+struct DispatchedEventDetails {
+  DispatchedEventDetails() : window(nullptr), in_nonclient_area(false) {}
+
+  ServerWindow* window;
+  bool in_nonclient_area;
+  mojom::EventPtr event;
+};
+
 class TestEventDispatcherDelegate : public EventDispatcherDelegate {
  public:
   explicit TestEventDispatcherDelegate(ServerWindow* root)
-      : root_(root),
-        focused_window_(nullptr),
-        last_target_(nullptr),
-        last_accelerator_(0),
-        last_in_nonclient_area_(false) {}
+      : root_(root), focused_window_(nullptr), last_accelerator_(0) {}
   ~TestEventDispatcherDelegate() override {}
-
-  mojom::EventPtr GetAndClearLastDispatchedEvent() {
-    return std::move(last_dispatched_event_);
-  }
 
   uint32_t GetAndClearLastAccelerator() {
     uint32_t return_value = last_accelerator_;
@@ -41,17 +44,15 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     return return_value;
   }
 
-  ServerWindow* GetAndClearLastTarget() {
-    ServerWindow* result = last_target_;
-    last_target_ = nullptr;
-    return result;
-  }
-  ServerWindow* last_target() { return last_target_; }
+  // Returns the last dispatched event, or null if there are no more.
+  scoped_ptr<DispatchedEventDetails> GetAndAdvanceDispatchedEventDetails() {
+    if (dispatched_event_queue_.empty())
+      return nullptr;
 
-  bool GetAndClearLastInNonclientArea() {
-    const bool result = last_in_nonclient_area_;
-    last_in_nonclient_area_ = false;
-    return result;
+    scoped_ptr<DispatchedEventDetails> details =
+        std::move(dispatched_event_queue_.front());
+    dispatched_event_queue_.pop();
+    return details;
   }
 
   ServerWindow* GetAndClearLastFocusedWindow() {
@@ -59,6 +60,8 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
     focused_window_ = nullptr;
     return result;
   }
+
+  bool has_queued_events() const { return !dispatched_event_queue_.empty(); }
 
  private:
   // EventDispatcherDelegate:
@@ -75,27 +78,56 @@ class TestEventDispatcherDelegate : public EventDispatcherDelegate {
   void DispatchInputEventToWindow(ServerWindow* target,
                                   bool in_nonclient_area,
                                   mojom::EventPtr event) override {
-    last_target_ = target;
-    last_dispatched_event_ = std::move(event);
-    last_in_nonclient_area_ = in_nonclient_area;
+    scoped_ptr<DispatchedEventDetails> details(new DispatchedEventDetails);
+    details->window = target;
+    details->in_nonclient_area = in_nonclient_area;
+    details->event = std::move(event);
+    dispatched_event_queue_.push(std::move(details));
   }
 
   ServerWindow* root_;
   ServerWindow* focused_window_;
-  ServerWindow* last_target_;
-  mojom::EventPtr last_dispatched_event_;
   uint32_t last_accelerator_;
-  bool last_in_nonclient_area_;
+  std::queue<scoped_ptr<DispatchedEventDetails>> dispatched_event_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(TestEventDispatcherDelegate);
 };
 
+// Used by RunMouseEventTests(). Can identify up to two generated events. The
+// first ServerWindow and two points identify the first event, the second
+// ServerWindow and points identify the second event. If only one event is
+// generated set the second window to null.
 struct MouseEventTest {
   ui::MouseEvent input_event;
-  ServerWindow* expected_target_window;
-  gfx::Point expected_root_location;
-  gfx::Point expected_location;
+  ServerWindow* expected_target_window1;
+  gfx::Point expected_root_location1;
+  gfx::Point expected_location1;
+  ServerWindow* expected_target_window2;
+  gfx::Point expected_root_location2;
+  gfx::Point expected_location2;
 };
+
+// Verifies |details| matches the supplied ServerWindow and points.
+void ExpectDispatchedEventDetailsMatches(const DispatchedEventDetails* details,
+                                         ServerWindow* target,
+                                         const gfx::Point& root_location,
+                                         const gfx::Point& location) {
+  if (!target) {
+    ASSERT_FALSE(details);
+    return;
+  }
+
+  ASSERT_EQ(target, details->window);
+  scoped_ptr<ui::Event> dispatched_event(
+      details->event.To<scoped_ptr<ui::Event>>());
+  ASSERT_TRUE(dispatched_event);
+  ASSERT_TRUE(dispatched_event->IsMouseEvent());
+  ASSERT_FALSE(details->in_nonclient_area);
+  ui::MouseEvent* dispatched_mouse_event =
+      static_cast<ui::MouseEvent*>(dispatched_event.get());
+  ASSERT_EQ(root_location, dispatched_mouse_event->root_location());
+  ASSERT_EQ(location, dispatched_mouse_event->location());
+}
 
 void RunMouseEventTests(EventDispatcher* dispatcher,
                         TestEventDispatcherDelegate* dispatcher_delegate,
@@ -103,34 +135,30 @@ void RunMouseEventTests(EventDispatcher* dispatcher,
                         size_t test_count) {
   for (size_t i = 0; i < test_count; ++i) {
     const MouseEventTest& test = tests[i];
-    dispatcher->OnEvent(
+    ASSERT_FALSE(dispatcher_delegate->has_queued_events())
+        << " unexpected queued events before running " << i;
+    dispatcher->ProcessEvent(
         mojom::Event::From(static_cast<const ui::Event&>(test.input_event)));
 
-    ASSERT_EQ(test.expected_target_window, dispatcher_delegate->last_target())
-        << "Test " << i << " failed.";
-
-    mojom::EventPtr dispatched_event_mojo =
-        dispatcher_delegate->GetAndClearLastDispatchedEvent();
-    ASSERT_TRUE(dispatched_event_mojo.get()) << "Test " << i << " failed.";
-    scoped_ptr<ui::Event> dispatched_event(
-        dispatched_event_mojo.To<scoped_ptr<ui::Event>>());
-    ASSERT_TRUE(dispatched_event.get()) << "Test " << i << " failed.";
-    ASSERT_TRUE(dispatched_event->IsMouseEvent()) << "Test " << i << " failed.";
-    EXPECT_FALSE(dispatcher_delegate->GetAndClearLastInNonclientArea())
-        << "Test " << i << " failed.";
-    ui::MouseEvent* dispatched_mouse_event =
-        static_cast<ui::MouseEvent*>(dispatched_event.get());
-    EXPECT_EQ(test.expected_root_location,
-              dispatched_mouse_event->root_location())
-        << "Test " << i << " failed.";
-    EXPECT_EQ(test.expected_location, dispatched_mouse_event->location())
-        << "Test " << i << " failed.";
+    scoped_ptr<DispatchedEventDetails> details =
+        dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+    ASSERT_NO_FATAL_FAILURE(ExpectDispatchedEventDetailsMatches(
+        details.get(), test.expected_target_window1,
+        test.expected_root_location1, test.expected_location1))
+        << " details don't match " << i;
+    details = dispatcher_delegate->GetAndAdvanceDispatchedEventDetails();
+    ASSERT_NO_FATAL_FAILURE(ExpectDispatchedEventDetailsMatches(
+        details.get(), test.expected_target_window2,
+        test.expected_root_location2, test.expected_location2))
+        << " details2 don't match " << i;
+    ASSERT_FALSE(dispatcher_delegate->has_queued_events())
+        << " unexpected queued events after running " << i;
   }
 }
 
 }  // namespace
 
-TEST(EventDispatcherTest, OnEvent) {
+TEST(EventDispatcherTest, ProcessEvent) {
   TestServerWindowDelegate window_delegate;
   ServerWindow root(&window_delegate, WindowId(1, 2));
   window_delegate.set_root_window(&root);
@@ -152,17 +180,18 @@ TEST(EventDispatcherTest, OnEvent) {
   const ui::MouseEvent ui_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
 
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
 
-  mojom::EventPtr dispatched_event_mojo =
-      event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
-  ASSERT_TRUE(dispatched_event_mojo.get());
+  ASSERT_TRUE(details);
+  ASSERT_EQ(&child, details->window);
+
   scoped_ptr<ui::Event> dispatched_event(
-      dispatched_event_mojo.To<scoped_ptr<ui::Event>>());
-  ASSERT_TRUE(dispatched_event.get());
+      details->event.To<scoped_ptr<ui::Event>>());
+  ASSERT_TRUE(dispatched_event);
   ASSERT_TRUE(dispatched_event->IsMouseEvent());
   ui::MouseEvent* dispatched_mouse_event =
       static_cast<ui::MouseEvent*>(dispatched_event.get());
@@ -219,7 +248,7 @@ TEST(EventDispatcherTest, EventMatching) {
   dispatcher.AddAccelerator(accelerator_1, std::move(matcher));
 
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
-  dispatcher.OnEvent(mojom::Event::From(key));
+  dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
@@ -227,24 +256,24 @@ TEST(EventDispatcherTest, EventMatching) {
   // ignoring.
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W,
                      ui::EF_CONTROL_DOWN | ui::EF_NUM_LOCK_ON);
-  dispatcher.OnEvent(mojom::Event::From(key));
+  dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_1,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   key = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_NONE);
-  dispatcher.OnEvent(mojom::Event::From(key));
+  dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   uint32_t accelerator_2 = 2;
   matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_W,
                                   mus::mojom::EVENT_FLAGS_NONE);
   dispatcher.AddAccelerator(accelerator_2, std::move(matcher));
-  dispatcher.OnEvent(mojom::Event::From(key));
+  dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_2,
             event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   dispatcher.RemoveAccelerator(accelerator_2);
-  dispatcher.OnEvent(mojom::Event::From(key));
+  dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 }
 
@@ -271,23 +300,31 @@ TEST(EventDispatcherTest, Capture) {
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
                       gfx::Point(20, 25), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
-       &child, gfx::Point(20, 25), gfx::Point(10, 15)},
+       &child, gfx::Point(20, 25), gfx::Point(10, 15), nullptr, gfx::Point(),
+       gfx::Point()},
+
       // Capture should be activated. Let's send a mouse move outside the bounds
       // of the child.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
-       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), nullptr, gfx::Point(),
+       gfx::Point()},
       // Release the mouse and verify that the mouse up event goes to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
-       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
-      // A mouse move at (50, 50) should now go to the root window.
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), nullptr, gfx::Point(),
+       gfx::Point()},
+
+      // A mouse move at (50, 50) should now go to the root window. As the
+      // move crosses between |child| and |root| |child| gets an exit, and
+      // |root| the move.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
-       &root, gfx::Point(50, 50), gfx::Point(50, 50)},
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), &root,
+       gfx::Point(50, 50), gfx::Point(50, 50)},
 
   };
   RunMouseEventTests(&dispatcher, &event_dispatcher_delegate, tests,
@@ -317,25 +354,32 @@ TEST(EventDispatcherTest, CaptureMultipleMouseButtons) {
       {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(20, 25),
                       gfx::Point(20, 25), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
-       &child, gfx::Point(20, 25), gfx::Point(10, 15)},
+       &child, gfx::Point(20, 25), gfx::Point(10, 15), nullptr, gfx::Point(),
+       gfx::Point()},
+
       // Capture should be activated. Let's send a mouse move outside the bounds
       // of the child and press the right mouse button too.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON, 0),
-       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), nullptr, gfx::Point(),
+       gfx::Point()},
+
       // Release the left mouse button and verify that the mouse up event goes
       // to the child.
       {ui::MouseEvent(ui::ET_MOUSE_RELEASED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON,
                       ui::EF_RIGHT_MOUSE_BUTTON),
-       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), nullptr, gfx::Point(),
+       gfx::Point()},
+
       // A mouse move at (50, 50) should still go to the child.
       {ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(50, 50),
                       gfx::Point(50, 50), base::TimeDelta(),
                       ui::EF_LEFT_MOUSE_BUTTON, 0),
-       &child, gfx::Point(50, 50), gfx::Point(40, 40)},
+       &child, gfx::Point(50, 50), gfx::Point(40, 40), nullptr, gfx::Point(),
+       gfx::Point()},
 
   };
   RunMouseEventTests(&dispatcher, &event_dispatcher_delegate, tests,
@@ -366,43 +410,61 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(press_event)));
 
   // Events should target child and be in the non-client area.
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_TRUE(details);
+  ASSERT_EQ(&child, details->window);
+  EXPECT_TRUE(details->in_nonclient_area);
 
   // Move the mouse 5,6 pixels and target is the same.
   const ui::MouseEvent move_event(ui::ET_MOUSE_MOVED, gfx::Point(17, 18),
                                   gfx::Point(17, 18), base::TimeDelta(),
                                   ui::EF_LEFT_MOUSE_BUTTON, 0);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(move_event)));
 
   // Still same target.
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&child, details->window);
+  EXPECT_TRUE(details->in_nonclient_area);
 
   // Release the mouse.
   const ui::MouseEvent release_event(
       ui::ET_MOUSE_RELEASED, gfx::Point(17, 18), gfx::Point(17, 18),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(release_event)));
 
   // The event should not have been dispatched to the delegate.
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&child, details->window);
+  EXPECT_TRUE(details->in_nonclient_area);
 
-  // Press in the client area and verify target/client area.
+  // Press in the client area and verify target/client area. The non-client area
+  // should get an exit first.
   const ui::MouseEvent press_event2(
       ui::ET_MOUSE_PRESSED, gfx::Point(21, 22), gfx::Point(21, 22),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(press_event2)));
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_TRUE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&child, details->window);
+  EXPECT_TRUE(details->in_nonclient_area);
+  EXPECT_EQ(mojom::EVENT_TYPE_MOUSE_EXIT, details->event->action);
+
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&child, details->window);
+  EXPECT_FALSE(details->in_nonclient_area);
+  EXPECT_EQ(mojom::EVENT_TYPE_POINTER_DOWN, details->event->action);
 }
 
 TEST(EventDispatcherTest, AdditionalClientArea) {
@@ -431,12 +493,15 @@ TEST(EventDispatcherTest, AdditionalClientArea) {
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(28, 11), gfx::Point(28, 11),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(press_event)));
 
   // Events should target child and be in the client area.
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&child, details->window);
+  EXPECT_FALSE(details->in_nonclient_area);
 }
 
 TEST(EventDispatcherTest, DontFocusOnSecondDown) {
@@ -467,18 +532,23 @@ TEST(EventDispatcherTest, DontFocusOnSecondDown) {
   const ui::MouseEvent press_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(12, 12), gfx::Point(12, 12),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(press_event)));
-  EXPECT_EQ(&child1, event_dispatcher_delegate.last_target());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  EXPECT_EQ(&child1, details->window);
   EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastFocusedWindow());
 
   // Press (with a different pointer id) on child2. Event should go to child2,
   // but focus should not change.
   const ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(53, 54), 2,
                                    base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_event)));
-  EXPECT_EQ(&child2, event_dispatcher_delegate.last_target());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  EXPECT_EQ(&child2, details->window);
   EXPECT_EQ(nullptr, event_dispatcher_delegate.GetAndClearLastFocusedWindow());
 }
 
@@ -509,47 +579,55 @@ TEST(EventDispatcherTest, TwoPointersActive) {
   // Press on child1.
   const ui::TouchEvent touch_event1(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1,
                                     base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
-  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child1, details->window);
 
   // Drag over child2, child1 should get the drag.
   const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1,
                                    base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
-  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child1, details->window);
 
   // Press on child2 with a different touch id.
   const ui::TouchEvent touch_event2(ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2,
                                     base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_event2)));
-  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child2, details->window);
 
   // Drag over child1 with id 2, child2 should continue to get the drag.
   const ui::TouchEvent drag_event2(ui::ET_TOUCH_MOVED, gfx::Point(13, 14), 2,
                                    base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(drag_event2)));
-  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child2, details->window);
 
   // Drag again with id 1, child1 should continue to get it.
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
-  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child1, details->window);
 
   // Release touch id 1, and click on 2. 2 should get it.
   const ui::TouchEvent touch_release(ui::ET_TOUCH_RELEASED, gfx::Point(54, 55),
                                      1, base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_release)));
-  EXPECT_EQ(&child1, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child1, details->window);
   const ui::TouchEvent touch_event3(ui::ET_TOUCH_PRESSED, gfx::Point(54, 55), 2,
                                     base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_event3)));
-  EXPECT_EQ(&child2, event_dispatcher_delegate.GetAndClearLastTarget());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&child2, details->window);
 }
 
 TEST(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
@@ -574,22 +652,22 @@ TEST(EventDispatcherTest, DestroyWindowWhileGettingEvents) {
   // Press on child.
   const ui::TouchEvent touch_event1(ui::ET_TOUCH_PRESSED, gfx::Point(12, 13), 1,
                                     base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(touch_event1)));
-  EXPECT_EQ(child.get(), event_dispatcher_delegate.GetAndClearLastTarget());
-
-  event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  EXPECT_EQ(child.get(), details->window);
 
   // Delete child, and continue the drag. Event should not be dispatched.
   child.reset();
 
   const ui::TouchEvent drag_event1(ui::ET_TOUCH_MOVED, gfx::Point(53, 54), 1,
                                    base::TimeDelta());
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(drag_event1)));
-  EXPECT_EQ(nullptr, event_dispatcher_delegate.GetAndClearLastTarget());
-  EXPECT_EQ(nullptr,
-            event_dispatcher_delegate.GetAndClearLastDispatchedEvent().get());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(nullptr, details.get());
 }
 
 TEST(EventDispatcherTest, MouseInExtendedHitTestRegion) {
@@ -614,40 +692,87 @@ TEST(EventDispatcherTest, MouseInExtendedHitTestRegion) {
   const ui::MouseEvent ui_event(
       ui::ET_MOUSE_PRESSED, gfx::Point(8, 9), gfx::Point(8, 9),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
-  ASSERT_EQ(&root, event_dispatcher_delegate.last_target());
-  event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
+  scoped_ptr<DispatchedEventDetails> details =
+      event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  ASSERT_EQ(&root, details->window);
 
   // Release the mouse.
   const ui::MouseEvent release_event(
       ui::ET_MOUSE_RELEASED, gfx::Point(8, 9), gfx::Point(8, 9),
       base::TimeDelta(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(release_event)));
-
-  // The event should not have been dispatched to the delegate.
-  ASSERT_EQ(&root, event_dispatcher_delegate.last_target());
-  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastDispatchedEvent());
-  EXPECT_FALSE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  ASSERT_EQ(&root, details->window);
+  EXPECT_FALSE(details->in_nonclient_area);
 
   // Change the extended hit test region and send event in extended hit test
-  // region.
+  // region. Should result in exit for root, followed by press for child.
   child.set_extended_hit_test_region(gfx::Insets(5, 5, 5, 5));
-  dispatcher.OnEvent(
+  dispatcher.ProcessEvent(
       mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
-  ASSERT_EQ(&child, event_dispatcher_delegate.last_target());
-  EXPECT_TRUE(event_dispatcher_delegate.GetAndClearLastInNonclientArea());
-  mojom::EventPtr dispatched_event_mojo =
-      event_dispatcher_delegate.GetAndClearLastDispatchedEvent();
-  ASSERT_TRUE(dispatched_event_mojo.get());
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  EXPECT_EQ(&root, details->window);
+  EXPECT_EQ(mojom::EVENT_TYPE_MOUSE_EXIT, details->event->action);
+  details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
+  ASSERT_TRUE(details);
+
+  EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
+  EXPECT_TRUE(details->in_nonclient_area);
+  ASSERT_EQ(&child, details->window);
+  EXPECT_EQ(mojom::EVENT_TYPE_POINTER_DOWN, details->event->action);
   scoped_ptr<ui::Event> dispatched_event(
-      dispatched_event_mojo.To<scoped_ptr<ui::Event>>());
+      details->event.To<scoped_ptr<ui::Event>>());
   ASSERT_TRUE(dispatched_event.get());
   ASSERT_TRUE(dispatched_event->IsMouseEvent());
   ui::MouseEvent* dispatched_mouse_event =
       static_cast<ui::MouseEvent*>(dispatched_event.get());
   EXPECT_EQ(gfx::Point(-2, -1), dispatched_mouse_event->location());
+}
+
+TEST(EventDispatcherTest, WheelWhileDown) {
+  TestServerWindowDelegate window_delegate;
+  ServerWindow root(&window_delegate, WindowId(1, 2));
+  window_delegate.set_root_window(&root);
+  root.SetVisible(true);
+
+  ServerWindow child1(&window_delegate, WindowId(1, 3));
+  root.Add(&child1);
+  child1.SetVisible(true);
+  EnableHitTest(&child1);
+
+  ServerWindow child2(&window_delegate, WindowId(1, 4));
+  root.Add(&child2);
+  child2.SetVisible(true);
+  EnableHitTest(&child2);
+
+  root.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child1.SetBounds(gfx::Rect(10, 10, 20, 20));
+  child2.SetBounds(gfx::Rect(50, 51, 11, 12));
+
+  TestEventDispatcherDelegate event_dispatcher_delegate(&root);
+  EventDispatcher dispatcher(&event_dispatcher_delegate);
+  dispatcher.set_root(&root);
+
+  MouseEventTest tests[] = {
+      // Send a mouse down event over child1.
+      {ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(15, 15),
+                      gfx::Point(15, 15), base::TimeDelta(),
+                      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON),
+       &child1, gfx::Point(15, 15), gfx::Point(5, 5), nullptr, gfx::Point(),
+       gfx::Point()},
+      // Send mouse wheel over child2, should go to child1 as it has capture.
+      {ui::MouseWheelEvent(gfx::Vector2d(1, 0), gfx::Point(53, 54),
+                           gfx::Point(53, 54), base::TimeDelta(), ui::EF_NONE,
+                           ui::EF_NONE),
+       &child1, gfx::Point(53, 54), gfx::Point(43, 44), nullptr, gfx::Point(),
+       gfx::Point()},
+  };
+  RunMouseEventTests(&dispatcher, &event_dispatcher_delegate, tests,
+                     arraysize(tests));
 }
 
 }  // namespace ws

@@ -42,6 +42,9 @@ ui::EventType MojoMouseEventTypeToUIEvent(const mus::mojom::EventPtr& event) {
       }
       return ui::ET_MOUSE_MOVED;
 
+    case mus::mojom::EVENT_TYPE_MOUSE_EXIT:
+      return ui::ET_MOUSE_EXITED;
+
     default:
       NOTREACHED();
   }
@@ -151,9 +154,11 @@ TypeConverter<mus::mojom::EventType, ui::EventType>::Convert(
     case ui::ET_MOUSE_DRAGGED:
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
     case ui::ET_TOUCH_MOVED:
       return mus::mojom::EVENT_TYPE_POINTER_MOVE;
+
+    case ui::ET_MOUSE_EXITED:
+      return mus::mojom::EVENT_TYPE_MOUSE_EXIT;
 
     case ui::ET_MOUSEWHEEL:
       return mus::mojom::EVENT_TYPE_WHEEL;
@@ -327,7 +332,8 @@ TypeConverter<scoped_ptr<ui::Event>, mus::mojom::EventPtr>::Convert(
     case mus::mojom::EVENT_TYPE_POINTER_DOWN:
     case mus::mojom::EVENT_TYPE_POINTER_UP:
     case mus::mojom::EVENT_TYPE_POINTER_MOVE:
-    case mus::mojom::EVENT_TYPE_POINTER_CANCEL: {
+    case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
+    case mus::mojom::EVENT_TYPE_MOUSE_EXIT: {
       switch (input->pointer_data->kind) {
         case mus::mojom::POINTER_KIND_MOUSE: {
           // TODO: last flags isn't right. Need to send changed_flags.

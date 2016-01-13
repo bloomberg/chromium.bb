@@ -195,7 +195,7 @@ void EventDispatcher::RemoveAccelerator(uint32_t id) {
   accelerators_.erase(it);
 }
 
-void EventDispatcher::OnEvent(mojom::EventPtr event) {
+void EventDispatcher::ProcessEvent(mojom::EventPtr event) {
   if (!root_)
     return;
 
@@ -230,7 +230,7 @@ void EventDispatcher::ProcessKeyEvent(mojom::EventPtr event) {
 }
 
 void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
-  bool is_mouse_event =
+  const bool is_mouse_event =
       event->pointer_data &&
       event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE;
 
@@ -238,58 +238,33 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
     mouse_pointer_last_location_ = EventLocationToPoint(*event);
 
   const int32_t pointer_id = event->pointer_data->pointer_id;
-  if (event->action == mojom::EVENT_TYPE_WHEEL ||
-      (event->action == mojom::EVENT_TYPE_POINTER_MOVE &&
-       pointer_targets_.count(pointer_id) == 0)) {
-    PointerTarget pointer_target;
-    if (pointer_targets_.count(pointer_id) != 0) {
-      pointer_target = pointer_targets_[pointer_id];
-    } else {
-      gfx::Point location(EventLocationToPoint(*event));
-      pointer_target.window =
-          FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
-      pointer_target.in_nonclient_area =
-          IsLocationInNonclientArea(pointer_target.window, location);
+  if (!IsTrackingPointer(pointer_id) ||
+      !pointer_targets_[pointer_id].is_pointer_down) {
+    const bool any_pointers_down = AreAnyPointersDown();
+    UpdateTargetForPointer(*event);
+    if (is_mouse_event)
+      mouse_cursor_source_window_ = pointer_targets_[pointer_id].window;
+
+    PointerTarget& pointer_target = pointer_targets_[pointer_id];
+    if (pointer_target.is_pointer_down) {
+      if (is_mouse_event) {
+        mouse_button_down_ = true;
+        mouse_cursor_source_window_ = pointer_target.window;
+      }
+      if (!any_pointers_down)
+        delegate_->SetFocusedWindowFromEventDispatcher(pointer_target.window);
     }
-    if (is_mouse_event && !mouse_button_down_)
-      mouse_cursor_source_window_ = pointer_target.window;
-    DispatchToPointerTarget(pointer_target, std::move(event));
-    return;
-  }
-
-  // Pointer down implicitly captures.
-  if (pointer_targets_.count(pointer_id) == 0) {
-    DCHECK(event->action == mojom::EVENT_TYPE_POINTER_DOWN);
-    const bool is_first_pointer_down = pointer_targets_.empty();
-    gfx::Point location(EventLocationToPoint(*event));
-    ServerWindow* target =
-        FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
-    DCHECK(target);
-    if (!IsObservingWindow(target))
-      target->AddObserver(this);
-
-    if (is_mouse_event) {
-      mouse_button_down_ = true;
-      mouse_cursor_source_window_ = target;
-    }
-
-    pointer_targets_[pointer_id].window = target;
-    pointer_targets_[pointer_id].in_nonclient_area =
-        IsLocationInNonclientArea(target, location);
-
-    if (is_first_pointer_down)
-      delegate_->SetFocusedWindowFromEventDispatcher(target);
   }
 
   // Release capture on pointer up. For mouse we only release if there are
   // no buttons down.
-  const bool should_reset_target =
+  const bool is_pointer_going_up =
       (event->action == mojom::EVENT_TYPE_POINTER_UP ||
        event->action == mojom::EVENT_TYPE_POINTER_CANCEL) &&
       (event->pointer_data->kind != mojom::POINTER_KIND_MOUSE ||
        IsOnlyOneMouseButtonDown(event->flags));
 
-  if (should_reset_target && is_mouse_event) {
+  if (is_pointer_going_up && is_mouse_event) {
     // When we release the mouse button, we want the cursor to be sourced from
     // the window under the mouse pointer, even though we're sending the button
     // up event to the window that had implicit capture. We have to set this
@@ -303,12 +278,89 @@ void EventDispatcher::ProcessPointerEvent(mojom::EventPtr event) {
 
   DispatchToPointerTarget(pointer_targets_[pointer_id], std::move(event));
 
-  if (should_reset_target) {
-    ServerWindow* target = pointer_targets_[pointer_id].window;
-    pointer_targets_.erase(pointer_id);
-    if (target && !IsObservingWindow(target))
-      target->RemoveObserver(this);
+  if (is_pointer_going_up) {
+    if (is_mouse_event)
+      pointer_targets_[pointer_id].is_pointer_down = false;
+    else
+      StopTrackingPointer(pointer_id);
   }
+}
+
+void EventDispatcher::StartTrackingPointer(
+    int32_t pointer_id,
+    const PointerTarget& pointer_target) {
+  DCHECK(!IsTrackingPointer(pointer_id));
+  if (!IsObservingWindow(pointer_target.window))
+    pointer_target.window->AddObserver(this);
+  pointer_targets_[pointer_id] = pointer_target;
+}
+
+void EventDispatcher::StopTrackingPointer(int32_t pointer_id) {
+  DCHECK(IsTrackingPointer(pointer_id));
+  ServerWindow* window = pointer_targets_[pointer_id].window;
+  pointer_targets_.erase(pointer_id);
+  if (window && !IsObservingWindow(window))
+    window->RemoveObserver(this);
+}
+
+void EventDispatcher::UpdateTargetForPointer(const mojom::Event& event) {
+  const int32_t pointer_id = event.pointer_data->pointer_id;
+  if (!IsTrackingPointer(pointer_id)) {
+    StartTrackingPointer(pointer_id, PointerTargetForEvent(event));
+    return;
+  }
+
+  const PointerTarget pointer_target = PointerTargetForEvent(event);
+  if (pointer_target.window == pointer_targets_[pointer_id].window &&
+      pointer_target.in_nonclient_area ==
+          pointer_targets_[pointer_id].in_nonclient_area) {
+    // The targets are the same, only set the down state to true if necessary.
+    // Down going to up is handled by ProcessPointerEvent().
+    if (pointer_target.is_pointer_down)
+      pointer_targets_[pointer_id].is_pointer_down = true;
+    return;
+  }
+
+  // The targets are changing. Send an exit if appropriate.
+  if (event.pointer_data->kind == mojom::POINTER_KIND_MOUSE) {
+    mojom::EventPtr exit_event = mojom::Event::New();
+    exit_event->action = mojom::EVENT_TYPE_MOUSE_EXIT;
+    // TODO(sky): copy flags from existing event?
+    exit_event->flags = mojom::EVENT_FLAGS_NONE;
+    exit_event->time_stamp = event.time_stamp;
+    exit_event->pointer_data = mojom::PointerData::New();
+    exit_event->pointer_data->pointer_id = event.pointer_data->pointer_id;
+    exit_event->pointer_data->kind = event.pointer_data->kind;
+    exit_event->pointer_data->location = event.pointer_data->location.Clone();
+    DispatchToPointerTarget(pointer_targets_[pointer_id],
+                            std::move(exit_event));
+  }
+
+  // Technically we're updating in place, but calling start then stop makes for
+  // simpler code.
+  StopTrackingPointer(pointer_id);
+  StartTrackingPointer(pointer_id, pointer_target);
+}
+
+EventDispatcher::PointerTarget EventDispatcher::PointerTargetForEvent(
+    const mojom::Event& event) const {
+  PointerTarget pointer_target;
+  gfx::Point location(EventLocationToPoint(event));
+  pointer_target.window =
+      FindDeepestVisibleWindowForEvents(root_, surface_id_, &location);
+  pointer_target.in_nonclient_area =
+      IsLocationInNonclientArea(pointer_target.window, location);
+  pointer_target.is_pointer_down =
+      event.action == mojom::EVENT_TYPE_POINTER_DOWN;
+  return pointer_target;
+}
+
+bool EventDispatcher::AreAnyPointersDown() const {
+  for (const auto& pair : pointer_targets_) {
+    if (pair.second.is_pointer_down)
+      return true;
+  }
+  return false;
 }
 
 void EventDispatcher::DispatchToPointerTarget(const PointerTarget& target,

@@ -12,6 +12,7 @@ enum EventType {
   POINTER_DOWN,
   POINTER_MOVE,
   POINTER_UP,
+  MOUSE_EXIT,
   WHEEL,
 };
 

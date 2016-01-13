@@ -264,6 +264,7 @@ class TestConnectionManagerDelegate : public ConnectionManagerDelegate {
   }
 
   TestClientConnection* last_connection_;
+  WindowTreeHostImpl* window_tree_host_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectionManagerDelegate);
 };
@@ -424,9 +425,11 @@ class WindowTreeTest : public testing::Test {
   }
 
   void AckPreviousEvent() {
-    host_connection()
-        ->window_tree_host()
-        ->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
+    while (host_connection()->window_tree_host()->tree_awaiting_input_ack_) {
+      host_connection()
+          ->window_tree_host()
+          ->tree_awaiting_input_ack_->OnWindowInputEventAck(0);
+    }
   }
 
   void DispatchEventAndAckImmediately(const ui::Event& event) {

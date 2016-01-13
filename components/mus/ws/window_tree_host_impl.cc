@@ -53,6 +53,36 @@ mojom::EventPtr CoalesceEvents(mojom::EventPtr first, mojom::EventPtr second) {
 
 }  // namespace
 
+class WindowTreeHostImpl::ProcessedEventTarget {
+ public:
+  ProcessedEventTarget(ServerWindow* window, bool in_nonclient_area)
+      : in_nonclient_area_(in_nonclient_area) {
+    tracker_.Add(window);
+  }
+
+  ~ProcessedEventTarget() {}
+
+  // Return true if the event is still valid. The event becomes invalid if
+  // the window is destroyed while waiting to dispatch.
+  bool IsValid() const { return !tracker_.windows().empty(); }
+
+  ServerWindow* window() {
+    DCHECK(IsValid());
+    return tracker_.windows().front();
+  }
+
+  bool in_nonclient_area() const { return in_nonclient_area_; }
+
+ private:
+  ServerWindowTracker tracker_;
+  const bool in_nonclient_area_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProcessedEventTarget);
+};
+
+WindowTreeHostImpl::QueuedEvent::QueuedEvent() {}
+WindowTreeHostImpl::QueuedEvent::~QueuedEvent() {}
+
 WindowTreeHostImpl::WindowTreeHostImpl(
     mojom::WindowTreeHostClientPtr client,
     ConnectionManager* connection_manager,
@@ -256,7 +286,7 @@ void WindowTreeHostImpl::OnEventAck(mojom::WindowTree* tree) {
   }
   tree_awaiting_input_ack_ = nullptr;
   event_ack_timer_.Stop();
-  DispatchNextEventFromQueue();
+  ProcessNextEventFromQueue();
 }
 
 void WindowTreeHostImpl::OnEventAckTimeout() {
@@ -265,12 +295,66 @@ void WindowTreeHostImpl::OnEventAckTimeout() {
   OnEventAck(tree_awaiting_input_ack_);
 }
 
-void WindowTreeHostImpl::DispatchNextEventFromQueue() {
-  if (event_queue_.empty())
-    return;
-  mojom::EventPtr next_event = std::move(event_queue_.front());
-  event_queue_.pop();
-  event_dispatcher_.OnEvent(std::move(next_event));
+void WindowTreeHostImpl::QueueEvent(
+    mojom::EventPtr event,
+    scoped_ptr<ProcessedEventTarget> processed_event_target) {
+  scoped_ptr<QueuedEvent> queued_event(new QueuedEvent);
+  queued_event->event = std::move(event);
+  queued_event->processed_target = std::move(processed_event_target);
+  event_queue_.push(std::move(queued_event));
+}
+
+void WindowTreeHostImpl::ProcessNextEventFromQueue() {
+  // Loop through |event_queue_| stopping after dispatching the first valid
+  // event.
+  while (!event_queue_.empty()) {
+    scoped_ptr<QueuedEvent> queued_event = std::move(event_queue_.front());
+    event_queue_.pop();
+    if (!queued_event->processed_target) {
+      event_dispatcher_.ProcessEvent(std::move(queued_event->event));
+      return;
+    }
+    if (queued_event->processed_target->IsValid()) {
+      DispatchInputEventToWindowImpl(
+          queued_event->processed_target->window(),
+          queued_event->processed_target->in_nonclient_area(),
+          std::move(queued_event->event));
+      return;
+    }
+  }
+}
+
+void WindowTreeHostImpl::DispatchInputEventToWindowImpl(ServerWindow* target,
+                                                        bool in_nonclient_area,
+                                                        mojom::EventPtr event) {
+  if (event->pointer_data &&
+      event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE) {
+    DCHECK(event_dispatcher_.mouse_cursor_source_window());
+    UpdateNativeCursor(
+        event_dispatcher_.mouse_cursor_source_window()->cursor());
+  }
+
+  // If the event is in the non-client area the event goes to the owner of
+  // the window. Otherwise if the window is an embed root, forward to the
+  // embedded window.
+  WindowTreeImpl* connection =
+      in_nonclient_area
+          ? connection_manager_->GetConnection(target->id().connection_id)
+          : connection_manager_->GetConnectionWithRoot(target);
+  if (!connection) {
+    DCHECK(!in_nonclient_area);
+    connection = connection_manager_->GetConnection(target->id().connection_id);
+  }
+
+  // TOOD(sad): Adjust this delay, possibly make this dynamic.
+  const base::TimeDelta max_delay = base::debug::BeingDebugged()
+                                        ? base::TimeDelta::FromDays(1)
+                                        : GetDefaultAckTimerDelay();
+  event_ack_timer_.Start(FROM_HERE, max_delay, this,
+                         &WindowTreeHostImpl::OnEventAckTimeout);
+
+  tree_awaiting_input_ack_ = connection;
+  connection->DispatchInputEvent(target, std::move(event));
 }
 
 void WindowTreeHostImpl::UpdateNativeCursor(int32_t cursor_id) {
@@ -289,16 +373,16 @@ void WindowTreeHostImpl::OnEvent(const ui::Event& event) {
   // If this is still waiting for an ack from a previously sent event, then
   // queue up the event to be dispatched once the ack is received.
   if (event_ack_timer_.IsRunning()) {
-    if (!event_queue_.empty() &&
-        EventsCanBeCoalesced(*event_queue_.back(), *mojo_event)) {
-      event_queue_.back() =
-          CoalesceEvents(std::move(event_queue_.back()), std::move(mojo_event));
+    if (!event_queue_.empty() && !event_queue_.back()->processed_target &&
+        EventsCanBeCoalesced(*event_queue_.back()->event, *mojo_event)) {
+      event_queue_.back()->event = CoalesceEvents(
+          std::move(event_queue_.back()->event), std::move(mojo_event));
       return;
     }
-    event_queue_.push(std::move(mojo_event));
+    QueueEvent(std::move(mojo_event), nullptr);
     return;
   }
-  event_dispatcher_.OnEvent(std::move(mojo_event));
+  event_dispatcher_.ProcessEvent(std::move(mojo_event));
 }
 
 void WindowTreeHostImpl::OnDisplayClosed() {
@@ -435,35 +519,14 @@ ServerWindow* WindowTreeHostImpl::GetFocusedWindowForEventDispatcher() {
 void WindowTreeHostImpl::DispatchInputEventToWindow(ServerWindow* target,
                                                     bool in_nonclient_area,
                                                     mojom::EventPtr event) {
-  DCHECK(!event_ack_timer_.IsRunning());
-
-  if (event->pointer_data &&
-      event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE) {
-    DCHECK(event_dispatcher_.mouse_cursor_source_window());
-    UpdateNativeCursor(
-        event_dispatcher_.mouse_cursor_source_window()->cursor());
+  if (event_ack_timer_.IsRunning()) {
+    scoped_ptr<ProcessedEventTarget> processed_event_target(
+        new ProcessedEventTarget(target, in_nonclient_area));
+    QueueEvent(std::move(event), std::move(processed_event_target));
+    return;
   }
 
-  // If the event is in the non-client area the event goes to the owner of
-  // the window. Otherwise if the window is an embed root, forward to the
-  // embedded window.
-  WindowTreeImpl* connection =
-      in_nonclient_area
-          ? connection_manager_->GetConnection(target->id().connection_id)
-          : connection_manager_->GetConnectionWithRoot(target);
-  if (!connection) {
-    DCHECK(!in_nonclient_area);
-    connection = connection_manager_->GetConnection(target->id().connection_id);
-  }
-  tree_awaiting_input_ack_ = connection;
-  connection->DispatchInputEvent(target, std::move(event));
-
-  // TOOD(sad): Adjust this delay, possibly make this dynamic.
-  const base::TimeDelta max_delay = base::debug::BeingDebugged()
-                                        ? base::TimeDelta::FromDays(1)
-                                        : GetDefaultAckTimerDelay();
-  event_ack_timer_.Start(FROM_HERE, max_delay, this,
-                         &WindowTreeHostImpl::OnEventAckTimeout);
+  DispatchInputEventToWindowImpl(target, in_nonclient_area, std::move(event));
 }
 
 void WindowTreeHostImpl::OnWindowDestroyed(ServerWindow* window) {

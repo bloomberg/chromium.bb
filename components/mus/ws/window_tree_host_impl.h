@@ -128,13 +128,44 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   void OnEventAck(mojom::WindowTree* tree);
 
  private:
+  class ProcessedEventTarget;
   friend class WindowTreeTest;
+
+  // There are two types of events that may be queued, both occur only when
+  // waiting for an ack from a client.
+  // . We get an event from the DisplayManager. This results in |event| being
+  //   set, but |processed_target| is null.
+  // . We get an event from the EventDispatcher. In this case both |event| and
+  //   |processed_target| are valid.
+  // The second case happens if EventDispatcher generates more than one event
+  // at a time.
+  struct QueuedEvent {
+    QueuedEvent();
+    ~QueuedEvent();
+
+    mojom::EventPtr event;
+    scoped_ptr<ProcessedEventTarget> processed_target;
+  };
 
   WindowId MapWindowIdFromClient(Id transport_window_id) const;
 
   void OnClientClosed();
+
   void OnEventAckTimeout();
-  void DispatchNextEventFromQueue();
+
+  // Schedules an event to be processed later.
+  void QueueEvent(mojom::EventPtr event,
+                  scoped_ptr<ProcessedEventTarget> processed_event_target);
+
+  // Processes the next valid event in |event_queue_|. If the event has already
+  // been processed it is dispatched, otherwise the event is passed to the
+  // EventDispatcher for processing.
+  void ProcessNextEventFromQueue();
+
+  // Dispatches the event to the appropriate client and starts the ack timer.
+  void DispatchInputEventToWindowImpl(ServerWindow* target,
+                                      bool in_nonclient_area,
+                                      mojom::EventPtr event);
 
   void UpdateNativeCursor(int32_t cursor_id);
 
@@ -188,7 +219,7 @@ class WindowTreeHostImpl : public DisplayManagerDelegate,
   // draws.
   std::set<ServerWindow*> windows_needing_frame_destruction_;
 
-  std::queue<mojom::EventPtr> event_queue_;
+  std::queue<scoped_ptr<QueuedEvent>> event_queue_;
   base::OneShotTimer event_ack_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeHostImpl);
