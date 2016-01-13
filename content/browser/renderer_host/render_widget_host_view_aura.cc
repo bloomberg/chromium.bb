@@ -355,7 +355,7 @@ void RenderWidgetHostViewAura::ApplyEventFilterForPopupExit(
     // notification. We also set a flag in the view indicating that we need
     // to force a Focus notification on the next mouse down.
     if (popup_parent_host_view_ && popup_parent_host_view_->host_) {
-      popup_parent_host_view_->set_focus_on_mouse_down_ = true;
+      popup_parent_host_view_->set_focus_on_mouse_down_or_key_event_ = true;
       popup_parent_host_view_->host_->Blur();
     }
     // Note: popup_parent_host_view_ may be NULL when there are multiple
@@ -479,7 +479,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_snapped_to_boundary_(false),
       is_guest_view_hack_(is_guest_view_hack),
       begin_frame_observer_proxy_(this),
-      set_focus_on_mouse_down_(false),
+      set_focus_on_mouse_down_or_key_event_(false),
       device_scale_factor_(0.0f),
       weak_ptr_factory_(this) {
   if (!is_guest_view_hack_)
@@ -774,8 +774,8 @@ void RenderWidgetHostViewAura::SetKeyboardFocus() {
       ::SetFocus(host->GetAcceleratedWidget());
   }
 #endif
-  if (host_ && set_focus_on_mouse_down_) {
-    set_focus_on_mouse_down_ = false;
+  if (host_ && set_focus_on_mouse_down_or_key_event_) {
+    set_focus_on_mouse_down_or_key_event_ = false;
     host_->Focus();
   }
 }
@@ -2026,6 +2026,10 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
       accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
     }
 
+    // Call SetKeyboardFocus() for not only ET_KEY_PRESSED but also
+    // ET_KEY_RELEASED. If a user closed the hotdog menu with ESC key press,
+    // we need to notify focus to Blink on ET_KEY_RELEASED for ESC key.
+    SetKeyboardFocus();
     // We don't have to communicate with an input method here.
     NativeWebKeyboardEvent webkit_event(*event);
     ForwardKeyboardEvent(webkit_event);

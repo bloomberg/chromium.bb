@@ -2280,12 +2280,6 @@ void WebViewImpl::mouseCaptureLost()
 
 void WebViewImpl::setFocus(bool enable)
 {
-    // On Windows, unnecessary setFocus(false) is called if a popup is shown and
-    // the hotdog menu is clicked.
-    // TODO(tkent): This should be fixed in Chromium.
-    if (!enable && m_pagePopup)
-        return;
-
     m_page->focusController().setFocused(enable);
     if (enable) {
         m_page->focusController().setActive(true);

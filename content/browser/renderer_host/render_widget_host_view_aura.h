@@ -681,7 +681,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 
   // This flag when set ensures that we send over a notification to blink that
   // the current view has focus. Defaults to false.
-  bool set_focus_on_mouse_down_;
+  bool set_focus_on_mouse_down_or_key_event_;
 
   float device_scale_factor_;
 
