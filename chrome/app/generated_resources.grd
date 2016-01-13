@@ -6574,6 +6574,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable the use of chrome.input.ime API.
         </message>
       </if>
+      <message name="IDS_FLAGS_ENABLE_GROUPED_HISTORY_NAME" desc="Enables grouping websites by domain on chrome://history.">
+        Group history by domain
+      </message>
+      <message name="IDS_FLAGS_ENABLE_GROUPED_HISTORY_DESCRIPTION" desc="Description of the 'group by domain' feature on chrome://history">
+        Group history by website domain (i.e. google.com) on chrome://history.
+      </message>
 
       <!-- WebRTC logs -->
       <message name="IDS_WEBRTC_LOGS_TITLE" desc="Title for the chrome://webrtc-logs page.">
