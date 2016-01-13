@@ -10,8 +10,8 @@
 #include "cc/playback/display_list_raster_source.h"
 #include "skia/ext/refptr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "third_party/skia/include/core/SkDrawFilter.h"
 #include "third_party/skia/include/core/SkSurface.h"
+#include "third_party/skia/include/utils/SkPaintFilterCanvas.h"
 
 namespace cc {
 
@@ -37,7 +37,9 @@ void TileTaskWorkerPool::ScheduleTasksOnOriginThread(TileTaskClient* client,
   }
 }
 
-static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
+namespace {
+
+bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
   switch (format) {
     case RGBA_4444:
     case RGBA_8888:
@@ -54,16 +56,46 @@ static bool IsSupportedPlaybackToMemoryFormat(ResourceFormat format) {
   return false;
 }
 
-class SkipImageFilter : public SkDrawFilter {
+class SkipImageCanvas : public SkPaintFilterCanvas {
  public:
-  bool filter(SkPaint* paint, Type type) override {
+  explicit SkipImageCanvas(SkCanvas* canvas) : SkPaintFilterCanvas(canvas) {}
+
+  bool onFilter(SkTCopyOnFirstWrite<SkPaint>* paint, Type type) const override {
     if (type == kBitmap_Type)
       return false;
 
-    SkShader* shader = paint->getShader();
+    SkShader* shader = (*paint) ? (*paint)->getShader() : nullptr;
     return !shader || !shader->isABitmap();
   }
+
+  void onDrawPicture(const SkPicture* picture,
+                     const SkMatrix* matrix,
+                     const SkPaint* paint) override {
+    SkTCopyOnFirstWrite<SkPaint> filteredPaint(paint);
+
+    // To filter nested draws, we must unfurl pictures at this stage.
+    if (onFilter(&filteredPaint, kPicture_Type))
+      SkCanvas::onDrawPicture(picture, matrix, filteredPaint);
+  }
 };
+
+class AutoSkipImageCanvas {
+ public:
+  AutoSkipImageCanvas(SkCanvas* canvas, bool include_images) : canvas_(canvas) {
+    if (!include_images) {
+      skip_image_canvas_ = skia::AdoptRef(new SkipImageCanvas(canvas));
+      canvas_ = skip_image_canvas_.get();
+    }
+  }
+
+  operator SkCanvas*() { return canvas_; }
+
+ private:
+  skia::RefPtr<SkCanvas> skip_image_canvas_;
+  SkCanvas* canvas_;
+};
+
+}  // anonymous namespace
 
 // static
 void TileTaskWorkerPool::PlaybackToMemory(
@@ -97,27 +129,21 @@ void TileTaskWorkerPool::PlaybackToMemory(
     stride = info.minRowBytes();
   DCHECK_GT(stride, 0u);
 
-  skia::RefPtr<SkDrawFilter> image_filter;
-  if (!include_images)
-    image_filter = skia::AdoptRef(new SkipImageFilter);
-
   if (!needs_copy) {
     skia::RefPtr<SkSurface> surface = skia::AdoptRef(
         SkSurface::NewRasterDirect(info, memory, stride, &surface_props));
-    skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-    canvas->setDrawFilter(image_filter.get());
-    raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+    AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
+    raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
                                     canvas_playback_rect, scale);
     return;
   }
 
   skia::RefPtr<SkSurface> surface =
       skia::AdoptRef(SkSurface::NewRaster(info, &surface_props));
-  skia::RefPtr<SkCanvas> canvas = skia::SharePtr(surface->getCanvas());
-  canvas->setDrawFilter(image_filter.get());
+  AutoSkipImageCanvas canvas(surface->getCanvas(), include_images);
   // TODO(reveman): Improve partial raster support by reducing the size of
   // playback rect passed to PlaybackToCanvas. crbug.com/519070
-  raster_source->PlaybackToCanvas(canvas.get(), canvas_bitmap_rect,
+  raster_source->PlaybackToCanvas(canvas, canvas_bitmap_rect,
                                   canvas_bitmap_rect, scale);
 
   {
@@ -126,7 +152,7 @@ void TileTaskWorkerPool::PlaybackToMemory(
     SkImageInfo dst_info =
         SkImageInfo::Make(info.width(), info.height(), buffer_color_type,
                           info.alphaType(), info.profileType());
-    bool rv = canvas->readPixels(dst_info, memory, stride, 0, 0);
+    bool rv = surface->getCanvas()->readPixels(dst_info, memory, stride, 0, 0);
     DCHECK(rv);
   }
 }
