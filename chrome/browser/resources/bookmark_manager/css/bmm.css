@@ -96,9 +96,7 @@ list > .folder > .url:empty::after {
 
 list > * > button {
   -webkit-transition: opacity 150ms;
-  background: #fff
-      url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg)
-      no-repeat center center;
+  background: #fff no-repeat center center;
   border: 1px solid hsl(214, 91%, 85%);
   border-radius: 3px;
   bottom: 1px;
@@ -353,11 +351,13 @@ list > .drag-above {
   padding-top: 0;
 }
 
+list > * > button,
 [i18n-processed] #folders-button,
 [i18n-processed] #organize-button,
 [i18n-processed] .splitter button {
   background-image:
       url(../../../../../ui/webui/resources/images/drop_down_arrow_black.svg);
+  background-size: 9px 4px;
 }
 
 #folders-button {
