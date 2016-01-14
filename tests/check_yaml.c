@@ -28,7 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 #define EXIT_SKIPPED 77
 
 #ifdef _WIN32
-char *program_name = "check_yaml";
+char *program_name;
 char *strndup (char const *s, size_t n);
 #endif
 
@@ -494,6 +494,10 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
 
 int
 main(int argc, char *argv[]) {
+#ifdef _WIN32
+  // FIXME: use gnulib module progname
+  program_name = argv[0];
+#endif
   if (argc != 2) {
     printf("Usage: %s file.yaml\n", argv[0]);
     return 0;
