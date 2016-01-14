@@ -5,6 +5,8 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
+#import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSBezierPath+RoundRect.h"
 
 @implementation InfoBubbleView
@@ -21,6 +23,24 @@
     backgroundColor_.reset([[NSColor whiteColor] retain]);
   }
   return self;
+}
+
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+  InfoBubbleWindow* info_bubble_window =
+      base::mac::ObjCCast<InfoBubbleWindow>([self window]);
+  if (info_bubble_window && [info_bubble_window isClosing]) {
+    // When a keyboard shortcut is pressed, the method that handles it is
+    // -[NSApplication _handleKeyEquivalent:], which calls the
+    // -performKeyEquivalent methods on all windows in the window list, whether
+    // they are open or closed, shown or hidden, active or dying. If a bubble
+    // window is closed but lingers in an autorelease pool, it might receive
+    // unexpected requests for key commands; see <http://crbug.com/574798> for
+    // an example. In such a case, make sure the key equivalent search stops
+    // here rather than proceeding down the view hierarchy and tickling stale
+    // pointers.
+    return NO;
+  }
+  return [super performKeyEquivalent:event];
 }
 
 - (void)drawRect:(NSRect)rect {
