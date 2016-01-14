@@ -530,10 +530,13 @@
     { "name": "google.us", "include_subdomains": true, "pins": "google" },
     { "name": "google.uz", "include_subdomains": true, "pins": "google" },
     { "name": "google.vg", "include_subdomains": true, "pins": "google" },
+    { "name": "googlevideo.com", "include_subdomains": true, "pins": "google" },
     { "name": "google.vu", "include_subdomains": true, "pins": "google" },
+    { "name": "googleweblight.com", "include_subdomains": true, "pins": "google" },
     { "name": "google.ws", "include_subdomains": true, "pins": "google" },
     { "name": "goo.gl", "include_subdomains": true, "pins": "google" },
     { "name": "gstatic.com", "include_subdomains": true, "pins": "google" },
+    { "name": "static.googleadsserving.cn", "include_subdomains": true, "pins": "google" },
     { "name": "urchin.com", "include_subdomains": true, "pins": "google" },
     { "name": "youtube.com", "include_subdomains": true, "pins": "google" },
     { "name": "youtu.be", "include_subdomains": true, "pins": "google" },
@@ -5894,6 +5897,9 @@
     "WITHGOOGLE_COM",
     "G4W_CO",
     "BADSSL_COM",
-    "YAHOO_COM"
+    "YAHOO_COM",
+    "GOOGLEVIDEO_COM",
+    "GOOGLEWEBLIGHT_COM",
+    "GOOGLEADSSERVING_CN"
   ]
 }
