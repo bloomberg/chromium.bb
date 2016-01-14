@@ -506,8 +506,6 @@ crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-out
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-polygon-004.html [ Failure ]
 crbug.com/441840 imported/csswg-test/css-shapes-1/shape-outside/values/shape-outside-shape-arguments-000.html [ Failure ]
 
-crbug.com/574577 imported/csswg-test/css-text-3/overflow-wrap/overflow-wrap-break-word-fit-content-001.html [ Failure ]
-
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-003.xht [ Failure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-005.xht [ Failure ]
 crbug.com/505151 imported/csswg-test/css-writing-modes-3/abs-pos-non-replaced-icb-vlr-011.xht [ Failure ]

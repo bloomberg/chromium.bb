@@ -624,7 +624,7 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
         bool applyWordSpacing = false;
 
         // Determine if we should try breaking in the middle of a word.
-        if (breakWords && !midWordBreak) {
+        if (breakWords && !midWordBreak && !U16_IS_TRAIL(c)) {
             widthFromLastBreakingOpportunity += charWidth;
             bool midWordBreakIsBeforeSurrogatePair = U16_IS_LEAD(c) && m_current.offset() + 1 < layoutText.textLength() && U16_IS_TRAIL(layoutText.uncheckedCharacterAt(m_current.offset() + 1));
             charWidth = textWidth(layoutText, m_current.offset(), midWordBreakIsBeforeSurrogatePair ? 2 : 1, font, m_width.committedWidth() + widthFromLastBreakingOpportunity, m_collapseWhiteSpace);
