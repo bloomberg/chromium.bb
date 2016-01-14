@@ -27,6 +27,7 @@
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   _window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+  [self.window makeKeyAndVisible];
   self.window.backgroundColor = [UIColor whiteColor];
 
   _delegate.reset(new web::ShellMainDelegate());
@@ -40,7 +41,6 @@
   base::scoped_nsobject<ViewController> controller(
       [[ViewController alloc] initWithBrowserState:browserState]);
   self.window.rootViewController = controller;
-  [self.window makeKeyAndVisible];
   return YES;
 }
 
