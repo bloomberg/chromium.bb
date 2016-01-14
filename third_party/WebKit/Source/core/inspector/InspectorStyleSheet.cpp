@@ -296,7 +296,8 @@ void StyleSheetHandler::observeComment(unsigned startOffset, unsigned endOffset)
     if (commentPropertyData.size() != 1)
         return;
     CSSPropertySourceData& propertyData = commentPropertyData.at(0);
-    if (propertyData.range.length() != commentText.length())
+    bool parsedOk = propertyData.parsedOk || propertyData.name.startsWith("-moz-") || propertyData.name.startsWith("-o-") || propertyData.name.startsWith("-webkit-") || propertyData.name.startsWith("-ms-");
+    if (!parsedOk || propertyData.range.length() != commentText.length())
         return;
 
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
