@@ -187,9 +187,15 @@ class InputRouterImplTest : public testing::Test {
     input_router_->SendKeyboardEvent(key_event);
   }
 
-  void SimulateWheelEvent(float dX, float dY, int modifiers, bool precise) {
+  void SimulateWheelEvent(float x,
+                          float y,
+                          float dX,
+                          float dY,
+                          int modifiers,
+                          bool precise) {
     input_router_->SendWheelEvent(MouseWheelEventWithLatencyInfo(
-        SyntheticWebMouseWheelEventBuilder::Build(dX, dY, modifiers, precise)));
+        SyntheticWebMouseWheelEventBuilder::Build(x, y, dX, dY, modifiers,
+                                                  precise)));
   }
 
   void SimulateMouseEvent(WebInputEvent::Type type, int x, int y) {
@@ -687,11 +693,11 @@ TEST_F(InputRouterImplTest, IgnoreKeyEventsWeDidntSend) {
 
 TEST_F(InputRouterImplTest, CoalescesWheelEvents) {
   // Simulate wheel events.
-  SimulateWheelEvent(0, -5, 0, false);  // sent directly
-  SimulateWheelEvent(0, -10, 0, false);  // enqueued
-  SimulateWheelEvent(8, -6, 0, false);  // coalesced into previous event
-  SimulateWheelEvent(9, -7, 1, false);  // enqueued, different modifiers
-  SimulateWheelEvent(0, -10, 0, false);  // enqueued, different modifiers
+  SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
+  SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
+  SimulateWheelEvent(0, 0, 8, -6, 0, false);   // coalesced into previous event
+  SimulateWheelEvent(0, 0, 9, -7, 1, false);   // enqueued, different modifiers
+  SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued, different modifiers
   // Explicitly verify that PhaseEnd isn't coalesced to avoid bugs like
   // https://crbug.com/154740.
   SimulateWheelEventWithPhase(WebMouseWheelEvent::PhaseEnded);  // enqueued
@@ -931,8 +937,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
 
 TEST_F(InputRouterImplTest, UnhandledWheelEvent) {
   // Simulate wheel events.
-  SimulateWheelEvent(0, -5, 0, false);  // sent directly
-  SimulateWheelEvent(0, -10, 0, false);  // enqueued
+  SimulateWheelEvent(0, 0, 0, -5, 0, false);   // sent directly
+  SimulateWheelEvent(0, 0, 0, -10, 0, false);  // enqueued
 
   // Check that only the first event was sent.
   EXPECT_TRUE(process_->sink().GetUniqueMessageMatching(
@@ -1803,7 +1809,7 @@ TEST_F(InputRouterImplTest, OverscrollDispatch) {
   wheel_overscroll.latest_overscroll_delta = gfx::Vector2dF(3, 0);
   wheel_overscroll.current_fling_velocity = gfx::Vector2dF(1, 0);
 
-  SimulateWheelEvent(3, 0, 0, false);
+  SimulateWheelEvent(0, 0, 3, 0, 0, false);
   InputEventAck ack(WebInputEvent::MouseWheel,
                     INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
   ack.overscroll.reset(new DidOverscrollParams(wheel_overscroll));
@@ -1881,11 +1887,13 @@ TEST_F(InputRouterImplScaleMouseEventTest, ScaleMouseEventTest) {
 
 TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
   ASSERT_EQ(0u, process_->sink().message_count());
-  SimulateWheelEvent(10, 10, 0, false);
+  SimulateWheelEvent(5, 5, 10, 10, 0, false);
   ASSERT_EQ(1u, process_->sink().message_count());
 
   const WebMouseWheelEvent* sent_event =
       GetSentWebInputEvent<WebMouseWheelEvent>();
+  EXPECT_EQ(10, sent_event->x);
+  EXPECT_EQ(10, sent_event->y);
   EXPECT_EQ(20, sent_event->deltaX);
   EXPECT_EQ(20, sent_event->deltaY);
   EXPECT_EQ(2, sent_event->wheelTicksX);
@@ -1893,6 +1901,8 @@ TEST_F(InputRouterImplScaleEventTest, ScaleMouseWheelEventTest) {
 
   const WebMouseWheelEvent* filter_event =
       GetFilterWebInputEvent<WebMouseWheelEvent>();
+  EXPECT_EQ(5, filter_event->x);
+  EXPECT_EQ(5, filter_event->y);
   EXPECT_EQ(10, filter_event->deltaX);
   EXPECT_EQ(10, filter_event->deltaY);
   EXPECT_EQ(1, filter_event->wheelTicksX);

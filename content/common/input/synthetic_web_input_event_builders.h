@@ -26,7 +26,9 @@ class CONTENT_EXPORT SyntheticWebMouseWheelEventBuilder {
  public:
   static blink::WebMouseWheelEvent Build(
       blink::WebMouseWheelEvent::Phase phase);
-  static blink::WebMouseWheelEvent Build(float dx,
+  static blink::WebMouseWheelEvent Build(float x,
+                                         float y,
+                                         float dx,
                                          float dy,
                                          int modifiers,
                                          bool precise);

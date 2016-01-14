@@ -83,6 +83,8 @@ scoped_ptr<blink::WebInputEvent> ConvertWebInputEventToViewport(
     blink::WebMouseWheelEvent* wheel_event = new blink::WebMouseWheelEvent;
     scaled_event.reset(wheel_event);
     *wheel_event = static_cast<const blink::WebMouseWheelEvent&>(event);
+    wheel_event->x *= scale;
+    wheel_event->y *= scale;
     wheel_event->deltaX *= scale;
     wheel_event->deltaY *= scale;
     wheel_event->wheelTicksX *= scale;

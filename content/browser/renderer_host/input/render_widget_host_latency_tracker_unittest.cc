@@ -134,7 +134,8 @@ TEST(RenderWidgetHostLatencyTrackerTest, InputCoordinatesPopulated) {
   tracker.Initialize(kTestRoutingId, kTestProcessId);
 
   {
-    auto event = SyntheticWebMouseWheelEventBuilder::Build(-5, 0, 0, true);
+    auto event =
+        SyntheticWebMouseWheelEventBuilder::Build(0, 0, -5, 0, 0, true);
     event.x = 100;
     event.y = 200;
     ui::LatencyInfo latency_info;
