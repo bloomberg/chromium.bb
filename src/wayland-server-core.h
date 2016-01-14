@@ -182,6 +182,9 @@ void
 wl_client_get_credentials(struct wl_client *client,
 			  pid_t *pid, uid_t *uid, gid_t *gid);
 
+int
+wl_client_get_fd(struct wl_client *client);
+
 void
 wl_client_add_destroy_listener(struct wl_client *client,
 			       struct wl_listener *listener);

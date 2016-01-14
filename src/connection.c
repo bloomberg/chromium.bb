@@ -405,6 +405,12 @@ wl_message_count_arrays(const struct wl_message *message)
 	return arrays;
 }
 
+int
+wl_connection_get_fd(struct wl_connection *connection)
+{
+	return connection->fd;
+}
+
 static int
 wl_connection_put_fd(struct wl_connection *connection, int32_t fd)
 {

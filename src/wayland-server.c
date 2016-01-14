@@ -491,6 +491,41 @@ wl_client_get_credentials(struct wl_client *client,
 		*gid = client->ucred.gid;
 }
 
+/** Get the file descriptor for the client
+ *
+ * \param client The display object
+ * \return The file descriptor to use for the connection
+ *
+ * This function returns the file descriptor for the given client.
+ *
+ * Be sure to use the file descriptor from the client for inspection only.
+ * If the caller does anything to the file descriptor that changes its state,
+ * it will likely cause problems.
+ *
+ * See also wl_client_get_credentials().
+ * It is recommended that you evaluate whether wl_client_get_credentials()
+ * can be applied to your use case instead of this function.
+ *
+ * If you would like to distinguish just between the client and the compositor
+ * itself from the client's request, it can be done by getting the client
+ * credentials and by checking the PID of the client and the compositor's PID.
+ * Regarding the case in which the socketpair() is being used, you need to be
+ * careful. Please note the documentation for wl_client_get_credentials().
+ *
+ * This function can be used for a compositor to validate a request from
+ * a client if there are additional information provided from the client's
+ * file descriptor. For instance, suppose you can get the security contexts
+ * from the client's file descriptor. The compositor can validate the client's
+ * request with the contexts and make a decision whether it permits or deny it.
+ *
+ * \memberof wl_client
+ */
+WL_EXPORT int
+wl_client_get_fd(struct wl_client *client)
+{
+	return wl_connection_get_fd(client->connection);
+}
+
 /** Look up an object in the client name space
  *
  * \param client The client object
