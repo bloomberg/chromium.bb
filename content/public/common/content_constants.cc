@@ -40,7 +40,4 @@ const int kStatsMaxCounters = 3000;
 
 const int kHistogramSynchronizerReservedSequenceNumber = 0;
 
-const char kFlashHwVideoDecodeFieldTrialName[] = "FlashHardwareVideoDecode";
-const char kFlashHwVideoDecodeFieldTrialEnabledName[] = "HwVideo";
-
 }  // namespace content

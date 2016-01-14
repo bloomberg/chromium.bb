@@ -62,10 +62,6 @@ extern const int kStatsMaxCounters;
 // a browser-supplied sequence number.
 CONTENT_EXPORT extern const int kHistogramSynchronizerReservedSequenceNumber;
 
-// Shared constants for the flash hardware video decode field trial.
-CONTENT_EXPORT extern const char kFlashHwVideoDecodeFieldTrialName[];
-CONTENT_EXPORT extern const char kFlashHwVideoDecodeFieldTrialEnabledName[];
-
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_CONTENT_CONSTANTS_H_

@@ -390,20 +390,8 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
     // Copy any flash args over and introduce field trials if necessary.
     // TODO(vtl): Stop passing flash args in the command line, or windows is
     // going to explode.
-    std::string field_trial =
-        base::FieldTrialList::FindFullName(kFlashHwVideoDecodeFieldTrialName);
     std::string existing_args =
         browser_command_line.GetSwitchValueASCII(switches::kPpapiFlashArgs);
-    if (field_trial == kFlashHwVideoDecodeFieldTrialEnabledName) {
-      // Arguments passed to Flash are comma delimited.
-      if (!existing_args.empty())
-        existing_args.append(",");
-      existing_args.append("enable_hw_video_decode=1");
-#if defined(OS_MACOSX)
-      // TODO(ihf): Remove this once Flash newer than 15.0.0.223 is released.
-      existing_args.append(",enable_hw_video_decode_mac=1");
-#endif
-    }
     cmd_line->AppendSwitchASCII(switches::kPpapiFlashArgs, existing_args);
   }
 
