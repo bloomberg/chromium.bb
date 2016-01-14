@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/video_frame.h"
@@ -189,7 +190,7 @@ interfaces::DecoderBufferPtr MojoDecryptor::TransferDecoderBuffer(
     return buffer;
 
   // Serialize the data section of the DecoderBuffer into our pipe.
-  uint32_t num_bytes = encrypted->data_size();
+  uint32_t num_bytes = base::checked_cast<uint32_t>(encrypted->data_size());
   DCHECK_GT(num_bytes, 0u);
   CHECK_EQ(WriteDataRaw(producer_handle_.get(), encrypted->data(), &num_bytes,
                         MOJO_READ_DATA_FLAG_ALL_OR_NONE),
@@ -206,7 +207,7 @@ scoped_refptr<DecoderBuffer> MojoDecryptor::ReadDecoderBuffer(
     return media_buffer;
 
   // Read the inner data for the DecoderBuffer from our DataPipe.
-  uint32_t num_bytes = media_buffer->data_size();
+  uint32_t num_bytes = base::checked_cast<uint32_t>(media_buffer->data_size());
   DCHECK_GT(num_bytes, 0u);
   CHECK_EQ(ReadDataRaw(consumer_handle_.get(), media_buffer->writable_data(),
                        &num_bytes, MOJO_READ_DATA_FLAG_ALL_OR_NONE),

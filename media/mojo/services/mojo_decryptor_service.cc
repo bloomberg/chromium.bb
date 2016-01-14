@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/cdm_context.h"
 #include "media/base/decoder_buffer.h"
@@ -184,12 +185,14 @@ interfaces::DecoderBufferPtr MojoDecryptorService::TransferDecoderBuffer(
     return buffer;
 
   // Serialize the data section of the DecoderBuffer into our pipe.
-  uint32_t num_bytes = encrypted->data_size();
-  DCHECK_GT(num_bytes, 0u);
-  CHECK_EQ(WriteDataRaw(producer_handle_.get(), encrypted->data(), &num_bytes,
-                        MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+  uint32_t bytes_to_write =
+      base::checked_cast<uint32_t>(encrypted->data_size());
+  DCHECK_GT(bytes_to_write, 0u);
+  uint32_t bytes_written = bytes_to_write;
+  CHECK_EQ(WriteDataRaw(producer_handle_.get(), encrypted->data(),
+                        &bytes_written, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
            MOJO_RESULT_OK);
-  CHECK_EQ(num_bytes, static_cast<uint32_t>(encrypted->data_size()));
+  CHECK_EQ(bytes_to_write, bytes_written);
   return buffer;
 }
 
@@ -201,12 +204,14 @@ scoped_refptr<DecoderBuffer> MojoDecryptorService::ReadDecoderBuffer(
     return media_buffer;
 
   // Read the inner data for the DecoderBuffer from our DataPipe.
-  uint32_t num_bytes = media_buffer->data_size();
-  DCHECK_GT(num_bytes, 0u);
+  uint32_t bytes_to_read =
+      base::checked_cast<uint32_t>(media_buffer->data_size());
+  DCHECK_GT(bytes_to_read, 0u);
+  uint32_t bytes_read = bytes_to_read;
   CHECK_EQ(ReadDataRaw(consumer_handle_.get(), media_buffer->writable_data(),
-                       &num_bytes, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
+                       &bytes_read, MOJO_READ_DATA_FLAG_ALL_OR_NONE),
            MOJO_RESULT_OK);
-  CHECK_EQ(num_bytes, static_cast<uint32_t>(media_buffer->data_size()));
+  CHECK_EQ(bytes_to_read, bytes_read);
   return media_buffer;
 }
 

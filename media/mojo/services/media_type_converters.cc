@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/numerics/safe_conversions.h"
 #include "media/base/audio_buffer.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/buffering_state.h"
@@ -410,8 +411,9 @@ TypeConverter<media::interfaces::DecoderBufferPtr,
   mojo_buffer->timestamp_usec = input->timestamp().InMicroseconds();
   mojo_buffer->duration_usec = input->duration().InMicroseconds();
   mojo_buffer->is_key_frame = input->is_key_frame();
-  mojo_buffer->data_size = input->data_size();
-  mojo_buffer->side_data_size = input->side_data_size();
+  mojo_buffer->data_size = base::checked_cast<uint32_t>(input->data_size());
+  mojo_buffer->side_data_size =
+      base::checked_cast<uint32_t>(input->side_data_size());
   mojo_buffer->front_discard_usec =
       input->discard_padding().first.InMicroseconds();
   mojo_buffer->back_discard_usec =

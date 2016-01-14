@@ -5,7 +5,6 @@
 #include "media/base/decoder_buffer_queue.h"
 
 #include "base/logging.h"
-#include "base/numerics/safe_conversions.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/timestamp_constants.h"
 
@@ -23,9 +22,7 @@ void DecoderBufferQueue::Push(const scoped_refptr<DecoderBuffer>& buffer) {
 
   queue_.push_back(buffer);
 
-  // TODO(damienv): Remove the cast here and in every place in this file
-  // when DecoderBuffer::data_size is modified to return a size_t.
-  data_size_ += base::checked_cast<size_t, int>(buffer->data_size());
+  data_size_ += buffer->data_size();
 
   // TODO(scherkus): FFmpeg returns some packets with no timestamp after
   // seeking. Fix and turn this into CHECK(). See http://crbug.com/162192
@@ -55,8 +52,7 @@ scoped_refptr<DecoderBuffer> DecoderBufferQueue::Pop() {
   scoped_refptr<DecoderBuffer> buffer = queue_.front();
   queue_.pop_front();
 
-  size_t buffer_data_size =
-      base::checked_cast<size_t, int>(buffer->data_size());
+  size_t buffer_data_size = buffer->data_size();
   DCHECK_LE(buffer_data_size, data_size_);
   data_size_ -= buffer_data_size;
 

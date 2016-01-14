@@ -229,8 +229,7 @@ class FrameProcessorTest : public testing::TestWithParam<bool> {
 
       // Decode the original_time_in_ms from the buffer's data.
       double original_time_in_ms;
-      ASSERT_EQ(static_cast<int>(sizeof(original_time_in_ms)),
-                last_read_buffer_->data_size());
+      ASSERT_EQ(sizeof(original_time_in_ms), last_read_buffer_->data_size());
       original_time_in_ms = *(reinterpret_cast<const double*>(
           last_read_buffer_->data()));
       if (original_time_in_ms != time_in_ms)
