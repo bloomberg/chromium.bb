@@ -47,8 +47,11 @@ public:
     // Requests the host invalidate the contents.
     virtual void invalidateRect(const IntRect& updateRect) = 0;
 
-    // Converts from the window coordinates to screen coordinates.
+    // Converts the rect from the viewport coordinates to screen coordinates.
     virtual IntRect viewportToScreen(const IntRect&) const = 0;
+
+    // Converts the length from the screen coordinates to the viewport coordinates.
+    virtual float screenToViewport(float length) const = 0;
 
     virtual void scheduleAnimation(Widget*) = 0;
 };

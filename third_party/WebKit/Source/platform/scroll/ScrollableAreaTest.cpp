@@ -162,7 +162,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
 
     EXPECT_CALL(*scrollableArea, layerForHorizontalScrollbar()).WillRepeatedly(Return(&graphicsLayer));
 
-    RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::create(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar);
+    RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::create(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar, nullptr);
     graphicsLayer.resetTrackedPaintInvalidations();
     scrollbar->setNeedsPaintInvalidation();
     EXPECT_TRUE(graphicsLayer.hasTrackedPaintInvalidations());
