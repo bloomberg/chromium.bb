@@ -433,7 +433,7 @@ class XcodeSettings(object):
     # Since the CLT has no SDK paths anyway, returning None is the
     # most sensible route and should still do the right thing.
     try:
-      return GetStdout(['xcodebuild', '-version', '-sdk', sdk, infoitem])
+      return GetStdout(['xcrun', '--sdk', sdk, infoitem])
     except:
       pass
 
@@ -445,7 +445,8 @@ class XcodeSettings(object):
   def _XcodePlatformPath(self, configname=None):
     sdk_root = self._SdkRoot(configname)
     if sdk_root not in XcodeSettings._platform_path_cache:
-      platform_path = self._GetSdkVersionInfoItem(sdk_root, 'PlatformPath')
+      platform_path = self._GetSdkVersionInfoItem(sdk_root,
+                                                  '--show-sdk-platform-path')
       XcodeSettings._platform_path_cache[sdk_root] = platform_path
     return XcodeSettings._platform_path_cache[sdk_root]
 
@@ -457,7 +458,7 @@ class XcodeSettings(object):
 
   def _XcodeSdkPath(self, sdk_root):
     if sdk_root not in XcodeSettings._sdk_path_cache:
-      sdk_path = self._GetSdkVersionInfoItem(sdk_root, 'Path')
+      sdk_path = self._GetSdkVersionInfoItem(sdk_root, '--show-sdk-path')
       XcodeSettings._sdk_path_cache[sdk_root] = sdk_path
       if sdk_root:
         XcodeSettings._sdk_root_cache[sdk_path] = sdk_root
@@ -1102,7 +1103,7 @@ class XcodeSettings(object):
       cache['DTSDKName'] = sdk_root
       if xcode >= '0430':
         cache['DTSDKBuild'] = self._GetSdkVersionInfoItem(
-            sdk_root, 'ProductBuildVersion')
+            sdk_root, '--show-sdk-version')
       else:
         cache['DTSDKBuild'] = cache['BuildMachineOSBuild']
 
@@ -1110,7 +1111,7 @@ class XcodeSettings(object):
         cache['DTPlatformName'] = cache['DTSDKName']
         if configname.endswith("iphoneos"):
           cache['DTPlatformVersion'] = self._GetSdkVersionInfoItem(
-              sdk_root, 'ProductVersion')
+              sdk_root, '--show-sdk-version')
           cache['CFBundleSupportedPlatforms'] = ['iPhoneOS']
         else:
           cache['CFBundleSupportedPlatforms'] = ['iPhoneSimulator']
