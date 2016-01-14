@@ -42,7 +42,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> LayoutScrollbar::createCustomScrollbar(Scrolla
 }
 
 LayoutScrollbar::LayoutScrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orientation, Node* ownerNode, LocalFrame* owningFrame)
-    : Scrollbar(scrollableArea, orientation, RegularScrollbar, LayoutScrollbarTheme::layoutScrollbarTheme())
+    : Scrollbar(scrollableArea, orientation, RegularScrollbar, nullptr, LayoutScrollbarTheme::layoutScrollbarTheme())
     , m_owner(ownerNode)
     , m_owningFrame(owningFrame)
 {

@@ -242,14 +242,14 @@ static IntRect cornerRect(const LayoutBox& box, const Scrollbar* horizontalScrol
         horizontalThickness = ScrollbarTheme::theme().scrollbarThickness();
         verticalThickness = horizontalThickness;
     } else if (verticalScrollbar && !horizontalScrollbar) {
-        horizontalThickness = verticalScrollbar->width();
+        horizontalThickness = verticalScrollbar->scrollbarThickness();
         verticalThickness = horizontalThickness;
     } else if (horizontalScrollbar && !verticalScrollbar) {
-        verticalThickness = horizontalScrollbar->height();
+        verticalThickness = horizontalScrollbar->scrollbarThickness();
         horizontalThickness = verticalThickness;
     } else {
-        horizontalThickness = verticalScrollbar->width();
-        verticalThickness = horizontalScrollbar->height();
+        horizontalThickness = verticalScrollbar->scrollbarThickness();
+        verticalThickness = horizontalScrollbar->scrollbarThickness();
     }
     return IntRect(cornerStart(box, bounds.x(), bounds.maxX(), horizontalThickness),
         bounds.maxY() - verticalThickness - box.styleRef().borderBottomWidth(),
@@ -1508,7 +1508,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> PaintLayerScrollableArea::ScrollbarManager::cr
         ScrollbarControlSize scrollbarSize = RegularScrollbar;
         if (actualLayoutObject.styleRef().hasAppearance())
             scrollbarSize = LayoutTheme::theme().scrollbarControlSizeForPart(actualLayoutObject.styleRef().appearance());
-        scrollbar = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize);
+        scrollbar = Scrollbar::create(m_scrollableArea.get(), orientation, scrollbarSize, &m_scrollableArea->box().frame()->page()->chromeClient());
         if (orientation == HorizontalScrollbar)
             m_scrollableArea->didAddScrollbar(*scrollbar, HorizontalScrollbar);
         else
