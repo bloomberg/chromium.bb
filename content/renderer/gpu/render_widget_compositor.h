@@ -42,8 +42,7 @@ class CompositorMessage;
 }
 
 namespace content {
-
-class RenderWidgetCompositorDelegate;
+class RenderWidget;
 
 class CONTENT_EXPORT RenderWidgetCompositor
     : NON_EXPORTED_BASE(public blink::WebLayerTreeView),
@@ -54,8 +53,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
   static scoped_ptr<RenderWidgetCompositor> Create(
-      RenderWidgetCompositorDelegate* delegate,
-      float device_scale_factor,
+      RenderWidget* widget,
       CompositorDependencies* compositor_deps);
 
   ~RenderWidgetCompositor() override;
@@ -186,10 +184,10 @@ class CONTENT_EXPORT RenderWidgetCompositor
   };
 
  protected:
-  RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
+  RenderWidgetCompositor(RenderWidget* widget,
                          CompositorDependencies* compositor_deps);
 
-  void Initialize(float device_scale_factor);
+  void Initialize();
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
@@ -199,8 +197,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void SynchronouslyComposite();
 
   int num_failed_recreate_attempts_;
-  RenderWidgetCompositorDelegate* const delegate_;
-  CompositorDependencies* const compositor_deps_;
+  RenderWidget* widget_;
+  CompositorDependencies* compositor_deps_;
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;
   bool never_visible_;
 

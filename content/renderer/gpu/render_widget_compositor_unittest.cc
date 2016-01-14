@@ -62,10 +62,9 @@ class RenderWidgetCompositorTest : public testing::Test {
   RenderWidgetCompositorTest()
       : compositor_deps_(new FakeCompositorDependencies),
         render_widget_(new TestRenderWidget(compositor_deps_.get())),
-        render_widget_compositor_(RenderWidgetCompositor::Create(
-            render_widget_.get(),
-            1.f /* initial_device_scale_factor */,
-            compositor_deps_.get())) {}
+        render_widget_compositor_(
+            RenderWidgetCompositor::Create(render_widget_.get(),
+                                           compositor_deps_.get())) {}
   ~RenderWidgetCompositorTest() override {}
 
  protected:
@@ -244,8 +243,7 @@ class RenderWidgetCompositorOutputSurfaceTest : public testing::Test {
         render_widget_(new RenderWidgetOutputSurface(compositor_deps_.get())) {
     render_widget_compositor_.reset(new RenderWidgetCompositorOutputSurface(
         render_widget_.get(), compositor_deps_.get()));
-    render_widget_compositor_->Initialize(
-        1.f /* initial_device_scale_factor */);
+    render_widget_compositor_->Initialize();
     render_widget_->SetCompositor(render_widget_compositor_.get());
   }
 
