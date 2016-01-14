@@ -94,7 +94,7 @@ void DrmCursorCore::MoveCursorTo(gfx::AcceleratedWidget window,
     window_ = window;
   }
 
-  SetCursorLocation(location_);
+  SetCursorLocation(location);
   if (window != old_window)
     SendCursorShow();
   else
