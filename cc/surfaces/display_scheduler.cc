@@ -155,7 +155,8 @@ bool DisplayScheduler::OnBeginFrameDerivedImpl(const BeginFrameArgs& args) {
 void DisplayScheduler::OnBeginFrameSourcePausedChanged(bool paused) {
   // BeginFrameSources used with DisplayScheduler do not make use of this
   // feature.
-  NOTIMPLEMENTED();
+  if (paused)
+    NOTIMPLEMENTED();
 }
 
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
