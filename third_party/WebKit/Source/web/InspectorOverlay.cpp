@@ -524,6 +524,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntPoint& docume
 {
     RefPtr<JSONObject> resetData = JSONObject::create();
     resetData->setNumber("deviceScaleFactor", m_webViewImpl->page()->deviceScaleFactor());
+    resetData->setNumber("pageScaleFactor", m_webViewImpl->page()->pageScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setNumber("pageZoomFactor", m_webViewImpl->mainFrameImpl()->frame()->pageZoomFactor());
     resetData->setNumber("scrollX", documentScrollOffset.x());
