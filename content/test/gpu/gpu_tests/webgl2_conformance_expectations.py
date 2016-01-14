@@ -83,7 +83,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         bug=295792)
     self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         bug=483282)
-    self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
     # Note that this test fails on ['win', 'intel'] with bug=483282
@@ -145,6 +144,61 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         '-with-canvas-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['win', 'mac'], bug=483282)
 
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rg8-rg-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgb565-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgb5_a1-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgba4-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgba4-rgba-unsigned_short_4_4_4_4.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-r8-red-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rg8-rg-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgb8-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgb565-rgb-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgb565-rgb-unsigned_short_5_6_5.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgb5_a1-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgb5_a1-rgba-unsigned_short_5_5_5_1.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgba4-rgba-unsigned_byte.html',
+        ['win', 'mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgba4-rgba-unsigned_short_4_4_4_4.html',
+        ['win', 'mac'], bug=483282)
+
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
     self.Skip('deqp/functional/gles3/texturestatequery.html',
@@ -159,7 +213,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Skip('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/*', ['win'], bug=483282)
     self.Skip('conformance2/transform_feedback/transform_feedback.html',
         ['win'], bug=483282)
     self.Fail('conformance2/glsl3/const-array-init.html',
@@ -248,8 +301,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/renderbuffers/' +
         'multisampled-renderbuffer-initialization.html',
         ['mac'], bug=483282)
+    self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
+        '-with-canvas-rgba8-rgba-unsigned_byte.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/canvas/tex-image-and-sub-image-3d' +
+        '-with-canvas-rgba8-rgba-unsigned_byte.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/textures/video/*', ['mac'], bug=483282)
-    self.Fail('conformance2/textures/webgl_canvas/*', ['mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-2d' +
+        '-with-webgl-canvas-rgba8-rgba-unsigned_byte.html',
+        ['mac'], bug=483282)
+    self.Fail('conformance2/textures/webgl_canvas/tex-image-and-sub-image-3d' +
+        '-with-webgl-canvas-rgba8-rgba-unsigned_byte.html',
+        ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['mac'], bug=483282)
     self.Fail('conformance2/textures/misc/texture-npot.html',
@@ -269,6 +333,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('deqp/functional/gles3/shaderswitch.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing.html',
+        ['linux'], bug=483282)
+    self.Fail('conformance2/rendering/draw-buffers.html',
         ['linux'], bug=483282)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['linux'], bug=483282)
