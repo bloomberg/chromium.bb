@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
@@ -56,6 +57,11 @@ class CONTENT_EXPORT ApiKey {
   bool ValidateOrigin(const std::string& origin) const;
   bool ValidateApiName(const std::string& api_name) const;
   bool ValidateDate(const base::Time& now) const;
+  bool ValidateSignature(const base::StringPiece& public_key) const;
+
+  static bool ValidateSignature(const std::string& signature_text,
+                                const std::string& data,
+                                const base::StringPiece& public_key);
 
  private:
   ApiKey(const std::string& signature,

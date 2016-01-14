@@ -205,6 +205,7 @@ source_set("common") {
       "//sandbox",
       "//storage/common",
       "//third_party/WebKit/public:blink",
+      "//third_party/boringssl",
       "//third_party/mojo/src/mojo/edk/system",
       "//ui/gl",
     ]

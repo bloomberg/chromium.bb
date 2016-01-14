@@ -635,6 +635,7 @@
         '../mojo/mojo_base.gyp:mojo_environment_chromium',
         '../storage/storage_common.gyp:storage_common',
         '../third_party/WebKit/public/blink.gyp:blink',
+        '../third_party/boringssl/boringssl.gyp:boringssl',
         '../third_party/mojo/mojo_edk.gyp:mojo_system_impl',
         '../third_party/mojo/mojo_public.gyp:mojo_cpp_bindings',
         '../ui/gl/gl.gyp:gl',
