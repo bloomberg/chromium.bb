@@ -572,8 +572,10 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
 
     AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
     AtomicString namespaceURI = determineNamespace(namespacePrefix);
-    if (namespaceURI.isNull())
+    if (namespaceURI.isNull()) {
+        m_failedParsing = true;
         return;
+    }
     QualifiedName tag = QualifiedName(namespacePrefix, determinedElementName, namespaceURI);
 
     if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
