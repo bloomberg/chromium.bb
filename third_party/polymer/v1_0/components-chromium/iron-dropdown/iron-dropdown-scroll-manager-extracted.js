@@ -27,6 +27,10 @@
        */
       elementIsScrollLocked: function(element) {
         var currentLockingElement = this.currentLockingElement;
+
+        if (currentLockingElement === undefined)
+          return false;
+
         var scrollLocked;
 
         if (this._hasCachedLockedElement(element)) {

@@ -7,11 +7,15 @@
     "list",
     "virtual-list"
   ],
-  "version": "1.1.6",
+  "version": "1.1.7",
   "homepage": "https://github.com/PolymerElements/iron-list",
   "authors": [
     "The Polymer Authors"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-list"
+  },
   "main": "iron-list.html",
   "license": "http://polymer.github.io/LICENSE.txt",
   "ignore": [],
@@ -32,9 +36,10 @@
     "iron-icons": "polymerelements/iron-icons#^1.0.0",
     "paper-badge": "polymerelements/paper-badge#^1.0.0",
     "paper-toolbar": "polymerelements/paper-toolbar#^1.0.0",
+    "paper-spinner": "polymerelements/paper-spinner#^1.0.0",
     "test-fixture": "polymerelements/test-fixture#^1.0.0",
     "iron-test-helpers": "polymerelements/iron-test-helpers#^1.0.0",
     "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.2",
-    "web-component-tester": "*"
+    "web-component-tester": "polymer/web-component-tester#^3.4.0"
   }
 }

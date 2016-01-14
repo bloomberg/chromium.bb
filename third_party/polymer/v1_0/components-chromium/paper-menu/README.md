@@ -35,7 +35,7 @@ An initial selection can be specified with the `selected` attribute.
     </paper-menu>
 
 Make a multi-select menu with the `multi` attribute. Items in a multi-select menu can be deselected,
-and multiple item can be selected.
+and multiple items can be selected.
 
     <paper-menu multi>
       <paper-item>Item 1</paper-item>

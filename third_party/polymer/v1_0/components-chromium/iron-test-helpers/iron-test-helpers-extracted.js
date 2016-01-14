@@ -6,4 +6,5 @@
     TestHelpers.flushAsynchronousOperations = flushAsynchronousOperations;
     TestHelpers.forceXIfStamp = forceXIfStamp;
     TestHelpers.fireEvent = fireEvent;
+    TestHelpers.skipUnless = skipUnless;
   })(this);

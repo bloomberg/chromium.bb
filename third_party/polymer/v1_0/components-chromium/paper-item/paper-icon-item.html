@@ -7,12 +7,8 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-behaviors/iron-control-state.html">
-<link rel="import" href="../iron-behaviors/iron-button-state.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/typography.html">
-<link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-styles/default-theme.html">
 <link rel="import" href="paper-item-behavior.html">
 <link rel="import" href="paper-item-shared-styles.html">
 
@@ -61,9 +57,10 @@ Custom property               | Description                                    |
       }
 
       .content-icon {
-        width: var(--paper-item-icon-width, 56px);
         @apply(--layout-horizontal);
         @apply(--layout-center);
+
+        width: var(--paper-item-icon-width, 56px);
       }
     </style>
 

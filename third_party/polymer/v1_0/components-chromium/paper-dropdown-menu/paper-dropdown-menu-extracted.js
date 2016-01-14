@@ -246,11 +246,12 @@
         /**
          * Returns false if the element is required and does not have a selection,
          * and true otherwise.
+         * @param {*=} _value Ignored.
          * @return {boolean} true if `required` is false, or if `required` is true
          * and the element has a valid selection.
          */
-        _getValidity: function() {
-          return this.disabled || !this.required || (this.required && this.value);
+        _getValidity: function(_value) {
+          return this.disabled || !this.required || (this.required && !!this.value);
         },
 
         _openedChanged: function() {

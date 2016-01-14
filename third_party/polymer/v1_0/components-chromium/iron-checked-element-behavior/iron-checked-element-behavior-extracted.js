@@ -58,6 +58,7 @@
 
     /**
      * Returns false if the element is required and not checked, and true otherwise.
+     * @param {*=} _value Ignored.
      * @return {boolean} true if `required` is false, or if `required` and `checked` are both true.
      */
     _getValidity: function(_value) {

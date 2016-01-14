@@ -8,7 +8,7 @@
 
   /** @polymerBehavior */
   Polymer.PaperItemBehavior = [
-    Polymer.IronControlState,
     Polymer.IronButtonState,
+    Polymer.IronControlState,
     Polymer.PaperItemBehaviorImpl
   ];
