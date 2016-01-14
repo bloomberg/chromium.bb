@@ -288,6 +288,14 @@ void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
   std::string app_id = GetAppId(app.package, app.activity);
   bool was_registered = IsRegistered(app_id);
 
+  if (was_registered) {
+    scoped_ptr<ArcAppListPrefs::AppInfo> app_old_info = GetApp(app_id);
+    if (app.name != app_old_info->name) {
+      FOR_EACH_OBSERVER(Observer, observer_list_,
+                        OnAppNameUpdated(app_id, app.name));
+    }
+  }
+
   ScopedArcAppListPrefUpdate update(prefs_, app_id);
   base::DictionaryValue* app_dict = update.Get();
   app_dict->SetString(kName, app.name);

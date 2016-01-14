@@ -62,6 +62,10 @@ class ArcAppListPrefs : public KeyedService,
     // Notifies an observer that app icon has been installed or updated.
     virtual void OnAppIconUpdated(const std::string& id,
                                   ui::ScaleFactor scale_factor) = 0;
+    // Notifies an observer that the name of an app has changed.
+    virtual void OnAppNameUpdated(const std::string& id,
+                                  const std::string& name) = 0;
+
    protected:
     virtual ~Observer() {}
   };
