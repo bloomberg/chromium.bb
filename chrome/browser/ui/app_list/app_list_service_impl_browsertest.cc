@@ -123,12 +123,12 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, CreatedLazily) {
 }
 
 // Tests that deleting a profile properly clears the app list view delegate, but
-// doesn't destroy it. Disabled on ChromeOS, since profiles can't be deleted
+// doesn't destroy it. Not built on ChromeOS, since profiles can't be deleted
 // this way (the second profile isn't signed in, so the test fails when creating
 // UserCloudPolicyManagerChromeOS).
-// Disabled because of flakiness: http://crbug.com/483615
+#if !defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
-                       DISABLED_DeletingProfileUpdatesViewDelegate) {
+                       DeletingProfileUpdatesViewDelegate) {
   Profile* second_profile = test::CreateSecondProfileAsync();
   service_->ShowForProfile(second_profile);
   AppListViewDelegate* view_delegate = test_api_->view_delegate();
@@ -152,6 +152,7 @@ IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest,
   EXPECT_EQ(view_delegate, test_api_->view_delegate());
   EXPECT_EQ(view_delegate->profile(), browser()->profile());
 }
+#endif  // !defined(OS_CHROMEOS)
 
 // Test that all the items in the context menu for a hosted app have valid
 // labels.

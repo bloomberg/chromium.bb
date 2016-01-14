@@ -253,16 +253,8 @@ IN_PROC_BROWSER_TEST_F(ShowAppListInteractiveTest, MAYBE_ShowAppListFlag) {
 }
 
 // ChromeOS does not support ShowForProfile(), or profile switching within the
-// app list. Profile switching on CrOS goes through a different code path. Also
-// these tests are flaky on Linux and Windows. See http://crbug.com/483615.
-#if defined(OS_LINUX) || defined(OS_WIN)
-#define MAYBE_ShowAppListNonDefaultProfile \
-    DISABLED_ShowAppListNonDefaultProfile
-#define MAYBE_DeleteShowingAppList DISABLED_DeleteShowingAppList
-#else
-#define MAYBE_ShowAppListNonDefaultProfile ShowAppListNonDefaultProfile
-#define MAYBE_DeleteShowingAppList DeleteShowingAppList
-#endif
+// app list. Profile switching on CrOS goes through a different code path.
+#if !defined(OS_CHROMEOS)
 // Interactive UI test that creates a non-default profile and configures it for
 // the --show-app-list flag.
 class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
@@ -300,7 +292,7 @@ class ShowAppListNonDefaultInteractiveTest : public ShowAppListInteractiveTest {
 // Test showing the app list for a profile that doesn't match the browser
 // profile.
 IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
-                       MAYBE_ShowAppListNonDefaultProfile) {
+                       ShowAppListNonDefaultProfile) {
   AppListService* service = test::GetAppListService();
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(second_profile_name_.value(),
@@ -323,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
 // Test showing the app list for a profile then deleting that profile while the
 // app list is visible.
 IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
-                       MAYBE_DeleteShowingAppList) {
+                       DeleteShowingAppList) {
   AppListService* service = test::GetAppListService();
   EXPECT_TRUE(service->IsAppListVisible());
   EXPECT_EQ(second_profile_name_.value(),
@@ -342,3 +334,4 @@ IN_PROC_BROWSER_TEST_F(ShowAppListNonDefaultInteractiveTest,
   // App Launcher should get closed immediately and nothing should explode.
   EXPECT_FALSE(service->IsAppListVisible());
 }
+#endif  // !defined(OS_CHROMEOS)
