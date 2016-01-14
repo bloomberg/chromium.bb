@@ -74,6 +74,7 @@ struct HeadlessBrowser::Options {
   const char** argv;
 
   std::string user_agent;
+  std::string navigator_platform;
 
   static const int kInvalidPort = -1;
   // If not null, create start devtools for remote debugging
@@ -81,7 +82,14 @@ struct HeadlessBrowser::Options {
   int devtools_http_port;
 
   // Optional URLRequestContextGetter for customizing network stack.
+  // Allows overriding:
+  // - Cookie storage
+  // - HTTP cache
+  // - SSL config
+  // - Proxy service
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter;
+
+  scoped_ptr<base::MessagePump> message_pump;
 
  private:
   Options(int argc, const char** argv);

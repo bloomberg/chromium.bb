@@ -44,6 +44,16 @@ class HEADLESS_EXPORT WebFrame {
       const std::string& source_code,
       const ScriptExecutionCallback& callback) = 0;
 
+  virtual std::string ContentAsText(size_t max_chars) const = 0;
+  virtual std::string ContentAsMarkup() const = 0;
+  virtual proto::Document ContentAsProtobuf() const = 0;
+
+  virtual gfx::Size GetScrollOffset() const = 0;
+  virtual void SetScrollOffset(const gfx::Size& offset) = 0;
+
+  virtual float GetPageScaleFactor() const = 0;
+  virtual void SetPageScaleFactor(float page_scale_factor) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(WebFrame);
 };

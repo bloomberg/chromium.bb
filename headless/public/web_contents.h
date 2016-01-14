@@ -29,9 +29,17 @@ class HEADLESS_EXPORT WebContents {
   class Observer {
    public:
     // Will be called on browser thread.
+    virtual void DidNavigateMainFrame() = 0;
     virtual void DocumentOnLoadCompletedInMainFrame() = 0;
 
-    // TODO(altimin): More OnSomething() methods will go here.
+    virtual void OnLoadProgressChanged(double progress) = 0;
+    virtual void AddMessageToConsole(const std::string& message) = 0;
+    virtual bool ShouldSuppressDialogs(WebContents* source) = 0;
+    virtual void OnModalAlertDialog(const std::string& message) = 0;
+    virtual bool OnModalConfirmDialog(const std::string& message) = 0;
+    virtual std::string OnModalPromptDialog(
+        const std::string& message,
+        const std::string& default_value) = 0;
 
    protected:
     explicit Observer(WebContents* web_contents);
@@ -44,17 +52,39 @@ class HEADLESS_EXPORT WebContents {
     DISALLOW_COPY_AND_ASSIGN(Observer);
   };
 
-  // Returns main frame for web page.
-  // Should be called on renderer main thread.
-  virtual WebFrame* MainFrame() = 0;
+  class Settings {
+    virtual void SetWebSecurityEnabled(bool enabled) = 0;
+    virtual void SetLocalStorageEnabled(bool enabled) = 0;
+    virtual void SetJavaScriptCanOpenWindowsAutomatically(bool enabled) = 0;
+    virtual void SetAllowScriptsToCloseWindows(bool enabled) = 0;
+    virtual void SetImagesEnabled(bool enabled) = 0;
+    virtual void SetJavascriptEnabled(bool enabled) = 0;
+    virtual void SetXSSAuditorEnabled(bool enabled) = 0;
+    virtual void SetDefaultTextEncoding(const std::string& encoding) = 0;
+  };
 
-  // Requests browser tab to nagivate to given url.
-  // Should be called on browser main thread.
+  virtual Settings* GetSettings() = 0;
+  virtual const Settings* GetSettings() const = 0;
+
+  virtual NavigationController* GetController() = 0;
+  virtual const NavigationController* GetController() const = 0;
+
+  virtual std::string GetTitle() const = 0;
+  virtual const GURL& GetVisibleURL() const = 0;
+  virtual const GURL& GetLastCommittedURL() const = 0;
+  virtual bool IsLoading() const = 0;
+
+  virtual bool SetViewportSize(const gfx::Size& size) const = 0;
+
+  // Returns main frame for web page. Note that the returned interface should
+  // only be used on the renderer main thread.
+  virtual WebFrame* GetMainFrame() = 0;
+
+  // Requests browser tab to navigate to given url.
   virtual void OpenURL(const GURL& url) = 0;
 
   using ScreenshotCallback = base::Callback<void(scoped_ptr<SkBitmap>)>;
   // Requests an image of web contents.
-  // Should be called on browser main thread.
   virtual void GetScreenshot(const ScreenshotCallback& callback) = 0;
 
  protected:
