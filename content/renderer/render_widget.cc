@@ -335,6 +335,10 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   } else {
     scale_ = params_.scale;
     offset_.SetPoint(params_.offset.x, params_.offset.y);
+    if (!params_.viewSize.width && !params_.viewSize.height && scale_) {
+      applied_widget_rect_.set_size(gfx::ScaleToRoundedSize(
+          original_size_, 1.f / scale_));
+    }
   }
 
   if (params_.screenPosition == WebDeviceEmulationParams::Desktop) {
