@@ -876,15 +876,6 @@ class CountryNames {
   // given |locale|, or null if no collator is available.
   const icu::Collator* GetCollatorForLocale(const icu::Locale& locale);
 
-  // Returns the ICU sort key corresponding to |str| for the given |collator|.
-  // Uses |buffer| as temporary storage, and might resize |buffer| as a side-
-  // effect. |buffer_size| should specify the |buffer|'s size, and is updated if
-  // the |buffer| is resized.
-  const std::string GetSortKey(const icu::Collator& collator,
-                               const base::string16& str,
-                               scoped_ptr<uint8_t[]>* buffer,
-                               int32_t* buffer_size) const;
-
   // Maps from common country names, including 2- and 3-letter country codes,
   // to the corresponding 2-letter country codes. The keys are uppercase ASCII
   // strings.
@@ -902,6 +893,33 @@ class CountryNames {
 
   DISALLOW_COPY_AND_ASSIGN(CountryNames);
 };
+
+// Returns the ICU sort key corresponding to |str| for the given |collator|.
+// Uses |buffer| as temporary storage, and might resize |buffer| as a side-
+// effect. |buffer_size| should specify the |buffer|'s size, and is updated if
+// the |buffer| is resized.
+const std::string GetSortKey(const icu::Collator& collator,
+                             const base::string16& str,
+                             scoped_ptr<uint8_t[]>* buffer,
+                             int32_t* buffer_size) {
+  DCHECK(buffer);
+  DCHECK(buffer_size);
+
+  icu::UnicodeString icu_str(str.c_str(), str.length());
+  int32_t expected_size =
+      collator.getSortKey(icu_str, buffer->get(), *buffer_size);
+  if (expected_size > *buffer_size) {
+    // If there wasn't enough space, grow the buffer and try again.
+    *buffer_size = expected_size;
+    buffer->reset(new uint8_t[*buffer_size]);
+    DCHECK(buffer->get());
+
+    expected_size = collator.getSortKey(icu_str, buffer->get(), *buffer_size);
+    DCHECK_EQ(*buffer_size, expected_size);
+  }
+
+  return std::string(reinterpret_cast<const char*>(buffer->get()));
+}
 
 // static
 CountryNames* CountryNames::GetInstance() {
@@ -1036,29 +1054,6 @@ const icu::Collator* CountryNames::GetCollatorForLocale(
   }
 
   return collators_[locale_name].get();
-}
-
-const std::string CountryNames::GetSortKey(const icu::Collator& collator,
-                                           const base::string16& str,
-                                           scoped_ptr<uint8_t[]>* buffer,
-                                           int32_t* buffer_size) const {
-  DCHECK(buffer);
-  DCHECK(buffer_size);
-
-  icu::UnicodeString icu_str(str.c_str(), str.length());
-  int32_t expected_size = collator.getSortKey(icu_str, buffer->get(),
-                                              *buffer_size);
-  if (expected_size > *buffer_size) {
-    // If there wasn't enough space, grow the buffer and try again.
-    *buffer_size = expected_size;
-    buffer->reset(new uint8_t[*buffer_size]);
-    DCHECK(buffer->get());
-
-    expected_size = collator.getSortKey(icu_str, buffer->get(), *buffer_size);
-    DCHECK_EQ(*buffer_size, expected_size);
-  }
-
-  return std::string(reinterpret_cast<const char*>(buffer->get()));
 }
 
 }  // namespace
