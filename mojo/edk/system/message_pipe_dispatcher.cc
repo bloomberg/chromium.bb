@@ -470,8 +470,15 @@ void MessagePipeDispatcher::CloseImplNoLock() {
   // destruction). So to avoid UAF, manually add a reference and only release it
   // if the task runs.
   AddRef();
-  internal::g_io_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(&MessagePipeDispatcher::CloseOnIOAndRelease, this));
+  if (!internal::g_io_thread_task_runner->PostTask(
+          FROM_HERE,
+          base::Bind(&MessagePipeDispatcher::CloseOnIOAndRelease, this))) {
+    // Avoid a shutdown leak in unittests. If the thread is shutting down,
+    // we can't connect to the other end to let it know that we're closed either
+    // way.
+    if (!transferable_ && non_transferable_state_ == WAITING_FOR_READ_OR_WRITE)
+      Release();
+  }
 }
 
 void MessagePipeDispatcher::SerializeInternal() {

@@ -726,8 +726,13 @@ void RawChannel::CallOnReadCompleted(IOResult io_result, size_t bytes_read) {
 }
 
 void RawChannel::WillDestroyCurrentMessageLoop() {
-  base::AutoLock locker(read_lock_);
-  OnReadCompletedNoLock(IO_FAILED_SHUTDOWN, 0);
+  {
+    base::AutoLock locker(read_lock_);
+    OnReadCompletedNoLock(IO_FAILED_SHUTDOWN, 0);
+  }
+  // The PostTask inside Shutdown() will never be called, so manually call it
+  // here to avoid leaks in LSAN builds.
+  Shutdown();
 }
 
 }  // namespace edk
