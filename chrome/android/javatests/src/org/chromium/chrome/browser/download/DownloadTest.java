@@ -9,6 +9,7 @@ import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.View;
 
+import org.chromium.base.Log;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -31,6 +32,7 @@ import java.io.File;
  * Tests Chrome download feature by attempting to download some files.
  */
 public class DownloadTest extends DownloadTestBase {
+    private static final String TAG = "cr_DownloadTest";
     private static final String SUPERBO_CONTENTS =
             "plain text response from a POST";
 
@@ -311,26 +313,32 @@ public class DownloadTest extends DownloadTestBase {
         File dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
         assertTrue(dir.isDirectory());
         final File file = new File(dir, "test.gzip");
-        if (!file.exists()) {
-            assertTrue(file.createNewFile());
+        try {
+            if (!file.exists()) {
+                assertTrue(file.createNewFile());
+            }
+
+            // Open in a new tab again.
+            loadUrl(url);
+            waitForFocus();
+
+            View currentView = getActivity().getActivityTab().getView();
+            TouchCommon.longPressView(currentView);
+            getInstrumentation().invokeContextMenuAction(
+                    getActivity(), R.id.contextmenu_open_in_new_tab, 0);
+            waitForNewTabToStabilize(2);
+
+            goToLastTab();
+            assertPollForInfoBarSize(1);
+
+            // Now create two new files by clicking on the infobars.
+            assertTrue("OVERWRITE button wasn't found",
+                    InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
+        } finally {
+            if (!file.delete()) {
+                Log.d(TAG, "Failed to delete test.gzip");
+            }
         }
-
-        // Open in a new tab again.
-        loadUrl(url);
-        waitForFocus();
-
-        View currentView = getActivity().getActivityTab().getView();
-        TouchCommon.longPressView(currentView);
-        getInstrumentation().invokeContextMenuAction(
-                getActivity(), R.id.contextmenu_open_in_new_tab, 0);
-        waitForNewTabToStabilize(2);
-
-        goToLastTab();
-        assertPollForInfoBarSize(1);
-
-        // Now create two new files by clicking on the infobars.
-        assertTrue("OVERWRITE button wasn't found",
-                InfoBarUtil.clickPrimaryButton(getInfoBars().get(0)));
     }
 
     @MediumTest
