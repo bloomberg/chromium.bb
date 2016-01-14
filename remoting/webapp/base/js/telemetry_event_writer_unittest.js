@@ -38,10 +38,12 @@ QUnit.module('TelemetryEventWriter', {
       remoting.ChromotingEvent.Role.CLIENT,
       remoting.TelemetryEventWriter.Client.write);
     logger.setLogEntryMode(remoting.ChromotingEvent.Mode.ME2ME);
+    var fakeHost = new remoting.Host('fake_id');
+    fakeHost.hostOs = remoting.ChromotingEvent.Os.OTHER;
+    fakeHost.hostOsVersion = 'host_os_version';
+    fakeHost.hostVersion = 'host_version';
+    logger.setHost(fakeHost);
     logger.setConnectionType('stun');
-    logger.setHostVersion('host_version');
-    logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-    logger.setHostOsVersion('host_os_version');
   },
   afterEach: function() {
     base.dispose(service);

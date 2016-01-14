@@ -18,6 +18,9 @@ var logWriterSpy = null;
 /** @type {sinon.TestStub} */
 var userAgentStub;
 
+/** @type {remoting.Host} */
+var fakeHost;
+
 QUnit.module('SessionLogger', {
   beforeEach: function() {
     userAgentStub = sinon.stub(remoting, 'getUserAgent');
@@ -28,6 +31,11 @@ QUnit.module('SessionLogger', {
     var spy = sinon.spy();
     logWriterSpy = /** @type {sinon.Spy} */ (spy);
     logWriter = /** @type {function(Object)} */ (spy);
+    fakeHost = new remoting.Host('host_id');
+    fakeHost.hostVersion = 'host_version';
+    fakeHost.hostOs = remoting.ChromotingEvent.Os.OTHER;
+    fakeHost.hostOsVersion = 'host_os_version';
+    fakeHost.updatedTime = '2015-12-31T01:23:00';
   },
   afterEach: function() {
     userAgentStub.restore();
@@ -75,14 +83,13 @@ QUnit.test('logSignalStrategyProgress()', function(assert) {
 });
 
 QUnit.test('logSessionStateChange()', function(assert){
+  var clock = sinon.useFakeTimers(new Date('2015-12-31T01:23:05').getTime());
   var Event = remoting.ChromotingEvent;
 
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('stun');
-  logger.setHostVersion('host_version');
-  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOsVersion('host_os_version');
+  logger.setHost(fakeHost);
 
   logger.logSessionStateChange(
       remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
@@ -106,6 +113,7 @@ QUnit.test('logSessionStateChange()', function(assert){
     host_version: 'host_version',
     host_os: remoting.ChromotingEvent.Os.OTHER,
     host_os_version: 'host_os_version',
+    host_last_heartbeat_elapsed_time: 5000,
     session_id: sessionId
   });
 });
@@ -117,9 +125,7 @@ QUnit.test('logSessionStateChange() should handle XMPP error',
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('stun');
-  logger.setHostVersion('host_version');
-  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOsVersion('host_os_version');
+  logger.setHost(fakeHost);
 
   logger.logSessionStateChange(
       remoting.ChromotingEvent.SessionState.CONNECTION_FAILED,
@@ -152,16 +158,14 @@ QUnit.test('logSessionStateChange() should handle XMPP error',
 
 QUnit.test('logSessionStateChange() should handle sessionId change.',
   function(assert){
-  var clock = sinon.useFakeTimers();
+  var clock = sinon.useFakeTimers(new Date('2015-12-31T01:23:05').getTime());
   var Event = remoting.ChromotingEvent;
 
   // Creates the logger.
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('relay');
-  logger.setHostVersion('host_version');
-  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOsVersion('host_os_version');
+  logger.setHost(fakeHost);
   var oldSessionId = logger.getSessionId();
 
   // Expires the session id.
@@ -185,7 +189,8 @@ QUnit.test('logSessionStateChange() should handle sessionId change.',
     connection_type: Event.ConnectionType.RELAY,
     host_version: 'host_version',
     host_os: remoting.ChromotingEvent.Os.OTHER,
-    host_os_version: 'host_os_version'
+    host_os_version: 'host_os_version',
+    host_last_heartbeat_elapsed_time: 5000
   });
 
   verifyEvent(assert, 1, {
@@ -201,7 +206,8 @@ QUnit.test('logSessionStateChange() should handle sessionId change.',
     connection_type: Event.ConnectionType.RELAY,
     host_version: 'host_version',
     host_os: remoting.ChromotingEvent.Os.OTHER,
-    host_os_version: 'host_os_version'
+    host_os_version: 'host_os_version',
+    host_last_heartbeat_elapsed_time: 5000
   });
 
   verifyEvent(assert, 2, {
@@ -219,6 +225,7 @@ QUnit.test('logSessionStateChange() should handle sessionId change.',
     host_version: 'host_version',
     host_os: remoting.ChromotingEvent.Os.OTHER,
     host_os_version: 'host_os_version',
+    host_last_heartbeat_elapsed_time: 5000,
     session_id: newSessionId
   });
 });
@@ -232,9 +239,7 @@ QUnit.test('logSessionStateChange() should log session_duration.',
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
   logger.setLogEntryMode(Event.Mode.ME2ME);
   logger.setConnectionType('direct');
-  logger.setHostVersion('host_version');
-  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOsVersion('host_os_version');
+  logger.setHost(fakeHost);
   logger.setAuthTotalTime(1000);
   clock.tick(2500);
 
@@ -270,9 +275,7 @@ QUnit.test('logStatistics()', function(assert) {
   logger = new remoting.SessionLogger(Event.Role.CLIENT, logWriter);
   logger.setLogEntryMode(Event.Mode.LGAPP);
   logger.setConnectionType('direct');
-  logger.setHostVersion('host_version');
-  logger.setHostOs(remoting.ChromotingEvent.Os.OTHER);
-  logger.setHostOsVersion('host_os_version');
+  logger.setHost(fakeHost);
 
   // Log the statistics.
   logger.logStatistics({

@@ -48,8 +48,16 @@ remoting.SessionLogger = function(role, writeLogEntry) {
   this.hostOs_ = remoting.ChromotingEvent.Os.OTHER;
   /** @private */
   this.hostOsVersion_ = '';
-  /** @private {number} */
+  /**
+   * Elapsed time since last host list refresh in milliseconds.
+   * @private {number}
+   */
   this.hostStatusUpdateElapsedTime_;
+  /**
+   * Elapsed time since the last host heartbeat in milliseconds.
+   * @private {number}
+   */
+  this.hostLastHeartbeatElapsedTime_;
   /** @private */
   this.mode_ = remoting.ChromotingEvent.Mode.ME2ME;
   /** @private {remoting.ChromotingEvent.AuthMethod} */
@@ -78,28 +86,18 @@ remoting.SessionLogger.prototype.setAuthTotalTime = function(totalTime) {
 };
 
 /**
- * @param {string} hostVersion Version of the host for current session.
+ * @param {remoting.Host} host
  * @return {void} Nothing.
  */
-remoting.SessionLogger.prototype.setHostVersion = function(hostVersion) {
-  this.hostVersion_ = hostVersion;
-};
+remoting.SessionLogger.prototype.setHost = function(host) {
+  this.hostOs_ = host.hostOs;
+  this.hostOsVersion_ = host.hostOsVersion;
+  this.hostVersion_ = host.hostVersion;
 
-/**
- * @param {remoting.ChromotingEvent.Os} hostOs Type of the OS the host
- *        for the current session.
- * @return {void} Nothing.
- */
-remoting.SessionLogger.prototype.setHostOs = function(hostOs) {
-  this.hostOs_ = hostOs;
-};
-
-/**
- * @param {string} hostOsVersion Version of the host Os for current session.
- * @return {void} Nothing.
- */
-remoting.SessionLogger.prototype.setHostOsVersion = function(hostOsVersion) {
-  this.hostOsVersion_ = hostOsVersion;
+  if (host.updatedTime != '') {
+    this.hostLastHeartbeatElapsedTime_ =
+        (Date.now() - new Date(host.updatedTime));
+  }
 };
 
 /**
@@ -332,6 +330,9 @@ remoting.SessionLogger.prototype.fillEvent_ = function(entry) {
   }
   if (this.hostStatusUpdateElapsedTime_ != undefined) {
     entry.host_status_update_elapsed_time = this.hostStatusUpdateElapsedTime_;
+  }
+  if (this.hostLastHeartbeatElapsedTime_ != undefined) {
+    entry.host_last_heartbeat_elapsed_time = this.hostLastHeartbeatElapsedTime_;
   }
   if (this.authMethod_ != undefined) {
     entry.auth_method = this.authMethod_;
