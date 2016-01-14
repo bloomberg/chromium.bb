@@ -23,3 +23,4 @@ Local Modifications:
 - Removed "doc", "po", "NEWS", "mkinstalldirs", "missing", "nls" folders.
 - Removed inline from exif_tag_table_count function in exif-tag.c, to build
   cleanly with MSVC's non-standard inline rules.
+- https://codereview.chromium.org/1585593002
