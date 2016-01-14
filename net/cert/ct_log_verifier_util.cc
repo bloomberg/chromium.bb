@@ -4,10 +4,6 @@
 
 #include "net/cert/ct_log_verifier_util.h"
 
-#include <stdint.h>
-
-#include <cmath>
-
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_util.h"
 #include "crypto/secure_hash.h"
@@ -18,16 +14,6 @@ namespace net {
 namespace ct {
 
 namespace internal {
-
-uint64_t CalculateNearestPowerOfTwo(uint64_t n) {
-  DCHECK_GT(n, 1u);
-
-  uint64_t ret = UINT64_C(1) << 63;
-  while (ret >= n)
-    ret >>= 1;
-
-  return ret;
-}
 
 std::string HashNodes(const std::string& lh, const std::string& rh) {
   scoped_ptr<crypto::SecureHash> hash(

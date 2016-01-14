@@ -17,10 +17,6 @@ namespace ct {
 
 namespace internal {
 
-// Calculate the power of two nearest to, but less than, |n|.
-// |n| must be at least 2.
-NET_EXPORT uint64_t CalculateNearestPowerOfTwo(uint64_t n);
-
 // Hash |lh| and |rh| to produce a node hash according to
 // http://tools.ietf.org/html/rfc6962#section-2.1
 NET_EXPORT std::string HashNodes(const std::string& lh, const std::string& rh);

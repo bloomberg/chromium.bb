@@ -23,6 +23,18 @@ namespace net {
 
 namespace {
 
+// Calculate the power of two nearest to, but less than, |n|.
+// |n| must be at least 2.
+uint64_t CalculateNearestPowerOfTwo(uint64_t n) {
+  DCHECK_GT(n, 1u);
+
+  uint64_t ret = UINT64_C(1) << 63;
+  while (ret >= n)
+    ret >>= 1;
+
+  return ret;
+}
+
 // The following structures, TestVector and ProofTestVector are used for
 // definining test proofs later on.
 
@@ -417,7 +429,7 @@ std::string ReferenceMerkleTreeHash(std::string* inputs, uint64_t input_size) {
   if (input_size == 1)
     return TreeHasher::HashLeaf(inputs[0]);
 
-  const uint64_t split = ct::internal::CalculateNearestPowerOfTwo(input_size);
+  const uint64_t split = CalculateNearestPowerOfTwo(input_size);
 
   return ct::internal::HashNodes(
       ReferenceMerkleTreeHash(&inputs[0], split),
@@ -447,7 +459,7 @@ std::vector<std::string> ReferenceSnapshotConsistency(std::string* inputs,
   }
 
   // 0 < snapshot1 < snapshot2
-  const uint64_t split = ct::internal::CalculateNearestPowerOfTwo(snapshot2);
+  const uint64_t split = CalculateNearestPowerOfTwo(snapshot2);
 
   std::vector<std::string> subproof;
   if (snapshot1 <= split) {
