@@ -15,6 +15,8 @@ HTMLUnknownElement::HTMLUnknownElement(const QualifiedName& tagName, Document& d
         UseCounter::count(document, UseCounter::DataElement);
     else if (tagName.localName() == "time")
         UseCounter::count(document, UseCounter::TimeElement);
+    else if (tagName.localName() == "menuitem")
+        UseCounter::count(document, UseCounter::MenuItemElement);
 }
 
 } // namespace blink

@@ -7,6 +7,7 @@
 #include "core/HTMLNames.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 
 namespace blink {
 
@@ -15,6 +16,7 @@ using namespace HTMLNames;
 inline HTMLMenuItemElement::HTMLMenuItemElement(Document& document)
     : HTMLElement(HTMLNames::menuitemTag, document)
 {
+    UseCounter::count(document, UseCounter::MenuItemElement);
 }
 
 void HTMLMenuItemElement::defaultEventHandler(Event* event)

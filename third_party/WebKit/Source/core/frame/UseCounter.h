@@ -958,6 +958,8 @@ public:
         SVG1DOMUriReference = 1101,
         SVG1DOMZoomAndPan = 1102,
         V8SVGGraphicsElement_Transform_AttributeGetter = 1103,
+        MenuItemElement = 1104,
+        MenuItemCloseTag = 1105,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
