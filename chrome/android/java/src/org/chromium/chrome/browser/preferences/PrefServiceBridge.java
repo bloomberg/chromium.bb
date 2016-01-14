@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.preferences;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -124,14 +123,7 @@ public final class PrefServiceBridge {
             // images disabled.
             setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_IMAGES, true);
         }
-        // Temporarily allowing disk access. TODO: Fix. See http://crbug.com/577183
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
-        try {
-            preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).commit();
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        preferences.edit().putInt(MIGRATION_PREF_KEY, MIGRATION_CURRENT_VERSION).apply();
     }
 
     /**
