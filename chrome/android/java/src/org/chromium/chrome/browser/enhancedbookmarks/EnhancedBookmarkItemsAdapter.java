@@ -32,7 +32,6 @@ import java.util.List;
  */
 class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements
         EnhancedBookmarkUIObserver, PromoHeaderShowingChangeListener {
-
     private static final int PROMO_HEADER_VIEW = 0;
     private static final int FOLDER_VIEW = 1;
     private static final int DIVIDER_VIEW = 2;
@@ -235,6 +234,7 @@ class EnhancedBookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         BookmarkId id = getItem(position);
+
         switch (getItemViewType(position)) {
             case PROMO_HEADER_VIEW:
             case OFFLINE_PAGES_STORAGE_VIEW:

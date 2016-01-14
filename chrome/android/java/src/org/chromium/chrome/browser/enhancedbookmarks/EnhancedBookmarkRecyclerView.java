@@ -13,7 +13,6 @@ import android.view.View;
 import android.widget.Checkable;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.R;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.List;
@@ -26,7 +25,6 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
 
     private EnhancedBookmarkDelegate mDelegate;
     private View mEmptyView;
-    private RecyclerView.ItemDecoration mVerticalSpaceItemDecoration;
 
     /**
      * Provides a way to override the default spacing between 2 items in RecyclerView.
@@ -123,38 +121,17 @@ public class EnhancedBookmarkRecyclerView extends RecyclerView implements
     @Override
     public void onAllBookmarksStateSet() {
         scrollToPosition(0);
-
-        // Restores to the default vertical spacing.
-        if (mVerticalSpaceItemDecoration != null) {
-            removeItemDecoration(mVerticalSpaceItemDecoration);
-            mVerticalSpaceItemDecoration = null;
-        }
     }
 
     @Override
     public void onFolderStateSet(BookmarkId folder) {
         scrollToPosition(0);
-
-        // Restores to the default vertical spacing.
-        if (mVerticalSpaceItemDecoration != null) {
-            removeItemDecoration(mVerticalSpaceItemDecoration);
-            mVerticalSpaceItemDecoration = null;
-        }
     }
 
     @Override
     public void onFilterStateSet(EnhancedBookmarkFilter filter) {
         assert filter == EnhancedBookmarkFilter.OFFLINE_PAGES;
         scrollToPosition(0);
-
-        // For "Saved offline" filter view, more spacing is needed between 2 items since the added
-        // line to show offline page size eats up the default spacing.
-        if (mVerticalSpaceItemDecoration == null) {
-            mVerticalSpaceItemDecoration =
-                    new VerticalSpaceItemDecoration(getResources().getDimensionPixelSize(
-                            R.dimen.offline_page_item_vertical_spacing));
-            addItemDecoration(mVerticalSpaceItemDecoration);
-        }
     }
 
     @Override
