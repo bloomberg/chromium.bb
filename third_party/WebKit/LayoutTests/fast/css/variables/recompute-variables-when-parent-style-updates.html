@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+  body {
+    --a: red;
+    --b: blue;
+  }
+
+  .foo {
+    --a: green;
+  }
+
+  .container {
+    --a: var(--b);
+  }
+
+  .here {
+    background: var(--a);
+    width: 100px;
+    height: 100px;
+  }
+</style>
+<div id="outer">
+<div class="here" id='red'></div>
+
+<div class="container" id='container'>
+  <div class="here" id='blue'></div>
+</div>
+</div>
+
+<script>
+test(function() {
+  assert_equals(getComputedStyle(red).backgroundColor, "rgb(255, 0, 0)");
+  assert_equals(getComputedStyle(blue).backgroundColor, "rgb(0, 0, 255)");
+  outer.classList.add('foo');
+  assert_equals(getComputedStyle(red).backgroundColor, "rgb(0, 128, 0)");
+  assert_equals(getComputedStyle(blue).backgroundColor, "rgb(0, 0, 255)");
+}, 'Custom properties are recomputed when parent style changes.');
+</script>
