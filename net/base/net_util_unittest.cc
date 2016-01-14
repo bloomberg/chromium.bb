@@ -10,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,18 +26,9 @@
 #endif  // OS_MACOSX
 #endif  // !OS_NACL && !OS_WIN
 
-#if defined(OS_WIN)
-#include <iphlpapi.h>
-#include <objbase.h>
-#include "base/win/windows_version.h"
-#endif  // OS_WIN
-
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_WIN)
 #include "net/base/address_tracker_linux.h"
 #endif  // !OS_MACOSX && !OS_NACL && !OS_WIN
-
-using base::ASCIIToUTF16;
-using base::WideToUTF16;
 
 namespace net {
 
@@ -88,84 +78,11 @@ void TestIPv6LoopbackOnly(const std::string& host) {
 
 }  // anonymous namespace
 
-TEST(NetUtilTest, GetIdentityFromURL) {
-  struct {
-    const char* const input_url;
-    const char* const expected_username;
-    const char* const expected_password;
-  } tests[] = {
-    {
-      "http://username:password@google.com",
-      "username",
-      "password",
-    },
-    { // Test for http://crbug.com/19200
-      "http://username:p@ssword@google.com",
-      "username",
-      "p@ssword",
-    },
-    { // Special URL characters should be unescaped.
-      "http://username:p%3fa%26s%2fs%23@google.com",
-      "username",
-      "p?a&s/s#",
-    },
-    { // Username contains %20.
-      "http://use rname:password@google.com",
-      "use rname",
-      "password",
-    },
-    { // Keep %00 as is.
-      "http://use%00rname:password@google.com",
-      "use%00rname",
-      "password",
-    },
-    { // Use a '+' in the username.
-      "http://use+rname:password@google.com",
-      "use+rname",
-      "password",
-    },
-    { // Use a '&' in the password.
-      "http://username:p&ssword@google.com",
-      "username",
-      "p&ssword",
-    },
-  };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
-                                    tests[i].input_url));
-    GURL url(tests[i].input_url);
-
-    base::string16 username, password;
-    GetIdentityFromURL(url, &username, &password);
-
-    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_username), username);
-    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_password), password);
-  }
-}
-
-// Try extracting a username which was encoded with UTF8.
-TEST(NetUtilTest, GetIdentityFromURL_UTF8) {
-  GURL url(WideToUTF16(L"http://foo:\x4f60\x597d@blah.com"));
-
-  EXPECT_EQ("foo", url.username());
-  EXPECT_EQ("%E4%BD%A0%E5%A5%BD", url.password());
-
-  // Extract the unescaped identity.
-  base::string16 username, password;
-  GetIdentityFromURL(url, &username, &password);
-
-  // Verify that it was decoded as UTF8.
-  EXPECT_EQ(ASCIIToUTF16("foo"), username);
-  EXPECT_EQ(WideToUTF16(L"\x4f60\x597d"), password);
-}
-
 TEST(NetUtilTest, CompliantHost) {
-  struct CompliantHostCase {
+  struct {
     const char* const host;
     bool expected_output;
-  };
-
-  const CompliantHostCase compliant_host_cases[] = {
+  } compliant_host_cases[] = {
       {"", false},
       {"a", true},
       {"-", false},
@@ -459,12 +376,10 @@ TEST(NetUtilTest, ResolveLocalHostname) {
 }
 
 TEST(NetUtilTest, GoogleHost) {
-  struct GoogleHostCase {
+  struct {
     GURL url;
     bool expected_output;
-  };
-
-  const GoogleHostCase google_host_cases[] = {
+  } google_host_cases[] = {
       {GURL("http://.google.com"), true},
       {GURL("http://.youtube.com"), true},
       {GURL("http://.gmail.com"), true},

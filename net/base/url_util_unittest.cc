@@ -4,8 +4,14 @@
 
 #include "net/base/url_util.h"
 
+#include "base/format_macros.h"
+#include "base/strings/utf_string_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+using base::ASCIIToUTF16;
+using base::WideToUTF16;
 
 namespace net {
 namespace {
@@ -157,6 +163,77 @@ TEST(UrlUtilTest, ParseQueryInvalidURL) {
   const GURL url("http://%01/?test");
   QueryIterator it(url);
   EXPECT_TRUE(it.IsAtEnd());
+}
+
+TEST(NetUtilTest, GetIdentityFromURL) {
+  struct {
+    const char* const input_url;
+    const char* const expected_username;
+    const char* const expected_password;
+  } tests[] = {
+    {
+      "http://username:password@google.com",
+      "username",
+      "password",
+    },
+    { // Test for http://crbug.com/19200
+      "http://username:p@ssword@google.com",
+      "username",
+      "p@ssword",
+    },
+    { // Special URL characters should be unescaped.
+      "http://username:p%3fa%26s%2fs%23@google.com",
+      "username",
+      "p?a&s/s#",
+    },
+    { // Username contains %20.
+      "http://use rname:password@google.com",
+      "use rname",
+      "password",
+    },
+    { // Keep %00 as is.
+      "http://use%00rname:password@google.com",
+      "use%00rname",
+      "password",
+    },
+    { // Use a '+' in the username.
+      "http://use+rname:password@google.com",
+      "use+rname",
+      "password",
+    },
+    { // Use a '&' in the password.
+      "http://username:p&ssword@google.com",
+      "username",
+      "p&ssword",
+    },
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
+                                    tests[i].input_url));
+    GURL url(tests[i].input_url);
+
+    base::string16 username, password;
+    GetIdentityFromURL(url, &username, &password);
+
+    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_username), username);
+    EXPECT_EQ(ASCIIToUTF16(tests[i].expected_password), password);
+  }
+}
+
+// Try extracting a username which was encoded with UTF8.
+TEST(UrlUtilTest, GetIdentityFromURL_UTF8) {
+  GURL url(WideToUTF16(L"http://foo:\x4f60\x597d@blah.com"));
+
+  EXPECT_EQ("foo", url.username());
+  EXPECT_EQ("%E4%BD%A0%E5%A5%BD", url.password());
+
+  // Extract the unescaped identity.
+  base::string16 username, password;
+  GetIdentityFromURL(url, &username, &password);
+
+  // Verify that it was decoded as UTF8.
+  EXPECT_EQ(ASCIIToUTF16("foo"), username);
+  EXPECT_EQ(WideToUTF16(L"\x4f60\x597d"), password);
 }
 
 }  // namespace

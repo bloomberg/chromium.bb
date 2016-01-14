@@ -11,15 +11,10 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 class GURL;
-
-namespace base {
-class Time;
-}
 
 namespace url {
 struct CanonHostInfo;
@@ -63,12 +58,6 @@ NET_EXPORT bool IsHostnameNonUnique(const std::string& hostname);
 
 // Returns the hostname of the current system. Returns empty string on failure.
 NET_EXPORT std::string GetHostName();
-
-// Extracts the unescaped username/password from |url|, saving the results
-// into |*username| and |*password|.
-NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
-                                           base::string16* username,
-                                           base::string16* password);
 
 // Returns either the host from |url|, or, if the host is empty, the full spec.
 NET_EXPORT std::string GetHostOrSpecFromURL(const GURL& url);

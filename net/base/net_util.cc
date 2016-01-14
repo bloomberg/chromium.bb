@@ -4,10 +4,7 @@
 
 #include "net/base/net_util.h"
 
-#include <errno.h>
-
 #include <algorithm>
-#include <limits>
 #include <string>
 
 #include "build/build_config.h"
@@ -24,14 +21,11 @@
 #endif  // defined(OS_POSIX)
 
 #include "base/logging.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
-#include "base/values.h"
 #include "net/base/address_list.h"
-#include "net/base/escape.h"
 #include "net/base/ip_address_number.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -276,15 +270,6 @@ std::string GetHostName() {
   }
   return std::string(buffer);
 #endif  // !defined(OS_NACL)
-}
-
-void GetIdentityFromURL(const GURL& url,
-                        base::string16* username,
-                        base::string16* password) {
-  UnescapeRule::Type flags =
-      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS;
-  *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags);
-  *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags);
 }
 
 std::string GetHostOrSpecFromURL(const GURL& url) {

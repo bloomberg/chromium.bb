@@ -4,10 +4,7 @@
 
 #include "net/base/url_util.h"
 
-#include <utility>
-
 #include "base/logging.h"
-#include "base/strings/string_piece.h"
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
@@ -139,6 +136,15 @@ std::string TrimEndingDot(const base::StringPiece& host) {
     host_trimmed.remove_suffix(1);
   }
   return host_trimmed.as_string();
+}
+
+void GetIdentityFromURL(const GURL& url,
+                        base::string16* username,
+                        base::string16* password) {
+  UnescapeRule::Type flags =
+      UnescapeRule::SPACES | UnescapeRule::URL_SPECIAL_CHARS;
+  *username = UnescapeAndDecodeUTF8URLComponent(url.username(), flags);
+  *password = UnescapeAndDecodeUTF8URLComponent(url.password(), flags);
 }
 
 }  // namespace net

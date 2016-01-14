@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -81,6 +82,12 @@ NET_EXPORT bool GetValueForKeyInQuery(const GURL& url,
 
 // Returns the hostname by trimming the ending dot, if one exists.
 NET_EXPORT std::string TrimEndingDot(const base::StringPiece& host);
+
+// Extracts the unescaped username/password from |url|, saving the results
+// into |*username| and |*password|.
+NET_EXPORT_PRIVATE void GetIdentityFromURL(const GURL& url,
+                                           base::string16* username,
+                                           base::string16* password);
 
 }  // namespace net
 
