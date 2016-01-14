@@ -9139,6 +9139,72 @@ TEST_F(LayerTreeHostImplTest, ScrollAnimated) {
   host_impl_->DidFinishImplFrame();
 }
 
+// Test that a smooth scroll offset animation is aborted when followed by a
+// non-smooth scroll offset animation.
+TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimatedAborted) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 200));
+  DrawFrame();
+
+  base::TimeTicks start_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(100);
+
+  BeginFrameArgs begin_frame_args =
+      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE);
+
+  // Perform animated scroll.
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollAnimated(gfx::Point(), gfx::Vector2d(0, 50)));
+
+  LayerImpl* scrolling_layer = host_impl_->CurrentlyScrollingLayer();
+
+  begin_frame_args.frame_time = start_time;
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  EXPECT_TRUE(host_impl_->animation_host()->HasAnyAnimationTargetingProperty(
+      scrolling_layer->id(), Animation::SCROLL_OFFSET));
+
+  EXPECT_EQ(gfx::ScrollOffset(), scrolling_layer->CurrentScrollOffset());
+  host_impl_->DidFinishImplFrame();
+
+  begin_frame_args.frame_time =
+      start_time + base::TimeDelta::FromMilliseconds(50);
+  host_impl_->WillBeginImplFrame(begin_frame_args);
+  host_impl_->Animate();
+  host_impl_->UpdateAnimationState(true);
+
+  float y = scrolling_layer->CurrentScrollOffset().y();
+  EXPECT_TRUE(y > 1 && y < 49);
+
+  // Perform instant scroll.
+  EXPECT_EQ(InputHandler::SCROLL_STARTED,
+            host_impl_->ScrollBegin(BeginState(gfx::Point(0, y)).get(),
+                                    InputHandler::WHEEL));
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y),
+                                                      InputHandler::WHEEL));
+  host_impl_->ScrollBy(
+      UpdateState(gfx::Point(0, y), gfx::Vector2d(0, 50)).get());
+  EXPECT_TRUE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(0, y + 50),
+                                                      InputHandler::WHEEL));
+  ScrollState scroll_state_end(0, 0, 0 /* start_position_x */,
+                               y + 50 /* start_position_y */, 0, 0, false,
+                               false, true);
+  host_impl_->ScrollEnd(&scroll_state_end);
+  EXPECT_FALSE(host_impl_->IsCurrentlyScrollingLayerAt(gfx::Point(),
+                                                       InputHandler::WHEEL));
+
+  // The instant scroll should have marked the smooth scroll animation as
+  // aborted.
+  EXPECT_FALSE(
+      host_impl_->animation_host()->HasActiveAnimation(scrolling_layer->id()));
+
+  EXPECT_VECTOR2DF_EQ(gfx::ScrollOffset(0, y + 50),
+                      scrolling_layer->CurrentScrollOffset());
+  EXPECT_EQ(NULL, host_impl_->CurrentlyScrollingLayer());
+  host_impl_->DidFinishImplFrame();
+}
+
 // Evolved from LayerTreeHostImplTest.ScrollAnimated.
 TEST_F(LayerTreeHostImplTimelinesTest, ScrollAnimated) {
   SetupScrollAndContentsLayers(gfx::Size(100, 200));

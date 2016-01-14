@@ -69,6 +69,7 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void PauseAnimation(int animation_id, double time_offset);
   void RemoveAnimation(int animation_id);
   void AbortAnimation(int animation_id);
+  void AbortAnimations(Animation::TargetProperty target_property);
 
   void PushPropertiesTo(AnimationPlayer* player_impl);
 

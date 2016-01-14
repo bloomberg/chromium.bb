@@ -160,6 +160,22 @@ void AnimationPlayer::AbortAnimation(int animation_id) {
   SetNeedsCommit();
 }
 
+void AnimationPlayer::AbortAnimations(
+    Animation::TargetProperty target_property) {
+  if (element_animations_) {
+    element_animations_->layer_animation_controller()->AbortAnimations(
+        target_property);
+    SetNeedsCommit();
+  } else {
+    auto animations_to_remove = std::remove_if(
+        animations_.begin(), animations_.end(),
+        [target_property](const scoped_ptr<Animation>& animation) {
+          return animation->target_property() == target_property;
+        });
+    animations_.erase(animations_to_remove, animations_.end());
+  }
+}
+
 void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
   if (layer_id_ != player_impl->layer_id()) {
     if (player_impl->layer_id())

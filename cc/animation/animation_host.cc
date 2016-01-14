@@ -97,6 +97,11 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     return true;
   }
 
+  void ScrollAnimationAbort() {
+    DCHECK(scroll_offset_animation_player_);
+    scroll_offset_animation_player_->AbortAnimations(Animation::SCROLL_OFFSET);
+  }
+
   // AnimationDelegate implementation.
   void NotifyAnimationStarted(base::TimeTicks monotonic_time,
                               Animation::TargetProperty target_property,
@@ -573,6 +578,11 @@ bool AnimationHost::ImplOnlyScrollAnimationUpdateTarget(
   DCHECK(scroll_offset_animations_);
   return scroll_offset_animations_->ScrollAnimationUpdateTarget(
       layer_id, scroll_delta, max_scroll_offset, frame_monotonic_time);
+}
+
+void AnimationHost::ScrollAnimationAbort() {
+  DCHECK(scroll_offset_animations_);
+  return scroll_offset_animations_->ScrollAnimationAbort();
 }
 
 }  // namespace cc

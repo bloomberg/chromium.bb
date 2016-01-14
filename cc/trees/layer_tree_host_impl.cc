@@ -2555,6 +2555,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   if (!scrolling_layer_impl)
     return SCROLL_IGNORED;
 
+  ScrollAnimationAbort(scrolling_layer_impl);
+
   top_controls_manager_->ScrollBegin();
 
   active_tree_->SetCurrentlyScrollingLayer(scrolling_layer_impl);
@@ -3608,6 +3610,14 @@ void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {
       active_tree_->ScrollableSize(), active_tree_->current_page_scale_factor(),
       active_tree_->min_page_scale_factor(),
       active_tree_->max_page_scale_factor());
+}
+
+void LayerTreeHostImpl::ScrollAnimationAbort(LayerImpl* layer_impl) {
+  if (animation_host_)
+    return animation_host_->ScrollAnimationAbort();
+
+  layer_impl->layer_animation_controller()->AbortAnimations(
+      Animation::SCROLL_OFFSET);
 }
 
 void LayerTreeHostImpl::ScrollAnimationCreate(

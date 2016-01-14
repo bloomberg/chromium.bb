@@ -149,6 +149,8 @@ class CC_EXPORT AnimationHost {
       const gfx::ScrollOffset& max_scroll_offset,
       base::TimeTicks frame_monotonic_time);
 
+  void ScrollAnimationAbort();
+
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
 

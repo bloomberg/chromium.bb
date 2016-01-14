@@ -48,6 +48,7 @@ public:
     explicit ScrollAnimator(ScrollableArea*, WTF::TimeFunction = WTF::monotonicallyIncreasingTime);
     ~ScrollAnimator() override;
 
+    bool hasRunningAnimation() const;
     float computeDeltaToConsume(ScrollbarOrientation, float pixelDelta) const override;
 
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;

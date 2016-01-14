@@ -64,6 +64,11 @@ FloatPoint ScrollAnimator::desiredTargetPosition() const
         ? m_targetOffset : currentPosition();
 }
 
+bool ScrollAnimator::hasRunningAnimation() const
+{
+    return (m_animationCurve || m_runState == RunState::WaitingToSendToCompositor);
+}
+
 float ScrollAnimator::computeDeltaToConsume(
     ScrollbarOrientation orientation, float pixelDelta) const
 {
@@ -89,8 +94,13 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
 
     TRACE_EVENT0("blink", "ScrollAnimator::scroll");
 
-    if (granularity == ScrollByPrecisePixel)
+    if (granularity == ScrollByPrecisePixel) {
+        if (hasRunningAnimation()) {
+            abortAnimation();
+            resetAnimationState();
+        }
         return ScrollAnimatorBase::userScroll(orientation, granularity, step, delta);
+    }
 
     float usedPixelDelta = computeDeltaToConsume(orientation, step * delta);
     FloatPoint pixelDelta = (orientation == VerticalScrollbar

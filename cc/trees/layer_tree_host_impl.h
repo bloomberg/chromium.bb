@@ -697,6 +697,8 @@ class CC_EXPORT LayerTreeHostImpl
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 
+  void ScrollAnimationAbort(LayerImpl* layer_impl);
+
   void ScrollAnimationCreate(LayerImpl* layer_impl,
                              const gfx::ScrollOffset& target_offset,
                              const gfx::ScrollOffset& current_offset);

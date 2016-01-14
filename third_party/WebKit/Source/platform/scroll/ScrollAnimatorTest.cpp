@@ -176,6 +176,55 @@ TEST(ScrollAnimatorTest, MainThreadEnabled)
     reset(*scrollAnimator);
 }
 
+// Test that a smooth scroll offset animation is aborted when followed by a
+// non-smooth scroll offset animation.
+TEST(ScrollAnimatorTest, AnimatedScrollAborted)
+{
+    OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea =
+        MockScrollableArea::create(true);
+    OwnPtrWillBeRawPtr<ScrollAnimator> scrollAnimator = adoptPtrWillBeNoop(
+        new ScrollAnimator(scrollableArea.get(), getMockedTime));
+
+    EXPECT_CALL(*scrollableArea, minimumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint()));
+    EXPECT_CALL(*scrollableArea, maximumScrollPosition()).Times(AtLeast(1))
+        .WillRepeatedly(Return(IntPoint(1000, 1000)));
+    EXPECT_CALL(*scrollableArea, setScrollOffset(_, _)).Times(3);
+    EXPECT_CALL(*scrollableArea, registerForAnimation()).Times(2);
+    EXPECT_CALL(*scrollableArea, scheduleAnimation()).Times(AtLeast(1))
+        .WillRepeatedly(Return(true));
+
+    EXPECT_FALSE(scrollAnimator->hasAnimationThatRequiresService());
+
+    // Smooth scroll.
+    ScrollResultOneDimensional result = scrollAnimator->userScroll(
+        HorizontalScrollbar, ScrollByLine, 100, 1);
+    EXPECT_TRUE(scrollAnimator->hasAnimationThatRequiresService());
+    EXPECT_TRUE(result.didScroll);
+    EXPECT_FLOAT_EQ(0.0, result.unusedScrollDelta);
+    EXPECT_TRUE(scrollAnimator->hasRunningAnimation());
+
+    gMockedTime += 0.05;
+    scrollAnimator->updateCompositorAnimations();
+    scrollAnimator->tickAnimation(getMockedTime());
+
+    EXPECT_NE(100, scrollAnimator->currentPosition().x());
+    EXPECT_NE(0, scrollAnimator->currentPosition().x());
+    EXPECT_EQ(0, scrollAnimator->currentPosition().y());
+
+    float x = scrollAnimator->currentPosition().x();
+
+    // Instant scroll.
+    result = scrollAnimator->userScroll(
+        HorizontalScrollbar, ScrollByPrecisePixel, 100, 1);
+    EXPECT_TRUE(result.didScroll);
+    EXPECT_FALSE(scrollAnimator->hasRunningAnimation());
+    EXPECT_EQ(x + 100, scrollAnimator->currentPosition().x());
+    EXPECT_EQ(0, scrollAnimator->currentPosition().y());
+
+    reset(*scrollAnimator);
+}
+
 TEST(ScrollAnimatorTest, Disabled)
 {
     OwnPtrWillBeRawPtr<MockScrollableArea> scrollableArea = MockScrollableArea::create(false);
