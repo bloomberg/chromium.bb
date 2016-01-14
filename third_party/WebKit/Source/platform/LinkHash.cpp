@@ -32,8 +32,8 @@
 
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
+#include "url/url_util.h"
 #include "wtf/text/StringUTF8Adaptor.h"
-#include <url/url_util.h>
 
 namespace blink {
 

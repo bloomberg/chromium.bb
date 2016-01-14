@@ -28,13 +28,13 @@
 #include "platform/weborigin/KURL.h"
 
 #include "platform/weborigin/KnownPorts.h"
+#include "url/url_util.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringHash.h"
 #include "wtf/text/StringUTF8Adaptor.h"
 #include "wtf/text/TextEncoding.h"
 #include <algorithm>
-#include <url/url_util.h>
 #ifndef NDEBUG
 #include <stdio.h>
 #endif

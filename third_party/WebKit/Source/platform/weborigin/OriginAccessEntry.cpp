@@ -34,8 +34,8 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPublicSuffixList.h"
-#include <url/third_party/mozilla/url_parse.h>
-#include <url/url_canon.h>
+#include "url/third_party/mozilla/url_parse.h"
+#include "url/url_canon.h"
 
 namespace blink {
 
