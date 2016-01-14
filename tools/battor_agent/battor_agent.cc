@@ -293,6 +293,7 @@ void BattOrAgent::OnMessageRead(bool success,
 
       samples_.insert(samples_.end(), frame.begin(), frame.end());
 
+      num_read_attempts_ = 1;
       PerformAction(Action::READ_DATA_FRAME);
       return;
     }
