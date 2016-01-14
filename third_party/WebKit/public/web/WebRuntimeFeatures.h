@@ -114,8 +114,6 @@ public:
 
     BLINK_EXPORT static void enableRequestAutocomplete(bool);
 
-    BLINK_EXPORT static void enableScreenOrientation(bool);
-
     BLINK_EXPORT static void enableScriptedSpeech(bool);
 
     BLINK_EXPORT static void enableSlimmingPaintV2(bool);

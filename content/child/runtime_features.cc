@@ -23,8 +23,6 @@
 #include <cpu-features.h>
 #include "base/android/build_info.h"
 #include "media/base/android/media_codec_util.h"
-#elif defined(OS_WIN)
-#include "base/win/windows_version.h"
 #endif
 
 using blink::WebRuntimeFeatures;
@@ -79,18 +77,6 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
     // Only Android, ChromeOS, and IOS support NetInfo right now.
     WebRuntimeFeatures::enableNetworkInformation(false);
 #endif
-
-#if defined(OS_WIN)
-  // Screen Orientation API is currently broken on Windows 8 Metro mode and
-  // until we can find how to disable it only for Blink instances running in a
-  // renderer process in Metro, we need to disable the API altogether for Win8.
-  // See http://crbug.com/400846
-  base::win::Version version = base::win::OSInfo::GetInstance()->version();
-  if (version == base::win::VERSION_WIN8 ||
-      version == base::win::VERSION_WIN8_1) {
-    WebRuntimeFeatures::enableScreenOrientation(false);
-  }
-#endif // OS_WIN
 }
 
 void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(

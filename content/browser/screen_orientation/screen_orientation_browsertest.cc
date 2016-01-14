@@ -23,10 +23,6 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/compositor/compositor_switches.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif // OS_WIN
-
 namespace content {
 
 class ScreenOrientationBrowserTest : public ContentBrowserTest  {
@@ -129,15 +125,6 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest,
   navigation_observer.Wait();
   WaitForResizeComplete(shell()->web_contents());
 
-#if defined(OS_WIN)
-  // Screen Orientation is currently disabled on Windows 8.
-  // This test will break, requiring an update when the API will be enabled.
-  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_WIN8) {
-    EXPECT_EQ(false, ScreenOrientationSupported());
-    return;
-  }
-#endif // defined(OS_WIN)
-
   int angle = GetOrientationAngle();
 
   for (int i = 0; i < 4; ++i) {
@@ -195,15 +182,6 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, DISABLED_LockSmoke) {
   TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
   shell()->LoadURL(test_url);
 
-#if defined(OS_WIN)
-  // Screen Orientation is currently disabled on Windows 8.
-  // This test will break, requiring an update when the API will be enabled.
-  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_WIN8) {
-    EXPECT_EQ(false, ScreenOrientationSupported());
-    return;
-  }
-#endif // defined(OS_WIN)
-
   navigation_observer.Wait();
 #if USE_AURA || defined(OS_ANDROID)
   WaitForResizeComplete(shell()->web_contents());
@@ -229,15 +207,6 @@ IN_PROC_BROWSER_TEST_F(ScreenOrientationBrowserTest, CrashTest_UseAfterDetach) {
 
   TestNavigationObserver navigation_observer(shell()->web_contents(), 2);
   shell()->LoadURL(test_url);
-
-#if defined(OS_WIN)
-  // Screen Orientation is currently disabled on Windows 8.
-  // When implemented, this test will break, requiring an update.
-  if (base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_WIN8) {
-    EXPECT_EQ(false, ScreenOrientationSupported());
-    return;
-  }
-#endif // defined(OS_WIN)
 
   navigation_observer.Wait();
 
