@@ -14,6 +14,9 @@
       <structure name="IDR_IOS_INCOGNITO_TAB_HTML" file="ntp/incognito_tab.html" flattenhtml="true" type="chrome_html" />
     </structures>
     <includes>
+      <include name="IDR_IOS_HISTORY_HTML" file="history/history.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_IOS_HISTORY_JS" file="history/history.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_IOS_HISTORY_OTHER_DEVICES_JS" file="history/other_devices.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_IOS_OMAHA_HTML" file="omaha/omaha.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_IOS_OMAHA_JS" file="omaha/omaha.js" type="BINDATA" />
     </includes>
