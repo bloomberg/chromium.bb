@@ -21,6 +21,9 @@ const char kGoogle[] = "google";
 const char kGaiaIdKey[] = "gaia_id";
 const char kEmailKey[] = "email";
 
+// Prefix for GetGaiaIdKey().
+const char kKeyGaiaIdPrefix[] = "g:";
+
 struct GoogleStringSingleton {
   GoogleStringSingleton() : google(kGoogle) {}
 
@@ -92,6 +95,11 @@ const std::string& AccountId::GetGaiaId() const {
 
 const std::string& AccountId::GetUserEmail() const {
   return user_email_;
+}
+
+const std::string AccountId::GetGaiaIdKey() const {
+  CHECK(!gaia_id_.empty());
+  return std::string(kKeyGaiaIdPrefix) + gaia_id_;
 }
 
 void AccountId::SetGaiaId(const std::string& gaia_id) {

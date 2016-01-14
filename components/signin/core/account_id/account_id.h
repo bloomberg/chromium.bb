@@ -35,6 +35,9 @@ class AccountId {
   const std::string& GetGaiaId() const;
   const std::string& GetUserEmail() const;
 
+  // This returns prefixed GaiaId string to be used as a storage key.
+  const std::string GetGaiaIdKey() const;
+
   void SetGaiaId(const std::string& gaia_id);
   void SetUserEmail(const std::string& email);
 
