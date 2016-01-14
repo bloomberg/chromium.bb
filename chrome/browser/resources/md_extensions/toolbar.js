@@ -6,28 +6,11 @@ cr.define('extensions', function() {
   var Toolbar = Polymer({
     is: 'extensions-toolbar',
 
-    /** @param {string} searchTerm */
-    onSearchTermSearch: function(searchTerm) {
+    /** @param {SearchFieldDelegate} delegate */
+    setSearchDelegate: function(delegate) {
+      this.$['search-field'].setDelegate(delegate);
     },
   });
-
-  /**
-   * @constructor
-   * @implements {SearchFieldDelegate}
-   */
-  // TODO(devlin): This is a bit excessive, and it would be better to just have
-  // Toolbar implement SearchFieldDelegate. But for now, we don't know how to
-  // make that happen with closure compiler.
-  function ToolbarSearchFieldDelegate(toolbar) {
-    this.toolbar_ = toolbar;
-  }
-
-  ToolbarSearchFieldDelegate.prototype = {
-    /** @override */
-    onSearchTermSearch: function(searchTerm) {
-      this.toolbar_.onSearchTermSearch(searchTerm);
-    }
-  };
 
   return {Toolbar: Toolbar};
 });

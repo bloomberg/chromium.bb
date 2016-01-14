@@ -44,6 +44,11 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      filter: {
+        type: String,
+        value: '',
+      },
+
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: {
         type: Array,
@@ -75,6 +80,7 @@ cr.define('extensions', function() {
       this.service.managerReady(this);
       this.scrollHelper_ = new ScrollHelper(this);
       this.sidebar.setScrollDelegate(this.scrollHelper_);
+      this.$.toolbar.setSearchDelegate(new SearchHelper(this));
     },
 
     /**
@@ -195,6 +201,22 @@ cr.define('extensions', function() {
     scrollToWebsites: function() {
       this.items_.scrollTop =
           this.items_.querySelector('#websites-list').offsetTop;
+    },
+  };
+
+  /**
+   * @param {extensions.Manager} manager
+   * @constructor
+   * @implements {SearchFieldDelegate}
+   */
+  function SearchHelper(manager) {
+    this.manager_ = manager;
+  }
+
+  SearchHelper.prototype = {
+    /** @override */
+    onSearchTermSearch: function(searchTerm) {
+      this.manager_.filter = searchTerm;
     },
   };
 

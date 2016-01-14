@@ -20,17 +20,17 @@
       <div id="items">
         <extensions-item-list id="extensions-list" items="[[extensions]]"
             delegate="[[service]]" header="[[i18n('sidebarExtensions')]]"
-            in-dev-mode="[[inDevMode]]"
+            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
             hidden$="[[computeListHidden_(extensions, extensions.splices)]]">
         </extensions-item-list>
         <extensions-item-list id="apps-list" items="[[apps]]"
             delegate="[[service]]" header="[[i18n('sidebarApps')]]"
-            in-dev-mode="[[inDevMode]]"
+            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
             hidden$="[[computeListHidden_(apps, apps.splices)]]">
         </extensions-item-list>
         <extensions-item-list id="websites-list" items="[[websites]]"
             delegate="[[service]]" header="[[i18n('sidebarWebsites')]]"
-            in-dev-mode="[[inDevMode]]"
+            in-dev-mode="[[inDevMode]]" filter="[[filter]]"
             hidden$="[[computeListHidden_(websites, websites.splices)]]">
         </extensions-item-list>
       </div>

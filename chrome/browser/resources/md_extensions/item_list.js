@@ -19,6 +19,8 @@ cr.define('extensions', function() {
         type: Boolean,
         value: false,
       },
+
+      filter: String,
     },
 
     listeners: {
@@ -33,6 +35,19 @@ cr.define('extensions', function() {
      */
     itemSizeChanged_: function(e) {
       this.$.list.updateSizeForItem(e.detail.item);
+    },
+
+    /**
+     * Computes the list of items to be shown.
+     * @param {Object} changeRecord The changeRecord for |items|.
+     * @param {string} filter The updated filter string.
+     * @return {Array<!chrome.developerPrivate.ExtensionInfo>}
+     * @private
+     */
+    computeShownItems_: function(changeRecord, filter) {
+      return this.items.filter(function(item) {
+        return item.name.toLowerCase().includes(this.filter.toLowerCase());
+      }, this);
     },
   });
 
