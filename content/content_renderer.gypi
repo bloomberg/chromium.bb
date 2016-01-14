@@ -215,6 +215,7 @@
       'renderer/gpu/queue_message_swap_promise.h',
       'renderer/gpu/render_widget_compositor.cc',
       'renderer/gpu/render_widget_compositor.h',
+      'renderer/gpu/render_widget_compositor_delegate.h',
       'renderer/gpu/stream_texture_host_android.cc',
       'renderer/gpu/stream_texture_host_android.h',
       'renderer/history_controller.cc',
