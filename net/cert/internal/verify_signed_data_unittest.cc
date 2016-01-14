@@ -61,21 +61,20 @@ void RunTestCaseUsingPolicy(VerifyResult expected_result,
   ASSERT_TRUE(ReadTestDataFromPemFile(path, mappings));
 
   scoped_ptr<SignatureAlgorithm> signature_algorithm =
-      SignatureAlgorithm::CreateFromDer(InputFromString(&algorithm));
+      SignatureAlgorithm::CreateFromDer(der::Input(&algorithm));
   ASSERT_TRUE(signature_algorithm);
 
   der::BitString signature_value_bit_string;
-  der::Parser signature_value_parser(InputFromString(&signature_value));
+  der::Parser signature_value_parser((der::Input(&signature_value)));
   ASSERT_TRUE(signature_value_parser.ReadBitString(&signature_value_bit_string))
       << "The signature value is not a valid BIT STRING";
 
   bool expected_result_bool = expected_result == SUCCESS;
 
-  EXPECT_EQ(
-      expected_result_bool,
-      VerifySignedData(*signature_algorithm, InputFromString(&signed_data),
-                       signature_value_bit_string, InputFromString(&public_key),
-                       policy));
+  EXPECT_EQ(expected_result_bool,
+            VerifySignedData(*signature_algorithm, der::Input(&signed_data),
+                             signature_value_bit_string,
+                             der::Input(&public_key), policy));
 }
 
 // RunTestCase() is the same as RunTestCaseUsingPolicy(), only it uses a

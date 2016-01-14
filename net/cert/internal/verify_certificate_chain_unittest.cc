@@ -47,7 +47,7 @@ std::string ReadTestFileToString(const std::string& file_name) {
 void AddCertificateToTrustStore(const std::string& cert_der,
                                 TrustStore* trust_store) {
   ParsedCertificate cert;
-  ASSERT_TRUE(ParseCertificate(InputFromString(&cert_der), &cert));
+  ASSERT_TRUE(ParseCertificate(der::Input(&cert_der), &cert));
 
   ParsedTbsCertificate tbs;
   ASSERT_TRUE(ParseTbsCertificate(cert.tbs_certificate_tlv, &tbs));
@@ -95,7 +95,7 @@ void ReadTestFromFile(const std::string& file_name,
     } else if (block_type == kTimeHeader) {
       ASSERT_FALSE(has_time) << "Duplicate " << kTimeHeader;
       has_time = true;
-      ASSERT_TRUE(der::ParseUTCTime(InputFromString(&block_data), time));
+      ASSERT_TRUE(der::ParseUTCTime(der::Input(&block_data), time));
     } else if (block_type == kResultHeader) {
       ASSERT_FALSE(has_result) << "Duplicate " << kResultHeader;
       ASSERT_TRUE(block_data == "SUCCESS" || block_data == "FAIL")
@@ -119,7 +119,7 @@ void RunTest(const char* file_name) {
 
   std::vector<der::Input> input_chain;
   for (const auto& cert_str : chain)
-    input_chain.push_back(InputFromString(&cert_str));
+    input_chain.push_back(der::Input(&cert_str));
 
   SimpleSignaturePolicy signature_policy(1024);
 

@@ -46,16 +46,14 @@ void EnsureParsingCertificateSucceeds(const std::string& file_name) {
 
   // Parsing the certificate should succeed.
   ParsedCertificate parsed;
-  ASSERT_TRUE(ParseCertificate(InputFromString(&data), &parsed));
+  ASSERT_TRUE(ParseCertificate(der::Input(&data), &parsed));
 
   // Ensure that the ParsedCertificate matches expectations.
   EXPECT_EQ(0, parsed.signature_value.unused_bits());
-  EXPECT_EQ(InputFromString(&expected_signature),
-            parsed.signature_value.bytes());
-  EXPECT_EQ(InputFromString(&expected_signature_algorithm),
+  EXPECT_EQ(der::Input(&expected_signature), parsed.signature_value.bytes());
+  EXPECT_EQ(der::Input(&expected_signature_algorithm),
             parsed.signature_algorithm_tlv);
-  EXPECT_EQ(InputFromString(&expected_tbs_certificate),
-            parsed.tbs_certificate_tlv);
+  EXPECT_EQ(der::Input(&expected_tbs_certificate), parsed.tbs_certificate_tlv);
 }
 
 // Loads certificate data from the PEM file |file_name| and verifies that the
@@ -71,7 +69,7 @@ void EnsureParsingCertificateFails(const std::string& file_name) {
 
   // Parsing the Certificate should fail.
   ParsedCertificate parsed;
-  ASSERT_FALSE(ParseCertificate(InputFromString(&data), &parsed));
+  ASSERT_FALSE(ParseCertificate(der::Input(&data), &parsed));
 }
 
 // Tests parsing a Certificate.
@@ -153,33 +151,33 @@ void EnsureParsingTbsSucceeds(const std::string& file_name,
 
   // Parsing the TBSCertificate should succeed.
   ParsedTbsCertificate parsed;
-  ASSERT_TRUE(ParseTbsCertificate(InputFromString(&data), &parsed));
+  ASSERT_TRUE(ParseTbsCertificate(der::Input(&data), &parsed));
 
   // Ensure that the ParsedTbsCertificate matches expectations.
   EXPECT_EQ(expected_version, parsed.version);
 
-  EXPECT_EQ(InputFromString(&expected_serial_number), parsed.serial_number);
-  EXPECT_EQ(InputFromString(&expected_signature_algorithm),
+  EXPECT_EQ(der::Input(&expected_serial_number), parsed.serial_number);
+  EXPECT_EQ(der::Input(&expected_signature_algorithm),
             parsed.signature_algorithm_tlv);
 
-  EXPECT_EQ(InputFromString(&expected_issuer), parsed.issuer_tlv);
+  EXPECT_EQ(der::Input(&expected_issuer), parsed.issuer_tlv);
 
   // In the test expectations PEM file, validity is described as a
   // textual string of the parsed value (rather than as DER).
   EXPECT_EQ(expected_validity_not_before, ToString(parsed.validity_not_before));
   EXPECT_EQ(expected_validity_not_after, ToString(parsed.validity_not_after));
 
-  EXPECT_EQ(InputFromString(&expected_subject), parsed.subject_tlv);
-  EXPECT_EQ(InputFromString(&expected_spki), parsed.spki_tlv);
+  EXPECT_EQ(der::Input(&expected_subject), parsed.subject_tlv);
+  EXPECT_EQ(der::Input(&expected_spki), parsed.spki_tlv);
 
-  EXPECT_EQ(InputFromString(&expected_issuer_unique_id),
+  EXPECT_EQ(der::Input(&expected_issuer_unique_id),
             parsed.issuer_unique_id.bytes());
   EXPECT_EQ(!expected_issuer_unique_id.empty(), parsed.has_issuer_unique_id);
-  EXPECT_EQ(InputFromString(&expected_subject_unique_id),
+  EXPECT_EQ(der::Input(&expected_subject_unique_id),
             parsed.subject_unique_id.bytes());
   EXPECT_EQ(!expected_subject_unique_id.empty(), parsed.has_subject_unique_id);
 
-  EXPECT_EQ(InputFromString(&expected_extensions), parsed.extensions_tlv);
+  EXPECT_EQ(der::Input(&expected_extensions), parsed.extensions_tlv);
   EXPECT_EQ(!expected_extensions.empty(), parsed.has_extensions);
 }
 
@@ -196,7 +194,7 @@ void EnsureParsingTbsFails(const std::string& file_name) {
 
   // Parsing the TBSCertificate should fail.
   ParsedTbsCertificate parsed;
-  ASSERT_FALSE(ParseTbsCertificate(InputFromString(&data), &parsed));
+  ASSERT_FALSE(ParseTbsCertificate(der::Input(&data), &parsed));
 }
 
 // Tests parsing a TBSCertificate for v3 that contains no optional fields.
@@ -336,7 +334,7 @@ bool ParseExtensionFromFile(const std::string& file_name,
   };
 
   EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  return ParseExtension(InputFromString(data), out);
+  return ParseExtension(der::Input(data), out);
 }
 
 // Parses an Extension whose critical field is true (255).
@@ -404,7 +402,7 @@ void EnsureParsingExtensionsSucceeds(
   };
 
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  ASSERT_TRUE(ParseExtensions(InputFromString(data), extensions));
+  ASSERT_TRUE(ParseExtensions(der::Input(data), extensions));
 }
 
 // Runs a test that verifies extensions parsing fails. The input file is a PEM
@@ -418,7 +416,7 @@ void EnsureParsingExtensionsFails(const std::string& file_name) {
 
   std::map<der::Input, ParsedExtension> extensions;
   ASSERT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  ASSERT_FALSE(ParseExtensions(InputFromString(&data), &extensions));
+  ASSERT_FALSE(ParseExtensions(der::Input(&data), &extensions));
 }
 
 // Parses an Extensions that is an empty sequence.
@@ -591,7 +589,7 @@ bool ParseBasicConstraintsFromFile(const std::string& file_name,
   };
 
   EXPECT_TRUE(ReadTestDataFromPemFile(GetFilePath(file_name), mappings));
-  return ParseBasicConstraints(InputFromString(&data), out);
+  return ParseBasicConstraints(der::Input(&data), out);
 }
 
 // Parses a BasicConstraints with no CA or pathlen.

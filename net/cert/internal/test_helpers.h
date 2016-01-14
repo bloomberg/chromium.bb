@@ -25,16 +25,6 @@ bool operator==(const Input& a, const Input& b);
 
 }  // namespace der
 
-// Creates a der::Input from an std::string. The lifetimes are a bit subtle
-// when using this function:
-//
-// The returned der::Input() is only valid so long as the input string is alive
-// and is not mutated.
-//
-// Note that the input parameter has been made a pointer to prevent callers
-// from accidentally passing an r-value.
-der::Input InputFromString(const std::string* s);
-
 // Parses |s| as a DER SEQUENCE TLV and returns a der::Input corresponding to
 // the value portion. On error returns an empty der::Input and adds a gtest
 // failure.

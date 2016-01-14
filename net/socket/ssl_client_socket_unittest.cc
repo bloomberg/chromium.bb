@@ -2383,8 +2383,7 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
 namespace {
 
 bool IsValidOCSPResponse(const base::StringPiece& input) {
-  der::Parser parser(der::Input(reinterpret_cast<const uint8_t*>(input.data()),
-                                input.length()));
+  der::Parser parser((der::Input(input)));
   der::Parser sequence;
   return parser.ReadSequence(&sequence) && !parser.HasMore() &&
          sequence.SkipTag(der::kEnumerated) &&

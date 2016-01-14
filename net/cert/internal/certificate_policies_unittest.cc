@@ -32,24 +32,21 @@ TEST(ParseCertificatePoliciesTest, InvalidEmpty) {
   std::string der;
   ASSERT_TRUE(LoadTestData("invalid-empty.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, InvalidIdentifierNotOid) {
   std::string der;
   ASSERT_TRUE(LoadTestData("invalid-policy_identifier_not_oid.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, AnyPolicy) {
   std::string der;
   ASSERT_TRUE(LoadTestData("anypolicy.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(1U, policies.size());
   EXPECT_EQ(AnyPolicy(), policies[0]);
 }
@@ -58,8 +55,7 @@ TEST(ParseCertificatePoliciesTest, AnyPolicyWithQualifier) {
   std::string der;
   ASSERT_TRUE(LoadTestData("anypolicy_with_qualifier.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(1U, policies.size());
   EXPECT_EQ(AnyPolicy(), policies[0]);
 }
@@ -69,16 +65,14 @@ TEST(ParseCertificatePoliciesTest, InvalidAnyPolicyWithCustomQualifier) {
   ASSERT_TRUE(
       LoadTestData("invalid-anypolicy_with_custom_qualifier.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, OnePolicy) {
   std::string der;
   ASSERT_TRUE(LoadTestData("policy_1_2_3.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(1U, policies.size());
   EXPECT_EQ(der::Input(policy_1_2_3_der), policies[0]);
 }
@@ -87,8 +81,7 @@ TEST(ParseCertificatePoliciesTest, OnePolicyWithQualifier) {
   std::string der;
   ASSERT_TRUE(LoadTestData("policy_1_2_3_with_qualifier.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(1U, policies.size());
   EXPECT_EQ(der::Input(policy_1_2_3_der), policies[0]);
 }
@@ -97,8 +90,7 @@ TEST(ParseCertificatePoliciesTest, OnePolicyWithCustomQualifier) {
   std::string der;
   ASSERT_TRUE(LoadTestData("policy_1_2_3_with_custom_qualifier.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(1U, policies.size());
   EXPECT_EQ(der::Input(policy_1_2_3_der), policies[0]);
 }
@@ -107,8 +99,7 @@ TEST(ParseCertificatePoliciesTest, InvalidPolicyWithDuplicatePolicyOid) {
   std::string der;
   ASSERT_TRUE(LoadTestData("invalid-policy_1_2_3_dupe.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, InvalidPolicyWithEmptyQualifiersSequence) {
@@ -116,8 +107,7 @@ TEST(ParseCertificatePoliciesTest, InvalidPolicyWithEmptyQualifiersSequence) {
   ASSERT_TRUE(LoadTestData(
       "invalid-policy_1_2_3_with_empty_qualifiers_sequence.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, InvalidPolicyInformationHasUnconsumedData) {
@@ -125,8 +115,7 @@ TEST(ParseCertificatePoliciesTest, InvalidPolicyInformationHasUnconsumedData) {
   ASSERT_TRUE(LoadTestData(
       "invalid-policy_1_2_3_policyinformation_unconsumed_data.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest,
@@ -135,16 +124,14 @@ TEST(ParseCertificatePoliciesTest,
   ASSERT_TRUE(LoadTestData(
       "invalid-policy_1_2_3_policyqualifierinfo_unconsumed_data.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_FALSE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_FALSE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
 }
 
 TEST(ParseCertificatePoliciesTest, TwoPolicies) {
   std::string der;
   ASSERT_TRUE(LoadTestData("policy_1_2_3_and_1_2_4.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(2U, policies.size());
   EXPECT_EQ(der::Input(policy_1_2_3_der), policies[0]);
   EXPECT_EQ(der::Input(policy_1_2_4_der), policies[1]);
@@ -154,8 +141,7 @@ TEST(ParseCertificatePoliciesTest, TwoPoliciesWithQualifiers) {
   std::string der;
   ASSERT_TRUE(LoadTestData("policy_1_2_3_and_1_2_4_with_qualifiers.pem", &der));
   std::vector<der::Input> policies;
-  EXPECT_TRUE(
-      ParseCertificatePoliciesExtension(InputFromString(&der), &policies));
+  EXPECT_TRUE(ParseCertificatePoliciesExtension(der::Input(&der), &policies));
   ASSERT_EQ(2U, policies.size());
   EXPECT_EQ(der::Input(policy_1_2_3_der), policies[0]);
   EXPECT_EQ(der::Input(policy_1_2_4_der), policies[1]);

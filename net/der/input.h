@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/compiler_specific.h"
+#include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -49,7 +50,15 @@ class NET_EXPORT_PRIVATE Input {
       : data_(data), len_(N) {}
 
   // Creates an Input from the given |data| and |len|.
-  Input(const uint8_t* data, size_t len);
+  explicit Input(const uint8_t* data, size_t len);
+
+  // Creates an Input from a base::StringPiece.
+  explicit Input(const base::StringPiece& sp);
+
+  // Creates an Input from a std::string. The lifetimes are a bit subtle when
+  // using this function: The constructed Input is only valid so long as |s| is
+  // still alive and not mutated.
+  Input(const std::string* s);
 
   // Returns the length in bytes of an Input's data.
   size_t Length() const { return len_; }
@@ -66,7 +75,18 @@ class NET_EXPORT_PRIVATE Input {
   // Returns a copy of the data represented by this object as a std::string.
   std::string AsString() const;
 
+  // Returns a StringPiece pointing to the same data as the Input. The resulting
+  // StringPiece must not outlive the data that was used to construct this
+  // Input.
+  base::StringPiece AsStringPiece() const;
+
  private:
+  // This constructor is deleted to prevent constructing an Input from a
+  // std::string r-value. Since the Input points to memory owned by another
+  // object, such an Input would point to invalid memory. Without this deleted
+  // constructor, a std::string could be passed in to the base::StringPiece
+  // constructor because of StringPiece's implicit constructor.
+  Input(std::string) = delete;
   const uint8_t* data_;
   size_t len_;
 };

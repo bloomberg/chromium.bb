@@ -70,26 +70,17 @@ bool SeekToSPKI(der::Input in, der::Parser* tbs_certificate) {
   return true;
 }
 
-der::Input InputFromStringPiece(base::StringPiece in) {
-  return der::Input(reinterpret_cast<const uint8_t*>(in.data()), in.length());
-}
-
-base::StringPiece StringPieceFromInput(der::Input in) {
-  return base::StringPiece(reinterpret_cast<const char*>(in.UnsafeData()),
-                           in.Length());
-}
-
 }  // namespace
 
 bool ExtractSPKIFromDERCert(base::StringPiece cert,
                             base::StringPiece* spki_out) {
   der::Parser parser;
-  if (!SeekToSPKI(InputFromStringPiece(cert), &parser))
+  if (!SeekToSPKI(der::Input(cert), &parser))
     return false;
   der::Input spki;
   if (!parser.ReadRawTLV(&spki))
     return false;
-  *spki_out = StringPieceFromInput(spki);
+  *spki_out = spki.AsStringPiece();
   return true;
 }
 
@@ -105,7 +96,7 @@ bool ExtractSubjectPublicKeyFromSPKI(base::StringPiece spki,
   //     parameters              ANY DEFINED BY algorithm OPTIONAL  }
 
   // Step into SubjectPublicKeyInfo sequence.
-  der::Parser parser(InputFromStringPiece(spki));
+  der::Parser parser((der::Input(spki)));
   der::Parser spki_parser;
   if (!parser.ReadSequence(&spki_parser))
     return false;
@@ -118,7 +109,7 @@ bool ExtractSubjectPublicKeyFromSPKI(base::StringPiece spki,
   der::Input spk;
   if (!spki_parser.ReadTag(der::kBitString, &spk))
     return false;
-  *spk_out = StringPieceFromInput(spk);
+  *spk_out = spk.AsStringPiece();
   return true;
 }
 
@@ -130,7 +121,7 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
 
   bool present;
   der::Parser tbs_cert_parser;
-  if (!SeekToSPKI(InputFromStringPiece(cert), &tbs_cert_parser))
+  if (!SeekToSPKI(der::Input(cert), &tbs_cert_parser))
     return false;
 
   // From RFC 5280, section 4.1
@@ -281,7 +272,7 @@ bool ExtractCRLURLsFromDERCert(base::StringPiece cert,
         }
         if (present) {
           // This does not validate that |url| is a valid IA5String.
-          tmp_urls_out.push_back(StringPieceFromInput(url));
+          tmp_urls_out.push_back(url.AsStringPiece());
         } else {
           der::Tag unused_tag;
           der::Input unused_value;

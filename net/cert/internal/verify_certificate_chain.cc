@@ -17,11 +17,6 @@ namespace net {
 
 namespace {
 
-// TODO(eroman): Move into net/der (duplicated from test_helpers.cc).
-static der::Input InputFromString(const std::string* s) {
-  return der::Input(reinterpret_cast<const uint8_t*>(s->data()), s->size());
-}
-
 // Map from OID to ParsedExtension.
 using ExtensionsMap = std::map<der::Input, ParsedExtension>;
 
@@ -177,7 +172,7 @@ WARN_UNUSED_RESULT const TrustAnchor* FindTrustAnchorByName(
     const TrustStore& trust_store,
     const der::Input& name) {
   for (const auto& anchor : trust_store.anchors) {
-    if (NameMatches(name, InputFromString(&anchor.name)))
+    if (NameMatches(name, der::Input(&anchor.name)))
       return &anchor;
   }
   return nullptr;
@@ -519,8 +514,8 @@ bool VerifyCertificateChain(const std::vector<der::Input>& certs_der,
           FindTrustAnchorByName(trust_store, cert.tbs.issuer_tlv);
       if (!trust_anchor)
         return false;
-      working_spki = InputFromString(&trust_anchor->spki);
-      working_issuer_name = InputFromString(&trust_anchor->name);
+      working_spki = der::Input(&trust_anchor->spki);
+      working_issuer_name = der::Input(&trust_anchor->name);
     }
 
     // Per RFC 5280 section 6.1:
