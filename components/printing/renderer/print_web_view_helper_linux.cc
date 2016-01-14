@@ -7,14 +7,9 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 #include "components/printing/common/print_messages.h"
-#include "content/public/renderer/render_thread.h"
 #include "printing/metafile_skia_wrapper.h"
-#include "printing/page_size_margins.h"
-#include "printing/pdf_metafile_skia.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 #if defined(OS_ANDROID)
 #include "base/file_descriptor_posix.h"
@@ -23,38 +18,6 @@
 #endif  // defined(OS_ANDROID)
 
 namespace printing {
-
-#if defined(ENABLE_PRINT_PREVIEW)
-bool PrintWebViewHelper::RenderPreviewPage(
-    int page_number,
-    const PrintMsg_Print_Params& print_params) {
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  page_params.page_number = page_number;
-  scoped_ptr<PdfMetafileSkia> draft_metafile;
-  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
-  if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new PdfMetafileSkia);
-    initial_render_metafile = draft_metafile.get();
-  }
-
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-  PrintPageInternal(page_params,
-                    print_preview_context_.prepared_frame(),
-                    initial_render_metafile);
-  print_preview_context_.RenderedPreviewPage(
-      base::TimeTicks::Now() - begin_time);
-  if (draft_metafile.get()) {
-    draft_metafile->FinishDocument();
-  } else if (print_preview_context_.IsModifiable() &&
-             print_preview_context_.generate_draft_pages()) {
-    DCHECK(!draft_metafile.get());
-    draft_metafile =
-        print_preview_context_.metafile()->GetMetafileForCurrentPage();
-  }
-  return PreviewPageRendered(page_number, draft_metafile.get());
-}
-#endif
 
 #if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
@@ -72,7 +35,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   page_params.params = params.params;
   for (int page_number : printed_pages) {
     page_params.page_number = page_number;
-    PrintPageInternal(page_params, frame, &metafile);
+    PrintPageInternal(page_params, frame, &metafile, nullptr, nullptr);
   }
 
   // blink::printEnd() for PDF should be called before metafile is closed.
@@ -116,47 +79,5 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(ENABLE_BASIC_PRINTING)
-
-void PrintWebViewHelper::PrintPageInternal(
-    const PrintMsg_PrintPage_Params& params,
-    blink::WebFrame* frame,
-    PdfMetafileSkia* metafile) {
-  PageSizeMargins page_layout_in_points;
-  double scale_factor = 1.0f;
-  ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
-                                  ignore_css_margins_, &scale_factor,
-                                  &page_layout_in_points);
-  gfx::Size page_size;
-  gfx::Rect content_area;
-  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
-                                          &content_area);
-  gfx::Rect canvas_area =
-      params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
-
-  skia::PlatformCanvas* canvas =
-      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
-  if (!canvas)
-    return;
-
-  MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-
-#if defined(ENABLE_PRINT_PREVIEW)
-  if (params.params.display_header_footer) {
-    // |page_number| is 0-based, so 1 is added.
-    // TODO(vitalybuka) : why does it work only with 1.25?
-    PrintHeaderAndFooter(canvas, params.page_number + 1,
-                         print_preview_context_.total_page_count(), *frame,
-                         scale_factor / 1.25, page_layout_in_points,
-                         params.params);
-  }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-
-  RenderPageContent(frame, params.page_number, canvas_area, content_area,
-                    scale_factor, canvas);
-
-  // Done printing. Close the canvas to retrieve the compiled metafile.
-  if (!metafile->FinishPage())
-    NOTREACHED() << "metafile failed";
-}
 
 }  // namespace printing

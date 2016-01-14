@@ -5,54 +5,13 @@
 #include "components/printing/renderer/print_web_view_helper.h"
 
 #include <stddef.h>
-#include <stdint.h>
 
 #include "base/logging.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/process/process_handle.h"
 #include "components/printing/common/print_messages.h"
-#include "content/public/renderer/render_thread.h"
 #include "printing/metafile_skia_wrapper.h"
-#include "printing/page_size_margins.h"
-#include "printing/pdf_metafile_skia.h"
-#include "printing/units.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace printing {
-
-#if defined(ENABLE_PRINT_PREVIEW)
-bool PrintWebViewHelper::RenderPreviewPage(
-    int page_number,
-    const PrintMsg_Print_Params& print_params) {
-  PrintMsg_PrintPage_Params page_params;
-  page_params.params = print_params;
-  page_params.page_number = page_number;
-  scoped_ptr<PdfMetafileSkia> draft_metafile;
-  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
-  if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
-    draft_metafile.reset(new PdfMetafileSkia);
-    initial_render_metafile = draft_metafile.get();
-  }
-
-  base::TimeTicks begin_time = base::TimeTicks::Now();
-  PrintPageInternal(page_params,
-                    print_preview_context_.prepared_frame(),
-                    initial_render_metafile,
-                    NULL,
-                    NULL);
-  print_preview_context_.RenderedPreviewPage(
-      base::TimeTicks::Now() - begin_time);
-  if (draft_metafile.get()) {
-    draft_metafile->FinishDocument();
-  } else if (print_preview_context_.IsModifiable() &&
-             print_preview_context_.generate_draft_pages()) {
-    DCHECK(!draft_metafile.get());
-    draft_metafile =
-        print_preview_context_.metafile()->GetMetafileForCurrentPage();
-  }
-  return PreviewPageRendered(page_number, draft_metafile.get());
-}
-#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 #if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
@@ -107,94 +66,5 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   return true;
 }
 #endif  // defined(ENABLE_BASIC_PRINTING)
-
-void PrintWebViewHelper::PrintPageInternal(
-    const PrintMsg_PrintPage_Params& params,
-    blink::WebFrame* frame,
-    PdfMetafileSkia* metafile,
-    gfx::Size* page_size_in_dpi,
-    gfx::Rect* content_area_in_dpi) {
-  PageSizeMargins page_layout_in_points;
-  double css_scale_factor = 1.0f;
-  ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
-                                  ignore_css_margins_, &css_scale_factor,
-                                  &page_layout_in_points);
-  gfx::Size page_size;
-  gfx::Rect content_area;
-  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
-                                          &content_area);
-  int dpi = static_cast<int>(params.params.dpi);
-  // Calculate the actual page size and content area in dpi.
-  if (page_size_in_dpi) {
-    *page_size_in_dpi =
-        gfx::Size(static_cast<int>(ConvertUnitDouble(page_size.width(),
-                                                     kPointsPerInch, dpi)),
-                  static_cast<int>(ConvertUnitDouble(page_size.height(),
-                                                     kPointsPerInch, dpi)));
-  }
-
-  if (content_area_in_dpi) {
-    // Output PDF matches paper size and should be printer edge to edge.
-    *content_area_in_dpi =
-        gfx::Rect(0, 0, page_size_in_dpi->width(), page_size_in_dpi->height());
-  }
-
-  gfx::Rect canvas_area =
-      params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
-
-  float webkit_page_shrink_factor =
-      frame->getPrintPageShrink(params.page_number);
-  float scale_factor = css_scale_factor * webkit_page_shrink_factor;
-
-  skia::PlatformCanvas* canvas =
-      metafile->GetVectorCanvasForNewPage(page_size, canvas_area, scale_factor);
-  if (!canvas)
-    return;
-
-  MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
-
-#if defined(ENABLE_PRINT_PREVIEW)
-  if (params.params.display_header_footer) {
-    // |page_number| is 0-based, so 1 is added.
-    PrintHeaderAndFooter(canvas, params.page_number + 1,
-                         print_preview_context_.total_page_count(), *frame,
-                         scale_factor, page_layout_in_points, params.params);
-  }
-#endif  // defined(ENABLE_PRINT_PREVIEW)
-
-  float webkit_scale_factor =
-      RenderPageContent(frame, params.page_number, canvas_area, content_area,
-                        scale_factor, canvas);
-  DCHECK_GT(webkit_scale_factor, 0.0f);
-  // Done printing. Close the canvas to retrieve the compiled metafile.
-  if (!metafile->FinishPage())
-    NOTREACHED() << "metafile failed";
-}
-
-bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
-    const PdfMetafileSkia& metafile,
-    base::SharedMemoryHandle* shared_mem_handle) {
-  uint32_t buf_size = metafile.GetDataSize();
-  if (buf_size == 0)
-    return false;
-
-  base::SharedMemory shared_buf;
-  // Allocate a shared memory buffer to hold the generated metafile data.
-  if (!shared_buf.CreateAndMapAnonymous(buf_size))
-    return false;
-
-  // Copy the bits into shared memory.
-  if (!metafile.GetData(shared_buf.memory(), buf_size))
-    return false;
-
-  if (!shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
-                                shared_mem_handle)) {
-    return false;
-  }
-
-  Send(new PrintHostMsg_DuplicateSection(routing_id(), *shared_mem_handle,
-                                         shared_mem_handle));
-  return true;
-}
 
 }  // namespace printing

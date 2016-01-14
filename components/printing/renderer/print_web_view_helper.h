@@ -268,20 +268,16 @@ class PrintWebViewHelper
 #endif  // defined(ENABLE_BASIC_PRINTING)
 
   // Prints the page listed in |params|.
-#if defined(OS_LINUX) || defined(OS_ANDROID)
+#if defined(OS_MACOSX)
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         blink::WebFrame* frame,
-                         PdfMetafileSkia* metafile);
-#elif defined(OS_WIN)
+                         blink::WebFrame* frame);
+#else
   void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
                          blink::WebFrame* frame,
                          PdfMetafileSkia* metafile,
                          gfx::Size* page_size_in_dpi,
                          gfx::Rect* content_area_in_dpi);
-#else
-  void PrintPageInternal(const PrintMsg_PrintPage_Params& params,
-                         blink::WebFrame* frame);
-#endif
+#endif  // defined(OS_MACOSX)
 
   // Platform specific helper function for rendering page(s) to |metafile|.
 #if defined(OS_MACOSX)

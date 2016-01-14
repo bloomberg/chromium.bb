@@ -29,6 +29,7 @@
 #include "content/public/renderer/render_view.h"
 #include "grit/components_resources.h"
 #include "net/base/escape.h"
+#include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
 #include "printing/units.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
@@ -1224,6 +1225,37 @@ bool PrintWebViewHelper::CreatePreviewDocument() {
   return true;
 }
 
+#if !defined(OS_MACOSX) && defined(ENABLE_PRINT_PREVIEW)
+bool PrintWebViewHelper::RenderPreviewPage(
+    int page_number,
+    const PrintMsg_Print_Params& print_params) {
+  PrintMsg_PrintPage_Params page_params;
+  page_params.params = print_params;
+  page_params.page_number = page_number;
+  scoped_ptr<PdfMetafileSkia> draft_metafile;
+  PdfMetafileSkia* initial_render_metafile = print_preview_context_.metafile();
+  if (print_preview_context_.IsModifiable() && is_print_ready_metafile_sent_) {
+    draft_metafile.reset(new PdfMetafileSkia);
+    initial_render_metafile = draft_metafile.get();
+  }
+
+  base::TimeTicks begin_time = base::TimeTicks::Now();
+  PrintPageInternal(page_params, print_preview_context_.prepared_frame(),
+                    initial_render_metafile, nullptr, nullptr);
+  print_preview_context_.RenderedPreviewPage(
+      base::TimeTicks::Now() - begin_time);
+  if (draft_metafile.get()) {
+    draft_metafile->FinishDocument();
+  } else if (print_preview_context_.IsModifiable() &&
+             print_preview_context_.generate_draft_pages()) {
+    DCHECK(!draft_metafile.get());
+    draft_metafile =
+        print_preview_context_.metafile()->GetMetafileForCurrentPage();
+  }
+  return PreviewPageRendered(page_number, draft_metafile.get());
+}
+#endif  // !defined(OS_MACOSX) && defined(ENABLE_PRINT_PREVIEW)
+
 bool PrintWebViewHelper::FinalizePrintReadyDocument() {
   DCHECK(!is_print_ready_metafile_sent_);
   print_preview_context_.FinalizePrintReadyDocument();
@@ -1692,7 +1724,81 @@ bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
 }
 #endif  // defined(ENABLE_BASIC_PRINTING)
 
-#if defined(OS_POSIX)
+#if !defined(OS_MACOSX)
+void PrintWebViewHelper::PrintPageInternal(
+    const PrintMsg_PrintPage_Params& params,
+    blink::WebFrame* frame,
+    PdfMetafileSkia* metafile,
+    gfx::Size* page_size_in_dpi,
+    gfx::Rect* content_area_in_dpi) {
+  PageSizeMargins page_layout_in_points;
+  double css_scale_factor = 1.0f;
+  ComputePageLayoutInPointsForCss(frame, params.page_number, params.params,
+                                  ignore_css_margins_, &css_scale_factor,
+                                  &page_layout_in_points);
+  gfx::Size page_size;
+  gfx::Rect content_area;
+  GetPageSizeAndContentAreaFromPageLayout(page_layout_in_points, &page_size,
+                                          &content_area);
+  int dpi = static_cast<int>(params.params.dpi);
+  // Calculate the actual page size and content area in dpi.
+  if (page_size_in_dpi) {
+    *page_size_in_dpi =
+        gfx::Size(static_cast<int>(ConvertUnitDouble(page_size.width(),
+                                                     kPointsPerInch, dpi)),
+                  static_cast<int>(ConvertUnitDouble(page_size.height(),
+                                                     kPointsPerInch, dpi)));
+  }
+
+  if (content_area_in_dpi) {
+    // Output PDF matches paper size and should be printer edge to edge.
+    *content_area_in_dpi =
+        gfx::Rect(0, 0, page_size_in_dpi->width(), page_size_in_dpi->height());
+  }
+
+  gfx::Rect canvas_area =
+      params.params.display_header_footer ? gfx::Rect(page_size) : content_area;
+
+#if defined(OS_WIN) || defined(ENABLE_PRINT_PREVIEW)
+  float webkit_page_shrink_factor =
+      frame->getPrintPageShrink(params.page_number);
+  float scale_factor = css_scale_factor * webkit_page_shrink_factor;
+#endif
+  // TODO(thestig) GetVectorCanvasForNewPage() and RenderPageContent() take a
+  // different scale factor vs Windows. Figure out why and combine the two.
+#if defined(OS_WIN)
+  float platform_scale_factor = scale_factor;
+#else
+  float platform_scale_factor = css_scale_factor;
+#endif  // defined(OS_WIN)
+
+  skia::PlatformCanvas* canvas = metafile->GetVectorCanvasForNewPage(
+      page_size, canvas_area, platform_scale_factor);
+  if (!canvas)
+    return;
+
+  MetafileSkiaWrapper::SetMetafileOnCanvas(*canvas, metafile);
+
+#if defined(ENABLE_PRINT_PREVIEW)
+  if (params.params.display_header_footer) {
+    // |page_number| is 0-based, so 1 is added.
+    PrintHeaderAndFooter(canvas, params.page_number + 1,
+                         print_preview_context_.total_page_count(), *frame,
+                         scale_factor, page_layout_in_points, params.params);
+  }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
+
+  float webkit_scale_factor =
+      RenderPageContent(frame, params.page_number, canvas_area, content_area,
+                        platform_scale_factor, canvas);
+  DCHECK_GT(webkit_scale_factor, 0.0f);
+
+  // Done printing. Close the canvas to retrieve the compiled metafile.
+  if (!metafile->FinishPage())
+    NOTREACHED() << "metafile failed";
+}
+#endif  // !defined(OS_MACOSX)
+
 bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
     const PdfMetafileSkia& metafile,
     base::SharedMemoryHandle* shared_mem_handle) {
@@ -1700,6 +1806,25 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
   if (buf_size == 0)
     return false;
 
+#if defined(OS_WIN)
+  base::SharedMemory shared_buf;
+  // Allocate a shared memory buffer to hold the generated metafile data.
+  if (!shared_buf.CreateAndMapAnonymous(buf_size))
+    return false;
+
+  // Copy the bits into shared memory.
+  if (!metafile.GetData(shared_buf.memory(), buf_size))
+    return false;
+
+  if (!shared_buf.GiveToProcess(base::GetCurrentProcessHandle(),
+                                shared_mem_handle)) {
+    return false;
+  }
+
+  Send(new PrintHostMsg_DuplicateSection(routing_id(), *shared_mem_handle,
+                                         shared_mem_handle));
+  return true;
+#else
   scoped_ptr<base::SharedMemory> shared_buf(
       content::RenderThread::Get()->HostAllocateSharedMemoryBuffer(buf_size));
   if (!shared_buf)
@@ -1713,8 +1838,8 @@ bool PrintWebViewHelper::CopyMetafileDataToSharedMem(
 
   return shared_buf->GiveToProcess(base::GetCurrentProcessHandle(),
                                    shared_mem_handle);
+#endif  // defined(OS_WIN)
 }
-#endif  // defined(OS_POSIX)
 
 #if defined(ENABLE_PRINT_PREVIEW)
 void PrintWebViewHelper::ShowScriptedPrintPreview() {
