@@ -1513,9 +1513,6 @@ bool WebGL2RenderingContextBase::validateClearBuffer(const char* functionName, G
 {
     switch (buffer) {
     case GL_COLOR:
-    case GL_FRONT:
-    case GL_BACK:
-    case GL_FRONT_AND_BACK:
         if (size < 4) {
             synthesizeGLError(GL_INVALID_VALUE, functionName, "invalid array size");
             return false;
