@@ -70,7 +70,6 @@ TEST_F(ContentSettingImageModelTest, UpdateFromWebContents) {
      ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
          CONTENT_SETTINGS_TYPE_IMAGES);
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_FALSE(HasIcon(*content_setting_image_model));
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_IMAGES);
@@ -109,7 +108,6 @@ TEST_F(ContentSettingImageModelTest, CookieAccessed) {
      ContentSettingSimpleImageModel::CreateForContentTypeForTesting(
          CONTENT_SETTINGS_TYPE_COOKIES));
   EXPECT_FALSE(content_setting_image_model->is_visible());
-  EXPECT_FALSE(HasIcon(*content_setting_image_model));
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
   net::CookieOptions options;
