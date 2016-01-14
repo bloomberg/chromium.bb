@@ -4,7 +4,11 @@
 
 #include "blimp/client/session/blimp_client_session.h"
 
+#include "base/command_line.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "blimp/client/blimp_client_switches.h"
 #include "blimp/client/session/navigation_feature.h"
 #include "blimp/client/session/render_widget_feature.h"
 #include "blimp/client/session/tab_control_feature.h"
@@ -15,6 +19,9 @@
 #include "blimp/net/common.h"
 #include "blimp/net/null_blimp_message_processor.h"
 #include "blimp/net/tcp_client_transport.h"
+#include "net/base/address_list.h"
+#include "net/base/ip_address.h"
+#include "net/base/ip_endpoint.h"
 
 namespace blimp {
 namespace client {
@@ -22,17 +29,45 @@ namespace {
 
 // TODO(kmarshall): Take values from configuration data.
 const char kDummyClientToken[] = "MyVoiceIsMyPassport";
-const uint16_t kDefaultTcpPort = 25467;
+const std::string kDefaultBlimpletIPAddress = "127.0.0.1";
+const uint16_t kDefaultBlimpletTCPPort = 25467;
 
-net::IPAddressNumber GetEndpointIPAddress() {
-  // Just connect to localhost for now.
-  // TODO(kmarshall): Take IP address from configuration data.
-  net::IPAddressNumber output;
-  output.push_back(0);
-  output.push_back(0);
-  output.push_back(0);
-  output.push_back(0);
-  return output;
+// A BlimpletAssignment contains the configuration data needed for a client
+// to connect to the engine.
+struct BlimpletAssignment {
+  net::IPEndPoint ip_endpoint;
+};
+
+net::IPAddress GetBlimpletIPAddress() {
+  std::string host;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBlimpletHost)) {
+    host = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+        switches::kBlimpletHost);
+  } else {
+    host = kDefaultBlimpletIPAddress;
+  }
+  net::IPAddress ip_address;
+  if (!net::IPAddress::FromIPLiteral(host, &ip_address))
+    CHECK(false) << "Invalid BlimpletAssignment host " << host;
+  return ip_address;
+}
+
+uint16_t GetBlimpletTCPPort() {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kBlimpletTCPPort)) {
+    std::string port_str =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kBlimpletTCPPort);
+    uint port_64t;
+    if (!base::StringToUint(port_str, &port_64t) ||
+        !base::IsValueInRangeForNumericType<uint16_t>(port_64t)) {
+      CHECK(false) << "Invalid BlimpletAssignment port " << port_str;
+    }
+    return base::checked_cast<uint16_t>(port_64t);
+  } else {
+    return kDefaultBlimpletTCPPort;
+  }
 }
 
 }  // namespace
@@ -48,7 +83,7 @@ class ClientNetworkComponents {
   ~ClientNetworkComponents() {}
 
   // Sets up network components and starts to connect to the engine.
-  void Initialize();
+  void Initialize(const net::AddressList& address_list);
 
   // Invoked by BlimpEngineSession to finish feature registration on IO thread:
   // using |incoming_proxy| as the incoming message processor, and connecting
@@ -73,16 +108,14 @@ class ClientNetworkComponents {
   DISALLOW_COPY_AND_ASSIGN(ClientNetworkComponents);
 };
 
-void ClientNetworkComponents::Initialize() {
+void ClientNetworkComponents::Initialize(const net::AddressList& address_list) {
   DCHECK(!connection_manager_);
   connection_manager_ = make_scoped_ptr(
       new ClientConnectionManager(browser_connection_handler_.get()));
   connection_manager_->set_client_token(kDummyClientToken);
 
-  connection_manager_->AddTransport(make_scoped_ptr(
-      new TCPClientTransport(net::AddressList(net::IPEndPoint(
-                                 GetEndpointIPAddress(), kDefaultTcpPort)),
-                             nullptr)));
+  connection_manager_->AddTransport(
+      make_scoped_ptr(new TCPClientTransport(address_list, nullptr)));
 
   connection_manager_->Connect();
 }
@@ -135,7 +168,8 @@ BlimpClientSession::BlimpClientSession()
   // completed.
   io_thread_.task_runner()->PostTask(
       FROM_HERE, base::Bind(&ClientNetworkComponents::Initialize,
-                            base::Unretained(net_components_.get())));
+                            base::Unretained(net_components_.get()),
+                            net::AddressList(GetBlimpletIPEndpoint())));
 }
 
 BlimpClientSession::~BlimpClientSession() {
@@ -181,6 +215,10 @@ NavigationFeature* BlimpClientSession::GetNavigationFeature() const {
 
 RenderWidgetFeature* BlimpClientSession::GetRenderWidgetFeature() const {
   return render_widget_feature_.get();
+}
+
+net::IPEndPoint BlimpClientSession::GetBlimpletIPEndpoint() {
+  return net::IPEndPoint(GetBlimpletIPAddress(), GetBlimpletTCPPort());
 }
 
 }  // namespace client

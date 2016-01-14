@@ -12,6 +12,8 @@ if (is_android) {
 component("blimp_client") {
   sources = [
     "blimp_client_export.h",
+    "blimp_client_switches.cc",
+    "blimp_client_switches.h",
     "blimp_startup.cc",
     "blimp_startup.h",
     "compositor/blimp_compositor.cc",

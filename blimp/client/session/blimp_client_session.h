@@ -13,6 +13,10 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 
+namespace net {
+class IPEndPoint;
+}
+
 namespace blimp {
 
 class BlimpMessageProcessor;
@@ -45,6 +49,9 @@ class BLIMP_CLIENT_EXPORT BlimpClientSession {
 
  protected:
   virtual ~BlimpClientSession();
+
+  // Returns the IPEndPoint to use for connecting to the blimplet.
+  net::IPEndPoint GetBlimpletIPEndpoint();
 
  private:
   // Registers a message processor which will receive all messages of the |type|
