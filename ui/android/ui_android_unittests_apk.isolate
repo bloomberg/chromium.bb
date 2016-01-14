@@ -7,7 +7,8 @@
   ],
   'variables': {
     'command': [
-      '<(PRODUCT_DIR)/bin/run_ui_android_unittests', '-v',
+      '<(PRODUCT_DIR)/bin/run_ui_android_unittests',
+      '--logcat-output-dir', '${ISOLATED_OUTDIR}/logcats'
     ],
     'files': [
       '<(PRODUCT_DIR)/bin/run_ui_android_unittests',
