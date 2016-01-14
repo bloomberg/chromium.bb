@@ -1084,14 +1084,6 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     @Override
-    public void preserveBasePageSelectionOnNextLossOfFocus() {
-        ContentViewCore basePageContentView = getBaseContentView();
-        if (basePageContentView != null) {
-            basePageContentView.preserveSelectionOnNextLossOfFocus();
-        }
-    }
-
-    @Override
     public void dismissContextualSearchBar() {
         hideContextualSearch(StateChangeReason.UNKNOWN);
     }

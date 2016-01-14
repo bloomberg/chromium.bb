@@ -59,11 +59,6 @@ public interface ContextualSearchManagementDelegate {
     void openResolvedSearchUrlInNewTab();
 
     /**
-     * Preserves the Base Page's selection next time it loses focus.
-     */
-    void preserveBasePageSelectionOnNextLossOfFocus();
-
-    /**
      * Dismisses the Contextual Search bar completely.  This will hide any panel that's currently
      * showing as well as any bar that's peeking.
      */

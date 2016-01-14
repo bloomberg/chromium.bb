@@ -337,8 +337,19 @@ public class LayoutManagerDocument extends LayoutManager
     }
 
     private void showContextualSearchLayout(boolean animate) {
-        mContextualSearchDelegate.preserveBasePageSelectionOnNextLossOfFocus();
+        ContentViewCore cvc = getCurrentTabContentViewCore();
+        if (cvc != null) {
+            cvc.preserveSelectionOnNextLossOfFocus();
+        }
         startShowing(mContextualSearchLayout, animate);
+    }
+
+    private ContentViewCore getCurrentTabContentViewCore() {
+        if (getTabModelSelector() == null) return null;
+        Tab tab = getTabModelSelector().getCurrentTab();
+        if (tab == null) return null;
+        ContentViewCore cvc = tab.getContentViewCore();
+        return cvc;
     }
 
     private class StaticEdgeSwipeHandler extends EmptyEdgeSwipeHandler {
