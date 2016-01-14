@@ -205,8 +205,7 @@ views::MenuButton* BrowserActionsContainer::GetOverflowReferenceView() {
 
 void BrowserActionsContainer::OnMouseEnteredToolbarActionView() {
   if (!shown_bubble_ && !toolbar_action_views_.empty() &&
-      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          browser_->profile())) {
+      toolbar_actions_bar_->show_icon_surfacing_bubble()) {
     ExtensionToolbarIconSurfacingBubble* bubble =
         new ExtensionToolbarIconSurfacingBubble(
             this,

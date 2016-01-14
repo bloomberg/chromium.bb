@@ -232,6 +232,9 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer {
     return popped_out_action_;
   }
   bool in_overflow_mode() const { return main_bar_ != nullptr; }
+  bool show_icon_surfacing_bubble() const {
+    return model_->highlighting_for_toolbar_redesign();
+  }
 
   ToolbarActionsBarDelegate* delegate_for_test() { return delegate_; }
 

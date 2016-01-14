@@ -808,8 +808,7 @@ void ToolbarActionsBarBridge::ShowExtensionMessageBubble(
 
 - (void)containerMouseEntered:(NSNotification*)notification {
   if (!activeBubble_ &&  // only show one bubble at a time
-      ExtensionToolbarIconSurfacingBubbleDelegate::ShouldShowForProfile(
-          browser_->profile())) {
+      toolbarActionsBar_->show_icon_surfacing_bubble()) {
     scoped_ptr<ToolbarActionsBarBubbleDelegate> delegate(
         new ExtensionToolbarIconSurfacingBubbleDelegate(browser_->profile()));
     ToolbarActionsBarBubbleMac* bubble =
