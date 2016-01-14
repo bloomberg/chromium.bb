@@ -30,13 +30,6 @@ using base::UserMetricsAction;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-// An object to represent the ChooseAnotherFolder item in the pop up.
-@interface ChooseAnotherFolder : NSObject
-@end
-
-@implementation ChooseAnotherFolder
-@end
-
 @interface BookmarkBubbleController (PrivateAPI)
 - (void)updateBookmarkNode;
 - (void)fillInFolderList;
@@ -46,13 +39,10 @@ using bookmarks::BookmarkNode;
 
 @synthesize node = node_;
 
-+ (id)chooseAnotherFolderObject {
   // Singleton object to act as a representedObject for the "choose another
   // folder" item in the pop up.
-  static ChooseAnotherFolder* object = nil;
-  if (!object) {
-    object = [[ChooseAnotherFolder alloc] init];
-  }
++ (id)chooseAnotherFolderObject {
+  static id object = [[NSObject alloc] init];
   return object;
 }
 
@@ -240,8 +230,8 @@ using bookmarks::BookmarkNode;
   if (!self.parentWindow)
     return;
   NSMenuItem* selected = [folderPopUpButton_ selectedItem];
-  ChooseAnotherFolder* chooseItem = [[self class] chooseAnotherFolderObject];
-  if ([[selected representedObject] isEqual:chooseItem]) {
+  if ([selected representedObject] ==
+      [[self class] chooseAnotherFolderObject]) {
     content::RecordAction(
         UserMetricsAction("BookmarkBubble_EditFromCombobox"));
     [self showEditor];
@@ -278,7 +268,7 @@ using bookmarks::BookmarkNode;
   const BookmarkNode* oldParent = node_->parent();
   NSMenuItem* selectedItem = [folderPopUpButton_ selectedItem];
   id representedObject = [selectedItem representedObject];
-  if ([representedObject isEqual:[[self class] chooseAnotherFolderObject]]) {
+  if (representedObject == [[self class] chooseAnotherFolderObject]) {
     // "Choose another folder..."
     return;
   }
@@ -305,8 +295,7 @@ using bookmarks::BookmarkNode;
   NSMenuItem *item = [menu addItemWithTitle:title
                                      action:NULL
                               keyEquivalent:@""];
-  ChooseAnotherFolder* obj = [[self class] chooseAnotherFolderObject];
-  [item setRepresentedObject:obj];
+  [item setRepresentedObject:[[self class] chooseAnotherFolderObject]];
   // Finally, select the current parent.
   NSValue* parentValue = [NSValue valueWithPointer:node_->parent()];
   NSInteger idx = [menu indexOfItemWithRepresentedObject:parentValue];
