@@ -54,6 +54,11 @@ class NET_EXPORT WebSocketChannel {
       const BoundNetLog&,
       scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamCreator;
 
+  // Methods which return a value of type ChannelState may delete |this|. If the
+  // return value is CHANNEL_DELETED, then the caller must return without making
+  // any further access to member variables or methods.
+  using ChannelState = WebSocketEventInterface::ChannelState;
+
   // Creates a new WebSocketChannel in an idle state.
   // SendAddChannelRequest() must be called immediately afterwards to start the
   // connection process.
@@ -67,20 +72,20 @@ class NET_EXPORT WebSocketChannel {
       const std::vector<std::string>& requested_protocols,
       const url::Origin& origin);
 
-  // Sends a data frame to the remote side. The frame should usually be no
-  // larger than 32KB to prevent the time required to copy the buffers from from
-  // unduly delaying other tasks that need to run on the IO thread. This method
-  // has a hard limit of 2GB. It is the responsibility of the caller to ensure
-  // that they have sufficient send quota to send this data, otherwise the
-  // connection will be closed without sending. |fin| indicates the last frame
-  // in a message, equivalent to "FIN" as specified in section 5.2 of
-  // RFC6455. |data| is the "Payload Data". If |op_code| is kOpCodeText, or it
-  // is kOpCodeContinuation and the type the message is Text, then |data| must
-  // be a chunk of a valid UTF-8 message, however there is no requirement for
-  // |data| to be split on character boundaries.
-  void SendFrame(bool fin,
-                 WebSocketFrameHeader::OpCode op_code,
-                 const std::vector<char>& data);
+  // Sends a data frame to the remote side. It is the responsibility of the
+  // caller to ensure that they have sufficient send quota to send this data,
+  // otherwise the connection will be closed without sending. |fin| indicates
+  // the last frame in a message, equivalent to "FIN" as specified in section
+  // 5.2 of RFC6455. |data| is the "Payload Data". If |op_code| is kOpCodeText,
+  // or it is kOpCodeContinuation and the type the message is Text, then |data|
+  // must be a chunk of a valid UTF-8 message, however there is no requirement
+  // for |data| to be split on character boundaries. Calling SendFrame may
+  // result in synchronous calls to |event_interface_| which may result in this
+  // object being deleted. In that case, the return value will be
+  // CHANNEL_DELETED.
+  ChannelState SendFrame(bool fin,
+                         WebSocketFrameHeader::OpCode op_code,
+                         const std::vector<char>& data);
 
   // Sends |quota| units of flow control to the remote side. If the underlying
   // transport has a concept of |quota|, then it permits the remote server to
@@ -170,11 +175,6 @@ class NET_EXPORT WebSocketChannel {
     // The size of data_.
     uint64_t size_;
   };
-
-  // Methods which return a value of type ChannelState may delete |this|. If the
-  // return value is CHANNEL_DELETED, then the caller must return without making
-  // any further access to member variables or methods.
-  typedef WebSocketEventInterface::ChannelState ChannelState;
 
   // The object passes through a linear progression of states from
   // FRESHLY_CONSTRUCTED to CLOSED, except that the SEND_CLOSED and RECV_CLOSED

@@ -363,40 +363,39 @@ bool WebSocketChannel::InClosingState() const {
   return state_ == SEND_CLOSED || state_ == CLOSE_WAIT || state_ == CLOSED;
 }
 
-void WebSocketChannel::SendFrame(bool fin,
-                                 WebSocketFrameHeader::OpCode op_code,
-                                 const std::vector<char>& data) {
+WebSocketChannel::ChannelState WebSocketChannel::SendFrame(
+    bool fin,
+    WebSocketFrameHeader::OpCode op_code,
+    const std::vector<char>& data) {
   if (data.size() > INT_MAX) {
     NOTREACHED() << "Frame size sanity check failed";
-    return;
+    return CHANNEL_ALIVE;
   }
   if (stream_ == NULL) {
     LOG(DFATAL) << "Got SendFrame without a connection established; "
                 << "misbehaving renderer? fin=" << fin << " op_code=" << op_code
                 << " data.size()=" << data.size();
-    return;
+    return CHANNEL_ALIVE;
   }
   if (InClosingState()) {
     DVLOG(1) << "SendFrame called in state " << state_
              << ". This may be a bug, or a harmless race.";
-    return;
+    return CHANNEL_ALIVE;
   }
   if (state_ != CONNECTED) {
     NOTREACHED() << "SendFrame() called in state " << state_;
-    return;
+    return CHANNEL_ALIVE;
   }
   if (data.size() > base::checked_cast<size_t>(current_send_quota_)) {
     // TODO(ricea): Kill renderer.
-    ignore_result(
-        FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, ""));
+    return FailChannel("Send quota exceeded", kWebSocketErrorGoingAway, "");
     // |this| has been deleted.
-    return;
   }
   if (!WebSocketFrameHeader::IsKnownDataOpCode(op_code)) {
     LOG(DFATAL) << "Got SendFrame with bogus op_code " << op_code
                 << "; misbehaving renderer? fin=" << fin
                 << " data.size()=" << data.size();
-    return;
+    return CHANNEL_ALIVE;
   }
   if (op_code == WebSocketFrameHeader::kOpCodeText ||
       (op_code == WebSocketFrameHeader::kOpCodeContinuation &&
@@ -406,12 +405,9 @@ void WebSocketChannel::SendFrame(bool fin,
     if (state == StreamingUtf8Validator::INVALID ||
         (state == StreamingUtf8Validator::VALID_MIDPOINT && fin)) {
       // TODO(ricea): Kill renderer.
-      ignore_result(
-          FailChannel("Browser sent a text frame containing invalid UTF-8",
-                      kWebSocketErrorGoingAway,
-                      ""));
+      return FailChannel("Browser sent a text frame containing invalid UTF-8",
+                         kWebSocketErrorGoingAway, "");
       // |this| has been deleted.
-      return;
     }
     sending_text_message_ = !fin;
     DCHECK(!fin || state == StreamingUtf8Validator::VALID_ENDPOINT);
@@ -423,7 +419,7 @@ void WebSocketChannel::SendFrame(bool fin,
   // server is not saturated.
   scoped_refptr<IOBuffer> buffer(new IOBuffer(data.size()));
   std::copy(data.begin(), data.end(), buffer->data());
-  ignore_result(SendFrameFromIOBuffer(fin, op_code, buffer, data.size()));
+  return SendFrameFromIOBuffer(fin, op_code, buffer, data.size());
   // |this| may have been deleted.
 }
 
