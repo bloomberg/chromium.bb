@@ -38,9 +38,9 @@ fi
 
 # TODO(glider): this doesn't work if we set CC and CXX to override the default
 # Clang.
-ASAN_DYLIB=$(find \
-    "${BUILT_PRODUCTS_DIR}/../../third_party/llvm-build/Release+Asserts/lib/clang/" \
-    -type f -path "*${ASAN_DYLIB_NAME}")
+SRCROOT="${BUILT_PRODUCTS_DIR}/../.."
+CLANGVER=$(python ${SRCROOT}/tools/clang/scripts/update.py --print-clang-version)
+ASAN_DYLIB=${SRCROOT}/third_party/llvm-build/Release+Asserts/lib/clang/${CLANGVER}/lib/darwin/${ASAN_DYLIB_NAME}
 
 DYLIB_BASENAME=$(basename "${ASAN_DYLIB}")
 if [[ "${DYLIB_BASENAME}" != "${ASAN_DYLIB_NAME}" ]]; then
