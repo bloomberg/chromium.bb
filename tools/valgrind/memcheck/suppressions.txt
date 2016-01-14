@@ -3165,6 +3165,7 @@
    bug_542543a
    Memcheck:Leak
    fun:_Znw*
+   ...
    fun:_ZN8IOThread34ConstructProxyScriptFetcherContextEPNS_7GlobalsEPN3net6NetLogE
    fun:_ZN8IOThread4InitEv
    fun:_ZN7content17BrowserThreadImpl4InitEv
