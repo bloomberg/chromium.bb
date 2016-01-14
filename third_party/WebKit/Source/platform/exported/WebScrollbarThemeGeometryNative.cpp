@@ -41,31 +41,6 @@ WebScrollbarThemeGeometryNative::WebScrollbarThemeGeometryNative(ScrollbarTheme&
 {
 }
 
-WebScrollbarThemeGeometryNative* WebScrollbarThemeGeometryNative::clone() const
-{
-    return new WebScrollbarThemeGeometryNative(m_theme);
-}
-
-int WebScrollbarThemeGeometryNative::thumbPosition(WebScrollbar* scrollbar)
-{
-    return m_theme.thumbPosition(WebScrollbarThemeClientImpl(*scrollbar));
-}
-
-int WebScrollbarThemeGeometryNative::thumbLength(WebScrollbar* scrollbar)
-{
-    return m_theme.thumbLength(WebScrollbarThemeClientImpl(*scrollbar));
-}
-
-int WebScrollbarThemeGeometryNative::trackPosition(WebScrollbar* scrollbar)
-{
-    return m_theme.trackPosition(WebScrollbarThemeClientImpl(*scrollbar));
-}
-
-int WebScrollbarThemeGeometryNative::trackLength(WebScrollbar* scrollbar)
-{
-    return m_theme.trackLength(WebScrollbarThemeClientImpl(*scrollbar));
-}
-
 bool WebScrollbarThemeGeometryNative::hasButtons(WebScrollbar* scrollbar)
 {
     return m_theme.hasButtons(WebScrollbarThemeClientImpl(*scrollbar));
@@ -86,16 +61,6 @@ WebRect WebScrollbarThemeGeometryNative::thumbRect(WebScrollbar* scrollbar)
     return m_theme.thumbRect(WebScrollbarThemeClientImpl(*scrollbar));
 }
 
-int WebScrollbarThemeGeometryNative::minimumThumbLength(WebScrollbar* scrollbar)
-{
-    return m_theme.minimumThumbLength(WebScrollbarThemeClientImpl(*scrollbar));
-}
-
-int WebScrollbarThemeGeometryNative::scrollbarThickness(WebScrollbar* scrollbar)
-{
-    return m_theme.scrollbarThickness(WebScrollbarThemeClientImpl(*scrollbar).controlSize());
-}
-
 WebRect WebScrollbarThemeGeometryNative::backButtonStartRect(WebScrollbar* scrollbar)
 {
     return m_theme.backButtonRect(WebScrollbarThemeClientImpl(*scrollbar), BackButtonStartPart, false);
@@ -114,24 +79,6 @@ WebRect WebScrollbarThemeGeometryNative::forwardButtonStartRect(WebScrollbar* sc
 WebRect WebScrollbarThemeGeometryNative::forwardButtonEndRect(WebScrollbar* scrollbar)
 {
     return m_theme.forwardButtonRect(WebScrollbarThemeClientImpl(*scrollbar), ForwardButtonEndPart, false);
-}
-
-WebRect WebScrollbarThemeGeometryNative::constrainTrackRectToTrackPieces(WebScrollbar* scrollbar, const WebRect& rect)
-{
-    return m_theme.constrainTrackRectToTrackPieces(WebScrollbarThemeClientImpl(*scrollbar), IntRect(rect));
-}
-
-void WebScrollbarThemeGeometryNative::splitTrack(WebScrollbar* scrollbar, const WebRect& webTrack, WebRect& webStartTrack, WebRect& webThumb, WebRect& webEndTrack)
-{
-    IntRect track(webTrack);
-    IntRect startTrack;
-    IntRect thumb;
-    IntRect endTrack;
-    m_theme.splitTrack(WebScrollbarThemeClientImpl(*scrollbar), track, startTrack, thumb, endTrack);
-
-    webStartTrack = startTrack;
-    webThumb = thumb;
-    webEndTrack = endTrack;
 }
 
 } // namespace blink

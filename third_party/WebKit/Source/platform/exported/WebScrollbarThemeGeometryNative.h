@@ -44,24 +44,14 @@ class PLATFORM_EXPORT WebScrollbarThemeGeometryNative : public WebScrollbarTheme
 public:
     static PassOwnPtr<WebScrollbarThemeGeometryNative> create(ScrollbarTheme&);
 
-    // WebScrollbarThemeGeometry overrides
-    WebScrollbarThemeGeometryNative* clone() const override;
-    int thumbPosition(WebScrollbar*) override;
-    int thumbLength(WebScrollbar*) override;
-    int trackPosition(WebScrollbar*) override;
-    int trackLength(WebScrollbar*) override;
     bool hasButtons(WebScrollbar*) override;
     bool hasThumb(WebScrollbar*) override;
     WebRect trackRect(WebScrollbar*) override;
     WebRect thumbRect(WebScrollbar*) override;
-    int minimumThumbLength(WebScrollbar*) override;
-    int scrollbarThickness(WebScrollbar*) override;
     WebRect backButtonStartRect(WebScrollbar*) override;
     WebRect backButtonEndRect(WebScrollbar*) override;
     WebRect forwardButtonStartRect(WebScrollbar*) override;
     WebRect forwardButtonEndRect(WebScrollbar*) override;
-    WebRect constrainTrackRectToTrackPieces(WebScrollbar*, const WebRect&) override;
-    void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) override;
 
 private:
     explicit WebScrollbarThemeGeometryNative(ScrollbarTheme&);

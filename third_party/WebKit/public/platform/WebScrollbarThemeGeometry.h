@@ -36,23 +36,14 @@ class BLINK_PLATFORM_EXPORT WebScrollbarThemeGeometry {
 public:
     virtual ~WebScrollbarThemeGeometry() { }
 
-    virtual WebScrollbarThemeGeometry* clone() const = 0;
-    virtual int thumbPosition(WebScrollbar*) = 0;
-    virtual int thumbLength(WebScrollbar*) = 0;
-    virtual int trackPosition(WebScrollbar*) = 0;
-    virtual int trackLength(WebScrollbar*) = 0;
     virtual bool hasButtons(WebScrollbar*) = 0;
     virtual bool hasThumb(WebScrollbar*) = 0;
     virtual WebRect trackRect(WebScrollbar*) = 0;
     virtual WebRect thumbRect(WebScrollbar*) = 0;
-    virtual int minimumThumbLength(WebScrollbar*) = 0;
-    virtual int scrollbarThickness(WebScrollbar*) = 0;
     virtual WebRect backButtonStartRect(WebScrollbar*) = 0;
     virtual WebRect backButtonEndRect(WebScrollbar*) = 0;
     virtual WebRect forwardButtonStartRect(WebScrollbar*) = 0;
     virtual WebRect forwardButtonEndRect(WebScrollbar*) = 0;
-    virtual WebRect constrainTrackRectToTrackPieces(WebScrollbar*, const WebRect&) = 0;
-    virtual void splitTrack(WebScrollbar*, const WebRect& track, WebRect& startTrack, WebRect& thumb, WebRect& endTrack) = 0;
 };
 
 } // namespace blink
