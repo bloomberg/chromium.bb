@@ -78,9 +78,7 @@ bool IsSeccompBPFSupportedBySDK() {
 }  // namespace
 
 RendererMainPlatformDelegate::RendererMainPlatformDelegate(
-    const MainFunctionParams& parameters)
-    : parameters_(parameters) {
-}
+    const MainFunctionParams& parameters) {}
 
 RendererMainPlatformDelegate::~RendererMainPlatformDelegate() {
 }

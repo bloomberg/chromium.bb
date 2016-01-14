@@ -44,7 +44,6 @@ BitmapUploader::BitmapUploader(mus::Window* window)
       format_(BGRA),
       next_resource_id_(1u),
       id_namespace_(0u),
-      local_id_(0u),
       surface_client_binding_(this) {}
 
 BitmapUploader::~BitmapUploader() {

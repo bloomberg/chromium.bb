@@ -487,11 +487,9 @@ class ChromeProtocolHandler
   // |is_incognito| should be set for incognito profiles.
   ChromeProtocolHandler(ResourceContext* resource_context,
                         bool is_incognito,
-                        AppCacheServiceImpl* appcache_service,
                         ChromeBlobStorageContext* blob_storage_context)
       : resource_context_(resource_context),
         is_incognito_(is_incognito),
-        appcache_service_(appcache_service),
         blob_storage_context_(blob_storage_context) {}
   ~ChromeProtocolHandler() override {}
 
@@ -551,7 +549,6 @@ class ChromeProtocolHandler
 
   // True when generated from an incognito profile.
   const bool is_incognito_;
-  AppCacheServiceImpl* appcache_service_;
   ChromeBlobStorageContext* blob_storage_context_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeProtocolHandler);
@@ -580,11 +577,10 @@ scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>
 URLDataManagerBackend::CreateProtocolHandler(
     content::ResourceContext* resource_context,
     bool is_incognito,
-    AppCacheServiceImpl* appcache_service,
     ChromeBlobStorageContext* blob_storage_context) {
   DCHECK(resource_context);
   return make_scoped_ptr(new ChromeProtocolHandler(
-      resource_context, is_incognito, appcache_service, blob_storage_context));
+      resource_context, is_incognito, blob_storage_context));
 }
 
 void URLDataManagerBackend::AddDataSource(

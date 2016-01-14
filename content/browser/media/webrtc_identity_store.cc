@@ -137,7 +137,7 @@ class WebRTCIdentityRequestHandle {
   WebRTCIdentityRequestHandle(
       WebRTCIdentityStore* store,
       const WebRTCIdentityStore::CompletionCallback& callback)
-      : store_(store), request_(NULL), callback_(callback) {}
+      : request_(NULL), callback_(callback) {}
 
  private:
   friend class WebRTCIdentityStore;
@@ -172,7 +172,6 @@ class WebRTCIdentityRequestHandle {
     base::ResetAndReturn(&callback_).Run(error, certificate, private_key);
   }
 
-  WebRTCIdentityStore* store_;
   WebRTCIdentityRequest* request_;
   WebRTCIdentityStore::CompletionCallback callback_;
 

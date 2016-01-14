@@ -19,20 +19,15 @@ namespace content {
 
 // static
 void BackgroundSyncClientImpl::Create(
-    int64_t service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request) {
-  new BackgroundSyncClientImpl(service_worker_registration_id,
-                               std::move(request));
+  new BackgroundSyncClientImpl(std::move(request));
 }
 
 BackgroundSyncClientImpl::~BackgroundSyncClientImpl() {}
 
 BackgroundSyncClientImpl::BackgroundSyncClientImpl(
-    int64_t service_worker_registration_id,
     mojo::InterfaceRequest<BackgroundSyncServiceClient> request)
-    : service_worker_registration_id_(service_worker_registration_id),
-      binding_(this, std::move(request)),
-      callback_seq_num_(0) {}
+    : binding_(this, std::move(request)), callback_seq_num_(0) {}
 
 void BackgroundSyncClientImpl::Sync(
     int64_t handle_id,

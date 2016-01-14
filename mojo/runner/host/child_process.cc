@@ -254,11 +254,7 @@ class ChildControllerImpl : public ChildController {
   ChildControllerImpl(AppContext* app_context,
                       base::NativeLibrary app_library,
                       const Blocker::Unblocker& unblocker)
-      : app_context_(app_context),
-        app_library_(app_library),
-        unblocker_(unblocker),
-        channel_info_(nullptr),
-        binding_(this) {}
+      : app_library_(app_library), unblocker_(unblocker), binding_(this) {}
 
   static void StartAppOnMainThread(
       base::NativeLibrary app_library,
@@ -269,12 +265,10 @@ class ChildControllerImpl : public ChildController {
   }
 
   base::ThreadChecker thread_checker_;
-  AppContext* const app_context_;
   base::NativeLibrary app_library_;
   Blocker::Unblocker unblocker_;
   StartAppCallback on_app_complete_;
 
-  embedder::ChannelInfo* channel_info_;
   Binding<ChildController> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildControllerImpl);

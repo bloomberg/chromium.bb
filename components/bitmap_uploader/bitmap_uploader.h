@@ -78,7 +78,6 @@ class BITMAP_UPLOADER_EXPORT BitmapUploader
   scoped_ptr<std::vector<unsigned char>> bitmap_;
   uint32_t next_resource_id_;
   uint32_t id_namespace_;
-  uint32_t local_id_;
   base::hash_map<uint32_t, uint32_t> resource_to_texture_id_map_;
   mojo::Binding<mus::mojom::SurfaceClient> surface_client_binding_;
 

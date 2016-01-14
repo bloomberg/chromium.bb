@@ -28,9 +28,7 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
  public:
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(MessageRouter* router,
-                       unsigned long long document_id,
-                       int route_id,
-                       int render_frame_route_id);
+                       int route_id);
   ~WebSharedWorkerProxy() override;
 
   // Implementations of WebSharedWorkerConnector APIs
@@ -64,22 +62,11 @@ class WebSharedWorkerProxy : public blink::WebSharedWorkerConnector,
   // routing ids).
   int route_id_;
 
-  // The routing id for the RenderFrame that created this worker.
-  int render_frame_route_id_;
-
   MessageRouter* const router_;
-
-  // ID of our parent document (used to shutdown workers when the parent
-  // document is detached).
-  unsigned long long document_id_;
 
   // Stores messages that were sent before the StartWorkerContext message.
   std::vector<IPC::Message*> queued_messages_;
 
-  // The id for the placeholder worker instance we've stored on the
-  // browser process (we need to pass this same route id back in when creating
-  // the worker).
-  int pending_route_id_;
   ConnectListener* connect_listener_;
   bool created_;
 

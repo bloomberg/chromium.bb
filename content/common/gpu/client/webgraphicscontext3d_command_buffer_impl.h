@@ -206,7 +206,6 @@ class WebGraphicsContext3DCommandBufferImpl
   scoped_ptr<gpu::TransferBuffer> transfer_buffer_;
   scoped_ptr<gpu::gles2::GLES2Implementation> real_gl_;
   scoped_ptr<gpu::gles2::GLES2Interface> trace_gl_;
-  Error last_error_;
   SharedMemoryLimits mem_limits_;
   scoped_refptr<ShareGroup> share_group_;
 

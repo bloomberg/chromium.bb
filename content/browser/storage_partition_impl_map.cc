@@ -426,7 +426,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
           URLDataManagerBackend::CreateProtocolHandler(
               browser_context_->GetResourceContext(),
               browser_context_->IsOffTheRecord(),
-              partition->GetAppCacheService(),
               blob_storage_context).release());
   std::vector<std::string> additional_webui_schemes;
   GetContentClient()->browser()->GetAdditionalWebUISchemes(
@@ -440,7 +439,6 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
             URLDataManagerBackend::CreateProtocolHandler(
                 browser_context_->GetResourceContext(),
                 browser_context_->IsOffTheRecord(),
-                partition->GetAppCacheService(),
                 blob_storage_context).release());
   }
   protocol_handlers[kChromeDevToolsScheme] =

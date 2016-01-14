@@ -231,7 +231,6 @@ class MEDIA_BLINK_EXPORT UrlIndex {
   std::map<UrlData::KeyType, scoped_refptr<UrlData>> by_url_;
   blink::WebFrame* frame_;
   scoped_refptr<MultiBuffer::GlobalLRU> lru_;
-  bool prune_cb_active_;
 
   // log2 of block size in multibuffer cache. Defaults to kBlockSizeShift.
   // Currently only changed for testing purposes.

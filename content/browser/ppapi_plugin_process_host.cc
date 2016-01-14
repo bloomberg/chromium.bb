@@ -52,7 +52,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   PpapiPluginSandboxedProcessLauncherDelegate(bool is_broker,
                                               const PepperPluginInfo& info,
                                               ChildProcessHost* host)
-      : info_(info),
+      :
+#if defined(OS_WIN)
+        info_(info),
+#endif // OS_WIN
 #if defined(OS_POSIX)
         ipc_fd_(host->TakeClientFileDescriptor()),
 #endif  // OS_POSIX
@@ -112,7 +115,9 @@ class PpapiPluginSandboxedProcessLauncherDelegate
   }
 
  private:
+#if defined(OS_WIN)
   const PepperPluginInfo& info_;
+#endif // OS_WIN
 #if defined(OS_POSIX)
   base::ScopedFD ipc_fd_;
 #endif  // OS_POSIX

@@ -67,8 +67,7 @@ PepperUDPSocketMessageFilter::PepperUDPSocketMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance,
     bool private_api)
-    : host_(host),
-      socket_options_(0),
+    : socket_options_(0),
       rcvbuf_size_(0),
       sndbuf_size_(0),
       multicast_ttl_(0),

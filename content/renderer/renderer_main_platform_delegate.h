@@ -38,8 +38,8 @@ class CONTENT_EXPORT RendererMainPlatformDelegate {
   bool EnableSandbox();
 
  private:
-  const MainFunctionParams& parameters_;
 #if defined(OS_WIN)
+  const MainFunctionParams& parameters_;
   HMODULE sandbox_test_module_;
 #elif defined(OS_MACOSX)
   NSBundle* sandbox_tests_bundle_;

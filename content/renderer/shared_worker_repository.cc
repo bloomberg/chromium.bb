@@ -45,8 +45,7 @@ SharedWorkerRepository::createSharedWorkerConnector(
   }
   documents_with_workers_.insert(document_id);
   return new WebSharedWorkerProxy(ChildThreadImpl::current()->GetRouter(),
-                                  document_id, reply.route_id,
-                                  params.render_frame_route_id);
+                                  reply.route_id);
 }
 
 void SharedWorkerRepository::documentDetached(DocumentID document) {
