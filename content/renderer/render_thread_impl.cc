@@ -44,7 +44,9 @@
 #include "cc/raster/task_graph_runner.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/scheduler/child/compositor_worker_scheduler.h"
 #include "components/scheduler/child/webthread_base.h"
+#include "components/scheduler/child/webthread_impl_for_worker_scheduler.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/appcache_frontend_impl.h"
@@ -218,6 +220,7 @@ using blink::WebScriptController;
 using blink::WebSecurityPolicy;
 using blink::WebString;
 using blink::WebView;
+using scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -246,6 +249,23 @@ const size_t kImageCacheSingleAllocationByteLimit = 64 * 1024 * 1024;
 // incorrectly from the wrong thread.
 base::LazyInstance<base::ThreadLocalPointer<RenderThreadImpl> >
     lazy_tls = LAZY_INSTANCE_INITIALIZER;
+
+class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
+ public:
+  explicit WebThreadForCompositor(base::Thread::Options options)
+      : WebThreadImplForWorkerScheduler("Compositor", options) {
+    Init();
+  }
+  ~WebThreadForCompositor() override {}
+
+ private:
+  // WebThreadImplForWorkerScheduler:
+  scoped_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler() override {
+    return make_scoped_ptr(new scheduler::CompositorWorkerScheduler(thread()));
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(WebThreadForCompositor);
+};
 
 class RenderViewZoomer : public RenderViewVisitor {
  public:
@@ -893,7 +913,7 @@ void RenderThreadImpl::Shutdown() {
 
   media_thread_.reset();
 
-  blink_platform_impl_->set_compositor_thread(nullptr);
+  blink_platform_impl_->SetCompositorThread(nullptr);
 
   compositor_thread_.reset();
 
@@ -1148,14 +1168,13 @@ void RenderThreadImpl::InitializeCompositorThread() {
   }
 #endif
   if (!compositor_task_runner_.get()) {
-
-    compositor_thread_.reset(new base::Thread("Compositor"));
-    base::Thread::Options compositor_thread_options;
+    base::Thread::Options options;
 #if defined(OS_ANDROID)
-    compositor_thread_options.priority = base::ThreadPriority::DISPLAY;
+    options.priority = base::ThreadPriority::DISPLAY;
 #endif
-    compositor_thread_->StartWithOptions(compositor_thread_options);
-    compositor_task_runner_ = compositor_thread_->task_runner();
+    compositor_thread_.reset(new WebThreadForCompositor(options));
+    blink_platform_impl_->SetCompositorThread(compositor_thread_.get());
+    compositor_task_runner_ = compositor_thread_->TaskRunner();
     compositor_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(base::IgnoreResult(&ThreadRestrictions::SetIOAllowed),

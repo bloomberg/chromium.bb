@@ -33,6 +33,8 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
                                   base::Thread::Options options);
   ~WebThreadImplForWorkerScheduler() override;
 
+  void Init();
+
   // blink::WebThread implementation.
   blink::WebScheduler* scheduler() const override;
   blink::PlatformThreadId threadId() const override;
@@ -45,7 +47,12 @@ class SCHEDULER_EXPORT WebThreadImplForWorkerScheduler
   // base::MessageLoop::DestructionObserver implementation.
   void WillDestroyCurrentMessageLoop() override;
 
+ protected:
+  base::Thread* thread() const { return thread_.get(); }
+
  private:
+  virtual scoped_ptr<scheduler::WorkerScheduler> CreateWorkerScheduler();
+
   void AddTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer) override;
   void RemoveTaskObserverInternal(

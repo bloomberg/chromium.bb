@@ -186,19 +186,14 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebString domKeyStringFromEnum(int dom_key) override;
   int domKeyEnumFromString(const blink::WebString& key_string) override;
 
-  scoped_ptr<scheduler::WebThreadBase> createThreadWithOptions(
-      const char* name,
-      base::Thread::Options);
-
-  // This class does *not* own |compositor_thread|. It is the responsibility of
-  // the caller to ensure that the compositor thread is cleared before it is
+  // This class does *not* own the compositor thread. It is the responsibility
+  // of the caller to ensure that the compositor thread is cleared before it is
   // destructed.
-  void set_compositor_thread(scheduler::WebThreadBase* compositor_thread) {
-    compositor_thread_ = compositor_thread;
-  }
+  void SetCompositorThread(scheduler::WebThreadBase* compositor_thread);
 
  private:
   void InternalInit();
+  void WaitUntilWebThreadTLSUpdate(scheduler::WebThreadBase* thread);
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
 
   bool IsMainThread() const;

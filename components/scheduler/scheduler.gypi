@@ -37,6 +37,8 @@
       'base/enqueue_order.h',
       'base/enqueue_order.cc',
       'child/child_scheduler.h',
+      'child/compositor_worker_scheduler.cc',
+      'child/compositor_worker_scheduler.h',
       'child/idle_helper.cc',
       'child/idle_helper.h',
       'child/scheduler_helper.cc',

@@ -93,6 +93,7 @@ class WebThreadImplForWorkerSchedulerTest : public testing::Test {
 
   void SetUp() override {
     thread_.reset(new WebThreadImplForWorkerScheduler("test thread"));
+    thread_->Init();
   }
 
   void RunOnWorkerThread(const tracked_objects::Location& from_here,

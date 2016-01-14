@@ -83,6 +83,7 @@ using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
 using blink::WebURLLoader;
+using scheduler::WebThreadImplForWorkerScheduler;
 
 namespace content {
 
@@ -482,6 +483,16 @@ void BlinkPlatformImpl::InternalInit() {
   }
 }
 
+void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
+    scheduler::WebThreadBase* thread) {
+  base::WaitableEvent event(false, false);
+  thread->TaskRunner()->PostTask(
+      FROM_HERE,
+      base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS, base::Unretained(this),
+                 base::Unretained(thread), base::Unretained(&event)));
+  event.Wait();
+}
+
 void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
                                            base::WaitableEvent* event) {
   DCHECK(!current_thread_slot_.Get());
@@ -551,21 +562,18 @@ bool BlinkPlatformImpl::portAllowed(const blink::WebURL& url) const {
 }
 
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
-  return createThreadWithOptions(name, base::Thread::Options()).release();
+  scoped_ptr<WebThreadImplForWorkerScheduler> thread(
+      new WebThreadImplForWorkerScheduler(name));
+  thread->Init();
+  WaitUntilWebThreadTLSUpdate(thread.get());
+  return thread.release();
 }
 
-scoped_ptr<scheduler::WebThreadBase> BlinkPlatformImpl::createThreadWithOptions(
-    const char* name,
-    base::Thread::Options options) {
-  scoped_ptr<scheduler::WebThreadBase> thread(
-      new scheduler::WebThreadImplForWorkerScheduler(name, options));
-  base::WaitableEvent event(false, false);
-  thread->TaskRunner()->PostTask(
-      FROM_HERE,
-      base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS, base::Unretained(this),
-                 base::Unretained(thread.get()), base::Unretained(&event)));
-  event.Wait();
-  return thread;
+void BlinkPlatformImpl::SetCompositorThread(
+    scheduler::WebThreadBase* compositor_thread) {
+  compositor_thread_ = compositor_thread;
+  if (compositor_thread_)
+    WaitUntilWebThreadTLSUpdate(compositor_thread_);
 }
 
 blink::WebThread* BlinkPlatformImpl::currentThread() {

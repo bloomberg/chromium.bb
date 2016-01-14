@@ -255,6 +255,7 @@ bool BlinkPlatformImpl::isReservedIPAddress(
 blink::WebThread* BlinkPlatformImpl::createThread(const char* name) {
   scheduler::WebThreadImplForWorkerScheduler* thread =
       new scheduler::WebThreadImplForWorkerScheduler(name);
+  thread->Init();
   thread->TaskRunner()->PostTask(
       FROM_HERE, base::Bind(&BlinkPlatformImpl::UpdateWebThreadTLS,
                             base::Unretained(this), thread));
