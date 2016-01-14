@@ -180,7 +180,9 @@ bool IsDateTimeInput(ui::TextInputType type) {
 content::RenderWidgetInputHandlerDelegate* GetRenderWidgetInputHandlerDelegate(
     content::RenderWidget* widget) {
 #if defined(MOJO_SHELL_CLIENT)
-  if (content::MojoShellConnection::Get()) {
+  const base::CommandLine& cmdline = *base::CommandLine::ForCurrentProcess();
+  if (content::MojoShellConnection::Get() &&
+      cmdline.HasSwitch(switches::kUseMusInRenderer)) {
     return content::RenderWidgetMusConnection::GetOrCreate(
         widget->routing_id());
   }
