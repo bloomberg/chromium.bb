@@ -149,8 +149,7 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
   return scoped_ptr<cc::SoftwareOutputDevice>(
       new SoftwareOutputDeviceWin(software_backing_.get(), compositor));
 #elif defined(USE_OZONE)
-  return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceOzone(
-      compositor));
+  return SoftwareOutputDeviceOzone::Create(compositor);
 #elif defined(USE_X11)
   return scoped_ptr<cc::SoftwareOutputDevice>(new SoftwareOutputDeviceX11(
       compositor));

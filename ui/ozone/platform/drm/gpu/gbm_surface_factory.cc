@@ -85,7 +85,7 @@ bool GbmSurfaceFactory::LoadEGLGLES2Bindings(
 scoped_ptr<SurfaceOzoneCanvas> GbmSurfaceFactory::CreateCanvasForWidget(
     gfx::AcceleratedWidget widget) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  LOG(FATAL) << "Software rendering mode is not supported with GBM platform";
+  LOG(ERROR) << "Software rendering mode is not supported with GBM platform";
   return nullptr;
 }
 

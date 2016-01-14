@@ -95,9 +95,10 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   compositor_->SetAcceleratedWidget(window_delegate_.GetAcceleratedWidget());
   compositor_->SetScaleAndSize(1.0f, size);
 
-  output_device_.reset(new content::SoftwareOutputDeviceOzone(
-      compositor_.get()));
-  output_device_->Resize(size, 1.f);
+  output_device_ =
+      content::SoftwareOutputDeviceOzone::Create(compositor_.get());
+  if (output_device_)
+    output_device_->Resize(size, 1.f);
 }
 
 void SoftwareOutputDeviceOzoneTest::TearDown() {
@@ -119,6 +120,10 @@ void SoftwareOutputDeviceOzonePixelTest::SetUp() {
 }
 
 TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
+  // Check if software rendering mode is not supported.
+  if (!output_device_)
+    return;
+
   gfx::Rect damage(0, 0, 100, 100);
   gfx::Size size(200, 100);
   // Reduce size.
