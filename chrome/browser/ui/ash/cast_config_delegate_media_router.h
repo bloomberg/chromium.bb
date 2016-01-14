@@ -7,6 +7,7 @@
 
 #include "ash/cast_config_delegate.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 
 namespace media_router {
 class MediaRouter;
@@ -28,20 +29,20 @@ class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate {
  private:
   // CastConfigDelegate:
   bool HasCastExtension() const override;
-  DeviceUpdateSubscription RegisterDeviceUpdateObserver(
-      const ReceiversAndActivitesCallback& callback) override;
   void RequestDeviceRefresh() override;
   void CastToReceiver(const std::string& receiver_id) override;
   void StopCasting(const std::string& route_id) override;
   bool HasOptions() const override;
   void LaunchCastOptions() override;
+  void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
+  void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;
 
   // |devices_| stores the current source/route status that we query from.
   // This will return null until the media router is initialized.
   CastDeviceCache* devices();
   scoped_ptr<CastDeviceCache> devices_;
 
-  base::CallbackList<void(const ReceiversAndActivities&)> callback_list_;
+  base::ObserverList<ash::CastConfigDelegate::Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(CastConfigDelegateMediaRouter);
 };

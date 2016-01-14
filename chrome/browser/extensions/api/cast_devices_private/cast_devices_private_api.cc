@@ -65,15 +65,20 @@ CastDeviceUpdateListeners::CastDeviceUpdateListeners(
 
 CastDeviceUpdateListeners::~CastDeviceUpdateListeners() {}
 
-ash::CastConfigDelegate::DeviceUpdateSubscription
-CastDeviceUpdateListeners::RegisterCallback(
-    const ash::CastConfigDelegate::ReceiversAndActivitesCallback& callback) {
-  return callback_list_.Add(callback);
+void CastDeviceUpdateListeners::AddObserver(
+    ash::CastConfigDelegate::Observer* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void CastDeviceUpdateListeners::RemoveObserver(
+    ash::CastConfigDelegate::Observer* observer) {
+  observer_list_.RemoveObserver(observer);
 }
 
 void CastDeviceUpdateListeners::NotifyCallbacks(
     const ReceiverAndActivityList& devices) {
-  callback_list_.Notify(devices);
+  FOR_EACH_OBSERVER(ash::CastConfigDelegate::Observer, observer_list_,
+                    OnDevicesUpdated(devices));
 }
 
 CastDevicesPrivateUpdateDevicesFunction::

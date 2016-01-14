@@ -9,8 +9,6 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "base/callback.h"
-#include "base/callback_list.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
@@ -71,12 +69,19 @@ class CastConfigDelegate {
     Activity activity;
   };
 
-  // The key is the receiver id.
   using ReceiversAndActivities = std::vector<ReceiverAndActivity>;
-  using ReceiversAndActivitesCallback =
-      base::Callback<void(const ReceiversAndActivities&)>;
-  using DeviceUpdateSubscription = scoped_ptr<
-      base::CallbackList<void(const ReceiversAndActivities&)>::Subscription>;
+
+  class ASH_EXPORT Observer {
+   public:
+    // Invoked whenever there is new receiver or activity information available.
+    virtual void OnDevicesUpdated(const ReceiversAndActivities& devices) = 0;
+
+   protected:
+    virtual ~Observer() {}
+
+   private:
+    DISALLOW_ASSIGN(Observer);
+  };
 
   virtual ~CastConfigDelegate() {}
 
@@ -84,11 +89,6 @@ class CastConfigDelegate {
   // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
   // gone. See crbug.com/551132.
   virtual bool HasCastExtension() const = 0;
-
-  // Adds a listener that will get invoked whenever the receivers or their
-  // associated activites have changed.
-  virtual DeviceUpdateSubscription RegisterDeviceUpdateObserver(
-      const ReceiversAndActivitesCallback& callback) = 0;
 
   // Request fresh data from the backend. When the data is available, all
   // registered observers will get called.
@@ -110,6 +110,10 @@ class CastConfigDelegate {
   // TODO(jdufault): Remove this function once the CastConfigDelegateChromeos is
   // gone. See crbug.com/551132.
   virtual void LaunchCastOptions() = 0;
+
+  // Add or remove an observer.
+  virtual void AddObserver(Observer* observer) = 0;
+  virtual void RemoveObserver(Observer* observer) = 0;
 
  private:
   DISALLOW_ASSIGN(CastConfigDelegate);

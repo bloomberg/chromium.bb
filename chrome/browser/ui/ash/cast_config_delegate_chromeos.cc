@@ -65,13 +65,6 @@ bool CastConfigDelegateChromeos::HasCastExtension() const {
   return FindCastExtension() != nullptr;
 }
 
-CastConfigDelegateChromeos::DeviceUpdateSubscription
-CastConfigDelegateChromeos::RegisterDeviceUpdateObserver(
-    const ReceiversAndActivitesCallback& callback) {
-  auto listeners = extensions::CastDeviceUpdateListeners::Get(GetProfile());
-  return listeners->RegisterCallback(callback);
-}
-
 void CastConfigDelegateChromeos::RequestDeviceRefresh() {
   scoped_ptr<base::ListValue> args =
       extensions::api::cast_devices_private::UpdateDevicesRequested::Create();
@@ -118,6 +111,18 @@ void CastConfigDelegateChromeos::LaunchCastOptions() {
   params.disposition = NEW_FOREGROUND_TAB;
   params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   chrome::Navigate(&params);
+}
+
+void CastConfigDelegateChromeos::AddObserver(
+    ash::CastConfigDelegate::Observer* observer) {
+  return extensions::CastDeviceUpdateListeners::Get(GetProfile())
+      ->AddObserver(observer);
+}
+
+void CastConfigDelegateChromeos::RemoveObserver(
+    ash::CastConfigDelegate::Observer* observer) {
+  return extensions::CastDeviceUpdateListeners::Get(GetProfile())
+      ->RemoveObserver(observer);
 }
 
 }  // namespace chromeos

@@ -10,6 +10,7 @@
 #include "ash/cast_config_delegate.h"
 #include "base/callback_list.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/extension_function.h"
 
@@ -20,13 +21,12 @@ class CastDeviceUpdateListeners : public BrowserContextKeyedAPI {
   explicit CastDeviceUpdateListeners(content::BrowserContext* context);
   ~CastDeviceUpdateListeners() override;
 
-  // Fetch an instance for the given context.
+  // Fetches an instance for the given context.
   static CastDeviceUpdateListeners* Get(content::BrowserContext* context);
 
-  // Register a function that will be invoked only when a new device update is
-  // available.
-  ash::CastConfigDelegate::DeviceUpdateSubscription RegisterCallback(
-      const ash::CastConfigDelegate::ReceiversAndActivitesCallback& callback);
+  // Adds an observer that will be invoked when new device data is available.
+  void AddObserver(ash::CastConfigDelegate::Observer* observer);
+  void RemoveObserver(ash::CastConfigDelegate::Observer* observer);
 
   // BrowserContextKeyedAPI implementation:
   static BrowserContextKeyedAPIFactory<CastDeviceUpdateListeners>*
@@ -40,7 +40,7 @@ class CastDeviceUpdateListeners : public BrowserContextKeyedAPI {
   friend class CastDevicesPrivateUpdateDevicesFunction;  // For NotifyCallbacks.
   void NotifyCallbacks(const ReceiverAndActivityList& devices);
 
-  base::CallbackList<void(const ReceiverAndActivityList&)> callback_list_;
+  base::ObserverList<ash::CastConfigDelegate::Observer> observer_list_;
 
   friend class BrowserContextKeyedAPIFactory<CastDeviceUpdateListeners>;
 

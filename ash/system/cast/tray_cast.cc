@@ -42,6 +42,12 @@ const int kStopButtonRightPadding = 18;
 
 // Returns the active CastConfigDelegate instance.
 ash::CastConfigDelegate* GetCastConfigDelegate() {
+  // When shutting down Chrome, there may not be a shell or a delegate instance.
+  if (!ash::Shell::GetInstance() ||
+      !ash::Shell::GetInstance()->system_tray_delegate()) {
+    return nullptr;
+  }
+
   return ash::Shell::GetInstance()
       ->system_tray_delegate()
       ->GetCastConfigDelegate();
@@ -125,12 +131,11 @@ class CastCastView : public views::View, public views::ButtonListener {
   views::ImageView* icon_;
   views::Label* label_;
   TrayPopupLabelButton* stop_button_;
-  base::WeakPtrFactory<CastCastView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
 
-CastCastView::CastCastView() : weak_ptr_factory_(this) {
+CastCastView::CastCastView() {
   // We will initialize the primary tray view which shows a stop button here.
 
   set_background(views::Background::CreateSolidBackground(kBackgroundColor));
@@ -412,7 +417,6 @@ class CastDetailedView : public TrayDetailsView, public ViewClickListener {
       receivers_and_activities_;
   // A mapping from the view pointer to the associated activity id.
   std::map<views::View*, std::string> receiver_activity_map_;
-  base::WeakPtrFactory<CastDetailedView> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDetailedView);
 };
@@ -421,7 +425,7 @@ CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
     user::LoginStatus login,
     const CastConfigDelegate::ReceiversAndActivities& receivers_and_activities)
-    : TrayDetailsView(owner), login_(login), weak_ptr_factory_(this) {
+    : TrayDetailsView(owner), login_(login) {
   CreateItems();
   UpdateReceiverList(receivers_and_activities);
 }
@@ -551,14 +555,19 @@ void CastDetailedView::OnViewClicked(views::View* sender) {
 
 }  // namespace tray
 
-TrayCast::TrayCast(SystemTray* system_tray)
-    : SystemTrayItem(system_tray),
-      weak_ptr_factory_(this) {
+TrayCast::TrayCast(SystemTray* system_tray) : SystemTrayItem(system_tray) {
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 TrayCast::~TrayCast() {
-  Shell::GetInstance()->RemoveShellObserver(this);
+  // TODO(jdufault): Remove these if checks (and the ones in
+  // GetCastConfigDelegate) by fixing deinit order. See crbug.com/577413.
+  if (Shell::GetInstance())
+    Shell::GetInstance()->RemoveShellObserver(this);
+
+  ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
+  if (added_observer_ && cast_config_delegate)
+    cast_config_delegate->RemoveObserver(this);
 }
 
 void TrayCast::StartCastForTest(const std::string& receiver_id) {
@@ -591,16 +600,16 @@ views::View* TrayCast::CreateDefaultView(user::LoginStatus status) {
   if (HasCastExtension()) {
     ash::CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
 
-    // We add the cast listener here instead of in the ctor for two reasons:
+    // Add the cast observer here instead of the ctor for two reasons:
     // - The ctor gets called too early in the initialization cycle (at least
     //   for the tests); the correct profile hasn't been setup yet.
-    // - The listener is only added if there is a cast extension. If the call
-    //   below were in the ctor, then the cast tray item would not appear if the
-    //   user installed the extension in an existing session.
-    if (!device_update_subscription_) {
-      device_update_subscription_ =
-          cast_config_delegate->RegisterDeviceUpdateObserver(base::Bind(
-              &TrayCast::OnReceiversUpdated, weak_ptr_factory_.GetWeakPtr()));
+    // - If we're using the cast extension backend (media router is disabled),
+    //   then the user can install the extension at any point in time. The
+    //   return value of HasCastExtension() can change, so only checking it in
+    //   the ctor isn't enough.
+    if (!added_observer_) {
+      cast_config_delegate->AddObserver(this);
+      added_observer_ = true;
     }
 
     // The extension updates its view model whenever the popup is opened, so we
@@ -645,7 +654,7 @@ bool TrayCast::HasCastExtension() {
          cast_config_delegate->HasCastExtension();
 }
 
-void TrayCast::OnReceiversUpdated(
+void TrayCast::OnDevicesUpdated(
     const CastConfigDelegate::ReceiversAndActivities& receivers_activities) {
   receivers_and_activities_ = receivers_activities;
 

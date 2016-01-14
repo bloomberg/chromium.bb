@@ -23,13 +23,13 @@ class CastConfigDelegateChromeos : public ash::CastConfigDelegate {
  private:
   // CastConfigDelegate:
   bool HasCastExtension() const override;
-  DeviceUpdateSubscription RegisterDeviceUpdateObserver(
-      const ReceiversAndActivitesCallback& callback) override;
   void RequestDeviceRefresh() override;
   void CastToReceiver(const std::string& receiver_id) override;
   void StopCasting(const std::string& activity_id) override;
   bool HasOptions() const override;
   void LaunchCastOptions() override;
+  void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
+  void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;
 
   DISALLOW_COPY_AND_ASSIGN(CastConfigDelegateChromeos);
 };
