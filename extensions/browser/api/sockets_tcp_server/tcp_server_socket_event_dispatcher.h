@@ -77,7 +77,7 @@ class TCPServerSocketEventDispatcher
   // Called when socket accepts a new connection.
   static void AcceptCallback(const AcceptParams& params,
                              int result_code,
-                             net::TCPClientSocket* socket);
+                             scoped_ptr<net::TCPClientSocket> socket);
 
   // Post an extension event from |thread_id| to UI thread
   static void PostEvent(const AcceptParams& params, scoped_ptr<Event> event);

@@ -121,12 +121,12 @@ void TCPServerSocketEventDispatcher::StartAccept(const AcceptParams& params) {
 void TCPServerSocketEventDispatcher::AcceptCallback(
     const AcceptParams& params,
     int result_code,
-    net::TCPClientSocket* socket) {
+    scoped_ptr<net::TCPClientSocket> socket) {
   DCHECK_CURRENTLY_ON(params.thread_id);
 
   if (result_code >= 0) {
     ResumableTCPSocket* client_socket =
-        new ResumableTCPSocket(socket, params.extension_id, true);
+        new ResumableTCPSocket(std::move(socket), params.extension_id, true);
     client_socket->set_paused(true);
     int client_socket_id = params.client_sockets->Add(client_socket);
 

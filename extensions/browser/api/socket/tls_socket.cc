@@ -103,7 +103,7 @@ void TLSSocket::Read(int count, const ReadCompletionCallback& callback) {
     return;
   }
 
-  if (!tls_socket_.get() || !IsConnected()) {
+  if (!tls_socket_.get()) {
     callback.Run(net::ERR_SOCKET_NOT_CONNECTED, NULL);
     return;
   }

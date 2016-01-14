@@ -40,7 +40,7 @@ typedef base::Callback<void(int,
                             scoped_refptr<net::IOBuffer> io_buffer,
                             const std::string&,
                             uint16_t)> RecvFromCompletionCallback;
-typedef base::Callback<void(int, net::TCPClientSocket*)>
+typedef base::Callback<void(int, scoped_ptr<net::TCPClientSocket>)>
     AcceptCompletionCallback;
 
 // A Socket wraps a low-level socket and includes housekeeping information that

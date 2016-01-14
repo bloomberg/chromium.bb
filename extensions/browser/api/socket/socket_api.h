@@ -289,7 +289,7 @@ class SocketAcceptFunction : public SocketAsyncApiFunction {
   void AsyncWorkStart() override;
 
  private:
-  void OnAccept(int result_code, net::TCPClientSocket* socket);
+  void OnAccept(int result_code, scoped_ptr<net::TCPClientSocket> socket);
 
   scoped_ptr<api::socket::Accept::Params> params_;
 };

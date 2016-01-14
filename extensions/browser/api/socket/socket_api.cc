@@ -461,11 +461,12 @@ void SocketAcceptFunction::AsyncWorkStart() {
 }
 
 void SocketAcceptFunction::OnAccept(int result_code,
-                                    net::TCPClientSocket* socket) {
+                                    scoped_ptr<net::TCPClientSocket> socket) {
   base::DictionaryValue* result = new base::DictionaryValue();
   result->SetInteger(kResultCodeKey, result_code);
   if (socket) {
-    Socket* client_socket = new TCPSocket(socket, extension_id(), true);
+    Socket* client_socket =
+        new TCPSocket(std::move(socket), extension_id(), true);
     result->SetInteger(kSocketIdKey, AddSocket(client_socket));
   }
   SetResult(result);

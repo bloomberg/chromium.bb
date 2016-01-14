@@ -44,9 +44,7 @@ class MockTCPSocket : public net::TCPClientSocket {
 
 class MockTCPServerSocket : public net::TCPServerSocket {
  public:
-  explicit MockTCPServerSocket()
-      : net::TCPServerSocket(NULL, net::NetLog::Source()) {
-  }
+  MockTCPServerSocket() : net::TCPServerSocket(NULL, net::NetLog::Source()) {}
   MOCK_METHOD2(Listen, int(const net::IPEndPoint& address, int backlog));
   MOCK_METHOD2(Accept, int(scoped_ptr<net::StreamSocket>* socket,
                             const net::CompletionCallback& callback));
@@ -61,7 +59,13 @@ class CompleteHandler {
   MOCK_METHOD1(OnComplete, void(int result_code));
   MOCK_METHOD2(OnReadComplete, void(int result_code,
       scoped_refptr<net::IOBuffer> io_buffer));
-  MOCK_METHOD2(OnAccept, void(int, net::TCPClientSocket*));
+
+  // MOCK_METHOD cannot mock a scoped_ptr argument.
+  MOCK_METHOD2(OnAcceptMock, void(int, net::TCPClientSocket*));
+  void OnAccept(int count, scoped_ptr<net::TCPClientSocket> socket) {
+    OnAcceptMock(count, socket.get());
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CompleteHandler);
 };
@@ -70,16 +74,16 @@ const std::string FAKE_ID = "abcdefghijklmnopqrst";
 
 TEST(SocketTest, TestTCPSocketRead) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
   CompleteHandler handler;
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID, true));
 
   EXPECT_CALL(*tcp_client_socket, Read(_, _, _))
       .Times(1);
   EXPECT_CALL(handler, OnReadComplete(_, _))
       .Times(1);
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      std::move(tcp_client_socket), FAKE_ID, true));
 
   const int count = 512;
   socket->Read(count, base::Bind(&CompleteHandler::OnReadComplete,
@@ -88,11 +92,8 @@ TEST(SocketTest, TestTCPSocketRead) {
 
 TEST(SocketTest, TestTCPSocketWrite) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
   CompleteHandler handler;
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
@@ -102,6 +103,9 @@ TEST(SocketTest, TestTCPSocketWrite) {
   EXPECT_CALL(handler, OnComplete(_))
       .Times(1);
 
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      std::move(tcp_client_socket), FAKE_ID, true));
+
   scoped_refptr<net::IOBufferWithSize> io_buffer(
       new net::IOBufferWithSize(256));
   socket->Write(io_buffer.get(), io_buffer->size(),
@@ -110,17 +114,18 @@ TEST(SocketTest, TestTCPSocketWrite) {
 
 TEST(SocketTest, TestTCPSocketBlockedWrite) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
   CompleteHandler handler;
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
       .Times(2)
       .WillRepeatedly(testing::DoAll(SaveArg<2>(&callback),
                                      Return(net::ERR_IO_PENDING)));
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      std::move(tcp_client_socket), FAKE_ID, true));
+
   scoped_refptr<net::IOBufferWithSize> io_buffer(new net::IOBufferWithSize(42));
   socket->Write(io_buffer.get(), io_buffer->size(),
       base::Bind(&CompleteHandler::OnComplete, base::Unretained(&handler)));
@@ -135,17 +140,18 @@ TEST(SocketTest, TestTCPSocketBlockedWrite) {
 
 TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
   CompleteHandler handlers[5];
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID, true));
 
   net::CompletionCallback callback;
   EXPECT_CALL(*tcp_client_socket, Write(_, _, _))
       .Times(5)
       .WillRepeatedly(testing::DoAll(SaveArg<2>(&callback),
                                      Return(net::ERR_IO_PENDING)));
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
+      std::move(tcp_client_socket), FAKE_ID, true));
+
   scoped_refptr<net::IOBufferWithSize> io_buffers[5];
   int i;
   for (i = 0; i < 5; i++) {
@@ -167,20 +173,24 @@ TEST(SocketTest, TestTCPSocketBlockedWriteReentry) {
 
 TEST(SocketTest, TestTCPSocketSetNoDelay) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
 
   bool no_delay = false;
-  EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
-      .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(true)));
+  {
+    testing::InSequence dummy;
+    EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
+        .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(true)));
+    EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
+        .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(false)));
+  }
+
+  scoped_ptr<TCPSocket> socket(
+      TCPSocket::CreateSocketForTesting(std::move(tcp_client_socket), FAKE_ID));
+
+  EXPECT_FALSE(no_delay);
   int result = socket->SetNoDelay(true);
   EXPECT_TRUE(result);
   EXPECT_TRUE(no_delay);
-
-  EXPECT_CALL(*tcp_client_socket, SetNoDelay(_))
-      .WillOnce(testing::DoAll(SaveArg<0>(&no_delay), Return(false)));
 
   result = socket->SetNoDelay(false);
   EXPECT_FALSE(result);
@@ -189,26 +199,29 @@ TEST(SocketTest, TestTCPSocketSetNoDelay) {
 
 TEST(SocketTest, TestTCPSocketSetKeepAlive) {
   net::AddressList address_list;
-  MockTCPSocket* tcp_client_socket = new MockTCPSocket(address_list);
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateSocketForTesting(
-      tcp_client_socket, FAKE_ID));
+  scoped_ptr<MockTCPSocket> tcp_client_socket(new MockTCPSocket(address_list));
 
   bool enable = false;
   int delay = 0;
-  EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
-      .WillOnce(testing::DoAll(SaveArg<0>(&enable),
-                               SaveArg<1>(&delay),
-                               Return(true)));
+  {
+    testing::InSequence dummy;
+    EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
+        .WillOnce(testing::DoAll(SaveArg<0>(&enable), SaveArg<1>(&delay),
+                                 Return(true)));
+    EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
+        .WillOnce(testing::DoAll(SaveArg<0>(&enable), SaveArg<1>(&delay),
+                                 Return(false)));
+  }
+
+  scoped_ptr<TCPSocket> socket(
+      TCPSocket::CreateSocketForTesting(std::move(tcp_client_socket), FAKE_ID));
+
+  EXPECT_FALSE(enable);
   int result = socket->SetKeepAlive(true, 4500);
   EXPECT_TRUE(result);
   EXPECT_TRUE(enable);
   EXPECT_EQ(4500, delay);
 
-  EXPECT_CALL(*tcp_client_socket, SetKeepAlive(_, _))
-      .WillOnce(testing::DoAll(SaveArg<0>(&enable),
-                               SaveArg<1>(&delay),
-                               Return(false)));
   result = socket->SetKeepAlive(false, 0);
   EXPECT_FALSE(result);
   EXPECT_FALSE(enable);
@@ -216,15 +229,16 @@ TEST(SocketTest, TestTCPSocketSetKeepAlive) {
 }
 
 TEST(SocketTest, TestTCPServerSocketListenAccept) {
-  MockTCPServerSocket* tcp_server_socket = new MockTCPServerSocket();
+  scoped_ptr<MockTCPServerSocket> tcp_server_socket(new MockTCPServerSocket());
   CompleteHandler handler;
-
-  scoped_ptr<TCPSocket> socket(TCPSocket::CreateServerSocketForTesting(
-      tcp_server_socket, FAKE_ID));
 
   EXPECT_CALL(*tcp_server_socket, Accept(_, _)).Times(1);
   EXPECT_CALL(*tcp_server_socket, Listen(_, _)).Times(1);
-  EXPECT_CALL(handler, OnAccept(_, _));
+
+  scoped_ptr<TCPSocket> socket(TCPSocket::CreateServerSocketForTesting(
+      std::move(tcp_server_socket), FAKE_ID));
+
+  EXPECT_CALL(handler, OnAcceptMock(_, _));
 
   std::string err_msg;
   EXPECT_EQ(net::OK, socket->Listen("127.0.0.1", 9999, 10, &err_msg));
