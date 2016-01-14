@@ -140,6 +140,8 @@ public:
     // set or spanner.
     void endFlow(LayoutUnit offsetInFlowThread);
 
+    void layout() override;
+
     void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const final;
 
     void attachToFlowThread();

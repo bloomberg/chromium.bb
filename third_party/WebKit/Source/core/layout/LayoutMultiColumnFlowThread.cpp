@@ -37,8 +37,7 @@ LayoutMultiColumnFlowThread::LayoutMultiColumnFlowThread()
     : m_lastSetWorkedOn(nullptr)
     , m_columnCount(1)
     , m_columnHeightAvailable(0)
-    , m_inBalancingPass(false)
-    , m_needsColumnHeightsRecalculation(false)
+    , m_columnHeightsChanged(false)
     , m_progressionIsInline(true)
     , m_isBeingEvacuated(false)
 {
@@ -354,25 +353,20 @@ void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
     // thread needs layout as well.
     layoutScope.setChildNeedsLayout(this);
 
-    m_needsColumnHeightsRecalculation = false;
-
     m_blockOffsetInEnclosingFragmentationContext = enclosingFragmentationContext() ? multiColumnBlockFlow()->offsetFromLogicalTopOfFirstPage() : LayoutUnit();
 
     for (LayoutBox* columnBox = firstMultiColumnBox(); columnBox; columnBox = columnBox->nextSiblingMultiColumnBox()) {
         if (!columnBox->isLayoutMultiColumnSet()) {
             ASSERT(columnBox->isLayoutMultiColumnSpannerPlaceholder()); // no other type is expected.
-            m_needsColumnHeightsRecalculation = true;
             continue;
         }
         LayoutMultiColumnSet* columnSet = toLayoutMultiColumnSet(columnBox);
         layoutScope.setChildNeedsLayout(columnSet);
-        if (!m_inBalancingPass) {
+        if (!m_columnHeightsChanged) {
             // This is the initial layout pass. We need to reset the column height, because contents
             // typically have changed.
             columnSet->resetColumnHeight();
         }
-        if (!m_needsColumnHeightsRecalculation)
-            m_needsColumnHeightsRecalculation = columnSet->heightIsAuto();
         // Since column sets are regular block flow objects, and their position is changed in
         // regular block layout code (with no means for the multicol code to notice unless we add
         // hooks there), store the previous position now. If it changes in the imminent layout
@@ -380,32 +374,10 @@ void LayoutMultiColumnFlowThread::layoutColumns(SubtreeLayoutScope& layoutScope)
         columnSet->storeOldPosition();
     }
 
+    m_columnHeightsChanged = false;
     invalidateColumnSets();
     layout();
-}
-
-bool LayoutMultiColumnFlowThread::recalculateColumnHeights()
-{
-    // All column sets that needed layout have now been laid out, so we can finally validate them.
     validateColumnSets();
-
-    if (!m_needsColumnHeightsRecalculation)
-        return false;
-
-    // Column heights may change here because of balancing. We may have to do multiple layout
-    // passes, depending on how the contents is fitted to the changed column heights. In most
-    // cases, laying out again twice or even just once will suffice. Sometimes we need more
-    // passes than that, though, but the number of retries should not exceed the number of
-    // columns, unless we have a bug.
-    bool needsRelayout = false;
-    for (LayoutMultiColumnSet* multicolSet = firstMultiColumnSet(); multicolSet; multicolSet = multicolSet->nextSiblingMultiColumnSet())
-        needsRelayout |= multicolSet->recalculateColumnHeight();
-
-    if (needsRelayout)
-        setChildNeedsLayout(MarkOnlyThis);
-
-    m_inBalancingPass = needsRelayout;
-    return needsRelayout;
 }
 
 void LayoutMultiColumnFlowThread::columnRuleStyleDidChange()

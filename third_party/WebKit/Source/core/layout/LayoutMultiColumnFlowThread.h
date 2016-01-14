@@ -183,7 +183,14 @@ public:
     // containing block is the multicol container).
     void skipColumnSpanner(LayoutBox*, LayoutUnit logicalTopInFlowThread);
 
-    bool recalculateColumnHeights();
+    // Returns true if at least one column got a new height after flow thread layout (during column
+    // set layout), in which case we need another layout pass. Column heights may change after flow
+    // thread layout because of balancing. We may have to do multiple layout passes, depending on
+    // how the contents is fitted to the changed column heights. In most cases, laying out again
+    // twice or even just once will suffice. Sometimes we need more passes than that, though, but
+    // the number of retries should not exceed the number of columns, unless we have a bug.
+    bool columnHeightsChanged() const { return m_columnHeightsChanged; }
+    void setColumnHeightsChanged() { m_columnHeightsChanged = true; }
 
     void columnRuleStyleDidChange();
 
@@ -243,8 +250,7 @@ private:
     // the coordinate space of the enclosing fragmentation context.
     LayoutUnit m_blockOffsetInEnclosingFragmentationContext;
 
-    bool m_inBalancingPass; // Set when relayouting for column balancing.
-    bool m_needsColumnHeightsRecalculation; // Set when we need to recalculate the column set heights after layout.
+    bool m_columnHeightsChanged; // Set when column heights are out of sync with actual layout.
     bool m_progressionIsInline; // Always true for regular multicol. False for paged-y overflow.
     bool m_isBeingEvacuated;
 };

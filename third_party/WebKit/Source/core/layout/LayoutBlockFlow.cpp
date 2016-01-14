@@ -390,7 +390,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren, LayoutUnit &
         setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
 
     if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-        if (flowThread->recalculateColumnHeights()) {
+        if (flowThread->columnHeightsChanged()) {
             setChildNeedsLayout(MarkOnlyThis);
             return false;
         }

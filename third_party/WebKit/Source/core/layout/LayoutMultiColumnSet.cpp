@@ -293,6 +293,13 @@ void LayoutMultiColumnSet::endFlow(LayoutUnit offsetInFlowThread)
     m_fragmentainerGroups.last().setLogicalBottomInFlowThread(offsetInFlowThread);
 }
 
+void LayoutMultiColumnSet::layout()
+{
+    if (recalculateColumnHeight())
+        multiColumnFlowThread()->setColumnHeightsChanged();
+    LayoutBlockFlow::layout();
+}
+
 void LayoutMultiColumnSet::computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const
 {
     minLogicalWidth = m_flowThread->minPreferredLogicalWidth();
