@@ -72,6 +72,8 @@ remoting.Error.prototype.toConnectionError = function() {
       return ConnectionError.NACL_DISABLED;
     case Tag.UNEXPECTED:
       return ConnectionError.UNEXPECTED;
+    case Tag.NACL_PLUGIN_CRASHED:
+      return ConnectionError.NACL_PLUGIN_CRASHED;
     // For errors that don't have a corresponding ConnectionError mapping,
     // default to Error.UNKNOWN_ERROR.
     case Tag.SERVICE_UNAVAILABLE:
@@ -168,6 +170,7 @@ remoting.Error.Tag = {
 
   INVALID_ACCESS_CODE: /*i18n-content*/ 'ERROR_INVALID_ACCESS_CODE',
   MISSING_PLUGIN: /*i18n-content*/ 'ERROR_MISSING_PLUGIN',
+  NACL_PLUGIN_CRASHED: /*i18n-content*/ 'ERROR_NACL_PLUGIN_CRASHED',
   AUTHENTICATION_FAILED: /*i18n-content*/ 'ERROR_AUTHENTICATION_FAILED',
   HOST_IS_OFFLINE: /*i18n-content*/ 'ERROR_HOST_IS_OFFLINE',
   INCOMPATIBLE_PROTOCOL: /*i18n-content*/ 'ERROR_INCOMPATIBLE_PROTOCOL',

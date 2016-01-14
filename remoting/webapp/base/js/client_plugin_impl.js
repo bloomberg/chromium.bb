@@ -171,11 +171,18 @@ remoting.ClientPluginImpl.prototype.handleMessage_ = function(event) {
 
 /** @private */
 remoting.ClientPluginImpl.prototype.onPluginCrashed_ = function(event) {
-  // This should only happen on assert() or exit() according to
-  // https://developer.chrome.com/native-client/devguide/coding/progress-events,
-  // which is extremely unlikely in retail builds.  So we just log it without
-  // propagating it to the UI.
-  console.error('Plugin crashed. ');
+  // If the plugin is initialized, there should be a connection event handler
+  // and we should report the crash through it.  Otherwise, we should reject the
+  // initialization promise.
+  if (this.connectionEventHandler_) {
+    this.connectionEventHandler_.onConnectionStatusUpdate(
+        remoting.ClientSession.State.FAILED,
+        remoting.ClientSession.ConnectionError.NACL_PLUGIN_CRASHED);
+  } else {
+    this.onInitializedDeferred_.reject(
+        new remoting.Error(remoting.Error.Tag.NACL_PLUGIN_CRASHED));
+  }
+  console.error('NaCl Module crashed. ');
 };
 
 /** @private */
@@ -358,6 +365,7 @@ remoting.ClientPluginImpl.prototype.dispose = function() {
 
   base.dispose(this.extensions_);
   this.extensions_ = null;
+  this.connectionEventHandler_ = null;
 };
 
 /**

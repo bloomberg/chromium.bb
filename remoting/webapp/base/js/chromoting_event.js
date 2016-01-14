@@ -313,6 +313,7 @@ remoting.ChromotingEvent.ConnectionError = {
   NACL_DISABLED: 15,
   MAX_SESSION_LENGTH: 16,
   HOST_CONFIGURATION_ERROR: 17,
+  NACL_PLUGIN_CRASHED: 18,
 };
 
 /** @enum {number} */
