@@ -131,6 +131,7 @@
 #include "chrome/browser/ui/android/context_menu_helper.h"
 #include "chrome/browser/ui/android/infobars/app_banner_infobar_android.h"
 #include "chrome/browser/ui/android/infobars/auto_signin_first_run_infobar.h"
+#include "chrome/browser/ui/android/infobars/autofill_save_card_infobar.h"
 #include "chrome/browser/ui/android/infobars/confirm_infobar.h"
 #include "chrome/browser/ui/android/infobars/data_reduction_proxy_infobar.h"
 #include "chrome/browser/ui/android/infobars/download_overwrite_infobar.h"
@@ -199,6 +200,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"AppBannerManagerAndroid", banners::AppBannerManagerAndroid::Register},
     {"ApplicationLifetime", RegisterApplicationLifetimeAndroid},
     {"AutocompleteControllerAndroid", RegisterAutocompleteControllerAndroid},
+    {"AutofillSaveCardInfoBar", AutofillSaveCardInfoBar::Register},
     {"AutofillDialogControllerAndroid",
      autofill::AutofillDialogControllerAndroid::
          RegisterAutofillDialogControllerAndroid},

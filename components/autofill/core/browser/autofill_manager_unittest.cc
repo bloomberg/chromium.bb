@@ -68,8 +68,8 @@ class MockAutofillClient : public TestAutofillClient {
 
   ~MockAutofillClient() override {}
 
-  MOCK_METHOD1(ConfirmSaveCreditCardLocally,
-               void(const base::Closure& callback));
+  MOCK_METHOD2(ConfirmSaveCreditCardLocally,
+               void(const CreditCard& card, const base::Closure& callback));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
@@ -882,7 +882,7 @@ class AutofillManagerTest : public testing::Test {
     form.fields[1].value = ASCIIToUTF16("4111111111111111");
     form.fields[2].value = ASCIIToUTF16("11");
     form.fields[3].value = ASCIIToUTF16("2017");
-    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
     FormSubmitted(form);
   }
 
@@ -899,7 +899,7 @@ class AutofillManagerTest : public testing::Test {
                             "2017");
     card->SetTypeForMaskedCard(kVisaCard);
 
-    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
+    EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
     EXPECT_CALL(*autofill_driver_, SendFormDataToRenderer(_, _, _))
         .Times(AtLeast(1));
     autofill_manager_->FillOrPreviewCreditCardForm(
@@ -2718,7 +2718,7 @@ TEST_F(AutofillManagerTest, FormSubmittedAutocompleteEnabled) {
   MockAutocompleteHistoryManager* m = static_cast<
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
-  EXPECT_CALL(*m, OnWillSubmitForm(_)).Times(1);
+  EXPECT_CALL(*m, OnWillSubmitForm(_));
   FormSubmitted(form);
 }
 
@@ -2745,7 +2745,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillDisabled) {
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
   EXPECT_CALL(*m,
-      OnGetAutocompleteSuggestions(_, _, _, _)).Times(1);
+      OnGetAutocompleteSuggestions(_, _, _, _));
 
   GetAutofillSuggestions(form, field);
 }
@@ -2832,7 +2832,7 @@ TEST_F(AutofillManagerTest, AutocompleteSuggestions_SomeWhenAutofillEmpty) {
       MockAutocompleteHistoryManager*>(
           autofill_manager_->autocomplete_history_manager_.get());
   EXPECT_CALL(*m,
-      OnGetAutocompleteSuggestions(_, _, _, _)).Times(1);
+      OnGetAutocompleteSuggestions(_, _, _, _));
 
   GetAutofillSuggestions(form, field);
 }
@@ -3169,7 +3169,7 @@ TEST_F(AutofillManagerTest, CreditCardSavedWhenAutocompleteOff) {
   form.fields[1].value = ASCIIToUTF16("4111111111111111");
   form.fields[2].value = ASCIIToUTF16("11");
   form.fields[3].value = ASCIIToUTF16("2017");
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(form);
 }
 
@@ -3188,7 +3188,7 @@ TEST_F(AutofillManagerTest, InvalidCreditCardNumberIsNotSaved) {
   form.fields[1].value = ASCIIToUTF16(card);
   form.fields[2].value = ASCIIToUTF16("11");
   form.fields[3].value = ASCIIToUTF16("2017");
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(form);
 }
 
@@ -3824,7 +3824,7 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfFeatureNotEnabled) {
   base::HistogramTester histogram_tester;
 
   // The save prompt should be shown instead of doing an upload.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
@@ -3858,7 +3858,7 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfCvcUnavailable) {
   base::HistogramTester histogram_tester;
 
   // Neither a local save nor an upload should happen in this case.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
@@ -3895,7 +3895,7 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfNoMatchingProfileAvailable) {
   base::HistogramTester histogram_tester;
 
   // Neither a local save nor an upload should happen in this case.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(0);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 
@@ -3935,7 +3935,7 @@ TEST_F(AutofillManagerTest, DontUploadCreditCardIfUploadDetailsFails) {
   base::HistogramTester histogram_tester;
 
   // The save prompt should be shown instead of doing an upload.
-  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_)).Times(1);
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
 

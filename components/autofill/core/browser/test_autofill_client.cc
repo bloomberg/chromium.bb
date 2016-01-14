@@ -14,6 +14,7 @@ TestAutofillClient::TestAutofillClient()
       rappor_service_(new rappor::TestRapporService()),
       is_context_secure_(true) {
 }
+
 TestAutofillClient::~TestAutofillClient() {
 }
 
@@ -48,14 +49,18 @@ void TestAutofillClient::ShowUnmaskPrompt(
     base::WeakPtr<CardUnmaskDelegate> delegate) {
 }
 
-void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {}
+void TestAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
+}
 
 void TestAutofillClient::ConfirmSaveCreditCardLocally(
-    const base::Closure& callback) {}
+    const CreditCard& card,
+    const base::Closure& callback) {
+}
 
 void TestAutofillClient::ConfirmSaveCreditCardToCloud(
-    const base::Closure& callback,
-    scoped_ptr<base::DictionaryValue> legal_message) {
+    const CreditCard& card,
+    scoped_ptr<base::DictionaryValue> legal_message,
+    const base::Closure& callback) {
   callback.Run();
 }
 
@@ -113,4 +118,5 @@ void TestAutofillClient::OnFirstUserGestureObserved() {
 bool TestAutofillClient::IsContextSecure(const GURL& form_origin) {
   return is_context_secure_;
 }
+
 }  // namespace autofill

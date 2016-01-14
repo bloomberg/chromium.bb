@@ -222,13 +222,15 @@ void AwAutofillClient::OnUnmaskVerificationResult(PaymentsRpcResult result) {
 }
 
 void AwAutofillClient::ConfirmSaveCreditCardLocally(
+    const autofill::CreditCard& card,
     const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 
 void AwAutofillClient::ConfirmSaveCreditCardToCloud(
-    const base::Closure& callback,
-    scoped_ptr<base::DictionaryValue> legal_message) {
+    const autofill::CreditCard& card,
+    scoped_ptr<base::DictionaryValue> legal_message,
+    const base::Closure& callback) {
   NOTIMPLEMENTED();
 }
 

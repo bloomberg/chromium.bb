@@ -44,6 +44,7 @@
       'autofill/core/browser/credit_card_unittest.cc',
       'autofill/core/browser/form_field_unittest.cc',
       'autofill/core/browser/form_structure_unittest.cc',
+      'autofill/core/browser/legal_message_line_unittest.cc',
       'autofill/core/browser/name_field_unittest.cc',
       'autofill/core/browser/options_util_unittest.cc',
       'autofill/core/browser/password_generator_unittest.cc',

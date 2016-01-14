@@ -8,10 +8,12 @@
 
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
-#include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_generation_manager.h"
@@ -79,19 +81,25 @@ void AutofillClientIOS::OnUnmaskVerificationResult(PaymentsRpcResult result) {
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardLocally(
+    const CreditCard& card,
     const base::Closure& callback) {
   // This method is invoked synchronously from
   // AutofillManager::OnFormSubmitted(); at the time of detecting that a form
   // was submitted, the WebContents is guaranteed to be live. Since the
   // InfoBarService is a WebContentsUserData, it must also be alive at this
   // time.
-  AutofillCCInfoBarDelegate::CreateForLocalSave(infobar_manager_, callback);
+  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
+      make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+          false, card, scoped_ptr<base::DictionaryValue>(nullptr), callback))));
 }
 
 void AutofillClientIOS::ConfirmSaveCreditCardToCloud(
-    const base::Closure& callback,
-    scoped_ptr<base::DictionaryValue> legal_message) {
-  AutofillCCInfoBarDelegate::CreateForUpload(infobar_manager_, callback);
+    const CreditCard& card,
+    scoped_ptr<base::DictionaryValue> legal_message,
+    const base::Closure& callback) {
+  infobar_manager_->AddInfoBar(CreateSaveCardInfoBarMobile(
+      make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+          true, card, std::move(legal_message), callback))));
 }
 
 void AutofillClientIOS::LoadRiskData(

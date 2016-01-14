@@ -63,6 +63,8 @@ class CreditCard : public AutofillDataModel {
 
 // This method is not compiled on iOS because the resources are not used and
 // should not be shipped.
+// TODO(jdonnelly): Use credit card issuer images on iOS.
+// http://crbug.com/535784
 #if !defined(OS_IOS)
   // The ResourceBundle ID for the appropriate credit card image.
   static int IconResourceId(const std::string& type);
@@ -112,6 +114,9 @@ class CreditCard : public AutofillDataModel {
   base::string16 TypeForDisplay() const;
   // A label for this credit card formatted as 'Cardname - 2345'.
   base::string16 TypeAndLastFourDigits() const;
+
+  // Localized expiration for this credit card formatted as 'Exp: 06/17'.
+  base::string16 AbbreviatedExpirationDateForDisplay() const;
 
   const std::string& type() const { return type_; }
 

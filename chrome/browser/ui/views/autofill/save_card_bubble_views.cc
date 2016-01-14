@@ -10,6 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
+#include "components/autofill/core/browser/legal_message_line.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_frame_view.h"
@@ -41,12 +42,11 @@ const bool kIsOkButtonOnLeftSide = false;
 #endif
 
 scoped_ptr<views::StyledLabel> CreateLegalMessageLineLabel(
-    const SaveCardBubbleController::LegalMessageLine& line,
+    const LegalMessageLine& line,
     views::StyledLabelListener* listener) {
   scoped_ptr<views::StyledLabel> label(
-      new views::StyledLabel(line.text, listener));
-  for (const SaveCardBubbleController::LegalMessageLine::Link& link :
-       line.links) {
+      new views::StyledLabel(line.text(), listener));
+  for (const LegalMessageLine::Link& link : line.links()) {
     label->AddStyleRange(link.range,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());
   }
@@ -122,8 +122,8 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 
   const auto& links =
       controller_->GetLegalMessageLines()[label->parent()->GetIndexOf(label)]
-          .links;
-  for (const SaveCardBubbleController::LegalMessageLine::Link& link : links) {
+          .links();
+  for (const LegalMessageLine::Link& link : links) {
     if (link.range == range) {
       controller_->OnLegalMessageLinkClicked(link.url);
       return;
@@ -229,10 +229,8 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
       views::Background::CreateSolidBackground(kLightShadingColor));
 
   // Add a StyledLabel for each line of the legal message.
-  for (const SaveCardBubbleController::LegalMessageLine& line :
-       controller_->GetLegalMessageLines()) {
+  for (const LegalMessageLine& line : controller_->GetLegalMessageLines())
     view->AddChildView(CreateLegalMessageLineLabel(line, this).release());
-  }
 
   return view;
 }

@@ -394,6 +394,7 @@ source_set("browser") {
     "ui/animation_util.mm",
     "ui/autofill/autofill_client_ios.h",
     "ui/autofill/autofill_client_ios.mm",
+    "ui/autofill/autofill_save_card_infobar.mm",
     "ui/background_generator.h",
     "ui/background_generator.mm",
     "ui/browser_otr_state.h",

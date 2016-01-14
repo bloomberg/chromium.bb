@@ -53,6 +53,12 @@
 #include "components/ui/zoom/zoom_controller.h"
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "components/autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h"
+#include "components/autofill/core/browser/autofill_save_card_infobar_mobile.h"
+#include "components/infobars/core/infobar.h"
+#endif
+
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 
 namespace autofill {
@@ -174,8 +180,15 @@ void ChromeAutofillClient::OnUnmaskVerificationResult(
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
+    const CreditCard& card,
     const base::Closure& callback) {
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  InfoBarService::FromWebContents(web_contents())->AddInfoBar(
+      CreateSaveCardInfoBarMobile(
+          make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+              false, card, scoped_ptr<base::DictionaryValue>(nullptr),
+              callback))));
+#else
   if (IsSaveCardBubbleEnabled()) {
     // Do lazy initialization of SaveCardBubbleControllerImpl.
     autofill::SaveCardBubbleControllerImpl::CreateForWebContents(
@@ -185,18 +198,21 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
     controller->ShowBubbleForLocalSave(callback);
     return;
   }
-#endif
+
   AutofillCCInfoBarDelegate::CreateForLocalSave(
       InfoBarService::FromWebContents(web_contents()), callback);
+#endif
 }
 
 void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
-    const base::Closure& callback,
-    scoped_ptr<base::DictionaryValue> legal_message) {
-// TODO(jdonnelly): Implement save card prompt for OS_IOS.
-#if defined(OS_ANDROID)
-  AutofillCCInfoBarDelegate::CreateForUpload(
-      InfoBarService::FromWebContents(web_contents()), callback);
+    const CreditCard& card,
+    scoped_ptr<base::DictionaryValue> legal_message,
+    const base::Closure& callback) {
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  InfoBarService::FromWebContents(web_contents())->AddInfoBar(
+      CreateSaveCardInfoBarMobile(
+          make_scoped_ptr(new AutofillSaveCardInfoBarDelegateMobile(
+              true, card, std::move(legal_message), callback))));
 #else
   // Do lazy initialization of SaveCardBubbleControllerImpl.
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());

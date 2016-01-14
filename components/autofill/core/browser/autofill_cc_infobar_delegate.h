@@ -39,25 +39,29 @@ class AutofillCCInfoBarDelegate : public ConfirmInfoBarDelegate {
   }
 #endif
 
- private:
-  AutofillCCInfoBarDelegate(bool upload,
-                            const base::Closure& save_card_callback);
   ~AutofillCCInfoBarDelegate() override;
 
+  // ConfirmInfoBarDelegate:
+  int GetIconId() const override;
+  base::string16 GetMessageText() const override;
+  base::string16 GetLinkText() const override;
+
+ protected:
+  AutofillCCInfoBarDelegate(bool upload,
+                            const base::Closure& save_card_callback);
+
+ private:
   void LogUserAction(AutofillMetrics::InfoBarMetric user_action);
 
   // ConfirmInfoBarDelegate:
   Type GetInfoBarType() const override;
   infobars::InfoBarDelegate::InfoBarIdentifier GetIdentifier() const override;
-  int GetIconId() const override;
   gfx::VectorIconId GetVectorIconId() const override;
   bool ShouldExpire(const NavigationDetails& details) const override;
   void InfoBarDismissed() override;
-  base::string16 GetMessageText() const override;
   base::string16 GetButtonLabel(InfoBarButton button) const override;
   bool Accept() override;
   bool Cancel() override;
-  base::string16 GetLinkText() const override;
   GURL GetLinkURL() const override;
 
   bool upload_;

@@ -37,6 +37,25 @@ void AutofillCCInfoBarDelegate::CreateForUpload(
           new AutofillCCInfoBarDelegate(true, save_card_callback))));
 }
 
+AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
+  if (!had_user_interaction_)
+    LogUserAction(AutofillMetrics::INFOBAR_IGNORED);
+}
+
+int AutofillCCInfoBarDelegate::GetIconId() const {
+  return IDR_INFOBAR_AUTOFILL_CC;
+}
+
+base::string16 AutofillCCInfoBarDelegate::GetMessageText() const {
+  return l10n_util::GetStringUTF16(
+      upload_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
+              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
+}
+
+base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
+  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
+}
+
 AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
     bool upload,
     const base::Closure& save_card_callback)
@@ -45,11 +64,6 @@ AutofillCCInfoBarDelegate::AutofillCCInfoBarDelegate(
       save_card_callback_(save_card_callback),
       had_user_interaction_(false) {
   AutofillMetrics::LogCreditCardInfoBarMetric(AutofillMetrics::INFOBAR_SHOWN);
-}
-
-AutofillCCInfoBarDelegate::~AutofillCCInfoBarDelegate() {
-  if (!had_user_interaction_)
-    LogUserAction(AutofillMetrics::INFOBAR_IGNORED);
 }
 
 void AutofillCCInfoBarDelegate::LogUserAction(
@@ -68,10 +82,6 @@ AutofillCCInfoBarDelegate::GetIdentifier() const {
 infobars::InfoBarDelegate::Type
 AutofillCCInfoBarDelegate::GetInfoBarType() const {
   return PAGE_ACTION_TYPE;
-}
-
-int AutofillCCInfoBarDelegate::GetIconId() const {
-  return IDR_INFOBAR_AUTOFILL_CC;
 }
 
 gfx::VectorIconId AutofillCCInfoBarDelegate::GetVectorIconId() const {
@@ -94,12 +104,6 @@ void AutofillCCInfoBarDelegate::InfoBarDismissed() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
 }
 
-base::string16 AutofillCCInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringUTF16(
-      upload_ ? IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_TO_CLOUD
-              : IDS_AUTOFILL_SAVE_CARD_PROMPT_TITLE_LOCAL);
-}
-
 base::string16 AutofillCCInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_OK
@@ -117,10 +121,6 @@ bool AutofillCCInfoBarDelegate::Accept() {
 bool AutofillCCInfoBarDelegate::Cancel() {
   LogUserAction(AutofillMetrics::INFOBAR_DENIED);
   return true;
-}
-
-base::string16 AutofillCCInfoBarDelegate::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
 }
 
 GURL AutofillCCInfoBarDelegate::GetLinkURL() const {

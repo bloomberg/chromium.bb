@@ -84,6 +84,8 @@ source_set("browser") {
     "form_group.h",
     "form_structure.cc",
     "form_structure.h",
+    "legal_message_line.cc",
+    "legal_message_line.h",
     "name_field.cc",
     "name_field.h",
     "options_util.cc",
@@ -148,6 +150,14 @@ source_set("browser") {
       "autofill_field_trial_ios.h",
       "keyboard_accessory_metrics_logger.h",
       "keyboard_accessory_metrics_logger.mm",
+    ]
+  }
+
+  if (is_ios || is_android) {
+    sources += [
+      "autofill_save_card_infobar_delegate_mobile.cc",
+      "autofill_save_card_infobar_delegate_mobile.h",
+      "autofill_save_card_infobar_mobile.h",
     ]
   }
 
@@ -266,6 +276,7 @@ source_set("unit_tests") {
     "credit_card_unittest.cc",
     "form_field_unittest.cc",
     "form_structure_unittest.cc",
+    "legal_message_line_unittest.cc",
     "name_field_unittest.cc",
     "options_util_unittest.cc",
     "password_generator_unittest.cc",

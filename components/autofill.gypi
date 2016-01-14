@@ -168,6 +168,8 @@
         'autofill/core/browser/form_group.h',
         'autofill/core/browser/form_structure.cc',
         'autofill/core/browser/form_structure.h',
+        'autofill/core/browser/legal_message_line.cc',
+        'autofill/core/browser/legal_message_line.h',
         'autofill/core/browser/name_field.cc',
         'autofill/core/browser/name_field.h',
         'autofill/core/browser/options_util.cc',
@@ -236,6 +238,13 @@
             'autofill/core/browser/autofill_field_trial_ios.h',
             'autofill/core/browser/keyboard_accessory_metrics_logger.h',
             'autofill/core/browser/keyboard_accessory_metrics_logger.mm',
+          ],
+        }],
+        ['OS=="ios" or OS=="android"', {
+          'sources': [
+            'autofill/core/browser/autofill_save_card_infobar_delegate_mobile.cc',
+            'autofill/core/browser/autofill_save_card_infobar_delegate_mobile.h',
+            'autofill/core/browser/autofill_save_card_infobar_mobile.h',
           ],
         }]
       ],

@@ -546,6 +546,7 @@
         'browser/ui/animation_util.mm',
         'browser/ui/autofill/autofill_client_ios.h',
         'browser/ui/autofill/autofill_client_ios.mm',
+        'browser/ui/autofill/autofill_save_card_infobar.mm',
         'browser/ui/background_generator.h',
         'browser/ui/background_generator.mm',
         'browser/ui/browser_otr_state.h',

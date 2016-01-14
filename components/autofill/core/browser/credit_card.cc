@@ -488,6 +488,15 @@ base::string16 CreditCard::TypeAndLastFourDigits() const {
   return type + base::UTF8ToUTF16("\xC2\xA0\xE2\x8B\xAF") + digits;
 }
 
+base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
+  base::string16 month = ExpirationMonthAsString();
+  base::string16 year = Expiration2DigitYearAsString();
+  return month.empty() || year.empty()
+             ? base::string16()
+             : l10n_util::GetStringFUTF16(
+                   IDS_AUTOFILL_CREDIT_CARD_EXPIRATION_DATE_ABBR, month, year);
+}
+
 void CreditCard::operator=(const CreditCard& credit_card) {
   set_use_count(credit_card.use_count());
   set_use_date(credit_card.use_date());

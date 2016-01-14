@@ -8,8 +8,9 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
-#include "ui/gfx/range/range.h"
+#include "components/autofill/core/browser/legal_message_line.h"
 #include "url/gurl.h"
 
 namespace autofill {
@@ -19,21 +20,6 @@ class SaveCardBubbleView;
 // Interface that exposes controller functionality to SaveCardBubbleView.
 class SaveCardBubbleController {
  public:
-  struct LegalMessageLine {
-    struct Link {
-      gfx::Range range;
-      GURL url;
-    };
-
-    LegalMessageLine();
-    ~LegalMessageLine();
-
-    base::string16 text;
-    std::vector<Link> links;
-  };
-
-  typedef std::vector<LegalMessageLine> LegalMessageLines;
-
   // Returns the title that should be displayed in the bubble.
   virtual base::string16 GetWindowTitle() const = 0;
 

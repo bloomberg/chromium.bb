@@ -851,9 +851,9 @@ void AutofillManager::OnDidGetUploadDetails(
     upload_request_.context_token = context_token;
     user_did_accept_upload_prompt_ = false;
     client_->ConfirmSaveCreditCardToCloud(
+        upload_request_.card, std::move(legal_message),
         base::Bind(&AutofillManager::OnUserDidAcceptUpload,
-                   weak_ptr_factory_.GetWeakPtr()),
-        std::move(legal_message));
+                   weak_ptr_factory_.GetWeakPtr()));
     client_->LoadRiskData(base::Bind(&AutofillManager::OnDidGetUploadRiskData,
                                      weak_ptr_factory_.GetWeakPtr()));
     AutofillMetrics::LogCardUploadDecisionMetric(
@@ -870,9 +870,11 @@ void AutofillManager::OnDidGetUploadDetails(
     // the upload details request will consistently fail and if we don't fall
     // back to a local save then the user will never be offered any kind of
     // credit card save.
-    client_->ConfirmSaveCreditCardLocally(base::Bind(
-        base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-        base::Unretained(personal_data_), upload_request_.card));
+    client_->ConfirmSaveCreditCardLocally(
+        upload_request_.card,
+        base::Bind(
+            base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
+            base::Unretained(personal_data_), upload_request_.card));
     AutofillMetrics::LogCardUploadDecisionMetric(
         AutofillMetrics::UPLOAD_NOT_OFFERED_GET_UPLOAD_DETAILS_FAILED);
   }
@@ -976,9 +978,11 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
 
     upload_request_ = payments::PaymentsClient::UploadRequestDetails();
     if (!IsCreditCardUploadEnabled()) {
-      client_->ConfirmSaveCreditCardLocally(base::Bind(
-          base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
-          base::Unretained(personal_data_), *imported_credit_card));
+      client_->ConfirmSaveCreditCardLocally(
+          *imported_credit_card,
+          base::Bind(
+              base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
+              base::Unretained(personal_data_), *imported_credit_card));
     } else {
       // Check for a CVC in order to determine whether we can prompt the user to
       // upload their card.
