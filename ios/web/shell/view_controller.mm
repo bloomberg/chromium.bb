@@ -30,14 +30,9 @@
 #include "ui/base/page_transition_types.h"
 
 namespace {
-// Returns true if WKWebView should be used instead of UIWebView.
-// TODO(stuartmorgan): Decide on a better way to control this.
+// Returns true if WKWebView is supported.
 bool UseWKWebView() {
-#if defined(FORCE_ENABLE_WKWEBVIEW)
   return web::IsWKWebViewSupported();
-#else
-  return false;
-#endif
 }
 }
 
