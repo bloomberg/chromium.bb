@@ -206,7 +206,7 @@
       },
       {
         "args": [
-          "--gtest_filter=-OutOfProcessPPAPITest.TrueTypeFont:OutOfProcessPPAPITest.BrowserFont"
+          "--test-launcher-filter-file=src/testing/buildbot/filters/cast-linux.content_browsertests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true
