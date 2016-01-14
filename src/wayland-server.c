@@ -908,6 +908,13 @@ wl_global_create(struct wl_display *display,
 	struct wl_global *global;
 	struct wl_resource *resource;
 
+	if (version < 1) {
+		wl_log("wl_global_create: failing to create interface "
+		       "'%s' with version %d because it is less than 1\n",
+			interface->name, version);
+		return NULL;
+	}
+
 	if (version > interface->version) {
 		wl_log("wl_global_create: implemented version for '%s' "
 		       "higher than interface version (%d > %d)\n",
