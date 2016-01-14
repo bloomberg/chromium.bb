@@ -155,7 +155,8 @@ scoped_ptr<blink::WebThread> RendererSchedulerImpl::CreateMainThread() {
   return make_scoped_ptr(new WebThreadImplForRendererScheduler(this));
 }
 
-scoped_refptr<TaskQueue> RendererSchedulerImpl::DefaultTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererSchedulerImpl::DefaultTaskRunner() {
   return helper_.DefaultTaskRunner();
 }
 

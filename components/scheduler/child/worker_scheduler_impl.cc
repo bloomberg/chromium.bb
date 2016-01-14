@@ -39,7 +39,8 @@ void WorkerSchedulerImpl::Init() {
   idle_helper_.EnableLongIdlePeriod();
 }
 
-scoped_refptr<TaskQueue> WorkerSchedulerImpl::DefaultTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WorkerSchedulerImpl::DefaultTaskRunner() {
   DCHECK(initialized_);
   return helper_.DefaultTaskRunner();
 }

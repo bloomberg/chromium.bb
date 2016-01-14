@@ -18,7 +18,8 @@ scoped_ptr<blink::WebThread> FakeRendererScheduler::CreateMainThread() {
   return nullptr;
 }
 
-scoped_refptr<scheduler::TaskQueue> FakeRendererScheduler::DefaultTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+FakeRendererScheduler::DefaultTaskRunner() {
   return nullptr;
 }
 

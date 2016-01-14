@@ -29,7 +29,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
       ChildScheduler* child_scheduler,
       scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner,
-      scoped_refptr<TaskQueue> timer_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner);
   ~WebSchedulerImpl() override;
 
   // blink::WebScheduler implementation:
@@ -58,7 +58,7 @@ class SCHEDULER_EXPORT WebSchedulerImpl : public blink::WebScheduler {
 
   ChildScheduler* child_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<TaskQueue> timer_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
   scoped_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
   scoped_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
 };
