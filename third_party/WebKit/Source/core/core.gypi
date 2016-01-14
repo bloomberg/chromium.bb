@@ -2212,6 +2212,7 @@
             'workers/WorkerNavigator.h',
             'workers/WorkerObjectProxy.cpp',
             'workers/WorkerObjectProxy.h',
+            'workers/WorkerOrWorkletGlobalScope.h',
             'workers/WorkerReportingProxy.h',
             'workers/WorkerScriptLoader.cpp',
             'workers/WorkerScriptLoader.h',

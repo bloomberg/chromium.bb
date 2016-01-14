@@ -310,6 +310,8 @@
       'webusb/USBInTransferResult.idl',
       'webusb/USBInterface.idl',
       'webusb/USBOutTransferResult.idl',
+      'worklet/Worklet.idl',
+      'worklet/WorkletGlobalScope.idl',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_dependency_idl_files': [
@@ -1828,6 +1830,10 @@
       'webusb/USBInterface.cpp',
       'webusb/USBInterface.h',
       'webusb/USBOutTransferResult.h',
+      'worklet/Worklet.cpp',
+      'worklet/Worklet.h',
+      'worklet/WorkletGlobalScope.cpp',
+      'worklet/WorkletGlobalScope.h',
     ],
     # 'partial interface' or target (right side of) 'implements'
     'modules_testing_dependency_idl_files' : [

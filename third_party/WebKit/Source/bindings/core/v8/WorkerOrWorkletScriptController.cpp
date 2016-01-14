@@ -44,9 +44,8 @@
 #include "core/frame/DOMTimer.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/inspector/WorkerThreadDebugger.h"
-#include "core/workers/SharedWorkerGlobalScope.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/heap/ThreadState.h"
 #include "public/platform/Platform.h"
@@ -101,13 +100,14 @@ public:
     ExecutionState* m_outerState;
 };
 
-PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
+PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> WorkerOrWorkletScriptController::create(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
 {
-    return adoptPtrWillBeNoop(new WorkerOrWorkletScriptController(workerGlobalScope, isolate));
+    return adoptPtrWillBeNoop(new WorkerOrWorkletScriptController(globalScope, isolate));
 }
 
-WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(WorkerGlobalScope* workerGlobalScope, v8::Isolate* isolate)
-    : m_workerGlobalScope(workerGlobalScope)
+WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope* globalScope, v8::Isolate* isolate)
+    : m_globalScope(globalScope)
+    , m_isolate(isolate)
     , m_executionForbidden(false)
     , m_executionScheduledToTerminate(false)
     , m_rejectedPromises(RejectedPromises::create())
@@ -135,12 +135,12 @@ void WorkerOrWorkletScriptController::dispose()
 
 bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
 {
-    v8::HandleScope handleScope(isolate());
+    v8::HandleScope handleScope(m_isolate);
 
     if (isContextInitialized())
         return true;
 
-    v8::Local<v8::Context> context = v8::Context::New(isolate());
+    v8::Local<v8::Context> context = v8::Context::New(m_isolate);
     if (context.IsEmpty())
         return false;
 
@@ -152,26 +152,23 @@ bool WorkerOrWorkletScriptController::initializeContextIfNeeded()
     WorkerThreadDebugger::setContextDebugData(context);
 
     // Create a new JS object and use it as the prototype for the shadow global object.
-    const WrapperTypeInfo* wrapperTypeInfo = m_workerGlobalScope->wrapperTypeInfo();
-    v8::Local<v8::Function> workerGlobalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
-    if (workerGlobalScopeConstructor.IsEmpty())
+    const WrapperTypeInfo* wrapperTypeInfo = m_globalScope->scriptWrappable()->wrapperTypeInfo();
+
+    v8::Local<v8::Function> globalScopeConstructor = m_scriptState->perContextData()->constructorForType(wrapperTypeInfo);
+    if (globalScopeConstructor.IsEmpty())
         return false;
-    v8::Local<v8::Object> jsWorkerGlobalScope;
-    if (!V8ObjectConstructor::newInstance(isolate(), workerGlobalScopeConstructor).ToLocal(&jsWorkerGlobalScope)) {
+
+    v8::Local<v8::Object> jsGlobalScope;
+    if (!V8ObjectConstructor::newInstance(m_isolate, globalScopeConstructor).ToLocal(&jsGlobalScope)) {
         m_scriptState->disposePerContextData();
         return false;
     }
 
-    jsWorkerGlobalScope = V8DOMWrapper::associateObjectWithWrapper(isolate(), m_workerGlobalScope, wrapperTypeInfo, jsWorkerGlobalScope);
+    jsGlobalScope = V8DOMWrapper::associateObjectWithWrapper(m_isolate, m_globalScope->scriptWrappable(), wrapperTypeInfo, jsGlobalScope);
 
     // Insert the object instance as the prototype of the shadow object.
     v8::Local<v8::Object> globalObject = v8::Local<v8::Object>::Cast(m_scriptState->context()->Global()->GetPrototype());
-    return v8CallBoolean(globalObject->SetPrototype(context, jsWorkerGlobalScope));
-}
-
-v8::Isolate* WorkerOrWorkletScriptController::isolate() const
-{
-    return m_workerGlobalScope->thread()->isolate();
+    return v8CallBoolean(globalObject->SetPrototype(context, jsGlobalScope));
 }
 
 ScriptValue WorkerOrWorkletScriptController::evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler* cacheHandler, V8CacheOptions v8CacheOptions)
@@ -183,16 +180,16 @@ ScriptValue WorkerOrWorkletScriptController::evaluate(const String& script, cons
 
     if (!m_disableEvalPending.isEmpty()) {
         m_scriptState->context()->AllowCodeGenerationFromStrings(false);
-        m_scriptState->context()->SetErrorMessageForCodeGenerationFromStrings(v8String(isolate(), m_disableEvalPending));
+        m_scriptState->context()->SetErrorMessageForCodeGenerationFromStrings(v8String(m_isolate, m_disableEvalPending));
         m_disableEvalPending = String();
     }
 
-    v8::TryCatch block(isolate());
+    v8::TryCatch block(m_isolate);
 
     v8::Local<v8::Script> compiledScript;
     v8::MaybeLocal<v8::Value> maybeResult;
-    if (v8Call(V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, isolate(), cacheHandler, SharableCrossOrigin, v8CacheOptions), compiledScript, block))
-        maybeResult = V8ScriptRunner::runCompiledScript(isolate(), compiledScript, m_workerGlobalScope);
+    if (v8Call(V8ScriptRunner::compileScript(script, fileName, String(), scriptStartPosition, m_isolate, cacheHandler, SharableCrossOrigin, v8CacheOptions), compiledScript, block))
+        maybeResult = V8ScriptRunner::runCompiledScript(m_isolate, compiledScript, m_globalScope);
 
     if (!block.CanContinue()) {
         forbidExecution();
@@ -242,19 +239,19 @@ bool WorkerOrWorkletScriptController::evaluate(const ScriptSourceCode& sourceCod
                 *errorEvent = state.m_errorEventFromImportedScript.release();
                 return false;
             }
-            if (m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin))
+            if (m_globalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin))
                 *errorEvent = ErrorEvent::createSanitizedError(m_world.get());
             else
                 *errorEvent = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
             V8ErrorHandler::storeExceptionOnErrorEventWrapper(m_scriptState.get(), errorEvent->get(), state.exception.v8Value(), m_scriptState->context()->Global());
         } else {
-            ASSERT(!m_workerGlobalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
+            ASSERT(!m_globalScope->shouldSanitizeScriptError(state.sourceURL, NotSharableCrossOrigin));
             RefPtrWillBeRawPtr<ErrorEvent> event = nullptr;
             if (state.m_errorEventFromImportedScript)
                 event = state.m_errorEventFromImportedScript.release();
             else
                 event = ErrorEvent::create(state.errorMessage, state.sourceURL, state.lineNumber, state.columnNumber, m_world.get());
-            m_workerGlobalScope->reportException(event, 0, nullptr, NotSharableCrossOrigin);
+            m_globalScope->reportException(event, 0, nullptr, NotSharableCrossOrigin);
         }
         return false;
     }
@@ -279,13 +276,13 @@ bool WorkerOrWorkletScriptController::isExecutionTerminating() const
 
 void WorkerOrWorkletScriptController::forbidExecution()
 {
-    ASSERT(m_workerGlobalScope->isContextThread());
+    ASSERT(m_globalScope->isContextThread());
     m_executionForbidden = true;
 }
 
 bool WorkerOrWorkletScriptController::isExecutionForbidden() const
 {
-    ASSERT(m_workerGlobalScope->isContextThread());
+    ASSERT(m_globalScope->isContextThread());
     return m_executionForbidden;
 }
 
@@ -299,12 +296,12 @@ void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(PassRef
     const String& errorMessage = errorEvent->message();
     if (m_executionState)
         m_executionState->m_errorEventFromImportedScript = errorEvent;
-    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(isolate(), errorMessage));
+    exceptionState.rethrowV8Exception(V8ThrowException::createGeneralError(m_isolate, errorMessage));
 }
 
 DEFINE_TRACE(WorkerOrWorkletScriptController)
 {
-    visitor->trace(m_workerGlobalScope);
+    visitor->trace(m_globalScope);
     visitor->trace(m_rejectedPromises);
 }
 

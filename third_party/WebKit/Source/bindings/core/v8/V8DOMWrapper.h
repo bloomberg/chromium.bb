@@ -35,6 +35,7 @@
 #include "bindings/core/v8/DOMDataStore.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
+#include "core/CoreExport.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RawPtr.h"
 #include "wtf/text/AtomicString.h"
@@ -63,7 +64,7 @@ public:
     // wrapper obejct and type, and does not check if it's valid or not.  The
     // value may not be a Blink's wrapper object.  In order to make sure of it,
     // Use isWrapper function instead.
-    static bool hasInternalFieldsSet(v8::Local<v8::Value>);
+    CORE_EXPORT static bool hasInternalFieldsSet(v8::Local<v8::Value>);
 };
 
 inline void V8DOMWrapper::setNativeInfo(v8::Local<v8::Object> wrapper, const WrapperTypeInfo* wrapperTypeInfo, ScriptWrappable* scriptWrappable)

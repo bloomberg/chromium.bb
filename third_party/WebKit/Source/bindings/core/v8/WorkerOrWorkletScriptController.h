@@ -48,13 +48,13 @@ class CachedMetadataHandler;
 class ErrorEvent;
 class ExceptionState;
 class ScriptSourceCode;
-class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 
 class CORE_EXPORT WorkerOrWorkletScriptController : public NoBaseWillBeGarbageCollectedFinalized<WorkerOrWorkletScriptController> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(WorkerOrWorkletScriptController);
     WTF_MAKE_NONCOPYABLE(WorkerOrWorkletScriptController);
 public:
-    static PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> create(WorkerGlobalScope*, v8::Isolate*);
+    static PassOwnPtrWillBeRawPtr<WorkerOrWorkletScriptController> create(WorkerOrWorkletGlobalScope*, v8::Isolate*);
     virtual ~WorkerOrWorkletScriptController();
     void dispose();
 
@@ -94,15 +94,19 @@ public:
     bool isContextInitialized() const { return m_scriptState && !!m_scriptState->perContextData(); }
 
 private:
-    WorkerOrWorkletScriptController(WorkerGlobalScope*, v8::Isolate*);
+    WorkerOrWorkletScriptController(WorkerOrWorkletGlobalScope*, v8::Isolate*);
     class ExecutionState;
-
-    v8::Isolate* isolate() const;
 
     // Evaluate a script file in the current execution environment.
     ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
 
-    RawPtrWillBeMember<WorkerGlobalScope> m_workerGlobalScope;
+    RawPtrWillBeMember<WorkerOrWorkletGlobalScope> m_globalScope;
+
+    // The v8 isolate associated to the (worker or worklet) global scope. For
+    // workers this should be the worker thread's isolate, while for worklets
+    // usually the main thread's isolate is used.
+    v8::Isolate* m_isolate;
+
     RefPtr<ScriptState> m_scriptState;
     RefPtr<DOMWrapperWorld> m_world;
     String m_disableEvalPending;

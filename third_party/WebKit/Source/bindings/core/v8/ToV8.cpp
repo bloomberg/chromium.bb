@@ -4,9 +4,10 @@
 
 #include "bindings/core/v8/ToV8.h"
 
+#include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/events/EventTarget.h"
 #include "core/frame/DOMWindow.h"
-#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 
 namespace blink {
 
@@ -42,10 +43,10 @@ v8::Local<v8::Value> toV8(EventTarget* impl, v8::Local<v8::Object> creationConte
     return toV8(static_cast<ScriptWrappable*>(impl), creationContext, isolate);
 }
 
-v8::Local<v8::Value> toV8(WorkerGlobalScope* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
+v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope* impl, v8::Local<v8::Object> creationContext, v8::Isolate* isolate)
 {
     // Notice that we explicitly ignore creationContext because the
-    // WorkerGlobalScope has its own creationContext.
+    // WorkerOrWorkletGlobalScope has its own creationContext.
 
     if (UNLIKELY(!impl))
         return v8::Null(isolate);

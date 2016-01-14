@@ -22,7 +22,7 @@ namespace blink {
 class DOMWindow;
 class Dictionary;
 class EventTarget;
-class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 
 // ScriptWrappable
 
@@ -48,11 +48,11 @@ inline v8::Local<v8::Value> toV8(Node* impl, v8::Local<v8::Object> creationConte
     return ScriptWrappable::fromNode(impl)->wrap(isolate, creationContext);
 }
 
-// Special versions for DOMWindow, WorkerGlobalScope and EventTarget
+// Special versions for DOMWindow, WorkerOrWorkletGlobalScope and EventTarget
 
 CORE_EXPORT v8::Local<v8::Value> toV8(DOMWindow*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 CORE_EXPORT v8::Local<v8::Value> toV8(EventTarget*, v8::Local<v8::Object> creationContext, v8::Isolate*);
-v8::Local<v8::Value> toV8(WorkerGlobalScope*, v8::Local<v8::Object> creationContext, v8::Isolate*);
+v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope*, v8::Local<v8::Object> creationContext, v8::Isolate*);
 
 // PassRefPtr, RawPtr and RefPtr
 

@@ -63,6 +63,7 @@ class LocalDOMWindow;
 class LocalFrame;
 class NodeFilter;
 class WorkerGlobalScope;
+class WorkerOrWorkletGlobalScope;
 class XPathNSResolver;
 
 template <typename T>
@@ -242,7 +243,7 @@ inline void v8SetReturnValue(const CallbackInfo& callbackInfo, EventTarget* impl
 template<typename CallbackInfo>
 inline void v8SetReturnValue(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl)
 {
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    v8SetReturnValue(callbackInfo, toV8((WorkerOrWorkletGlobalScope*) impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<typename CallbackInfo, typename T>
@@ -312,7 +313,7 @@ inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, Event
 template<typename CallbackInfo>
 inline void v8SetReturnValueForMainWorld(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl)
 {
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    v8SetReturnValue(callbackInfo, toV8((WorkerOrWorkletGlobalScope*) impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<typename CallbackInfo, typename T>
@@ -370,7 +371,7 @@ inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, EventTarget* 
 template<typename CallbackInfo>
 inline void v8SetReturnValueFast(const CallbackInfo& callbackInfo, WorkerGlobalScope* impl, const ScriptWrappable*)
 {
-    v8SetReturnValue(callbackInfo, toV8(impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
+    v8SetReturnValue(callbackInfo, toV8((WorkerOrWorkletGlobalScope*) impl, callbackInfo.Holder(), callbackInfo.GetIsolate()));
 }
 
 template<typename CallbackInfo, typename T, typename Wrappable>
@@ -957,6 +958,7 @@ LocalDOMWindow* enteredDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* currentDOMWindow(v8::Isolate*);
 CORE_EXPORT LocalDOMWindow* callingDOMWindow(v8::Isolate*);
 CORE_EXPORT ExecutionContext* toExecutionContext(v8::Local<v8::Context>);
+CORE_EXPORT void registerToExecutionContextForModules(ExecutionContext* (*toExecutionContextForModules)(v8::Local<v8::Context>));
 CORE_EXPORT ExecutionContext* currentExecutionContext(v8::Isolate*);
 CORE_EXPORT ExecutionContext* enteredExecutionContext(v8::Isolate*);
 

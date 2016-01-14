@@ -235,6 +235,7 @@ EXPOSED_EXECUTION_CONTEXT_METHOD = {
     'SharedWorker': 'isSharedWorkerGlobalScope',
     'Window': 'isDocument',
     'Worker': 'isWorkerGlobalScope',
+    'Worklet': 'isWorkletGlobalScope',
 }
 
 

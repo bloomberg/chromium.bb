@@ -39,6 +39,7 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/workers/WorkerEventQueue.h"
+#include "core/workers/WorkerOrWorkletGlobalScope.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
 #include "wtf/Assertions.h"
@@ -63,7 +64,7 @@ class WorkerLocation;
 class WorkerNavigator;
 class WorkerThread;
 
-class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData, public RefCountedWillBeNoBase<WorkerGlobalScope>, public SecurityContext, public ExecutionContext, public WillBeHeapSupplementable<WorkerGlobalScope>, public DOMWindowBase64 {
+class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData, public RefCountedWillBeNoBase<WorkerGlobalScope>, public SecurityContext, public WorkerOrWorkletGlobalScope, public WillBeHeapSupplementable<WorkerGlobalScope>, public DOMWindowBase64 {
     DEFINE_WRAPPERTYPEINFO();
     REFCOUNTED_EVENT_TARGET(WorkerGlobalScope);
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(WorkerGlobalScope);
@@ -73,6 +74,10 @@ public:
     bool isWorkerGlobalScope() const final { return true; }
 
     ExecutionContext* executionContext() const final;
+    ScriptWrappable* scriptWrappable() const final
+    {
+        return const_cast<WorkerGlobalScope*>(this);
+    }
 
     virtual void countFeature(UseCounter::Feature) const;
     virtual void countDeprecation(UseCounter::Feature) const;
@@ -83,7 +88,7 @@ public:
     String userAgent() const final;
     void disableEval(const String& errorMessage) final;
 
-    WorkerOrWorkletScriptController* script() { return m_script.get(); }
+    WorkerOrWorkletScriptController* script() final { return m_script.get(); }
 
     virtual void didEvaluateWorkerScript();
     void dispose();

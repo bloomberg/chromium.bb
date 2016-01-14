@@ -701,6 +701,10 @@ LocalDOMWindow* callingDOMWindow(v8::Isolate* isolate)
     return toLocalDOMWindow(toDOMWindow(context));
 }
 
+namespace {
+ExecutionContext* (*s_toExecutionContextForModules)(v8::Local<v8::Context>) = nullptr;
+}
+
 ExecutionContext* toExecutionContext(v8::Local<v8::Context> context)
 {
     if (context.IsEmpty())
@@ -712,8 +716,13 @@ ExecutionContext* toExecutionContext(v8::Local<v8::Context> context)
     v8::Local<v8::Object> workerWrapper = V8WorkerGlobalScope::findInstanceInPrototypeChain(global, context->GetIsolate());
     if (!workerWrapper.IsEmpty())
         return V8WorkerGlobalScope::toImpl(workerWrapper)->executionContext();
-    // FIXME: Is this line of code reachable?
-    return 0;
+    ASSERT(s_toExecutionContextForModules);
+    return (*s_toExecutionContextForModules)(context);
+}
+
+void registerToExecutionContextForModules(ExecutionContext* (*toExecutionContextForModules)(v8::Local<v8::Context>))
+{
+    s_toExecutionContextForModules = toExecutionContextForModules;
 }
 
 ExecutionContext* currentExecutionContext(v8::Isolate* isolate)
@@ -778,7 +787,7 @@ v8::Local<v8::Context> toV8Context(ExecutionContext* context, DOMWrapperWorld& w
         if (LocalFrame* frame = toDocument(context)->frame())
             return toV8Context(frame, world);
     } else if (context->isWorkerGlobalScope()) {
-        if (WorkerOrWorkletScriptController* script = toWorkerGlobalScope(context)->script()) {
+        if (WorkerOrWorkletScriptController* script = toWorkerOrWorkletGlobalScope(context)->script()) {
             if (script->scriptState()->contextIsValid())
                 return script->scriptState()->context();
         }
