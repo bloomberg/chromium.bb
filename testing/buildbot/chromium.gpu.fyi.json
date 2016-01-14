@@ -1688,6 +1688,41 @@
           ]
         },
         "test": "gles2_conform_test"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--use-angle=d3d9"
+        ],
+        "name": "gles2_conform_d3d9_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--use-angle=gl",
+          "--disable-gpu-sandbox"
+        ],
+        "name": "gles2_conform_gl_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
       }
     ],
     "isolated_scripts": [
@@ -2095,6 +2130,41 @@
         "args": [
           "--use-gpu-in-tests"
         ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--use-angle=d3d9"
+        ],
+        "name": "gles2_conform_d3d9_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows"
+            }
+          ]
+        },
+        "test": "gles2_conform_test"
+      },
+      {
+        "args": [
+          "--use-gpu-in-tests",
+          "--use-angle=gl",
+          "--disable-gpu-sandbox"
+        ],
+        "name": "gles2_conform_gl_test",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
