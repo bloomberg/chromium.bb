@@ -254,8 +254,15 @@ public class ImeTest extends ContentShellTestBase {
     public void testKeyboardNotDismissedAfterCopySelection() throws Exception {
         commitText("Sample Text", 1);
         waitAndVerifyStatesAndCalls(0, "Sample Text", 11, 11, -1, -1);
+
+        // This will select 'Text' part.
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
+
+        // Wait until selection popup shows before long press. Otherwise view
+        // position may change during sleep in longPressNode implementation.
+        assertWaitForSelectActionBarStatus(true);
+
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         selectAll();
         copy();
@@ -452,6 +459,7 @@ public class ImeTest extends ContentShellTestBase {
         commitText("Sample Text", 1);
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
+        assertWaitForSelectActionBarStatus(true);
         DOMUtils.longPressNode(this, mContentViewCore, "textarea");
         assertWaitForKeyboardStatus(true);
     }
@@ -953,6 +961,7 @@ public class ImeTest extends ContentShellTestBase {
 
         DOMUtils.clickNode(this, mContentViewCore, "input_text");
         assertWaitForKeyboardStatus(true);
+        assertWaitForSelectActionBarStatus(true);
 
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         assertWaitForSelectActionBarStatus(true);
@@ -1074,7 +1083,11 @@ public class ImeTest extends ContentShellTestBase {
                 // We do not check the other way around: in some cases we need to keep
                 // input connection even when the last known status is 'hidden'.
                 // See crbug.com/569332 for more details.
-                if (show && getAdapterInputConnection() == null) return false;
+                if (show && getAdapterInputConnection() == null) {
+                    updateFailureReason("input connection should not be null.");
+                    return false;
+                }
+                updateFailureReason("expected show: " + show);
                 return show == mInputMethodManagerWrapper.isShowWithoutHideOutstanding();
             }
         });

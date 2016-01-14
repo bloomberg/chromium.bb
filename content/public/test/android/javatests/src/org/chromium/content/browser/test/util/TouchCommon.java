@@ -152,6 +152,8 @@ public class TouchCommon {
 
     /**
      * Sends (synchronously) a long press to the center of the View.
+     * <p>Note that view should be located in the current position for a foreseeable
+     * amount because this involves sleep to simulate touch to long press transition.
      *
      * @param v The view to receive the long press.
      */

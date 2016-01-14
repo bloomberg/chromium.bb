@@ -235,6 +235,8 @@ public class DOMUtils {
 
     /**
      * Long-press a DOM node by its id.
+     * <p>Note that content view should be located in the current position for a foreseeable
+     * amount of time because this involves sleep to simulate touch to long press transition.
      * @param activityTestCase The ActivityInstrumentationTestCase2 to instrument.
      * @param viewCore The ContentViewCore in which the node lives.
      * @param nodeId The id of the node.
