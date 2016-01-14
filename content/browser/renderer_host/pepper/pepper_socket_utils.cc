@@ -146,7 +146,7 @@ const unsigned char kIPv6Empty[] =
 const unsigned char kIPv6Loopback[] =
     {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
 
-bool isLoopbackAddress(const net::IPAddressNumber& address) {
+bool IsLoopbackAddress(const net::IPAddressNumber& address) {
   if (address.size() == net::kIPv4AddressSize) {
     // The entire IPv4 subnet 127.0.0.0/8 is for loopback. See RFC3330.
     return address[0] == 0x7f;
@@ -158,7 +158,7 @@ bool isLoopbackAddress(const net::IPAddressNumber& address) {
   return false;
 }
 
-std::string addressToFirewallString(const net::IPAddressNumber& address) {
+std::string AddressToFirewallString(const net::IPAddressNumber& address) {
   if (address.empty()) {
     return std::string();
   }
@@ -181,11 +181,11 @@ std::string addressToFirewallString(const net::IPAddressNumber& address) {
 void OpenFirewallHole(const net::IPEndPoint& address,
                       chromeos::FirewallHole::PortType type,
                       FirewallHoleOpenCallback callback) {
-  if (isLoopbackAddress(address.address())) {
+  if (IsLoopbackAddress(address.address())) {
     callback.Run(nullptr);
     return;
   }
-  std::string address_string = addressToFirewallString(address.address());
+  std::string address_string = AddressToFirewallString(address.address());
 
   chromeos::FirewallHole::Open(type, address.port(), address_string, callback);
 }
