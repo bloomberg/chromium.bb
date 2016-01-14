@@ -26,8 +26,6 @@
 
 namespace blink {
 
-DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLengthList);
-
 SVGLengthList::SVGLengthList(SVGLengthMode mode)
     : m_mode(mode)
 {

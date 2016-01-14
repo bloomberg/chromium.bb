@@ -1,21 +1,19 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <style>
-  body {
-    font-size: 10px;
-  }
-  </style>
-</head>
+<style>
+body {
+  font-size: 10px;
+}
+</style>
 <body>
 <template id="target-template">
-<svg width="200px" height="300px" viewBox="0 0 1500 1000">
-  <text class="target" x="20, 40, 60" />
-</svg>
+  <svg width="0" height="0" viewBox="0 0 1000 1000">
+    <text class="target"/>
+  </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
 'use strict';
+
 assertAttributeInterpolation({
   property: 'y',
   from: '0, -1, 2',
@@ -28,18 +26,20 @@ assertAttributeInterpolation({
   {at: 1, is: '5, -6, 7'},
   {at: 1.4, is: '7, -8, 9'}
 ]);
+
 assertAttributeInterpolation({
   property: 'y',
-  from: '0em, 1ex, 2rems',
-  to: '5em, 6ex, 7rems'
+  from: '0em, 1ex, 2rem',
+  to: '5em, 6ex, 7rem'
 }, [
-  {at: -0.4, is: '-2em, -1ex, 0rems'},
-  {at: 0, is: '0em, 1ex, 2rems'},
-  {at: 0.2, is: '1em, 2ex, 3rems'},
-  {at: 0.6, is: '3em, 4ex, 5rems'},
-  {at: 1, is: '5em, 6ex, 7rems'},
-  {at: 1.4, is: '7em, 8ex, 9rems'}
+  {at: -0.4, is: '-2em, -1ex, 0rem'},
+  {at: 0, is: '0em, 1ex, 2rem'},
+  {at: 0.2, is: '1em, 2ex, 3rem'},
+  {at: 0.6, is: '3em, 4ex, 5rem'},
+  {at: 1, is: '5em, 6ex, 7rem'},
+  {at: 1.4, is: '7em, 8ex, 9rem'}
 ]);
+
 assertAttributeInterpolation({
   property: 'y',
   from: '55%, 5em, 0',
@@ -54,4 +54,3 @@ assertAttributeInterpolation({
 ]);
 </script>
 </body>
-</html>

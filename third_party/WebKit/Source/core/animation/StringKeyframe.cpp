@@ -28,14 +28,13 @@
 #include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/LengthBoxStyleInterpolation.h"
 #include "core/animation/LengthPairStyleInterpolation.h"
-#include "core/animation/LengthSVGInterpolation.h"
 #include "core/animation/LengthStyleInterpolation.h"
-#include "core/animation/ListSVGInterpolation.h"
 #include "core/animation/ListStyleInterpolation.h"
 #include "core/animation/SVGAngleInterpolationType.h"
 #include "core/animation/SVGIntegerInterpolationType.h"
 #include "core/animation/SVGIntegerOptionalIntegerInterpolationType.h"
 #include "core/animation/SVGLengthInterpolationType.h"
+#include "core/animation/SVGLengthListInterpolationType.h"
 #include "core/animation/SVGNumberInterpolationType.h"
 #include "core/animation/SVGNumberListInterpolationType.h"
 #include "core/animation/SVGNumberOptionalNumberInterpolationType.h"
@@ -313,12 +312,19 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
             || attribute == SVGNames::startOffsetAttr
             || attribute == SVGNames::textLengthAttr
             || attribute == SVGNames::widthAttr
-            || attribute == SVGNames::xAttr
             || attribute == SVGNames::x1Attr
             || attribute == SVGNames::x2Attr
             || attribute == SVGNames::y1Attr
             || attribute == SVGNames::y2Attr) {
             applicableTypes->append(adoptPtr(new SVGLengthInterpolationType(attribute)));
+        } else if (attribute == SVGNames::dxAttr
+            || attribute == SVGNames::dyAttr) {
+            applicableTypes->append(adoptPtr(new SVGNumberInterpolationType(attribute)));
+            applicableTypes->append(adoptPtr(new SVGLengthListInterpolationType(attribute)));
+        } else if (attribute == SVGNames::xAttr
+            || attribute == SVGNames::yAttr) {
+            applicableTypes->append(adoptPtr(new SVGLengthInterpolationType(attribute)));
+            applicableTypes->append(adoptPtr(new SVGLengthListInterpolationType(attribute)));
         } else if (attribute == SVGNames::amplitudeAttr
             || attribute == SVGNames::azimuthAttr
             || attribute == SVGNames::biasAttr
@@ -616,15 +622,12 @@ PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVG
     RefPtr<Interpolation> interpolation = nullptr;
     ASSERT(fromValue->type() == toValue->type());
     switch (fromValue->type()) {
-    case AnimatedLengthList:
-        interpolation = ListSVGInterpolation<LengthSVGInterpolation>::maybeCreate(fromValue, toValue, attribute);
-        break;
-
     // Handled by SVGInterpolationTypes.
     case AnimatedAngle:
     case AnimatedInteger:
     case AnimatedIntegerOptionalInteger:
     case AnimatedLength:
+    case AnimatedLengthList:
     case AnimatedNumber:
     case AnimatedNumberList:
     case AnimatedNumberOptionalNumber:

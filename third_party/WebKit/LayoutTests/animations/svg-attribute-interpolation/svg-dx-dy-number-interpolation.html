@@ -2,9 +2,9 @@
 <html>
 <body>
 <template id="target-template">
-<svg width="90" height="90">
-<text class="target">123</text>
-</svg>
+  <svg width="0" height="0">
+    <feOffset class="target"></feOffset>
+  </svg>
 </template>
 <script src="resources/interpolation-test.js"></script>
 <script>
@@ -12,26 +12,27 @@
 assertAttributeInterpolation({
   property: 'dx',
   from: '1',
-  to: '6'
+  to: '6',
 }, [
   {at: -0.4, is: '-1'},
   {at: 0, is: '1'},
   {at: 0.2, is: '2'},
   {at: 0.6, is: '4'},
   {at: 1, is: '6'},
-  {at: 1.4, is: '8'}
+  {at: 1.4, is: '8'},
 ]);
+
 assertAttributeInterpolation({
   property: 'dy',
-  from: '1 -2',
-  to: '6 -12'
+  from: '1',
+  to: '6',
 }, [
-  {at: -0.4, is: '-1 2'},
-  {at: 0, is: '1 -2'},
-  {at: 0.2, is: '2 -4'},
-  {at: 0.6, is: '4 -8'},
-  {at: 1, is: '6 -12'},
-  {at: 1.4, is: '8 -16'}
+  {at: -0.4, is: '-1'},
+  {at: 0, is: '1'},
+  {at: 0.2, is: '2'},
+  {at: 0.6, is: '4'},
+  {at: 1, is: '6'},
+  {at: 1.4, is: '8'},
 ]);
 </script>
 </body>

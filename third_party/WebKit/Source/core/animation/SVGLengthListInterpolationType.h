@@ -2,32 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SVGLengthInterpolationType_h
-#define SVGLengthInterpolationType_h
+#ifndef SVGLengthListInterpolationType_h
+#define SVGLengthListInterpolationType_h
 
+#include "core/SVGNames.h"
 #include "core/animation/SVGInterpolationType.h"
 #include "core/svg/SVGLength.h"
 
 namespace blink {
 
-class SVGLengthContext;
 enum class SVGLengthMode;
 
-class SVGLengthInterpolationType : public SVGInterpolationType {
+class SVGLengthListInterpolationType : public SVGInterpolationType {
 public:
-    SVGLengthInterpolationType(const QualifiedName& attribute)
+    SVGLengthListInterpolationType(const QualifiedName& attribute)
         : SVGInterpolationType(attribute)
         , m_unitMode(SVGLength::lengthModeForAnimatedLengthAttribute(attribute))
         , m_negativeValuesForbidden(SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(attribute))
     { }
 
-    static PassOwnPtr<InterpolableValue> neutralInterpolableValue();
-    static InterpolationComponent convertSVGLength(const SVGLength&);
-    static PassRefPtrWillBeRawPtr<SVGLength> resolveInterpolableSVGLength(const InterpolableValue&, const SVGLengthContext&, SVGLengthMode, bool negativeValuesForbidden);
-
 private:
     PassOwnPtr<InterpolationValue> maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const final;
     PassOwnPtr<InterpolationValue> maybeConvertSVGValue(const SVGPropertyBase& svgValue) const final;
+    PassOwnPtr<PairwisePrimitiveInterpolation> mergeSingleConversions(InterpolationValue& startValue, InterpolationValue& endValue) const final;
+    void composite(UnderlyingValue&, double underlyingFraction, const InterpolationValue&) const final;
     PassRefPtrWillBeRawPtr<SVGPropertyBase> appliedSVGValue(const InterpolableValue&, const NonInterpolableValue*) const final;
     void apply(const InterpolableValue&, const NonInterpolableValue*, InterpolationEnvironment&) const final;
 
@@ -37,4 +35,4 @@ private:
 
 } // namespace blink
 
-#endif // SVGLengthInterpolationType_h
+#endif // SVGLengthListInterpolationType_h

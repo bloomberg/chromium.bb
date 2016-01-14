@@ -75,21 +75,17 @@ LengthInterpolatedUnit convertToInterpolatedUnit(CSSPrimitiveValue::UnitType uni
 
 } // namespace
 
-PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+PassOwnPtr<InterpolableValue> SVGLengthInterpolationType::neutralInterpolableValue()
 {
     OwnPtr<InterpolableList> listOfValues = InterpolableList::create(numLengthInterpolatedUnits);
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(0));
 
-    return InterpolationValue::create(*this, listOfValues.release());
+    return listOfValues.release();
 }
 
-PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+InterpolationComponent SVGLengthInterpolationType::convertSVGLength(const SVGLength& length)
 {
-    if (svgValue.type() != AnimatedLength)
-        return nullptr;
-
-    const SVGLength& length = toSVGLength(svgValue);
     double value = length.valueInSpecifiedUnits();
     LengthInterpolatedUnit unitType = convertToInterpolatedUnit(length.typeWithCalcResolved(), value);
 
@@ -100,17 +96,10 @@ PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertSVGValue(
     for (size_t i = 0; i < numLengthInterpolatedUnits; ++i)
         listOfValues->set(i, InterpolableNumber::create(values[i]));
 
-    return InterpolationValue::create(*this, listOfValues.release());
+    return InterpolationComponent(listOfValues.release());
 }
 
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
-{
-    ASSERT_NOT_REACHED();
-    // This function is no longer called, because apply has been overridden.
-    return nullptr;
-}
-
-PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*, const SVGLengthContext& lengthContext) const
+PassRefPtrWillBeRawPtr<SVGLength> SVGLengthInterpolationType::resolveInterpolableSVGLength(const InterpolableValue& interpolableValue, const SVGLengthContext& lengthContext, SVGLengthMode unitMode, bool negativeValuesForbidden)
 {
     const InterpolableList& listOfValues = toInterpolableList(interpolableValue);
 
@@ -138,23 +127,45 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGVa
         for (size_t i = 0; i < numLengthInterpolatedUnits; i++) {
             double entry = toInterpolableNumber(listOfValues.get(i))->value();
             if (entry)
-                value += lengthContext.convertValueToUserUnits(entry, m_unitMode, unitTypes[i]);
+                value += lengthContext.convertValueToUserUnits(entry, unitMode, unitTypes[i]);
         }
     }
 
-    if (m_negativeValuesForbidden && value < 0)
+    if (negativeValuesForbidden && value < 0)
         value = 0;
 
-    RefPtrWillBeRawPtr<SVGLength> result = SVGLength::create(m_unitMode); // defaults to the length 0
+    RefPtrWillBeRawPtr<SVGLength> result = SVGLength::create(unitMode); // defaults to the length 0
     result->newValueSpecifiedUnits(unitType, value);
     return result.release();
+}
+
+PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertNeutral(const UnderlyingValue&, ConversionCheckers&) const
+{
+    return InterpolationValue::create(*this, neutralInterpolableValue());
+}
+
+PassOwnPtr<InterpolationValue> SVGLengthInterpolationType::maybeConvertSVGValue(const SVGPropertyBase& svgValue) const
+{
+    if (svgValue.type() != AnimatedLength)
+        return nullptr;
+
+    const SVGLength& length = toSVGLength(svgValue);
+    InterpolationComponent component = convertSVGLength(length);
+    return InterpolationValue::create(*this, component);
+}
+
+PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLengthInterpolationType::appliedSVGValue(const InterpolableValue& interpolableValue, const NonInterpolableValue*) const
+{
+    ASSERT_NOT_REACHED();
+    // This function is no longer called, because apply has been overridden.
+    return nullptr;
 }
 
 void SVGLengthInterpolationType::apply(const InterpolableValue& interpolableValue, const NonInterpolableValue* nonInterpolableValue, InterpolationEnvironment& environment) const
 {
     SVGElement& element = environment.svgElement();
     SVGLengthContext lengthContext(&element);
-    element.setWebAnimatedAttribute(attribute(), appliedSVGValue(interpolableValue, nonInterpolableValue, lengthContext));
+    element.setWebAnimatedAttribute(attribute(), resolveInterpolableSVGLength(interpolableValue, lengthContext, m_unitMode, m_negativeValuesForbidden));
 }
 
 } // namespace blink

@@ -77,6 +77,8 @@ private:
     SVGLengthMode m_mode;
 };
 
+DEFINE_SVG_PROPERTY_TYPE_CASTS(SVGLengthList);
+
 } // namespace blink
 
 #endif // SVGLengthList_h
