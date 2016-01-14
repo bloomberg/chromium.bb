@@ -163,6 +163,16 @@
     if (_webViewContentView) {
       DCHECK(![_webViewContentView superview]);
       [self addSubview:_webViewContentView];
+      // The frame needs to be set immediately after the web view is added
+      // as a subview. The change in the frame triggers drawing operations and
+      // if not done after it's added as a subview, the web view exhibits
+      // strange behavior where clicks from certain web sites are not triggered.
+      // The actual value of the frame doesn't matter as long as it's not
+      // CGRectZero.
+      // TODO(crbug.com/577793): This is an undocumented and not-well-understood
+      // workaround for this issue.
+      const CGRect kDummyRect = CGRectMake(10, 20, 30, 50);
+      self.webViewContentView.frame = kDummyRect;
     }
   }
 }
