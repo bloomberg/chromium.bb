@@ -276,10 +276,11 @@ public class ContextMenuTest extends DownloadTestBase {
             SecurityException, IOException {
         // Select "save [image/video]" in that menu.
         Tab tab = getActivity().getActivityTab();
+        int callCount = getChromeDownloadCallCount();
         ContextMenuUtils.selectContextMenuItem(this, tab, mediaDOMElement, saveMenuID);
 
         // Wait for the download to complete and see if we got the right file
-        assertTrue(waitForChromeDownloadToFinish());
+        assertTrue(waitForChromeDownloadToFinish(callCount));
         checkLastDownload(expectedFilename);
     }
 

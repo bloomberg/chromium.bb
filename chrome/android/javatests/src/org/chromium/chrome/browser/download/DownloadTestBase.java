@@ -174,7 +174,7 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
     private final EnqueueHttpGetDownloadCallbackHelper mEnqueueHttpGetDownloadCallbackHelper =
             new EnqueueHttpGetDownloadCallbackHelper();
     private String mLastDownloadFilePath;
-    private CallbackHelper mHttpDownloadFinished;
+    private final CallbackHelper mHttpDownloadFinished = new CallbackHelper();
     private DownloadManagerService mSavedDownloadManagerService;
 
     protected String getLastDownloadFile() {
@@ -196,14 +196,17 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
         return downloadName.startsWith(fileName) && downloadName.endsWith(extension);
     }
 
-    public boolean waitForChromeDownloadToFinish() throws InterruptedException {
+    public int getChromeDownloadCallCount() {
+        return mHttpDownloadFinished.getCallCount();
+    }
+
+    public boolean waitForChromeDownloadToFinish(int callCount) throws InterruptedException {
         boolean eventReceived = true;
         try {
-            mHttpDownloadFinished.waitForCallback(0, 1, 5, TimeUnit.SECONDS);
+            mHttpDownloadFinished.waitForCallback(callCount, 1, 5, TimeUnit.SECONDS);
         } catch (TimeoutException e) {
             eventReceived = false;
         }
-        mHttpDownloadFinished = new CallbackHelper();
         return eventReceived;
     }
 
@@ -251,8 +254,6 @@ public abstract class DownloadTestBase extends ChromeActivityTestCaseBase<Chrome
                         DownloadManagerService.getDownloadManagerService(context));
             }
         });
-
-        mHttpDownloadFinished = new CallbackHelper();
     }
 
     @Override
