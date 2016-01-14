@@ -133,9 +133,14 @@ public class BackgroundSyncLauncher {
             protected void onPostExecute(Void params) {
                 if (sGCMEnabled) {
                     if (shouldLaunch) {
-                        scheduleLaunchTask(context, mScheduler, minDelayMs);
+                        boolean scheduleSuccess =
+                                scheduleLaunchTask(context, mScheduler, minDelayMs);
+                        recordBooleanHistogram(
+                                "BackgroundSync.LaunchTask.ScheduleSuccess", scheduleSuccess);
                     } else {
-                        removeScheduledTasks(mScheduler);
+                        boolean cancelSuccess = removeScheduledTasks(mScheduler);
+                        recordBooleanHistogram(
+                                "BackgroundSync.LaunchTask.CancelSuccess", cancelSuccess);
                     }
                 }
             }
@@ -185,7 +190,7 @@ public class BackgroundSyncLauncher {
         return !sGCMEnabled;
     }
 
-    private static void scheduleLaunchTask(
+    private static boolean scheduleLaunchTask(
             Context context, GcmNetworkManager scheduler, long minDelayMs) {
         // Google Play Services may not be up to date, if the application was not installed through
         // the Play Store. In this case, scheduling the task will fail silently.
@@ -201,28 +206,28 @@ public class BackgroundSyncLauncher {
                                     .build();
         try {
             scheduler.schedule(oneoff);
-            recordBooleanHistogram("BackgroundSync.LaunchTask.ScheduleSuccess", true);
         } catch (IllegalArgumentException e) {
-            // Log the occurrence so that we can keep track of how often this is happening, and
-            // disable GCM for the remainder of this session.
+            // Disable GCM for the remainder of this session.
             setGCMEnabled(false);
-            recordBooleanHistogram("BackgroundSync.LaunchTask.ScheduleSuccess", false);
+            // Return false so that the failure will be logged.
+            return false;
         }
+        return true;
     }
 
-    private static void removeScheduledTasks(GcmNetworkManager scheduler) {
+    private static boolean removeScheduledTasks(GcmNetworkManager scheduler) {
         try {
             scheduler.cancelAllTasks(BackgroundSyncLauncherService.class);
-            recordBooleanHistogram("BackgroundSync.LaunchTask.CancelSuccess", true);
         } catch (IllegalArgumentException e) {
             // This occurs when BackgroundSyncLauncherService is not found in the application
             // manifest. This should not happen in code that reaches here, but has been seen in
             // the past. See https://crbug.com/548314
-            // Log the occurrence so that we can keep track of how often this is happening, and
-            // disable GCM for the remainder of this session.
+            // Disable GCM for the remainder of this session.
             setGCMEnabled(false);
-            recordBooleanHistogram("BackgroundSync.LaunchTask.CancelSuccess", false);
+            // Return false so that the failure will be logged.
+            return false;
         }
+        return true;
     }
 
     /**
@@ -243,6 +248,8 @@ public class BackgroundSyncLauncher {
                         if (shouldLaunch) {
                             // It's unclear what time the sync event was supposed to fire, so fire
                             // without delay and let the browser reschedule if necessary.
+                            // TODO(iclelland): If this fails, report the failure via UMA (not now,
+                            // since the browser is not running, but on next startup.)
                             scheduleLaunchTask(context, scheduler, 0);
                         }
                     }
@@ -262,6 +269,7 @@ public class BackgroundSyncLauncher {
 
     private static void recordBooleanHistogram(String name, boolean value) {
         if (!sReportingDisabledForTests) {
+            // recordBooleanHistogram must only be called when the browser is running.
             RecordHistogram.recordBooleanHistogram(name, value);
         }
     }
