@@ -434,6 +434,7 @@ class Settings(object):
     self.viewvc_url = None
     self.updated = False
     self.is_gerrit = None
+    self.squash_gerrit_uploads = None
     self.git_editor = None
     self.project = None
     self.force_https_commit_url = None
@@ -598,6 +599,14 @@ class Settings(object):
     if self.is_gerrit is None:
       self.is_gerrit = self._GetConfig('gerrit.host', error_ok=True)
     return self.is_gerrit
+
+  def GetSquashGerritUploads(self):
+    """Return true if uploads to Gerrit should be squashed by default."""
+    if self.squash_gerrit_uploads is None:
+      self.squash_gerrit_uploads = (
+          RunGit(['config', '--bool', 'gerrit.squash-uploads'],
+                 error_ok=True).strip() == 'true')
+    return self.squash_gerrit_uploads
 
   def GetGitEditor(self):
     """Return the editor specified in the git config, or None if none is."""
@@ -1386,6 +1395,10 @@ def LoadCodereviewSettingsFromFile(fileobj):
 
   if 'GERRIT_HOST' in keyvals:
     RunGit(['config', 'gerrit.host', keyvals['GERRIT_HOST']])
+
+  if 'GERRIT_SQUASH_UPLOADS' in keyvals:
+    RunGit(['config', 'gerrit.squash-uploads',
+            keyvals['GERRIT_SQUASH_UPLOADS']])
 
   if 'PUSH_URL_CONFIG' in keyvals and 'ORIGIN_URL_CONFIG' in keyvals:
     #should be of the form
@@ -2354,6 +2367,9 @@ def CMDupload(parser, args):
                          'Default: remote branch head, or master')
   parser.add_option('--squash', action='store_true',
                     help='Squash multiple commits into one (Gerrit only)')
+  parser.add_option('--no-squash', action='store_true',
+                    help='Don\'t squash multiple commits into one ' +
+                         '(Gerrit only)')
   parser.add_option('--email', default=None,
                     help='email address to use to connect to Rietveld')
   parser.add_option('--tbr-owners', dest='tbr_owners', action='store_true',
@@ -2437,6 +2453,12 @@ def CMDupload(parser, args):
 
   print_stats(options.similarity, options.find_copies, args)
   if settings.GetIsGerrit():
+    if options.squash and options.no_squash:
+      DieWithError('Can only use one of --squash or --no-squash')
+
+    options.squash = ((settings.GetSquashGerritUploads() or options.squash) and
+                      not options.no_squash)
+
     return GerritUpload(options, args, cl, change)
   ret = RietveldUpload(options, args, cl, change)
   if not ret:

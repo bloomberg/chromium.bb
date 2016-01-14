@@ -585,6 +585,7 @@ class TestGitCl(TestCase):
   def _gerrit_upload_calls(description, reviewers, squash,
                            expected_upstream_ref='origin/refs/heads/master'):
     calls = [
+        ((['git', 'config', '--bool', 'gerrit.squash-uploads'],), 'false'),
         ((['git', 'log', '--pretty=format:%s\n\n%b',
            'fake_ancestor_sha..HEAD'],),
          description)
