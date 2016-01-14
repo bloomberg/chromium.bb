@@ -2029,12 +2029,21 @@ def GerritUpload(options, args, cl, change):
                                        'commit-msg')
         file_handle, msg_file = tempfile.mkstemp(text=True,
                                                  prefix='commit_msg')
+        logging.debug("%s %s", file_handle, msg_file)
         try:
           try:
-            with os.fdopen(file_handle, 'w') as fileobj:
+            try:
+              fileobj = os.fdopen(file_handle, 'w')
+            except OSError:
+              # if fdopen fails, file_handle remains open.
+              # See https://docs.python.org/2/library/os.html#os.fdopen.
+              os.close(file_handle)
+              raise
+            with fileobj:
+              # This will close the file_handle.
               fileobj.write(change_desc.description)
+            logging.debug("%s %s finish editing", file_handle, msg_file)
           finally:
-            os.close(file_handle)
             RunCommand([commit_msg_hook, msg_file])
             change_desc.set_description(gclient_utils.FileRead(msg_file))
         finally:
