@@ -526,6 +526,10 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * Creates an instance of a {@link Tab}.
+     *
+     * This constructor may be called before the native library has been loaded, so any additions
+     * must be vetted for library calls.
+     *
      * @param id        The id this tab should be identified with.
      * @param incognito Whether or not this tab is incognito.
      * @param window    An instance of a {@link WindowAndroid}.
@@ -536,6 +540,10 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
     /**
      * Creates an instance of a {@link Tab}.
+     *
+     * This constructor can be called before the native library has been loaded, so any additions
+     * must be vetted for library calls.
+     *
      * @param id          The id this tab should be identified with.
      * @param parentId    The id id of the tab that caused this tab to be opened.
      * @param incognito   Whether or not this tab is incognito.
@@ -596,8 +604,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         if (incognito) {
             CipherFactory.getInstance().triggerKeyGeneration();
         }
-
-        RevenueStats.getInstance().tabCreated(this);
 
         ContextualSearchTabHelper.createForTab(this);
         MediaSessionTabHelper.createForTab(this);
@@ -1263,6 +1269,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
             mDelegateFactory = delegateFactory;
             initializeNative();
+
+            RevenueStats.getInstance().tabCreated(this);
 
             if (AppBannerManager.isEnabled()) {
                 mAppBannerManager = mDelegateFactory.createAppBannerManager(this);
