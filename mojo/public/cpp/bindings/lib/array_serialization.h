@@ -201,7 +201,7 @@ struct ArraySerializer<
       MOJO_DCHECK(!validate_params)
           << "Struct type should not have array validate params";
 
-      Serialize_(input.Pass(), buf, output);
+      Serialize_(std::move(input), buf, output);
     }
   };
 

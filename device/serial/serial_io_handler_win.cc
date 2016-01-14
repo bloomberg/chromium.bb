@@ -477,7 +477,7 @@ serial::DeviceControlSignalsPtr SerialIoHandlerWin::GetControlSignals() const {
   signals->cts = (status & MS_CTS_ON) != 0;
   signals->dsr = (status & MS_DSR_ON) != 0;
   signals->ri = (status & MS_RING_ON) != 0;
-  return signals.Pass();
+  return signals;
 }
 
 bool SerialIoHandlerWin::SetControlSignals(
@@ -512,7 +512,7 @@ serial::ConnectionInfoPtr SerialIoHandlerWin::GetPortInfo() const {
   info->parity_bit = ParityBitConstantToEnum(config.Parity);
   info->stop_bits = StopBitsConstantToEnum(config.StopBits);
   info->cts_flow_control = config.fOutxCtsFlow != 0;
-  return info.Pass();
+  return info;
 }
 
 bool SerialIoHandlerWin::SetBreak() {

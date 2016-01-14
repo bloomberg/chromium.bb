@@ -287,7 +287,7 @@ class InterfacePtrState<Interface, true> {
     endpoint_client_.reset();
     proxy_.reset();
     return InterfacePtrInfo<GenericInterface>(
-        router_ ? router_->PassMessagePipe() : handle_.Pass(), version_);
+        router_ ? router_->PassMessagePipe() : std::move(handle_), version_);
   }
 
   bool is_bound() const { return handle_.is_valid() || endpoint_client_; }
