@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state_impl_io_data.h"
 
 #include <set>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -67,7 +68,7 @@ ChromeBrowserStateImplIOData::Handle::~Handle() {
   if (io_data_->data_reduction_proxy_io_data())
     io_data_->data_reduction_proxy_io_data()->ShutdownOnUIThread();
 
-  io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
+  io_data_->ShutdownOnUIThread(GetAllContextGetters());
 }
 
 void ChromeBrowserStateImplIOData::Handle::Init(
@@ -105,8 +106,7 @@ void ChromeBrowserStateImplIOData::Handle::Init(
           browser_state_->GetPrefs(),
           web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
           web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
-          enable_quic_for_data_reduction_proxy)
-          .Pass());
+          enable_quic_for_data_reduction_proxy));
 
   base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
   scoped_refptr<base::SequencedTaskRunner> db_task_runner =
@@ -118,7 +118,7 @@ void ChromeBrowserStateImplIOData::Handle::Init(
   IOSChromeDataReductionProxySettingsFactory::GetForBrowserState(browser_state_)
       ->InitDataReductionProxySettings(
           io_data_->data_reduction_proxy_io_data(), browser_state_->GetPrefs(),
-          browser_state_->GetRequestContext(), store.Pass(),
+          browser_state_->GetRequestContext(), std::move(store),
           web::WebThread::GetTaskRunnerForThread(web::WebThread::UI),
           db_task_runner);
 }
@@ -211,7 +211,7 @@ ChromeBrowserStateImplIOData::Handle::GetAllContextGetters() {
   if (main_request_context_getter_.get())
     context_getters->push_back(main_request_context_getter_);
 
-  return context_getters.Pass();
+  return context_getters;
 }
 
 ChromeBrowserStateImplIOData::LazyParams::LazyParams() : cache_max_size(0) {}
@@ -254,10 +254,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
   main_context->set_net_log(io_thread->net_log());
 
-  network_delegate_ =
-      data_reduction_proxy_io_data()
-          ->CreateNetworkDelegate(chrome_network_delegate.Pass(), true)
-          .Pass();
+  network_delegate_ = data_reduction_proxy_io_data()->CreateNetworkDelegate(
+      std::move(chrome_network_delegate), true);
 
   main_context->set_network_delegate(network_delegate_.get());
 
@@ -318,8 +316,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
           lazy_params_->cache_path, lazy_params_->cache_max_size,
           web::WebThread::GetTaskRunnerForThread(web::WebThread::CACHE)));
   http_network_session_ = CreateHttpNetworkSession(*profile_params);
-  main_http_factory_ =
-      CreateMainHttpFactory(http_network_session_.get(), main_backend.Pass());
+  main_http_factory_ = CreateMainHttpFactory(http_network_session_.get(),
+                                             std::move(main_backend));
   main_context->set_http_transaction_factory(main_http_factory_.get());
 
   scoped_ptr<net::URLRequestJobFactoryImpl> main_job_factory(
@@ -332,8 +330,8 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
   request_interceptors.insert(
       request_interceptors.begin(),
       data_reduction_proxy_io_data()->CreateInterceptor().release());
-  main_job_factory_ = SetUpJobFactoryDefaults(main_job_factory.Pass(),
-                                              request_interceptors.Pass(),
+  main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
+                                              std::move(request_interceptors),
                                               main_context->network_delegate());
   main_context->set_job_factory(main_job_factory_.get());
   main_context->set_network_quality_estimator(
@@ -359,7 +357,7 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
   scoped_ptr<net::HttpCache::BackendFactory> app_backend =
       net::HttpCache::DefaultBackend::InMemory(0);
   scoped_ptr<net::HttpCache> app_http_cache =
-      CreateHttpFactory(http_network_session_.get(), app_backend.Pass());
+      CreateHttpFactory(http_network_session_.get(), std::move(app_backend));
 
   cookie_util::CookieStoreConfig ios_cookie_config(
       base::FilePath(),
@@ -370,7 +368,7 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
   context->SetCookieStore(cookie_store.get());
-  context->SetHttpTransactionFactory(app_http_cache.Pass());
+  context->SetHttpTransactionFactory(std::move(app_http_cache));
 
   scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
       new net::URLRequestJobFactoryImpl());
@@ -380,10 +378,10 @@ ChromeBrowserStateImplIOData::InitializeAppRequestContext(
   request_interceptors.insert(
       request_interceptors.begin(),
       data_reduction_proxy_io_data()->CreateInterceptor().release());
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory(
-      SetUpJobFactoryDefaults(job_factory.Pass(), request_interceptors.Pass(),
-                              main_context->network_delegate()));
-  context->SetJobFactory(top_job_factory.Pass());
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory(SetUpJobFactoryDefaults(
+      std::move(job_factory), std::move(request_interceptors),
+      main_context->network_delegate()));
+  context->SetJobFactory(std::move(top_job_factory));
 
   return context;
 }

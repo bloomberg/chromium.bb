@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <utility>
+
 #include "base/logging.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/crw_session_controller.h"
@@ -74,7 +76,7 @@ void NavigationManagerImpl::ReplaceSessionHistory(
     ScopedVector<web::NavigationItem> items,
     int current_index) {
   SetSessionController([[[CRWSessionController alloc]
-      initWithNavigationItems:items.Pass()
+      initWithNavigationItems:std::move(items)
                  currentIndex:current_index
                  browserState:browser_state_] autorelease]);
 }
@@ -273,7 +275,7 @@ void NavigationManagerImpl::Reload(bool check_for_reposts) {
 
 scoped_ptr<std::vector<BrowserURLRewriter::URLRewriter>>
 NavigationManagerImpl::GetTransientURLRewriters() {
-  return transient_url_rewriters_.Pass();
+  return std::move(transient_url_rewriters_);
 }
 
 void NavigationManagerImpl::RemoveTransientURLRewriters() {

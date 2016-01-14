@@ -314,7 +314,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       // InitPasswordFormFillData() that the preferred match (3rd parameter)
       // should be one of the |matches|.
       auto scoped_form = make_scoped_ptr(new autofill::PasswordForm(form));
-      matches.insert(std::make_pair(form.username_value, scoped_form.Pass()));
+      matches.insert(
+          std::make_pair(form.username_value, std::move(scoped_form)));
       autofill::InitPasswordFormFillData(form, matches, &form, false, false,
                                          &formData);
       [self fillPasswordForm:formData

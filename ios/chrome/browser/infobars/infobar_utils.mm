@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/infobars/infobar_utils.h"
 
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
@@ -12,9 +14,9 @@
 
 scoped_ptr<infobars::InfoBar> CreateConfirmInfoBar(
     scoped_ptr<ConfirmInfoBarDelegate> delegate) {
-  scoped_ptr<InfoBarIOS> infobar(new InfoBarIOS(delegate.Pass()));
+  scoped_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   base::scoped_nsobject<ConfirmInfoBarController> controller(
       [[ConfirmInfoBarController alloc] initWithDelegate:infobar.get()]);
   infobar->SetController(controller);
-  return infobar.Pass();
+  return std::move(infobar);
 }

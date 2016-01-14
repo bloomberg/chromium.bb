@@ -249,7 +249,7 @@ ProofVerifier* ProofVerifierForTestingInternal(bool use_real_proof_verifier) {
       make_scoped_ptr(new MultiLogCTVerifier), "quic_root.crt");
 #else
   return new FakeProofVerifier(
-      cert_verifier.Pass(), make_scoped_ptr(new TransportSecurityState),
+      std::move(cert_verifier), make_scoped_ptr(new TransportSecurityState),
       make_scoped_ptr(new MultiLogCTVerifier), "quic_root.crt");
 #endif
 }

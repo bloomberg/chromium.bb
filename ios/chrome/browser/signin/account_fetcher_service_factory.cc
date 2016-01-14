@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/account_fetcher_service_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
@@ -52,7 +54,7 @@ scoped_ptr<KeyedService> AccountFetcherServiceFactory::BuildServiceInstanceFor(
       SigninClientFactory::GetForBrowserState(browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
-  return service.Pass();
+  return std::move(service);
 }
 
 }  // namespace ios

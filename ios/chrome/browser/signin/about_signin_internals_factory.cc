@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/about_signin_internals_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -56,7 +58,7 @@ scoped_ptr<KeyedService> AboutSigninInternalsFactory::BuildServiceInstanceFor(
           chrome_browser_state)));
   service->Initialize(
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
-  return service.Pass();
+  return std::move(service);
 }
 
 void AboutSigninInternalsFactory::RegisterBrowserStatePrefs(

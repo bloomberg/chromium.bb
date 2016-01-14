@@ -2,14 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/web/navigation/crw_session_controller.h"
+
 #import <Foundation/Foundation.h>
+
+#include <utility>
 
 #include "base/logging.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
@@ -754,7 +757,7 @@ web::NavigationItem* CreateNavigationItem(const std::string& url,
 TEST_F(CRWSessionControllerTest, CreateWithEmptyNavigations) {
   ScopedVector<web::NavigationItem> items;
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:items.Pass()
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:0
                                                browserState:&browser_state_]);
   EXPECT_EQ(controller.get().entries.count, 0U);
@@ -772,7 +775,7 @@ TEST_F(CRWSessionControllerTest, CreateWithNavList) {
   items.push_back(CreateNavigationItem("http://www.espn.com",
                                        "http://www.nothing.com", @"ESPN"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:items.Pass()
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:1
                                                browserState:&browser_state_]);
 
@@ -831,7 +834,7 @@ TEST_F(CRWSessionControllerTest, PushNewEntry) {
   items.push_back(CreateNavigationItem("http://www.thirdpage.com",
                                        "http://www.secondpage.com", @"Third"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:items.Pass()
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:0
                                                browserState:&browser_state_]);
 
@@ -883,7 +886,7 @@ TEST_F(CRWSessionControllerTest, IsPushStateNavigation) {
   items.push_back(CreateNavigationItem("http://foo.com/bar#bar",
                                        "http://foo.com/bar", @"Sixth"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:items.Pass()
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:0
                                                browserState:&browser_state_]);
   CRWSessionEntry* entry0 = [controller.get().entries objectAtIndex:0];
@@ -919,7 +922,7 @@ TEST_F(CRWSessionControllerTest, UpdateCurrentEntry) {
   items.push_back(CreateNavigationItem("http://www.thirdpage.com",
                                        "http://www.secondpage.com", @"Third"));
   base::scoped_nsobject<CRWSessionController> controller(
-      [[CRWSessionController alloc] initWithNavigationItems:items.Pass()
+      [[CRWSessionController alloc] initWithNavigationItems:std::move(items)
                                                currentIndex:0
                                                browserState:&browser_state_]);
 

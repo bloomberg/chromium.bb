@@ -69,7 +69,7 @@ scoped_ptr<base::DictionaryValue> GetTestPasswordCredentialDictionaryValue() {
   value->SetString("name", kTestCredentialName);
   value->SetString("avatarURL", kTestCredentialAvatarURL);
   value->SetString("password", kTestCredentialPassword);
-  return value.Pass();
+  return value;
 }
 
 // Returns a value representing the credential returned by
@@ -81,7 +81,7 @@ scoped_ptr<base::DictionaryValue> GetTestFederatedCredentialDictionaryValue() {
   value->SetString("name", kTestCredentialName);
   value->SetString("avatarURL", kTestCredentialAvatarURL);
   value->SetString("federation", kTestCredentialFederationURL);
-  return value.Pass();
+  return value;
 }
 
 // Tests that parsing an empty value fails.
@@ -112,7 +112,7 @@ TEST(CredentialUtilTest, ParsingPasswordCredentialSucceeds) {
 // specified fails.
 TEST(CredentialUtilTest, ParsingPasswordCredentialWithNoIDFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestPasswordCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue());
   value->RemoveWithoutPathExpansion("id", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -122,7 +122,7 @@ TEST(CredentialUtilTest, ParsingPasswordCredentialWithNoIDFails) {
 // formed avatarURL fails.
 TEST(CredentialUtilTest, ParsingPasswordCredentialWithBadAvatarURLFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestPasswordCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue());
   value->SetString("avatarURL", "foo");
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -132,7 +132,7 @@ TEST(CredentialUtilTest, ParsingPasswordCredentialWithBadAvatarURLFails) {
 // specified fails.
 TEST(CredentialUtilTest, ParsingPasswordCredentialWithNoPasswordFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestPasswordCredentialDictionaryValue().Pass());
+      GetTestPasswordCredentialDictionaryValue());
   value->Remove("password", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -151,7 +151,7 @@ TEST(CredentialUtilTest, ParsingFederatedCredentialSucceeds) {
 // fails.
 TEST(CredentialUtilTest, ParsingFederatedCredentialWithNoIDFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestFederatedCredentialDictionaryValue().Pass());
+      GetTestFederatedCredentialDictionaryValue());
   value->RemoveWithoutPathExpansion("id", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -161,7 +161,7 @@ TEST(CredentialUtilTest, ParsingFederatedCredentialWithNoIDFails) {
 // formed avatarURL fails.
 TEST(CredentialUtilTest, ParsingFederatedCredentialWithBadAvatarURLFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestFederatedCredentialDictionaryValue().Pass());
+      GetTestFederatedCredentialDictionaryValue());
   value->SetString("avatarURL", "foo");
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -171,7 +171,7 @@ TEST(CredentialUtilTest, ParsingFederatedCredentialWithBadAvatarURLFails) {
 // federation URL fails.
 TEST(CredentialUtilTest, ParsingFederatedValueWithNoFederationURLFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestFederatedCredentialDictionaryValue().Pass());
+      GetTestFederatedCredentialDictionaryValue());
   value->Remove("federation", nullptr);
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));
@@ -181,7 +181,7 @@ TEST(CredentialUtilTest, ParsingFederatedValueWithNoFederationURLFails) {
 // formed federationURL fails.
 TEST(CredentialUtilTest, ParsingFederatedValueWithBadFederationURLFails) {
   scoped_ptr<base::DictionaryValue> value(
-      GetTestFederatedCredentialDictionaryValue().Pass());
+      GetTestFederatedCredentialDictionaryValue());
   value->SetString("federation", "bar");
   Credential credential;
   EXPECT_FALSE(DictionaryValueToCredential(*value, &credential));

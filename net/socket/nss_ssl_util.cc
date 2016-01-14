@@ -11,6 +11,7 @@
 #include <sslproto.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/cpu.h"
@@ -87,7 +88,7 @@ scoped_ptr<base::Value> NetLogSSLErrorCallback(
   dict->SetInteger("net_error", net_error);
   if (ssl_lib_error)
     dict->SetInteger("ssl_lib_error", ssl_lib_error);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 class NSSSSLInitSingleton {
@@ -388,7 +389,7 @@ scoped_ptr<base::Value> NetLogSSLFailedNSSFunctionCallback(
   if (param[0] != '\0')
     dict->SetString("param", param);
   dict->SetInteger("ssl_lib_error", ssl_lib_error);
-  return dict.Pass();
+  return std::move(dict);
 }
 
 void LogFailedNSSFunction(const BoundNetLog& net_log,

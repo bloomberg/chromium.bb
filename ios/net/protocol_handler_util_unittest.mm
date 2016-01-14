@@ -2,12 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/net/protocol_handler_util.h"
+
+#include <utility>
+
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/net/protocol_handler_util.h"
 #include "net/base/elements_upload_data_stream.h"
 #import "net/base/mac/url_conversions.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -261,7 +264,7 @@ TEST_F(ProtocolHandlerUtilTest, AddMissingHeaders) {
   scoped_ptr<UploadElementReader> reader(
       new UploadBytesElementReader(nullptr, 0));
   out_request->set_upload(
-      ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+      ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
   CopyHttpHeaders(in_request, out_request.get());
 
   // Some headers are added by default if missing.

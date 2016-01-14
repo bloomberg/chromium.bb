@@ -4,6 +4,8 @@
 
 #include "net/socket/ssl_server_socket_nss.h"
 
+#include <utility>
+
 #if defined(OS_WIN)
 #include <winsock2.h>
 #endif
@@ -88,7 +90,7 @@ scoped_ptr<SSLServerSocket> CreateSSLServerSocket(
                                     << " called yet!";
 
   return scoped_ptr<SSLServerSocket>(
-      new SSLServerSocketNSS(socket.Pass(), cert, key, ssl_config));
+      new SSLServerSocketNSS(std::move(socket), cert, key, ssl_config));
 }
 
 SSLServerSocketNSS::SSLServerSocketNSS(
@@ -102,7 +104,7 @@ SSLServerSocketNSS::SSLServerSocketNSS(
       user_write_buf_len_(0),
       nss_fd_(NULL),
       nss_bufs_(NULL),
-      transport_socket_(transport_socket.Pass()),
+      transport_socket_(std::move(transport_socket)),
       ssl_config_(ssl_config),
       cert_(cert),
       key_(key.Copy()),

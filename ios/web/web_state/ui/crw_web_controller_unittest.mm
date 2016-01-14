@@ -7,6 +7,8 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
+#include <utility>
+
 #include "base/callback_helpers.h"
 #include "base/ios/ios_util.h"
 #import "base/mac/bind_objc_block.h"
@@ -1118,7 +1120,7 @@ TEST_F(CRWUIWebViewWebControllerTest, POSTRequestCache) {
   item->SetTransitionType(ui::PAGE_TRANSITION_FORM_SUBMIT);
   item->set_is_renderer_initiated(true);
   base::scoped_nsobject<CRWSessionEntry> currentEntry(
-      [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
+      [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
   base::scoped_nsobject<NSMutableURLRequest> request(
       [[NSMutableURLRequest alloc] initWithURL:net::NSURLWithGURL(url)]);
   [request setHTTPMethod:@"POST"];

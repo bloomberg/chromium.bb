@@ -155,7 +155,7 @@ const char kScriptCommandPrefix[] = "webui";
       };
 
   _fetchers.push_back(
-      [self fetcherForURL:URL completionHandler:fetcherCompletion].Pass());
+      [self fetcherForURL:URL completionHandler:fetcherCompletion]);
   _fetchers.back()->Start();
 }
 

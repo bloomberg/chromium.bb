@@ -48,7 +48,7 @@ IOSSerializedNavigationBuilder::ToNavigationItem(
     item->GetFavicon().url = navigation->favicon_url_;
   }
 
-  return item.Pass();
+  return item;
 }
 
 // static
@@ -61,7 +61,7 @@ IOSSerializedNavigationBuilder::ToNavigationItems(
        it != navigations.end(); ++it) {
     items.push_back(ToNavigationItem(&(*it)).release());
   }
-  return items.Pass();
+  return items;
 }
 
 }  // namespace sessions

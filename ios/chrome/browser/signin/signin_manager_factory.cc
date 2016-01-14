@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/time/time.h"
@@ -91,7 +93,7 @@ scoped_ptr<KeyedService> SigninManagerFactory::BuildServiceInstanceFor(
   service->Initialize(GetApplicationContext()->GetLocalState());
   FOR_EACH_OBSERVER(SigninManagerFactoryObserver, observer_list_,
                     SigninManagerCreated(service.get()));
-  return service.Pass();
+  return std::move(service);
 }
 
 void SigninManagerFactory::BrowserStateShutdown(web::BrowserState* context) {

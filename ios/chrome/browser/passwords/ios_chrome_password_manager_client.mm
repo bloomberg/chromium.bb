@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/passwords/ios_chrome_password_manager_client.h"
 
+#include <utility>
+
 #include "base/memory/scoped_ptr.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -72,7 +74,7 @@ bool IOSChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     bool update_password) {
   if (form_to_save->IsBlacklisted())
     return false;
-  [delegate_ showSavePasswordInfoBar:form_to_save.Pass()];
+  [delegate_ showSavePasswordInfoBar:std::move(form_to_save)];
   return true;
 }
 

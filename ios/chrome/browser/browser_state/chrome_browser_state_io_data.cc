@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -140,13 +141,13 @@ void ChromeBrowserStateIOData::AppRequestContext::SetCookieStore(
 
 void ChromeBrowserStateIOData::AppRequestContext::SetHttpTransactionFactory(
     scoped_ptr<net::HttpTransactionFactory> http_factory) {
-  http_factory_ = http_factory.Pass();
+  http_factory_ = std::move(http_factory);
   set_http_transaction_factory(http_factory_.get());
 }
 
 void ChromeBrowserStateIOData::AppRequestContext::SetJobFactory(
     scoped_ptr<net::URLRequestJobFactory> job_factory) {
-  job_factory_ = job_factory.Pass();
+  job_factory_ = std::move(job_factory);
   set_job_factory(job_factory_.get());
 }
 
@@ -308,7 +309,7 @@ bool ChromeBrowserStateIOData::IsDataReductionProxyEnabled() const {
 void ChromeBrowserStateIOData::set_data_reduction_proxy_io_data(
     scoped_ptr<data_reduction_proxy::DataReductionProxyIOData>
         data_reduction_proxy_io_data) const {
-  data_reduction_proxy_io_data_ = data_reduction_proxy_io_data.Pass();
+  data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
 }
 
 base::WeakPtr<net::HttpServerProperties>
@@ -318,7 +319,7 @@ ChromeBrowserStateIOData::http_server_properties() const {
 
 void ChromeBrowserStateIOData::set_http_server_properties(
     scoped_ptr<net::HttpServerProperties> http_server_properties) const {
-  http_server_properties_ = http_server_properties.Pass();
+  http_server_properties_ = std::move(http_server_properties);
 }
 
 void ChromeBrowserStateIOData::Init(
@@ -352,7 +353,7 @@ void ChromeBrowserStateIOData::Init(
   proxy_service_ = ios::ProxyServiceFactory::CreateProxyService(
       io_thread->net_log(), nullptr,
       io_thread_globals->system_network_delegate.get(),
-      profile_params_->proxy_config_service.Pass(),
+      std::move(profile_params_->proxy_config_service),
       true /* quick_check_enabled */);
   transport_security_state_.reset(new net::TransportSecurityState());
   base::SequencedWorkerPool* pool = web::WebThread::GetBlockingPool();
@@ -374,7 +375,7 @@ void ChromeBrowserStateIOData::Init(
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());
 
-  InitializeInternal(network_delegate.Pass(), profile_params_.get(),
+  InitializeInternal(std::move(network_delegate), profile_params_.get(),
                      protocol_handlers);
 
   profile_params_.reset();
@@ -410,15 +411,16 @@ ChromeBrowserStateIOData::SetUpJobFactoryDefaults(
       make_scoped_ptr(new about_handler::AboutProtocolHandler()));
 
   // Set up interceptors in the reverse order.
-  scoped_ptr<net::URLRequestJobFactory> top_job_factory = job_factory.Pass();
+  scoped_ptr<net::URLRequestJobFactory> top_job_factory =
+      std::move(job_factory);
   for (URLRequestInterceptorScopedVector::reverse_iterator i =
            request_interceptors.rbegin();
        i != request_interceptors.rend(); ++i) {
     top_job_factory.reset(new net::URLRequestInterceptingJobFactory(
-        top_job_factory.Pass(), make_scoped_ptr(*i)));
+        std::move(top_job_factory), make_scoped_ptr(*i)));
   }
   request_interceptors.weak_clear();
-  return top_job_factory.Pass();
+  return top_job_factory;
 }
 
 void ChromeBrowserStateIOData::ShutdownOnUIThread(
@@ -479,12 +481,12 @@ scoped_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateMainHttpFactory(
     net::HttpNetworkSession* session,
     scoped_ptr<net::HttpCache::BackendFactory> main_backend) const {
   return scoped_ptr<net::HttpCache>(
-      new net::HttpCache(session, main_backend.Pass(), true));
+      new net::HttpCache(session, std::move(main_backend), true));
 }
 
 scoped_ptr<net::HttpCache> ChromeBrowserStateIOData::CreateHttpFactory(
     net::HttpNetworkSession* shared_session,
     scoped_ptr<net::HttpCache::BackendFactory> backend) const {
   return scoped_ptr<net::HttpCache>(
-      new net::HttpCache(shared_session, backend.Pass(), true));
+      new net::HttpCache(shared_session, std::move(backend), true));
 }

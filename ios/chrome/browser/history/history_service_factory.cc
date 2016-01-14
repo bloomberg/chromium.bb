@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/history/history_service_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -80,7 +82,7 @@ scoped_ptr<KeyedService> HistoryServiceFactory::BuildServiceInstanceFor(
               browser_state->GetStatePath()))) {
     return nullptr;
   }
-  return history_service.Pass();
+  return std::move(history_service);
 }
 
 web::BrowserState* HistoryServiceFactory::GetBrowserStateToUse(

@@ -4,8 +4,10 @@
 
 #import "ios/web/web_state/ui/crw_wk_web_view_web_controller.h"
 
-#include <stddef.h>
 #import <WebKit/WebKit.h>
+#include <stddef.h>
+
+#include <utility>
 
 #include "base/containers/mru_cache.h"
 #include "base/ios/ios_util.h"
@@ -414,7 +416,7 @@ WKWebViewErrorSource WKWebViewErrorSourceFromError(NSError* error) {
 - (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState {
   DCHECK(webState);
   web::BrowserState* browserState = webState->GetBrowserState();
-  self = [super initWithWebState:webState.Pass()];
+  self = [super initWithWebState:std::move(webState)];
   if (self) {
     _certVerificationController.reset([[CRWCertVerificationController alloc]
         initWithBrowserState:browserState]);

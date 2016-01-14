@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/invalidation/ios_chrome_profile_invalidation_provider_factory.h"
 
+#include <utility>
+
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
@@ -68,7 +70,7 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       base::Closure()));
 
   scoped_ptr<TiclInvalidationService> service(new TiclInvalidationService(
-      web::GetWebClient()->GetUserAgent(false), identity_provider.Pass(),
+      web::GetWebClient()->GetUserAgent(false), std::move(identity_provider),
       make_scoped_ptr(new invalidation::TiclProfileSettingsProvider(
           browser_state->GetPrefs())),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
@@ -77,7 +79,7 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
   service->Init(
       make_scoped_ptr(new InvalidatorStorage(browser_state->GetPrefs())));
 
-  return make_scoped_ptr(new ProfileInvalidationProvider(service.Pass()));
+  return make_scoped_ptr(new ProfileInvalidationProvider(std::move(service)));
 }
 
 void IOSChromeProfileInvalidationProviderFactory::RegisterBrowserStatePrefs(

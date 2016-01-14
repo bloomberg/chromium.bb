@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/passwords/credential_manager.h"
 
+#include <utility>
+
 #include "base/ios/ios_util.h"
 #import "base/ios/weak_nsobject.h"
 #include "base/mac/bind_objc_block.h"
@@ -302,7 +304,7 @@ void CredentialManager::OnProvisionalSaveComplete() {
   if (client_->IsSavingAndFillingEnabledForCurrentPage() &&
       !form_manager_->IsBlacklisted()) {
     client_->PromptUserToSaveOrUpdatePassword(
-        form_manager_.Pass(),
+        std::move(form_manager_),
         password_manager::CredentialSourceType::CREDENTIAL_SOURCE_API, false);
   }
 }

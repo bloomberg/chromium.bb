@@ -45,5 +45,5 @@ CreateIOSChromeDataReductionProxyIOData(
       data_reduction_proxy::DataReductionProxyConfigRetrievalParams::Create(
           prefs));
 
-  return data_reduction_proxy_io_data.Pass();
+  return data_reduction_proxy_io_data;
 }

@@ -6,6 +6,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include <utility>
+
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
@@ -107,7 +109,7 @@ void DistillerPageIOS::HandleJavaScriptResultString(NSString* result) {
         base::JSONReader::Read(base::SysNSStringToUTF8(result));
     if (dictionaryValue &&
         dictionaryValue->IsType(base::Value::TYPE_DICTIONARY)) {
-      resultValue = dictionaryValue.Pass();
+      resultValue = std::move(dictionaryValue);
     }
   }
   OnDistillationDone(url_, resultValue.get());

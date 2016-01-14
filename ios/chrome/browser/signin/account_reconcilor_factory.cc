@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_reconcilor.h"
@@ -50,7 +52,7 @@ scoped_ptr<KeyedService> AccountReconcilorFactory::BuildServiceInstanceFor(
       GaiaCookieManagerServiceFactory::GetForBrowserState(
           chrome_browser_state)));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
-  return reconcilor.Pass();
+  return std::move(reconcilor);
 }
 
 }  // namespace ios

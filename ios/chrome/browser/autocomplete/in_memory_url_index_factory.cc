@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/autocomplete/in_memory_url_index_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "base/prefs/pref_service.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -39,7 +41,7 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(web::BrowserState* context) {
       browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
       schemes_to_whilelist));
   in_memory_url_index->Init();
-  return in_memory_url_index.Pass();
+  return std::move(in_memory_url_index);
 }
 
 }  // namespace

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/net/proxy_service_factory.h"
 
+#include <utility>
+
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "ios/web/public/web_thread.h"
 #include "net/proxy/proxy_config_service.h"
@@ -18,7 +20,7 @@ ProxyServiceFactory::CreateProxyConfigService(PrefProxyConfigTracker* tracker) {
       net::ProxyService::CreateSystemProxyConfigService(
           web::WebThread::GetTaskRunnerForThread(web::WebThread::IO),
           web::WebThread::GetTaskRunnerForThread(web::WebThread::FILE)));
-  return tracker->CreateTrackingProxyConfigService(base_service.Pass()).Pass();
+  return tracker->CreateTrackingProxyConfigService(std::move(base_service));
 }
 
 // static
@@ -50,9 +52,9 @@ scoped_ptr<net::ProxyService> ProxyServiceFactory::CreateProxyService(
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::IO);
   scoped_ptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateUsingSystemProxyResolver(
-          proxy_config_service.Pass(), 0, net_log));
+          std::move(proxy_config_service), 0, net_log));
   proxy_service->set_quick_check_enabled(quick_check_enabled);
-  return proxy_service.Pass();
+  return proxy_service;
 }
 
 }  // namespace ios

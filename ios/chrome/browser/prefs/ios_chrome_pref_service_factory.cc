@@ -68,7 +68,7 @@ scoped_ptr<syncable_prefs::PrefServiceSyncable> CreateBrowserStatePrefs(
   scoped_ptr<syncable_prefs::PrefServiceSyncable> pref_service =
       factory.CreateSyncable(pref_registry.get());
   ConfigureDefaultSearchPrefMigrationToDictionaryValue(pref_service.get());
-  return pref_service.Pass();
+  return pref_service;
 }
 
 scoped_ptr<syncable_prefs::PrefServiceSyncable>

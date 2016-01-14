@@ -6,6 +6,8 @@
 
 #import <UIKit/UIkit.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -88,7 +90,7 @@ OffTheRecordChromeBrowserStateIOData::Handle::~Handle() {
   CFNotificationCenterRemoveObserver(CFNotificationCenterGetLocalCenter(), this,
                                      nullptr, nullptr);
 
-  io_data_->ShutdownOnUIThread(GetAllContextGetters().Pass());
+  io_data_->ShutdownOnUIThread(GetAllContextGetters());
 }
 
 scoped_refptr<IOSChromeURLRequestContextGetter>
@@ -136,7 +138,7 @@ OffTheRecordChromeBrowserStateIOData::Handle::GetAllContextGetters() {
   if (main_request_context_getter_.get())
     context_getters->push_back(main_request_context_getter_);
 
-  return context_getters.Pass();
+  return context_getters;
 }
 
 OffTheRecordChromeBrowserStateIOData::OffTheRecordChromeBrowserStateIOData()
@@ -162,7 +164,7 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
 
   main_context->set_network_delegate(chrome_network_delegate.get());
 
-  network_delegate_ = chrome_network_delegate.Pass();
+  network_delegate_ = std::move(chrome_network_delegate);
 
   main_context->set_host_resolver(io_thread_globals->host_resolver.get());
   main_context->set_http_auth_handler_factory(
@@ -211,8 +213,8 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
 
   InstallProtocolHandlers(main_job_factory.get(), protocol_handlers);
   URLRequestInterceptorScopedVector empty_interceptors;
-  main_job_factory_ = SetUpJobFactoryDefaults(main_job_factory.Pass(),
-                                              empty_interceptors.Pass(),
+  main_job_factory_ = SetUpJobFactoryDefaults(std::move(main_job_factory),
+                                              std::move(empty_interceptors),
                                               main_context->network_delegate());
   main_context->set_job_factory(main_job_factory_.get());
 

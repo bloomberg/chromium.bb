@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/web_resource/web_resource_util.h"
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -34,7 +35,7 @@ class WebResourceUtilTest : public testing::Test {
   // Called on success.
   void OnParseSuccess(scoped_ptr<base::Value> value) {
     success_called_ = true;
-    value_ = value.Pass();
+    value_ = std::move(value);
   }
 
   // Called on error.

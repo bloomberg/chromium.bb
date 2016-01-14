@@ -76,7 +76,7 @@ class DefaultClientSocketFactory : public ClientSocketFactory,
         std::move(transport_socket), host_and_port, ssl_config, context));
 #else
     return scoped_ptr<SSLClientSocket>(new SSLClientSocketNSS(
-        transport_socket.Pass(), host_and_port, ssl_config, context));
+        std::move(transport_socket), host_and_port, ssl_config, context));
 #endif
   }
 

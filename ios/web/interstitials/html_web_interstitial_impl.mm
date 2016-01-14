@@ -4,6 +4,8 @@
 
 #import "ios/web/interstitials/html_web_interstitial_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/web/interstitials/web_interstitial_facade_delegate.h"
@@ -67,7 +69,7 @@ WebInterstitial* WebInterstitial::CreateHtmlInterstitial(
     scoped_ptr<HtmlWebInterstitialDelegate> delegate) {
   WebStateImpl* web_state_impl = static_cast<WebStateImpl*>(web_state);
   return new HtmlWebInterstitialImpl(web_state_impl, new_navigation, url,
-                                     delegate.Pass());
+                                     std::move(delegate));
 }
 
 HtmlWebInterstitialImpl::HtmlWebInterstitialImpl(
@@ -76,7 +78,7 @@ HtmlWebInterstitialImpl::HtmlWebInterstitialImpl(
     const GURL& url,
     scoped_ptr<HtmlWebInterstitialDelegate> delegate)
     : WebInterstitialImpl(web_state, new_navigation, url),
-      delegate_(delegate.Pass()) {
+      delegate_(std::move(delegate)) {
   DCHECK(delegate_);
 }
 

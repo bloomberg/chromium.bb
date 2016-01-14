@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -148,13 +149,13 @@ scoped_ptr<net::HostResolver> CreateGlobalHostResolver(net::NetLog* net_log) {
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
   if (!command_line.HasSwitch(switches::kIOSHostResolverRules))
-    return global_host_resolver.Pass();
+    return global_host_resolver;
 
   scoped_ptr<net::MappedHostResolver> remapped_resolver(
-      new net::MappedHostResolver(global_host_resolver.Pass()));
+      new net::MappedHostResolver(std::move(global_host_resolver)));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kIOSHostResolverRules));
-  return remapped_resolver.Pass();
+  return std::move(remapped_resolver);
 }
 
 int GetSwitchValueAsInt(const base::CommandLine& command_line,
@@ -382,7 +383,7 @@ void IOSChromeIOThread::Init() {
   scoped_ptr<IOSChromeNetworkDelegate> chrome_network_delegate(
       new IOSChromeNetworkDelegate());
 
-  globals_->system_network_delegate = chrome_network_delegate.Pass();
+  globals_->system_network_delegate = std::move(chrome_network_delegate);
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
   std::map<std::string, std::string> network_quality_estimator_params;
@@ -392,7 +393,7 @@ void IOSChromeIOThread::Init() {
   scoped_ptr<net::ExternalEstimateProvider> external_estimate_provider;
   // Pass ownership.
   globals_->network_quality_estimator.reset(new net::NetworkQualityEstimator(
-      external_estimate_provider.Pass(), network_quality_estimator_params));
+      std::move(external_estimate_provider), network_quality_estimator_params));
 
   globals_->cert_verifier.reset(
       new net::MultiThreadedCertVerifier(net::CertVerifyProc::CreateDefault()));
@@ -574,8 +575,7 @@ void IOSChromeIOThread::CreateDefaultAuthHandlerFactory() {
       new net::HttpAuthPreferences(supported_schemes, std::string()));
   globals_->http_auth_handler_factory =
       net::HttpAuthHandlerRegistryFactory::Create(
-          globals_->http_auth_preferences.get(), globals_->host_resolver.get())
-          .Pass();
+          globals_->http_auth_preferences.get(), globals_->host_resolver.get());
 }
 
 void IOSChromeIOThread::ClearHostCache() {
@@ -692,7 +692,7 @@ void IOSChromeIOThread::InitSystemRequestContextOnIOThread() {
 
   globals_->system_proxy_service = ios::ProxyServiceFactory::CreateProxyService(
       net_log_, nullptr, globals_->system_network_delegate.get(),
-      system_proxy_config_service_.Pass(), true /* quick_check_enabled */);
+      std::move(system_proxy_config_service_), true /* quick_check_enabled */);
 
   globals_->system_request_context.reset(
       ConstructSystemRequestContext(globals_, net_log_));

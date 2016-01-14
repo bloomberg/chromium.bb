@@ -4,6 +4,8 @@
 
 #include "ios/net/http_cache_helper.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -67,7 +69,7 @@ void ClearHttpCacheOnIOThread(
   scoped_ptr<disk_cache::Backend*> backend(new disk_cache::Backend*(nullptr));
   disk_cache::Backend** backend_ptr = backend.get();
   net::CompletionCallback doom_callback =
-      base::Bind(&DoomHttpCache, base::Passed(backend.Pass()),
+      base::Bind(&DoomHttpCache, base::Passed(std::move(backend)),
                  client_task_runner, callback);
 
   int rv = http_cache->GetBackend(backend_ptr, doom_callback);

@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
@@ -81,7 +83,7 @@ IOSChromePasswordStoreFactory::BuildServiceInstanceFor(
 
   scoped_refptr<password_manager::PasswordStore> store =
       new password_manager::PasswordStoreDefault(
-          main_thread_runner, db_thread_runner, login_db.Pass());
+          main_thread_runner, db_thread_runner, std::move(login_db));
   if (!store->Init(ios::sync_start_util::GetFlareForSyncableService(
           context->GetStatePath()))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the

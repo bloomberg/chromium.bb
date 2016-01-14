@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/autofill/autofill_client_ios.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "components/autofill/core/browser/autofill_cc_infobar_delegate.h"
@@ -31,7 +33,7 @@ AutofillClientIOS::AutofillClientIOS(
       infobar_manager_(infobar_manager),
       bridge_(bridge),
       password_generation_manager_(password_generation_manager),
-      identity_provider_(identity_provider.Pass()),
+      identity_provider_(std::move(identity_provider)),
       unmask_controller_(browser_state->GetPrefs(),
                          browser_state->IsOffTheRecord()) {}
 

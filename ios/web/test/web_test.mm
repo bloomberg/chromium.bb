@@ -4,6 +4,8 @@
 
 #import "ios/web/test/web_test.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
@@ -263,7 +265,7 @@ NSString* WebTestWithWebController::CreateLoadCheck() {
 
 CRWWebController* WebTestWithUIWebViewWebController::CreateWebController() {
   scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
-  return [[TestWebController alloc] initWithWebState:web_state_impl.Pass()];
+  return [[TestWebController alloc] initWithWebState:std::move(web_state_impl)];
 }
 
 void WebTestWithUIWebViewWebController::LoadCommands(NSString* commands,
@@ -279,8 +281,8 @@ void WebTestWithUIWebViewWebController::LoadCommands(NSString* commands,
 
 CRWWebController* WebTestWithWKWebViewWebController::CreateWebController() {
   scoped_ptr<WebStateImpl> web_state_impl(new WebStateImpl(GetBrowserState()));
-  return [[CRWWKWebViewWebController alloc] initWithWebState:
-      web_state_impl.Pass()];
+  return [[CRWWKWebViewWebController alloc]
+      initWithWebState:std::move(web_state_impl)];
 }
 
 }  // namespace web

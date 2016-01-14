@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/profile_policy_connector.h"
+#include <utility>
 
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "components/policy/core/common/policy_service_stub.h"
 
 namespace policy {
@@ -19,7 +20,7 @@ void ProfilePolicyConnector::Init(
 }
 
 void ProfilePolicyConnector::InitForTesting(scoped_ptr<PolicyService> service) {
-  policy_service_ = service.Pass();
+  policy_service_ = std::move(service);
 }
 
 void ProfilePolicyConnector::Shutdown() {}

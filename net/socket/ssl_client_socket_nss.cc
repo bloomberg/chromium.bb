@@ -63,6 +63,7 @@
 #include <algorithm>
 #include <limits>
 #include <map>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -2359,7 +2360,7 @@ SSLClientSocketNSS::SSLClientSocketNSS(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
-    : transport_(transport_socket.Pass()),
+    : transport_(std::move(transport_socket)),
       host_and_port_(host_and_port),
       ssl_config_(ssl_config),
       cert_verifier_(context.cert_verifier),

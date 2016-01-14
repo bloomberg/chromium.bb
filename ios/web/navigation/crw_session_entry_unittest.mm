@@ -2,13 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/web/navigation/crw_session_entry.h"
+
 #import <Foundation/Foundation.h>
 #include <stdint.h>
+
+#include <utility>
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/navigation/crw_session_entry.h"
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/public/referrer.h"
 #import "net/base/mac/url_conversions.h"
@@ -42,7 +45,7 @@ class CRWSessionEntryTest : public PlatformTest {
     item->SetTimestamp(base::Time::Now());
     item->SetPostData([@"Test data" dataUsingEncoding:NSUTF8StringEncoding]);
     sessionEntry_.reset(
-        [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
+        [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
   }
   void TearDown() override { sessionEntry_.reset(); }
 

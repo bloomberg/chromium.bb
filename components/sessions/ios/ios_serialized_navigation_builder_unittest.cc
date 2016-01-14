@@ -28,7 +28,7 @@ scoped_ptr<web::NavigationItem> MakeNavigationItemForTest() {
   navigation_item->SetTimestamp(test_data::kTimestamp);
   navigation_item->GetFavicon().valid = true;
   navigation_item->GetFavicon().url = test_data::kFaviconURL;
-  return navigation_item.Pass();
+  return navigation_item;
 }
 
 }  // namespace

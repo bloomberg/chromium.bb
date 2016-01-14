@@ -54,5 +54,5 @@ scoped_ptr<favicon_base::LargeIconResult> LargeIconCache::CloneLargeIconResult(
         new favicon_base::LargeIconResult(new favicon_base::FallbackIconStyle(
             *large_icon_result.fallback_icon_style.get())));
   }
-  return clone.Pass();
+  return clone;
 }

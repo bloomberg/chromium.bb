@@ -4,6 +4,7 @@
 
 #include "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/logging.h"
@@ -61,7 +62,7 @@ scoped_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
     scoped_ptr<translate::TranslateInfoBarDelegate> delegate) const {
   translate::TranslateStep step = delegate->translate_step();
 
-  scoped_ptr<InfoBarIOS> infobar(new InfoBarIOS(delegate.Pass()));
+  scoped_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
   base::scoped_nsobject<InfoBarController> controller;
   switch (step) {
     case translate::TRANSLATE_STEP_AFTER_TRANSLATE:
@@ -85,7 +86,7 @@ scoped_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
       NOTREACHED();
   }
   infobar->SetController(controller);
-  return infobar.Pass();
+  return std::move(infobar);
 }
 
 void ChromeIOSTranslateClient::ShowTranslateUI(

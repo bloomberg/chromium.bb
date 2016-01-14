@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/mac/objc_property_releaser.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
@@ -126,7 +128,8 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
   webState->GetNavigationManagerImpl().InitializeSession(nil, nil, NO, 0);
   web::WebViewType webViewType =
       UseWKWebView() ? web::WK_WEB_VIEW_TYPE : web::UI_WEB_VIEW_TYPE;
-  _webController.reset(web::CreateWebController(webViewType, webState.Pass()));
+  _webController.reset(
+      web::CreateWebController(webViewType, std::move(webState)));
   [_webController setDelegate:self];
   [_webController setUIDelegate:self];
   [_webController setWebUsageEnabled:YES];

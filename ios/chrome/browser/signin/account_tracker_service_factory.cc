@@ -4,6 +4,8 @@
 
 #include "ios/chrome/browser/signin/account_tracker_service_factory.h"
 
+#include <utility>
+
 #include "base/memory/singleton.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/signin/core/browser/account_tracker_service.h"
@@ -45,7 +47,7 @@ scoped_ptr<KeyedService> AccountTrackerServiceFactory::BuildServiceInstanceFor(
   scoped_ptr<AccountTrackerService> service(new AccountTrackerService());
   service->Initialize(
       SigninClientFactory::GetForBrowserState(chrome_browser_state));
-  return service.Pass();
+  return std::move(service);
 }
 
 }  // namespace ios

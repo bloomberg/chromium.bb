@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/dom_distiller/distiller_viewer.h"
 
 #include <string>
+#include <utility>
 
 #include "components/dom_distiller/core/distilled_page_prefs.h"
 #include "components/dom_distiller/core/dom_distiller_request_view_base.h"
@@ -34,7 +35,7 @@ DistillerViewer::DistillerViewer(ios::ChromeBrowserState* browser_state,
   scoped_ptr<ViewerHandle> viewer_handle = distillerService->ViewUrl(
       this, distillerService->CreateDefaultDistillerPage(gfx::Size()), url);
 
-  TakeViewerHandle(viewer_handle.Pass());
+  TakeViewerHandle(std::move(viewer_handle));
 }
 
 DistillerViewer::~DistillerViewer() {

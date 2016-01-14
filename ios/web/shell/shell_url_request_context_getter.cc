@@ -4,6 +4,8 @@
 
 #include "ios/web/shell/shell_url_request_context_getter.h"
 
+#include <utility>
+
 #include "base/base_paths.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
@@ -87,7 +89,8 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         new net::StaticHttpUserAgentSettings("en-us,en", user_agent)));
     storage_->set_proxy_service(
         net::ProxyService::CreateUsingSystemProxyResolver(
-            proxy_config_service_.Pass(), 0, url_request_context_->net_log()));
+            std::move(proxy_config_service_), 0,
+            url_request_context_->net_log()));
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
 
@@ -107,7 +110,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
             url_request_context_->net_log()));
     storage_->set_http_auth_handler_factory(
         net::HttpAuthHandlerFactory::CreateDefault(host_resolver.get()));
-    storage_->set_host_resolver(host_resolver.Pass());
+    storage_->set_host_resolver(std::move(host_resolver));
 
     net::HttpNetworkSession::Params network_session_params;
     network_session_params.cert_verifier =
@@ -137,10 +140,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
 
     storage_->set_http_network_session(
         make_scoped_ptr(new net::HttpNetworkSession(network_session_params)));
-    storage_->set_http_transaction_factory(make_scoped_ptr(
-        new net::HttpCache(storage_->http_network_session(),
-                           main_backend.Pass(),
-                           true /* set_up_quic_server_info */)));
+    storage_->set_http_transaction_factory(make_scoped_ptr(new net::HttpCache(
+        storage_->http_network_session(), std::move(main_backend),
+        true /* set_up_quic_server_info */)));
 
     scoped_ptr<net::URLRequestJobFactoryImpl> job_factory(
         new net::URLRequestJobFactoryImpl());
@@ -148,7 +150,7 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
         "data", make_scoped_ptr(new net::DataProtocolHandler));
     DCHECK(set_protocol);
 
-    storage_->set_job_factory(job_factory.Pass());
+    storage_->set_job_factory(std::move(job_factory));
   }
 
   return url_request_context_.get();

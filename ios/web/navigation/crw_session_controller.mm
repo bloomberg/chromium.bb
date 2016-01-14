@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/format_macros.h"
@@ -189,7 +190,7 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
     for (size_t i = 0; i < items.size(); ++i) {
       scoped_ptr<web::NavigationItem> item(items[i]);
       base::scoped_nsobject<CRWSessionEntry> entry(
-          [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()]);
+          [[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]);
       [_entries addObject:entry];
     }
     self.currentNavigationIndex = currentIndex;
@@ -889,8 +890,8 @@ NSString* const kXCallbackParametersKey = @"xCallbackParameters";
   item->SetTransitionType(transition);
   item->SetIsOverridingUserAgent(useDesktopUserAgent);
   item->set_is_renderer_initiated(rendererInitiated);
-  return [
-      [[CRWSessionEntry alloc] initWithNavigationItem:item.Pass()] autorelease];
+  return [[[CRWSessionEntry alloc] initWithNavigationItem:std::move(item)]
+      autorelease];
 }
 
 @end

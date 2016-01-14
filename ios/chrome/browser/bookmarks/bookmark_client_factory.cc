@@ -49,7 +49,7 @@ BookmarkClientFactory::~BookmarkClientFactory() {}
 
 scoped_ptr<KeyedService> BookmarkClientFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  return BuildBookmarkClientImpl(context).Pass();
+  return BuildBookmarkClientImpl(context);
 }
 
 web::BrowserState* BookmarkClientFactory::GetBrowserStateToUse(

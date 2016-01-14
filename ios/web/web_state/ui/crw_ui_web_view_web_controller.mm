@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #import "base/ios/ios_util.h"
 #import "base/ios/ns_error_util.h"
 #import "base/ios/weak_nsobject.h"
@@ -328,7 +330,7 @@ const size_t kMaxMessageQueueSize = 262144;
 @implementation CRWUIWebViewWebController
 
 - (instancetype)initWithWebState:(scoped_ptr<web::WebStateImpl>)webState {
-  self = [super initWithWebState:webState.Pass()];
+  self = [super initWithWebState:std::move(webState)];
   if (self) {
     _jsInvokeParameterQueue.reset([[CRWJSInvokeParameterQueue alloc] init]);
 

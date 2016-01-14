@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <limits>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -173,10 +174,7 @@ void DeleteFileInFlightIO() {
 namespace disk_cache {
 
 File::File(base::File file)
-    : init_(true),
-      mixed_(true),
-      base_file_(file.Pass()) {
-}
+    : init_(true), mixed_(true), base_file_(std::move(file)) {}
 
 bool File::Init(const base::FilePath& name) {
   if (base_file_.IsValid())

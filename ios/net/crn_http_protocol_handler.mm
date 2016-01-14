@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <utility>
 #include <vector>
 
 #include "base/command_line.h"
@@ -724,7 +725,7 @@ void HttpProtocolHandlerCore::Start(id<CRNNetworkClientProtocol> base_client) {
     scoped_ptr<UploadElementReader> reader(
         new UploadOwnedBytesElementReader(&owned_data));
     net_request_->set_upload(
-        ElementsUploadDataStream::CreateWithReader(reader.Pass(), 0));
+        ElementsUploadDataStream::CreateWithReader(std::move(reader), 0));
   }
 
   net_request_->Start();
