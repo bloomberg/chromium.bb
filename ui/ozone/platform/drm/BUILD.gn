@@ -98,6 +98,8 @@ source_set("gbm") {
     "host/drm_display_host.h",
     "host/drm_display_host_manager.cc",
     "host/drm_display_host_manager.h",
+    "host/drm_display_host_manager_core.cc",
+    "host/drm_display_host_manager_core.h",
     "host/drm_gpu_platform_support_host.cc",
     "host/drm_gpu_platform_support_host.h",
     "host/drm_native_display_delegate.cc",
