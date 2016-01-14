@@ -95,9 +95,6 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Called when the IME is disabled.
   virtual void Disable() = 0;
 
-  // Called when a property is activated or changed.
-  virtual void PropertyActivate(const std::string& property_name) = 0;
-
   // Called when the IME is reset.
   virtual void Reset() = 0;
 
@@ -233,6 +230,9 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
     bool is_auxiliary_text_visible;
   };
 
+  // Called when a property is activated or changed.
+  virtual void PropertyActivate(const std::string& property_name) = 0;
+
   // Called when the candidate in lookup table is clicked. The |index| is 0
   // based candidate index in lookup table.
   virtual void CandidateClicked(uint32_t index) = 0;
@@ -270,7 +270,7 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
   // Hides the input view window (from API call).
   virtual void HideInputView() = 0;
 
-#endif
+#endif  // defined(OS_CHROMEOS)
 
  protected:
   IMEEngineHandlerInterface() {}

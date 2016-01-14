@@ -48,236 +48,12 @@ const char kErrorNotActive[] = "IME is not active";
 const char kErrorWrongContext[] = "Context is not active";
 const char kCandidateNotFound[] = "Candidate not found";
 
-// Notifies InputContextHandler that the composition is changed.
-void UpdateComposition(const ui::CompositionText& composition_text,
-                       uint32_t cursor_pos,
-                       bool is_visible) {
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->UpdateCompositionText(composition_text, cursor_pos,
-                                         is_visible);
-}
-
-// Returns the length of characters of a UTF-8 string with unknown string
-// length. Cannot apply faster algorithm to count characters in an utf-8
-// string without knowing the string length,  so just does a full scan.
-size_t GetUtf8StringLength(const char* s) {
-  size_t ret = 0;
-  while (*s) {
-    if ((*s & 0xC0) != 0x80)
-      ret++;
-    ++s;
-  }
-  return ret;
-}
-
-std::string GetKeyFromEvent(const ui::KeyEvent& event) {
-  const std::string code = event.GetCodeString();
-  if (base::StartsWith(code, "Control", base::CompareCase::SENSITIVE))
-    return "Ctrl";
-  if (base::StartsWith(code, "Shift", base::CompareCase::SENSITIVE))
-    return "Shift";
-  if (base::StartsWith(code, "Alt", base::CompareCase::SENSITIVE))
-    return "Alt";
-  if (base::StartsWith(code, "Arrow", base::CompareCase::SENSITIVE))
-    return code.substr(5);
-  if (code == "Escape")
-    return "Esc";
-  if (code == "Backspace" || code == "Tab" || code == "Enter" ||
-      code == "CapsLock" || code == "Power")
-    return code;
-  // Cases for media keys.
-  switch (event.key_code()) {
-    case ui::VKEY_BROWSER_BACK:
-    case ui::VKEY_F1:
-      return "HistoryBack";
-    case ui::VKEY_BROWSER_FORWARD:
-    case ui::VKEY_F2:
-      return "HistoryForward";
-    case ui::VKEY_BROWSER_REFRESH:
-    case ui::VKEY_F3:
-      return "BrowserRefresh";
-    case ui::VKEY_MEDIA_LAUNCH_APP2:
-    case ui::VKEY_F4:
-      return "ChromeOSFullscreen";
-    case ui::VKEY_MEDIA_LAUNCH_APP1:
-    case ui::VKEY_F5:
-      return "ChromeOSSwitchWindow";
-    case ui::VKEY_BRIGHTNESS_DOWN:
-    case ui::VKEY_F6:
-      return "BrightnessDown";
-    case ui::VKEY_BRIGHTNESS_UP:
-    case ui::VKEY_F7:
-      return "BrightnessUp";
-    case ui::VKEY_VOLUME_MUTE:
-    case ui::VKEY_F8:
-      return "AudioVolumeMute";
-    case ui::VKEY_VOLUME_DOWN:
-    case ui::VKEY_F9:
-      return "AudioVolumeDown";
-    case ui::VKEY_VOLUME_UP:
-    case ui::VKEY_F10:
-      return "AudioVolumeUp";
-    default:
-      break;
-  }
-  uint16_t ch = 0;
-  // Ctrl+? cases, gets key value for Ctrl is not down.
-  if (event.flags() & ui::EF_CONTROL_DOWN) {
-    ui::KeyEvent event_no_ctrl(event.type(), event.key_code(),
-                               event.flags() ^ ui::EF_CONTROL_DOWN);
-    ch = event_no_ctrl.GetCharacter();
-  } else {
-    ch = event.GetCharacter();
-  }
-  return base::UTF16ToUTF8(base::string16(1, ch));
-}
-
-void GetExtensionKeyboardEventFromKeyEvent(
-    const ui::KeyEvent& event,
-    InputMethodEngine::KeyboardEvent* ext_event) {
-  DCHECK(event.type() == ui::ET_KEY_RELEASED ||
-         event.type() == ui::ET_KEY_PRESSED);
-  DCHECK(ext_event);
-  ext_event->type = (event.type() == ui::ET_KEY_RELEASED) ? "keyup" : "keydown";
-
-  if (event.code() == ui::DomCode::NONE)
-    ext_event->code = ui::KeyboardCodeToDomKeycode(event.key_code());
-  else
-    ext_event->code = event.GetCodeString();
-  ext_event->key_code = static_cast<int>(event.key_code());
-  ext_event->alt_key = event.IsAltDown();
-  ext_event->ctrl_key = event.IsControlDown();
-  ext_event->shift_key = event.IsShiftDown();
-  ext_event->caps_lock = event.IsCapsLockOn();
-  ext_event->key = GetKeyFromEvent(event);
-}
-
 }  // namespace
 
 InputMethodEngine::InputMethodEngine()
-    : current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
-      context_id_(0),
-      next_context_id_(1),
-      composition_text_(new ui::CompositionText()),
-      composition_cursor_(0),
-      candidate_window_(new ui::CandidateWindow()),
-      window_visible_(false),
-      sent_key_event_(NULL),
-      profile_(NULL) {}
+    : candidate_window_(new ui::CandidateWindow()), window_visible_(false) {}
 
 InputMethodEngine::~InputMethodEngine() {}
-
-void InputMethodEngine::Initialize(scoped_ptr<ui::IMEEngineObserver> observer,
-                                   const char* extension_id,
-                                   Profile* profile) {
-  DCHECK(observer) << "Observer must not be null.";
-
-  // TODO(komatsu): It is probably better to set observer out of Initialize.
-  observer_ = std::move(observer);
-  extension_id_ = extension_id;
-  profile_ = profile;
-}
-
-const std::string& InputMethodEngine::GetActiveComponentId() const {
-  return active_component_id_;
-}
-
-bool InputMethodEngine::SetComposition(
-    int context_id,
-    const char* text,
-    int selection_start,
-    int selection_end,
-    int cursor,
-    const std::vector<SegmentInfo>& segments,
-    std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  composition_cursor_ = cursor;
-  composition_text_.reset(new ui::CompositionText());
-  composition_text_->text = base::UTF8ToUTF16(text);
-
-  composition_text_->selection.set_start(selection_start);
-  composition_text_->selection.set_end(selection_end);
-
-  // TODO: Add support for displaying selected text in the composition string.
-  for (std::vector<SegmentInfo>::const_iterator segment = segments.begin();
-       segment != segments.end(); ++segment) {
-    ui::CompositionUnderline underline;
-
-    switch (segment->style) {
-      case SEGMENT_STYLE_UNDERLINE:
-        underline.color = SK_ColorBLACK;
-        break;
-      case SEGMENT_STYLE_DOUBLE_UNDERLINE:
-        underline.color = SK_ColorBLACK;
-        underline.thick = true;
-        break;
-      case SEGMENT_STYLE_NO_UNDERLINE:
-        underline.color = SK_ColorTRANSPARENT;
-        break;
-      default:
-        continue;
-    }
-
-    underline.start_offset = segment->start;
-    underline.end_offset = segment->end;
-    composition_text_->underlines.push_back(underline);
-  }
-
-  // TODO(nona): Makes focus out mode configuable, if necessary.
-  UpdateComposition(*composition_text_, composition_cursor_, true);
-  return true;
-}
-
-bool InputMethodEngine::ClearComposition(int context_id, std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  composition_cursor_ = 0;
-  composition_text_.reset(new ui::CompositionText());
-  UpdateComposition(*composition_text_, composition_cursor_, false);
-  return true;
-}
-
-bool InputMethodEngine::CommitText(int context_id,
-                                   const char* text,
-                                   std::string* error) {
-  if (!IsActive()) {
-    // TODO: Commit the text anyways.
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(text);
-
-  // Records histograms for committed characters.
-  if (!composition_text_->text.empty()) {
-    size_t len = GetUtf8StringLength(text);
-    UMA_HISTOGRAM_CUSTOM_COUNTS("InputMethod.CommitLength",
-                                len, 1, 25, 25);
-    composition_text_.reset(new ui::CompositionText());
-  }
-  return true;
-}
 
 bool InputMethodEngine::SendKeyEvents(
     int context_id,
@@ -463,29 +239,6 @@ bool InputMethodEngine::IsActive() const {
   return !active_component_id_.empty();
 }
 
-bool InputMethodEngine::DeleteSurroundingText(int context_id,
-                                              int offset,
-                                              size_t number_of_chars,
-                                              std::string* error) {
-  if (!IsActive()) {
-    *error = kErrorNotActive;
-    return false;
-  }
-  if (context_id != context_id_ || context_id_ == -1) {
-    *error = kErrorWrongContext;
-    return false;
-  }
-
-  // TODO(nona): Return false if there is ongoing composition.
-
-  ui::IMEInputContextHandlerInterface* input_context =
-      ui::IMEBridge::Get()->GetInputContextHandler();
-  if (input_context)
-    input_context->DeleteSurroundingText(offset, number_of_chars);
-
-  return true;
-}
-
 void InputMethodEngine::HideInputView() {
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
@@ -493,13 +246,6 @@ void InputMethodEngine::HideInputView() {
     keyboard_controller->HideKeyboard(
         keyboard::KeyboardController::HIDE_REASON_MANUAL);
   }
-}
-
-void InputMethodEngine::SetCompositionBounds(
-    const std::vector<gfx::Rect>& bounds) {
-  if (!CheckProfile())
-    return;
-  observer_->OnCompositionBoundsChanged(bounds);
 }
 
 void InputMethodEngine::EnableInputView() {
@@ -513,97 +259,17 @@ void InputMethodEngine::EnableInputView() {
     keyboard_controller->Reload();
 }
 
-void InputMethodEngine::FocusIn(
-    const ui::IMEEngineHandlerInterface::InputContext& input_context) {
-  if (!CheckProfile())
-    return;
-  current_input_type_ = input_context.type;
-
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  context_id_ = next_context_id_;
-  ++next_context_id_;
-
-  observer_->OnFocus(ui::IMEEngineHandlerInterface::InputContext(
-      context_id_, input_context.type, input_context.mode,
-      input_context.flags));
-}
-
-void InputMethodEngine::FocusOut() {
-  if (!CheckProfile())
-    return;
-  if (!IsActive() || current_input_type_ == ui::TEXT_INPUT_TYPE_NONE)
-    return;
-
-  current_input_type_ = ui::TEXT_INPUT_TYPE_NONE;
-
-  int context_id = context_id_;
-  context_id_ = -1;
-  observer_->OnBlur(context_id);
-}
 
 void InputMethodEngine::Enable(const std::string& component_id) {
-  if (!CheckProfile())
-    return;
-  DCHECK(!component_id.empty());
-  active_component_id_ = component_id;
-  observer_->OnActivate(component_id);
-  const ui::IMEEngineHandlerInterface::InputContext& input_context =
-      ui::IMEBridge::Get()->GetCurrentInputContext();
-  current_input_type_ = input_context.type;
-  FocusIn(input_context);
+  InputMethodEngineBase::Enable(component_id);
   EnableInputView();
 }
 
-void InputMethodEngine::Disable() {
-  if (!CheckProfile())
-    return;
-  active_component_id_.clear();
-  ui::IMEBridge::Get()->GetInputContextHandler()->CommitText(
-      base::UTF16ToUTF8(composition_text_->text));
-  composition_text_.reset(new ui::CompositionText());
-  observer_->OnDeactivated(active_component_id_);
-}
-
 void InputMethodEngine::PropertyActivate(const std::string& property_name) {
-  if (!CheckProfile())
-    return;
   observer_->OnMenuItemActivated(active_component_id_, property_name);
 }
 
-void InputMethodEngine::Reset() {
-  if (!CheckProfile())
-    return;
-  composition_text_.reset(new ui::CompositionText());
-  observer_->OnReset(active_component_id_);
-}
-
-bool InputMethodEngine::IsInterestedInKeyEvent() const {
-  return observer_->IsInterestedInKeyEvent();
-}
-
-void InputMethodEngine::ProcessKeyEvent(const ui::KeyEvent& key_event,
-                                        KeyEventDoneCallback& callback) {
-  if (!CheckProfile())
-    return;
-
-  KeyboardEvent ext_event;
-  GetExtensionKeyboardEventFromKeyEvent(key_event, &ext_event);
-
-  // If the given key event is equal to the key event sent by
-  // SendKeyEvents, this engine ID is propagated to the extension IME.
-  // Note, this check relies on that ui::KeyEvent is propagated as
-  // reference without copying.
-  if (&key_event == sent_key_event_)
-    ext_event.extension_id = extension_id_;
-
-  observer_->OnKeyEvent(active_component_id_, ext_event, callback);
-}
-
 void InputMethodEngine::CandidateClicked(uint32_t index) {
-  if (!CheckProfile())
-    return;
   if (index > candidate_ids_.size()) {
     return;
   }
@@ -611,22 +277,6 @@ void InputMethodEngine::CandidateClicked(uint32_t index) {
   // Only left button click is supported at this moment.
   observer_->OnCandidateClicked(active_component_id_, candidate_ids_.at(index),
                                 ui::IMEEngineObserver::MOUSE_BUTTON_LEFT);
-}
-
-void InputMethodEngine::SetSurroundingText(const std::string& text,
-                                           uint32_t cursor_pos,
-                                           uint32_t anchor_pos,
-                                           uint32_t offset_pos) {
-  if (!CheckProfile())
-    return;
-  observer_->OnSurroundingTextChanged(
-      active_component_id_, text, static_cast<int>(cursor_pos),
-      static_cast<int>(anchor_pos), static_cast<int>(offset_pos));
-}
-
-bool InputMethodEngine::CheckProfile() const {
-  Profile* active_profile = ProfileManager::GetActiveUserProfile();
-  return active_profile == profile_ || profile_->IsSameProfile(active_profile);
 }
 
 // TODO(uekawa): rename this method to a more reasonable name.
