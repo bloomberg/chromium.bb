@@ -38,7 +38,7 @@ static inline bool isValidRange(const FloatType& x)
 // at a higher precision internally, without any unnecessary runtime cost or code
 // complexity.
 template <typename CharType, typename FloatType>
-static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatType& number, WhitespaceMode mode)
+static bool genericParseNumber(const CharType*& cursor, const CharType* end, FloatType& number, WhitespaceMode mode)
 {
     FloatType integer, decimal, frac, exponent;
     int sign, expsign;
@@ -51,8 +51,9 @@ static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatT
     expsign = 1;
 
     if (mode & AllowLeadingWhitespace)
-        skipOptionalSVGSpaces(ptr, end);
+        skipOptionalSVGSpaces(cursor, end);
 
+    const CharType* ptr = cursor;
     // read the sign
     if (ptr < end && *ptr == '+')
         ptr++;
@@ -134,8 +135,11 @@ static bool genericParseNumber(const CharType*& ptr, const CharType* end, FloatT
     if (!isValidRange(number))
         return false;
 
+    // A valid number has been parsed. Commit cursor.
+    cursor = ptr;
+
     if (mode & AllowTrailingWhitespace)
-        skipOptionalSVGSpacesOrDelimiter(ptr, end);
+        skipOptionalSVGSpacesOrDelimiter(cursor, end);
 
     return true;
 }
