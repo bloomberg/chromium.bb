@@ -330,7 +330,7 @@ bool MessagePumpMojo::ProcessReadyHandles() {
           // handle.
           read_handle_.reset();
         } else {
-          RemoveInvalidHandle(handle_results[i], handle);
+          SignalHandleError(handle, handle_results[i]);
         }
         break;
       case MOJO_RESULT_OK:
@@ -352,23 +352,6 @@ bool MessagePumpMojo::ProcessReadyHandles() {
     }
   }
   return true;
-}
-
-void MessagePumpMojo::RemoveInvalidHandle(MojoResult result, Handle handle) {
-  // TODO(sky): deal with control pipe going bad.
-  CHECK(result == MOJO_RESULT_FAILED_PRECONDITION ||
-        result == MOJO_RESULT_CANCELLED ||
-        result == MOJO_RESULT_DEADLINE_EXCEEDED);
-  // Indicates the control pipe went bad.
-  CHECK_NE(handle.value(), read_handle_.get().value());
-
-  auto it = handlers_.find(handle);
-  CHECK(it != handlers_.end());
-  MessagePumpMojoHandler* handler = it->second.handler;
-  RemoveHandler(handle);
-  WillSignalHandler();
-  handler->OnHandleError(handle, result);
-  DidSignalHandler();
 }
 
 bool MessagePumpMojo::RemoveExpiredHandles() {
@@ -393,11 +376,7 @@ bool MessagePumpMojo::RemoveExpiredHandles() {
     // Don't need to check deadline again since it can't change if id hasn't
     // changed.
     if (it != handlers_.end() && it->second.id == pair.second) {
-      MessagePumpMojoHandler* handler = it->second.handler;
-      RemoveHandler(pair.first);
-      WillSignalHandler();
-      handler->OnHandleError(pair.first, MOJO_RESULT_DEADLINE_EXCEEDED);
-      DidSignalHandler();
+      SignalHandleError(pair.first, MOJO_RESULT_DEADLINE_EXCEEDED);
       removed = true;
     }
   }
@@ -434,9 +413,23 @@ MojoDeadline MessagePumpMojo::GetDeadlineForWait(
 }
 
 void MessagePumpMojo::SignalHandleReady(Handle handle) {
-  DCHECK(handlers_.find(handle) != handlers_.end());
+  auto it = handlers_.find(handle);
+  DCHECK(it != handlers_.end());
+  MessagePumpMojoHandler* handler = it->second.handler;
+
   WillSignalHandler();
-  handlers_[handle].handler->OnHandleReady(handle);
+  handler->OnHandleReady(handle);
+  DidSignalHandler();
+}
+
+void MessagePumpMojo::SignalHandleError(Handle handle, MojoResult result) {
+  auto it = handlers_.find(handle);
+  DCHECK(it != handlers_.end());
+  MessagePumpMojoHandler* handler = it->second.handler;
+
+  RemoveHandler(handle);
+  WillSignalHandler();
+  handler->OnHandleError(handle, result);
   DidSignalHandler();
 }
 

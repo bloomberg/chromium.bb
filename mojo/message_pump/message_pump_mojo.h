@@ -106,10 +106,6 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   // if any handles were ready and processed.
   bool ProcessReadyHandles();
 
-  // Removes the given invalid handle. This is called if MojoGetReadyHandles
-  // finds an invalid or closed handle.
-  void RemoveInvalidHandle(MojoResult result, Handle handle);
-
   // Removes any handles that have expired their deadline. Runs the handler's
   // OnHandleError() function with |MOJO_RESULT_DEADLINE_EXCEEDED| as the
   // result. Returns |true| if any handles were removed.
@@ -123,6 +119,11 @@ class MOJO_MESSAGE_PUMP_EXPORT MessagePumpMojo : public base::MessagePump {
   // Run |OnHandleReady()| for the handler registered with |handle|. |handle|
   // must be registered.
   void SignalHandleReady(Handle handle);
+
+  // Run |OnHandleError()| for the handler registered with |handle| and the
+  // error code |result|. |handle| must be registered, and will be removed
+  // before calling |OnHandleError()|.
+  void SignalHandleError(Handle handle, MojoResult result);
 
   void WillSignalHandler();
   void DidSignalHandler();
