@@ -50,6 +50,10 @@
 #include "ui/views/widget/widget.h"
 #include "url/gurl.h"
 
+#if defined(OS_WIN)
+#include "ui/base/win/shell.h"
+#endif
+
 namespace {
 
 // Dimensions.
@@ -197,6 +201,13 @@ NotificationView* NotificationView::Create(MessageCenterController* controller,
   if (top_level)
     return notification_view;
 #endif
+
+#if defined(OS_WIN)
+  // Don't create shadows for notifications on Windows under classic theme.
+  if (top_level && !ui::win::IsAeroGlassEnabled()) {
+    return notification_view;
+  }
+#endif  // OS_WIN
 
   notification_view->CreateShadowBorder();
   return notification_view;
