@@ -1198,6 +1198,13 @@ abstract class ContextualSearchPanelBase implements ContextualSearchPromoHost {
     }
 
     /**
+     * @return The peeking height of the panel's bar in dp.
+     */
+    protected float getBarHeightPeeking() {
+        return mSearchBarHeightPeeking;
+    }
+
+    /**
      * @return Whether the Panel Promo is visible.
      */
     protected boolean isPromoVisible() {
