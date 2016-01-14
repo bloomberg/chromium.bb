@@ -404,16 +404,21 @@ cr.define('options', function() {
       for (var i = 0; i < bubbleCount; i++)
         this.createSearchBubble_(bubbleControls[i], text);
 
-      // If the search doesn't change for a couple seconds, send some metrics.
+      // If the search doesn't change for one second, send some metrics.
       clearTimeout(this.delayedSearchMetric_);
       this.delayedSearchMetric_ = setTimeout(function() {
+        if (!foundMatches) {
+          chrome.metricsPrivate.recordSmallCount(
+            'Settings.SearchLengthNoMatch', text.length);
+        }
         chrome.metricsPrivate.recordUserAction('Settings.Searching');
         chrome.metricsPrivate.recordSmallCount(
             'Settings.SearchLength', text.length);
         chrome.metricsPrivate.recordSmallCount(
-            'Settings.SearchMatchCount',
-            Math.max(pageMatchesForMetrics, subpageMatchesForMetrics));
-      }, 2000);
+            'Settings.SearchPageMatchCount', pageMatchesForMetrics);
+        chrome.metricsPrivate.recordSmallCount(
+            'Settings.SearchSubpageMatchCount', subpageMatchesForMetrics);
+      }, 1000);
 
       // Cleanup the recursion-prevention variable.
       this.insideSetSearchText_ = false;

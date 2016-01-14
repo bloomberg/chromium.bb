@@ -44500,14 +44500,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Settings.SearchMatchCount">
+<histogram name="Settings.SearchLengthNoMatch">
   <owner>dschuyler@chromium.org</owner>
   <summary>
-    The number of search hits within the chrome://settings page.  This is
+    If no matches are found when searching within the chrome://settings page,
+    record the length of the search text.
+  </summary>
+</histogram>
+
+<histogram name="Settings.SearchPageMatchCount">
+  <owner>dschuyler@chromium.org</owner>
+  <summary>
+    The number of search page hits within the chrome://settings page.  This is
     especially important when the count is zero (i.e. we returned no hits for a
     given search in settings).  A search is considered complete via timeout
     since there is no concrete way to define the end of a search (the search is
     incremental).
+  </summary>
+</histogram>
+
+<histogram name="Settings.SearchSubpageMatchCount">
+  <owner>dschuyler@chromium.org</owner>
+  <summary>
+    The number of search subpage hits within the chrome://settings page.  This
+    is different from Settings.SearchPageMatchCount in that it is tracking hits
+    in subpages rather than top level pages. See also
+    Settings.SearchPageMatchCount.
   </summary>
 </histogram>
 
