@@ -30,6 +30,7 @@ public class MediaSessionTest extends ContentShellTestBase {
     private static final String VERY_SHORT_VIDEO = "very-short-video";
     private static final String SHORT_VIDEO = "short-video";
     private static final String LONG_VIDEO = "long-video";
+    private static final String LONG_VIDEO_SILENT = "long-video-silent";
 
     private AudioManager getAudioManager() {
         return (AudioManager) getActivity().getApplicationContext().getSystemService(
@@ -174,6 +175,21 @@ public class MediaSessionTest extends ContentShellTestBase {
         DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
 
         mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
+    }
+
+    @MediumTest
+    @Feature({"MediaSession"})
+    public void testSilentVideoDontGainFocus() throws Exception {
+        assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
+        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
+
+        DOMUtils.playMedia(getWebContents(), LONG_VIDEO_SILENT);
+        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO_SILENT);
+
+        // TODO(zqzhang): we need to wait fot the OS to notify the audio focus loss.
+        Thread.sleep(500);
+        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
     }
 
     @SmallTest
