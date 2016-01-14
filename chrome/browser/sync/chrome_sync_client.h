@@ -33,7 +33,7 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   ~ChromeSyncClient() override;
 
   // SyncClient implementation.
-  void Initialize(sync_driver::SyncService* sync_service) override;
+  void Initialize() override;
   sync_driver::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
@@ -66,13 +66,15 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   // Register data types which are enabled on desktop platforms only.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly disabled/enabled by the command line.
-  void RegisterDesktopDataTypes(syncer::ModelTypeSet disabled_types,
+  void RegisterDesktopDataTypes(sync_driver::SyncService* sync_service,
+                                syncer::ModelTypeSet disabled_types,
                                 syncer::ModelTypeSet enabled_types);
 
   // Register data types which are enabled on Android platforms only.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly disabled/enabled by the command line.
-  void RegisterAndroidDataTypes(syncer::ModelTypeSet disabled_types,
+  void RegisterAndroidDataTypes(sync_driver::SyncService* sync_service,
+                                syncer::ModelTypeSet disabled_types,
                                 syncer::ModelTypeSet enabled_types);
 
   void ClearBrowsingData(base::Time start, base::Time end);
@@ -88,12 +90,6 @@ class ChromeSyncClient : public sync_driver::SyncClient {
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
   scoped_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
-
-  // TODO(zea): this is a member only because Typed URLs needs access to
-  // the UserShare and Cryptographer outside of the UI thread. Remove this
-  // once that's no longer the case.
-  // Note: not owned.
-  sync_driver::SyncService* sync_service_;
 
   // Generates and monitors the ExtensionsActivity object used by sync.
   ExtensionsActivityMonitor extensions_activity_monitor_;

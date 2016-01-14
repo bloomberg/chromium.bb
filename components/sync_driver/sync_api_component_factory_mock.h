@@ -29,7 +29,9 @@ class SyncApiComponentFactoryMock
       sync_driver::ChangeProcessor* change_processor);
   ~SyncApiComponentFactoryMock() override;
 
-  MOCK_METHOD1(RegisterDataTypes, void(const RegisterDataTypesMethod&));
+  MOCK_METHOD2(RegisterDataTypes,
+               void(sync_driver::SyncService* sync_service,
+                    const RegisterDataTypesMethod&));
   MOCK_METHOD5(CreateDataTypeManager,
                sync_driver::DataTypeManager*(
                    const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&,

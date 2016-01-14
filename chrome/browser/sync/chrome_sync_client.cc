@@ -185,7 +185,7 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
 ChromeSyncClient::~ChromeSyncClient() {
 }
 
-void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
+void ChromeSyncClient::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   web_data_service_ = WebDataServiceFactory::GetAutofillWebDataForProfile(
@@ -215,12 +215,11 @@ void ChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
         token_service, url_request_context_getter, web_data_service_,
         password_store_));
   }
-  sync_service_ = sync_service;
 }
 
 sync_driver::SyncService* ChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_;
+  return ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile_);
 }
 
 PrefService* ChromeSyncClient::GetPrefService() {
@@ -501,9 +500,9 @@ void ChromeSyncClient::SetSyncApiComponentFactoryForTesting(
 }
 
 void ChromeSyncClient::RegisterDesktopDataTypes(
+    sync_driver::SyncService* sync_service,
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
-  sync_driver::SyncService* sync_service = GetSyncService();
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread =
@@ -608,9 +607,9 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
 }
 
 void ChromeSyncClient::RegisterAndroidDataTypes(
+    sync_driver::SyncService* sync_service,
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
-  sync_driver::SyncService* sync_service = GetSyncService();
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, chrome::GetChannel());
 #if defined(ENABLE_SUPERVISED_USERS)

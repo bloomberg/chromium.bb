@@ -135,7 +135,7 @@ IOSChromeSyncClient::IOSChromeSyncClient(ios::ChromeBrowserState* browser_state)
 
 IOSChromeSyncClient::~IOSChromeSyncClient() {}
 
-void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
+void IOSChromeSyncClient::Initialize() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
 
   web_data_service_ =
@@ -165,12 +165,11 @@ void IOSChromeSyncClient::Initialize(sync_driver::SyncService* sync_service) {
         token_service, url_request_context_getter, web_data_service_,
         password_store_));
   }
-  sync_service_ = sync_service;
 }
 
 sync_driver::SyncService* IOSChromeSyncClient::GetSyncService() {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
-  return sync_service_;
+  return IOSChromeProfileSyncServiceFactory::GetForBrowserState(browser_state_);
 }
 
 PrefService* IOSChromeSyncClient::GetPrefService() {

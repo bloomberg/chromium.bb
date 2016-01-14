@@ -119,20 +119,22 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
 void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
+    sync_driver::SyncService* sync_service,
     const RegisterDataTypesMethod& register_platform_types_method) {
   syncer::ModelTypeSet disabled_types =
       GetDisabledTypesFromCommandLine(command_line_);
   syncer::ModelTypeSet enabled_types =
       GetEnabledTypesFromCommandLine(command_line_);
-  RegisterCommonDataTypes(disabled_types, enabled_types);
+  RegisterCommonDataTypes(sync_service, disabled_types, enabled_types);
   if (!register_platform_types_method.is_null())
-    register_platform_types_method.Run(disabled_types, enabled_types);
+    register_platform_types_method.Run(sync_service, disabled_types,
+                                       enabled_types);
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
+    sync_driver::SyncService* sync_service,
     syncer::ModelTypeSet disabled_types,
     syncer::ModelTypeSet enabled_types) {
-  sync_driver::SyncService* sync_service = sync_client_->GetSyncService();
   base::Closure error_callback =
       base::Bind(&ChromeReportUnrecoverableError, channel_);
 

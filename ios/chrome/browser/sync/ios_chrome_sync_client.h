@@ -32,7 +32,7 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   ~IOSChromeSyncClient() override;
 
   // SyncClient implementation.
-  void Initialize(sync_driver::SyncService* sync_service) override;
+  void Initialize() override;
   sync_driver::SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;
   bookmarks::BookmarkModel* GetBookmarkModel() override;
@@ -72,11 +72,6 @@ class IOSChromeSyncClient : public sync_driver::SyncClient {
   scoped_refptr<password_manager::PasswordStore> password_store_;
 
   scoped_ptr<sync_sessions::SyncSessionsClient> sync_sessions_client_;
-
-  // TODO(crbug.com/558298): this is a member only because Typed URLs needs
-  // access to the UserShare and Cryptographer outside of the UI thread. Remove
-  // this once that's no longer the case.
-  sync_driver::SyncService* sync_service_;  // Weak.
 
   const scoped_refptr<syncer::ExtensionsActivity> dummy_extensions_activity_;
 

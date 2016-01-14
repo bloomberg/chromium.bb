@@ -65,7 +65,7 @@ class SyncClient {
   virtual ~SyncClient();
 
   // Initializes the sync client with the specified sync service.
-  virtual void Initialize(SyncService* service) = 0;
+  virtual void Initialize() = 0;
 
   // Returns the current SyncService instance.
   virtual SyncService* GetSyncService() = 0;

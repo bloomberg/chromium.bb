@@ -18,7 +18,7 @@ class FakeSyncClient : public SyncClient {
   explicit FakeSyncClient(SyncApiComponentFactory* factory);
   ~FakeSyncClient() override;
 
-  void Initialize(SyncService* sync_service) override;
+  void Initialize() override;
 
   SyncService* GetSyncService() override;
   PrefService* GetPrefService() override;

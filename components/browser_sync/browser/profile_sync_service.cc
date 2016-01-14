@@ -255,7 +255,7 @@ bool ProfileSyncService::CanSyncStart() const {
 }
 
 void ProfileSyncService::Initialize() {
-  sync_client_->Initialize(this);
+  sync_client_->Initialize();
 
   startup_controller_.reset(new browser_sync::StartupController(
       start_behavior_, oauth2_token_service_, &sync_prefs_, signin_.get(),
@@ -290,7 +290,7 @@ void ProfileSyncService::Initialize() {
       register_platform_types_callback =
           sync_client_->GetRegisterPlatformTypesCallback();
   sync_client_->GetSyncApiComponentFactory()->RegisterDataTypes(
-      register_platform_types_callback);
+      this, register_platform_types_callback);
 
   // We clear this here (vs Shutdown) because we want to remember that an error
   // happened on shutdown so we can display details (message, location) about it

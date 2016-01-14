@@ -14,7 +14,8 @@ namespace {
 
 void DummyClearBrowsingDataCallback(base::Time start, base::Time end) {}
 
-void DummyRegisterPlatformTypesCallback(syncer::ModelTypeSet,
+void DummyRegisterPlatformTypesCallback(SyncService* sync_service,
+                                        syncer::ModelTypeSet,
                                         syncer::ModelTypeSet) {}
 
 }  // namespace
@@ -29,7 +30,7 @@ FakeSyncClient::FakeSyncClient(SyncApiComponentFactory* factory)
 
 FakeSyncClient::~FakeSyncClient() {}
 
-void FakeSyncClient::Initialize(SyncService* sync_service) {}
+void FakeSyncClient::Initialize() {}
 
 SyncService* FakeSyncClient::GetSyncService() {
   return sync_service_.get();

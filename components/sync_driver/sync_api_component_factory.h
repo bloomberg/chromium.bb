@@ -61,7 +61,8 @@ class SyncApiComponentFactory {
   // data type controllers.
   // |disabled_types| and |enabled_types| control the disable/enable state of
   // types that are on or off by default (respectively).
-  typedef base::Callback<void(syncer::ModelTypeSet disabled_types,
+  typedef base::Callback<void(sync_driver::SyncService* sync_service,
+                              syncer::ModelTypeSet disabled_types,
                               syncer::ModelTypeSet enabled_types)>
       RegisterDataTypesMethod;
 
@@ -88,6 +89,7 @@ class SyncApiComponentFactory {
 
   // Creates and registers enabled datatypes with the provided SyncClient.
   virtual void RegisterDataTypes(
+      sync_driver::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) = 0;
 
   // Instantiates a new DataTypeManager with a SyncBackendHost, a list of data

@@ -60,6 +60,7 @@ class ProfileSyncComponentsFactoryImpl
 
   // SyncApiComponentFactory implementation:
   void RegisterDataTypes(
+      sync_driver::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override;
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
@@ -90,7 +91,8 @@ class ProfileSyncComponentsFactoryImpl
   // Register data types which are enabled on both desktop and mobile.
   // |disabled_types| and |enabled_types| correspond only to those types
   // being explicitly enabled/disabled by the command line.
-  void RegisterCommonDataTypes(syncer::ModelTypeSet disabled_types,
+  void RegisterCommonDataTypes(sync_driver::SyncService* sync_service,
+                               syncer::ModelTypeSet disabled_types,
                                syncer::ModelTypeSet enabled_types);
 
   void DisableBrokenType(syncer::ModelType type,

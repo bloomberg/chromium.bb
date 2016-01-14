@@ -43,6 +43,7 @@ class TestSyncApiComponentFactory : public SyncApiComponentFactory {
 
   // SyncApiComponentFactory implementation.
   void RegisterDataTypes(
+      sync_driver::SyncService* sync_service,
       const RegisterDataTypesMethod& register_platform_types_method) override {}
   sync_driver::DataTypeManager* CreateDataTypeManager(
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
