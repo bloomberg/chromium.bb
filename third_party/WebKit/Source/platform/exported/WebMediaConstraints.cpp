@@ -39,7 +39,7 @@ namespace blink {
 class WebMediaConstraintsPrivate final : public RefCounted<WebMediaConstraintsPrivate> {
 public:
     static PassRefPtr<WebMediaConstraintsPrivate> create();
-    static PassRefPtr<WebMediaConstraintsPrivate> create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory);
+    static PassRefPtr<WebMediaConstraintsPrivate> create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
     static PassRefPtr<WebMediaConstraintsPrivate> create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
     bool isEmpty() const;
@@ -51,7 +51,7 @@ public:
     const WebVector<WebMediaTrackConstraintSet>& advanced() const;
 
 private:
-    WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory);
+    WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
     WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced);
 
     WebVector<WebMediaConstraint> m_optional;
@@ -62,25 +62,30 @@ private:
 
 PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create()
 {
-    WebVector<WebMediaConstraint> optional;
-    WebVector<WebMediaConstraint> mandatory;
-    return adoptRef(new WebMediaConstraintsPrivate(optional, mandatory));
+    WebMediaTrackConstraintSet basic;
+    WebVector<WebMediaTrackConstraintSet> advanced;
+    return adoptRef(new WebMediaConstraintsPrivate(basic, advanced));
 }
 
-PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory)
+PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
 {
-    return adoptRef(new WebMediaConstraintsPrivate(optional, mandatory));
+    return adoptRef(new WebMediaConstraintsPrivate(optional, mandatory, basic, advanced));
 }
 
-WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory)
+WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
     : m_optional(optional)
     , m_mandatory(mandatory)
+    , m_basic(basic)
+    , m_advanced(advanced)
 {
 }
 
 bool WebMediaConstraintsPrivate::isEmpty() const
 {
-    return m_optional.isEmpty() && m_mandatory.isEmpty();
+    // TODO(hta): When generating advanced constraints, make sure no empty
+    // elements can be added to the m_advanced vector.
+    return m_basic.isEmpty() && m_advanced.isEmpty()
+        && m_optional.isEmpty() && m_mandatory.isEmpty();
 }
 
 PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
@@ -89,7 +94,9 @@ PassRefPtr<WebMediaConstraintsPrivate> WebMediaConstraintsPrivate::create(const 
 }
 
 WebMediaConstraintsPrivate::WebMediaConstraintsPrivate(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
-    : m_basic(basic)
+    : m_optional()
+    , m_mandatory()
+    , m_basic(basic)
     , m_advanced(advanced)
 {
 }
@@ -154,6 +161,11 @@ bool LongConstraint::matches(long value) const
     return true;
 }
 
+bool LongConstraint::isEmpty() const
+{
+    return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
+}
+
 bool DoubleConstraint::matches(double value) const
 {
     if (m_hasMin && value < m_min - kConstraintEpsilon) {
@@ -166,6 +178,11 @@ bool DoubleConstraint::matches(double value) const
         return false;
     }
     return true;
+}
+
+bool DoubleConstraint::isEmpty() const
+{
+    return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
 }
 
 bool StringConstraint::matches(WebString value) const
@@ -181,12 +198,42 @@ bool StringConstraint::matches(WebString value) const
     return false;
 }
 
+bool StringConstraint::isEmpty() const
+{
+    return m_exact.isEmpty() && m_ideal.isEmpty();
+}
+
 bool BooleanConstraint::matches(bool value) const
 {
     if (m_hasExact && static_cast<bool>(m_exact) != value) {
         return false;
     }
     return true;
+}
+
+bool BooleanConstraint::isEmpty() const
+{
+    return !m_hasIdeal && !m_hasExact;
+}
+
+bool WebMediaTrackConstraintSet::isEmpty() const
+{
+    return width.isEmpty() && height.isEmpty() && aspectRatio.isEmpty()
+        && frameRate.isEmpty() && facingMode.isEmpty() && volume.isEmpty()
+        && sampleRate.isEmpty() && sampleSize.isEmpty()
+        && echoCancellation.isEmpty() && latency.isEmpty()
+        && channelCount.isEmpty() && deviceId.isEmpty() && groupId.isEmpty()
+        && mediaStreamSource.isEmpty() && renderToAssociatedSink.isEmpty()
+        && hotwordEnabled.isEmpty() && googEchoCancellation.isEmpty()
+        && googExperimentalEchoCancellation.isEmpty()
+        && googAutoGainControl.isEmpty()
+        && googExperimentalAutoGainControl.isEmpty()
+        && googNoiseSuppression.isEmpty()
+        && googHighpassFilter.isEmpty()
+        && googTypingNoiseDetection.isEmpty()
+        && googExperimentalNoiseSuppression.isEmpty()
+        && googBeamforming.isEmpty() && googArrayGeometry.isEmpty()
+        && googAudioMirroring.isEmpty();
 }
 
 // WebMediaConstraints
@@ -236,10 +283,10 @@ void WebMediaConstraints::initialize()
     m_private = WebMediaConstraintsPrivate::create();
 }
 
-void WebMediaConstraints::initialize(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory)
+void WebMediaConstraints::initialize(const WebVector<WebMediaConstraint>& optional, const WebVector<WebMediaConstraint>& mandatory, const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)
 {
     ASSERT(isNull());
-    m_private = WebMediaConstraintsPrivate::create(optional, mandatory);
+    m_private = WebMediaConstraintsPrivate::create(optional, mandatory, basic, advanced);
 }
 
 void WebMediaConstraints::initialize(const WebMediaTrackConstraintSet& basic, const WebVector<WebMediaTrackConstraintSet>& advanced)

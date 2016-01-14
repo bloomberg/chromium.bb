@@ -330,9 +330,12 @@ RTCPeerConnection* RTCPeerConnection::create(ExecutionContext* context, const Di
     if (exceptionState.hadException())
         return 0;
 
-    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
-    if (exceptionState.hadException())
+    MediaErrorState mediaErrorState;
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, mediaErrorState);
+    if (mediaErrorState.hadException()) {
+        mediaErrorState.raiseException(exceptionState);
         return 0;
+    }
 
     RTCPeerConnection* peerConnection = new RTCPeerConnection(context, configuration, constraints, exceptionState);
     peerConnection->suspendIfNeeded();
@@ -413,9 +416,12 @@ void RTCPeerConnection::createOffer(ExecutionContext* context, RTCSessionDescrip
 
         m_peerHandler->createOffer(request, offerOptions);
     } else {
-        WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, exceptionState);
-        if (exceptionState.hadException())
+        MediaErrorState mediaErrorState;
+        WebMediaConstraints constraints = MediaConstraintsImpl::create(rtcOfferOptions, mediaErrorState);
+        if (mediaErrorState.hadException()) {
+            mediaErrorState.raiseException(exceptionState);
             return;
+        }
 
         if (!constraints.isEmpty())
             UseCounter::count(context, UseCounter::RTCPeerConnectionCreateOfferLegacyConstraints);
@@ -443,9 +449,12 @@ void RTCPeerConnection::createAnswer(ExecutionContext* context, RTCSessionDescri
 
     ASSERT(successCallback);
 
-    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
-    if (exceptionState.hadException())
+    MediaErrorState mediaErrorState;
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, mediaErrorState);
+    if (mediaErrorState.hadException()) {
+        mediaErrorState.raiseException(exceptionState);
         return;
+    }
 
     RTCSessionDescriptionRequest* request = RTCSessionDescriptionRequestImpl::create(executionContext(), this, successCallback, errorCallback);
     m_peerHandler->createAnswer(request, constraints);
@@ -518,9 +527,12 @@ void RTCPeerConnection::updateIce(const Dictionary& rtcConfiguration, const Dict
     if (exceptionState.hadException())
         return;
 
-    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
-    if (exceptionState.hadException())
+    MediaErrorState mediaErrorState;
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, mediaErrorState);
+    if (mediaErrorState.hadException()) {
+        mediaErrorState.raiseException(exceptionState);
         return;
+    }
 
     bool valid = m_peerHandler->updateICE(configuration, constraints);
     if (!valid)
@@ -697,9 +709,12 @@ void RTCPeerConnection::addStream(MediaStream* stream, const Dictionary& mediaCo
     if (m_localStreams.contains(stream))
         return;
 
-    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, exceptionState);
-    if (exceptionState.hadException())
+    MediaErrorState mediaErrorState;
+    WebMediaConstraints constraints = MediaConstraintsImpl::create(mediaConstraints, mediaErrorState);
+    if (mediaErrorState.hadException()) {
+        mediaErrorState.raiseException(exceptionState);
         return;
+    }
 
     m_localStreams.append(stream);
 

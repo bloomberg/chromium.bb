@@ -31,7 +31,9 @@ MockMediaConstraintFactory::CreateWebMediaConstraints() const {
   blink::WebVector<blink::WebMediaConstraint> mandatory(mandatory_);
   blink::WebVector<blink::WebMediaConstraint> optional(optional_);
   blink::WebMediaConstraints constraints;
-  constraints.initialize(optional, mandatory);
+  blink::WebMediaTrackConstraintSet basic;
+  blink::WebVector<blink::WebMediaTrackConstraintSet> advanced;
+  constraints.initialize(optional, mandatory, basic, advanced);
   return constraints;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2015 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -28,29 +28,44 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef MediaConstraintsImpl_h
-#define MediaConstraintsImpl_h
+#ifndef MediaErrorState_h
+#define MediaErrorState_h
 
-#include "modules/mediastream/MediaErrorState.h"
-#include "public/platform/WebMediaConstraints.h"
-#include "wtf/text/WTFString.h"
+#include "bindings/core/v8/ExceptionState.h"
 
 namespace blink {
 
-class Dictionary;
-class ExceptionState;
-class MediaTrackConstraintSet;
+class NavigatorUserMediaError;
 
-namespace MediaConstraintsImpl {
+// A class that is able to be used like ExceptionState for carrying
+// information about an error up the stack, but it is up to the higher
+// level code whether it produces a DOMerror or a NavigatorUserMediaError.
+class MediaErrorState {
+public:
+    MediaErrorState();
+    void throwTypeError(const String& message);
+    void throwDOMException(const ExceptionCode&, const String& message);
+    void throwConstraintError(const String& message, const String& constraint);
+    void reset();
 
-WebMediaConstraints create();
-WebMediaConstraints create(const Dictionary&, MediaErrorState&);
-WebMediaConstraints create(const MediaTrackConstraintSet&, MediaErrorState&);
-
-}
+    bool hadException();
+    bool canGenerateException();
+    void raiseException(ExceptionState&);
+    NavigatorUserMediaError* createError();
+private:
+    enum ErrorType {
+        NoError,
+        TypeError,
+        DOMError,
+        ConstraintError
+    };
+    ErrorType m_errorType;
+    String m_name;
+    ExceptionCode m_code;
+    String m_message;
+    String m_constraint;
+};
 
 } // namespace blink
 
-#endif // MediaConstraintsImpl_h
-
-
+#endif // MediaErrorState_h

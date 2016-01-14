@@ -1181,6 +1181,8 @@
       'mediastream/MediaDevices.h',
       'mediastream/MediaDevicesRequest.cpp',
       'mediastream/MediaDevicesRequest.h',
+      'mediastream/MediaErrorState.cpp',
+      'mediastream/MediaErrorState.h',
       'mediastream/MediaStream.cpp',
       'mediastream/MediaStream.h',
       'mediastream/MediaStreamEvent.cpp',
