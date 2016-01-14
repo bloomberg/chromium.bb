@@ -61,9 +61,19 @@ class TracingBrowserTest : public InProcessBrowserTest {
                                       MemoryDumpManager::kTraceCategory,
                                       event_name, 10));
 
-    GURL url2("chrome://credits/");
+    // Create and destroy renderers while tracing is enabled.
+    GURL url2("chrome://credits");
     ui_test_utils::NavigateToURLWithDisposition(
         browser(), url2, NEW_FOREGROUND_TAB,
+        ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+    ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
+
+    // Close the current tab.
+    browser()->tab_strip_model()->CloseSelectedTabs();
+
+    GURL url3("chrome://settings");
+    ui_test_utils::NavigateToURLWithDisposition(
+        browser(), url3, CURRENT_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
     ASSERT_NO_FATAL_FAILURE(ExecuteJavascriptOnCurrentTab());
 
