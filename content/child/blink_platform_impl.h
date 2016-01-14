@@ -79,7 +79,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
   blink::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const blink::WebString& challenge,
-      const blink::WebURL& url) override;
+      const blink::WebURL& url,
+      const blink::WebURL& top_origin) override;
   size_t memoryUsageMB() override;
   size_t actualMemoryUsageMB() override;
   size_t physicalMemoryMB() override;

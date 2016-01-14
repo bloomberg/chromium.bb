@@ -531,6 +531,7 @@ void RenderMessageFilter::OnCacheableMetadataAvailable(
 void RenderMessageFilter::OnKeygen(uint32_t key_size_index,
                                    const std::string& challenge_string,
                                    const GURL& url,
+                                   const GURL& top_origin,
                                    IPC::Message* reply_msg) {
   if (!resource_context_)
     return;
@@ -550,6 +551,13 @@ void RenderMessageFilter::OnKeygen(uint32_t key_size_index,
       RenderProcessHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
       Send(reply_msg);
       return;
+  }
+
+  if (!GetContentClient()->browser()->AllowKeygen(top_origin,
+                                                  resource_context_)) {
+    RenderProcessHostMsg_Keygen::WriteReplyParams(reply_msg, std::string());
+    Send(reply_msg);
+    return;
   }
 
   resource_context_->CreateKeygenHandler(

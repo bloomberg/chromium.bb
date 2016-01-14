@@ -251,10 +251,11 @@ public:
     // Returns a base64 encoded signed copy of a public key from a newly
     // generated key pair and the supplied challenge string. keySizeindex
     // specifies the strength of the key.
-    virtual WebString signedPublicKeyAndChallengeString(unsigned keySizeIndex,
-                                                        const WebString& challenge,
-                                                        const WebURL& url) { return WebString(); }
-
+    virtual WebString signedPublicKeyAndChallengeString(
+        unsigned keySizeIndex, const WebString& challenge, const WebURL& url, const WebURL& topOrigin)
+    {
+        return WebString();
+    }
 
     // Memory --------------------------------------------------------------
 

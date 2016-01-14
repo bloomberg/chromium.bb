@@ -195,6 +195,7 @@ class CONTENT_EXPORT RenderMessageFilter : public BrowserMessageFilter {
   void OnKeygen(uint32_t key_size_index,
                 const std::string& challenge_string,
                 const GURL& url,
+                const GURL& top_origin,
                 IPC::Message* reply_msg);
   void PostKeygenToWorkerThread(IPC::Message* reply_msg,
                                 scoped_ptr<net::KeygenHandler> keygen_handler);

@@ -1219,7 +1219,8 @@ bool BlinkPlatformImpl::databaseSetFileSize(
 blink::WebString BlinkPlatformImpl::signedPublicKeyAndChallengeString(
     unsigned key_size_index,
     const blink::WebString& challenge,
-    const blink::WebURL& url) {
+    const blink::WebURL& url,
+    const blink::WebURL& top_origin) {
   return blink::WebString("");
 }
 

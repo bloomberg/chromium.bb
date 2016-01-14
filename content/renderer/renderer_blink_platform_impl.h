@@ -110,7 +110,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebString signedPublicKeyAndChallengeString(
       unsigned key_size_index,
       const blink::WebString& challenge,
-      const blink::WebURL& url) override;
+      const blink::WebURL& url,
+      const blink::WebURL& top_origin) override;
   void getPluginList(bool refresh,
                      blink::WebPluginListBuilder* builder) override;
   blink::WebPublicSuffixList* publicSuffixList() override;
