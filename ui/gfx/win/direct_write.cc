@@ -13,7 +13,6 @@
 #include "third_party/skia/include/ports/SkTypeface_win.h"
 #include "ui/gfx/platform_font_win.h"
 #include "ui/gfx/switches.h"
-#include "ui/gfx/win/dpi.h"
 
 namespace gfx {
 namespace win {
@@ -41,17 +40,7 @@ bool ShouldUseDirectWrite() {
   // If forced off, don't use it.
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kDisableDirectWrite))
-    return false;
-
-  // Can't use GDI on HiDPI.
-  if (gfx::GetDPIScale() > 1.0f)
-    return true;
-
-  // Otherwise, check the field trial.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("DirectWrite");
-  return group_name != "Disabled";
+  return !command_line.HasSwitch(switches::kDisableDirectWrite);
 }
 
 void CreateDWriteFactory(IDWriteFactory** factory) {
