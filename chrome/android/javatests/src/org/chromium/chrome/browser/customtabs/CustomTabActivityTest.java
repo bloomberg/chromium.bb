@@ -10,10 +10,12 @@ import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_PHONE;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Instrumentation;
+import android.app.Instrumentation.ActivityMonitor;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
@@ -38,12 +40,10 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
-import org.chromium.chrome.browser.document.DocumentActivity;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.CustomTabToolbar;
 import org.chromium.chrome.browser.util.ColorUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.BrowserStartupController;
@@ -301,7 +300,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertNotNull(menu.findItem(R.id.info_menu_id));
         assertNotNull(menu.findItem(R.id.reload_menu_id));
         assertNotNull(menu.findItem(R.id.find_in_page_id));
-        assertNotNull(menu.findItem(R.id.open_in_chrome_id));
+        assertNotNull(menu.findItem(R.id.open_in_browser_id));
         assertFalse(menu.findItem(R.id.share_menu_id).isVisible());
         assertFalse(menu.findItem(R.id.share_menu_id).isEnabled());
     }
@@ -376,39 +375,29 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
      * Test whether clicking "Open in Chrome" takes us to a chrome normal tab, loading the same url.
      */
     @SmallTest
-    public void testOpenInChrome() throws InterruptedException {
+    public void testOpenInBrowser() throws InterruptedException {
         startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
-
-        boolean isDocumentMode = FeatureUtilities.isDocumentMode(
-                getInstrumentation().getTargetContext());
-        String activityName;
-        if (isDocumentMode) {
-            activityName = DocumentActivity.class.getName();
-        } else {
-            activityName = ChromeTabbedActivity.class.getName();
-        }
-        Instrumentation.ActivityMonitor monitor = getInstrumentation().addMonitor(activityName,
-                null, false);
-
+        IntentFilter filter = new IntentFilter(Intent.ACTION_VIEW);
+        filter.addDataScheme(Uri.parse(TestHttpServerClient.getUrl("")).getScheme());
+        final ActivityMonitor monitor = getInstrumentation().addMonitor(filter, null, false);
         openAppMenuAndAssertMenuShown();
+        final String menuItemTitle = mActivity.getString(R.string.menu_open_in_product_default);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mActivity.onMenuOrKeyboardAction(R.id.open_in_chrome_id, false);
+                MenuItem item = mActivity.getAppMenuHandler()
+                        .getAppMenu().getMenu().findItem(R.id.open_in_browser_id);
+                assertNotNull(item);
+                assertEquals(menuItemTitle, item.getTitle().toString());
+                mActivity.onMenuOrKeyboardAction(R.id.open_in_browser_id, false);
             }
         });
-
-        final ChromeActivity chromeActivity = (ChromeActivity) monitor
-                .waitForActivityWithTimeout(ACTIVITY_START_TIMEOUT_MS);
-        assertNotNull("A normal chrome activity did not start.", chromeActivity);
-        CriteriaHelper.pollForUIThreadCriteria(
-                new Criteria("The normal tab was not initiated correctly.") {
-                    @Override
-                    public boolean isSatisfied() {
-                        Tab tab = chromeActivity.getActivityTab();
-                        return tab != null && tab.getUrl().equals(TEST_PAGE);
-                    }
-                });
+        CriteriaHelper.pollForCriteria(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getInstrumentation().checkMonitorHit(monitor, 1);
+            }
+        });
     }
 
     /**

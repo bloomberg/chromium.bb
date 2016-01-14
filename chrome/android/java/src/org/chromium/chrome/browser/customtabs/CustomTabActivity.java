@@ -553,15 +553,14 @@ public class CustomTabActivity extends ChromeActivity {
                 || id == R.id.recent_tabs_menu_id || id == R.id.new_incognito_tab_menu_id
                 || id == R.id.new_tab_menu_id || id == R.id.open_history_menu_id) {
             return true;
-        } else if (id == R.id.open_in_chrome_id) {
+        } else if (id == R.id.open_in_browser_id) {
             String url = getTabModelSelector().getCurrentTab().getUrl();
             if (DomDistillerUrlUtils.isDistilledPage(url)) {
                 url = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
             }
-            Intent chromeIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-            chromeIntent.setPackage(getApplicationContext().getPackageName());
-            chromeIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(chromeIntent);
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
             RecordUserAction.record("CustomTabsMenuOpenInChrome");
             return true;
         } else if (id == R.id.find_in_page_id) {
