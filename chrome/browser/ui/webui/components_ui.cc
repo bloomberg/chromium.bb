@@ -237,6 +237,7 @@ base::string16 ComponentsUI::ServiceStatusToString(
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_UPTODATE);
     case update_client::CrxUpdateItem::State::kNoUpdate:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_SVC_STATUS_NOUPDATE);
+    case update_client::CrxUpdateItem::State::kUninstalled:  // Fall through.
     case update_client::CrxUpdateItem::State::kLastStatus:
       return l10n_util::GetStringUTF16(IDS_COMPONENTS_UNKNOWN);
   }

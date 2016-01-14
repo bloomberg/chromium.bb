@@ -97,7 +97,7 @@ class FakePingManagerImpl : public PingManager {
   explicit FakePingManagerImpl(const scoped_refptr<Configurator>& config);
   ~FakePingManagerImpl() override;
 
-  void OnUpdateComplete(const CrxUpdateItem* item) override;
+  void SendPing(const CrxUpdateItem* item) override;
 
   const std::vector<CrxUpdateItem>& items() const;
 
@@ -113,7 +113,7 @@ FakePingManagerImpl::FakePingManagerImpl(
 FakePingManagerImpl::~FakePingManagerImpl() {
 }
 
-void FakePingManagerImpl::OnUpdateComplete(const CrxUpdateItem* item) {
+void FakePingManagerImpl::SendPing(const CrxUpdateItem* item) {
   items_.push_back(*item);
 }
 
@@ -2133,6 +2133,62 @@ TEST_F(UpdateClientTest, EmptyIdList) {
       empty_id_list, base::Bind(&DataCallbackFake::Callback),
       base::Bind(&CompletionCallbackFake::Callback, runloop.QuitClosure()));
   runloop.Run();
+}
+
+TEST_F(UpdateClientTest, SendUninstallPing) {
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static scoped_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config) {
+      return nullptr;
+    }
+
+    bool CheckForUpdates(
+        const std::vector<CrxUpdateItem*>& items_to_check,
+        const std::string& additional_attributes,
+        const UpdateCheckCallback& update_check_callback) override {
+      return false;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static scoped_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>&
+            url_fetcher_task_runner) {
+      return nullptr;
+    }
+
+   private:
+    FakeCrxDownloader() : CrxDownloader(scoped_ptr<CrxDownloader>()) {}
+    ~FakeCrxDownloader() override {}
+
+    void DoStartDownload(const GURL& url) override {}
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override {
+      const auto& ping_items = items();
+      EXPECT_EQ(1U, ping_items.size());
+      EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_items[0].id);
+      EXPECT_TRUE(base::Version("1.0").Equals(ping_items[0].previous_version));
+      EXPECT_TRUE(base::Version("0.0").Equals(ping_items[0].next_version));
+      EXPECT_EQ(10, ping_items[0].extra_code1);
+    }
+  };
+
+  scoped_ptr<PingManager> ping_manager(new FakePingManager(config()));
+  scoped_refptr<UpdateClient> update_client(new UpdateClientImpl(
+      config(), std::move(ping_manager), &FakeUpdateChecker::Create,
+      &FakeCrxDownloader::Create));
+
+  update_client->SendUninstallPing("jebgalgnebhfojomionfpkfelancnnkf",
+                                   base::Version("1.0"), 10);
 }
 
 }  // namespace update_client

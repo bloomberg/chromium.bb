@@ -53,6 +53,9 @@ class UpdateClientImpl : public UpdateClient {
                          CrxUpdateItem* update_item) const override;
   bool IsUpdating(const std::string& id) const override;
   void Stop() override;
+  void SendUninstallPing(const std::string& id,
+                         const Version& version,
+                         int reason) override;
 
  private:
   ~UpdateClientImpl() override;

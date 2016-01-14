@@ -289,6 +289,15 @@ class UpdateClient : public base::RefCounted<UpdateClient> {
                       const CrxDataCallback& crx_data_callback,
                       const CompletionCallback& completion_callback) = 0;
 
+  // Sends an uninstall ping for the CRX identified by |id| and |version|. The
+  // |reason| parameter is defined by the caller. The current implementation of
+  // this function only sends a best-effort, fire-and-forget ping. It has no
+  // other side effects regarding installs or updates done through an instance
+  // of this class.
+  virtual void SendUninstallPing(const std::string& id,
+                                 const Version& version,
+                                 int reason) = 0;
+
   // Returns status details about a CRX update. The function returns true in
   // case of success and false in case of errors, such as |id| was
   // invalid or not known.

@@ -49,6 +49,9 @@ class FakeUpdateClient : public update_client::UpdateClient {
   }
   bool IsUpdating(const std::string& id) const override { return false; }
   void Stop() override {}
+  void SendUninstallPing(const std::string& id,
+                         const Version& version,
+                         int reason) override {}
 
  protected:
   friend class base::RefCounted<FakeUpdateClient>;

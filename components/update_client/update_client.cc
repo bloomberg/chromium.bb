@@ -226,6 +226,23 @@ void UpdateClientImpl::Stop() {
   }
 }
 
+void UpdateClientImpl::SendUninstallPing(const std::string& id,
+                                         const Version& version,
+                                         int reason) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // The implementation of PingManager::SendPing contains a self-deleting
+  // object responsible for sending the ping.
+  CrxUpdateItem item;
+  item.state = CrxUpdateItem::State::kUninstalled;
+  item.id = id;
+  item.previous_version = version;
+  item.next_version = base::Version("0");
+  item.extra_code1 = reason;
+
+  ping_manager_->SendPing(&item);
+}
+
 scoped_refptr<UpdateClient> UpdateClientFactory(
     const scoped_refptr<Configurator>& config) {
   scoped_ptr<PingManager> ping_manager(new PingManager(config));

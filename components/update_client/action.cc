@@ -89,6 +89,7 @@ void ActionImpl::ChangeItemState(CrxUpdateItem* item, CrxUpdateItem::State to) {
     case CrxUpdateItem::State::kDownloading:
     case CrxUpdateItem::State::kDownloadingDiff:
     case CrxUpdateItem::State::kDownloaded:
+    case CrxUpdateItem::State::kUninstalled:
     case CrxUpdateItem::State::kLastStatus:
       // No notification for these states.
       break;
@@ -135,7 +136,7 @@ void ActionImpl::UpdateCrx() {
 }
 
 void ActionImpl::UpdateCrxComplete(CrxUpdateItem* item) {
-  update_context_->ping_manager->OnUpdateComplete(item);
+  update_context_->ping_manager->SendPing(item);
 
   update_context_->queue.pop();
 

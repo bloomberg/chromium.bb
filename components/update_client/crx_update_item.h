@@ -68,6 +68,7 @@ struct CrxUpdateItem {
     kUpdated,
     kUpToDate,
     kNoUpdate,
+    kUninstalled,
     kLastStatus
   };
 

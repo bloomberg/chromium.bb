@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
@@ -70,7 +72,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
 
-  ping_manager_->OnUpdateComplete(&item);
+  ping_manager_->SendPing(&item);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
@@ -88,7 +90,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   item.previous_version = base::Version("1.0");
   item.next_version = base::Version("2.0");
 
-  ping_manager_->OnUpdateComplete(&item);
+  ping_manager_->SendPing(&item);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
@@ -116,7 +118,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   item.diff_update_failed = true;
   item.crx_diffurls.push_back(GURL("http://host/path"));
 
-  ping_manager_->OnUpdateComplete(&item);
+  ping_manager_->SendPing(&item);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();
@@ -156,7 +158,7 @@ TEST_F(ComponentUpdaterPingManagerTest, DISABLED_PingManagerTest) {
   download_metrics.download_time_ms = 9870;
   item.download_metrics.push_back(download_metrics);
 
-  ping_manager_->OnUpdateComplete(&item);
+  ping_manager_->SendPing(&item);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(1, interceptor->GetCount()) << interceptor->GetRequestsAsString();

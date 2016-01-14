@@ -19,7 +19,7 @@ class PingManager {
   explicit PingManager(const scoped_refptr<Configurator>& config);
   virtual ~PingManager();
 
-  virtual void OnUpdateComplete(const CrxUpdateItem* item);
+  virtual void SendPing(const CrxUpdateItem* item);
 
  private:
   const scoped_refptr<Configurator> config_;

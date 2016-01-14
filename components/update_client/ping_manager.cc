@@ -81,7 +81,8 @@ std::string BuildDownloadCompleteEventElements(const CrxUpdateItem* item) {
   return download_events;
 }
 
-// Returns a string representing one ping event xml element for an update item.
+// Returns a string representing one ping event for the update of an item.
+// The event type for this ping event is 3.
 std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item) {
   DCHECK(item->state == CrxUpdateItem::State::kNoUpdate ||
          item->state == CrxUpdateItem::State::kUpdated);
@@ -117,6 +118,20 @@ std::string BuildUpdateCompleteEventElement(const CrxUpdateItem* item) {
   return ping_event;
 }
 
+// Returns a string representing one ping event for the uninstall of an item.
+// The event type for this ping event is 4.
+std::string BuildUninstalledEventElement(const CrxUpdateItem* item) {
+  DCHECK(item->state == CrxUpdateItem::State::kUninstalled);
+
+  using base::StringAppendF;
+
+  std::string ping_event("<event eventtype=\"4\" eventresult=\"1\"");
+  if (item->extra_code1)
+    StringAppendF(&ping_event, " extracode1=\"%d\"", item->extra_code1);
+  StringAppendF(&ping_event, "/>");
+  return ping_event;
+}
+
 // Builds a ping message for the specified update item.
 std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
   const char app_element_format[] =
@@ -124,12 +139,27 @@ std::string BuildPing(const Configurator& config, const CrxUpdateItem* item) {
       "%s"
       "%s"
       "</app>";
+
+  std::string ping_event;
+  switch (item->state) {
+    case CrxUpdateItem::State::kNoUpdate:  // Fall through.
+    case CrxUpdateItem::State::kUpdated:
+      ping_event = BuildUpdateCompleteEventElement(item);
+      break;
+    case CrxUpdateItem::State::kUninstalled:
+      ping_event = BuildUninstalledEventElement(item);
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+
   const std::string app_element(base::StringPrintf(
       app_element_format,
       item->id.c_str(),                                    // "appid"
       item->previous_version.GetString().c_str(),          // "version"
       item->next_version.GetString().c_str(),              // "nextversion"
-      BuildUpdateCompleteEventElement(item).c_str(),       // update event
+      ping_event.c_str(),                                  // ping event
       BuildDownloadCompleteEventElements(item).c_str()));  // download events
 
   return BuildProtocolRequest(config.GetBrowserVersion().GetString(),
@@ -195,7 +225,7 @@ PingManager::~PingManager() {
 
 // Sends a fire and forget ping when the updates are complete. The ping
 // sender object self-deletes after sending the ping has completed asynchrously.
-void PingManager::OnUpdateComplete(const CrxUpdateItem* item) {
+void PingManager::SendPing(const CrxUpdateItem* item) {
   PingSender* ping_sender(new PingSender(config_));
   if (!ping_sender->SendPing(item))
     delete ping_sender;
