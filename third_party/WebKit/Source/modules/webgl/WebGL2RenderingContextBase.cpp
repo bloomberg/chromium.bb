@@ -1007,7 +1007,6 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     GLenum internalformat = texture->getInternalFormat(target, level);
 
     if (!canvas->renderingContext() || !canvas->renderingContext()->isAccelerated() || !canUseTexImageCanvasByGPU(internalformat, type)) {
-        ASSERT(!canvas->renderingContext() || canvas->renderingContext()->is2d());
         // 2D canvas has only FrontBuffer.
         texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, canvas->copiedImage(FrontBuffer, PreferAcceleration).get(),
             WebGLImageConversion::HtmlDomCanvas, m_unpackFlipY, m_unpackPremultiplyAlpha);
