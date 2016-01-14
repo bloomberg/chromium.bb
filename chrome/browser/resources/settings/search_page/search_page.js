@@ -82,9 +82,4 @@ Polymer({
   onSearchEnginesTap_: function() {
     this.$.pages.setSubpageChain(['search-engines']);
   },
-
-  /** @private */
-  onSearchEnginesAdvancedTap_: function() {
-    this.$.pages.setSubpageChain(['search-engines', 'search-engines-advanced']);
-  },
 });

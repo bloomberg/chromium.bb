@@ -4,26 +4,16 @@
 
 .icons {
   display: inline-block;
-  text-align: right;
-  width: 96px;
 }
 
 .inputs {
-  display: inline-block;
-}
-
-.inputs > paper-input {
-  border-bottom: 1px solid gray;
-}
-
-.inputs > paper-input:not(:last-child) {
-  border-right: 1px solid gray;
+  display: flex;
 }
 
 .narrow-input {
-  width: 140px;
+  flex: 1;
 }
 
 .wide-input {
-  width: 300px;
+  flex: 3;
 }

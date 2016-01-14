@@ -4,20 +4,22 @@
 
 .container {
   max-height: 400px;
-  overflow-y: auto;
-  width: 760px;
+}
+
+.headers {
+  display: flex;
 }
 
 .headers > div {
   background-color: #6c6c6c;
   color: white;
-  display: inline-block;
+  padding: 5px;
 }
 
 .narrow-label {
-  width: 140px;
+  flex: 1;
 }
 
 .wide-label {
-  width: 300px;
+  flex: 3;
 }

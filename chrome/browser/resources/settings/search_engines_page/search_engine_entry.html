@@ -21,11 +21,11 @@
         </paper-input>
       </div>
       <div class="icons">
-        <iron-icon id="checkIcon" icon="check" on-click="makeDefault_" hidden>
+        <iron-icon icon="settings" on-tap="toggleEditable_"></iron-icon>
+        <iron-icon id="checkIcon" icon="check" on-tap="makeDefault_">
         </iron-icon>
-        <iron-icon id="deleteIcon" icon="clear" on-click="deleteEngine_" hidden>
+        <iron-icon id="deleteIcon" icon="clear" on-tap="deleteEngine_">
         </iron-icon>
-        <iron-icon icon="settings" on-click="toggleEditable_"></iron-icon>
       </div>
     </div>
   </template>

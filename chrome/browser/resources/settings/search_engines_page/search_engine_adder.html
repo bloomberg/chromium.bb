@@ -7,7 +7,7 @@
 <dom-module id="cr-search-engine-adder">
   <link rel="import" type="css" href="search_engine_adder.css">
   <template>
-    <div class="add-label layout horizontal center justified">
+    <div class="layout horizontal center justified">
       <span i18n-content="searchEnginesAddSearchEngineLabel"></span>
       <cr-expand-button expanded="{{opened}}"></cr-expand-button>
     </div>
@@ -34,7 +34,7 @@
           </div>
           <div class="layout horizontal center">
             <paper-button i18n-content="searchEnginesAddButtonLabel"
-                on-click="{{add_}}" raised>
+                on-tap="add_" raised>
             </paper-button>
           </div>
         </div>
