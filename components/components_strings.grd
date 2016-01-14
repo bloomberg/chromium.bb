@@ -225,6 +225,18 @@
       <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
         JSON Parser
       </message>
+      <if expr="not is_android">
+        <if expr="not use_titlecase">
+          <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
+            &amp;Print...
+          </message>
+        </if>
+        <if expr="use_titlecase">
+          <message name="IDS_PRINT" desc="In Title Case: The text label of the Print... menu item. Opens a dialog box to select print settings">
+            &amp;Print...
+          </message>
+        </if>
+      </if>
     </messages>
   </release>
 </grit>

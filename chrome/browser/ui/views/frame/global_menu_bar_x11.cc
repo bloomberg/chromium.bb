@@ -35,6 +35,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/sessions/core/tab_restore_service.h"
+#include "grit/components_strings.h"
 #include "ui/base/accelerators/menu_label_accelerator_util_linux.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
