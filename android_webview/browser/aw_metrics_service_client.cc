@@ -165,9 +165,7 @@ bool AwMetricsServiceClient::IsOffTheRecordSessionActive() {
 }
 
 int32_t AwMetricsServiceClient::GetProduct() {
-  // TODO(paulmiller) Switch this to a WebView product once we have a log source
-  // for WebView.
-  return ::metrics::ChromeUserMetricsExtension::CHROME;
+  return ::metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }
 
 std::string AwMetricsServiceClient::GetApplicationLocale() {
@@ -206,9 +204,8 @@ scoped_ptr<metrics::MetricsLogUploader> AwMetricsServiceClient::CreateUploader(
   return scoped_ptr<::metrics::MetricsLogUploader>(
       new metrics::NetMetricsLogUploader(
           request_context_,
-          // TODO(paulmiller): Switch this to metrics::kDefaultMetricsServerUrl
-          // once we have a log source for WebView.
-          "http://localhost:10000/uma/v2", metrics::kDefaultMetricsMimeType,
+          metrics::kDefaultMetricsServerUrl,
+          metrics::kDefaultMetricsMimeType,
           on_upload_complete));
 }
 
