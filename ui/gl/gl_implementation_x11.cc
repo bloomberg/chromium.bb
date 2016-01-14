@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
@@ -40,6 +41,9 @@ const char kGLLibraryName[] = "libGL.so.1";
 
 const char kGLESv2LibraryName[] = "libGLESv2.so.2";
 const char kEGLLibraryName[] = "libEGL.so.1";
+
+const char kGLESv2ANGLELibraryName[] = "libGLESv2_ANGLE.so";
+const char kEGLANGLELibraryName[] = "libEGL_ANGLE.so";
 
 }  // namespace
 
@@ -99,12 +103,25 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       break;
     }
     case kGLImplementationEGLGLES2: {
-      base::NativeLibrary gles_library =
-          LoadLibraryAndPrintError(kGLESv2LibraryName);
+      base::FilePath glesv2_path(kGLESv2LibraryName);
+      base::FilePath egl_path(kEGLLibraryName);
+
+      const base::CommandLine* command_line =
+          base::CommandLine::ForCurrentProcess();
+      if (command_line->GetSwitchValueASCII(switches::kUseGL) ==
+          kGLImplementationANGLEName) {
+        base::FilePath module_path;
+        if (!PathService::Get(base::DIR_MODULE, &module_path))
+          return false;
+
+        glesv2_path = module_path.Append(kGLESv2ANGLELibraryName);
+        egl_path = module_path.Append(kEGLANGLELibraryName);
+      }
+
+      base::NativeLibrary gles_library = LoadLibraryAndPrintError(glesv2_path);
       if (!gles_library)
         return false;
-      base::NativeLibrary egl_library =
-          LoadLibraryAndPrintError(kEGLLibraryName);
+      base::NativeLibrary egl_library = LoadLibraryAndPrintError(egl_path);
       if (!egl_library) {
         base::UnloadNativeLibrary(gles_library);
         return false;

@@ -186,6 +186,8 @@
             '<(DEPTH)/build/linux/system.gyp:xcomposite',
             '<(DEPTH)/build/linux/system.gyp:xext',
             '<(DEPTH)/ui/events/platform/events_platform.gyp:events_platform',
+            '<(DEPTH)/third_party/angle/src/angle.gyp:libEGL_ANGLE',
+            '<(DEPTH)/third_party/angle/src/angle.gyp:libGLESv2_ANGLE',
             '<(DEPTH)/ui/gfx/x/gfx_x11.gyp:gfx_x11',
           ],
         }],

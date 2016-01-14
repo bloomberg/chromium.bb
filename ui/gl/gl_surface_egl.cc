@@ -256,11 +256,11 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   std::string requested_renderer =
       command_line->GetSwitchValueASCII(switches::kUseANGLE);
 
-  if (supports_angle_d3d) {
-    bool use_angle_default =
-        !command_line->HasSwitch(switches::kUseANGLE) ||
-        requested_renderer == kANGLEImplementationDefaultName;
+  bool use_angle_default =
+      !command_line->HasSwitch(switches::kUseANGLE) ||
+      requested_renderer == kANGLEImplementationDefaultName;
 
+  if (supports_angle_d3d) {
     if (use_angle_default) {
       // Default mode for ANGLE - try D3D11, else try D3D9
       if (!command_line->HasSwitch(switches::kDisableD3D11)) {
@@ -281,11 +281,16 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   }
 
   if (supports_angle_opengl) {
-    if (requested_renderer == kANGLEImplementationOpenGLName) {
+    if (use_angle_default && !supports_angle_d3d) {
       init_displays->push_back(ANGLE_OPENGL);
-    }
-    if (requested_renderer == kANGLEImplementationOpenGLESName) {
       init_displays->push_back(ANGLE_OPENGLES);
+    } else {
+      if (requested_renderer == kANGLEImplementationOpenGLName) {
+        init_displays->push_back(ANGLE_OPENGL);
+      }
+      if (requested_renderer == kANGLEImplementationOpenGLESName) {
+        init_displays->push_back(ANGLE_OPENGLES);
+      }
     }
   }
 

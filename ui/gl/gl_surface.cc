@@ -46,7 +46,9 @@ bool GLSurface::InitializeOneOff() {
         cmd->GetSwitchValueASCII(switches::kUseGL);
     if (requested_implementation_name == "any") {
       fallback_to_osmesa = true;
-    } else if (requested_implementation_name == "swiftshader") {
+    } else if (requested_implementation_name ==
+                   kGLImplementationSwiftShaderName ||
+               requested_implementation_name == kGLImplementationANGLEName) {
       impl = kGLImplementationEGLGLES2;
     } else {
       impl = GetNamedGLImplementation(requested_implementation_name);

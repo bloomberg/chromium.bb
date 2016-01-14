@@ -11,6 +11,7 @@ const char kGLImplementationDesktopName[]     = "desktop";
 const char kGLImplementationOSMesaName[]      = "osmesa";
 const char kGLImplementationAppleName[]       = "apple";
 const char kGLImplementationEGLName[]         = "egl";
+const char kGLImplementationANGLEName[]       = "angle";
 const char kGLImplementationSwiftShaderName[] = "swiftshader";
 const char kGLImplementationMockName[]        = "mock";
 

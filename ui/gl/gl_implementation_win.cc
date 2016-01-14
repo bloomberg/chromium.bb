@@ -136,7 +136,8 @@ bool InitializeStaticGLBindings(GLImplementation implementation) {
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
       bool using_swift_shader =
-          command_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader";
+          command_line->GetSwitchValueASCII(switches::kUseGL) ==
+          kGLImplementationSwiftShaderName;
       if (using_swift_shader) {
         if (!command_line->HasSwitch(switches::kSwiftShaderPath))
           return false;

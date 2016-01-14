@@ -190,6 +190,10 @@ component("gl") {
     ]
 
     deps += [ "//ui/gfx/x" ]
+    data_deps = [
+      "//third_party/angle:libEGL_ANGLE",
+      "//third_party/angle:libGLESv2_ANGLE",
+    ]
   }
   if (is_win) {
     sources += [
