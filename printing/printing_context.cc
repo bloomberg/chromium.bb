@@ -118,7 +118,9 @@ PrintingContext::Result PrintingContext::UpdatePrintSettings(
   }
 
   bool show_system_dialog = false;
+#if defined(ENABLE_BASIC_PRINTING)
   job_settings.GetBoolean(kSettingShowSystemDialog, &show_system_dialog);
+#endif
 
   int page_count = 0;
   job_settings.GetInteger(kSettingPreviewPageCount, &page_count);

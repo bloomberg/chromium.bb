@@ -16,16 +16,15 @@
 #include "printing/pdf_metafile_skia.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#if defined(OS_ANDROID)
 #include "base/file_descriptor_posix.h"
 #else
 #include "base/process/process_handle.h"
-#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
 
 namespace printing {
 
-using blink::WebFrame;
-
+#if defined(ENABLE_PRINT_PREVIEW)
 bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
@@ -55,7 +54,9 @@ bool PrintWebViewHelper::RenderPreviewPage(
   }
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
+#endif
 
+#if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count) {
   PdfMetafileSkia metafile;
@@ -79,10 +80,7 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
 
   metafile.FinishDocument();
 
-#if defined(OS_CHROMEOS)
-  NOTREACHED();
-  return false;
-#elif defined(OS_ANDROID)
+#if defined(OS_ANDROID)
   int sequence_number = -1;
   base::FileDescriptor fd;
 
@@ -115,12 +113,13 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
     printed_page_params.metafile_data_handle.fd = -1;
   }
   return true;
-#endif  // defined(OS_CHROMEOS)
+#endif  // defined(OS_ANDROID)
 }
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
-    WebFrame* frame,
+    blink::WebFrame* frame,
     PdfMetafileSkia* metafile) {
   PageSizeMargins page_layout_in_points;
   double scale_factor = 1.0f;

@@ -47,6 +47,7 @@ const char kPrintOnUserAction[] =
     "  <button id=\"print\" onclick=\"window.print();\">Hello World!</button>"
     "</body>";
 
+#if defined(ENABLE_PRINT_PREVIEW)
 // HTML with 3 pages.
 const char kMultipageHTML[] =
     "<html><head><style>"
@@ -108,8 +109,10 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingShouldPrintBackgrounds, false);
   dict->SetBoolean(kSettingShouldPrintSelectionOnly, false);
 }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 #endif  // !defined(OS_CHROMEOS)
 
+#if defined(ENABLE_PRINT_PREVIEW)
 class DidPreviewPageListener : public IPC::Listener {
  public:
   explicit DidPreviewPageListener(base::RunLoop* run_loop)
@@ -127,6 +130,7 @@ class DidPreviewPageListener : public IPC::Listener {
   base::RunLoop* const run_loop_;
   DISALLOW_COPY_AND_ASSIGN(DidPreviewPageListener);
 };
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 }  // namespace
 
@@ -180,6 +184,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
 #endif  // defined(OS_CHROMEOS)
   }
 
+#if defined(ENABLE_PRINT_PREVIEW)
   // The renderer should be done calculating the number of rendered pages
   // according to the specified settings defined in the mock render thread.
   // Verify the page count is correct.
@@ -193,6 +198,7 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
                                               &post_page_count_param);
     EXPECT_EQ(count, base::get<0>(post_page_count_param).page_count);
   }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
   // Verifies whether the pages printed or not.
   void VerifyPagesPrinted(bool printed) {
@@ -213,8 +219,9 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     PrintWebViewHelper::Get(view_)->OnPrintPages();
     ProcessPendingMessages();
   }
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
+#if defined(ENABLE_PRINT_PREVIEW)
   void VerifyPreviewRequest(bool requested) {
     const IPC::Message* print_msg =
         render_thread_->sink().GetUniqueMessageMatching(
@@ -233,15 +240,19 @@ class PrintWebViewHelperTestBase : public content::RenderViewTest {
     run_loop.Run();
     render_thread_->sink().RemoveFilter(&filter);
   }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
+#if defined(ENABLE_BASIC_PRINTING)
   void OnPrintForPrintPreview(const base::DictionaryValue& dict) {
     PrintWebViewHelper::Get(view_)->OnPrintForPrintPreview(dict);
     ProcessPendingMessages();
   }
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
   // Naked pointer as ownership is with content::RenderViewTest::render_thread_.
   PrintMockRenderThread* print_render_thread_;
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(PrintWebViewHelperTestBase);
 };
 
@@ -260,7 +271,7 @@ class MAYBE_PrintWebViewHelperTest : public PrintWebViewHelperTestBase {
 
   void SetUp() override { PrintWebViewHelperTestBase::SetUp(); }
 
- protected:
+ private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperTest);
 };
 
@@ -336,7 +347,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintWithJavascript) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
-#endif  // !ENABLE_PRINT_PREVIEW
+#endif  // !defined(ENABLE_PRINT_PREVIEW)
 
 #if defined(ENABLE_BASIC_PRINTING)
 // Tests that printing pages work and sending and receiving messages through
@@ -348,7 +359,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, OnPrintPages) {
   VerifyPageCount(1);
   VerifyPagesPrinted(true);
 }
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 #if defined(OS_MACOSX) && defined(ENABLE_BASIC_PRINTING)
 // TODO(estade): I don't think this test is worth porting to Linux. We will have
@@ -505,6 +516,7 @@ TEST_F(MAYBE_PrintWebViewHelperTest, PrintLayoutTest) {
 #define MAYBE_PrintWebViewHelperPreviewTest PrintWebViewHelperPreviewTest
 #endif  // defined(OS_ANDROID)
 
+#if defined(ENABLE_PRINT_PREVIEW)
 class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
  public:
   MAYBE_PrintWebViewHelperPreviewTest() {}
@@ -600,10 +612,10 @@ class MAYBE_PrintWebViewHelperPreviewTest : public PrintWebViewHelperTestBase {
     }
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_PrintWebViewHelperPreviewTest);
 };
 
-#if defined(ENABLE_PRINT_PREVIEW)
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, BlockScriptInitiatedPrinting) {
   LoadHTML(kHelloWorldHTML);
   PrintWebViewHelper* print_web_view_helper = PrintWebViewHelper::Get(view_);
@@ -635,7 +647,6 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, PrintWithJavaScript) {
 
   VerifyPreviewRequest(true);
 }
-#endif  // ENABLE_PRINT_PREVIEW
 
 // Tests that print preview work and sending and receiving messages through
 // that channel all works.
@@ -932,6 +943,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintPreviewCancel) {
   VerifyPagesPrinted(false);
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
 // Tests that printing from print preview works and sending and receiving
 // messages through that channel all works.
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreview) {
@@ -957,6 +969,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest, OnPrintForPrintPreviewFail) {
 
   VerifyPagesPrinted(false);
 }
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 // Tests that when default printer has invalid printer settings, print preview
 // receives error message.
@@ -1021,6 +1034,7 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
   VerifyPrintPreviewGenerated(false);
 }
 
+#if defined(ENABLE_BASIC_PRINTING)
 TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
        OnPrintForPrintPreviewUsingInvalidPrinterSettings) {
   LoadHTML(kPrintPreviewHTML);
@@ -1036,6 +1050,8 @@ TEST_F(MAYBE_PrintWebViewHelperPreviewTest,
   VerifyPrintFailed(true);
   VerifyPagesPrinted(false);
 }
+#endif  // defined(ENABLE_BASIC_PRINTING)
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 #endif  // !defined(OS_CHROMEOS)
 

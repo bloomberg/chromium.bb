@@ -291,7 +291,6 @@ void ReportPrintSettingsStats(const base::DictionaryValue& settings) {
                           &distill_page) && distill_page) {
     ReportPrintSettingHistogram(DISTILL_PAGE);
   }
-
 }
 
 // Callback that stores a PDF file on disk.
@@ -1004,6 +1003,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
     SendCloudPrintJob(data.get());
   } else {
+#if defined(ENABLE_BASIC_PRINTING)
     bool system_dialog = false;
     settings->GetBoolean(printing::kSettingShowSystemDialog, &system_dialog);
     if (system_dialog) {
@@ -1054,6 +1054,9 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
           printing::PrintViewManager::FromWebContents(initiator);
       print_view_manager->PrintPreviewDone();
     }
+#else
+    NOTREACHED();
+#endif   // defined(ENABLE_BASIC_PRINTING)
   }
 }
 

@@ -176,8 +176,10 @@ const char kSettingShouldPrintBackgrounds[] = "shouldPrintBackgrounds";
 // Whether to print selection only.
 const char kSettingShouldPrintSelectionOnly[] = "shouldPrintSelectionOnly";
 
-// Whether to print selection only.
+#if defined(ENABLE_BASIC_PRINTING)
+// Whether to print using the system dialog.
 const char kSettingShowSystemDialog[] = "showSystemDialog";
+#endif
 
 // Indices used to represent first preview page and complete preview document.
 const int FIRST_PAGE_INDEX = 0;

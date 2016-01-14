@@ -71,6 +71,11 @@
             '../ui/base/ui_base_tests.gyp:ui_base_unittests',
             '../ui/gfx/gfx_tests.gyp:gfx_unittests',
           ],
+        }, { # 'OS!="ios"
+          'dependencies': [
+            '../device/bluetooth/bluetooth.gyp:*',
+            '../device/device_tests.gyp:*',
+          ],
         }],
         ['OS=="android"', {
           'dependencies': [
@@ -134,7 +139,6 @@
             '../ppapi/ppapi.gyp:*',
             '../ppapi/ppapi_internal.gyp:*',
             '../ppapi/tools/ppapi_tools.gyp:*',
-            '../printing/printing.gyp:*',
             '../skia/skia.gyp:*',
             '../sync/tools/sync_tools.gyp:*',
             '../third_party/WebKit/public/all.gyp:*',
@@ -158,12 +162,6 @@
             '../tools/telemetry/telemetry.gyp:*',
             '../v8/tools/gyp/v8.gyp:*',
             '<(libjpeg_gyp_path):*',
-          ],
-        }],
-        ['OS!="ios"', {
-          'dependencies': [
-            '../device/bluetooth/bluetooth.gyp:*',
-            '../device/device_tests.gyp:*',
           ],
         }],
         ['use_openssl==0 and OS=="ios"', {
@@ -292,6 +290,11 @@
         ['use_openh264==1', {
           'dependencies': [
             '../third_party/openh264/openh264.gyp:*',
+          ],
+        }],
+        ['enable_basic_printing==1 or enable_print_preview==1', {
+          'dependencies': [
+            '../printing/printing.gyp:*',
           ],
         }],
       ],

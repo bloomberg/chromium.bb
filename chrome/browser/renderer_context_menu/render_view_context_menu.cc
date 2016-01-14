@@ -1629,8 +1629,6 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     return;
   command_executed_ = true;
 
-  RenderFrameHost* render_frame_host = GetRenderFrameHost();
-
   // Process extension menu items.
   if (ContextMenuMatcher::IsExtensionsCustomCommandId(id)) {
     extension_items_.ExecuteCommand(id, source_web_contents_, params_);
@@ -1896,6 +1894,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
     case IDC_PRINT: {
 #if defined(ENABLE_PRINTING)
       if (params_.media_type != WebContextMenuData::MediaTypeNone) {
+        RenderFrameHost* render_frame_host = GetRenderFrameHost();
         if (render_frame_host) {
           render_frame_host->Send(new PrintMsg_PrintNodeUnderContextMenu(
               render_frame_host->GetRoutingID()));
@@ -1907,7 +1906,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
           source_web_contents_,
           GetPrefs(browser_context_)->GetBoolean(prefs::kPrintPreviewDisabled),
           !params_.selection_text.empty());
-#endif  // ENABLE_PRINTING
+#endif  // defined(ENABLE_PRINTING)
       break;
     }
 

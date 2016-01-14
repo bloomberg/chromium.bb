@@ -21,8 +21,6 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
-#include "components/printing/common/print_messages.h"
-#include "components/printing/renderer/print_web_view_helper.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
@@ -41,6 +39,11 @@
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
+
+#if defined(ENABLE_PRINTING)
+#include "components/printing/common/print_messages.h"
+#include "components/printing/renderer/print_web_view_helper.h"
+#endif
 
 using blink::WebDataSource;
 using blink::WebElement;
@@ -145,8 +148,10 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
                         OnRequestThumbnailForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
+#if defined(ENABLE_PRINTING)
     IPC_MESSAGE_HANDLER(PrintMsg_PrintNodeUnderContextMenu,
                         OnPrintNodeUnderContextMenu)
+#endif
     IPC_MESSAGE_HANDLER(ChromeViewMsg_AppBannerPromptRequest,
                         OnAppBannerPromptRequest)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -216,10 +221,12 @@ void ChromeRenderFrameObserver::OnRequestThumbnailForContextNode(
 }
 
 void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
+#if defined(ENABLE_PRINTING)
   printing::PrintWebViewHelper* helper =
       printing::PrintWebViewHelper::Get(render_frame()->GetRenderView());
   if (helper)
     helper->PrintNode(render_frame()->GetContextMenuNode());
+#endif
 }
 
 void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(

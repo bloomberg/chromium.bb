@@ -19,8 +19,6 @@
         '../../../../build/linux/system.gyp:x11',
         '../../../../components/components_resources.gyp:components_resources',
         '../../../../content/content.gyp:content',
-        '../../../../printing/printing.gyp:cups',
-        '../../../../printing/printing.gyp:printing',
         '../../../../skia/skia.gyp:skia',
         '../../../../ui/aura/aura.gyp:aura',
         '../../../../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
@@ -117,6 +115,16 @@
 
             # G_STATIC_ASSERT uses a typedef as a static_assert.
             '-Wno-unused-local-typedef',
+          ],
+        }],
+        ['enable_basic_printing==1', {
+          'dependencies': [
+            '../../../../printing/printing.gyp:printing',
+          ],
+        }],
+        ['use_cups==1', {
+          'dependencies': [
+            '../../../../printing/printing.gyp:cups',
           ],
         }],
       ],

@@ -22,7 +22,7 @@
 #if defined(ENABLE_SERVICE_DISCOVERY)
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
 #include "chrome/browser/printing/cloud_print/privet_local_printer_lister.h"
-#endif  // ENABLE_SERVICE_DISCOVERY
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)
 
 class PrinterHandler;
 class PrintPreviewUI;
@@ -84,7 +84,7 @@ class PrintPreviewHandler
   // Called when the user press ctrl+shift+p to display the native system
   // dialog.
   void ShowSystemDialog();
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 #if defined(ENABLE_SERVICE_DISCOVERY)
   // PrivetLocalPrinterLister::Delegate implementation.
@@ -102,7 +102,8 @@ class PrintPreviewHandler
   void OnPrivetPrintingError(
       const cloud_print::PrivetLocalPrintOperation* print_operation,
       int http_code) override;
-#endif  // ENABLE_SERVICE_DISCOVERY
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)
+
   int regenerate_preview_request_count() const {
     return regenerate_preview_request_count_;
   }
@@ -164,7 +165,7 @@ class PrintPreviewHandler
   // Asks the initiator renderer to show the native print system dialog. |args|
   // is unused.
   void HandleShowSystemDialog(const base::ListValue* args);
-#endif  // ENABLE_BASIC_PRINTING
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
   // Callback for the signin dialog to call once signin is complete.
   void OnSigninComplete();
@@ -303,7 +304,7 @@ class PrintPreviewHandler
       const cloud_print::DeviceDescription& description,
       bool has_local_printing,
       base::DictionaryValue* printer_value);
-#endif
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)
 
   // Lazily creates |extension_printer_handler_| that can be used to handle
   // extension printers requests.
@@ -382,7 +383,7 @@ class PrintPreviewHandler
       privet_capabilities_operation_;
   scoped_ptr<cloud_print::PrivetLocalPrintOperation>
       privet_local_print_operation_;
-#endif
+#endif  // defined(ENABLE_SERVICE_DISCOVERY)
 
   // Handles requests for extension printers. Created lazily by calling
   // |EnsureExtensionPrinterHandlerSet|.

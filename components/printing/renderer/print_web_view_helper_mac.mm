@@ -18,8 +18,7 @@
 
 namespace printing {
 
-using blink::WebFrame;
-
+#if defined(ENABLE_BASIC_PRINTING)
 bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
                                           int page_count) {
   const PrintMsg_PrintPages_Params& params = *print_pages_params_;
@@ -37,10 +36,11 @@ bool PrintWebViewHelper::PrintPagesNative(blink::WebFrame* frame,
   }
   return true;
 }
+#endif  // defined(ENABLE_BASIC_PRINTING)
 
 void PrintWebViewHelper::PrintPageInternal(
     const PrintMsg_PrintPage_Params& params,
-    WebFrame* frame) {
+    blink::WebFrame* frame) {
   PdfMetafileSkia metafile;
   if (!metafile.Init())
     return;
@@ -69,6 +69,7 @@ void PrintWebViewHelper::PrintPageInternal(
   Send(new PrintHostMsg_DidPrintPage(routing_id(), page_params));
 }
 
+#if defined(ENABLE_PRINT_PREVIEW)
 bool PrintWebViewHelper::RenderPreviewPage(
     int page_number,
     const PrintMsg_Print_Params& print_params) {
@@ -109,10 +110,11 @@ bool PrintWebViewHelper::RenderPreviewPage(
   }
   return PreviewPageRendered(page_number, draft_metafile.get());
 }
+#endif  // defined(ENABLE_PRINT_PREVIEW)
 
 void PrintWebViewHelper::RenderPage(const PrintMsg_Print_Params& params,
                                     int page_number,
-                                    WebFrame* frame,
+                                    blink::WebFrame* frame,
                                     bool is_preview,
                                     PdfMetafileSkia* metafile,
                                     gfx::Size* page_size,

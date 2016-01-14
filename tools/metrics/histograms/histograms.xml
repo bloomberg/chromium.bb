@@ -37403,6 +37403,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="PrintPreview.PageCount.PrintToCloudPrintWebDialog">
+  <obsolete>
+    No longer used as of 01/2016.
+  </obsolete>
   <owner>vitalybuka@chromium.org</owner>
   <summary>
     The final page count (after page selection) of documents printed to a cloud
