@@ -63,7 +63,6 @@
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/blacklist_load_analyzer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
-#include "chrome/browser/safe_browsing/incident_reporting/off_domain_inclusion_detector.h"
 #include "chrome/browser/safe_browsing/incident_reporting/resource_request_detector.h"
 #include "chrome/browser/safe_browsing/incident_reporting/variations_seed_signature_analyzer.h"
 #endif
@@ -241,9 +240,6 @@ void SafeBrowsingService::Initialize() {
   incident_service_.reset(CreateIncidentReportingService());
   resource_request_detector_.reset(new ResourceRequestDetector(
       incident_service_->GetIncidentReceiver()));
-
-  off_domain_inclusion_detector_.reset(
-      new OffDomainInclusionDetector(database_manager_));
 #endif  // !defined(FULL_SAFE_BROWSING)
 
   // Track the safe browsing preference of existing profiles.
@@ -289,7 +285,6 @@ void SafeBrowsingService::ShutDown() {
   csd_service_.reset();
 
 #if defined(FULL_SAFE_BROWSING)
-  off_domain_inclusion_detector_.reset();
   resource_request_detector_.reset();
   incident_service_.reset();
 #endif
@@ -375,8 +370,6 @@ void SafeBrowsingService::OnResourceRequest(const net::URLRequest* request) {
 #if defined(FULL_SAFE_BROWSING)
   TRACE_EVENT1("SafeBrowsing", "SafeBrowsingServer::OnResourceRequest", "url",
                request->url().spec());
-  if (off_domain_inclusion_detector_)
-    off_domain_inclusion_detector_->OnResourceRequest(request);
   if (resource_request_detector_)
     resource_request_detector_->OnResourceRequest(request);
 #endif

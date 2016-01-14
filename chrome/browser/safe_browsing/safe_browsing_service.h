@@ -308,8 +308,6 @@ class SafeBrowsingService
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
 
 #if defined(FULL_SAFE_BROWSING)
-  scoped_ptr<OffDomainInclusionDetector> off_domain_inclusion_detector_;
-
   scoped_ptr<ResourceRequestDetector> resource_request_detector_;
 #endif
 
