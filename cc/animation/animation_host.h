@@ -12,9 +12,11 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_events.h"
+#include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
 #include "cc/trees/mutator_host_client.h"
+#include "ui/gfx/geometry/box_f.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 namespace gfx {
 class ScrollOffset;
@@ -22,6 +24,7 @@ class ScrollOffset;
 
 namespace cc {
 
+class AnimationEvents;
 class AnimationPlayer;
 class AnimationRegistrar;
 class AnimationTimeline;
@@ -88,10 +91,10 @@ class CC_EXPORT AnimationHost {
   bool ActivateAnimations();
   bool AnimateLayers(base::TimeTicks monotonic_time);
   bool UpdateAnimationState(bool start_ready_animations,
-                            AnimationEventsVector* events);
+                            AnimationEvents* events);
 
-  scoped_ptr<AnimationEventsVector> CreateEvents();
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
+  scoped_ptr<AnimationEvents> CreateEvents();
+  void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
 
   bool ScrollOffsetAnimationWasInterrupted(int layer_id) const;
 

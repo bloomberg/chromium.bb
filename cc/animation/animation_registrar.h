@@ -9,11 +9,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "cc/animation/animation_events.h"
+#include "base/time/time.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {
 
+class AnimationEvents;
 class LayerAnimationController;
 
 class CC_EXPORT AnimationRegistrar {
@@ -67,13 +68,10 @@ class CC_EXPORT AnimationRegistrar {
   bool ActivateAnimations();
   bool AnimateLayers(base::TimeTicks monotonic_time);
   bool UpdateAnimationState(bool start_ready_animations,
-                            AnimationEventsVector* events);
+                            AnimationEvents* events);
 
-  scoped_ptr<AnimationEventsVector> CreateEvents() {
-    return make_scoped_ptr(new AnimationEventsVector());
-  }
-
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
+  scoped_ptr<AnimationEvents> CreateEvents();
+  void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
 
  private:
   AnimationRegistrar();

@@ -32,7 +32,7 @@ class ProxyMainForTest : public ProxyMain {
       const RendererCapabilities& capabilities) override;
   void BeginMainFrameNotExpectedSoon() override;
   void DidCommitAndDrawFrame() override;
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events) override;
+  void SetAnimationEvents(scoped_ptr<AnimationEvents> events) override;
   void DidLoseOutputSurface() override;
   void RequestNewOutputSurface() override;
   void DidInitializeOutputSurface(

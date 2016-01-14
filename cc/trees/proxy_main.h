@@ -6,7 +6,6 @@
 #define CC_TREES_PROXY_MAIN_H_
 
 #include "base/macros.h"
-#include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/input/top_controls_state.h"
@@ -17,6 +16,8 @@
 #include "cc/trees/proxy_common.h"
 
 namespace cc {
+
+class AnimationEvents;
 class BeginFrameSource;
 class ChannelMain;
 class LayerTreeHost;
@@ -48,7 +49,7 @@ class CC_EXPORT ProxyMain : public Proxy {
       const RendererCapabilities& capabilities);
   virtual void BeginMainFrameNotExpectedSoon();
   virtual void DidCommitAndDrawFrame();
-  virtual void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue);
+  virtual void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
   virtual void DidLoseOutputSurface();
   virtual void RequestNewOutputSurface();
   virtual void DidInitializeOutputSurface(

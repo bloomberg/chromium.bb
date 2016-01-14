@@ -5,13 +5,14 @@
 #ifndef CC_TREES_CHANNEL_IMPL_H_
 #define CC_TREES_CHANNEL_IMPL_H_
 
-#include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/output/renderer_capabilities.h"
 #include "cc/trees/proxy_common.h"
 
 namespace cc {
+
+class AnimationEvents;
 
 // Channel used to send commands to and receive commands from ProxyMain.
 // The ChannelImpl implementation creates and owns ProxyImpl on receiving the
@@ -25,7 +26,7 @@ class CC_EXPORT ChannelImpl {
       const RendererCapabilities& capabilities) = 0;
   virtual void BeginMainFrameNotExpectedSoon() = 0;
   virtual void DidCommitAndDrawFrame() = 0;
-  virtual void SetAnimationEvents(scoped_ptr<AnimationEventsVector> queue) = 0;
+  virtual void SetAnimationEvents(scoped_ptr<AnimationEvents> queue) = 0;
   virtual void DidLoseOutputSurface() = 0;
   virtual void RequestNewOutputSurface() = 0;
   virtual void DidInitializeOutputSurface(

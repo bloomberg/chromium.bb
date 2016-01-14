@@ -8,6 +8,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/layer_animation_controller.h"
 
 namespace cc {
@@ -85,7 +86,7 @@ bool AnimationRegistrar::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 bool AnimationRegistrar::UpdateAnimationState(bool start_ready_animations,
-                                              AnimationEventsVector* events) {
+                                              AnimationEvents* events) {
   if (!needs_animate_layers())
     return false;
 
@@ -98,10 +99,15 @@ bool AnimationRegistrar::UpdateAnimationState(bool start_ready_animations,
   return true;
 }
 
+scoped_ptr<AnimationEvents> AnimationRegistrar::CreateEvents() {
+  return make_scoped_ptr(new AnimationEvents());
+}
+
 void AnimationRegistrar::SetAnimationEvents(
-    scoped_ptr<AnimationEventsVector> events) {
-  for (size_t event_index = 0; event_index < events->size(); ++event_index) {
-    int event_layer_id = (*events)[event_index].layer_id;
+    scoped_ptr<AnimationEvents> events) {
+  for (size_t event_index = 0; event_index < events->events_.size();
+       ++event_index) {
+    int event_layer_id = events->events_[event_index].layer_id;
 
     // Use the map of all controllers, not just active ones, since non-active
     // controllers may still receive events for impl-only animations.
@@ -109,21 +115,22 @@ void AnimationRegistrar::SetAnimationEvents(
         all_animation_controllers_;
     auto iter = animation_controllers.find(event_layer_id);
     if (iter != animation_controllers.end()) {
-      switch ((*events)[event_index].type) {
+      switch (events->events_[event_index].type) {
         case AnimationEvent::STARTED:
-          (*iter).second->NotifyAnimationStarted((*events)[event_index]);
+          (*iter).second->NotifyAnimationStarted(events->events_[event_index]);
           break;
 
         case AnimationEvent::FINISHED:
-          (*iter).second->NotifyAnimationFinished((*events)[event_index]);
+          (*iter).second->NotifyAnimationFinished(events->events_[event_index]);
           break;
 
         case AnimationEvent::ABORTED:
-          (*iter).second->NotifyAnimationAborted((*events)[event_index]);
+          (*iter).second->NotifyAnimationAborted(events->events_[event_index]);
           break;
 
         case AnimationEvent::PROPERTY_UPDATE:
-          (*iter).second->NotifyAnimationPropertyUpdate((*events)[event_index]);
+          (*iter).second->NotifyAnimationPropertyUpdate(
+              events->events_[event_index]);
           break;
       }
     }

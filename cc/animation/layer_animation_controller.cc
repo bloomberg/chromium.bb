@@ -11,6 +11,7 @@
 
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_value_observer.h"
@@ -203,7 +204,7 @@ void LayerAnimationController::Animate(base::TimeTicks monotonic_time) {
 
 void LayerAnimationController::AccumulatePropertyUpdates(
     base::TimeTicks monotonic_time,
-    AnimationEventsVector* events) {
+    AnimationEvents* events) {
   if (!events)
     return;
 
@@ -226,7 +227,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
             animation->curve()->ToFloatAnimationCurve();
         event.opacity = float_animation_curve->GetValue(trimmed);
         event.is_impl_only = true;
-        events->push_back(event);
+        events->events_.push_back(event);
         break;
       }
 
@@ -238,7 +239,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
             animation->curve()->ToTransformAnimationCurve();
         event.transform = transform_animation_curve->GetValue(trimmed);
         event.is_impl_only = true;
-        events->push_back(event);
+        events->events_.push_back(event);
         break;
       }
 
@@ -250,7 +251,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
             animation->curve()->ToFilterAnimationCurve();
         event.filters = filter_animation_curve->GetValue(trimmed);
         event.is_impl_only = true;
-        events->push_back(event);
+        events->events_.push_back(event);
         break;
       }
 
@@ -269,7 +270,7 @@ void LayerAnimationController::AccumulatePropertyUpdates(
 }
 
 void LayerAnimationController::UpdateState(bool start_ready_animations,
-                                           AnimationEventsVector* events) {
+                                           AnimationEvents* events) {
   if (!HasActiveValueObserver())
     return;
 
@@ -875,7 +876,7 @@ void LayerAnimationController::StartAnimations(base::TimeTicks monotonic_time) {
 
 void LayerAnimationController::PromoteStartedAnimations(
     base::TimeTicks monotonic_time,
-    AnimationEventsVector* events) {
+    AnimationEvents* events) {
   for (size_t i = 0; i < animations_.size(); ++i) {
     if (animations_[i]->run_state() == Animation::STARTING &&
         animations_[i]->affects_active_observers()) {
@@ -896,7 +897,7 @@ void LayerAnimationController::PromoteStartedAnimations(
         if (started_event.is_impl_only)
           NotifyAnimationStarted(started_event);
         else
-          events->push_back(started_event);
+          events->events_.push_back(started_event);
       }
     }
   }
@@ -920,7 +921,7 @@ void LayerAnimationController::MarkFinishedAnimations(
 
 void LayerAnimationController::MarkAnimationsForDeletion(
     base::TimeTicks monotonic_time,
-    AnimationEventsVector* events) {
+    AnimationEvents* events) {
   bool marked_animations_for_deletions = false;
   std::vector<size_t> animations_with_same_group_id;
 
@@ -936,7 +937,7 @@ void LayerAnimationController::MarkAnimationsForDeletion(
         AnimationEvent aborted_event(AnimationEvent::ABORTED, id_, group_id,
                                      animations_[i]->target_property(),
                                      monotonic_time);
-        events->push_back(aborted_event);
+        events->events_.push_back(aborted_event);
       }
       // If on the compositor or on the main thread and received finish event,
       // animation can be marked for deletion.
@@ -1006,7 +1007,7 @@ void LayerAnimationController::MarkAnimationsForDeletion(
             if (finished_event.is_impl_only)
               NotifyAnimationFinished(finished_event);
             else
-              events->push_back(finished_event);
+              events->events_.push_back(finished_event);
           }
           animations_[animation_index]->SetRunState(
               Animation::WAITING_FOR_DELETION, monotonic_time);

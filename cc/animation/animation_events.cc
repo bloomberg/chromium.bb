@@ -20,4 +20,8 @@ AnimationEvent::AnimationEvent(AnimationEvent::Type type,
       opacity(0.f) {
 }
 
+AnimationEvents::AnimationEvents() {}
+
+AnimationEvents::~AnimationEvents() {}
+
 }  // namespace cc

@@ -4,6 +4,7 @@
 
 #include "cc/test/proxy_main_for_test.h"
 
+#include "cc/animation/animation_events.h"
 #include "cc/test/threaded_channel_for_test.h"
 
 namespace cc {
@@ -52,8 +53,7 @@ void ProxyMainForTest::DidCommitAndDrawFrame() {
   ProxyMain::DidCommitAndDrawFrame();
 }
 
-void ProxyMainForTest::SetAnimationEvents(
-    scoped_ptr<AnimationEventsVector> events) {
+void ProxyMainForTest::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
   test_hooks_->ReceivedSetAnimationEvents();
   ProxyMain::SetAnimationEvents(std::move(events));
 }

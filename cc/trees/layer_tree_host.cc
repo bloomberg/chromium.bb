@@ -23,6 +23,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/layer_animation_controller.h"
@@ -576,8 +577,7 @@ void LayerTreeHost::SetNextCommitForcesRedraw() {
   proxy_->SetNeedsUpdateLayers();
 }
 
-void LayerTreeHost::SetAnimationEvents(
-    scoped_ptr<AnimationEventsVector> events) {
+void LayerTreeHost::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
   DCHECK(task_runner_provider_->IsMainThread());
   if (animation_host_)
     animation_host_->SetAnimationEvents(std::move(events));
@@ -945,16 +945,18 @@ void LayerTreeHost::AnimateLayers(base::TimeTicks monotonic_time) {
   if (!settings_.accelerated_animation_enabled)
     return;
 
-  AnimationEventsVector events;
+  scoped_ptr<AnimationEvents> events;
   if (animation_host_) {
+    events = animation_host_->CreateEvents();
     if (animation_host_->AnimateLayers(monotonic_time))
-      animation_host_->UpdateAnimationState(true, &events);
+      animation_host_->UpdateAnimationState(true, events.get());
   } else {
+    events = animation_registrar_->CreateEvents();
     if (animation_registrar_->AnimateLayers(monotonic_time))
-      animation_registrar_->UpdateAnimationState(true, &events);
+      animation_registrar_->UpdateAnimationState(true, events.get());
   }
 
-  if (!events.empty())
+  if (!events->events_.empty())
     property_trees_.needs_rebuild = true;
 }
 

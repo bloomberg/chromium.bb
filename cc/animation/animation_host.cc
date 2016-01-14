@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_registrar.h"
@@ -357,17 +358,16 @@ bool AnimationHost::AnimateLayers(base::TimeTicks monotonic_time) {
 }
 
 bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
-                                         AnimationEventsVector* events) {
+                                         AnimationEvents* events) {
   return animation_registrar_->UpdateAnimationState(start_ready_animations,
                                                     events);
 }
 
-scoped_ptr<AnimationEventsVector> AnimationHost::CreateEvents() {
+scoped_ptr<AnimationEvents> AnimationHost::CreateEvents() {
   return animation_registrar_->CreateEvents();
 }
 
-void AnimationHost::SetAnimationEvents(
-    scoped_ptr<AnimationEventsVector> events) {
+void AnimationHost::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
   return animation_registrar_->SetAnimationEvents(std::move(events));
 }
 

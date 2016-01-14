@@ -21,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event_argument.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
@@ -3267,7 +3268,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
     return;
 
   bool has_active_animations = false;
-  scoped_ptr<AnimationEventsVector> events;
+  scoped_ptr<AnimationEvents> events;
 
   if (animation_host_) {
     events = animation_host_->CreateEvents();
@@ -3279,7 +3280,7 @@ void LayerTreeHostImpl::UpdateAnimationState(bool start_ready_animations) {
         start_ready_animations, events.get());
   }
 
-  if (!events->empty())
+  if (!events->events_.empty())
     client_->PostAnimationEventsToMainThreadOnImplThread(std::move(events));
 
   if (has_active_animations)

@@ -235,12 +235,12 @@ void AnimationTimelinesTest::ReleaseRefPtrs() {
 void AnimationTimelinesTest::AnimateLayersTransferEvents(
     base::TimeTicks time,
     unsigned expect_events) {
-  scoped_ptr<AnimationEventsVector> events =
+  scoped_ptr<AnimationEvents> events =
       host_->animation_registrar()->CreateEvents();
 
   host_impl_->animation_registrar()->AnimateLayers(time);
   host_impl_->animation_registrar()->UpdateAnimationState(true, events.get());
-  EXPECT_EQ(expect_events, events->size());
+  EXPECT_EQ(expect_events, events->events_.size());
 
   host_->animation_registrar()->AnimateLayers(time);
   host_->animation_registrar()->UpdateAnimationState(true, nullptr);

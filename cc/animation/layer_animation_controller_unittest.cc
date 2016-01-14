@@ -9,6 +9,7 @@
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_curve.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
@@ -149,13 +150,13 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
 
   // Synchronize the start times.
-  EXPECT_EQ(1u, events.size());
-  controller->NotifyAnimationStarted(events[0]);
+  EXPECT_EQ(1u, events.events_.size());
+  controller->NotifyAnimationStarted(events.events_[0]);
   EXPECT_EQ(controller->GetAnimationById(animation_id)->start_time(),
             controller_impl->GetAnimationById(animation_id)->start_time());
 
@@ -189,13 +190,13 @@ TEST(LayerAnimationControllerTest, UseSpecifiedStartTimes) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
 
   // Synchronize the start times.
-  EXPECT_EQ(1u, events.size());
-  controller->NotifyAnimationStarted(events[0]);
+  EXPECT_EQ(1u, events.events_.size());
+  controller->NotifyAnimationStarted(events.events_[0]);
 
   EXPECT_EQ(start_time,
             controller->GetAnimationById(animation_id)->start_time());
@@ -224,8 +225,7 @@ TEST(LayerAnimationControllerTest, Activation) {
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events = registrar->CreateEvents();
 
   controller->SetAnimationRegistrar(registrar.get());
   controller_impl->SetAnimationRegistrar(registrar_impl.get());
@@ -250,8 +250,8 @@ TEST(LayerAnimationControllerTest, Activation) {
 
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
-  EXPECT_EQ(1u, events->size());
-  controller->NotifyAnimationStarted((*events)[0]);
+  EXPECT_EQ(1u, events->events_.size());
+  controller->NotifyAnimationStarted(events->events_[0]);
 
   EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
   EXPECT_EQ(1u,
@@ -267,7 +267,7 @@ TEST(LayerAnimationControllerTest, Activation) {
             controller->GetAnimation(Animation::OPACITY)->run_state());
   EXPECT_EQ(1u, registrar->active_animation_controllers_for_testing().size());
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1500));
   controller_impl->UpdateState(true, events.get());
@@ -278,8 +278,8 @@ TEST(LayerAnimationControllerTest, Activation) {
   EXPECT_EQ(0u,
             registrar_impl->active_animation_controllers_for_testing().size());
 
-  EXPECT_EQ(1u, events->size());
-  controller->NotifyAnimationFinished((*events)[0]);
+  EXPECT_EQ(1u, events->events_.size());
+  controller->NotifyAnimationFinished(events->events_[0]);
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1500));
   controller->UpdateState(true, nullptr);
 
@@ -331,14 +331,14 @@ TEST(LayerAnimationControllerTest, SyncPause) {
   TimeTicks time = kInitialTickTime;
 
   // Start the animations on each controller.
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(time);
   controller_impl->UpdateState(true, &events);
-  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(1u, events.events_.size());
 
   controller->Animate(time);
   controller->UpdateState(true, nullptr);
-  controller->NotifyAnimationStarted(events[0]);
+  controller->NotifyAnimationStarted(events.events_[0]);
 
   EXPECT_EQ(Animation::RUNNING,
             controller_impl->GetAnimationById(animation_id)->run_state());
@@ -385,8 +385,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
 
   EXPECT_FALSE(controller_impl->GetAnimation(Animation::OPACITY));
 
@@ -400,23 +399,23 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, events.get());
-  EXPECT_EQ(1u, events->size());
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[0].type);
+  EXPECT_EQ(1u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
 
   // Notify main thread controller that the animation has started.
-  controller->NotifyAnimationStarted((*events)[0]);
+  controller->NotifyAnimationStarted(events->events_[0]);
 
   // Complete animation on impl thread.
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime + TimeDelta::FromSeconds(1));
   controller_impl->UpdateState(true, events.get());
-  EXPECT_EQ(1u, events->size());
-  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[0].type);
+  EXPECT_EQ(1u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::FINISHED, events->events_[0].type);
 
-  controller->NotifyAnimationFinished((*events)[0]);
+  controller->NotifyAnimationFinished(events->events_[0]);
 
   controller->Animate(kInitialTickTime + TimeDelta::FromSeconds(2));
   controller->UpdateState(true, nullptr);
@@ -432,8 +431,7 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
 TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   FakeLayerAnimationValueObserver dummy;
   FakeLayerAnimationValueObserver dummy_impl;
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -451,9 +449,9 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   controller_impl->UpdateState(true, events.get());
 
   // There should be a STARTED event for the animation.
-  EXPECT_EQ(1u, events->size());
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[0].type);
-  controller->NotifyAnimationStarted((*events)[0]);
+  EXPECT_EQ(1u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
+  controller->NotifyAnimationStarted(events->events_[0]);
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   controller->UpdateState(true, nullptr);
@@ -461,7 +459,7 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   EXPECT_FALSE(dummy.animation_waiting_for_deletion());
   EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(2000));
   controller_impl->UpdateState(true, events.get());
@@ -469,14 +467,14 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
   EXPECT_TRUE(dummy_impl.animation_waiting_for_deletion());
 
   // There should be a FINISHED event for the animation.
-  EXPECT_EQ(1u, events->size());
-  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[0].type);
+  EXPECT_EQ(1u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::FINISHED, events->events_[0].type);
 
   // Neither controller should have deleted the animation yet.
   EXPECT_TRUE(controller->GetAnimation(Animation::OPACITY));
   EXPECT_TRUE(controller_impl->GetAnimation(Animation::OPACITY));
 
-  controller->NotifyAnimationFinished((*events)[0]);
+  controller->NotifyAnimationFinished(events->events_[0]);
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   controller->UpdateState(true, nullptr);
@@ -495,18 +493,17 @@ TEST(LayerAnimationControllerTest, AnimationsAreDeleted) {
 // Tests that transitioning opacity from 0 to 1 works as expected.
 
 static const AnimationEvent* GetMostRecentPropertyUpdateEvent(
-    const AnimationEventsVector* events) {
+    const AnimationEvents* events) {
   const AnimationEvent* event = 0;
-  for (size_t i = 0; i < events->size(); ++i)
-    if ((*events)[i].type == AnimationEvent::PROPERTY_UPDATE)
-      event = &(*events)[i];
+  for (size_t i = 0; i < events->events_.size(); ++i)
+    if (events->events_[i].type == AnimationEvent::PROPERTY_UPDATE)
+      event = &events->events_[i];
 
   return event;
 }
 
 TEST(LayerAnimationControllerTest, TrivialTransition) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -536,8 +533,7 @@ TEST(LayerAnimationControllerTest, TrivialTransition) {
 }
 
 TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -553,7 +549,7 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(0.f, dummy_impl.opacity());
-  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(0.f, start_opacity_event->opacity);
@@ -563,15 +559,14 @@ TEST(LayerAnimationControllerTest, TrivialTransitionOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(1.f, dummy_impl.opacity());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_opacity_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(1.f, end_opacity_event->opacity);
 }
 
 TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -603,7 +598,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(gfx::Transform(), dummy_impl.transform());
-  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   ASSERT_TRUE(start_transform_event);
@@ -618,7 +613,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(expected_transform, dummy_impl.transform());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_transform_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_EQ(expected_transform, end_transform_event->transform);
@@ -626,8 +621,7 @@ TEST(LayerAnimationControllerTest, TrivialTransformOnImpl) {
 }
 
 TEST(LayerAnimationControllerTest, FilterTransition) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -674,8 +668,7 @@ TEST(LayerAnimationControllerTest, FilterTransition) {
 }
 
 TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -704,7 +697,7 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_TRUE(controller_impl->HasActiveAnimation());
   EXPECT_EQ(start_filters, dummy_impl.filters());
-  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(1u, events->events_.size());
   const AnimationEvent* start_filter_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_TRUE(start_filter_event);
@@ -716,7 +709,7 @@ TEST(LayerAnimationControllerTest, FilterTransitionOnImplOnly) {
   controller_impl->UpdateState(true, events.get());
   EXPECT_EQ(end_filters, dummy_impl.filters());
   EXPECT_FALSE(controller_impl->HasActiveAnimation());
-  EXPECT_EQ(2u, events->size());
+  EXPECT_EQ(2u, events->events_.size());
   const AnimationEvent* end_filter_event =
       GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_TRUE(end_filter_event);
@@ -731,8 +724,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
   controller_impl->set_value_provider(&dummy_provider_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   FakeLayerAnimationValueProvider dummy_provider;
   scoped_refptr<LayerAnimationController> controller(
@@ -775,7 +767,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransition) {
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
-  controller->NotifyAnimationStarted((*events)[0]);
+  controller->NotifyAnimationStarted(events->events_[0]);
   controller->Animate(kInitialTickTime + duration / 2);
   controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -809,8 +801,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   FakeLayerAnimationValueProvider dummy_provider;
   scoped_refptr<LayerAnimationController> controller(
@@ -853,8 +844,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionNoImplProvider) {
   const AnimationEvent* event = GetMostRecentPropertyUpdateEvent(events.get());
   EXPECT_FALSE(event);
 
-
-  controller->NotifyAnimationStarted((*events)[0]);
+  controller->NotifyAnimationStarted(events->events_[0]);
   controller->Animate(kInitialTickTime + duration / 2);
   controller->UpdateState(true, nullptr);
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -885,8 +875,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetTransitionOnImplOnly) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
 
   gfx::ScrollOffset initial_value(100.f, 300.f);
   gfx::ScrollOffset target_value(300.f, 200.f);
@@ -934,8 +923,7 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
   controller_impl->set_value_provider(&dummy_provider_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   FakeLayerAnimationValueProvider dummy_provider;
   scoped_refptr<LayerAnimationController> controller(
@@ -1065,8 +1053,7 @@ TEST(LayerAnimationControllerTest,
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeAnimationDelegate delegate;
   controller_impl->set_layer_animation_delegate(&delegate);
 
@@ -1085,7 +1072,7 @@ TEST(LayerAnimationControllerTest,
   EXPECT_TRUE(delegate.started());
   EXPECT_FALSE(delegate.finished());
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   controller_impl->UpdateState(true, events.get());
@@ -1121,13 +1108,13 @@ TEST(LayerAnimationControllerTest,
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
 
   // Synchronize the start times.
-  EXPECT_EQ(1u, events.size());
-  controller->NotifyAnimationStarted(events[0]);
+  EXPECT_EQ(1u, events.events_.size());
+  controller->NotifyAnimationStarted(events.events_[0]);
 
   // Validate start time on the main thread delegate.
   EXPECT_EQ(start_time, delegate.start_time());
@@ -1173,13 +1160,13 @@ TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller_impl->GetAnimationById(animation_id)->run_state());
 
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
 
   // Synchronize the start times.
-  EXPECT_EQ(1u, events.size());
-  controller->NotifyAnimationStarted(events[0]);
+  EXPECT_EQ(1u, events.events_.size());
+  controller->NotifyAnimationStarted(events.events_[0]);
 
   // Validate start time on the event observer.
   EXPECT_EQ(start_time, observer.start_time());
@@ -1189,8 +1176,7 @@ TEST(LayerAnimationControllerTest, SpecifiedStartTimesAreSentToEventObservers) {
 // finish.
 TEST(LayerAnimationControllerTest,
      AnimationsWaitingForStartTimeDoNotFinishIfTheyOutwaitTheirFinish) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1229,8 +1215,7 @@ TEST(LayerAnimationControllerTest,
 
 // Tests that two queued animations affecting the same property run in sequence.
 TEST(LayerAnimationControllerTest, TrivialQueuing) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1271,8 +1256,7 @@ TEST(LayerAnimationControllerTest, TrivialQueuing) {
 
 // Tests interrupting a transition with another transition.
 TEST(LayerAnimationControllerTest, Interrupt) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1306,8 +1290,7 @@ TEST(LayerAnimationControllerTest, Interrupt) {
 // Tests scheduling two animations to run together when only one property is
 // free.
 TEST(LayerAnimationControllerTest, ScheduleTogetherWhenAPropertyIsBlocked) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1343,8 +1326,7 @@ TEST(LayerAnimationControllerTest, ScheduleTogetherWhenAPropertyIsBlocked) {
 // another animation queued to start when the shorter animation finishes (should
 // wait for both to finish).
 TEST(LayerAnimationControllerTest, ScheduleTogetherWithAnAnimWaiting) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1384,8 +1366,7 @@ TEST(LayerAnimationControllerTest, ScheduleTogetherWithAnAnimWaiting) {
 
 // Test that a looping animation loops and for the correct number of iterations.
 TEST(LayerAnimationControllerTest, TrivialLooping) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1430,8 +1411,7 @@ TEST(LayerAnimationControllerTest, TrivialLooping) {
 
 // Test that an infinitely looping animation does indeed go until aborted.
 TEST(LayerAnimationControllerTest, InfiniteLooping) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1477,8 +1457,7 @@ TEST(LayerAnimationControllerTest, InfiniteLooping) {
 
 // Test that pausing and resuming work as expected.
 TEST(LayerAnimationControllerTest, PauseResume) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1523,8 +1502,7 @@ TEST(LayerAnimationControllerTest, PauseResume) {
 }
 
 TEST(LayerAnimationControllerTest, AbortAGroupedAnimation) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1569,8 +1547,7 @@ TEST(LayerAnimationControllerTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
   controller_impl->AddValueObserver(&dummy_impl);
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1600,8 +1577,7 @@ TEST(LayerAnimationControllerTest, PushUpdatesWhenSynchronizedStartTimeNeeded) {
 
 // Tests that skipping a call to UpdateState works as expected.
 TEST(LayerAnimationControllerTest, SkipUpdateState) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
@@ -1626,12 +1602,12 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller->UpdateState(true, events.get());
 
   // Should have one STARTED event and one FINISHED event.
-  EXPECT_EQ(2u, events->size());
-  EXPECT_NE((*events)[0].type, (*events)[1].type);
+  EXPECT_EQ(2u, events->events_.size());
+  EXPECT_NE(events->events_[0].type, events->events_[1].type);
 
   // The float transition should still be at its starting point.
   EXPECT_TRUE(controller->HasActiveAnimation());
@@ -1648,8 +1624,7 @@ TEST(LayerAnimationControllerTest, SkipUpdateState) {
 // Tests that an animation controller with only a pending observer gets ticked
 // but doesn't progress animations past the STARTING state.
 TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy;
   FakeInactiveLayerAnimationValueObserver pending_dummy;
   scoped_refptr<LayerAnimationController> controller(
@@ -1664,7 +1639,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   // state.
   controller->Animate(kInitialTickTime);
   controller->UpdateState(true, events.get());
-  EXPECT_EQ(0u, events->size());
+  EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::WAITING_FOR_TARGET_AVAILABILITY,
             controller->GetAnimation(Animation::OPACITY)->run_state());
 
@@ -1675,7 +1650,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   // progress to RUNNING.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
   controller->UpdateState(true, events.get());
-  EXPECT_EQ(0u, events->size());
+  EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::STARTING,
             controller->GetAnimation(Animation::OPACITY)->run_state());
   EXPECT_EQ(0.5f, pending_dummy.opacity());
@@ -1684,7 +1659,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   // there, and shouldn't be ticked past its starting point.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(2000));
   controller->UpdateState(true, events.get());
-  EXPECT_EQ(0u, events->size());
+  EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::STARTING,
             controller->GetAnimation(Animation::OPACITY)->run_state());
   EXPECT_EQ(0.5f, pending_dummy.opacity());
@@ -1695,7 +1670,7 @@ TEST(LayerAnimationControllerTest, InactiveObserverGetsTicked) {
   // initially tick at its starting point, but should now progress to RUNNING.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(3000));
   controller->UpdateState(true, events.get());
-  EXPECT_EQ(1u, events->size());
+  EXPECT_EQ(1u, events->events_.size());
   EXPECT_EQ(Animation::RUNNING,
             controller->GetAnimation(Animation::OPACITY)->run_state());
   EXPECT_EQ(0.5f, pending_dummy.opacity());
@@ -1882,16 +1857,16 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   EXPECT_FALSE(dummy.animation_waiting_for_deletion());
   EXPECT_FALSE(dummy_impl.animation_waiting_for_deletion());
 
-  AnimationEventsVector events;
+  AnimationEvents events;
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
   EXPECT_TRUE(dummy_impl.animation_waiting_for_deletion());
-  EXPECT_EQ(1u, events.size());
-  EXPECT_EQ(AnimationEvent::ABORTED, events[0].type);
+  EXPECT_EQ(1u, events.events_.size());
+  EXPECT_EQ(AnimationEvent::ABORTED, events.events_[0].type);
   EXPECT_EQ(Animation::WAITING_FOR_DELETION,
             controller_impl->GetAnimation(Animation::OPACITY)->run_state());
 
-  controller->NotifyAnimationAborted(events[0]);
+  controller->NotifyAnimationAborted(events.events_[0]);
   EXPECT_EQ(Animation::ABORTED,
             controller->GetAnimation(Animation::OPACITY)->run_state());
 
@@ -1910,8 +1885,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
 // Ensure that we only generate FINISHED events for animations in a group
 // once all animations in that group are finished.
 TEST(LayerAnimationControllerTest, FinishedEventsForGroup) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -1936,18 +1910,18 @@ TEST(LayerAnimationControllerTest, FinishedEventsForGroup) {
   controller_impl->UpdateState(true, events.get());
 
   // Both animations should have started.
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[0].type);
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[1].type);
+  EXPECT_EQ(2u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[1].type);
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   controller_impl->UpdateState(true, events.get());
 
   // The opacity animation should be finished, but should not have generated
   // a FINISHED event yet.
-  EXPECT_EQ(0u, events->size());
+  EXPECT_EQ(0u, events->events_.size());
   EXPECT_EQ(Animation::FINISHED,
             controller_impl->GetAnimationById(2)->run_state());
   EXPECT_EQ(Animation::RUNNING,
@@ -1958,17 +1932,16 @@ TEST(LayerAnimationControllerTest, FinishedEventsForGroup) {
   controller_impl->UpdateState(true, events.get());
 
   // Both animations should have generated FINISHED events.
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[0].type);
-  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[1].type);
+  EXPECT_EQ(2u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::FINISHED, events->events_[0].type);
+  EXPECT_EQ(AnimationEvent::FINISHED, events->events_[1].type);
 }
 
 // Ensure that when a group has a mix of aborted and finished animations,
 // we generate a FINISHED event for the finished animation and an ABORTED
 // event for the aborted animation.
 TEST(LayerAnimationControllerTest, FinishedAndAbortedEventsForGroup) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
       LayerAnimationController::Create(0));
@@ -1991,24 +1964,24 @@ TEST(LayerAnimationControllerTest, FinishedAndAbortedEventsForGroup) {
   controller_impl->UpdateState(true, events.get());
 
   // Both animations should have started.
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[0].type);
-  EXPECT_EQ(AnimationEvent::STARTED, (*events)[1].type);
+  EXPECT_EQ(2u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[0].type);
+  EXPECT_EQ(AnimationEvent::STARTED, events->events_[1].type);
 
   controller_impl->AbortAnimations(Animation::OPACITY);
 
-  events.reset(new AnimationEventsVector);
+  events.reset(new AnimationEvents);
   controller_impl->Animate(kInitialTickTime +
                            TimeDelta::FromMilliseconds(1000));
   controller_impl->UpdateState(true, events.get());
 
   // We should have exactly 2 events: a FINISHED event for the tranform
   // animation, and an ABORTED event for the opacity animation.
-  EXPECT_EQ(2u, events->size());
-  EXPECT_EQ(AnimationEvent::FINISHED, (*events)[0].type);
-  EXPECT_EQ(Animation::TRANSFORM, (*events)[0].target_property);
-  EXPECT_EQ(AnimationEvent::ABORTED, (*events)[1].type);
-  EXPECT_EQ(Animation::OPACITY, (*events)[1].target_property);
+  EXPECT_EQ(2u, events->events_.size());
+  EXPECT_EQ(AnimationEvent::FINISHED, events->events_[0].type);
+  EXPECT_EQ(Animation::TRANSFORM, events->events_[0].target_property);
+  EXPECT_EQ(AnimationEvent::ABORTED, events->events_[1].type);
+  EXPECT_EQ(Animation::OPACITY, events->events_[1].target_property);
 }
 
 TEST(LayerAnimationControllerTest, HasAnimationThatAffectsScale) {
@@ -2453,8 +2426,7 @@ TEST(LayerAnimationControllerTest, MaximumTargetScaleWithDirection) {
 }
 
 TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -2516,8 +2488,7 @@ TEST(LayerAnimationControllerTest, NewlyPushedAnimationWaitsForActivation) {
 }
 
 TEST(LayerAnimationControllerTest, ActivationBetweenAnimateAndUpdateState) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -2571,7 +2542,7 @@ TEST(LayerAnimationControllerTest, ActivationBetweenAnimateAndUpdateState) {
 
 TEST(LayerAnimationControllerTest,
      ObserverNotifiedWhenTransformIsPotentiallyAnimatingChanges) {
-  AnimationEventsVector events;
+  AnimationEvents events;
   FakeLayerAnimationValueObserver active_dummy_impl;
   FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -2602,8 +2573,8 @@ TEST(LayerAnimationControllerTest,
   controller_impl->Animate(kInitialTickTime);
   controller_impl->UpdateState(true, &events);
 
-  controller->NotifyAnimationStarted(events[0]);
-  events.clear();
+  controller->NotifyAnimationStarted(events.events_[0]);
+  events.events_.clear();
 
   // Finish the animation.
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(1000));
@@ -2622,8 +2593,8 @@ TEST(LayerAnimationControllerTest,
   EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
   EXPECT_FALSE(active_dummy_impl.transform_is_animating());
 
-  controller->NotifyAnimationFinished(events[0]);
-  events.clear();
+  controller->NotifyAnimationFinished(events.events_[0]);
+  events.events_.clear();
 
   // Case 2: An animation that's removed before it finishes.
   int animation_id =
@@ -2642,8 +2613,8 @@ TEST(LayerAnimationControllerTest,
                            TimeDelta::FromMilliseconds(2000));
   controller_impl->UpdateState(true, &events);
 
-  controller->NotifyAnimationStarted(events[0]);
-  events.clear();
+  controller->NotifyAnimationStarted(events.events_[0]);
+  events.events_.clear();
 
   controller->RemoveAnimation(animation_id);
   EXPECT_FALSE(dummy.transform_is_animating());
@@ -2672,8 +2643,8 @@ TEST(LayerAnimationControllerTest,
                            TimeDelta::FromMilliseconds(3000));
   controller_impl->UpdateState(true, &events);
 
-  controller->NotifyAnimationStarted(events[0]);
-  events.clear();
+  controller->NotifyAnimationStarted(events.events_[0]);
+  events.events_.clear();
 
   controller_impl->AbortAnimations(Animation::TRANSFORM);
   EXPECT_FALSE(pending_dummy_impl.transform_is_animating());
@@ -2683,7 +2654,7 @@ TEST(LayerAnimationControllerTest,
                            TimeDelta::FromMilliseconds(4000));
   controller_impl->UpdateState(true, &events);
 
-  controller->NotifyAnimationAborted(events[0]);
+  controller->NotifyAnimationAborted(events.events_[0]);
   EXPECT_FALSE(dummy.transform_is_animating());
 }
 
@@ -2720,8 +2691,7 @@ TEST(LayerAnimationControllerTest, ClippedNegativeOpacityValues) {
 }
 
 TEST(LayerAnimationControllerTest, PushedDeletedAnimationWaitsForActivation) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(
@@ -2777,8 +2747,7 @@ TEST(LayerAnimationControllerTest, PushedDeletedAnimationWaitsForActivation) {
 // Tests that an animation that affects only active observers won't block
 // an animation that affects only pending observers from starting.
 TEST(LayerAnimationControllerTest, StartAnimationsAffectingDifferentObservers) {
-  scoped_ptr<AnimationEventsVector> events(
-      make_scoped_ptr(new AnimationEventsVector));
+  scoped_ptr<AnimationEvents> events(make_scoped_ptr(new AnimationEvents));
   FakeLayerAnimationValueObserver dummy_impl;
   FakeInactiveLayerAnimationValueObserver pending_dummy_impl;
   scoped_refptr<LayerAnimationController> controller_impl(

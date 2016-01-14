@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/animation/animation.h"
-#include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"

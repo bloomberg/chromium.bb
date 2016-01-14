@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/animation/animation_events.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -214,12 +215,11 @@ void ThreadedChannel::DidCommitAndDrawFrame() {
                                               impl().proxy_main_weak_ptr));
 }
 
-void ThreadedChannel::SetAnimationEvents(
-    scoped_ptr<AnimationEventsVector> queue) {
+void ThreadedChannel::SetAnimationEvents(scoped_ptr<AnimationEvents> events) {
   DCHECK(IsImplThread());
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::Bind(&ProxyMain::SetAnimationEvents,
-                            impl().proxy_main_weak_ptr, base::Passed(&queue)));
+                            impl().proxy_main_weak_ptr, base::Passed(&events)));
 }
 
 void ThreadedChannel::DidLoseOutputSurface() {

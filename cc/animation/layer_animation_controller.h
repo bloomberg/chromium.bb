@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_events.h"
+#include "cc/animation/animation.h"
 #include "cc/animation/layer_animation_event_observer.h"
 #include "cc/base/cc_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
@@ -26,8 +26,8 @@ class Transform;
 
 namespace cc {
 
-class Animation;
 class AnimationDelegate;
+class AnimationEvents;
 class AnimationRegistrar;
 class FilterOperations;
 class KeyframeValueList;
@@ -59,10 +59,9 @@ class CC_EXPORT LayerAnimationController
 
   void Animate(base::TimeTicks monotonic_time);
   void AccumulatePropertyUpdates(base::TimeTicks monotonic_time,
-                                 AnimationEventsVector* events);
+                                 AnimationEvents* events);
 
-  void UpdateState(bool start_ready_animations,
-                   AnimationEventsVector* events);
+  void UpdateState(bool start_ready_animations, AnimationEvents* events);
 
   // Make animations affect active observers if and only if they affect
   // pending observers. Any animations that no longer affect any observers
@@ -190,10 +189,10 @@ class CC_EXPORT LayerAnimationController
 
   void StartAnimations(base::TimeTicks monotonic_time);
   void PromoteStartedAnimations(base::TimeTicks monotonic_time,
-                                AnimationEventsVector* events);
+                                AnimationEvents* events);
   void MarkFinishedAnimations(base::TimeTicks monotonic_time);
   void MarkAnimationsForDeletion(base::TimeTicks monotonic_time,
-                                 AnimationEventsVector* events);
+                                 AnimationEvents* events);
   void PurgeAnimationsMarkedForDeletion();
 
   void TickAnimations(base::TimeTicks monotonic_time);

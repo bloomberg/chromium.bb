@@ -18,6 +18,10 @@
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
 
+namespace cc {
+struct AnimationEvent;
+}
+
 namespace ui {
 
 class LayerAnimationDelegate;

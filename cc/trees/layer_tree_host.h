@@ -20,7 +20,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "cc/animation/animation_events.h"
+#include "cc/animation/animation.h"
 #include "cc/base/cc_export.h"
 #include "cc/debug/frame_timing_tracker.h"
 #include "cc/debug/micro_benchmark.h"
@@ -51,6 +51,8 @@ class GpuMemoryBufferManager;
 }
 
 namespace cc {
+
+class AnimationEvents;
 class AnimationRegistrar;
 class AnimationHost;
 class BeginFrameSource;
@@ -183,7 +185,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   void SetNextCommitForcesRedraw();
 
-  void SetAnimationEvents(scoped_ptr<AnimationEventsVector> events);
+  void SetAnimationEvents(scoped_ptr<AnimationEvents> events);
 
   void SetRootLayer(scoped_refptr<Layer> root_layer);
   Layer* root_layer() { return root_layer_.get(); }

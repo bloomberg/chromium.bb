@@ -34,7 +34,13 @@ struct CC_EXPORT AnimationEvent {
   FilterOperations filters;
 };
 
-typedef std::vector<AnimationEvent> AnimationEventsVector;
+class CC_EXPORT AnimationEvents {
+ public:
+  AnimationEvents();
+  ~AnimationEvents();
+
+  std::vector<AnimationEvent> events_;
+};
 
 }  // namespace cc
 
