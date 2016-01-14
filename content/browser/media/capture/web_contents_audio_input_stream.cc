@@ -13,11 +13,11 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
-#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/virtual_audio_input_stream.h"
 #include "media/audio/virtual_audio_output_stream.h"
 #include "media/base/bind_to_current_loop.h"
@@ -329,7 +329,7 @@ WebContentsAudioInputStream* WebContentsAudioInputStream::Create(
     AudioMirroringManager* audio_mirroring_manager) {
   int render_process_id;
   int main_render_frame_id;
-  if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
+  if (!WebContentsMediaCaptureId::ExtractTabCaptureTarget(
           device_id, &render_process_id, &main_render_frame_id)) {
     return NULL;
   }

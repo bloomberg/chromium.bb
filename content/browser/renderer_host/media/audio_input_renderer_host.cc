@@ -17,13 +17,13 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/web_contents_audio_input_stream.h"
-#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/media/webrtc_internals.h"
 #include "content/browser/renderer_host/media/audio_input_debug_writer.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_input_sync_writer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/audio/audio_manager_base.h"
 #include "media/base/audio_bus.h"
 
@@ -442,7 +442,7 @@ void AudioInputRendererHost::DoCreateStream(
   // If we have successfully created the SyncWriter then assign it to the
   // entry and construct an AudioInputController.
   entry->writer.reset(writer.release());
-  if (WebContentsCaptureUtil::IsWebContentsDeviceId(device_id)) {
+  if (WebContentsMediaCaptureId::IsWebContentsDeviceId(device_id)) {
     entry->controller = media::AudioInputController::CreateForStream(
         audio_manager_->GetTaskRunner(),
         this,

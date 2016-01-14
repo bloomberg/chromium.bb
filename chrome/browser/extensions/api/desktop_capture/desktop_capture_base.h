@@ -12,7 +12,6 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/media/desktop_media_list.h"
 #include "chrome/browser/media/desktop_media_picker.h"
-#include "chrome/browser/media/native_desktop_media_list.h"
 #include "chrome/common/extensions/api/desktop_capture.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"

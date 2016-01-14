@@ -69,7 +69,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/browser/media/capture/cursor_renderer.h"
-#include "content/browser/media/capture/web_contents_capture_util.h"
 #include "content/browser/media/capture/web_contents_tracker.h"
 #include "content/browser/media/capture/window_activity_tracker.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -79,6 +78,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/render_widget_host_view_frame_subscriber.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_media_capture_id.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_capture_types.h"
 #include "media/base/video_frame_metadata.h"
@@ -953,15 +953,14 @@ media::VideoCaptureDevice* WebContentsVideoCaptureDevice::Create(
   // Parse device_id into render_process_id and main_render_frame_id.
   int render_process_id = -1;
   int main_render_frame_id = -1;
-  if (!WebContentsCaptureUtil::ExtractTabCaptureTarget(
-           device_id, &render_process_id, &main_render_frame_id)) {
+  if (!WebContentsMediaCaptureId::ExtractTabCaptureTarget(
+          device_id, &render_process_id, &main_render_frame_id)) {
     return NULL;
   }
 
   return new WebContentsVideoCaptureDevice(
-      render_process_id,
-      main_render_frame_id,
-      WebContentsCaptureUtil::IsAutoThrottlingOptionSet(device_id));
+      render_process_id, main_render_frame_id,
+      WebContentsMediaCaptureId::IsAutoThrottlingOptionSet(device_id));
 }
 
 void WebContentsVideoCaptureDevice::AllocateAndStart(
