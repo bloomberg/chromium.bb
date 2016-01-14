@@ -107,6 +107,7 @@ ContentSettingsType kPermissionType[] = {
 #if defined(OS_ANDROID)
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
 #endif
+    CONTENT_SETTINGS_TYPE_KEYGEN,
 };
 
 // Determines whether to show permission |type| in the Website Settings UI. Only
@@ -709,8 +710,11 @@ void WebsiteSettings::PresentSitePermissions() {
                                                       NULL);
     }
 
-    if (permission_info.setting != CONTENT_SETTING_DEFAULT &&
-        permission_info.setting != permission_info.default_setting) {
+    if ((permission_info.setting != CONTENT_SETTING_DEFAULT &&
+         permission_info.setting != permission_info.default_setting) ||
+        (permission_info.type == CONTENT_SETTINGS_TYPE_KEYGEN &&
+         tab_specific_content_settings()->IsContentBlocked(
+             permission_info.type))) {
       permission_info_list.push_back(permission_info);
     }
   }

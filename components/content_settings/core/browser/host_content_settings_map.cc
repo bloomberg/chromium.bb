@@ -345,7 +345,8 @@ void HostContentSettingsMap::SetNarrowestContentSetting(
              type == CONTENT_SETTINGS_TYPE_PUSH_MESSAGING) {
     primary_pattern = ContentSettingsPattern::FromURL(primary_url);
     secondary_pattern = ContentSettingsPattern::Wildcard();
-  } else if (type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
+  } else if (type == CONTENT_SETTINGS_TYPE_KEYGEN ||
+             type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
              type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA ||
              type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS ||
              type == CONTENT_SETTINGS_TYPE_PPAPI_BROKER) {

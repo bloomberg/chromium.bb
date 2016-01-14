@@ -24,6 +24,7 @@ cr.define('options', function() {
     'cookies': 'cookies',
     'images': 'images',
     'javascript': 'javascript',
+    'keygen': 'keygen',
     'location': 'location',
     'media-stream-camera': 'mediaStreamCamera',
     'media-stream-mic': 'mediaStreamMic',

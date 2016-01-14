@@ -9567,6 +9567,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Options_DefaultKeygenSettingChanged">
+  <owner>rsleevi@chromium.org</owner>
+  <owner>svaldez@chromium.org</owner>
+  <description>
+    Triggers when the default decision for using key generation is changed.
+  </description>
+</action>
+
 <action name="Options_DefaultMIDISysExSettingChanged">
   <owner>toyoshim@chromium.org</owner>
   <description>
