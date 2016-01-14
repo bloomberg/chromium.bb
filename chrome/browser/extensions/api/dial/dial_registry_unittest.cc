@@ -119,6 +119,7 @@ class DialRegistryTest : public testing::Test {
 TEST_F(DialRegistryTest, TestAddRemoveListeners) {
   SetListenerExpectations();
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_)).Times(2);
 
   EXPECT_FALSE(registry_->repeating_timer_.IsRunning());
   registry_->OnListenerAdded();
@@ -133,6 +134,7 @@ TEST_F(DialRegistryTest, TestAddRemoveListeners) {
 
 TEST_F(DialRegistryTest, TestNoDevicesDiscovered) {
   SetListenerExpectations();
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(registry_->mock_service(), Discover());
 
   registry_->OnListenerAdded();
@@ -149,6 +151,7 @@ TEST_F(DialRegistryTest, TestDevicesDiscovered) {
   SetListenerExpectations();
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
@@ -173,6 +176,7 @@ TEST_F(DialRegistryTest, TestDevicesDiscoveredWithTwoListeners) {
   SetListenerExpectations();
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_))
       .Times(2);
   EXPECT_CALL(registry_->mock_service(), Discover());
@@ -197,6 +201,7 @@ TEST_F(DialRegistryTest, TestDeviceExpires) {
   SetListenerExpectations();
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
@@ -228,6 +233,7 @@ TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
 
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
   EXPECT_CALL(registry_->mock_service(), Discover());
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
@@ -258,21 +264,34 @@ TEST_F(DialRegistryTest, TestExpiredDeviceIsRediscovered) {
 }
 
 TEST_F(DialRegistryTest, TestRemovingListenerDoesNotClearList) {
+  DialRegistry::DeviceList expected_list2;
+  expected_list2.push_back(first_device_);
+  expected_list2.push_back(second_device_);
+
+  InSequence s;
   EXPECT_CALL(registry_->mock_service(),
-              AddObserver(A<DialService::Observer*>()))
-      .Times(2);
+              AddObserver(A<DialService::Observer*>()));
+  EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
   EXPECT_CALL(registry_->mock_service(),
-              RemoveObserver(A<DialService::Observer*>()))
-      .Times(2);
-  EXPECT_CALL(registry_->mock_service(), Discover())
-      .Times(2);
-  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
+              RemoveObserver(A<DialService::Observer*>()));
 
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(NULL);
   registry_->OnDeviceDiscovered(NULL, first_device_);
+  registry_->OnDeviceDiscovered(NULL, second_device_);
   registry_->OnDiscoveryFinished(NULL);
   registry_->OnListenerRemoved();
+
+  // Removing and adding a listener again fires an event with the current device
+  // list (even though no new devices were discovered).
+  EXPECT_CALL(registry_->mock_service(),
+              AddObserver(A<DialService::Observer*>()));
+  EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(expected_list2));
+  EXPECT_CALL(registry_->mock_service(),
+              RemoveObserver(A<DialService::Observer*>()));
 
   registry_->OnListenerAdded();
   registry_->OnDiscoveryRequest(NULL);
@@ -285,6 +304,7 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionLost) {
 
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
   EXPECT_CALL(mock_observer_,
               OnDialError(DialRegistry::DIAL_NETWORK_DISCONNECTED));
@@ -318,6 +338,7 @@ TEST_F(DialRegistryTest, TestNetworkEventConnectionRestored) {
 
   InSequence s;
   EXPECT_CALL(registry_->mock_service(), Discover());
+  EXPECT_CALL(mock_observer_, OnDialDeviceEvent(empty_list_));
   EXPECT_CALL(mock_observer_, OnDialDeviceEvent(list_with_first_device_));
 
   EXPECT_CALL(mock_observer_,

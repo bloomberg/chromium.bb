@@ -61,10 +61,11 @@ void DialRegistry::OnListenerAdded() {
   if (++num_listeners_ == 1) {
     VLOG(2) << "Listener added; starting periodic discovery.";
     StartPeriodicDiscovery();
-  } else {
-    // Event the new listener with the current device list.
-    SendEvent();
   }
+  // Event listeners with the current device list.
+  // TODO(crbug.com/576817): Rework the DIAL API so we don't need to have extra
+  // behaviors when adding listeners.
+  SendEvent();
 }
 
 void DialRegistry::OnListenerRemoved() {
