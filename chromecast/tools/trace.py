@@ -9,101 +9,16 @@
 
 import contextlib
 import json
-import logging
-import math
 import optparse
 import os
 import sys
 import websocket
 
-
-class TracingClient(object):
-  def BufferUsage(self, buffer_usage):
-    percent = int(math.floor(buffer_usage * 100))
-    logging.debug('Buffer Usage: %i', percent)
-
-
-class TracingBackend(object):
-  def __init__(self, devtools_port):
-    self._socket = None
-    self._next_request_id = 0
-    self._tracing_client = None
-    self._tracing_data = []
-
-  def Connect(self, device_ip, devtools_port, timeout=10):
-    assert not self._socket
-    url = 'ws://%s:%i/devtools/browser' % (device_ip, devtools_port)
-    print('Connect to %s ...' % url)
-    self._socket = websocket.create_connection(url, timeout=timeout)
-    self._next_request_id = 0
-
-  def Disconnect(self):
-    if self._socket:
-      self._socket.close()
-      self._socket = None
-
-  def StartTracing(self,
-                   tracing_client=None,
-                   custom_categories=None,
-                   record_continuously=False,
-                   buffer_usage_reporting_interval=0,
-                   timeout=10):
-    self._tracing_client = tracing_client
-    self._socket.settimeout(timeout)
-    req = {
-      'method': 'Tracing.start',
-      'params': {
-        'categories': custom_categories,
-        'bufferUsageReportingInterval': buffer_usage_reporting_interval,
-        'options': 'record-continuously' if record_continuously else
-                   'record-until-full'
-      }
-    }
-    self._SendRequest(req)
-
-  def StopTracing(self, timeout=30):
-    self._socket.settimeout(timeout)
-    req = {'method': 'Tracing.end'}
-    self._SendRequest(req)
-    while self._socket:
-      res = self._ReceiveResponse()
-      if 'method' in res and self._HandleResponse(res):
-        self._tracing_client = None
-        result = self._tracing_data
-        self._tracing_data = []
-        return result
-
-  def _SendRequest(self, req):
-    req['id'] = self._next_request_id
-    self._next_request_id += 1
-    data = json.dumps(req)
-    self._socket.send(data)
-
-  def _ReceiveResponse(self):
-    while self._socket:
-      data = self._socket.recv()
-      res = json.loads(data)
-      return res
-
-  def _HandleResponse(self, res):
-    method = res.get('method')
-    value = res.get('params', {}).get('value')
-    if 'Tracing.dataCollected' == method:
-      if type(value) in [str, unicode]:
-        self._tracing_data.append(value)
-      elif type(value) is list:
-        self._tracing_data.extend(value)
-      else:
-        logging.warning('Unexpected type in tracing data')
-    elif 'Tracing.bufferUsage' == method and self._tracing_client:
-      self._tracing_client.BufferUsage(value)
-    elif 'Tracing.tracingComplete' == method:
-      return True
-
+from tracinglib import TracingBackend, TracingClient
 
 @contextlib.contextmanager
 def Connect(device_ip, devtools_port):
-  backend = TracingBackend(devtools_port)
+  backend = TracingBackend()
   try:
     backend.Connect(device_ip, devtools_port)
     yield backend
@@ -122,8 +37,8 @@ def DumpTrace(trace, options):
   else:
     filepath = os.path.join(os.getcwd(), filepath)
 
-  with open(filepath, "w") as f:
-   json.dump(trace, f)
+  with open(filepath, 'w') as f:
+    json.dump(trace, f)
   return filepath
 
 
@@ -133,7 +48,7 @@ def _CreateOptionParser():
   parser.add_option(
       '-v', '--verbose', help='Verbose logging.', action='store_true')
   parser.add_option(
-      '-p', '--port', help='Remote debugging port.', type="int", default=9222)
+      '-p', '--port', help='Remote debugging port.', type='int', default=9222)
   parser.add_option(
       '-d', '--device', help='Device ip address.', type='string',
       default='127.0.0.1')
