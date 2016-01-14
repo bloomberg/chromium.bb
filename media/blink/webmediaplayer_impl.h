@@ -111,11 +111,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // paint() the current video frame into |canvas|. This is used to support
   // various APIs and functionalities, including but not limited to: <canvas>,
   // WebGL texImage2D, ImageBitmap, printing and capturing capabilities.
-  //
-  // This is also used to draw the first frame before WebLayer for the video is
-  // set on the WebMediaPlayerClient, which happens asynchronously. After
-  // WebLayer is set, a video frame will also be drawn immediately.
-  // TODO(chrishtr): Remove this when http://crbug.com/527579 is fixed.
   void paint(blink::WebCanvas* canvas,
              const blink::WebRect& rect,
              unsigned char alpha,

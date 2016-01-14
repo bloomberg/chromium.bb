@@ -42,12 +42,13 @@ void VideoPainter::paintReplaced(const PaintInfo& paintInfo, const LayoutPoint& 
 
     LayoutObjectDrawingRecorder drawingRecorder(context, m_layoutVideo, paintInfo.phase, contentRect, paintOffset);
 
-    if (displayingPoster) {
+    // Video frames are only painted in software for printing or capturing node images via web APIs.
+    bool forceSoftwareVideoPaint = paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers;
+
+    if (displayingPoster || !forceSoftwareVideoPaint) {
+        // This wil display the poster image, if one is present, and otherwise paint nothing.
         ImagePainter(m_layoutVideo).paintIntoRect(context, rect);
-    } else if ((paintInfo.globalPaintFlags() & GlobalPaintFlattenCompositingLayers) || !m_layoutVideo.acceleratedRenderingInUse()) {
-        // TODO(chrishtr): Fix the !m_layoutVideo.acceleratedRenderingInUse()
-        // case and update the comment about paint() in webmediaplayer_impl.h.
-        // See http://crbug.com/527579 for details.
+    } else {
         SkPaint videoPaint = context.fillPaint();
         videoPaint.setColor(SK_ColorBLACK);
         m_layoutVideo.videoElement()->paintCurrentFrame(context.canvas(), pixelSnappedIntRect(rect), &videoPaint);
