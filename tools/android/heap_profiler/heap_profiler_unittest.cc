@@ -434,8 +434,8 @@ TEST_F(HeapProfilerTest, Test64Bit) {
       (void*)0x7ffffffffffff000L, 4096, st2.frames, st2.depth, 0);
   heap_profiler_alloc(
       (void*)0xfffffffffffff000L, 4096, st3.frames, st3.depth, 0);
-  EXPECT_EQ(3, stats_.num_allocs);
-  EXPECT_EQ(3, stats_.num_stack_traces);
+  EXPECT_EQ(3u, stats_.num_allocs);
+  EXPECT_EQ(3u, stats_.num_stack_traces);
   EXPECT_EQ(4096u + 4096 + 4096, stats_.total_alloc_bytes);
 
   heap_profiler_free((void*)0x1000, 4096, NULL);
