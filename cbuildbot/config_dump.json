@@ -10829,6 +10829,20 @@
         "master": true,
         "sync_chrome": false
     },
+    "master-toolchain-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "afdo_use": false,
+        "boards": [],
+        "branch_util_test": true,
+        "description": "Toolchain master (all others are slaves).",
+        "health_alert_recipients": [
+            "c-compiler-chrome@google.com"
+        ],
+        "health_threshold": 1,
+        "master": true,
+        "sync_chrome": true
+    },
     "mccloud-chrome-pfq": {
         "_template": "chrome-pfq",
         "boards": [

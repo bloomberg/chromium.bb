@@ -2018,6 +2018,22 @@ def GetConfig():
 
   _grouped_variant_release = _release.derive(_grouped_variant_config)
 
+  ### Master toolchain config.
+
+  site_config.Add(
+      'master-toolchain-release', _release,
+      boards=[],
+      description='Toolchain master (all others are slaves).',
+      master=True,
+      sync_chrome=True,
+      chrome_sdk=True,
+      health_alert_recipients=['c-compiler-chrome@google.com'],
+      health_threshold=1,
+      afdo_use=False,
+      usepkg_build_packages=False,
+      branch_util_test=True,
+  )
+
   ### Master release config.
 
   site_config.Add(
