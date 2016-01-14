@@ -29,11 +29,13 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
 #endif
     m_font->addClient(this);
 
-    if (RuntimeEnabledFeatures::cssFontDisplayEnabled()) {
+    if (RuntimeEnabledFeatures::webFontsInterventionEnabled()) {
         // TODO(crbug.com/515343): Consider to use better signals.
-        m_isInterventionEnabled = networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
-        if (m_isInterventionEnabled && m_display == FontDisplayAuto)
+        if (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto) {
+
+            m_isInterventionEnabled = true;
             m_period = SwapPeriod;
+        }
     }
 }
 
