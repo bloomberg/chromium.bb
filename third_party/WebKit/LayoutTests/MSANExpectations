@@ -66,3 +66,6 @@ crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-samples-in-snap
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-active-dom-object.html [ Timeout ]
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Timeout ]
 crbug.com/462190 [ Linux ] inspector-protocol/heap-profiler/heap-snapshot-with-event-listener.html [ Timeout ]
+
+# Intentionally failed allocations, via partitionAllocGenericFlags()
+crbug.com/577889 [ Linux ] fast/js/typed-array-allocation-failure.html [ Crash ]
