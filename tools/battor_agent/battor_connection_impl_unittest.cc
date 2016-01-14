@@ -135,22 +135,17 @@ TEST_F(BattOrConnectionImplTest, ResetSendsCorrectBytes) {
   SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0, 0);
 
   const char expected_data[] = {
-      BATTOR_CONTROL_BYTE_START,
-      BATTOR_MESSAGE_TYPE_CONTROL,
-      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
-      BATTOR_CONTROL_BYTE_ESCAPE,
-      0x00,
-      BATTOR_CONTROL_BYTE_ESCAPE,
-      0x00,
-      BATTOR_CONTROL_BYTE_ESCAPE,
-      0x00,
-      BATTOR_CONTROL_BYTE_ESCAPE,
-      0x00,
+      BATTOR_CONTROL_BYTE_START,  BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE, BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
+      BATTOR_CONTROL_BYTE_ESCAPE, 0x00,
       BATTOR_CONTROL_BYTE_END,
   };
 
   ASSERT_TRUE(GetSendSuccess());
-  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(12)->data(), expected_data, 12));
+  ASSERT_EQ(0, std::memcmp(ReadMessageRaw(13)->data(), expected_data, 13));
 }
 
 TEST_F(BattOrConnectionImplTest, ReadMessageControlMessage) {
@@ -160,6 +155,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageControlMessage) {
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
       BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       0x04,
       0x04,
@@ -167,7 +163,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageControlMessage) {
       0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 8);
+  SendBytesRaw(data, 9);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   const char expected[] = {BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04, 0x04, 0x04,
@@ -186,6 +182,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageInvalidType) {
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
       UINT8_MAX,
+      BATTOR_CONTROL_BYTE_ESCAPE,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       0x04,
       0x04,
@@ -193,7 +190,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageInvalidType) {
       0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 6);
+  SendBytesRaw(data, 7);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
@@ -205,10 +202,13 @@ TEST_F(BattOrConnectionImplTest, ReadMessageEndsMidMessageByte) {
   ASSERT_TRUE(GetOpenSuccess());
 
   const char data[] = {
-      BATTOR_CONTROL_BYTE_START, BATTOR_MESSAGE_TYPE_CONTROL,
-      BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04,
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      0x04,
   };
-  SendBytesRaw(data, 4);
+  SendBytesRaw(data, 5);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
@@ -222,13 +222,14 @@ TEST_F(BattOrConnectionImplTest, ReadMessageMissingEndByte) {
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
       BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       0x04,
       0x04,
       0x04,
       0x04,
   };
-  SendBytesRaw(data, 5);
+  SendBytesRaw(data, 6);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
@@ -242,6 +243,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageWithEscapeCharacters) {
   const char data[] = {
       BATTOR_CONTROL_BYTE_START,
       BATTOR_MESSAGE_TYPE_CONTROL,
+      BATTOR_CONTROL_BYTE_ESCAPE,
       BATTOR_CONTROL_MESSAGE_TYPE_RESET,
       BATTOR_CONTROL_BYTE_ESCAPE,
       0x00,
@@ -250,7 +252,7 @@ TEST_F(BattOrConnectionImplTest, ReadMessageWithEscapeCharacters) {
       0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 9);
+  SendBytesRaw(data, 10);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   const char expected[] = {BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x00};
@@ -329,11 +331,14 @@ TEST_F(BattOrConnectionImplTest, ReadMessageFailsWithControlButExpectingAck) {
   ASSERT_TRUE(GetOpenSuccess());
 
   const char data[] = {
-      BATTOR_CONTROL_BYTE_START,         BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-      BATTOR_CONTROL_MESSAGE_TYPE_RESET, 0x04,
+      BATTOR_CONTROL_BYTE_START,
+      BATTOR_MESSAGE_TYPE_CONTROL_ACK,
+      BATTOR_CONTROL_BYTE_ESCAPE,
+      BATTOR_CONTROL_MESSAGE_TYPE_RESET,
+      0x04,
       BATTOR_CONTROL_BYTE_END,
   };
-  SendBytesRaw(data, 5);
+  SendBytesRaw(data, 6);
   ReadMessage(BATTOR_MESSAGE_TYPE_CONTROL);
 
   ASSERT_TRUE(IsReadComplete());
