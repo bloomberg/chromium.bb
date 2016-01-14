@@ -41,9 +41,10 @@ class ExtensionMessagePort : public MessageService::MessagePort {
                        content::RenderProcessHost* extension_process);
   ~ExtensionMessagePort() override;
 
-  bool IsValidPort() override;
-
   // MessageService::MessagePort:
+  void RemoveCommonFrames(const MessagePort& port) override;
+  bool HasFrame(content::RenderFrameHost* rfh) const override;
+  bool IsValidPort() override;
   void DispatchOnConnect(const std::string& channel_name,
                          scoped_ptr<base::DictionaryValue> source_tab,
                          int source_frame_id,

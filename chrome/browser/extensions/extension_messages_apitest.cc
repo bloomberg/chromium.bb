@@ -162,6 +162,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingEventURL) {
   ASSERT_TRUE(RunExtensionTest("messaging/event_url")) << message_;
 }
 
+// Tests that messages cannot be received from the same frame.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MessagingBackgroundOnly) {
+  ASSERT_TRUE(RunExtensionTest("messaging/background_only")) << message_;
+}
+
 // Tests connecting from a panel to its extension.
 class PanelMessagingTest : public ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {

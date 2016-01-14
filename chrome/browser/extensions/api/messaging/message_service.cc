@@ -193,6 +193,13 @@ static content::RenderProcessHost* GetExtensionProcess(
 
 }  // namespace
 
+void MessageService::MessagePort::RemoveCommonFrames(const MessagePort& port) {}
+
+bool MessageService::MessagePort::HasFrame(
+    content::RenderFrameHost* rfh) const {
+  return false;
+}
+
 // static
 void MessageService::AllocatePortIdPair(int* port1, int* port2) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -569,6 +576,12 @@ void MessageService::OpenChannelImpl(BrowserContext* browser_context,
   if (!opener->IsValidPort())
     return;
 
+  params->receiver->RemoveCommonFrames(*opener);
+  if (!params->receiver->IsValidPort()) {
+    opener->DispatchOnDisconnect(kReceivingEndDoesntExistError);
+    return;
+  }
+
   MessageChannel* channel(new MessageChannel());
   channel->opener.reset(opener.release());
   channel->receiver.reset(params->receiver.release());
@@ -708,6 +721,9 @@ void MessageService::CloseChannelImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   MessageChannel* channel = channel_iter->second;
+  // Remove from map to make sure that it is impossible for CloseChannelImpl to
+  // run twice for the same channel.
+  channels_.erase(channel_iter);
 
   // Notify the other side.
   if (notify_other_port) {
@@ -720,8 +736,7 @@ void MessageService::CloseChannelImpl(
   channel->opener->DecrementLazyKeepaliveCount();
   channel->receiver->DecrementLazyKeepaliveCount();
 
-  delete channel_iter->second;
-  channels_.erase(channel_iter);
+  delete channel;
 }
 
 void MessageService::PostMessage(int source_port_id, const Message& message) {

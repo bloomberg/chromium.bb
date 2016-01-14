@@ -63,6 +63,14 @@ class MessageService : public BrowserContextKeyedAPI {
    public:
     virtual ~MessagePort() {}
 
+    // Called right before a channel is created for this MessagePort and |port|.
+    // This allows us to ensure that the ports have no RenderFrameHost instances
+    // in common.
+    virtual void RemoveCommonFrames(const MessagePort& port);
+
+    // Check whether the given RenderFrameHost is associated with this port.
+    virtual bool HasFrame(content::RenderFrameHost* rfh) const;
+
     // Called right before a port is connected to a channel. If false, the port
     // is not used and the channel is closed.
     virtual bool IsValidPort() = 0;

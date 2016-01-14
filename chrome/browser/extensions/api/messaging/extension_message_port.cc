@@ -114,6 +114,23 @@ ExtensionMessagePort::ExtensionMessagePort(
 
 ExtensionMessagePort::~ExtensionMessagePort() {}
 
+void ExtensionMessagePort::RemoveCommonFrames(const MessagePort& port) {
+  // Avoid overlap in the set of frames to make sure that it does not matter
+  // when UnregisterFrame is called.
+  for (std::set<content::RenderFrameHost*>::iterator it = frames_.begin();
+       it != frames_.end(); ) {
+    if (port.HasFrame(*it)) {
+      frames_.erase(it++);
+    } else {
+      ++it;
+    }
+  }
+}
+
+bool ExtensionMessagePort::HasFrame(content::RenderFrameHost* rfh) const {
+  return frames_.find(rfh) != frames_.end();
+}
+
 bool ExtensionMessagePort::IsValidPort() {
   return !frames_.empty();
 }
