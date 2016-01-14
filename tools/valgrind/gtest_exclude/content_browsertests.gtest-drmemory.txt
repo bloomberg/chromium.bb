@@ -61,3 +61,6 @@ WebRtcMediaRecorderTest.MediaRecorderPausePreventsDataavailableFromBeingFired
 
 # https://crbug.com/571548
 RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
+
+# https://crbug.com/577796
+WebRtcMediaRecorderTest.MediaRecorderPeerConnection
