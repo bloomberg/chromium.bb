@@ -70,6 +70,7 @@ void ArcSettingsBridgeImpl::StartObservingSettingsChanges() {
 
 void ArcSettingsBridgeImpl::SyncAllPrefs() const {
   SyncFontSize();
+  SyncLocale();
   SyncSpokenFeedbackEnabled();
   SyncTimeZone();
 }
@@ -148,6 +149,18 @@ void ArcSettingsBridgeImpl::SyncSpokenFeedbackEnabled() const {
   extras.SetBoolean("enabled", enabled);
   SendSettingsBroadcast("org.chromium.arc.settings.SET_SPOKEN_FEEDBACK_ENABLED",
                         extras);
+}
+
+void ArcSettingsBridgeImpl::SyncLocale() const {
+  const PrefService::Preference* pref =
+      registrar_.prefs()->FindPreference(prefs::kApplicationLocale);
+  DCHECK(pref);
+  std::string locale;
+  bool value_exists = pref->GetValue()->GetAsString(&locale);
+  DCHECK(value_exists);
+  base::DictionaryValue extras;
+  extras.SetString("locale", locale);
+  SendSettingsBroadcast("org.chromium.arc.settings.SET_LOCALE", extras);
 }
 
 void ArcSettingsBridgeImpl::SyncTimeZone() const {

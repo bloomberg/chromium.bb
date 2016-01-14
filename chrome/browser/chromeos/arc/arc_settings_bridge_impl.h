@@ -74,6 +74,7 @@ class ArcSettingsBridgeImpl
   // Retrives Chrome's state for the settings and send it to Android.
   void SyncAllPrefs() const;
   void SyncFontSize() const;
+  void SyncLocale() const;
   void SyncSpokenFeedbackEnabled() const;
   void SyncTimeZone() const;
 
