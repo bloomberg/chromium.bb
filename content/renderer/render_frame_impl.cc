@@ -1497,7 +1497,19 @@ void RenderFrameImpl::OnSwapOut(
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
   if (proxy && swapped_out_forbidden) {
+    // The swap call deletes this RenderFrame via frameDetached.  Do not access
+    // any members after this call.
+    // TODO(creis): WebFrame::swap() can return false.  Most of those cases
+    // should be due to the frame being detached during unload (in which case
+    // the necessary cleanup has happened anyway), but it might be possible for
+    // it to return false without detaching.  Catch those cases below to track
+    // down https://crbug.com/575245.
     frame_->swap(proxy->web_frame());
+
+    // For main frames, the swap should have cleared the RenderView's pointer to
+    // this frame.
+    if (is_main_frame)
+      CHECK(!render_view->main_render_frame_);
 
     if (is_loading)
       proxy->OnDidStartLoading();
