@@ -1285,13 +1285,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.LEFT, 1, false);
     }
 
-    /**
-     * Bug: crbug.com/392656
-     * @MediumTest
-     * @Feature({"Android-TabSwitcher"})
-     * @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testToolbarSwipeNextThenPrevTab() throws InterruptedException {
         ChromeTabUtils.newTabFromMenu(getInstrumentation(), getActivity());
         ChromeTabUtils.switchTabInCurrentTabModel(getActivity(), 0);
@@ -1306,13 +1302,9 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
         runToolbarSideSwipeTestOnCurrentModel(ScrollDirection.RIGHT, 0, true);
     }
 
-    /**
-     * Bug: crbug.com/392656
-     * @MediumTest
-     * @Feature({"Android-TabSwitcher"})
-     * @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Android-TabSwitcher"})
+    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testToolbarSwipeNextThenPrevTabIncognito() throws InterruptedException {
         newIncognitoTabFromMenu();
         newIncognitoTabFromMenu();
