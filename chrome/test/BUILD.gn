@@ -1641,6 +1641,7 @@ test("unit_tests") {
       ":unit_tests_java",
       "//components/offline_pages:test_support",
       "//v8:v8_external_startup_data_assets",
+      google_play_services_resources,
     ]
     deps -= [ "//third_party/libaddressinput" ]
 
