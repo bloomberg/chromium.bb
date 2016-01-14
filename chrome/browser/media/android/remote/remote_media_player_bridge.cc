@@ -165,6 +165,12 @@ void RemoteMediaPlayerBridge::OnCastStopping(JNIEnv* env,
       ->SwitchToLocalPlayer(player_id());
 }
 
+void RemoteMediaPlayerBridge::OnSeekCompleted(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  OnSeekComplete();
+}
+
 void RemoteMediaPlayerBridge::Pause(bool is_media_related_action) {
   // Ignore the pause if it's not from an event that is explicitly telling
   // the video to pause. It's possible for Pause() to be called for other

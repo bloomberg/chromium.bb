@@ -692,6 +692,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         } else {
             clearStreamState();
             mReconnecting = false;
+            mLastKnownStreamPosition = 0;
         }
 
         notifyRouteSelected(route);

@@ -83,6 +83,8 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
       const base::android::JavaParamRef<jstring>& casting_message);
   void OnCastStopping(JNIEnv* env,
                       const base::android::JavaParamRef<jobject>& obj);
+  void OnSeekCompleted(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
 
   // Wrappers for calls to Java used by the remote media player manager
   void RequestRemotePlayback();

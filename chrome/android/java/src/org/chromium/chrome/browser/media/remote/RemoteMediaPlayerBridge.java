@@ -9,9 +9,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.media.MediaPlayer;
 import android.os.Build;
-import android.util.Log;
 
 import org.chromium.base.CommandLine;
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -30,6 +30,8 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     private final long mStartPositionMillis;
     private long mNativeRemoteMediaPlayerBridge;
 
+    // TODO(dgn) We don't create MediaPlayerListener using a RemoteMediaPlayerBridge anymore so
+    //           the inheritance and the extra listeners can now go away. (https://crbug.com/577110)
     private MediaPlayer.OnCompletionListener mOnCompletionListener;
     private MediaPlayer.OnSeekCompleteListener mOnSeekCompleteListener;
     private MediaPlayer.OnErrorListener mOnErrorListener;
@@ -73,8 +75,8 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
 
         @Override
         public void onSeekCompleted() {
-            if (mActive && mOnSeekCompleteListener != null) {
-                mOnSeekCompleteListener.onSeekComplete(null);
+            if (mActive && mNativeRemoteMediaPlayerBridge != 0) {
+                nativeOnSeekCompleted(mNativeRemoteMediaPlayerBridge);
             }
         }
 
@@ -383,4 +385,5 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     private native void nativeOnCastStarting(long nativeRemoteMediaPlayerBridge,
             String castingMessage);
     private native void nativeOnCastStopping(long nativeRemoteMediaPlayerBridge);
+    private native void nativeOnSeekCompleted(long nativeRemoteMediaPlayerBridge);
 }
