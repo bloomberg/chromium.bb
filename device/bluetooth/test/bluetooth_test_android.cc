@@ -215,6 +215,20 @@ void BluetoothTestAndroid::
       env, characteristic_android->GetJavaObject().obj());
 }
 
+void BluetoothTestAndroid::SimulateGattCharacteristicChanged(
+    BluetoothGattCharacteristic* characteristic,
+    const std::vector<uint8_t>& value) {
+  BluetoothRemoteGattCharacteristicAndroid* characteristic_android =
+      static_cast<BluetoothRemoteGattCharacteristicAndroid*>(characteristic);
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  Java_FakeBluetoothGattCharacteristic_valueChanged(
+      env,
+      characteristic_android ? characteristic_android->GetJavaObject().obj()
+                             : nullptr,
+      base::android::ToJavaByteArray(env, value).obj());
+}
+
 void BluetoothTestAndroid::SimulateGattCharacteristicRead(
     BluetoothGattCharacteristic* characteristic,
     const std::vector<uint8_t>& value) {

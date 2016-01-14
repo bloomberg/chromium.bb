@@ -136,10 +136,10 @@ bool BluetoothRemoteGattCharacteristicAndroid::UpdateValue(
 void BluetoothRemoteGattCharacteristicAndroid::StartNotifySession(
     const NotifySessionCallback& callback,
     const ErrorCallback& error_callback) {
-  // TODO(crbug.com/551634): Check characteristic properties and return a better
-  // error code if notifications aren't permitted.
   if (Java_ChromeBluetoothRemoteGattCharacteristic_startNotifySession(
           AttachCurrentThread(), j_characteristic_.obj())) {
+    // TODO(crbug.com/569664): Wait until descriptor write completes before
+    // reporting success via calling |callback|.
     scoped_ptr<device::BluetoothGattNotifySession> notify_session(
         new BluetoothGattNotifySessionAndroid(instance_id_));
     base::MessageLoop::current()->PostTask(
@@ -203,6 +203,15 @@ void BluetoothRemoteGattCharacteristicAndroid::WriteRemoteCharacteristic(
   write_error_callback_ = error_callback;
 }
 
+void BluetoothRemoteGattCharacteristicAndroid::OnChanged(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& jcaller,
+    const JavaParamRef<jbyteArray>& value) {
+  base::android::JavaByteArrayToByteVector(env, value, &value_);
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, adapter_->GetObservers(),
+                    GattCharacteristicValueChanged(adapter_, this, value_));
+}
+
 void BluetoothRemoteGattCharacteristicAndroid::OnRead(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
@@ -220,6 +229,7 @@ void BluetoothRemoteGattCharacteristicAndroid::OnRead(
       && !read_callback.is_null()) {
     base::android::JavaByteArrayToByteVector(env, value, &value_);
     read_callback.Run(value_);
+    // TODO(https://crbug.com/545682): Call GattCharacteristicValueChanged.
   } else if (!read_error_callback.is_null()) {
     read_error_callback.Run(
         BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));
@@ -241,6 +251,7 @@ void BluetoothRemoteGattCharacteristicAndroid::OnWrite(
   if (status == 0  // android.bluetooth.BluetoothGatt.GATT_SUCCESS
       && !write_callback.is_null()) {
     write_callback.Run();
+    // TODO(https://crbug.com/545682): Call GattCharacteristicValueChanged.
   } else if (!write_error_callback.is_null()) {
     write_error_callback.Run(
         BluetoothRemoteGattServiceAndroid::GetGattErrorCode(status));

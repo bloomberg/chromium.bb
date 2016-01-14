@@ -454,6 +454,24 @@ class Fakes {
             mDescriptors = new ArrayList<Wrappers.BluetoothGattDescriptorWrapper>();
         }
 
+        // Simulate a characteristic value notified as changed.
+        @CalledByNative("FakeBluetoothGattCharacteristic")
+        private static void valueChanged(
+                ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic, byte[] value) {
+            if (chromeCharacteristic == null && sRememberedCharacteristic == null) {
+                throw new IllegalArgumentException(
+                        "rememberCharacteristic wasn't called previously.");
+            }
+
+            FakeBluetoothGattCharacteristic fakeCharacteristic = (chromeCharacteristic == null)
+                    ? sRememberedCharacteristic
+                    : (FakeBluetoothGattCharacteristic) chromeCharacteristic.mCharacteristic;
+
+            fakeCharacteristic.mValue = value;
+            fakeCharacteristic.mService.mDevice.mGattCallback.onCharacteristicChanged(
+                    fakeCharacteristic);
+        }
+
         // Implements BluetoothTestAndroid::RememberCharacteristicForSubsequentAction.
         @CalledByNative("FakeBluetoothGattCharacteristic")
         private static void rememberCharacteristicForSubsequentAction(
@@ -551,6 +569,16 @@ class Fakes {
 
         // -----------------------------------------------------------------------------------------
         // Wrappers.BluetoothGattCharacteristicWrapper overrides:
+
+        @Override
+        public Wrappers.BluetoothGattDescriptorWrapper getDescriptor(UUID uuid) {
+            for (Wrappers.BluetoothGattDescriptorWrapper descriptor : mDescriptors) {
+                if (descriptor.getUuid().equals(uuid)) {
+                    return descriptor;
+                }
+            }
+            return null;
+        }
 
         @Override
         public List<Wrappers.BluetoothGattDescriptorWrapper> getDescriptors() {

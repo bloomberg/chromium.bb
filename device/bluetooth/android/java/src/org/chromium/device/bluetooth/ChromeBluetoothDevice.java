@@ -186,6 +186,26 @@ final class ChromeBluetoothDevice {
         }
 
         @Override
+        public void onCharacteristicChanged(
+                final Wrappers.BluetoothGattCharacteristicWrapper characteristic) {
+            Log.i(TAG, "device onCharacteristicChanged.");
+            ThreadUtils.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ChromeBluetoothRemoteGattCharacteristic chromeCharacteristic =
+                            mWrapperToChromeCharacteristicsMap.get(characteristic);
+                    if (chromeCharacteristic == null) {
+                        // Android events arriving with no Chrome object is expected rarely only
+                        // when the event races object destruction.
+                        Log.v(TAG, "onCharacteristicChanged when chromeCharacteristic == null.");
+                    } else {
+                        chromeCharacteristic.onCharacteristicChanged();
+                    }
+                }
+            });
+        }
+
+        @Override
         public void onCharacteristicRead(
                 final Wrappers.BluetoothGattCharacteristicWrapper characteristic,
                 final int status) {

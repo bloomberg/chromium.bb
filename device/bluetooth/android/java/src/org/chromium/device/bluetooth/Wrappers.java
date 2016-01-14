@@ -355,6 +355,14 @@ class Wrappers {
         }
 
         @Override
+        public void onCharacteristicChanged(
+                BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
+            Log.i(TAG, "wrapper onCharacteristicChanged.");
+            mWrapperCallback.onCharacteristicChanged(
+                    mDeviceWrapper.mCharacteristicsToWrappers.get(characteristic));
+        }
+
+        @Override
         public void onCharacteristicRead(
                 BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
             mWrapperCallback.onCharacteristicRead(
@@ -390,6 +398,8 @@ class Wrappers {
      * call.
      */
     abstract static class BluetoothGattCallbackWrapper {
+        public abstract void onCharacteristicChanged(
+                BluetoothGattCharacteristicWrapper characteristic);
         public abstract void onCharacteristicRead(
                 BluetoothGattCharacteristicWrapper characteristic, int status);
         public abstract void onCharacteristicWrite(
@@ -449,6 +459,22 @@ class Wrappers {
                 BluetoothGattCharacteristic characteristic, BluetoothDeviceWrapper deviceWrapper) {
             mCharacteristic = characteristic;
             mDeviceWrapper = deviceWrapper;
+        }
+
+        public BluetoothGattDescriptorWrapper getDescriptor(UUID uuid) {
+            BluetoothGattDescriptor descriptor = mCharacteristic.getDescriptor(uuid);
+            if (descriptor == null) {
+                return null;
+            }
+
+            BluetoothGattDescriptorWrapper descriptorWrapper =
+                    mDeviceWrapper.mDescriptorsToWrappers.get(descriptor);
+
+            if (descriptorWrapper == null) {
+                descriptorWrapper = new BluetoothGattDescriptorWrapper(descriptor);
+                mDeviceWrapper.mDescriptorsToWrappers.put(descriptor, descriptorWrapper);
+            }
+            return descriptorWrapper;
         }
 
         public List<BluetoothGattDescriptorWrapper> getDescriptors() {
