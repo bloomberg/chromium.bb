@@ -3,6 +3,12 @@
 Breakpad is a set of client and server components which implement a
 crash-reporting system.
 
+* [Homepage](https://chromium.googlesource.com/breakpad/breakpad/)
+* [Documentation](https://chromium.googlesource.com/breakpad/breakpad/+/master/docs/)
+* [Bugs](https://bugs.chromium.org/p/google-breakpad/)
+* Discussion/Questions: [google-breakpad-discuss@googlegroups.com](https://groups.google.com/d/forum/google-breakpad-discuss)
+* Developer/Reviews: [google-breakpad-dev@googlegroups.com](https://groups.google.com/d/forum/google-breakpad-dev)
+
 ## Getting started in 32-bit mode (from trunk)
 
 ```sh
@@ -41,7 +47,3 @@ If you need to reconfigure your build be sure to run `make distclean` first.
 6.  At https://codereview.chromium.org/ you'll find your issue listed; click on
     it, and select Publish+Mail, and enter in the code reviewer and CC
     google-breakpad-dev@googlegroups.com
-
-## Documentation
-
-Visit https://chromium.googlesource.com/breakpad/breakpad/+/master/docs/
