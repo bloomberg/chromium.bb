@@ -838,8 +838,6 @@ void RenderThreadImpl::Shutdown() {
   FOR_EACH_OBSERVER(
       RenderProcessObserver, observers_, OnRenderProcessShutdown());
 
-  ChildThreadImpl::Shutdown();
-
   if (memory_observer_) {
     message_loop()->RemoveTaskObserver(memory_observer_.get());
     memory_observer_.reset();
@@ -937,6 +935,8 @@ void RenderThreadImpl::Shutdown() {
   // Clean up plugin channels before this thread goes away.
   NPChannelBase::CleanupChannels();
 #endif
+
+  ChildThreadImpl::Shutdown();
 
   // Shut down the message loop and the renderer scheduler before shutting down
   // Blink. This prevents a scenario where a pending task in the message loop

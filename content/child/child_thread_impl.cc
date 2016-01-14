@@ -493,10 +493,6 @@ void ChildThreadImpl::Init(const Options& options) {
 }
 
 ChildThreadImpl::~ChildThreadImpl() {
-  // ChildDiscardableSharedMemoryManager has to be destroyed while
-  // |thread_safe_sender_| is still valid.
-  discardable_shared_memory_manager_.reset();
-
 #ifdef IPC_MESSAGE_LOG_ENABLED
   IPC::Logging::GetInstance()->SetIPCSender(NULL);
 #endif
@@ -522,6 +518,9 @@ void ChildThreadImpl::Shutdown() {
   file_system_dispatcher_.reset();
   quota_dispatcher_.reset();
   WebFileSystemImpl::DeleteThreadSpecificInstance();
+  // ChildDiscardableSharedMemoryManager has to be destroyed while
+  // |thread_safe_sender_| and |message_loop_| are still valid.
+  discardable_shared_memory_manager_.reset();
 }
 
 void ChildThreadImpl::OnChannelConnected(int32_t peer_pid) {
