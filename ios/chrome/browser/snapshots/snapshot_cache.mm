@@ -144,15 +144,17 @@ void ConvertAndSaveGreyImage(
     DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
     propertyReleaser_SnapshotCache_.Init(self, [SnapshotCache class]);
 
-    if (!IsIPadIdiom()) {
-      if (experimental_flags::IsLRUSnapshotCacheEnabled()) {
-        lruCache_.reset(
-            [[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity]);
-      } else {
-        imageDictionary_.reset([[NSMutableDictionary alloc]
-            initWithCapacity:kCacheInitialCapacity]);
-      }
+    // Always use the LRUCache when the tab switcher is enabled.
+    if (experimental_flags::IsTabSwitcherEnabled() ||
+        experimental_flags::IsLRUSnapshotCacheEnabled()) {
+      lruCache_.reset(
+          [[LRUCache alloc] initWithCacheSize:kLRUCacheMaxCapacity]);
+    } else {
+      imageDictionary_.reset(
+          [[NSMutableDictionary alloc] initWithCapacity:kCacheInitialCapacity]);
+    }
 
+    if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled()) {
       [[NSNotificationCenter defaultCenter]
           addObserver:self
              selector:@selector(handleLowMemory)
@@ -174,7 +176,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)dealloc {
-  if (!IsIPadIdiom()) {
+  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled()) {
     [[NSNotificationCenter defaultCenter]
         removeObserver:self
                   name:UIApplicationDidReceiveMemoryWarningNotification
@@ -207,9 +209,10 @@ void ConvertAndSaveGreyImage(
                          callback:(void (^)(UIImage*))callback {
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   DCHECK(sessionID);
-  // iPad does not cache images, so if there is no callback we can avoid an
-  // expensive read from storage.
-  if (IsIPadIdiom() && !callback)
+
+  // Cache on iPad is enabled only when the tab switcher is enabled.
+  if ((IsIPadIdiom() && !experimental_flags::IsTabSwitcherEnabled()) &&
+      !callback)
     return;
 
   UIImage* img = nil;
@@ -233,10 +236,9 @@ void ConvertAndSaveGreyImage(
             [SnapshotCache imagePathForSessionID:sessionID]) retain]);
       }),
       base::BindBlock(^(base::scoped_nsobject<UIImage> image) {
-        // The iPad tab switcher is currently using its own memory cache so the
-        // image is not stored in memory here if running on iPad.
-        // The same logic is used on image writes (code below).
-        if (!IsIPadIdiom() && image) {
+        // Cache on iPad is enabled only when the tab switcher is enabled.
+        if ((!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled()) &&
+            image) {
           if (lruCache_)
             [lruCache_ setObject:image forKey:sessionID];
           else
@@ -252,10 +254,8 @@ void ConvertAndSaveGreyImage(
   if (!img || !sessionID)
     return;
 
-  // The iPad tab switcher is currently using its own memory cache so the image
-  // is not stored in memory here if running on iPad.
-  // The same logic is used on image reads (code above).
-  if (!IsIPadIdiom()) {
+  // Cache on iPad is enabled only when the tab switcher is enabled.
+  if (!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled()) {
     if (lruCache_)
       [lruCache_ setObject:img forKey:sessionID];
     else
@@ -387,7 +387,7 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)handleLowMemory {
-  DCHECK(!IsIPadIdiom());
+  DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   NSMutableDictionary* dictionary =
       [[NSMutableDictionary alloc] initWithCapacity:2];
@@ -410,14 +410,14 @@ void ConvertAndSaveGreyImage(
 }
 
 - (void)handleEnterBackground {
-  DCHECK(!IsIPadIdiom());
+  DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   [imageDictionary_ removeAllObjects];
   [lruCache_ removeAllObjects];
 }
 
 - (void)handleBecomeActive {
-  DCHECK(!IsIPadIdiom());
+  DCHECK(!IsIPadIdiom() || experimental_flags::IsTabSwitcherEnabled());
   DCHECK_CURRENTLY_ON_WEB_THREAD(web::WebThread::UI);
   for (NSString* sessionID in pinnedIDs_)
     [self retrieveImageForSessionID:sessionID callback:nil];
