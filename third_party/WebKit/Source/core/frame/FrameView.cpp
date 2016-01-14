@@ -224,6 +224,8 @@ void FrameView::reset()
     m_layoutSubtreeRootList.clear();
 }
 
+// Call function for each non-throttled frame view in pre tree order.
+// Note it needs a null check of the frame's layoutView to access it in case of detached frames.
 template <typename Function>
 void FrameView::forAllNonThrottledFrameViews(Function function)
 {
@@ -2463,7 +2465,8 @@ void FrameView::synchronizedPaint()
 
     forAllNonThrottledFrameViews([](FrameView& frameView) {
         frameView.lifecycle().advanceTo(DocumentLifecycle::PaintClean);
-        frameView.layoutView()->layer()->clearNeedsRepaintRecursively();
+        if (LayoutView* layoutView = frameView.layoutView())
+            layoutView->layer()->clearNeedsRepaintRecursively();
     });
 }
 
