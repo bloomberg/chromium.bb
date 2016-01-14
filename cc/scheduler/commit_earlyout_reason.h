@@ -6,8 +6,13 @@
 #define CC_SCHEDULER_COMMIT_EARLYOUT_REASON_H_
 
 #include "base/logging.h"
+#include "cc/base/cc_export.h"
 
 namespace cc {
+
+namespace proto {
+class CommitEarlyOutReason;
+}
 
 enum class CommitEarlyOutReason {
   ABORTED_OUTPUT_SURFACE_LOST,
@@ -15,6 +20,14 @@ enum class CommitEarlyOutReason {
   ABORTED_DEFERRED_COMMIT,
   FINISHED_NO_UPDATES,
 };
+
+// Please update the To/From Protobuf methods for any updates made to
+// CommitEarlyOutReason enum.
+CC_EXPORT CommitEarlyOutReason
+CommitEarlyOutReasonFromProtobuf(const proto::CommitEarlyOutReason& proto);
+CC_EXPORT void CommitEarlyOutReasonToProtobuf(
+    CommitEarlyOutReason reason,
+    proto::CommitEarlyOutReason* proto);
 
 inline const char* CommitEarlyOutReasonToString(CommitEarlyOutReason reason) {
   switch (reason) {

@@ -492,6 +492,7 @@
         'scheduler/begin_frame_source.h',
         'scheduler/begin_frame_tracker.cc',
         'scheduler/begin_frame_tracker.h',
+        'scheduler/commit_earlyout_reason.cc',
         'scheduler/commit_earlyout_reason.h',
         'scheduler/compositor_timing_history.cc',
         'scheduler/compositor_timing_history.h',
@@ -604,6 +605,7 @@
       'target_name': 'cc_proto',
       'type': '<(component)',
       'sources': [
+        'proto/commit_earlyout_reason.proto',
         'proto/compositor_message.proto',
         'proto/display_item.proto',
         'proto/display_list_recording_source.proto',

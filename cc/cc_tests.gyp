@@ -109,6 +109,7 @@
       'resources/scoped_resource_unittest.cc',
       'resources/video_resource_updater_unittest.cc',
       'scheduler/begin_frame_source_unittest.cc',
+      'scheduler/commit_earlyout_reason_unittest.cc',
       'scheduler/compositor_timing_history_unittest.cc',
       'scheduler/delay_based_time_source_unittest.cc',
       'scheduler/scheduler_state_machine_unittest.cc',
