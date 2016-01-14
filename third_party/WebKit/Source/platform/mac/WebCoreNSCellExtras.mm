@@ -29,7 +29,7 @@
 - (void)drawFocusRingMaskWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 @end
 
-@implementation NSCell (WebCoreFocusRingDrawing)
+@implementation NSCell (BlinkFocusRingDrawing)
 
 - (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView
 {

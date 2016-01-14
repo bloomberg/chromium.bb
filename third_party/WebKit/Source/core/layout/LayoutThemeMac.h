@@ -29,7 +29,7 @@
 #import "wtf/HashMap.h"
 #import "wtf/RetainPtr.h"
 
-OBJC_CLASS LayoutThemeNotificationObserver;
+OBJC_CLASS BlinkLayoutThemeNotificationObserver;
 
 namespace blink {
 
@@ -189,7 +189,7 @@ private:
 
     mutable HashMap<int, RGBA32> m_systemColorCache;
 
-    RetainPtr<LayoutThemeNotificationObserver> m_notificationObserver;
+    RetainPtr<BlinkLayoutThemeNotificationObserver> m_notificationObserver;
 
     ThemePainterMac m_painter;
 };

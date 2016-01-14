@@ -34,9 +34,9 @@
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "wtf/RetainPtr.h"
 
-OBJC_CLASS WebScrollAnimationHelperDelegate;
-OBJC_CLASS WebScrollbarPainterControllerDelegate;
-OBJC_CLASS WebScrollbarPainterDelegate;
+OBJC_CLASS BlinkScrollAnimationHelperDelegate;
+OBJC_CLASS BlinkScrollbarPainterControllerDelegate;
+OBJC_CLASS BlinkScrollbarPainterDelegate;
 
 typedef id ScrollbarPainterController;
 
@@ -74,12 +74,12 @@ public:
 
 private:
     RetainPtr<id> m_scrollAnimationHelper;
-    RetainPtr<WebScrollAnimationHelperDelegate> m_scrollAnimationHelperDelegate;
+    RetainPtr<BlinkScrollAnimationHelperDelegate> m_scrollAnimationHelperDelegate;
 
     RetainPtr<ScrollbarPainterController> m_scrollbarPainterController;
-    RetainPtr<WebScrollbarPainterControllerDelegate> m_scrollbarPainterControllerDelegate;
-    RetainPtr<WebScrollbarPainterDelegate> m_horizontalScrollbarPainterDelegate;
-    RetainPtr<WebScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
+    RetainPtr<BlinkScrollbarPainterControllerDelegate> m_scrollbarPainterControllerDelegate;
+    RetainPtr<BlinkScrollbarPainterDelegate> m_horizontalScrollbarPainterDelegate;
+    RetainPtr<BlinkScrollbarPainterDelegate> m_verticalScrollbarPainterDelegate;
 
     void initialScrollbarPaintTimerFired(Timer<ScrollAnimatorMac>*);
     Timer<ScrollAnimatorMac> m_initialScrollbarPaintTimer;

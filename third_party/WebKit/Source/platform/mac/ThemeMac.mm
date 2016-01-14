@@ -35,10 +35,10 @@
 #include "wtf/StdLibExtras.h"
 
 // This is a view whose sole purpose is to tell AppKit that it's flipped.
-@interface WebCoreFlippedView : NSControl
+@interface BlinkFlippedControl : NSControl
 @end
 
-@implementation WebCoreFlippedView
+@implementation BlinkFlippedControl
 
 - (BOOL)isFlipped
 {
@@ -169,7 +169,7 @@ static ThemeDrawState convertControlStatesToThemeDrawState(ThemeButtonKind kind,
 static NSView* ensuredView(ScrollableArea* scrollableArea)
 {
     // Use a fake flipped view.
-    static NSView *flippedView = [[WebCoreFlippedView alloc] init];
+    static NSView *flippedView = [[BlinkFlippedControl alloc] init];
     [flippedView setFrameSize:NSSizeFromCGSize(scrollableArea->contentsSize())];
 
     return flippedView;

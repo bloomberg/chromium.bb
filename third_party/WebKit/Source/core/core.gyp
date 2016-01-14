@@ -331,50 +331,6 @@
             ],
           },
         }],
-        ['OS=="mac"', {
-          'direct_dependent_settings': {
-            'defines': [
-              # Chromium's version of WebCore includes the following Objective-C
-              # classes. The system-provided WebCore framework may also provide
-              # these classes. Because of the nature of Objective-C binding
-              # (dynamically at runtime), it's possible for the
-              # Chromium-provided versions to interfere with the system-provided
-              # versions.  This may happen when a system framework attempts to
-              # use core.framework, such as when converting an HTML-flavored
-              # string to an NSAttributedString.  The solution is to force
-              # Objective-C class names that would conflict to use alternate
-              # names.
-              #
-              # This list will hopefully shrink but may also grow.  Its
-              # performance is monitored by the "Check Objective-C Rename"
-              # postbuild step, and any suspicious-looking symbols not handled
-              # here or whitelisted in that step will cause a build failure.
-              #
-              # If this is unhandled, the console will receive log messages
-              # such as:
-              # com.google.Chrome[] objc[]: Class ScrollbarPrefsObserver is implemented in both .../Google Chrome.app/Contents/Versions/.../Google Chrome Helper.app/Contents/MacOS/../../../Google Chrome Framework.framework/Google Chrome Framework and /System/Library/Frameworks/WebKit.framework/Versions/A/Frameworks/WebCore.framework/Versions/A/WebCore. One of the two will be used. Which one is undefined.
-              'WebCoreTextFieldCell=ChromiumWebCoreObjCWebCoreTextFieldCell',
-            ],
-            'postbuilds': [
-              {
-                # This step ensures that any Objective-C names that aren't
-                # redefined to be "safe" above will cause a build failure.
-                'postbuild_name': 'Check Objective-C Rename',
-                'variables': {
-                  'class_whitelist_regex':
-                      'ChromiumWebCoreObjC|TCMVisibleView|RTCMFlippedView|ScrollerStyleObserver|LayoutThemeNotificationObserver',
-                  'category_whitelist_regex':
-                      'WebCoreFocusRingDrawing|WebCoreTheme',
-                },
-                'action': [
-                  '../build/scripts/check_objc_rename.sh',
-                  '<(class_whitelist_regex)',
-                  '<(category_whitelist_regex)',
-                ],
-              },
-            ],
-          },
-        }],
         ['"WTF_USE_WEBAUDIO_FFMPEG=1" in feature_defines', {
           # This directory needs to be on the include path for multiple sub-targets of webcore.
           'direct_dependent_settings': {

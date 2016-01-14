@@ -25,6 +25,6 @@
 
 #import <AppKit/AppKit.h>
 
-@interface NSCell (WebCoreFocusRingDrawing)
+@interface NSCell (BlinkFocusRingDrawing)
 - (void)cr_drawFocusRingWithFrame:(NSRect)cellFrame inView:(NSView *)controlView;
 @end

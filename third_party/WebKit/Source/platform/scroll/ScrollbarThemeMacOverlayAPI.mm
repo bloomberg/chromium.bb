@@ -38,7 +38,7 @@
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "wtf/RetainPtr.h"
 
-@interface WebCoreScrollbarObserver : NSObject {
+@interface BlinkScrollbarObserver : NSObject {
     blink::ScrollbarThemeClient* _scrollbar;
     RetainPtr<ScrollbarPainter> _scrollbarPainter;
     BOOL _visible;
@@ -46,7 +46,7 @@
 - (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter;
 @end
 
-@implementation WebCoreScrollbarObserver
+@implementation BlinkScrollbarObserver
 
 - (id)initWithScrollbar:(blink::ScrollbarThemeClient*)scrollbar painter:(ScrollbarPainter)painter
 {
@@ -89,7 +89,7 @@
 
 namespace blink {
 
-typedef HashMap<ScrollbarThemeClient*, RetainPtr<WebCoreScrollbarObserver> > ScrollbarPainterMap;
+typedef HashMap<ScrollbarThemeClient*, RetainPtr<BlinkScrollbarObserver> > ScrollbarPainterMap;
 
 static ScrollbarPainterMap& scrollbarPainterMap()
 {
@@ -110,7 +110,7 @@ void ScrollbarThemeMacOverlayAPI::registerScrollbar(ScrollbarThemeClient& scroll
 
     bool isHorizontal = scrollbar.orientation() == HorizontalScrollbar;
     ScrollbarPainter scrollbarPainter = [NSClassFromString(@"NSScrollerImp") scrollerImpWithStyle:recommendedScrollerStyle() controlSize:(NSControlSize)scrollbar.controlSize() horizontal:isHorizontal replacingScrollerImp:nil];
-    RetainPtr<WebCoreScrollbarObserver> observer = [[WebCoreScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:scrollbarPainter];
+    RetainPtr<BlinkScrollbarObserver> observer = [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:scrollbarPainter];
 
     scrollbarPainterMap().add(&scrollbar, observer);
     updateEnabledState(scrollbar);
@@ -126,7 +126,7 @@ void ScrollbarThemeMacOverlayAPI::unregisterScrollbar(ScrollbarThemeClient& scro
 
 void ScrollbarThemeMacOverlayAPI::setNewPainterForScrollbar(ScrollbarThemeClient& scrollbar, ScrollbarPainter newPainter)
 {
-    RetainPtr<WebCoreScrollbarObserver> observer = [[WebCoreScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:newPainter];
+    RetainPtr<BlinkScrollbarObserver> observer = [[BlinkScrollbarObserver alloc] initWithScrollbar:&scrollbar painter:newPainter];
     scrollbarPainterMap().set(&scrollbar, observer);
     updateEnabledState(scrollbar);
     updateScrollbarOverlayStyle(scrollbar);

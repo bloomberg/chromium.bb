@@ -85,7 +85,7 @@ static ScrollbarPainter scrollbarPainterForScrollbar(Scrollbar& scrollbar)
 - (CGFloat)_progress;
 @end
 
-@interface WebScrollAnimationHelperDelegate : NSObject
+@interface BlinkScrollAnimationHelperDelegate : NSObject
 {
     blink::ScrollAnimatorMac* _animator;
 }
@@ -102,7 +102,7 @@ static NSSize abs(NSSize size)
     return finalSize;
 }
 
-@implementation WebScrollAnimationHelperDelegate
+@implementation BlinkScrollAnimationHelperDelegate
 
 - (id)initWithScrollAnimator:(blink::ScrollAnimatorMac*)scrollAnimator
 {
@@ -181,14 +181,14 @@ static NSSize abs(NSSize size)
 
 @end
 
-@interface WebScrollbarPainterControllerDelegate : NSObject
+@interface BlinkScrollbarPainterControllerDelegate : NSObject
 {
     ScrollableArea* _scrollableArea;
 }
 - (id)initWithScrollableArea:(ScrollableArea*)scrollableArea;
 @end
 
-@implementation WebScrollbarPainterControllerDelegate
+@implementation BlinkScrollbarPainterControllerDelegate
 
 - (id)initWithScrollableArea:(ScrollableArea*)scrollableArea
 {
@@ -292,19 +292,19 @@ enum FeatureToAnimate {
     ExpansionTransition
 };
 
-@class WebScrollbarPartAnimation;
+@class BlinkScrollbarPartAnimation;
 
 namespace blink {
 
-// This class is used to drive the animation timer for WebScrollbarPartAnimation
+// This class is used to drive the animation timer for BlinkScrollbarPartAnimation
 // objects. This is used instead of NSAnimation because CoreAnimation
 // establishes connections to the WindowServer, which should not be done in a
 // sandboxed renderer process.
-class WebScrollbarPartAnimationTimer {
+class BlinkScrollbarPartAnimationTimer {
 public:
-    WebScrollbarPartAnimationTimer(WebScrollbarPartAnimation* animation,
+    BlinkScrollbarPartAnimationTimer(BlinkScrollbarPartAnimation* animation,
                                    CFTimeInterval duration)
-        : m_timer(this, &WebScrollbarPartAnimationTimer::timerFired)
+        : m_timer(this, &BlinkScrollbarPartAnimationTimer::timerFired)
         , m_startTime(0.0)
         , m_duration(duration)
         , m_animation(animation)
@@ -312,7 +312,7 @@ public:
     {
     }
 
-    ~WebScrollbarPartAnimationTimer() {}
+    ~BlinkScrollbarPartAnimationTimer() {}
 
     void start()
     {
@@ -333,7 +333,7 @@ public:
     }
 
 private:
-    void timerFired(Timer<WebScrollbarPartAnimationTimer>*)
+    void timerFired(Timer<BlinkScrollbarPartAnimationTimer>*)
     {
         double currentTime = WTF::currentTime();
         double delta = currentTime - m_startTime;
@@ -347,18 +347,18 @@ private:
         [m_animation setCurrentProgress:progress];
     }
 
-    Timer<WebScrollbarPartAnimationTimer> m_timer;
+    Timer<BlinkScrollbarPartAnimationTimer> m_timer;
     double m_startTime;  // In seconds.
     double m_duration;   // In seconds.
-    WebScrollbarPartAnimation* m_animation;  // Weak, owns this.
+    BlinkScrollbarPartAnimation* m_animation;  // Weak, owns this.
     RefPtr<CubicBezierTimingFunction> m_timingFunction;
 };
 
 }  // namespace blink
 
-@interface WebScrollbarPartAnimation : NSObject {
+@interface BlinkScrollbarPartAnimation : NSObject {
     Scrollbar* _scrollbar;
-    OwnPtr<WebScrollbarPartAnimationTimer> _timer;
+    OwnPtr<BlinkScrollbarPartAnimationTimer> _timer;
     RetainPtr<ScrollbarPainter> _scrollbarPainter;
     FeatureToAnimate _featureToAnimate;
     CGFloat _startValue;
@@ -367,7 +367,7 @@ private:
 - (id)initWithScrollbar:(Scrollbar*)scrollbar featureToAnimate:(FeatureToAnimate)featureToAnimate animateFrom:(CGFloat)startValue animateTo:(CGFloat)endValue duration:(NSTimeInterval)duration;
 @end
 
-@implementation WebScrollbarPartAnimation
+@implementation BlinkScrollbarPartAnimation
 
 - (id)initWithScrollbar:(Scrollbar*)scrollbar featureToAnimate:(FeatureToAnimate)featureToAnimate animateFrom:(CGFloat)startValue animateTo:(CGFloat)endValue duration:(NSTimeInterval)duration
 {
@@ -375,7 +375,7 @@ private:
     if (!self)
         return nil;
 
-    _timer = adoptPtr(new WebScrollbarPartAnimationTimer(self, duration));
+    _timer = adoptPtr(new BlinkScrollbarPartAnimationTimer(self, duration));
     _scrollbar = scrollbar;
     _featureToAnimate = featureToAnimate;
     _startValue = startValue;
@@ -454,14 +454,14 @@ private:
 
 @end
 
-@interface WebScrollbarPainterDelegate : NSObject<NSAnimationDelegate>
+@interface BlinkScrollbarPainterDelegate : NSObject<NSAnimationDelegate>
 {
     blink::Scrollbar* _scrollbar;
 
-    RetainPtr<WebScrollbarPartAnimation> _knobAlphaAnimation;
-    RetainPtr<WebScrollbarPartAnimation> _trackAlphaAnimation;
-    RetainPtr<WebScrollbarPartAnimation> _uiStateTransitionAnimation;
-    RetainPtr<WebScrollbarPartAnimation> _expansionTransitionAnimation;
+    RetainPtr<BlinkScrollbarPartAnimation> _knobAlphaAnimation;
+    RetainPtr<BlinkScrollbarPartAnimation> _trackAlphaAnimation;
+    RetainPtr<BlinkScrollbarPartAnimation> _uiStateTransitionAnimation;
+    RetainPtr<BlinkScrollbarPartAnimation> _expansionTransitionAnimation;
     BOOL _hasExpandedSinceInvisible;
 }
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar;
@@ -469,7 +469,7 @@ private:
 - (void)cancelAnimations;
 @end
 
-@implementation WebScrollbarPainterDelegate
+@implementation BlinkScrollbarPainterDelegate
 
 - (id)initWithScrollbar:(blink::Scrollbar*)scrollbar
 {
@@ -522,7 +522,7 @@ private:
     return _scrollbar->convertFromContainingWidget(_scrollbar->scrollableArea()->lastKnownMousePosition());
 }
 
-- (void)setUpAlphaAnimation:(RetainPtr<WebScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(blink::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
+- (void)setUpAlphaAnimation:(RetainPtr<BlinkScrollbarPartAnimation>&)scrollbarPartAnimation scrollerPainter:(ScrollbarPainter)scrollerPainter part:(blink::ScrollbarPart)part animateAlphaTo:(CGFloat)newAlpha duration:(NSTimeInterval)duration
 {
     // If the user has scrolled the page, then the scrollbars must be animated here.
     // This overrides the early returns.
@@ -553,7 +553,7 @@ private:
             [self scrollAnimator].setVisibleScrollerThumbRect(IntRect());
     }
 
-    scrollbarPartAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
+    scrollbarPartAnimation.adoptNS([[BlinkScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
                                                                        featureToAnimate:part == ThumbPart ? ThumbAlpha : TrackAlpha
                                                                             animateFrom:part == ThumbPart ? [scrollerPainter knobAlpha] : [scrollerPainter trackAlpha]
                                                                               animateTo:newAlpha
@@ -599,7 +599,7 @@ private:
     [scrollbarPainter setUiStateTransitionProgress:1 - [scrollerImp uiStateTransitionProgress]];
 
     if (!_uiStateTransitionAnimation)
-        _uiStateTransitionAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
+        _uiStateTransitionAnimation.adoptNS([[BlinkScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
                                                                                 featureToAnimate:UIStateTransition
                                                                                      animateFrom:[scrollbarPainter uiStateTransitionProgress]
                                                                                        animateTo:1.0
@@ -629,7 +629,7 @@ private:
     [scrollbarPainter setExpansionTransitionProgress:1 - [scrollerImp expansionTransitionProgress]];
 
     if (!_expansionTransitionAnimation) {
-        _expansionTransitionAnimation.adoptNS([[WebScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
+        _expansionTransitionAnimation.adoptNS([[BlinkScrollbarPartAnimation alloc] initWithScrollbar:_scrollbar
                                                                                   featureToAnimate:ExpansionTransition
                                                                                        animateFrom:[scrollbarPainter expansionTransitionProgress]
                                                                                          animateTo:1.0
@@ -693,11 +693,11 @@ ScrollAnimatorMac::ScrollAnimatorMac(ScrollableArea* scrollableArea)
     ThreadState::current()->registerPreFinalizer(this);
 #endif
 
-    m_scrollAnimationHelperDelegate.adoptNS([[WebScrollAnimationHelperDelegate alloc] initWithScrollAnimator:this]);
+    m_scrollAnimationHelperDelegate.adoptNS([[BlinkScrollAnimationHelperDelegate alloc] initWithScrollAnimator:this]);
     m_scrollAnimationHelper.adoptNS([[NSClassFromString(@"NSScrollAnimationHelper") alloc] initWithDelegate:m_scrollAnimationHelperDelegate.get()]);
 
     if (ScrollbarThemeMacCommon::isOverlayAPIAvailable()) {
-        m_scrollbarPainterControllerDelegate.adoptNS([[WebScrollbarPainterControllerDelegate alloc] initWithScrollableArea:scrollableArea]);
+        m_scrollbarPainterControllerDelegate.adoptNS([[BlinkScrollbarPainterControllerDelegate alloc] initWithScrollableArea:scrollableArea]);
         m_scrollbarPainterController = [[[NSClassFromString(@"NSScrollerImpPair") alloc] init] autorelease];
         [m_scrollbarPainterController.get() performSelector:@selector(setDelegate:) withObject:m_scrollbarPainterControllerDelegate.get()];
         [m_scrollbarPainterController.get() setScrollerStyle:ScrollbarThemeMacCommon::recommendedScrollerStyle()];
@@ -938,7 +938,7 @@ void ScrollAnimatorMac::didAddVerticalScrollbar(Scrollbar& scrollbar)
         return;
 
     ASSERT(!m_verticalScrollbarPainterDelegate);
-    m_verticalScrollbarPainterDelegate.adoptNS([[WebScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
+    m_verticalScrollbarPainterDelegate.adoptNS([[BlinkScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
 
     [painter setDelegate:m_verticalScrollbarPainterDelegate.get()];
     [m_scrollbarPainterController.get() setVerticalScrollerImp:painter];
@@ -973,7 +973,7 @@ void ScrollAnimatorMac::didAddHorizontalScrollbar(Scrollbar& scrollbar)
         return;
 
     ASSERT(!m_horizontalScrollbarPainterDelegate);
-    m_horizontalScrollbarPainterDelegate.adoptNS([[WebScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
+    m_horizontalScrollbarPainterDelegate.adoptNS([[BlinkScrollbarPainterDelegate alloc] initWithScrollbar:&scrollbar]);
 
     [painter setDelegate:m_horizontalScrollbarPainterDelegate.get()];
     [m_scrollbarPainterController.get() setHorizontalScrollerImp:painter];
