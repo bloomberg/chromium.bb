@@ -76,8 +76,9 @@ ExternalInstallManager::~ExternalInstallManager() {
 
 void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
                                                      bool is_new_profile) {
-  // Error already exists.
-  if (ContainsKey(errors_, extension->id()))
+  // Error already exists or has been previously shown.
+  if (ContainsKey(errors_, extension->id()) ||
+      shown_ids_.count(extension->id()) > 0)
     return;
 
   ExternalInstallError::AlertType alert_type =
@@ -87,13 +88,14 @@ void ExternalInstallManager::AddExternalInstallError(const Extension* extension,
 
   scoped_ptr<ExternalInstallError> error(new ExternalInstallError(
       browser_context_, extension->id(), alert_type, this));
+  shown_ids_.insert(extension->id());
   errors_.insert(std::make_pair(extension->id(), std::move(error)));
 }
 
 void ExternalInstallManager::RemoveExternalInstallError(
     const std::string& extension_id) {
-  errors_.erase(extension_id);
-  UpdateExternalExtensionAlert();
+  if (errors_.erase(extension_id) > 0)
+    UpdateExternalExtensionAlert();
 }
 
 void ExternalInstallManager::UpdateExternalExtensionAlert() {
@@ -106,7 +108,8 @@ void ExternalInstallManager::UpdateExternalExtensionAlert() {
   const ExtensionSet& disabled_extensions =
       ExtensionRegistry::Get(browser_context_)->disabled_extensions();
   for (const scoped_refptr<const Extension>& extension : disabled_extensions) {
-    if (ContainsKey(errors_, extension->id()))
+    if (ContainsKey(errors_, extension->id()) ||
+        shown_ids_.count(extension->id()) > 0)
       continue;
 
     if (!IsUnacknowledgedExternalExtension(extension.get()))

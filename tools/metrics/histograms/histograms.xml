@@ -12334,6 +12334,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.ExternalWarningUninstallationResult" enum="Boolean">
+  <owner>rdevlin.cronin@chromium.org</owner>
+  <summary>
+    Whether or not the uninstallation of an external extension succeeded.
+    Triggered when the external install warning is shown to the user and the
+    user selects to remove the extension.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FeatureProviderStaticInitTime" units="ms">
   <owner>rkaplow@chromium.org</owner>
   <summary>

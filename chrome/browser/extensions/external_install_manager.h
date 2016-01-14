@@ -83,6 +83,8 @@ class ExternalInstallManager : public ExtensionRegistryObserver,
   // The collection of ExternalInstallErrors.
   std::map<std::string, scoped_ptr<ExternalInstallError>> errors_;
 
+  std::set<std::string> shown_ids_;
+
   content::NotificationRegistrar registrar_;
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>

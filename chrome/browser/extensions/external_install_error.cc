@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_install_error_menu_item_id_provider.h"
@@ -307,34 +309,39 @@ ExternalInstallError::~ExternalInstallError() {
 void ExternalInstallError::OnInstallPromptDone(
     ExtensionInstallPrompt::Result result) {
   const Extension* extension = GetExtension();
-  bool did_remove_error = false;
+
+  // If the error isn't removed and deleted as part of handling the user's
+  // response (which can happen, e.g., if an uninstall fails), be sure to remove
+  // the error directly in order to ensure it's not called twice.
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE,
+      base::Bind(&ExternalInstallError::RemoveError,
+                 weak_factory_.GetWeakPtr()));
+
   switch (result) {
     case ExtensionInstallPrompt::Result::ACCEPTED:
       if (extension) {
         ExtensionSystem::Get(browser_context_)
             ->extension_service()
             ->GrantPermissionsAndEnableExtension(extension);
-        // Since the manager listens for the extension to be loaded, this will
-        // remove the error.
-        did_remove_error = true;
       }
       break;
     case ExtensionInstallPrompt::Result::USER_CANCELED:
       if (extension) {
-        ExtensionSystem::Get(browser_context_)
+        bool uninstallation_result = ExtensionSystem::Get(browser_context_)
             ->extension_service()
             ->UninstallExtension(extension_id_,
                                  extensions::UNINSTALL_REASON_INSTALL_CANCELED,
                                  base::Bind(&base::DoNothing),
                                  nullptr);  // Ignore error.
-        did_remove_error = true;
+        UMA_HISTOGRAM_BOOLEAN("Extensions.ExternalWarningUninstallationResult",
+                              uninstallation_result);
       }
       break;
     case ExtensionInstallPrompt::Result::ABORTED:
       break;
   }
-  if (!did_remove_error)
-    manager_->RemoveExternalInstallError(extension_id_);
+  // NOTE: We may be deleted here!
 }
 
 void ExternalInstallError::ShowDialog(Browser* browser) {
@@ -426,6 +433,10 @@ void ExternalInstallError::OnDialogReady(
     global_error_.reset(new ExternalInstallMenuAlert(this));
     error_service_->AddGlobalError(global_error_.get());
   }
+}
+
+void ExternalInstallError::RemoveError() {
+  manager_->RemoveExternalInstallError(extension_id_);
 }
 
 }  // namespace extensions
