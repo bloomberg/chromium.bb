@@ -26,6 +26,16 @@ namespace content {
 // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
 class CONTENT_EXPORT ManifestParser {
  public:
+  class ErrorInfo {
+   public:
+    ErrorInfo(const std::string& error_msg, int error_line, int error_column)
+        : error_msg(error_msg),
+          error_line(error_line),
+          error_column(error_column) {}
+    const std::string error_msg;
+    const int error_line;
+    const int error_column;
+  };
   ManifestParser(const base::StringPiece& data,
                  const GURL& manifest_url,
                  const GURL& document_url);
@@ -36,7 +46,7 @@ class CONTENT_EXPORT ManifestParser {
   void Parse();
 
   const Manifest& manifest() const;
-  const std::vector<std::string>& errors() const;
+  const std::vector<scoped_ptr<ErrorInfo>>& errors() const;
   bool failed() const;
 
  private:
@@ -183,13 +193,17 @@ class CONTENT_EXPORT ManifestParser {
   base::NullableString16 ParseGCMSenderID(
       const base::DictionaryValue& dictionary);
 
+  void AddErrorInfo(const std::string& error_msg,
+                    int error_line = 0,
+                    int error_column = 0);
+
   const base::StringPiece& data_;
   GURL manifest_url_;
   GURL document_url_;
 
   bool failed_;
   Manifest manifest_;
-  std::vector<std::string> errors_;
+  std::vector<scoped_ptr<ErrorInfo>> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);
 };

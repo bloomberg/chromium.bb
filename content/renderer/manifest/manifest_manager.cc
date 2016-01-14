@@ -160,12 +160,15 @@ void ManifestManager::OnManifestFetchComplete(
 
   fetcher_.reset();
 
-  for (const std::string& msg : parser.errors()) {
+  for (const scoped_ptr<ManifestParser::ErrorInfo>& error_info :
+       parser.errors()) {
     blink::WebConsoleMessage message;
     message.level = blink::WebConsoleMessage::LevelError;
-    message.text = blink::WebString::fromUTF8(msg);
+    message.text = blink::WebString::fromUTF8(error_info->error_msg);
     message.url =
         render_frame()->GetWebFrame()->document().manifestURL().string();
+    message.lineNumber = error_info->error_line;
+    message.columnNumber = error_info->error_column;
     render_frame()->GetWebFrame()->addMessageToConsole(message);
   }
 

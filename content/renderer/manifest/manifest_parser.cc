@@ -105,12 +105,15 @@ ManifestParser::~ManifestParser() {
 }
 
 void ManifestParser::Parse() {
-  std::string parse_error;
+  std::string error_msg;
+  int error_line = 0;
+  int error_column = 0;
   scoped_ptr<base::Value> value = base::JSONReader::ReadAndReturnError(
-      data_, base::JSON_PARSE_RFC, nullptr, &parse_error);
+      data_, base::JSON_PARSE_RFC, nullptr, &error_msg, &error_line,
+      &error_column);
 
   if (!value) {
-    errors_.push_back(GetErrorPrefix() + parse_error);
+    AddErrorInfo(GetErrorPrefix() + error_msg, error_line, error_column);
     ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return;
@@ -118,8 +121,8 @@ void ManifestParser::Parse() {
 
   base::DictionaryValue* dictionary = nullptr;
   if (!value->GetAsDictionary(&dictionary)) {
-    errors_.push_back(GetErrorPrefix() +
-                      "root element must be a valid JSON object.");
+    AddErrorInfo(GetErrorPrefix() +
+                 "root element must be a valid JSON object.");
     ManifestUmaUtil::ParseFailed();
     failed_ = true;
     return;
@@ -146,7 +149,8 @@ const Manifest& ManifestParser::manifest() const {
   return manifest_;
 }
 
-const std::vector<std::string>& ManifestParser::errors() const {
+const std::vector<scoped_ptr<ManifestParser::ErrorInfo>>&
+ManifestParser::errors() const {
   return errors_;
 }
 
@@ -162,8 +166,8 @@ bool ManifestParser::ParseBoolean(const base::DictionaryValue& dictionary,
 
   bool value;
   if (!dictionary.GetBoolean(key, &value)) {
-    errors_.push_back(GetErrorPrefix() +
-                      "property '" + key + "' ignored, type boolean expected.");
+    AddErrorInfo(GetErrorPrefix() + "property '" + key + "' ignored, type " +
+                 "boolean expected.");
     return default_value;
   }
 
@@ -179,8 +183,8 @@ base::NullableString16 ManifestParser::ParseString(
 
   base::string16 value;
   if (!dictionary.GetString(key, &value)) {
-    errors_.push_back(GetErrorPrefix() +
-                      "property '" + key + "' ignored, type string expected.");
+    AddErrorInfo(GetErrorPrefix() + "property '" + key + "' ignored, type " +
+                 "string expected.");
     return base::NullableString16();
   }
 
@@ -198,10 +202,9 @@ int64_t ManifestParser::ParseColor(
 
   blink::WebColor color;
   if (!blink::WebCSSParser::parseColor(&color, parsed_color.string())) {
-      errors_.push_back(GetErrorPrefix() +
-                        "property '" + key + "' ignored, '" +
-                        base::UTF16ToUTF8(parsed_color.string()) +
-                        "' is not a valid color.");
+    AddErrorInfo(GetErrorPrefix() + "property '" + key + "' ignored, '" +
+                 base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
+                 "valid color.");
       return Manifest::kInvalidOrMissingColor;
   }
 
@@ -239,8 +242,8 @@ GURL ManifestParser::ParseStartURL(const base::DictionaryValue& dictionary) {
     return GURL();
 
   if (start_url.GetOrigin() != document_url_.GetOrigin()) {
-    errors_.push_back(GetErrorPrefix() + "property 'start_url' ignored, should "
-                      "be same origin as document.");
+    AddErrorInfo(GetErrorPrefix() + "property 'start_url' ignored, should be " +
+                 "same origin as document.");
     return GURL();
   }
 
@@ -262,7 +265,7 @@ blink::WebDisplayMode ManifestParser::ParseDisplay(
   else if (base::LowerCaseEqualsASCII(display.string(), "browser"))
     return blink::WebDisplayModeBrowser;
   else {
-    errors_.push_back(GetErrorPrefix() + "unknown 'display' value ignored.");
+    AddErrorInfo(GetErrorPrefix() + "unknown 'display' value ignored.");
     return blink::WebDisplayModeUndefined;
   }
 }
@@ -296,8 +299,7 @@ blink::WebScreenOrientationLockType ManifestParser::ParseOrientation(
                                       "portrait-secondary"))
     return blink::WebScreenOrientationLockPortraitSecondary;
   else {
-    errors_.push_back(GetErrorPrefix() +
-                      "unknown 'orientation' value ignored.");
+    AddErrorInfo(GetErrorPrefix() + "unknown 'orientation' value ignored.");
     return blink::WebScreenOrientationLockDefault;
   }
 }
@@ -317,8 +319,8 @@ double ManifestParser::ParseIconDensity(const base::DictionaryValue& icon) {
     return Manifest::Icon::kDefaultDensity;
 
   if (!icon.GetDouble("density", &density) || density <= 0) {
-    errors_.push_back(GetErrorPrefix() +
-                      "icon 'density' ignored, must be float greater than 0.");
+    AddErrorInfo(GetErrorPrefix() +
+                 "icon 'density' ignored, must be float greater than 0.");
     return Manifest::Icon::kDefaultDensity;
   }
   return density;
@@ -333,7 +335,7 @@ std::vector<gfx::Size> ManifestParser::ParseIconSizes(
 
   std::vector<gfx::Size> sizes = ParseIconSizesHTML(sizes_str.string());
   if (sizes.empty()) {
-    errors_.push_back(GetErrorPrefix() + "found icon with no valid size.");
+    AddErrorInfo(GetErrorPrefix() + "found icon with no valid size.");
   }
   return sizes;
 }
@@ -346,8 +348,8 @@ std::vector<Manifest::Icon> ManifestParser::ParseIcons(
 
   const base::ListValue* icons_list = nullptr;
   if (!dictionary.GetList("icons", &icons_list)) {
-    errors_.push_back(GetErrorPrefix() +
-                      "property 'icons' ignored, type array expected.");
+    AddErrorInfo(GetErrorPrefix() +
+                 "property 'icons' ignored, type array expected.");
     return icons;
   }
 
@@ -395,7 +397,7 @@ ManifestParser::ParseRelatedApplications(
 
   const base::ListValue* applications_list = nullptr;
   if (!dictionary.GetList("related_applications", &applications_list)) {
-    errors_.push_back(
+    AddErrorInfo(
         GetErrorPrefix() +
         "property 'related_applications' ignored, type array expected.");
     return applications;
@@ -411,7 +413,7 @@ ManifestParser::ParseRelatedApplications(
         ParseRelatedApplicationPlatform(*application_dictionary);
     // "If platform is undefined, move onto the next item if any are left."
     if (application.platform.is_null()) {
-      errors_.push_back(
+      AddErrorInfo(
           GetErrorPrefix() +
           "'platform' is a required field, related application ignored.");
       continue;
@@ -422,7 +424,7 @@ ManifestParser::ParseRelatedApplications(
     // "If both id and url are undefined, move onto the next item if any are
     // left."
     if (application.url.is_empty() && application.id.is_null()) {
-      errors_.push_back(
+      AddErrorInfo(
           GetErrorPrefix() +
           "one of 'url' or 'id' is required, related application ignored.");
       continue;
@@ -454,4 +456,10 @@ base::NullableString16 ManifestParser::ParseGCMSenderID(
   return ParseString(dictionary, "gcm_sender_id", Trim);
 }
 
+void ManifestParser::AddErrorInfo(const std::string& error_msg,
+                                  int error_line,
+                                  int error_column) {
+  errors_.push_back(
+      make_scoped_ptr(new ErrorInfo(error_msg, error_line, error_column)));
+}
 } // namespace content

@@ -31,7 +31,11 @@ class ManifestParserTest : public testing::Test  {
                                  const GURL& manifest_url) {
     ManifestParser parser(data, document_url, manifest_url);
     parser.Parse();
-    errors_ = parser.errors();
+    errors_.clear();
+    for (const scoped_ptr<ManifestParser::ErrorInfo>& error_info :
+         parser.errors()) {
+      errors_.push_back(error_info->error_msg);
+    }
     return parser.manifest();
   }
 

@@ -860,7 +860,7 @@ void WebLocalFrameImpl::addMessageToConsole(const WebConsoleMessage& message)
         return;
     }
 
-    frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url));
+    frame()->document()->addConsoleMessage(ConsoleMessage::create(OtherMessageSource, webCoreMessageLevel, message.text, message.url, message.lineNumber, message.columnNumber));
 }
 
 void WebLocalFrameImpl::collectGarbage()
