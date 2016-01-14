@@ -125,16 +125,6 @@ class TabStripTest : public views::ViewsTestBase {
     views::ViewsTestBase::TearDown();
   }
 
-  // Forces a call to OnPaint() for each tab in |tab_strip_| in order to
-  // trigger a layout, which is needed to update the visibility of tab
-  // close buttons after a tab switch or close. Note that painting does
-  // not occur in unit tests, which is why this helper is used.
-  void TriggerPaintOfAllTabs() {
-    gfx::Canvas canvas;
-    for (int i = 0; i < tab_strip_->tab_count(); ++i)
-      tab_strip_->tab_at(i)->OnPaint(&canvas);
-  }
-
  protected:
   // Returns the rectangular hit test region of |tab| in |tab|'s local
   // coordinate space.
@@ -442,7 +432,6 @@ TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   Tab* tab2 = tab_strip_->tab_at(2);
 
   // Ensure that all tab close buttons are initially visible.
-  TriggerPaintOfAllTabs();
   EXPECT_TRUE(tab0->showing_close_button_);
   EXPECT_TRUE(tab1->showing_close_button_);
   EXPECT_TRUE(tab2->showing_close_button_);
@@ -450,7 +439,6 @@ TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // Enter stacked layout mode and verify this sets |touch_layout_|.
   ASSERT_FALSE(tab_strip_->touch_layout_.get());
   tab_strip_->SetStackedLayout(true);
-  TriggerPaintOfAllTabs();
   ASSERT_TRUE(tab_strip_->touch_layout_.get());
 
   // Only the close button of the active tab should be visible in stacked
@@ -472,7 +460,6 @@ TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   // tab close button hidden and the newly-active tab should show
   // its tab close button.
   tab_strip_->SelectTab(tab2);
-  TriggerPaintOfAllTabs();
   ASSERT_FALSE(tab1->IsActive());
   ASSERT_TRUE(tab2->IsActive());
   EXPECT_FALSE(tab0->showing_close_button_);
@@ -485,14 +472,12 @@ TEST_F(TabStripTest, TabCloseButtonVisibilityWhenStacked) {
   tab_strip_->CloseTab(tab1, CLOSE_TAB_FROM_TOUCH);
   tab1 = nullptr;
   ASSERT_TRUE(tab2->IsActive());
-  TriggerPaintOfAllTabs();
   EXPECT_FALSE(tab0->showing_close_button_);
   EXPECT_TRUE(tab2->showing_close_button_);
   EXPECT_FALSE(tab3->showing_close_button_);
 
   // All tab close buttons should be shown when disengaging stacked tab mode.
   tab_strip_->SetStackedLayout(false);
-  TriggerPaintOfAllTabs();
   ASSERT_FALSE(tab_strip_->touch_layout_.get());
   EXPECT_TRUE(tab0->showing_close_button_);
   EXPECT_TRUE(tab2->showing_close_button_);

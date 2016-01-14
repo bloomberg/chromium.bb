@@ -126,6 +126,10 @@ class Tab : public gfx::AnimationDelegate,
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
 
+  // Called when stacked layout changes and the close button may need to
+  // be updated.
+  void HideCloseButtonForInactiveTabsChanged() { Layout(); }
+
   // Returns the inset within the first dragged tab to use when calculating the
   // "drag insertion point".  If we simply used the x-coordinate of the tab,
   // we'd be calculating based on a point well before where the user considers

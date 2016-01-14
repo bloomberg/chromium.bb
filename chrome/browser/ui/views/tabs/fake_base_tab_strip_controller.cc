@@ -66,9 +66,13 @@ bool FakeBaseTabStripController::IsNewTabPage(int index) const {
 }
 
 void FakeBaseTabStripController::SelectTab(int index) {
-  if (!IsValidIndex(index))
+  if (!IsValidIndex(index) || active_index_ == index)
     return;
+  ui::ListSelectionModel old_selection_model;
+  old_selection_model.SetSelectedIndex(active_index_);
   active_index_ = index;
+  selection_model_.SetSelectedIndex(active_index_);
+  tab_strip_->SetSelection(old_selection_model, selection_model_);
 }
 
 void FakeBaseTabStripController::ExtendSelectionTo(int index) {

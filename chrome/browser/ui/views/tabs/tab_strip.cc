@@ -729,6 +729,9 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
         active_center - ideal_bounds(active_index).width() / 2);
     AnimateToIdealBounds();
   }
+
+  for (int i = 0; i < tab_count(); ++i)
+    tab_at(i)->HideCloseButtonForInactiveTabsChanged();
 }
 
 gfx::Rect TabStrip::GetNewTabButtonBounds() {

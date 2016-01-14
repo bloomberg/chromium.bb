@@ -545,6 +545,7 @@ bool Tab::IsActive() const {
 void Tab::ActiveStateChanged() {
   OnButtonColorMaybeChanged();
   media_indicator_button_->UpdateEnabledForMuteToggle();
+  Layout();
 }
 
 bool Tab::IsSelected() const {
@@ -1176,18 +1177,9 @@ void Tab::DataChanged(const TabRendererData& old) {
 }
 
 void Tab::PaintTab(gfx::Canvas* canvas) {
-  // See if the model changes whether the icons should be painted.
-  const bool show_icon = ShouldShowIcon();
-  const bool show_media_indicator = ShouldShowMediaIndicator();
-  const bool show_close_button = ShouldShowCloseBox();
-  if (show_icon != showing_icon_ ||
-      show_media_indicator != showing_media_indicator_ ||
-      show_close_button != showing_close_button_)
-    Layout();
-
   PaintTabBackground(canvas);
 
-  if (show_icon)
+  if (showing_icon_)
     PaintIcon(canvas);
 }
 
