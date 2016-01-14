@@ -88,6 +88,7 @@ struct BattOrControlMessageAck {
 struct BattOrEEPROM {
   uint8_t magic[4];
   uint16_t version;
+  char serial_num[20];
   uint32_t timestamp;
   float r1;
   float r2;
@@ -99,6 +100,7 @@ struct BattOrEEPROM {
   float high_gain;
   float high_gain_correction_factor;
   float high_gain_correction_offset;
+  uint16_t high_gain_amppot;
   uint32_t sd_sr;
   uint16_t sd_tdiv;
   uint16_t sd_tovf;
@@ -107,7 +109,6 @@ struct BattOrEEPROM {
   uint16_t uart_tdiv;
   uint16_t uart_tovf;
   uint16_t uart_filpot;
-  uint16_t high_gain_amppot;
   uint32_t crc32;
 };
 
