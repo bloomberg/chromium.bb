@@ -45,6 +45,7 @@ component("boringssl") {
 
   public_configs = [ ":openssl_config" ]
 
+  asmflags = []
   cflags = []
   defines = [
     "BORINGSSL_IMPLEMENTATION",
@@ -70,7 +71,7 @@ component("boringssl") {
 
   if (current_cpu == "arm" && is_clang) {
     # TODO(hans) Enable integrated-as (crbug.com/124610).
-    asmflags = [ "-fno-integrated-as" ]
+    asmflags += [ "-fno-integrated-as" ]
     if (is_android) {
       rebased_android_toolchain_root =
           rebase_path(android_toolchain_root, root_build_dir)
