@@ -36,13 +36,14 @@ class BufferedSocketWriter {
   BufferedSocketWriter();
   virtual ~BufferedSocketWriter();
 
-  // Initializes the writer. |write_callback| is called to write data to the
+  // Starts the writer. |write_callback| is called to write data to the
   // socket. |write_failed_callback| is called when write operation fails.
   // Writing stops after the first failed write.
-  void Init(const WriteCallback& write_callback,
-            const WriteFailedCallback& write_failed_callback);
+  void Start(const WriteCallback& write_callback,
+             const WriteFailedCallback& write_failed_callback);
 
-  // Puts a new data chunk in the buffer.
+  // Puts a new data chunk in the buffer. If called before Start() then all data
+  // is buffered until Start().
   void Write(const scoped_refptr<net::IOBufferWithSize>& buffer,
              const base::Closure& done_task);
 
@@ -53,9 +54,6 @@ class BufferedSocketWriter {
   struct PendingPacket;
   typedef std::list<PendingPacket*> DataQueue;
 
-  // Returns true if the writer is closed due to an error.
-  bool is_closed();
-
   void DoWrite();
   void HandleWriteResult(int result);
   void OnWritten(int result);
@@ -64,6 +62,8 @@ class BufferedSocketWriter {
 
   WriteCallback write_callback_;
   WriteFailedCallback write_failed_callback_;
+
+  bool closed_ = false;
 
   DataQueue queue_;
 

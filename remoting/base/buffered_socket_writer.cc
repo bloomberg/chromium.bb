@@ -5,6 +5,7 @@
 #include "remoting/base/buffered_socket_writer.h"
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/stl_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -39,7 +40,7 @@ scoped_ptr<BufferedSocketWriter> BufferedSocketWriter::CreateForSocket(
     net::Socket* socket,
     const WriteFailedCallback& write_failed_callback) {
   scoped_ptr<BufferedSocketWriter> result(new BufferedSocketWriter());
-  result->Init(base::Bind(&WriteNetSocket, socket), write_failed_callback);
+  result->Start(base::Bind(&WriteNetSocket, socket), write_failed_callback);
   return result;
 }
 
@@ -49,11 +50,12 @@ BufferedSocketWriter::~BufferedSocketWriter() {
   STLDeleteElements(&queue_);
 }
 
-void BufferedSocketWriter::Init(
+void BufferedSocketWriter::Start(
     const WriteCallback& write_callback,
     const WriteFailedCallback& write_failed_callback) {
   write_callback_ = write_callback;
   write_failed_callback_ = write_failed_callback;
+  DoWrite();
 }
 
 void BufferedSocketWriter::Write(
@@ -63,7 +65,7 @@ void BufferedSocketWriter::Write(
   DCHECK(data.get());
 
   // Don't write after error.
-  if (is_closed())
+  if (closed_)
     return;
 
   queue_.push_back(new PendingPacket(
@@ -72,15 +74,12 @@ void BufferedSocketWriter::Write(
   DoWrite();
 }
 
-bool BufferedSocketWriter::is_closed() {
-  return write_callback_.is_null();
-}
-
 void BufferedSocketWriter::DoWrite() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::WeakPtr<BufferedSocketWriter> self = weak_factory_.GetWeakPtr();
-  while (self && !write_pending_ && !is_closed() && !queue_.empty()) {
+  while (self && !write_pending_ && !write_callback_.is_null() &&
+         !queue_.empty()) {
     int result = write_callback_.Run(
         queue_.front()->data.get(), queue_.front()->data->BytesRemaining(),
         base::Bind(&BufferedSocketWriter::OnWritten,
@@ -94,11 +93,10 @@ void BufferedSocketWriter::HandleWriteResult(int result) {
     if (result == net::ERR_IO_PENDING) {
       write_pending_ = true;
     } else {
+      closed_ = true;
       write_callback_.Reset();
-      if (!write_failed_callback_.is_null()) {
-        WriteFailedCallback callback = write_failed_callback_;
-        callback.Run(result);
-      }
+      if (!write_failed_callback_.is_null())
+        base::ResetAndReturn(&write_failed_callback_).Run(result);
     }
     return;
   }

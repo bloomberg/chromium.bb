@@ -73,7 +73,7 @@ ClientVideoDispatcherTest::ClientVideoDispatcherTest()
   reader_.StartReading(&host_socket_,
                        base::Bind(&ClientVideoDispatcherTest::OnReadError,
                                   base::Unretained(this)));
-  writer_.Init(
+  writer_.Start(
       base::Bind(&P2PStreamSocket::Write, base::Unretained(&host_socket_)),
       BufferedSocketWriter::WriteFailedCallback());
 }
