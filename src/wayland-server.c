@@ -908,9 +908,10 @@ wl_global_create(struct wl_display *display,
 	struct wl_global *global;
 	struct wl_resource *resource;
 
-	if (interface->version < version) {
-		wl_log("wl_global_create: implemented version higher "
-		       "than interface version%m\n");
+	if (version > interface->version) {
+		wl_log("wl_global_create: implemented version for '%s' "
+		       "higher than interface version (%d > %d)\n",
+		       interface->name, version, interface->version);
 		return NULL;
 	}
 
