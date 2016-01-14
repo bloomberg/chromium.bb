@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_header_painter.h"
 #include "ash/frame/frame_border_hit_test_controller.h"
@@ -178,12 +179,12 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
     return 0;
 
   if (browser_view()->IsTabStripVisible()) {
-    // TODO(tdanderson): Remove this temporary hack to prevent the buttons in
-    //                   the header from overlapping the tabstrip/toolbar
-    //                   separator in material design.
     if (ui::MaterialDesignController::IsModeMaterial()) {
-      return header_painter_->GetHeaderHeight() -
-          browser_view()->GetTabStripHeight();
+      const int header_height = restored
+          ? GetAshLayoutSize(
+                AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON).height()
+          : header_painter_->GetHeaderHeight();
+      return header_height - browser_view()->GetTabStripHeight();
     }
 
     return ((frame()->IsMaximized() || frame()->IsFullscreen()) && !restored) ?
