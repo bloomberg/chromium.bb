@@ -9,6 +9,8 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
+#include "components/translate/content/browser/browser_cld_data_provider.h"
+#include "components/translate/content/browser/browser_cld_data_provider_factory.h"
 #include "components/translate/content/common/translate_messages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_manager.h"
@@ -39,6 +41,9 @@ ContentTranslateDriver::ContentTranslateDriver(
       navigation_controller_(nav_controller),
       translate_manager_(NULL),
       max_reload_check_attempts_(kMaxTranslateLoadCheckAttempts),
+      cld_data_provider_(
+          translate::BrowserCldDataProviderFactory::Get()->
+          CreateBrowserCldDataProvider(nav_controller->GetWebContents())),
       weak_pointer_factory_(this) {
   DCHECK(navigation_controller_);
 }
@@ -218,6 +223,12 @@ bool ContentTranslateDriver::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ChromeFrameHostMsg_PageTranslated, OnPageTranslated)
   IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
+  if (!handled) {
+    // The CLD Data Provider may have its own embedder-specific communication,
+    // such as transferring the file handle for a CLD data file to the render
+    // process.
+    handled = cld_data_provider_->OnMessageReceived(message);
+  }
   return handled;
 }
 
