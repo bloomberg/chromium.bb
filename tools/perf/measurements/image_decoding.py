@@ -43,7 +43,7 @@ class ImageDecoding(page_test.PageTest):
         'disabled-by-default-devtools.timeline')
     for c in [ 'blink', 'devtools.timeline', 'webkit.console', 'blink.console']:
       config.tracing_category_filter.AddIncludedCategory(c)
-    config.tracing_options.enable_chrome_trace = True
+    config.enable_chrome_trace = True
     tab.browser.platform.tracing_controller.Start(config)
 
   def StopBrowserAfterPage(self, browser, page):

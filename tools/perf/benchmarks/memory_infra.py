@@ -37,7 +37,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
       filter_string='-*,blink.console,disabled-by-default-memory-infra')
     tbm_options = timeline_based_measurement.Options(
         overhead_level=trace_memory)
-    tbm_options.tracing_options.enable_android_graphics_memtrack = True
+    tbm_options.config.enable_android_graphics_memtrack = True
     return tbm_options
 
   @classmethod
