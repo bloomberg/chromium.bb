@@ -32,6 +32,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #import "chrome/browser/mac/dock.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -617,6 +618,19 @@ void RevealAppShimInFinderForAppOnFileThread(
   shortcut_creator.RevealAppShimInFinder();
 }
 
+// Mac-specific version of web_app::ShouldCreateShortcutFor() used during batch
+// upgrades to ensure all shortcuts a user may still have are repaired when
+// required by a Chrome upgrade.
+bool ShouldUpgradeShortcutFor(Profile* profile,
+                              const extensions::Extension* extension) {
+  if (extension->location() == extensions::Manifest::COMPONENT ||
+      !extensions::ui_util::CanDisplayInAppLauncher(extension, profile)) {
+    return false;
+  }
+
+  return extension->is_app();
+}
+
 }  // namespace
 
 @interface CrCreateAppShortcutCheckboxObserver : NSObject {
@@ -839,6 +853,11 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
   std::vector<base::FilePath> paths;
   paths.push_back(app_data_dir_);
 
+  // Remember whether the copy in the profile directory exists. If it doesn't
+  // and others do, it should be re-created. Otherwise, it's a signal that a
+  // shortcut has never been created.
+  bool profile_copy_exists = base::PathExists(GetInternalShortcutPath());
+
   // Try to update the copy under ~/Applications. If that does not exist, check
   // if a matching bundle can be found elsewhere.
   base::FilePath app_path = GetApplicationsShortcutPath();
@@ -854,7 +873,7 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
       app_path = GetAppBundleById(GetBundleIdentifier());
 
     if (app_path.empty()) {
-      if (info_->from_bookmark) {
+      if (profile_copy_exists && info_->from_bookmark) {
         // The bookmark app shortcut has been deleted by the user. Restore it,
         // as the Mac UI for bookmark apps creates the expectation that the app
         // will be added to Applications.
@@ -864,7 +883,23 @@ bool WebAppShortcutCreator::UpdateShortcuts() {
     } else {
       paths.push_back(app_path.DirName());
     }
+  } else {
+    // If a test has set g_app_shims_allow_update_and_launch_in_tests, it means
+    // it relies on UpdateShortcuts() to create shortcuts. (Tests can't rely on
+    // install-triggered shortcut creation because they can't synchronize with
+    // the UI thread). So, allow shortcuts to be created for this case, even if
+    // none currently exist. TODO(tapted): Remove this when tests are properly
+    // mocked.
+    profile_copy_exists = true;
   }
+
+  // When upgrading, if no shim exists anywhere on disk, don't create the copy
+  // under the profile directory for the first time. The best way to tell
+  // whether a shortcut has been created is to poke around on disk, so the
+  // upgrade process must send all candidate extensions to the FILE thread.
+  // Then those without shortcuts will get culled here.
+  if (paths.size() == 1 && !profile_copy_exists)
+    return false;
 
   size_t success_count = CreateShortcutsIn(paths);
   if (success_count == 0)
@@ -1186,8 +1221,7 @@ void UpdateShortcutsForAllApps(Profile* profile,
       registry->GenerateInstalledExtensionsSet();
   for (auto& extension_refptr : *candidates) {
     const extensions::Extension* extension = extension_refptr.get();
-    if (web_app::ShouldCreateShortcutFor(SHORTCUT_CREATION_AUTOMATED, profile,
-                                         extension)) {
+    if (ShouldUpgradeShortcutFor(profile, extension)) {
       web_app::UpdateAllShortcuts(base::string16(), profile, extension,
                                   latch->NoOpClosure());
     }
