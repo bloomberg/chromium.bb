@@ -7,7 +7,7 @@ var animation;
 
 function startAnimation()
 {
-    animation = node.animate([{ width: "100px" }, { width: "2000px" }], { duration: 20, fill: "forwards" });
+    animation = node.animate([{ width: "100px" }, { width: "2000px" }], { duration: 0, fill: "forwards" });
 }
 
 function cancelAnimation()
@@ -15,29 +15,21 @@ function cancelAnimation()
     animation.cancel();
 }
 
-function rafWidth(resolve, reject)
+function getWidth()
 {
-    function frameCallback()
-    {
-        resolve(node.offsetWidth);
-    }
-
-    if (window.testRunner)
-        testRunner.layoutAndPaintAsyncThen(frameCallback);
+    return node.offsetWidth;
 }
 
-window.debugTest = true;
 function test()
 {
     InspectorTest.eventHandler["Animation.animationStarted"] = onStarted;
     InspectorTest.sendCommand("Animation.enable", {});
     InspectorTest.evaluateInPage("startAnimation()", function() {});
-    var pausedWidth;
 
     function onStarted(response)
     {
         InspectorTest.log("Animation started");
-        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(pause.bind(null, response.params.animation.id));
+        InspectorTest.evaluateInPage("getWidth()", pause.bind(null, response.params.animation.id));
     }
 
     function pause(id, width)
@@ -45,7 +37,7 @@ function test()
         InspectorTest.log("Box is animating: " + (width != 100).toString());
         InspectorTest.sendCommand("Animation.setPaused", { animations: [ id ], paused: true });
         InspectorTest.evaluateInPage("cancelAnimation()", function() {});
-        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(release.bind(null, id));
+        InspectorTest.evaluateInPage("getWidth()", release.bind(null, id));
     }
 
     function release(id, width)
@@ -53,7 +45,7 @@ function test()
         InspectorTest.log("Animation paused");
         InspectorTest.log("Box is animating: " + (width != 100).toString());
         InspectorTest.sendCommand("Animation.releaseAnimations", { animations: [ id ] });
-        InspectorTest.invokePageFunctionPromise("rafWidth", []).then(released);
+        InspectorTest.evaluateInPage("getWidth()", released);
     }
 
     function released(width)
