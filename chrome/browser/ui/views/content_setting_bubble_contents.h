@@ -21,6 +21,10 @@ class ContentSettingBubbleModel;
 class ContentSettingMediaMenuModel;
 class Profile;
 
+namespace chrome {
+class ContentSettingBubbleViewsBridge;
+}
+
 namespace ui {
 class SimpleMenuModel;
 }
@@ -67,6 +71,9 @@ class ContentSettingBubbleContents : public content::WebContentsObserver,
  private:
   class Favicon;
   struct MediaMenuParts;
+
+  // This allows ContentSettingBubbleViewsBridge to call SetAnchorRect().
+  friend class chrome::ContentSettingBubbleViewsBridge;
 
   typedef std::map<views::Link*, int> ListItemLinks;
   typedef std::map<views::MenuButton*, MediaMenuParts*> MediaMenuPartsMap;

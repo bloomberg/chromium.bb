@@ -13,6 +13,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 class Browser;
+class ContentSettingBubbleModel;
 class GURL;
 class LoginHandler;
 class Profile;
@@ -115,6 +116,22 @@ void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
                              Profile* profile,
                              const BookmarkEditor::EditDetails& details,
                              BookmarkEditor::Configuration configuration);
+
+#if defined(OS_MACOSX)
+
+// This is a class so that it can be friended from ContentSettingBubbleContents,
+// which allows it to call SetAnchorRect().
+class ContentSettingBubbleViewsBridge {
+ public:
+  static void Show(gfx::NativeView parent_view,
+                   ContentSettingBubbleModel* model,
+                   content::WebContents* web_contents,
+                   const gfx::Point& anchor);
+ private:
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ContentSettingBubbleViewsBridge);
+};
+
+#endif  // OS_MACOSX
 
 #endif  // TOOLKIT_VIEWS
 

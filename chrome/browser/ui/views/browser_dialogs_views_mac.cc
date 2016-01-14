@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bubble_view.h"
+#include "chrome/browser/ui/views/content_setting_bubble_contents.h"
 #include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
 
 // This file provides definitions of desktop browser dialog-creation methods for
@@ -42,6 +43,18 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
   BookmarkBubbleView::ShowBubble(nullptr, gfx::Rect(anchor_point, gfx::Size()),
                                  parent, observer, std::move(delegate),
                                  browser->profile(), url, already_bookmarked);
+}
+
+void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
+                                           ContentSettingBubbleModel* model,
+                                           content::WebContents* web_contents,
+                                           const gfx::Point& anchor) {
+  ContentSettingBubbleContents* contents =
+      new ContentSettingBubbleContents(model, web_contents, nullptr,
+          views::BubbleBorder::Arrow::TOP_RIGHT);
+  contents->set_parent_window(parent_view);
+  contents->SetAnchorRect(gfx::Rect(anchor, gfx::Size()));
+  views::BubbleDelegateView::CreateBubble(contents)->Show();
 }
 
 }  // namespace chrome
