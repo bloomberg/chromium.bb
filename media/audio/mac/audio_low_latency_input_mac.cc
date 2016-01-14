@@ -794,7 +794,9 @@ bool AUAudioInputStream::GetInputCallbackIsActive() {
 
 void AUAudioInputStream::CheckInputStartupSuccess() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (started_) {
+  // Only add UMA stat related to failing input audio for streams where
+  // the AGC has been enabled, e.g. WebRTC audio input streams.
+  if (started_ && GetAutomaticGainControl()) {
     // Check if we have called Start() and input callbacks have actually
     // started in time as they should. If that is not the case, we have a
     // problem and the stream is considered dead.
@@ -802,17 +804,10 @@ void AUAudioInputStream::CheckInputStartupSuccess() {
     UMA_HISTOGRAM_BOOLEAN("Media.Audio.InputStartupSuccessMac",
                           input_callback_is_active);
     DVLOG(1) << "input_callback_is_active: " << input_callback_is_active;
-
     if (!input_callback_is_active) {
-      const bool agc = GetAutomaticGainControl();
-      UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac", agc);
-      // Only add UMA stat related to failing input audio for streams where
-      // the AGC has been enabled, e.g. WebRTC audio input streams.
-      if (agc) {
-        // Now when we know that startup has failed for some reason, add extra
-        // UMA stats in an attempt to figure out the exact reason.
-        AddHistogramsForFailedStartup();
-      }
+      // Now when we know that startup has failed for some reason, add extra
+      // UMA stats in an attempt to figure out the exact reason.
+      AddHistogramsForFailedStartup();
     }
   }
 }
@@ -843,6 +838,10 @@ void AUAudioInputStream::AddHistogramsForFailedStartup() {
                             manager_->low_latency_input_streams());
   UMA_HISTOGRAM_COUNTS_1000("Media.Audio.NumberOfBasicInputStreamsMac",
                             manager_->basic_input_streams());
+  // TODO(henrika): this value will currently always report true. It should be
+  // fixed when we understand the problem better.
+  UMA_HISTOGRAM_BOOLEAN("Media.Audio.AutomaticGainControlMac",
+                        GetAutomaticGainControl());
 }
 
 }  // namespace media
