@@ -59,8 +59,6 @@ public:
     // Constructs a WebLayerTreeView set up with reasonable defaults for
     // testing.
     virtual WebLayerTreeView* createLayerTreeViewForTesting() { return nullptr; }
-
-    virtual WebData readFromFile(const WebString& path) { return WebData(); }
 };
 
 }

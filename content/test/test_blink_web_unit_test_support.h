@@ -85,7 +85,6 @@ class TestBlinkWebUnitTestSupport : public blink::WebUnitTestSupport,
   void serveAsynchronousMockedRequests() override;
   void setLoaderDelegate(blink::WebURLLoaderTestDelegate* delegate) override;
   blink::WebLayerTreeView* createLayerTreeViewForTesting() override;
-  blink::WebData readFromFile(const blink::WebString& path) override;
   blink::WebThread* currentThread() override;
 
   void getPluginList(bool refresh,

@@ -344,16 +344,6 @@ TestBlinkWebUnitTestSupport::createLayerTreeViewForTesting() {
   return view.release();
 }
 
-blink::WebData TestBlinkWebUnitTestSupport::readFromFile(
-    const blink::WebString& path) {
-  base::FilePath file_path = base::FilePath::FromUTF16Unsafe(path);
-
-  std::string buffer;
-  base::ReadFileToString(file_path, &buffer);
-
-  return blink::WebData(buffer.data(), buffer.size());
-}
-
 blink::WebThread* TestBlinkWebUnitTestSupport::currentThread() {
   if (web_thread_ && web_thread_->isCurrentThread())
     return web_thread_.get();
