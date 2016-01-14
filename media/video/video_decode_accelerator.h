@@ -38,6 +38,9 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
   struct MEDIA_EXPORT Capabilities {
     Capabilities();
     ~Capabilities();
+
+    std::string AsHumanReadableString() const;
+
     // Flags that can be associated with a VDA.
     enum Flags {
       NO_FLAGS = 0,

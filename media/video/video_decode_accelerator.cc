@@ -53,6 +53,19 @@ VideoDecodeAccelerator::Capabilities::Capabilities() : flags(NO_FLAGS) {}
 
 VideoDecodeAccelerator::Capabilities::~Capabilities() {}
 
+std::string VideoDecodeAccelerator::Capabilities::AsHumanReadableString()
+    const {
+  std::ostringstream s;
+  s << "[";
+  for (const SupportedProfile& sp : supported_profiles) {
+    s << " " << GetProfileName(sp.profile) << ": " << sp.min_resolution.width()
+      << "x" << sp.min_resolution.height() << "->" << sp.max_resolution.width()
+      << "x" << sp.max_resolution.height();
+  }
+  s << "]";
+  return s.str();
+}
+
 } // namespace media
 
 namespace std {

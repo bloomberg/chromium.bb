@@ -196,14 +196,17 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  // Only use MediaCodec for VP8/9 if it's likely backed by hardware.
+  // Only use MediaCodec for VP8/9 if it's likely backed by hardware
+  // or if the stream is encrypted.
   if ((codec_ == media::kCodecVP8 || codec_ == media::kCodecVP9) &&
-      media::VideoCodecBridge::IsKnownUnaccelerated(
-          codec_, media::MEDIA_CODEC_DECODER)) {
-    DVLOG(1) << "Initialization failed: "
-             << (codec_ == media::kCodecVP8 ? "vp8" : "vp9")
-             << " is not hardware accelerated";
-    return false;
+      !is_encrypted_) {
+    if (media::VideoCodecBridge::IsKnownUnaccelerated(
+            codec_, media::MEDIA_CODEC_DECODER)) {
+      DVLOG(1) << "Initialization failed: "
+               << (codec_ == media::kCodecVP8 ? "vp8" : "vp9")
+               << " is not hardware accelerated";
+      return false;
+    }
   }
 
   if (!make_context_current_.Run()) {
@@ -892,23 +895,17 @@ AndroidVideoDecodeAccelerator::GetCapabilities() {
   Capabilities capabilities;
   SupportedProfiles& profiles = capabilities.supported_profiles;
 
-  if (!media::VideoCodecBridge::IsKnownUnaccelerated(
-          media::kCodecVP8, media::MEDIA_CODEC_DECODER)) {
-    SupportedProfile profile;
-    profile.profile = media::VP8PROFILE_ANY;
-    profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(1920, 1088);
-    profiles.push_back(profile);
-  }
+  SupportedProfile profile;
 
-  if (!media::VideoCodecBridge::IsKnownUnaccelerated(
-          media::kCodecVP9, media::MEDIA_CODEC_DECODER)) {
-    SupportedProfile profile;
-    profile.profile = media::VP9PROFILE_ANY;
-    profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(1920, 1088);
-    profiles.push_back(profile);
-  }
+  profile.profile = media::VP8PROFILE_ANY;
+  profile.min_resolution.SetSize(0, 0);
+  profile.max_resolution.SetSize(1920, 1088);
+  profiles.push_back(profile);
+
+  profile.profile = media::VP9PROFILE_ANY;
+  profile.min_resolution.SetSize(0, 0);
+  profile.max_resolution.SetSize(1920, 1088);
+  profiles.push_back(profile);
 
   for (const auto& supported_profile : kSupportedH264Profiles) {
     SupportedProfile profile;
