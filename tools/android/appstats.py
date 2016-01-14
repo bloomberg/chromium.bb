@@ -14,13 +14,15 @@ import time
 
 from operator import sub
 
-sys.path.append(os.path.join(os.path.dirname(__file__),
-                             os.pardir,
-                             os.pardir,
-                             'build',
-                             'android'))
-from pylib.device import device_errors
-from pylib.device import device_utils
+_SRC_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..'))
+
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil'))
+from devil.android import device_errors
+from devil.android import device_utils
+
+sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
+import devil_chromium
 
 class Utils(object):
   """A helper class to hold various utility methods."""
@@ -943,6 +945,8 @@ def main(argv):
   # Make sure we show memory stats if nothing was specifically requested.
   if not args.show_net and not args.show_mem:
     args.show_mem = True
+
+  devil_chromium.Initialize()
 
   curses.setupterm()
 

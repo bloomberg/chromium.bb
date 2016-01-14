@@ -15,12 +15,16 @@ import random
 import sys
 import threading
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                             os.pardir, os.pardir, 'build', 'android'))
-
-from pylib.device import device_utils
-
 import customtabs_benchmark
+
+_SRC_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..', '..'))
+
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
+
+sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
+import devil_chromium
 
 
 _KEYS = ['url', 'warmup', 'no_prerendering', 'delay_to_may_launch_url',
@@ -132,6 +136,7 @@ def main():
   if options.config is None:
     logging.error('A configuration file must be provided.')
     sys.exit(0)
+  devil_chromium.Initialize()
   configs = _ParseConfiguration(options.config)
   _Run(options.output_file_prefix, configs)
 

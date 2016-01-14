@@ -9,17 +9,18 @@ import optparse
 import os
 import sys
 
-BUILD_ANDROID_DIR = os.path.join(os.path.dirname(__file__),
-                                 os.pardir,
-                                 os.pardir,
-                                 'build',
-                                 'android')
-sys.path.append(BUILD_ANDROID_DIR)
+_SRC_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..'))
+
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil')
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.sdk import intent
+
+sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
+import devil_chromium
 from pylib import constants
 from pylib import flag_changer
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.device import intent
 
 # Browser Constants
 DEFAULT_BROWSER = 'chrome'
@@ -81,6 +82,8 @@ def main(argv):
 
   if not options.browser in constants.PACKAGE_INFO.keys():
     option_parser.error('Unknown browser option ' + options.browser)
+
+  devil_chromium.Initialize()
 
   package_info = constants.PACKAGE_INFO[options.browser]
 

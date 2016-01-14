@@ -13,13 +13,17 @@ import re
 import sys
 import time
 
-sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
-                             os.pardir, os.pardir, 'build', 'android'))
+_SRC_PATH = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..'))
 
-from pylib.device import device_errors
-from pylib.device import device_utils
-from pylib.device import intent
-from pylib.perf import cache_control
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil'))
+from devil.android import device_errors
+from devil.android import device_utils
+from devil.android.perf import cache_control
+from devil.android.sdk import intent
+
+sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
+import devil_chromium
 
 
 def RunOnce(device, url, warmup, no_prerendering, delay_to_may_launch_url,
@@ -150,6 +154,7 @@ def _CreateOptionParser():
 def main():
   parser = _CreateOptionParser()
   options, _ = parser.parse_args()
+  devil_chromium.Initialize()
   devices = device_utils.DeviceUtils.HealthyDevices()
   device = devices[0]
   if len(devices) != 1 and options.device is None:
