@@ -13,6 +13,7 @@ import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Build;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -450,9 +451,14 @@ public class NewTabPage
                     mProfile, mTab.getWebContents(), pageUrl, iconUrl, isLargeIcon, callback);
         }
 
+        private boolean isLocalUrl(String url) {
+            return "file".equals(Uri.parse(url).getScheme());
+        }
+
         @Override
         public boolean isOfflineAvailable(String pageUrl) {
             if (mIsDestroyed || !isNtpOfflinePagesEnabled()) return false;
+            if (isLocalUrl(pageUrl)) return true;
             if (mOfflinePageBridge == null) mOfflinePageBridge = new OfflinePageBridge(mProfile);
             return mOfflinePageBridge.getPageByOnlineURL(pageUrl) != null;
         }
