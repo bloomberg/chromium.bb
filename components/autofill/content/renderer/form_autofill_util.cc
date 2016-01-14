@@ -1468,40 +1468,57 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     FormFieldData* field) {
   // Only attempt formless Autofill on checkout flows. This avoids the many
   // false positives found on the non-checkout web. See
-  // http://crbug.com/462375. For now this early abort only applies to
-  // English-language pages, because the regex is not translated. Note that
-  // an empty "lang" attribute counts as English. A potential problem is that
-  // this only checks document.title(), but should actually check the main
-  // frame's title. Thus it may make bad decisions for iframes.
+  // http://crbug.com/462375.
   WebElement html_element = document.documentElement();
+
+  // For now this restriction only applies to English-language pages, because
+  // the keywords are not translated. Note that an empty "lang" attribute
+  // counts as English.
   std::string lang;
   if (!html_element.isNull())
     lang = html_element.getAttribute("lang").utf8();
-  if (lang.empty() ||
-      base::StartsWith(lang, "en", base::CompareCase::INSENSITIVE_ASCII)) {
-    std::string title(base::UTF16ToUTF8(base::string16(document.title())));
-    const char* const kKeywords[] = {
-      "payment",
-      "checkout",
-      "address",
-      "delivery",
-      "shipping",
-    };
-
-    bool found = false;
-    for (const auto& keyword : kKeywords) {
-      if (title.find(keyword) != base::string16::npos) {
-        found = true;
-        break;
-      }
-    }
-    if (!found)
-      return false;
+  if (!lang.empty() &&
+      !base::StartsWith(lang, "en", base::CompareCase::INSENSITIVE_ASCII)) {
+    return UnownedFormElementsAndFieldSetsToFormData(
+        fieldsets, control_elements, element, document, extract_mask, form,
+        field);
   }
 
-  return UnownedFormElementsAndFieldSetsToFormData(
-      fieldsets, control_elements, element, document, extract_mask, form,
-      field);
+  // A potential problem is that this only checks document.title(), but should
+  // actually check the main frame's title. Thus it may make bad decisions for
+  // iframes.
+  base::string16 title(base::ToLowerASCII(base::string16(document.title())));
+
+  // Don't check the path for url's without a standard format path component,
+  // such as data:.
+  std::string path;
+  GURL url(document.url());
+  if (url.IsStandard())
+    path = base::ToLowerASCII(url.path());
+
+  const char* const kKeywords[] = {
+    "payment",
+    "checkout",
+    "address",
+    "delivery",
+    "shipping",
+  };
+
+  for (const auto& keyword : kKeywords) {
+    // Compare char16 elements of |title| with char elements of |keyword| using
+    // operator==.
+    auto title_pos = std::search(title.begin(), title.end(),
+                                 keyword, keyword + strlen(keyword));
+    if (title_pos != title.end() ||
+        path.find(keyword) != std::string::npos) {
+      // Found a keyword: treat this as an unowned form.
+      return UnownedFormElementsAndFieldSetsToFormData(
+          fieldsets, control_elements, element, document, extract_mask, form,
+          field);
+    }
+  }
+
+  return false;
 }
 
 bool UnownedPasswordFormElementsAndFieldSetsToFormData(

@@ -104,8 +104,10 @@ const char kFormHtml[] =
     "  <INPUT type='submit' name='reply-send' value='Send'/>"
     "</FORM>";
 
+// This constant uses a mixed-case title tag to be sure that the title match is
+// not case-sensitive. Other tests in this file use an all-lower title tag.
 const char kUnownedFormHtml[] =
-    "<HEAD><TITLE>enter shipping info</TITLE></HEAD>"
+    "<HEAD><TITLE>Enter Shipping Info</TITLE></HEAD>"
     "<INPUT type='text' id='firstname'/>"
     "<INPUT type='text' id='lastname'/>"
     "<INPUT type='hidden' id='imhidden'/>"
@@ -134,6 +136,72 @@ const char kUnownedFormHtml[] =
     "<TEXTAREA id='textarea'></TEXTAREA>"
     "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
     "<INPUT type='submit' name='reply-send' value='Send'/>";
+
+// This constant has no title tag, and should be passed to
+// LoadHTMLWithURLOverride to test the detection of unowned forms by URL.
+const char kUnownedUntitledFormHtml[] =
+    "<INPUT type='text' id='firstname'/>"
+    "<INPUT type='text' id='lastname'/>"
+    "<INPUT type='hidden' id='imhidden'/>"
+    "<INPUT type='text' id='notempty' value='Hi'/>"
+    "<INPUT type='text' autocomplete='off' id='noautocomplete'/>"
+    "<INPUT type='text' disabled='disabled' id='notenabled'/>"
+    "<INPUT type='text' readonly id='readonly'/>"
+    "<INPUT type='text' style='visibility: hidden'"
+    "       id='invisible'/>"
+    "<INPUT type='text' style='display: none' id='displaynone'/>"
+    "<INPUT type='month' id='month'/>"
+    "<INPUT type='month' id='month-nonempty' value='2011-12'/>"
+    "<SELECT id='select'>"
+    "  <OPTION></OPTION>"
+    "  <OPTION value='CA'>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-nonempty'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-unchanged'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<TEXTAREA id='textarea'></TEXTAREA>"
+    "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
+    "<INPUT type='submit' name='reply-send' value='Send'/>";
+
+// This constant does not have a title tag, but should match an unowned form
+// anyway because it is not English.
+const char kUnownedNonEnglishFormHtml[] =
+    "<HTML LANG='fr'>"
+    "<INPUT type='text' id='firstname'/>"
+    "<INPUT type='text' id='lastname'/>"
+    "<INPUT type='hidden' id='imhidden'/>"
+    "<INPUT type='text' id='notempty' value='Hi'/>"
+    "<INPUT type='text' autocomplete='off' id='noautocomplete'/>"
+    "<INPUT type='text' disabled='disabled' id='notenabled'/>"
+    "<INPUT type='text' readonly id='readonly'/>"
+    "<INPUT type='text' style='visibility: hidden'"
+    "       id='invisible'/>"
+    "<INPUT type='text' style='display: none' id='displaynone'/>"
+    "<INPUT type='month' id='month'/>"
+    "<INPUT type='month' id='month-nonempty' value='2011-12'/>"
+    "<SELECT id='select'>"
+    "  <OPTION></OPTION>"
+    "  <OPTION value='CA'>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-nonempty'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<SELECT id='select-unchanged'>"
+    "  <OPTION value='CA' selected>California</OPTION>"
+    "  <OPTION value='TX'>Texas</OPTION>"
+    "</SELECT>"
+    "<TEXTAREA id='textarea'></TEXTAREA>"
+    "<TEXTAREA id='textarea-nonempty'>Go&#10;away!</TEXTAREA>"
+    "<INPUT type='submit' name='reply-send' value='Send'/>"
+    "</HTML>";
 
 std::string RetrievalMethodToString(
     const WebElementDescriptor::RetrievalMethod& method) {
@@ -263,11 +331,15 @@ class FormAutofillTest : public ChromeRenderViewTest {
   // Test FormFillxxx functions.
   void TestFormFillFunctions(const char* html,
                              bool unowned,
+                             const char* url_override,
                              const AutofillFieldCase* field_cases,
                              size_t number_of_field_cases,
                              FillFormFunction fill_form_function,
                              GetValueFunction get_value_function) {
-    LoadHTML(html);
+    if (url_override)
+      LoadHTMLWithUrlOverride(html, url_override);
+    else
+      LoadHTML(html);
 
     WebFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -362,7 +434,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
         id).to<WebInputElement>();
   }
 
-  void TestFillForm(const char* html, bool unowned) {
+  void TestFillForm(const char* html, bool unowned, const char* url_override) {
     static const AutofillFieldCase field_cases[] = {
       // fields: form_control_type, name, initial_value, autocomplete_attribute,
       //         should_be_autofilled, autofill_value, expected_value
@@ -423,7 +495,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
         "some multi-\nline value",
         "Go\naway!"},
     };
-    TestFormFillFunctions(html, unowned, field_cases, arraysize(field_cases),
+    TestFormFillFunctions(html, unowned, url_override,
+                          field_cases, arraysize(field_cases),
                           FillForm, &GetValueWrapper);
     // Verify preview selection.
     WebInputElement firstname = GetInputElementById("firstname");
@@ -431,7 +504,8 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(16, firstname.selectionEnd());
   }
 
-  void TestPreviewForm(const char* html, bool unowned) {
+  void TestPreviewForm(const char* html, bool unowned,
+                       const char* url_override) {
     static const AutofillFieldCase field_cases[] = {
       // Normal empty fields should be previewed.
       {"text",
@@ -495,13 +569,28 @@ class FormAutofillTest : public ChromeRenderViewTest {
         "suggested multi-\nline value",
         ""},
     };
-    TestFormFillFunctions(html, unowned, field_cases, arraysize(field_cases),
+    TestFormFillFunctions(html, unowned, url_override,
+                          field_cases, arraysize(field_cases),
                           &PreviewForm, &GetSuggestedValueWrapper);
 
     // Verify preview selection.
     WebInputElement firstname = GetInputElementById("firstname");
     EXPECT_EQ(0, firstname.selectionStart());
     EXPECT_EQ(19, firstname.selectionEnd());
+  }
+
+  void TestUnmatchedUnownedForm(const char* html, const char* url_override) {
+    if (url_override)
+      LoadHTMLWithUrlOverride(html, url_override);
+    else
+      LoadHTML(html);
+
+    WebFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+
+    FormCache form_cache(*web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
+    ASSERT_EQ(0U, forms.size());
   }
 
   void TestFindFormForInputElement(const char* html, bool unowned) {
@@ -2508,11 +2597,29 @@ TEST_F(FormAutofillTest, FindFormForTextAreaElementForUnownedForm) {
 
 // Test regular FillForm function.
 TEST_F(FormAutofillTest, FillForm) {
-  TestFillForm(kFormHtml, false);
+  TestFillForm(kFormHtml, false, nullptr);
 }
 
 TEST_F(FormAutofillTest, FillFormForUnownedForm) {
-  TestFillForm(kUnownedFormHtml, true);
+  TestFillForm(kUnownedFormHtml, true, nullptr);
+}
+
+TEST_F(FormAutofillTest, FillFormForUnownedUntitledForm) {
+  TestFillForm(kUnownedUntitledFormHtml, true,
+               "http://example.test/checkout_flow");
+}
+
+TEST_F(FormAutofillTest, FillFormForUnownedNonEnglishForm) {
+  TestFillForm(kUnownedNonEnglishFormHtml, true, nullptr);
+}
+
+TEST_F(FormAutofillTest, FillFormForUnownedNonASCIIForm) {
+  std::string html("<HEAD><TITLE>accented latin: \xC3\xA0, thai: \xE0\xB8\x81, "
+      "control: \x04, nbsp: \xEF\xBB\xBF, non-BMP: \xF0\x9F\x8C\x80; This "
+      "should match a CHECKOUT flow despite the non-ASCII chars"
+      "</TITLE></HEAD>");
+  html.append(kUnownedUntitledFormHtml);
+  TestFillForm(html.c_str(), true, nullptr);
 }
 
 TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
@@ -2594,18 +2701,64 @@ TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
        "some multi-\nline value",
        "some multi-\nline value"},
   };
-  TestFormFillFunctions(kFormHtml, false, field_cases, arraysize(field_cases),
+  TestFormFillFunctions(kFormHtml, false, nullptr,
+                        field_cases, arraysize(field_cases),
                         &FillFormIncludingNonFocusableElementsWrapper,
                         &GetValueWrapper);
 }
 
 TEST_F(FormAutofillTest, PreviewForm) {
-  TestPreviewForm(kFormHtml, false);
+  TestPreviewForm(kFormHtml, false, nullptr);
 }
 
 TEST_F(FormAutofillTest, PreviewFormForUnownedForm) {
-  TestPreviewForm(kUnownedFormHtml, true);
+  TestPreviewForm(kUnownedFormHtml, true, nullptr);
 }
+
+TEST_F(FormAutofillTest, PreviewFormForUnownedUntitledForm) {
+  // This test uses a mixed-case URL to be sure that the url match is not
+  // case-sensitive.
+  TestPreviewForm(kUnownedUntitledFormHtml, true,
+                  "http://example.test/Enter_Shipping_Address/");
+}
+
+TEST_F(FormAutofillTest, PreviewFormForUnownedNonEnglishForm) {
+  TestPreviewForm(kUnownedNonEnglishFormHtml, true, nullptr);
+}
+
+// Data that looks like an unowned form should NOT be matched unless an
+// additional indicator is present, such as title tag or url, to prevent false
+// positives.
+
+TEST_F(FormAutofillTest, UnmatchedFormNoURL) {
+  TestUnmatchedUnownedForm(kUnownedUntitledFormHtml, nullptr);
+}
+
+TEST_F(FormAutofillTest, UnmatchedFormPathWithoutKeywords) {
+  TestUnmatchedUnownedForm(kUnownedUntitledFormHtml,
+                           "http://example.test/path_without_keywords");
+}
+
+TEST_F(FormAutofillTest, UnmatchedFormKeywordInQueryOnly) {
+  TestUnmatchedUnownedForm(kUnownedUntitledFormHtml,
+                           "http://example.test/search?q=checkout+in+query");
+}
+
+TEST_F(FormAutofillTest, UnmatchedFormTitleWithoutKeywords) {
+  std::string wrong_title_html(
+      "<TITLE>This title has nothing to do with autofill</TITLE>");
+  wrong_title_html += kUnownedUntitledFormHtml;
+  TestUnmatchedUnownedForm(wrong_title_html.c_str(), nullptr);
+}
+
+TEST_F(FormAutofillTest, UnmatchedFormNonASCII) {
+  std::string html("<HEAD><TITLE>Non-ASCII soft hyphen in the middle of "
+                   "keyword prevents a match here: check\xC2\xADout"
+                   "</TITLE></HEAD>");
+  html.append(kUnownedUntitledFormHtml);
+  TestUnmatchedUnownedForm(html.c_str(), nullptr);
+}
+
 
 TEST_F(FormAutofillTest, Labels) {
   ExpectJohnSmithLabels(
