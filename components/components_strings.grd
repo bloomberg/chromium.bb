@@ -210,6 +210,9 @@
       <message name="IDS_CANCEL" desc="Used for Cancel on buttons">
         Cancel
       </message>
+      <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
+        Close
+      </message>
       <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
         Done
       </message>

@@ -467,9 +467,6 @@ are declared in build/common.gypi.
       <message name="IDS_EDIT" desc="Edit menu item">
         &amp;Edit
       </message>
-      <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
-        Close
-      </message>
       <if expr="is_macosx">
         <message name="IDS_ACCNAME_TAB" desc="A generic description of a tab button's role">
           Tab
