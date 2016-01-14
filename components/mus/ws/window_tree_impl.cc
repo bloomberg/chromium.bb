@@ -1123,7 +1123,7 @@ void WindowTreeImpl::WmRequestClose(Id transport_window_id) {
   WindowTreeImpl* connection =
       connection_manager_->GetConnectionWithRoot(window);
   if (connection && connection != host->GetWindowTree())
-    connection->client_->RequestClose(MapWindowIdToClient(window));
+    connection->client_->RequestClose(connection->MapWindowIdToClient(window));
   // TODO(sky): think about what else case means.
 }
 
