@@ -66,9 +66,9 @@ void ArcBridgeService::OnAppInstanceReady(AppInstancePtr app_ptr) {
 void ArcBridgeService::OnAppVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   app_ptr_ = std::move(temporary_app_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceReady());
   app_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseAppChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAppInstanceReady());
 }
 
 void ArcBridgeService::CloseAppChannel() {
@@ -90,9 +90,9 @@ void ArcBridgeService::OnAuthInstanceReady(AuthInstancePtr auth_ptr) {
 void ArcBridgeService::OnAuthVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   auth_ptr_ = std::move(temporary_auth_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceReady());
   auth_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseAuthChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnAuthInstanceReady());
 }
 
 void ArcBridgeService::CloseAuthChannel() {
@@ -115,9 +115,9 @@ void ArcBridgeService::OnClipboardInstanceReady(
 void ArcBridgeService::OnClipboardVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   clipboard_ptr_ = std::move(temporary_clipboard_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceReady());
   clipboard_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseClipboardChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceReady());
 }
 
 void ArcBridgeService::CloseClipboardChannel() {
@@ -139,9 +139,9 @@ void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
 void ArcBridgeService::OnInputVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   input_ptr_ = std::move(temporary_input_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceReady());
   input_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseInputChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceReady());
 }
 
 void ArcBridgeService::CloseInputChannel() {
@@ -165,10 +165,10 @@ void ArcBridgeService::OnNotificationsInstanceReady(
 void ArcBridgeService::OnNotificationsVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   notifications_ptr_ = std::move(temporary_notifications_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceReady());
   notifications_ptr_.set_connection_error_handler(
       base::Bind(&ArcBridgeService::CloseNotificationsChannel,
                  weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnNotificationsInstanceReady());
 }
 
 void ArcBridgeService::CloseNotificationsChannel() {
@@ -190,9 +190,9 @@ void ArcBridgeService::OnPowerInstanceReady(PowerInstancePtr power_ptr) {
 void ArcBridgeService::OnPowerVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   power_ptr_ = std::move(temporary_power_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceReady());
   power_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::ClosePowerChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnPowerInstanceReady());
 }
 
 void ArcBridgeService::ClosePowerChannel() {
@@ -214,9 +214,9 @@ void ArcBridgeService::OnProcessInstanceReady(ProcessInstancePtr process_ptr) {
 void ArcBridgeService::OnProcessVersionReady(int32_t version) {
   DCHECK(CalledOnValidThread());
   process_ptr_ = std::move(temporary_process_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceReady());
   process_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseProcessChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnProcessInstanceReady());
 }
 
 void ArcBridgeService::CloseProcessChannel() {
@@ -237,10 +237,11 @@ void ArcBridgeService::OnSettingsInstanceReady(
 }
 
 void ArcBridgeService::OnSettingsVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
   settings_ptr_ = std::move(temporary_settings_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceReady());
   settings_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseSettingsChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnSettingsInstanceReady());
 }
 
 void ArcBridgeService::CloseSettingsChannel() {
@@ -260,10 +261,11 @@ void ArcBridgeService::OnVideoInstanceReady(VideoInstancePtr video_ptr) {
 }
 
 void ArcBridgeService::OnVideoVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
   video_ptr_ = std::move(temporary_video_ptr_);
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnVideoInstanceReady());
   video_ptr_.set_connection_error_handler(base::Bind(
       &ArcBridgeService::CloseVideoChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnVideoInstanceReady());
 }
 
 void ArcBridgeService::CloseVideoChannel() {
