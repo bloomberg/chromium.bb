@@ -86,9 +86,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/rendering/draw-buffers.html', bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Skip('conformance2/textures/webgl_canvas/*', bug=483282)
-    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1408.
-    self.Fail('conformance2/textures/misc/tex-input-validation.html',
-        bug=575550)
+    # Note that this test fails on ['win', 'intel'] with bug=483282
+    self.Fail('conformance2/buffers/uniform-buffers.html', bug=577368)
 
     # Windows only.
     self.Skip('deqp/functional/gles3/readpixel.html', ['win'], bug=483282)
@@ -104,6 +103,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/textures/canvas/*', ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
+        ['win'], bug=483282)
+    self.Fail('conformance2/textures/misc/tex-input-validation.html',
         ['win'], bug=483282)
     self.Skip('conformance2/textures/misc/tex-mipmap-levels.html',
         ['win'], bug=483282)
@@ -172,10 +173,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Skip('conformance2/textures/canvas/tex-image-and-sub-image-2d' +
         '-with-canvas-rgba8-rgba-unsigned_byte.html',
         ['win', 'debug'], bug=542901)
-
-    # Windows Intel only.
-    self.Fail('conformance2/buffers/uniform-buffers.html',
-        ['win', 'intel'], bug=483282)
 
     # Mac only.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',

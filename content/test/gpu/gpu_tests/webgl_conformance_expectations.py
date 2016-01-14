@@ -40,9 +40,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=540900)
     self.Fail('conformance/textures/misc/cube-incomplete-fbo.html',
         bug=559362)
-    # Remove after we roll in https://github.com/KhronosGroup/WebGL/pull/1408.
-    self.Fail('conformance/textures/misc/tex-input-validation.html',
-        bug=574618)
+    # Once we fix the CopyTexSubImage out-of-bounds behavior, this test will
+    # still fail on Win7/Intel and Android/Qualcomm/Adreno420.
+    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
+        bug=577357)
+    # self.Fail('conformance/textures/misc/' +
+    #     'copy-tex-image-and-sub-image-2d.html',
+    #     ['win7', 'intel'])
+    # self.Fail('conformance/textures/misc/' +
+    #     'copy-tex-image-and-sub-image-2d.html',
+    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
 
     # Win failures
     self.Fail('conformance/glsl/bugs/' +
@@ -58,8 +65,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/rendering/gl-scissor-test.html',
         ['win7', 'intel'], bug=314997)
     self.Fail('conformance/context/premultiplyalpha-test.html',
-        ['win7', 'intel'])
-    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
         ['win7', 'intel'])
     self.Fail('conformance/rendering/gl-viewport-test.html',
         ['win7', 'intel'], bug=372511)
@@ -153,18 +158,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['mac', ('intel', 0x116)], bug=369349)
 
-    # Mac 10.8 / Intel HD 3000 failures
-    self.Fail('conformance/rendering/gl-scissor-test.html',
-        ['mountainlion', ('intel', 0x116)], bug=314997)
-    self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
-        ['mountainlion', ('intel', 0x116)], bug=322795)
-    self.Flaky('conformance/ogles/*',
-        ['mountainlion', ('intel', 0x116)], bug=527250)
-
-    # Mac 10.8 / Intel HD 4000 failures.
-    self.Fail('conformance/context/context-hidden-alpha.html',
-        ['mountainlion', ('intel', 0x166)], bug=518008)
-
     # Mac 10.9 / Intel HD 3000 failures
     self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
         ['mavericks', ('intel', 0x116)], bug=417415)
@@ -179,49 +172,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac / AMD Failures
     self.Fail('deqp/data/gles2/shaders/conversions.html',
         ['mac', 'amd'], bug=478572)
-
-    # Mac 10.8 / ATI failures
-    self.Fail(
-        'conformance/rendering/' +
-        'point-with-gl-pointcoord-in-fragment-shader.html',
-        ['mountainlion', 'amd'])
-
-    # Mac 10.7 / Intel failures
-    self.Skip('conformance/glsl/functions/glsl-function-asin.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/glsl/functions/glsl-function-dot.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/glsl/functions/glsl-function-faceforward.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/glsl/functions/glsl-function-length.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/glsl/functions/glsl-function-normalize.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/glsl/functions/glsl-function-reflect.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/rendering/line-loop-tri-fan.html',
-        ['lion', 'intel'])
-    self.Skip('conformance/ogles/GL/control_flow/control_flow_001_to_008.html',
-        ['lion', 'intel'], bug=345575)
-    self.Skip('conformance/ogles/GL/dot/dot_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/faceforward/faceforward_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/length/length_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/normalize/normalize_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/reflect/reflect_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/refract/refract_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    self.Skip('conformance/ogles/GL/tan/tan_001_to_006.html',
-        ['lion', 'intel'], bug=323736)
-    # Two flaky tests.
-    self.Fail('conformance/ogles/GL/functions/functions_049_to_056.html',
-        ['lion', 'intel'], bug=393331)
-    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
-        ['lion', 'intel'], bug=393331)
 
     # Linux failures
     # NVIDIA
@@ -405,9 +355,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', 'android-webview-shell',
                ('qualcomm', 'Adreno (TM) 420')], bug=499874)
     self.Fail('conformance/rendering/gl-scissor-test.html',
-              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
-    self.Fail('conformance/textures/misc/' +
-              'copy-tex-image-and-sub-image-2d.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
