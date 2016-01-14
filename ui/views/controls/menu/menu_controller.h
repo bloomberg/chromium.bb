@@ -543,6 +543,11 @@ class VIEWS_EXPORT MenuController : public WidgetObserver {
   // if any message loop is terminated.
   bool TerminateNestedMessageLoopIfNecessary();
 
+  // Performs the teardown of menus launched with |async_run_|. This will
+  // notifiy the |delegate_|. If |exit_type_| is EXIT_ALL all nested
+  // asynchronous runs will be exited.
+  void ExitAsyncRun();
+
   // Performs the teardown of the menu launched by Run(). The selected item is
   // returned.
   MenuItemView* ExitMenuRun();

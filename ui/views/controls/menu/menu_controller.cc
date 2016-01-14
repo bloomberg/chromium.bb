@@ -418,12 +418,7 @@ void MenuController::Cancel(ExitType type) {
     // WARNING: the call to MenuClosed deletes us.
     return;
   }
-  if (async_run_) {
-    internal::MenuControllerDelegate* delegate = delegate_;
-    MenuItemView* result = ExitMenuRun();
-    delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
-                           result, accept_event_flags_);
-  }
+  ExitAsyncRun();
 }
 
 void MenuController::AddNestedDelegate(
@@ -857,6 +852,8 @@ void MenuController::OnDragComplete(bool should_close) {
   if (showing_ && should_close && GetActiveInstance() == this) {
     CloseAllNestedMenus();
     Cancel(EXIT_ALL);
+  } else if (async_run_) {
+    ExitAsyncRun();
   }
 }
 
@@ -1072,7 +1069,10 @@ void MenuController::StartDrag(SubmenuView* source,
   // TODO(varunjain): Properly determine and send DRAG_EVENT_SOURCE below.
   item->GetWidget()->RunShellDrag(NULL, data, widget_loc, drag_ops,
       ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-  did_initiate_drag_ = false;
+  // MenuController may have been deleted if |async_run_| so check for an active
+  // instance before accessing member variables.
+  if (GetActiveInstance())
+    did_initiate_drag_ = false;
 }
 
 void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
@@ -1275,12 +1275,7 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
     SetExitType(EXIT_ALL);
   }
   accept_event_flags_ = event_flags;
-  if (async_run_) {
-    internal::MenuControllerDelegate* delegate = delegate_;
-    MenuItemView* result = ExitMenuRun();
-    delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
-                           result, accept_event_flags_);
-  }
+  ExitAsyncRun();
 }
 
 bool MenuController::ShowSiblingMenu(SubmenuView* source,
@@ -2415,6 +2410,19 @@ bool MenuController::TerminateNestedMessageLoopIfNecessary() {
   if (quit_now)
     message_loop_->QuitNow();
   return quit_now;
+}
+
+void MenuController::ExitAsyncRun() {
+  if (!async_run_)
+    return;
+  bool nested = delegate_stack_.size() > 1;
+  // ExitMenuRun unwinds nested delegates
+  internal::MenuControllerDelegate* delegate = delegate_;
+  MenuItemView* result = ExitMenuRun();
+  delegate->OnMenuClosed(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+                         result, accept_event_flags_);
+  if (nested && exit_type_ == EXIT_ALL)
+    ExitAsyncRun();
 }
 
 MenuItemView* MenuController::ExitMenuRun() {
