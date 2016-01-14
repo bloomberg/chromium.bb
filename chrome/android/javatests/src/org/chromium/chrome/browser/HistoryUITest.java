@@ -6,12 +6,13 @@ package org.chromium.chrome.browser;
 
 import android.app.Dialog;
 import android.support.v7.app.AlertDialog;
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.LargeTest;
+import android.test.suitebuilder.annotation.MediumTest;
 import android.util.JsonReader;
 import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -26,13 +27,15 @@ import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
-import org.chromium.content.browser.test.util.UiUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Vector;
 import java.util.concurrent.TimeoutException;
 
+/**
+ * UI Tests for the history page.
+ */
 public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
     private static final String HISTORY_URL = "chrome://history-frame/";
@@ -82,6 +85,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 results.add(new HistoryItem(url, title));
             }
             jsonReader.endArray();
+            jsonReader.close();
         } catch (IOException ioe) {
             fail("Failed to evaluate JavaScript: " + jsResults + "\n" + ioe);
         }
@@ -91,45 +95,14 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         return history;
     }
 
-    private void removeSelectedEntries(int[] indices)
+    private void removeSelectedHistoryEntryAtIndex(int index)
             throws InterruptedException, TimeoutException {
-        // Build the query with the indices of the history elements to delete.
-        StringBuilder jsQuery = new StringBuilder("var toCheck = [");
-        for (int i = 0; i < indices.length; ++i) {
-            if (i != 0) {
-                jsQuery.append(", ");
-            }
-            jsQuery.append(Integer.toString(indices[i]));
-        }
-
-        // Remove the specified indices from history.
-        runJavaScriptCodeInCurrentTab(jsQuery.append("];\n")
-                .append("var checkboxes = Array.prototype.slice.call(")
-                .append("    document.getElementsByTagName('input')).")
-                .append("    filter(function(elem, index, array) {")
-                .append("    return elem.type == 'checkbox'; })\n")
-                .append("for (i = 0; i < checkboxes.length; ++i) {\n")
-                .append("    checkboxes[i].checked = false;\n")
-                .append("}\n")
-                .append("for (i = 0; i < toCheck.length; ++i) {\n")
-                .append("    checkboxes[toCheck[i]].checked = true;\n")
-                .append("}\n")
-                .append("window.confirm = function() { return true; };\n")
-                .append("removeItems();\n").toString());
-
-        // The deleteComplete() JavaScript method is called when the operation finishes.
-        // Since we cannot synchronously wait for a JS callback, keep checking until the delete
-        // queue becomes empty.
-        Boolean pending;
-        do {
-            pending = Boolean.parseBoolean(runJavaScriptCodeInCurrentTab("deleteQueue.length > 0"));
-        } while (pending);
+        runJavaScriptCodeInCurrentTab(
+                "document.getElementsByClassName('remove-entry')[" + index + "].click();");
     }
 
     private int getHistoryLength(ContentViewCore cvc)
             throws InterruptedException, TimeoutException {
-        getInstrumentation().waitForIdleSync();
-
         String numResultsString = JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 cvc.getWebContents(), "document.querySelectorAll('.entry').length");
         int numResults = Integer.parseInt(numResultsString);
@@ -141,7 +114,7 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
      * @param expected The number of results that should be loaded.
      * @throws InterruptedException
      */
-    private void assertResultCountReaches(final ContentViewCore cvc, final int expected)
+    private void waitForResultCount(final ContentViewCore cvc, final int expected)
             throws InterruptedException {
         CriteriaHelper.pollForCriteria(
                 new Criteria() {
@@ -160,19 +133,14 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
                 });
     }
 
-    /*
-     * @MediumTest
-     * @Feature({"History"})
-     * Bug 5969084
-     */
-    @DisabledTest
+    @MediumTest
+    @Feature({"History"})
     public void testSearchHistory() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/get_title_test.html"));
         loadUrl(HISTORY_URL);
-        UiUtils.settleDownUI(getInstrumentation());
-        assertResultCountReaches(getActivity().getCurrentContentViewCore(), 2);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
         // Search for one of them.
         Tab tab = getActivity().getActivityTab();
@@ -188,21 +156,17 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         tab.addObserver(observer);
         runJavaScriptCodeInCurrentTab("historyView.setSearch('about')");
         loadCallback.waitForCallback(0);
-        assertResultCountReaches(getActivity().getCurrentContentViewCore(), 1);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 1);
 
         // Delete the search term.
         runJavaScriptCodeInCurrentTab("historyView.setSearch('')");
         loadCallback.waitForCallback(1);
-        assertResultCountReaches(getActivity().getCurrentContentViewCore(), 2);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
         tab.removeObserver(observer);
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"History"})
-     * Bug 6164471
-     */
-    @FlakyTest
+    @LargeTest
+    @Feature({"History"})
     public void testRemovingEntries() throws InterruptedException, TimeoutException {
         // Urls will be visited in reverse order to preserve the array ordering
         // in the history results.
@@ -219,9 +183,9 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Check that the history page contains the visited pages.
         loadUrl(HISTORY_URL);
-        UiUtils.settleDownUI(getInstrumentation());
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
+
         HistoryItem[] history = getHistoryContents();
-        assertEquals(testUrls.length, history.length);
         for (int i = 0; i < testUrls.length; ++i) {
             assertEquals(testUrls[i], history[i].url);
             assertEquals(testTitles[i], history[i].title);
@@ -229,28 +193,23 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Remove the first entry from history.
         assertTrue(history.length >= 1);
-        removeSelectedEntries(new int[]{ 0 });
+        removeSelectedHistoryEntryAtIndex(0);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 1);
 
         // Check that now the first result is the second visited page.
         history = getHistoryContents();
-        assertEquals(testUrls.length - 1, history.length);
         assertEquals(testUrls[1], history[0].url);
         assertEquals(testTitles[1], history[0].title);
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"History"})
-     * Bug 5971989
-     */
-    @FlakyTest
+    @LargeTest
+    @Feature({"History"})
     public void testClearBrowsingData() throws InterruptedException, TimeoutException {
         // Introduce some entries in the history page.
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/google.html"));
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
         loadUrl(HISTORY_URL);
-        UiUtils.settleDownUI(getInstrumentation());
-        assertResultCountReaches(getActivity().getCurrentContentViewCore(), 2);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 2);
 
         // Trigger cleaning up all the browsing data. JS finishing events will make it synchronous
         // to us.
@@ -309,6 +268,6 @@ public class HistoryUITest extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
         JavaScriptUtils.executeJavaScriptAndWaitForResult(
                 mainActivity.getCurrentContentViewCore().getWebContents(), "reloadHistory()");
-        assertResultCountReaches(getActivity().getCurrentContentViewCore(), 0);
+        waitForResultCount(getActivity().getCurrentContentViewCore(), 0);
     }
 }
