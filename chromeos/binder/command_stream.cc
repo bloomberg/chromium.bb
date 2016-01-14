@@ -111,9 +111,20 @@ bool CommandStream::OnIncomingCommand(uint32_t command, BufferReader* reader) {
     }
     case BR_OK:
       break;
-    case BR_TRANSACTION:
-      NOTIMPLEMENTED();
+    case BR_TRANSACTION: {
+      TransactionDataFromDriver data(
+          base::Bind(&CommandStream::FreeTransactionBuffer,
+                     weak_ptr_factory_.GetWeakPtr()));
+      if (!reader->Read(data.mutable_data(), sizeof(*data.mutable_data()))) {
+        LOG(ERROR) << "Failed to read transaction data.";
+        return false;
+      }
+      if (!incoming_command_handler_->OnTransaction(data)) {
+        LOG(ERROR) << "Failed to handle transaction.";
+        return false;
+      }
       break;
+    }
     case BR_REPLY: {
       scoped_ptr<TransactionDataFromDriver> data(new TransactionDataFromDriver(
           base::Bind(&CommandStream::FreeTransactionBuffer,

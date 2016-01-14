@@ -13,6 +13,7 @@
 #include "chromeos/binder/driver.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/transaction_data.h"
+#include "chromeos/binder/transaction_status.h"
 
 namespace binder {
 
@@ -45,6 +46,36 @@ CommandBroker::CommandBroker(Driver* driver)
 
 CommandBroker::~CommandBroker() {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+bool CommandBroker::EnterLooper() {
+  command_stream_.AppendOutgoingCommand(BC_ENTER_LOOPER, nullptr, 0);
+  return command_stream_.Flush();
+}
+
+bool CommandBroker::ExitLooper() {
+  command_stream_.AppendOutgoingCommand(BC_EXIT_LOOPER, nullptr, 0);
+  return command_stream_.Flush();
+}
+
+bool CommandBroker::PollCommands() {
+  // Fetch and process commands.
+  if (!command_stream_.Fetch()) {
+    LOG(ERROR) << "Failed to fetch commands.";
+    return false;
+  }
+  while (command_stream_.CanProcessIncomingCommand()) {
+    if (!command_stream_.ProcessIncomingCommand()) {
+      LOG(ERROR) << "Failed to process command.";
+      return false;
+    }
+  }
+  // Flush outgoing commands.
+  if (!command_stream_.Flush()) {
+    LOG(ERROR) << "Failed to flush commands.";
+    return false;
+  }
+  return true;
 }
 
 bool CommandBroker::Transact(int32_t handle,
@@ -98,6 +129,37 @@ void CommandBroker::ReleaseReference(int32_t handle) {
 base::Closure CommandBroker::GetReleaseReferenceClosure(int32_t handle) {
   return base::Bind(&CommandBroker::ReleaseReference,
                     weak_ptr_factory_.GetWeakPtr(), handle);
+}
+
+bool CommandBroker::OnTransaction(const TransactionData& data) {
+  LocalObject* object = reinterpret_cast<LocalObject*>(data.GetCookie());
+  scoped_ptr<TransactionData> reply;
+  if (!object->Transact(this, data, &reply)) {
+    LOG(ERROR) << "Failed to transact.";
+    return false;
+  }
+  if (!data.IsOneWay()) {
+    // Send reply.
+    if (!reply) {
+      reply.reset(new TransactionStatus(Status::FAILED_TRANSACTION));
+    }
+    binder_transaction_data tr = ConvertTransactionDataToStruct(*reply);
+    tr.target.handle = -1;  // This value will be ignored. Set invalid handle.
+    command_stream_.AppendOutgoingCommand(BC_REPLY, &tr, sizeof(tr));
+    if (!command_stream_.Flush()) {
+      LOG(ERROR) << "Failed to write";
+      return false;
+    }
+    scoped_ptr<TransactionData> response_data;
+    ResponseType response_type = WaitForResponse(&response_data);
+    // Not returning false for errors here, as doing it can result in letting
+    // another process abort the loop in PollCommands() (e.g. any process can
+    // cause a "dead binder" error with crash). We should return false only for
+    // fundamental errors like binder protocol errors.
+    LOG_IF(ERROR, response_type != RESPONSE_TYPE_TRANSACTION_COMPLETE)
+        << "Error on the other end when sending reply: " << response_type;
+  }
+  return true;
 }
 
 void CommandBroker::OnReply(scoped_ptr<TransactionData> data) {

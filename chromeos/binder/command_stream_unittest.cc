@@ -25,6 +25,8 @@ class BinderCommandStreamTest : public ::testing::Test,
   void SetUp() override { ASSERT_TRUE(driver_.Initialize()); }
 
   // CommandStream::IncomingCommandHandler override:
+  bool OnTransaction(const TransactionData& data) override { return false; }
+
   void OnReply(scoped_ptr<TransactionData> data) override {
     received_response_ = RESPONSE_REPLY;
     ASSERT_TRUE(data);

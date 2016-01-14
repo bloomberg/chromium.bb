@@ -32,6 +32,10 @@ class CHROMEOS_EXPORT CommandStream {
     virtual ~IncomingCommandHandler() {}
     // TODO(hashimoto): Add methods to handle incoming commands.
 
+    // Called to handle BR_TRANSACTION.
+    // |data| contains the parameters.
+    virtual bool OnTransaction(const TransactionData& data) = 0;
+
     // Called to handle BR_REPLY.
     // |data| is the reply for the previous transaction.
     virtual void OnReply(scoped_ptr<TransactionData> data) = 0;

@@ -32,6 +32,18 @@ class CHROMEOS_EXPORT CommandBroker
   explicit CommandBroker(Driver* driver);
   ~CommandBroker() override;
 
+  // Tells the driver that the current thread entered command handling loop.
+  // Returns true on success.
+  bool EnterLooper();
+
+  // Tells the driver that the current thread exited command handling loop.
+  // Returns true on success.
+  bool ExitLooper();
+
+  // Fetches incoming commands and handles them.
+  // Returns true on success.
+  bool PollCommands();
+
   // Performs transaction with the remote object specified by the handle.
   // Returns true on success. If not one-way transaction, this method blocks
   // until the target object sends a reply.
@@ -51,6 +63,7 @@ class CHROMEOS_EXPORT CommandBroker
   base::Closure GetReleaseReferenceClosure(int32_t handle);
 
   // CommandStream::IncomingCommandHandler override:
+  bool OnTransaction(const TransactionData& data) override;
   void OnReply(scoped_ptr<TransactionData> data) override;
   void OnDeadReply() override;
   void OnTransactionComplete() override;
