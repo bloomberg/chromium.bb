@@ -51,7 +51,9 @@ CommandBufferProxyImpl::CommandBufferProxyImpl(GpuChannelHost* channel,
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0),
       verified_fence_sync_release_(0),
-      next_signal_id_(0) {
+      next_signal_id_(0),
+      weak_this_(AsWeakPtr()),
+      callback_thread_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(channel);
   DCHECK(stream_id);
 }
@@ -83,7 +85,10 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  DCHECK(handled);
+  if (!handled) {
+    DLOG(ERROR) << "Gpu process sent invalid message.";
+    InvalidGpuMessage();
+  }
   return handled;
 }
 
@@ -149,7 +154,11 @@ void CommandBufferProxyImpl::RemoveDeletionObserver(
 
 void CommandBufferProxyImpl::OnSignalAck(uint32_t id) {
   SignalTaskMap::iterator it = signal_tasks_.find(id);
-  DCHECK(it != signal_tasks_.end());
+  if (it == signal_tasks_.end()) {
+    DLOG(ERROR) << "Gpu process sent invalid SignalAck.";
+    InvalidGpuMessage();
+    return;
+  }
   base::Closure callback = it->second;
   signal_tasks_.erase(it);
   callback.Run();
@@ -304,8 +313,11 @@ void CommandBufferProxyImpl::WaitForTokenInRange(int32_t start, int32_t end) {
             route_id_, start, end, &state)))
       OnUpdateState(state);
   }
-  DCHECK(InRange(start, end, last_state_.token) ||
-         last_state_.error != gpu::error::kNoError);
+  if (!InRange(start, end, last_state_.token) &&
+      last_state_.error == gpu::error::kNoError) {
+    DLOG(ERROR) << "GPU state invalid after WaitForTokenInRange.";
+    InvalidGpuReply();
+  }
 }
 
 void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32_t start,
@@ -325,8 +337,11 @@ void CommandBufferProxyImpl::WaitForGetOffsetInRange(int32_t start,
             route_id_, start, end, &state)))
       OnUpdateState(state);
   }
-  DCHECK(InRange(start, end, last_state_.get_offset) ||
-         last_state_.error != gpu::error::kNoError);
+  if (!InRange(start, end, last_state_.get_offset) &&
+      last_state_.error == gpu::error::kNoError) {
+    DLOG(ERROR) << "GPU state invalid after WaitForGetOffsetInRange.";
+    InvalidGpuReply();
+  }
 }
 
 void CommandBufferProxyImpl::SetGetBuffer(int32_t shm_id) {
@@ -776,6 +791,29 @@ void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,
                                                      base::TimeDelta interval) {
   if (!update_vsync_parameters_completion_callback_.is_null())
     update_vsync_parameters_completion_callback_.Run(timebase, interval);
+}
+
+void CommandBufferProxyImpl::InvalidGpuMessage() {
+  LOG(ERROR) << "Received invalid message from the GPU process.";
+  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
+}
+
+void CommandBufferProxyImpl::InvalidGpuReply() {
+  CheckLock();
+  LOG(ERROR) << "Received invalid reply from the GPU process.";
+  last_state_.error = gpu::error::kLostContext;
+  last_state_.context_lost_reason = gpu::error::kInvalidGpuMessage;
+  callback_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&CommandBufferProxyImpl::InvalidGpuReplyOnClientThread,
+                 weak_this_));
+}
+
+void CommandBufferProxyImpl::InvalidGpuReplyOnClientThread() {
+  scoped_ptr<base::AutoLock> lock;
+  if (lock_)
+    lock.reset(new base::AutoLock(*lock_));
+  OnDestroyed(gpu::error::kInvalidGpuMessage, gpu::error::kLostContext);
 }
 
 }  // namespace content

@@ -52,6 +52,10 @@ namespace error {
     // The GPU channel was lost. This error is set client-side.
     kGpuChannelLost,
 
+    // The GPU process sent an invalid message/reply. This error is set
+    // client-side.
+    kInvalidGpuMessage,
+
     kContextLostReasonLast = kGpuChannelLost
   };
 }

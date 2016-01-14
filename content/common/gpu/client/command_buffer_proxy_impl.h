@@ -207,6 +207,16 @@ class CommandBufferProxyImpl
   // Updates the highest verified release fence sync.
   void UpdateVerifiedReleases(uint32_t verified_flush);
 
+  // Loses the context after we received an invalid message from the GPU
+  // process. Will call the lost context callback reentrantly if any.
+  void InvalidGpuMessage();
+
+  // Loses the context after we received an invalid reply from the GPU
+  // process. Will post a task to call the lost context callback if any.
+  void InvalidGpuReply();
+
+  void InvalidGpuReplyOnClientThread();
+
   // The shared memory area used to update state.
   gpu::CommandBufferSharedState* shared_state() const;
 
@@ -257,6 +267,9 @@ class CommandBufferProxyImpl
 
   SwapBuffersCompletionCallback swap_buffers_completion_callback_;
   UpdateVSyncParametersCallback update_vsync_parameters_completion_callback_;
+
+  base::WeakPtr<CommandBufferProxyImpl> weak_this_;
+  scoped_refptr<base::SequencedTaskRunner> callback_thread_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxyImpl);
 };

@@ -24,8 +24,10 @@ enum CommandBufferContextLostReason {
   CONTEXT_LOST_UNKNOWN,
   CONTEXT_LOST_OUT_OF_MEMORY,
   CONTEXT_LOST_MAKECURRENT_FAILED,
+  CONTEXT_LOST_INVALID_GPU_MESSAGE,
   // Add new values here and update _MAX_ENUM.
-  CONTEXT_LOST_REASON_MAX_ENUM = CONTEXT_LOST_MAKECURRENT_FAILED
+  // Also update //tools/metrics/histograms/histograms.xml
+  CONTEXT_LOST_REASON_MAX_ENUM = CONTEXT_LOST_INVALID_GPU_MESSAGE
 };
 
 CommandBufferContextLostReason GetContextLostReason(
@@ -45,6 +47,8 @@ CommandBufferContextLostReason GetContextLostReason(
         return CONTEXT_LOST_MAKECURRENT_FAILED;
       case gpu::error::kGpuChannelLost:
         return CONTEXT_LOST_GPU_CHANNEL_ERROR;
+      case gpu::error::kInvalidGpuMessage:
+        return CONTEXT_LOST_INVALID_GPU_MESSAGE;
     }
   }
   switch (error) {
