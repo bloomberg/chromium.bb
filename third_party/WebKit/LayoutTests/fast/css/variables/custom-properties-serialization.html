@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<meta charset="UTF-8">
+
+<style>
+#test1 {
+  --camelCase: blue;
+  color: var(--camelCase);
+}
+#test2 {
+  --Aå: 100px;
+  width: var(--Aå);
+}
+#test3 {
+  --colour: green;
+  background: var(--colour);
+  color: var(--color);
+}
+</style>
+
+<script>
+test(function() {
+  assert_equals(document.styleSheets[0].cssRules[0].cssText, "#test1 { --camelCase:  blue; color: var(--camelCase); }");
+  assert_equals(document.styleSheets[0].cssRules[1].cssText, "#test2 { --Aå:  100px; width: var(--Aå); }");
+  assert_equals(document.styleSheets[0].cssRules[0].style.getPropertyValue("--camelCase"), " blue");
+  assert_equals(document.styleSheets[0].cssRules[0].style.getPropertyValue("color"), "var(--camelCase)");
+  assert_equals(document.styleSheets[0].cssRules[1].style.getPropertyValue("--Aå"), " 100px");
+  assert_equals(document.styleSheets[0].cssRules[1].style.getPropertyValue("width"), "var(--Aå)");
+  assert_equals(document.styleSheets[0].cssRules[2].style.getPropertyValue("background"), "var(--colour)");
+  assert_equals(document.styleSheets[0].cssRules[2].style.getPropertyValue("color"), "var(--color)");
+}, "Custom properties serialization");
+</script>
