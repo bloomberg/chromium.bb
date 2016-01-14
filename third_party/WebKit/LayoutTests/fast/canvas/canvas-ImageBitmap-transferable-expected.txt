@@ -7,6 +7,7 @@ PASS bitmapWidth is imageWidth
 PASS bitmapHeight is imageHeight
 PASS bitmapWidth is 0
 PASS bitmapHeight is 0
+PASS createImageBitmap from a neutered ImageBitmap was rejected
 PASS bitmapWidth is imageWidth
 PASS bitmapHeight is imageHeight
 PASS newImage.data[0] is within 5 of image.data[0]

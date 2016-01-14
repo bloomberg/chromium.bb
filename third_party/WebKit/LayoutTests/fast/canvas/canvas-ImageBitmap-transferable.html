@@ -39,6 +39,15 @@ createImageBitmap(image).then(imageBitmap => {
   bitmapHeight = imageBitmap.height;
   shouldBe("bitmapWidth", "0");
   shouldBe("bitmapHeight", "0");
+
+  newImageBitmap = imageBitmap;
+  // Test createImageBitmap from neutered ImageBitmap
+  createImageBitmap(imageBitmap).then(function() {
+      testFailed("Promise accepted, expected to be rejected");
+      finishJSTest();
+  }, () => {
+      testPassed("createImageBitmap from a neutered ImageBitmap was rejected");
+  });
 });
 
 worker.onmessage = function(e) {
