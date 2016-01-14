@@ -217,68 +217,9 @@ cr-menu.chrome-menu > [checked]::before {
   display: none;
 }
 
-/**
- * Ok/Cancel style buttons
- * Height: 31px (content:21px + border:5px * 2)
- * TODO(fukino): Remove these styles once our dialogs get material design.
- **/
-.cr-dialog-buttons > button {
-  background-color: rgb(250, 250, 250);
-  background-image: none;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: 5px solid transparent;
-  border-image: -webkit-image-set(
-    url(chrome://resources/images/apps/button.png) 1x,
-    url(chrome://resources/images/2x/apps/button.png)
-        2x) 5 / 5px / 2px repeat;
-  box-sizing: content-box;
-  color: rgb(34, 34, 34);
-  cursor: default;
-  height: 21px;
-  line-height: 21px;
-  margin: 0;
-  min-height: 21px;
-  min-width: 55px;
-  padding: 0 10px;
-  position: relative;
-  text-align: center;
-  z-index: 1;
-}
-
-.buttonbar button {
-  -webkit-margin-start: 12px;
-}
-
-.cr-dialog-buttons > button:hover {
-  border-image: -webkit-image-set(
-    url(chrome://resources/images/apps/button_hover.png) 1x,
-    url(chrome://resources/images/2x/apps/button_hover.png)
-        2x) 5 fill / 5px / 2px repeat;
-  color: #222;
-}
-
-.cr-dialog-buttons > button:active {
-  border-image: -webkit-image-set(
-    url(chrome://resources/images/apps/button_pressed.png) 1x,
-    url(chrome://resources/images/2x/apps/button_pressed.png)
-        2x) 5 fill / 5px / 2px repeat;
-  color: #333;
-}
-
-.cr-dialog-buttons > button[disabled],
-.cr-dialog-buttons > button[disabled]:hover {
-  background-color: rgb(250, 250, 250);
-  background-image: none;
-  border-image: -webkit-image-set(
-    url(chrome://resources/images/apps/button.png) 1x,
-    url(chrome://resources/images/2x/apps/button.png)
-        2x) 5 fill / 5px / 2px repeat;
-  color: rgb(150, 150, 150);
-}
-
 /* Style for <button>s to have similar style with Polymer's <paper-button>. */
-.imitate-paper-button {
+.imitate-paper-button,
+.cr-dialog-buttons > button {
   -webkit-user-select: none;
   background: transparent;
   border: 0;
@@ -299,6 +240,42 @@ cr-menu.chrome-menu > [checked]::before {
   text-align: center;
   text-transform: uppercase;
   z-index: 0;
+}
+
+.cr-dialog-buttons > button {
+  -webkit-margin-end: 0;
+  -webkit-margin-start: 5px;
+  font-weight: 500;
+  height: 32px;
+  min-width: 70px;
+  padding: auto;
+}
+
+.cr-dialog-buttons > button.cr-dialog-ok {
+  background-color: rgb(33, 150, 243);
+  color: white;
+}
+
+.cr-dialog-buttons > button.cr-dialog-cancel {
+  color: rgb(100, 100, 100);
+}
+
+.cr-dialog-buttons > button.cr-dialog-cancel:hover {
+  color: rgb(33, 150, 243);
+}
+
+.cr-dialog-buttons > button[disabled],
+.cr-dialog-buttons > button[disabled]:hover {
+  background-color: rgb(234, 234, 234);
+  color: rgb(168, 168, 168);
+}
+
+.cr-dialog-buttons > button:focus:not(:active) {
+  box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.5);
+}
+
+.buttonbar button {
+  -webkit-margin-start: 12px;
 }
 
 /* Gray progress bar. */
@@ -341,17 +318,17 @@ html[dir='rtl'] .entry-name {
 }
 
 .cr-dialog-frame {
-  background-color: rgb(250, 250, 250);
-  border: 1px solid rgb(255, 255, 255);
+  background-color: white;
   border-radius: 2px;
-  box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.2),
+              0 2px 6px 0 rgba(0, 0, 0, 0.1);
   color: rgb(34, 34, 34);
   cursor: default;
   display: flex;
   flex-direction: column;
-  padding: 20px;
+  padding: 12px;
   position: relative;
-  width: 460px;
+  width: 386px;
 }
 
 .cr-dialog-frame:focus {
@@ -389,39 +366,26 @@ html[dir='rtl'] .entry-name {
   transition: opacity 250ms;
 }
 
-.cr-dialog-shield {
-  background-color: white;
-  bottom: 0;
-  display: block;
-  left: 0;
-  opacity: 0;
-  pointer-events: none;
-  position: absolute;
-  right: 0;
-  top: 0;
-  transition: opacity 500ms;
-}
-
-.shown > .cr-dialog-shield {
-  opacity: 0.5;
-  transition: opacity 500ms;
-}
-
 .cr-dialog-title {
   -webkit-margin-end: 20px;
+  -webkit-margin-start: 4px;
   display: block;
-  font-size: 125%;
+  font-size: 14px;
+  font-weight: 500;
   margin-bottom: 10px;
+  margin-top: 4px;
   white-space: nowrap;
   word-wrap: normal;
 }
 
 .cr-dialog-text {
-  margin: 13px 0;
+  font-size: 12px;
+  margin: 4px 4px 10px 4px;
 }
 
 .cr-dialog-text,
 .cr-dialog-title {
+  color: black;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -435,25 +399,20 @@ html[dir='rtl'] .entry-name {
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-top: 10px;
-}
-
-.cr-dialog-buttons button {
-  -webkit-margin-start: 8px;
-  line-height: 1.8;
+  padding-top: 24px;
 }
 
 .cr-dialog-close {
   background: -webkit-image-set(
-      url(chrome://theme/IDR_CLOSE_DIALOG) 1x,
-      url(chrome://theme/IDR_CLOSE_DIALOG@2x) 2x) center no-repeat;
+      url(../images/files/ui/close_button.png) 1x,
+      url(../images/files/ui/2x/close_button.png) 2x) center no-repeat;
   display: inline-block;
-  height: 44px;
+  height: 40px;
   opacity: 0.7;
   position: absolute;
   right: 0;
   top: 0;
-  width: 44px;
+  width: 40px;
 }
 
 html[dir='rtl'] .cr-dialog-close {
@@ -462,15 +421,11 @@ html[dir='rtl'] .cr-dialog-close {
 }
 
 .cr-dialog-close:hover {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_CLOSE_DIALOG_H) 1x,
-      url(chrome://theme/IDR_CLOSE_DIALOG_H@2x) 2x);
+  opacity: 0.9;
 }
 
 .cr-dialog-close:active {
-  background-image: -webkit-image-set(
-      url(chrome://theme/IDR_CLOSE_DIALOG_P) 1x,
-      url(chrome://theme/IDR_CLOSE_DIALOG_P@2x) 2x);
+  opacity: 1;
 }
 
 /* Minor tweak of vertical position for texts which need to be vertically

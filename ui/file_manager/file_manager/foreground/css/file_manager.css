@@ -1414,23 +1414,16 @@ html[dir='rtl'] .badge {
   padding-left: 26px;
 }
 
-#default-tasks-list > li[selected] {
-  background-color: rgb(225, 225, 225);
-}
-
-#default-tasks-list:focus > li[selected] {
-  background-color: rgb(66, 129, 244);
-  color: white;
-}
-
 #list-container list > li[selected],
 #list-container list > li:active,
-#list-container list > li.accepts {
+#list-container list > li.accepts,
+#default-tasks-list > li[selected] {
   background-color: rgb(232, 232, 232);
 }
 
 #list-container list:focus > li[selected],
-#list-container list:focus > li.accepts[selected] {
+#list-container list:focus > li.accepts[selected],
+#default-tasks-list:focus > li[selected] {
   background-color: rgb(213, 234, 245);
 }
 
