@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "content/public/browser/android/content_view_core.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/user_metrics.h"
@@ -40,8 +41,13 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
   static int next_id = 1;
   int this_id = next_id++;
   pending_document_has_images_requests_[this_id] = result;
-  Send(new AwViewMsg_DocumentHasImages(web_contents()->GetRoutingID(),
-                                       this_id));
+  // Send the message to the main frame, instead of the whole frame tree,
+  // because it only makes sense on the main frame.
+  // TODO(hush): deal with the case where the receiving RenderView is gone or
+  // inactive.
+  // crbug.com/570906
+  Send(new AwViewMsg_DocumentHasImages(
+      web_contents()->GetMainFrame()->GetRoutingID(), this_id));
 }
 
 void AwRenderViewHostExt::ClearCache() {
@@ -61,8 +67,10 @@ void AwRenderViewHostExt::RequestNewHitTestDataAt(
     const gfx::PointF& touch_center,
     const gfx::SizeF& touch_area) {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_DoHitTest(web_contents()->GetRoutingID(), touch_center,
-                               touch_area));
+  // We only need to get blink::WebView on the renderer side to invoke the
+  // blink hit test API, so sending this IPC to main frame is enough.
+  Send(new AwViewMsg_DoHitTest(web_contents()->GetMainFrame()->GetRoutingID(),
+                               touch_center, touch_area));
 }
 
 const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
@@ -72,18 +80,20 @@ const AwHitTestData& AwRenderViewHostExt::GetLastHitTestData() const {
 
 void AwRenderViewHostExt::SetTextZoomFactor(float factor) {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_SetTextZoomFactor(web_contents()->GetRoutingID(), factor));
+  Send(new AwViewMsg_SetTextZoomFactor(
+      web_contents()->GetMainFrame()->GetRoutingID(), factor));
 }
 
 void AwRenderViewHostExt::ResetScrollAndScaleState() {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_ResetScrollAndScaleState(web_contents()->GetRoutingID()));
+  Send(new AwViewMsg_ResetScrollAndScaleState(
+      web_contents()->GetMainFrame()->GetRoutingID()));
 }
 
 void AwRenderViewHostExt::SetInitialPageScale(double page_scale_factor) {
   DCHECK(CalledOnValidThread());
-  Send(new AwViewMsg_SetInitialPageScale(web_contents()->GetRoutingID(),
-                                         page_scale_factor));
+  Send(new AwViewMsg_SetInitialPageScale(
+      web_contents()->GetMainFrame()->GetRoutingID(), page_scale_factor));
 }
 
 void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
@@ -91,8 +101,8 @@ void AwRenderViewHostExt::SetBackgroundColor(SkColor c) {
     return;
   background_color_ = c;
   if (web_contents()->GetRenderViewHost()) {
-    Send(new AwViewMsg_SetBackgroundColor(web_contents()->GetRoutingID(),
-                                          background_color_));
+    Send(new AwViewMsg_SetBackgroundColor(
+        web_contents()->GetMainFrame()->GetRoutingID(), background_color_));
   }
 }
 
@@ -103,8 +113,9 @@ void AwRenderViewHostExt::SetJsOnlineProperty(bool network_up) {
 void AwRenderViewHostExt::SmoothScroll(int target_x,
                                        int target_y,
                                        long duration_ms) {
-  Send(new AwViewMsg_SmoothScroll(web_contents()->GetRoutingID(), target_x,
-                                  target_y, duration_ms));
+  Send(
+      new AwViewMsg_SmoothScroll(web_contents()->GetMainFrame()->GetRoutingID(),
+                                 target_x, target_y, duration_ms));
 }
 
 void AwRenderViewHostExt::RenderViewCreated(
@@ -137,9 +148,12 @@ void AwRenderViewHostExt::OnPageScaleFactorChanged(float page_scale_factor) {
   client_->OnWebLayoutPageScaleFactorChanged(page_scale_factor);
 }
 
-bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
+bool AwRenderViewHostExt::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AwRenderViewHostExt, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AwRenderViewHostExt, message,
+                                   render_frame_host)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_DocumentHasImagesResponse,
                         OnDocumentHasImagesResponse)
     IPC_MESSAGE_HANDLER(AwViewHostMsg_UpdateHitTestData,
@@ -152,8 +166,17 @@ bool AwRenderViewHostExt::OnMessageReceived(const IPC::Message& message) {
   return handled ? true : WebContentsObserver::OnMessageReceived(message);
 }
 
-void AwRenderViewHostExt::OnDocumentHasImagesResponse(int msg_id,
-                                                      bool has_images) {
+void AwRenderViewHostExt::OnDocumentHasImagesResponse(
+    content::RenderFrameHost* render_frame_host,
+    int msg_id,
+    bool has_images) {
+  // Only makes sense coming from the main frame of the current frame tree.
+  // This matches the current implementation that only cares about if there is
+  // an img child node in the main document, and essentially invokes JS:
+  // node.getElementsByTagName("img").
+  if (render_frame_host != web_contents()->GetMainFrame())
+    return;
+
   DCHECK(CalledOnValidThread());
   std::map<int, DocumentHasImagesResult>::iterator pending_req =
       pending_document_has_images_requests_.find(msg_id);
@@ -166,14 +189,29 @@ void AwRenderViewHostExt::OnDocumentHasImagesResponse(int msg_id,
 }
 
 void AwRenderViewHostExt::OnUpdateHitTestData(
+    content::RenderFrameHost* render_frame_host,
     const AwHitTestData& hit_test_data) {
+  content::RenderFrameHost* main_frame_host = render_frame_host;
+  while (main_frame_host->GetParent())
+    main_frame_host = main_frame_host->GetParent();
+
+  // Make sense from any frame of the current frame tree, because a focused
+  // node could be in either the mainframe or a subframe.
+  if (main_frame_host != web_contents()->GetMainFrame())
+    return;
+
   DCHECK(CalledOnValidThread());
   last_hit_test_data_ = hit_test_data;
   has_new_hit_test_data_ = true;
 }
 
 void AwRenderViewHostExt::OnContentsSizeChanged(
+    content::RenderFrameHost* render_frame_host,
     const gfx::Size& contents_size) {
+  // Only makes sense coming from the main frame of the current frame tree.
+  if (render_frame_host != web_contents()->GetMainFrame())
+    return;
+
   client_->OnWebLayoutContentsSizeChanged(contents_size);
 }
 

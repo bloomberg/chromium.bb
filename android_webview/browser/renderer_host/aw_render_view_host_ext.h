@@ -91,11 +91,16 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams& params) override;
   void OnPageScaleFactorChanged(float page_scale_factor) override;
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
 
-  void OnDocumentHasImagesResponse(int msg_id, bool has_images);
-  void OnUpdateHitTestData(const AwHitTestData& hit_test_data);
-  void OnContentsSizeChanged(const gfx::Size& contents_size);
+  void OnDocumentHasImagesResponse(content::RenderFrameHost* render_frame_host,
+                                   int msg_id,
+                                   bool has_images);
+  void OnUpdateHitTestData(content::RenderFrameHost* render_frame_host,
+                           const AwHitTestData& hit_test_data);
+  void OnContentsSizeChanged(content::RenderFrameHost* render_frame_host,
+                             const gfx::Size& contents_size);
 
   bool IsRenderViewReady() const;
 
