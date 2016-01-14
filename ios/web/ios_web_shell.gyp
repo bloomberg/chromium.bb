@@ -24,6 +24,14 @@
           '-Xlinker -objc_abi_version -Xlinker 2'
         ]
       },
+      # TODO(crbug.com/577748): Move mac_bundle_resources to ios_web_shell_lib.
+      'mac_bundle_resources': [
+        'shell/Default.png',
+        'shell/MainView.xib',
+        'shell/textfield_background@2x.png',
+        'shell/toolbar_back@2x.png',
+        'shell/toolbar_forward@2x.png',
+      ],
       'sources': [
         'shell/web_exe_main.mm',
       ],
@@ -42,13 +50,6 @@
         '../../net/net.gyp:net',
         '../../net/net.gyp:net_extras',
         '../../ui/base/ui_base.gyp:ui_base',
-      ],
-      'mac_bundle_resources': [
-        'shell/Default.png',
-        'shell/MainView.xib',
-        'shell/textfield_background@2x.png',
-        'shell/toolbar_back@2x.png',
-        'shell/toolbar_forward@2x.png',
       ],
       'export_dependent_settings': [
         'ios_web.gyp:ios_web',
