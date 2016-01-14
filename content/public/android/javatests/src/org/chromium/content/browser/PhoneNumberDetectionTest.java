@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.test.FlakyTest;
-
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.common.ContentSwitches;
@@ -24,10 +22,11 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     }
 
     /* @LargeTest */
-    @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
+    @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testInternationalNumberIntents() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/phone_international.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/phone_international.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // US: +1 650-253-0000.
@@ -140,11 +139,11 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     }
 
     /* @MediumTest */
-    @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=US")
     public void testLocalUSNumbers() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/phone_local.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // US_1: 1-888-433-5788.
@@ -165,24 +164,24 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     }
 
     /* @MediumTest */
-    @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=GB")
     public void testLocalUKNumbers() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/phone_local.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // GB_1: (0) 20 7323 8299.
         String intentUrl = scrollAndTapExpectingIntent("GB_1");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+442073238299"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "02073238299"));
 
         // GB_2: 01227865330.
         intentUrl = scrollAndTapExpectingIntent("GB_2");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+441227865330"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "01227865330"));
 
         // GB_3: 01963 824686.
         intentUrl = scrollAndTapExpectingIntent("GB_3");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+441963824686"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "01963824686"));
 
         // International numbers should still work.
         intentUrl = scrollAndTapExpectingIntent("International");
@@ -190,24 +189,24 @@ public class PhoneNumberDetectionTest extends ContentDetectionTestBase {
     }
 
     /* @MediumTest */
-    @FlakyTest
     @Feature({"ContentDetection", "TabContents"})
     @CommandLineFlags.Add(ContentSwitches.NETWORK_COUNTRY_ISO + "=FR")
     public void testLocalFRNumbers() throws Throwable {
-        startActivityWithTestUrl("content/content_detection/phone_local.html");
+        startActivityWithTestUrl(
+                "content/test/data/android/content_detection/phone_local.html");
         assertWaitForPageScaleFactorMatch(1.0f);
 
         // FR_1: 01 40 20 50 50.
         String intentUrl = scrollAndTapExpectingIntent("FR_1");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+33140205050"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "0140205050"));
 
         // FR_2: 0326475534.
         intentUrl = scrollAndTapExpectingIntent("FR_2");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+33326475534"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "0326475534"));
 
         // FR_3: (0) 237 211 992.
         intentUrl = scrollAndTapExpectingIntent("FR_3");
-        assertTrue(isExpectedTelephoneIntent(intentUrl, "+33237211992"));
+        assertTrue(isExpectedTelephoneIntent(intentUrl, "0237211992"));
 
         // International numbers should still work.
         intentUrl = scrollAndTapExpectingIntent("International");
