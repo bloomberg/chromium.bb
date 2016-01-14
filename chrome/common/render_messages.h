@@ -437,10 +437,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_OpenAboutPlugins)
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     base::FilePath /* plugin_path */)
 
-// Tells the browser that we blocked a plugin because NPAPI is not supported.
-IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_NPAPINotSupported,
-                    std::string /* identifer */)
-
 // Asks the renderer whether an app banner should be shown. It will reply with
 // ChromeViewHostMsg_AppBannerPromptReply.
 IPC_MESSAGE_ROUTED2(ChromeViewMsg_AppBannerPromptRequest,

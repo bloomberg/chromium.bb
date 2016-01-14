@@ -801,8 +801,6 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringUTF16(IDS_PLUGIN_NOT_SUPPORTED_METRO));
-        render_frame->Send(new ChromeViewHostMsg_NPAPINotSupported(
-            render_frame->GetRoutingID(), identifier));
         break;
       }
       case ChromeViewHostMsg_GetPluginInfo_Status::kDisabled: {

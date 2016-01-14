@@ -422,23 +422,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     }
 #endif
 
-#if defined(OS_WIN)
-    // Windows 8 specific commands.
-    case IDC_METRO_SNAP_ENABLE:
-      browser_->SetMetroSnapMode(true);
-      break;
-    case IDC_METRO_SNAP_DISABLE:
-      browser_->SetMetroSnapMode(false);
-      break;
-    // TODO(scottmg): Remove entirely http://crbug.com/558054.
-    case IDC_WIN_DESKTOP_RESTART:
-      break;
-    // TODO(scottmg): Remove entirely http://crbug.com/558054.
-    case IDC_WIN8_METRO_RESTART:
-    case IDC_WIN_CHROMEOS_RESTART:
-      break;
-#endif
-
 #if defined(OS_MACOSX)
     case IDC_PRESENTATION_MODE:
       chrome::ToggleFullscreenMode(browser_);
@@ -936,15 +919,6 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
   command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
-#if defined(OS_WIN)
-  bool metro = browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH;
-  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_ENABLE, metro);
-  command_updater_.UpdateCommandEnabled(IDC_METRO_SNAP_DISABLE, metro);
-  int restart_mode = metro ? IDC_WIN_DESKTOP_RESTART :
-      (base::win::GetVersion() >= base::win::VERSION_WIN8 ?
-          IDC_WIN8_METRO_RESTART : IDC_WIN_CHROMEOS_RESTART);
-  command_updater_.UpdateCommandEnabled(restart_mode, normal_window);
-#endif
 
   // These are always enabled; the menu determines their menu item visibility.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);

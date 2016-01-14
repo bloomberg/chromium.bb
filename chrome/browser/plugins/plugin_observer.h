@@ -60,7 +60,6 @@ class PluginObserver : public content::WebContentsObserver,
 #endif
   void OnOpenAboutPlugins();
   void OnCouldNotLoadPlugin(const base::FilePath& plugin_path);
-  void OnNPAPINotSupported(const std::string& identifier);
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
   // Stores all PluginPlaceholderHosts, keyed by their routing ID.

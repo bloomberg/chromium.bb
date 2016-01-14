@@ -48,8 +48,6 @@ bool ChromeWebViewPermissionHelperDelegate::OnMessageReceived(
                         OnBlockedOutdatedPlugin)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
                         OnBlockedUnauthorizedPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
-                        OnNPAPINotSupported)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
 
@@ -100,10 +98,6 @@ void ChromeWebViewPermissionHelperDelegate::OnCouldNotLoadPlugin(
 void ChromeWebViewPermissionHelperDelegate::OnBlockedOutdatedPlugin(
     int placeholder_id,
     const std::string& identifier) {
-}
-
-void ChromeWebViewPermissionHelperDelegate::OnNPAPINotSupported(
-    const std::string& id) {
 }
 
 void ChromeWebViewPermissionHelperDelegate::OnOpenAboutPlugins() {

@@ -107,42 +107,6 @@ base::string16 GetUpgradeDialogMenuItemName() {
   }
 }
 
-#if defined(OS_WIN)
-bool GetRestartMenuItemIfRequired(const chrome::HostDesktopType& desktop_type,
-                                  int* command_id,
-                                  int* string_id) {
-  if (base::win::GetVersion() == base::win::VERSION_WIN8 ||
-      base::win::GetVersion() == base::win::VERSION_WIN8_1) {
-    if (desktop_type != chrome::HOST_DESKTOP_TYPE_ASH) {
-      *command_id = IDC_WIN8_METRO_RESTART;
-      *string_id = IDS_WIN8_METRO_RESTART;
-    } else {
-      *command_id = IDC_WIN_DESKTOP_RESTART;
-      *string_id = IDS_WIN_DESKTOP_RESTART;
-    }
-    return true;
-  }
-
-  // Windows 7 ASH mode is only supported in DEBUG for now.
-#if !defined(NDEBUG)
-  // Windows 8 can support ASH mode using WARP, but Windows 7 requires a working
-  // GPU compositor.
-  if (base::win::GetVersion() == base::win::VERSION_WIN7 &&
-      content::GpuDataManager::GetInstance()->CanUseGpuBrowserCompositor()) {
-    if (desktop_type != chrome::HOST_DESKTOP_TYPE_ASH) {
-      *command_id = IDC_WIN_CHROMEOS_RESTART;
-      *string_id = IDS_WIN_CHROMEOS_RESTART;
-    } else {
-      *command_id = IDC_WIN_DESKTOP_RESTART;
-      *string_id = IDS_WIN_DESKTOP_RESTART;
-    }
-    return true;
-  }
-#endif
-  return false;
-}
-#endif
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -497,29 +461,6 @@ void AppMenuModel::LogMenuMetrics(int command_id) {
       LogMenuAction(MENU_ACTION_RESTORE_TAB);
       break;
 
-    // Windows.
-    case IDC_WIN_DESKTOP_RESTART:
-      if (!uma_action_recorded_) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.WinDesktopRestart",
-                                   delta);
-      }
-      LogMenuAction(MENU_ACTION_WIN_DESKTOP_RESTART);
-      break;
-    case IDC_WIN8_METRO_RESTART:
-      if (!uma_action_recorded_) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.Win8MetroRestart",
-                                   delta);
-      }
-      LogMenuAction(MENU_ACTION_WIN8_METRO_RESTART);
-      break;
-
-    case IDC_WIN_CHROMEOS_RESTART:
-      if (!uma_action_recorded_) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.ChromeOSRestart",
-                                   delta);
-      }
-      LogMenuAction(MENU_ACTION_WIN_CHROMEOS_RESTART);
-      break;
     case IDC_DISTILL_PAGE:
       if (!uma_action_recorded_) {
         UMA_HISTOGRAM_MEDIUM_TIMES("WrenchMenu.TimeToAction.DistillPage",
@@ -907,22 +848,7 @@ void AppMenuModel::Build() {
                              IDS_TOGGLE_REQUEST_TABLET_SITE);
 #endif
 
-#if defined(OS_WIN)
-  int command_id = IDC_WIN_DESKTOP_RESTART;
-  int string_id = IDS_WIN_DESKTOP_RESTART;
-  if (GetRestartMenuItemIfRequired(browser_->host_desktop_type(),
-                                   &command_id,
-                                   &string_id)) {
-    AddSeparator(ui::NORMAL_SEPARATOR);
-    AddItemWithStringId(command_id, string_id);
-  }
-#endif
-  bool show_exit_menu = browser_defaults::kShowExitMenuItem;
-#if defined(OS_WIN)
-  if (browser_->host_desktop_type() == chrome::HOST_DESKTOP_TYPE_ASH)
-    show_exit_menu = false;
-#endif
-  if (show_exit_menu) {
+  if (browser_defaults::kShowExitMenuItem) {
     AddSeparator(ui::NORMAL_SEPARATOR);
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
   }

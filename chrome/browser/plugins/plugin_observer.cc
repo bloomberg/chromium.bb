@@ -361,8 +361,6 @@ bool PluginObserver::OnMessageReceived(
                         OnOpenAboutPlugins)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_CouldNotLoadPlugin,
                         OnCouldNotLoadPlugin)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NPAPINotSupported,
-                        OnNPAPINotSupported)
 
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
@@ -433,17 +431,4 @@ void PluginObserver::OnCouldNotLoadPlugin(const base::FilePath& plugin_path) {
       l10n_util::GetStringFUTF16(IDS_PLUGIN_INITIALIZATION_ERROR_PROMPT,
                                  plugin_name),
       true);
-}
-
-void PluginObserver::OnNPAPINotSupported(const std::string& identifier) {
-#if defined(OS_WIN) && defined(ENABLE_PLUGIN_INSTALLATION)
-  scoped_ptr<PluginMetadata> plugin;
-  bool ret = PluginFinder::GetInstance()->FindPluginWithIdentifier(
-      identifier, NULL, &plugin);
-  DCHECK(ret);
-
-  PluginMetroModeInfoBarDelegate::Create(
-      InfoBarService::FromWebContents(web_contents()),
-      PluginMetroModeInfoBarDelegate::DESKTOP_MODE_REQUIRED, plugin->name());
-#endif
 }
