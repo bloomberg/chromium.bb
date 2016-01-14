@@ -152,10 +152,15 @@ void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 void SVGPathElement::collectStyleForPresentationAttribute(const QualifiedName& name, const AtomicString& value, MutableStylePropertySet* style)
 {
     SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-    if (property == m_path)
-        addPropertyToPresentationAttributeStyle(style, CSSPropertyD, m_path->currentValue()->pathValue());
-    else
-        SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
+    if (property == m_path) {
+        SVGAnimatedPath* path = this->path();
+        // If this is a <use> instance, return the referenced path to maximize geometry sharing.
+        if (const SVGElement* element = correspondingElement())
+            path = toSVGPathElement(element)->path();
+        addPropertyToPresentationAttributeStyle(style, CSSPropertyD, path->currentValue()->pathValue());
+        return;
+    }
+    SVGGeometryElement::collectStyleForPresentationAttribute(name, value, style);
 }
 
 void SVGPathElement::invalidateMPathDependencies()

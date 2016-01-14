@@ -40,8 +40,8 @@ public:
     PassRefPtrWillBeRawPtr<SVGPointTearOff> getPointAtLength(float distance);
     unsigned getPathSegAtLength(float distance);
 
-    SVGAnimatedPath* path() { return m_path.get(); }
-    SVGAnimatedNumber* pathLength() { return m_pathLength.get(); }
+    SVGAnimatedPath* path() const { return m_path.get(); }
+    SVGAnimatedNumber* pathLength() const { return m_pathLength.get(); }
 
     const SVGPathByteStream& pathByteStream() const;
 
