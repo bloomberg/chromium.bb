@@ -27,8 +27,8 @@ DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
   header()->qdcount = base::HostToNet16(1);
 
   // Write question section after the header.
-  base::BigEndianWriter writer(reinterpret_cast<char*>(header() + 1),
-                               question_size());
+  base::BigEndianWriter writer(
+      io_buffer_->data() + sizeof(dns_protocol::Header), question_size());
   writer.WriteBytes(qname.data(), qname.size());
   writer.WriteU16(qtype);
   writer.WriteU16(dns_protocol::kClassIN);
