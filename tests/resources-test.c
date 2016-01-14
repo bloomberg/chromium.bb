@@ -45,7 +45,7 @@ TEST(create_resource_tst)
 	client = wl_client_create(display, s[0]);
 	assert(client);
 
-	res = wl_resource_create(client, &wl_display_interface, 4, 0);
+	res = wl_resource_create(client, &wl_seat_interface, 4, 0);
 	assert(res);
 
 	/* setters/getters */
@@ -105,7 +105,7 @@ TEST(destroy_res_tst)
 	client = wl_client_create(display, s[0]);
 	assert(client);
 
-	res = wl_resource_create(client, &wl_display_interface, 4, 0);
+	res = wl_resource_create(client, &wl_seat_interface, 4, 0);
 	assert(res);
 	wl_resource_set_implementation(res, NULL, &destroyed, res_destroy_func);
 	wl_resource_add_destroy_listener(res, &destroy_listener);
@@ -119,7 +119,7 @@ TEST(destroy_res_tst)
 	assert(notify_called); /* check if signal was emitted */
 	assert(wl_client_get_object(client, id) == NULL);
 
-	res = wl_resource_create(client, &wl_display_interface, 2, 0);
+	res = wl_resource_create(client, &wl_seat_interface, 2, 0);
 	assert(res);
 	destroyed = 0;
 	notify_called = 0;
@@ -149,13 +149,13 @@ TEST(create_resource_with_same_id)
 	client = wl_client_create(display, s[0]);
 	assert(client);
 
-	res = wl_resource_create(client, &wl_display_interface, 2, 0);
+	res = wl_resource_create(client, &wl_seat_interface, 2, 0);
 	assert(res);
 	id = wl_resource_get_id(res);
 	assert(wl_client_get_object(client, id) == res);
 
 	/* this one should replace the old one */
-	res2 = wl_resource_create(client, &wl_display_interface, 1, id);
+	res2 = wl_resource_create(client, &wl_seat_interface, 1, id);
 	assert(res2 != NULL);
 	assert(wl_client_get_object(client, id) == res2);
 
