@@ -2248,6 +2248,10 @@ gfx::Size RenderViewImpl::GetSize() const {
   return size();
 }
 
+float RenderViewImpl::GetDeviceScaleFactor() const {
+  return device_scale_factor_;
+}
+
 WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }

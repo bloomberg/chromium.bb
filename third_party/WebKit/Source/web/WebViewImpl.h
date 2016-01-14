@@ -212,7 +212,6 @@ public:
     WebSize contentsPreferredMinimumSize() override;
     void setDisplayMode(WebDisplayMode) override;
 
-    float deviceScaleFactor() const override;
     void setDeviceScaleFactor(float) override;
     void setZoomFactorForDeviceScaleFactor(float) override;
 
@@ -627,6 +626,8 @@ private:
 
     void cancelPagePopup();
     void updatePageOverlays();
+
+    float deviceScaleFactor() const;
 
     WebViewClient* m_client; // Can be 0 (e.g. unittests, shared workers, etc.)
     WebSpellCheckClient* m_spellCheckClient;

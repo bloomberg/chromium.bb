@@ -69,9 +69,11 @@ void DragClientImpl::startDrag(DragImage* dragImage, const IntPoint& dragImageOr
 
     if (dragImage) {
         float resolutionScale = dragImage->resolutionScale();
-        if (m_webView->deviceScaleFactor() != resolutionScale) {
+        float deviceScaleFactor =
+            m_webView->client()->screenInfo().deviceScaleFactor;
+        if (deviceScaleFactor != resolutionScale) {
             ASSERT(resolutionScale > 0);
-            float scale = m_webView->deviceScaleFactor() / resolutionScale;
+            float scale = deviceScaleFactor / resolutionScale;
             dragImage->scale(scale, scale);
         }
         image = dragImage->bitmap();

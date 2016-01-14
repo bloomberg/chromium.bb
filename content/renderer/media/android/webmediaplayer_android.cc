@@ -1150,7 +1150,8 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
   // OnVideoSizeChanged, which is when the frame sizes of the video file
   // change). Perhaps have to poll (on main thread of course)?
   gfx::Size video_size_css_px = video_weblayer_->bounds();
-  float device_scale_factor = frame_->view()->deviceScaleFactor();
+  RenderView* render_view = RenderView::FromWebView(frame_->view());
+  float device_scale_factor = render_view->GetDeviceScaleFactor();
   // canvas_size will be the size in device pixels when pageScaleFactor == 1
   gfx::Size canvas_size(
       static_cast<int>(video_size_css_px.width() * device_scale_factor),

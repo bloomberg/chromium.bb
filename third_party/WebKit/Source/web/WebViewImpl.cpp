@@ -3205,14 +3205,6 @@ void WebViewImpl::setPageScaleFactor(float scaleFactor)
     page()->frameHost().visualViewport().setScale(scaleFactor);
 }
 
-float WebViewImpl::deviceScaleFactor() const
-{
-    if (!page())
-        return 1;
-
-    return page()->deviceScaleFactor();
-}
-
 void WebViewImpl::setDeviceScaleFactor(float scaleFactor)
 {
     if (!page())
@@ -4624,6 +4616,16 @@ void WebViewImpl::detachPaintArtifactCompositor()
 
     m_layerTreeView->setDeferCommits(true);
     m_layerTreeView->clearRootLayer();
+}
+
+float WebViewImpl::deviceScaleFactor() const
+{
+    // TODO(oshima): Investigate if this should return the ScreenInfo's scale factor rather than
+    // page's scale factor, which can be 1 in use-zoom-for-dsf mode.
+    if (!page())
+        return 1;
+
+    return page()->deviceScaleFactor();
 }
 
 } // namespace blink

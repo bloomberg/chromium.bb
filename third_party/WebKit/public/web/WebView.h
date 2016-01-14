@@ -286,9 +286,6 @@ public:
     // Sets the display mode of the web app.
     virtual void setDisplayMode(WebDisplayMode) = 0;
 
-    // The ratio of the current device's screen DPI to the target device's screen DPI.
-    virtual float deviceScaleFactor() const = 0;
-
     // Sets the ratio as computed by computePageScaleConstraints.
     // TODO(oshima): Remove this once the device scale factor implementation is fully
     // migrated to use zooming mechanism.
