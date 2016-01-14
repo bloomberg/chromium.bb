@@ -5004,6 +5004,8 @@ void RenderFrameImpl::NavigateInternal(
 
   // Create parameters for a standard navigation.
   blink::WebFrameLoadType load_type = blink::WebFrameLoadType::Standard;
+  blink::WebHistoryLoadType history_load_type =
+      blink::WebHistoryDifferentDocumentLoad;
   bool should_load_request = false;
   WebHistoryItem item_for_history_navigation;
   WebURLRequest request =
@@ -5051,48 +5053,41 @@ void RenderFrameImpl::NavigateInternal(
       // browser should never be telling us to navigate to swappedout://.
       CHECK(entry->root().urlString() != kSwappedOutURL);
 
-      if (!browser_side_navigation) {
+      if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
+        // By default, tell the HistoryController to go the deserialized
+        // HistoryEntry.  This only works if all frames are in the same
+        // process.
+        DCHECK(!frame_->parent());
+        DCHECK(!browser_side_navigation);
         scoped_ptr<NavigationParams> navigation_params(
             new NavigationParams(*pending_navigation_params_.get()));
-        if (!SiteIsolationPolicy::UseSubframeNavigationEntries()) {
-          // By default, tell the HistoryController to go the deserialized
-          // HistoryEntry.  This only works if all frames are in the same
-          // process.
-          DCHECK(!frame_->parent());
-          render_view_->history_controller()->GoToEntry(
-              frame_, std::move(entry), std::move(navigation_params),
-              cache_policy);
-        } else {
-          // In --site-per-process, the browser process sends a single
-          // WebHistoryItem destined for this frame.
-          // TODO(creis): Change PageState to FrameState.  In the meantime, we
-          // store the relevant frame's WebHistoryItem in the root of the
-          // PageState.
-          SetPendingNavigationParams(std::move(navigation_params));
-          blink::WebHistoryItem history_item = entry->root();
-          blink::WebHistoryLoadType load_type =
-              request_params.is_same_document_history_load
-                  ? blink::WebHistorySameDocumentLoad
-                  : blink::WebHistoryDifferentDocumentLoad;
-
-          // Navigate the frame directly.
-          // TODO(creis): Use InitialHistoryLoad rather than BackForward for a
-          // history navigation in a newly created subframe.
-          WebURLRequest request =
-              frame_->requestFromHistoryItem(history_item, cache_policy);
-          frame_->load(request, blink::WebFrameLoadType::BackForward,
-                       history_item, load_type);
-        }
+        render_view_->history_controller()->GoToEntry(
+            frame_, std::move(entry), std::move(navigation_params),
+            cache_policy);
       } else {
-        // TODO(clamy): this should be set to the HistoryItem sent by the
-        // browser once the HistoryController has moved to the browser.
-        // TODO(clamy): distinguish between different document and same document
-        // loads.
-        // TODO(clamy): update this for subframes history loads.
-        item_for_history_navigation =
-            entry->GetHistoryNodeForFrame(this)->item();
+        // In --site-per-process, the browser process sends a single
+        // WebHistoryItem destined for this frame.
+        // TODO(creis): Change PageState to FrameState.  In the meantime, we
+        // store the relevant frame's WebHistoryItem in the root of the
+        // PageState.
+        item_for_history_navigation = entry->root();
+        history_load_type = request_params.is_same_document_history_load
+                                ? blink::WebHistorySameDocumentLoad
+                                : blink::WebHistoryDifferentDocumentLoad;
+
+        // TODO(creis): Use InitialHistoryLoad rather than BackForward for a
+        // history navigation in a newly created subframe.
         load_type = blink::WebFrameLoadType::BackForward;
         should_load_request = true;
+
+        // Generate the request for the load from the HistoryItem.
+        // PlzNavigate: use the data sent by the browser for the url and the
+        // HTTP state. The restoration of user state such as scroll position
+        // will be done based on the history item during the load.
+        if (!browser_side_navigation) {
+          request = frame_->requestFromHistoryItem(item_for_history_navigation,
+                                                   cache_policy);
+        }
       }
     }
   } else {
@@ -5142,7 +5137,8 @@ void RenderFrameImpl::NavigateInternal(
     } else {
       // Load the request.
       frame_->toWebLocalFrame()->load(request, load_type,
-                                      item_for_history_navigation);
+                                      item_for_history_navigation,
+                                      history_load_type);
     }
   }
 

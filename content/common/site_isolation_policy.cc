@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 
@@ -28,7 +29,8 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
 bool SiteIsolationPolicy::UseSubframeNavigationEntries() {
   // Enable the new navigation history behavior if any manner of site isolation
   // is active.
-  return AreCrossProcessFramesPossible();
+  // PlzNavigate: also enable the new navigation history behavior.
+  return AreCrossProcessFramesPossible() || IsBrowserSideNavigationEnabled();
 }
 
 // static
