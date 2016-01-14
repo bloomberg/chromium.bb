@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -24,13 +25,6 @@ namespace content {
 
 namespace {
 
-void DestroyWorker(scoped_ptr<EmbeddedWorkerInstance> worker,
-                   ServiceWorkerStatusCode* out_status,
-                   ServiceWorkerStatusCode status) {
-  *out_status = status;
-  worker.reset();
-}
-
 void SaveStatusAndCall(ServiceWorkerStatusCode* out,
                        const base::Closure& callback,
                        ServiceWorkerStatusCode status) {
@@ -46,14 +40,36 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
   EmbeddedWorkerInstanceTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  void OnStopped(EmbeddedWorkerInstance::Status old_status) override {
-    stopped_ = true;
-    stopped_old_status_ = old_status;
+  enum EventType {
+    PROCESS_ALLOCATED,
+    START_WORKER_MESSAGE_SENT,
+    STARTED,
+    STOPPED,
+    DETACHED,
+  };
+
+  struct EventLog {
+    EventType type;
+    EmbeddedWorkerInstance::Status status;
+  };
+
+  void RecordEvent(
+      EventType type,
+      EmbeddedWorkerInstance::Status status = EmbeddedWorkerInstance::STOPPED) {
+    EventLog log = {type, status};
+    events_.push_back(log);
   }
 
+  void OnProcessAllocated() override { RecordEvent(PROCESS_ALLOCATED); }
+  void OnStartWorkerMessageSent() override {
+    RecordEvent(START_WORKER_MESSAGE_SENT);
+  }
+  void OnStarted() override { RecordEvent(STARTED); }
+  void OnStopped(EmbeddedWorkerInstance::Status old_status) override {
+    RecordEvent(STOPPED, old_status);
+  }
   void OnDetached(EmbeddedWorkerInstance::Status old_status) override {
-    detached_ = true;
-    detached_old_status_ = old_status;
+    RecordEvent(DETACHED, old_status);
   }
 
   bool OnMessageReceived(const IPC::Message& message) override { return false; }
@@ -86,15 +102,37 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   TestBrowserThreadBundle thread_bundle_;
   scoped_ptr<EmbeddedWorkerTestHelper> helper_;
-  bool detached_ = false;
-  EmbeddedWorkerInstance::Status detached_old_status_ =
-      EmbeddedWorkerInstance::STOPPED;
-  bool stopped_ = false;
-  EmbeddedWorkerInstance::Status stopped_old_status_ =
-      EmbeddedWorkerInstance::STOPPED;
+  std::vector<EventLog> events_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceTest);
+};
+
+// A helper to simulate the start worker sequence is stalled in a worker
+// process.
+class StalledInStartWorkerHelper : public EmbeddedWorkerTestHelper {
+ public:
+  StalledInStartWorkerHelper() : EmbeddedWorkerTestHelper(base::FilePath()) {}
+  ~StalledInStartWorkerHelper() override{};
+
+  void OnStartWorker(int embedded_worker_id,
+                     int64_t service_worker_version_id,
+                     const GURL& scope,
+                     const GURL& script_url) override {
+    if (force_stall_in_start_) {
+      // Do nothing to simulate a stall in the worker process.
+      return;
+    }
+    EmbeddedWorkerTestHelper::OnStartWorker(
+        embedded_worker_id, service_worker_version_id, scope, script_url);
+  }
+
+  void set_force_stall_in_start(bool force_stall_in_start) {
+    force_stall_in_start_ = force_stall_in_start;
+  }
+
+ private:
+  bool force_stall_in_start_ = true;
 };
 
 class FailToSendIPCHelper : public EmbeddedWorkerTestHelper {
@@ -254,58 +292,177 @@ TEST_F(EmbeddedWorkerInstanceTest, RemoveWorkerInSharedProcess) {
   worker2->Stop();
 }
 
-// Test detaching in the middle of the start worker sequence.
-TEST_F(EmbeddedWorkerInstanceTest, DetachDuringStart) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachDuringProcessAllocation) {
+  const int64_t version_id = 55L;
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
   worker->AddListener(this);
 
-  scoped_ptr<EmbeddedWorkerMsg_StartWorker_Params> params(
-      new EmbeddedWorkerMsg_StartWorker_Params());
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  // Run the start worker sequence and detach during process allocation.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  worker->Start(
+      version_id, scope, url,
+      base::Bind(&SaveStatusAndCall, &status, base::Bind(&base::DoNothing)));
+  worker->Detach();
+  base::RunLoop().RunUntilIdle();
 
-  // Pretend the worker got stopped before the start sequence reached
-  // SendStartWorker.
-  worker->status_ = EmbeddedWorkerInstance::STOPPED;
-  base::RunLoop run_loop;
-  worker->SendStartWorker(
-      std::move(params),
-      base::Bind(&SaveStatusAndCall, &status, run_loop.QuitClosure()),
-      true /* is_new_process */, MSG_ROUTING_NONE,
-      false /* wait_for_debugger */);
-  run_loop.Run();
-  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
-  // Don't expect SendStartWorker() to dispatch an OnStopped/Detached() message
-  // since the worker was already stopped.
-  EXPECT_FALSE(stopped_);
-  EXPECT_FALSE(detached_);
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
 
-  // Repeat, this time have the start callback destroy the worker, as is
-  // usual when starting a worker fails, and ensure a crash doesn't occur.
-  worker->status_ = EmbeddedWorkerInstance::STOPPED;
-  EmbeddedWorkerInstance* worker_ptr = worker.get();
-  worker_ptr->SendStartWorker(
-      std::move(params),
-      base::Bind(&DestroyWorker, base::Passed(&worker), &status),
-      true /* is_new_process */, MSG_ROUTING_NONE,
-      false /* wait_for_debugger */);
-  // No crash.
-  EXPECT_EQ(SERVICE_WORKER_ERROR_ABORT, status);
+  // The start callback should not be aborted by detach (see a comment on the
+  // dtor of EmbeddedWorkerInstance::StartTask).
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+
+  // "PROCESS_ALLOCATED" event should not be recorded.
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, events_[0].status);
 }
 
-// Test stopping in the middle of the start worker sequence, before
-// a process is allocated.
-TEST_F(EmbeddedWorkerInstanceTest, StopDuringStart) {
+TEST_F(EmbeddedWorkerInstanceTest, DetachAfterSendingStartWorkerMessage) {
+  const int64_t version_id = 55L;
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  helper_.reset(new StalledInStartWorkerHelper());
   scoped_ptr<EmbeddedWorkerInstance> worker =
       embedded_worker_registry()->CreateWorker();
   worker->AddListener(this);
-  // Pretend we stop during starting before we got a process allocated.
-  worker->status_ = EmbeddedWorkerInstance::STARTING;
-  worker->process_id_ = ChildProcessHost::kInvalidUniqueID;
-  worker->Stop();
+
+  // Run the start worker sequence until a start worker message is sent.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  worker->Start(
+      version_id, scope, url,
+      base::Bind(&SaveStatusAndCall, &status, base::Bind(base::DoNothing)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(2u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  events_.clear();
+
+  worker->Detach();
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
-  EXPECT_TRUE(detached_);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, detached_old_status_);
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
+
+  // The start callback should not be aborted by detach (see a comment on the
+  // dtor of EmbeddedWorkerInstance::StartTask).
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+
+  // "STARTED" event should not be recorded.
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, events_[0].status);
+}
+
+TEST_F(EmbeddedWorkerInstanceTest, StopDuringProcessAllocation) {
+  const int64_t version_id = 55L;
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  worker->AddListener(this);
+
+  // Stop the start worker sequence before a process is allocated.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  worker->Start(
+      version_id, scope, url,
+      base::Bind(&SaveStatusAndCall, &status, base::Bind(base::DoNothing)));
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
+
+  // The start callback should not be aborted by stop (see a comment on the dtor
+  // of EmbeddedWorkerInstance::StartTask).
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+
+  // "PROCESS_ALLOCATED" event should not be recorded.
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(DETACHED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, events_[0].status);
+  events_.clear();
+
+  // Restart the worker.
+  status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop);
+  worker->Start(version_id, scope, url, base::Bind(&SaveStatusAndCall, &status,
+                                                   run_loop->QuitClosure()));
+  run_loop->Run();
+
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  ASSERT_EQ(3u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  EXPECT_EQ(STARTED, events_[2].type);
+
+  // Tear down the worker.
+  worker->Stop();
+}
+
+TEST_F(EmbeddedWorkerInstanceTest, StopAfterSendingStartWorkerMessage) {
+  const int64_t version_id = 55L;
+  const GURL scope("http://example.com/");
+  const GURL url("http://example.com/worker.js");
+
+  helper_.reset(new StalledInStartWorkerHelper);
+  scoped_ptr<EmbeddedWorkerInstance> worker =
+      embedded_worker_registry()->CreateWorker();
+  worker->AddListener(this);
+
+  // Run the start worker sequence until a start worker message is sent.
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  worker->Start(
+      version_id, scope, url,
+      base::Bind(&SaveStatusAndCall, &status, base::Bind(base::DoNothing)));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(2u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  events_.clear();
+
+  worker->Stop();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPED, worker->status());
+  EXPECT_EQ(ChildProcessHost::kInvalidUniqueID, worker->process_id());
+
+  // The start callback should not be aborted by stop (see a comment on the dtor
+  // of EmbeddedWorkerInstance::StartTask).
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+
+  // "STARTED" event should not be recorded.
+  ASSERT_EQ(1u, events_.size());
+  EXPECT_EQ(STOPPED, events_[0].type);
+  EXPECT_EQ(EmbeddedWorkerInstance::STOPPING, events_[0].status);
+  events_.clear();
+
+  // Restart the worker.
+  static_cast<StalledInStartWorkerHelper*>(helper_.get())
+      ->set_force_stall_in_start(false);
+  status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  scoped_ptr<base::RunLoop> run_loop(new base::RunLoop);
+  worker->Start(version_id, scope, url, base::Bind(&SaveStatusAndCall, &status,
+                                                   run_loop->QuitClosure()));
+  run_loop->Run();
+
+  // The worker should be started.
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  ASSERT_EQ(3u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(START_WORKER_MESSAGE_SENT, events_[1].type);
+  EXPECT_EQ(STARTED, events_[2].type);
+
+  // Tear down the worker.
+  worker->Stop();
 }
 
 TEST_F(EmbeddedWorkerInstanceTest, Detach) {
@@ -362,8 +519,10 @@ TEST_F(EmbeddedWorkerInstanceTest, FailToSendStartIPC) {
 
   // The callback should have run, and we should have got an OnStopped message.
   EXPECT_EQ(SERVICE_WORKER_ERROR_IPC_FAILED, status);
-  EXPECT_TRUE(stopped_);
-  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, stopped_old_status_);
+  ASSERT_EQ(2u, events_.size());
+  EXPECT_EQ(PROCESS_ALLOCATED, events_[0].type);
+  EXPECT_EQ(STOPPED, events_[1].type);
+  EXPECT_EQ(EmbeddedWorkerInstance::STARTING, events_[1].status);
 }
 
 }  // namespace content

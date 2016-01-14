@@ -234,9 +234,11 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
 
   std::map<int, ProcessInfo>::iterator info =
       instance_info_.find(embedded_worker_id);
-  // TODO(nhiroki): Make sure the instance info is not mixed up.
-  // (http://crbug.com/568915)
-  CHECK(info != instance_info_.end());
+  // ReleaseWorkerProcess could be called for a nonexistent worker id, for
+  // example, when request to start a worker is aborted on the IO thread during
+  // process allocation that is failed on the UI thread.
+  if (info == instance_info_.end())
+    return;
 
   RenderProcessHost* rph = NULL;
   if (info->second.site_instance.get()) {
