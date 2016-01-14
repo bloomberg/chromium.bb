@@ -1016,7 +1016,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-password-change-support",
      IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_NAME,
      IDS_FLAGS_PASSWORD_CHANGE_SUPPORT_DESCRIPTION,
-     kOsMac,
+     kOsAndroid,
      FEATURE_VALUE_TYPE(
          password_manager::features::kEnablePasswordChangeSupport)},
     {"enable-password-force-saving",

@@ -1533,10 +1533,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 // The password manager should distinguish forms with empty actions. After
 // successful login, the login form disappears, but the another one shouldn't be
 // recognized as the login form. The save prompt should appear.
-// Disabled on Mac and Android.
-// TODO(kolos) Turn on this when the update prompt will be implemented on Mac
-// and Android.
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PromptForPushStateWhenFormWithEmptyActionDisappears) {
   NavigateToFile("/password/password_push_state.html");
@@ -1620,7 +1616,6 @@ IN_PROC_BROWSER_TEST_F(
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsShowingPrompt());
 }
-#endif  // !OS_MACOSX && !OS_ANDROID
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        InFrameNavigationDoesNotClearPopupState) {
@@ -1685,16 +1680,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdFormBubbleShown) {
-// TODO(dvadym): Remove appending kEnablePasswordChangeSupport switch as soon as
-// it is removed on Mac. http://crbug.com/359315
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   NavigateToFile("/password/password_form.html");
 
   NavigationObserver observer(WebContents());
@@ -1713,16 +1698,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdFormPushStateBubbleShown) {
-// TODO(dvadym): Remove appending kEnablePasswordChangeSupport switch as soon as
-// it is removed on Mac. http://crbug.com/359315
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   NavigateToFile("/password/password_push_state.html");
 
   NavigationObserver observer(WebContents());
@@ -2087,14 +2062,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdNoAccountStored) {
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   NavigateToFile("/password/password_form.html");
 
@@ -2133,14 +2100,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwd1AccountStored) {
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2188,14 +2147,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordOverridenUpdateBubbleShown) {
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2237,14 +2188,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        PasswordNotOverridenUpdateBubbleNotShown) {
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2278,14 +2221,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        ChangePwdWhenTheFormContainNotUsernameTextfield) {
-#if defined(OS_MACOSX)
-  // Add the enable-password-change-support feature.
-  base::FeatureList::ClearInstanceForTesting();
-  scoped_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      password_manager::features::kEnablePasswordChangeSupport.name, "");
-  base::FeatureList::SetInstance(std::move(feature_list));
-#endif
   ASSERT_TRUE(ChromePasswordManagerClient::IsTheHotNewBubbleUIEnabled());
   // At first let us save credentials to the PasswordManager.
   scoped_refptr<password_manager::TestPasswordStore> password_store =
@@ -2898,9 +2833,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   EXPECT_FALSE(prompt_observer->IsShowingUpdatePrompt());
 }
 
-// TODO(dvadym): Turn on this test when Change password UI will be implemented
-// for Mac. http://crbug.com/359315
-#if !defined(OS_MACOSX)
 // Tests that the update bubble shown when a password form without username is
 // submitted and there are stored credentials but with different password.
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
@@ -2941,7 +2873,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   CheckThatCredentialsStored(password_store.get(), base::ASCIIToUTF16("temp"),
                              base::ASCIIToUTF16("new_pw"));
 }
-#endif
 
 // Tests that the prompt to save the password is still shown if the fields have
 // the "autocomplete" attribute set off.
