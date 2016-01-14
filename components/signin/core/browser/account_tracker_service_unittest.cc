@@ -669,9 +669,9 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_SeedAccountInfoFull DISABLED_SeedAccountInfoFull
 #else
-#define MAYBE_SeedAccountInfoFull
+#define MAYBE_SeedAccountInfoFull SeedAccountInfoFull
 #endif
-TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
+TEST_F(AccountTrackerServiceTest, MAYBE_SeedAccountInfoFull) {
   AccountTrackerObserver observer;
   account_tracker()->AddObserver(&observer);
 

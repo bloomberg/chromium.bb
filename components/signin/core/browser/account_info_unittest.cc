@@ -61,9 +61,9 @@ TEST_F(AccountInfoTest, UpdateWithNoModification) {
 #if defined(MEMORY_SANITIZER)
 #define MAYBE_UpdateWithSuccessfulUpdate DISABLED_UpdateWithSuccessfulUpdate
 #else
-#define MAYBE_UpdateWithSuccessfulUpdate
+#define MAYBE_UpdateWithSuccessfulUpdate UpdateWithSuccessfulUpdate
 #endif
-TEST_F(AccountInfoTest, UpdateWithSuccessfulUpdate) {
+TEST_F(AccountInfoTest, MAYBE_UpdateWithSuccessfulUpdate) {
   AccountInfo info;
   info.account_id = info.gaia = info.email = "test_id";
 
