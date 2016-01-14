@@ -554,16 +554,25 @@ TEST_F(AutofillExternalDelegateUnitTest, ScanCreditCardPromptMetricsTest) {
   }
 }
 
+MATCHER_P3(CreditCardMatches,
+           card_number,
+           expiration_month,
+           expiration_year,
+           "") {
+  return !arg.Compare(
+      CreditCard(card_number, expiration_month, expiration_year));
+}
+
 // Test that autofill manager will fill the credit card form after user scans a
 // credit card.
 TEST_F(AutofillExternalDelegateUnitTest, FillCreditCardForm) {
   base::string16 card_number = base::ASCIIToUTF16("test");
   int expiration_month = 1;
   int expiration_year = 3000;
-  EXPECT_CALL(
-      *autofill_manager_,
-      FillCreditCardForm(
-          _, _, _, CreditCard(card_number, expiration_month, expiration_year)));
+  EXPECT_CALL(*autofill_manager_,
+              FillCreditCardForm(
+                  _, _, _, CreditCardMatches(card_number, expiration_month,
+                                             expiration_year)));
   external_delegate_->OnCreditCardScanned(card_number, expiration_month,
                                           expiration_year);
 }

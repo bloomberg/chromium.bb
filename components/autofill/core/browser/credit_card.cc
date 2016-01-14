@@ -85,42 +85,27 @@ CreditCard::CreditCard(const std::string& guid, const std::string& origin)
       type_(kGenericCard),
       expiration_month_(0),
       expiration_year_(0),
-      server_status_(OK) {
-}
+      server_status_(OK) {}
 
 CreditCard::CreditCard(const base::string16& card_number,
                        int expiration_month,
                        int expiration_year)
-    : AutofillDataModel(std::string(), std::string()),
-      record_type_(LOCAL_CARD),
-      server_status_(OK) {
+    : CreditCard() {
   SetNumber(card_number);
   SetExpirationMonth(expiration_month);
   SetExpirationYear(expiration_year);
 }
 
 CreditCard::CreditCard(RecordType type, const std::string& server_id)
-    : AutofillDataModel(base::GenerateGUID(), std::string()),
-      record_type_(type),
-      type_(kGenericCard),
-      expiration_month_(0),
-      expiration_year_(0),
-      server_id_(server_id),
-      server_status_(OK) {
+    : CreditCard() {
   DCHECK(type == MASKED_SERVER_CARD || type == FULL_SERVER_CARD);
+  record_type_ = type;
+  server_id_ = server_id;
 }
 
-CreditCard::CreditCard()
-    : AutofillDataModel(base::GenerateGUID(), std::string()),
-      record_type_(LOCAL_CARD),
-      type_(kGenericCard),
-      expiration_month_(0),
-      expiration_year_(0),
-      server_status_(OK) {
-}
+CreditCard::CreditCard() : CreditCard(base::GenerateGUID(), std::string()) {}
 
-CreditCard::CreditCard(const CreditCard& credit_card)
-    : AutofillDataModel(std::string(), std::string()) {
+CreditCard::CreditCard(const CreditCard& credit_card) : CreditCard() {
   operator=(credit_card);
 }
 
