@@ -115,7 +115,7 @@ struct BattOrEEPROM {
 // The BattOrFrameHeader begins every frame containing BattOr samples.
 struct BattOrFrameHeader {
   // The number of frames that have preceded this one.
-  uint32_t sequence_no;
+  uint32_t sequence_number;
   // The number of bytes of raw samples in this frame.
   uint16_t length;
 };
