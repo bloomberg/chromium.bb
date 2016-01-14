@@ -112,6 +112,7 @@ static_library("with_no_strings") {
       "//courgette:courgette_lib",
       "//crypto",
       "//third_party/bspatch",
+      "//third_party/crashpad/crashpad/client",
       "//third_party/icu",
       "//third_party/lzma_sdk",
     ]

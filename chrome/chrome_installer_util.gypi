@@ -126,6 +126,7 @@
             '<(DEPTH)/courgette/courgette.gyp:courgette_lib',
             '<(DEPTH)/crypto/crypto.gyp:crypto',
             '<(DEPTH)/third_party/bspatch/bspatch.gyp:bspatch',
+            '<(DEPTH)/third_party/crashpad/crashpad/client/client.gyp:crashpad_client',
             '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
             '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
             '<(DEPTH)/third_party/lzma_sdk/lzma_sdk.gyp:lzma_sdk',

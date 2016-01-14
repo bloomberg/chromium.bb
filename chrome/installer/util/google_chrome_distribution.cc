@@ -20,6 +20,7 @@
 #include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_icon_resources_win.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/installer/util/app_registration_data.h"
 #include "chrome/installer/util/channel_info.h"
 #include "chrome/installer/util/google_update_constants.h"
@@ -32,6 +33,8 @@
 #include "chrome/installer/util/updating_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "chrome/installer/util/wmi.h"
+#include "third_party/crashpad/crashpad/client/crash_report_database.h"
+#include "third_party/crashpad/crashpad/client/settings.h"
 
 namespace {
 
@@ -243,6 +246,16 @@ base::string16 GoogleChromeDistribution::GetDistributionData(HKEY root_key) {
   result.append(google_update::kRegApField);
   result.append(L"=");
   result.append(ap_value);
+
+  // Crash client id.
+  base::FilePath crash_dir;
+  if (chrome::GetDefaultCrashDumpLocation(&crash_dir)) {
+    crashpad::UUID client_id;
+    scoped_ptr<crashpad::CrashReportDatabase> database(
+        crashpad::CrashReportDatabase::InitializeWithoutCreating(crash_dir));
+    if (database && database->GetSettings()->GetClientID(&client_id))
+      result.append(L"&crash_client_id=").append(client_id.ToString16());
+  }
 
   return result;
 }
