@@ -20,6 +20,7 @@ class ExceptionState;
 class IntersectionObserverCallback;
 class IntersectionObserverInit;
 
+// TODO(oilpan): Switch to GarbageCollected<> after oilpan ships
 class IntersectionObserver final : public GarbageCollectedFinalized<IntersectionObserver>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 

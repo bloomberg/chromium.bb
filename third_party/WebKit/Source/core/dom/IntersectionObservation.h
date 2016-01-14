@@ -14,6 +14,7 @@ class Element;
 class IntersectionObserver;
 class Node;
 
+// TODO(oilpan): Switch to GarbageCollected<> after oilpan ships.
 class IntersectionObservation : public GarbageCollectedFinalized<IntersectionObservation> {
 public:
     IntersectionObservation(IntersectionObserver&, Element&, bool shouldReportRootBounds);
