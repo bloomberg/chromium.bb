@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
@@ -19,13 +19,17 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/test_history_database.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -366,45 +370,39 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
-class SiteEngagementServiceTest : public BrowserWithTestWindowTest {
+class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  public:
-  SiteEngagementServiceTest() {}
-
   void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
+    ChromeRenderViewHostTestHarness::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     g_temp_history_dir = temp_dir_.path();
     HistoryServiceFactory::GetInstance()->SetTestingFactory(
         profile(), &BuildTestHistoryService);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSiteEngagementService);
   }
 
   void NavigateWithTransitionAndExpectHigherScore(
       SiteEngagementService* service,
-      GURL& url,
+      const GURL& url,
       ui::PageTransition transition) {
     double prev_score = service->GetScore(url);
-    content::NavigationController* controller =
-        &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-
-    browser()->OpenURL(content::OpenURLParams(url, content::Referrer(),
-                                              CURRENT_TAB, transition, false));
-    CommitPendingLoad(controller);
+    controller().LoadURL(url, content::Referrer(), transition, std::string());
+    int pending_id = controller().GetPendingEntry()->GetUniqueID();
+    content::WebContentsTester::For(web_contents())
+        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+                          url, transition);
     EXPECT_LT(prev_score, service->GetScore(url));
   }
 
   void NavigateWithTransitionAndExpectEqualScore(
       SiteEngagementService* service,
-      GURL& url,
+      const GURL& url,
       ui::PageTransition transition) {
     double prev_score = service->GetScore(url);
-    content::NavigationController* controller =
-        &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-
-    browser()->OpenURL(content::OpenURLParams(url, content::Referrer(),
-                                              CURRENT_TAB, transition, false));
-    CommitPendingLoad(controller);
+    controller().LoadURL(url, content::Referrer(), transition, std::string());
+    int pending_id = controller().GetPendingEntry()->GetUniqueID();
+    content::WebContentsTester::For(web_contents())
+        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+                          url, transition);
     EXPECT_EQ(prev_score, service->GetScore(url));
   }
 
@@ -484,13 +482,13 @@ TEST_F(SiteEngagementServiceTest, ScoreIncrementsOnPageRequest) {
       SiteEngagementServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(service);
 
+  // Create the helper manually since it isn't present when a tab isn't created.
+  SiteEngagementHelper::CreateForWebContents(web_contents());
+
   GURL url("http://www.google.com/");
   EXPECT_EQ(0, service->GetScore(url));
-  AddTab(browser(), GURL("about:blank"));
-
   NavigateWithTransitionAndExpectHigherScore(service, url,
                                              ui::PAGE_TRANSITION_TYPED);
-
   NavigateWithTransitionAndExpectHigherScore(service, url,
                                              ui::PAGE_TRANSITION_AUTO_BOOKMARK);
 }
@@ -886,12 +884,14 @@ TEST_F(SiteEngagementServiceTest, CleanupEngagementScores) {
 }
 
 TEST_F(SiteEngagementServiceTest, NavigationAccumulation) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url("https://www.google.com/");
 
   SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+      SiteEngagementServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(service);
+
+  // Create the helper manually since it isn't present when a tab isn't created.
+  SiteEngagementHelper::CreateForWebContents(web_contents());
 
   // Only direct navigation should trigger engagement.
   NavigateWithTransitionAndExpectHigherScore(service, url,

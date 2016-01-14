@@ -4,32 +4,27 @@
 
 #include "chrome/browser/engagement/site_engagement_helper.h"
 
-#include <utility>
-
-#include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "base/timer/mock_timer.h"
 #include "base/values.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/engagement/site_engagement_service_factory.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/browser_with_test_window_test.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
+class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
  public:
-  void SetUp() override {
-    BrowserWithTestWindowTest::SetUp();
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableSiteEngagementService);
-  }
-
   SiteEngagementHelper* GetHelper(content::WebContents* web_contents) {
+    SiteEngagementHelper::CreateForWebContents(web_contents);
     SiteEngagementHelper* helper =
         SiteEngagementHelper::FromWebContents(web_contents);
+
     DCHECK(helper);
     return helper;
   }
@@ -83,29 +78,27 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
     return helper->input_tracker_.is_tracking();
   }
 
-  void NavigateWithDisposition(GURL& url, WindowOpenDisposition disposition) {
-    content::NavigationController* controller =
-        &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
-    browser()->OpenURL(
-        content::OpenURLParams(url, content::Referrer(), disposition,
-                               ui::PAGE_TRANSITION_TYPED, false));
-    CommitPendingLoad(controller);
+  void Navigate(const GURL& url) {
+    controller().LoadURL(url, content::Referrer(), ui::PAGE_TRANSITION_TYPED,
+                         std::string());
+    int pending_id = controller().GetPendingEntry()->GetUniqueID();
+    content::WebContentsTester::For(web_contents())
+        ->TestDidNavigate(web_contents()->GetMainFrame(), 1, pending_id, true,
+                          url, ui::PAGE_TRANSITION_TYPED);
   }
 
   void UserInputAccumulation(const blink::WebInputEvent::Type type) {
-    AddTab(browser(), GURL("about:blank"));
     GURL url1("https://www.google.com/");
     GURL url2("http://www.google.com/");
-    content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+    content::WebContents* contents = web_contents();
 
-    SiteEngagementHelper* helper = GetHelper(web_contents);
+    SiteEngagementHelper* helper = GetHelper(contents);
     SiteEngagementService* service =
-      SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+        SiteEngagementServiceFactory::GetForProfile(profile());
     DCHECK(service);
 
     // Check that navigation triggers engagement.
-    NavigateWithDisposition(url1, CURRENT_TAB);
+    Navigate(url1);
     TrackingStarted(helper);
 
     EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
@@ -126,7 +119,7 @@ class SiteEngagementHelperTest : public BrowserWithTestWindowTest {
     EXPECT_EQ(0, service->GetScore(url2));
 
     // Simulate inputs for a different link.
-    NavigateWithDisposition(url2, CURRENT_TAB);
+    Navigate(url2);
     TrackingStarted(helper);
 
     EXPECT_DOUBLE_EQ(0.7, service->GetScore(url1));
@@ -157,18 +150,16 @@ TEST_F(SiteEngagementHelperTest, GestureEngagementAccumulation) {
 }
 
 TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+      SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
 
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
@@ -196,7 +187,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Simulate inputs for a different link.
-  NavigateWithDisposition(url2, CURRENT_TAB);
+  Navigate(url2);
   TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.6, service->GetScore(url1));
@@ -211,20 +202,18 @@ TEST_F(SiteEngagementHelperTest, MediaEngagementAccumulation) {
 }
 
 TEST_F(SiteEngagementHelperTest, MediaEngagement) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
   SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+      SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
 
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   MediaStartedPlaying(helper);
 
   EXPECT_DOUBLE_EQ(0.50, service->GetScore(url1));
@@ -236,7 +225,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  web_contents->WasHidden();
+  contents->WasHidden();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -248,7 +237,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  web_contents->WasShown();
+  contents->WasShown();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.53, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
@@ -260,7 +249,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  NavigateWithDisposition(url2, CURRENT_TAB);
+  Navigate(url2);
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0.5, service->GetScore(url2));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
@@ -271,14 +260,14 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   EXPECT_EQ(0.52, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
-  web_contents->WasHidden();
+  contents->WasHidden();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0.53, service->GetScore(url2));
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   MediaStoppedPlaying(helper);
-  web_contents->WasShown();
+  contents->WasShown();
   media_tracker_timer->Fire();
   EXPECT_DOUBLE_EQ(0.55, service->GetScore(url1));
   EXPECT_EQ(0.53, service->GetScore(url2));
@@ -286,15 +275,13 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
 }
 
 TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+      SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
 
   base::HistogramTester histograms;
@@ -303,7 +290,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
   histograms.ExpectTotalCount(SiteEngagementMetrics::kEngagementTypeHistogram,
                               0);
 
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
@@ -360,7 +347,7 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
                                SiteEngagementMetrics::ENGAGEMENT_MEDIA_HIDDEN,
                                1);
 
-  NavigateWithDisposition(url2, CURRENT_TAB);
+  Navigate(url2);
   TrackingStarted(helper);
 
   EXPECT_DOUBLE_EQ(0.93, service->GetScore(url1));
@@ -386,23 +373,21 @@ TEST_F(SiteEngagementHelperTest, MixedInputEngagementAccumulation) {
 }
 
 TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-    browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
   SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
 
   SiteEngagementService* service =
-    SiteEngagementServiceFactory::GetForProfile(browser()->profile());
+      SiteEngagementServiceFactory::GetForProfile(profile());
   DCHECK(service);
 
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   EXPECT_DOUBLE_EQ(0.5, service->GetScore(url1));
   EXPECT_EQ(0, service->GetScore(url2));
 
@@ -459,7 +444,7 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   EXPECT_EQ(0, service->GetScore(url2));
 
   // Timer should be running for navigation delay. Media is disabled again.
-  NavigateWithDisposition(url2, CURRENT_TAB);
+  Navigate(url2);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
   EXPECT_FALSE(media_tracker_timer->IsRunning());
@@ -496,30 +481,28 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
 // tracking until after a delay. We must manually call WasShown/WasHidden as
 // they are not triggered automatically in this test environment.
 TEST_F(SiteEngagementHelperTest, ShowAndHide) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("http://www.google.com/");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
   base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
   SetMediaTrackerPauseTimer(helper, make_scoped_ptr(media_tracker_timer));
 
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   input_tracker_timer->Fire();
 
   // Hiding the tab should stop input tracking. Media tracking remains inactive.
-  web_contents->WasHidden();
+  contents->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(media_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
 
   // Showing the tab should start tracking again after another delay. Media
   // tracking remains inactive.
-  web_contents->WasShown();
+  contents->WasShown();
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(media_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
@@ -529,14 +512,14 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   EXPECT_TRUE(media_tracker_timer->IsRunning());
 
   // Hiding the tab should stop input tracking, but not media tracking.
-  web_contents->WasHidden();
+  contents->WasHidden();
   EXPECT_FALSE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(media_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
 
   // Showing the tab should start tracking again after another delay. Media
   // tracking continues.
-  web_contents->WasShown();
+  contents->WasShown();
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_TRUE(media_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
@@ -550,23 +533,21 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
 
 // Ensure tracking behavior is correct for multiple navigations in a single tab.
 TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
-  AddTab(browser(), GURL("about:blank"));
   GURL url1("https://www.google.com/");
   GURL url2("https://www.example.com/");
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  content::WebContents* contents = web_contents();
 
   base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
-  SiteEngagementHelper* helper = GetHelper(web_contents);
+  SiteEngagementHelper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, make_scoped_ptr(input_tracker_timer));
 
   // Navigation should start the initial delay timer.
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
 
   // Navigating before the timer fires should simply reset the timer.
-  NavigateWithDisposition(url2, CURRENT_TAB);
+  Navigate(url2);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
 
@@ -576,7 +557,7 @@ TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
   EXPECT_TRUE(IsTrackingInput(helper));
 
   // Navigation should start the initial delay timer again.
-  NavigateWithDisposition(url1, CURRENT_TAB);
+  Navigate(url1);
   EXPECT_TRUE(input_tracker_timer->IsRunning());
   EXPECT_FALSE(IsTrackingInput(helper));
 }
