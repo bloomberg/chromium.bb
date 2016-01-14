@@ -6,6 +6,7 @@
 
 #include <string.h>  // for memset()
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/md5.h"
 #include "url/gurl.h"

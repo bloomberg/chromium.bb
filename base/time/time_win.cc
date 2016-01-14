@@ -38,6 +38,7 @@
 #include <mmsystem.h>
 #include <stdint.h>
 
+#include "base/bit_cast.h"
 #include "base/cpu.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "base/bit_cast.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"

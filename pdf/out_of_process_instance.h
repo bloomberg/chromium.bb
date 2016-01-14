@@ -6,6 +6,7 @@
 #define PDF_OUT_OF_PROCESS_INSTANCE_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include <queue>
 #include <set>

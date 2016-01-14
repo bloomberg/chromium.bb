@@ -120,6 +120,7 @@
           'bind_helpers.h',
           'bind_internal.h',
           'bind_internal_win.h',
+          'bit_cast.h',
           'bits.h',
           'build_time.cc',
           'build_time.h',

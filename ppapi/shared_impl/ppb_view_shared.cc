@@ -4,6 +4,8 @@
 
 #include "ppapi/shared_impl/ppb_view_shared.h"
 
+#include <string.h>
+
 namespace {
 
 bool IsRectNonempty(const PP_Rect& rect) {

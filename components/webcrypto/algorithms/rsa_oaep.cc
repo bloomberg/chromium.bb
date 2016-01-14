@@ -5,6 +5,7 @@
 #include <openssl/evp.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "components/webcrypto/algorithms/rsa.h"
 #include "components/webcrypto/algorithms/util.h"

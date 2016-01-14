@@ -46,6 +46,7 @@
 #define NET_DISK_CACHE_BLOCKFILE_DISK_FORMAT_V3_H_
 
 #include <stdint.h>
+#include <string.h>
 
 #include "net/disk_cache/blockfile/disk_format_base.h"
 

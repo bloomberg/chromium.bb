@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"
 #include "third_party/zlib/zlib.h"

@@ -8,6 +8,7 @@
 
 #include <sstream>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/win/scoped_process_information.h"

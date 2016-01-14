@@ -4,6 +4,7 @@
 
 #include "net/filter/gzip_filter.h"
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "net/filter/gzip_header.h"
 #include "third_party/zlib/zlib.h"

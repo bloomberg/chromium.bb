@@ -7,6 +7,7 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include "base/bit_cast.h"
 #include "base/memory/scoped_ptr.h"
 #include "sandbox/win/wow_helper/target_code.h"
 

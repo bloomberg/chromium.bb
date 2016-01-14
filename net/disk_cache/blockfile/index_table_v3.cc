@@ -9,6 +9,7 @@
 #include <set>
 #include <utility>
 
+#include "base/bit_cast.h"
 #include "base/bits.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"

@@ -5,6 +5,7 @@
 #include <fstream>
 #include <ostream>
 
+#include "base/bit_cast.h"
 #include "base/files/file_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"

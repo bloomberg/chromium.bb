@@ -4,6 +4,7 @@
 
 #include "remoting/client/plugin/pepper_util.h"
 
+#include "base/bit_cast.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/sys_byteorder.h"

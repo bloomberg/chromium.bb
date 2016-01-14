@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"

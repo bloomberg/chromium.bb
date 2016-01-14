@@ -4,6 +4,8 @@
 
 #include "net/quic/test_tools/mock_random.h"
 
+#include <string.h>
+
 namespace net {
 namespace test {
 

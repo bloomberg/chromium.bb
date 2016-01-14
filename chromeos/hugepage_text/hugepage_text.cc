@@ -10,6 +10,7 @@
 #include <link.h>
 #include <sys/mman.h>
 
+#include "base/bit_cast.h"
 #include "base/logging.h"
 
 namespace chromeos {
