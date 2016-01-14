@@ -3237,7 +3237,8 @@ def CMDtry(parser, args):
                               'infra', 'config', 'cq.cfg')
         if os.path.exists(cq_cfg):
           masters = {}
-          cq_masters = commit_queue.get_master_builder_map(cq_cfg)
+          cq_masters = commit_queue.get_master_builder_map(
+              cq_cfg, include_experimental=False, include_triggered=False)
           for master, builders in cq_masters.iteritems():
             for builder in builders:
               # Skip presubmit builders, because these will fail without LGTM.

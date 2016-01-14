@@ -105,7 +105,8 @@ def set_commit(obj, issue, flag):
   _apply_on_issue(_set_commit, obj, issue)
 
 
-def get_master_builder_map(config_path):
+def get_master_builder_map(
+      config_path, include_experimental=True, include_triggered=True):
   """Returns a map of master -> [builders] from cq config."""
   with open(config_path) as config_file:
     cq_config = config_file.read()
@@ -117,8 +118,13 @@ def get_master_builder_map(config_path):
     for bucket in config.verifiers.try_job.buckets:
       masters.setdefault(bucket.name, [])
       for builder in bucket.builders:
-        if not builder.HasField('experiment_percentage'):
-          masters[bucket.name].append(builder.name)
+        if (not include_experimental and
+            builder.HasField('experiment_percentage')):
+          continue
+        if (not include_triggered and
+            builder.HasField('triggered_by')):
+          continue
+        masters[bucket.name].append(builder.name)
   return masters
 
 
