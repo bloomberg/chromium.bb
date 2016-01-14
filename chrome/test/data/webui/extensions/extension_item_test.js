@@ -116,6 +116,7 @@ cr.define('extension_item_tests', function() {
     ElementVisibilityDeveloperState:
         'element visibility: after enabling developer mode',
     ClickableItems: 'clickable items',
+    Warnings: 'warnings',
   };
 
   function registerTests() {
@@ -149,10 +150,10 @@ cr.define('extension_item_tests', function() {
         testDeveloperElementsAreHidden(item);
 
         expectTrue(item.$.enabled.checked);
-        expectEquals('Enabled', item.$.enabled.textContent);
+        expectEquals('Enabled', item.$.enabled.textContent.trim());
         item.set('data.state', 'DISABLED');
         expectFalse(item.$.enabled.checked);
-        expectEquals('Disabled', item.$.enabled.textContent);
+        expectEquals('Disabled', item.$.enabled.textContent.trim());
       });
 
       test(assert(TestNames.ElementVisibilityDetailState), function() {
@@ -197,6 +198,55 @@ cr.define('extension_item_tests', function() {
         mockDelegate.testClickingCalls(
             item.$$('#inspect-views paper-button:nth-of-type(0n + 2)'),
             'inspectItemView', [item.data.id, item.data.views[1]]);
+      });
+
+      test(assert(TestNames.Warnings), function() {
+        var hasCorruptedWarning = function() {
+          return extension_test_util.isVisible(item, '#corrupted-warning');
+        };
+        var hasSuspiciousWarning = function() {
+          return extension_test_util.isVisible(item, '#suspicious-warning');
+        };
+        var hasBlacklistedWarning = function() {
+          return extension_test_util.isVisible(item, '#blacklisted-warning');
+        };
+
+        extension_test_util.testVisible(item, '#warnings-container', false);
+        item.set('data.disableReasons.corruptInstall', true);
+        Polymer.dom.flush();
+        extension_test_util.testVisible(item, '#warnings-container', true);
+
+        var warnings = assert(item.$$('#warnings-container'));
+        expectEquals('mild', warnings.className);
+        expectTrue(hasCorruptedWarning());
+        expectFalse(hasSuspiciousWarning());
+        expectFalse(hasBlacklistedWarning());
+
+        item.set('data.disableReasons.suspiciousInstall', true);
+        Polymer.dom.flush();
+        expectEquals('mild', warnings.className);
+        expectTrue(hasCorruptedWarning());
+        expectTrue(hasSuspiciousWarning());
+        expectFalse(hasBlacklistedWarning());
+
+        item.set('data.blacklistText', 'This item is blacklisted');
+        Polymer.dom.flush();
+        expectEquals('severe', warnings.className);
+        expectTrue(hasCorruptedWarning());
+        expectTrue(hasSuspiciousWarning());
+        expectTrue(hasBlacklistedWarning());
+
+        item.set('data.blacklistText', undefined);
+        Polymer.dom.flush();
+        expectEquals('mild', warnings.className);
+        expectTrue(hasCorruptedWarning());
+        expectTrue(hasSuspiciousWarning());
+        expectFalse(hasBlacklistedWarning());
+
+        item.set('data.disableReasons.corruptInstall', false);
+        item.set('data.disableReasons.suspiciousInstall', false);
+        Polymer.dom.flush();
+        extension_test_util.testVisible(item, '#warnings-container', false);
       });
     });
   }

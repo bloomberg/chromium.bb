@@ -165,7 +165,25 @@ cr.define('extensions', function() {
                     ' ' + this.i18n('viewInactive') : '') +
                (view.isIframe ? ' ' + this.i18n('viewIframe') : '');
       return label;
-    }
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
+    hasWarnings_: function() {
+      return this.data.disableReasons.corruptInstall ||
+             this.data.disableReasons.suspiciousInstall ||
+             !!this.data.blacklistText;
+    },
+
+    /**
+     * @return {string}
+     * @private
+     */
+    computeWarningsClasses_: function() {
+      return this.data.blacklistText ? 'severe' : 'mild';
+    },
   });
 
   return {

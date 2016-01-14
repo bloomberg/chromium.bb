@@ -17,6 +17,7 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "grit/browser_resources.h"
 #include "grit/theme_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
 #if defined(OS_CHROMEOS)
@@ -62,6 +63,13 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddLocalizedString("itemDetails", IDS_MD_EXTENSIONS_ITEM_DETAILS);
   source->AddLocalizedString("itemEnabled", IDS_MD_EXTENSIONS_ITEM_ENABLED);
   source->AddLocalizedString("itemDisabled", IDS_MD_EXTENSIONS_ITEM_DISABLED);
+  source->AddLocalizedString("itemCorruptInstall",
+                             IDS_EXTENSIONS_CORRUPTED_EXTENSION);
+  source->AddString(
+      "itemSuspiciousInstall",
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
   source->AddLocalizedString("viewBackgroundPage",
                              IDS_EXTENSIONS_BACKGROUND_PAGE);
   source->AddLocalizedString("viewIncognito",

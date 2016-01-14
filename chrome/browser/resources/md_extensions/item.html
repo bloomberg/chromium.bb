@@ -10,49 +10,75 @@
 
 <dom-module id="extensions-item">
   <template>
-    <div id="card" class$="[[computeClasses_(data.state)]]">
-      <div id="icon-wrapper">
-        <img alt="" id="icon" src="[[data.iconUrl]]">
-      </div>
-      <div id="content">
-        <div class="content-section">
-          <div class="layout horizontal justified center">
-            <div id="name">[[data.name]]</div>
-            <paper-icon-button icon="[[computeExpandIcon_(showingDetails_)]]"
-                id="show-details" on-tap="onShowDetailsTap_">
-            </paper-icon-button>
-          </div>
-          <div id="description">[[data.description]]</div>
-          <div id="controls" class="layout horizontal center">
-            <paper-checkbox id="enabled" class="checkbox"
-                checked="[[isEnabled_(data.state)]]"
-                on-change="onEnableChange_">[[computeEnableCheckboxLabel_(data.state)]]</paper-checkbox>
-            <span id="version">[[data.version]]</span>
-            <paper-icon-button icon="delete" id="delete-button"
-                on-tap="onDeleteTap_"></paper-icon-button>
-          </div>
+    <div id="card-wrapper" class$="[[computeClasses_(data.state)]]">
+      <div id="card">
+        <div id="icon-wrapper">
+          <img alt="" id="icon" src="[[data.iconUrl]]">
         </div>
-        <template is="dom-if" if="[[showingDetails_]]">
-          <div id="details-container" class="content-section">
-            <template is="dom-if" if="[[inDevMode]]">
-              <div id="extension-id"></div>
-              <div id="inspect-views">
-                <span>[[i18n('itemInspectViews')]]</span>
-                <template is="dom-repeat" items="[[data.views]]">
-                  <paper-button on-tap="onInspectTap_">[[computeInspectLabel_(item)]]</paper-button>
-                </template>
-              </div>
-            </template>
+        <div id="content">
+          <div class="content-section">
             <div class="layout horizontal justified center">
-              <paper-checkbox id="allow-incognito" class="checkbox"
-                  checked=[[data.incognitoAccess.isActive]]
-                  on-change="onAllowIncognitoChange_">[[i18n('itemAllowIncognito')]]</paper-checkbox>
-              <paper-button id="details-button"
-                  on-tap="onDetailsTap_">[[i18n('itemDetails')]]</paper-button>
+              <div id="name">[[data.name]]</div>
+              <paper-icon-button icon="[[computeExpandIcon_(showingDetails_)]]"
+                  id="show-details" on-tap="onShowDetailsTap_">
+              </paper-icon-button>
+            </div>
+            <div id="description">[[data.description]]</div>
+            <div id="controls" class="layout horizontal center">
+              <paper-checkbox id="enabled" class="checkbox"
+                  checked="[[isEnabled_(data.state)]]"
+                  on-change="onEnableChange_">
+                [[computeEnableCheckboxLabel_(data.state)]]
+              </paper-checkbox>
+              <span id="version">[[data.version]]</span>
+              <paper-icon-button icon="delete" id="delete-button"
+                  on-tap="onDeleteTap_"></paper-icon-button>
             </div>
           </div>
-        </template>
+          <template is="dom-if" if="[[showingDetails_]]">
+            <div id="details-container" class="content-section">
+              <template is="dom-if" if="[[inDevMode]]">
+                <div id="extension-id"></div>
+                <div id="inspect-views">
+                  <span>[[i18n('itemInspectViews')]]</span>
+                  <template is="dom-repeat" items="[[data.views]]">
+                    <paper-button on-tap="onInspectTap_">
+                      [[computeInspectLabel_(item)]]
+                    </paper-button>
+                  </template>
+                </div>
+              </template>
+              <div class="layout horizontal justified center">
+                <paper-checkbox id="allow-incognito" class="checkbox"
+                    checked="[[data.incognitoAccess.isActive]]"
+                    on-change="onAllowIncognitoChange_">
+                  [[i18n('itemAllowIncognito')]]
+                </paper-checkbox>
+                <paper-button id="details-button" on-tap="onDetailsTap_">
+                  [[i18n('itemDetails')]]
+                </paper-button>
+              </div>
+            </div>
+          </template>
+        </div>
       </div>
+      <template is="dom-if" if="[[hasWarnings_(data.*)]]">
+        <div id="warnings-container"
+            class$="[[computeWarningsClasses_(data.blacklistText)]]">
+          <iron-icon icon="warning"></iron-icon>
+          <div>
+            <div id="corrupted-warning"
+                hidden="[[!data.disableReasons.corruptInstall]]">
+              [[i18n('itemCorruptInstall')]]
+            </div>
+            <div id="suspicious-warning"
+                hidden="[[!data.disableReasons.suspiciousInstall]]">
+              [[i18n('itemSuspiciousInstall')]]
+            </div>
+            <div id="blacklisted-warning">[[data.blacklistText]]</div>
+          </div>
+        </div>
+      </template>
     </div>
   </template>
   <link rel="import" type="css" href="chrome://extensions/item.css">

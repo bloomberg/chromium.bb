@@ -19,14 +19,17 @@
 }
 
 /* TODO(devlin): Combine this with downloads style. */
-#card {
+#card-wrapper {
   background: white;
   box-shadow: 0 2px 2px 0 rgba(0, 0, 0, .05), 0 1px 4px 0 rgba(0, 0, 0, .08),
               0 3px 1px -2px rgba(0, 0, 0, .2);
   color: #5A5A5A;
-  display: flex;
   min-height: 103px;
   width: 622px;
+}
+
+#card {
+  display: flex;
 }
 
 #card.disabled {
@@ -80,4 +83,31 @@
 paper-button {
   /* TODO(devlin): Decide whether all webui should do this. */
   cursor: pointer;
+}
+
+#warnings-container {
+  border-top: 1px solid #C5C5C5;
+  display: flex;
+  padding: 10px;
+}
+
+#warnings-container div {
+  color: #333;
+}
+
+#warnings-container iron-icon {
+  -webkit-margin-end: 10px;
+  flex-shrink: 0;
+}
+
+#warnings-container.severe iron-icon {
+  color: rgb(219, 68, 55);
+}
+
+#warnings-container.mild iron-icon {
+  color: rgb(240, 147, 0);
+}
+
+#blacklisted-warning:empty {
+  display: none;
 }

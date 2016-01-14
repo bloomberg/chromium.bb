@@ -126,6 +126,12 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemClickableItemsTest',
   mocha.grep(assert(TestNames.ClickableItems)).run();
 });
 
+TEST_F('CrExtensionsBrowserTest', 'ExtensionItemWarningsTest',
+       function() {
+  extension_item_tests.registerTests();
+  mocha.grep(assert(extension_item_tests.TestNames.Warnings)).run();
+});
+
 ////////////////////////////////////////////////////////////////////////////////
 // Extension Service Tests
 
