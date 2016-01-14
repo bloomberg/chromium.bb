@@ -146,8 +146,15 @@ void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
 void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
   DCHECK_EQ(mus_window_, window);
   mus_window_destroyed_ = true;
+#ifndef NDEBUG
+  weak_factory_.reset(new base::WeakPtrFactory<PlatformWindowMus>(this));
+  base::WeakPtr<PlatformWindowMus> weak_ptr = weak_factory_->GetWeakPtr();
+#endif
   delegate_->OnClosed();
-  mus_window_ = nullptr;
+  // |this| has been destroyed at this point.
+#ifndef NDEBUG
+  DCHECK(!weak_ptr);
+#endif
 }
 
 void PlatformWindowMus::OnWindowBoundsChanged(mus::Window* window,

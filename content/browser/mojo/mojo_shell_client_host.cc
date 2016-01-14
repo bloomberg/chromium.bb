@@ -102,7 +102,8 @@ class PIDSender : public RenderProcessHostObserver {
     host_->AddObserver(this);
   }
   ~PIDSender() override {
-    host_->RemoveObserver(this);
+    if (host_)
+      host_->RemoveObserver(this);
   }
 
  private:
@@ -110,6 +111,11 @@ class PIDSender : public RenderProcessHostObserver {
   void RenderProcessReady(RenderProcessHost* host) override {
     pid_receiver_->SetPID(base::GetProcId(host->GetHandle()));
     delete this;
+  }
+
+  void RenderProcessHostDestroyed(RenderProcessHost* host) override {
+    DCHECK_EQ(host_, host);
+    host_ = nullptr;
   }
 
   RenderProcessHost* host_;

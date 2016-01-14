@@ -82,6 +82,10 @@ class VIEWS_MUS_EXPORT PlatformWindowMus
   // True if OnWindowDestroyed() has been received.
   bool mus_window_destroyed_;
 
+#ifndef NDEBUG
+  scoped_ptr<base::WeakPtrFactory<PlatformWindowMus>> weak_factory_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowMus);
 };
 
