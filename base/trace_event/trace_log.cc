@@ -1350,6 +1350,7 @@ void TraceLog::AddMetadataEvent(
     const scoped_refptr<ConvertableToTraceFormat>* convertable_values,
     unsigned int flags) {
   scoped_ptr<TraceEvent> trace_event(new TraceEvent);
+  AutoLock lock(lock_);
   trace_event->Initialize(
       0,  // thread_id
       TimeTicks(), ThreadTicks(), TRACE_EVENT_PHASE_METADATA,
@@ -1357,7 +1358,6 @@ void TraceLog::AddMetadataEvent(
       trace_event_internal::kNoId,  // id
       trace_event_internal::kNoId,  // bind_id
       num_args, arg_names, arg_types, arg_values, convertable_values, flags);
-  AutoLock lock(lock_);
   metadata_events_.push_back(std::move(trace_event));
 }
 
