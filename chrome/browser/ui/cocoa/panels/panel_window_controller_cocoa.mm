@@ -95,7 +95,6 @@ const double kWidthOfMouseResizeArea = 15.0;
       [controller activationRequestedByPanel] ||
       [app isCyclingWindows] ||
       [self isKeyWindow] ||
-      [app previousKeyWindow] == self ||
       [[app windows] count] == static_cast<NSUInteger>([controller numPanels]);
 }
 

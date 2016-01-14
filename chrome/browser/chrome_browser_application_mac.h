@@ -10,25 +10,14 @@
 #import <AppKit/AppKit.h>
 #include <stddef.h>
 
-#include <vector>
-
 #import "base/mac/scoped_sending_event.h"
 #import "base/message_loop/message_pump_mac.h"
-#include "base/synchronization/lock.h"
 
 @interface BrowserCrApplication : NSApplication<CrAppProtocol,
                                                 CrAppControlProtocol> {
  @private
   BOOL handlingSendEvent_;
   BOOL cyclingWindows_;
-
-  // App's previous key windows. Most recent key window is last.
-  // Does not include current key window. Elements of this vector are weak
-  // references.
-  std::vector<NSWindow*> previousKeyWindows_;
-
-  // Guards previousKeyWindows_.
-  base::Lock previousKeyWindowsLock_;
 }
 
 // Our implementation of |-terminate:| only attempts to terminate the
@@ -36,10 +25,8 @@
 // method cancels that process.
 - (void)cancelTerminate:(id)sender;
 
-// Keep track of the previous key windows and whether windows are being
-// cycled for use in determining whether a Panel window can become the
-// key window.
-- (NSWindow*)previousKeyWindow;
+// Keep track of whether windows are being cycled for use in determining whether
+// a Panel window can become the key window.
 - (BOOL)isCyclingWindows;
 @end
 

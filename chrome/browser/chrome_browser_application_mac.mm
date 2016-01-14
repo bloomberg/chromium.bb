@@ -131,19 +131,10 @@ void CancelTerminate() {
 
 }  // namespace chrome_browser_application_mac
 
-// These methods are being exposed for the purposes of overriding.
+// Method exposed for the purposes of overriding.
 // Used to determine when a Panel window can become the key window.
 @interface NSApplication (PanelsCanBecomeKey)
 - (void)_cycleWindowsReversed:(BOOL)arg1;
-- (id)_removeWindow:(NSWindow*)window;
-- (id)_setKeyWindow:(NSWindow*)window;
-@end
-
-@interface BrowserCrApplication (PrivateInternal)
-
-// This must be called under the protection of previousKeyWindowsLock_.
-- (void)removePreviousKeyWindow:(NSWindow*)window;
-
 @end
 
 @implementation BrowserCrApplication
@@ -375,47 +366,6 @@ void CancelTerminate() {
 
 - (BOOL)isCyclingWindows {
   return cyclingWindows_;
-}
-
-- (id)_removeWindow:(NSWindow*)window {
-  // Note _removeWindow is called from -[NSWindow dealloc], which can happen at
-  // unpredictable times due to reference counting. Just update state.
-  {
-    base::AutoLock lock(previousKeyWindowsLock_);
-    [self removePreviousKeyWindow:window];
-  }
-  return [super _removeWindow:window];
-}
-
-- (id)_setKeyWindow:(NSWindow*)window {
-  // |window| is nil when the current key window is being closed.
-  // A separate call follows with a new value when a new key window is set.
-  // Closed windows are not tracked in previousKeyWindows_.
-  if (window != nil) {
-    base::AutoLock lock(previousKeyWindowsLock_);
-    [self removePreviousKeyWindow:window];
-    NSWindow* currentKeyWindow = [self keyWindow];
-    if (currentKeyWindow != nil && currentKeyWindow != window)
-      previousKeyWindows_.push_back(currentKeyWindow);
-  }
-
-  return [super _setKeyWindow:window];
-}
-
-- (NSWindow*)previousKeyWindow {
-  base::AutoLock lock(previousKeyWindowsLock_);
-  return previousKeyWindows_.empty() ? nil : previousKeyWindows_.back();
-}
-
-- (void)removePreviousKeyWindow:(NSWindow*)window {
-  previousKeyWindowsLock_.AssertAcquired();
-  std::vector<NSWindow*>::iterator window_iterator =
-      std::find(previousKeyWindows_.begin(),
-                previousKeyWindows_.end(),
-                window);
-  if (window_iterator != previousKeyWindows_.end()) {
-    previousKeyWindows_.erase(window_iterator);
-  }
 }
 
 @end
