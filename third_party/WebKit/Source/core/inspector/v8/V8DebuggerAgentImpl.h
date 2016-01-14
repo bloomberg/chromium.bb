@@ -156,6 +156,7 @@ private:
 
     SkipPauseRequest shouldSkipExceptionPause();
     SkipPauseRequest shouldSkipStepPause();
+    bool isMuteBreakpointInstalled();
 
     void schedulePauseOnNextStatementIfSteppingInto();
 
@@ -186,9 +187,10 @@ private:
     void increaseCachedSkipStackGeneration();
     PassRefPtr<TypeBuilder::Debugger::ExceptionDetails> createExceptionDetails(v8::Isolate*, v8::Local<v8::Message>);
 
-    typedef HashMap<String, V8DebuggerScript> ScriptsMap;
-    typedef HashMap<String, Vector<String>> BreakpointIdToDebuggerBreakpointIdsMap;
-    typedef HashMap<String, std::pair<String, BreakpointSource>> DebugServerBreakpointToBreakpointIdAndSourceMap;
+    using ScriptsMap = HashMap<String, V8DebuggerScript>;
+    using BreakpointIdToDebuggerBreakpointIdsMap = HashMap<String, Vector<String>>;
+    using DebugServerBreakpointToBreakpointIdAndSourceMap = HashMap<String, std::pair<String, BreakpointSource>>;
+    using MuteBreakpoins = HashMap<String, std::pair<String, int>>;
 
     enum DebuggerStep {
         NoStep = 0,
@@ -209,6 +211,7 @@ private:
     ScriptsMap m_scripts;
     BreakpointIdToDebuggerBreakpointIdsMap m_breakpointIdToDebuggerBreakpointIds;
     DebugServerBreakpointToBreakpointIdAndSourceMap m_serverBreakpoints;
+    MuteBreakpoins m_muteBreakpoints;
     String m_continueToLocationBreakpointId;
     InspectorFrontend::Debugger::Reason::Enum m_breakReason;
     RefPtr<JSONObject> m_breakAuxData;

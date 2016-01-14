@@ -1,0 +1,63 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+
+function throwAnException()
+{
+    var a;
+    try {
+        a.foo = 1; // Should not stop here.
+    } catch (e) {
+    }
+
+    debugger; // Should not stop here.
+
+    try {
+        a.bar = 1; // Should stop here.
+    } catch (e) {
+    }
+}
+
+function handleClick()
+{
+    throwAnException();
+}
+
+var test = function()
+{
+    InspectorTest.startDebuggerTest(step1);
+
+    function step1()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions);
+        InspectorTest.showScriptSource("debugger-mute-exception.html", step2);
+    }
+
+    function step2(sourceFrame)
+    {
+        InspectorTest.addResult("Script source was shown.");
+        InspectorTest.setBreakpoint(sourceFrame, 10, "false", true);
+        InspectorTest.setBreakpoint(sourceFrame, 14, "false", true);
+        InspectorTest.evaluateInPage("setTimeout(handleClick, 0)");
+        InspectorTest.waitUntilPausedAndDumpStackAndResume(step3);
+    }
+
+    function step3()
+    {
+        InspectorTest.DebuggerAgent.setPauseOnExceptions(WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
+        InspectorTest.completeDebuggerTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that pause on exception is muted when conditional breakpoint is set to "false".
+</p>
+
+</body>
+</html>

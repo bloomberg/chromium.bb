@@ -429,6 +429,7 @@ void V8DebuggerAgentImpl::removeBreakpoint(const String& breakpointId)
         const String& debuggerBreakpointId = debuggerBreakpointIdsIterator->value[i];
         debugger().removeBreakpoint(debuggerBreakpointId);
         m_serverBreakpoints.remove(debuggerBreakpointId);
+        m_muteBreakpoints.remove(debuggerBreakpointId);
     }
     m_breakpointIdToDebuggerBreakpointIds.remove(debuggerBreakpointIdsIterator);
 }
@@ -536,6 +537,22 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipExceptionPa
     return RequestNoSkip;
 }
 
+bool V8DebuggerAgentImpl::isMuteBreakpointInstalled()
+{
+    if (!m_muteBreakpoints.size())
+        return false;
+    RefPtr<JavaScriptCallFrame> frame = debugger().callFrameNoScopes(0);
+    if (!frame)
+        return false;
+    String sourceID = String::number(frame->sourceID());
+    int line = frame->line();
+    for (auto it : m_muteBreakpoints.values()) {
+        if (it.first == sourceID && it.second == line)
+            return true;
+    }
+    return false;
+}
+
 V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::shouldSkipStepPause()
 {
     if (m_steppingFromFramework)
@@ -580,6 +597,8 @@ PassRefPtr<TypeBuilder::Debugger::Location> V8DebuggerAgentImpl::resolveBreakpoi
         return nullptr;
 
     m_serverBreakpoints.set(debuggerBreakpointId, std::make_pair(breakpointId, source));
+    if (breakpoint.condition == "false")
+        m_muteBreakpoints.set(debuggerBreakpointId, std::make_pair(scriptId, breakpoint.lineNumber));
 
     RELEASE_ASSERT(!breakpointId.isEmpty());
     BreakpointIdToDebuggerBreakpointIdsMap::iterator debuggerBreakpointIdsIterator = m_breakpointIdToDebuggerBreakpointIds.find(breakpointId);
@@ -1500,6 +1519,9 @@ V8DebuggerAgentImpl::SkipPauseRequest V8DebuggerAgentImpl::didPause(v8::Local<v8
 {
     ScriptState* scriptState = ScriptState::from(context);
     if (!scriptState->contextIsValid())
+        return RequestContinue;
+
+    if (isMuteBreakpointInstalled())
         return RequestContinue;
 
     ScriptValue exception(scriptState, v8exception);

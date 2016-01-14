@@ -1,0 +1,10 @@
+Tests that pause on exception is muted when conditional breakpoint is set to "false".
+
+Script source was shown.
+Script execution paused.
+Call stack:
+    0) throwAnException (debugger-mute-exception.html:18)
+    1) handleClick (debugger-mute-exception.html:25)
+Paused on exception: 'TypeError: Cannot set property 'bar' of undefined'.
+Script execution resumed.
+
