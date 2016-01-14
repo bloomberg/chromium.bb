@@ -344,6 +344,7 @@ read_options (yaml_parser_t *parser, int len,
       error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		    "Unsupported option %s", option_name);
     }
+    free(option_name);
   }
   if (!parse_error)
     yaml_parse_error(parser);
