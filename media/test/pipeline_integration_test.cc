@@ -561,6 +561,19 @@ class MockMediaSource {
     last_timestamp_offset_ = timestamp_offset;
   }
 
+  void SetMemoryLimits(size_t limit_bytes) {
+    chunk_demuxer_->SetMemoryLimits(DemuxerStream::AUDIO, limit_bytes);
+    chunk_demuxer_->SetMemoryLimits(DemuxerStream::VIDEO, limit_bytes);
+  }
+
+  void EvictCodedFrames(base::TimeDelta currentMediaTime, size_t newDataSize) {
+    chunk_demuxer_->EvictCodedFrames(kSourceId, currentMediaTime, newDataSize);
+  }
+
+  void RemoveRange(base::TimeDelta start, base::TimeDelta end) {
+    chunk_demuxer_->Remove(kSourceId, start, end);
+  }
+
   void EndOfStream() {
     chunk_demuxer_->MarkEndOfStream(PIPELINE_OK);
   }
@@ -1085,6 +1098,60 @@ TEST_F(PipelineIntegrationTest, MediaSource_ConfigChange_WebM) {
   Play();
 
   EXPECT_TRUE(WaitUntilOnEnded());
+  source.Shutdown();
+  Stop();
+}
+
+TEST_F(PipelineIntegrationTest, MediaSource_Remove_Updates_BufferedRanges) {
+  const char* input_filename = "bear-320x240.webm";
+  MockMediaSource source(input_filename, kWebM, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+
+  auto buffered_ranges = pipeline_->GetBufferedTimeRanges();
+  EXPECT_EQ(1u, buffered_ranges.size());
+  EXPECT_EQ(0, buffered_ranges.start(0).InMilliseconds());
+  EXPECT_EQ(k320WebMFileDurationMs, buffered_ranges.end(0).InMilliseconds());
+
+  source.RemoveRange(base::TimeDelta::FromMilliseconds(1000),
+                     base::TimeDelta::FromMilliseconds(k320WebMFileDurationMs));
+  buffered_ranges = pipeline_->GetBufferedTimeRanges();
+  EXPECT_EQ(1u, buffered_ranges.size());
+  EXPECT_EQ(0, buffered_ranges.start(0).InMilliseconds());
+  EXPECT_EQ(1001, buffered_ranges.end(0).InMilliseconds());
+
+  source.Shutdown();
+  Stop();
+}
+
+// This test case imitates media playback with advancing media_time and
+// continuously adding new data. At some point we should reach the buffering
+// limit, after that MediaSource should evict some buffered data and that
+// evicted data shold be reflected in the change of media::Pipeline buffered
+// ranges (returned by GetBufferedTimeRanges). At that point the buffered ranges
+// will no longer start at 0.
+TEST_F(PipelineIntegrationTest, MediaSource_FillUp_Buffer) {
+  const char* input_filename = "bear-320x240.webm";
+  MockMediaSource source(input_filename, kWebM, kAppendWholeFile);
+  StartPipelineWithMediaSource(&source);
+  source.SetMemoryLimits(1048576);
+
+  scoped_refptr<DecoderBuffer> file = ReadTestDataFile(input_filename);
+
+  auto buffered_ranges = pipeline_->GetBufferedTimeRanges();
+  EXPECT_EQ(1u, buffered_ranges.size());
+  do {
+    // Advance media_time to the end of the currently buffered data
+    base::TimeDelta media_time = buffered_ranges.end(0);
+    source.Seek(media_time);
+    // Ask MediaSource to evict buffered data if buffering limit has been
+    // reached (the data will be evicted from the front of the buffered range).
+    source.EvictCodedFrames(media_time, file->data_size());
+    source.AppendAtTime(media_time, file->data(), file->data_size());
+    buffered_ranges = pipeline_->GetBufferedTimeRanges();
+  } while (buffered_ranges.size() == 1 &&
+           buffered_ranges.start(0) == base::TimeDelta::FromSeconds(0));
+
+  EXPECT_EQ(1u, buffered_ranges.size());
   source.Shutdown();
   Stop();
 }

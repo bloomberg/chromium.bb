@@ -246,8 +246,8 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   void FinishSeek();
 
   // DemuxerHost implementaion.
-  void AddBufferedTimeRange(base::TimeDelta start,
-                            base::TimeDelta end) override;
+  void OnBufferedTimeRangesChanged(
+      const Ranges<base::TimeDelta>& ranges) override;
   void SetDuration(base::TimeDelta duration) override;
   void OnDemuxerError(PipelineStatus error) override;
   void AddTextStream(DemuxerStream* text_stream,
@@ -350,7 +350,7 @@ class MEDIA_EXPORT Pipeline : public DemuxerHost {
   // Amount of available buffered data as reported by |demuxer_|.
   Ranges<base::TimeDelta> buffered_time_ranges_;
 
-  // True when AddBufferedTimeRange() has been called more recently than
+  // True when OnBufferedTimeRangesChanged() has been called more recently than
   // DidLoadingProgress().
   bool did_loading_progress_;
 

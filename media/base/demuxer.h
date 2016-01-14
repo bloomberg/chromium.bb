@@ -17,6 +17,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/base/pipeline_status.h"
+#include "media/base/ranges.h"
 
 namespace media {
 
@@ -24,9 +25,13 @@ class TextTrackConfig;
 
 class MEDIA_EXPORT DemuxerHost {
  public:
-  // Notify the host that time range [start,end] has been buffered.
-  virtual void AddBufferedTimeRange(base::TimeDelta start,
-                                    base::TimeDelta end) = 0;
+  // Notify the host that buffered time ranges have changed. Note that buffered
+  // time ranges can grow (when new media data is appended), but they can also
+  // shrink (when buffering reaches limit capacity and some buffered data
+  // becomes evicted, e.g. due to MSE GC algorithm, or by explicit removal of
+  // ranges directed by MSE web app).
+  virtual void OnBufferedTimeRangesChanged(
+      const Ranges<base::TimeDelta>& ranges) = 0;
 
   // Sets the duration of the media in microseconds.
   // Duration may be kInfiniteDuration() if the duration is not known.

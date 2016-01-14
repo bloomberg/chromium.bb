@@ -659,8 +659,7 @@ void ChunkDemuxer::AppendData(
     ranges = GetBufferedRanges_Locked();
   }
 
-  for (size_t i = 0; i < ranges.size(); ++i)
-    host_->AddBufferedTimeRange(ranges.start(i), ranges.end(i));
+  host_->OnBufferedTimeRangesChanged(ranges);
 }
 
 void ChunkDemuxer::ResetParserState(const std::string& id,
@@ -702,6 +701,7 @@ void ChunkDemuxer::Remove(const std::string& id, TimeDelta start,
     return;
 
   source_state_map_[id]->Remove(start, end, duration_);
+  host_->OnBufferedTimeRangesChanged(GetBufferedRanges_Locked());
 }
 
 double ChunkDemuxer::GetDuration() {

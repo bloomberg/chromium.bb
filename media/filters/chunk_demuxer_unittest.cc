@@ -584,7 +584,7 @@ class ChunkDemuxerTest : public ::testing::Test {
   void AppendData(const std::string& source_id,
                   const uint8_t* data,
                   size_t length) {
-    EXPECT_CALL(host_, AddBufferedTimeRange(_, _)).Times(AnyNumber());
+    EXPECT_CALL(host_, OnBufferedTimeRangesChanged(_)).Times(AnyNumber());
 
     demuxer_->AppendData(source_id, data, length,
                          append_window_start_for_next_append_,

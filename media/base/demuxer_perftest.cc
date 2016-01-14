@@ -31,8 +31,8 @@ class DemuxerHostImpl : public media::DemuxerHost {
   ~DemuxerHostImpl() override {}
 
   // DemuxerHost implementation.
-  void AddBufferedTimeRange(base::TimeDelta start,
-                            base::TimeDelta end) override {}
+  void OnBufferedTimeRangesChanged(
+      const Ranges<base::TimeDelta>& ranges) override {}
   void SetDuration(base::TimeDelta duration) override {}
   void OnDemuxerError(media::PipelineStatus error) override {}
   void AddTextStream(media::DemuxerStream* text_stream,

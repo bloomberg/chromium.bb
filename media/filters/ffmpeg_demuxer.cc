@@ -1514,8 +1514,7 @@ void FFmpegDemuxer::NotifyBufferingChanged() {
   } else if (video) {
     buffered = video->GetBufferedRanges();
   }
-  for (size_t i = 0; i < buffered.size(); ++i)
-    host_->AddBufferedTimeRange(buffered.start(i), buffered.end(i));
+  host_->OnBufferedTimeRangesChanged(buffered);
 }
 
 void FFmpegDemuxer::OnDataSourceError() {

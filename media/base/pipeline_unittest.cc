@@ -661,7 +661,9 @@ TEST_F(PipelineTest, GetBufferedTimeRanges) {
   EXPECT_EQ(0u, pipeline_->GetBufferedTimeRanges().size());
 
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
-  pipeline_->AddBufferedTimeRange(base::TimeDelta(), kDuration / 8);
+  Ranges<base::TimeDelta> ranges;
+  ranges.Add(base::TimeDelta(), kDuration / 8);
+  pipeline_->OnBufferedTimeRangesChanged(ranges);
   EXPECT_TRUE(pipeline_->DidLoadingProgress());
   EXPECT_FALSE(pipeline_->DidLoadingProgress());
   EXPECT_EQ(1u, pipeline_->GetBufferedTimeRanges().size());

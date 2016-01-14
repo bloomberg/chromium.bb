@@ -507,10 +507,11 @@ void Pipeline::OnStopCompleted(PipelineStatus status) {
   }
 }
 
-void Pipeline::AddBufferedTimeRange(TimeDelta start, TimeDelta end) {
+void Pipeline::OnBufferedTimeRangesChanged(
+    const Ranges<base::TimeDelta>& ranges) {
   DCHECK(IsRunning());
   base::AutoLock auto_lock(lock_);
-  buffered_time_ranges_.Add(start, end);
+  buffered_time_ranges_ = ranges;
   did_loading_progress_ = true;
 }
 

@@ -283,8 +283,8 @@ void OnNewBuffer(BufferList* buffer_list,
 class FakeDemuxerHost : public ::media::DemuxerHost {
  public:
   // DemuxerHost implementation.
-  void AddBufferedTimeRange(base::TimeDelta start,
-                            base::TimeDelta end) override {}
+  void OnBufferedTimeRangesChanged(
+      const ::media::Ranges<base::TimeDelta>& ranges) override {}
   void SetDuration(base::TimeDelta duration) override {}
   void OnDemuxerError(::media::PipelineStatus error) override {
     LOG(FATAL) << "OnDemuxerError: " << error;

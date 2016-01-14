@@ -110,8 +110,8 @@ class MediaSourceDelegate : public media::DemuxerHost {
 
  private:
   // Methods inherited from DemuxerHost.
-  void AddBufferedTimeRange(base::TimeDelta start,
-                            base::TimeDelta end) override;
+  void OnBufferedTimeRangesChanged(
+      const media::Ranges<base::TimeDelta>& ranges) override;
   void SetDuration(base::TimeDelta duration) override;
   void OnDemuxerError(media::PipelineStatus status) override;
   void AddTextStream(media::DemuxerStream* text_stream,

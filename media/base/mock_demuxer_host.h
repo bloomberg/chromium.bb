@@ -17,8 +17,8 @@ class MockDemuxerHost : public DemuxerHost {
   MockDemuxerHost();
   virtual ~MockDemuxerHost();
 
-  MOCK_METHOD2(AddBufferedTimeRange, void(base::TimeDelta start,
-                                          base::TimeDelta end));
+  MOCK_METHOD1(OnBufferedTimeRangesChanged,
+               void(const Ranges<base::TimeDelta>&));
   MOCK_METHOD1(SetDuration, void(base::TimeDelta duration));
   MOCK_METHOD1(OnDemuxerError, void(PipelineStatus error));
   MOCK_METHOD2(AddTextStream, void(DemuxerStream*,

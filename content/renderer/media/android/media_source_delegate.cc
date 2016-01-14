@@ -307,9 +307,9 @@ void MediaSourceDelegate::SeekInternal(const base::TimeDelta& seek_time) {
       media_weak_factory_.GetWeakPtr()));
 }
 
-void MediaSourceDelegate::AddBufferedTimeRange(base::TimeDelta start,
-                                               base::TimeDelta end) {
-  buffered_time_ranges_.Add(start, end);
+void MediaSourceDelegate::OnBufferedTimeRangesChanged(
+    const media::Ranges<base::TimeDelta>& ranges) {
+  buffered_time_ranges_ = ranges;
 }
 
 void MediaSourceDelegate::SetDuration(base::TimeDelta duration) {
