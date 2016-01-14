@@ -11604,7 +11604,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ActiveScriptController.DeniedExtensions"
     units="Extension Count">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions on a page that wanted to execute a script, required
@@ -11614,7 +11613,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ActiveScriptController.PermittedExtensions"
     units="Extension Count">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions on a page that wanted to execute a script, required
@@ -11624,7 +11622,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ActiveScriptController.PreventableAdInjectors"
     units="Extension Count">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions per page that injected an ad and could have been
@@ -11636,7 +11633,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ActiveScriptController.ShownActiveScriptsOnPage"
     units="Number of Actions">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <obsolete>
     Deprecated 2/2014.
@@ -11649,7 +11645,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ActiveScriptController.UnpreventableAdInjectors"
     units="Extension Count">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions per page that injected an ad and that could not
@@ -11739,7 +11734,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.BackgroundContentsServiceStartupTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to load BackgroundContents for apps at startup when the extension
     system notifies that it is ready.
@@ -11750,12 +11745,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced by Extensions.BackgroundPageLoadTime2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The time for an extension's background page to load.</summary>
 </histogram>
 
 <histogram name="Extensions.BackgroundPageLoadTime2" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time taken for an extension's persistent background page to load its
     initial URL.
@@ -11764,7 +11759,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.BackgroundPageType"
     units="ExtensionBackgroundPageType">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The type (if any) of background page the extension has. Recorded for
     installed extensions on startup.
@@ -11772,7 +11767,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.BadMessageFunctionName" enum="ExtensionFunctions">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of times each Extension function call sends a bad message,
     killing the renderer. This may indicate a bug in that API's implementation
@@ -11782,7 +11777,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.BadSyncDataReason" enum="BadSyncDataReason">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The reason a valid ExtensionSyncData could not be parsed from a SyncData
     received from sync.
@@ -11952,7 +11947,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Blessed" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per blessed
@@ -11962,7 +11957,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_BlessedWebPage" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per blessed web page
@@ -11971,7 +11966,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_ContentScript" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per content script
@@ -11980,7 +11975,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Unblessed" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per unblessed
@@ -11989,7 +11984,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_Unspecified" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings in an unknown type
@@ -11998,7 +11993,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_WebPage" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per web page context
@@ -12007,7 +12002,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.DidCreateScriptContext_WebUI" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Part of the suite of Extensions.DidCreateScriptContext_* metrics. Records
     the time taken to install Extension JavaScript bindings per WebUI context
@@ -12017,7 +12012,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.DidInitializeServiceWorkerContextOnWorkerThread"
     units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Records the time taken to install Extension JavaScript bindings per service
     worker context.
@@ -12026,7 +12021,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.DidSuppressJavaScriptException"
     enum="ChromeChannelForHistogram">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Records the Chrome channel when JavaScript exceptions are not gracefully
     dealt with, and suppressed by C++ instead. These are exceptions generated
@@ -12042,14 +12037,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.Disabled">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions that are disabled at browser startup.
   </summary>
 </histogram>
 
 <histogram name="Extensions.DisabledForPermissions">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions that are disabled at browser startup due to
     permissions increases.
@@ -12058,7 +12053,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.DisabledUIUserResponse"
     enum="ExtensionDisabledUIUserResponse">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     User response to the dialog shown when an extension is disabled due to an
     update requiring more permissions.
@@ -12086,7 +12081,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.EnhancedBookmarksManagerNumEventListeners">
-  <owner>kalman@chromium.org</owner>
   <owner>wittman@chromium.org</owner>
   <summary>
     The number of event listeners the Enhanced Bookmarks Manager has, measured
@@ -12106,7 +12100,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.EventlessEventPages">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions with event pages that have no registered event
     listeners at profile startup. (This may indicate something has gone wrong;
@@ -12118,12 +12112,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced by Extensions.EventPageActiveTime2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The time an extension's event page has spent loaded.</summary>
 </histogram>
 
 <histogram name="Extensions.EventPageActiveTime2" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time between an extension's event page loading its first URL and the
     event page later shutting down.
@@ -12131,7 +12125,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.EventPageIdleTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The time an extension's event page has spent unloaded.</summary>
 </histogram>
 
@@ -12139,25 +12133,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced by Extensions.EventPageLoadTime2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The time for an extension's event page to load.</summary>
 </histogram>
 
 <histogram name="Extensions.EventPageLoadTime2" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time taken for an extension's event page to load its initial URL.
   </summary>
 </histogram>
 
 <histogram name="Extensions.Events.Dispatch" enum="ExtensionEvents">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Recorded every time an event is dispatched to an extension.</summary>
 </histogram>
 
 <histogram name="Extensions.Events.DispatchToComponent" enum="ExtensionEvents">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Recorded every time an event is dispatched to a *component* extension.
@@ -12167,7 +12159,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Events.DispatchWithPersistentBackgroundPage"
     enum="ExtensionEvents">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Recorded every time an event is dispatched to an extension with a persistent
@@ -12180,7 +12171,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Events.DispatchWithRunningEventPage"
     enum="ExtensionEvents">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Recorded every time an event is dispatched to an extension with an event
@@ -12194,7 +12184,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Events.DispatchWithSuspendedEventPage"
     enum="ExtensionEvents">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Recorded every time an event is dispatched to an extension with an event
@@ -12223,7 +12212,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionHostMonitoring.MaxActiveLoading">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The maximum number of ExtensionHosts (primarily background/event pages) that
     were actively loading at any one time, within the first minute of Chrome
@@ -12232,7 +12221,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionHostMonitoring.MaxInQueue">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The maximum number of ExtensionHosts (primarily background/event pages) in
     the queue awaiting being loaded (via an ExtensionHostQueue), within the
@@ -12241,7 +12230,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionHostMonitoring.NumLoaded">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The total number of ExtensionHosts that completed loading in the first
     minute of Chrome startup. Emitted exactly one minute after startup.
@@ -12249,7 +12238,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionHostMonitoring.NumQueued">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The total number of ExtensionHosts (primarily background/event pages) that
     were added to a queue to start loading, within the first minute of Chrome
@@ -12259,12 +12248,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionInstalled">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>An extension has been installed.</summary>
 </histogram>
 
 <histogram name="Extensions.ExtensionLocation" enum="ExtensionLocation">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions loaded at startup time grouped by
     Extension::Location.
@@ -12286,7 +12275,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionServiceInitTime">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken for the ExtensionService to initialize, including the time it
     takes to load the extensions for the service's profile and parse their
@@ -12296,7 +12285,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionServiceNotifyReadyListenersTime">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken for the ExtensionService to notify all ready listeners that the
     extension system is now ready. This happens as part of the total
@@ -12306,7 +12295,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ExtensionUninstalled">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>An extension has been uninstalled.</summary>
 </histogram>
 
@@ -12352,7 +12341,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.FileAccessAllowed">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions (and friends) that could have been given access to
     the file:// scheme, and were, for users that have at least one extension
@@ -12364,7 +12353,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.FileAccessNotAllowed">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions (and friends) that could have been given access to
     the file:// scheme, but weren't, for users that have at least one extension
@@ -12404,7 +12393,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of calls to extension functions.</summary>
 </histogram>
 
@@ -12417,7 +12406,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_AutoDisable3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it is
@@ -12431,7 +12420,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_Install3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it was
@@ -12442,7 +12431,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_InstallAbort3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when installation
@@ -12455,7 +12444,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_InstallCancel3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when installation
@@ -12466,7 +12455,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_Load3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it was
@@ -12477,7 +12466,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_ReEnable3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it was
@@ -12489,7 +12478,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_ReEnableAbort3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when the
@@ -12502,7 +12491,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_ReEnableCancel3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when the
@@ -12514,7 +12503,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_Uninstall3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it was
@@ -12525,7 +12514,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.HasPermissions_WebStoreInstall3" enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when it was
@@ -12539,7 +12528,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.HasPermissions_WebStoreInstallAbort3"
     enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when installation
@@ -12553,7 +12542,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.HasPermissions_WebStoreInstallCancel3"
     enum="Boolean">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     Whether there were any permissions present in an extension when installation
@@ -12613,7 +12602,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.IncognitoAllowed">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions (and friends) that could have been allowed in
     incognito, and were, for users that have at least one extension that could
@@ -12625,7 +12614,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.IncognitoNotAllowed">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions (and friends) that could have been allowed in
     incognito, but weren't, for users that have at least one extension that
@@ -12660,7 +12649,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectCssTime" units="ms">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The amount of time for a CSS file to be injected into a page.
@@ -12668,7 +12656,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectEnd_BlockingScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Number of blocking scripts injected at document end by extensions.
@@ -12676,13 +12663,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectEnd_ScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document end by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectEnd_Time" units="ms">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject all scripts at document end by extensions.
@@ -12690,7 +12675,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectIdle_BlockingScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Number of blocking scripts injected at document idle by extensions.
@@ -12698,13 +12682,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectIdle_ScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document idle by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectIdle_Time" units="ms">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject all scripts at document idle by extensions.
@@ -12712,13 +12694,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectScriptTime" units="ms">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Time taken to inject all scripts by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_BlockingScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Number of blocking scripts injected at document start by extensions.
@@ -12726,19 +12706,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InjectStart_CssCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of css files injected by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_ScriptCount">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Number of scripts injected at document start by extensions.</summary>
 </histogram>
 
 <histogram name="Extensions.InjectStart_Time" units="ms">
-  <owner>kalman@chromium.org</owner>
   <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to inject css/scripts at document start by extensions.
@@ -12780,22 +12757,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.InstallSource" enum="ExtensionLocation">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Installs grouped by the location property in prefs.</summary>
 </histogram>
 
 <histogram name="Extensions.InstallType" enum="ExtensionType">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Installs grouped by Extension::HistogramType.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAll">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The number of extensions and themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAllComponentTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to load all component extensions at profile open. This happens as
     part of the total initialization time of ExtensionService, measured in
@@ -12804,7 +12781,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadAllTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to load all non-component extensions at profile open. This
     happens as part of the total initialization time of ExtensionService,
@@ -12813,7 +12790,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadAllTime2" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     Time taken to load all non-component extensions at profile open and record
     metrics. This happens as part of the total initialization time of
@@ -12822,26 +12799,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadApp">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The number of apps loaded by each user at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppExternal">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of externally managed apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadAppUser">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of user-installed apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadBrowserAction">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of browser action extensions loaded at profile open.
   </summary>
@@ -12866,33 +12843,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadExtension">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The number of extensions loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionExternal">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of externally managed extensions loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExtensionUser">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of user-installed extensions loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadExternal">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of externally managed extensions and apps loaded at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadHostedApp">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of hosted apps loaded by each user at profile open.
   </summary>
@@ -12907,24 +12884,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadPackagedApp">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of legacy packaged apps loaded by each user at profile open.
   </summary>
 </histogram>
 
 <histogram name="Extensions.LoadPlatformApp">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The number of platform apps loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadTheme">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The number of themes loaded at profile open.</summary>
 </histogram>
 
 <histogram name="Extensions.LoadType" enum="ExtensionType">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of extensions loaded at profile open grouped by
     Extension::HistogramType.
@@ -12932,7 +12909,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.LoadUserScript">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of converted user scripts loaded at profile open.
   </summary>
@@ -12995,7 +12972,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ManifestVersion">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The manifest version of each loaded extension.</summary>
 </histogram>
 
@@ -13021,7 +12998,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.NonWebstoreLocation" enum="ExtensionLocation">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The number of apps/extensions with a non-webstore update_url loaded at
     startup time grouped by Extension::Location.
@@ -13039,7 +13016,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_AutoDisable2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
@@ -13052,7 +13029,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_AutoDisable3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
@@ -13062,7 +13039,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_AutoDisable3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it is automatically disabled
@@ -13078,7 +13055,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_Install2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed.
@@ -13089,7 +13066,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_Install3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed.
@@ -13097,7 +13074,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.Permissions_Install3" enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed. To find
@@ -13112,7 +13089,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_InstallAbort2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted, not
@@ -13125,7 +13102,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_InstallAbort3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted, not
@@ -13135,7 +13112,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_InstallAbort3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was aborted (e.g.
@@ -13152,7 +13129,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_InstallCancel2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was canceled.
@@ -13164,7 +13141,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_InstallCancel3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was canceled.
@@ -13173,7 +13150,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_InstallCancel3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation was canceled. To
@@ -13187,7 +13164,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_Load2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>The permissions present in an extension when it was loaded.</summary>
 </histogram>
@@ -13196,13 +13173,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_Load3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>The permissions present in an extension when it was loaded.</summary>
 </histogram>
 
 <histogram name="Extensions.Permissions_Load3" enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was loaded (which happens at
@@ -13216,7 +13193,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnable2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
@@ -13228,7 +13205,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnable3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
@@ -13237,7 +13214,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.Permissions_ReEnable3" enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was re-enabled from a
@@ -13252,7 +13229,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnableAbort2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
@@ -13265,7 +13242,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnableAbort3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
@@ -13275,7 +13252,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_ReEnableAbort3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable prompt was
@@ -13292,7 +13269,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_ReEnableCancel2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
@@ -13305,7 +13282,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_ReEnableCancel3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
@@ -13315,7 +13292,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_ReEnableCancel3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when the re-enable was canceled from
@@ -13329,7 +13306,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 5/2014, replaced by Extensions.Permissions_Uninstall2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was uninstalled.
@@ -13340,7 +13317,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Deprecated as of 6/2015, replaced by Extensions.Permissions_Uninstall3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was uninstalled.
@@ -13348,7 +13325,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.Permissions_Uninstall3" enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was uninstalled. To find
@@ -13364,7 +13341,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 5/2014, replaced by
     Extensions.Permissions_WebStoreInstall2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
@@ -13378,7 +13355,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 6/2015, replaced by
     Extensions.Permissions_WebStoreInstall3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
@@ -13388,7 +13365,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_WebStoreInstall3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when it was installed through the
@@ -13405,7 +13382,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 5/2014, replaced by
     Extensions.Permissions_WebStoreInstallAbort2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13419,7 +13396,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 6/2015, replaced by
     Extensions.Permissions_WebStoreInstallAbort3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13429,7 +13406,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_WebStoreInstallAbort3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13447,7 +13424,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 5/2014, replaced by
     Extensions.Permissions_WebStoreInstallCancel2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13461,7 +13438,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Deprecated as of 6/2015, replaced by
     Extensions.Permissions_WebStoreInstallCancel3.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13471,7 +13448,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.Permissions_WebStoreInstallCancel3"
     enum="ExtensionPermission3">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <owner>rpaquay@chromium.org</owner>
   <summary>
     The permissions present in an extension when installation from the web store
@@ -13482,7 +13459,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.PopupCreateTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time taken between a user clicking on a button to open a popup, and the
     popup finishing loading its initial URL. This is a good way to measure the
@@ -13497,12 +13474,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <obsolete>
     Replaced by Extensions.PopupLoadTime2.
   </obsolete>
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>The time for an Extension's popup to load.</summary>
 </histogram>
 
 <histogram name="Extensions.PopupLoadTime2" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time taken for an extension popup to load its initial URL. This may not
     include the time taken for an extension process to start, if the extension
@@ -13514,7 +13491,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.ProcessManagerStartupHostsTime" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The time taken to start up persistent background pages for extensions in
     ExtensionProcessManager when the extension system notifies that it is ready.
@@ -13684,7 +13661,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.StartupDelay_Total" units="ms">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>
     The total time extensions delay network requests at startup.
   </summary>
@@ -13699,7 +13676,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ThrottledNetworkRequestDelay" units="ms">
   <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>kalman@chromium.org</owner>
   <summary>
     The duration by which a network request was delayed while waiting for
     extension user script load. Recorded once per request that is delayed, at
@@ -13709,7 +13685,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Extensions.ThrottledNetworkRequests" units="requests">
   <owner>rdevlin.cronin@chromium.org</owner>
-  <owner>kalman@chromium.org</owner>
   <summary>
     The total number of network requests that were delayed by extension user
     script load. Recorded once each time network requests may have been delayed
@@ -13742,7 +13717,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Extensions.UninstallType" enum="ExtensionType">
-  <owner>kalman@chromium.org</owner>
+  <owner>rdevlin.cronin@chromium.org</owner>
   <summary>Uninstalls grouped by Extension::HistogramType.</summary>
 </histogram>
 
@@ -46938,7 +46913,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Stability.BadMessageTerminated.Extensions"
     enum="BadMessageReasonExtensions">
-  <owner>kalman@chromium.org</owner>
   <owner>jamescook@chromium.org</owner>
   <summary>
     Count of extension processes killed because they sent an IPC that couldn't
