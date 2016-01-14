@@ -4,12 +4,11 @@
 
 #include <stddef.h>
 
-#include <string>
-
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/metrics/field_trial.h"
+#include "base/run_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_observer.h"
@@ -151,6 +150,8 @@ TEST_F(BrowserInstantControllerTest, DefaultSearchProviderChanged) {
     }
 
     // Ensure only the expected tabs(contents) reloaded.
+    base::RunLoop loop;
+    loop.RunUntilIdle();
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
       << test.description;
 
@@ -193,6 +194,8 @@ TEST_F(BrowserInstantControllerTest, GoogleBaseURLUpdated) {
         << test.description;
 
     // Ensure only the expected tabs(contents) reloaded.
+    base::RunLoop loop;
+    loop.RunUntilIdle();
     EXPECT_EQ(test.should_reload ? 1 : 0, observer->num_reloads())
       << test.description;
 
