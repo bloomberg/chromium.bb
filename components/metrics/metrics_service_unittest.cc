@@ -16,7 +16,6 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/threading/platform_thread.h"
-#include "components/compression/compression_utils.h"
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -25,6 +24,7 @@
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/variations/metrics_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace metrics {
 

@@ -23,5 +23,19 @@
         'zip_reader.h',
       ],
     },
+    {
+      'target_name': 'compression_utils',
+      'type': 'static_library',
+      'dependencies': [
+        '../zlib.gyp:zlib',
+      ],
+      'include_dirs': [
+        '../../..',
+      ],
+      'sources': [
+        'compression_utils.cc',
+        'compression_utils.h',
+      ],
+    },
   ],
 }

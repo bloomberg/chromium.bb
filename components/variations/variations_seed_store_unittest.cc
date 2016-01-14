@@ -8,11 +8,11 @@
 #include "base/macros.h"
 #include "base/prefs/testing_pref_service.h"
 #include "build/build_config.h"
-#include "components/compression/compression_utils.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/study.pb.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 #if defined(OS_ANDROID)
 #include "components/variations/android/variations_seed_bridge.h"

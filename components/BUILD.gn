@@ -49,7 +49,6 @@ test("components_unittests") {
     "//base/test:test_support",
     "//components/bookmarks/browser:unit_tests",
     "//components/bookmarks/managed:unit_tests",
-    "//components/compression:unit_tests",
     "//components/content_settings/core/browser:unit_tests",
     "//components/content_settings/core/common",
     "//components/content_settings/core/common:unit_tests",

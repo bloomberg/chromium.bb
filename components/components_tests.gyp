@@ -112,9 +112,6 @@
       'component_updater/component_updater_service_unittest.cc',
       'component_updater/timer_unittest.cc',
     ],
-    'compression_unittest_sources': [
-      'compression/compression_utils_unittest.cc',
-    ],
     'content_settings_unittest_sources': [
       'content_settings/core/browser/content_settings_mock_provider.cc',
       'content_settings/core/browser/content_settings_mock_provider.h',
@@ -906,7 +903,6 @@
         '<@(child_trace_message_filter_unittest_sources)',
         '<@(cloud_devices_unittest_sources)',
         '<@(component_updater_unittest_sources)',
-        '<@(compression_unittest_sources)',
         '<@(content_settings_unittest_sources)',
         '<@(crash_unittest_sources)',
         '<@(crx_file_unittest_sources)',
@@ -1013,7 +1009,6 @@
         'components.gyp:cloud_devices_common',
         'components.gyp:component_updater',
         'components.gyp:component_updater_test_support',
-        'components.gyp:compression',
         'components.gyp:content_settings_core_browser',
         'components.gyp:content_settings_core_common',
         'components.gyp:content_settings_core_test_support',

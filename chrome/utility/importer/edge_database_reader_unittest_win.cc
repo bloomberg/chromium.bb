@@ -18,8 +18,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/chrome_paths.h"
-#include "components/compression/compression_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace {
 

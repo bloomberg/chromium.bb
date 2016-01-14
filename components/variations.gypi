@@ -19,7 +19,7 @@
         '../crypto/crypto.gyp:crypto',
         '../third_party/mt19937ar/mt19937ar.gyp:mt19937ar',
         '../third_party/protobuf/protobuf.gyp:protobuf_lite',
-        'compression',
+        '../third_party/zlib/google/zip.gyp:compression_utils',
         'crash_core_common',
       ],
       'sources': [

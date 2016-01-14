@@ -19,7 +19,6 @@
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/compression/compression_utils.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "net/base/load_flags.h"
@@ -27,6 +26,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
+#include "third_party/zlib/google/compression_utils.h"
 #include "url/gurl.h"
 
 namespace autofill {

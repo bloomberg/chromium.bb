@@ -20,7 +20,6 @@
     'certificate_reporting.gypi',
     'cloud_devices.gypi',
     'component_updater.gypi',
-    'compression.gypi',
     'content_settings.gypi',
     'contextual_search.gypi',
     'cookie_config.gypi',

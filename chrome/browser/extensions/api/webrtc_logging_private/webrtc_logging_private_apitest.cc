@@ -15,10 +15,10 @@
 #include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/compression/compression_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/test_util.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 using compression::GzipUncompress;
 using extensions::Extension;

@@ -9,4 +9,5 @@ include_rules = [
   "-net",
   "+third_party/mt19937ar",
   "+third_party/protobuf",
+  "+third_party/zlib/google",
 ]

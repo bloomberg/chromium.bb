@@ -149,3 +149,13 @@ static_library("zip") {
     "//base",
   ]
 }
+
+static_library("compression_utils") {
+  sources = [
+    "google/compression_utils.cc",
+    "google/compression_utils.h",
+  ]
+  deps = [
+    ":zlib",
+  ]
+}

@@ -28,9 +28,9 @@
 #include "chrome/common/importer/importer_test_registry_overrider_win.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/compression/compression_utils.h"
 #include "components/favicon_base/favicon_usage_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace {
 

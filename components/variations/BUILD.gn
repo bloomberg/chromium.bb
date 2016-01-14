@@ -69,11 +69,11 @@ source_set("variations") {
     "proto",
     "//base",
     "//base:prefs",
-    "//components/compression",
     "//components/crash/core/common",
     "//crypto",
     "//third_party/mt19937ar",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/zlib:compression_utils",
   ]
 
   if (is_android) {
@@ -120,7 +120,7 @@ source_set("unit_tests") {
     "proto",
     "//base:prefs_test_support",
     "//base/test:test_support",
-    "//components/compression",
     "//testing/gtest",
+    "//third_party/zlib:compression_utils",
   ]
 }

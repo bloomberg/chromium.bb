@@ -14,8 +14,8 @@
 #include "base/rand_util.h"
 #include "base/sha1.h"
 #include "base/values.h"
-#include "components/compression/compression_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace metrics {
 

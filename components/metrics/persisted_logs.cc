@@ -13,7 +13,7 @@
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/sha1.h"
 #include "base/timer/elapsed_timer.h"
-#include "components/compression/compression_utils.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 namespace metrics {
 

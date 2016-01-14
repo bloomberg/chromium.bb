@@ -6,5 +6,6 @@ include_rules = [
   "+components/metrics",
   "+components/variations",
   "+components/version_info",
+  "+third_party/zlib/google",
   "-net",
 ]

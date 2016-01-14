@@ -15,11 +15,11 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "components/compression/compression_utils.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/proto/variations_seed.pb.h"
 #include "crypto/signature_verifier.h"
 #include "third_party/protobuf/src/google/protobuf/io/coded_stream.h"
+#include "third_party/zlib/google/compression_utils.h"
 
 #if defined(OS_ANDROID)
 #include "components/variations/android/variations_seed_bridge.h"

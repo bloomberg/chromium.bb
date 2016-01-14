@@ -15,8 +15,8 @@
         '../base/base.gyp:base',
         '../base/base.gyp:base_i18n',
         '../base/base.gyp:base_prefs',
+        '../third_party/zlib/google/zip.gyp:compression_utils',
         'component_metrics_proto',
-        'compression',
         'variations',
       ],
       'export_dependent_settings': [

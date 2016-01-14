@@ -322,6 +322,7 @@
       '../components/search_engines/template_url_service_unittest.cc',
 
       '../testing/gtest_mac_unittest.mm',
+      '../third_party/zlib/google/compression_utils_unittest.cc',
       '../third_party/zlib/google/zip_reader_unittest.cc',
       '../third_party/zlib/google/zip_unittest.cc',
       '../tools/json_schema_compiler/test/additional_properties_unittest.cc',
