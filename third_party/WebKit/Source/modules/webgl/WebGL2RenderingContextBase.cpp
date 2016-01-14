@@ -308,10 +308,24 @@ void WebGL2RenderingContextBase::framebufferTextureLayer(ScriptState* scriptStat
         synthesizeGLError(GL_INVALID_OPERATION, "framebufferTextureLayer", "no framebuffer bound");
         return;
     }
-    webContext()->framebufferTextureLayer(target, attachment, objectOrZero(texture), level, layer);
-    framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, layer);
+    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+        webContext()->framebufferTextureLayer(target, GL_DEPTH_ATTACHMENT, objectOrZero(texture), level, layer);
+        webContext()->framebufferTextureLayer(target, GL_STENCIL_ATTACHMENT, objectOrZero(texture), level, layer);
+    } else {
+        webContext()->framebufferTextureLayer(target, attachment, objectOrZero(texture), level, layer);
+    }
+    if (attachment == GL_DEPTH_STENCIL_ATTACHMENT) {
+        // On ES3, DEPTH_STENCIL_ATTACHMENT is like an alias for DEPTH_ATTACHMENT + STENCIL_ATTACHMENT.
+        // We divide it here so in WebGLFramebuffer, we don't have to handle DEPTH_STENCIL_ATTACHMENT in WebGL 2.
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_DEPTH_ATTACHMENT, textarget, texture, level, layer);
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, GL_STENCIL_ATTACHMENT, textarget, texture, level, layer);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_DEPTH_ATTACHMENT, texture);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", GL_STENCIL_ATTACHMENT, texture);
+    } else {
+        framebufferBinding->setAttachmentForBoundFramebuffer(target, attachment, textarget, texture, level, layer);
+        preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
+    }
     applyStencilTest();
-    preserveObjectWrapper(scriptState, framebufferBinding, "attachment", attachment, texture);
 }
 
 ScriptValue WebGL2RenderingContextBase::getInternalformatParameter(ScriptState* scriptState, GLenum target, GLenum internalformat, GLenum pname)
