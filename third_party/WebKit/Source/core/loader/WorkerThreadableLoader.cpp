@@ -147,7 +147,7 @@ void WorkerThreadableLoader::MainThreadBridge::mainThreadCreateLoader(PassOwnPtr
     m_mainThreadLoader = DocumentThreadableLoader::create(*document, this, request, options, resourceLoaderOptions);
     if (!m_mainThreadLoader) {
         // DocumentThreadableLoader::create may return 0 when the document loader has been already changed.
-        didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "Can't create DocumentThreadableLoader"));
+        didFail(ResourceError(errorDomainBlinkInternal, 0, request.url().string(), "The parent document page has been unloaded."));
     }
 }
 
