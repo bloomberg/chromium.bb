@@ -96,7 +96,6 @@
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/scheduler/CancellableTaskFactory.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
-#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebFrameScheduler.h"
@@ -510,7 +509,7 @@ PassRefPtrWillBeRawPtr<Scrollbar> FrameView::createScrollbar(ScrollbarOrientatio
         return LayoutScrollbar::createCustomScrollbar(this, orientation, customScrollbarElement, customScrollbarFrame);
 
     // Nobody set a custom style, so we just use a native scrollbar.
-    return Scrollbar::create(this, orientation, RegularScrollbar, &frame().page()->chromeClient());
+    return Scrollbar::create(this, orientation, RegularScrollbar);
 }
 
 void FrameView::setContentsSize(const IntSize& size)
@@ -3236,13 +3235,12 @@ void FrameView::computeScrollbarExistence(bool& newHasHorizontalScrollbar, bool&
 void FrameView::updateScrollbarGeometry()
 {
     if (m_horizontalScrollbar) {
-        int thickness = m_horizontalScrollbar->scrollbarThickness();
         int clientWidth = visibleWidth();
         IntRect oldRect(m_horizontalScrollbar->frameRect());
         IntRect hBarRect((shouldPlaceVerticalScrollbarOnLeft() && m_verticalScrollbar) ? m_verticalScrollbar->width() : 0,
-            height() - thickness,
+            height() - m_horizontalScrollbar->height(),
             width() - (m_verticalScrollbar ? m_verticalScrollbar->width() : 0),
-            thickness);
+            m_horizontalScrollbar->height());
         m_horizontalScrollbar->setFrameRect(adjustScrollbarRectForResizer(hBarRect, *m_horizontalScrollbar));
         if (oldRect != m_horizontalScrollbar->frameRect())
             setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
@@ -3253,12 +3251,11 @@ void FrameView::updateScrollbarGeometry()
     }
 
     if (m_verticalScrollbar) {
-        int thickness = m_verticalScrollbar->scrollbarThickness();
         int clientHeight = visibleHeight();
         IntRect oldRect(m_verticalScrollbar->frameRect());
-        IntRect vBarRect(shouldPlaceVerticalScrollbarOnLeft() ? 0 : (width() - thickness),
+        IntRect vBarRect(shouldPlaceVerticalScrollbarOnLeft() ? 0 : (width() - m_verticalScrollbar->width()),
             0,
-            thickness,
+            m_verticalScrollbar->width(),
             height() - (m_horizontalScrollbar ? m_horizontalScrollbar->height() : 0));
         m_verticalScrollbar->setFrameRect(adjustScrollbarRectForResizer(vBarRect, *m_verticalScrollbar));
         if (oldRect != m_verticalScrollbar->frameRect())

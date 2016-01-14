@@ -260,8 +260,6 @@ public:
 
     virtual PassOwnPtr<WebFrameScheduler> createFrameScheduler() = 0;
 
-    float screenToViewport(float) const override;
-
 protected:
     ~ChromeClient() override { }
 

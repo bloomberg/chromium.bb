@@ -30,6 +30,7 @@
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 
 namespace blink {
 
@@ -72,14 +73,15 @@ IntRect ScrollbarThemeNonMacCommon::trackRect(const ScrollbarThemeClient& scroll
 {
     // The track occupies all space between the two buttons.
     IntSize bs = buttonSize(scrollbar);
+    int thickness = scrollbarThickness(scrollbar.controlSize());
     if (scrollbar.orientation() == HorizontalScrollbar) {
         if (scrollbar.width() <= 2 * bs.width())
             return IntRect();
-        return IntRect(scrollbar.x() + bs.width(), scrollbar.y(), scrollbar.width() - 2 * bs.width(), scrollbar.height());
+        return IntRect(scrollbar.x() + bs.width(), scrollbar.y(), scrollbar.width() - 2 * bs.width(), thickness);
     }
     if (scrollbar.height() <= 2 * bs.height())
         return IntRect();
-    return IntRect(scrollbar.x(), scrollbar.y() + bs.height(), scrollbar.width(), scrollbar.height() - 2 * bs.height());
+    return IntRect(scrollbar.x(), scrollbar.y() + bs.height(), thickness, scrollbar.height() - 2 * bs.height());
 }
 
 void ScrollbarThemeNonMacCommon::paintTrackBackground(GraphicsContext& context, const ScrollbarThemeClient& scrollbar, const IntRect& rect)

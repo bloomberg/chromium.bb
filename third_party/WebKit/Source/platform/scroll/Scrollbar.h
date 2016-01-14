@@ -38,7 +38,6 @@
 namespace blink {
 
 class GraphicsContext;
-class HostWindow;
 class IntRect;
 class PlatformGestureEvent;
 class PlatformMouseEvent;
@@ -48,7 +47,7 @@ class ScrollbarTheme;
 
 class PLATFORM_EXPORT Scrollbar : public Widget, public ScrollbarThemeClient {
 public:
-    static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow*);
+    static PassRefPtrWillBeRawPtr<Scrollbar> create(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize);
 
     // Theme object ownership remains with the caller and it must outlive the scrollbar.
     static PassRefPtrWillBeRawPtr<Scrollbar> createForTesting(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme*);
@@ -93,8 +92,6 @@ public:
     void visibilityChanged() override;
     bool enabled() const override { return m_enabled; }
     void setEnabled(bool) override;
-
-    int scrollbarThickness() const;
 
     // Called by the ScrollableArea when the scroll offset changes.
     void offsetDidChange();
@@ -180,7 +177,7 @@ public:
     DECLARE_VIRTUAL_TRACE();
 
 protected:
-    Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, HostWindow* = 0, ScrollbarTheme* = 0);
+    Scrollbar(ScrollableArea*, ScrollbarOrientation, ScrollbarControlSize, ScrollbarTheme* = 0);
 
     void autoscrollTimerFired(Timer<Scrollbar>*);
     void startTimerIfNeeded(double delay);
@@ -193,7 +190,6 @@ protected:
     ScrollbarOrientation m_orientation;
     ScrollbarControlSize m_controlSize;
     ScrollbarTheme& m_theme;
-    HostWindow* m_hostWindow;
 
     int m_visibleSize;
     int m_totalSize;
