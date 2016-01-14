@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mash/system_ui/system_ui.h"
+#include "mash/shelf/shelf_application.h"
 #include "mojo/public/c/system/main.h"
 #include "mojo/shell/public/cpp/application_runner.h"
 
 MojoResult MojoMain(MojoHandle shell_handle) {
-  mojo::ApplicationRunner runner(new mash::system_ui::SystemUI);
+  mojo::ApplicationRunner runner(new mash::shelf::ShelfApplication);
   return runner.Run(shell_handle);
 }

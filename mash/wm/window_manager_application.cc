@@ -17,6 +17,7 @@
 #include "mash/wm/background_layout.h"
 #include "mash/wm/shadow_controller.h"
 #include "mash/wm/shelf_layout.h"
+#include "mash/wm/user_window_controller_impl.h"
 #include "mash/wm/window_layout.h"
 #include "mash/wm/window_manager_impl.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
@@ -79,8 +80,10 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
   window_manager_.reset(new WindowManagerImpl());
   // Don't bind to the WindowManager immediately. Wait for OnEmbed() first.
   mus::mojom::WindowManagerPtr window_manager;
-  requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
-      mojo::GetProxy(&window_manager)));
+  requests_.push_back(
+      make_scoped_ptr(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
+          mojo::GetProxy(&window_manager))));
+  user_window_controller_.reset(new UserWindowControllerImpl());
   mus::mojom::WindowTreeHostClientPtr host_client;
   host_client_binding_.Bind(GetProxy(&host_client));
   mus::CreateSingleWindowTreeHost(app, std::move(host_client), this,
@@ -90,6 +93,7 @@ void WindowManagerApplication::Initialize(mojo::ApplicationImpl* app) {
 
 bool WindowManagerApplication::ConfigureIncomingConnection(
     mojo::ApplicationConnection* connection) {
+  connection->AddService<mash::wm::mojom::UserWindowController>(this);
   connection->AddService<mus::mojom::AcceleratorRegistrar>(this);
   connection->AddService<mus::mojom::WindowManager>(this);
   return true;
@@ -132,10 +136,16 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   aura_init_.reset(new views::AuraInit(app_, "mash_wm_resources.pak"));
   window_manager_->Initialize(this);
 
-  for (auto request : requests_)
+  for (auto& request : requests_)
     window_manager_binding_.AddBinding(window_manager_.get(),
                                        std::move(*request));
   requests_.clear();
+
+  user_window_controller_->Initialize(this);
+  for (auto& request : user_window_controller_requests_)
+    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
+                                               std::move(*request));
+  user_window_controller_requests_.clear();
 
   shadow_controller_.reset(new ShadowController(root->connection()));
 }
@@ -145,6 +155,19 @@ void WindowManagerApplication::OnConnectionLost(
   // TODO(sky): shutdown.
   NOTIMPLEMENTED();
   shadow_controller_.reset();
+}
+
+void WindowManagerApplication::Create(
+    mojo::ApplicationConnection* connection,
+    mojo::InterfaceRequest<mash::wm::mojom::UserWindowController> request) {
+  if (root_) {
+    user_window_controller_binding_.AddBinding(user_window_controller_.get(),
+                                               std::move(request));
+  } else {
+    user_window_controller_requests_.push_back(make_scoped_ptr(
+        new mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>(
+            std::move(request))));
+  }
 }
 
 void WindowManagerApplication::Create(
@@ -173,8 +196,9 @@ void WindowManagerApplication::Create(
     window_manager_binding_.AddBinding(window_manager_.get(),
                                        std::move(request));
   } else {
-    requests_.push_back(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
-        std::move(request)));
+    requests_.push_back(
+        make_scoped_ptr(new mojo::InterfaceRequest<mus::mojom::WindowManager>(
+            std::move(request))));
   }
 }
 

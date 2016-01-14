@@ -50,6 +50,8 @@ source_set("lib") {
     "shadow_controller.h",
     "shelf_layout.cc",
     "shelf_layout.h",
+    "user_window_controller_impl.cc",
+    "user_window_controller_impl.h",
     "window_layout.cc",
     "window_layout.h",
     "window_manager_application.cc",

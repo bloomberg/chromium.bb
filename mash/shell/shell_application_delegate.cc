@@ -20,7 +20,7 @@ void ShellApplicationDelegate::Initialize(mojo::ApplicationImpl* app) {
   StartBrowserDriver();
   StartWindowManager();
   StartWallpaper();
-  StartSystemUI();
+  StartShelf();
   StartQuickLaunch();
 }
 
@@ -42,9 +42,9 @@ void ShellApplicationDelegate::StartWallpaper() {
                                      base::Unretained(this)));
 }
 
-void ShellApplicationDelegate::StartSystemUI() {
-  StartRestartableService("mojo:system_ui",
-                          base::Bind(&ShellApplicationDelegate::StartSystemUI,
+void ShellApplicationDelegate::StartShelf() {
+  StartRestartableService("mojo:shelf",
+                          base::Bind(&ShellApplicationDelegate::StartShelf,
                                      base::Unretained(this)));
 }
 

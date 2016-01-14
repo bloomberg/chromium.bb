@@ -11,11 +11,8 @@ group("all") {
   deps = [
     ":tests",
     "//mash/example",
-    "//mash/quick_launch",
     "//mash/shell",
     "//mash/task_viewer",
-    "//mash/wallpaper",
-    "//mash/wm",
   ]
 }
 

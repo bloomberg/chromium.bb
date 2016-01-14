@@ -11,7 +11,6 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/scoped_vector.h"
 #include "components/mus/common/types.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
@@ -19,6 +18,7 @@
 #include "components/mus/public/interfaces/window_manager.mojom.h"
 #include "components/mus/public/interfaces/window_tree_host.mojom.h"
 #include "mash/wm/public/interfaces/container.mojom.h"
+#include "mash/wm/public/interfaces/user_window_controller.mojom.h"
 #include "mojo/common/weak_binding_set.h"
 #include "mojo/services/tracing/public/cpp/tracing_impl.h"
 #include "mojo/shell/public/cpp/application_delegate.h"
@@ -41,6 +41,7 @@ class AcceleratorRegistrarImpl;
 class BackgroundLayout;
 class ShadowController;
 class ShelfLayout;
+class UserWindowControllerImpl;
 class WindowLayout;
 class WindowManagerImpl;
 
@@ -49,6 +50,7 @@ class WindowManagerApplication
       public mus::WindowObserver,
       public mus::mojom::WindowTreeHostClient,
       public mus::WindowTreeDelegate,
+      public mojo::InterfaceFactory<mash::wm::mojom::UserWindowController>,
       public mojo::InterfaceFactory<mus::mojom::WindowManager>,
       public mojo::InterfaceFactory<mus::mojom::AcceleratorRegistrar> {
  public:
@@ -86,6 +88,11 @@ class WindowManagerApplication
   void OnEmbed(mus::Window* root) override;
   void OnConnectionLost(mus::WindowTreeConnection* connection) override;
 
+  // InterfaceFactory<mash::wm::mojom::UserWindowController>:
+  void Create(mojo::ApplicationConnection* connection,
+              mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>
+                  request) override;
+
   // InterfaceFactory<mus::mojom::AcceleratorRegistrar>:
   void Create(mojo::ApplicationConnection* connection,
               mojo::InterfaceRequest<mus::mojom::AcceleratorRegistrar> request)
@@ -120,7 +127,17 @@ class WindowManagerApplication
   // |requests_| stores any pending WindowManager interface requests.
   scoped_ptr<WindowManagerImpl> window_manager_;
   mojo::WeakBindingSet<mus::mojom::WindowManager> window_manager_binding_;
-  ScopedVector<mojo::InterfaceRequest<mus::mojom::WindowManager>> requests_;
+  std::vector<scoped_ptr<mojo::InterfaceRequest<mus::mojom::WindowManager>>>
+      requests_;
+
+  // |user_window_controller_| is created once OnEmbed() is called. Until that
+  // time |user_window_controller_requests_| stores pending interface requests.
+  scoped_ptr<UserWindowControllerImpl> user_window_controller_;
+  mojo::WeakBindingSet<mash::wm::mojom::UserWindowController>
+      user_window_controller_binding_;
+  std::vector<
+      scoped_ptr<mojo::InterfaceRequest<mash::wm::mojom::UserWindowController>>>
+      user_window_controller_requests_;
 
   scoped_ptr<BackgroundLayout> background_layout_;
   scoped_ptr<ShelfLayout> shelf_layout_;

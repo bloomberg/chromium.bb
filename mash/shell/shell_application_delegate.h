@@ -32,7 +32,7 @@ class ShellApplicationDelegate : public mojo::ApplicationDelegate {
 
   void StartWindowManager();
   void StartWallpaper();
-  void StartSystemUI();
+  void StartShelf();
   void StartBrowserDriver();
   void StartQuickLaunch();
 

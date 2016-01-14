@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MASH_SYSTEM_UI_SYSTEM_UI_H_
-#define MASH_SYSTEM_UI_SYSTEM_UI_H_
+#ifndef MASH_SHELF_SHELF_APPLICATION_H_
+#define MASH_SHELF_SHELF_APPLICATION_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
@@ -15,12 +15,12 @@ class AuraInit;
 }
 
 namespace mash {
-namespace system_ui {
+namespace shelf {
 
-class SystemUI : public mojo::ApplicationDelegate {
+class ShelfApplication : public mojo::ApplicationDelegate {
  public:
-  SystemUI();
-  ~SystemUI() override;
+  ShelfApplication();
+  ~ShelfApplication() override;
 
  private:
   // mojo::ApplicationDelegate:
@@ -32,10 +32,10 @@ class SystemUI : public mojo::ApplicationDelegate {
 
   scoped_ptr<views::AuraInit> aura_init_;
 
-  DISALLOW_COPY_AND_ASSIGN(SystemUI);
+  DISALLOW_COPY_AND_ASSIGN(ShelfApplication);
 };
 
-}  // namespace system_ui
+}  // namespace shelf
 }  // namespace mash
 
-#endif  // MASH_SYSTEM_UI_SYSTEM_UI_H_
+#endif  // MASH_SHELF_SHELF_APPLICATION_H_

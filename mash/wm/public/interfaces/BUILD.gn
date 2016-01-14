@@ -7,5 +7,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "container.mojom",
+    "user_window_controller.mojom",
   ]
 }
