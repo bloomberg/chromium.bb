@@ -205,8 +205,14 @@ static void hibernateWrapper(WeakPtr<Canvas2DLayerBridge> bridge, double /*idleD
 void Canvas2DLayerBridge::hibernate()
 {
     ASSERT(!isHibernating());
+
     if (m_destructionInProgress) {
         m_logger->reportHibernationEvent(HibernationAbortedDueToPendingDestruction);
+        return;
+    }
+
+    if (!m_surface) {
+        m_logger->reportHibernationEvent(HibernationAbortedBecauseNoSurface);
         return;
     }
 
@@ -227,20 +233,37 @@ void Canvas2DLayerBridge::hibernate()
 
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::hibernate");
     RefPtr<SkSurface> tempHibernationSurface = adoptRef(SkSurface::NewRasterN32Premul(m_size.width(), m_size.height()));
-    if (tempHibernationSurface) {
-        // No HibernationEvent reported on success. This is on purppose to avoid
-        // non-complementary stats. Each HibernationScheduled event is paired with
-        // exactly one failure or exit event.
-        flushRecordingOnly();
-        SkPaint copyPaint;
-        copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
-        m_surface->draw(tempHibernationSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback
-        m_hibernationImage = adoptRef(tempHibernationSurface->newImageSnapshot());
-        m_surface.clear(); // destroy the GPU-backed buffer
-        m_layer->clearTexture();
-        m_logger->didStartHibernating();
-    } else {
+    if (!tempHibernationSurface) {
         m_logger->reportHibernationEvent(HibernationAbortedDueToAllocationFailure);
+        return;
+    }
+    // No HibernationEvent reported on success. This is on purppose to avoid
+    // non-complementary stats. Each HibernationScheduled event is paired with
+    // exactly one failure or exit event.
+    flushRecordingOnly();
+    // The following checks that the flush succeeded, which should always be the
+    // case because flushRecordingOnly should only fail it it fails to allocate
+    // a surface, and we have an early exit at the top of this function for when
+    // 'this' does not already have a surface.
+    ASSERT(!m_haveRecordedDrawCommands);
+    SkPaint copyPaint;
+    copyPaint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    m_surface->draw(tempHibernationSurface->getCanvas(), 0, 0, &copyPaint); // GPU readback
+    m_hibernationImage = adoptRef(tempHibernationSurface->newImageSnapshot());
+    m_surface.clear(); // destroy the GPU-backed buffer
+    m_layer->clearTexture();
+    m_logger->didStartHibernating();
+
+}
+
+void Canvas2DLayerBridge::reportSurfaceCreationFailure()
+{
+    if (!m_surfaceCreationFailedAtLeastOnce) {
+        // Only count the failure once per instance so that the histogram may
+        // reflect the proportion of Canvas2DLayerBridge instances with surface
+        // allocation failures.
+        CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasSurfaceCreationFailed);
+        m_surfaceCreationFailedAtLeastOnce = true;
     }
 }
 
@@ -262,6 +285,9 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
     }
 
     m_surface = createSkSurface(wantAcceleration ? m_contextProvider->grContext() : nullptr, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated);
+
+    if (!m_surface)
+        reportSurfaceCreationFailure();
 
     if (m_surface && surfaceIsAccelerated && !m_layer) {
         m_layer = adoptPtr(Platform::current()->compositorSupport()->createExternalTextureLayer(this));
@@ -292,6 +318,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint)
         if (m_imageBuffer && !m_isDeferralEnabled)
             m_imageBuffer->resetCanvas(m_surface->getCanvas());
     }
+
     return m_surface.get();
 }
 
@@ -318,8 +345,13 @@ void Canvas2DLayerBridge::disableDeferral()
     if (!m_isDeferralEnabled)
         return;
 
-    m_isDeferralEnabled = false;
+    CanvasMetrics::countCanvasContextUsage(CanvasMetrics::GPUAccelerated2DCanvasDeferralDisabled);
     flushRecordingOnly();
+    // Because we will be discarding the recorder, if the flush failed
+    // content will be lost -> force m_haveRecordedDrawCommands to false
+    m_haveRecordedDrawCommands = false;
+
+    m_isDeferralEnabled = false;
     m_recorder.clear();
     // install the current matrix/clip stack onto the immediate canvas
     SkSurface* surface = getOrCreateSurface();
@@ -522,6 +554,10 @@ bool Canvas2DLayerBridge::restoreSurface()
         GrContext* grCtx = m_contextProvider->grContext();
         bool surfaceIsAccelerated;
         RefPtr<SkSurface> surface(createSkSurface(grCtx, m_size, m_msaaSampleCount, m_opacityMode, &surfaceIsAccelerated));
+
+        if (!m_surface)
+            reportSurfaceCreationFailure();
+
         // Current paradigm does support switching from accelerated to non-accelerated, which would be tricky
         // due to changes to the layer tree, which can only happen at specific times during the document lifecycle.
         // Therefore, we can only accept the restored surface if it is accelerated.

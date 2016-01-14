@@ -22,6 +22,8 @@ public:
         Unaccelerated2DCanvasImageBufferCreationFailed = 5,
         GPUAccelerated2DCanvasImageBufferCreationFailed = 6,
         DisplayList2DCanvasFallbackToRaster = 7,
+        GPUAccelerated2DCanvasDeferralDisabled = 8,
+        GPUAccelerated2DCanvasSurfaceCreationFailed = 9,
         NumberOfUsages
     };
 

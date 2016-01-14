@@ -111,8 +111,9 @@ public:
         HibernationEndedWithSwitchToBackgroundRendering = 8,
         HibernationEndedWithFallbackToSW = 9,
         HibernationEndedWithTeardown = 10,
+        HibernationAbortedBecauseNoSurface = 11,
 
-        HibernationEventCount = 11,
+        HibernationEventCount = 12,
     };
 
     class PLATFORM_EXPORT Logger {
@@ -131,6 +132,7 @@ private:
     void skipQueuedDrawCommands();
     void flushRecordingOnly();
     void unregisterTaskObserver();
+    void reportSurfaceCreationFailure();
 
     // WebThread::TaskOberver implementation
     void willProcessTask() override;
@@ -159,6 +161,7 @@ private:
     bool m_isRegisteredTaskObserver;
     bool m_renderingTaskCompletedForCurrentFrame;
     bool m_softwareRenderingWhileHidden;
+    bool m_surfaceCreationFailedAtLeastOnce = false;
 
     friend class Canvas2DLayerBridgeTest;
 
