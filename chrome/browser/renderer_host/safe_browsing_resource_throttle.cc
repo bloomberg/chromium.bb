@@ -322,7 +322,7 @@ void SafeBrowsingResourceThrottle::OnBlockingPageComplete(bool proceed) {
 }
 
 bool SafeBrowsingResourceThrottle::CheckUrl(const GURL& url) {
-  TRACE_EVENT1("SafeBrowsing", "SafeBrowsingResourceThrottle::CheckUrl", "url",
+  TRACE_EVENT1("loader", "SafeBrowsingResourceThrottle::CheckUrl", "url",
                url.spec());
   CHECK_EQ(state_, STATE_NONE);
   // To reduce aggregate latency on mobile, check only the most dangerous

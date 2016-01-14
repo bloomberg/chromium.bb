@@ -305,7 +305,7 @@ void UrlToFullHashes(const GURL& url,
                      std::vector<SBFullHash>* full_hashes) {
   // Include this function in traces because it's not cheap so it should be
   // called sparingly.
-  TRACE_EVENT2("SafeBrowsing", "UrlToFullHashes", "url", url.spec(),
+  TRACE_EVENT2("loader", "safe_browsing::UrlToFullHashes", "url", url.spec(),
                "include_whitelist_hashes", include_whitelist_hashes);
   std::vector<std::string> hosts;
   if (url.HostIsIPAddress()) {
