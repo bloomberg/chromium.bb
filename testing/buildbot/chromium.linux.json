@@ -5,6 +5,9 @@
     ],
     "gtest_tests": [
       {
+        "test": "android_webview_unittests"
+      },
+      {
         "test": "base_unittests"
       },
       {
