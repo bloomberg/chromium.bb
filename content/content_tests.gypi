@@ -271,7 +271,6 @@
       'browser/web_contents/web_contents_view_aura_browsertest.cc',
       'browser/webkit_browsertest.cc',
       'browser/webui/web_ui_mojo_browsertest.cc',
-      'child/child_thread_impl_browsertest.cc',
       'child/site_isolation_stats_gatherer_browsertest.cc',
       'renderer/accessibility/renderer_accessibility_browsertest.cc',
       'renderer/devtools/v8_sampling_profiler_browsertest.cc',
@@ -325,6 +324,7 @@
     'content_browsertests_unofficial_build_sources': [
       # These tests depend on single process mode, which is disabled
       # in official builds.
+      'child/child_thread_impl_browsertest.cc',
       'renderer/browser_render_view_browsertest.cc',
       'renderer/dom_serializer_browsertest.cc',
       'renderer/resource_fetcher_browsertest.cc',
