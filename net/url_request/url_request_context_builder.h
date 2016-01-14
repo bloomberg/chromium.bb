@@ -16,6 +16,7 @@
 
 #include <stdint.h>
 #include <string>
+#include <unordered_map>
 #include <utility>
 
 #include "base/files/file_path.h"
@@ -90,6 +91,7 @@ class NET_EXPORT URLRequestContextBuilder {
     bool quic_store_server_configs_in_properties;
     bool quic_delay_tcp_race;
     int quic_max_number_of_lossy_connections;
+    std::unordered_set<std::string> quic_host_whitelist;
     float quic_packet_loss_threshold;
     int quic_idle_connection_timeout_seconds;
     QuicTagVector quic_connection_options;
@@ -221,6 +223,11 @@ class NET_EXPORT URLRequestContextBuilder {
       int quic_idle_connection_timeout_seconds) {
     http_network_session_params_.quic_idle_connection_timeout_seconds =
         quic_idle_connection_timeout_seconds;
+  }
+
+  void set_quic_host_whitelist(
+      const std::unordered_set<std::string>& quic_host_whitelist) {
+    http_network_session_params_.quic_host_whitelist = quic_host_whitelist;
   }
 
   void set_throttling_enabled(bool throttling_enabled) {

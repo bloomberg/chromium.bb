@@ -403,6 +403,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.quic_idle_connection_timeout_seconds;
   network_session_params.quic_connection_options =
       http_network_session_params_.quic_connection_options;
+  network_session_params.quic_host_whitelist =
+      http_network_session_params_.quic_host_whitelist;
 
   storage->set_http_network_session(
       make_scoped_ptr(new HttpNetworkSession(network_session_params)));

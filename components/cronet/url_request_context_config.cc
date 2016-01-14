@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
+#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "net/cert/cert_verifier.h"
 #include "net/dns/host_resolver.h"
@@ -33,6 +34,7 @@ const char kQuicMaxNumberOfLossyConnections[] =
 const char kQuicPacketLossThreshold[] = "packet_loss_threshold";
 const char kQuicIdleConnectionTimeoutSeconds[] =
     "idle_connection_timeout_seconds";
+const char kQuicHostWhitelist[] = "host_whitelist";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -105,6 +107,17 @@ void ParseAndSetExperimentalOptions(
                               &quic_idle_connection_timeout_seconds)) {
       context_builder->set_quic_idle_connection_timeout_seconds(
           quic_idle_connection_timeout_seconds);
+    }
+
+    std::string quic_host_whitelist;
+    if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
+      std::unordered_set<std::string> hosts;
+      for (const std::string& host :
+           base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_ALL)) {
+        hosts.insert(host);
+      }
+      context_builder->set_quic_host_whitelist(hosts);
     }
   }
 

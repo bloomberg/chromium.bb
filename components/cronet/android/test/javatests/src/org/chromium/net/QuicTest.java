@@ -42,6 +42,7 @@ public class QuicTest extends CronetTestBase {
 
         JSONObject quicParams = new JSONObject()
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
+                                        .put("host_whitelist", "test.example.com")
                                         .put("store_server_configs_in_properties", true)
                                         .put("delay_tcp_race", true)
                                         .put("max_number_of_lossy_connections", 10)
@@ -115,7 +116,6 @@ public class QuicTest extends CronetTestBase {
         // The total received bytes should be larger than the content length, to account for
         // headers.
         assertTrue(callback.mResponseInfo.getReceivedBytesCount() > expectedContent.length());
-
         // This test takes a long time, since the update will only be scheduled
         // after kUpdatePrefsDelayMs in http_server_properties_manager.cc.
         while (true) {
@@ -138,6 +138,9 @@ public class QuicTest extends CronetTestBase {
         builder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         builder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK, 1000 * 1024);
         builder.enableQUIC(true);
+        JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
+        JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
+        builder.setExperimentalOptions(experimentalOptions.toString());
         builder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
         mTestFramework = startCronetTestFrameworkWithUrlAndCronetEngineBuilder(null, builder);
         registerHostResolver(mTestFramework);

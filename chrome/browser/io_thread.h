@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/compiler_specific.h"
@@ -239,6 +240,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> quic_close_sessions_on_ip_change;
     Optional<int> quic_idle_connection_timeout_seconds;
     Optional<bool> quic_disable_preconnect_if_0rtt;
+    std::unordered_set<std::string> quic_host_whitelist;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
@@ -459,6 +461,11 @@ class IOThread : public content::BrowserThreadDelegate {
 
   // Returns true if PreConnect should be disabled if QUIC can do 0RTT.
   static bool ShouldQuicDisablePreConnectIfZeroRtt(
+      const VariationParameters& quic_trial_params);
+
+  // Returns the set of hosts to whitelist for QUIC.
+  static std::unordered_set<std::string> GetQuicHostWhitelist(
+      const base::CommandLine& command_line,
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

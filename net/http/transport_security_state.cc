@@ -1100,6 +1100,25 @@ bool TransportSecurityState::GetStaticDomainState(const std::string& host,
   return true;
 }
 
+bool TransportSecurityState::IsGooglePinnedHost(const std::string& host) const {
+  DCHECK(CalledOnValidThread());
+
+  if (!IsBuildTimely())
+    return false;
+
+  PreloadResult result;
+  if (!DecodeHSTSPreload(host, &result))
+    return false;
+
+  if (!result.has_pins)
+    return false;
+
+  if (result.pinset_id >= arraysize(kPinsets))
+    return false;
+
+  return kPinsets[result.pinset_id].accepted_pins == kGoogleAcceptableCerts;
+}
+
 bool TransportSecurityState::GetStaticExpectCTState(
     const std::string& host,
     ExpectCTState* expect_ct_state) const {

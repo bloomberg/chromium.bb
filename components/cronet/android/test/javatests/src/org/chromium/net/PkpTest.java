@@ -8,6 +8,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.test.util.CertTestUtil;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.security.cert.CertificateFactory;
@@ -337,12 +338,15 @@ public class PkpTest extends CronetTestBase {
         assertEquals(200, mListener.mResponseInfo.getHttpStatusCode());
     }
 
-    private void createCronetEngineBuilder() {
+    private void createCronetEngineBuilder() throws Exception {
         // Set common CronetEngine parameters
         mBuilder = new CronetEngine.Builder(getContext());
         mBuilder.enableQUIC(true);
         mBuilder.addQuicHint(QuicTestServer.getServerHost(), QuicTestServer.getServerPort(),
                 QuicTestServer.getServerPort());
+        JSONObject quicParams = new JSONObject().put("host_whitelist", "test.example.com");
+        JSONObject experimentalOptions = new JSONObject().put("QUIC", quicParams);
+        mBuilder.setExperimentalOptions(experimentalOptions.toString());
         mBuilder.setStoragePath(CronetTestFramework.getTestStorage(getContext()));
         mBuilder.enableHttpCache(CronetEngine.Builder.HTTP_CACHE_DISK_NO_HTTP, 1000 * 1024);
         mBuilder.setMockCertVerifierForTesting(MockCertVerifier.createMockCertVerifier(CERTS_USED));
