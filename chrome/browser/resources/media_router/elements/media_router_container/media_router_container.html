@@ -34,13 +34,6 @@
         tooltip="[[computeHeaderTooltip_(currentView_, headerTextTooltip)]]"
         on-back-click="showSinkList_">
     </media-router-header>
-    <template is="dom-if"
-        if="[[computeIssueBannerShown_(currentView_, issue)]]">
-      <issue-banner id="issue-banner" issue="[[issue]]"
-          class$="[[computeIssueBannerClass_(issue)]]"
-          on-issue-action-click="showSinkList_">
-      </issue-banner>
-    </template>
     <template is="dom-if" if="[[!computeCastModeListHidden_(currentView_)]]">
       <paper-menu id="cast-mode-list">
         <template is="dom-repeat" id="defaultCastModeList"
@@ -117,6 +110,13 @@
         </template>
       </paper-menu>
     </div>
+    <template is="dom-if"
+        if="[[computeIssueBannerShown_(currentView_, issue)]]">
+      <issue-banner id="issue-banner" issue="[[issue]]"
+          class$="[[computeIssueBannerClass_(issue)]]"
+          on-issue-action-click="showSinkList_">
+      </issue-banner>
+    </template>
   </template>
   <script src="media_router_container.js"></script>
 </dom-module>

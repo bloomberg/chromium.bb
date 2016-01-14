@@ -79,12 +79,11 @@
 #issue-banner {
   margin-top: var(--container-header-height);
   width: 100%;
-  z-index: 1;
 }
 
 #issue-banner.non-blocking {
   bottom: 0;
-  position: fixed;
+  margin-top: 0;
 }
 
 paper-item {

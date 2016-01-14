@@ -75,6 +75,15 @@ Polymer({
     },
 
     /**
+     * The height of the dialog.
+     * @private {number}
+     */
+    dialogHeight_: {
+      type: Number,
+      value: 330,
+    },
+
+    /**
      * The time |this| element calls ready().
      * @private {number}
      */
@@ -722,8 +731,13 @@ Polymer({
    * @private
    */
   maybeShowIssueView_: function(issue) {
-    if (!!issue && issue.isBlocking)
+    if (!!issue && issue.isBlocking) {
       this.currentView_ = media_router.MediaRouterView.ISSUE;
+    } else {
+      this.async(function() {
+        this.updateMaxSinkListHeight(this.dialogHeight_);
+      });
+    }
   },
 
   /**
@@ -1092,6 +1106,7 @@ Polymer({
    * @param {number} dialogHeight The height of the Media Router dialog.
    */
   updateMaxSinkListHeight: function(dialogHeight) {
+    this.dialogHeight_ = dialogHeight;
     var headerHeight = this.$$('#container-header').offsetHeight;
     var firstRunFlowHeight =
         this.computeShowFirstRunFlow_(this.showFirstRunFlow,
@@ -1101,11 +1116,12 @@ Polymer({
     this.$['sink-list-view'].style.marginTop =
         firstRunFlowHeight + headerHeight + 'px';
 
-    // TODO(apacible): After non-fatal issue banner has been updated to appear
-    // below the sink list rather than overlapping, take into account the
-    // banner height when calculating the sink list height.
-    // crbug.com/567362
+    // A non-blocking issue banner may appear below the sink list.
+    var issueHeight = this.$$('#issue-banner') ?
+        this.$$('#issue-banner').offsetHeight : 0;
+
     this.$['sink-list'].style.maxHeight =
-        dialogHeight - headerHeight - firstRunFlowHeight + 'px';
+        this.dialogHeight_ - headerHeight - firstRunFlowHeight -
+        issueHeight + 'px';
   },
 });
