@@ -41,7 +41,7 @@ namespace {
 const char kLearnMoreURL[] =
 #if defined(OFFICIAL_BUILD)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/"
-    "main.html?answer=188743";
+    "main.html?answer=1047364";
 #else
     "https://support.google.com/chromebook/answer/183101";
 #endif
