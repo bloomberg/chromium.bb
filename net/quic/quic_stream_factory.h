@@ -112,6 +112,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
 // QuicChromiumClientSessions.
 class NET_EXPORT_PRIVATE QuicStreamFactory
     : public NetworkChangeNotifier::IPAddressObserver,
+      public NetworkChangeNotifier::NetworkObserver,
       public SSLConfigService::Observer,
       public CertDatabase::Observer {
  public:
@@ -149,6 +150,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       bool store_server_configs_in_properties,
       bool close_sessions_on_ip_change,
       int idle_connection_timeout_seconds,
+      bool migrate_sessions_on_network_change,
       const QuicTagVector& connection_options);
   ~QuicStreamFactory() override;
 
@@ -208,19 +210,46 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Cancels a pending request.
   void CancelRequest(QuicStreamRequest* request);
 
-  // Closes all current sessions.
-  void CloseAllSessions(int error);
+  // Closes all current sessions with specified network and QUIC error codes.
+  void CloseAllSessions(int error, QuicErrorCode quic_error);
 
   scoped_ptr<base::Value> QuicStreamFactoryInfoToValue() const;
 
   // Delete all cached state objects in |crypto_config_|.
   void ClearCachedStatesInCryptoConfig();
 
+  // Helper method that configures a DatagramClientSocket. Socket is
+  // bound to the default network if the |network| param is
+  // NetworkChangeNotifier::kInvalidNetworkHandle.
+  // Returns net_error code.
+  int ConfigureSocket(DatagramClientSocket* socket,
+                      IPEndPoint addr,
+                      NetworkChangeNotifier::NetworkHandle network);
+
+  // Helper method that initiates migration of active sessions
+  // currently bound to |network| to an alternate network, if one
+  // exists. Idle sessions bound to |network| are closed. If there is
+  // no alternate network to migrate active sessions onto, active
+  // sessions are closed if |force_close| is true, and continue using
+  // |network| otherwise. Sessions not bound to |network| are left unchanged.
+  void MaybeMigrateOrCloseSessions(NetworkChangeNotifier::NetworkHandle network,
+                                   bool force_close);
+
   // NetworkChangeNotifier::IPAddressObserver methods:
 
   // Until the servers support roaming, close all connections when the local
   // IP address changes.
   void OnIPAddressChanged() override;
+
+  // NetworkChangeNotifier::NetworkObserver methods:
+  void OnNetworkConnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkDisconnected(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkSoonToDisconnect(
+      NetworkChangeNotifier::NetworkHandle network) override;
+  void OnNetworkMadeDefault(
+      NetworkChangeNotifier::NetworkHandle network) override;
 
   // SSLConfigService::Observer methods:
 
@@ -458,6 +487,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Set if all sessions should be closed when any local IP address changes.
   const bool close_sessions_on_ip_change_;
+
+  // Set if migration should be attempted on active sessions when primary
+  // interface changes.
+  const bool migrate_sessions_on_network_change_;
 
   // Each profile will (probably) have a unique port_seed_ value.  This value
   // is used to help seed a pseudo-random number generator (PortSuggester) so

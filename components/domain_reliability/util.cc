@@ -255,6 +255,22 @@ const struct QuicErrorMapping {
   // tampered with.
   { net::QUIC_VERSION_NEGOTIATION_MISMATCH,
    "quic.version_negotiation_mismatch" },
+
+  // Network change and connection migration errors.
+
+  // IP address changed causing connection close.
+  { net::QUIC_IP_ADDRESS_CHANGED, "quic.ip_address_changed" },
+  // Network changed, but connection had no migratable streams.
+  { net::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
+    "quic.connection_migration_no_migratable_streams" },
+  // Connection changed networks too many times.
+  { net::QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES,
+    "quic.connection_migration_too_many_changes" },
+  // Connection migration was attempted, but there was no new network to
+  // migrate to.
+  { net::QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK,
+    "quic.connection_migration_no_new_network" },
+
   // No error. Used as bound while iterating.
   { net::QUIC_LAST_ERROR, "quic.last_error"}
 };

@@ -33,6 +33,23 @@ void QuicTestPacketMaker::set_hostname(const std::string& host) {
   host_.assign(host);
 }
 
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePingPacket(
+    QuicPacketNumber num,
+    bool include_version) {
+  QuicPacketHeader header;
+  header.public_header.connection_id = connection_id_;
+  header.public_header.reset_flag = false;
+  header.public_header.version_flag = include_version;
+  header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
+  header.packet_number = num;
+  header.entropy_flag = false;
+  header.fec_flag = false;
+  header.fec_group = 0;
+
+  QuicPingFrame ping;
+  return scoped_ptr<QuicEncryptedPacket>(MakePacket(header, QuicFrame(ping)));
+}
+
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRstPacket(
     QuicPacketNumber num,
     bool include_version,
@@ -232,6 +249,35 @@ scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeDataPacket(
   return MakePacket(header_, QuicFrame(&frame));
 }
 
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeAckAndDataPacket(
+    QuicPacketNumber packet_number,
+    bool include_version,
+    QuicStreamId stream_id,
+    QuicPacketNumber largest_received,
+    QuicPacketNumber least_unacked,
+    bool fin,
+    QuicStreamOffset offset,
+    base::StringPiece data) {
+  InitializeHeader(packet_number, include_version);
+
+  QuicAckFrame ack(MakeAckFrame(largest_received));
+  ack.delta_time_largest_observed = QuicTime::Delta::Zero();
+  for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
+    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+  }
+  QuicFrames frames;
+  frames.push_back(QuicFrame(&ack));
+
+  QuicStopWaitingFrame stop_waiting;
+  stop_waiting.least_unacked = least_unacked;
+  frames.push_back(QuicFrame(&stop_waiting));
+
+  QuicStreamFrame stream_frame(stream_id, fin, offset, data);
+  frames.push_back(QuicFrame(&stream_frame));
+
+  return MakeMultipleFramesPacket(header_, frames);
+}
+
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeRequestHeadersPacket(
     QuicPacketNumber packet_number,
     QuicStreamId stream_id,
@@ -406,10 +452,16 @@ SpdyHeaderBlock QuicTestPacketMaker::GetResponseHeaders(
 scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakePacket(
     const QuicPacketHeader& header,
     const QuicFrame& frame) {
-  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(),
-                    Perspective::IS_CLIENT);
   QuicFrames frames;
   frames.push_back(frame);
+  return MakeMultipleFramesPacket(header, frames);
+}
+
+scoped_ptr<QuicEncryptedPacket> QuicTestPacketMaker::MakeMultipleFramesPacket(
+    const QuicPacketHeader& header,
+    const QuicFrames& frames) {
+  QuicFramer framer(SupportedVersions(version_), QuicTime::Zero(),
+                    Perspective::IS_CLIENT);
   scoped_ptr<QuicPacket> packet(
       BuildUnsizedDataPacket(&framer, header, frames));
   char buffer[kMaxPacketSize];

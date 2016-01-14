@@ -127,6 +127,7 @@ HttpNetworkSession::Params::Params()
       quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
       quic_disable_preconnect_if_0rtt(false),
+      quic_migrate_sessions_on_network_change(false),
       proxy_delegate(NULL) {
   quic_supported_versions.push_back(QUIC_VERSION_25);
 }
@@ -178,6 +179,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_store_server_configs_in_properties,
           params.quic_close_sessions_on_ip_change,
           params.quic_idle_connection_timeout_seconds,
+          params.quic_migrate_sessions_on_network_change,
           params.quic_connection_options),
       spdy_session_pool_(params.host_resolver,
                          params.ssl_config_service,
@@ -337,7 +339,7 @@ void HttpNetworkSession::CloseAllConnections() {
   normal_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   websocket_socket_pool_manager_->FlushSocketPoolsWithError(ERR_ABORTED);
   spdy_session_pool_.CloseCurrentSessions(ERR_ABORTED);
-  quic_stream_factory_.CloseAllSessions(ERR_ABORTED);
+  quic_stream_factory_.CloseAllSessions(ERR_ABORTED, QUIC_INTERNAL_ERROR);
 }
 
 void HttpNetworkSession::CloseIdleConnections() {

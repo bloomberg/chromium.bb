@@ -241,6 +241,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<int> quic_idle_connection_timeout_seconds;
     Optional<bool> quic_disable_preconnect_if_0rtt;
     std::unordered_set<std::string> quic_host_whitelist;
+    Optional<bool> quic_migrate_sessions_on_network_change;
     bool enable_user_alternate_protocol_ports;
     // NetErrorTabHelper uses |dns_probe_service| to send DNS probes when a
     // main frame load fails with a DNS error in order to provide more useful
@@ -466,6 +467,11 @@ class IOThread : public content::BrowserThreadDelegate {
   // Returns the set of hosts to whitelist for QUIC.
   static std::unordered_set<std::string> GetQuicHostWhitelist(
       const base::CommandLine& command_line,
+      const VariationParameters& quic_trial_params);
+
+  // Returns true if QUIC should migrate sessions when primary network
+  // changes.
+  static bool ShouldQuicMigrateSessionsOnNetworkChange(
       const VariationParameters& quic_trial_params);
 
   // Returns the maximum length for QUIC packets, based on any flags in

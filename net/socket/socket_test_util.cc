@@ -35,7 +35,6 @@
 #define NET_TRACE(level, s) VLOG(level) << s << __FUNCTION__ << "() "
 
 namespace net {
-
 namespace {
 
 inline char AsciifyHigh(char x) {
@@ -1245,6 +1244,7 @@ MockUDPClientSocket::MockUDPClientSocket(SocketDataProvider* data,
       read_data_(SYNCHRONOUS, ERR_UNEXPECTED),
       need_read_data_(true),
       source_port_(123),
+      network_(NetworkChangeNotifier::kInvalidNetworkHandle),
       pending_read_buf_(NULL),
       pending_read_buf_len_(0),
       net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_NONE)),
@@ -1343,16 +1343,18 @@ const BoundNetLog& MockUDPClientSocket::NetLog() const {
 
 int MockUDPClientSocket::BindToNetwork(
     NetworkChangeNotifier::NetworkHandle network) {
-  return ERR_NOT_IMPLEMENTED;
+  network_ = network;
+  return OK;
 }
 
 int MockUDPClientSocket::BindToDefaultNetwork() {
-  return ERR_NOT_IMPLEMENTED;
+  network_ = kDefaultNetworkForTests;
+  return OK;
 }
 
 NetworkChangeNotifier::NetworkHandle MockUDPClientSocket::GetBoundNetwork()
     const {
-  return NetworkChangeNotifier::kInvalidNetworkHandle;
+  return network_;
 }
 
 int MockUDPClientSocket::Connect(const IPEndPoint& address) {

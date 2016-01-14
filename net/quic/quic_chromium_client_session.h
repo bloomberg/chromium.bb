@@ -192,7 +192,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // Resumes a crypto handshake with the server after a timeout.
   int ResumeCryptoConnect(const CompletionCallback& callback);
 
-  // Causes the QuicConnectionHelper to start reading from the socket
+  // Causes the QuicConnectionHelper to start reading from all sockets
   // and passing the data along to the QuicConnection.
   void StartReading();
 
@@ -224,6 +224,21 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   const QuicServerId& server_id() const { return server_id_; }
 
   QuicDisabledReason disabled_reason() const { return disabled_reason_; }
+
+  // Migrates session onto new socket, i.e., starts reading from |socket|
+  // in addition to any previous sockets, and sets |writer| to be the new
+  // default writer. Returns true if socket was successfully added to the
+  // session and the session was successfully migrated to using the new socket.
+  // Returns false if number of migrations exceeds kMaxReadersPerQuicSession.
+  // Takes ownership of |socket|, |reader|, and |writer|.
+  bool MigrateToSocket(scoped_ptr<DatagramClientSocket> socket,
+                       scoped_ptr<QuicPacketReader> reader,
+                       scoped_ptr<QuicPacketWriter> writer);
+
+  // Returns current default socket. This is the socket over which all
+  // QUIC packets are sent. This default socket can change, so do not store the
+  // returned socket.
+  const DatagramClientSocket* GetDefaultSocket() const;
 
  protected:
   // QuicSession methods:
@@ -274,7 +289,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool require_confirmation_;
   scoped_ptr<QuicCryptoClientStream> crypto_stream_;
   QuicStreamFactory* stream_factory_;
-  scoped_ptr<DatagramClientSocket> socket_;
+  std::vector<scoped_ptr<DatagramClientSocket>> sockets_;
   TransportSecurityState* transport_security_state_;
   scoped_ptr<QuicServerInfo> server_info_;
   scoped_ptr<CertVerifyResult> cert_verify_result_;
@@ -286,7 +301,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   size_t num_total_streams_;
   base::TaskRunner* task_runner_;
   BoundNetLog net_log_;
-  QuicPacketReader packet_reader_;
+  std::vector<scoped_ptr<QuicPacketReader>> packet_readers_;
   base::TimeTicks dns_resolution_end_time_;
   base::TimeTicks handshake_start_;  // Time the handshake was started.
   scoped_ptr<QuicConnectionLogger> logger_;

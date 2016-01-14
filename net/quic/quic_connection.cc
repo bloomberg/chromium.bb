@@ -153,7 +153,7 @@ class PingAlarm : public QuicAlarm::Delegate {
   explicit PingAlarm(QuicConnection* connection) : connection_(connection) {}
 
   QuicTime OnAlarm() override {
-    connection_->SendPing();
+    connection_->OnPingTimeout();
     return QuicTime::Zero();
   }
 
@@ -1811,10 +1811,13 @@ PeerAddressChangeType QuicConnection::DeterminePeerAddressChangeType() {
   return UNKNOWN;
 }
 
-void QuicConnection::SendPing() {
-  if (retransmission_alarm_->IsSet()) {
-    return;
+void QuicConnection::OnPingTimeout() {
+  if (!retransmission_alarm_->IsSet()) {
+    SendPing();
   }
+}
+
+void QuicConnection::SendPing() {
   packet_generator_.AddControlFrame(QuicFrame(QuicPingFrame()));
 }
 

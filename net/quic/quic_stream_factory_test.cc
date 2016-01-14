@@ -24,6 +24,7 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_http_stream.h"
+#include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_crypto_client_stream_factory.h"
@@ -46,6 +47,7 @@ using std::string;
 using std::vector;
 
 namespace net {
+
 namespace test {
 
 namespace {
@@ -119,6 +121,71 @@ class MockQuicServerInfoFactory : public QuicServerInfoFactory {
   }
 };
 
+class MockNetworkChangeNotifier : public NetworkChangeNotifier {
+ public:
+  MockNetworkChangeNotifier() : force_network_handles_supported_(false) {}
+
+  ConnectionType GetCurrentConnectionType() const override {
+    return CONNECTION_UNKNOWN;
+  }
+
+  void ForceNetworkHandlesSupported() {
+    force_network_handles_supported_ = true;
+  }
+
+  bool AreNetworkHandlesCurrentlySupported() const override {
+    return force_network_handles_supported_;
+  }
+
+  void SetConnectedNetworksList(const NetworkList& network_list) {
+    connected_networks_ = network_list;
+  }
+
+  void GetCurrentConnectedNetworks(NetworkList* network_list) const override {
+    network_list->clear();
+    *network_list = connected_networks_;
+  }
+
+  void NotifyNetworkSoonToDisconnect(
+      NetworkChangeNotifier::NetworkHandle network) {
+    NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+        NetworkChangeNotifier::SOON_TO_DISCONNECT, network);
+    // Spin the message loop so the notification is delivered.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  void NotifyNetworkDisconnected(NetworkChangeNotifier::NetworkHandle network) {
+    NetworkChangeNotifier::NotifyObserversOfSpecificNetworkChange(
+        NetworkChangeNotifier::DISCONNECTED, network);
+    // Spin the message loop so the notification is delivered.
+    base::MessageLoop::current()->RunUntilIdle();
+  }
+
+ private:
+  bool force_network_handles_supported_;
+  NetworkChangeNotifier::NetworkList connected_networks_;
+};
+
+// Class to replace existing NetworkChangeNotifier singleton with a
+// MockNetworkChangeNotifier for a test. To use, simply create a
+// ScopedMockNetworkChangeNotifier object in the test.
+class ScopedMockNetworkChangeNotifier {
+ public:
+  ScopedMockNetworkChangeNotifier()
+      : disable_network_change_notifier_for_tests_(
+            new NetworkChangeNotifier::DisableForTest()),
+        mock_network_change_notifier_(new MockNetworkChangeNotifier()) {}
+
+  MockNetworkChangeNotifier* mock_network_change_notifier() {
+    return mock_network_change_notifier_.get();
+  }
+
+ private:
+  scoped_ptr<NetworkChangeNotifier::DisableForTest>
+      disable_network_change_notifier_for_tests_;
+  scoped_ptr<MockNetworkChangeNotifier> mock_network_change_notifier_;
+};
+
 class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
  protected:
   QuicStreamFactoryTest()
@@ -131,6 +198,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
             new ChannelIDService(new DefaultChannelIDStore(nullptr),
                                  base::ThreadTaskRunnerHandle::Get())),
         cert_transparency_verifier_(new MultiLogCTVerifier()),
+        scoped_mock_network_change_notifier_(nullptr),
         factory_(nullptr),
         host_port_pair_(kDefaultServerHostName, kDefaultServerPort),
         privacy_mode_(PRIVACY_MODE_DISABLED),
@@ -151,7 +219,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         delay_tcp_race_(false),
         store_server_configs_in_properties_(false),
         close_sessions_on_ip_change_(false),
-        idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds) {
+        idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
+        migrate_sessions_on_network_change_(false) {
     clock_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
   }
 
@@ -172,9 +241,21 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         threshold_public_resets_post_handshake_, receive_buffer_size_,
         delay_tcp_race_, store_server_configs_in_properties_,
         close_sessions_on_ip_change_, idle_connection_timeout_seconds_,
-        QuicTagVector()));
+        migrate_sessions_on_network_change_, QuicTagVector()));
     factory_->set_require_confirmation(false);
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
+  }
+
+  void InitializeConnectionMigrationTest(
+      NetworkChangeNotifier::NetworkList connected_networks) {
+    scoped_mock_network_change_notifier_.reset(
+        new ScopedMockNetworkChangeNotifier());
+    MockNetworkChangeNotifier* mock_ncn =
+        scoped_mock_network_change_notifier_->mock_network_change_notifier();
+    mock_ncn->ForceNetworkHandlesSupported();
+    mock_ncn->SetConnectedNetworksList(connected_networks);
+    migrate_sessions_on_network_change_ = true;
+    Initialize();
   }
 
   bool HasActiveSession(const HostPortPair& host_port_pair) {
@@ -263,14 +344,40 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
 
   void NotifyIPAddressChanged() {
     NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
-    // For thread safety, the NCN queues tasks to do the actual notifications,
-    // so we need to spin the message loop so the notification is delivered.
+    // Spin the message loop so the notification is delivered.
     base::MessageLoop::current()->RunUntilIdle();
+  }
+
+  scoped_ptr<QuicEncryptedPacket> ConstructGetRequestPacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin) {
+    SpdyHeaderBlock headers = maker_.GetRequestHeaders("GET", "https", "/");
+    SpdyPriority priority =
+        ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
+    size_t spdy_headers_frame_len;
+    return maker_.MakeRequestHeadersPacket(
+        packet_number, stream_id, should_include_version, fin, priority,
+        headers, &spdy_headers_frame_len);
+  }
+
+  scoped_ptr<QuicEncryptedPacket> ConstructOkResponsePacket(
+      QuicPacketNumber packet_number,
+      QuicStreamId stream_id,
+      bool should_include_version,
+      bool fin) {
+    SpdyHeaderBlock headers = maker_.GetResponseHeaders("200 OK");
+    size_t spdy_headers_frame_len;
+    return maker_.MakeResponseHeadersPacket(packet_number, stream_id,
+                                            should_include_version, fin,
+                                            headers, &spdy_headers_frame_len);
   }
 
   MockHostResolver host_resolver_;
   MockClientSocketFactory socket_factory_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
+  ProofVerifyDetailsChromium verify_details_;
   MockRandom random_generator_;
   MockClock* clock_;  // Owned by factory_.
   scoped_refptr<TestTaskRunner> runner_;
@@ -280,6 +387,8 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   scoped_ptr<ChannelIDService> channel_id_service_;
   TransportSecurityState transport_security_state_;
   scoped_ptr<CTVerifier> cert_transparency_verifier_;
+  scoped_ptr<ScopedMockNetworkChangeNotifier>
+      scoped_mock_network_change_notifier_;
   scoped_ptr<QuicStreamFactory> factory_;
   HostPortPair host_port_pair_;
   PrivacyMode privacy_mode_;
@@ -305,6 +414,7 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   bool store_server_configs_in_properties_;
   bool close_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;
+  bool migrate_sessions_on_network_change_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -1172,7 +1282,7 @@ TEST_P(QuicStreamFactoryTest, CloseAllSessions) {
                                          net_log_, CompletionCallback()));
 
   // Close the session and verify that stream saw the error.
-  factory_->CloseAllSessions(ERR_INTERNET_DISCONNECTED);
+  factory_->CloseAllSessions(ERR_INTERNET_DISCONNECTED, QUIC_INTERNAL_ERROR);
   EXPECT_EQ(ERR_INTERNET_DISCONNECTED,
             stream->ReadResponseHeaders(callback_.callback()));
 
@@ -1250,6 +1360,499 @@ TEST_P(QuicStreamFactoryTest, OnIPAddressChanged) {
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
   EXPECT_TRUE(socket_data2.AllReadDataConsumed());
   EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnect) {
+  InitializeConnectionMigrationTest(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> request_packet(
+      ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
+                                  request_packet->length(), 1)};
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response,
+                                    callback_.callback()));
+
+  // Set up second socket data provider that is used after migration.
+  // The response to the earlier request is read on this new socket.
+  scoped_ptr<QuicEncryptedPacket> ping(
+      maker_.MakePingPacket(2, /*include_version=*/true));
+  MockWrite writes1[] = {
+      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0)};
+  scoped_ptr<QuicEncryptedPacket> response_headers_packet(
+      ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
+  MockRead reads1[] = {MockRead(ASYNC, response_headers_packet->data(),
+                                response_headers_packet->length(), 1),
+                       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
+  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
+                                   arraysize(writes1));
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+
+  // Trigger connection migration. This should cause a PING frame
+  // to be emitted.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkSoonToDisconnect(kDefaultNetworkForTests);
+
+  // The session should now be marked as going away. Ensure that
+  // while it is still alive, it is no longer active.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Verify that response headers on the migrated socket were delivered to the
+  // stream.
+  EXPECT_EQ(OK, stream->ReadResponseHeaders(callback_.callback()));
+  EXPECT_EQ(200, response.headers->response_code());
+
+  // Create a new request for the same destination and verify that a
+  // new session is created.
+  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, privacy_mode_,
+                             /*cert_verify_flags=*/0, host_port_pair_.host(),
+                             "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_TRUE(
+      QuicStreamFactoryPeer::HasActiveSession(factory_.get(), host_port_pair_));
+  EXPECT_NE(session, QuicStreamFactoryPeer::GetActiveSession(factory_.get(),
+                                                             host_port_pair_));
+
+  // On a DISCONNECTED notification, nothing happens to the migrated session.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnected) {
+  InitializeConnectionMigrationTest(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> request_packet(
+      ConstructGetRequestPacket(1, kClientDataStreamId1, true, true));
+  MockWrite writes[] = {MockWrite(SYNCHRONOUS, request_packet->data(),
+                                  request_packet->length(), 1)};
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.org/");
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Send GET request on stream.
+  HttpResponseInfo response_info;
+  HttpRequestHeaders request_headers;
+  EXPECT_EQ(OK, stream->SendRequest(request_headers, &response_info,
+                                    callback_.callback()));
+
+  // Set up second socket data provider that is used after migration.
+  scoped_ptr<QuicEncryptedPacket> ping(
+      maker_.MakePingPacket(2, /*include_version=*/true));
+  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      3, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+  MockWrite writes1[] = {
+      MockWrite(SYNCHRONOUS, ping->data(), ping->length(), 0)};
+  scoped_ptr<QuicEncryptedPacket> response_packet(
+      ConstructOkResponsePacket(1, kClientDataStreamId1, false, false));
+  MockRead reads1[] = {
+      MockRead(ASYNC, response_packet->data(), response_packet->length(), 1),
+      MockRead(SYNCHRONOUS, ERR_IO_PENDING, 2)};
+  SequencedSocketData socket_data1(reads1, arraysize(reads1), writes1,
+                                   arraysize(writes1));
+  socket_factory_.AddSocketDataProvider(&socket_data1);
+
+  // Trigger connection migration. This should cause a PING frame
+  // to be emitted.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  // The session should now be marked as going away. Ensure that
+  // while it is still alive, it is no longer active.
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Create a new request for the same destination and verify that a
+  // new session is created.
+  MockRead reads2[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data2(reads2, arraysize(reads2), nullptr, 0);
+  socket_factory_.AddSocketDataProvider(&socket_data2);
+
+  QuicStreamRequest request2(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request2.Request(host_port_pair_, privacy_mode_,
+                             /*cert_verify_flags=*/0, host_port_pair_.host(),
+                             "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream2 = request2.ReleaseStream();
+  EXPECT_TRUE(stream2.get());
+
+  EXPECT_TRUE(
+      QuicStreamFactoryPeer::HasActiveSession(factory_.get(), host_port_pair_));
+  EXPECT_NE(session, QuicStreamFactoryPeer::GetActiveSession(factory_.get(),
+                                                             host_port_pair_));
+  EXPECT_EQ(true,
+            QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data1.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data1.AllWriteDataConsumed());
+  EXPECT_TRUE(socket_data2.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data2.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnectNoNetworks) {
+  NetworkChangeNotifier::NetworkList no_networks(0);
+  InitializeConnectionMigrationTest(no_networks);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
+  };
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  // Trigger connection migration. Since there are no networks
+  // to migrate to, this should cause the session to continue on the same
+  // socket, but be marked as going away.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkSoonToDisconnect(kDefaultNetworkForTests);
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNetworks) {
+  NetworkChangeNotifier::NetworkList no_networks(0);
+  InitializeConnectionMigrationTest(no_networks);
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
+  };
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Trigger connection migration. Since there are no networks
+  // to migrate to, this should cause a RST_STREAM frame to be emitted
+  // and the session to be closed.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnectNoNewNetwork) {
+  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      1, true, kClientDataStreamId1, QUIC_STREAM_CANCELLED));
+  MockWrite writes[] = {
+      MockWrite(SYNCHRONOUS, client_rst->data(), client_rst->length(), 1),
+  };
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Trigger connection migration. Since there are no networks
+  // to migrate to, this should cause session to be continue but be marked as
+  // going away.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkSoonToDisconnect(kDefaultNetworkForTests);
+
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+  EXPECT_EQ(1u, session->GetNumActiveStreams());
+
+  stream.reset();
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoNewNetwork) {
+  InitializeConnectionMigrationTest({kDefaultNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  scoped_ptr<QuicEncryptedPacket> client_rst(maker_.MakeRstPacket(
+      1, true, kClientDataStreamId1, QUIC_RST_ACKNOWLEDGEMENT));
+  MockWrite writes[] = {
+      MockWrite(ASYNC, client_rst->data(), client_rst->length(), 1),
+  };
+  SequencedSocketData socket_data(reads, arraysize(reads), writes,
+                                  arraysize(writes));
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Cause QUIC stream to be created.
+  HttpRequestInfo request_info;
+  EXPECT_EQ(OK, stream->InitializeStream(&request_info, DEFAULT_PRIORITY,
+                                         net_log_, CompletionCallback()));
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Trigger connection migration. Since there are no networks
+  // to migrate to, this should cause a RST_STREAM frame to be emitted
+  // with QUIC_RST_ACKNOWLEDGEMENT error code, and the session will be closed.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeSoonToDisconnectNoOpenStreams) {
+  InitializeConnectionMigrationTest(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0u);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Trigger connection migration. Since there are no active streams,
+  // the session will be closed.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
+}
+
+TEST_P(QuicStreamFactoryTest, OnNetworkChangeDisconnectedNoOpenStreams) {
+  InitializeConnectionMigrationTest(
+      {kDefaultNetworkForTests, kNewNetworkForTests});
+  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
+  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
+
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING, 0)};
+  SequencedSocketData socket_data(reads, arraysize(reads), nullptr, 0u);
+  socket_factory_.AddSocketDataProvider(&socket_data);
+
+  // Create request and QuicHttpStream.
+  QuicStreamRequest request(factory_.get());
+  EXPECT_EQ(ERR_IO_PENDING,
+            request.Request(host_port_pair_, privacy_mode_,
+                            /*cert_verify_flags=*/0, host_port_pair_.host(),
+                            "GET", net_log_, callback_.callback()));
+  EXPECT_EQ(OK, callback_.WaitForResult());
+  scoped_ptr<QuicHttpStream> stream = request.ReleaseStream();
+  EXPECT_TRUE(stream.get());
+
+  // Ensure that session is alive and active.
+  QuicChromiumClientSession* session =
+      QuicStreamFactoryPeer::GetActiveSession(factory_.get(), host_port_pair_);
+  EXPECT_TRUE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_TRUE(HasActiveSession(host_port_pair_));
+
+  // Trigger connection migration. Since there are no active streams,
+  // the session will be closed.
+  scoped_mock_network_change_notifier_->mock_network_change_notifier()
+      ->NotifyNetworkDisconnected(kDefaultNetworkForTests);
+
+  EXPECT_FALSE(QuicStreamFactoryPeer::IsLiveSession(factory_.get(), session));
+  EXPECT_FALSE(HasActiveSession(host_port_pair_));
+
+  EXPECT_TRUE(socket_data.AllReadDataConsumed());
+  EXPECT_TRUE(socket_data.AllWriteDataConsumed());
 }
 
 TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {

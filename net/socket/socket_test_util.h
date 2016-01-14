@@ -46,6 +46,9 @@ class RunLoop;
 
 namespace net {
 
+const NetworkChangeNotifier::NetworkHandle kDefaultNetworkForTests = 1;
+const NetworkChangeNotifier::NetworkHandle kNewNetworkForTests = 2;
+
 enum {
   // A private network error code used by the socket test utility classes.
   // If the |result| member of a MockRead is
@@ -763,6 +766,9 @@ class MockUDPClientSocket : public DatagramClientSocket, public AsyncSocket {
 
   // Address of the "remote" peer we're connected to.
   IPEndPoint peer_addr_;
+
+  // Network that the socket is bound to.
+  NetworkChangeNotifier::NetworkHandle network_;
 
   // While an asynchronous IO is pending, we save our user-buffer state.
   scoped_refptr<IOBuffer> pending_read_buf_;

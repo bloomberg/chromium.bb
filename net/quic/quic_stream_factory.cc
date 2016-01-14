@@ -71,6 +71,15 @@ enum CreateSessionFailure {
   CREATION_ERROR_MAX
 };
 
+enum QuicConnectionMigrationStatus {
+  MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
+  MIGRATION_STATUS_ALREADY_MIGRATED,
+  MIGRATION_STATUS_INTERNAL_ERROR,
+  MIGRATION_STATUS_TOO_MANY_CHANGES,
+  MIGRATION_STATUS_SUCCESS,
+  MIGRATION_STATUS_MAX
+};
+
 // The maximum receive window sizes for QUIC sessions and streams.
 const int32_t kQuicSessionMaxRecvWindowSize = 15 * 1024 * 1024;  // 15 MB
 const int32_t kQuicStreamMaxRecvWindowSize = 6 * 1024 * 1024;    // 6 MB
@@ -81,6 +90,11 @@ const int32_t kMaxUndecryptablePackets = 100;
 void HistogramCreateSessionFailure(enum CreateSessionFailure error) {
   UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.CreationError", error,
                             CREATION_ERROR_MAX);
+}
+
+void HistogramMigrationStatus(enum QuicConnectionMigrationStatus status) {
+  UMA_HISTOGRAM_ENUMERATION("Net.QuicSession.ConnectionMigration", status,
+                            MIGRATION_STATUS_MAX);
 }
 
 bool IsEcdsaSupported() {
@@ -575,6 +589,7 @@ QuicStreamFactory::QuicStreamFactory(
     bool store_server_configs_in_properties,
     bool close_sessions_on_ip_change,
     int idle_connection_timeout_seconds,
+    bool migrate_sessions_on_network_change,
     const QuicTagVector& connection_options)
     : require_confirmation_(true),
       host_resolver_(host_resolver),
@@ -622,6 +637,9 @@ QuicStreamFactory::QuicStreamFactory(
           kQuicYieldAfterDurationMilliseconds)),
       store_server_configs_in_properties_(store_server_configs_in_properties),
       close_sessions_on_ip_change_(close_sessions_on_ip_change),
+      migrate_sessions_on_network_change_(
+          migrate_sessions_on_network_change &&
+          NetworkChangeNotifier::AreNetworkHandlesSupported()),
       port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
@@ -660,13 +678,17 @@ QuicStreamFactory::QuicStreamFactory(
         new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
 
-  if (close_sessions_on_ip_change_) {
+  DCHECK(
+      !(close_sessions_on_ip_change_ && migrate_sessions_on_network_change_));
+  if (migrate_sessions_on_network_change_) {
+    NetworkChangeNotifier::AddNetworkObserver(this);
+  } else if (close_sessions_on_ip_change_) {
     NetworkChangeNotifier::AddIPAddressObserver(this);
   }
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
-  CloseAllSessions(ERR_ABORTED);
+  CloseAllSessions(ERR_ABORTED, QUIC_INTERNAL_ERROR);
   while (!all_sessions_.empty()) {
     delete all_sessions_.begin()->first;
     all_sessions_.erase(all_sessions_.begin());
@@ -676,7 +698,9 @@ QuicStreamFactory::~QuicStreamFactory() {
     STLDeleteElements(&(active_jobs_[server_id]));
     active_jobs_.erase(server_id);
   }
-  if (close_sessions_on_ip_change_) {
+  if (migrate_sessions_on_network_change_) {
+    NetworkChangeNotifier::RemoveNetworkObserver(this);
+  } else if (close_sessions_on_ip_change_) {
     NetworkChangeNotifier::RemoveIPAddressObserver(this);
   }
 }
@@ -1116,17 +1140,15 @@ void QuicStreamFactory::CancelRequest(QuicStreamRequest* request) {
   active_requests_.erase(request);
 }
 
-void QuicStreamFactory::CloseAllSessions(int error) {
+void QuicStreamFactory::CloseAllSessions(int error, QuicErrorCode quic_error) {
   while (!active_sessions_.empty()) {
     size_t initial_size = active_sessions_.size();
-    active_sessions_.begin()->second->CloseSessionOnError(error,
-                                                          QUIC_INTERNAL_ERROR);
+    active_sessions_.begin()->second->CloseSessionOnError(error, quic_error);
     DCHECK_NE(initial_size, active_sessions_.size());
   }
   while (!all_sessions_.empty()) {
     size_t initial_size = all_sessions_.size();
-    all_sessions_.begin()->first->CloseSessionOnError(error,
-                                                      QUIC_INTERNAL_ERROR);
+    all_sessions_.begin()->first->CloseSessionOnError(error, quic_error);
     DCHECK_NE(initial_size, all_sessions_.size());
   }
   DCHECK(all_sessions_.empty());
@@ -1159,16 +1181,115 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig() {
 }
 
 void QuicStreamFactory::OnIPAddressChanged() {
-  CloseAllSessions(ERR_NETWORK_CHANGED);
+  CloseAllSessions(ERR_NETWORK_CHANGED, QUIC_IP_ADDRESS_CHANGED);
   set_require_confirmation(true);
 }
 
+void QuicStreamFactory::OnNetworkConnected(
+    NetworkChangeNotifier::NetworkHandle network) {}
+
+void QuicStreamFactory::OnNetworkMadeDefault(
+    NetworkChangeNotifier::NetworkHandle network) {}
+
+void QuicStreamFactory::OnNetworkDisconnected(
+    NetworkChangeNotifier::NetworkHandle network) {
+  MaybeMigrateOrCloseSessions(network, /*force_close=*/true);
+  set_require_confirmation(true);
+}
+
+// This method is expected to only be called when migrating from Cellular to
+// WiFi on Android.
+void QuicStreamFactory::OnNetworkSoonToDisconnect(
+    NetworkChangeNotifier::NetworkHandle network) {
+  MaybeMigrateOrCloseSessions(network, /*force_close=*/false);
+}
+
+void QuicStreamFactory::MaybeMigrateOrCloseSessions(
+    NetworkChangeNotifier::NetworkHandle network,
+    bool force_close) {
+  DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
+
+  // Find a new network that sessions bound to |network| can be migrated to.
+  NetworkChangeNotifier::NetworkList network_list;
+  NetworkChangeNotifier::GetConnectedNetworks(&network_list);
+  NetworkChangeNotifier::NetworkHandle new_network =
+      NetworkChangeNotifier::kInvalidNetworkHandle;
+  for (NetworkChangeNotifier::NetworkHandle n : network_list) {
+    if (n != network) {
+      new_network = n;
+      break;
+    }
+  }
+
+  QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
+  while (it != all_sessions_.end()) {
+    QuicChromiumClientSession* session = it->first;
+    QuicServerId server_id = it->second;
+    ++it;
+
+    if (session->GetDefaultSocket()->GetBoundNetwork() != network) {
+      // If session is not bound to |network|, move on.
+      HistogramMigrationStatus(MIGRATION_STATUS_ALREADY_MIGRATED);
+      continue;
+    }
+    if (session->GetNumActiveStreams() == 0) {
+      // Close idle sessions.
+      session->CloseSessionOnError(
+          ERR_NETWORK_CHANGED, QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+      HistogramMigrationStatus(MIGRATION_STATUS_NO_MIGRATABLE_STREAMS);
+      continue;
+    }
+    // If session has active streams, mark it as going away.
+    OnSessionGoingAway(session);
+    if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+      // No new network was found.
+      if (force_close) {
+        session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                     QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK);
+      }
+      continue;
+    }
+
+    // Use OS-specified port for socket (DEFAULT_BIND) instead of
+    // using the PortSuggester since the connection is being migrated
+    // and not being newly created.
+    scoped_ptr<DatagramClientSocket> socket(
+        client_socket_factory_->CreateDatagramClientSocket(
+            DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+            session->net_log().net_log(), session->net_log().source()));
+
+    QuicConnection* connection = session->connection();
+    if (ConfigureSocket(socket.get(), connection->peer_address(),
+                        new_network) != OK) {
+      session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
+      HistogramMigrationStatus(MIGRATION_STATUS_INTERNAL_ERROR);
+      continue;
+    }
+
+    scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+        socket.get(), clock_.get(), session, yield_after_packets_,
+        yield_after_duration_, session->net_log()));
+    DefaultPacketWriterFactory packet_writer_factory(socket.get());
+    scoped_ptr<QuicPacketWriter> new_writer(
+        packet_writer_factory.Create(connection));
+
+    if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
+                                  std::move(new_writer))) {
+      session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                   QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+      HistogramMigrationStatus(MIGRATION_STATUS_TOO_MANY_CHANGES);
+    } else {
+      HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
+    }
+  }
+}
+
 void QuicStreamFactory::OnSSLConfigChanged() {
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_INTERNAL_ERROR);
 }
 
 void QuicStreamFactory::OnCertAdded(const X509Certificate* cert) {
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_INTERNAL_ERROR);
 }
 
 void QuicStreamFactory::OnCACertChanged(const X509Certificate* cert) {
@@ -1181,7 +1302,7 @@ void QuicStreamFactory::OnCACertChanged(const X509Certificate* cert) {
   // Since the OnCACertChanged method doesn't tell us what
   // kind of change it is, we have to flush the socket
   // pools to be safe.
-  CloseAllSessions(ERR_CERT_DATABASE_CHANGED);
+  CloseAllSessions(ERR_CERT_DATABASE_CHANGED, QUIC_INTERNAL_ERROR);
 }
 
 bool QuicStreamFactory::HasActiveSession(const QuicServerId& server_id) const {
@@ -1195,54 +1316,33 @@ bool QuicStreamFactory::HasActiveJob(const QuicServerId& key) const {
   return ContainsKey(active_jobs_, key);
 }
 
-int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
-                                     int cert_verify_flags,
-                                     scoped_ptr<QuicServerInfo> server_info,
-                                     const AddressList& address_list,
-                                     base::TimeTicks dns_resolution_end_time,
-                                     const BoundNetLog& net_log,
-                                     QuicChromiumClientSession** session) {
-  bool enable_port_selection = enable_port_selection_;
-  if (enable_port_selection && ContainsKey(gone_away_aliases_, server_id)) {
-    // Disable port selection when the server is going away.
-    // There is no point in trying to return to the same server, if
-    // that server is no longer handling requests.
-    enable_port_selection = false;
-    gone_away_aliases_.erase(server_id);
-  }
-
-  QuicConnectionId connection_id = random_generator_->RandUint64();
-  IPEndPoint addr = *address_list.begin();
-  scoped_refptr<PortSuggester> port_suggester =
-      new PortSuggester(server_id.host_port_pair(), port_seed_);
-  DatagramSocket::BindType bind_type =
-      enable_port_selection ? DatagramSocket::RANDOM_BIND
-                            :            // Use our callback.
-          DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
-  scoped_ptr<DatagramClientSocket> socket(
-      client_socket_factory_->CreateDatagramClientSocket(
-          bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
-          net_log.net_log(), net_log.source()));
-
+int QuicStreamFactory::ConfigureSocket(
+    DatagramClientSocket* socket,
+    IPEndPoint addr,
+    NetworkChangeNotifier::NetworkHandle network) {
   if (enable_non_blocking_io_ &&
       client_socket_factory_ == ClientSocketFactory::GetDefaultFactory()) {
 #if defined(OS_WIN)
-    static_cast<UDPClientSocket*>(socket.get())->UseNonBlockingIO();
+    static_cast<UDPClientSocket*>(socket)->UseNonBlockingIO();
 #endif
   }
 
-  int rv = socket->Connect(addr);
+  // If caller leaves network unspecified, use current default.
+  int rv;
+  if (migrate_sessions_on_network_change_) {
+    if (network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+      rv = socket->BindToDefaultNetwork();
+    } else {
+      rv = socket->BindToNetwork(network);
+    }
+    if (rv != OK)
+      return rv;
+  }
 
+  rv = socket->Connect(addr);
   if (rv != OK) {
     HistogramCreateSessionFailure(CREATION_ERROR_CONNECTING_SOCKET);
     return rv;
-  }
-  UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
-                       port_suggester->call_count());
-  if (enable_port_selection) {
-    DCHECK_LE(1u, port_suggester->call_count());
-  } else {
-    DCHECK_EQ(0u, port_suggester->call_count());
   }
 
   rv = socket->SetReceiveBufferSize(socket_receive_buffer_size_);
@@ -1250,6 +1350,7 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     HistogramCreateSessionFailure(CREATION_ERROR_SETTING_RECEIVE_BUFFER);
     return rv;
   }
+
   // Set a buffer large enough to contain the initial CWND's worth of packet
   // to work around the problem with CHLO packets being sent out with the
   // wrong encryption level, when the send buffer is full.
@@ -1269,14 +1370,60 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     }
   }
 
-  DefaultPacketWriterFactory packet_writer_factory(socket.get());
+  return OK;
+}
 
+int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
+                                     int cert_verify_flags,
+                                     scoped_ptr<QuicServerInfo> server_info,
+                                     const AddressList& address_list,
+                                     base::TimeTicks dns_resolution_end_time,
+                                     const BoundNetLog& net_log,
+                                     QuicChromiumClientSession** session) {
+  IPEndPoint addr = *address_list.begin();
+  bool enable_port_selection = enable_port_selection_;
+  if (enable_port_selection && ContainsKey(gone_away_aliases_, server_id)) {
+    // Disable port selection when the server is going away.
+    // There is no point in trying to return to the same server, if
+    // that server is no longer handling requests.
+    enable_port_selection = false;
+    gone_away_aliases_.erase(server_id);
+  }
+  scoped_refptr<PortSuggester> port_suggester =
+      new PortSuggester(server_id.host_port_pair(), port_seed_);
+  DatagramSocket::BindType bind_type =
+      enable_port_selection ? DatagramSocket::RANDOM_BIND
+                            :            // Use our callback.
+          DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
+
+  scoped_ptr<DatagramClientSocket> socket(
+      client_socket_factory_->CreateDatagramClientSocket(
+          bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
+          net_log.net_log(), net_log.source()));
+
+  // Passing in kInvalidNetworkHandle binds socket to default network.
+  int rv = ConfigureSocket(socket.get(), addr,
+                           NetworkChangeNotifier::kInvalidNetworkHandle);
+  if (rv != OK) {
+    return rv;
+  }
+
+  UMA_HISTOGRAM_COUNTS("Net.QuicEphemeralPortsSuggested",
+                       port_suggester->call_count());
+  if (enable_port_selection) {
+    DCHECK_LE(1u, port_suggester->call_count());
+  } else {
+    DCHECK_EQ(0u, port_suggester->call_count());
+  }
+
+  DefaultPacketWriterFactory packet_writer_factory(socket.get());
   if (!helper_.get()) {
     helper_.reset(
         new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
                                  clock_.get(), random_generator_));
   }
 
+  QuicConnectionId connection_id = random_generator_->RandUint64();
   QuicConnection* connection = new QuicConnection(
       connection_id, addr, helper_.get(), packet_writer_factory,
       true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);

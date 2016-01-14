@@ -30,6 +30,8 @@ class QuicTestPacketMaker {
   ~QuicTestPacketMaker();
 
   void set_hostname(const std::string& host);
+  scoped_ptr<QuicEncryptedPacket> MakePingPacket(QuicPacketNumber num,
+                                                 bool include_version);
   scoped_ptr<QuicEncryptedPacket> MakeRstPacket(
       QuicPacketNumber num,
       bool include_version,
@@ -70,6 +72,15 @@ class QuicTestPacketMaker {
                                                  bool fin,
                                                  QuicStreamOffset offset,
                                                  base::StringPiece data);
+  scoped_ptr<QuicEncryptedPacket> MakeAckAndDataPacket(
+      QuicPacketNumber packet_number,
+      bool include_version,
+      QuicStreamId stream_id,
+      QuicPacketNumber largest_received,
+      QuicPacketNumber least_unacked,
+      bool fin,
+      QuicStreamOffset offset,
+      base::StringPiece data);
 
   // If |spdy_headers_frame_length| is non-null, it will be set to the size of
   // the SPDY headers frame created for this packet.
@@ -143,6 +154,9 @@ class QuicTestPacketMaker {
  private:
   scoped_ptr<QuicEncryptedPacket> MakePacket(const QuicPacketHeader& header,
                                              const QuicFrame& frame);
+  scoped_ptr<QuicEncryptedPacket> MakeMultipleFramesPacket(
+      const QuicPacketHeader& header,
+      const QuicFrames& frames);
 
   void InitializeHeader(QuicPacketNumber packet_number,
                         bool should_include_version);

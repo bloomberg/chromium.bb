@@ -1180,7 +1180,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
       &params->quic_disable_preconnect_if_0rtt);
   if (!globals.quic_host_whitelist.empty())
     params->quic_host_whitelist = globals.quic_host_whitelist;
-
+  globals.quic_migrate_sessions_on_network_change.CopyToIfSet(
+      &params->quic_migrate_sessions_on_network_change);
   globals.origin_to_force_quic_on.CopyToIfSet(
       &params->origin_to_force_quic_on);
   params->enable_user_alternate_protocol_ports =
@@ -1321,6 +1322,8 @@ void IOThread::ConfigureQuicGlobals(
         ShouldQuicDisablePreConnectIfZeroRtt(quic_trial_params));
     globals->quic_host_whitelist =
         GetQuicHostWhitelist(command_line, quic_trial_params);
+    globals->quic_migrate_sessions_on_network_change.set(
+        ShouldQuicMigrateSessionsOnNetworkChange(quic_trial_params));
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(command_line,
@@ -1596,6 +1599,14 @@ std::unordered_set<std::string> IOThread::GetQuicHostWhitelist(
     hosts.insert(host);
   }
   return hosts;
+}
+
+bool IOThread::ShouldQuicMigrateSessionsOnNetworkChange(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params,
+                        "migrate_sessions_on_network_change"),
+      "true");
 }
 
 size_t IOThread::GetQuicMaxPacketLength(

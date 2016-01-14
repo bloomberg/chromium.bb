@@ -234,6 +234,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_EQ(net::kIdleConnectionTimeoutSeconds,
             params.quic_idle_connection_timeout_seconds);
   EXPECT_FALSE(params.quic_disable_preconnect_if_0rtt);
+  EXPECT_FALSE(params.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
   EXPECT_TRUE(params.quic_host_whitelist.empty());
 }
@@ -347,6 +348,15 @@ TEST_F(IOThreadTest, QuicDisablePreConnectIfZeroRtt) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.quic_disable_preconnect_if_0rtt);
+}
+
+TEST_F(IOThreadTest, QuicMigrateSessionsOnNetworkChangeFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["migrate_sessions_on_network_change"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.quic_migrate_sessions_on_network_change);
 }
 
 TEST_F(IOThreadTest, PacketLengthFromFieldTrialParams) {

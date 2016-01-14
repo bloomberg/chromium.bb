@@ -639,8 +639,20 @@ enum QuicErrorCode {
   // tampered with.
   QUIC_VERSION_NEGOTIATION_MISMATCH = 55,
 
+  // IP address changed causing connection close.
+  QUIC_IP_ADDRESS_CHANGED = 78,
+
+  // Connection migration errors.
+  // Network changed, but connection had no migratable streams.
+  QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS = 79,
+  // Connection changed networks too many times.
+  QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES = 80,
+  // Connection migration was attempted, but there was no new network to
+  // migrate to.
+  QUIC_CONNECTION_MIGRATION_NO_NEW_NETWORK = 81,
+
   // No error. Used as bound while iterating.
-  QUIC_LAST_ERROR = 78,
+  QUIC_LAST_ERROR = 82,
 };
 
 // Must be updated any time a QuicErrorCode is deprecated.

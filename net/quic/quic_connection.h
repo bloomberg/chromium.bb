@@ -389,6 +389,10 @@ class NET_EXPORT_PRIVATE QuicConnection
 
   // Set the packet writer.
   void SetQuicPacketWriter(QuicPacketWriter* writer, bool owns_writer) {
+    DCHECK(writer != nullptr);
+    if (writer_ != nullptr && owns_writer_) {
+      delete writer_;
+    }
     writer_ = writer;
     owns_writer_ = owns_writer;
   }
@@ -505,7 +509,11 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Otherwise, it will reschedule the timeout alarm.
   void CheckForTimeout();
 
-  // Sends a ping, and resets the ping alarm.
+  // Called when the ping alarm fires. Causes a ping frame to be sent only
+  // if the retransmission alarm is not running.
+  void OnPingTimeout();
+
+  // Sends a ping frame.
   void SendPing();
 
   // Sets up a packet with an QuicAckFrame and sends it out.

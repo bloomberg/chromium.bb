@@ -184,7 +184,9 @@ class NET_EXPORT HttpNetworkSession
     bool quic_disable_preconnect_if_0rtt;
     // List of hosts for which QUIC is explicitly whitelisted.
     std::unordered_set<std::string> quic_host_whitelist;
-
+    // If true, active QUIC sessions may be migrated onto new IPs when network
+    // changes.
+    bool quic_migrate_sessions_on_network_change;
     ProxyDelegate* proxy_delegate;
   };
 
