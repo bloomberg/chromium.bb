@@ -69,6 +69,7 @@
 #endif
 
 #if !defined(OS_ANDROID)
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
 #endif
 
@@ -107,6 +108,24 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
 #endif
 };
+
+// Determines whether to show permission |type| in the Website Settings UI. Only
+// applies to permissions listed in |kPermissionType|.
+bool ShouldShowPermission(ContentSettingsType type) {
+  // TODO(mgiuca): When simplified-fullscreen-ui is enabled on all platforms,
+  // remove these from kPermissionType, rather than having this check
+  // (http://crbug.com/577396).
+#if !defined(OS_ANDROID)
+  // Fullscreen and mouselock settings are not shown in simplified fullscreen
+  // mode (always allow).
+  if (type == CONTENT_SETTINGS_TYPE_FULLSCREEN ||
+      type == CONTENT_SETTINGS_TYPE_MOUSELOCK) {
+    return !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled();
+  }
+#endif
+
+  return true;
+}
 
 // Returns true if any of the given statuses match |status|.
 bool CertificateTransparencyStatusMatchAny(
@@ -662,6 +681,9 @@ void WebsiteSettings::PresentSitePermissions() {
   WebsiteSettingsUI::PermissionInfo permission_info;
   for (size_t i = 0; i < arraysize(kPermissionType); ++i) {
     permission_info.type = kPermissionType[i];
+
+    if (!ShouldShowPermission(permission_info.type))
+      continue;
 
     content_settings::SettingInfo info;
     scoped_ptr<base::Value> value =

@@ -32,6 +32,7 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -761,6 +762,13 @@ void ContentSettingsHandler::InitializePage() {
   UpdateAllExceptionsViewsFromModel();
   UpdateAllChooserExceptionsViewsFromModel();
   UpdateProtectedContentExceptionsButton();
+
+  // Fullscreen and mouselock settings are not shown in simplified fullscreen
+  // mode (always allow).
+  web_ui()->CallJavascriptFunction(
+      "ContentSettings.setExclusiveAccessVisible",
+      base::FundamentalValue(
+          !ExclusiveAccessManager::IsSimplifiedFullscreenUIEnabled()));
 }
 
 void ContentSettingsHandler::OnContentSettingChanged(

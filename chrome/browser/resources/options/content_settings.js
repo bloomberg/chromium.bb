@@ -226,6 +226,15 @@ cr.define('options', function() {
   };
 
   /**
+   * Shows/hides the fullscreen and mouselock sections.
+   * @param {boolean} visible Whether to show (or hide) the sections.
+   */
+  ContentSettings.setExclusiveAccessVisible = function(visible) {
+    $('fullscreen-section').hidden = !visible;
+    $('mouselock-section').hidden = !visible;
+  };
+
+  /**
    * Updates the microphone/camera devices menu with the given entries.
    * @param {string} type The device type.
    * @param {Array} devices List of available devices.
