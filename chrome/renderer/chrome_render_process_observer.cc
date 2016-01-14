@@ -359,11 +359,23 @@ void ChromeRenderProcessObserver::OnSetFieldTrialGroup(
                                           << sender_pid;
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(field_trial_name, group_name);
-  // TODO(mef): Remove this check after the investigation of 359406 is complete.
-  CHECK(trial) << field_trial_name << ":" << group_name << "=>"
-               << base::FieldTrialList::FindFullName(field_trial_name) << " | "
-               << base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-                   switches::kForceFieldTrials);
+  // TODO(asvitkine): Remove this after http://crbug.com/359406 is fixed.
+  if (!trial) {
+    // Log the --force-fieldtrials= switch value for debugging purposes. Take
+    // its substring starting with the trial name, since otherwise the end of
+    // it can get truncated in the dump.
+    std::string switch_substr = base::CommandLine::ForCurrentProcess()->
+        GetSwitchValueASCII(switches::kForceFieldTrials);
+    size_t index = switch_substr.find(field_trial_name);
+    if (index != std::string::npos) {
+      // If possible, log the string one char before the trial name, as there
+      // may be a leading * to indicate it should be activated.
+      switch_substr = switch_substr.substr(index > 0 ? index - 1 : index);
+    }
+    CHECK(trial) << field_trial_name << ":" << group_name << "=>"
+                 << base::FieldTrialList::FindFullName(field_trial_name)
+                 << " ] " << switch_substr;
+  }
   // Ensure the trial is marked as "used" by calling group() on it if it is
   // marked as activated.
   trial->group();
