@@ -655,10 +655,6 @@ void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemp
         return;
     }
 
-    // TODO(hajimehoshi): We doubt this assertion is needed. This was introduced
-    // by http://trac.webkit.org/browser/trunk/WebCore/editing/Selection.cpp?annotate=blame&rev=21071
-    ASSERT(m_affinity == TextAffinity::Downstream);
-
     m_base = base;
     m_extent = extent;
     m_baseIsFirst = base.compareTo(extent) <= 0;
@@ -670,6 +666,12 @@ void VisibleSelectionTemplate<Strategy>::setWithoutValidation(const PositionTemp
         m_end = base;
     }
     m_selectionType = base == extent ? CaretSelection : RangeSelection;
+    if (m_selectionType != CaretSelection) {
+        // Since |m_affinity| for non-|CaretSelection| is always |Downstream|,
+        // we should keep this invariant. Note: This function can be called with
+        // |m_affinity| is |TextAffinity::Upstream|.
+        m_affinity = TextAffinity::Downstream;
+    }
     didChange();
 }
 
