@@ -55,6 +55,7 @@ MediaRecorder* MediaRecorder::create(ExecutionContext* context, MediaStream* str
 MediaRecorder::MediaRecorder(ExecutionContext* context, MediaStream* stream, const MediaRecorderOptions& options, ExceptionState& exceptionState)
     : ActiveDOMObject(context)
     , m_stream(stream)
+    , m_streamAmountOfTracks(stream->getTracks().size())
     , m_mimeType(options.mimeType())
     , m_stopped(true)
     , m_ignoreMutedMedia(true)
@@ -205,6 +206,10 @@ void MediaRecorder::writeData(const char* data, size_t length, bool lastInSlice)
         m_stopped = false;
         scheduleDispatchEvent(Event::create(EventTypeNames::start));
     }
+    if (m_stream && m_streamAmountOfTracks != m_stream->getTracks().size()) {
+        m_streamAmountOfTracks = m_stream->getTracks().size();
+        onError("Amount of tracks in MediaStream has changed.");
+    }
 
     // TODO(mcasas): Act as |m_ignoredMutedMedia| instructs if |m_stream| track(s) is in muted() state.
 
@@ -225,9 +230,6 @@ void MediaRecorder::onError(const WebString& message)
 {
     // TODO(mcasas): Beef up the Error Event and add the |message|, see https://github.com/w3c/mediacapture-record/issues/31
     scheduleDispatchEvent(Event::create(EventTypeNames::error));
-
-    if (m_state == State::Recording)
-        stopRecording();
 }
 
 void MediaRecorder::createBlobEvent(Blob* blob)

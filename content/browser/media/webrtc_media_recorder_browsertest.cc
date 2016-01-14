@@ -76,8 +76,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest, MediaRecorderResume) {
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderNoResumeWhenRecorderInactive) {
-  MakeTypicalCall("testIllegalResumeThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+  MakeTypicalCall("testIllegalResumeThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
@@ -98,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderPausePreventsDataavailableFromBeingFired) {
   MakeTypicalCall("testPausePreventsDataavailableFromBeingFired();",
-      kMediaRecorderHtmlFile);
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
@@ -113,31 +112,42 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderIllegalStopThrowsDOMError) {
-  MakeTypicalCall("testIllegalStopThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+  MakeTypicalCall("testIllegalStopThrowsDOMError();", kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderIllegalStartWhileRecordingThrowsDOMError) {
   MakeTypicalCall("testIllegalStartInRecordingStateThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderIllegalStartWhilePausedThrowsDOMError) {
   MakeTypicalCall("testIllegalStartInPausedStateThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderIllegalRequestDataThrowsDOMError) {
   MakeTypicalCall("testIllegalRequestDataThrowsDOMError();",
-      kMediaRecorderHtmlFile);
+                  kMediaRecorderHtmlFile);
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
                        MediaRecorderPeerConnection) {
   MakeTypicalCall("testRecordRemotePeerConnection();", kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       AddingTrackToMediaStreamFiresErrorEvent) {
+  MakeTypicalCall("testAddingTrackToMediaStreamFiresErrorEvent();",
+                  kMediaRecorderHtmlFile);
+}
+
+IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcMediaRecorderTest,
+                       RemovingTrackFromMediaStreamFiresErrorEvent) {
+  MakeTypicalCall("testRemovingTrackFromMediaStreamFiresErrorEvent();",
+                  kMediaRecorderHtmlFile);
 }
 
 }  // namespace content
