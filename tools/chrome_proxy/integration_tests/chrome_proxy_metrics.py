@@ -912,4 +912,6 @@ class ChromeProxyInstrumentedVideoMetric(Metric):
 # configured to always return block-once for these URLs.
 def IsTestUrlForBlockOnce(url):
   return (url == 'http://check.googlezip.net/blocksingle/' or
-      url == 'http://chromeproxy-test.appspot.com/default?respBody=T0s=&respStatus=200&flywheelAction=block-once')
+      url == ('http://chromeproxy-test.appspot.com/default?respBody=T0s='
+              '&respHeader=eyJBY2Nlc3MtQ29udHJvbC1BbGxvdy1PcmlnaW4iOlsiKiJ'
+              'dfQ==&respStatus=200&flywheelAction=block-once'))

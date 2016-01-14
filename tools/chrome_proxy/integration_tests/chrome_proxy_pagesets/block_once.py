@@ -17,10 +17,14 @@ class BlockOncePage(page_module.Page):
     # Ensure that a subsequent request uses the data reduction proxy.
     action_runner.ExecuteJavaScript('''
       (function() {
+        window.post_request_completed = false;
         var request = new XMLHttpRequest();
         request.open("POST",
-            "http://chromeproxy-test.appspot.com/default?respBody=T0s=&respStatus=200&flywheelAction=block-once");
+            "http://chromeproxy-test.appspot.com/default?" +
+            "respBody=T0s=&respHeader=eyJBY2Nlc3MtQ29udHJvbC1BbGxvdy1Pcml" +
+            "naW4iOlsiKiJdfQ==&respStatus=200&flywheelAction=block-once");
         request.onload = function() {
+          window.post_request_completed = true;
           var viaProxyRequest = new XMLHttpRequest();
           viaProxyRequest.open("GET",
               "http://check.googlezip.net/image.png");
@@ -29,7 +33,8 @@ class BlockOncePage(page_module.Page):
         request.send();
       })();
     ''')
-    action_runner.Wait(1)
+    action_runner.WaitForJavaScriptCondition(
+        "window.post_request_completed == true", 30)
 
 class BlockOnceStorySet(story.StorySet):
 
