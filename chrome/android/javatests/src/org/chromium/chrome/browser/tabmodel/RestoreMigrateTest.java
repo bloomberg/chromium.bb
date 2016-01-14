@@ -25,6 +25,10 @@ import java.util.concurrent.ExecutionException;
  */
 public class RestoreMigrateTest extends InstrumentationTestCase {
 
+    private static void disableReporting() {
+        TabPersistentStore.sReportingDisabledForTests = true;
+    }
+
     private void writeStateFile(final TabModelSelector selector, int index) throws IOException {
         byte[] data = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<byte[]>() {
@@ -232,6 +236,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
                 getInstrumentation().getTargetContext(), null, null);
 
         int maxId = Math.max(getMaxId(selector0), getMaxId(selector1));
+        disableReporting();
         assertEquals("Invalid next id", maxId + 1, storeIn.loadStateInternal());
     }
 
@@ -258,6 +263,7 @@ public class RestoreMigrateTest extends InstrumentationTestCase {
         TabPersistentStore storeIn1 = new TabPersistentStore(selectorIn1, 1,
                 getInstrumentation().getTargetContext(), null, null);
 
+        disableReporting();
         storeIn0.loadStateInternal();
         storeIn1.loadStateInternal();
 

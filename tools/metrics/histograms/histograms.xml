@@ -321,6 +321,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.StrictMode.TabPersistentStore" units="ms">
+  <owner>wnwen@chromium.org</owner>
+  <owner>yfriedman@chromium.org</owner>
+  <summary>
+    Measures time spent during StrictMode-whitelisted code in
+    TabPersistentStore.
+  </summary>
+</histogram>
+
 <histogram name="AndroidTabCloseUndo.Toast"
     enum="AndroidTabCloseUndoToastEvent">
   <owner>dtrainor@chromium.org</owner>
@@ -80726,6 +80735,16 @@ To add a new entry, add it with any value and run test to compute valid value.
   <suffix name="AccountManager" label="Using Android AccountManager API"/>
   <suffix name="GoogleAuthUtil" label="Using GoogleAuthUtil API"/>
   <affected-histogram name="Signin.AndroidGetAccountsTime"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="AndroidTabPersistentStoreTime" separator=".">
+  <suffix name="CleanupAllEncryptedTime"/>
+  <suffix name="LoadStateInternalTime"/>
+  <suffix name="LoadStateTime"/>
+  <suffix name="ReadSavedStateTime"/>
+  <suffix name="RestoreTabTime"/>
+  <suffix name="SaveStateTime"/>
+  <affected-histogram name="Android.StrictMode.TabPersistentStore"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="AppListFirstPaintWarmStartFast" separator="">
