@@ -60,13 +60,15 @@ NSString* EvaluateJavaScriptAsString(UIWebView* web_view, NSString* script) {
 
 id EvaluateJavaScript(WKWebView* web_view, NSString* script) {
   __block base::scoped_nsobject<id> result;
+  __block bool completed = false;
   [web_view evaluateJavaScript:script
              completionHandler:^(id evaluationResult, NSError* error) {
                DCHECK(!error);
+               completed = true;
                result.reset([evaluationResult copy]);
              }];
-  base::test::ios::WaitUntilCondition(^bool() {
-    return result;
+  base::test::ios::WaitUntilCondition(^{
+    return completed;
   });
   return [[result retain] autorelease];
 }
