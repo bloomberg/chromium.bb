@@ -30,7 +30,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
       const web_app::ShortcutInfo& shortcut_info);
 
   HWND GetNativeAppWindowHWND() const;
-  bool IsRunningInAsh();
   void EnsureCaptionStyleSet();
 
   // Overridden from ChromeNativeAppWindowViews:
@@ -52,7 +51,6 @@ class ChromeNativeAppWindowViewsWin : public ChromeNativeAppWindowViewsAura {
   GlassAppWindowFrameViewWin* glass_frame_view_;
 
   // The Windows Application User Model ID identifying the app.
-  // Not set for windows running inside Ash.
   base::string16 app_model_id_;
 
   // Whether the InitParams indicated that this window should be translucent.
