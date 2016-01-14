@@ -76,6 +76,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private static final String TEST_PAGE =
             TestHttpServerClient.getUrl("chrome/test/data/android/contextualsearch/tap_test.html");
     private static final int TEST_TIMEOUT = 15000;
+    private static final int TEST_EXPECTED_FAILURE_TIMEOUT = 1000;
 
     // TODO(donnd): get these from TemplateURL once the low-priority or Contextual Search API
     // is fully supported.
@@ -576,6 +577,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Waits for the Search Panel to enter the given {@code PanelState} and assert.
+     * @param state The {@link PanelState} to wait for.
      * @throws InterruptedException
      */
     private void waitForPanelToEnterState(final PanelState state)
@@ -589,6 +591,30 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                 return mPanel.getPanelState() == state;
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Asserts that the panel is still in the given state and continues to stay that way
+     * for a while.
+     * Waits for a reasonable amount of time for the panel to change to a different state,
+     * and verifies that it did not change state while this method is executing.
+     * Note that it's quite possible for the panel to transition through some other state and
+     * back to the initial state before this method is called without that being detected,
+     * because this method only monitors state during its own execution.
+     * @param initialState The initial state of the panel at the beginning of an operation that
+     *        should not change the panel state.
+     * @throws InterruptedException
+     */
+    private void assertPanelStillInState(final PanelState initialState)
+            throws InterruptedException {
+        boolean didChangeState = false;
+        long startTime = SystemClock.uptimeMillis();
+        while (!didChangeState
+                && SystemClock.uptimeMillis() - startTime < TEST_EXPECTED_FAILURE_TIMEOUT) {
+            Thread.sleep(DEFAULT_POLLING_INTERVAL);
+            didChangeState = mPanel.getPanelState() != initialState;
+        }
+        assertFalse(didChangeState);
     }
 
     /**
@@ -1399,21 +1425,22 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapOnRoleIgnored() throws InterruptedException, TimeoutException {
+        PanelState initialState = mPanel.getPanelState();
         clickNode("role");
-        assertPanelNeverOpened();
+        assertPanelStillInState(initialState);
     }
 
     /**
      * Tests that a Tap gesture on an element with an ARIA attribute does not trigger.
      * http://crbug.com/542874
+     */
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    */
-    @DisabledTest
     public void testTapOnARIAIgnored() throws InterruptedException, TimeoutException {
+        PanelState initialState = mPanel.getPanelState();
         clickNode("aria");
-        assertPanelNeverOpened();
+        assertPanelStillInState(initialState);
     }
 
     /**
@@ -1423,8 +1450,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     @Feature({"ContextualSearch"})
     @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
     public void testTapOnFocusableIgnored() throws InterruptedException, TimeoutException {
+        PanelState initialState = mPanel.getPanelState();
         clickNode("focusable");
-        assertPanelNeverOpened();
+        assertPanelStillInState(initialState);
     }
 
     /**
