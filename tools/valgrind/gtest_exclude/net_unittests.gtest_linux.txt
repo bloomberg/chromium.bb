@@ -7,4 +7,4 @@ DiskCacheEntryTest.SimpleCacheSizeChanges
 Spdy_SpdyNetworkTransactionTest.StartTransactionOnReadCallback_0
 
 # Failing. crbug.com/577346
-Tests_QuicSimpleServerSessionTest.TestPromisePushResources_0
+QuicSimpleServerSessionTest.TestPromisePushResources
