@@ -6,7 +6,6 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_TABLET;
 
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 import android.text.TextUtils;
@@ -30,7 +29,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.chrome.test.util.OmniboxTestUtils;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
-import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
@@ -45,8 +43,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Navigate in UrlBar tests.
@@ -56,8 +52,8 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     private static final String NEW_TAB_PAGE = "chrome-native://newtab/";
 
     private void navigateAndObserve(final String startUrl, final String endUrl)
-            throws InterruptedException {
-        new TabLoadObserver(getActivity().getActivityTab(), startUrl).assertLoaded();
+            throws Exception {
+        new TabLoadObserver(getActivity().getActivityTab()).fullyLoadUrl(startUrl);
 
         CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
@@ -75,11 +71,14 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      * Types the passed text in the omnibox to trigger a navigation. You can pass a URL or a search
      * term. This code triggers suggestions and prerendering; unless you are testing these
      * features specifically, you should use loadUrl() which is less prone to flakyness.
+     *
      * @param url The URL to navigate to.
+     * @param expectedTitle Title that the page is expected to have.  Shouldn't be set if the page
+     *                      load causes a redirect.
      * @return the URL in the omnibox.
-     * @throws InterruptedException
      */
-    private String typeInOmniboxAndNavigate(final String url) throws InterruptedException {
+    private String typeInOmniboxAndNavigate(final String url, final String expectedTitle)
+            throws Exception {
         final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
         assertNotNull("urlBar is null", urlBar);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -93,36 +92,11 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
         OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
 
-        Tab currentTab = getActivity().getActivityTab();
-        final CallbackHelper loadedCallback = new CallbackHelper();
-        final AtomicBoolean tabCrashReceived = new AtomicBoolean();
-        currentTab.addObserver(new EmptyTabObserver() {
-            @Override
-            public void onPageLoadFinished(Tab tab) {
-                loadedCallback.notifyCalled();
-                tab.removeObserver(this);
-            }
-
-            @Override
-            public void onCrash(Tab tab, boolean sadTabShown) {
-                tabCrashReceived.set(true);
-                tab.removeObserver(this);
-            }
-        });
-
         // Loads the url.
+        TabLoadObserver observer =
+                new TabLoadObserver(getActivity().getActivityTab(), expectedTitle, null);
         KeyUtils.singleKeyEventView(getInstrumentation(), urlBar, KeyEvent.KEYCODE_ENTER);
-
-        boolean pageLoadReceived = true;
-        try {
-            loadedCallback.waitForCallback(0);
-        } catch (TimeoutException ex) {
-            pageLoadReceived = false;
-        }
-
-        assertTrue("Neither PAGE_LOAD_FINISHED nor a TAB_CRASHED event was received",
-                pageLoadReceived || tabCrashReceived.get());
-        getInstrumentation().waitForIdleSync();
+        observer.assertLoaded();
 
         // The URL has been set before the page notification was broadcast, so it is safe to access.
         return urlBar.getText().toString();
@@ -142,27 +116,27 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     @Smoke
     @MediumTest
     @Feature({"Navigation", "Main"})
-    public void testNavigate() throws InterruptedException {
+    public void testNavigate() throws Exception {
         String url = TestHttpServerClient.getUrl("chrome/test/data/android/navigate/simple.html");
-        String result = typeInOmniboxAndNavigate(url);
+        String result = typeInOmniboxAndNavigate(url, "Simple");
         assertEquals(expectedLocation(url), result);
     }
 
-//    @Restriction(RESTRICTION_TYPE_TABLET)
-//    @MediumTest
-//    @Feature({"Navigation"})
-//    crbug.com/516018
-    @FlakyTest
-    public void testNavigateMany() throws InterruptedException {
+    @Restriction(RESTRICTION_TYPE_TABLET)
+    @MediumTest
+    @Feature({"Navigation"})
+    public void testNavigateMany() throws Exception {
         final String[] urls = {
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/one.html"),
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/two.html"),
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/three.html")
         };
+        final String[] titles = {"One", "Two", "Three"};
         final int repeats = 3;
+
         for (int i = 0; i < repeats; i++) {
             for (int j = 0; j < urls.length; j++) {
-                String result = typeInOmniboxAndNavigate(urls[j]);
+                String result = typeInOmniboxAndNavigate(urls[j], titles[j]);
                 assertEquals(expectedLocation(urls[j]), result);
             }
         }
@@ -173,11 +147,11 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
-    public void testNavigateLandscape() throws InterruptedException {
+    public void testNavigateLandscape() throws Exception {
         // '0' is Landscape Mode. '1' is Portrait.
         getActivity().setRequestedOrientation(0);
         String url = TestHttpServerClient.getUrl("chrome/test/data/android/navigate/simple.html");
-        String result = typeInOmniboxAndNavigate(url);
+        String result = typeInOmniboxAndNavigate(url, "Simple");
         assertEquals(expectedLocation(url), result);
     }
 
@@ -186,7 +160,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
-    public void testOpenAndNavigate() throws InterruptedException {
+    public void testOpenAndNavigate() throws Exception {
         final String url =
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/simple.html");
         navigateAndObserve(url, url);
@@ -197,7 +171,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
 
         assertEquals("Wrong number of tabs",
                 tabCount + 1, getActivity().getCurrentTabModel().getCount());
-        String result = typeInOmniboxAndNavigate(url);
+        String result = typeInOmniboxAndNavigate(url, "Simple");
         assertEquals(expectedLocation(url), result);
     }
 
@@ -206,7 +180,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
-    public void testOpenLink() throws InterruptedException, TimeoutException {
+    public void testOpenLink() throws Exception {
         String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
         String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
 
@@ -225,7 +199,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
      */
     @MediumTest
     @Feature({"Navigation"})
-    public void testTabObserverOnPageLoadStarted() throws InterruptedException, TimeoutException {
+    public void testTabObserverOnPageLoadStarted() throws Exception {
         final String url1 = TestHttpServerClient.getUrl("chrome/test/data/android/google.html");
         final String url2 = TestHttpServerClient.getUrl("chrome/test/data/android/about.html");
 
@@ -258,7 +232,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 TestHttpServerClient.getUrl("chrome/test/data/android/redirect/about.html");
         final String redirectedUrl =
                 TestHttpServerClient.getUrl("chrome/test/data/android/redirect/one.html");
-        typeInOmniboxAndNavigate(initialUrl);
+        typeInOmniboxAndNavigate(initialUrl, null);
 
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
@@ -287,7 +261,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
                 "UTF-8"));
         final String targetUrl =
                 TestHttpServerClient.getUrl("chrome/test/data/android/redirect/one.html");
-        typeInOmniboxAndNavigate(initialUrl);
+        typeInOmniboxAndNavigate(initialUrl, null);
 
         // Now intent fallback should be triggered assuming 'non_existent' scheme cannot be handled.
         CriteriaHelper.pollForCriteria(new Criteria() {
@@ -316,7 +290,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
     @Restriction(RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
-    public void testNavigateBackAndForwardButtons() throws InterruptedException {
+    public void testNavigateBackAndForwardButtons() throws Exception {
         final String[] urls = {
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/one.html"),
                 TestHttpServerClient.getUrl("chrome/test/data/android/navigate/two.html"),
@@ -449,10 +423,8 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         try {
             return JavaScriptUtils.executeJavaScriptAndWaitForResult(
                     tab.getWebContents(), "document.body.innerText");
-        } catch (InterruptedException ex) {
-            assert false : "Unexpected InterruptedException";
-        } catch (TimeoutException ex) {
-            assert false : "Unexpected TimeoutException";
+        } catch (Exception ex) {
+            assert false : "Unexpected Exception";
         }
         return null;
     }

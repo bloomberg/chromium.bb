@@ -259,8 +259,7 @@ public class WebappModeTest extends MultiActivityTestBase {
         final int firstWebappId = firstActivity.getActivityTab().getId();
 
         // Load up the test page.
-        new TabLoadObserver(firstActivity.getActivityTab(), linkHtml).assertLoaded(
-                DEFAULT_MAX_TIME_TO_POLL_FOR_ACTIVITY_MS);
+        new TabLoadObserver(firstActivity.getActivityTab()).fullyLoadUrl(linkHtml);
 
         // Do a plain click to make the link open in the main browser via a window.open().
         // If the window is opened successfully, javascript on the first page triggers and changes

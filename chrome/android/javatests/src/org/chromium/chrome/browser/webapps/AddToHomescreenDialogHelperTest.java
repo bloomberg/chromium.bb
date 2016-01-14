@@ -15,7 +15,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ShortcutHelper;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.TabLoadObserver;
@@ -126,7 +125,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcuts() throws InterruptedException {
+    public void testAddWebappShortcuts() throws Exception {
         // Add a webapp shortcut and make sure the intent's parameters make sense.
         addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, "");
         Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
@@ -152,7 +151,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddBookmarkShortcut() throws InterruptedException {
+    public void testAddBookmarkShortcut() throws Exception {
         addShortcutToURL(NORMAL_HTML, NORMAL_TITLE, "");
 
         // Make sure the intent's parameters make sense.
@@ -167,7 +166,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcutsWithoutTitleEdit() throws InterruptedException {
+    public void testAddWebappShortcutsWithoutTitleEdit() throws Exception {
         // Add a webapp shortcut using the page's title.
         addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, "");
         Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
@@ -176,7 +175,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcutsWithTitleEdit() throws InterruptedException {
+    public void testAddWebappShortcutsWithTitleEdit() throws Exception {
         // Add a webapp shortcut with a custom title.
         addShortcutToURL(WEBAPP_HTML, WEBAPP_TITLE, EDITED_WEBAPP_TITLE);
         Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
@@ -185,7 +184,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcutsWithApplicationName() throws InterruptedException {
+    public void testAddWebappShortcutsWithApplicationName() throws Exception {
         addShortcutToURL(META_APP_NAME_HTML, META_APP_NAME_PAGE_TITLE, "");
         Intent firedIntent = mShortcutHelperDelegate.mBroadcastedIntent;
         assertEquals(META_APP_NAME_TITLE, firedIntent.getStringExtra(Intent.EXTRA_SHORTCUT_NAME));
@@ -193,7 +192,7 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
 
     @SmallTest
     @Feature("{Webapp}")
-    public void testAddWebappShortcutSplashScreenIcon() throws InterruptedException {
+    public void testAddWebappShortcutSplashScreenIcon() throws Exception {
         // Sets the overriden factory to observer splash screen update.
         final TestDataStorageFactory dataStorageFactory = new TestDataStorageFactory();
         WebappDataStorage.setFactoryForTests(dataStorageFactory);
@@ -216,9 +215,8 @@ public class AddToHomescreenDialogHelperTest extends ChromeActivityTestCaseBase<
     }
 
     private void addShortcutToURL(String url, final String expectedPageTitle, final String title)
-            throws InterruptedException {
-        final Tab activeTab = mActivity.getActivityTab();
-        new TabLoadObserver(activeTab, url, expectedPageTitle, null).assertLoaded();
+            throws Exception {
+        new TabLoadObserver(mActivity.getActivityTab(), expectedPageTitle, null).fullyLoadUrl(url);
 
         // Add the shortcut.
         Callable<AddToHomescreenDialogHelper> callable =

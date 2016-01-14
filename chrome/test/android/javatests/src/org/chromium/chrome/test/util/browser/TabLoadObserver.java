@@ -6,9 +6,12 @@ package org.chromium.chrome.test.util.browser;
 
 import android.text.TextUtils;
 
+import junit.framework.Assert;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -21,57 +24,64 @@ import java.util.Locale;
 public class TabLoadObserver extends EmptyTabObserver {
     private static final float FLOAT_EPSILON = 0.001f;
 
+    private final CallbackHelper mTabLoadStartedCallback = new CallbackHelper();
+    private final CallbackHelper mTabLoadFinishedCallback = new CallbackHelper();
+
     private final Tab mTab;
     private final String mExpectedTitle;
     private final Float mExpectedScale;
 
-    private boolean mTabLoadStarted;
-    private boolean mTabLoadStopped;
-
-    public TabLoadObserver(Tab tab, final String url) {
-        this(tab, url, null, null);
+    public TabLoadObserver(Tab tab) {
+        this(tab, null, null);
     }
 
-    public TabLoadObserver(Tab tab, final String url, String expectedTitle, Float expectedScale) {
+    public TabLoadObserver(Tab tab, String expectedTitle, Float expectedScale) {
         mTab = tab;
+        mTab.addObserver(this);
         mExpectedTitle = expectedTitle;
         mExpectedScale = expectedScale;
+    }
 
-        mTab.addObserver(this);
+    @Override
+    public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
+        mTabLoadStartedCallback.notifyCalled();
+    }
+
+    @Override
+    public void onPageLoadFinished(Tab tab) {
+        mTabLoadFinishedCallback.notifyCalled();
+    }
+
+    @Override
+    public void onCrash(Tab tab, boolean sadTabShown) {
+        Assert.fail("Tab crashed; test results will be invalid.  Failing.");
+    }
+
+    /**
+     * Loads the given URL and waits for it to complete.
+     *
+     * @param url URL to load and wait for.
+     */
+    public void fullyLoadUrl(final String url) throws Exception {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 mTab.loadUrl(new LoadUrlParams(url));
             }
         });
-    }
-
-    @Override
-    public void onLoadStarted(Tab tab, boolean toDifferentDocument) {
-        mTabLoadStarted = true;
-    }
-
-    @Override
-    public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
-        mTabLoadStopped = true;
+        assertLoaded();
     }
 
     /**
      * Asserts the page has loaded.
-     * @param maxAllowedTime The maximum time this will wait for the page to load.
      */
-    public void assertLoaded(long maxAllowedTime) throws InterruptedException {
-        Criteria loadedCriteria = new Criteria() {
+    public void assertLoaded() throws Exception {
+        mTabLoadStartedCallback.waitForCallback(0, 1);
+        mTabLoadFinishedCallback.waitForCallback(0, 1);
+
+        CriteriaHelper.pollForUIThreadCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                if (!mTabLoadStarted) {
-                    updateFailureReason("load started never called");
-                    return false;
-                }
-                if (!mTabLoadStopped) {
-                    updateFailureReason("load stopped never called");
-                    return false;
-                }
                 if (!mTab.isLoadingAndRenderingDone()) {
                     updateFailureReason("load and rendering never completed");
                     return false;
@@ -85,6 +95,7 @@ public class TabLoadObserver extends EmptyTabObserver {
                             mExpectedTitle, title));
                     return false;
                 }
+
                 if (mExpectedScale != null) {
                     if (mTab.getContentViewCore() == null) {
                         updateFailureReason("tab has no content view core");
@@ -103,16 +114,6 @@ public class TabLoadObserver extends EmptyTabObserver {
                 updateFailureReason(null);
                 return true;
             }
-        };
-
-        CriteriaHelper.pollForUIThreadCriteria(
-                loadedCriteria, maxAllowedTime, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
-    }
-
-    /**
-     * Asserts that the page has loaded.
-     */
-    public void assertLoaded() throws InterruptedException {
-        assertLoaded(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL);
+        });
     }
 }
