@@ -73,10 +73,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.
-  // |delegate| may be null. |renderer| may also be null, in which case an
-  // internal renderer will be created.
-  // TODO(xhwang): Drop the internal renderer path and always pass in a renderer
-  // here.
+  // |delegate| may be null. |renderer_factory| must not be null.
   WebMediaPlayerImpl(
       blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,

@@ -184,6 +184,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_cdm_attached_(false),
       renderer_factory_(std::move(renderer_factory)) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
+  DCHECK(renderer_factory_);
 
   if (delegate)
     delegate->AddObserver(this);
