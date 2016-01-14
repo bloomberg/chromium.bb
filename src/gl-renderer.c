@@ -626,7 +626,7 @@ repaint_region(struct weston_view *ev, pixman_region32_t *region,
 	 * coordinates. texture_region() will iterate over all pairs of
 	 * rectangles from both regions, compute the intersection
 	 * polygon for each pair, and store it as a triangle fan if
-	 * it has a non-zero area (at least 3 vertices1, actually).
+	 * it has a non-zero area (at least 3 vertices, actually).
 	 */
 	nfans = texture_region(ev, region, surf_region);
 
