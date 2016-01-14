@@ -55,6 +55,7 @@ static const float maxCancelButtonSize = 21;
 static const float defaultSearchFieldResultsDecorationSize = 13;
 static const float minSearchFieldResultsDecorationSize = 9;
 static const float maxSearchFieldResultsDecorationSize = 30;
+static const int menuListArrowPaddingSize = 14;
 
 static bool useMockTheme()
 {
@@ -387,11 +388,6 @@ void LayoutThemeDefault::setDefaultFontSize(int fontSize)
     LayoutThemeFontProvider::setDefaultFontSize(fontSize);
 }
 
-int LayoutThemeDefault::menuListArrowPadding() const
-{
-    return ScrollbarTheme::theme().scrollbarThickness();
-}
-
 int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int paddingType) const
 {
     if (style.appearance() == NoControlPart)
@@ -405,7 +401,7 @@ int LayoutThemeDefault::menuListInternalPadding(const ComputedStyle& style, int 
     // LayoutMenuList to lay out the individual items in the popup.
     const int barType = style.direction() == LTR ? RightPadding : LeftPadding;
     if (paddingType == barType)
-        padding += menuListArrowPadding();
+        padding += menuListArrowPaddingSize;
 
     return padding * style.effectiveZoom();
 }

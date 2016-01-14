@@ -260,7 +260,7 @@ void ThemePainterDefault::setupMenuListArrow(const LayoutBox& box, const IntRect
         int spacingTop = box.borderTop() + box.paddingTop();
         int spacingBottom = box.borderBottom() + box.paddingBottom();
         int spacingRight = box.borderRight() + box.paddingRight();
-        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        extraParams.menuList.arrowX = (box.styleRef().direction() == RTL) ? rect.x() + 4 + spacingRight: right - 10 - spacingRight;
         extraParams.menuList.arrowSize = rect.height() - spacingBottom - spacingTop;
     } else {
         const int arrowSize = 6;

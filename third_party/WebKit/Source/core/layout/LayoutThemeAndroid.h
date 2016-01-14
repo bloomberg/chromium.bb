@@ -51,9 +51,6 @@ public:
         return LayoutThemeAndroid::defaultActiveSelectionBackgroundColor;
     }
 
-protected:
-    int menuListArrowPadding() const override;
-
 private:
     ~LayoutThemeAndroid() override;
 

@@ -131,7 +131,6 @@ protected:
     LayoutThemeDefault();
     ~LayoutThemeDefault() override;
     bool shouldUseFallbackTheme(const ComputedStyle&) const override;
-    virtual int menuListArrowPadding() const;
 
     IntRect determinateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
     IntRect indeterminateProgressValueRectFor(LayoutProgress*, const IntRect&) const;
