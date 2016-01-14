@@ -7,13 +7,13 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/parser/CSSTokenizer.h"
-#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/IntersectionObserverCallback.h"
 #include "core/dom/IntersectionObserverController.h"
 #include "core/dom/IntersectionObserverEntry.h"
 #include "core/dom/IntersectionObserverInit.h"
+#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutView.h"
 #include "platform/Timer.h"
@@ -81,17 +81,17 @@ static void parseThresholds(const DoubleOrDoubleArray& thresholdParameter, Vecto
 
 IntersectionObserver* IntersectionObserver::create(const IntersectionObserverInit& observerInit, IntersectionObserverCallback& callback, ExceptionState& exceptionState)
 {
-    RefPtrWillBeRawPtr<Element> root = observerInit.root();
+    RefPtrWillBeRawPtr<Node> root = observerInit.root();
     if (!root) {
         // TODO(szager): Use Document instead of document element for implicit root. (crbug.com/570538)
         ExecutionContext* context = callback.executionContext();
         ASSERT(context->isDocument());
         Frame* mainFrame = toDocument(context)->frame()->tree().top();
         if (mainFrame && mainFrame->isLocalFrame())
-            root = toLocalFrame(mainFrame)->document()->documentElement();
+            root = toLocalFrame(mainFrame)->document();
     }
     if (!root) {
-        exceptionState.throwDOMException(HierarchyRequestError, "Unable to get root element in main frame to track.");
+        exceptionState.throwDOMException(HierarchyRequestError, "Unable to get root node in main frame to track.");
         return nullptr;
     }
 
@@ -112,15 +112,18 @@ IntersectionObserver* IntersectionObserver::create(const IntersectionObserverIni
     return new IntersectionObserver(callback, *root, rootMargin, thresholds);
 }
 
-IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callback, Element& root, const Vector<Length>& rootMargin, const Vector<float>& thresholds)
+IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callback, Node& root, const Vector<Length>& rootMargin, const Vector<float>& thresholds)
     : m_callback(&callback)
-    , m_root(root.ensureIntersectionObserverData().createWeakPtr(&root))
     , m_thresholds(thresholds)
     , m_topMargin(Fixed)
     , m_rightMargin(Fixed)
     , m_bottomMargin(Fixed)
     , m_leftMargin(Fixed)
 {
+    if (root.isDocumentNode())
+        m_root = toDocument(root).ensureIntersectionObserverData().createWeakPtr(&root);
+    else
+        m_root = toElement(root).ensureIntersectionObserverData().createWeakPtr(&root);
     switch (rootMargin.size()) {
     case 0:
         break;
@@ -149,24 +152,24 @@ IntersectionObserver::IntersectionObserver(IntersectionObserverCallback& callbac
     root.document().ensureIntersectionObserverController().addTrackedObserver(*this);
 }
 
-LayoutObject* IntersectionObserver::rootLayoutObject()
+LayoutObject* IntersectionObserver::rootLayoutObject() const
 {
-    Element* rootElement = root();
-    if (rootElement == rootElement->document().documentElement())
-        return rootElement->document().layoutView();
-    return rootElement->layoutObject();
+    Node* rootNode = root();
+    if (rootNode->isDocumentNode())
+        return toDocument(rootNode)->layoutView();
+    return toElement(rootNode)->layoutObject();
 }
 
 bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
 {
     // Is m_root an ancestor, through the DOM and frame trees, of target?
-    Element* rootElement = m_root.get();
-    if (!rootElement || !target || target == rootElement)
+    Node* rootNode = root();
+    if (!rootNode || !target || target == rootNode)
         return false;
-    if (!target->inDocument() || !rootElement->inDocument())
+    if (!target->inDocument() || !rootNode->inDocument())
         return false;
 
-    Document* rootDocument = &rootElement->document();
+    Document* rootDocument = &rootNode->document();
     Document* targetDocument = &target->document();
     while (targetDocument != rootDocument) {
         target = targetDocument->ownerElement();
@@ -174,7 +177,11 @@ bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
             return false;
         targetDocument = &target->document();
     }
-    return target->isDescendantOf(rootElement);
+    if (rootNode->isDocumentNode()) {
+        ASSERT(targetDocument == rootNode);
+        return true;
+    }
+    return target->isDescendantOf(rootNode);
 }
 
 void IntersectionObserver::observe(Element* target, ExceptionState& exceptionState)

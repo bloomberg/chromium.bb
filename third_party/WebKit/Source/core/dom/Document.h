@@ -136,6 +136,7 @@ class MainThreadTaskRunner;
 class MediaQueryListListener;
 class MediaQueryMatcher;
 class NodeFilter;
+class NodeIntersectionObserverData;
 class NodeIterator;
 class NthIndexCache;
 class OriginAccessEntry;
@@ -689,6 +690,7 @@ public:
 
     IntersectionObserverController* intersectionObserverController();
     IntersectionObserverController& ensureIntersectionObserverController();
+    NodeIntersectionObserverData& ensureIntersectionObserverData();
 
     void updateViewportDescription();
     void processReferrerPolicy(const String& policy);
@@ -1405,6 +1407,7 @@ private:
     PersistentWillBeMember<CanvasFontCache> m_canvasFontCache;
 
     PersistentWillBeMember<IntersectionObserverController> m_intersectionObserverController;
+    PersistentWillBeMember<NodeIntersectionObserverData> m_intersectionObserverData;
 
     int m_nodeCount;
 };

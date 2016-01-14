@@ -83,6 +83,7 @@
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeFilter.h"
+#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/NodeIterator.h"
 #include "core/dom/NodeRareData.h"
 #include "core/dom/NodeTraversal.h"
@@ -608,6 +609,9 @@ void Document::dispose()
 
     if (svgExtensions())
         accessSVGExtensions().pauseAnimations();
+
+    if (m_intersectionObserverData)
+        m_intersectionObserverData->dispose();
 
     m_lifecycle.advanceTo(DocumentLifecycle::Disposed);
     DocumentLifecycleNotifier::notifyDocumentWasDisposed();
@@ -5081,6 +5085,13 @@ IntersectionObserverController& Document::ensureIntersectionObserverController()
     return *m_intersectionObserverController;
 }
 
+NodeIntersectionObserverData& Document::ensureIntersectionObserverData()
+{
+    if (!m_intersectionObserverData)
+        m_intersectionObserverData = new NodeIntersectionObserverData();
+    return *m_intersectionObserverData;
+}
+
 void Document::reportBlockedScriptExecutionToInspector(const String& directiveText)
 {
     InspectorInstrumentation::scriptExecutionBlockedByCSP(this, directiveText);
@@ -5885,6 +5896,7 @@ DEFINE_TRACE(Document)
     visitor->trace(m_contextDocument);
     visitor->trace(m_canvasFontCache);
     visitor->trace(m_intersectionObserverController);
+    visitor->trace(m_intersectionObserverData);
     WillBeHeapSupplementable<Document>::trace(visitor);
 #endif
     TreeScope::trace(visitor);

@@ -54,7 +54,6 @@
 #include "core/dom/ClientRectList.h"
 #include "core/dom/DatasetDOMStringMap.h"
 #include "core/dom/ElementDataCache.h"
-#include "core/dom/ElementIntersectionObserverData.h"
 #include "core/dom/ElementRareData.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
@@ -65,6 +64,7 @@
 #include "core/dom/MutationRecord.h"
 #include "core/dom/NamedNodeMap.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/NodeIntersectionObserverData.h"
 #include "core/dom/PresentationAttributeStyle.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ScriptableDocumentParser.h"
@@ -2596,14 +2596,14 @@ Node* Element::insertAdjacent(const String& where, Node* newChild, ExceptionStat
     return nullptr;
 }
 
-ElementIntersectionObserverData* Element::intersectionObserverData() const
+NodeIntersectionObserverData* Element::intersectionObserverData() const
 {
     if (elementRareData())
         return elementRareData()->intersectionObserverData();
     return nullptr;
 }
 
-ElementIntersectionObserverData& Element::ensureIntersectionObserverData()
+NodeIntersectionObserverData& Element::ensureIntersectionObserverData()
 {
     return ensureElementRareData().ensureIntersectionObserverData();
 }
