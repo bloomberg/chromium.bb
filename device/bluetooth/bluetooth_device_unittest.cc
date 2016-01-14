@@ -395,6 +395,55 @@ TEST_F(BluetoothTest,
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_ANDROID)
+// Calls CreateGattConnection & DisconnectGatt, then checks that gatt services
+// have been cleaned up.
+TEST_F(BluetoothTest, BluetoothGattConnection_DisconnectGatt_Cleanup) {
+  InitWithFakeAdapter();
+  StartLowEnergyDiscoverySession();
+  BluetoothDevice* device = DiscoverLowEnergyDevice(3);
+  EXPECT_FALSE(device->IsConnected());
+
+  // Connect to the device
+  ResetEventCounts();
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  TestBluetoothAdapterObserver observer(adapter_);
+  SimulateGattConnection(device);
+  EXPECT_TRUE(device->IsConnected());
+
+  // Discover services
+  std::vector<std::string> services;
+  services.push_back("00000000-0000-1000-8000-00805f9b34fb");
+  services.push_back("00000001-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services);
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(2u, device->GetGattServices().size());
+  EXPECT_EQ(1, observer.gatt_services_discovered_count());
+
+  // Disconnect from the device
+  device->DisconnectGatt();
+  SimulateGattDisconnection(device);
+  EXPECT_FALSE(device->IsConnected());
+  EXPECT_FALSE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(0u, device->GetGattServices().size());
+
+  // Verify that the device can be connected to again
+  device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                               GetConnectErrorCallback(Call::NOT_EXPECTED));
+  SimulateGattConnection(device);
+  EXPECT_TRUE(device->IsConnected());
+
+  // Verify that service discovery can be done again
+  std::vector<std::string> services2;
+  services2.push_back("00000002-0000-1000-8000-00805f9b34fb");
+  SimulateGattServicesDiscovered(device, services2);
+  EXPECT_TRUE(device->IsGattServicesDiscoveryComplete());
+  EXPECT_EQ(1u, device->GetGattServices().size());
+  EXPECT_EQ(2, observer.gatt_services_discovered_count());
+}
+#endif  // defined(OS_ANDROID)
+
+#if defined(OS_ANDROID)
 // Calls CreateGattConnection, but simulate errors connecting. Also, verifies
 // multiple errors should only invoke callbacks once.
 TEST_F(BluetoothTest, BluetoothGattConnection_ErrorAfterConnection) {

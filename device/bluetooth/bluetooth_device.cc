@@ -19,7 +19,9 @@
 namespace device {
 
 BluetoothDevice::BluetoothDevice(BluetoothAdapter* adapter)
-    : adapter_(adapter), services_data_(new base::DictionaryValue()) {}
+    : adapter_(adapter),
+      gatt_services_discovery_complete_(false),
+      services_data_(new base::DictionaryValue()) {}
 
 BluetoothDevice::~BluetoothDevice() {
   DidDisconnectGatt();
@@ -212,6 +214,14 @@ void BluetoothDevice::CreateGattConnection(
     return DidConnectGatt();
 
   CreateGattConnectionImpl();
+}
+
+void BluetoothDevice::SetGattServicesDiscoveryComplete(bool complete) {
+  gatt_services_discovery_complete_ = complete;
+}
+
+bool BluetoothDevice::IsGattServicesDiscoveryComplete() const {
+  return gatt_services_discovery_complete_;
 }
 
 std::vector<BluetoothGattService*>
