@@ -42,6 +42,9 @@ const char kGAPSCookie[] = "gaps_cookie";
 // Key of the reason for re-auth.
 const char kReauthReasonKey[] = "reauth_reason";
 
+// Key for the GaiaId migration status.
+const char kGaiaIdMigration[] = "gaia_id_migration";
+
 PrefService* GetLocalState() {
   UserManager* user_manager = UserManager::Get();
   if (user_manager)
@@ -251,6 +254,25 @@ AccountId GetAccountId(const std::string& user_email,
   return (gaia_id.empty()
               ? AccountId::FromUserEmail(user_email)
               : AccountId::FromUserEmailGaiaId(user_email, gaia_id));
+}
+
+bool GetGaiaIdMigrationStatus(const AccountId& account_id,
+                              const std::string& subsystem) {
+  bool migrated = false;
+
+  if (GetBooleanPref(account_id,
+                     std::string(kGaiaIdMigration) + "." + subsystem,
+                     &migrated)) {
+    return migrated;
+  }
+
+  return false;
+}
+
+void SetGaiaIdMigrationStatusDone(const AccountId& account_id,
+                                  const std::string& subsystem) {
+  SetBooleanPref(account_id, std::string(kGaiaIdMigration) + "." + subsystem,
+                 true);
 }
 
 void UpdateGaiaID(const AccountId& account_id, const std::string& gaia_id) {
