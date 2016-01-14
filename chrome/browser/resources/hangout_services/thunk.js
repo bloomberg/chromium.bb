@@ -41,10 +41,6 @@ chrome.runtime.onMessageExternal.addListener(
           requestInfo['guestProcessId'] = sender.guestProcessId;
         }
 
-        if (sender.guestRenderFrameRoutingId) {
-          requestInfo['guestRenderFrameId'] = sender.guestRenderFrameRoutingId;
-        }
-
         var method = message['method'];
         var origin = getHost(sender.url);
         if (method == 'cpu.getInfo') {
