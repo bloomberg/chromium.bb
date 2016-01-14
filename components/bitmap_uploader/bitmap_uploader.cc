@@ -14,6 +14,7 @@
 #include "mojo/converters/geometry/geometry_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_type_converters.h"
 #include "mojo/converters/surfaces/surfaces_utils.h"
+#include "mojo/public/c/gles2/chromium_extension.h"
 #include "mojo/public/c/gles2/gles2.h"
 #include "mojo/services/network/public/interfaces/url_loader.mojom.h"
 #include "mojo/shell/public/cpp/application_impl.h"
@@ -130,7 +131,12 @@ void BitmapUploader::Upload() {
     GLbyte mailbox[GL_MAILBOX_SIZE_CHROMIUM];
     glGenMailboxCHROMIUM(mailbox);
     glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
-    gpu::SyncToken sync_token(glInsertSyncPointCHROMIUM());
+
+    const GLuint64 fence_sync = glInsertFenceSyncCHROMIUM();
+    glShallowFlushCHROMIUM();
+
+    gpu::SyncToken sync_token;
+    glGenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
 
     mus::mojom::TransferableResourcePtr resource =
         mus::mojom::TransferableResource::New();
