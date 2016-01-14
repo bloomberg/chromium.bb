@@ -222,6 +222,20 @@ TEST_F(OfflinePageMHTMLArchiverTest, GenerateFileName) {
   base::FilePath actual_2(
       OfflinePageMHTMLArchiver::GenerateFileName(url_2, title_2));
   EXPECT_EQ(expected_2, actual_2);
-}
+
+  GURL url_3("https://www.google.com/search");
+  std::string title_3 =
+      "A really really really really really long title "
+      "that is over 80 chars long here^ - TRUNCATE THIS PART";
+  std::string expected_title_3_part =
+      "A_really_really_really_really_really_long_title_"
+      "that_is_over_80_chars_long_here^";
+  base::FilePath expected_3(
+      FILE_PATH_LITERAL("www.google.com-" +
+                        expected_title_3_part +
+                        "-ko+SHbxDoN0rARsFf82l4QubaJE=.mhtml"));
+  base::FilePath actual_3(
+      OfflinePageMHTMLArchiver::GenerateFileName(url_3, title_3));
+  EXPECT_EQ(expected_3, actual_3);}
 
 }  // namespace offline_pages
