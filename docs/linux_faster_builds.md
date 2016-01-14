@@ -46,7 +46,8 @@ Icecc doesn't work with sysroot.
 
     linux_use_bundled_gold=0
 
-Using the system linker is necessary since a recent binutils upgrade.
+Using the system linker is necessary when using glibc 2.21 or newer. See
+[related bug](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=808181).
 
 ## Build only specific targets
 
