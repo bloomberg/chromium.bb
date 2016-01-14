@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/ppb_graphics_3d.h"
@@ -84,7 +85,8 @@ int32_t SwapBuffers(PP_Resource context,
   EnterResource<PPB_Graphics3D_API> enter(context, callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
+  return enter.SetResult(enter.object()->SwapBuffers(enter.callback(),
+                                                     gpu::SyncToken()));
 }
 
 const PPB_Graphics3D_1_0 g_ppb_graphics3d_thunk_1_0 = {&GetAttribMaxValue,

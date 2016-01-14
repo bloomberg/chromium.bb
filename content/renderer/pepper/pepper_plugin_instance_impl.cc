@@ -753,7 +753,7 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   }
 
   cc::Layer* layer =
-      texture_layer_.get() ? texture_layer_.get() : compositor_layer_.get();
+      texture_layer_ ? texture_layer_.get() : compositor_layer_.get();
   if (layer) {
     if (rect.IsEmpty()) {
       layer->SetNeedsDisplay();
@@ -767,7 +767,7 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
                                           int dy,
                                           const gfx::Rect& rect) {
   cc::Layer* layer =
-      texture_layer_.get() ? texture_layer_.get() : compositor_layer_.get();
+      texture_layer_ ? texture_layer_.get() : compositor_layer_.get();
   if (layer) {
     InvalidateRect(rect);
   } else if (fullscreen_container_) {
@@ -785,15 +785,18 @@ void PepperPluginInstanceImpl::ScrollRect(int dx,
 }
 
 void PepperPluginInstanceImpl::CommitBackingTexture() {
-  if (!texture_layer_.get())
+  if (!texture_layer_) {
+    UpdateLayer(true);
     return;
+  }
+
   gpu::Mailbox mailbox;
-  uint32_t sync_point = 0;
-  bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_point);
+  gpu::SyncToken sync_token;
+  bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_token);
   DCHECK(!mailbox.IsZero());
-  DCHECK_NE(sync_point, 0u);
+  DCHECK(sync_token.HasData());
   texture_layer_->SetTextureMailboxWithoutReleaseCallback(
-      cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point), GL_TEXTURE_2D));
+      cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D));
   texture_layer_->SetNeedsDisplay();
 }
 
@@ -1530,7 +1533,7 @@ bool PepperPluginInstanceImpl::LoadTextInputInterface() {
 }
 
 void PepperPluginInstanceImpl::UpdateLayerTransform() {
-  if (!bound_graphics_2d_platform_ || !texture_layer_.get()) {
+  if (!bound_graphics_2d_platform_ || !texture_layer_) {
     // Currently the transform is only applied for Graphics2D.
     return;
   }
@@ -1974,17 +1977,16 @@ bool PepperPluginInstanceImpl::PrintPDFOutput(PP_Resource print_output,
   return false;
 }
 
-void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
+void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   if (!container_)
     return;
 
   gpu::Mailbox mailbox;
-  uint32_t sync_point = 0;
+  gpu::SyncToken sync_token;
   if (bound_graphics_3d_.get()) {
-    bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_point);
-    DCHECK_EQ(mailbox.IsZero(), sync_point == 0);
+    bound_graphics_3d_->GetBackingMailbox(&mailbox, &sync_token);
   }
-  bool want_3d_layer = !mailbox.IsZero();
+  bool want_3d_layer = !mailbox.IsZero() && sync_token.HasData();
   bool want_2d_layer = !!bound_graphics_2d_platform_;
   bool want_texture_layer = want_3d_layer || want_2d_layer;
   bool want_compositor_layer = !!bound_compositor_;
@@ -1996,7 +1998,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
     want_compositor_layer = false;
   }
 
-  if (!device_changed && (want_texture_layer == !!texture_layer_.get()) &&
+  if (!force_creation && (want_texture_layer == !!texture_layer_) &&
       (want_3d_layer == layer_is_hardware_) &&
       (want_compositor_layer == !!compositor_layer_.get()) &&
       layer_bound_to_fullscreen_ == !!fullscreen_container_) {
@@ -2004,7 +2006,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
     return;
   }
 
-  if (texture_layer_.get() || compositor_layer_.get()) {
+  if (texture_layer_ || compositor_layer_) {
     if (!layer_bound_to_fullscreen_)
       container_->setWebLayer(NULL);
     else if (fullscreen_container_)
@@ -2025,8 +2027,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool device_changed) {
           cc_blink::WebLayerImpl::LayerSettings(), NULL);
       opaque = bound_graphics_3d_->IsOpaque();
       texture_layer_->SetTextureMailboxWithoutReleaseCallback(
-          cc::TextureMailbox(mailbox, gpu::SyncToken(sync_point),
-                             GL_TEXTURE_2D));
+          cc::TextureMailbox(mailbox, sync_token, GL_TEXTURE_2D));
     } else {
       DCHECK(bound_graphics_2d_platform_);
       texture_layer_ = cc::TextureLayer::CreateForMailbox(

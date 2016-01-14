@@ -11,6 +11,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/shared_impl/ppb_graphics_3d_shared.h"
 #include "ppapi/shared_impl/resource.h"
 
@@ -61,9 +62,9 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   // These messages are used to send Flush callbacks to the plugin.
   void ViewInitiatedPaint();
 
-  void GetBackingMailbox(gpu::Mailbox* mailbox, uint32_t* sync_point) {
+  void GetBackingMailbox(gpu::Mailbox* mailbox, gpu::SyncToken* sync_token) {
     *mailbox = mailbox_;
-    *sync_point = sync_point_;
+    *sync_token = sync_token_;
   }
 
   CommandBufferProxyImpl* GetCommandBufferProxy();
@@ -75,7 +76,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   // ppapi::PPB_Graphics3D_Shared overrides.
   gpu::CommandBuffer* GetCommandBuffer() override;
   gpu::GpuControl* GetGpuControl() override;
-  int32_t DoSwapBuffers() override;
+  int32_t DoSwapBuffers(const gpu::SyncToken& sync_token) override;
 
  private:
   explicit PPB_Graphics3D_Impl(PP_Instance instance);
@@ -100,7 +101,7 @@ class PPB_Graphics3D_Impl : public ppapi::PPB_Graphics3D_Shared {
   bool commit_pending_;
 
   gpu::Mailbox mailbox_;
-  uint32_t sync_point_;
+  gpu::SyncToken sync_token_;
   bool has_alpha_;
   scoped_refptr<GpuChannelHost> channel_;
   scoped_ptr<CommandBufferProxyImpl> command_buffer_;

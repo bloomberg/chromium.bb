@@ -54,7 +54,8 @@ int32_t PPB_Graphics3D_Shared::ResizeBuffers(int32_t width, int32_t height) {
 }
 
 int32_t PPB_Graphics3D_Shared::SwapBuffers(
-    scoped_refptr<TrackedCallback> callback) {
+    scoped_refptr<TrackedCallback> callback,
+    const gpu::SyncToken& sync_token) {
   if (HasPendingSwap()) {
     Log(PP_LOGLEVEL_ERROR,
         "PPB_Graphics3D.SwapBuffers: Plugin attempted swap "
@@ -64,7 +65,7 @@ int32_t PPB_Graphics3D_Shared::SwapBuffers(
   }
 
   swap_callback_ = callback;
-  return DoSwapBuffers();
+  return DoSwapBuffers(sync_token);
 }
 
 int32_t PPB_Graphics3D_Shared::GetAttribMaxValue(int32_t attribute,

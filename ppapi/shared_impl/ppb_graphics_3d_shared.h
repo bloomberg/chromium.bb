@@ -40,7 +40,8 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
   int32_t SetAttribs(const int32_t attrib_list[]) override;
   int32_t GetError() override;
   int32_t ResizeBuffers(int32_t width, int32_t height) override;
-  int32_t SwapBuffers(scoped_refptr<TrackedCallback> callback) override;
+  int32_t SwapBuffers(scoped_refptr<TrackedCallback> callback,
+                      const gpu::SyncToken& sync_token) override;
   int32_t GetAttribMaxValue(int32_t attribute, int32_t* value) override;
 
   void* MapTexSubImage2DCHROMIUM(GLenum target,
@@ -67,7 +68,7 @@ class PPAPI_SHARED_EXPORT PPB_Graphics3D_Shared
 
   virtual gpu::CommandBuffer* GetCommandBuffer() = 0;
   virtual gpu::GpuControl* GetGpuControl() = 0;
-  virtual int32_t DoSwapBuffers() = 0;
+  virtual int32_t DoSwapBuffers(const gpu::SyncToken& sync_token) = 0;
 
   bool HasPendingSwap() const;
   bool CreateGLES2Impl(int32_t command_buffer_size,

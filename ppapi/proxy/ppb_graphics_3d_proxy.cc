@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/sync_token.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/enter_proxy.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -126,10 +127,20 @@ gpu::GpuControl* Graphics3D::GetGpuControl() {
   return command_buffer_.get();
 }
 
-int32_t Graphics3D::DoSwapBuffers() {
-  gles2_impl()->SwapBuffers();
+int32_t Graphics3D::DoSwapBuffers(const gpu::SyncToken& sync_token) {
+  // A valid sync token would indicate a swap buffer already happened somehow.
+  DCHECK(!sync_token.HasData());
+
+  gpu::gles2::GLES2Implementation* gl = gles2_impl();
+  gl->SwapBuffers();
+  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
+
+  gpu::SyncToken new_sync_token;
+  gl->GenSyncTokenCHROMIUM(fence_sync, new_sync_token.GetData());
+
   IPC::Message* msg = new PpapiHostMsg_PPBGraphics3D_SwapBuffers(
-      API_ID_PPB_GRAPHICS_3D, host_resource());
+      API_ID_PPB_GRAPHICS_3D, host_resource(), new_sync_token);
   msg->set_unblock(true);
   PluginDispatcher::GetForResource(this)->Send(msg);
 
@@ -343,12 +354,13 @@ void PPB_Graphics3D_Proxy::OnMsgDestroyTransferBuffer(
     enter.object()->DestroyTransferBuffer(id);
 }
 
-void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context) {
+void PPB_Graphics3D_Proxy::OnMsgSwapBuffers(const HostResource& context,
+                                            const gpu::SyncToken& sync_token) {
   EnterHostFromHostResourceForceCallback<PPB_Graphics3D_API> enter(
       context, callback_factory_,
       &PPB_Graphics3D_Proxy::SendSwapBuffersACKToPlugin, context);
   if (enter.succeeded())
-    enter.SetResult(enter.object()->SwapBuffers(enter.callback()));
+    enter.SetResult(enter.object()->SwapBuffers(enter.callback(), sync_token));
 }
 
 void PPB_Graphics3D_Proxy::OnMsgInsertSyncPoint(const HostResource& context,
