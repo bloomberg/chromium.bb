@@ -49,6 +49,7 @@ PluginPowerSaverBrowserTest.LargeCrossOriginObscured
 # The test takes too long.
 SmartSessionRestoreMRUTest.PRE_CorrectLoadingOrder
 SmartSessionRestoreMRUTest.CorrectLoadingOrder
+SmartSessionRestoreTest.PRE_CorrectLoadingOrder
 
 # https://crbug.com/516368
 PushMessagingBrowserTest.PushEventSuccess
@@ -72,6 +73,7 @@ MaterialPDFExtensionTest.Bookmark
 MaterialPDFExtensionTest.WhitespaceTitle
 MaterialPDFExtensionTest.ZoomManager
 PDFExtensionTest.WhitespaceTitle
+PDFExtensionTest.ToolbarManager
 
 # https://crbug.com/530729
 SiteDetailsBrowserTest.ManyCrossSiteIframes
@@ -87,6 +89,7 @@ DistillablePageUtilsBrowserTestAdaboost.TestDelegate
 
 # https://crbug.com/561088
 CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerSplitSectionsTest
+CrExtensionsBrowserTestWithMultipleExtensionTypesInstalled.ExtensionManagerAppSectionVisibilityTest
 
 # https://crbug.com/562434
 AppearanceSettingsBrowserTest.uiTests
@@ -94,3 +97,9 @@ AppearanceSettingsBrowserTest.uiTests
 # https://crbug.com/571263
 DistillablePageUtilsBrowserTestAlways.TestDelegate
 DistillablePageUtilsBrowserTestOG.TestDelegate
+
+# https://crbug.com/577850
+LoginPromptBrowserTest.ShouldReplaceExistingInterstitialWhenNavigated
+
+# https://crbug.com/577853
+OnStartupSettingsBrowserTest.uiTests
