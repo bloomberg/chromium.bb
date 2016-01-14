@@ -94,6 +94,8 @@ public:
 
     bool isViewportDependent() const;
 
+    bool isDeviceDependent() const;
+
     String serialize() const;
 
     PassOwnPtrWillBeRawPtr<MediaQueryExp> copy() const { return adoptPtrWillBeNoop(new MediaQueryExp(*this)); }

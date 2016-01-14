@@ -134,10 +134,11 @@ public:
 
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
-    void addMediaQueryResults(const MediaQueryResultList&);
-    MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }
+    void addViewportDependentMediaQueries(const MediaQueryResultList&);
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool mediaQueryAffectedByViewportChange() const;
+    void addDeviceDependentMediaQueries(const MediaQueryResultList&);
+    bool mediaQueryAffectedByDeviceChange() const;
 
     // FIXME: Rename to reflect the purpose, like didChangeFontSize or something.
     void invalidateMatchedPropertiesCache();
@@ -232,6 +233,7 @@ private:
 
     OwnPtrWillBeMember<MediaQueryEvaluator> m_medium;
     MediaQueryResultList m_viewportDependentMediaQueryResults;
+    MediaQueryResultList m_deviceDependentMediaQueryResults;
 
     RawPtrWillBeMember<Document> m_document;
     SelectorFilter m_selectorFilter;

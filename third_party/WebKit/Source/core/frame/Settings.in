@@ -380,3 +380,7 @@ disallowFetchForDocWrittenScriptsInMainFrame initial=false
 
 # The autoplay gesture override experiment is described in crbug.com/487345 .
 autoplayExperimentMode type=String, initial="off"
+
+# When DevTools is emulating mobile device, frame resize may mean device size has changed,
+# which in turn affects media queries.
+resizeIsDeviceSizeChange initial=false

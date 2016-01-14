@@ -80,10 +80,10 @@ public:
     bool mediaTypeMatch(const String& mediaTypeToMatch) const;
 
     // Evaluates a list of media queries.
-    bool eval(const MediaQuerySet*, MediaQueryResultList* = 0) const;
+    bool eval(const MediaQuerySet*, MediaQueryResultList* viewportDependent = 0, MediaQueryResultList* deviceDependent = 0) const;
 
     // Evaluates media query.
-    bool eval(const MediaQuery*, MediaQueryResultList*) const;
+    bool eval(const MediaQuery*, MediaQueryResultList* viewportDependent = 0, MediaQueryResultList* deviceDependent = 0) const;
 
     // Evaluates media query subexpression, ie "and (media-feature: value)" part.
     bool eval(const MediaQueryExp*) const;

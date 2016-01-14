@@ -120,7 +120,7 @@ static bool applyRestrictor(MediaQuery::Restrictor r, bool value)
     return r == MediaQuery::Not ? !value : value;
 }
 
-bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* viewportDependentMediaQueryResults) const
+bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* viewportDependentMediaQueryResults, MediaQueryResultList* deviceDependentMediaQueryResults) const
 {
     if (!mediaTypeMatch(query->mediaType()))
         return applyRestrictor(query->restrictor(), false);
@@ -132,6 +132,8 @@ bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* vi
         bool exprResult = eval(expressions.at(i).get());
         if (viewportDependentMediaQueryResults && expressions.at(i)->isViewportDependent())
             viewportDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(i), exprResult)));
+        if (deviceDependentMediaQueryResults && expressions.at(i)->isDeviceDependent())
+            deviceDependentMediaQueryResults->append(adoptRefWillBeNoop(new MediaQueryResult(*expressions.at(i), exprResult)));
         if (!exprResult)
             break;
     }
@@ -140,7 +142,7 @@ bool MediaQueryEvaluator::eval(const MediaQuery* query, MediaQueryResultList* vi
     return applyRestrictor(query->restrictor(), expressions.size() == i);
 }
 
-bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultList* viewportDependentMediaQueryResults) const
+bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultList* viewportDependentMediaQueryResults, MediaQueryResultList* deviceDependentMediaQueryResults) const
 {
     if (!querySet)
         return true;
@@ -152,7 +154,7 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
     // Iterate over queries, stop if any of them eval to true (OR semantics).
     bool result = false;
     for (size_t i = 0; i < queries.size() && !result; ++i)
-        result = eval(queries[i].get(), viewportDependentMediaQueryResults);
+        result = eval(queries[i].get(), viewportDependentMediaQueryResults, deviceDependentMediaQueryResults);
 
     return result;
 }

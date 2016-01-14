@@ -147,6 +147,7 @@ public:
     const WillBeHeapVector<MinimalRuleData>& deepCombinatorOrShadowPseudoRules() const { return m_deepCombinatorOrShadowPseudoRules; }
     const WillBeHeapVector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
     const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
+    const MediaQueryResultList& deviceDependentMediaQueryResults() const { return m_deviceDependentMediaQueryResults; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
@@ -226,6 +227,7 @@ private:
     WillBeHeapVector<MinimalRuleData> m_shadowDistributedRules;
 
     MediaQueryResultList m_viewportDependentMediaQueryResults;
+    MediaQueryResultList m_deviceDependentMediaQueryResults;
 
     unsigned m_ruleCount;
     OwnPtrWillBeMember<PendingRuleMaps> m_pendingRules;

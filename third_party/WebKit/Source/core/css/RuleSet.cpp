@@ -270,7 +270,7 @@ void RuleSet::addChildRules(const WillBeHeapVector<RefPtrWillBeMember<StyleRuleB
             addPageRule(toStyleRulePage(rule));
         } else if (rule->isMediaRule()) {
             StyleRuleMedia* mediaRule = toStyleRuleMedia(rule);
-            if ((!mediaRule->mediaQueries() || medium.eval(mediaRule->mediaQueries(), &m_viewportDependentMediaQueryResults)))
+            if ((!mediaRule->mediaQueries() || medium.eval(mediaRule->mediaQueries(), &m_viewportDependentMediaQueryResults, &m_deviceDependentMediaQueryResults)))
                 addChildRules(mediaRule->childRules(), medium, addRuleFlags);
         } else if (rule->isFontFaceRule()) {
             addFontFaceRule(toStyleRuleFontFace(rule));
@@ -293,7 +293,7 @@ void RuleSet::addRulesFromSheet(StyleSheetContents* sheet, const MediaQueryEvalu
     const WillBeHeapVector<RefPtrWillBeMember<StyleRuleImport>>& importRules = sheet->importRules();
     for (unsigned i = 0; i < importRules.size(); ++i) {
         StyleRuleImport* importRule = importRules[i].get();
-        if (importRule->styleSheet() && (!importRule->mediaQueries() || medium.eval(importRule->mediaQueries(), &m_viewportDependentMediaQueryResults)))
+        if (importRule->styleSheet() && (!importRule->mediaQueries() || medium.eval(importRule->mediaQueries(), &m_viewportDependentMediaQueryResults, &m_deviceDependentMediaQueryResults)))
             addRulesFromSheet(importRule->styleSheet(), medium, addRuleFlags);
     }
 
@@ -384,6 +384,7 @@ DEFINE_TRACE(RuleSet)
     visitor->trace(m_deepCombinatorOrShadowPseudoRules);
     visitor->trace(m_shadowDistributedRules);
     visitor->trace(m_viewportDependentMediaQueryResults);
+    visitor->trace(m_deviceDependentMediaQueryResults);
     visitor->trace(m_pendingRules);
 #ifndef NDEBUG
     visitor->trace(m_allRules);

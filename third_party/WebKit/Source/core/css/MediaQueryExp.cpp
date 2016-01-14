@@ -176,6 +176,19 @@ bool MediaQueryExp::isViewportDependent() const
         || m_mediaFeature == maxAspectRatioMediaFeature;
 }
 
+bool MediaQueryExp::isDeviceDependent() const
+{
+    return m_mediaFeature == deviceAspectRatioMediaFeature
+        || m_mediaFeature == deviceWidthMediaFeature
+        || m_mediaFeature == deviceHeightMediaFeature
+        || m_mediaFeature == minDeviceAspectRatioMediaFeature
+        || m_mediaFeature == minDeviceWidthMediaFeature
+        || m_mediaFeature == minDeviceHeightMediaFeature
+        || m_mediaFeature == maxDeviceAspectRatioMediaFeature
+        || m_mediaFeature == maxDeviceWidthMediaFeature
+        || m_mediaFeature == maxDeviceHeightMediaFeature;
+}
+
 MediaQueryExp::MediaQueryExp(const MediaQueryExp& other)
     : m_mediaFeature(other.mediaFeature())
     , m_expValue(other.expValue())

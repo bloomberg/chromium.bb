@@ -201,7 +201,7 @@ void StyleResolver::appendCSSStyleSheet(CSSStyleSheet& cssSheet)
     ASSERT(cssSheet.ownerNode());
     ASSERT(isHTMLStyleElement(cssSheet.ownerNode()) || isSVGStyleElement(cssSheet.ownerNode()) || cssSheet.ownerNode()->treeScope() == cssSheet.ownerDocument());
 
-    if (cssSheet.mediaQueries() && !m_medium->eval(cssSheet.mediaQueries(), &m_viewportDependentMediaQueryResults))
+    if (cssSheet.mediaQueries() && !m_medium->eval(cssSheet.mediaQueries(), &m_viewportDependentMediaQueryResults, &m_deviceDependentMediaQueryResults))
         return;
 
     TreeScope* treeScope = &cssSheet.ownerNode()->treeScope();
@@ -1530,10 +1530,16 @@ void StyleResolver::computeFont(ComputedStyle* style, const StylePropertySet& pr
     }
 }
 
-void StyleResolver::addMediaQueryResults(const MediaQueryResultList& list)
+void StyleResolver::addViewportDependentMediaQueries(const MediaQueryResultList& list)
 {
     for (size_t i = 0; i < list.size(); ++i)
         m_viewportDependentMediaQueryResults.append(list[i]);
+}
+
+void StyleResolver::addDeviceDependentMediaQueries(const MediaQueryResultList& list)
+{
+    for (size_t i = 0; i < list.size(); ++i)
+        m_deviceDependentMediaQueryResults.append(list[i]);
 }
 
 bool StyleResolver::mediaQueryAffectedByViewportChange() const
@@ -1545,12 +1551,22 @@ bool StyleResolver::mediaQueryAffectedByViewportChange() const
     return false;
 }
 
+bool StyleResolver::mediaQueryAffectedByDeviceChange() const
+{
+    for (unsigned i = 0; i < m_deviceDependentMediaQueryResults.size(); ++i) {
+        if (m_medium->eval(m_deviceDependentMediaQueryResults[i]->expression()) != m_deviceDependentMediaQueryResults[i]->result())
+            return true;
+    }
+    return false;
+}
+
 DEFINE_TRACE(StyleResolver)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_matchedPropertiesCache);
     visitor->trace(m_medium);
     visitor->trace(m_viewportDependentMediaQueryResults);
+    visitor->trace(m_deviceDependentMediaQueryResults);
     visitor->trace(m_selectorFilter);
     visitor->trace(m_viewportStyleResolver);
     visitor->trace(m_features);

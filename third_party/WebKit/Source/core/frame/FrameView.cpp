@@ -765,8 +765,10 @@ void FrameView::performPreLayoutTasks()
     bool wasResized = wasViewportResized();
     Document* document = m_frame->document();
 
-    // Viewport-dependent media queries may cause us to need completely different style information.
-    if (!document->styleResolver() || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())) {
+    // Viewport-dependent or device-dependent media queries may cause us to need completely different style information.
+    if (!document->styleResolver()
+        || (wasResized && document->styleResolver()->mediaQueryAffectedByViewportChange())
+        || (wasResized && m_frame->settings() && m_frame->settings()->resizeIsDeviceSizeChange() && document->styleResolver()->mediaQueryAffectedByDeviceChange())) {
         document->mediaQueryAffectingValueChanged();
     } else if (wasResized) {
         document->evaluateMediaQueryList();
