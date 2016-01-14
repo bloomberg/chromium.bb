@@ -84,7 +84,7 @@ class WebContentsLoadStopObserver : content::WebContentsObserver {
 
 class ServiceWorkerTest : public ExtensionApiTest {
  public:
-  ServiceWorkerTest() : current_channel_(version_info::Channel::UNKNOWN) {}
+  ServiceWorkerTest() : current_channel_(version_info::Channel::DEV) {}
 
   ~ServiceWorkerTest() override {}
 
@@ -158,7 +158,7 @@ class ServiceWorkerTest : public ExtensionApiTest {
   }
 
  private:
-  // Sets the channel to "trunk" since service workers are restricted to trunk.
+  // Sets the channel to "dev" since service workers are restricted to dev.
   ScopedCurrentChannel current_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerTest);
@@ -236,15 +236,15 @@ class ServiceWorkerPushMessagingTest : public ServiceWorkerTest {
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerPushMessagingTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterSucceedsOnTrunk) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterSucceedsOnDev) {
   StartTestFromBackgroundPage("register.js", kExpectSuccess);
 }
 
-// This feature is restricted to trunk, so on dev it should have existing
+// This feature is restricted to dev, so on beta it should have existing
 // behavior - which is for it to fail.
-IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterFailsOnDev) {
+IN_PROC_BROWSER_TEST_F(ServiceWorkerTest, RegisterFailsOnBeta) {
   ScopedCurrentChannel current_channel_override(
-      version_info::Channel::DEV);
+      version_info::Channel::BETA);
   std::string error;
   const Extension* extension =
       StartTestFromBackgroundPage("register.js", &error);
