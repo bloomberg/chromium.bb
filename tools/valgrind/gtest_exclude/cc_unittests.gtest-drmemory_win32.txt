@@ -45,3 +45,9 @@ LayerTreeHostCopyRequestTestLostOutputSurface.RunMultiThread_DirectRenderer
 
 # https://crbug.com/571268
 LayerTreeHostTestGpuRasterDeviceSizeChanged.*
+
+# https://crbug.com/577781
+GpuRasterizationRasterizesBorderTiles.RunMultiThread_DelegatingRenderer
+GpuRasterizationRasterizesBorderTiles.RunMultiThread_DirectRenderer
+GpuRasterizationRasterizesBorderTiles.RunSingleThread_DelegatingRenderer
+GpuRasterizationRasterizesBorderTiles.RunSingleThread_DirectRenderer
