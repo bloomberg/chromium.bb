@@ -107,14 +107,33 @@ MojoResult RunAllTests(MojoHandle application_request_handle) {
   return (result == 0) ? MOJO_RESULT_OK : MOJO_RESULT_UNKNOWN;
 }
 
-ApplicationTestBase::ApplicationTestBase() : application_impl_(nullptr) {
+TestHelper::TestHelper(ApplicationDelegate* delegate)
+    : application_impl_(new ApplicationImpl(
+          delegate == nullptr ? &default_application_delegate_ : delegate,
+          std::move(g_application_request))) {
+  // Fake application initialization.
+  Application* application = application_impl_.get();
+  application->Initialize(std::move(g_shell), g_url);
 }
+
+TestHelper::~TestHelper() {
+  // TODO: commented out until http://crbug.com/533107 is solved.
+  // {
+  // ApplicationImpl::TestApi test_api(application_impl_);
+  // test_api.UnbindConnections(&g_application_request, &g_shell);
+  // }
+  // We may have supplied a member as the delegate. Delete |application_impl_|
+  // while still valid.
+  application_impl_.reset();
+}
+
+ApplicationTestBase::ApplicationTestBase() : test_helper_(nullptr) {}
 
 ApplicationTestBase::~ApplicationTestBase() {
 }
 
 ApplicationDelegate* ApplicationTestBase::GetApplicationDelegate() {
-  return &default_application_delegate_;
+  return nullptr;
 }
 
 void ApplicationTestBase::SetUp() {
@@ -127,24 +146,15 @@ void ApplicationTestBase::SetUp() {
   MOJO_CHECK(g_shell);
 
   // New applications are constructed for each test to avoid persisting state.
-  application_impl_ = new ApplicationImpl(GetApplicationDelegate(),
-                                          std::move(g_application_request));
-
-  // Fake application initialization.
-  Application* application = application_impl_;
-  application->Initialize(std::move(g_shell), g_url);
+  test_helper_.reset(new TestHelper(GetApplicationDelegate()));
 }
 
 void ApplicationTestBase::TearDown() {
   MOJO_CHECK(!g_application_request.is_pending());
   MOJO_CHECK(!g_shell);
 
-  // TODO: commented out until http://crbug.com/533107 is solved.
-  // {
-  // ApplicationImpl::TestApi test_api(application_impl_);
-  // test_api.UnbindConnections(&g_application_request, &g_shell);
-  // }
-  delete application_impl_;
+  test_helper_.reset();
+
   if (ShouldCreateDefaultRunLoop())
     Environment::DestroyDefaultRunLoop();
 }
@@ -152,7 +162,6 @@ void ApplicationTestBase::TearDown() {
 bool ApplicationTestBase::ShouldCreateDefaultRunLoop() {
   return true;
 }
-
 
 }  // namespace test
 }  // namespace mojo

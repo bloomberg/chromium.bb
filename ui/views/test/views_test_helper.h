@@ -22,7 +22,7 @@ namespace views {
 // required for running tests.
 class ViewsTestHelper {
  public:
-  explicit ViewsTestHelper();
+  ViewsTestHelper();
   virtual ~ViewsTestHelper();
 
   // Create a platform specific instance.

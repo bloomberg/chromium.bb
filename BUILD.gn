@@ -624,7 +624,10 @@ group("gn_only") {
   }
 
   if (is_win || is_linux) {
-    deps += [ "//mash:all" ]
+    deps += [
+      "//mash:all",
+      "//ui/views/mus:tests",
+    ]
   }
 
   if (is_linux && !is_chromeos && !is_chromecast) {

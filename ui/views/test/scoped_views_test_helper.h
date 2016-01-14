@@ -11,6 +11,7 @@
 
 namespace views {
 
+class PlatformTestHelper;
 class TestViewsDelegate;
 class ViewsTestHelper;
 
@@ -39,6 +40,7 @@ class ScopedViewsTestHelper {
  private:
   scoped_ptr<TestViewsDelegate> views_delegate_;
   scoped_ptr<ViewsTestHelper> test_helper_;
+  scoped_ptr<PlatformTestHelper> platform_test_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedViewsTestHelper);
 };

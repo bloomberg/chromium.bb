@@ -810,6 +810,11 @@
       ],
       'sources': [
         '<@(views_test_support_sources)',
+        # These two sources are not listed in views_test_support_sources as
+        # they are not used by the gn target that pulls in
+        # views_test_support_sources.
+        'test/default_platform_test_helper.cc',
+        'test/platform_test_helper.h',
       ],
       'conditions': [
         ['use_aura==1', {

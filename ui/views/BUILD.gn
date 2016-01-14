@@ -145,9 +145,12 @@ component("views") {
   }
 }
 
-static_library("test_support") {
+source_set("test_support_internal") {
   testonly = true
   sources = gypi_values.views_test_support_sources
+
+  # External code should depend upon "test_support".
+  visibility = [ "./*" ]
 
   configs += [ "//build/config:precompiled_headers" ]
 
@@ -171,6 +174,8 @@ static_library("test_support") {
     "//ui/gfx/geometry",
   ]
 
+  sources += [ "test/platform_test_helper.h" ]
+
   if (use_aura) {
     sources += gypi_values.views_test_support_aura_sources
     deps += [
@@ -188,6 +193,16 @@ static_library("test_support") {
   if (use_ozone || !use_x11) {
     sources -= [ "test/x11_property_change_waiter.cc" ]
   }
+}
+
+static_library("test_support") {
+  testonly = true
+  public_deps = [
+    ":test_support_internal",
+  ]
+  sources = [
+    "test/default_platform_test_helper.cc",
+  ]
 }
 
 test("views_unittests") {

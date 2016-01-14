@@ -5,6 +5,7 @@
 #ifndef MOJO_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 #define MOJO_SHELL_PUBLIC_CPP_APPLICATION_TEST_BASE_H_
 
+#include "base/memory/scoped_ptr.h"
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/string.h"
 #include "mojo/public/cpp/system/macros.h"
@@ -22,6 +23,26 @@ namespace test {
 // initialized, to support construction of a default run loop.
 MojoResult RunAllTests(MojoHandle application_request_handle);
 
+// Used to configure the ApplicationImpl. This is used internally by
+// ApplicationTestBase, but useful if you do not want to subclass
+// ApplicationTestBase.
+class TestHelper {
+ public:
+  explicit TestHelper(ApplicationDelegate* delegate);
+  ~TestHelper();
+
+  ApplicationImpl* application_impl() { return application_impl_.get(); }
+
+ private:
+  // The application delegate used if GetApplicationDelegate is not overridden.
+  ApplicationDelegate default_application_delegate_;
+
+  // The application implementation instance, reconstructed for each test.
+  scoped_ptr<ApplicationImpl> application_impl_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(TestHelper);
+};
+
 // A GTEST base class for application testing executed in mojo_shell.
 class ApplicationTestBase : public testing::Test {
  public:
@@ -29,7 +50,9 @@ class ApplicationTestBase : public testing::Test {
   ~ApplicationTestBase() override;
 
  protected:
-  ApplicationImpl* application_impl() { return application_impl_; }
+  ApplicationImpl* application_impl() {
+    return test_helper_ ? test_helper_->application_impl() : nullptr;
+  }
 
   // Get the ApplicationDelegate for the application to be tested.
   virtual ApplicationDelegate* GetApplicationDelegate();
@@ -44,10 +67,7 @@ class ApplicationTestBase : public testing::Test {
   virtual bool ShouldCreateDefaultRunLoop();
 
  private:
-  // The application implementation instance, reconstructed for each test.
-  ApplicationImpl* application_impl_;
-  // The application delegate used if GetApplicationDelegate is not overridden.
-  ApplicationDelegate default_application_delegate_;
+  scoped_ptr<TestHelper> test_helper_;
 
   MOJO_DISALLOW_COPY_AND_ASSIGN(ApplicationTestBase);
 };
