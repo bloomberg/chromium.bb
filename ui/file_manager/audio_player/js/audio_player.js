@@ -327,6 +327,10 @@ AudioPlayer.prototype.onResize_ = function(event) {
  */
 AudioPlayer.prototype.onKeyDown_ = function(event) {
   switch (util.getKeyModifiers(event) + event.keyIdentifier) {
+    case 'Ctrl-U+0057': // Ctrl+W => Close the player.
+      chrome.app.window.current().close();
+      break;
+
     // Handle debug shortcut keys.
     case 'Ctrl-Shift-U+0049': // Ctrl+Shift+I
       chrome.fileManagerPrivate.openInspector('normal');
