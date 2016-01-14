@@ -4,7 +4,7 @@
 
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/device-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-in-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/animations/fade-out-animation.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
@@ -12,16 +12,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-icon-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
-
-<iron-iconset-svg name="host-pairing-icons" size="48">
-  <svg>
-    <defs>
-      <g id="cast">
-        <include src="../../../../app/theme/cast_icon.svg">
-      </g>
-    </defs>
-  </svg>
-</iron-iconset-svg>
 
 <dom-module name="host-pairing-page">
 
@@ -107,7 +97,7 @@
       </host-pairing-page>
     </neon-animated-pages>
     <paper-icon-item id="device-indicator">
-      <iron-icon icon="host-pairing-icons:cast" item-icon></iron-icon>
+      <iron-icon icon="device:bluetooth"></iron-icon>
       <div id="device-label">{{C.deviceName}}</div>
     </paper-icon-item>
     <div id="illustration"></div>
