@@ -379,7 +379,7 @@ TEST_F(ScreenManagerTest,
 TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
 
@@ -397,7 +397,7 @@ TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithSameBounds) {
 TEST_F(ScreenManagerTest, CheckControllerToWindowMappingWithDifferentBounds) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   gfx::Rect new_bounds = GetPrimaryBounds();
   new_bounds.Inset(0, 0, 1, 1);
   window->SetBounds(new_bounds);
@@ -420,7 +420,7 @@ TEST_F(ScreenManagerTest,
   for (size_t i = 1; i < kWindowCount + 1; ++i) {
     scoped_ptr<ui::DrmWindow> window(
         new ui::DrmWindow(i, device_manager_.get(), screen_manager_.get()));
-    window->Initialize();
+    window->Initialize(buffer_generator_.get());
     window->SetBounds(GetPrimaryBounds());
     screen_manager_->AddWindow(i, std::move(window));
   }
@@ -445,7 +445,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
   gfx::AcceleratedWidget window_id = 1;
   scoped_ptr<ui::DrmWindow> window(new ui::DrmWindow(
       window_id, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(window_id, std::move(window));
 
@@ -467,7 +467,7 @@ TEST_F(ScreenManagerTest, ShouldDissociateWindowOnControllerRemoval) {
 TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   screen_manager_->AddWindow(1, std::move(window));
 
@@ -496,7 +496,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasNoBuffer) {
 TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   scoped_ptr<ui::DrmWindow> window(
       new ui::DrmWindow(1, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
       drm_, gfx::BufferFormat::BGRA_8888, GetPrimaryBounds().size());

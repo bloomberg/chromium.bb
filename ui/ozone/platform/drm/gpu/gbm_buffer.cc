@@ -23,11 +23,6 @@
 #include "ui/ozone/public/ozone_platform.h"  // nogncheck
 #include "ui/ozone/public/surface_factory_ozone.h"
 
-namespace {
-// Optimal format for rendering on overlay.
-const gfx::BufferFormat kOverlayRenderFormat = gfx::BufferFormat::UYVY_422;
-}  // namespace
-
 namespace ui {
 
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
@@ -90,27 +85,14 @@ bool GbmPixmap::InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer) {
 
 void GbmPixmap::SetProcessingCallback(
     const ProcessingCallback& processing_callback) {
+  DCHECK(processing_callback_.is_null());
   processing_callback_ = processing_callback;
 }
 
 scoped_refptr<NativePixmap> GbmPixmap::GetProcessedPixmap(
     gfx::Size target_size,
     gfx::BufferFormat target_format) {
-  ui::OzonePlatform* platform = ui::OzonePlatform::GetInstance();
-  ui::SurfaceFactoryOzone* factory = platform->GetSurfaceFactoryOzone();
-  // Create a buffer from Ozone.
-  scoped_refptr<ui::NativePixmap> processed_pixmap =
-      factory->CreateNativePixmap(gfx::kNullAcceleratedWidget, target_size,
-                                  target_format, gfx::BufferUsage::SCANOUT);
-  if (!processed_pixmap) {
-    LOG(ERROR) << "Failed creating an Ozone NativePixmap for processing";
-    return nullptr;
-  }
-  if (!processing_callback_.Run(this, processed_pixmap)) {
-    LOG(ERROR) << "Failed processing NativePixmap";
-    return nullptr;
-  }
-  return processed_pixmap;
+  return nullptr;
 }
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
@@ -155,20 +137,6 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
-  gfx::Size target_size;
-  gfx::BufferFormat target_format;
-  if (plane_z_order && ShouldApplyProcessing(display_bounds, crop_rect,
-                                             &target_size, &target_format)) {
-    scoped_refptr<NativePixmap> processed_pixmap =
-        GetProcessedPixmap(target_size, target_format);
-    if (processed_pixmap) {
-      return processed_pixmap->ScheduleOverlayPlane(
-          widget, plane_z_order, plane_transform, display_bounds, crop_rect);
-    } else {
-      return false;
-    }
-  }
-
   // TODO(reveman): Add support for imported buffers. crbug.com/541558
   if (!buffer_) {
     PLOG(ERROR) << "ScheduleOverlayPlane requires a buffer.";
@@ -176,35 +144,42 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   }
 
   DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
-  surface_manager_->GetSurface(widget)->QueueOverlayPlane(OverlayPlane(
-      buffer_, plane_z_order, plane_transform, display_bounds, crop_rect));
+  surface_manager_->GetSurface(widget)->QueueOverlayPlane(
+      OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
+                   crop_rect, base::Bind(&GbmPixmap::ProcessBuffer, this)));
+
   return true;
 }
 
-bool GbmPixmap::ShouldApplyProcessing(const gfx::Rect& display_bounds,
-                                      const gfx::RectF& crop_rect,
-                                      gfx::Size* target_size,
-                                      gfx::BufferFormat* target_format) {
-  if (crop_rect.width() == 0 || crop_rect.height() == 0) {
-    PLOG(ERROR) << "ShouldApplyProcessing passed zero processing target.";
-    return false;
+scoped_refptr<ScanoutBuffer> GbmPixmap::ProcessBuffer(const gfx::Size& size,
+                                                      uint32_t format) {
+  DCHECK(GetBufferSize() != size ||
+         buffer_->GetFramebufferPixelFormat() != format);
+
+  if (!processed_pixmap_ || size != processed_pixmap_->GetBufferSize() ||
+      format != processed_pixmap_->buffer()->GetFramebufferPixelFormat()) {
+    // Release any old processed pixmap.
+    processed_pixmap_ = nullptr;
+    gfx::BufferFormat buffer_format = GetBufferFormatFromFourCCFormat(format);
+
+    scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
+        buffer_->drm().get(), buffer_format, size, buffer_->GetUsage());
+
+    // ProcessBuffer is called on DrmThread. We could have used
+    // CreateNativePixmap to initialize the pixmap, however it posts a
+    // synchronous task to DrmThread resulting in a deadlock.
+    processed_pixmap_ = new GbmPixmap(surface_manager_);
+    if (!processed_pixmap_->InitializeFromBuffer(buffer))
+      return nullptr;
   }
 
-  if (!buffer_) {
-    PLOG(ERROR) << "ShouldApplyProcessing requires a buffer.";
-    return false;
+  DCHECK(!processing_callback_.is_null());
+  if (!processing_callback_.Run(this, processed_pixmap_)) {
+    LOG(ERROR) << "Failed processing NativePixmap";
+    return nullptr;
   }
 
-  // TODO(william.xie): Figure out the optimal render format for overlay.
-  // See http://crbug.com/553264.
-  *target_format = kOverlayRenderFormat;
-  gfx::Size pixmap_size = buffer_->GetSize();
-  // If the required size is not integer-sized, round it to the next integer.
-  *target_size = gfx::ToCeiledSize(
-      gfx::SizeF(display_bounds.width() / crop_rect.width(),
-                 display_bounds.height() / crop_rect.height()));
-
-  return pixmap_size != *target_size || GetBufferFormat() != *target_format;
+  return processed_pixmap_->buffer();
 }
 
 }  // namespace ui

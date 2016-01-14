@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -30,6 +31,19 @@ struct OZONE_EXPORT OverlayPlane {
                const gfx::Rect& display_bounds,
                const gfx::RectF& crop_rect);
 
+  // This represents a callback function which can handle post processing
+  // operations like scaling, format conversion etc of the buffer bound to this
+  // plane and return the processed buffer.
+  typedef base::Callback<scoped_refptr<ScanoutBuffer>(const gfx::Size& size,
+                                                      uint32_t format)>
+      ProcessBufferCallback;
+  OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
+               int z_order,
+               gfx::OverlayTransform plane_transform,
+               const gfx::Rect& display_bounds,
+               const gfx::RectF& crop_rect,
+               const ProcessBufferCallback& processing_callback);
+
   bool operator<(const OverlayPlane& plane) const;
 
   ~OverlayPlane();
@@ -42,6 +56,7 @@ struct OZONE_EXPORT OverlayPlane {
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
+  ProcessBufferCallback processing_callback;
 };
 
 }  // namespace ui

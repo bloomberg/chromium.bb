@@ -106,15 +106,18 @@ DrmOverlayValidator::OverlayHints::OverlayHints(uint32_t format,
 
 DrmOverlayValidator::OverlayHints::~OverlayHints() {}
 
-DrmOverlayValidator::DrmOverlayValidator(DrmWindow* window)
-    : window_(window), overlay_hints_cache_(kMaxCacheSize) {}
+DrmOverlayValidator::DrmOverlayValidator(
+    DrmWindow* window,
+    ScanoutBufferGenerator* buffer_generator)
+    : window_(window),
+      buffer_generator_(buffer_generator),
+      overlay_hints_cache_(kMaxCacheSize) {}
 
 DrmOverlayValidator::~DrmOverlayValidator() {}
 
 std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
     const std::vector<OverlayCheck_Params>& params,
-    const OverlayPlaneList& last_used_planes,
-    ScanoutBufferGenerator* buffer_generator) {
+    const OverlayPlaneList& last_used_planes) {
   std::vector<OverlayCheck_Params> validated_params = params;
   HardwareDisplayController* controller = window_->GetController();
   if (!controller) {
@@ -141,7 +144,7 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
 
     scoped_refptr<ScanoutBuffer> buffer = GetBufferForPageFlipTest(
         drm, scaled_buffer_size, GetFourCCFormatForFramebuffer(overlay.format),
-        buffer_generator, &reusable_buffers);
+        buffer_generator_, &reusable_buffers);
     DCHECK(buffer);
 
     OverlayPlane plane(buffer, overlay.plane_z_order, overlay.transform,
@@ -163,35 +166,58 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
     }
   }
 
-  UpdateOverlayHintsCache(drm, test_list, buffer_generator, &reusable_buffers);
+  UpdateOverlayHintsCache(drm, test_list, &reusable_buffers);
 
   return validated_params;
 }
 
-uint32_t DrmOverlayValidator::GetOptimalBufferFormat(
-    const OverlayPlane& plane,
-    const OverlayPlaneList& plane_list) const {
-  const auto& iter = overlay_hints_cache_.Peek(plane_list);
-  // We dont have any information in cache about this combination of layers,
-  // return standard BGRX format.
-  if (iter == overlay_hints_cache_.end())
-    return DRM_FORMAT_XRGB8888;
+OverlayPlaneList DrmOverlayValidator::PrepareBuffersForPageFlip(
+    const OverlayPlaneList& planes) {
+  if (planes.size() <= 1)
+    return planes;
 
-  DCHECK(plane_list.size() == iter->second.size());
+  HardwareDisplayController* controller = window_->GetController();
+  if (!controller)
+    return planes;
 
-  size_t size = plane_list.size();
-  uint32_t index;
-  for (index = 0; index < size; index++) {
-    const OverlayPlane& test_plane = plane_list.at(index);
-    if (test_plane.z_order == plane.z_order &&
-        test_plane.plane_transform == plane.plane_transform &&
-        test_plane.display_bounds == plane.display_bounds &&
-        test_plane.crop_rect == plane.crop_rect) {
-      break;
+  OverlayPlaneList pending_planes = planes;
+  const auto& overlay_hints = overlay_hints_cache_.Get(planes);
+
+  size_t size = planes.size();
+  bool use_hints = overlay_hints != overlay_hints_cache_.end();
+
+  for (size_t i = 0; i < size; i++) {
+    auto& plane = pending_planes.at(i);
+    if (plane.processing_callback.is_null())
+      continue;
+
+    uint32_t original_format = plane.buffer->GetFramebufferPixelFormat();
+    uint32_t target_format = original_format;
+
+    const gfx::Size& original_size = plane.buffer->GetSize();
+    gfx::Size target_size =
+        GetScaledSize(original_size, plane.display_bounds, plane.crop_rect);
+
+    if (use_hints) {
+      DCHECK(size == overlay_hints->second.size());
+      const OverlayHints& hints = overlay_hints->second.at(i);
+      target_format = hints.optimal_format;
+
+      // We can handle plane scaling, avoid scaling buffer here.
+      if (!hints.handle_scaling)
+        target_size = original_size;
+    }
+
+    if (original_size != target_size || original_format != target_format) {
+      scoped_refptr<ScanoutBuffer> processed_buffer =
+          plane.processing_callback.Run(target_size, target_format);
+
+      if (processed_buffer)
+        plane.buffer = processed_buffer;
     }
   }
 
-  return iter->second.at(index).optimal_format;
+  return pending_planes;
 }
 
 void DrmOverlayValidator::ClearCache() {
@@ -201,7 +227,6 @@ void DrmOverlayValidator::ClearCache() {
 void DrmOverlayValidator::UpdateOverlayHintsCache(
     const scoped_refptr<DrmDevice>& drm,
     const OverlayPlaneList& plane_list,
-    ScanoutBufferGenerator* buffer_generator,
     std::vector<scoped_refptr<ScanoutBuffer>>* reusable_buffers) {
   const auto& iter = overlay_hints_cache_.Get(plane_list);
   if (iter != overlay_hints_cache_.end())
@@ -227,7 +252,7 @@ void DrmOverlayValidator::UpdateOverlayHintsCache(
       scoped_refptr<ScanoutBuffer> original_buffer = plane.buffer;
       plane.buffer =
           GetBufferForPageFlipTest(drm, plane.buffer->GetSize(), optimal_format,
-                                   buffer_generator, reusable_buffers);
+                                   buffer_generator_, reusable_buffers);
 
       if (!controller->TestPageFlip(preferred_format_test_list)) {
         // If test failed here, it means even though optimal_format is

@@ -14,7 +14,7 @@ struct gbm_bo;
 
 namespace ui {
 
-class DrmDevice;
+class GbmDevice;
 
 // Wrapper for a GBM buffer. The base class provides common functionality
 // required to prepare the buffer for scanout. It does not provide any ownership
@@ -23,6 +23,7 @@ class DrmDevice;
 class GbmBufferBase : public ScanoutBuffer {
  public:
   gbm_bo* bo() const { return bo_; }
+  const scoped_refptr<GbmDevice>& drm() const { return drm_; }
 
   // ScanoutBuffer:
   uint32_t GetFramebufferId() const override;
@@ -32,14 +33,14 @@ class GbmBufferBase : public ScanoutBuffer {
   bool RequiresGlFinish() const override;
 
  protected:
-  GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
+  GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
                 gbm_bo* bo,
                 gfx::BufferFormat format,
                 gfx::BufferUsage usage);
   ~GbmBufferBase() override;
 
  private:
-  scoped_refptr<DrmDevice> drm_;
+  scoped_refptr<GbmDevice> drm_;
   gbm_bo* bo_;
   uint32_t framebuffer_ = 0;
   uint32_t framebuffer_pixel_format_ = 0;

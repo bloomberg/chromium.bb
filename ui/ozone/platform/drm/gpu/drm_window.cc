@@ -61,11 +61,12 @@ DrmWindow::DrmWindow(gfx::AcceleratedWidget widget,
 DrmWindow::~DrmWindow() {
 }
 
-void DrmWindow::Initialize() {
+void DrmWindow::Initialize(ScanoutBufferGenerator* buffer_generator) {
   TRACE_EVENT1("drm", "DrmWindow::Initialize", "widget", widget_);
 
   device_manager_->UpdateDrmDevice(widget_, nullptr);
-  overlay_validator_ = make_scoped_ptr(new DrmOverlayValidator(this));
+  overlay_validator_ =
+      make_scoped_ptr(new DrmOverlayValidator(this, buffer_generator));
 }
 
 void DrmWindow::Shutdown() {
@@ -134,7 +135,8 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
     return;
   }
 
-  last_submitted_planes_ = planes;
+  last_submitted_planes_ =
+      overlay_validator_->PrepareBuffersForPageFlip(planes);
 
   if (!controller_) {
     callback.Run(gfx::SwapResult::SWAP_ACK);
@@ -145,10 +147,9 @@ void DrmWindow::SchedulePageFlip(const std::vector<OverlayPlane>& planes,
 }
 
 std::vector<OverlayCheck_Params> DrmWindow::TestPageFlip(
-    const std::vector<OverlayCheck_Params>& overlay_params,
-    ScanoutBufferGenerator* buffer_generator) {
-  return overlay_validator_->TestPageFlip(
-      overlay_params, last_submitted_planes_, buffer_generator);
+    const std::vector<OverlayCheck_Params>& overlay_params) {
+  return overlay_validator_->TestPageFlip(overlay_params,
+                                          last_submitted_planes_);
 }
 
 const OverlayPlane* DrmWindow::GetLastModesetBuffer() {

@@ -70,10 +70,8 @@ class GbmPixmap : public NativePixmap {
 
  private:
   ~GbmPixmap() override;
-  bool ShouldApplyProcessing(const gfx::Rect& display_bounds,
-                             const gfx::RectF& crop_rect,
-                             gfx::Size* target_size,
-                             gfx::BufferFormat* target_format);
+  scoped_refptr<ScanoutBuffer> ProcessBuffer(const gfx::Size& size,
+                                             uint32_t format);
 
   scoped_refptr<GbmBuffer> buffer_;
   base::ScopedFD dma_buf_;
@@ -81,6 +79,9 @@ class GbmPixmap : public NativePixmap {
 
   GbmSurfaceFactory* surface_manager_;
 
+  // OverlayValidator can request scaling or format conversions as needed for
+  // this Pixmap. This holds the processed buffer.
+  scoped_refptr<GbmPixmap> processed_pixmap_;
   ProcessingCallback processing_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GbmPixmap);

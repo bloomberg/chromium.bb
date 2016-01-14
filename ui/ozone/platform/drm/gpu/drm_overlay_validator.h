@@ -18,7 +18,8 @@ struct OverlayCheck_Params;
 
 class DrmOverlayValidator {
  public:
-  explicit DrmOverlayValidator(DrmWindow* window);
+  explicit DrmOverlayValidator(DrmWindow* window,
+                               ScanoutBufferGenerator* buffer_generator);
   ~DrmOverlayValidator();
 
   // Tests if configurations |params| are compatible with |window_| and finds
@@ -26,14 +27,12 @@ class DrmOverlayValidator {
   // without failing the page flip. It expects |params| to be sorted by z_order.
   std::vector<OverlayCheck_Params> TestPageFlip(
       const std::vector<OverlayCheck_Params>& params,
-      const OverlayPlaneList& last_used_planes,
-      ScanoutBufferGenerator* buffer_generator);
+      const OverlayPlaneList& last_used_planes);
 
-  // Tries to predict preferred format supported by hardware planes for |plane|
-  // for the given combination of |plane_list|. Using this format can help
-  // reduce read memory bandwidth during scanout for this plane.
-  uint32_t GetOptimalBufferFormat(const OverlayPlane& plane,
-                                  const OverlayPlaneList& plane_list) const;
+  // Checks if buffers bound to planes can be optimized (i.e. format, scaling)to
+  // reduce Display Read bandwidth. This should be called before an actual page
+  // flip. Expects |planes| to be sorted by Z order.
+  OverlayPlaneList PrepareBuffersForPageFlip(const OverlayPlaneList& planes);
 
   // Clears internal cache of validated overlay configurations. This should be
   // usually called when |window_| size has changed or moved controller.
@@ -65,10 +64,10 @@ class DrmOverlayValidator {
   void UpdateOverlayHintsCache(
       const scoped_refptr<DrmDevice>& drm,
       const OverlayPlaneList& plane_list,
-      ScanoutBufferGenerator* buffer_generator,
       std::vector<scoped_refptr<ScanoutBuffer>>* reusable_buffers);
 
   DrmWindow* window_;  // Not owned.
+  ScanoutBufferGenerator* buffer_generator_;  // Not owned.
 
   // List of all configurations which have been validated.
   base::MRUCacheBase<OverlayPlaneList,

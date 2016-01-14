@@ -130,7 +130,7 @@ void DrmThread::GetVSyncParameters(
 void DrmThread::CreateWindow(gfx::AcceleratedWidget widget) {
   scoped_ptr<DrmWindow> window(
       new DrmWindow(widget, device_manager_.get(), screen_manager_.get()));
-  window->Initialize();
+  window->Initialize(buffer_generator_.get());
   screen_manager_->AddWindow(widget, std::move(window));
 }
 
@@ -163,8 +163,8 @@ void DrmThread::CheckOverlayCapabilities(
     const base::Callback<void(gfx::AcceleratedWidget,
                               const std::vector<OverlayCheck_Params>&)>&
         callback) {
-  callback.Run(widget, screen_manager_->GetWindow(widget)
-                           ->TestPageFlip(overlays, buffer_generator_.get()));
+  callback.Run(widget,
+               screen_manager_->GetWindow(widget)->TestPageFlip(overlays));
 }
 
 void DrmThread::RefreshNativeDisplays(

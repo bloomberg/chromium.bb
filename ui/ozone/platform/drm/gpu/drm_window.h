@@ -56,7 +56,7 @@ class OZONE_EXPORT DrmWindow {
 
   gfx::Rect bounds() const { return bounds_; }
 
-  void Initialize();
+  void Initialize(ScanoutBufferGenerator* buffer_generator);
 
   void Shutdown();
 
@@ -89,8 +89,7 @@ class OZONE_EXPORT DrmWindow {
   void SchedulePageFlip(const std::vector<OverlayPlane>& planes,
                         const SwapCompletionCallback& callback);
   std::vector<OverlayCheck_Params> TestPageFlip(
-      const std::vector<OverlayCheck_Params>& overlay_params,
-      ScanoutBufferGenerator* buffer_generator);
+      const std::vector<OverlayCheck_Params>& overlay_params);
 
   // Returns the last buffer associated with this window.
   const OverlayPlane* GetLastModesetBuffer();

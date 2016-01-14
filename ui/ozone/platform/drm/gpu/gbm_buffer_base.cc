@@ -8,11 +8,11 @@
 
 #include "base/logging.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
-#include "ui/ozone/platform/drm/gpu/drm_device.h"
+#include "ui/ozone/platform/drm/gpu/gbm_device.h"
 
 namespace ui {
 
-GbmBufferBase::GbmBufferBase(const scoped_refptr<DrmDevice>& drm,
+GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
                              gbm_bo* bo,
                              gfx::BufferFormat format,
                              gfx::BufferUsage usage)
