@@ -8,7 +8,7 @@ namespace pairing_chromeos {
 
 const char* kPairingServiceUUID = "f035ff16-c025-468e-bb16-967704d141ea";
 const char* kPairingServiceName = "ChromeOSDevicePairing";
-const char* kDeviceNamePrefix = "Device_";
+const char* kDeviceNamePrefix = "Chrome";
 const int kPairingAPIVersion = 1;
 
 }  // namespace pairing_chromeos

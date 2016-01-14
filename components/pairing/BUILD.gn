@@ -31,6 +31,7 @@ source_set("pairing") {
   deps = [
     ":proto",
     "//base",
+    "//chromeos",
     "//device/bluetooth",
     "//net",
   ]

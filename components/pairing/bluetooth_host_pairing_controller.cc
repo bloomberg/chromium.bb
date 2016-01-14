@@ -8,6 +8,7 @@
 #include "base/hash.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "chromeos/system/devicetype.h"
 #include "components/pairing/bluetooth_pairing_constants.h"
 #include "components/pairing/pairing_api.pb.h"
 #include "components/pairing/proto_decoder.h"
@@ -18,6 +19,21 @@ namespace pairing_chromeos {
 
 namespace {
 const int kReceiveSize = 16384;
+
+std::string GetChromeOSDeviceType() {
+  switch (chromeos::GetDeviceType()) {
+    case chromeos::DeviceType::kChromebox:
+      return std::string(kDeviceNamePrefix) + "box";
+    case chromeos::DeviceType::kChromebase:
+      return std::string(kDeviceNamePrefix) + "base";
+    case chromeos::DeviceType::kChromebit:
+      return std::string(kDeviceNamePrefix) + "bit";
+    case chromeos::DeviceType::kChromebook:
+      return std::string(kDeviceNamePrefix) + "book";
+    default:
+      return std::string(kDeviceNamePrefix) + "device";
+  }
+}
 
 pairing_api::HostStatusParameters::Connectivity PairingApiConnectivityStatus(
     HostPairingController::Connectivity connectivity_status) {
@@ -164,7 +180,8 @@ void BluetoothHostPairingController::SetName() {
   // Hash the bluetooth address and take the lower 2 bytes to create a human
   // readable device name.
   const uint32_t device_id = base::Hash(adapter_->GetAddress()) & 0xFFFF;
-  device_name_ = base::StringPrintf("%s%04X", kDeviceNamePrefix, device_id);
+  device_name_ =
+      base::StringPrintf("%s_%04X", GetChromeOSDeviceType().c_str(), device_id);
 
   adapter_->SetName(
       device_name_,
