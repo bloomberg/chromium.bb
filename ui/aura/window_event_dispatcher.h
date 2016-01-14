@@ -71,9 +71,9 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   Window* mouse_moved_handler() { return mouse_moved_handler_; }
 
   // Repost event for re-processing. Used when exiting context menus.
-  // We only support the ET_MOUSE_PRESSED and ET_GESTURE_TAP_DOWN event
-  // types (although the latter is currently a no-op).
-  void RepostEvent(const ui::LocatedEvent& event);
+  // We support the ET_MOUSE_PRESSED, ET_TOUCH_PRESSED and ET_GESTURE_TAP_DOWN
+  // event types (although the latter is currently a no-op).
+  void RepostEvent(const ui::LocatedEvent* event);
 
   // Invoked when the mouse events get enabled or disabled.
   void OnMouseEventsEnableStateChanged(bool enabled);

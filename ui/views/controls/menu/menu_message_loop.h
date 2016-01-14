@@ -31,7 +31,7 @@ class MenuMessageLoop {
 
   // Repost |event| to |window|.
   // |screen_loc| is the event's location in screen coordinates.
-  static void RepostEventToWindow(const ui::LocatedEvent& event,
+  static void RepostEventToWindow(const ui::LocatedEvent* event,
                                   gfx::NativeWindow window,
                                   const gfx::Point& screen_loc);
 

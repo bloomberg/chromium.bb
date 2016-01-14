@@ -95,6 +95,9 @@ DesktopWindowTreeHostWin::~DesktopWindowTreeHostWin() {
 
 // static
 aura::Window* DesktopWindowTreeHostWin::GetContentWindowForHWND(HWND hwnd) {
+  // All HWND's we create should have WindowTreeHost instances associated with
+  // them. There are exceptions like the content layer creating HWND's which
+  // are not associated with WindowTreeHost instances.
   aura::WindowTreeHost* host =
       aura::WindowTreeHost::GetForAcceleratedWidget(hwnd);
   return host ? host->window()->GetProperty(kContentWindowForRootWindow) : NULL;

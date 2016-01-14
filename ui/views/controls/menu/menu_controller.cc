@@ -39,6 +39,7 @@
 #include "ui/views/widget/widget.h"
 
 #if defined(OS_WIN)
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/win/internal_constants.h"
 #include "ui/gfx/win/dpi.h"
 #include "ui/views/win/hwnd_util.h"
@@ -468,7 +469,7 @@ bool MenuController::OnMousePressed(SubmenuView* source,
   }
 
   // Otherwise, the menu handles this click directly.
-  SetSelectionOnPointerDown(source, event);
+  SetSelectionOnPointerDown(source, &event);
   return true;
 }
 
@@ -630,7 +631,7 @@ void MenuController::OnGestureEvent(SubmenuView* source,
                                     ui::GestureEvent* event) {
   MenuPart part = GetMenuPart(source, event->location());
   if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
-    SetSelectionOnPointerDown(source, *event);
+    SetSelectionOnPointerDown(source, event);
     event->StopPropagation();
   } else if (event->type() == ui::ET_GESTURE_LONG_PRESS) {
     if (part.type == MenuPart::MENU_ITEM && part.menu) {
@@ -672,6 +673,16 @@ void MenuController::OnGestureEvent(SubmenuView* source,
   if (!part.submenu)
     return;
   part.submenu->OnGestureEvent(event);
+}
+
+void MenuController::OnTouchEvent(SubmenuView* source, ui::TouchEvent* event) {
+  if (event->type() == ui::ET_TOUCH_PRESSED) {
+    MenuPart part = GetMenuPart(source, event->location());
+    if (part.type == MenuPart::NONE) {
+      RepostEvent(source, event);
+      event->SetHandled();
+    }
+  }
 }
 
 View* MenuController::GetTooltipHandlerForPoint(SubmenuView* source,
@@ -967,20 +978,20 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 }
 
 void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
-                                               const ui::LocatedEvent& event) {
+                                               const ui::LocatedEvent* event) {
   if (!blocking_run_)
     return;
 
   DCHECK(!GetActiveMouseView());
 
-  MenuPart part = GetMenuPart(source, event.location());
+  MenuPart part = GetMenuPart(source, event->location());
   if (part.is_scroll())
     return;  // Ignore presses on scroll buttons.
 
   // When this menu is opened through a touch event, a simulated right-click
   // is sent before the menu appears.  Ignore it.
-  if ((event.flags() & ui::EF_RIGHT_MOUSE_BUTTON) &&
-      (event.flags() & ui::EF_FROM_TOUCH))
+  if ((event->flags() & ui::EF_RIGHT_MOUSE_BUTTON) &&
+      (event->flags() & ui::EF_FROM_TOUCH))
     return;
 
   if (part.type == MenuPart::NONE ||
@@ -989,7 +1000,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     // Remember the time stamp of the current (press down) event. The owner can
     // then use this to figure out if this menu was finished with the same click
     // which is sent to it thereafter.
-    closing_event_time_ = event.time_stamp();
+    closing_event_time_ = event->time_stamp();
 
     // Mouse wasn't pressed over any menu, or the active menu, cancel.
 
@@ -1004,7 +1015,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     if (!menu_stack_.empty()) {
       // We're running nested menus. Only exit all if the mouse wasn't over one
       // of the menus from the last run.
-      gfx::Point screen_loc(event.location());
+      gfx::Point screen_loc(event->location());
       View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
       MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
           menu_stack_.back().first.item, screen_loc);
@@ -1034,7 +1045,7 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
   } else {
     if (part.menu->GetDelegate()->CanDrag(part.menu)) {
       possible_drag_ = true;
-      press_pt_ = event.location();
+      press_pt_ = event->location();
     }
     if (part.menu->HasSubmenu())
       selection_types |= SELECTION_OPEN_SUBMENU;
@@ -2177,11 +2188,11 @@ void MenuController::SelectByChar(base::char16 character) {
 }
 
 void MenuController::RepostEvent(SubmenuView* source,
-                                 const ui::LocatedEvent& event) {
-  if (!event.IsMouseEvent()) {
+                                 const ui::LocatedEvent* event) {
+  if (!event->IsMouseEvent() && !event->IsTouchEvent()) {
     // TODO(rbyers): Gesture event repost is tricky to get right
     // crbug.com/170987.
-    DCHECK(event.IsGestureEvent());
+    DCHECK(event->IsGestureEvent());
     return;
   }
 
@@ -2197,7 +2208,7 @@ void MenuController::RepostEvent(SubmenuView* source,
   state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
 #endif
 
-  gfx::Point screen_loc(event.location());
+  gfx::Point screen_loc(event->location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
   gfx::NativeView native_view = source->GetWidget()->GetNativeView();
   if (!native_view)
@@ -2207,16 +2218,27 @@ void MenuController::RepostEvent(SubmenuView* source,
   gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
 
 #if defined(OS_WIN)
+  gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
+  HWND target_window = ::WindowFromPoint(screen_loc_pixels.ToPOINT());
+  // If we don't find a native window for the HWND at the current location,
+  // then attempt to find a native window from its parent if one exists.
+  // There are HWNDs created outside views, which don't have associated
+  // native windows.
+  if (!window) {
+    HWND parent = ::GetParent(target_window);
+    if (parent) {
+      aura::WindowTreeHost* host =
+          aura::WindowTreeHost::GetForAcceleratedWidget(parent);
+      if (host) {
+        target_window = parent;
+        window = host->window();
+      }
+    }
+  }
   // Convert screen_loc to pixels for the Win32 API's like WindowFromPoint,
   // PostMessage/SendMessage to work correctly. These API's expect the
   // coordinates to be in pixels.
-  // PostMessage() to metro windows isn't allowed (access will be denied). Don't
-  // try to repost with Win32 if the window under the mouse press is in metro.
-  if (!ViewsDelegate::GetInstance() ||
-      !ViewsDelegate::GetInstance()->IsWindowInMetro(window)) {
-    gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
-    HWND target_window = window ? HWNDForNativeWindow(window) :
-                                  WindowFromPoint(screen_loc_pixels.ToPOINT());
+  if (event->IsMouseEvent()) {
     HWND source_window = HWNDForNativeView(native_view);
     if (!target_window || !source_window ||
         GetWindowThreadProcessId(source_window, NULL) !=
@@ -2238,7 +2260,7 @@ void MenuController::RepostEvent(SubmenuView* source,
     // the event we just got. MouseEvent only tells us what is down, which may
     // differ. Need to add ability to get changed button from MouseEvent.
     int event_type;
-    int flags = event.flags();
+    int flags = event->flags();
     if (flags & ui::EF_LEFT_MOUSE_BUTTON) {
       event_type = client_area ? WM_LBUTTONDOWN : WM_NCLBUTTONDOWN;
     } else if (flags & ui::EF_MIDDLE_MOUSE_BUTTON) {
@@ -2259,13 +2281,13 @@ void MenuController::RepostEvent(SubmenuView* source,
       window_y = pt.y;
     }
 
-    WPARAM target = client_area ? event.native_event().wParam : nc_hit_result;
+    WPARAM target = client_area ? event->native_event().wParam : nc_hit_result;
     LPARAM window_coords = MAKELPARAM(window_x, window_y);
     PostMessage(target_window, event_type, target, window_coords);
     return;
   }
 #endif
-  // Non-Windows Aura or |window| is in metro mode.
+  // Non Aura window.
   if (!window)
     return;
 

@@ -101,21 +101,25 @@ MenuMessageLoop* MenuMessageLoop::Create() {
 }
 
 // static
-void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent& event,
+void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent* event,
                                           gfx::NativeWindow window,
                                           const gfx::Point& screen_loc) {
   aura::Window* root = window->GetRootWindow();
-  ScreenPositionClient* spc = aura::client::GetScreenPositionClient(root);
+  aura::client::ScreenPositionClient* spc =
+      aura::client::GetScreenPositionClient(root);
   if (!spc)
     return;
 
   gfx::Point root_loc(screen_loc);
   spc->ConvertPointFromScreen(root, &root_loc);
 
-  ui::MouseEvent clone(static_cast<const ui::MouseEvent&>(event));
-  clone.set_location(root_loc);
-  clone.set_root_location(root_loc);
-  root->GetHost()->dispatcher()->RepostEvent(clone);
+  scoped_ptr<ui::Event> clone = ui::Event::Clone(*event);
+  scoped_ptr<ui::LocatedEvent> located_event(
+      static_cast<ui::LocatedEvent*>(clone.release()));
+  located_event->set_location(root_loc);
+  located_event->set_root_location(root_loc);
+
+  root->GetHost()->dispatcher()->RepostEvent(located_event.get());
 }
 
 MenuMessageLoopAura::MenuMessageLoopAura() : owner_(nullptr) {}

@@ -100,26 +100,33 @@ WindowEventDispatcher::~WindowEventDispatcher() {
   ui::GestureRecognizer::Get()->RemoveGestureEventHelper(this);
 }
 
-void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent& event) {
-  DCHECK(event.type() == ui::ET_MOUSE_PRESSED ||
-         event.type() == ui::ET_GESTURE_TAP_DOWN);
+void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
+  DCHECK(event->type() == ui::ET_MOUSE_PRESSED ||
+         event->type() == ui::ET_GESTURE_TAP_DOWN ||
+         event->type() == ui::ET_TOUCH_PRESSED);
   // We allow for only one outstanding repostable event. This is used
   // in exiting context menus.  A dropped repost request is allowed.
-  if (event.type() == ui::ET_MOUSE_PRESSED) {
+  if (event->type() == ui::ET_MOUSE_PRESSED) {
     held_repostable_event_.reset(
         new ui::MouseEvent(
-            static_cast<const ui::MouseEvent&>(event),
-            static_cast<aura::Window*>(event.target()),
+            static_cast<const ui::MouseEvent&>(*event),
+            static_cast<aura::Window*>(event->target()),
             window()));
+  } else if (event->type() == ui::ET_TOUCH_PRESSED) {
+    held_repostable_event_.reset(
+        new ui::TouchEvent(static_cast<const ui::TouchEvent&>(*event)));
+  } else {
+    DCHECK(event->type() == ui::ET_GESTURE_TAP_DOWN);
+    held_repostable_event_.reset();
+    // TODO(rbyers): Reposing of gestures is tricky to get
+    // right, so it's not yet supported.  crbug.com/170987.
+  }
+
+  if (held_repostable_event_) {
     base::MessageLoop::current()->PostNonNestableTask(
         FROM_HERE, base::Bind(
             base::IgnoreResult(&WindowEventDispatcher::DispatchHeldEvents),
             repost_event_factory_.GetWeakPtr()));
-  } else {
-    DCHECK(event.type() == ui::ET_GESTURE_TAP_DOWN);
-    held_repostable_event_.reset();
-    // TODO(rbyers): Reposing of gestures is tricky to get
-    // right, so it's not yet supported.  crbug.com/170987.
   }
 }
 
@@ -666,11 +673,11 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchHeldEvents() {
 
   DispatchDetails dispatch_details;
   if (held_repostable_event_) {
-    if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
-      scoped_ptr<ui::MouseEvent> mouse_event(
-          static_cast<ui::MouseEvent*>(held_repostable_event_.release()));
-      dispatching_held_event_ = mouse_event.get();
-      dispatch_details = OnEventFromSource(mouse_event.get());
+    if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED ||
+        held_repostable_event_->type() == ui::ET_TOUCH_PRESSED) {
+      scoped_ptr<ui::LocatedEvent> event = std::move(held_repostable_event_);
+      dispatching_held_event_ = event.get();
+      dispatch_details = OnEventFromSource(event.get());
     } else {
       // TODO(rbyers): GESTURE_TAP_DOWN not yet supported: crbug.com/170987.
       NOTREACHED();

@@ -168,14 +168,19 @@ TouchDispositionGestureFilter::OnGesturePacket(
     return SUCCESS;
   }
 
-  // Check the packet's unique_touch_event_id is valid and unique.
+  // Check the packet's unique_touch_event_id is valid and unique with the
+  // exception of TOUCH_TIMEOUT packets which have the unique_touch_event_id_
+  // of 0. |TOUCH_TIMEOUT| packets don't wait for an ack, they are dispatched
+  // as soon as they reach the head of the queue, in |SendAckedEvents|.
   if (!Tail().empty()) {
-    DCHECK_NE(packet.unique_touch_event_id(),
-              Tail().back().unique_touch_event_id());
+    DCHECK((packet.gesture_source() == GestureEventDataPacket::TOUCH_TIMEOUT)
+            || (packet.unique_touch_event_id() !=
+                    Tail().back().unique_touch_event_id()));
   }
   if (!Head().empty()) {
     DCHECK_NE(packet.unique_touch_event_id(),
               Head().front().unique_touch_event_id());
+
   }
 
   Tail().push(packet);

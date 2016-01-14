@@ -18,7 +18,7 @@ MenuMessageLoop* MenuMessageLoop::Create() {
 }
 
 // static
-void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent& event,
+void MenuMessageLoop::RepostEventToWindow(const ui::LocatedEvent* event,
                                           gfx::NativeWindow window,
                                           const gfx::Point& screen_loc) {
   NOTIMPLEMENTED();
