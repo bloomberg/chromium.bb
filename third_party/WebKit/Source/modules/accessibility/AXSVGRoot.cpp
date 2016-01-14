@@ -67,5 +67,19 @@ AXObject* AXSVGRoot::computeParent() const
     return AXLayoutObject::computeParent();
 }
 
+// SVG AAM 1.0 S8.2: the default role for an SVG root is "group".
+AccessibilityRole AXSVGRoot::determineAccessibilityRole()
+{
+    AccessibilityRole role = AXLayoutObject::determineAccessibilityRole();
+    if (role == UnknownRole)
+        role = GroupRole;
+    return role;
+}
+
+// SVG elements are only ignored when a generic element would also be ignored.
+bool AXSVGRoot::computeAccessibilityIsIgnored(IgnoredReasons* reasons) const
+{
+    return accessibilityIsIgnoredByDefault(reasons);
+}
 
 } // namespace blink

@@ -54,6 +54,7 @@
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutObject.h"
+#include "core/svg/SVGElement.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
@@ -2375,6 +2376,41 @@ String AXNodeObject::nativeTextAlternative(AXObjectSet& visited, AXNameFrom& nam
         }
 
         return textAlternative;
+    }
+
+    // Per SVG AAM 1.0's modifications to 2D of this algorithm.
+    if (node()->isSVGElement()) {
+        nameFrom = AXNameFromRelatedElement;
+        if (nameSources) {
+            nameSources->append(NameSource(*foundTextAlternative));
+            nameSources->last().type = nameFrom;
+            nameSources->last().nativeSource = AXTextFromNativeHTMLTitleElement;
+        }
+        ASSERT(node()->isContainerNode());
+        Element* title = ElementTraversal::firstChild(
+            toContainerNode(*(node())),
+            HasTagName(SVGNames::titleTag));
+
+        if (title) {
+            AXObject* titleAXObject = axObjectCache().getOrCreate(title);
+            if (titleAXObject && !visited.contains(titleAXObject)) {
+                textAlternative = recursiveTextAlternative(*titleAXObject, false, visited);
+                if (relatedObjects) {
+                    localRelatedObjects.append(new NameSourceRelatedObject(
+                        titleAXObject, textAlternative));
+                    *relatedObjects = localRelatedObjects;
+                    localRelatedObjects.clear();
+                }
+            }
+            if (nameSources) {
+                NameSource& source = nameSources->last();
+                source.text = textAlternative;
+                source.relatedObjects = *relatedObjects;
+                *foundTextAlternative = true;
+            } else {
+                return textAlternative;
+            }
+        }
     }
 
     // Fieldset / legend.

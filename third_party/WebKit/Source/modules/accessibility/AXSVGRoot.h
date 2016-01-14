@@ -46,6 +46,9 @@ public:
 
     void setParent(AXObject*) override;
 
+    AccessibilityRole determineAccessibilityRole() override;
+    bool computeAccessibilityIsIgnored(IgnoredReasons*) const override;
+
 private:
     AXObject* computeParent() const override;
     bool isAXSVGRoot() const override { return true; }
