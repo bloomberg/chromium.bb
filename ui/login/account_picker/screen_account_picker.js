@@ -145,6 +145,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
      * Event handler that is invoked just before the frame is hidden.
      */
     onBeforeHide: function() {
+      $('pod-row').clearFocusedPod();
       this.showing_ = false;
       chrome.send('loginUIStateChanged', ['account-picker', false]);
       $('login-header-bar').signinUIState = SIGNIN_UI_STATE.HIDDEN;
