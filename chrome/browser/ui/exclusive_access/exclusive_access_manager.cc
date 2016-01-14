@@ -127,7 +127,7 @@ void ExclusiveAccessManager::OnTabClosing(WebContents* web_contents) {
 bool ExclusiveAccessManager::HandleUserKeyPress(
     const content::NativeWebKeyboardEvent& event) {
   if (event.windowsKeyCode != ui::VKEY_ESCAPE) {
-    OnUserInput();
+    exclusive_access_context_->OnExclusiveAccessUserInput();
     return false;
   }
 
@@ -135,10 +135,6 @@ bool ExclusiveAccessManager::HandleUserKeyPress(
   handled = fullscreen_controller_.HandleUserPressedEscape();
   handled |= mouse_lock_controller_.HandleUserPressedEscape();
   return handled;
-}
-
-void ExclusiveAccessManager::OnUserInput() {
-  exclusive_access_context_->OnExclusiveAccessUserInput();
 }
 
 void ExclusiveAccessManager::OnAcceptExclusiveAccessPermission() {

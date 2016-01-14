@@ -515,9 +515,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // handled if it should not be further processed.
   void HandleGestureForTouchSelection(ui::GestureEvent* event);
 
-  // Forwards a mouse event to this view's parent window delegate.
-  void ForwardMouseEventToParent(ui::MouseEvent* event);
-
   // The model object.
   RenderWidgetHostImpl* const host_;
 
