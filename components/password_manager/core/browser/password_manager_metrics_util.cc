@@ -181,6 +181,13 @@ void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event) {
                             event, UPDATE_PASSWORD_EVENT_COUNT);
 }
 
+void LogMultiAccountUpdateBubbleUserAction(
+    MultiAccountUpdateBubbleUserAction action) {
+  UMA_HISTOGRAM_ENUMERATION("PasswordManager.MultiAccountPasswordUpdateAction",
+                            action,
+                            MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT);
+}
+
 }  // namespace metrics_util
 
 }  // namespace password_manager

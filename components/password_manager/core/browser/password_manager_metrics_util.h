@@ -110,6 +110,19 @@ enum UpdatePasswordSubmissionEvent {
   NO_UPDATE_SUBMISSION
 };
 
+enum MultiAccountUpdateBubbleUserAction {
+  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_CHANGED,
+  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_NOT_CHANGED,
+  DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_REJECTED_UPDATE,
+  DEFAULT_ACCOUNT_PREFERRED_USER_CHANGED,
+  DEFAULT_ACCOUNT_PREFERRED_USER_NOT_CHANGED,
+  DEFAULT_ACCOUNT_PREFERRED_USER_REJECTED_UPDATE,
+  DEFAULT_ACCOUNT_FIRST_USER_CHANGED,
+  DEFAULT_ACCOUNT_FIRST_USER_NOT_CHANGED,
+  DEFAULT_ACCOUNT_FIRST_USER_REJECTED_UPDATE,
+  MULTI_ACCOUNT_UPDATE_BUBBLE_USER_ACTION_COUNT
+};
+
 // We monitor the performance of the save password heuristic for a handful of
 // domains. For privacy reasons we are not reporting UMA signals by domain, but
 // by a domain group. A domain group can contain multiple domains, and a domain
@@ -173,6 +186,11 @@ void LogPasswordGenerationAvailableSubmissionEvent(
 
 // Log submission events related to password update.
 void LogUpdatePasswordSubmissionEvent(UpdatePasswordSubmissionEvent event);
+
+// Log a user action on showing an update password bubble with multiple
+// accounts.
+void LogMultiAccountUpdateBubbleUserAction(
+    MultiAccountUpdateBubbleUserAction action);
 
 }  // namespace metrics_util
 

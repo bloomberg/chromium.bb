@@ -32539,6 +32539,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>An error on LoginDatabase initialization.</summary>
 </histogram>
 
+<histogram name="PasswordManager.MultiAccountPasswordUpdateAction"
+    enum="MultiAccountUpdateBubbleUserAction">
+  <owner>dvadym@chromium.org</owner>
+  <summary>
+    A user action when a password update bubble with multiple accounts is shown.
+  </summary>
+</histogram>
+
 <histogram name="PasswordManager.NumPasswordsDeletedByBulkDelete">
   <owner>vabr@chromium.org</owner>
   <summary>
@@ -70981,6 +70989,19 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="9" label="OPUS"/>
   <int value="10" label="HEVC"/>
   <int value="11" label="AC3"/>
+</enum>
+
+<enum name="MultiAccountUpdateBubbleUserAction" type="int">
+  <int value="0" label="DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_CHANGED"/>
+  <int value="1" label="DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_NOT_CHANGED"/>
+  <int value="2"
+      label="DEFAULT_ACCOUNT_MATCHED_BY_PASSWORD_USER_REJECTED_UPDATE"/>
+  <int value="3" label="DEFAULT_ACCOUNT_PREFERRED_USER_CHANGED"/>
+  <int value="4" label="DEFAULT_ACCOUNT_PREFERRED_USER_NOT_CHANGED"/>
+  <int value="5" label="DEFAULT_ACCOUNT_PREFERRED_USER_REJECTED_UPDATE"/>
+  <int value="6" label="DEFAULT_ACCOUNT_FIRST_USER_CHANGED"/>
+  <int value="7" label="DEFAULT_ACCOUNT_FIRST_USER_NOT_CHANGED"/>
+  <int value="8" label="DEFAULT_ACCOUNT_FIRST_USER_REJECTED_UPDATE"/>
 </enum>
 
 <enum name="MultiProfileSessionMode" type="int">
