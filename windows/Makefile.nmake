@@ -66,6 +66,7 @@ error.obj: $(GNULIBDIR)\error.c $(GNULIBHEADERS)
 strndup.obj: $(GNULIBDIR)\strndup.c $(GNULIBHEADERS)
     $(CC) $(GNULIBCFLAGS) $(GNULIBDIR)\strndup.c
 brl_checks.obj: $(TESTSDIR)\brl_checks.c $(YAMLHEADERS)
-    $(CC) $(YAMLCFLAGS) $(TESTSDIR)\brl_checks.c
+# Disable MSVC warning C4333: '>>': right shift by too large amount, data loss
+    $(CC) $(YAMLCFLAGS) /wd4333 $(TESTSDIR)\brl_checks.c
 check_yaml.obj: $(TESTSDIR)\check_yaml.c $(YAMLHEADERS)
     $(CC) $(YAMLCFLAGS) $(TESTSDIR)\check_yaml.c
