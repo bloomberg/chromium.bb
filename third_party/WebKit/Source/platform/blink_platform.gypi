@@ -1021,6 +1021,7 @@
       'geometry/FloatBoxTestHelpers.cpp',
       'geometry/FloatPointTest.cpp',
       'geometry/FloatPolygonTest.cpp',
+      'geometry/FloatRectTest.cpp',
       'geometry/FloatRoundedRectTest.cpp',
       'geometry/FloatSizeTest.cpp',
       'geometry/GeometryTestHelpers.cpp',

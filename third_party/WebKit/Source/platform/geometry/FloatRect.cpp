@@ -171,6 +171,14 @@ void FloatRect::scale(float sx, float sy)
     m_size.setHeight(height() * sy);
 }
 
+float FloatRect::squaredDistanceTo(const FloatPoint& point) const
+{
+    FloatPoint closestPoint;
+    closestPoint.setX(clampTo<float>(point.x(), x(), maxX()));
+    closestPoint.setY(clampTo<float>(point.y(), y(), maxY()));
+    return (point - closestPoint).diagonalLengthSquared();
+}
+
 FloatRect unionRect(const Vector<FloatRect>& rects)
 {
     FloatRect result;

@@ -169,6 +169,8 @@ public:
 
     FloatRect transposedRect() const { return FloatRect(m_location.transposedPoint(), m_size.transposedSize()); }
 
+    float squaredDistanceTo(const FloatPoint&) const;
+
 #if OS(MACOSX)
     FloatRect(const CGRect&);
     operator CGRect() const;
