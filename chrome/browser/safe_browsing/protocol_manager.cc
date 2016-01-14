@@ -93,6 +93,8 @@ static const size_t kSbMaxBackOff = 8;
 
 const char kGetHashUmaResponseMetricName[] = "SB2.GetHashResponseOrErrorCode";
 const char kGetChunkUmaResponseMetricName[] = "SB2.GetChunkResponseOrErrorCode";
+const char kUmaV4ResponseMetricName[] =
+    "SafeBrowsing.GetV4HashHttpResponseOrErrorCode";
 
 // The V4 URL prefix where browser fetches hashes from the V4 server.
 const char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
@@ -214,6 +216,13 @@ void SafeBrowsingProtocolManager::RecordGetHashResult(bool is_download,
     UMA_HISTOGRAM_ENUMERATION("SB2.GetHashResult", result_type,
                               GET_HASH_RESULT_MAX);
   }
+}
+
+// static
+void SafeBrowsingProtocolManager::RecordGetV4HashResult(
+    ResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("SafeBrowsing.GetV4HashResult", result_type,
+                            GET_HASH_RESULT_MAX);
 }
 
 void SafeBrowsingProtocolManager::RecordHttpResponseOrErrorCode(
@@ -373,7 +382,11 @@ void SafeBrowsingProtocolManager::GetV4FullHashes(
   // proceed with the request. If not, we are required to return empty results
   // (i.e. treat the page as safe).
   if (Time::Now() <= next_gethash_v4_time_) {
-    // TODO(kcarattini): Add UMA recording.
+    if (gethash_v4_error_count_) {
+      RecordGetV4HashResult(GET_HASH_BACKOFF_ERROR);
+    } else {
+      RecordGetV4HashResult(GET_HASH_MIN_WAIT_DURATION_ERROR);
+    }
     std::vector<SBFullHashResult> full_hashes;
     callback.Run(full_hashes, base::TimeDelta());
     return;
@@ -477,24 +490,34 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     hash_requests_.erase(it);
   } else if (v4_it != v4_hash_requests_.end()) {
     // V4 FindFullHashes response.
+    // TODO(kcarattini): Consider pulling all the V4 handling out into a
+    // separate V4ProtocolManager class.
+    RecordHttpResponseOrErrorCode(kUmaV4ResponseMetricName, status,
+                                  response_code);
     const FullHashDetails& details = v4_it->second;
     std::vector<SBFullHashResult> full_hashes;
     base::TimeDelta negative_cache_duration;
     if (status.is_success() && response_code == net::HTTP_OK) {
-      // TODO(kcarattini): Add UMA reporting.
+      RecordGetV4HashResult(GET_HASH_STATUS_200);
       ResetGetHashV4Errors();
       std::string data;
       source->GetResponseAsString(&data);
       if (!ParseV4HashResponse(data, &full_hashes, &negative_cache_duration)) {
         full_hashes.clear();
-        // TODO(kcarattini): Add UMA reporting.
+        RecordGetV4HashResult(GET_HASH_PARSE_ERROR);
       }
     } else {
       HandleGetHashV4Error(Time::Now());
-      // TODO(kcarattini): Add UMA reporting.
+
       DVLOG(1) << "SafeBrowsing GetEncodedFullHashes request for: " <<
           source->GetURL() << " failed with error: " << status.error() <<
           " and response code: " << response_code;
+
+      if (status.status() == net::URLRequestStatus::FAILED) {
+        RecordGetV4HashResult(GET_HASH_NETWORK_ERROR);
+      } else {
+        RecordGetV4HashResult(GET_HASH_HTTP_ERROR);
+      }
     }
 
     // Invoke the callback with full_hashes, even if there was a parse error or
