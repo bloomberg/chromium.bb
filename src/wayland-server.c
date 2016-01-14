@@ -730,6 +730,11 @@ registry_bind(struct wl_client *client,
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid global %s (%d)", interface, name);
+	else if (version == 0)
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid version for global %s (%d): 0 is not a valid version",
+				       interface, name);
 	else if (global->version < version)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
