@@ -127,7 +127,8 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       touchstart_expected_soon(false),
       have_seen_a_begin_main_frame(false),
       has_visible_render_widget_with_touch_handler(false),
-      begin_frame_not_expected_soon(false) {}
+      begin_frame_not_expected_soon(false),
+      expensive_task_blocking_allowed(true) {}
 
 RendererSchedulerImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -718,6 +719,11 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       NOTREACHED();
   }
 
+  if (!MainThreadOnly().expensive_task_blocking_allowed) {
+    block_expensive_loading_tasks = false;
+    block_expensive_timer_tasks = false;
+  }
+
   // Don't block expensive tasks unless we have actually seen something.
   if (!MainThreadOnly().have_seen_a_begin_main_frame) {
     block_expensive_loading_tasks = false;
@@ -1081,6 +1087,10 @@ void RendererSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
 
 void RendererSchedulerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {
   helper_.UnregisterTimeDomain(time_domain);
+}
+
+void RendererSchedulerImpl::SetExpensiveTaskBlockingAllowed(bool allowed) {
+  MainThreadOnly().expensive_task_blocking_allowed = allowed;
 }
 
 base::TickClock* RendererSchedulerImpl::tick_clock() const {

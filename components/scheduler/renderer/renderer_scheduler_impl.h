@@ -91,6 +91,8 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void RegisterTimeDomain(TimeDomain* time_domain);
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
+  void SetExpensiveTaskBlockingAllowed(bool allowed);
+
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
   TaskCostEstimator* GetLoadingTaskCostEstimatorForTesting();
@@ -295,6 +297,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool have_seen_a_begin_main_frame;
     bool has_visible_render_widget_with_touch_handler;
     bool begin_frame_not_expected_soon;
+    bool expensive_task_blocking_allowed;
   };
 
   struct AnyThread {

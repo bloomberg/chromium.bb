@@ -154,8 +154,6 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
 
   base::PlatformThread::SetName("CrRendererMain");
-  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler(
-      scheduler::RendererScheduler::Create());
 
   bool no_sandbox = parsed_command_line.HasSwitch(switches::kNoSandbox);
 
@@ -185,6 +183,9 @@ int RendererMain(const MainFunctionParams& parameters) {
       parsed_command_line.GetSwitchValueASCII(switches::kEnableFeatures),
       parsed_command_line.GetSwitchValueASCII(switches::kDisableFeatures));
   base::FeatureList::SetInstance(std::move(feature_list));
+
+  scoped_ptr<scheduler::RendererScheduler> renderer_scheduler(
+      scheduler::RendererScheduler::Create());
 
   // PlatformInitialize uses FieldTrials, so this must happen later.
   platform.PlatformInitialize();
