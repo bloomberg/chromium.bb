@@ -1,8 +1,10 @@
 Makefile
 Makefile.in
 configure
+config.guess
 config.log
 config.status
+config.sub
 compile
 install-sh
 missing
