@@ -441,17 +441,7 @@ content::WebContents* BlimpEngineSession::OpenURLFromTab(
   load_url_params.extra_headers = params.extra_headers;
   load_url_params.should_replace_current_entry =
       params.should_replace_current_entry;
-
-  if (params.transferred_global_request_id != content::GlobalRequestID()) {
-    // If transferred_global_request_id is set, then
-    // the navigation is being transferred from one RenderViewHost to another.
-    // Preserve the request-id and renderer-initiated flag.
-    load_url_params.is_renderer_initiated = params.is_renderer_initiated;
-    load_url_params.transferred_global_request_id =
-        params.transferred_global_request_id;
-  } else if (params.is_renderer_initiated) {
-    load_url_params.is_renderer_initiated = true;
-  }
+  load_url_params.is_renderer_initiated = params.is_renderer_initiated;
 
   source->GetController().LoadURLWithParams(load_url_params);
   return source;

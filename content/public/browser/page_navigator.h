@@ -76,10 +76,6 @@ struct CONTENT_EXPORT OpenURLParams {
   // Whether this navigation is initiated by the renderer process.
   bool is_renderer_initiated;
 
-  // Reference to the old request id in case this is a navigation that is being
-  // transferred to a new renderer.
-  GlobalRequestID transferred_global_request_id;
-
   // Indicates whether this navigation should replace the current
   // navigation entry.
   bool should_replace_current_entry;

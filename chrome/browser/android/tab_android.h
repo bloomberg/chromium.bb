@@ -120,10 +120,6 @@ class TabAndroid : public CoreTabHelperDelegate,
 
   bool HasPrerenderedUrl(GURL gurl);
 
-  void MakeLoadURLParams(
-      chrome::NavigateParams* params,
-      content::NavigationController::LoadURLParams* load_url_params);
-
   bool HasOfflinePages() const;
   void ShowOfflinePages();
   void LoadOfflineCopy(const GURL& url);

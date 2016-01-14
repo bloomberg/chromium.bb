@@ -262,32 +262,6 @@ bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
   return false;
 }
 
-void TabAndroid::MakeLoadURLParams(
-    chrome::NavigateParams* params,
-    NavigationController::LoadURLParams* load_url_params) {
-  load_url_params->referrer = params->referrer;
-  load_url_params->frame_tree_node_id = params->frame_tree_node_id;
-  load_url_params->redirect_chain = params->redirect_chain;
-  load_url_params->transition_type = params->transition;
-  load_url_params->extra_headers = params->extra_headers;
-  load_url_params->should_replace_current_entry =
-      params->should_replace_current_entry;
-
-  if (params->transferred_global_request_id != GlobalRequestID()) {
-    load_url_params->transferred_global_request_id =
-        params->transferred_global_request_id;
-  }
-  load_url_params->is_renderer_initiated = params->is_renderer_initiated;
-
-  // Only allows the browser-initiated navigation to use POST.
-  if (params->uses_post && !params->is_renderer_initiated) {
-    load_url_params->load_type =
-        NavigationController::LOAD_TYPE_BROWSER_INITIATED_HTTP_POST;
-    load_url_params->browser_initiated_post_data =
-        params->browser_initiated_post_data;
-  }
-}
-
 void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                                  content::WebContents* new_contents,
                                  bool did_start_load,

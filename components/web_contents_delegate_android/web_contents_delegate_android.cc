@@ -119,11 +119,6 @@ WebContents* WebContentsDelegateAndroid::OpenURLFromTab(
       params.should_replace_current_entry;
   load_params.is_renderer_initiated = params.is_renderer_initiated;
 
-  if (params.transferred_global_request_id != content::GlobalRequestID()) {
-    load_params.transferred_global_request_id =
-        params.transferred_global_request_id;
-  }
-
   // Only allows the browser-initiated navigation to use POST.
   if (params.uses_post && !params.is_renderer_initiated) {
     load_params.load_type =

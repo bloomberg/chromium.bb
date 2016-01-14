@@ -1025,14 +1025,14 @@ void WebViewGuest::NavigateGuest(const std::string& src,
   // if the navigation is embedder-initiated. For browser-initiated navigations,
   // content scripts will be ready.
   if (force_navigation) {
-    SignalWhenReady(base::Bind(
-        &WebViewGuest::LoadURLWithParams, weak_ptr_factory_.GetWeakPtr(), url,
-        content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-        GlobalRequestID(), force_navigation));
+    SignalWhenReady(
+        base::Bind(&WebViewGuest::LoadURLWithParams,
+                   weak_ptr_factory_.GetWeakPtr(), url, content::Referrer(),
+                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, force_navigation));
     return;
   }
   LoadURLWithParams(url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-                    GlobalRequestID(), force_navigation);
+                    force_navigation);
 }
 
 bool WebViewGuest::HandleKeyboardShortcuts(
@@ -1304,7 +1304,6 @@ WebContents* WebViewGuest::OpenURLFromTab(
   // about:blank.
   if (params.disposition == CURRENT_TAB) {
     LoadURLWithParams(params.url, params.referrer, params.transition,
-                      params.transferred_global_request_id,
                       true /* force_navigation */);
     return web_contents();
   }
@@ -1362,7 +1361,6 @@ void WebViewGuest::LoadURLWithParams(
     const GURL& url,
     const content::Referrer& referrer,
     ui::PageTransition transition_type,
-    const GlobalRequestID& transferred_global_request_id,
     bool force_navigation) {
   if (!url.is_valid()) {
     LoadAbort(true /* is_top_level */, url, net::ERR_INVALID_URL,
@@ -1400,7 +1398,7 @@ void WebViewGuest::LoadURLWithParams(
   load_url_params.referrer = referrer;
   load_url_params.transition_type = transition_type;
   load_url_params.extra_headers = std::string();
-  load_url_params.transferred_global_request_id = transferred_global_request_id;
+  load_url_params.transferred_global_request_id = GlobalRequestID();
   if (is_overriding_user_agent_) {
     load_url_params.override_user_agent =
         content::NavigationController::UA_OVERRIDE_TRUE;

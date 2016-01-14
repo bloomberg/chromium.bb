@@ -630,9 +630,6 @@ void NavigatorImpl::RequestOpenURL(RenderFrameHostImpl* render_frame_host,
   params.source_site_instance = source_site_instance;
   if (redirect_chain.size() > 0)
     params.redirect_chain = redirect_chain;
-  // TODO(creis): Remove transferred_global_request_id from OpenURLParams.
-  // See https://crbug.com/495161.
-  params.transferred_global_request_id = GlobalRequestID();
   params.should_replace_current_entry = should_replace_current_entry;
   params.user_gesture = user_gesture;
 

@@ -273,14 +273,7 @@ void LoadURLInContents(WebContents* target_contents,
   load_url_params.extra_headers = params->extra_headers;
   load_url_params.should_replace_current_entry =
       params->should_replace_current_entry;
-
-  if (params->transferred_global_request_id != GlobalRequestID()) {
-    load_url_params.is_renderer_initiated = params->is_renderer_initiated;
-    load_url_params.transferred_global_request_id =
-        params->transferred_global_request_id;
-  } else if (params->is_renderer_initiated) {
-    load_url_params.is_renderer_initiated = true;
-  }
+  load_url_params.is_renderer_initiated = params->is_renderer_initiated;
 
   // Only allows the browser-initiated navigation to use POST.
   if (params->uses_post && !params->is_renderer_initiated) {

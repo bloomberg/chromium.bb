@@ -298,7 +298,6 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest>,
       const GURL& url,
       const content::Referrer& referrer,
       ui::PageTransition transition_type,
-      const content::GlobalRequestID& transferred_global_request_id,
       bool force_navigation);
 
   void RequestNewWindowPermission(

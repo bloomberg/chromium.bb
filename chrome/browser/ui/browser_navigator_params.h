@@ -227,11 +227,6 @@ struct NavigateParams {
   // browser passed in via |browser|, it's profile will be used instead.
   Profile* initiating_profile;
 
-  // Refers to a navigation that was parked in the browser in order to be
-  // transferred to another RVH. Only used in case of a redirection of a request
-  // to a different site that created a new RVH.
-  content::GlobalRequestID transferred_global_request_id;
-
   // Refers to which desktop this navigation should occur on. May be passed
   // explicitly or inferred from an existing Browser instance.
   chrome::HostDesktopType host_desktop_type;
