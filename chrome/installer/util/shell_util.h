@@ -149,17 +149,6 @@ class ShellUtil {
       options |= PROPERTIES_SHORTCUT_NAME;
     }
 
-    // Sets whether this is a dual mode shortcut (Win8+).
-    // Documentation on usage of the dual mode property on Win8:
-    // http://go.microsoft.com/fwlink/p/?linkid=243079
-    // NOTE: Only the default (no arguments and default browser appid) browser
-    // shortcut in the Start menu (Start screen on Win8+) should be made dual
-    // mode.
-    void set_dual_mode(bool dual_mode_in) {
-      dual_mode = dual_mode_in;
-      options |= PROPERTIES_DUAL_MODE;
-    }
-
     // Sets whether to pin this shortcut to the taskbar after creating it
     // (ignored if the shortcut is only being updated).
     // Note: This property doesn't have a mask in |options|.
@@ -191,10 +180,6 @@ class ShellUtil {
       return (options & PROPERTIES_SHORTCUT_NAME) != 0;
     }
 
-    bool has_dual_mode() const {
-      return (options & PROPERTIES_DUAL_MODE) != 0;
-    }
-
     // The level to install this shortcut at (CURRENT_USER for a per-user
     // shortcut and SYSTEM_LEVEL for an all-users shortcut).
     ShellChange level;
@@ -206,7 +191,6 @@ class ShellUtil {
     int icon_index;
     base::string16 app_id;
     base::string16 shortcut_name;
-    bool dual_mode;
     bool pin_to_taskbar;
     // Bitfield made of IndividualProperties. Properties set in |options| will
     // be used to create/update the shortcut, others will be ignored on update

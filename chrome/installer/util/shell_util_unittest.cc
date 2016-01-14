@@ -102,7 +102,6 @@ class ShellUtilShortcutTest : public testing::Test {
     test_properties_.set_description(L"Makes polar bears dance.");
     test_properties_.set_icon(icon_path, 7);
     test_properties_.set_app_id(L"Polar.Bear");
-    test_properties_.set_dual_mode(true);
   }
 
   // Returns the expected path of a test shortcut. Returns an empty FilePath on
@@ -186,11 +185,6 @@ class ShellUtilShortcutTest : public testing::Test {
       // Tests are always seen as user-level installs in ShellUtil.
       expected_properties.set_app_id(ShellUtil::GetBrowserModelId(dist, true));
     }
-
-    if (properties.has_dual_mode())
-      expected_properties.set_dual_mode(properties.dual_mode);
-    else
-      expected_properties.set_dual_mode(false);
 
     base::win::ValidateShortcut(expected_path, expected_properties);
   }
@@ -327,7 +321,6 @@ TEST_F(ShellUtilShortcutTest, ReplaceSystemLevelDesktopShortcut) {
   // properties that don't have a default value to be set back to their default
   // (as validated in ValidateChromeShortcut()) or unset if they don't .
   ShellUtil::ShortcutProperties expected_properties(new_properties);
-  expected_properties.set_dual_mode(false);
 
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_DESKTOP, dist_,
                          expected_properties);
@@ -354,29 +347,6 @@ TEST_F(ShellUtilShortcutTest, UpdateQuickLaunchShortcutArguments) {
 
   ValidateChromeShortcut(ShellUtil::SHORTCUT_LOCATION_QUICK_LAUNCH, dist_,
                          expected_properties);
-}
-
-TEST_F(ShellUtilShortcutTest, UpdateAddDualModeToStartMenuShortcut) {
-  ShellUtil::ShortcutProperties properties(ShellUtil::CURRENT_USER);
-  product_->AddDefaultShortcutProperties(chrome_exe_, &properties);
-  ASSERT_TRUE(
-      ShellUtil::CreateOrUpdateShortcut(
-          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist_,
-          properties, ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS));
-
-  ShellUtil::ShortcutProperties added_properties(ShellUtil::CURRENT_USER);
-  added_properties.set_dual_mode(true);
-  ASSERT_TRUE(
-      ShellUtil::CreateOrUpdateShortcut(
-          ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED, dist_,
-          added_properties, ShellUtil::SHELL_SHORTCUT_UPDATE_EXISTING));
-
-  ShellUtil::ShortcutProperties expected_properties(properties);
-  expected_properties.set_dual_mode(true);
-
-  ValidateChromeShortcut(
-      ShellUtil::SHORTCUT_LOCATION_START_MENU_CHROME_DIR_DEPRECATED,
-      dist_, expected_properties);
 }
 
 TEST_F(ShellUtilShortcutTest, CreateIfNoSystemLevel) {

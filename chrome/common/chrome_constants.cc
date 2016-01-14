@@ -123,7 +123,6 @@ const base::FilePath::CharType kFrameworkName[] =
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kBrowserResourcesDll[] = FPL("chrome.dll");
-const base::FilePath::CharType kMetroDriverDll[] = FPL("metro_driver.dll");
 const base::FilePath::CharType kStatusTrayWindowClass[] =
     FPL("Chrome_StatusTrayWindow");
 #endif  // defined(OS_WIN)

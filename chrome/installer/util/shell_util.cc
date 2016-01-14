@@ -299,6 +299,7 @@ void GetProgIdEntries(const ApplicationInfo& app_info,
     entries->push_back(new RegistryEntry(
         prog_id_path + ShellUtil::kRegShellOpen, ShellUtil::kRegDelegateExecute,
         app_info.delegate_clsid));
+    // TODO(scottmg): Simplify after Metro removal. https://crbug.com/558054.
     entries->back()->set_removal_flag(RegistryEntry::RemovalFlag::VALUE);
   }
 
@@ -379,6 +380,7 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
         GetChromeDelegateExecuteEntries(chrome_exe, app_info);
     // Remove the keys (not only their values) so that Windows will continue
     // to launch Chrome without a pesky association error.
+    // TODO(scottmg): Simplify after Metro removal. https://crbug.com/558054.
     for (RegistryEntry* entry : delegate_execute_entries)
       entry->set_removal_flag(RegistryEntry::RemovalFlag::KEY);
     // Move |delegate_execute_entries| to |entries|.
@@ -966,9 +968,6 @@ base::win::ShortcutProperties TranslateShortcutProperties(
   if (properties.has_app_id())
     shortcut_properties.set_app_id(properties.app_id);
 
-  if (properties.has_dual_mode())
-    shortcut_properties.set_dual_mode(properties.dual_mode);
-
   return shortcut_properties;
 }
 
@@ -1378,7 +1377,6 @@ const wchar_t* ShellUtil::kRegOpenWithProgids = L"OpenWithProgids";
 ShellUtil::ShortcutProperties::ShortcutProperties(ShellChange level_in)
     : level(level_in),
       icon_index(0),
-      dual_mode(false),
       pin_to_taskbar(false),
       options(0U) {}
 

@@ -394,9 +394,6 @@ void CreateOrUpdateShortcuts(
   }
 
   ShellUtil::ShortcutProperties start_menu_properties(base_properties);
-  // IMPORTANT: Only the default (no arguments and default browserappid) browser
-  // shortcut in the Start menu (Start screen on Win8+) should be made dual
-  // mode and that prior to Windows 10 only.
   if (shortcut_operation == ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS ||
       shortcut_operation ==
           ShellUtil::SHELL_SHORTCUT_CREATE_IF_NO_SYSTEM_LEVEL) {

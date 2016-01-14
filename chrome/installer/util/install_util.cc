@@ -154,9 +154,8 @@ void InstallUtil::TriggerActiveSetupCommand() {
   // and the time setup.exe checks for it.
   cmd.AppendSwitch(installer::switches::kForceConfigureUserSettings);
 
-  base::LaunchOptions launch_options;
   base::Process process =
-      base::LaunchProcess(cmd.GetCommandLineString(), launch_options);
+      base::LaunchProcess(cmd.GetCommandLineString(), base::LaunchOptions());
   if (!process.IsValid())
     PLOG(ERROR) << cmd.GetCommandLineString();
 }
