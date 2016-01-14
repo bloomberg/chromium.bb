@@ -330,6 +330,13 @@ const char kCrosRegion[] = "cros-region";
 // Enables IME menu
 const char kEnableImeMenu[] = "enable-ime-menu";
 
+// Controls CrOS GaiaId migration for tests:
+// ""        - default,
+// "started" - migration started (i.e. all stored user keys will be converted
+//             to GaiaId).
+const char kTestCrosGaiaIdMigration[] = "test-cros-gaia-id-migration";
+const char kTestCrosGaiaIdMigrationStarted[] = "started";
+
 bool WakeOnWifiEnabled() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(kDisableWakeOnWifi);
 }
@@ -378,6 +385,15 @@ GetMemoryPressureThresholds() {
 
 bool IsImeMenuEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kEnableImeMenu);
+}
+
+bool IsGaiaIdMigrationStarted() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (!command_line->HasSwitch(kTestCrosGaiaIdMigration))
+    return false;
+
+  return command_line->GetSwitchValueASCII(kTestCrosGaiaIdMigration) ==
+         kTestCrosGaiaIdMigrationStarted;
 }
 
 }  // namespace switches

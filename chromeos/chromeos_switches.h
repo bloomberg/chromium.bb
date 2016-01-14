@@ -112,6 +112,8 @@ CHROMEOS_EXPORT extern const char kCrosRegionsMode[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeOverride[];
 CHROMEOS_EXPORT extern const char kCrosRegionsModeHide[];
 CHROMEOS_EXPORT extern const char kCrosRegion[];
+CHROMEOS_EXPORT extern const char kTestCrosGaiaIdMigration[];
+CHROMEOS_EXPORT extern const char kTestCrosGaiaIdMigrationStarted[];
 
 CHROMEOS_EXPORT bool WakeOnWifiEnabled();
 
@@ -121,6 +123,7 @@ GetMemoryPressureThresholds();
 
 CHROMEOS_EXPORT bool IsImeMenuEnabled();
 
+CHROMEOS_EXPORT bool IsGaiaIdMigrationStarted();
 }  // namespace switches
 }  // namespace chromeos
 
