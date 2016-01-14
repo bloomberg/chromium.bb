@@ -52,6 +52,9 @@ remoting.ConnectedView = function(plugin, viewportElement, cursorElement) {
     new remoting.Clipboard(plugin)
   );
 
+  /** @private {base.OneShotTimer} */
+  this.restoreFocusTimer_ = null;
+
   // TODO(wez): Only allow mouse lock if the app has the pointerLock permission.
   this.plugin_.allowMouseLock();
 
@@ -66,6 +69,8 @@ remoting.ConnectedView.prototype.dispose = function() {
   this.disposables_ = null;
   this.cursorRender_ = null;
   this.plugin_ = null;
+  base.dispose(this.restoreFocusTimer_);
+  this.restoreFocusTimer_ = null;
 };
 
 /**
@@ -101,7 +106,8 @@ remoting.ConnectedView.prototype.onPluginLostFocus_ = function(event) {
   // Due to crbug.com/246335, we can't restore the focus immediately,
   // otherwise the plugin gets confused about whether or not it has focus.
   var that = this;
-  var delayedCallback = function() {
+  base.dispose(this.restoreFocusTimer_);
+  this.restoreFocusTimer_ = new base.OneShotTimer(function() {
     // When the 'blur' event handler is called document.activeElement has not
     // been set to the correct target. We need to retrieve the target in this
     // delayedCallback.
@@ -109,8 +115,7 @@ remoting.ConnectedView.prototype.onPluginLostFocus_ = function(event) {
     if (!that.isElementFocusable_(target)) {
       that.plugin_.element().focus();
     }
-  };
-  window.setTimeout(delayedCallback, 0);
+  }, 0);
 };
 
 /**
