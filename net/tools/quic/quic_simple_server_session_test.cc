@@ -198,7 +198,7 @@ class QuicSimpleServerSessionTest
     string scheme = "http";
     for (unsigned int i = 1; i <= num_resources; ++i) {
       string path = partial_push_resource_path + base::UintToString(i);
-      string url = scheme + "://" + resource_host + "/" + path;
+      string url = scheme + "://" + resource_host + path;
       GURL resource_url = GURL(url);
       string body = partial_push_response_body + base::UintToString(i);
       SpdyHeaderBlock response_headers;
