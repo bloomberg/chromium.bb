@@ -490,9 +490,11 @@ const GoogleConfigParams kGoogleConfigs[] = {
 const char* kGoogleStandardCollectors[] = {
   "https://beacons.gvt2.com/domainreliability/upload",
   "https://beacons2.gvt2.com/domainreliability/upload",
-  "https://clients2.google.com/domainreliability/upload",
   "https://beacons3.gvt2.com/domainreliability/upload",
-  "https://beacons4.gvt2.com/domainreliability/upload"
+  "https://beacons4.gvt2.com/domainreliability/upload",
+  "https://beacons5.gvt2.com/domainreliability/upload",
+  "https://beacons5.gvt3.com/domainreliability/upload",
+  "https://clients2.google.com/domainreliability/upload",
 };
 
 const char* kGoogleOriginSpecificCollectorPathString =
