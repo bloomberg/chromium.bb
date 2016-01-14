@@ -371,6 +371,12 @@ cr.define('options', function() {
      * @private
      */
     receiveExistingSupervisedUsers_: function(supervisedUsers) {
+      // After a supervised user has been created and the dialog has been
+      // hidden, this gets called again with a list including
+      // the just-created SU. Ignore, to prevent the "already exists" bubble
+      // from showing up if the overlay is already hidden.
+      if (!this.visible)
+        return;
       $('import-existing-supervised-user-link').hidden =
           supervisedUsers.length === 0;
       if (!$('create-profile-supervised').checked)
@@ -406,8 +412,10 @@ cr.define('options', function() {
                 HTMLEscape(elide(newName, /* maxLength */ 50)));
         this.showErrorBubble_(errorHtml, 'create', true);
 
-        $('supervised-user-import-existing').onclick =
-            this.getImportHandler_(supervisedUsers[i], nameIsUnique);
+        if ($('supervised-user-import-existing')) {
+          $('supervised-user-import-existing').onclick =
+              this.getImportHandler_(supervisedUsers[i], nameIsUnique);
+        }
         $('create-profile-ok').disabled = true;
         return;
       }
