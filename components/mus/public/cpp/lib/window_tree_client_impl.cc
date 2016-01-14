@@ -14,6 +14,7 @@
 #include "components/mus/public/cpp/lib/window_private.h"
 #include "components/mus/public/cpp/window_manager_delegate.h"
 #include "components/mus/public/cpp/window_observer.h"
+#include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
 #include "components/mus/public/cpp/window_tree_connection_observer.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
@@ -128,12 +129,13 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
   in_destructor_ = true;
 
   std::vector<Window*> non_owned;
+  WindowTracker tracker;
   while (!windows_.empty()) {
     IdToWindowMap::iterator it = windows_.begin();
     if (OwnsWindow(it->second)) {
       it->second->Destroy();
     } else {
-      non_owned.push_back(it->second);
+      tracker.Add(it->second);
       windows_.erase(it);
     }
   }
@@ -142,8 +144,8 @@ WindowTreeClientImpl::~WindowTreeClientImpl() {
   // exception is the window manager and embed roots, which may know about
   // other random windows that it doesn't own.
   // NOTE: we manually delete as we're a friend.
-  for (size_t i = 0; i < non_owned.size(); ++i)
-    delete non_owned[i];
+  while (!tracker.windows().empty())
+    delete tracker.windows().front();
 
   delegate_->OnConnectionLost(this);
 }

@@ -17,6 +17,7 @@
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_observer.h"
 #include "components/mus/public/cpp/window_property.h"
+#include "components/mus/public/cpp/window_tracker.h"
 #include "components/mus/public/cpp/window_tree_delegate.h"
 #include "mojo/common/common_type_converters.h"
 #include "mojo/converters/geometry/geometry_type_converters.h"
@@ -643,6 +644,23 @@ TEST_F(WindowTreeClientImplTest, NewTopLevelWindowGetsAllChangesInFlight) {
   EXPECT_EQ("server_yy", root2->GetSharedProperty<std::string>("yy"));
   ASSERT_TRUE(root2->HasSharedProperty("xx"));
   EXPECT_EQ("server_xx", root2->GetSharedProperty<std::string>("xx"));
+}
+
+// Tests that if the client has multiple unowned windows, and one of them is a
+// transient child to another, the  teardown can happen cleanly.
+TEST_F(WindowTreeClientImplTest, MultipleUnOwnedWindowsDuringDestruction) {
+  scoped_ptr<WindowTreeSetup> setup(new WindowTreeSetup());
+  Window* root1 = setup->GetFirstRoot();
+  ASSERT_TRUE(root1);
+  Window* root2 = setup->window_tree_connection()->NewTopLevelWindow(nullptr);
+  ASSERT_TRUE(root2);
+  root1->AddTransientWindow(root2);
+
+  WindowTracker tracker;
+  tracker.Add(root1);
+  tracker.Add(root2);
+  setup.reset();
+  EXPECT_TRUE(tracker.windows().empty());
 }
 
 }  // namespace mus
