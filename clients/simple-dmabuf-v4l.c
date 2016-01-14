@@ -34,7 +34,6 @@
 
 #include <drm_fourcc.h>
 
-#include <stropts.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <fcntl.h>
