@@ -2970,8 +2970,6 @@ interface MouseEvent : UIEvent
     getter screenY
     getter shiftKey
     getter toElement
-    getter webkitMovementX
-    getter webkitMovementY
     getter which
     getter x
     getter y

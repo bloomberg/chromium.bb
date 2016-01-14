@@ -3114,7 +3114,7 @@ cr.define('login', function() {
     handleMouseMove_: function(e) {
       if (this.disabled)
         return;
-      if (e.webkitMovementX == 0 && e.webkitMovementY == 0)
+      if (e.movementX == 0 && e.movementY == 0)
         return;
 
       // Defocus (thus hide) action box, if it is focused on a user pod

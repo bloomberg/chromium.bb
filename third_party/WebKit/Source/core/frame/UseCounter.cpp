@@ -919,12 +919,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case CSSSelectorPseudoShadow:
         return "::shadow pseudo-element is deprecated. See https://www.chromestatus.com/features/6750456638341120 for more details.";
 
-    case PrefixedMouseEventMovementX:
-        return replacedBy("'webkitMovementX'", "'movementX'");
-
-    case PrefixedMouseEventMovementY:
-        return replacedBy("'webkitMovementY'", "'movementY'");
-
     case SVGSMILElementInDocument:
     case SVGSMILAnimationInImageRegardlessOfCache:
         return "SVG's SMIL animations (<animate>, <set>, etc.) are deprecated and will be removed. Please use CSS animations or Web animations instead.";

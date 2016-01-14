@@ -74,8 +74,6 @@
     [MeasureAs=MouseEventFromElement] readonly attribute Node fromElement;
     [MeasureAs=MouseEventToElement] readonly attribute Node toElement;
     [MeasureAs=MouseEventWhich] readonly attribute long which;
-    [DeprecateAs=PrefixedMouseEventMovementX, ImplementedAs=movementX] readonly attribute long webkitMovementX;
-    [DeprecateAs=PrefixedMouseEventMovementY, ImplementedAs=movementY] readonly attribute long webkitMovementY;
     [Measure] readonly attribute long layerX;
     [Measure] readonly attribute long layerY;
 };

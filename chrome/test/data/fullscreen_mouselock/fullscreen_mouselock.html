@@ -136,15 +136,13 @@ function moveHTMLCursorBy(x, y) {
 
 var polyFillMouseEventMovementFromVenderPrefix = function (e) {
   e.movementX = (e.movementX !== undefined ? e.movementX :
-                (e.webkitMovementX !== undefined ? e.webkitMovementX :
                 (e.mozMovementX !== undefined ? e.mozMovementX :
                 (e.oMovementX !== undefined ? e.oMovementX :
-                 e.msMovementY))));
+                 e.msMovementY)));
   e.movementY = (e.movementY !== undefined ? e.movementY :
-                (e.webkitMovementY !== undefined ? e.webkitMovementY :
                 (e.mozMovementY !== undefined ? e.mozMovementY :
                 (e.oMovementY !== undefined ? e.oMovementY :
-                 e.msMovementY))));
+                 e.msMovementY)));
 }
 
 var clicked_elem_ID = ""

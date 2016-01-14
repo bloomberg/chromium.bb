@@ -41,8 +41,8 @@ document.getElementById('locktarget1').addEventListener('mousemove',
     function (e) {
   setTimeout(function() { embedder.postMessage('mouse-move', '*'); }, 500);
   if (info.innerHTML != 'fail') {
-    info.innerHTML = 'Info: movementX: '+ e.webkitMovementX +
-        ', movementY: ' + e.webkitMovementY;
+    info.innerHTML = 'Info: movementX: '+ e.movementX +
+        ', movementY: ' + e.movementY;
     }
 });
 
