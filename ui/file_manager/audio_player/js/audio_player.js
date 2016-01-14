@@ -208,6 +208,7 @@ AudioPlayer.prototype.loadMetadata_ = function(track) {
  */
 AudioPlayer.prototype.displayMetadata_ = function(track, metadata, opt_error) {
   this.player_.tracks[track].setMetadata(metadata, opt_error);
+  this.player_.notifyTrackMetadataUpdated(track);
 };
 
 /**

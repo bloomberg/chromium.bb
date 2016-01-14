@@ -349,6 +349,21 @@ Polymer({
   },
 
   /**
+   * Notifis the track-list element that the metadata for specified track is
+   * updated.
+   * @param {number} index The index of the track whose metadata is updated.
+   */
+  notifyTrackMetadataUpdated: function(index) {
+    if (index < 0 || index >= this.tracks.length)
+      return;
+
+    this.$.trackList.notifyPath('tracks.' + index + '.title',
+        this.tracks[index].title);
+    this.$.trackList.notifyPath('tracks.' + index + '.artist',
+        this.tracks[index].artist);
+  },
+
+  /**
    * Invoked when the audio player is being unloaded.
    */
   onPageUnload: function() {
