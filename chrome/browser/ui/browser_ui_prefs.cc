@@ -47,6 +47,9 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   // us from having to hard-code pref registration in the several unit tests
   // that use this preference.
   registry->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
+  registry->RegisterBooleanPref(
+      prefs::kHideFullscreenToolbar, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
   registry->RegisterBooleanPref(
       prefs::kDeleteBrowsingHistory,

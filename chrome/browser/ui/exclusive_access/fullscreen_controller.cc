@@ -432,7 +432,8 @@ void FullscreenController::ToggleFullscreenModeInternal(
   // FullscreenWithoutChrome and FullscreenWithToolbar.
   if (exclusive_access_context->IsFullscreen() &&
       !IsWindowFullscreenForTabOrPending() &&
-      exclusive_access_context->SupportsFullscreenWithToolbar()) {
+      exclusive_access_context->SupportsFullscreenWithToolbar() &&
+      IsExtensionFullscreenOrPending()) {
     if (option == BROWSER_WITH_TOOLBAR) {
       enter_fullscreen = enter_fullscreen ||
                          !exclusive_access_context->IsFullscreenWithToolbar();

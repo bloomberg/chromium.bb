@@ -319,7 +319,7 @@ CA
                                     <action selector="commandDispatch:" target="-1" id="531"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="^IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" tag="34039" keyEquivalent="F" id="70p-NK-bpU">
+                            <menuItem title="^IDS_TOGGLE_FULLSCREEN_TOOLBAR_MAC" tag="40251" keyEquivalent="F" id="70p-NK-bpU">
                                 <connections>
                                     <action selector="commandDispatch:" target="-1" id="0A7-Iy-65Q"/>
                                 </connections>

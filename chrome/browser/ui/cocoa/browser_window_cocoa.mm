@@ -461,7 +461,10 @@ void BrowserWindowCocoa::UpdateFullscreenWithToolbar(bool with_toolbar) {
 }
 
 void BrowserWindowCocoa::ToggleFullscreenToolbar() {
-  [controller_ toggleFullscreenToolbar];
+  PrefService* prefs = browser_->profile()->GetPrefs();
+  bool hideToolbar = !prefs->GetBoolean(prefs::kHideFullscreenToolbar);
+  [controller_ setFullscreenToolbarHidden:hideToolbar];
+  prefs->SetBoolean(prefs::kHideFullscreenToolbar, hideToolbar);
 }
 
 bool BrowserWindowCocoa::IsFullscreenWithToolbar() const {
