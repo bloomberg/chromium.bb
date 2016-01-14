@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.39",
+  "version": "8.40",
   "entries": [
     {
       "id": 1,
@@ -1696,6 +1696,20 @@ LONG_STRING_CONST(
       "gl_vendor": "NVIDIA.*",
       "features": [
         "pack_parameters_workaround_with_pack_buffer"
+      ]
+    },
+    {
+      "id": 143,
+      "description": "Timer queries crash on Intel GPUs on Linux",
+      "cr_bugs": [540543, 576991],
+      "os": {
+        "type": "linux"
+      },
+      "vendor_id": "0x8086",
+      "driver_vendor": "Mesa",
+      "disabled_extensions": [
+        "GL_ARB_timer_query",
+        "GL_EXT_timer_query"
       ]
     }
   ]

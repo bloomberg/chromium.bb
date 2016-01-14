@@ -308,6 +308,21 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['linux', ('amd', 0x6779)], bug=479983)
     self.Fail('conformance/uniforms/uniform-default-values.html',
         ['linux', ('amd', 0x6779)], bug=482013)
+    # Intel
+    self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
+        ['linux', 'intel'], bug=540543)  # GPU timeout
+    self.Fail('conformance/glsl/bugs/qualcomm-loop-with-continue-crash.html',
+        ['linux', 'intel'], bug=540543)  # ANGLE bug 1277
+    self.Fail('conformance/glsl/misc/empty_main.vert.html',
+        ['linux', 'intel'], bug=540543)  # ANGLE bug 1277
+    self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
+        ['linux', 'intel'], bug=540543)  # ANGLE bug 1277
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['linux', 'intel'], bug=540543)  # ANGLE bug 1276
+    self.Fail('conformance/glsl/misc/shaders-with-varyings.html',
+        ['linux', 'intel'], bug=540543)
+    self.Fail('deqp/data/gles2/shaders/linkage.html',
+        ['linux', 'intel'], bug=540543)
 
     # Android failures
     self.Fail('deqp/data/gles2/shaders/constants.html',
