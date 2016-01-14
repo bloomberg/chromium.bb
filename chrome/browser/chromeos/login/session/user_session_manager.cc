@@ -179,6 +179,18 @@ void InitLocaleAndInputMethodsForNewUser(
   if (preferred_input_method.id().empty()) {
     preferred_input_method =
         session_manager->GetDefaultIMEState(profile)->GetCurrentInputMethod();
+    const input_method::InputMethodDescriptor* descriptor =
+        manager->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
+            manager->GetInputMethodUtil()->GetHardwareInputMethodIds()[0]);
+    // If the hardware input method's keyboard layout is the same as the
+    // default input method (e.g. from GaiaScreen), use the hardware input
+    // method. Note that the hardware input method can be non-login-able.
+    // Refer to the issue chrome-os-partner:48623.
+    if (descriptor &&
+        descriptor->GetPreferredKeyboardLayout() ==
+            preferred_input_method.GetPreferredKeyboardLayout()) {
+      preferred_input_method = *descriptor;
+    }
   }
 
   // Derive kLanguagePreloadEngines from |locale| and |preferred_input_method|.

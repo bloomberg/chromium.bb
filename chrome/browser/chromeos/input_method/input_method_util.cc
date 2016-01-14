@@ -85,8 +85,8 @@ const struct {
 const char* const kEngineIdMigrationMap[][2] = {
     {"ime:jp:mozc_jp", "nacl_mozc_jp"},
     {"ime:jp:mozc_us", "nacl_mozc_us"},
-    {"ime:ko:hangul_2set", "hangul_2set"},
-    {"ime:ko:hangul", "hangul_2set"},
+    {"ime:ko:hangul_2set", "ko-t-i0-und"},
+    {"ime:ko:hangul", "ko-t-i0-und"},
     {"ime:zh-t:array", "zh-hant-t-i0-array-1992"},
     {"ime:zh-t:cangjie", "zh-hant-t-i0-cangjie-1987"},
     {"ime:zh-t:dayi", "zh-hant-t-i0-dayi-1988"},
@@ -713,9 +713,12 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
   hardware_layouts_ = cached_hardware_layouts_;
   MigrateInputMethods(&hardware_layouts_);
 
+  bool has_xkb = false;
   for (size_t i = 0; i < hardware_layouts_.size(); ++i) {
     if (IsLoginKeyboard(hardware_layouts_[i]))
       hardware_login_layouts_.push_back(hardware_layouts_[i]);
+    if (extension_ime_util::IsKeyboardLayoutExtension(hardware_layouts_[i]))
+      has_xkb = true;
   }
 
   if (hardware_login_layouts_.empty()) {
@@ -725,8 +728,20 @@ void InputMethodUtil::UpdateHardwareLayoutCache() {
     // So need to make sure |hardware_login_layouts_| is not empty, and
     // |hardware_layouts_| contains at least one login layout.
     std::string fallback_id = GetFallbackInputMethodDescriptor().id();
-    hardware_layouts_.insert(hardware_layouts_.begin(), fallback_id);
     hardware_login_layouts_.push_back(fallback_id);
+    // If has XKB input method, it means the XKB input method is
+    // non-login-able. Therefore, add the fallback to the hardware layouts.
+    // If has no XKB input method, then it is up to the VPD to set the correct
+    // hardware input methods.
+    // Examples:
+    // 1) Arabic transliteration input method cannot be used to input Latin
+    // characters. So the VPD should be "xkb:us::eng,t13n:ar".
+    // 2) Korean input method can be used to input Latin characters. So the
+    // VPD should be "ime:ko:hangul". See chrome-os-partner:48623.
+    // 3) Russian keyboard cannot be used to input Latin characters, but it is
+    // XKB input method. So the VPD can be "xkb:ru::rus".
+    if (hardware_layouts_.empty() || has_xkb)
+      hardware_layouts_.insert(hardware_layouts_.begin(), fallback_id);
   }
 }
 
