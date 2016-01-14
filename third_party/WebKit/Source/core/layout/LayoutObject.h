@@ -1308,7 +1308,7 @@ public:
     virtual LayoutRect viewRect() const;
 
     void invalidateDisplayItemClient(const DisplayItemClient&) const;
-    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(const LayoutBoxModelObject* paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
+    void invalidateDisplayItemClientsIncludingNonCompositingDescendants(const LayoutBoxModelObject* paintInvalidationContainer, PaintInvalidationReason) const;
 
     // Called before anonymousChild.setStyle(). Override to set custom styles for the child.
     virtual void updateAnonymousChildStyle(const LayoutObject& anonymousChild, ComputedStyle& style) const { }
@@ -1489,9 +1489,7 @@ protected:
     // owned by this object, including the object itself, LayoutText/LayoutInline line boxes, etc.,
     // not including children which will be invalidated normally during invalidateTreeIfNeeded() and
     // parts which are invalidated separately (e.g. scrollbars).
-    // |paintInvalidationRect| can be nullptr if we know it's unchanged and PaintController has cached the
-    // previous value; otherwise we must pass a correct value.
-    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
+    virtual void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const;
 
     void setIsBackgroundAttachmentFixedObject(bool);
 

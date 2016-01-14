@@ -287,7 +287,7 @@ public:
     // Indicate that the contents of this layoutObject need to be repainted. Only has an effect if compositing is being used,
     void setBackingNeedsPaintInvalidationInRect(const LayoutRect&, PaintInvalidationReason) const; // r is in the coordinate space of this layout object
 
-    void invalidateDisplayItemClientOnBacking(const DisplayItemClient&, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const;
+    void invalidateDisplayItemClientOnBacking(const DisplayItemClient&, PaintInvalidationReason) const;
 
     // http://www.w3.org/TR/css3-background/#body-background
     // <html> root element with no background steals background from its first <body> child.

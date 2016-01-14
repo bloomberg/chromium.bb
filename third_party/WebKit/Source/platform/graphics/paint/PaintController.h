@@ -10,7 +10,6 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/ContiguousContainer.h"
-#include "platform/graphics/PaintInvalidationReason.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/graphics/paint/DisplayItemList.h"
 #include "platform/graphics/paint/PaintArtifact.h"
@@ -44,11 +43,7 @@ public:
 
     // These methods are called during paint invalidation (or paint if SlimmingPaintV2 is on).
 
-    // If |visualRect| is not nullptr, for slimming paint v1, it contains all pixels within the GraphicsLayer
-    // which might be painted into by the display item client, in coordinate space of the GraphicsLayer.
-    // TODO(pdr): define it for spv2.
-    // |visualRect| can be nullptr if we know it's unchanged and PaintController has cached the previous value.
-    void invalidate(const DisplayItemClient&, PaintInvalidationReason, const IntRect* visualRect);
+    void invalidate(const DisplayItemClient&);
     void invalidateUntracked(const DisplayItemClient&);
     void invalidateAll();
 
@@ -196,8 +191,6 @@ private:
     void processNewItem(DisplayItem&);
 
     void updateValidlyCachedClientsIfNeeded() const;
-
-    void invalidateClient(const DisplayItemClient&);
 
 #ifndef NDEBUG
     WTF::String displayItemListAsDebugString(const DisplayItemList&) const;

@@ -124,10 +124,7 @@ public:
     // LayoutRect is in the coordinate space of the layer's layout object.
     void setContentsNeedDisplayInRect(const LayoutRect&, PaintInvalidationReason);
 
-    // If |visualRect| is not nullptr, it contains all pixels that might be painted by the display item client,
-    // in coordinate space of the layer's layout object.
-    // |visualRect| can be nullptr if we know it's unchanged and PaintController has cached the previous value.
-    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason, const LayoutRect* visualRect);
+    void invalidateDisplayItemClient(const DisplayItemClient&, PaintInvalidationReason);
 
     // Notification from the layoutObject that its content changed.
     void contentChanged(ContentChangeType);

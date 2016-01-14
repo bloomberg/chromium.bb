@@ -1431,14 +1431,12 @@ void LayoutInline::addAnnotatedRegions(Vector<AnnotatedRegionValue>& regions)
     regions.append(region);
 }
 
-void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
+void LayoutInline::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
 {
-    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
+    LayoutBoxModelObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 
-    // Use the paintInvalidationRect of LayoutInline for inline boxes, which saves the cost to calculate paint invalidation rect
-    // for every inline box. This won't cause more rasterization invalidations because the whole LayoutInline is being invalidated.
     for (InlineFlowBox* box = firstLineBox(); box; box = box->nextLineBox())
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, paintInvalidationRect);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason);
 }
 
 } // namespace blink

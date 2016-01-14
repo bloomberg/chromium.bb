@@ -246,7 +246,7 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff, const ComputedSt
         bool newStyleIsFixedPosition = style()->position() == FixedPosition;
         bool oldStyleIsFixedPosition = oldStyle->position() == FixedPosition;
         if (newStyleIsFixedPosition != oldStyleIsFixedPosition)
-            invalidateDisplayItemClientsIncludingNonCompositingDescendants(nullptr, PaintInvalidationStyleChange, nullptr);
+            invalidateDisplayItemClientsIncludingNonCompositingDescendants(nullptr, PaintInvalidationStyleChange);
     }
 
     // The used style for body background may change due to computed style change
@@ -401,18 +401,13 @@ void LayoutBoxModelObject::setBackingNeedsPaintInvalidationInRect(const LayoutRe
     }
 }
 
-void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
+void LayoutBoxModelObject::invalidateDisplayItemClientOnBacking(const DisplayItemClient& displayItemClient, PaintInvalidationReason invalidationReason) const
 {
     if (layer()->groupedMapping()) {
-        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer()) {
-            // Note: the subpixel accumulation of layer() does not need to be added here. It is already taken into account.
-            IntRect paintInvalidationRectOnSquashingLayer;
-            if (paintInvalidationRect)
-                paintInvalidationRectOnSquashingLayer = enclosingIntRect(*paintInvalidationRect);
-            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason, paintInvalidationRect ? &paintInvalidationRectOnSquashingLayer : nullptr);
-        }
+        if (GraphicsLayer* squashingLayer = layer()->groupedMapping()->squashingLayer())
+            squashingLayer->invalidateDisplayItemClient(displayItemClient, invalidationReason);
     } else if (CompositedLayerMapping* compositedLayerMapping = layer()->compositedLayerMapping()) {
-        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason, paintInvalidationRect);
+        compositedLayerMapping->invalidateDisplayItemClient(displayItemClient, invalidationReason);
     }
 }
 

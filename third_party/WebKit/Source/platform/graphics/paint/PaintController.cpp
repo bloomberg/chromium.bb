@@ -116,16 +116,7 @@ void PaintController::endScope()
     endSkippingCache();
 }
 
-void PaintController::invalidate(const DisplayItemClient& client, PaintInvalidationReason paintInvalidationReason, const IntRect* visualRect)
-{
-    invalidateClient(client);
-
-    if (visualRect) {
-        // TODO(wkorman): cache visualRect for the client.
-    }
-}
-
-void PaintController::invalidateClient(const DisplayItemClient& client)
+void PaintController::invalidate(const DisplayItemClient& client)
 {
 #if ENABLE(ASSERT)
     // Slimming paint v1 CompositedLayerMapping may invalidate client on extra layers.
@@ -169,7 +160,7 @@ bool PaintController::clientCacheIsValid(const DisplayItemClient& client) const
 void PaintController::invalidatePaintOffset(const DisplayItemClient& client)
 {
     ASSERT(RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled());
-    invalidateClient(client);
+    invalidate(client);
 
 #if ENABLE(ASSERT)
     ASSERT(!paintOffsetWasInvalidated(client));

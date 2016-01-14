@@ -1868,17 +1868,15 @@ PassRefPtr<AbstractInlineTextBox> LayoutText::firstAbstractInlineTextBox()
     return AbstractInlineTextBox::getOrCreate(LineLayoutText(this), m_firstTextBox);
 }
 
-void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason, const LayoutRect* paintInvalidationRect) const
+void LayoutText::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
 {
-    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason, paintInvalidationRect);
+    LayoutObject::invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 
-    // Use the paintInvalidationRect of LayoutText for inline boxes, which saves the cost to calculate paint invalidation rect
-    // for every inline box. This won't cause more rasterization invalidations because the whole LayoutText is being invalidated.
     for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason, paintInvalidationRect);
+        paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*box, invalidationReason);
         if (box->truncation() != cNoTruncation) {
             if (EllipsisBox* ellipsisBox = box->root().ellipsisBox())
-                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason, paintInvalidationRect);
+                paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*ellipsisBox, invalidationReason);
         }
     }
 }

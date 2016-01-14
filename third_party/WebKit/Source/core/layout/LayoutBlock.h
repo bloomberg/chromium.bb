@@ -378,7 +378,7 @@ protected:
     bool isInlineBlockOrInlineTable() const final { return isInline() && isAtomicInlineLevel(); }
 
     void invalidatePaintOfSubtreesIfNeeded(PaintInvalidationState& childPaintInvalidationState) override;
-    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason, const LayoutRect* paintInvalidationRect) const override;
+    void invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason) const override;
 
 private:
     LayoutObjectChildList* virtualChildren() final { return children(); }
