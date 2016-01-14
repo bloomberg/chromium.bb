@@ -151,7 +151,11 @@ class SyncTokenClientImpl : public media::VideoFrame::SyncTokenClient {
       : web_graphics_context_(web_graphics_context) {}
   ~SyncTokenClientImpl() override {}
   void GenerateSyncToken(gpu::SyncToken* sync_token) override {
-    if (!web_graphics_context_->insertSyncPoint(sync_token->GetData())) {
+    const blink::WGC3Duint64 fence_sync =
+        web_graphics_context_->insertFenceSyncCHROMIUM();
+    web_graphics_context_->shallowFlushCHROMIUM();
+    if (!web_graphics_context_->genSyncTokenCHROMIUM(fence_sync,
+                                                     sync_token->GetData())) {
       sync_token->Clear();
     }
   }

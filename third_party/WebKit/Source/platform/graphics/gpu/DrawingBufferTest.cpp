@@ -440,8 +440,8 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     // prepareMailbox() does not wait for any sync point.
     EXPECT_EQ(0u, webContext()->mostRecentlyWaitedSyncToken());
 
-    WGC3Duint waitSyncToken = 0;
-    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    WGC3Duint64 waitSyncToken = 0;
+    webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -454,7 +454,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
     m_drawingBuffer->beginDestruction();
-    webContext()->insertSyncPoint(reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
+    webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), reinterpret_cast<WGC3Dbyte*>(&waitSyncToken));
     memcpy(mailbox.syncToken, &waitSyncToken, sizeof(waitSyncToken));
     mailbox.validSyncToken = true;
     m_drawingBuffer->mailboxReleased(mailbox, false);
@@ -685,7 +685,7 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     m_drawingBuffer->markContentsChanged();
     EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
 
-    mailbox.validSyncToken = webContext()->insertSyncPoint(mailbox.syncToken);
+    mailbox.validSyncToken = webContext()->genSyncTokenCHROMIUM(webContext()->insertFenceSyncCHROMIUM(), mailbox.syncToken);
     m_drawingBuffer->setIsHidden(true);
     m_drawingBuffer->mailboxReleased(mailbox);
     // m_drawingBuffer deletes mailbox immediately when hidden.
