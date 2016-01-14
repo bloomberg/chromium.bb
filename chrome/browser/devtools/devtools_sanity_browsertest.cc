@@ -1127,7 +1127,7 @@ class DevToolsPixelOutputTests : public DevToolsSanityTest {
 
 // This test enables switches::kUseGpuInTests which causes false positives
 // with MemorySanitizer.
-#if defined(MEMORY_SANITIZER) || \
+#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
     (defined(OS_CHROMEOS) && defined(OFFICIAL_BUILD))
 #define MAYBE_TestScreenshotRecording DISABLED_TestScreenshotRecording
 #else
