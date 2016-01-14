@@ -1285,6 +1285,9 @@ const char kViewerLaunchViaAppId[]          = "viewer-launch-via-appid";
 // Windows 8 and higher.
 const char kWaitForMutex[]                  = "wait-for-mutex";
 
+// Causes the process to run as a watcher process.
+const char kWatcherProcess[]                = "watcher";
+
 // Indicates that chrome was launched to service a search request in Windows 8.
 const char kWindows8Search[]                = "windows8-search";
 #endif  // defined(OS_WIN)

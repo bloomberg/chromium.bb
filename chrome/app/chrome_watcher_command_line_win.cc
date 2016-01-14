@@ -147,7 +147,8 @@ base::CommandLine GenerateChromeWatcherCommandLine(
     DWORD main_thread_id,
     HANDLE on_initialized_event) {
   base::CommandLine command_line(chrome_exe);
-  command_line.AppendSwitchASCII(switches::kProcessType, "watcher");
+  command_line.AppendSwitchASCII(switches::kProcessType,
+                                 switches::kWatcherProcess);
   command_line.AppendSwitchASCII(kMainThreadIdSwitch,
                                  base::UintToString(main_thread_id));
   AppendHandleSwitch(kOnIninitializedEventHandleSwitch, on_initialized_event,
