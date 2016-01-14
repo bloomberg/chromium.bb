@@ -28,26 +28,26 @@
 interface SVGMarkerElement : SVGElement {
 
     // Marker Unit Types
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKERUNITS_UNKNOWN = 0;
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKERUNITS_USERSPACEONUSE = 1;
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKERUNITS_STROKEWIDTH = 2;
+    const unsigned short SVG_MARKERUNITS_UNKNOWN = 0;
+    const unsigned short SVG_MARKERUNITS_USERSPACEONUSE = 1;
+    const unsigned short SVG_MARKERUNITS_STROKEWIDTH = 2;
 
     // Marker Orientation Types
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKER_ORIENT_UNKNOWN = 0;
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKER_ORIENT_AUTO = 1;
-    [MeasureAs=SVG1DOM] const unsigned short SVG_MARKER_ORIENT_ANGLE = 2;
+    const unsigned short SVG_MARKER_ORIENT_UNKNOWN = 0;
+    const unsigned short SVG_MARKER_ORIENT_AUTO = 1;
+    const unsigned short SVG_MARKER_ORIENT_ANGLE = 2;
 
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength refX;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength refY;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration markerUnits;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength markerWidth;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength markerHeight;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration orientType;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedAngle orientAngle;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedLength refX;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedLength refY;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedEnumeration markerUnits;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedLength markerWidth;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedLength markerHeight;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedEnumeration orientType;
+    [MeasureAs=SVG1DOMMarkerElement] readonly attribute SVGAnimatedAngle orientAngle;
     // attribute DOMString orient;
 
-    [MeasureAs=SVG1DOM] void setOrientToAuto();
-    [MeasureAs=SVG1DOM] void setOrientToAngle(SVGAngle angle);
+    [MeasureAs=SVG1DOMMarkerElement] void setOrientToAuto();
+    [MeasureAs=SVG1DOMMarkerElement] void setOrientToAngle(SVGAngle angle);
 };
 
 SVGMarkerElement implements SVGFitToViewBox;

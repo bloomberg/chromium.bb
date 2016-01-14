@@ -26,11 +26,11 @@
 // http://www.w3.org/TR/SVG2/embedded.html#InterfaceSVGImageElement
 
 interface SVGImageElement : SVGGraphicsElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength width;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength height;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+    [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength width;
+    [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength height;
+    [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };
 
 SVGImageElement implements SVGURIReference;

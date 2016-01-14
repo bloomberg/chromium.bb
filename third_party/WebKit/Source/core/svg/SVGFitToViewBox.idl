@@ -29,6 +29,6 @@
 [
     NoInterfaceObject, // Always used on target of 'implements'
 ] interface SVGFitToViewBox {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedRect viewBox;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
+    [MeasureAs=SVG1DOMFitToViewBox] readonly attribute SVGAnimatedRect viewBox;
+    [MeasureAs=SVG1DOMFitToViewBox] readonly attribute SVGAnimatedPreserveAspectRatio preserveAspectRatio;
 };

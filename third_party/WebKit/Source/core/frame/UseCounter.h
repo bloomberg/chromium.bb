@@ -469,7 +469,6 @@ public:
         NotificationInsecureOrigin = 564,
         NotificationShowEvent = 565,
         CSSXGetComputedStyleQueries = 566,
-        SVG1DOM = 567,
         SVGTransformListConsolidate = 569,
         SVGAnimatedTransformListBaseVal = 570,
         QuotedAnimationName = 571,
@@ -960,6 +959,17 @@ public:
         V8SVGGraphicsElement_Transform_AttributeGetter = 1103,
         MenuItemElement = 1104,
         MenuItemCloseTag = 1105,
+        SVG1DOMMarkerElement = 1106,
+        SVG1DOMUseElement = 1107,
+        SVG1DOMMaskElement = 1108,
+        V8SVGAElement_Target_AttributeGetter = 1109,
+        V8SVGClipPathElement_ClipPathUnits_AttributeGetter = 1110,
+        SVG1DOMFitToViewBox = 1111,
+        SVG1DOMCursorElement = 1112,
+        V8SVGPathElement_PathLength_AttributeGetter = 1113,
+        SVG1DOMSVGElement = 1114,
+        SVG1DOMImageElement = 1115,
+        SVG1DOMForeignObjectElement = 1116,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

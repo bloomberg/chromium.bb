@@ -65113,6 +65113,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1101" label="SVG1DOMUriReference"/>
   <int value="1102" label="SVG1DOMZoomAndPan"/>
   <int value="1103" label="V8SVGGraphicsElement_Transform_AttributeGetter"/>
+  <int value="1104" label="MenuItemElement"/>
+  <int value="1105" label="MenuItemCloseTag"/>
+  <int value="1106" label="SVG1DOMMarkerElement"/>
+  <int value="1107" label="SVG1DOMUseElement"/>
+  <int value="1108" label="SVG1DOMMaskElement"/>
+  <int value="1109" label="V8SVGAElement_Target_AttributeGetter"/>
+  <int value="1110" label="V8SVGClipPathElement_ClipPathUnits_AttributeGetter"/>
+  <int value="1111" label="SVG1DOMFitToViewBox"/>
+  <int value="1112" label="SVG1DOMCursorElement"/>
+  <int value="1113" label="V8SVGPathElement_PathLength_AttributeGetter"/>
+  <int value="1114" label="SVG1DOMSVGElement"/>
+  <int value="1115" label="SVG1DOMImageElement"/>
+  <int value="1116" label="SVG1DOMForeignObjectElement"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

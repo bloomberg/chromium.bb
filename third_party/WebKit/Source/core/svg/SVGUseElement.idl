@@ -26,10 +26,10 @@
 // http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGUseElement
 
 interface SVGUseElement : SVGGraphicsElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength   x;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength   y;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength   width;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength   height;
+    [MeasureAs=SVG1DOMUseElement] readonly attribute SVGAnimatedLength   x;
+    [MeasureAs=SVG1DOMUseElement] readonly attribute SVGAnimatedLength   y;
+    [MeasureAs=SVG1DOMUseElement] readonly attribute SVGAnimatedLength   width;
+    [MeasureAs=SVG1DOMUseElement] readonly attribute SVGAnimatedLength   height;
 };
 
 SVGUseElement implements SVGURIReference;

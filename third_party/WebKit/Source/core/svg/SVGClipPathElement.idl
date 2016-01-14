@@ -30,5 +30,5 @@
 // implement SVGUnitTypes. The transform attribute (which is on
 // SVGGraphicsElement) should also be on SVGClipPathElement.
 interface SVGClipPathElement : SVGGraphicsElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration clipPathUnits;
+    [Measure] readonly attribute SVGAnimatedEnumeration clipPathUnits;
 };

@@ -26,12 +26,12 @@
 // http://www.w3.org/TR/css-masking/#InterfaceSVGMaskElement
 
 interface SVGMaskElement : SVGElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration maskUnits;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedEnumeration maskContentUnits;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength width;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength height;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedEnumeration maskUnits;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedEnumeration maskContentUnits;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedLength width;
+    [MeasureAs=SVG1DOMMaskElement] readonly attribute SVGAnimatedLength height;
 };
 
 // SVGMaskElement implements SVGUnitTypes;

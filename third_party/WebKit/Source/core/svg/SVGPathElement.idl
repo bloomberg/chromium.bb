@@ -27,7 +27,7 @@
 // http://www.w3.org/TR/SVG2/paths.html#InterfaceSVGPathElement
 
 interface SVGPathElement : SVGGeometryElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedNumber pathLength;
+    [Measure] readonly attribute SVGAnimatedNumber pathLength;
 
     float getTotalLength();
     // TODO(philipj): SVGPoint should be DOMPoint.

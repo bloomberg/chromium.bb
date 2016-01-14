@@ -23,11 +23,10 @@
 // http://www.w3.org/TR/SVG2/struct.html#InterfaceSVGSVGElement
 
 interface SVGSVGElement : SVGGraphicsElement {
-
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength width;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength height;
+    [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength width;
+    [MeasureAs=SVG1DOMSVGElement] readonly attribute SVGAnimatedLength height;
     // TODO(philipj): viewport should be a DOMRectReadOnly.
     [Measure] readonly attribute SVGRect viewport;
     // TODO(philipj): useCurrentView and currentView have been removed:

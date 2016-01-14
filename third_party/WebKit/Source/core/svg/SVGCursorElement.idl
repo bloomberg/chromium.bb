@@ -26,8 +26,8 @@
 // http://www.w3.org/TR/SVG2/interact.html#InterfaceSVGCursorElement
 
 interface SVGCursorElement : SVGElement {
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength x;
-    [MeasureAs=SVG1DOM] readonly attribute SVGAnimatedLength y;
+    [MeasureAs=SVG1DOMCursorElement] readonly attribute SVGAnimatedLength x;
+    [MeasureAs=SVG1DOMCursorElement] readonly attribute SVGAnimatedLength y;
 };
 
 SVGCursorElement implements SVGURIReference;
