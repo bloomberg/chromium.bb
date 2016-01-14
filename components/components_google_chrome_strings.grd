@@ -153,16 +153,12 @@
           again for improved performance.
         </message>
       </if>
-      <!-- Offline interstitial  -->
-      <if expr="not is_android and not is_ios">
-        <message name="IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED" desc="Summary of the error page when the network connection failed. May be followed by platform dependent instructions.">
-          Google Chrome can't display the webpage because your computer isn't connected to the Internet.
-        </message>
-      </if>
-      <!-- Network Error Pages -->
       <message name="IDS_ERRORPAGES_SUGGESTION_FIREWALL_CONFIG_HEADER" desc="When a webpage fails to load, in some cases we suggest reconfiguring the firewall.  This is a header above some details.">
         Allow Chrome to access the network in your firewall or antivirus
         settings.
+      </message>
+      <message name="IDS_ERRORPAGES_SUMMARY_BLOCKED_ENROLLMENT_CHECK_PENDING" desc="Summary in the error page when the user tries to browse before the forced enrollment check has finished.">
+        Chrome OS hasn’t completed its initial setup.
       </message>
       <if expr="is_macosx">
         <message name="IDS_ERRORPAGES_SUGGESTION_PROXY_DISABLE_PLATFORM" desc="Mac OSX instructions for disabling use of a proxy server.">
