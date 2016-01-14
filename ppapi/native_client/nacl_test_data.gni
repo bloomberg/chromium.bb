@@ -90,9 +90,12 @@ template("nacl_test_data") {
                              "libs",
                            ])
     deps = [
-      "//ppapi:ppapi_cpp_lib",
+      "//build/config/nacl:nacl_base",
       "//ppapi/native_client:ppapi_lib",
     ]
+    if (!is_nacl_glibc) {
+      deps += [ "//ppapi:ppapi_cpp_lib" ]
+    }
     ldflags = [ "-pthread" ]
     if (defined(invoker.deps)) {
       deps += invoker.deps

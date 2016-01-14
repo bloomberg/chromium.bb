@@ -126,6 +126,7 @@ class MyModule : public pp::Module {
 namespace pp {
 
 // Factory function for your specialization of the Module object.
+__attribute__((visibility("default")))
 Module* CreateModule() {
   printf("hello world from CreateModule\n"); fflush(NULL);
   return new MyModule();
