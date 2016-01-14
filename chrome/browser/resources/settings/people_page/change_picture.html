@@ -1,0 +1,39 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://md-settings/people_page/change_picture_private_api.html">
+
+<dom-module id="settings-change-picture">
+  <link rel="import" type="css"
+      href="chrome://md-settings/settings_shared.css">
+  <link rel="import" type="css" href="change_picture.css">
+  <template>
+    <div class="settings-box">
+      <div class="split">
+        <div id="availableIcons">
+          <paper-button toggles
+              active="{{isActiveImage_(profileImageUrl_, selectedImageUrl_)}}"
+              on-tap="onProfileImageTap_">
+            <img class="user-image" src="[[profileImageUrl_]]"
+                alt="[[i18n('profilePhotoLoading')]]">
+          </paper-button>
+          <template is="dom-if" if="[[oldImageUrl_]]">
+            <paper-button toggles
+                active="{{isActiveImage_(oldImageUrl_, selectedImageUrl_)}}"
+                on-tap="onOldImageTap_">
+              <img class="user-image" src="[[oldImageUrl_]]">
+            </paper-button>
+          </template>
+          <template is="dom-repeat" items="[[defaultImages_]]">
+            <paper-button toggles
+                active="{{isActiveImage_(item.url, selectedImageUrl_)}}"
+                on-tap="onDefaultImageTap_" data-image-url$="[[item.url]]">
+              <img class="user-image" src="[[item.url]]" alt="[[item.title]]">
+            </paper-button>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+  <script src="change_picture.js"></script>
+</dom-module>

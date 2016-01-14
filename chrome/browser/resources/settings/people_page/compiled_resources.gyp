@@ -4,6 +4,27 @@
 {
   'targets': [
     {
+      'target_name': 'change_picture',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/i18n_behavior.js',
+          'change_picture_private_api.js',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
+      'target_name': 'change_picture_private_api',
+      'variables': {
+        'depends': [
+          '../../../../../ui/webui/resources/js/compiled_resources.gyp:cr',
+        ],
+      },
+      'includes': ['../../../../../third_party/closure_compiler/compile_js.gypi'],
+    },
+    {
       'target_name': 'people_page',
       'variables': {
         'depends': [

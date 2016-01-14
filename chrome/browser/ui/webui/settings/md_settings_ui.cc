@@ -26,9 +26,11 @@
 #include "grit/settings_resources.h"
 #include "grit/settings_resources_map.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
+#else  // !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/webui/settings/settings_manage_profile_handler.h"
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 namespace settings {
 
@@ -50,7 +52,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(new PeopleHandler(profile));
   AddSettingsPageUIHandler(new StartupPagesHandler(web_ui));
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
+#else
   AddSettingsPageUIHandler(new ManageProfileHandler(profile));
 #endif
 

@@ -491,10 +491,40 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("peoplePageTitle", IDS_SETTINGS_PEOPLE);
   html_source->AddLocalizedString("manageOtherPeople",
                                   IDS_SETTINGS_PEOPLE_MANAGE_OTHER_PEOPLE);
-
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+  html_source->AddLocalizedString("changePictureTitle",
+                                  IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE);
+  html_source->AddLocalizedString("changePicturePageDescription",
+                                  IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT);
+  html_source->AddLocalizedString("takePhoto",
+                                  IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO);
+  html_source->AddLocalizedString("discardPhoto",
+                                  IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO);
+  html_source->AddLocalizedString("flipPhoto",
+                                  IDS_SETTINGS_CHANGE_PICTURE_FLIP_PHOTO);
+  html_source->AddLocalizedString("chooseFile",
+                                  IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE);
+  html_source->AddLocalizedString("profilePhoto",
+                                  IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO);
+  html_source->AddLocalizedString(
+      "profilePhotoLoading", IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO);
+  html_source->AddLocalizedString("previewAltText",
+                                  IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT);
+  html_source->AddLocalizedString("authorCredit",
+                                  IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_TEXT);
+  html_source->AddLocalizedString(
+      "photoFromCamera", IDS_SETTINGS_CHANGE_PICTURE_PHOTO_FROM_CAMERA);
+  html_source->AddLocalizedString("photoFlippedAccessibleText",
+                                  IDS_SETTINGS_PHOTO_FLIP_ACCESSIBLE_TEXT);
+  html_source->AddLocalizedString("photoFlippedBackAccessibleText",
+                                  IDS_SETTINGS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT);
+  html_source->AddLocalizedString("photoCaptureAccessibleText",
+                                  IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT);
+  html_source->AddLocalizedString("photoDiscardAccessibleText",
+                                  IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT);
+#else   // !defined(OS_CHROMEOS)
   html_source->AddLocalizedString("editPerson", IDS_SETTINGS_EDIT_PERSON);
-#endif
+#endif  // defined(OS_CHROMEOS)
 
   html_source->AddLocalizedString("syncOverview", IDS_SETTINGS_SYNC_OVERVIEW);
   html_source->AddLocalizedString("syncSignin", IDS_SETTINGS_SYNC_SIGNIN);

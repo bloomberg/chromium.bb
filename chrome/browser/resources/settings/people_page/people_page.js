@@ -95,12 +95,21 @@ Polymer({
   },
 
   /** @private */
-  onManageProfileTap_: function() {
+  onPictureTap_: function() {
+<if expr="chromeos">
+    this.$.pages.setSubpageChain(['changePicture']);
+</if>
 <if expr="not chromeos">
     this.$.pages.setSubpageChain(['manageProfile']);
 </if>
-    // TODO(tommycli): Implement ChromeOS version. January 2016.
   },
+
+<if expr="not chromeos">
+  /** @private */
+  onProfileNameTap_: function() {
+    this.$.pages.setSubpageChain(['manageProfile']);
+  },
+</if>
 
   /** @private */
   onSigninTap_: function() {

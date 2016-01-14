@@ -4,14 +4,17 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-dialog/paper-dialog.html">
-<link rel="import" href="chrome://md-settings/people_page/manage_profile.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_page.html">
 <link rel="import" href="chrome://md-settings/people_page/sync_private_api.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_animated_pages.html">
 <link rel="import" href="chrome://md-settings/settings_page/settings_subheader.html">
 
 <if expr="chromeos">
+<link rel="import" href="chrome://md-settings/people_page/change_picture.html">
 <link rel="import" href="chrome://md-settings/people_page/users_page.html">
+</if>
+<if expr="not chromeos">
+<link rel="import" href="chrome://md-settings/people_page/manage_profile.html">
 </if>
 
 <dom-module id="settings-people-page">
@@ -23,9 +26,19 @@
       <neon-animatable id="main">
         <div class="settings-box">
           <div class="split">
-            <span class="start" on-tap="onManageProfileTap_">
-              <img id="account-picture" src="[[profileIconUrl_]]">
-              [[profileName_]]
+            <span class="start">
+              <img id="account-picture" src="[[profileIconUrl_]]"
+                  on-tap="onPictureTap_">
+<if expr="chromeos">
+              <span id="profile-name" on-tap="onProfileNameTap_">
+                [[profileName_]]
+              </span>
+</if>
+<if expr="not chromeos">
+              <span id="profile-name">
+                [[profileName_]]
+              </span>
+</if>
             </span>
             <span>
               <template is="dom-if" if="[[!syncStatus.signedIn]]">
@@ -79,6 +92,11 @@
         <settings-subheader i18n-values="page-title:usersPageTitle">
         </settings-subheader>
         <settings-users-page prefs="{{prefs}}"></settings-users-page>
+      </neon-animatable>
+      <neon-animatable id="changePicture">
+        <settings-subheader i18n-values="page-title:changePictureTitle">
+        </settings-subheader>
+        <settings-change-picture></settings-change-picture>
       <neon-animatable>
 </if>
 <if expr="not chromeos">

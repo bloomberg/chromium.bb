@@ -132,6 +132,15 @@ Polymer({
       subpage: ['search-engines', 'search-engines-advanced'],
       subpageTitles: ['searchEnginesPageTitle', 'advancedPageTitle'],
     },
+<if expr="chromeos">
+    {
+      url: '/changePicture',
+      page: 'basic',
+      section: 'people',
+      subpage: ['changePicture'],
+      subpageTitles: ['changePictureTitle'],
+    },
+</if>
 <if expr="not chromeos">
     {
       url: '/manageProfile',

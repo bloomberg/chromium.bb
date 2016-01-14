@@ -121,6 +121,7 @@ cr.define('settings', function() {
       SyncPrivateApi.getProfileInfoCallback_(name, iconUrl);
   };
 
+<if expr="not chromeos">
   /**
    * Called from JavaScript. Gets the available profile icons to choose from.
    * @param {!function(!Array<string>)} callback
@@ -147,6 +148,7 @@ cr.define('settings', function() {
   SyncPrivateApi.setProfileIconAndName = function(iconUrl, name) {
     chrome.send('setProfileIconAndName', [iconUrl, name]);
   };
+</if>
 
   /**
    * Starts the signin process for the user. Does nothing if the user is

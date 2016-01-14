@@ -605,6 +605,54 @@
     Manage other people
   </message>
 
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TITLE" desc="Title of the subpage shown when user wants to change his/her picture.">
+      Change picture
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture subpage.">
+      Choose a picture to display for your account on the sign-in screen.
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
+      Choose a file
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
+      Take photo
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_PHOTO_FROM_CAMERA" desc="The accessible text on the icon in the user image grid for a camera photo, when a photo has been captured.">
+      Photo from internal camera
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo of the current user.">
+      Discard photo
+    </message>
+    <message name="IDS_SETTINGS_PHOTO_CAPTURE_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was captured.">
+      Photo was captured
+    </message>
+    <message name="IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce that a photo was discarded.">
+      Photo was discarded
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_FLIP_PHOTO" desc="The text on the button to flip the camera image horizontally.">
+      Flip camera image horizontally
+    </message>
+    <message name="IDS_SETTINGS_PHOTO_FLIP_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce horizontal flip of camera image.">
+      Photo flipped
+    </message>
+    <message name="IDS_SETTINGS_PHOTO_FLIPBACK_ACCESSIBLE_TEXT" desc="The accessible message to speak to announce horizontal back-flip of camera image to not-flipped state.">
+      Photo flipped back
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_PREVIEW_ALT" desc="Alt text for the big preview of user image.">
+      User image preview
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_AUTHOR_TEXT" desc="Author label.">
+      Photo by
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_PHOTO" desc="The text on the Google profile photo of the user.">
+      Google Profile photo
+    </message>
+    <message name="IDS_SETTINGS_CHANGE_PICTURE_PROFILE_LOADING_PHOTO" desc="The text on the loading stub for Google profile image.">
+      Google Profile photo (loading)
+    </message>
+  </if>
+
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_EDIT_PERSON" desc="Title of the edit person subpage">
       Edit person

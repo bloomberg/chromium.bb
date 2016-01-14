@@ -9,3 +9,13 @@
   vertical-align: middle;
   width: 56px;
 }
+
+#account-picture:hover {
+  cursor: pointer;
+}
+
+<if expr="not chromeos">
+#profile-name:hover {
+  cursor: pointer;
+}
+</if>
