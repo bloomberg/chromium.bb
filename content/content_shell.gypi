@@ -275,9 +275,6 @@
             '../mojo/mojo_base.gyp:libmojo_system_java',
             'content_shell_jni_headers',
           ],
-          'dependencies!': [
-            'copy_test_netscape_plugin',
-          ],
         }],  # OS=="android"
         ['os_posix == 1 and OS != "mac"', {
           'dependencies': [
@@ -321,12 +318,6 @@
             ['exclude', 'shell/browser/shell_views.cc'],
           ],
         }],  # use_aura==1
-        # The test plugin relies on X11.
-        ['OS=="linux" and use_x11==0', {
-          'dependencies!': [
-            'copy_test_netscape_plugin',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '../chromeos/chromeos.gyp:chromeos',
@@ -562,84 +553,81 @@
         'content_shell',
       ],
     },
-
     {
       'target_name': 'test_netscape_plugin',
-      'type': 'loadable_module',
-      'sources': [
-        'shell/tools/plugin/PluginObject.cpp',
-        'shell/tools/plugin/PluginObject.h',
-        'shell/tools/plugin/PluginObjectMac.mm',
-        'shell/tools/plugin/PluginTest.cpp',
-        'shell/tools/plugin/PluginTest.h',
-        'shell/tools/plugin/TestObject.cpp',
-        'shell/tools/plugin/Tests/EvaluateJSAfterRemovingPluginElement.cpp',
-        'shell/tools/plugin/Tests/FormValue.cpp',
-        'shell/tools/plugin/Tests/GetUserAgentWithNullNPPFromNPPNew.cpp',
-        'shell/tools/plugin/Tests/LeakWindowScriptableObject.cpp',
-        'shell/tools/plugin/Tests/LogNPPSetWindow.cpp',
-        'shell/tools/plugin/Tests/NPDeallocateCalledBeforeNPShutdown.cpp',
-        'shell/tools/plugin/Tests/NPPNewFails.cpp',
-        'shell/tools/plugin/Tests/NPRuntimeCallsWithNullNPP.cpp',
-        'shell/tools/plugin/Tests/NPRuntimeObjectFromDestroyedPlugin.cpp',
-        'shell/tools/plugin/Tests/NPRuntimeRemoveProperty.cpp',
-        'shell/tools/plugin/Tests/NullNPPGetValuePointer.cpp',
-        'shell/tools/plugin/Tests/PassDifferentNPPStruct.cpp',
-        'shell/tools/plugin/Tests/PluginScriptableNPObjectInvokeDefault.cpp',
-        'shell/tools/plugin/Tests/PluginScriptableObjectOverridesAllProperties.cpp',
-        'shell/tools/plugin/main.cpp',
-        'shell/tools/plugin/test_object.h',
-      ],
-      'include_dirs': [
-        '<(DEPTH)',
-        '<(DEPTH)/content/shell/tools/plugin/',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../third_party/npapi/npapi.gyp:npapi',
-      ],
       'conditions': [
-        ['OS=="mac"', {
-          'mac_bundle': 1,
-          'product_extension': 'plugin',
-          'link_settings': {
-            'libraries': [
-              '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
-              '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
-              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
-            ]
-          },
-          'xcode_settings': {
-            'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
-            'INFOPLIST_FILE': 'shell/tools/plugin/mac/Info.plist',
-          },
-        }],
-        ['os_posix == 1 and OS != "mac"', {
-          'cflags': [
-            '-fvisibility=default',
+        ['OS != "win" and OS != "mac"', {
+          'type': 'none',
+        }, {  # OS=="win" or OS=="mac"
+          'type': 'loadable_module',
+          'sources': [
+            'shell/tools/plugin/PluginObject.cpp',
+            'shell/tools/plugin/PluginObject.h',
+            'shell/tools/plugin/PluginObjectMac.mm',
+            'shell/tools/plugin/PluginTest.cpp',
+            'shell/tools/plugin/PluginTest.h',
+            'shell/tools/plugin/TestObject.cpp',
+            'shell/tools/plugin/Tests/EvaluateJSAfterRemovingPluginElement.cpp',
+            'shell/tools/plugin/Tests/FormValue.cpp',
+            'shell/tools/plugin/Tests/GetUserAgentWithNullNPPFromNPPNew.cpp',
+            'shell/tools/plugin/Tests/LeakWindowScriptableObject.cpp',
+            'shell/tools/plugin/Tests/LogNPPSetWindow.cpp',
+            'shell/tools/plugin/Tests/NPDeallocateCalledBeforeNPShutdown.cpp',
+            'shell/tools/plugin/Tests/NPPNewFails.cpp',
+            'shell/tools/plugin/Tests/NPRuntimeCallsWithNullNPP.cpp',
+            'shell/tools/plugin/Tests/NPRuntimeObjectFromDestroyedPlugin.cpp',
+            'shell/tools/plugin/Tests/NPRuntimeRemoveProperty.cpp',
+            'shell/tools/plugin/Tests/NullNPPGetValuePointer.cpp',
+            'shell/tools/plugin/Tests/PassDifferentNPPStruct.cpp',
+            'shell/tools/plugin/Tests/PluginScriptableNPObjectInvokeDefault.cpp',
+            'shell/tools/plugin/Tests/PluginScriptableObjectOverridesAllProperties.cpp',
+            'shell/tools/plugin/main.cpp',
+            'shell/tools/plugin/test_object.h',
           ],
-        }],
-        ['use_x11 == 1', {
-          'dependencies': [ '../build/linux/system.gyp:x11' ],
-        }],
-        ['OS=="win"', {
+          'include_dirs': [
+            '<(DEPTH)',
+            '<(DEPTH)/content/shell/tools/plugin/',
+          ],
+          'dependencies': [
+            '../base/base.gyp:base',
+            '../third_party/npapi/npapi.gyp:npapi',
+          ],
           'conditions': [
-            ['MSVS_VERSION < "2015"', {
-              'defines': [
-                # This seems like a hack, but this is what Safari Win does.
-                # Luckily it is no longer needed/allowed with VS 2015.
-                'snprintf=_snprintf',
+            ['OS=="mac"', {
+              'mac_bundle': 1,
+              'product_extension': 'plugin',
+              'link_settings': {
+                'libraries': [
+                  '$(SDKROOT)/System/Library/Frameworks/Carbon.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/Cocoa.framework',
+                  '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+                ]
+              },
+              'xcode_settings': {
+                'GCC_SYMBOLS_PRIVATE_EXTERN': 'NO',
+                'INFOPLIST_FILE': 'shell/tools/plugin/mac/Info.plist',
+              },
+            }],
+            ['OS=="win"', {
+              'conditions': [
+                ['MSVS_VERSION < "2015"', {
+                  'defines': [
+                    # This seems like a hack, but this is what Safari Win does.
+                    # Luckily it is no longer needed/allowed with VS 2015.
+                    'snprintf=_snprintf',
+                  ],
+                }],
               ],
+              'sources': [
+                'shell/tools/plugin/win/TestNetscapePlugin.def',
+                'shell/tools/plugin/win/TestNetscapePlugin.rc',
+              ],
+              # The .rc file requires that the name of the dll is np_test_netscape_plugin.dll.
+              'product_name': 'np_test_netscape_plugin',
+              # Disable c4267 warnings until we fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4267, ],
             }],
           ],
-          'sources': [
-            'shell/tools/plugin/win/TestNetscapePlugin.def',
-            'shell/tools/plugin/win/TestNetscapePlugin.rc',
-          ],
-          # The .rc file requires that the name of the dll is np_test_netscape_plugin.dll.
-          'product_name': 'np_test_netscape_plugin',
-          # Disable c4267 warnings until we fix size_t to int truncations.
-          'msvs_disabled_warnings': [ 4267, ],
         }],
       ],
     },
@@ -660,12 +648,6 @@
           'copies': [{
             'destination': '<(PRODUCT_DIR)/plugins/',
             'files': ['<(PRODUCT_DIR)/test_netscape_plugin.plugin/'],
-          }],
-        }],
-        ['os_posix == 1 and OS != "mac"', {
-          'copies': [{
-            'destination': '<(PRODUCT_DIR)/plugins',
-            'files': ['<(PRODUCT_DIR)/libtest_netscape_plugin.so'],
           }],
         }],
       ],
