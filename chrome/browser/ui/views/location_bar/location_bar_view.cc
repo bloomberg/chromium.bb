@@ -207,9 +207,8 @@ void LocationBarView::Init() {
       font_list.DeriveWithHeightUpperBound(bubble_height);
 
   const SkColor background_color = GetColor(BACKGROUND);
-  const SkColor text_color = GetColor(TEXT);
-  location_icon_view_ = new LocationIconView(bubble_font_list, text_color,
-                                             background_color, this);
+  location_icon_view_ =
+      new LocationIconView(bubble_font_list, background_color, this);
   location_icon_view_->set_drag_controller(this);
   AddChildView(location_icon_view_);
 
@@ -258,7 +257,7 @@ void LocationBarView::Init() {
   for (ContentSettingImageModel* model : models.get()) {
     // ContentSettingImageView takes ownership of its model.
     ContentSettingImageView* image_view = new ContentSettingImageView(
-        model, this, bubble_font_list, text_color, background_color);
+        model, this, bubble_font_list, background_color);
     content_setting_views_.push_back(image_view);
     image_view->SetVisible(false);
     AddChildView(image_view);
@@ -599,7 +598,6 @@ void LocationBarView::Layout() {
 
   location_icon_view_->SetLabel(base::string16());
   location_icon_view_->SetBackground(false);
-  location_icon_view_->SetLabelForegroundColor(GetColor(TEXT));
   if (ShouldShowKeywordBubble()) {
     leading_decorations.AddDecoration(bubble_vertical_padding, bubble_height,
                                       true, 0, bubble_horizontal_padding,
@@ -623,8 +621,6 @@ void LocationBarView::Layout() {
   } else if (ShouldShowEVBubble()) {
     location_icon_view_->SetLabel(GetToolbarModel()->GetEVCertName());
     location_icon_view_->SetBackground(true);
-    location_icon_view_->SetLabelForegroundColor(
-        GetColor(EV_BUBBLE_TEXT_AND_BORDER));
     // The largest fraction of the omnibox that can be taken by the EV bubble.
     const double kMaxBubbleFraction = 0.5;
     leading_decorations.AddDecoration(
@@ -862,9 +858,19 @@ void LocationBarView::RefreshLocationIcon() {
     return;
 
   if (ui::MaterialDesignController::IsModeMaterial()) {
-    location_icon_view_->SetImage(gfx::CreateVectorIcon(
-        omnibox_view_->GetVectorIcon(color_utils::IsDark(GetColor(BACKGROUND))),
-        16, color_utils::DeriveDefaultIconColor(GetColor(TEXT))));
+    gfx::VectorIconId icon_id = gfx::VectorIconId::VECTOR_ICON_NONE;
+    const int kIconSize = 16;
+    SkColor icon_color = gfx::kPlaceholderColor;
+    if (ShouldShowEVBubble()) {
+      icon_id = gfx::VectorIconId::LOCATION_BAR_HTTPS_VALID_IN_CHIP;
+      icon_color = location_icon_view_->GetTextColor();
+    } else {
+      icon_id = omnibox_view_->GetVectorIcon(
+          color_utils::IsDark(GetColor(BACKGROUND)));
+      icon_color = color_utils::DeriveDefaultIconColor(GetColor(TEXT));
+    }
+    location_icon_view_->SetImage(
+        gfx::CreateVectorIcon(icon_id, kIconSize, icon_color));
   } else {
     location_icon_view_->SetImage(
         *GetThemeProvider()->GetImageSkiaNamed(omnibox_view_->GetIcon()));

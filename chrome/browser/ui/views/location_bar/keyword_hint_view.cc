@@ -54,7 +54,6 @@ TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list,
                                    SkColor background_color)
     : IconLabelBubbleView(0,
                           font_list,
-                          gfx::kPlaceholderColor,
                           background_color,
                           false),
       text_color_(text_color) {

@@ -30,10 +30,8 @@ class Painter;
 // tab-to-search UI, and content settings.
 class IconLabelBubbleView : public views::ImageView {
  public:
-  // TODO(estade): remove |text_color| which is not used for MD.
   IconLabelBubbleView(int contained_image,
                       const gfx::FontList& font_list,
-                      SkColor text_color,
                       SkColor parent_background_color,
                       bool elide_in_middle);
   ~IconLabelBubbleView() override;
@@ -48,12 +46,6 @@ class IconLabelBubbleView : public views::ImageView {
   void set_is_extension_icon(bool is_extension_icon) {
     is_extension_icon_ = is_extension_icon;
   }
-
-  // Sets a background color on |label_| based on |chip_background_color| and
-  // the parent's bg color.
-  void SetLabelBackgroundColor(SkColor chip_background_color);
-
-  void SetLabelForegroundColor(SkColor color);
 
  protected:
   views::ImageView* image() { return image_; }
@@ -90,6 +82,10 @@ class IconLabelBubbleView : public views::ImageView {
   gfx::Size GetSizeForLabelWidth(int width) const;
 
  private:
+  // Sets a background color on |label_| based on |chip_background_color| and
+  // the parent's bg color.
+  void SetLabelBackgroundColor(SkColor chip_background_color);
+
   // Amount of padding at the edges of the bubble.  If |leading| is true, this
   // is the padding at the beginning of the bubble (left in LTR), otherwise it's
   // the end padding.

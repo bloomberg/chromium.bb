@@ -21,7 +21,6 @@ class LocatedEvent;
 class LocationIconView : public IconLabelBubbleView {
  public:
   LocationIconView(const gfx::FontList& font_list,
-                   SkColor text_color,
                    SkColor parent_background_color,
                    LocationBarView* location_bar);
   ~LocationIconView() override;

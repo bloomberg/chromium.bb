@@ -36,11 +36,9 @@ ContentSettingImageView::ContentSettingImageView(
     ContentSettingImageModel* image_model,
     LocationBarView* parent,
     const gfx::FontList& font_list,
-    SkColor text_color,
     SkColor parent_background_color)
     : IconLabelBubbleView(0,
                           font_list,
-                          text_color,
                           parent_background_color,
                           false),
       parent_(parent),

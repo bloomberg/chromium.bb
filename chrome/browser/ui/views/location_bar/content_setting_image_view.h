@@ -40,11 +40,9 @@ class ContentSettingImageView : public IconLabelBubbleView,
                                 public views::WidgetObserver {
  public:
   // ContentSettingImageView takes ownership of its |image_model|.
-  // TODO(estade): remove |text_color| because it isn't necessary for MD.
   ContentSettingImageView(ContentSettingImageModel* image_model,
                           LocationBarView* parent,
                           const gfx::FontList& font_list,
-                          SkColor text_color,
                           SkColor parent_background_color);
   ~ContentSettingImageView() override;
 

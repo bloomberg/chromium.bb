@@ -49,6 +49,8 @@ class SelectedKeywordView : public IconLabelBubbleView {
   const char* GetClassName() const override;
   int GetImageAndPaddingWidth() const override;
 
+  SkColor text_color_;
+
   // The keyword we're showing. If empty, no keyword is selected.
   // NOTE: we don't cache the TemplateURL as it is possible for it to get
   // deleted out from under us.

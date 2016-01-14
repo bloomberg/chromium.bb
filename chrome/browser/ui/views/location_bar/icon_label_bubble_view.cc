@@ -30,7 +30,6 @@ SkColor CalculateImageColor(gfx::ImageSkia* image) {
 
 IconLabelBubbleView::IconLabelBubbleView(int contained_image,
                                          const gfx::FontList& font_list,
-                                         SkColor text_color,
                                          SkColor parent_background_color,
                                          bool elide_in_middle)
     : background_painter_(nullptr),
@@ -49,7 +48,6 @@ IconLabelBubbleView::IconLabelBubbleView(int contained_image,
   image_->set_interactive(false);
   AddChildView(image_);
 
-  label_->SetEnabledColor(text_color);
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   if (elide_in_middle)
@@ -63,14 +61,17 @@ IconLabelBubbleView::~IconLabelBubbleView() {
 void IconLabelBubbleView::SetBackgroundImageGrid(
     const int background_images[]) {
   should_show_background_ = true;
-  background_painter_.reset(
-      views::Painter::CreateImageGridPainter(background_images));
-  // Use the middle image of the background to represent the color of the entire
-  // background.
-  gfx::ImageSkia* background_image =
-      ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          background_images[4]);
-  SetLabelBackgroundColor(CalculateImageColor(background_image));
+  if (!ui::MaterialDesignController::IsModeMaterial()) {
+    background_painter_.reset(
+        views::Painter::CreateImageGridPainter(background_images));
+    // Use the middle image of the background to represent the color of the
+    // entire background.
+    gfx::ImageSkia* background_image =
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            background_images[4]);
+    SetLabelBackgroundColor(CalculateImageColor(background_image));
+  }
+  OnNativeThemeChanged(GetNativeTheme());
 }
 
 void IconLabelBubbleView::UnsetBackgroundImageGrid() {
@@ -84,24 +85,6 @@ void IconLabelBubbleView::SetLabel(const base::string16& label) {
 
 void IconLabelBubbleView::SetImage(const gfx::ImageSkia& image_skia) {
   image_->SetImage(image_skia);
-}
-
-void IconLabelBubbleView::SetLabelBackgroundColor(
-    SkColor chip_background_color) {
-  // The background images are painted atop |parent_background_color_|.
-  // Alpha-blend |chip_background_color| with |parent_background_color_| to
-  // determine the actual color the label text will sit atop.
-  // Tricky bit: We alpha blend an opaque version of |chip_background_color|
-  // against |parent_background_color_| using the original image grid color's
-  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
-  // even if |a| is a color with non-255 alpha.
-  label_->SetBackgroundColor(color_utils::AlphaBlend(
-      SkColorSetA(chip_background_color, 255), GetParentBackgroundColor(),
-      SkColorGetA(chip_background_color)));
-}
-
-void IconLabelBubbleView::SetLabelForegroundColor(SkColor color) {
-  label_->SetEnabledColor(color);
 }
 
 bool IconLabelBubbleView::ShouldShowBackground() const {
@@ -143,10 +126,15 @@ void IconLabelBubbleView::Layout() {
 
 void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
-  if (!ui::MaterialDesignController::IsModeMaterial())
+  // If the background isn't visible, the label and border won't be either, so
+  // don't bother updating them.
+  if (!ShouldShowBackground())
     return;
 
   label_->SetEnabledColor(GetTextColor());
+
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return;
 
   bool inverted = color_utils::IsDark(GetParentBackgroundColor());
   SkColor border_color = inverted ? SK_ColorWHITE : GetBorderColor();
@@ -175,6 +163,20 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int width) const {
   }
 
   return size;
+}
+
+void IconLabelBubbleView::SetLabelBackgroundColor(
+    SkColor chip_background_color) {
+  // The background images are painted atop |parent_background_color_|.
+  // Alpha-blend |chip_background_color| with |parent_background_color_| to
+  // determine the actual color the label text will sit atop.
+  // Tricky bit: We alpha blend an opaque version of |chip_background_color|
+  // against |parent_background_color_| using the original image grid color's
+  // alpha. This is because AlphaBlend(a, b, 255) always returns |a| unchanged
+  // even if |a| is a color with non-255 alpha.
+  label_->SetBackgroundColor(color_utils::AlphaBlend(
+      SkColorSetA(chip_background_color, 255), GetParentBackgroundColor(),
+      SkColorGetA(chip_background_color)));
 }
 
 int IconLabelBubbleView::GetBubbleOuterPadding(bool leading) const {

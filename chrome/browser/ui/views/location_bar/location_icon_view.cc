@@ -16,6 +16,7 @@
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/painter.h"
 
@@ -47,12 +48,10 @@ void ProcessEventInternal(LocationBarView* view) {
 }  // namespace
 
 LocationIconView::LocationIconView(const gfx::FontList& font_list,
-                                   SkColor text_color,
                                    SkColor parent_background_color,
                                    LocationBarView* location_bar)
     : IconLabelBubbleView(IDR_OMNIBOX_HTTPS_INVALID,
                           font_list,
-                          text_color,
                           parent_background_color,
                           true),
       suppress_mouse_released_action_(false),
@@ -154,11 +153,11 @@ gfx::Size LocationIconView::GetMinimumSizeForLabelText(
 }
 
 SkColor LocationIconView::GetTextColor() const {
-  return location_bar_->GetColor(LocationBarView::TEXT);
+  return location_bar_->GetColor(LocationBarView::EV_BUBBLE_TEXT_AND_BORDER);
 }
 
 SkColor LocationIconView::GetBorderColor() const {
-  return location_bar_->GetColor(LocationBarView::TEXT);
+  return GetTextColor();
 }
 
 gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
@@ -171,10 +170,8 @@ gfx::Size LocationIconView::GetMinimumSizeForPreferredSize(
 
 void LocationIconView::SetBackground(bool should_show_ev) {
   static const int kEvBackgroundImages[] = IMAGE_GRID(IDR_OMNIBOX_EV_BUBBLE);
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    if (should_show_ev)
-      SetBackgroundImageGrid(kEvBackgroundImages);
-    else
-      UnsetBackgroundImageGrid();
-  }
+  if (should_show_ev)
+    SetBackgroundImageGrid(kEvBackgroundImages);
+  else
+    UnsetBackgroundImageGrid();
 }

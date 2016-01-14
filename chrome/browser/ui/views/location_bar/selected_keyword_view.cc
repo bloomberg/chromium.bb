@@ -28,11 +28,8 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
                                          SkColor text_color,
                                          SkColor parent_background_color,
                                          Profile* profile)
-    : IconLabelBubbleView(0,
-                          font_list,
-                          text_color,
-                          parent_background_color,
-                          false),
+    : IconLabelBubbleView(0, font_list, parent_background_color, false),
+      text_color_(text_color),
       profile_(profile) {
   if (!ui::MaterialDesignController::IsModeMaterial()) {
     static const int kBackgroundImages[] =
@@ -58,7 +55,9 @@ void SelectedKeywordView::ResetImage() {
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {
-  DCHECK(ui::MaterialDesignController::IsModeMaterial());
+  if (!ui::MaterialDesignController::IsModeMaterial())
+    return text_color_;
+
   return color_utils::IsDark(GetParentBackgroundColor())
              ? gfx::kGoogleBlue700
              : GetNativeTheme()->GetSystemColor(
