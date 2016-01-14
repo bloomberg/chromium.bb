@@ -14,6 +14,8 @@ import android.preference.PreferenceFragment;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebUma;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 
@@ -38,16 +40,12 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
             if (getActivity().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                     == PackageManager.PERMISSION_GRANTED) {
                 Log.d(TAG, "Location permission already granted");
-                setPhysicalWebEnabled(true);
-                return;
+            } else {
+                Log.d(TAG, "Requesting location permission");
+                requestPermissions(
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ID);
             }
-
-            Log.d(TAG, "Requesting location permission");
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_ID);
-            return;
         }
-
-        setPhysicalWebEnabled(true);
     }
 
 
@@ -60,6 +58,8 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     PhysicalWebUma.onPrefsLocationGranted(getActivity());
                     Log.d(TAG, "Location permission granted");
+                    PhysicalWeb.startPhysicalWeb(
+                            (ChromeApplication) getActivity().getApplicationContext());
                 } else {
                     PhysicalWebUma.onPrefsLocationDenied(getActivity());
                     Log.d(TAG, "Location permission denied");
@@ -67,11 +67,6 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
                 break;
             default:
         }
-
-        // It doesn't matter whether we were given the location permission or not.  We will flip
-        // the setting to true and let the PreferenceManager figure out what to do with the
-        // location permission or lack thereof.
-        setPhysicalWebEnabled(true);
     }
 
     private void initPhysicalWebSwitch() {
@@ -85,19 +80,16 @@ public class PhysicalWebPreferenceFragment extends PreferenceFragment {
         physicalWebSwitch.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                if ((boolean) newValue) {
+                boolean enabled = (boolean) newValue;
+                if (enabled) {
                     PhysicalWebUma.onPrefsFeatureEnabled(getActivity());
                     ensureLocationPermission();
                 } else {
                     PhysicalWebUma.onPrefsFeatureDisabled(getActivity());
-                    setPhysicalWebEnabled(false);
                 }
+                PrivacyPreferencesManager.getInstance(getActivity()).setPhysicalWebEnabled(enabled);
                 return true;
             }
         });
-    }
-
-    private void setPhysicalWebEnabled(boolean value) {
-        PrivacyPreferencesManager.getInstance(getActivity()).setPhysicalWebEnabled(value);
     }
 }
