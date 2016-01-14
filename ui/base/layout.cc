@@ -20,11 +20,6 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 
-#if defined(OS_WIN)
-#include "ui/gfx/win/dpi.h"
-#include <Windows.h>
-#endif  // defined(OS_WIN)
-
 namespace ui {
 
 namespace {
@@ -79,14 +74,6 @@ ScaleFactor GetSupportedScaleFactor(float scale) {
   }
   DCHECK_NE(closest_match, SCALE_FACTOR_NONE);
   return closest_match;
-}
-
-float GetImageScale(ScaleFactor scale_factor) {
-#if defined(OS_WIN)
-  return gfx::GetDPIScale();
-#else
-  return GetScaleForScaleFactor(scale_factor);
-#endif
 }
 
 float GetScaleForScaleFactor(ScaleFactor scale_factor) {
