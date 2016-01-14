@@ -18,7 +18,7 @@ class TimingFunction;
 
 class CC_EXPORT ScrollOffsetAnimationCurve : public AnimationCurve {
  public:
-  enum class DurationBehavior { DELTA_BASED, CONSTANT };
+  enum class DurationBehavior { DELTA_BASED, CONSTANT, INVERSE_DELTA };
   static scoped_ptr<ScrollOffsetAnimationCurve> Create(
       const gfx::ScrollOffset& target_value,
       scoped_ptr<TimingFunction> timing_function,

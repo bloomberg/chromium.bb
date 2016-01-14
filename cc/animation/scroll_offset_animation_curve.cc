@@ -12,8 +12,22 @@
 #include "cc/base/time_util.h"
 #include "ui/gfx/animation/tween.h"
 
-const double kConstantDuration = 12.0;
+using DurationBehavior = cc::ScrollOffsetAnimationCurve::DurationBehavior;
+
+const double kConstantDuration = 9.0;
 const double kDurationDivisor = 60.0;
+
+const double kInverseDeltaRampStartPx = 120.0;
+const double kInverseDeltaRampEndPx = 480.0;
+const double kInverseDeltaMinDuration = 6.0;
+const double kInverseDeltaMaxDuration = 12.0;
+
+const double kInverseDeltaSlope =
+    (kInverseDeltaMinDuration - kInverseDeltaMaxDuration) /
+    (kInverseDeltaRampEndPx - kInverseDeltaRampStartPx);
+
+const double kInverseDeltaOffset =
+    kInverseDeltaMaxDuration - kInverseDeltaRampStartPx * kInverseDeltaSlope;
 
 namespace cc {
 
@@ -25,24 +39,28 @@ static float MaximumDimension(const gfx::Vector2dF& delta) {
   return std::abs(delta.x()) > std::abs(delta.y()) ? delta.x() : delta.y();
 }
 
-static base::TimeDelta SegmentDuration(
-    const gfx::Vector2dF& delta,
-    ScrollOffsetAnimationCurve::DurationBehavior behavior) {
-  if (behavior == ScrollOffsetAnimationCurve::DurationBehavior::DELTA_BASED) {
-    // The duration of a JS scroll animation depends on the size of the scroll.
-    // The exact relationship between the size and the duration isn't specified
-    // by the CSSOM View smooth scroll spec and is instead left up to user
-    // agents to decide. The calculation performed here will very likely be
-    // further tweaked before the smooth scroll API ships.
-    return base::TimeDelta::FromMicroseconds(
-        (std::sqrt(std::abs(MaximumDimension(delta))) / kDurationDivisor) *
-        base::Time::kMicrosecondsPerSecond);
-  } else {
-    // Input-driven scroll animations use a constant duration.
-    return base::TimeDelta::FromMicroseconds(
-        (kConstantDuration / kDurationDivisor) *
-        base::Time::kMicrosecondsPerSecond);
+static base::TimeDelta SegmentDuration(const gfx::Vector2dF& delta,
+                                       DurationBehavior behavior) {
+  double duration = kConstantDuration;
+  switch (behavior) {
+    case DurationBehavior::CONSTANT:
+      duration = kConstantDuration;
+      break;
+    case DurationBehavior::DELTA_BASED:
+      duration = std::sqrt(std::abs(MaximumDimension(delta)));
+      break;
+    case DurationBehavior::INVERSE_DELTA:
+      duration = std::min(
+          std::max(kInverseDeltaOffset +
+                       std::abs(MaximumDimension(delta)) * kInverseDeltaSlope,
+                   kInverseDeltaMinDuration),
+          kInverseDeltaMaxDuration);
+      break;
+    default:
+      NOTREACHED();
   }
+  return base::TimeDelta::FromMicroseconds(duration / kDurationDivisor *
+                                           base::Time::kMicrosecondsPerSecond);
 }
 
 static scoped_ptr<TimingFunction> EaseOutWithInitialVelocity(double velocity) {

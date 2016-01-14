@@ -78,6 +78,7 @@ private:
     bool registerAndScheduleAnimation();
 
     FloatPoint m_targetOffset;
+    ScrollGranularity m_lastGranularity;
 };
 
 } // namespace blink

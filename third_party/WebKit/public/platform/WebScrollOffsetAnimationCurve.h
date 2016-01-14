@@ -16,7 +16,8 @@ public:
 
     enum ScrollDurationBehavior {
         ScrollDurationDeltaBased = 0,
-        ScrollDurationConstant
+        ScrollDurationConstant,
+        ScrollDurationInverseDelta
     };
 
     virtual void setInitialValue(WebFloatPoint) = 0;

@@ -51,6 +51,7 @@ PassOwnPtrWillBeRawPtr<ScrollAnimatorBase> ScrollAnimatorBase::create(Scrollable
 ScrollAnimator::ScrollAnimator(ScrollableArea* scrollableArea, WTF::TimeFunction timeFunction)
     : ScrollAnimatorBase(scrollableArea)
     , m_timeFunction(timeFunction)
+    , m_lastGranularity(ScrollByPixel)
 {
 }
 
@@ -143,6 +144,7 @@ ScrollResultOneDimensional ScrollAnimator::userScroll(
 
     m_targetOffset = targetPos;
     m_startTime = m_timeFunction();
+    m_lastGranularity = granularity;
 
     if (registerAndScheduleAnimation())
         m_runState = RunState::WaitingToSendToCompositor;
@@ -226,7 +228,9 @@ void ScrollAnimator::updateCompositorAnimations()
                 ->createScrollOffsetAnimationCurve(
                     m_targetOffset,
                     WebCompositorAnimationCurve::TimingFunctionTypeEaseInOut,
-                    WebScrollOffsetAnimationCurve::ScrollDurationConstant));
+                    m_lastGranularity == ScrollByPixel ?
+                        WebScrollOffsetAnimationCurve::ScrollDurationInverseDelta :
+                        WebScrollOffsetAnimationCurve::ScrollDurationConstant));
             m_animationCurve->setInitialValue(currentPosition());
         }
 

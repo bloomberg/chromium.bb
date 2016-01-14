@@ -48,7 +48,7 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     scoped_ptr<ScrollOffsetAnimationCurve> curve =
         ScrollOffsetAnimationCurve::Create(
             target_offset, EaseInOutTimingFunction::Create(),
-            ScrollOffsetAnimationCurve::DurationBehavior::CONSTANT);
+            ScrollOffsetAnimationCurve::DurationBehavior::INVERSE_DELTA);
     curve->SetInitialValue(current_offset);
 
     scoped_ptr<Animation> animation = Animation::Create(

@@ -22,6 +22,9 @@ static DurationBehavior GetDurationBehavior(
 
     case WebScrollOffsetAnimationCurve::ScrollDurationConstant:
       return DurationBehavior::CONSTANT;
+
+    case WebScrollOffsetAnimationCurve::ScrollDurationInverseDelta:
+      return DurationBehavior::INVERSE_DELTA;
   }
   NOTREACHED();
   return DurationBehavior::DELTA_BASED;
