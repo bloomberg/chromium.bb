@@ -42,7 +42,8 @@ def _ParseArgs(args):
   parser = optparse.OptionParser()
   build_utils.AddDepfileOption(parser)
 
-  parser.add_option('--android-sdk', help='path to the Android SDK folder')
+  parser.add_option('--android-sdk-jar',
+                    help='the path to android jar file.')
   parser.add_option('--aapt-path',
                     help='path to the Android aapt tool')
   parser.add_option('--non-constant-id', action='store_true')
@@ -110,7 +111,7 @@ def _ParseArgs(args):
 
   # Check that required options have been provided.
   required_options = (
-      'android_sdk',
+      'android_sdk_jar',
       'aapt_path',
       'android_manifest',
       'dependencies_res_zips',
@@ -341,7 +342,6 @@ def CombineZips(zip_files, output_path):
 
 
 def _OnStaleMd5(options):
-  android_jar = os.path.join(options.android_sdk, 'android.jar')
   aapt = options.aapt_path
   with build_utils.TempDir() as temp_dir:
     deps_dir = os.path.join(temp_dir, 'deps')
@@ -379,7 +379,7 @@ def _OnStaleMd5(options):
                        '-m',
                        '-M', options.android_manifest,
                        '--auto-add-overlay',
-                       '-I', android_jar,
+                       '-I', options.android_sdk_jar,
                        '--output-text-symbols', gen_dir,
                        '-J', gen_dir,
                        '--ignore-assets', build_utils.AAPT_IGNORE_PATTERN]
@@ -463,7 +463,7 @@ def main(args):
   # of them does not change what gets written to the depsfile.
   input_strings = options.extra_res_packages + [
     options.aapt_path,
-    options.android_sdk,
+    options.android_sdk_jar,
     options.app_as_shared_lib,
     options.custom_package,
     options.include_all_resources,

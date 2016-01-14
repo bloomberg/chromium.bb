@@ -933,11 +933,18 @@ template("create_apk") {
         _android_aapt_path = android_default_aapt_path
       }
 
+      if (defined(invoker.alternative_android_sdk_jar)) {
+        _rebased_android_sdk_jar =
+            rebase_path(invoker.alternative_android_sdk_jar)
+      } else {
+        _rebased_android_sdk_jar = rebased_android_sdk_jar
+      }
+
       args = [
         "--depfile",
         rebase_path(depfile, root_build_dir),
-        "--android-sdk",
-        rebased_android_sdk,
+        "--android-sdk-jar",
+        _rebased_android_sdk_jar,
         "--aapt-path",
         _android_aapt_path,
         "--configuration-name=$android_configuration_name",
@@ -988,6 +995,7 @@ template("create_apk") {
   package_resources_helper(_package_resources_target_name) {
     forward_variables_from(invoker,
                            [
+                             "alternative_android_sdk_jar",
                              "android_aapt_path",
                              "extensions_to_not_compress",
                            ])
@@ -1035,6 +1043,7 @@ template("create_apk") {
   package_resources_helper(_incremental_package_resources_target_name) {
     forward_variables_from(invoker,
                            [
+                             "alternative_android_sdk_jar",
                              "android_aapt_path",
                              "extensions_to_not_compress",
                            ])
@@ -1780,11 +1789,18 @@ template("process_resources") {
       _android_aapt_path = android_default_aapt_path
     }
 
+    if (defined(invoker.alternative_android_sdk_jar)) {
+      _rebased_android_sdk_jar =
+          rebase_path(invoker.alternative_android_sdk_jar)
+    } else {
+      _rebased_android_sdk_jar = rebased_android_sdk_jar
+    }
+
     args = [
       "--depfile",
       rebase_path(depfile, root_build_dir),
-      "--android-sdk",
-      rebase_path(android_sdk, root_build_dir),
+      "--android-sdk-jar",
+      _rebased_android_sdk_jar,
       "--aapt-path",
       _android_aapt_path,
       "--android-manifest",

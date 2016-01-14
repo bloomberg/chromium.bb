@@ -1422,6 +1422,7 @@ template("android_apk") {
   process_resources(process_resources_target) {
     forward_variables_from(invoker,
                            [
+                             "alternative_android_sdk_jar",
                              "android_aapt_path",
                              "app_as_shared_lib",
                              "include_all_resources",
@@ -1685,6 +1686,7 @@ template("android_apk") {
     deps = []
     forward_variables_from(invoker,
                            [
+                             "alternative_android_sdk_jar",
                              "android_aapt_path",
                              "app_as_shared_lib",
                              "deps",
@@ -1779,6 +1781,7 @@ template("android_apk") {
       deps = []
       forward_variables_from(invoker,
                              [
+                               "alternative_android_sdk_jar",
                                "android_aapt_path",
                                "deps",
                                "native_lib_placeholders",
