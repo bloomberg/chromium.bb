@@ -380,7 +380,15 @@ class Generator(generator.Generator):
       "imported_interfaces": self.GetImportedInterfaces(),
     }
 
-  @UseJinja("js_templates/module.amd.tmpl", filters=js_filters)
+  @staticmethod
+  def GetTemplatePrefix():
+    return "js_templates"
+
+  @classmethod
+  def GetFilters(cls):
+    return cls.js_filters
+
+  @UseJinja("module.amd.tmpl")
   def GenerateAMDModule(self):
     return self.GetParameters()
 

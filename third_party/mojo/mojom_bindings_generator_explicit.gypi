@@ -45,7 +45,12 @@
         '<(java_out_dir)',
         '<(stamp_filename)',
       ],
-      'inputs': [ '<@(mojom_files)' ],
+      'inputs': [
+        '<@(mojom_files)',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/cpp_templates.zip',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/java_templates.zip',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings/js_templates.zip',
+      ],
       'outputs': [ '<(stamp_filename)' ],
     },
     {
@@ -69,8 +74,8 @@
       ],
       'action': [
         'python', '<@(mojom_bindings_generator)',
+        '--use_bundled_pylibs', 'generate',
         '<@(mojom_files)',
-        '--use_bundled_pylibs',
         '-d', '<(DEPTH)',
         '<@(mojom_import_args)',
         '-o', '<(SHARED_INTERMEDIATE_DIR)',
@@ -78,6 +83,8 @@
         '--variant', '<(mojom_variant)',
         '-g', '<(mojom_output_languages)',
         '<@(mojom_extra_generator_args)',
+        '--bytecode_path',
+        '<(SHARED_INTERMEDIATE_DIR)/mojo/public/tools/bindings',
       ],
       'message': 'Generating Mojo bindings from <@(mojom_files)',
     }
@@ -86,6 +93,7 @@
     ['require_interface_bindings==1', {
       'dependencies': [
         '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/mojo/public/tools/bindings/bindings.gyp:precompile_mojom_bindings_generator_templates',
         '<(DEPTH)/third_party/mojo/mojo_public.gyp:mojo_interface_bindings_generation',
       ],
     }],

@@ -488,15 +488,23 @@ class Generator(generator.Generator):
       "extra_headers": self.GetExtraHeaders(),
     }
 
-  @UseJinja("cpp_templates/module.h.tmpl", filters=cpp_filters)
+  @staticmethod
+  def GetTemplatePrefix():
+    return "cpp_templates"
+
+  @classmethod
+  def GetFilters(cls):
+    return cls.cpp_filters
+
+  @UseJinja("module.h.tmpl")
   def GenerateModuleHeader(self):
     return self.GetJinjaExports()
 
-  @UseJinja("cpp_templates/module-internal.h.tmpl", filters=cpp_filters)
+  @UseJinja("module-internal.h.tmpl")
   def GenerateModuleInternalHeader(self):
     return self.GetJinjaExports()
 
-  @UseJinja("cpp_templates/module.cc.tmpl", filters=cpp_filters)
+  @UseJinja("module.cc.tmpl")
   def GenerateModuleSource(self):
     return self.GetJinjaExports()
 
