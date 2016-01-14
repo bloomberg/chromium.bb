@@ -125,6 +125,10 @@ const float kRightEdgeOffset = 25;
   [nextButton_ setToolTip:l10n_util::GetNSString(
        IDS_FIND_IN_PAGE_NEXT_TOOLTIP)];
 
+  [closeButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_CLOSE)];
+  [previousButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_PREVIOUS)];
+  [nextButton_ setTitle:l10n_util::GetNSString(IDS_ACCNAME_NEXT)];
+
   [findBarView_ setFrame:[self hiddenFindBarFrame]];
   defaultWidth_ = NSWidth([findBarView_ frame]);
   [[self view] setHidden:YES];
