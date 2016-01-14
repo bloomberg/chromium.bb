@@ -131,6 +131,8 @@ The following changes have been made since qcms was imported:
    - http://code.google.com/p/chromium/issues/detail?id=565222
  - Set the media white point of the sRGB profile
    - http://code.google.com/p/chromium/issues/detail?id=565222
+ - Don't build QCMS on Android and iOS
+   - https://code.google.com/p/chromium/issues/detail?id=577155
 
 For the Chromium changes, since the import, in a patch format run:
   git diff b8456f38 src
