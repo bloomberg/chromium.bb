@@ -342,40 +342,6 @@ public class OmniboxTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         checkAutocompleteText(suggestionsMap, "mispellled", "mispellled", 10, 10);
     }
 
-    /**
-     * crbug.com/267901
-     * @MediumTest
-     * @Feature({"Omnibox"})
-     */
-    @FlakyTest
-    public void testPerformSearchQuery() throws InterruptedException {
-        UiUtils.settleDownUI(getInstrumentation());
-        final String testQuery = "Test Query";
-
-        ChromeTabUtils.waitForTabPageLoaded(getActivity().getActivityTab(), new Runnable() {
-            @Override
-            public void run() {
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        final LocationBarLayout locationBar =
-                                (LocationBarLayout) getActivity().findViewById(R.id.location_bar);
-                        locationBar.performSearchQueryForTest(testQuery);
-                    }
-                });
-            }
-        });
-
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                final UrlBar urlBar = (UrlBar) getActivity().findViewById(R.id.url_bar);
-                String currentUrl = urlBar.getText().toString();
-                assertEquals(testQuery, currentUrl);
-            }
-        });
-    }
-
     @MediumTest
     @Feature({"Omnibox"})
     public void testDuplicateAutocompleteTextResults()
