@@ -392,8 +392,8 @@ bool GLSurfaceEGL::InitializeOneOff() {
   g_use_direct_composition =
       HasEGLExtension("EGL_ANGLE_direct_composition") &&
       HasEGLExtension("EGL_ANGLE_flexible_surface_compatibility") &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDirectComposition);
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kUseDirectComposition);
 
   // TODO(oetuaho@nvidia.com): Surfaceless is disabled on Android as a temporary
   // workaround, since code written for Android WebView takes different paths
