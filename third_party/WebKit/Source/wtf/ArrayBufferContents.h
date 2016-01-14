@@ -72,6 +72,7 @@ public:
     void copyTo(ArrayBufferContents& other);
 
     static void allocateMemory(size_t, InitializationPolicy, void*&);
+    static void allocateMemoryOrNull(size_t, InitializationPolicy, void*&);
     static void freeMemory(void*, size_t);
     static void setAdjustAmoutOfExternalAllocatedMemoryFunction(AdjustAmountOfExternalAllocatedMemoryFunction function)
     {
@@ -80,6 +81,7 @@ public:
     }
 
 private:
+    static void allocateMemoryWithFlags(size_t, InitializationPolicy, int, void*&);
     class DataHolder : public ThreadSafeRefCounted<DataHolder> {
         WTF_MAKE_NONCOPYABLE(DataHolder);
     public:

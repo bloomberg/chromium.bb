@@ -97,13 +97,23 @@ void ArrayBufferContents::copyTo(ArrayBufferContents& other)
     m_holder->copyMemoryTo(*other.m_holder);
 }
 
-void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
+void ArrayBufferContents::allocateMemoryWithFlags(size_t size, InitializationPolicy policy, int flags, void*& data)
 {
     if (s_adjustAmountOfExternalAllocatedMemoryFunction)
         s_adjustAmountOfExternalAllocatedMemoryFunction(static_cast<int>(size));
-    data = partitionAllocGeneric(WTF::Partitions::bufferPartition(), size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
+    data = partitionAllocGenericFlags(WTF::Partitions::bufferPartition(), flags, size, WTF_HEAP_PROFILER_TYPE_NAME(ArrayBufferContents));
     if (policy == ZeroInitialize && data)
         memset(data, '\0', size);
+}
+
+void ArrayBufferContents::allocateMemory(size_t size, InitializationPolicy policy, void*& data)
+{
+    allocateMemoryWithFlags(size, policy, 0, data);
+}
+
+void ArrayBufferContents::allocateMemoryOrNull(size_t size, InitializationPolicy policy, void*& data)
+{
+    allocateMemoryWithFlags(size, policy, PartitionAllocReturnNull, data);
 }
 
 void ArrayBufferContents::freeMemory(void* data, size_t size)

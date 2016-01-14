@@ -329,17 +329,19 @@ static void initializeV8Common(v8::Isolate* isolate)
 namespace {
 
 class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
+    // Allocate() methods return null to signal allocation failure to V8, which should respond by throwing
+    // a RangeError, per http://www.ecma-international.org/ecma-262/6.0/#sec-createbytedatablock.
     void* Allocate(size_t size) override
     {
         void* data;
-        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::ZeroInitialize, data);
+        WTF::ArrayBufferContents::allocateMemoryOrNull(size, WTF::ArrayBufferContents::ZeroInitialize, data);
         return data;
     }
 
     void* AllocateUninitialized(size_t size) override
     {
         void* data;
-        WTF::ArrayBufferContents::allocateMemory(size, WTF::ArrayBufferContents::DontInitialize, data);
+        WTF::ArrayBufferContents::allocateMemoryOrNull(size, WTF::ArrayBufferContents::DontInitialize, data);
         return data;
     }
 
