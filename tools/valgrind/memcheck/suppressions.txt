@@ -3394,15 +3394,3 @@
    fun:_ZN2cc10GLRenderer18DrawRenderPassQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_18RenderPassDrawQuadEPKN3gfx5QuadFE
    fun:_ZN2cc10GLRenderer10DoDrawQuadEPNS_14DirectRenderer12DrawingFrameEPKNS_8DrawQuadEPKN3gfx5QuadFE
 }
-{
-   bug_577333a
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN47AccountInfoTest_UpdateWithSuccessfulUpdate_Test8TestBodyEv
-}
-{
-   bug_577333b
-   Memcheck:Uninitialized
-   ...
-   fun:_ZN50AccountTrackerServiceTest_SeedAccountInfoFull_Test8TestBodyEv
-}

@@ -21,7 +21,16 @@ bool UpdateField(bool* field, bool new_value) {
 }
 }
 
-AccountInfo::AccountInfo() {}
+AccountInfo::AccountInfo()
+    : account_id(),
+      gaia(),
+      email(),
+      full_name(),
+      given_name(),
+      hosted_domain(),
+      locale(),
+      picture_url(),
+      is_child_account(false) {}
 AccountInfo::~AccountInfo() {}
 
 bool AccountInfo::IsValid() const {

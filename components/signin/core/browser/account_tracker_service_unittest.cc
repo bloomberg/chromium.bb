@@ -665,13 +665,7 @@ TEST_F(AccountTrackerServiceTest, SeedAccountInfo) {
   EXPECT_EQ(email, infos[0].email);
 }
 
-// Fails under MSan. crbug.com/577333
-#if defined(MEMORY_SANITIZER)
-#define MAYBE_SeedAccountInfoFull DISABLED_SeedAccountInfoFull
-#else
-#define MAYBE_SeedAccountInfoFull SeedAccountInfoFull
-#endif
-TEST_F(AccountTrackerServiceTest, MAYBE_SeedAccountInfoFull) {
+TEST_F(AccountTrackerServiceTest, SeedAccountInfoFull) {
   AccountTrackerObserver observer;
   account_tracker()->AddObserver(&observer);
 
