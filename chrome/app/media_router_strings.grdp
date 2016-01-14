@@ -49,12 +49,28 @@
   </message>
 
   <!-- First Run Flow -->
-  <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE" desc="Title of the first run flow, which is shown to the user the first time they use Media Router, until they acknowledge the message. This is a welcome message that introduces Media Router to the user.">
-    Welcome to the Cast experience in Chromium!
-  </message>
-  <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT" desc="Text of the first run flow, which is shown to the user the first time they use Media Router. This is an introductory description of what Media Router does.">
-    You can use this feature to display content from Chromium on your TV or other devices.
-  </message>
+  <if expr="_google_chrome">
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_OPT_IN_TEXT" desc="Text of the cloud services opt in text in the first run flow, which is shown to the user if they are currently signed in and have enabled sync.">
+      Enable casting to cloud-based services like Google Hangouts.
+    </message>
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_LEARN_MORE" desc="Text of the learn more link, which, on click, opens a page with more details about cloud-based services.">
+      Learn More
+    </message>
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE" desc="Title of the first run flow, which is shown to the user the first time they use Media Router, until they acknowledge the message. This is a welcome message that introduces Media Router to the user.">
+      Welcome to the Cast experience in Chrome!
+    </message>
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT" desc="Text of the first run flow, which is shown to the user the first time they use Media Router. This is an introductory description of what Media Router does.">
+      You can use this feature to display content from Chrome on your TV or other devices.
+    </message>
+  </if>
+  <if expr="not _google_chrome">
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TITLE" desc="Title of the first run flow, which is shown to the user the first time they use Media Router, until they acknowledge the message. This is a welcome message that introduces Media Router to the user.">
+      Welcome to the Cast experience in Chromium!
+    </message>
+    <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_TEXT" desc="Text of the first run flow, which is shown to the user the first time they use Media Router. This is an introductory description of what Media Router does.">
+      You can use this feature to display content from Chromium on your TV or other devices.
+    </message>
+  </if>
   <message name="IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_BUTTON" desc="Acknowledge button for the first run flow, which, on click, will dismiss the first run flow and set the current profile's preference that the user has acknowledged the first run flow.">
     Ok, got it
   </message>
