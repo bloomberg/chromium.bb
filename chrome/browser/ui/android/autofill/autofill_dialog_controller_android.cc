@@ -276,7 +276,8 @@ void AutofillDialogControllerAndroid::Show() {
   bool has_credit_card_field = false;
   for (size_t i = 0; i < form_structure_.field_count(); ++i) {
     AutofillType type = form_structure_.field(i)->Type();
-    if (type.html_type() != HTML_TYPE_UNKNOWN && type.group() == CREDIT_CARD) {
+    if (type.html_type() != HTML_TYPE_UNSPECIFIED &&
+        type.group() == CREDIT_CARD) {
       has_credit_card_field = true;
       break;
     }

@@ -1014,6 +1014,41 @@ TEST_F(AutofillManagerTest, OnFormsSeen_DifferentFormStructures) {
   download_manager_->VerifyLastQueriedForms(forms);
 }
 
+// Test that no suggestions are returned for a field with an unrecognized
+// autocomplete attribute.
+TEST_F(AutofillManagerTest, GetProfileSuggestions_UnrecognizedAttribute) {
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set a valid autocomplete attribute for the first name.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+  // Set no autocomplete attribute for the middle name.
+  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute for the last name.
+  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "unrecognized";
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Suggestions should be returned for the first two fields
+  GetAutofillSuggestions(form, form.fields[0]);
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  GetAutofillSuggestions(form, form.fields[1]);
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+
+  // Suggestions should not be returned for the third field because of its
+  // unrecognized autocomplete attribute.
+  GetAutofillSuggestions(form, form.fields[2]);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
+}
+
 // Test that no suggestions are returned when there are less than three fields
 // and none of them have an autocomplete attribute.
 TEST_F(AutofillManagerTest, GetProfileSuggestions_SmallFormNoAutocomplete) {
@@ -1902,6 +1937,47 @@ TEST_F(AutofillManagerTest, FillAddressAndCreditCardForm) {
   }
 }
 
+// Test that a field with an unrecognized autocomplete attribute is not filled.
+TEST_F(AutofillManagerTest, FillAddressForm_UnrecognizedAttribute) {
+  FormData address_form;
+  address_form.name = ASCIIToUTF16("MyForm");
+  address_form.origin = GURL("https://myform.com/form.html");
+  address_form.action = GURL("https://myform.com/submit.html");
+  FormFieldData field;
+  // Set a valid autocomplete attribute for the first name.
+  test::CreateTestFormField("First name", "firstname", "", "text", &field);
+  field.autocomplete_attribute = "given-name";
+  address_form.fields.push_back(field);
+  // Set no autocomplete attribute for the middle name.
+  test::CreateTestFormField("Middle name", "middle", "", "text", &field);
+  field.autocomplete_attribute = "";
+  address_form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute for the last name.
+  test::CreateTestFormField("Last name", "lastname", "", "text", &field);
+  field.autocomplete_attribute = "unrecognized";
+  address_form.fields.push_back(field);
+  std::vector<FormData> address_forms(1, address_form);
+  FormsSeen(address_forms);
+
+  // Fill the address form.
+  const char guid[] = "00000000-0000-0000-0000-000000000001";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(
+      kDefaultPageID, address_form, address_form.fields[0],
+      MakeFrontendID(std::string(), guid), &response_page_id, &response_data);
+
+  // The fist and middle names should be filled.
+  ExpectFilledField("First name", "firstname", "Elvis", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Middle name", "middle", "Aaron", "text",
+                    response_data.fields[1]);
+
+  // The last name should not be filled.
+  ExpectFilledField("Last name", "lastname", "", "text",
+                    response_data.fields[2]);
+}
+
 // Test that non credit card related fields with the autocomplete attribute set
 // to off are not filled on desktop.
 TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOff) {
@@ -1957,6 +2033,48 @@ TEST_F(AutofillManagerTest, FillAddressForm_AutocompleteOff) {
     ExpectFilledField("Address Line 1", "addr1", "3734 Elvis Presley Blvd.",
                       "text", response_data.fields[3]);
   }
+}
+
+// Test that a field with an unrecognized autocomplete attribute is not filled.
+TEST_F(AutofillManagerTest, FillCreditCardForm_UnrecognizedAttribute) {
+  // Set up the form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  // Set a valid autocomplete attribute on the card name.
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  field.autocomplete_attribute = "cc-name";
+  form.fields.push_back(field);
+  // Set no autocomplete attribute on the card number.
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute on the expiration month.
+  test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+  field.autocomplete_attribute = "unrecognized";
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  const char guid[] = "00000000-0000-0000-0000-000000000004";
+  int response_page_id = 0;
+  FormData response_data;
+  FillAutofillFormDataAndSaveResults(kDefaultPageID, form, *form.fields.begin(),
+                                     MakeFrontendID(guid, std::string()),
+                                     &response_page_id, &response_data);
+
+  // The credit card name and number should be filled.
+  ExpectFilledField("Name on Card", "nameoncard", "Elvis Presley", "text",
+                    response_data.fields[0]);
+  ExpectFilledField("Card Number", "cardnumber", "4234567890123456", "text",
+                    response_data.fields[1]);
+
+  // The expiration month should not be filled.
+  ExpectFilledField("Expiration Date", "ccmonth", "", "text",
+                    response_data.fields[2]);
 }
 
 // Test that credit card fields are filled even if they have the autocomplete
@@ -3436,6 +3554,43 @@ TEST_F(AutofillManagerTest, OnDidFillAutofillFormDataAndUnfocus_Upload) {
   autofill_manager_->OnFocusNoLongerOnForm();
   // Wait for upload to complete.
   autofill_manager_->WaitForAsyncUploadProcess();
+}
+
+// Test that no suggestions are returned for a field with an unrecognized
+// autocomplete attribute.
+TEST_F(AutofillManagerTest, GetCreditCardSuggestions_UnrecognizedAttribute) {
+  // Set up the form data.
+  FormData form;
+  form.name = ASCIIToUTF16("MyForm");
+  form.origin = GURL("https://myform.com/form.html");
+  form.action = GURL("https://myform.com/submit.html");
+
+  FormFieldData field;
+  // Set a valid autocomplete attribute on the card name.
+  test::CreateTestFormField("Name on Card", "nameoncard", "", "text", &field);
+  field.autocomplete_attribute = "cc-name";
+  form.fields.push_back(field);
+  // Set no autocomplete attribute on the card number.
+  test::CreateTestFormField("Card Number", "cardnumber", "", "text", &field);
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+  // Set an unrecognized autocomplete attribute on the expiration month.
+  test::CreateTestFormField("Expiration Date", "ccmonth", "", "text", &field);
+  field.autocomplete_attribute = "unrecognized";
+  form.fields.push_back(field);
+  std::vector<FormData> forms(1, form);
+  FormsSeen(forms);
+
+  // Suggestions should be returned for the first two fields
+  GetAutofillSuggestions(form, form.fields[0]);
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+  GetAutofillSuggestions(form, form.fields[1]);
+  EXPECT_TRUE(external_delegate_->on_suggestions_returned_seen());
+
+  // Suggestions should not be returned for the third field because of its
+  // unrecognized autocomplete attribute.
+  GetAutofillSuggestions(form, form.fields[2]);
+  EXPECT_FALSE(external_delegate_->on_suggestions_returned_seen());
 }
 
 // Test to verify suggestions appears for forms having credit card number split

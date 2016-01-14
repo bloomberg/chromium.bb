@@ -159,7 +159,7 @@ enum ServerFieldType {
 // See [ http://is.gd/whatwg_autocomplete ] for the full list of specced hints.
 enum HtmlFieldType {
   // Default type.
-  HTML_TYPE_UNKNOWN,
+  HTML_TYPE_UNSPECIFIED,
 
   // Name types.
   HTML_TYPE_NAME,
@@ -181,7 +181,7 @@ enum HtmlFieldType {
   HTML_TYPE_COUNTRY_CODE,    // The ISO 3166-1-alpha-2 country code.
   HTML_TYPE_COUNTRY_NAME,    // The localized country name.
   HTML_TYPE_POSTAL_CODE,
-  HTML_TYPE_FULL_ADDRESS,    // The complete address, formatted for display.
+  HTML_TYPE_FULL_ADDRESS,  // The complete address, formatted for display.
 
   // Credit card types.
   HTML_TYPE_CREDIT_CARD_NAME,
@@ -217,6 +217,9 @@ enum HtmlFieldType {
   HTML_TYPE_CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR,
   HTML_TYPE_CREDIT_CARD_EXP_2_DIGIT_YEAR,
   HTML_TYPE_CREDIT_CARD_EXP_4_DIGIT_YEAR,
+
+  // Non standard autcomplete types.
+  HTML_TYPE_UNRECOGNIZED,
 };
 
 // The list of all HTML autocomplete field mode hints supported by Chrome.

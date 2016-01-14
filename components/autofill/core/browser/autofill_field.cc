@@ -423,12 +423,11 @@ base::string16 RemoveWhitespace(const base::string16& value) {
 AutofillField::AutofillField()
     : server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),
-      html_type_(HTML_TYPE_UNKNOWN),
+      html_type_(HTML_TYPE_UNSPECIFIED),
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
       credit_card_number_offset_(0),
-      previously_autofilled_(false) {
-}
+      previously_autofilled_(false) {}
 
 AutofillField::AutofillField(const FormFieldData& field,
                              const base::string16& unique_name)
@@ -436,12 +435,11 @@ AutofillField::AutofillField(const FormFieldData& field,
       unique_name_(unique_name),
       server_type_(NO_SERVER_DATA),
       heuristic_type_(UNKNOWN_TYPE),
-      html_type_(HTML_TYPE_UNKNOWN),
+      html_type_(HTML_TYPE_UNSPECIFIED),
       html_mode_(HTML_MODE_NONE),
       phone_part_(IGNORED),
       credit_card_number_offset_(0),
-      previously_autofilled_(false) {
-}
+      previously_autofilled_(false) {}
 
 AutofillField::~AutofillField() {}
 
@@ -478,7 +476,7 @@ void AutofillField::SetHtmlType(HtmlFieldType type, HtmlFieldMode mode) {
 }
 
 AutofillType AutofillField::Type() const {
-  if (html_type_ != HTML_TYPE_UNKNOWN)
+  if (html_type_ != HTML_TYPE_UNSPECIFIED)
     return AutofillType(html_type_, html_mode_);
 
   if (server_type_ != NO_SERVER_DATA) {

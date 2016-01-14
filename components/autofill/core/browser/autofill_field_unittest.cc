@@ -274,7 +274,7 @@ TEST(AutofillFieldTest, FillPhoneNumber) {
   EXPECT_EQ(ASCIIToUTF16("555"), field.value);
 
   // Now reset the type, and set a max-length instead.
-  field.SetHtmlType(HTML_TYPE_UNKNOWN, HtmlFieldMode());
+  field.SetHtmlType(HTML_TYPE_UNSPECIFIED, HtmlFieldMode());
   field.set_heuristic_type(PHONE_HOME_NUMBER);
   field.max_length = 4;
 

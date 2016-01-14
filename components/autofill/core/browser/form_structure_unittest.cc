@@ -485,13 +485,13 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttributePhoneTypes) {
             form_structure->field(2)->phone_part());
 }
 
-// If at least one field includes type hints in the 'autocomplete' attribute, we
-// should not try to apply any other heuristics.
-TEST_F(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
+// The heuristics and server predictions should run if there are more than two
+// fillable fields.
+TEST_F(FormStructureTest,
+       HeuristicsAndServerPredictions_BigForm_NoAutocompleteAttribute) {
   scoped_ptr<FormStructure> form_structure;
   FormData form;
 
-  // Start with a regular contact form.
   FormFieldData field;
   field.form_control_type = "text";
 
@@ -518,20 +518,155 @@ TEST_F(FormStructureTest, AutocompleteAttributeOverridesOtherHeuristics) {
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+}
 
-  // Now update the first form field to include an 'autocomplete' attribute.
-  form.fields.front().autocomplete_attribute = "x-other";
+// The heuristics and server predictions should run even if a valid autocomplete
+// attribute is present in the form (if it has more that two fillable fields).
+TEST_F(FormStructureTest,
+       HeuristicsAndServerPredictions_ValidAutocompleteAttribute) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  // Set a valid autocomplete attribute to the first field.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable());
+  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+
+  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(2)->heuristic_type());
+}
+
+// The heuristics and server predictions should run even if an unrecognized
+// autocomplete attribute is present in the form (if it has more than two
+// fillable fields).
+TEST_F(FormStructureTest,
+       HeuristicsAndServerPredictions_UnrecognizedAutocompleteAttribute) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  // Set an unrecognized autocomplete attribute to the first field.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.autocomplete_attribute = "unrecognized";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Middle Name");
+  field.name = ASCIIToUTF16("middlename");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_TRUE(form_structure->IsAutofillable());
+  EXPECT_TRUE(form_structure->ShouldBeCrowdsourced());
+
+  ASSERT_EQ(4U, form_structure->field_count());
+  ASSERT_EQ(3U, form_structure->autofill_count());
+
+  EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(NAME_MIDDLE, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(NAME_LAST, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(3)->heuristic_type());
+}
+
+// Tests the heuristics and server predictions are not run for forms with less
+// than 3 fields.
+TEST_F(FormStructureTest,
+       HeuristicsAndServerPredictions_SmallForm_NoAutocompleteAttribute) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+
   form_structure.reset(new FormStructure(form));
   form_structure->DetermineHeuristicTypes();
   EXPECT_FALSE(form_structure->IsAutofillable());
   EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
 
-  ASSERT_EQ(3U, form_structure->field_count());
+  ASSERT_EQ(2U, form_structure->field_count());
   ASSERT_EQ(0U, form_structure->autofill_count());
 
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
-  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->server_type());
+}
+
+// Tests the heuristics and server predictions are not run for forms with less
+// than 3 fields, even if an autocomplete attribute is specified.
+TEST_F(FormStructureTest,
+       HeuristicsAndServerPredictions_SmallForm_ValidAutocompleteAttribute) {
+  scoped_ptr<FormStructure> form_structure;
+  FormData form;
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  // Set a valid autocompelete attribute to the first field.
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  field.autocomplete_attribute = "given-name";
+  form.fields.push_back(field);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  field.autocomplete_attribute = "";
+  form.fields.push_back(field);
+
+  form_structure.reset(new FormStructure(form));
+  form_structure->DetermineHeuristicTypes();
+  EXPECT_FALSE(form_structure->IsAutofillable());
+  EXPECT_FALSE(form_structure->ShouldBeCrowdsourced());
+
+  ASSERT_EQ(2U, form_structure->field_count());
+  ASSERT_EQ(1U, form_structure->autofill_count());
+
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(0)->heuristic_type());
+  EXPECT_EQ(UNKNOWN_TYPE, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(0)->server_type());
+  EXPECT_EQ(NO_SERVER_DATA, form_structure->field(1)->server_type());
 }
 
 // Even with an 'autocomplete' attribute set, ShouldBeCrowdsourced() should

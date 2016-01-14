@@ -57,7 +57,7 @@ TEST(AutofillTypeTest, ServerFieldTypes) {
 
 TEST(AutofillTypeTest, HtmlFieldTypes) {
   // Unknown type.
-  AutofillType unknown(HTML_TYPE_UNKNOWN, HTML_MODE_NONE);
+  AutofillType unknown(HTML_TYPE_UNSPECIFIED, HTML_MODE_NONE);
   EXPECT_EQ(UNKNOWN_TYPE, unknown.GetStorableType());
   EXPECT_EQ(NO_GROUP, unknown.group());
 

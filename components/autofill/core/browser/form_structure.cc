@@ -239,6 +239,9 @@ bool ContactTypeHintMatchesFieldType(const std::string& token,
 HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
     const std::string& autocomplete_attribute_value,
     const AutofillField& field) {
+  if (autocomplete_attribute_value == "")
+    return HTML_TYPE_UNSPECIFIED;
+
   if (autocomplete_attribute_value == "name")
     return HTML_TYPE_NAME;
 
@@ -366,7 +369,7 @@ HtmlFieldType FieldTypeFromAutocompleteAttributeValue(
   if (autocomplete_attribute_value == "email")
     return HTML_TYPE_EMAIL;
 
-  return HTML_TYPE_UNKNOWN;
+  return HTML_TYPE_UNRECOGNIZED;
 }
 
 std::string StripDigitsIfRequired(const base::string16& input) {
@@ -426,7 +429,7 @@ void FormStructure::DetermineHeuristicTypes() {
   if (!was_parsed_for_autocomplete_attributes_)
     ParseFieldTypesFromAutocompleteAttributes();
 
-  if (!has_author_specified_types_) {
+  if (active_field_count() >= kRequiredFieldsForPredictionRoutines) {
     ServerFieldTypeMap field_type_map;
     FormField::ParseFormFields(fields_.get(), is_form_tag_, &field_type_map);
     for (size_t i = 0; i < field_count(); ++i) {
@@ -782,8 +785,9 @@ bool FormStructure::ShouldBeParsed() const {
 }
 
 bool FormStructure::ShouldBeCrowdsourced() const {
-  return (has_password_field_ || !has_author_specified_types_) &&
-      ShouldBeParsed();
+  return (has_password_field_ ||
+          active_field_count() >= kRequiredFieldsForPredictionRoutines) &&
+         ShouldBeParsed();
 }
 
 void FormStructure::UpdateFromCache(const FormStructure& cached_form) {
@@ -1166,7 +1170,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     tokens.pop_back();
     HtmlFieldType field_type =
         FieldTypeFromAutocompleteAttributeValue(field_type_token, *field);
-    if (field_type == HTML_TYPE_UNKNOWN)
+    if (field_type == HTML_TYPE_UNSPECIFIED)
       continue;
 
     // The preceding token, if any, may be a type hint.
