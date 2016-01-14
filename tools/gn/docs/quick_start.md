@@ -266,10 +266,10 @@ static_library("hello") {
 ```
 
 This applies the `hello_config` to the `hello` target itself, plus all
-targets that depend on transitively depend on the current one. Now
-everybody that depends on us will get our settings. You can also set
-`public_configs` which applies only to targets that directly
-depend on your target (not transitively).
+targets that transitively depend on the current one. Now everybody that
+depends on us will get our settings. You can also set `public_configs`
+which applies only to targets that directly depend on your target (not
+transitively).
 
 Now if you compile and run, you'll see the new version with two people:
 
@@ -323,7 +323,7 @@ came from on the `say_hello` target:
 ```
 
 You can see that `TWO_PEOPLE` was defined by a config, and you can also
-see the which like caused that config to be applied to your target (in
+see the which line caused that config to be applied to your target (in
 this case, the `all_dependent_configs` line).
 
 Another particularly interesting variation:
