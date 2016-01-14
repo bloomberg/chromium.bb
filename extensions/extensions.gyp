@@ -37,6 +37,13 @@
       'sources': [
         '<@(extensions_common_mojo_sources)',
       ],
+      'conditions': [
+        ['enable_wifi_display==1', {
+          'sources': [
+            '<@(extensions_common_mojo_sources_wifi_display)',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //extensions/common
@@ -177,6 +184,13 @@
             '<@(extensions_browser_sources_linux_nonchromeos)',
           ],
         }],
+        ['enable_wifi_display == 1', {
+          'sources': [
+            '<@(extensions_browser_sources_wifi_display)',
+            '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/wifi_display_session_service.mojom.cc',
+            '<(SHARED_INTERMEDIATE_DIR)/extensions/common/mojo/wifi_display_session_service.mojom.h',
+          ],
+        }],
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
@@ -201,6 +215,13 @@
       ],
       # Disable c4267 warnings until we fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
+      'conditions': [
+        ['enable_wifi_display==1', {
+          'sources': [
+            '<@(extensions_render_sources_wifi_display)',
+          ],
+        }],
+      ],
     },
     {
       # GN version: //extensions/utility

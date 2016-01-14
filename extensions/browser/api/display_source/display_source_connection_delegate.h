@@ -18,14 +18,15 @@ using DisplaySourceAuthInfo = api::display_source::AuthenticationInfo;
 
 // The DisplaySourceConnectionDelegate interface should be implemented
 // to provide sinks search and connection functionality for
-// 'chrome.displaySource'
-// API.
+// 'chrome.displaySource' API.
 class DisplaySourceConnectionDelegate : public KeyedService {
  public:
   using AuthInfoCallback = base::Callback<void(const DisplaySourceAuthInfo&)>;
   using FailureCallback = base::Callback<void(const std::string&)>;
   using SinkInfoListCallback =
       base::Callback<void(const DisplaySourceSinkInfoList&)>;
+
+  const static int kInvalidSinkId = -1;
 
   struct Connection {
     Connection();
@@ -37,10 +38,11 @@ class DisplaySourceConnectionDelegate : public KeyedService {
 
   class Observer {
    public:
-    // This method is called each tiome the list of available
+    // This method is called each time the list of available
     // sinks is updated whether after 'GetAvailableSinks' call
-    // or while the implementation is constantly watching the sinks
-    // (after 'StartWatchingSinks' was called).
+    // or while the implementation is constantly watching the
+    // available sinks (after 'StartWatchingAvailableSinks' was called).
+    // Also this method is called to reflect current connection updates.
     virtual void OnSinksUpdated(const DisplaySourceSinkInfoList& sinks) = 0;
 
    protected:
@@ -61,7 +63,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   virtual DisplaySourceSinkInfoList last_found_sinks() const = 0;
 
   // Returns the Connection object representing the current
-  // connection to the sink or NULL if there is no curent connection.
+  // connection to the sink or NULL if there is no current connection.
   virtual const Connection* connection() const = 0;
 
   // Queries the list of currently available sinks.
@@ -80,19 +82,18 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   // Connects to a sink by given id and auth info.
   virtual void Connect(int sink_id,
                        const DisplaySourceAuthInfo& auth_info,
-                       const base::Closure& connected_callback,
                        const FailureCallback& failure_callback) = 0;
 
   // Disconnects the current connection to sink, the 'failure_callback'
-  // is called if there is no current connection.
-  virtual void Disconnect(const base::Closure& disconnected_callback,
-                          const FailureCallback& failure_callback) = 0;
+  // is called if an error has occurred or if there is no established
+  // connection.
+  virtual void Disconnect(const FailureCallback& failure_callback) = 0;
 
-  // Implementation should start watching the sinks updates.
-  virtual void StartWatchingSinks() = 0;
+  // Implementation should start watching the available sinks updates.
+  virtual void StartWatchingAvailableSinks() = 0;
 
-  // Implementation should stop watching the sinks updates.
-  virtual void StopWatchingSinks() = 0;
+  // Implementation should stop watching the available sinks updates.
+  virtual void StopWatchingAvailableSinks() = 0;
 
  protected:
   base::ObserverList<Observer> observers_;

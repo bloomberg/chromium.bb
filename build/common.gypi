@@ -88,6 +88,9 @@
           # Enable Wayland display server support.
           'enable_wayland_server%' : 0,
 
+          # Enable Wi-Fi Display support.
+          'enable_wifi_display%' : 0,
+
           # By default we build against a stable sysroot image to avoid
           # depending on the packages installed on the local machine. Set this
           # to 0 to build against locally installed headers and libraries (e.g.
@@ -166,6 +169,7 @@
         'enable_hidpi%': '<(enable_hidpi)',
         'enable_topchrome_md%': '<(enable_topchrome_md)',
         'enable_wayland_server%': '<(enable_wayland_server)',
+        'enable_wifi_display%': '<(enable_wifi_display)',
         'buildtype%': '<(buildtype)',
         'branding%': '<(branding)',
         'branding_path_component%': '<(branding)',
@@ -351,6 +355,7 @@
       'enable_hidpi%': '<(enable_hidpi)',
       'enable_topchrome_md%': '<(enable_topchrome_md)',
       'enable_wayland_server%': '<(enable_wayland_server)',
+      'enable_wifi_display%': '<(enable_wifi_display)',
       'android_channel%': '<(android_channel)',
       'use_goma%': '<(use_goma)',
       'gomadir%': '<(gomadir)',
@@ -1153,6 +1158,7 @@
     'enable_hidpi%': '<(enable_hidpi)',
     'enable_topchrome_md%': '<(enable_topchrome_md)',
     'enable_wayland_server%': '<(enable_wayland_server)',
+    'enable_wifi_display%': '<(enable_wifi_display)',
     'image_loader_extension%': '<(image_loader_extension)',
     'fastbuild%': '<(fastbuild)',
     'dont_embed_build_metadata%': '<(dont_embed_build_metadata)',
@@ -2775,6 +2781,9 @@
       }],
       ['enable_wayland_server==1', {
         'defines': ['ENABLE_WAYLAND_SERVER=1'],
+      }],
+      ['enable_wifi_display==1', {
+        'defines': ['ENABLE_WIFI_DISPLAY=1'],
       }],
       ['use_udev==1', {
         'defines': ['USE_UDEV'],

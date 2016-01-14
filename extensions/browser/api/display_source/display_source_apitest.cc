@@ -51,17 +51,15 @@ class MockDisplaySourceConnectionDelegate
 
   void Connect(int sink_id,
                const DisplaySourceAuthInfo& auth_info,
-               const base::Closure& connected_callback,
                const FailureCallback& failure_callback) override {}
 
-  void Disconnect(const base::Closure& disconnected_callback,
-                  const FailureCallback& failure_callback) override {}
+  void Disconnect(const FailureCallback& failure_callback) override {}
 
-  void StartWatchingSinks() override {
+  void StartWatchingAvailableSinks() override {
     AddSink(CreateSinkInfoPtr(2, "sink 2", SINK_STATE_DISCONNECTED));
   }
 
-  void StopWatchingSinks() override {}
+  void StopWatchingAvailableSinks() override {}
 
  private:
   void AddSink(DisplaySourceSinkInfoPtr sink) {

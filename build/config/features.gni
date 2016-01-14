@@ -115,6 +115,9 @@ declare_args() {
   fieldtrial_testing_like_official_build = is_chrome_branded
 
   use_cups = (is_desktop_linux || is_mac) && !is_chromecast && !is_headless
+
+  # Enables Wi-Fi Display functionality
+  enable_wifi_display = false
 }
 
 # Default these based on the explicit value of enable_nacl, not just

@@ -21,6 +21,10 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/switches.h"
 
+#if defined(ENABLE_WIFI_DISPLAY)
+#include "extensions/browser/api/display_source/wifi_display/wifi_display_session_service_impl.h"
+#endif
+
 namespace extensions {
 namespace {
 
@@ -54,6 +58,15 @@ void RegisterServicesForFrame(content::RenderFrameHost* render_frame_host,
   service_registry->AddService(base::Bind(
       KeepAliveImpl::Create,
       render_frame_host->GetProcess()->GetBrowserContext(), extension));
+
+#if defined(ENABLE_WIFI_DISPLAY)
+  if (ExtensionHasPermission(extension, render_frame_host->GetProcess(),
+                             "displaySource")) {
+    service_registry->AddService(
+        base::Bind(WiFiDisplaySessionServiceImpl::BindToRequest,
+                   render_frame_host->GetProcess()->GetBrowserContext()));
+  }
+#endif
 }
 
 }  // namespace extensions

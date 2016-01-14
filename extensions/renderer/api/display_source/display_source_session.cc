@@ -4,14 +4,23 @@
 
 #include "extensions/renderer/api/display_source/display_source_session.h"
 
+#if defined(ENABLE_WIFI_DISPLAY)
+#include "extensions/renderer/api/display_source/wifi_display/wifi_display_session.h"
+#endif
+
 namespace extensions {
 
-DisplaySourceSession::DisplaySourceSession()
-  : state_(Idle) {
+DisplaySourceSessionParams::DisplaySourceSessionParams()
+    : auth_method(api::display_source::AUTHENTICATION_METHOD_NONE) {
 }
 
-DisplaySourceSession::~DisplaySourceSession() {
+DisplaySourceSessionParams::~DisplaySourceSessionParams() = default;
+
+DisplaySourceSession::DisplaySourceSession()
+    : state_(Idle) {
 }
+
+DisplaySourceSession::~DisplaySourceSession() = default;
 
 void DisplaySourceSession::SetCallbacks(
     const SinkIdCallback& started_callback,
@@ -27,10 +36,10 @@ void DisplaySourceSession::SetCallbacks(
 }
 
 scoped_ptr<DisplaySourceSession> DisplaySourceSessionFactory::CreateSession(
-    int sink_id,
-    const blink::WebMediaStreamTrack& video_track,
-    const blink::WebMediaStreamTrack& audio_track,
-    scoped_ptr<DisplaySourceAuthInfo> auth_info) {
+    const DisplaySourceSessionParams& params) {
+#if defined(ENABLE_WIFI_DISPLAY)
+  return scoped_ptr<DisplaySourceSession>(new WiFiDisplaySession(params));
+#endif
   return nullptr;
 }
 

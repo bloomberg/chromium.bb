@@ -12,6 +12,9 @@
       'common/mojo/keep_alive.mojom',
       'common/mojo/stash.mojom',
     ],
+    'extensions_common_mojo_sources_wifi_display': [
+      'common/mojo/wifi_display_session_service.mojom',
+    ],
     'extensions_common_sources': [
       'common/api/bluetooth/bluetooth_manifest_data.cc',
       'common/api/bluetooth/bluetooth_manifest_data.h',
@@ -849,6 +852,10 @@
       'browser/api/networking_private/networking_private_linux.cc',
       'browser/api/networking_private/networking_private_linux.h',
     ],
+    'extensions_browser_sources_wifi_display': [
+      'browser/api/display_source/wifi_display/wifi_display_session_service_impl.cc',
+      'browser/api/display_source/wifi_display/wifi_display_session_service_impl.h',
+    ],
     'extensions_renderer_sources': [
       'renderer/activity_log_converter_strategy.cc',
       'renderer/activity_log_converter_strategy.h',
@@ -1023,6 +1030,10 @@
       'renderer/web_ui_injection_host.h',
       'renderer/worker_script_context_set.cc',
       'renderer/worker_script_context_set.h',
+    ],
+    'extensions_render_sources_wifi_display': [
+      'renderer/api/display_source/wifi_display/wifi_display_session.cc',
+      'renderer/api/display_source/wifi_display/wifi_display_session.h',
     ],
     'extensions_utility_sources': [
       'utility/unpacker.cc',

@@ -1,0 +1,35 @@
+// Copyright 2015 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module extensions;
+
+// WiFiDisplaySessionService class provides access to the network for
+// the render-hosted Wi-Fi Display session.
+interface WiFiDisplaySessionService {
+  SetClient(WiFiDisplaySessionServiceClient client);
+
+  // Requires connection to a sink using the given authentication information.
+  Connect(int32 sink_id, int32 auth_method, string auth_data);
+
+  // Drops the established connection to the connected sink.
+  Disconnect();
+
+  // Sends a controlling mesage to the connected sink.
+  SendMessage(string message);
+};
+
+interface WiFiDisplaySessionServiceClient {
+  // Notification of a successfull connection to a sink.
+  OnConnected(int32 sink_id, string ip_address);
+
+  // Notification of a connection termination.
+  OnDisconnected(int32 sink_id);
+
+  // Notification of an error occurred during the session.
+  OnError(int32 sink_id, int32 type, string description);
+
+  // Invoked to transmit a controlling message from
+  // the connected sink.
+  OnMessage(string data);
+};

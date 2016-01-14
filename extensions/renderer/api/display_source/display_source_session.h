@@ -10,9 +10,14 @@
 #include "extensions/common/api/display_source.h"
 #include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 
+namespace content {
+class RenderFrame;
+}
+
 namespace extensions {
 
 using DisplaySourceAuthInfo = api::display_source::AuthenticationInfo;
+using DisplaySourceAuthMethod = api::display_source::AuthenticationMethod;
 using DisplaySourceErrorType = api::display_source::ErrorType;
 
 // This class represents a generic display source session interface.
@@ -78,13 +83,22 @@ class DisplaySourceSession {
   DISALLOW_COPY_AND_ASSIGN(DisplaySourceSession);
 };
 
+struct DisplaySourceSessionParams {
+  DisplaySourceSessionParams();
+  ~DisplaySourceSessionParams();
+
+  int sink_id;
+  blink::WebMediaStreamTrack video_track;
+  blink::WebMediaStreamTrack audio_track;
+  DisplaySourceAuthMethod auth_method;
+  std::string auth_data;
+  content::RenderFrame* render_frame;
+};
+
 class DisplaySourceSessionFactory {
  public:
   static scoped_ptr<DisplaySourceSession> CreateSession(
-      int sink_id,
-      const blink::WebMediaStreamTrack& video_track,
-      const blink::WebMediaStreamTrack& audio_track,
-      scoped_ptr<DisplaySourceAuthInfo> auth_info);
+      const DisplaySourceSessionParams& params);
  private:
   DISALLOW_COPY_AND_ASSIGN(DisplaySourceSessionFactory);
 };

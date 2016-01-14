@@ -135,9 +135,17 @@ void DisplaySourceCustomBindings::StartSession(
     auth_info = DisplaySourceAuthInfo::FromValue(*auth_info_val);
   }
 
+  DisplaySourceSessionParams session_params;
+  session_params.sink_id = sink_id;
+  session_params.video_track = video_track;
+  session_params.audio_track = audio_track;
+  session_params.render_frame = context()->GetRenderFrame();
+  if (auth_info) {
+    session_params.auth_method = auth_info->method;
+    session_params.auth_data = auth_info->data ? *auth_info->data : "";
+  }
   scoped_ptr<DisplaySourceSession> session =
-      DisplaySourceSessionFactory::CreateSession(
-          sink_id, video_track, audio_track, std::move(auth_info));
+      DisplaySourceSessionFactory::CreateSession(session_params);
   if (!session) {
     isolate->ThrowException(v8::Exception::Error(v8::String::NewFromUtf8(
         isolate, kErrorNotSupported)));
@@ -156,8 +164,8 @@ void DisplaySourceCustomBindings::StartSession(
   session->SetCallbacks(on_started_callback,
                         on_terminated_callback,
                         on_error_callback);
-  session_map_.insert(std::make_pair(sink_id, std::move(session)));
   session->Start();
+  session_map_.insert(std::make_pair(sink_id, std::move(session)));
 }
 
 void DisplaySourceCustomBindings::TerminateSession(
@@ -249,8 +257,10 @@ void DisplaySourceCustomBindings::OnSessionError(int sink_id,
                                                  const std::string& message) {
   DisplaySourceSession* session = GetDisplaySession(sink_id);
   CHECK(session);
-  if (session->state() == DisplaySourceSession::Establishing) {
-    // Error has occured before the session has actually started.
+  if (session->state() != DisplaySourceSession::Established &&
+      session->state() != DisplaySourceSession::Terminating) {
+    // Error has occured before the session has actually started,
+    // no need to wait for session termination notification.
     session_map_.erase(sink_id);
   }
 

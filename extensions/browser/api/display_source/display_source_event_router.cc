@@ -65,7 +65,7 @@ void DisplaySourceEventRouter::StartOrStopListeningForSinksChanges() {
             browser_context_);
     if (delegate) {
       delegate->AddObserver(this);
-      delegate->StartWatchingSinks();
+      delegate->StartWatchingAvailableSinks();
     }
   }
   if (!should_listen && listening_) {
@@ -74,7 +74,7 @@ void DisplaySourceEventRouter::StartOrStopListeningForSinksChanges() {
             browser_context_);
     if (delegate) {
       delegate->RemoveObserver(this);
-      delegate->StopWatchingSinks();
+      delegate->StopWatchingAvailableSinks();
     }
   }
 
