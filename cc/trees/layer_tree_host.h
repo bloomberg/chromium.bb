@@ -72,6 +72,10 @@ struct PendingPageScaleAnimation;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
+namespace proto {
+class LayerTreeHost;
+}
+
 class CC_EXPORT LayerTreeHost : public MutatorHostClient {
  public:
   // TODO(sad): InitParams should be a movable type so that it can be
@@ -366,6 +370,16 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   bool HasAnyAnimation(const Layer* layer) const;
   bool HasActiveAnimation(const Layer* layer) const;
 
+  // Serializes the parts of this LayerTreeHost that is needed for a commit to a
+  // protobuf message. Not all members are serialized as they are not helpful
+  // for remote usage.
+  void ToProtobufForCommit(proto::LayerTreeHost* proto) const;
+
+  // Deserializes the protobuf into this LayerTreeHost before a commit. The
+  // expected input is a serialized remote LayerTreeHost. After deserializing
+  // the protobuf, the normal commit-flow should continue.
+  void FromProtobufForCommit(const proto::LayerTreeHost& proto);
+
  protected:
   LayerTreeHost(InitParams* params, CompositorMode mode);
   void InitializeThreaded(
@@ -404,6 +418,8 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void RecordGpuRasterizationHistogram();
 
  private:
+  friend class LayerTreeHostSerializationTest;
+
   void InitializeProxy(
       scoped_ptr<Proxy> proxy,
       scoped_ptr<BeginFrameSource> external_begin_frame_source);

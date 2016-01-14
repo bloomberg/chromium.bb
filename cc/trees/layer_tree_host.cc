@@ -36,8 +36,11 @@
 #include "cc/layers/heads_up_display_layer_impl.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_iterator.h"
+#include "cc/layers/layer_proto_converter.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/layers/painted_scrollbar_layer.h"
+#include "cc/proto/gfx_conversions.h"
+#include "cc/proto/layer_tree_host.pb.h"
 #include "cc/resources/ui_resource_request.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/draw_property_utils.h"
@@ -56,6 +59,27 @@ static base::StaticAtomicSequenceNumber s_layer_tree_host_sequence_number;
 }
 
 namespace cc {
+namespace {
+
+Layer* UpdateAndGetLayer(Layer* current_layer,
+                         int layer_id,
+                         const base::hash_map<int, Layer*>& layer_id_map) {
+  if (layer_id == Layer::INVALID_ID) {
+    if (current_layer)
+      current_layer->SetLayerTreeHost(nullptr);
+
+    return nullptr;
+  }
+
+  auto layer_it = layer_id_map.find(layer_id);
+  DCHECK(layer_it != layer_id_map.end());
+  if (current_layer && current_layer != layer_it->second)
+    current_layer->SetLayerTreeHost(nullptr);
+
+  return layer_it->second;
+}
+
+}  // namespace
 
 LayerTreeHost::InitParams::InitParams() {
 }
@@ -1274,6 +1298,145 @@ bool LayerTreeHost::IsThreaded() const {
   DCHECK(compositor_mode_ != CompositorMode::Threaded ||
          task_runner_provider_->HasImplThread());
   return compositor_mode_ == CompositorMode::Threaded;
+}
+
+void LayerTreeHost::ToProtobufForCommit(proto::LayerTreeHost* proto) const {
+  // Not all fields are serialized, as they are eiher not needed for a commit,
+  // or implementation isn't ready yet.
+  // Unsupported items:
+  // - animations
+  // - UI resources
+  // - instrumentation of stats
+  // - histograms
+  // Skipped items:
+  // - SwapPromise as they are mostly used for perf measurements.
+  // - The bitmap and GPU memory related items.
+  // Other notes:
+  // - The output surfaces are only valid on the client-side so they are
+  //   therefore not serialized.
+  // - LayerTreeSettings are needed only during construction of the
+  //   LayerTreeHost, so they are serialized outside of the LayerTreeHost
+  //   serialization.
+  // - The |visible_| flag will be controlled from the client separately and
+  //   will need special handling outside of the serialization of the
+  //   LayerTreeHost.
+  // TODO(nyquist): Figure out how to support animations. See crbug.com/570376.
+  proto->set_needs_full_tree_sync(needs_full_tree_sync_);
+  proto->set_needs_meta_info_recomputation(needs_meta_info_recomputation_);
+  proto->set_source_frame_number(source_frame_number_);
+  proto->set_meta_information_sequence_number(
+      meta_information_sequence_number_);
+  LayerProtoConverter::SerializeLayerHierarchy(root_layer_,
+                                               proto->mutable_root_layer());
+  LayerProtoConverter::SerializeLayerProperties(root_layer_.get(),
+                                                proto->mutable_layer_updates());
+  proto->set_hud_layer_id(hud_layer_ ? hud_layer_->id() : Layer::INVALID_ID);
+  debug_state_.ToProtobuf(proto->mutable_debug_state());
+  SizeToProto(device_viewport_size_, proto->mutable_device_viewport_size());
+  proto->set_top_controls_shrink_blink_size(top_controls_shrink_blink_size_);
+  proto->set_top_controls_height(top_controls_height_);
+  proto->set_top_controls_shown_ratio(top_controls_shown_ratio_);
+  proto->set_device_scale_factor(device_scale_factor_);
+  proto->set_painted_device_scale_factor(painted_device_scale_factor_);
+  proto->set_page_scale_factor(page_scale_factor_);
+  proto->set_min_page_scale_factor(min_page_scale_factor_);
+  proto->set_max_page_scale_factor(max_page_scale_factor_);
+  Vector2dFToProto(elastic_overscroll_, proto->mutable_elastic_overscroll());
+  proto->set_has_gpu_rasterization_trigger(has_gpu_rasterization_trigger_);
+  proto->set_content_is_suitable_for_gpu_rasterization(
+      content_is_suitable_for_gpu_rasterization_);
+  proto->set_background_color(background_color_);
+  proto->set_has_transparent_background(has_transparent_background_);
+  proto->set_in_paint_layer_contents(in_paint_layer_contents_);
+  proto->set_id(id_);
+  proto->set_next_commit_forces_redraw(next_commit_forces_redraw_);
+
+  // Viewport layers.
+  proto->set_overscroll_elasticity_layer_id(
+      overscroll_elasticity_layer_ ? overscroll_elasticity_layer_->id()
+                                   : Layer::INVALID_ID);
+  proto->set_page_scale_layer_id(page_scale_layer_ ? page_scale_layer_->id()
+                                                   : Layer::INVALID_ID);
+  proto->set_inner_viewport_scroll_layer_id(
+      inner_viewport_scroll_layer_ ? inner_viewport_scroll_layer_->id()
+                                   : Layer::INVALID_ID);
+  proto->set_outer_viewport_scroll_layer_id(
+      outer_viewport_scroll_layer_ ? outer_viewport_scroll_layer_->id()
+                                   : Layer::INVALID_ID);
+
+  LayerSelectionToProtobuf(selection_, proto->mutable_selection());
+  property_trees_.ToProtobuf(proto->mutable_property_trees());
+  proto->set_surface_id_namespace(surface_id_namespace_);
+  proto->set_next_surface_sequence(next_surface_sequence_);
+}
+
+void LayerTreeHost::FromProtobufForCommit(const proto::LayerTreeHost& proto) {
+  needs_full_tree_sync_ = proto.needs_full_tree_sync();
+  needs_meta_info_recomputation_ = proto.needs_meta_info_recomputation();
+  source_frame_number_ = proto.source_frame_number();
+  meta_information_sequence_number_ = proto.meta_information_sequence_number();
+
+  // Layer hierarchy.
+  scoped_refptr<Layer> new_root_layer =
+      LayerProtoConverter::DeserializeLayerHierarchy(root_layer_,
+                                                     proto.root_layer());
+  if (root_layer_ != new_root_layer) {
+    root_layer_->SetLayerTreeHost(nullptr);
+    root_layer_ = new_root_layer;
+    root_layer_->SetLayerTreeHost(this);
+  }
+
+  // Populate layer_id_map_ with the new layers.
+  layer_id_map_.clear();
+  LayerTreeHostCommon::CallFunctionForSubtree(
+      root_layer(),
+      [this](Layer* layer) { layer_id_map_[layer->id()] = layer; });
+
+  LayerProtoConverter::DeserializeLayerProperties(root_layer_.get(),
+                                                  proto.layer_updates());
+
+  debug_state_.FromProtobuf(proto.debug_state());
+  device_viewport_size_ = ProtoToSize(proto.device_viewport_size());
+  top_controls_shrink_blink_size_ = proto.top_controls_shrink_blink_size();
+  top_controls_height_ = proto.top_controls_height();
+  top_controls_shown_ratio_ = proto.top_controls_shown_ratio();
+  device_scale_factor_ = proto.device_scale_factor();
+  painted_device_scale_factor_ = proto.painted_device_scale_factor();
+  page_scale_factor_ = proto.page_scale_factor();
+  min_page_scale_factor_ = proto.min_page_scale_factor();
+  max_page_scale_factor_ = proto.max_page_scale_factor();
+  elastic_overscroll_ = ProtoToVector2dF(proto.elastic_overscroll());
+  has_gpu_rasterization_trigger_ = proto.has_gpu_rasterization_trigger();
+  content_is_suitable_for_gpu_rasterization_ =
+      proto.content_is_suitable_for_gpu_rasterization();
+  background_color_ = proto.background_color();
+  has_transparent_background_ = proto.has_transparent_background();
+  in_paint_layer_contents_ = proto.in_paint_layer_contents();
+  id_ = proto.id();
+  next_commit_forces_redraw_ = proto.next_commit_forces_redraw();
+
+  hud_layer_ = static_cast<HeadsUpDisplayLayer*>(
+      UpdateAndGetLayer(hud_layer_.get(), proto.hud_layer_id(), layer_id_map_));
+  overscroll_elasticity_layer_ =
+      UpdateAndGetLayer(overscroll_elasticity_layer_.get(),
+                        proto.overscroll_elasticity_layer_id(), layer_id_map_);
+  page_scale_layer_ = UpdateAndGetLayer(
+      page_scale_layer_.get(), proto.page_scale_layer_id(), layer_id_map_);
+  inner_viewport_scroll_layer_ =
+      UpdateAndGetLayer(inner_viewport_scroll_layer_.get(),
+                        proto.inner_viewport_scroll_layer_id(), layer_id_map_);
+  outer_viewport_scroll_layer_ =
+      UpdateAndGetLayer(outer_viewport_scroll_layer_.get(),
+                        proto.outer_viewport_scroll_layer_id(), layer_id_map_);
+
+  LayerSelectionFromProtobuf(&selection_, proto.selection());
+
+  // It is required to create new PropertyTrees before deserializing it.
+  property_trees_ = PropertyTrees();
+  property_trees_.FromProtobuf(proto.property_trees());
+
+  surface_id_namespace_ = proto.surface_id_namespace();
+  next_surface_sequence_ = proto.next_surface_sequence();
 }
 
 }  // namespace cc
