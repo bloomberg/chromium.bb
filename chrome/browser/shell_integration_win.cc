@@ -193,10 +193,11 @@ void MigrateChromiumShortcutsCallback() {
     if (kLocations[i].sub_dir)
       path = path.Append(kLocations[i].sub_dir);
 
-    bool check_dual_mode = kLocations[i].location_id == base::DIR_START_MENU ||
-                           kLocations[i].location_id == base::DIR_TASKBAR_PINS;
+    // Clear |dual_mode| property from taskbar pins as those are user-level
+    // shortcuts which aren't handled by the installer.
+    bool clear_dual_mode = kLocations[i].location_id == base::DIR_TASKBAR_PINS;
     ShellIntegration::MigrateShortcutsInPathInternal(chrome_exe, path,
-                                                     check_dual_mode);
+                                                     clear_dual_mode);
   }
 }
 
@@ -525,7 +526,7 @@ void ShellIntegration::MigrateChromiumShortcuts() {
 int ShellIntegration::MigrateShortcutsInPathInternal(
     const base::FilePath& chrome_exe,
     const base::FilePath& path,
-    bool check_dual_mode) {
+    bool clear_dual_mode) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // Enumerate all pinned shortcuts in the given path directly.
@@ -598,36 +599,22 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
       }
     }
 
-    // Only set dual mode if the expected app id is the default app id.
+    // Clear |dual_mode| property from any shortcuts that previously had it (as
+    // requested by caller).
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(dist, is_per_user_install));
-    if (check_dual_mode && expected_app_id == default_chromium_model_id) {
-      // TODO(scottmg): Simplify with no Metro: http://crbug.com/558054.
-      const bool dual_mode_desired = false;
+    if (clear_dual_mode && expected_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {
         // When in doubt, prefer to not update the shortcut.
         NOTREACHED();
         continue;
-      } else {
-        switch (propvariant.get().vt) {
-          case VT_EMPTY:
-            // If dual_mode is not set at all, make sure it gets set to true if
-            // desired.
-            if (dual_mode_desired)
-              updated_properties.set_dual_mode(true);
-            break;
-          case VT_BOOL:
-            // Make sure dual_mode is set as desired.
-            if ((!!propvariant.get().boolVal) != dual_mode_desired)
-              updated_properties.set_dual_mode(dual_mode_desired);
-            break;
-          default:
-            NOTREACHED();
-            continue;
-        }
+      }
+      if (propvariant.get().vt == VT_BOOL &&
+                 !!propvariant.get().boolVal) {
+        updated_properties.set_dual_mode(false);
       }
     }
 

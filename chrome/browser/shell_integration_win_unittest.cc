@@ -202,8 +202,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
         AddTestShortcutAndResetProperties(&temp_properties));
 
     // Shortcut 11 points to chrome.exe, already has the right appid, and has
-    // dual_mode set and thus should only be migrated if dual_mode is checked
-    // and not desired for this OS version.
+    // dual_mode set and thus should only be migrated if dual_mode is being
+    // cleared.
     temp_properties.set_target(chrome_exe_);
     temp_properties.set_app_id(chrome_app_id_);
     temp_properties.set_dual_mode(true);
@@ -268,8 +268,8 @@ class ShellIntegrationWinMigrateShortcutTest : public testing::Test {
 
 }  // namespace
 
-// Test migration when not checking for dual mode.
-TEST_F(ShellIntegrationWinMigrateShortcutTest, DontCheckDualMode) {
+// Test migration when not clearing dual mode.
+TEST_F(ShellIntegrationWinMigrateShortcutTest, DontClearDualMode) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
@@ -289,8 +289,9 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, DontCheckDualMode) {
   shortcuts_[9].properties.set_app_id(extension_app_id_);
   shortcuts_[10].properties.set_app_id(non_default_profile_extension_app_id_);
 
-  // Explicitly set the dual_mode expectations on all shortcuts to ensure
-  // ValidateShortcut verifies it.
+  // Explicitly set the dual_mode expectations on all shortcuts that didn't have
+  // it to ensure ValidateShortcut verifies it. Those that had it should remain
+  // unchanged per |clear_dual_mode| being false above.
   for (size_t i = 0; i < shortcuts_.size(); ++i) {
     if (!(shortcuts_[i].properties.options &
           base::win::ShortcutProperties::PROPERTIES_DUAL_MODE)) {
@@ -309,22 +310,17 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, DontCheckDualMode) {
                 chrome_exe_, temp_dir_.path(), false));
 }
 
-// Test migration when also checking for dual mode.
-TEST_F(ShellIntegrationWinMigrateShortcutTest, CheckDualMode) {
+// Test migration when also clearing dual mode.
+TEST_F(ShellIntegrationWinMigrateShortcutTest, ClearDualMode) {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
-  // 9 shortcuts should have their app id updated below.
-
-  // shortcut 11 should be migrate away from dual_mode for a total of 10
-  // shortcuts migrated.
+  // 9 shortcuts should have their app id updated below and shortcut 11 should
+  // be migrated away from dual_mode for a total of 10 shortcuts migrated.
   EXPECT_EQ(10, ShellIntegration::MigrateShortcutsInPathInternal(
                     chrome_exe_, temp_dir_.path(), true));
 
-  // Shortcut 1, 3, 4, 5, 6, 7, 8, 9, and 10 should have had both their app_id
-  // fixed and shortcut 1, 2, 3, 4, and 5 should also have had their dual_mode
-  // property added if it is desired (or 11 should have had it removed if it is
-  // not).
+  // Shortcut 1, 3, 4, 5, 6, 7, 8, 9, and 10 should have had their app_id fixed.
   shortcuts_[1].properties.set_app_id(chrome_app_id_);
   shortcuts_[3].properties.set_app_id(chrome_app_id_);
   shortcuts_[4].properties.set_app_id(chrome_app_id_);
@@ -336,14 +332,9 @@ TEST_F(ShellIntegrationWinMigrateShortcutTest, CheckDualMode) {
   shortcuts_[9].properties.set_app_id(extension_app_id_);
   shortcuts_[10].properties.set_app_id(non_default_profile_extension_app_id_);
 
-  // Explicitly flag the expected dual_mode properties.
-  shortcuts_[0].properties.set_dual_mode(false);
-  shortcuts_[11].properties.set_dual_mode(false);
-  shortcuts_[6].properties.set_dual_mode(false);
-  shortcuts_[7].properties.set_dual_mode(false);
-  shortcuts_[8].properties.set_dual_mode(false);
-  shortcuts_[9].properties.set_dual_mode(false);
-  shortcuts_[10].properties.set_dual_mode(false);
+  // No shortcut should still have the dual_mode property.
+  for (size_t i = 0; i < shortcuts_.size(); ++i)
+    shortcuts_[i].properties.set_dual_mode(false);
 
   for (size_t i = 0; i < shortcuts_.size(); ++i) {
     SCOPED_TRACE(i);

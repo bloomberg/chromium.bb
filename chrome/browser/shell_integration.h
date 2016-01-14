@@ -160,16 +160,15 @@ class ShellIntegration {
   static void MigrateChromiumShortcuts();
 
   // Migrates all shortcuts in |path| which point to |chrome_exe| such that they
-  // have the appropriate AppUserModelId. Also makes sure those shortcuts have
-  // the dual_mode (ref. shell_util.h) property set if such is requested by
-  // |check_dual_mode|.
+  // have the appropriate AppUserModelId. Also clears the dual_mode property
+  // from shortcuts that previously had it if requested by |clear_dual_mode|.
   // Returns the number of shortcuts migrated.
   // This method should not be called prior to Windows 7.
   // This method is only public for the sake of tests and shouldn't be called
   // externally otherwise.
   static int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
                                             const base::FilePath& path,
-                                            bool check_dual_mode);
+                                            bool clear_dual_mode);
 
   // Returns the path to the Start Menu shortcut for the given Chrome.
   static base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);
