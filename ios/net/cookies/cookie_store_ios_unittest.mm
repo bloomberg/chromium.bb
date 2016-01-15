@@ -846,8 +846,7 @@ TEST_F(CookieStoreIOSWithBackend, NoNotifyOnNoChange) {
   store_->UnSynchronize();
 }
 
-// TODO(crbug.com/567736): [merge 363378] Test fails consistently after merge.
-TEST_F(CookieStoreIOSWithBackend, DISABLED_MultipleNotifies) {
+TEST_F(CookieStoreIOSWithBackend, MultipleNotifies) {
   CookieStoreIOS::SwitchSynchronizedStore(nullptr, store_.get());
   backend_->RunLoadedCallback();
   std::vector<net::CanonicalCookie> cookies;
