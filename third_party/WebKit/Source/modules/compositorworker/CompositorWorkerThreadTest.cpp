@@ -40,7 +40,7 @@ public:
 
 private:
     // WorkerThread:
-    void didStartRunLoop() override
+    void didStartWorkerThread() override
     {
         m_startEvent->signal();
     }

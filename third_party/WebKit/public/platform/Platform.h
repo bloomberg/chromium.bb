@@ -641,8 +641,8 @@ public:
     virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*) { return nullptr; }
     // WebWorker ----------------------------------------------------------
 
-    virtual void didStartWorkerRunLoop() { }
-    virtual void didStopWorkerRunLoop() { }
+    virtual void didStartWorkerThread() { }
+    virtual void willStopWorkerThread() { }
 
     // WebCrypto ----------------------------------------------------------
 

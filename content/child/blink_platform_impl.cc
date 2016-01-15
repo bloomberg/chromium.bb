@@ -1111,15 +1111,11 @@ blink::WebGestureCurve* BlinkPlatformImpl::createFlingAnimationCurve(
              IsMainThread()).release();
 }
 
-void BlinkPlatformImpl::didStartWorkerRunLoop() {
-  // TODO(kinuko): Cleanup this code.
+void BlinkPlatformImpl::didStartWorkerThread() {
   WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
 }
 
-void BlinkPlatformImpl::didStopWorkerRunLoop() {
-  // TODO(kalman): blink::Platform::didStopWorkerRunLoop should be called
-  // willStopWorkerRunLoop, because at this point the run loop hasn't been
-  // stopped. WillStopWorkerRunLoop is the correct name.
+void BlinkPlatformImpl::willStopWorkerThread() {
   WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
 }
 

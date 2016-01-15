@@ -171,8 +171,8 @@ class CONTENT_EXPORT BlinkPlatformImpl
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
-  void didStartWorkerRunLoop() override;
-  void didStopWorkerRunLoop() override;
+  void didStartWorkerThread() override;
+  void willStopWorkerThread() override;
   blink::WebCrypto* crypto() override;
   blink::WebGeofencingProvider* geofencingProvider() override;
   blink::WebNotificationManager* notificationManager() override;

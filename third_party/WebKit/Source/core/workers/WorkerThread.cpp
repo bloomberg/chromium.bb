@@ -295,7 +295,7 @@ void WorkerThread::initialize(PassOwnPtr<WorkerThreadStartupData> startupData)
         m_workerGlobalScope = createWorkerGlobalScope(startupData);
         m_workerGlobalScope->scriptLoaded(sourceCode.length(), cachedMetaData.get() ? cachedMetaData->size() : 0);
 
-        didStartRunLoop();
+        didStartWorkerThread();
 
         // Notify proxy that a new WorkerGlobalScope has been created and started.
         m_workerReportingProxy.workerGlobalScopeStarted(m_workerGlobalScope.get());
@@ -335,7 +335,7 @@ void WorkerThread::shutdown()
 
     // This should be called after the WorkerGlobalScope's disposed (which may
     // trigger some last-minutes cleanups) and before the thread actually stops.
-    didStopRunLoop();
+    willStopWorkerThread();
 
     backingThread().removeTaskObserver(m_microtaskRunner.get());
     postTask(BLINK_FROM_HERE, createSameThreadTask(&WorkerThread::performShutdownTask, this));
@@ -426,16 +426,16 @@ void WorkerThread::terminateInternal()
     backingThread().postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&WorkerThread::shutdown, AllowCrossThreadAccess(this))));
 }
 
-void WorkerThread::didStartRunLoop()
+void WorkerThread::didStartWorkerThread()
 {
     ASSERT(isCurrentThread());
-    Platform::current()->didStartWorkerRunLoop();
+    Platform::current()->didStartWorkerThread();
 }
 
-void WorkerThread::didStopRunLoop()
+void WorkerThread::willStopWorkerThread()
 {
     ASSERT(isCurrentThread());
-    Platform::current()->didStopWorkerRunLoop();
+    Platform::current()->willStopWorkerThread();
 }
 
 void WorkerThread::terminateAndWaitForAllWorkers()

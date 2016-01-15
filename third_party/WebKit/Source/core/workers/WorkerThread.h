@@ -69,8 +69,8 @@ public:
     // used by other workers (e.g.  compositor workers).
     virtual WebThreadSupportingGC& backingThread() = 0;
 
-    virtual void didStartRunLoop();
-    virtual void didStopRunLoop();
+    virtual void didStartWorkerThread();
+    virtual void willStopWorkerThread();
 
     v8::Isolate* isolate() const { return m_isolate; }
 

@@ -32,8 +32,8 @@ protected:
     // WorkerThread:
     PassRefPtrWillBeRawPtr<WorkerGlobalScope> createWorkerGlobalScope(PassOwnPtr<WorkerThreadStartupData>) override;
     WebThreadSupportingGC& backingThread() override;
-    void didStartRunLoop() override { }
-    void didStopRunLoop() override { }
+    void didStartWorkerThread() override { }
+    void willStopWorkerThread() override { }
     void initializeBackingThread() override;
     void shutdownBackingThread() override;
     v8::Isolate* initializeIsolate() override;
