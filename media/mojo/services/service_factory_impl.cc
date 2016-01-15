@@ -38,15 +38,15 @@ ServiceFactoryImpl::~ServiceFactoryImpl() {
 void ServiceFactoryImpl::CreateRenderer(
     mojo::InterfaceRequest<interfaces::Renderer> request) {
   // The created object is owned by the pipe.
+  // The audio and video sinks are owned by the client.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::MessageLoop::current()->task_runner());
-  scoped_refptr<AudioRendererSink> audio_renderer_sink =
+  AudioRendererSink* audio_renderer_sink =
       mojo_media_client_->CreateAudioRendererSink();
-  scoped_ptr<VideoRendererSink> video_renderer_sink =
+  VideoRendererSink* video_renderer_sink =
       mojo_media_client_->CreateVideoRendererSink(task_runner);
   scoped_ptr<Renderer> renderer = GetRendererFactory()->CreateRenderer(
-      task_runner, task_runner, audio_renderer_sink.get(),
-      video_renderer_sink.get());
+      task_runner, task_runner, audio_renderer_sink, video_renderer_sink);
 
   new MojoRendererService(cdm_service_context_.GetWeakPtr(),
                           std::move(renderer), std::move(request));

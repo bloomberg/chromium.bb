@@ -17,11 +17,11 @@ scoped_ptr<RendererFactory> MojoMediaClient::CreateRendererFactory(
   return nullptr;
 }
 
-scoped_refptr<AudioRendererSink> MojoMediaClient::CreateAudioRendererSink() {
+AudioRendererSink* MojoMediaClient::CreateAudioRendererSink() {
   return nullptr;
 }
 
-scoped_ptr<VideoRendererSink> MojoMediaClient::CreateVideoRendererSink(
+VideoRendererSink* MojoMediaClient::CreateVideoRendererSink(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   return nullptr;
 }

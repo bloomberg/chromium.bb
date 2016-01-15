@@ -48,15 +48,22 @@ class DefaultMojoMediaClient : public MojoMediaClient {
                                                       *audio_hardware_config_));
   }
 
-  scoped_refptr<AudioRendererSink> CreateAudioRendererSink() override {
-    return new AudioOutputStreamSink();
+  AudioRendererSink* CreateAudioRendererSink() override {
+    if (!audio_renderer_sink_)
+      audio_renderer_sink_ = new AudioOutputStreamSink();
+
+    return audio_renderer_sink_.get();
   }
 
-  scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
+  VideoRendererSink* CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) override {
-    return make_scoped_ptr(
-        new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
-                          NullVideoSink::NewFrameCB(), task_runner));
+    if (!video_renderer_sink_) {
+      video_renderer_sink_ = make_scoped_ptr(
+          new NullVideoSink(false, base::TimeDelta::FromSecondsD(1.0 / 60),
+                            NullVideoSink::NewFrameCB(), task_runner));
+    }
+
+    return video_renderer_sink_.get();
   }
 
   scoped_ptr<CdmFactory> CreateCdmFactory(
@@ -67,6 +74,8 @@ class DefaultMojoMediaClient : public MojoMediaClient {
  private:
   FakeAudioLogFactory fake_audio_log_factory_;
   scoped_ptr<AudioHardwareConfig> audio_hardware_config_;
+  scoped_refptr<AudioRendererSink> audio_renderer_sink_;
+  scoped_ptr<VideoRendererSink> video_renderer_sink_;
 
   DISALLOW_COPY_AND_ASSIGN(DefaultMojoMediaClient);
 };

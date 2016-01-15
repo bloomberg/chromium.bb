@@ -31,9 +31,10 @@ class MojoMediaClient {
   // CreateAudioDecoders() and CreateVideoDecoders().
   virtual scoped_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log);
-  // The output sink used for rendering audio or video respectively.
-  virtual scoped_refptr<AudioRendererSink> CreateAudioRendererSink();
-  virtual scoped_ptr<VideoRendererSink> CreateVideoRendererSink(
+  // The output sink used for rendering audio or video respectively. These
+  // sinks must be owned by the client.
+  virtual AudioRendererSink* CreateAudioRendererSink();
+  virtual VideoRendererSink* CreateVideoRendererSink(
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Returns the CdmFactory to be used by MojoCdmService.
