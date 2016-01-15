@@ -42,18 +42,6 @@
   <message name="IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE" desc="Button label shown to never translate a specific language in the translate infobar">
     Never translate <ph name="language">$1<ex>French</ex></ph>
   </message>
-  <if expr="is_ios">
-    <if expr="_google_chrome">
-      <message name="IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em] [iOS only]">
-        Would you like Google Chrome to offer to translate <ph name="LANGUAGE_NAME">$2<ex>French</ex></ph> pages from this site next time?
-      </message>
-    </if>
-    <if expr="not _google_chrome">
-      <message name="IDS_TRANSLATE_INFOBAR_NEVER_MESSAGE_IOS" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em] [iOS only]">
-        Would you like Chromium to offer to translate <ph name="LANGUAGE_NAME">$2<ex>French</ex></ph> pages from this site next time?
-      </message>
-    </if>
-  </if>
   <message name="IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE" desc="Button label shown to always translate a specific language in the translate infobar">
     Always translate <ph name="language">$1<ex>English</ex></ph>
   </message>

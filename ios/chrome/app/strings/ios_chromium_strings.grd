@@ -160,6 +160,9 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings. Directs user to adjust Privacy Settings for Chrome. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
         Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.
       </message>
+      <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_MESSAGE" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em]">
+        Would you like Chromium to offer to translate <ph name="LANGUAGE_NAME">$1<ex>French</ex></ph> pages from this site next time?
+      </message>
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chromium just got better! A new version is available.
       </message>
