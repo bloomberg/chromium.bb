@@ -41,6 +41,34 @@ private:
     const QualifiedName m_tagName;
 };
 
+// This class is used to traverse the DOM tree. It isn't meant to be
+// constructed; instead, callers invoke the static methods, after templating it
+// so that ElementType is the type of element they are interested in traversing.
+// Traversals can also be predicated on a matcher, which will be used to
+// filter the returned elements. A matcher is a callable - an object of a class
+// that defines operator(). HasTagName above is an example of a matcher.
+//
+// For example, a caller could do this:
+//   Traversal<Element>::firstChild(someNode, HasTagName(HTMLNames::titleTag));
+//
+// This invocation would return the first child of |someNode| (which has to be a
+// ContainerNode) for which HasTagName(HTMLNames::titleTag) returned true, so it
+// would return the first child of |someNode| which is a <title> element. If the
+// caller needs to traverse a Node this way, it's necessary to first check
+// Node::isContainerNode() and then use toContainerNode().
+//
+// When looking for a specific element type, it is more efficient to do this:
+//   Traversal<HTMLTitleElement>::firstChild(someNode);
+//
+// Traversal can also be used to find ancestors and descendants; see the
+// documentation in the class body below.
+//
+// Note that these functions do not traverse into child shadow trees of any
+// shadow hosts they encounter. If you need to traverse the shadow DOM, you can
+// manually traverse the shadow trees using a second Traversal, or use
+// ComposedTreeTraversal.
+//
+// ElementTraversal is a specialized version of Traversal<Element>.
 template <class ElementType>
 class Traversal {
     STATIC_ONLY(Traversal);
