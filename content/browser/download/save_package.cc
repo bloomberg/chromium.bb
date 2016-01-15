@@ -1095,9 +1095,8 @@ void SavePackage::GetSavableResourceLinks() {
   wait_state_ = RESOURCES_LIST;
 
   DCHECK_EQ(0, number_of_frames_pending_response_);
-  web_contents()->ForEachFrame(base::Bind(
-      &SavePackage::GetSavableResourceLinksForFrame,
-      base::Unretained(this)));  // Safe, because ForEachFrame is synchronous.
+  number_of_frames_pending_response_ = web_contents()->SendToAllFrames(
+      new FrameMsg_GetSavableResourceLinks(MSG_ROUTING_NONE));
   DCHECK_LT(0, number_of_frames_pending_response_);
 
   // Enqueue the main frame separately (because this frame won't show up in any
@@ -1108,11 +1107,6 @@ void SavePackage::GetSavableResourceLinks() {
   EnqueueFrame(FrameTreeNode::kFrameTreeNodeInvalidId,  // No container.
                main_frame_tree_node->frame_tree_node_id(),
                main_frame_tree_node->current_url());
-}
-
-void SavePackage::GetSavableResourceLinksForFrame(RenderFrameHost* target) {
-  number_of_frames_pending_response_++;
-  target->Send(new FrameMsg_GetSavableResourceLinks(target->GetRoutingID()));
 }
 
 void SavePackage::OnSavableResourceLinksResponse(

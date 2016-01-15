@@ -206,7 +206,10 @@ bool ForEachPendingFrameInternal(
   return true;
 }
 
-void SendToAllFramesInternal(IPC::Message* message, RenderFrameHost* rfh) {
+void SendToAllFramesInternal(int* number_of_messages,
+                             IPC::Message* message,
+                             RenderFrameHost* rfh) {
+  *number_of_messages = *number_of_messages + 1;
   IPC::Message* message_copy = new IPC::Message(*message);
   message_copy->set_routing_id(rfh->GetRoutingID());
   rfh->Send(message_copy);
@@ -789,9 +792,12 @@ void WebContentsImpl::ForEachFrame(
   frame_tree_.ForEach(base::Bind(&ForEachFrameInternal, on_frame));
 }
 
-void WebContentsImpl::SendToAllFrames(IPC::Message* message) {
-  ForEachFrame(base::Bind(&SendToAllFramesInternal, message));
+int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
+  int number_of_messages = 0;
+  ForEachFrame(
+      base::Bind(&SendToAllFramesInternal, &number_of_messages, message));
   delete message;
+  return number_of_messages;
 }
 
 RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() const {

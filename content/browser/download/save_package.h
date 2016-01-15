@@ -184,8 +184,7 @@ class CONTENT_EXPORT SavePackage
                         bool need_html_ext,
                         base::FilePath::StringType* generated_name);
 
-  // Main routine that initiates asking all frames for their savable resources,
-  // using GetSavableResourceLinksForFrame to send IPC to individual frames.
+  // Main routine that initiates asking all frames for their savable resources.
   //
   // Responses are received asynchronously by OnSavableResourceLinks... methods
   // and pending responses are counted/tracked by
@@ -197,10 +196,7 @@ class CONTENT_EXPORT SavePackage
   // EnqueueFrame.
   void GetSavableResourceLinks();
 
-  // Asks a given frame for its savable resources.
-  void GetSavableResourceLinksForFrame(RenderFrameHost* target);
-
-  // Response from |sender| frame to GetSavableResourceLinksForFrame request.
+  // Response from |sender| frame to GetSavableResourceLinks request.
   void OnSavableResourceLinksResponse(
       RenderFrameHostImpl* sender,
       const std::vector<GURL>& resources_list,
@@ -222,18 +218,17 @@ class CONTENT_EXPORT SavePackage
       const Referrer& referrer,
       SaveFileCreateInfo::SaveFileSource save_source);
 
-  // Helper to enqueue a savable resource reported by
-  // GetSavableResourceLinksForFrame.
+  // Helper to enqueue a savable resource reported by GetSavableResourceLinks.
   void EnqueueSavableResource(int container_frame_tree_node_id,
                               const GURL& url,
                               const Referrer& referrer);
-  // Helper to enqueue a subframe reported by GetSavableResourceLinksForFrame.
+  // Helper to enqueue a subframe reported by GetSavableResourceLinks.
   void EnqueueFrame(int container_frame_tree_node_id,
                     int frame_tree_node_id,
                     const GURL& frame_original_url);
 
-  // Response to GetSavableResourceLinksForFrame that indicates an error
-  // when processing the frame associated with |sender|.
+  // Response to GetSavableResourceLinks that indicates an error when processing
+  // the frame associated with |sender|.
   void OnSavableResourceLinksError(RenderFrameHostImpl* sender);
 
   // Helper tracking how many |number_of_frames_pending_response_| we have
