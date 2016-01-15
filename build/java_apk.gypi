@@ -77,6 +77,7 @@
     'tested_apk_obfuscated_jar_path%': '/',
     'tested_apk_dex_path%': '/',
     'tested_apk_is_multidex%': 0,
+    'tested_apk_generated_multidex_config%': 0,
     'additional_input_paths': [],
     'additional_locale_input_paths': [],
     'create_density_splits%': 0,
@@ -121,6 +122,11 @@
     'native_libraries_template_data_dir': '<(intermediate_dir)/native_libraries/',
     'native_libraries_template_data_file': '<(native_libraries_template_data_dir)/native_libraries_array.h',
     'native_libraries_template_version_file': '<(native_libraries_template_data_dir)/native_libraries_version.h',
+    'generate_multidex_config%': 0,
+    'multidex_config_template': '<(DEPTH)/base/android/java/templates/ChromiumMultiDex.template',
+    'multidex_config_java_dir': '<(intermediate_dir)/multidex_config/',
+    'multidex_config_java_file': '<(multidex_config_java_dir)/ChromiumMultiDex.java',
+    'multidex_config_java_stamp': '<(intermediate_dir)/multidex_config_java.stamp',
     'compile_stamp': '<(intermediate_dir)/compile.stamp',
     'lint_stamp': '<(intermediate_dir)/lint.stamp',
     'lint_result': '<(intermediate_dir)/lint_result.xml',
@@ -266,6 +272,7 @@
           'tested_apk_obfuscated_jar_path': '<(obfuscated_jar_path)',
           'tested_apk_dex_path': '<(dex_path)',
           'tested_apk_is_multidex': '<(enable_multidex)',
+          'tested_apk_generated_multidex_config': '>(generate_multidex_config)',
         }
       }]
     ],
@@ -794,36 +801,57 @@
         },
       ],
     }],
-    ['enable_multidex == 1', {
+  ],
+  'target_conditions': [
+    ['generate_multidex_config == 1 and tested_apk_generated_multidex_config == 0', {
+      'variables': {
+        'generated_src_dirs': ['<(multidex_config_java_dir)'],
+      },
       'actions': [
-        {
-          'action_name': 'main_dex_list_for_<(_target_name)',
-          'variables': {
-            'jar_paths': ['>@(input_jars_paths)', '<(javac_jar_path)'],
-            'output_path': '<(main_dex_list_path)',
-          },
-          'includes': [ 'android/main_dex_action.gypi' ],
-        },
         {
           'action_name': 'configure_multidex_for_<(_target_name)',
           'inputs': [
             '<(DEPTH)/build/android/gyp/configure_multidex.py',
+            '<(multidex_config_template)',
           ],
           'outputs': [
             '<(multidex_configuration_path)',
+            '<(multidex_config_java_stamp)',
           ],
           'variables': {
             'additional_multidex_config_options': [],
-            'enabled_configurations': ['>@(enable_multidex_configurations)'],
+            'enabled_configurations': '>(enable_multidex_configurations)',
+            'conditions': [
+              ['enable_multidex == 1', {
+                'additional_multidex_config_options': ['--enable-multidex'],
+              }],
+            ],
           },
           'action': [
             'python', '<(DEPTH)/build/android/gyp/configure_multidex.py',
             '--configuration-name', '<(CONFIGURATION_NAME)',
             '--enabled-configurations', '<(enabled_configurations)',
             '--multidex-configuration-path', '<(multidex_configuration_path)',
+            '--multidex-config-java-template', '<(multidex_config_template)',
+            '--multidex-config-java-file', '<(multidex_config_java_file)',
+            '--multidex-config-java-stamp', '<(multidex_config_java_stamp)',
             '>@(additional_multidex_config_options)',
           ],
         },
+      ],
+      'conditions': [
+        ['enable_multidex == 1', {
+          'actions': [
+            {
+              'action_name': 'main_dex_list_for_<(_target_name)',
+              'variables': {
+                'jar_paths': ['>@(input_jars_paths)', '<(javac_jar_path)'],
+                'output_path': '<(main_dex_list_path)',
+              },
+              'includes': [ 'android/main_dex_action.gypi' ],
+            },
+          ]
+        }]
       ],
     }],
   ],
@@ -954,6 +982,9 @@
       'conditions': [
         ['native_lib_target != ""', {
           'inputs': [ '<(native_libraries_java_stamp)' ],
+        }],
+        ['generate_multidex_config == 1', {
+          'inputs': [ '<(multidex_config_java_stamp)' ],
         }],
       ],
       'outputs': [
