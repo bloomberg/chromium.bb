@@ -115,13 +115,13 @@ TEST(CSSSelectorParserTest, InvalidANPlusB)
 TEST(CSSSelectorParserTest, ShadowDomPseudoInCompound)
 {
     const char* testCases[][2] = {
-        { "::shadow", "*::shadow" }, // crbug.com/478969
+        { "::shadow", "::shadow" },
         { ".a::shadow", ".a::shadow" },
         { "::content", "::content" },
         { ".a::content", ".a::content" },
-        { "::content.a", ".a::content" },
-        { "::content.a.b", ".b.a::content" },
-        { ".a::content.b", ".b.a::content" },
+        { "::content.a", "::content.a" },
+        { "::content.a.b", "::content.a.b" },
+        { ".a::content.b", ".a::content.b" },
     };
 
     for (unsigned i = 0; i < WTF_ARRAY_LENGTH(testCases); ++i) {

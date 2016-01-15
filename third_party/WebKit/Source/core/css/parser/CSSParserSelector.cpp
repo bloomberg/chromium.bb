@@ -80,15 +80,6 @@ bool CSSParserSelector::isSimple() const
     return false;
 }
 
-void CSSParserSelector::insertTagHistory(CSSSelector::Relation before, PassOwnPtr<CSSParserSelector> selector, CSSSelector::Relation after)
-{
-    if (m_tagHistory)
-        selector->setTagHistory(m_tagHistory.release());
-    setRelation(before);
-    selector->setRelation(after);
-    m_tagHistory = selector;
-}
-
 void CSSParserSelector::appendTagHistory(CSSSelector::Relation relation, PassOwnPtr<CSSParserSelector> selector)
 {
     CSSParserSelector* end = this;
@@ -96,6 +87,12 @@ void CSSParserSelector::appendTagHistory(CSSSelector::Relation relation, PassOwn
         end = end->tagHistory();
     end->setRelation(relation);
     end->setTagHistory(selector);
+}
+
+PassOwnPtr<CSSParserSelector> CSSParserSelector::releaseTagHistory()
+{
+    setRelation(CSSSelector::SubSelector);
+    return m_tagHistory.release();
 }
 
 void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool isImplicit)
@@ -107,13 +104,9 @@ void CSSParserSelector::prependTagSelector(const QualifiedName& tagQName, bool i
     m_selector = adoptPtr(new CSSSelector(tagQName, isImplicit));
 }
 
-bool CSSParserSelector::hasHostPseudoSelector() const
+bool CSSParserSelector::isHostPseudoSelector() const
 {
-    for (CSSParserSelector* selector = const_cast<CSSParserSelector*>(this); selector; selector = selector->tagHistory()) {
-        if (selector->pseudoType() == CSSSelector::PseudoHost || selector->pseudoType() == CSSSelector::PseudoHostContext)
-            return true;
-    }
-    return false;
+    return pseudoType() == CSSSelector::PseudoHost || pseudoType() == CSSSelector::PseudoHostContext;
 }
 
 } // namespace blink

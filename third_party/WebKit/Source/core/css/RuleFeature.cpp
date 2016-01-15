@@ -405,6 +405,10 @@ RuleFeatureSet::extractInvalidationSetFeatures(const CSSSelector& selector, Inva
             continue;
 
         features.treeBoundaryCrossing = current->isShadowSelector();
+        if (current->relationIsAffectedByPseudoContent()) {
+            features.contentPseudoCrossing = true;
+            features.insertionPointCrossing = true;
+        }
         features.adjacent = current->isAdjacentSelector();
         if (current->relation() == CSSSelector::DirectAdjacent)
             features.maxDirectAdjacentSelectors = 1;
@@ -473,11 +477,8 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         } else {
             if (current->isHostPseudoClass())
                 descendantFeatures.treeBoundaryCrossing = true;
-            if (current->isInsertionPointCrossing()) {
+            if (current->isInsertionPointCrossing())
                 descendantFeatures.insertionPointCrossing = true;
-                if (current->pseudoType() == CSSSelector::PseudoContent)
-                    descendantFeatures.contentPseudoCrossing = true;
-            }
             if (const CSSSelectorList* selectorList = current->selectorList()) {
                 ASSERT(supportsInvalidationWithSelectorList(current->pseudoType()));
                 for (const CSSSelector* subSelector = selectorList->first(); subSelector; subSelector = CSSSelectorList::next(*subSelector))
@@ -488,9 +489,12 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         if (current->relation() == CSSSelector::SubSelector)
             continue;
 
+        if (current->relationIsAffectedByPseudoContent()) {
+            descendantFeatures.insertionPointCrossing = true;
+            descendantFeatures.contentPseudoCrossing = true;
+        }
         if (current->isShadowSelector())
             descendantFeatures.treeBoundaryCrossing = true;
-
         if (!current->isAdjacentSelector()) {
             lastCompoundSelectorInAdjacentChain = current->tagHistory();
             siblingFeatures = nullptr;

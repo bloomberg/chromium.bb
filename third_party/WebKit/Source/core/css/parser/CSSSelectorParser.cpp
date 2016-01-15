@@ -135,16 +135,26 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParse
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector(range);
     if (!selector)
         return nullptr;
+
+    bool previousCompoundHasContentPseudo = false;
+
+    for (CSSParserSelector* simple = selector.get(); simple && !previousCompoundHasContentPseudo; simple = simple->tagHistory())
+        previousCompoundHasContentPseudo = simple->pseudoType() == CSSSelector::PseudoContent;
+
     while (CSSSelector::Relation combinator = consumeCombinator(range)) {
         OwnPtr<CSSParserSelector> nextSelector = consumeCompoundSelector(range);
         if (!nextSelector)
             return combinator == CSSSelector::Descendant ? selector.release() : nullptr;
         CSSParserSelector* end = nextSelector.get();
-        while (end->tagHistory())
+        bool compoundHasContentPseudo = end->pseudoType() == CSSSelector::PseudoContent;
+        while (end->tagHistory()) {
             end = end->tagHistory();
+            compoundHasContentPseudo |= end->pseudoType() == CSSSelector::PseudoContent;
+        }
         end->setRelation(combinator);
-        if (selector->pseudoType() == CSSSelector::PseudoContent)
+        if (previousCompoundHasContentPseudo)
             end->setRelationIsAffectedByPseudoContent();
+        previousCompoundHasContentPseudo = compoundHasContentPseudo;
         end->setTagHistory(selector.release());
 
         selector = nextSelector.release();
@@ -181,7 +191,7 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSPars
         return CSSParserSelector::create(QualifiedName(namespacePrefix, elementName, namespaceURI));
     }
     prependTypeSelectorIfNeeded(namespacePrefix, elementName, compoundSelector.get());
-    return compoundSelector.release();
+    return splitCompoundAtImplicitShadowCrossingCombinator(compoundSelector.release());
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeSimpleSelector(CSSParserTokenRange& range)
@@ -578,68 +588,25 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
     }
     QualifiedName tag = QualifiedName(namespacePrefix, determinedElementName, namespaceURI);
 
-    if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
-        return rewriteSpecifiersWithElementNameForCustomPseudoElement(tag, compoundSelector, elementName.isNull());
-
-    if (compoundSelector->pseudoType() == CSSSelector::PseudoContent)
-        return rewriteSpecifiersWithElementNameForContentPseudoElement(tag, compoundSelector, elementName.isNull());
-
-    // *:host never matches, so we can't discard the * otherwise we can't tell the
-    // difference between *:host and just :host.
-    if (tag == anyQName() && !compoundSelector->hasHostPseudoSelector())
-        return;
-    compoundSelector->prependTagSelector(tag, elementName.isNull());
-}
-
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsImplicit)
-{
-    CSSParserSelector* lastShadowPseudo = specifiers;
-    CSSParserSelector* history = specifiers;
-    while (history->tagHistory()) {
-        history = history->tagHistory();
-        if (history->needsImplicitShadowCrossingCombinatorForMatching()
-            || history->hasImplicitShadowCrossingCombinatorForMatching()) {
-            lastShadowPseudo = history;
-        }
-    }
-
-    if (lastShadowPseudo->tagHistory()) {
-        ASSERT(lastShadowPseudo->hasImplicitShadowCrossingCombinatorForMatching());
-        if (tag != anyQName())
-            lastShadowPseudo->tagHistory()->prependTagSelector(tag, tagIsImplicit);
-        return;
-    }
-
-    // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
-    // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
-    OwnPtr<CSSParserSelector> elementNameSelector = CSSParserSelector::create(tag);
-    lastShadowPseudo->setTagHistory(elementNameSelector.release());
-    lastShadowPseudo->setRelation(CSSSelector::ShadowPseudo);
-}
-
-void CSSSelectorParser::rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector* specifiers, bool tagIsImplicit)
-{
-    CSSParserSelector* last = specifiers;
-    CSSParserSelector* history = specifiers;
-    while (history->tagHistory()) {
-        history = history->tagHistory();
-        if (history->pseudoType() == CSSSelector::PseudoContent || history->relationIsAffectedByPseudoContent())
-            last = history;
-    }
-
-    if (last->tagHistory()) {
-        if (tag != anyQName())
-            last->tagHistory()->prependTagSelector(tag, tagIsImplicit);
-        return;
-    }
-
-    // For shadow-ID pseudo-elements to be correctly matched, the ShadowPseudo combinator has to be used.
-    // We therefore create a new Selector with that combinator here in any case, even if matching any (host) element in any namespace (i.e. '*').
-    OwnPtr<CSSParserSelector> elementNameSelector = CSSParserSelector::create(tag);
-    last->setTagHistory(elementNameSelector.release());
+    // *:host/*:host-context never matches, so we can't discard the *,
+    // otherwise we can't tell the difference between *:host and just :host.
+    //
+    // Also, selectors where we use a ShadowPseudo combinator between the
+    // element and the pseudo element for matching (custom pseudo elements,
+    // ::cue, ::shadow), we need a universal selector to set the combinator
+    // (relation) on in the cases where there are no simple selectors preceding
+    // the pseudo element.
+    if (tag != anyQName() || compoundSelector->isHostPseudoSelector() || compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
+        compoundSelector->prependTagSelector(tag, elementName.isNull());
 }
 
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector)
+{
+    compoundSelector->appendTagHistory(CSSSelector::SubSelector, simpleSelector);
+    return compoundSelector;
+}
+
+PassOwnPtr<CSSParserSelector> CSSSelectorParser::splitCompoundAtImplicitShadowCrossingCombinator(PassOwnPtr<CSSParserSelector> compoundSelector)
 {
     // The tagHistory is a linked list that stores combinator separated compound selectors
     // from right-to-left. Yet, within a single compound selector, stores the simple selectors
@@ -653,40 +620,18 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::addSimpleSelectorToCompound(Pas
     // the selector parser as a single compound selector.
     //
     // Example: input#x::-webkit-clear-button -> [ ::-webkit-clear-button, input, #x ]
-    //
-    // ::content is kept at the end of the compound in order easily know when to call
-    // setRelationIsAffectedByPseudoContent.
-    //
-    // We are currently not dropping selectors containing multiple instances of ::content,
-    // ::shadow, ::cue, and custom pseudo elements in arbitrary order. There are known
-    // issues like crbug.com/478563
-    //
-    // TODO(rune@opera.com): We should try to remove the need for the re-ordering tricks
-    // below and in the remaining rewrite* methods by using a more suitable storage
-    // structure in CSSSelectorParser.
-    //
-    // The code below is to keep ::content at the end of the compound, and to keep the
-    // tagHistory order correct for implicit ShadowPseudo and juggling multiple (two?)
-    // compounds.
 
-    CSSSelector::Relation relation = CSSSelector::SubSelector;
+    CSSParserSelector* splitAfter = compoundSelector.get();
 
-    if (simpleSelector->needsImplicitShadowCrossingCombinatorForMatching() || simpleSelector->pseudoType() == CSSSelector::PseudoContent) {
-        if (simpleSelector->needsImplicitShadowCrossingCombinatorForMatching())
-            relation = CSSSelector::ShadowPseudo;
-        simpleSelector->appendTagHistory(relation, compoundSelector);
-        return simpleSelector;
-    }
-    if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching() || compoundSelector->pseudoType() == CSSSelector::PseudoContent) {
-        if (compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
-            relation = CSSSelector::ShadowPseudo;
-        compoundSelector->insertTagHistory(CSSSelector::SubSelector, simpleSelector, relation);
+    while (splitAfter->tagHistory() && !splitAfter->tagHistory()->needsImplicitShadowCrossingCombinatorForMatching())
+        splitAfter = splitAfter->tagHistory();
+
+    if (!splitAfter || !splitAfter->tagHistory())
         return compoundSelector;
-    }
 
-    // All other simple selectors are added to the end of the compound.
-    compoundSelector->appendTagHistory(CSSSelector::SubSelector, simpleSelector);
-    return compoundSelector;
+    OwnPtr<CSSParserSelector> secondCompound = splitAfter->releaseTagHistory();
+    secondCompound->appendTagHistory(CSSSelector::ShadowPseudo, compoundSelector);
+    return secondCompound.release();
 }
 
 } // namespace blink

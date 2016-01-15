@@ -652,10 +652,6 @@ String CSSSelector::selectorText(const String& rightSide) const
         } else if (cs->m_match == PseudoElement) {
             str.appendLiteral("::");
             str.append(cs->serializingValue());
-            // ::content is always stored at the end of the compound.
-            if (cs->pseudoType() == PseudoContent && cs->relation() == SubSelector && cs->tagHistory()) {
-                return cs->tagHistory()->selectorText() + str.toString() + rightSide;
-            }
         } else if (cs->isAttributeSelector()) {
             str.append('[');
             const AtomicString& prefix = cs->attribute().prefix();

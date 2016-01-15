@@ -51,9 +51,8 @@ private:
     const AtomicString& defaultNamespace() const;
     const AtomicString& determineNamespace(const AtomicString& prefix);
     void prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector*);
-    void rewriteSpecifiersWithElementNameForCustomPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsImplicit);
-    void rewriteSpecifiersWithElementNameForContentPseudoElement(const QualifiedName& tag, CSSParserSelector*, bool tagIsImplicit);
     static PassOwnPtr<CSSParserSelector> addSimpleSelectorToCompound(PassOwnPtr<CSSParserSelector> compoundSelector, PassOwnPtr<CSSParserSelector> simpleSelector);
+    static PassOwnPtr<CSSParserSelector> splitCompoundAtImplicitShadowCrossingCombinator(PassOwnPtr<CSSParserSelector> compoundSelector);
 
     const CSSParserContext& m_context;
     RawPtrWillBeMember<StyleSheetContents> m_styleSheet; // FIXME: Should be const

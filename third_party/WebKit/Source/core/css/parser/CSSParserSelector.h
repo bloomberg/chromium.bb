@@ -55,7 +55,7 @@ public:
     void adoptSelectorVector(Vector<OwnPtr<CSSParserSelector>>& selectorVector);
     void setSelectorList(PassOwnPtr<CSSSelectorList>);
 
-    bool hasHostPseudoSelector() const;
+    bool isHostPseudoSelector() const;
 
     CSSSelector::Match match() const { return m_selector->match(); }
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
@@ -63,24 +63,18 @@ public:
     bool needsImplicitShadowCrossingCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
 
     bool isSimple() const;
-    bool hasImplicitShadowCrossingCombinatorForMatching() const;
 
     CSSParserSelector* tagHistory() const { return m_tagHistory.get(); }
     void setTagHistory(PassOwnPtr<CSSParserSelector> selector) { m_tagHistory = selector; }
     void clearTagHistory() { m_tagHistory.clear(); }
-    void insertTagHistory(CSSSelector::Relation before, PassOwnPtr<CSSParserSelector>, CSSSelector::Relation after);
     void appendTagHistory(CSSSelector::Relation, PassOwnPtr<CSSParserSelector>);
+    PassOwnPtr<CSSParserSelector> releaseTagHistory();
     void prependTagSelector(const QualifiedName&, bool tagIsImplicit = false);
 
 private:
     OwnPtr<CSSSelector> m_selector;
     OwnPtr<CSSParserSelector> m_tagHistory;
 };
-
-inline bool CSSParserSelector::hasImplicitShadowCrossingCombinatorForMatching() const
-{
-    return m_selector->relation() == CSSSelector::ShadowPseudo;
-}
 
 } // namespace blink
 

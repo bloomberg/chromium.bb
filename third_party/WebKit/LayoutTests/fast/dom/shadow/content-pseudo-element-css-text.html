@@ -7,6 +7,7 @@
 ::content { display: block; }
 div content::content div content::content div.green { color: green; }
 *::content * { color: blue; }
+div::shadow::shadow::content { }
 </style>
 </head>
 <script>
@@ -14,6 +15,7 @@ description("Test for cssText of '::content' rule.");
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(0).cssText", ".foo::content div .bar::before { display: block; }");
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(1).cssText", "::content { display: block; }");
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(2).cssText", "div content::content div content::content div.green { color: green; }");
-shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(3).cssText", "*::content * { color: blue; }");
+shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(3).cssText", "::content * { color: blue; }");
+shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(4).cssText", "div::shadow::shadow::content { }"); // Should be dropped, really.
 </script>
 </html>
