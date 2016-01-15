@@ -449,6 +449,10 @@ int QuicHttpStream::DoSendHeadersComplete(int rv) {
   if (rv < 0)
     return rv;
 
+  // If the stream is already closed, don't read the request the body.
+  if (!stream_)
+    return response_status_;
+
   next_state_ = request_body_stream_ ? STATE_READ_REQUEST_BODY : STATE_OPEN;
 
   return OK;
