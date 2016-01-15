@@ -37,9 +37,13 @@ import webserver
 _TEST_DATA_DIR = os.path.join(chrome_paths.GetTestData(), 'chromedriver')
 
 if util.IsLinux():
-  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'third_party',
+                                  'catapult', 'devil'))
   from devil.android import device_utils
   from devil.android import forwarder
+
+  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+  import devil_chromium
   from pylib import constants
 
 
@@ -1770,6 +1774,9 @@ if __name__ == '__main__':
 
   global _ANDROID_PACKAGE_KEY
   _ANDROID_PACKAGE_KEY = options.android_package
+
+  if _ANDROID_PACKAGE_KEY:
+    devil_chromium.Initialize()
 
   if options.filter == '*':
     if _ANDROID_PACKAGE_KEY:
