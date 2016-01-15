@@ -18,8 +18,8 @@ struct OverlayCheck_Params;
 
 class DrmOverlayValidator {
  public:
-  explicit DrmOverlayValidator(DrmWindow* window,
-                               ScanoutBufferGenerator* buffer_generator);
+  DrmOverlayValidator(DrmWindow* window,
+                      ScanoutBufferGenerator* buffer_generator);
   ~DrmOverlayValidator();
 
   // Tests if configurations |params| are compatible with |window_| and finds

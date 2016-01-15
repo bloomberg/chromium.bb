@@ -89,12 +89,6 @@ void GbmPixmap::SetProcessingCallback(
   processing_callback_ = processing_callback;
 }
 
-scoped_refptr<NativePixmap> GbmPixmap::GetProcessedPixmap(
-    gfx::Size target_size,
-    gfx::BufferFormat target_format) {
-  return nullptr;
-}
-
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
 

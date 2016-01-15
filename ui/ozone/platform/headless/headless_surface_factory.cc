@@ -83,11 +83,6 @@ class TestPixmap : public ui::NativePixmap {
   }
   void SetProcessingCallback(
       const ProcessingCallback& processing_callback) override {}
-  scoped_refptr<NativePixmap> GetProcessedPixmap(
-      gfx::Size target_size,
-      gfx::BufferFormat target_format) override {
-    return nullptr;
-  }
   gfx::NativePixmapHandle ExportHandle() override {
     return gfx::NativePixmapHandle();
   }

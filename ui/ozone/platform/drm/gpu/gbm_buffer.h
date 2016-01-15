@@ -49,9 +49,6 @@ class GbmPixmap : public NativePixmap {
   bool InitializeFromBuffer(const scoped_refptr<GbmBuffer>& buffer);
   void SetProcessingCallback(
       const ProcessingCallback& processing_callback) override;
-  scoped_refptr<NativePixmap> GetProcessedPixmap(
-      gfx::Size target_size,
-      gfx::BufferFormat target_format) override;
 
   // NativePixmap:
   void* GetEGLClientBuffer() const override;
