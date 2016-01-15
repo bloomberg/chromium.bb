@@ -480,14 +480,17 @@ bool LocalSafeBrowsingDatabaseManager::CheckBrowseUrl(const GURL& url,
   // TODO(gab): Refactor SafeBrowsingDatabase to avoid depending on this here.
   std::vector<SBFullHashResult> cache_hits;
 
+  std::vector<SBFullHash> full_hashes;
+  UrlToFullHashes(url, false, &full_hashes);
+
   std::vector<SBPrefix> browse_prefix_hits;
-  bool browse_prefix_match = database_->ContainsBrowseUrl(
-      url, &browse_prefix_hits, &cache_hits);
+  bool browse_prefix_match = database_->ContainsBrowseHashes(
+      full_hashes, &browse_prefix_hits, &cache_hits);
 
   std::vector<SBPrefix> unwanted_prefix_hits;
   std::vector<SBFullHashResult> unused_cache_hits;
-  bool unwanted_prefix_match = database_->ContainsUnwantedSoftwareUrl(
-      url, &unwanted_prefix_hits, &unused_cache_hits);
+  bool unwanted_prefix_match = database_->ContainsUnwantedSoftwareHashes(
+      full_hashes, &unwanted_prefix_hits, &unused_cache_hits);
 
   // Merge the two pre-sorted prefix hits lists.
   // TODO(gab): Refactor SafeBrowsingDatabase for it to return this merged list

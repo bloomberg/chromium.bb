@@ -51,6 +51,7 @@
 #include "components/bookmarks/browser/startup_task_runner_service.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/safe_browsing_db/database_manager.h"
+#include "components/safe_browsing_db/util.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_frame_host.h"
@@ -195,6 +196,7 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
   // Deletes the current database and creates a new one.
   bool ResetDatabase() override {
     badurls_.clear();
+    urls_by_hash_.clear();
     return true;
   }
 
@@ -207,6 +209,15 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     cache_hits->clear();
     return ContainsUrl(MALWARE, PHISH, std::vector<GURL>(1, url), prefix_hits);
   }
+
+  bool ContainsBrowseHashes(
+      const std::vector<SBFullHash>& full_hashes,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) override {
+    cache_hits->clear();
+    return ContainsUrl(MALWARE, PHISH, UrlsForHashes(full_hashes), prefix_hits);
+  }
+
   bool ContainsUnwantedSoftwareUrl(
       const GURL& url,
       std::vector<SBPrefix>* prefix_hits,
@@ -215,6 +226,16 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     return ContainsUrl(UNWANTEDURL, UNWANTEDURL, std::vector<GURL>(1, url),
                        prefix_hits);
   }
+
+  bool ContainsUnwantedSoftwareHashes(
+      const std::vector<SBFullHash>& full_hashes,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) override {
+    cache_hits->clear();
+    return ContainsUrl(UNWANTEDURL, UNWANTEDURL, UrlsForHashes(full_hashes),
+                       prefix_hits);
+  }
+
   bool ContainsDownloadUrlPrefixes(
       const std::vector<SBPrefix>& prefixes,
       std::vector<SBPrefix>* prefix_hits) override {
@@ -272,6 +293,7 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
                                      prefix_hits.begin(), prefix_hits.end());
     bad_prefixes_.insert(
         std::make_pair(full_hash.list_id, full_hash.hash.prefix));
+    urls_by_hash_[SBFullHashToString(full_hash.hash)] = url;
   }
 
  private:
@@ -307,6 +329,17 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
     return hit;
   }
 
+  std::vector<GURL> UrlsForHashes(const std::vector<SBFullHash>& full_hashes) {
+    std::vector<GURL> urls;
+    for (auto hash : full_hashes) {
+      auto url_it = urls_by_hash_.find(SBFullHashToString(hash));
+      if (url_it != urls_by_hash_.end()) {
+        urls.push_back(url_it->second);
+      }
+    }
+    return urls;
+  }
+
   bool ContainsUrlPrefixes(int list_id0,
                            int list_id1,
                            const std::vector<SBPrefix>& prefixes,
@@ -326,6 +359,7 @@ class TestSafeBrowsingDatabase : public SafeBrowsingDatabase {
 
   base::hash_map<std::string, Hits> badurls_;
   base::hash_set<std::pair<int, SBPrefix>> bad_prefixes_;
+  base::hash_map<std::string, GURL> urls_by_hash_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSafeBrowsingDatabase);
 };

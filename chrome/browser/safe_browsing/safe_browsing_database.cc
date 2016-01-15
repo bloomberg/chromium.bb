@@ -793,6 +793,14 @@ bool SafeBrowsingDatabaseNew::ContainsBrowseUrl(
                               cache_hits);
 }
 
+bool SafeBrowsingDatabaseNew::ContainsBrowseHashes(
+    const std::vector<SBFullHash>& full_hashes,
+    std::vector<SBPrefix>* prefix_hits,
+    std::vector<SBFullHashResult>* cache_hits) {
+  return PrefixSetContainsUrlHashes(full_hashes, PrefixSetId::BROWSE,
+                                    prefix_hits, cache_hits);
+}
+
 bool SafeBrowsingDatabaseNew::ContainsUnwantedSoftwareUrl(
     const GURL& url,
     std::vector<SBPrefix>* prefix_hits,
@@ -801,30 +809,23 @@ bool SafeBrowsingDatabaseNew::ContainsUnwantedSoftwareUrl(
                               cache_hits);
 }
 
+bool SafeBrowsingDatabaseNew::ContainsUnwantedSoftwareHashes(
+    const std::vector<SBFullHash>& full_hashes,
+    std::vector<SBPrefix>* prefix_hits,
+    std::vector<SBFullHashResult>* cache_hits) {
+  return PrefixSetContainsUrlHashes(full_hashes, PrefixSetId::UNWANTED_SOFTWARE,
+                                    prefix_hits, cache_hits);
+}
+
 bool SafeBrowsingDatabaseNew::PrefixSetContainsUrl(
     const GURL& url,
     PrefixSetId prefix_set_id,
     std::vector<SBPrefix>* prefix_hits,
     std::vector<SBFullHashResult>* cache_hits) {
-  // Clear the results first.
-  prefix_hits->clear();
-  cache_hits->clear();
-
   std::vector<SBFullHash> full_hashes;
   UrlToFullHashes(url, false, &full_hashes);
-  if (full_hashes.empty())
-    return false;
-
   return PrefixSetContainsUrlHashes(full_hashes, prefix_set_id, prefix_hits,
                                     cache_hits);
-}
-
-bool SafeBrowsingDatabaseNew::ContainsBrowseUrlHashesForTesting(
-    const std::vector<SBFullHash>& full_hashes,
-    std::vector<SBPrefix>* prefix_hits,
-    std::vector<SBFullHashResult>* cache_hits) {
-  return PrefixSetContainsUrlHashes(full_hashes, PrefixSetId::BROWSE,
-                                    prefix_hits, cache_hits);
 }
 
 bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
@@ -832,6 +833,13 @@ bool SafeBrowsingDatabaseNew::PrefixSetContainsUrlHashes(
     PrefixSetId prefix_set_id,
     std::vector<SBPrefix>* prefix_hits,
     std::vector<SBFullHashResult>* cache_hits) {
+  // Clear the results first.
+  prefix_hits->clear();
+  cache_hits->clear();
+
+  if (full_hashes.empty())
+    return false;
+
   // Used to determine cache expiration.
   const base::Time now = base::Time::Now();
 

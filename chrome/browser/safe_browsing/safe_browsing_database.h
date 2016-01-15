@@ -99,6 +99,16 @@ class SafeBrowsingDatabase {
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) = 0;
 
+  // Returns false if none of the hashes in |full_hashes| are in the browse
+  // database or all were already cached as a miss.  If it returns true,
+  // |prefix_hits| contains sorted unique matching hash prefixes which had no
+  // cached results and |cache_hits| contains any matching cached gethash
+  // results.  This function is safe to call from any thread.
+  virtual bool ContainsBrowseHashes(
+      const std::vector<SBFullHash>& full_hashes,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) = 0;
+
   // Returns true iff the given url is on the unwanted software blacklist.
   // Returns false if |url| is not in the browse database or already was cached
   // as a miss.  If it returns true, |prefix_hits| contains sorted unique
@@ -107,6 +117,18 @@ class SafeBrowsingDatabase {
   // call from any thread.
   virtual bool ContainsUnwantedSoftwareUrl(
       const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) = 0;
+
+  // Returns true iff any of the given hashes are on the unwanted software
+  // blacklist.
+  // Returns false if none of the hashes in |full_hashes| are in the browse
+  // database or all were already cached as a miss.  If it returns true,
+  // |prefix_hits| contains sorted unique matching hash prefixes which had no
+  // cached results and |cache_hits| contains any matching cached gethash
+  // results.  This function is safe to call from any thread.
+  virtual bool ContainsUnwantedSoftwareHashes(
+      const std::vector<SBFullHash>& full_hashes,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) = 0;
 
@@ -321,8 +343,15 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
   bool ContainsBrowseUrl(const GURL& url,
                          std::vector<SBPrefix>* prefix_hits,
                          std::vector<SBFullHashResult>* cache_hits) override;
+  bool ContainsBrowseHashes(const std::vector<SBFullHash>& full_hashes,
+                         std::vector<SBPrefix>* prefix_hits,
+                         std::vector<SBFullHashResult>* cache_hits) override;
   bool ContainsUnwantedSoftwareUrl(
       const GURL& url,
+      std::vector<SBPrefix>* prefix_hits,
+      std::vector<SBFullHashResult>* cache_hits) override;
+  bool ContainsUnwantedSoftwareHashes(
+      const std::vector<SBFullHash>& full_hashes,
       std::vector<SBPrefix>* prefix_hits,
       std::vector<SBFullHashResult>* cache_hits) override;
   bool ContainsDownloadUrlPrefixes(const std::vector<SBPrefix>& prefixes,
@@ -530,13 +559,6 @@ class SafeBrowsingDatabaseNew : public SafeBrowsingDatabase {
                             PrefixSetId prefix_set_id,
                             std::vector<SBPrefix>* prefix_hits,
                             std::vector<SBFullHashResult>* cache_hits);
-
-  // Exposed for testing of PrefixSetContainsUrlHashes() on the
-  // PrefixSet backing kMalwareList.
-  bool ContainsBrowseUrlHashesForTesting(
-      const std::vector<SBFullHash>& full_hashes,
-      std::vector<SBPrefix>* prefix_hits,
-      std::vector<SBFullHashResult>* cache_hits);
 
   bool PrefixSetContainsUrlHashes(const std::vector<SBFullHash>& full_hashes,
                                   PrefixSetId prefix_set_id,

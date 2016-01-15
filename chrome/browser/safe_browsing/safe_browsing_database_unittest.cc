@@ -477,20 +477,68 @@ TEST_F(SafeBrowsingDatabaseTest, ListNames) {
 
 // Checks database reading and writing for browse and unwanted PrefixSets.
 TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
+
   struct TestCase {
     using TestListContainsBadUrl = bool (SafeBrowsingDatabase::*)(
         const GURL& url,
+        std::vector<SBPrefix>* prefix_hits,
+        std::vector<SBFullHashResult>* cache_hits);
+    using TestListContainsBadHashes = bool (SafeBrowsingDatabase::*)(
+        const std::vector<SBFullHash>& full_hashes,
         std::vector<SBPrefix>* prefix_hits,
         std::vector<SBFullHashResult>* cache_hits);
 
     const char* test_list_name;
     size_t expected_list_index;
     TestListContainsBadUrl test_list_contains_bad_url;
-  } const kTestCases[]{
-      {kMalwareList, 0U, &SafeBrowsingDatabase::ContainsBrowseUrl},
-      {kPhishingList, 1U, &SafeBrowsingDatabase::ContainsBrowseUrl},
-      {kUnwantedUrlList, 8U,
-       &SafeBrowsingDatabase::ContainsUnwantedSoftwareUrl},
+    TestListContainsBadHashes test_list_contains_bad_hashes;
+
+    void TestContainsFunctions(SafeBrowsingDatabaseNew& database,
+        bool expected_outcome,
+        const GURL& url,
+        std::vector<SBPrefix>* prefix_hits,
+        std::vector<SBFullHashResult>* cache_hits) const {
+      EXPECT_EQ(expected_outcome,
+          (database.*test_list_contains_bad_url)(url, prefix_hits, cache_hits))
+          << test_list_name << url;
+
+      // Contains*Hashes should always return the same result as Contains*Url.
+      std::vector<SBFullHash> full_hashes;
+      UrlToFullHashes(url, false, &full_hashes);
+      ASSERT_FALSE(full_hashes.empty()) << test_list_name << url;
+
+      std::vector<SBPrefix> hash_prefix_hits;
+      std::vector<SBFullHashResult> hash_cache_hits;
+      EXPECT_EQ(expected_outcome, (database.*test_list_contains_bad_hashes)(
+          full_hashes, &hash_prefix_hits, &hash_cache_hits)) << test_list_name
+          << url;
+
+      EXPECT_EQ(prefix_hits->size(), hash_prefix_hits.size()) << test_list_name
+          << url;
+      EXPECT_EQ(cache_hits->size(), hash_cache_hits.size()) << test_list_name
+          << url;
+    }
+  };
+
+  TestCase const kTestCases[] {
+    {
+      kMalwareList,
+      0U,
+      &SafeBrowsingDatabase::ContainsBrowseUrl,
+      &SafeBrowsingDatabase::ContainsBrowseHashes
+    },
+    {
+      kPhishingList,
+      1U,
+      &SafeBrowsingDatabase::ContainsBrowseUrl,
+      &SafeBrowsingDatabase::ContainsBrowseHashes
+    },
+    {
+      kUnwantedUrlList,
+      8U,
+      &SafeBrowsingDatabase::ContainsUnwantedSoftwareUrl,
+      &SafeBrowsingDatabase::ContainsUnwantedSoftwareHashes
+    },
   };
 
   for (const auto& test_case : kTestCases) {
@@ -526,40 +574,41 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
 
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits);
+
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(SBPrefixForString("www.evil.com/phishing.html"), prefix_hits[0]);
     EXPECT_TRUE(cache_hits.empty());
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/malware.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/malware.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://192.168.0.1/malware.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://192.168.0.1/malware.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.evil.com/"), &prefix_hits, &cache_hits);
     EXPECT_TRUE(prefix_hits.empty());
     EXPECT_TRUE(cache_hits.empty());
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/robots.txt"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.evil.com/robots.txt"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/evil.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/evil.html"), &prefix_hits, &cache_hits);
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(SBPrefixForString("www.evil.com/evil.html"), prefix_hits[0]);
 
@@ -587,25 +636,25 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
     database_->InsertChunks(test_case.test_list_name, chunks);
     database_->UpdateFinished(true);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits);
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(SBPrefixForString("www.evil.com/phishing.html"), prefix_hits[0]);
     EXPECT_TRUE(cache_hits.empty());
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.evil.com/notevil1.html"), &prefix_hits, &cache_hits);
     EXPECT_TRUE(prefix_hits.empty());
     EXPECT_TRUE(cache_hits.empty());
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits);
 
     GetListsInfo(&lists);
     ASSERT_LE(1U, lists.size());
@@ -635,14 +684,14 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
     AddDelChunk(test_case.test_list_name, 2);
     database_->UpdateFinished(true);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.evil.com/notevil2.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.good.com/good1.html"), &prefix_hits, &cache_hits);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.good.com/good2.html"), &prefix_hits, &cache_hits);
 
     GetListsInfo(&lists);
     ASSERT_LE(1U, lists.size());
@@ -685,10 +734,10 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
     database_->InsertChunks(test_case.test_list_name, chunks);
     database_->UpdateFinished(true);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
+    test_case.TestContainsFunctions(*database_, false,
         GURL("http://www.notevilanymore.com/index.html"),
         &prefix_hits,
-        &cache_hits));
+        &cache_hits);
 
     // Now insert the tardy add chunk and we don't expect them to appear
     // in database because of the previous sub chunk.
@@ -700,32 +749,32 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseAndUnwantedDatabasesAndPrefixSets) {
     database_->InsertChunks(test_case.test_list_name, chunks);
     database_->UpdateFinished(true);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
+    test_case.TestContainsFunctions(*database_, false,
         GURL("http://www.notevilanymore.com/index.html"),
         &prefix_hits,
-        &cache_hits));
+        &cache_hits);
 
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
+    test_case.TestContainsFunctions(*database_, false,
         GURL("http://www.notevilanymore.com/good.html"),
         &prefix_hits,
-        &cache_hits));
+        &cache_hits);
 
     // Reset and reload the database.  The database will rely on the prefix set.
     ResetAndReloadFullDatabase();
 
     // Check that a prefix still hits.
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/phishing.html"), &prefix_hits, &cache_hits);
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(SBPrefixForString("www.evil.com/phishing.html"), prefix_hits[0]);
 
     // Also check that it's not just always returning true in this case.
-    EXPECT_FALSE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, false,
+        GURL("http://www.evil.com/"), &prefix_hits, &cache_hits);
 
     // Check that the full hash is still present.
-    EXPECT_TRUE((database_.get()->*test_case.test_list_contains_bad_url)(
-        GURL("http://www.evil.com/evil.html"), &prefix_hits, &cache_hits));
+    test_case.TestContainsFunctions(*database_, true,
+        GURL("http://www.evil.com/evil.html"), &prefix_hits, &cache_hits);
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(SBPrefixForString("www.evil.com/evil.html"), prefix_hits[0]);
   }
@@ -1713,14 +1762,14 @@ TEST_F(SafeBrowsingDatabaseTest, CachedFullMiss) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_1);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // kFullHash2_1 gets a hit from the prefix in the database.
     full_hashes.push_back(kFullHash2_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix2, prefix_hits[0]);
@@ -1761,7 +1810,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     full_hashes.push_back(kFullHash1_1);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -1771,7 +1820,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     full_hashes.push_back(kFullHash2_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(2U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -1782,7 +1831,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     full_hashes.push_back(kFullHash3_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(2U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -1812,7 +1861,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_1);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     EXPECT_TRUE(prefix_hits.empty());
     ASSERT_EQ(1U, cache_hits.size());
@@ -1824,7 +1873,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     full_hashes.push_back(kFullHash2_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix2, prefix_hits[0]);
@@ -1836,7 +1885,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     full_hashes.push_back(kFullHash1_3);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix2, prefix_hits[0]);
@@ -1852,7 +1901,7 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_3);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     EXPECT_TRUE(prefix_hits.empty());
     ASSERT_EQ(1U, cache_hits.size());
@@ -1866,14 +1915,14 @@ TEST_F(SafeBrowsingDatabaseTest, CachedPrefixHitFullMiss) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_2);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // Other prefix hits possible when kFullHash1_2 hits nothing.
     full_hashes.push_back(kFullHash2_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix2, prefix_hits[0]);
@@ -1905,14 +1954,14 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_3);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // Also one which is present, should have a prefix hit.
     full_hashes.push_back(kFullHash1_1);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -1922,7 +1971,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     full_hashes.push_back(kFullHash1_2);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -1947,7 +1996,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_3);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // kFullHash1_1 is also not in the cached result, which takes
@@ -1955,14 +2004,14 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     prefix_hits.clear();
     full_hashes.push_back(kFullHash1_1);
     cache_hits.clear();
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // kFullHash1_2 is in the cached result.
     full_hashes.push_back(kFullHash1_2);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     EXPECT_TRUE(prefix_hits.empty());
     ASSERT_EQ(1U, cache_hits.size());
@@ -1987,21 +2036,21 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_1);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // Nor kFullHash1_3.
     full_hashes.push_back(kFullHash1_3);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
 
     // Still has kFullHash1_2.
     full_hashes.push_back(kFullHash1_2);
     prefix_hits.clear();
     cache_hits.clear();
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -2028,7 +2077,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashMatching) {
     full_hashes.push_back(kFullHash1_1);
     full_hashes.push_back(kFullHash1_2);
     full_hashes.push_back(kFullHash1_3);
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
   }
 }
@@ -2053,7 +2102,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashAndPrefixMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_2);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_FALSE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_FALSE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
   }
 
@@ -2070,7 +2119,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashAndPrefixMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_2);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
@@ -2090,7 +2139,7 @@ TEST_F(SafeBrowsingDatabaseTest, BrowseFullHashAndPrefixMatching) {
     std::vector<SBFullHash> full_hashes(1, kFullHash1_2);
     std::vector<SBPrefix> prefix_hits;
     std::vector<SBFullHashResult> cache_hits;
-    EXPECT_TRUE(database_->ContainsBrowseUrlHashesForTesting(
+    EXPECT_TRUE(database_->ContainsBrowseHashes(
         full_hashes, &prefix_hits, &cache_hits));
     ASSERT_EQ(1U, prefix_hits.size());
     EXPECT_EQ(kPrefix1, prefix_hits[0]);
