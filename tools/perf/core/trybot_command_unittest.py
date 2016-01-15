@@ -58,7 +58,9 @@ class TrybotCommandTest(unittest.TestCase):
       counter[0] += 1
       expected_args, expected_responses = expected_args_list[counter[0]]
       self.assertEquals(
-        expected_args, args, 'Popen() is called with unexpected args %s' % args)
+        expected_args, args,
+        'Popen() is called with unexpected args.\n Actual: %s.\n'
+        'Expecting (index %i): %s' % (args, counter[0], expected_args))
       return FakeProcess(expected_responses)
     self._mock_subprocess.Popen.side_effect = side_effect
 
@@ -478,3 +480,75 @@ class TrybotCommandTest(unittest.TestCase):
     self.assertEquals((0, 'https://codereview.chromium.org/12345'),
         command._UpdateConfigAndRunTryjob(
         'android', cfg_filename, []))
+    cfg.seek(0)
+    config = '''config = {
+  "command": "./tools/perf/run_benchmark --browser=android-chromium",
+  "max_time_minutes": "120",
+  "repeat_count": "1",
+  "target_arch": "ia32",
+  "truncate_percent": "0"
+}'''
+    self.assertEquals(cfg.read(), config)
+
+  def testUpdateConfigGitTryAll(self):
+    self._MockTryserverJson({
+        'android_nexus4_perf_bisect': 'stuff',
+        'win_8_perf_bisect': 'stuff2'
+    })
+    command = trybot_command.Trybot()
+    command._InitializeBuilderNames('all')
+    self._ExpectProcesses((
+        (['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+         (0, 'CURRENT-BRANCH', None)),
+        (['git', 'update-index', '--refresh', '-q'],
+         (0, '', None)),
+        (['git', 'diff-index', 'HEAD'],
+         (0, '', None)),
+        (['git', 'log', 'origin/master..HEAD'],
+         (0, 'abcdef', None)),
+        (['git', 'checkout', '-b', 'telemetry-tryjob'],
+         (0, '', None)),
+        (['git', 'branch', '--set-upstream-to', 'origin/master'],
+         (0, '', None)),
+        (['git', 'commit', '-a', '-m', 'bisect config: win'],
+         (0, 'None', None)),
+        (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
+         'CL for perf tryjob on win'],
+         (0, 'stuff2 https://codereview.chromium.org/12345 stuff2', None)),
+        (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
+          'win_8_perf_bisect'],
+         (0, None, None)),
+        (['git', 'commit', '-a', '-m', 'bisect config: android'],
+         (0, 'None', None)),
+       (['git', 'cl', 'upload', '-f', '--bypass-hooks', '-m',
+         'CL for perf tryjob on android'],
+         (0, 'stuff https://codereview.chromium.org/12345 stuff', None)),
+      (['git', 'cl', 'try', '-m', 'tryserver.chromium.perf', '-b',
+        'android_nexus4_perf_bisect'], (0, None, None)),
+      (['git', 'checkout', 'CURRENT-BRANCH'],
+       (0, '', None)),
+      (['git', 'branch', '-D', 'telemetry-tryjob'],
+       (0, '', None))))
+    cfg_filename = 'tools/run-perf-test.cfg'
+    cfg = StringIO.StringIO()
+    self._stubs.open.files = {cfg_filename: cfg}
+    self.assertEquals(0, command._AttemptTryjob(cfg_filename, []))
+    cfg.seek(0)
+
+    # The config contains both config for browser release & android-chromium,
+    # but that's because the stub testing does not reset the StringIO. In
+    # reality, the cfg_filename should be overwritten with the new data.
+    config = ('''config = {
+  "command": "python tools\\\\perf\\\\run_benchmark --browser=release",
+  "max_time_minutes": "120",
+  "repeat_count": "1",
+  "target_arch": "ia32",
+  "truncate_percent": "0"
+}''''''config = {
+  "command": "./tools/perf/run_benchmark --browser=android-chromium",
+  "max_time_minutes": "120",
+  "repeat_count": "1",
+  "target_arch": "ia32",
+  "truncate_percent": "0"
+}''')
+    self.assertEquals(cfg.read(), config)

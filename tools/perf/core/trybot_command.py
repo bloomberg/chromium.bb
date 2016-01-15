@@ -243,6 +243,9 @@ class Trybot(command_line.ArgParseCommand):
     Returns:
       A dictionary with perf config parameters.
     """
+    # To make sure that we don't mutate the original args
+    arguments = arguments[:]
+
     # Generate the command line for the perf trybots
     target_arch = 'ia32'
     if any(arg == '--chrome-root' or arg.startswith('--chrome-root=') for arg
@@ -333,6 +336,9 @@ class Trybot(command_line.ArgParseCommand):
         logging.error('Error in git branch --set-upstream-to: %s', err)
         return ERROR
       for bot_platform in self._builder_names:
+        if not self._builder_names[bot_platform]:
+          logging.warning('No builder is found for %s' % bot_platform)
+          continue
         try:
           results, output = self._UpdateConfigAndRunTryjob(
               bot_platform, cfg_file_path, arguments)
