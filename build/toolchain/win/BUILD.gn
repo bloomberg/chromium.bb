@@ -235,6 +235,12 @@ template("msvc_toolchain") {
   }
 }
 
+if (host_os == "win") {
+  clang_cl = "clang-cl.exe"
+} else {
+  clang_cl = "clang-cl"
+}
+
 # 32-bit toolchains. Only define these when the target architecture is 32-bit
 # since we don't do any 32-bit cross compiles when targeting 64-bit (the
 # build does generate some 64-bit stuff from 32-bit target builds).
@@ -261,7 +267,7 @@ if (target_cpu == "x86") {
     toolchain_cpu = "x86"
     prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                          root_build_dir)
-    cl = "${goma_prefix}$prefix/clang-cl.exe"
+    cl = "${goma_prefix}$prefix/${clang_cl}"
     toolchain_os = "win"
     is_clang = true
   }
@@ -290,7 +296,7 @@ msvc_toolchain("clang_x64") {
   toolchain_cpu = "x64"
   prefix = rebase_path("//third_party/llvm-build/Release+Asserts/bin",
                        root_build_dir)
-  cl = "${goma_prefix}$prefix/clang-cl.exe"
+  cl = "${goma_prefix}$prefix/${clang_cl}"
   toolchain_os = "win"
   is_clang = true
 }
