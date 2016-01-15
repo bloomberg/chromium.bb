@@ -9,6 +9,10 @@
 
 namespace blink {
 
+Credential::~Credential()
+{
+}
+
 Credential::Credential(PlatformCredential* credential)
     : m_platformCredential(credential)
 {

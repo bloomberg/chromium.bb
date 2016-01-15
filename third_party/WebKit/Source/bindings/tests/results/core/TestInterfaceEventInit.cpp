@@ -13,6 +13,10 @@ TestInterfaceEventInit::TestInterfaceEventInit()
 {
 }
 
+TestInterfaceEventInit::~TestInterfaceEventInit()
+{
+}
+
 DEFINE_TRACE(TestInterfaceEventInit)
 {
     EventInit::trace(visitor);

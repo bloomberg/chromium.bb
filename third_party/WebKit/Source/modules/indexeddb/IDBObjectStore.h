@@ -50,7 +50,7 @@ class DOMStringList;
 class IDBAny;
 class ExceptionState;
 
-class IDBObjectStore : public GarbageCollectedFinalized<IDBObjectStore>, public ScriptWrappable {
+class IDBObjectStore final : public GarbageCollectedFinalized<IDBObjectStore>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static IDBObjectStore* create(const IDBObjectStoreMetadata& metadata, IDBTransaction* transaction)

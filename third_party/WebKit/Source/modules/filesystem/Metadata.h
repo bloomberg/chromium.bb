@@ -37,7 +37,7 @@
 
 namespace blink {
 
-class Metadata : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
+class Metadata final : public GarbageCollectedFinalized<Metadata>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static Metadata* create(const FileMetadata& platformMetadata)

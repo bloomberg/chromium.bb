@@ -6,6 +6,10 @@
 
 namespace blink {
 
+DOMMatrixReadOnly::~DOMMatrixReadOnly()
+{
+}
+
 bool DOMMatrixReadOnly::is2D() const
 {
     return m_is2D;

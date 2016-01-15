@@ -17,6 +17,7 @@ class CORE_EXPORT TestPermissiveDictionary {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestPermissiveDictionary();
+    virtual ~TestPermissiveDictionary();
 
     bool hasBooleanMember() const { return !m_booleanMember.isNull(); }
     bool booleanMember() const { return m_booleanMember.get(); }

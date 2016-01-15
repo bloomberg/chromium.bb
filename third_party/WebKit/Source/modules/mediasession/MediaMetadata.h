@@ -15,7 +15,7 @@ namespace blink {
 class MediaMetadataInit;
 
 // Implementation of MediaMetadata interface from the Media Session API.
-class MODULES_EXPORT MediaMetadata
+class MODULES_EXPORT MediaMetadata final
     : public GarbageCollectedFinalized<MediaMetadata>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

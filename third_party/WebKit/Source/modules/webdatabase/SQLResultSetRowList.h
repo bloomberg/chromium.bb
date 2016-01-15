@@ -39,7 +39,7 @@ class ScriptValue;
 class ScriptState;
 class ExceptionState;
 
-class SQLResultSetRowList : public GarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
+class SQLResultSetRowList final : public GarbageCollectedFinalized<SQLResultSetRowList>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SQLResultSetRowList* create() { return new SQLResultSetRowList; }

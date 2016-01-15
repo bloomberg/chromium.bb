@@ -18,6 +18,8 @@ class VRController;
 class VRDevice : public GarbageCollectedFinalized<VRDevice>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    virtual ~VRDevice();
+
     unsigned index() const { return m_hardwareUnit->index(); }
     const String& hardwareUnitId() const { return m_hardwareUnit->hardwareUnitId(); }
     const String& deviceId() const { return m_deviceId; }

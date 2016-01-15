@@ -6,6 +6,10 @@
 
 namespace blink {
 
+VRDevice::~VRDevice()
+{
+}
+
 VRDevice::VRDevice(VRHardwareUnit* hardwareUnit, unsigned deviceId)
     : m_hardwareUnit(hardwareUnit)
     , m_deviceId(String::number(deviceId))

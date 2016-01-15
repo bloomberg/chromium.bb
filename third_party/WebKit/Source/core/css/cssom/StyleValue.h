@@ -23,6 +23,8 @@ public:
         KeywordValueType, SimpleLengthType, CalcLengthType, NumberType, TransformValueType
     };
 
+    virtual ~StyleValue() { }
+
     virtual StyleValueType type() const = 0;
 
     static StyleValue* create(const CSSValue&);

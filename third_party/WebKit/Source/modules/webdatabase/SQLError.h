@@ -64,7 +64,7 @@ private:
     String m_message;
 };
 
-class SQLError : public GarbageCollectedFinalized<SQLError>, public ScriptWrappable {
+class SQLError final : public GarbageCollectedFinalized<SQLError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SQLError* create(const SQLErrorData& data) { return new SQLError(data); }

@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class PositionError : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
+class PositionError final : public GarbageCollectedFinalized<PositionError>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     enum ErrorCode {

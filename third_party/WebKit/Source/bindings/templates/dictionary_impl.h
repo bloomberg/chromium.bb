@@ -13,6 +13,7 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     {{cpp_class}}();
+    virtual ~{{cpp_class}}();
 
     {% for member in members %}
     bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }

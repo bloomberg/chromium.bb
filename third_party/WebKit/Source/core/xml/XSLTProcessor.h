@@ -39,7 +39,7 @@ class LocalFrame;
 class Document;
 class DocumentFragment;
 
-class XSLTProcessor : public GarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
+class XSLTProcessor final : public GarbageCollectedFinalized<XSLTProcessor>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static XSLTProcessor* create(Document& document)

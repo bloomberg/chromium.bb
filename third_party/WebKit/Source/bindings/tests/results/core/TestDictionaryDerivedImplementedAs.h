@@ -21,6 +21,7 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestDictionaryDerivedImplementedAs();
+    virtual ~TestDictionaryDerivedImplementedAs();
 
     bool hasDerivedStringMember() const { return !m_derivedStringMember.isNull(); }
     String derivedStringMember() const { return m_derivedStringMember; }

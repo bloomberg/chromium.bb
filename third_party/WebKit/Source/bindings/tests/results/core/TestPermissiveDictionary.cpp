@@ -13,6 +13,10 @@ TestPermissiveDictionary::TestPermissiveDictionary()
 {
 }
 
+TestPermissiveDictionary::~TestPermissiveDictionary()
+{
+}
+
 DEFINE_TRACE(TestPermissiveDictionary)
 {
 }

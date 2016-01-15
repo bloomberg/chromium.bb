@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class SourceInfo : public GarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
+class SourceInfo final : public GarbageCollectedFinalized<SourceInfo>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static SourceInfo* create(const WebSourceInfo&);

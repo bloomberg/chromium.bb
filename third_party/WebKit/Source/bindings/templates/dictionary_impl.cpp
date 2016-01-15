@@ -15,6 +15,10 @@ namespace blink {
     {% endfor %}
 }
 
+{{cpp_class}}::~{{cpp_class}}()
+{
+}
+
 DEFINE_TRACE({{cpp_class}})
 {
     {% for member in members if member.is_traceable %}

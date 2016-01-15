@@ -57,6 +57,8 @@ public:
         return new DOMError(DOMException::getErrorName(ec), message);
     }
 
+    virtual ~DOMError();
+
     const String& name() const { return m_name; }
     const String& message() const { return m_message; }
 

@@ -1212,7 +1212,7 @@ class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
     USING_PRE_FINALIZER(PreFinalizerBase, dispose);
 public:
     static PreFinalizerBase* create() { return new PreFinalizerBase();  }
-    ~PreFinalizerBase() { m_wasDestructed = true; }
+    virtual ~PreFinalizerBase() { m_wasDestructed = true; }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     void dispose()
     {
@@ -4144,7 +4144,7 @@ public:
     InlinedVectorObjectWithVtable()
     {
     }
-    ~InlinedVectorObjectWithVtable()
+    virtual ~InlinedVectorObjectWithVtable()
     {
         s_destructorCalls++;
     }
@@ -5974,6 +5974,7 @@ TEST(HeapTest, PartObjectWithVirtualMethod)
 class AllocInSuperConstructorArgumentSuper : public GarbageCollectedFinalized<AllocInSuperConstructorArgumentSuper> {
 public:
     AllocInSuperConstructorArgumentSuper(bool value) : m_value(value) { }
+    virtual ~AllocInSuperConstructorArgumentSuper() { }
     DEFINE_INLINE_VIRTUAL_TRACE() { }
     bool value() { return m_value; }
 private:

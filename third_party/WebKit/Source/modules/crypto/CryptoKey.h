@@ -42,7 +42,7 @@ namespace blink {
 
 class CryptoResult;
 
-class CryptoKey : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
+class CryptoKey final : public GarbageCollectedFinalized<CryptoKey>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static CryptoKey* create(const WebCryptoKey& key)

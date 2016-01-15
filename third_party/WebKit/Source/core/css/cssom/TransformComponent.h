@@ -20,6 +20,8 @@ public:
         Matrix3DType, Rotate3DType, Scale3DType, Translate3DType
     };
 
+    virtual ~TransformComponent() { }
+
     virtual TransformComponentType type() const = 0;
 
     bool is2DComponent() const

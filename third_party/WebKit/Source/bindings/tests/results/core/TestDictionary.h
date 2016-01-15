@@ -30,6 +30,7 @@ class CORE_EXPORT TestDictionary {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestDictionary();
+    virtual ~TestDictionary();
 
     bool hasAnyMember() const { return !(m_anyMember.isEmpty() || m_anyMember.isNull() || m_anyMember.isUndefined()); }
     ScriptValue anyMember() const { return m_anyMember; }

@@ -14,6 +14,10 @@ TestDictionaryDerivedImplementedAs::TestDictionaryDerivedImplementedAs()
     setDerivedStringMemberWithDefault(String("default string value"));
 }
 
+TestDictionaryDerivedImplementedAs::~TestDictionaryDerivedImplementedAs()
+{
+}
+
 DEFINE_TRACE(TestDictionaryDerivedImplementedAs)
 {
     visitor->trace(m_stringOrDoubleSequenceMember);

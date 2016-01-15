@@ -17,7 +17,7 @@ namespace blink {
 class MediaMetadata;
 class ScriptState;
 
-class MODULES_EXPORT MediaSession
+class MODULES_EXPORT MediaSession final
     : public GarbageCollectedFinalized<MediaSession>
     , public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();

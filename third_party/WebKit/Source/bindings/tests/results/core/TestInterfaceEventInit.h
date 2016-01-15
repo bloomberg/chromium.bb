@@ -18,6 +18,7 @@ class CORE_EXPORT TestInterfaceEventInit : public EventInit {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     TestInterfaceEventInit();
+    virtual ~TestInterfaceEventInit();
 
     bool hasStringMember() const { return !m_stringMember.isNull(); }
     String stringMember() const { return m_stringMember; }

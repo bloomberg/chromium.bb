@@ -24,6 +24,10 @@ TestDictionary::TestDictionary()
     setUnrestrictedDoubleMember(3.14);
 }
 
+TestDictionary::~TestDictionary()
+{
+}
+
 DEFINE_TRACE(TestDictionary)
 {
     visitor->trace(m_doubleOrStringMember);

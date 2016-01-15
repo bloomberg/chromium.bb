@@ -14,7 +14,7 @@ namespace blink {
 
 class Document;
 
-class PrivateScriptTest : public GarbageCollectedFinalized<PrivateScriptTest>, public ScriptWrappable {
+class PrivateScriptTest final : public GarbageCollectedFinalized<PrivateScriptTest>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PrivateScriptTest* create(Document* document)

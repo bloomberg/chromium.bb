@@ -17,6 +17,8 @@ class DOMMatrix;
 class DOMMatrixReadOnly : public GarbageCollectedFinalized<DOMMatrixReadOnly>, public ScriptWrappable {
     DEFINE_WRAPPERTYPEINFO();
 public:
+    virtual ~DOMMatrixReadOnly();
+
     double a() const { return m_matrix->m11(); }
     double b() const { return m_matrix->m12(); }
     double c() const { return m_matrix->m21(); }

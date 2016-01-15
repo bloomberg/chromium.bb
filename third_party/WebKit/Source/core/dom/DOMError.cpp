@@ -28,6 +28,10 @@
 
 namespace blink {
 
+DOMError::~DOMError()
+{
+}
+
 DOMError::DOMError(const String& name)
     : m_name(name)
 {

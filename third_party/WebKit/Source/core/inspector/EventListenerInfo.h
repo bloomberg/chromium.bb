@@ -31,7 +31,7 @@ public:
     const AtomicString eventType;
     const EventListenerVector eventListenerVector;
 
-    DEFINE_INLINE_VIRTUAL_TRACE()
+    DEFINE_INLINE_TRACE()
     {
         visitor->trace(eventTarget);
         visitor->trace(eventListenerVector);
