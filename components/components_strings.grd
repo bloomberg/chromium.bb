@@ -222,9 +222,6 @@
       <message name="IDS_OK" desc="Used for OK on buttons">
         OK
       </message>
-      <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
-        JSON Parser
-      </message>
       <if expr="not is_android">
         <if expr="not use_titlecase">
           <message name="IDS_PRINT" desc="The text label of the Print... menu item. Opens a dialog box to select print settings">
@@ -237,6 +234,24 @@
           </message>
         </if>
       </if>
+
+      <!-- Accessibility labels for generic items -->
+      <message name="IDS_ACCNAME_BACK" desc="The accessible name for the back button.">
+        Back
+      </message>
+      <message name="IDS_ACCNAME_FORWARD" desc="The accessible name for the forward button.">
+        Forward
+      </message>
+      <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
+        Close
+      </message>
+      <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the editable-text portion of the omnibox.">
+        Address and search bar
+      </message>
+
+      <message name="IDS_UTILITY_PROCESS_JSON_PARSER_NAME" desc="The name of the utility process used for parsing JSON files.">
+        JSON Parser
+      </message>
     </messages>
   </release>
 </grit>

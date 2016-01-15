@@ -34,6 +34,7 @@
 #include "components/toolbar/toolbar_model.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/constants.h"
+#include "grit/components_strings.h"
 #include "net/base/escape.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_view_state.h"
