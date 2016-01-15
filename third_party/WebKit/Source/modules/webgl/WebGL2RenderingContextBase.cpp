@@ -2106,6 +2106,12 @@ void WebGL2RenderingContextBase::beginTransformFeedback(GLenum primitiveMode)
     // have a buffer object bound", and "if no binding points would be used".
     // crbug.com/448164
     setTransformFeedbackActive(true);
+
+    if (m_currentProgram)
+        m_currentProgram->increaseActiveTransformFeedbackCount();
+
+    if (m_transformFeedbackBinding)
+        m_transformFeedbackBinding->setProgram(m_currentProgram);
 }
 
 void WebGL2RenderingContextBase::endTransformFeedback()
@@ -2122,6 +2128,9 @@ void WebGL2RenderingContextBase::endTransformFeedback()
 
     setTransformFeedbackPaused(false);
     setTransformFeedbackActive(false);
+
+    if (m_currentProgram)
+        m_currentProgram->decreaseActiveTransformFeedbackCount();
 }
 
 void WebGL2RenderingContextBase::transformFeedbackVaryings(WebGLProgram* program, const Vector<String>& varyings, GLenum bufferMode)
@@ -2209,6 +2218,11 @@ void WebGL2RenderingContextBase::resumeTransformFeedback()
 
     if (!transformFeedbackActive() || !transformFeedbackPaused()) {
         synthesizeGLError(GL_INVALID_OPERATION, "resumeTransformFeedback", "transform feedback is not active or is not paused");
+        return;
+    }
+
+    if (m_transformFeedbackBinding && m_transformFeedbackBinding->getProgram() != m_currentProgram) {
+        synthesizeGLError(GL_INVALID_OPERATION, "resumeTransformFeedback", "the program object is not active");
         return;
     }
 
@@ -2743,13 +2757,13 @@ ScriptValue WebGL2RenderingContextBase::getParameter(ScriptState* scriptState, G
     case GL_TEXTURE_BINDING_3D:
         return WebGLAny(scriptState, m_textureUnits[m_activeTextureUnit].m_texture3DBinding.get());
     case GL_TRANSFORM_FEEDBACK_ACTIVE:
-        return getBooleanParameter(scriptState, pname);
+        return WebGLAny(scriptState, transformFeedbackActive());
     case GL_TRANSFORM_FEEDBACK_BUFFER_BINDING:
         return WebGLAny(scriptState, m_boundTransformFeedbackBuffer.get());
     case GL_TRANSFORM_FEEDBACK_BINDING:
         return WebGLAny(scriptState, m_transformFeedbackBinding.get());
     case GL_TRANSFORM_FEEDBACK_PAUSED:
-        return getBooleanParameter(scriptState, pname);
+        return WebGLAny(scriptState, transformFeedbackPaused());
     case GL_UNIFORM_BUFFER_BINDING:
         return WebGLAny(scriptState, m_boundUniformBuffer.get());
     case GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT:

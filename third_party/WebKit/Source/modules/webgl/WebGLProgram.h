@@ -55,6 +55,10 @@ public:
     // Also, we invalidate the cached program info.
     void increaseLinkCount();
 
+    unsigned activeTransformFeedbackCount() const { return m_activeTransformFeedbackCount; }
+    void increaseActiveTransformFeedbackCount();
+    void decreaseActiveTransformFeedbackCount();
+
     WebGLShader* getAttachedShader(GLenum);
     bool attachShader(WebGLShader*);
     bool detachShader(WebGLShader*);
@@ -79,6 +83,10 @@ private:
     // This is used to track whether a WebGLUniformLocation belongs to this
     // program or not.
     unsigned m_linkCount;
+
+    // This is used to track the program being used by active transform
+    // feedback objects.
+    unsigned m_activeTransformFeedbackCount;
 
     Member<WebGLShader> m_vertexShader;
     Member<WebGLShader> m_fragmentShader;

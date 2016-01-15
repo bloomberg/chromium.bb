@@ -39,6 +39,7 @@ WebGLProgram::WebGLProgram(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx)
     , m_linkStatus(false)
     , m_linkCount(0)
+    , m_activeTransformFeedbackCount(0)
     , m_infoValid(true)
 {
     setObject(ctx->webContext()->createProgram());
@@ -105,6 +106,16 @@ void WebGLProgram::increaseLinkCount()
 {
     ++m_linkCount;
     m_infoValid = false;
+}
+
+void WebGLProgram::increaseActiveTransformFeedbackCount()
+{
+    ++m_activeTransformFeedbackCount;
+}
+
+void WebGLProgram::decreaseActiveTransformFeedbackCount()
+{
+    --m_activeTransformFeedbackCount;
 }
 
 WebGLShader* WebGLProgram::getAttachedShader(GLenum type)

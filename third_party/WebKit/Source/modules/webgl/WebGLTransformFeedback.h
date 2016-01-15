@@ -5,6 +5,7 @@
 #ifndef WebGLTransformFeedback_h
 #define WebGLTransformFeedback_h
 
+#include "modules/webgl/WebGLProgram.h"
 #include "modules/webgl/WebGLSharedPlatform3DObject.h"
 #include "wtf/PassRefPtr.h"
 
@@ -29,6 +30,11 @@ public:
     void setActive(bool);
     void setPaused(bool);
 
+    WebGLProgram* getProgram() const { return m_program; }
+    void setProgram(WebGLProgram*);
+
+    DECLARE_TRACE();
+
 protected:
     explicit WebGLTransformFeedback(WebGL2RenderingContextBase*);
 
@@ -41,6 +47,8 @@ private:
 
     bool m_active;
     bool m_paused;
+
+    Member<WebGLProgram> m_program;
 };
 
 } // namespace blink

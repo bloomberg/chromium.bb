@@ -3658,6 +3658,11 @@ void WebGLRenderingContextBase::linkProgram(WebGLProgram* program)
     if (isContextLost() || !validateWebGLObject("linkProgram", program))
         return;
 
+    if (program->activeTransformFeedbackCount() > 0) {
+        synthesizeGLError(GL_INVALID_OPERATION, "linkProgram", "program being used by one or more active transform feedback objects");
+        return;
+    }
+
     webContext()->linkProgram(objectOrZero(program));
     program->increaseLinkCount();
 }

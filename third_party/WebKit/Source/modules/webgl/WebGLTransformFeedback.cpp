@@ -24,6 +24,7 @@ WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx)
     , m_target(0)
     , m_active(false)
     , m_paused(false)
+    , m_program(nullptr)
 {
     setObject(ctx->webContext()->createTransformFeedback());
 }
@@ -50,6 +51,17 @@ void WebGLTransformFeedback::setActive(bool active)
 void WebGLTransformFeedback::setPaused(bool paused)
 {
     m_paused = paused;
+}
+
+void WebGLTransformFeedback::setProgram(WebGLProgram* program)
+{
+    m_program = program;
+}
+
+DEFINE_TRACE(WebGLTransformFeedback)
+{
+    visitor->trace(m_program);
+    WebGLSharedPlatform3DObject::trace(visitor);
 }
 
 } // namespace blink
