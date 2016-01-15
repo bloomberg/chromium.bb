@@ -64,7 +64,8 @@ ThumbnailModel.prototype.get = function(entries) {
           };
           var canUseContentThumbnail =
               metadataList[i].present &&
-              FileType.isImage(entries[i], metadataList[i].contentMimeType);
+              (FileType.isImage(entries[i], metadataList[i].contentMimeType) ||
+               FileType.isAudio(entries[i], metadataList[i].contentMimeType));
           if (canUseContentThumbnail)
             contentRequestEntries.push(entries[i]);
         }

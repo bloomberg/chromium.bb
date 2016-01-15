@@ -102,6 +102,16 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
 }
 
 /**
+ * Seeks offset to generate video thumbnail.
+ * TODO(ryoh):
+ *   What is the best position for the thumbnail?
+ *   The first frame seems not good -- sometimes it is a black frame.
+ * @const
+ * @type {number}
+ */
+ImageRequest.VIDEO_THUMBNAIL_POSITION = 3; // [sec]
+
+/**
  * Returns ID of the request.
  * @return {string} Request ID.
  */
@@ -261,11 +271,48 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   var parseImage = function(contentType, blob) {
     if (contentType)
       this.contentType_ = contentType;
-    this.image_.src = URL.createObjectURL(blob);
+    if (fileType.type === 'video') {
+      this.createThumbnailUrl_(blob).then(function(url) {
+        this.image_.src = url;
+      }.bind(this), onFailure);
+    } else {
+      this.image_.src = URL.createObjectURL(blob);
+    }
   }.bind(this);
 
   // Request raw data via XHR.
   this.xhr_.load(this.request_.url, parseImage, onFailure);
+};
+
+/**
+ * Creates a video thumbnail data url from video file.
+ *
+ * @param {Blob}  blob Blob object of video file
+ * @return {Promise<String>}  Promise that resolves with the data url of video
+ *    thumbnail.
+ * @private
+ */
+ImageRequest.prototype.createThumbnailUrl_ = function(blob) {
+  var url = URL.createObjectURL(blob);
+  var video = document.createElement('video');
+  return new Promise(function(resolve, reject) {
+    video.addEventListener('canplay', resolve);
+    video.addEventListener('error', reject);
+    video.currentTime = ImageRequest.VIDEO_THUMBNAIL_POSITION;
+    video.preload = 'auto';
+    video.src = url;
+  }).then(function() {
+    URL.revokeObjectURL(url);
+    var canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    return canvas.toDataURL();
+  }, function(errev) {
+    URL.revokeObjectURL(url);
+    console.error(errev);
+    return Promise.reject(errev);
+  });
 };
 
 /**
@@ -404,7 +451,8 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
       onFailure(xhr.status);
       return;
     }
-    var contentType = xhr.getResponseHeader('Content-Type');
+    var contentType = xhr.getResponseHeader('Content-Type') ||
+      xhr.response.type;
     onSuccess(contentType, /** @type {Blob} */ (xhr.response));
   }.bind(this);
 

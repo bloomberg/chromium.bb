@@ -77,6 +77,7 @@ function ThumbnailLoader(entry, opt_loaderType, opt_metadata, opt_mediaType,
         break;
       case ThumbnailLoader.LoadTarget.FILE_ENTRY:
         if (FileType.isImage(entry, mimeType) ||
+            FileType.isVideo(entry, mimeType) ||
             FileType.isRaw(entry, mimeType)) {
           this.thumbnailUrl_ = entry.toURL();
           this.transform_ =
