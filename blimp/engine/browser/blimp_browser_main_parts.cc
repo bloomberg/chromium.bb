@@ -4,8 +4,11 @@
 
 #include "blimp/engine/browser/blimp_browser_main_parts.h"
 
+#include "base/command_line.h"
+#include "base/threading/thread_restrictions.h"
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/engine/browser/blimp_browser_context.h"
+#include "blimp/engine/browser/blimp_engine_config.h"
 #include "blimp/engine/browser/blimp_engine_session.h"
 #include "blimp/net/blimp_connection.h"
 #include "content/public/browser/browser_thread.h"
@@ -30,6 +33,15 @@ void BlimpBrowserMainParts::PreEarlyInitialization() {
   // TODO(haibinlu): Rename the method below. crbug/548330.
   ui::InitializeInputMethodForTesting();
 #endif
+  // Fetch the engine config from the command line, and crash if invalid. Allow
+  // IO operations even though this is not in the FILE thread as this is
+  // necessary for Blimp startup and occurs before any user interaction.
+  {
+    const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    engine_config_ = BlimpEngineConfig::Create(*cmd_line);
+    CHECK(engine_config_);
+  }
 }
 
 void BlimpBrowserMainParts::PreMainMessageLoopRun() {

@@ -75,3 +75,15 @@ docker run blimp_engine --with-my-flags
 
 See the [blimp engine `Dockerfile`](../engine/Dockerfile) to find out what flags
 are passed by default.
+
+### Mapping Volumes into the Docker Container
+
+If you need to map a directory into the Docker container (eg. for necessary
+files):
+
+```bash
+docker run -v /path/to/srcdir:/path/to/docker/destdir blimp_engine
+```
+
+NB: The permissions of the directory and the files outside of the Docker
+container will be carried over into the container.

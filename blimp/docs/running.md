@@ -42,3 +42,7 @@ client device via USB, you'll need remote port forwarding to allow the Blimp
 client to talk to your computer. Follow the instructions
 [here](https://developer.chrome.com/devtools/docs/remote-debugging) to get
 started. You'll probably want to remap 25467 to "localhost:25467".
+
+### Required flags
+*   `--blimp-client-token-path=$PATH`: Path to a file containing a nonempty
+token string. If this is not present, the engine will fail to boot.

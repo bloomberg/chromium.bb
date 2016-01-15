@@ -22,6 +22,7 @@ namespace blimp {
 namespace engine {
 
 class BlimpBrowserContext;
+class BlimpEngineConfig;
 class BlimpEngineSession;
 
 class BlimpBrowserMainParts : public content::BrowserMainParts {
@@ -37,6 +38,7 @@ class BlimpBrowserMainParts : public content::BrowserMainParts {
   BlimpBrowserContext* GetBrowserContext();
 
  private:
+  scoped_ptr<BlimpEngineConfig> engine_config_;
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<BlimpEngineSession> engine_session_;
 
