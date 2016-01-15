@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
 #include "content/public/browser/bluetooth_chooser.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -104,33 +105,42 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
       const std::vector<device::BluetoothUUID>& optional_services);
   void OnConnectGATT(int thread_id,
                      int request_id,
+                     int frame_routing_id,
                      const std::string& device_id);
   void OnGetPrimaryService(int thread_id,
                            int request_id,
+                           int frame_routing_id,
                            const std::string& device_id,
                            const std::string& service_uuid);
   void OnGetCharacteristic(int thread_id,
                            int request_id,
+                           int frame_routing_id,
                            const std::string& service_instance_id,
                            const std::string& characteristic_uuid);
   void OnReadValue(int thread_id,
                    int request_id,
+                   int frame_routing_id,
                    const std::string& characteristic_instance_id);
   void OnWriteValue(int thread_id,
                     int request_id,
+                    int frame_routing_id,
                     const std::string& characteristic_instance_id,
                     const std::vector<uint8_t>& value);
   void OnStartNotifications(int thread_id,
                             int request_id,
+                            int frame_routing_id,
                             const std::string& characteristic_instance_id);
   void OnStopNotifications(int thread_id,
                            int request_id,
+                           int frame_routing_id,
                            const std::string& characteristic_instance_id);
   void OnRegisterCharacteristicObject(
       int thread_id,
+      int frame_routing_id,
       const std::string& characteristic_instance_id);
   void OnUnregisterCharacteristicObject(
       int thread_id,
+      int frame_routing_id,
       const std::string& characteristic_instance_id);
 
   // Callbacks for BluetoothAdapter::StartDiscoverySession.
@@ -210,23 +220,36 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // was already recorded and since there renderer crashed there is no need to
   // send a response.
 
-  // Queries the platform cache for a Device with |device_id|. Fills in the
-  // |outcome| field and the |device| field if successful.
-  CacheQueryResult QueryCacheForDevice(const std::string& device_id);
+  // Queries the platform cache for a Device with |device_id| for |origin|.
+  // Fills in the |outcome| field and the |device| field if successful.
+  CacheQueryResult QueryCacheForDevice(const url::Origin& origin,
+                                       const std::string& device_id);
   // Queries the platform cache for a Service with |service_instance_id|. Fills
   // in the |outcome| field, and |device| and |service| fields if successful.
-  CacheQueryResult QueryCacheForService(const std::string& service_instance_id);
+  CacheQueryResult QueryCacheForService(const url::Origin& origin,
+                                        const std::string& service_instance_id);
   // Queries the platform cache for a characteristic with
   // |characteristic_instance_id|. Fills in the |outcome| field, and |device|,
   // |service| and |characteristic| fields if successful.
   CacheQueryResult QueryCacheForCharacteristic(
+      const url::Origin& origin,
       const std::string& characteristic_instance_id);
 
   // Adds the PrimaryServicesRequest to the vector of pending services requests
   // for that device.
   void AddToPendingPrimaryServicesRequest(
-      const std::string& device_id,
+      const std::string& device_address,
       const PrimaryServicesRequest& request);
+
+  // Returns the origin for the frame with "frame_routing_id" in
+  // render_process_id_.
+  url::Origin GetOrigin(int frame_routing_id);
+
+  // Returns true if the frame has permission to access the characteristic
+  // with |characteristic_instance_id|.
+  bool CanFrameAccessCharacteristicInstance(
+      int frame_routing_id,
+      const std::string& characteristic_instance_id);
 
   // Show help pages from the chooser dialog.
   void ShowBluetoothOverviewLink();
@@ -242,8 +265,10 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // again everywhere a requestDevice() reply is sent.
   IDMap<RequestDeviceSession, IDMapOwnPointer> request_device_sessions_;
 
+  BluetoothAllowedDevicesMap allowed_devices_map_;
+
   // Maps to get the object's parent based on it's instanceID
-  // Map of service_instance_id to device_id.
+  // Map of service_instance_id to device_address.
   std::map<std::string, std::string> service_to_device_;
   // Map of characteristic_instance_id to service_instance_id.
   std::map<std::string, std::string> characteristic_to_service_;
@@ -276,8 +301,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // TODO(scheib): Destroy as connections are closed. http://crbug.com/539643
   ScopedVector<device::BluetoothGattConnection> connections_;
 
-  // Map of device_id's to primary-services requests that need responses when
-  // that device's service discovery completes.
+  // Map of device_address's to primary-services requests that need responses
+  // when that device's service discovery completes.
   std::map<std::string, std::vector<PrimaryServicesRequest>>
       pending_primary_services_requests_;
 

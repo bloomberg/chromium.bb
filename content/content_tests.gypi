@@ -203,6 +203,7 @@
       'browser/background_sync/background_sync_browsertest.cc',
       'browser/battery_status/battery_monitor_impl_browsertest.cc',
       'browser/battery_status/battery_monitor_integration_browsertest.cc',
+      'browser/bluetooth/bluetooth_allowed_devices_map_unittest.cc',
       'browser/bookmarklet_browsertest.cc',
       'browser/browser_side_navigation_browsertest.cc',
       'browser/child_process_launcher_browsertest.cc',

@@ -438,6 +438,8 @@
       'browser/background_sync/background_sync_status.h',
       'browser/bad_message.cc',
       'browser/bad_message.h',
+      'browser/bluetooth/bluetooth_allowed_devices_map.cc',
+      'browser/bluetooth/bluetooth_allowed_devices_map.h',
       'browser/bluetooth/bluetooth_dispatcher_host.cc',
       'browser/bluetooth/bluetooth_dispatcher_host.h',
       'browser/bluetooth/bluetooth_metrics.cc',

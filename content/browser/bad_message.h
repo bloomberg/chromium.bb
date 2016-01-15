@@ -126,6 +126,7 @@ enum BadMessageReason {
   RFMF_RENDERER_FAKED_ITS_OWN_DEATH = 102,
   DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE = 103,
   DWNLD_INVALID_SERIALIZE_AS_MHTML_RESPONSE = 104,
+  BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN = 105,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

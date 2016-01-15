@@ -226,56 +226,65 @@ IPC_MESSAGE_CONTROL5(BluetoothHostMsg_RequestDevice,
                      std::vector<device::BluetoothUUID> /* optional_services */)
 
 // Connects to a bluetooth device.
-IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ConnectGATT,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ConnectGATT,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* device_id */)
 
 // Gets primary service from bluetooth device.
-IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetPrimaryService,
+IPC_MESSAGE_CONTROL5(BluetoothHostMsg_GetPrimaryService,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* device_id */,
                      std::string /* service_uuid */)
 
 // Gets a GATT Characteristic within a GATT Service.
-IPC_MESSAGE_CONTROL4(BluetoothHostMsg_GetCharacteristic,
+IPC_MESSAGE_CONTROL5(BluetoothHostMsg_GetCharacteristic,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* service_instance_id */,
                      std::string /* characteristic_uuid */)
 
 // Reads the characteristics value from a bluetooth device.
-IPC_MESSAGE_CONTROL3(BluetoothHostMsg_ReadValue,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ReadValue,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristic_instance_id */)
 
 // Writes a value to a bluetooth device's characteristic.
-IPC_MESSAGE_CONTROL4(BluetoothHostMsg_WriteValue,
+IPC_MESSAGE_CONTROL5(BluetoothHostMsg_WriteValue,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristic_instance_id */,
                      std::vector<uint8_t> /* value */)
 
 // Subscribes to notifications from a device's characteristic.
-IPC_MESSAGE_CONTROL3(BluetoothHostMsg_StartNotifications,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_StartNotifications,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristic_instance_id */)
 
 // Unsubscribes from notifications from a device's characteristic.
-IPC_MESSAGE_CONTROL3(BluetoothHostMsg_StopNotifications,
+IPC_MESSAGE_CONTROL4(BluetoothHostMsg_StopNotifications,
                      int /* thread_id */,
                      int /* request_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristic_instance_id */)
 
 // Register to receive characteristic value changed events.
-IPC_MESSAGE_CONTROL2(BluetoothHostMsg_RegisterCharacteristic,
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_RegisterCharacteristic,
                      int /* thread_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristics_instance_id */)
 
 // Unregister from characteristic value changed events.
-IPC_MESSAGE_CONTROL2(BluetoothHostMsg_UnregisterCharacteristic,
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_UnregisterCharacteristic,
                      int /* thread_id */,
+                     int /* frame_routing_id */,
                      std::string /* characteristics_instance_id */)
