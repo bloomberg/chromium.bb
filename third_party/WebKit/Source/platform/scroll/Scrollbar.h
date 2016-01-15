@@ -170,7 +170,7 @@ public:
     // Even if no parts are invalidated, the scrollbar may need to be redrawn
     // if, for instance, the thumb moves without changing the appearance of any
     // part.
-    void setNeedsPaintInvalidation(ScrollbarPart invalidParts = NoPart);
+    void setNeedsPaintInvalidation(ScrollbarPart invalidParts);
 
     // Promptly unregister from the theme manager + run finalizers of derived Scrollbars.
     EAGERLY_FINALIZE();
@@ -217,8 +217,8 @@ protected:
 private:
     bool isScrollbar() const override { return true; }
 
-    void invalidate() override { setNeedsPaintInvalidation(); }
-    void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(); }
+    void invalidate() override { setNeedsPaintInvalidation(AllParts); }
+    void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(AllParts); }
 
     float scrollableAreaCurrentPos() const;
 

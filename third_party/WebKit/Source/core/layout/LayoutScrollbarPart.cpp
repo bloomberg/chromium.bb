@@ -197,7 +197,7 @@ LayoutObject* LayoutScrollbarPart::layoutObjectOwningScrollbar() const
 void LayoutScrollbarPart::setNeedsPaintInvalidation()
 {
     if (m_scrollbar) {
-        m_scrollbar->setNeedsPaintInvalidation();
+        m_scrollbar->setNeedsPaintInvalidation(AllParts);
         return;
     }
 

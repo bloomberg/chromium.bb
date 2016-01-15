@@ -105,7 +105,7 @@ void Scrollbar::setFrameRect(const IntRect& frameRect)
         return;
 
     Widget::setFrameRect(frameRect);
-    setNeedsPaintInvalidation();
+    setNeedsPaintInvalidation(AllParts);
 }
 
 ScrollbarOverlayStyle Scrollbar::scrollbarOverlayStyle() const
@@ -141,7 +141,10 @@ void Scrollbar::offsetDidChange()
 
     int oldThumbPosition = theme().thumbPosition(*this);
     m_currentPos = position;
-    setNeedsPaintInvalidation();
+    // TODO(jbroman): The theme should provide the parts to invalidate.
+    // At the moment, the only theme that doesn't invalidate everything is Mac,
+    // which invalidates this as needed in ScrollAnimatorMac.
+    setNeedsPaintInvalidation(NoPart);
     if (m_pressedPart == ThumbPart)
         setPressedPos(m_pressedPos + theme().thumbPosition(*this) - oldThumbPosition);
 }
@@ -159,7 +162,7 @@ void Scrollbar::setProportion(int visibleSize, int totalSize)
     m_visibleSize = visibleSize;
     m_totalSize = totalSize;
 
-    setNeedsPaintInvalidation();
+    setNeedsPaintInvalidation(AllParts);
 }
 
 void Scrollbar::paint(GraphicsContext& context, const CullRect& cullRect) const
@@ -191,7 +194,6 @@ void Scrollbar::autoscrollPressedPart(double delay)
 
     // Handle the track.
     if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbUnderMouse(*this)) {
-        setNeedsPaintInvalidation();
         setHoveredPart(ThumbPart);
         return;
     }
@@ -210,7 +212,6 @@ void Scrollbar::startTimerIfNeeded(double delay)
     // Handle the track.  We halt track scrolling once the thumb is level
     // with us.
     if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbUnderMouse(*this)) {
-        setNeedsPaintInvalidation();
         setHoveredPart(ThumbPart);
         return;
     }
@@ -307,7 +308,7 @@ void Scrollbar::setHoveredPart(ScrollbarPart part)
     if (((m_hoveredPart == NoPart || part == NoPart) && theme().invalidateOnMouseEnterExit())
         // When there's a pressed part, we don't draw a hovered state, so there's no reason to invalidate.
         || m_pressedPart == NoPart)
-        setNeedsPaintInvalidation();
+        setNeedsPaintInvalidation(static_cast<ScrollbarPart>(m_hoveredPart | part));
 
     m_hoveredPart = part;
 }
@@ -317,7 +318,7 @@ void Scrollbar::setPressedPart(ScrollbarPart part)
     if (m_pressedPart != NoPart
         // When we no longer have a pressed part, we can start drawing a hovered state on the hovered part.
         || m_hoveredPart != NoPart)
-        setNeedsPaintInvalidation();
+        setNeedsPaintInvalidation(static_cast<ScrollbarPart>(m_pressedPart | m_hoveredPart | part));
     m_pressedPart = part;
 }
 
@@ -388,12 +389,10 @@ void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
                 // The mouse is moving back over the pressed part.  We
                 // need to start up the timer action again.
                 startTimerIfNeeded(theme().autoscrollTimerDelay());
-                setNeedsPaintInvalidation();
             } else if (m_hoveredPart == m_pressedPart) {
                 // The mouse is leaving the pressed part.  Kill our timer
                 // if needed.
                 stopTimerIfNeeded();
-                setNeedsPaintInvalidation();
             }
         }
 
@@ -473,7 +472,7 @@ void Scrollbar::setEnabled(bool e)
         return;
     m_enabled = e;
     theme().updateEnabledState(*this);
-    setNeedsPaintInvalidation();
+    setNeedsPaintInvalidation(AllParts);
 }
 
 int Scrollbar::scrollbarThickness() const

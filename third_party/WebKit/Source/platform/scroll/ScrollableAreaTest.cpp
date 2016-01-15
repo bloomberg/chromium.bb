@@ -113,7 +113,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     EXPECT_CALL(theme, shouldRepaintAllPartsOnInvalidation()).WillRepeatedly(Return(true));
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
-    scrollbar->setNeedsPaintInvalidation();
+    scrollbar->setNeedsPaintInvalidation(NoPart);
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
@@ -121,7 +121,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     scrollbar->clearThumbNeedsRepaint();
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
-    scrollbar->setNeedsPaintInvalidation();
+    scrollbar->setNeedsPaintInvalidation(NoPart);
     EXPECT_TRUE(scrollbar->trackNeedsRepaint());
     EXPECT_TRUE(scrollbar->thumbNeedsRepaint());
 
@@ -130,7 +130,7 @@ TEST_F(ScrollableAreaTest, ScrollbarTrackAndThumbRepaint)
     scrollbar->clearThumbNeedsRepaint();
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
-    scrollbar->setNeedsPaintInvalidation();
+    scrollbar->setNeedsPaintInvalidation(NoPart);
     EXPECT_FALSE(scrollbar->trackNeedsRepaint());
     EXPECT_FALSE(scrollbar->thumbNeedsRepaint());
 
@@ -164,7 +164,7 @@ TEST_F(ScrollableAreaTest, ScrollbarGraphicsLayerInvalidation)
 
     RefPtrWillBeRawPtr<Scrollbar> scrollbar = Scrollbar::create(scrollableArea.get(), HorizontalScrollbar, RegularScrollbar, nullptr);
     graphicsLayer.resetTrackedPaintInvalidations();
-    scrollbar->setNeedsPaintInvalidation();
+    scrollbar->setNeedsPaintInvalidation(NoPart);
     EXPECT_TRUE(graphicsLayer.hasTrackedPaintInvalidations());
 }
 
