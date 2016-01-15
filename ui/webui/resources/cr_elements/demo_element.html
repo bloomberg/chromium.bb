@@ -2,39 +2,16 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 
 <dom-module id="cr-demo-element">
   <link rel="import" type="css" href="demo_element.css">
   <template>
-    <h3>cr-collapse</h3>
-    <div class="layout vertical">
-      <cr-expand-button expanded="{{collapseOpened}}">
-        Collapse 1
-      </cr-expand-button>
-      <cr-collapse opened="[[collapseOpened]]">
-        <div class="layout vertical">
-          <span>Collapsable Section 1</span>
-          <paper-checkbox>Advanced option 1</paper-checkbox>
-          <paper-checkbox>Advanced option 2</paper-checkbox>
-        </div>
-      </cr-collapse>
-      <paper-button toggles active="{{collapseOpened2}}">
-        Collapse 2
-      </paper-button>
-      <cr-collapse opened="[[collapseOpened2]]">
-        <div class="layout vertical">
-          <span>Collapsable Section 2</span>
-        </div>
-      </cr-collapse>
-    </div>
-
     <cr-expand-button toggles expanded="{{networkOpened}}">
       <span class="heading">cr-network-*</span>
     </cr-expand-button>
-    <cr-collapse opened="[[networkOpened]]">
+    <iron-collapse opened="[[networkOpened]]">
       <div class="layout vertical">
         <h3>cr-network-icon</h3>
         <div class="layout vertical">
@@ -54,7 +31,7 @@
           </div>
         </div>
       </div>
-    </cr-collapse>
+    </iron-collapse>
 
   </template>
   <script src="demo_element.js"></script>

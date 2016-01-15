@@ -1,10 +1,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_collapse/cr_collapse.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
@@ -114,7 +114,7 @@
         <!-- Advanced section -->
         <div id="advancedDiv" class="layout vertical"
             hidden$="[[!hasAdvancedOrDeviceFields_(networkProperties)]]">
-          <cr-collapse opened="[[advancedExpanded]]">
+          <iron-collapse opened="[[advancedExpanded]]">
             <!-- Advanced properties -->
             <div id="advancedInfoDiv" class="layout vertical section">
               <network-property-list
@@ -131,7 +131,7 @@
                   Network
                 </paper-button>
               </div>
-              <cr-collapse opened="[[addressExpanded]]">
+              <iron-collapse opened="[[addressExpanded]]">
                 <div class="layout vertical">
                   <network-apnlist editable
                       hidden$="[[!isType_(networkProperties, NetworkType.CELLULAR)]]"
@@ -147,7 +147,7 @@
                       on-nameservers-change="onIPConfigChange_">
                   </network-nameservers>
                 </div>
-              </cr-collapse>
+              </iron-collapse>
             </div>
 
             <!-- Proxy -->
@@ -158,14 +158,14 @@
                   Proxy
                 </paper-button>
               </div>
-              <cr-collapse opened="[[proxyExpanded]]">
+              <iron-collapse opened="[[proxyExpanded]]">
                 <div id="proxyDiv" class="layout vertical">
                   <network-proxy editable
                       network-properties="[[networkProperties]]"
                       on-proxy-change="onProxyChange_">
                   </network-proxy>
                 </div>
-              </cr-collapse>
+              </iron-collapse>
             </div>
 
             <!-- Device properties -->
@@ -176,14 +176,14 @@
                   Device
                 </paper-button>
               </div>
-              <cr-collapse opened="[[deviceExpanded]]">
+              <iron-collapse opened="[[deviceExpanded]]">
                 <network-property-list
                     fields="[[getDeviceFields_(networkProperties)]]"
                     property-dict="[[networkProperties]]">
                 </network-property-list>
-              </cr-collapse>
+              </iron-collapse>
             </div>
-          </cr-collapse>
+          </iron-collapse>
         </div>
       </div>
     </div>

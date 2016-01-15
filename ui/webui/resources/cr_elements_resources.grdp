@@ -18,15 +18,6 @@
                file="../../webui/resources/cr_elements/demo_page.html"
                type="chrome_html" />
   </if>
-  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_CSS"
-             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.css"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_HTML"
-             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.html"
-             type="chrome_html" />
-  <structure name="IDR_CR_ELEMENTS_CR_COLLAPSE_JS"
-             file="../../webui/resources/cr_elements/cr_collapse/cr_collapse.js"
-             type="chrome_html" />
   <structure name="IDR_CR_ELEMENTS_CR_EVENTS_HTML"
              file="../../webui/resources/cr_elements/cr_events/cr_events.html"
              type="chrome_html" />
