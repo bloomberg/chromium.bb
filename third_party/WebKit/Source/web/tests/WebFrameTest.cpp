@@ -4710,10 +4710,10 @@ TEST_P(ParameterizedWebFrameTest, CompositedSelectionBoundsCleared)
     webViewHelper.webView()->resize(WebSize(viewWidth, viewHeight));
     FrameTestHelpers::loadFrame(webViewHelper.webView()->mainFrame(), m_baseURL + "select_range_basic.html");
 
-    // The frame starts with a non-empty selection.
+    // The frame starts with no selection.
     WebFrame* frame = webViewHelper.webView()->mainFrame();
     ASSERT_TRUE(frame->hasSelection());
-    EXPECT_FALSE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
+    EXPECT_TRUE(fakeSelectionLayerTreeView.getAndResetSelectionCleared());
 
     // The selection cleared notification should be triggered upon layout.
     frame->executeCommand(WebString::fromUTF8("Unselect"));

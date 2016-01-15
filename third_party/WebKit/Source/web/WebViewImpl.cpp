@@ -1902,9 +1902,9 @@ void WebViewImpl::resizeViewWhileAnchored(FrameView* view)
 
     m_fullscreenController->updateSize();
 
-    // Relayout immediately to recalculate the minimum scale limit for rotation anchoring.
-    if (view->needsLayout())
-        view->layout();
+    // Update lifecyle phases immediately to recalculate the minimum scale limit for rotation anchoring,
+    // and to make sure that no lifecycle states are stale if this WebView is embedded in another one.
+    updateAllLifecyclePhases();
 }
 
 void WebViewImpl::resize(const WebSize& newSize)
