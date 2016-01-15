@@ -105,7 +105,9 @@ BattOrAgent::BattOrAgent(
       last_action_(Action::INVALID),
       command_(Command::INVALID),
       num_read_attempts_(0) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  // We don't care what thread the constructor is called on - we only care that
+  // all of the other method invocations happen on the same thread.
+  thread_checker_.DetachFromThread();
 }
 
 BattOrAgent::~BattOrAgent() {
