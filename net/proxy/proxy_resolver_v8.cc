@@ -373,6 +373,13 @@ class SharedIsolateFactory {
         gin::V8Initializer::LoadV8Natives();
 #endif
 
+        // The performance of the proxy resolver is limited by DNS resolution,
+        // and not V8, so tune down V8 to use as little memory as possible.
+        static const char kOptimizeForSize[] = "--optimize_for_size";
+        v8::V8::SetFlagsFromString(kOptimizeForSize, strlen(kOptimizeForSize));
+        static const char kNoOpt[] = "--noopt";
+        v8::V8::SetFlagsFromString(kNoOpt, strlen(kNoOpt));
+
         gin::IsolateHolder::Initialize(
             gin::IsolateHolder::kNonStrictMode,
             gin::IsolateHolder::kStableV8Extras,
