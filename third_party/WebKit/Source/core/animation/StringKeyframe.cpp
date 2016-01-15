@@ -4,6 +4,7 @@
 
 #include "core/animation/StringKeyframe.h"
 
+#include "core/StylePropertyShorthand.h"
 #include "core/XLinkNames.h"
 #include "core/animation/CSSColorInterpolationType.h"
 #include "core/animation/CSSFontWeightInterpolationType.h"
@@ -92,8 +93,13 @@ PropertyHandleSet StringKeyframe::properties() const
     // This is not used in time-critical code, so we probably don't need to
     // worry about caching this result.
     PropertyHandleSet properties;
-    for (unsigned i = 0; i < m_cssPropertyMap->propertyCount(); ++i)
-        properties.add(PropertyHandle(m_cssPropertyMap->propertyAt(i).id(), false));
+    for (unsigned i = 0; i < m_cssPropertyMap->propertyCount(); ++i) {
+        StylePropertySet::PropertyReference propertyReference = m_cssPropertyMap->propertyAt(i);
+        ASSERT_WITH_MESSAGE(
+            !isShorthandProperty(propertyReference.id()) || propertyReference.value()->isVariableReferenceValue(),
+            "Web Animations: Encountered unexpanded shorthand CSS property (%d).", propertyReference.id());
+        properties.add(PropertyHandle(propertyReference.id(), false));
+    }
 
     for (unsigned i = 0; i < m_presentationAttributeMap->propertyCount(); ++i)
         properties.add(PropertyHandle(m_presentationAttributeMap->propertyAt(i).id(), true));

@@ -30,7 +30,6 @@
 
 #include "core/animation/KeyframeEffectModel.h"
 
-#include "core/StylePropertyShorthand.h"
 #include "core/animation/AnimationEffect.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -178,8 +177,6 @@ void KeyframeEffectModelBase::ensureKeyframeGroups() const
             zeroOffsetEasing = &keyframe->easing();
 
         for (const PropertyHandle& property : keyframe->properties()) {
-            if (property.isCSSProperty())
-                ASSERT_WITH_MESSAGE(!isShorthandProperty(property.cssProperty()), "Web Animations: Encountered shorthand CSS property (%d) in normalized keyframes.", property.cssProperty());
             KeyframeGroupMap::iterator groupIter = m_keyframeGroups->find(property);
             PropertySpecificKeyframeGroup* group;
             if (groupIter == m_keyframeGroups->end())
