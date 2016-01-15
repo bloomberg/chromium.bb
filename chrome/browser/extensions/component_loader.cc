@@ -577,6 +577,9 @@ void ComponentLoader::AddDefaultComponentExtensions(
 
 void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
     bool skip_session_components) {
+  // Do not add component extensions that have background pages here -- add them
+  // to AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode.
+
   // No component extension for kiosk app launch splash screen.
   if (skip_session_components)
     return;
@@ -586,6 +589,8 @@ void ComponentLoader::AddDefaultComponentExtensionsForKioskMode(
 
   // Add virtual keyboard.
   AddKeyboardApp();
+
+  AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode();
 
 #if defined(ENABLE_PLUGINS)
   Add(pdf_extension_util::GetManifest(),
@@ -687,6 +692,23 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
   Add(IDR_CRYPTOTOKEN_MANIFEST,
       base::FilePath(FILE_PATH_LITERAL("cryptotoken")));
+}
+
+void ComponentLoader::
+    AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  // Component extensions with background pages are not enabled during tests
+  // because they generate a lot of background behavior that can interfere.
+  if (!enable_background_extensions_during_testing &&
+      (command_line->HasSwitch(switches::kTestType) ||
+       command_line->HasSwitch(
+           switches::kDisableComponentExtensionsWithBackgroundPages))) {
+    return;
+  }
+
+  AddHangoutServicesExtension();
 }
 
 void ComponentLoader::DeleteData(int manifest_resource_id,

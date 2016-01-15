@@ -141,6 +141,7 @@ class ComponentLoader {
 
   void AddDefaultComponentExtensionsWithBackgroundPages(
       bool skip_session_components);
+  void AddDefaultComponentExtensionsWithBackgroundPagesForKioskMode();
   void AddFileManagerExtension();
   void AddVideoPlayerExtension();
   void AddAudioPlayerExtension();
