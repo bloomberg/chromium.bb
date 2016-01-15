@@ -4,23 +4,21 @@
 
 import("//build/config/android/rules.gni")
 
-if (!is_component_build) {
-  template("remoting_apk_tmpl") {
-    android_apk(target_name) {
-      forward_variables_from(invoker, "*")
+template("remoting_apk_tmpl") {
+  android_apk(target_name) {
+    forward_variables_from(invoker, "*")
 
-      android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
-      native_libs = [ "libremoting_client_jni.so" ]
+    android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
+    native_libs = [ "libremoting_client_jni.so" ]
 
-      deps += [
-        "//remoting/android:remoting_apk_manifest",
-        "//remoting/android:remoting_client_jni",
-      ]
+    deps += [
+      "//remoting/android:remoting_apk_manifest",
+      "//remoting/android:remoting_client_jni",
+    ]
 
-      if (target_cpu == "arm") {
-        deps += [ "//remoting/android:remoting_cardboard_extract_native_lib" ]
-        native_libs += [ "libvrtoolkit.so" ]
-      }
+    if (target_cpu == "arm") {
+      deps += [ "//remoting/android:remoting_cardboard_extract_native_lib" ]
+      loadable_modules = [ "$root_out_dir/libvrtoolkit.so" ]
     }
   }
 }

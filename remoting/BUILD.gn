@@ -41,7 +41,7 @@ group("remoting_all") {
     ]
   }
 
-  if (is_android && !is_component_build) {
+  if (is_android) {
     deps += [
       "//remoting/android:remoting_apk",
       "//remoting/android:remoting_test_apk",
