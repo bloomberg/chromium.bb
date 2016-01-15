@@ -134,14 +134,21 @@ public class BookmarksBridge {
         }
 
         /**
-         * Called when the native side of bookmark is loaded and now in usable state.
+         * Invoked when the native side of bookmark is loaded and now in usable state.
          */
         public void bookmarkModelLoaded() {
             bookmarkModelChanged();
         }
 
         /**
-         *  Called when there are changes to the bookmark model that don't trigger any of the other
+         * Invoked when bookmarks became editable or non-editable.
+         */
+        public void editBookmarksEnabledChanged() {
+            bookmarkModelChanged();
+        }
+
+        /**
+         *  Invoked when there are changes to the bookmark model that don't trigger any of the other
          *  callback methods or it wasn't handled by other callback methods.
          *  Examples:
          *  - On partner bookmarks change.
@@ -694,6 +701,13 @@ public class BookmarksBridge {
 
         for (BookmarkModelObserver observer : mObservers) {
             observer.bookmarkModelChanged();
+        }
+    }
+
+    @CalledByNative
+    private void editBookmarksEnabledChanged() {
+        for (BookmarkModelObserver observer : mObservers) {
+            observer.editBookmarksEnabledChanged();
         }
     }
 

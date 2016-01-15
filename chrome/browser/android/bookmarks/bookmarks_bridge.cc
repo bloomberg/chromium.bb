@@ -112,6 +112,12 @@ BookmarksBridge::BookmarksBridge(JNIEnv* env, jobject obj, jobject j_profile)
       chrome::GetBrowserContextRedirectedInIncognito(profile_));
   partner_bookmarks_shim_->AddObserver(this);
 
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      bookmarks::prefs::kEditBookmarksEnabled,
+      base::Bind(&BookmarksBridge::EditBookmarksEnabledChanged,
+                 base::Unretained(this)));
+
   NotifyIfDoneLoading();
 
   // Since a sync or import could have started before this class is
@@ -856,6 +862,14 @@ const BookmarkNode* BookmarksBridge::GetFolderWithFallback(long folder_id,
 bool BookmarksBridge::IsEditBookmarksEnabled() const {
   return profile_->GetPrefs()->GetBoolean(
       bookmarks::prefs::kEditBookmarksEnabled);
+}
+
+void BookmarksBridge::EditBookmarksEnabledChanged() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_BookmarksBridge_editBookmarksEnabledChanged(env, obj.obj());
 }
 
 bool BookmarksBridge::IsEditable(const BookmarkNode* node) const {

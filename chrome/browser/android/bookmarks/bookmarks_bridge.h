@@ -11,6 +11,7 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/prefs/pref_change_registrar.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_shim.h"
 #include "components/bookmarks/browser/base_bookmark_model_observer.h"
 #include "components/bookmarks/common/android/bookmark_id.h"
@@ -204,6 +205,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   const bookmarks::BookmarkNode* GetFolderWithFallback(long folder_id,
                                                        int type);
   bool IsEditBookmarksEnabled() const;
+  void EditBookmarksEnabledChanged();
   // Returns whether |node| can be modified by the user.
   bool IsEditable(const bookmarks::BookmarkNode* node) const;
   // Returns whether |node| is a managed bookmark.
@@ -258,6 +260,7 @@ class BookmarksBridge : public bookmarks::BaseBookmarkModelObserver,
   bookmarks::BookmarkModel* bookmark_model_;  // weak
   bookmarks::ManagedBookmarkService* managed_bookmark_service_;  // weak
   scoped_ptr<bookmarks::ScopedGroupBookmarkActions> grouped_bookmark_actions_;
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Information about the Partner bookmarks (must check for IsLoaded()).
   // This is owned by profile.

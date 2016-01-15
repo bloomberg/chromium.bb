@@ -991,7 +991,11 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             return;
         }
 
-        assert mToolbarManager.getBookmarksBridge().isEditBookmarksEnabled();
+        // Defense in depth against the UI being erroneously enabled.
+        if (!mToolbarManager.getBookmarksBridge().isEditBookmarksEnabled()) {
+            assert false;
+            return;
+        }
 
         // Note the use of getUserBookmarkId() over getBookmarkId() here: Managed bookmarks can't be
         // edited. If the current URL is only bookmarked by managed bookmarks, this will return
