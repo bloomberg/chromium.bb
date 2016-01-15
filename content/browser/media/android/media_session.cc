@@ -135,6 +135,11 @@ void MediaSession::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 
 void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
                                   int player_id) {
+  // If a playback is completed, BrowserMediaPlayerManager will call
+  // OnPlayerPaused() after RemovePlayer(). This is a workaround for this.
+  if (!players_.count(PlayerIdentifier(observer, player_id)))
+    return;
+
   // If there is more than one observer, remove the paused one from the session.
   if (players_.size() != 1) {
     RemovePlayer(observer, player_id);
@@ -142,7 +147,6 @@ void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
   }
 
   // Otherwise, suspend the session.
-  DCHECK(*players_.begin() == PlayerIdentifier(observer, player_id));
   DCHECK(!IsSuspended());
   OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
 }
