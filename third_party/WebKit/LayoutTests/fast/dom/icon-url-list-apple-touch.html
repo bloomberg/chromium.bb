@@ -20,16 +20,14 @@ function runTests() {
         return
     }
 
-    if (window.internals && window.internals.runtimeFlags.touchIconLoadingEnabled) {
-        if (!actualURLs[1] || actualURLs[1] != "http://test.com/i/touch.png") {
-            debug("Test failed.. apple touch icon missing or invalid.")
-            return
-        }
+    if (!actualURLs[1] || actualURLs[1] != "http://test.com/i/touch.png") {
+        debug("Test failed.. apple touch icon missing or invalid.")
+        return
+    }
 
-        if (!actualURLs[2] || actualURLs[2] != "http://test.com/i/touch-precomposed.png") {
-            debug("Test failed.. apple touch icon missing or invalid.")
-            return
-        }
+    if (!actualURLs[2] || actualURLs[2] != "http://test.com/i/touch-precomposed.png") {
+        debug("Test failed.. apple touch icon missing or invalid.")
+        return
     }
 
     debug("All icons are preset and in-order in document.iconURLs()")

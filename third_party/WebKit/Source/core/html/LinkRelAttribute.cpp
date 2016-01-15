@@ -86,11 +86,9 @@ LinkRelAttribute::LinkRelAttribute(const String& rel)
         } else if (equalIgnoringCase(linkType, "next")) {
             m_isLinkNext = true;
         } else if (equalIgnoringCase(linkType, "apple-touch-icon")) {
-            if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
-                m_iconType = TouchIcon;
+            m_iconType = TouchIcon;
         } else if (equalIgnoringCase(linkType, "apple-touch-icon-precomposed")) {
-            if (RuntimeEnabledFeatures::touchIconLoadingEnabled())
-                m_iconType = TouchPrecomposedIcon;
+            m_iconType = TouchPrecomposedIcon;
         } else if (equalIgnoringCase(linkType, "manifest")) {
             m_isManifest = true;
         }

@@ -30,9 +30,6 @@ using blink::WebRuntimeFeatures;
 namespace content {
 
 static void SetRuntimeFeatureDefaultsForPlatform() {
-  // Enable non-standard "apple-touch-icon" and "apple-touch-icon-precomposed".
-  WebRuntimeFeatures::enableTouchIconLoading(true);
-
 #if defined(OS_ANDROID)
   // MSE/EME implementation needs Android MediaCodec API.
   if (!media::MediaCodecUtil::IsMediaCodecAvailable()) {

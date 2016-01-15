@@ -36,22 +36,6 @@
 
 namespace blink {
 
-class LinkRelAttributeTest : public testing::Test {
-protected:
-    void SetUp() override
-    {
-        m_touchIconLoadingEnabled = RuntimeEnabledFeatures::touchIconLoadingEnabled();
-    }
-
-    void TearDown() override
-    {
-        RuntimeEnabledFeatures::setTouchIconLoadingEnabled(m_touchIconLoadingEnabled);
-    }
-
-private:
-    bool m_touchIconLoadingEnabled;
-};
-
 static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconType iconType, bool isAlternate, bool isDNSPrefetch, bool isLinkSubresource, bool isLinkPrerender, bool isImport = false, bool isPreconnect = false)
 {
     LinkRelAttribute linkRelAttribute(value);
@@ -65,47 +49,8 @@ static inline void testLinkRelAttribute(String value, bool isStyleSheet, IconTyp
     ASSERT_EQ(isPreconnect, linkRelAttribute.isPreconnect()) << value.utf8().data();
 }
 
-TEST_F(LinkRelAttributeTest, Constructor)
+TEST(LinkRelAttributeTest, Constructor)
 {
-    RuntimeEnabledFeatures::setTouchIconLoadingEnabled(false);
-
-    testLinkRelAttribute("stylesheet", true, InvalidIcon, false, false, false, false);
-    testLinkRelAttribute("sTyLeShEeT", true, InvalidIcon, false, false, false, false);
-
-    testLinkRelAttribute("icon", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("iCoN", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("shortcut icon", false, Favicon, false, false, false, false);
-    testLinkRelAttribute("sHoRtCuT iCoN", false, Favicon, false, false, false, false);
-
-    testLinkRelAttribute("dns-prefetch", false, InvalidIcon, false, true, false, false);
-    testLinkRelAttribute("dNs-pReFeTcH", false, InvalidIcon, false, true, false, false);
-
-    testLinkRelAttribute("apple-touch-icon", false, InvalidIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn", false, InvalidIcon, false, false, false, false);
-    testLinkRelAttribute("apple-touch-icon-precomposed", false, InvalidIcon, false, false, false, false);
-    testLinkRelAttribute("aPpLe-tOuCh-IcOn-pReCoMpOsEd", false, InvalidIcon, false, false, false, false);
-
-    testLinkRelAttribute("alternate stylesheet", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("stylesheet alternate", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("aLtErNaTe sTyLeShEeT", true, InvalidIcon, true, false, false, false);
-    testLinkRelAttribute("sTyLeShEeT aLtErNaTe", true, InvalidIcon, true, false, false, false);
-
-    testLinkRelAttribute("stylesheet icon prerender aLtErNaTe", true, Favicon, true, false, false, true);
-    testLinkRelAttribute("alternate subresource", false, InvalidIcon, true, false, true, false);
-    testLinkRelAttribute("alternate icon stylesheet", true, Favicon, true, false, false, false);
-
-    testLinkRelAttribute("import", false, InvalidIcon, false, false, false, false, true);
-    // "import" is mutually exclusive and "stylesheet" wins when they conflict.
-    testLinkRelAttribute("stylesheet import", true, InvalidIcon, false, false, false, false, false);
-
-    testLinkRelAttribute("preconnect", false, InvalidIcon, false, false, false, false, false, true);
-    testLinkRelAttribute("pReCoNnEcT", false, InvalidIcon, false, false, false, false, false, true);
-}
-
-TEST_F(LinkRelAttributeTest, ConstructorTouchIconLoadingEnabled)
-{
-    RuntimeEnabledFeatures::setTouchIconLoadingEnabled(true);
-
     testLinkRelAttribute("stylesheet", true, InvalidIcon, false, false, false, false);
     testLinkRelAttribute("sTyLeShEeT", true, InvalidIcon, false, false, false, false);
 
