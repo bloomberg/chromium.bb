@@ -858,6 +858,8 @@ Reemit PAT/PMT before writing the next packet.
 Use LATM packetization for AAC.
 @item pat_pmt_at_frames
 Reemit PAT and PMT at each video frame.
+@item system_b
+Conform to System B (DVB) instead of System A (ATSC).
 @end table
 
 @subsection Example
@@ -873,6 +875,21 @@ ffmpeg -i file.mpg -c copy \
      -metadata service_name="Some Channel" \
      -y out.ts
 @end example
+
+@section mxf, mxf_d10
+
+MXF muxer.
+
+@subsection Options
+
+The muxer options are:
+
+@table @option
+@item store_user_comments @var{bool}
+Set if user comments should be stored if available or never.
+IRT D-10 does not allow user comments. The default is thus to write them for
+mxf but not for mxf_d10
+@end table
 
 @section null
 

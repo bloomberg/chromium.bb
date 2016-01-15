@@ -108,7 +108,11 @@ void avcodec_register_all(void)
     REGISTER_HWACCEL(VC1_DXVA2,         vc1_dxva2);
     REGISTER_HWACCEL(VC1_VAAPI,         vc1_vaapi);
     REGISTER_HWACCEL(VC1_VDPAU,         vc1_vdpau);
+    REGISTER_HWACCEL(VC1_MMAL,          vc1_mmal);
     REGISTER_HWACCEL(VC1_QSV,           vc1_qsv);
+    REGISTER_HWACCEL(VP9_D3D11VA,       vp9_d3d11va);
+    REGISTER_HWACCEL(VP9_DXVA2,         vp9_dxva2);
+    REGISTER_HWACCEL(VP9_VAAPI,         vp9_vaapi);
     REGISTER_HWACCEL(WMV3_D3D11VA,      wmv3_d3d11va);
     REGISTER_HWACCEL(WMV3_DXVA2,        wmv3_dxva2);
     REGISTER_HWACCEL(WMV3_VAAPI,        wmv3_vaapi);
@@ -326,6 +330,7 @@ void avcodec_register_all(void)
     REGISTER_DECODER(VC1_VDPAU,         vc1_vdpau);
 #endif
     REGISTER_DECODER(VC1IMAGE,          vc1image);
+    REGISTER_DECODER(VC1_MMAL,          vc1_mmal);
     REGISTER_DECODER(VC1_QSV,           vc1_qsv);
     REGISTER_DECODER(VCR1,              vcr1);
     REGISTER_DECODER(VMDVIDEO,          vmdvideo);
@@ -445,6 +450,8 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (WMAV2,             wmav2);
     REGISTER_DECODER(WMAVOICE,          wmavoice);
     REGISTER_DECODER(WS_SND1,           ws_snd1);
+    REGISTER_DECODER(XMA1,              xma1);
+    REGISTER_DECODER(XMA2,              xma2);
 
     /* PCM codecs */
     REGISTER_ENCDEC (PCM_ALAW,          pcm_alaw);
@@ -544,7 +551,7 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (SUBRIP,            subrip);
     REGISTER_DECODER(SUBVIEWER,         subviewer);
     REGISTER_DECODER(SUBVIEWER1,        subviewer1);
-    REGISTER_DECODER(TEXT,              text);
+    REGISTER_ENCDEC (TEXT,              text);
     REGISTER_DECODER(VPLAYER,           vplayer);
     REGISTER_ENCDEC (WEBVTT,            webvtt);
     REGISTER_ENCDEC (XSUB,              xsub);
@@ -565,7 +572,6 @@ void avcodec_register_all(void)
     REGISTER_ENCDEC (LIBSCHROEDINGER,   libschroedinger);
     REGISTER_ENCODER(LIBSHINE,          libshine);
     REGISTER_ENCDEC (LIBSPEEX,          libspeex);
-    REGISTER_DECODER(LIBSTAGEFRIGHT_H264, libstagefright_h264);
     REGISTER_ENCODER(LIBTHEORA,         libtheora);
     REGISTER_ENCODER(LIBTWOLAME,        libtwolame);
     REGISTER_ENCDEC (LIBUTVIDEO,        libutvideo);

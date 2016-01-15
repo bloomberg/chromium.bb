@@ -150,7 +150,7 @@ static int scan_mmco_reset(AVCodecParserContext *s)
                     unsigned int reordering_of_pic_nums_idc = get_ue_golomb_31(&sl->gb);
 
                     if (reordering_of_pic_nums_idc < 3)
-                        get_ue_golomb(&sl->gb);
+                        get_ue_golomb_long(&sl->gb);
                     else if (reordering_of_pic_nums_idc > 3) {
                         av_log(h->avctx, AV_LOG_ERROR,
                                "illegal reordering_of_pic_nums_idc %d\n",
@@ -189,7 +189,7 @@ static int scan_mmco_reset(AVCodecParserContext *s)
                 return 1;
 
             if (opcode == MMCO_SHORT2UNUSED || opcode == MMCO_SHORT2LONG)
-                get_ue_golomb(&sl->gb);
+                get_ue_golomb_long(&sl->gb); // difference_of_pic_nums_minus1
             if (opcode == MMCO_SHORT2LONG || opcode == MMCO_LONG2UNUSED ||
                 opcode == MMCO_LONG || opcode == MMCO_SET_MAX_LONG)
                 get_ue_golomb_31(&sl->gb);
@@ -371,7 +371,7 @@ static inline int parse_nal_units(AVCodecParserContext *s,
             }
 
             if (h->nal_unit_type == NAL_IDR_SLICE)
-                get_ue_golomb(&sl->gb); /* idr_pic_id */
+                get_ue_golomb_long(&sl->gb); /* idr_pic_id */
             if (h->sps.poc_type == 0) {
                 h->poc_lsb = get_bits(&sl->gb, h->sps.log2_max_poc_lsb);
 

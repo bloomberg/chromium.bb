@@ -29,6 +29,7 @@
  * add sane pulse detection
  ***********************************/
 
+#include "libavutil/thread.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/opt.h"
 #include "avcodec.h"
@@ -45,6 +46,8 @@
 #include "aacenc_utils.h"
 
 #include "psymodel.h"
+
+static AVOnce aac_table_init = AV_ONCE_INIT;
 
 /**
  * Make AAC audio config object.
@@ -292,7 +295,13 @@ static void apply_mid_side_stereo(ChannelElement *cpe)
         for (w2 =  0; w2 < ics->group_len[w]; w2++) {
             int start = (w+w2) * 128;
             for (g = 0; g < ics->num_swb; g++) {
-                if (!cpe->ms_mask[w*16 + g] && !cpe->is_mask[w*16 + g]) {
+                /* ms_mask can be used for other purposes in PNS and I/S,
+                 * so must not apply M/S if any band uses either, even if
+                 * ms_mask is set.
+                 */
+                if (!cpe->ms_mask[w*16 + g] || cpe->is_mask[w*16 + g]
+                    || cpe->ch[0].band_type[w*16 + g] == NOISE_BT
+                    || cpe->ch[1].band_type[w*16 + g] == NOISE_BT) {
                     start += ics->swb_sizes[g];
                     continue;
                 }
@@ -565,6 +574,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
             ics->num_windows        = wi[ch].num_windows;
             ics->swb_sizes          = s->psy.bands    [ics->num_windows == 8];
             ics->num_swb            = tag == TYPE_LFE ? ics->num_swb : s->psy.num_bands[ics->num_windows == 8];
+            ics->max_sfb            = FFMIN(ics->max_sfb, ics->num_swb);
             ics->swb_offset         = wi[ch].window_type[0] == EIGHT_SHORT_SEQUENCE ?
                                         ff_swb_offset_128 [s->samplerate_index]:
                                         ff_swb_offset_1024[s->samplerate_index];
@@ -639,7 +649,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                         sce->band_type[w] = 0;
             }
             s->psy.bitres.alloc = -1;
-            s->psy.bitres.bits = avctx->frame_bits / s->channels;
+            s->psy.bitres.bits = s->last_frame_pb_count / s->channels;
             s->psy.model->analyze(&s->psy, start_ch, coeffs, wi);
             if (s->psy.bitres.alloc > 0) {
                 /* Lambda unused here on purpose, we need to take psy's unscaled allocation */
@@ -669,14 +679,14 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
             for (ch = 0; ch < chans; ch++) { /* TNS and PNS */
                 sce = &cpe->ch[ch];
                 s->cur_channel = start_ch + ch;
-                if (s->options.pns && s->coder->search_for_pns)
-                    s->coder->search_for_pns(s, avctx, sce);
                 if (s->options.tns && s->coder->search_for_tns)
                     s->coder->search_for_tns(s, sce);
                 if (s->options.tns && s->coder->apply_tns_filt)
                     s->coder->apply_tns_filt(s, sce);
                 if (sce->tns.present)
                     tns_mode = 1;
+                if (s->options.pns && s->coder->search_for_pns)
+                    s->coder->search_for_pns(s, avctx, sce);
             }
             s->cur_channel = start_ch;
             if (s->options.intensity_stereo) { /* Intensity Stereo */
@@ -784,7 +794,7 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
             s->lambda = FFMIN(s->lambda * ratio, 65536.f);
 
             /* Keep iterating if we must reduce and lambda is in the sky */
-            if ((s->lambda < 300.f || ratio > 0.9f) && (s->lambda > 10.f || ratio < 1.1f)) {
+            if (ratio > 0.9f && ratio < 1.1f) {
                 break;
             } else {
                 if (is_mode || ms_mode || tns_mode || pred_mode) {
@@ -808,7 +818,9 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
 
     put_bits(&s->pb, 3, TYPE_END);
     flush_put_bits(&s->pb);
-    avctx->frame_bits = put_bits_count(&s->pb);
+
+    s->last_frame_pb_count = put_bits_count(&s->pb);
+
     s->lambda_sum += s->lambda;
     s->lambda_count++;
 
@@ -879,6 +891,11 @@ alloc_fail:
     return AVERROR(ENOMEM);
 }
 
+static av_cold void aac_encode_init_tables(void)
+{
+    ff_aac_tableinit();
+}
+
 static av_cold int aac_encode_init(AVCodecContext *avctx)
 {
     AACEncContext *s = avctx->priv_data;
@@ -889,8 +906,8 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
 
     s->channels = avctx->channels;
     s->chan_map = aac_chan_configs[s->channels-1];
-    s->random_state = 0x1f2e3d4c;
     s->lambda = avctx->global_quality > 0 ? avctx->global_quality : 120;
+    s->last_frame_pb_count = 0;
     avctx->extradata_size = 5;
     avctx->frame_size = 1024;
     avctx->initial_padding = 1024;
@@ -912,7 +929,9 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
     ERROR_IF(s->channels > AAC_MAX_CHANNELS || s->channels == 7,
              "Unsupported number of channels: %d\n", s->channels);
     WARN_IF(1024.0 * avctx->bit_rate / avctx->sample_rate > 6144 * s->channels,
-             "Too many bits per frame requested, clamping to max\n");
+             "Too many bits %f > %d per frame requested, clamping to max\n",
+             1024.0 * avctx->bit_rate / avctx->sample_rate,
+             6144 * s->channels);
 
     for (i = 0; i < FF_ARRAY_ELEMS(aacenc_profiles); i++)
         if (avctx->profile == aacenc_profiles[i])
@@ -946,13 +965,17 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
         avctx->profile = FF_PROFILE_AAC_MAIN;
         WARN_IF(1,
                 "Chainging profile to \"aac_main\"\n");
-        ERROR_IF(s->options.pred,
+        ERROR_IF(s->options.ltp,
                  "LTP prediction unavailable in the \"aac_main\" profile\n");
     }
     s->profile = avctx->profile;
     s->coder = &ff_aac_coders[s->options.coder];
 
     if (s->options.coder != AAC_CODER_TWOLOOP) {
+        ERROR_IF(avctx->strict_std_compliance > FF_COMPLIANCE_EXPERIMENTAL,
+                 "Coders other than twoloop require -strict -2 and some may be removed in the future\n");
+        WARN_IF(s->options.coder == AAC_CODER_FAAC,
+                "The FAAC-like coder will be removed in the near future, please use twoloop!\n");
         s->options.intensity_stereo = 0;
         s->options.pns = 0;
     }
@@ -976,11 +999,13 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
         goto fail;
     s->psypp = ff_psy_preprocess_init(avctx);
     ff_lpc_init(&s->lpc, 2*avctx->frame_size, TNS_MAX_ORDER, FF_LPC_TYPE_LEVINSON);
+    av_lfg_init(&s->lfg, 0x72adca55);
 
-    if (HAVE_MIPSDSPR1)
+    if (HAVE_MIPSDSP)
         ff_aac_coder_init_mips(s);
 
-    ff_aac_tableinit();
+    if ((ret = ff_thread_once(&aac_table_init, &aac_encode_init_tables)) != 0)
+        return AVERROR_UNKNOWN;
 
     ff_af_queue_init(avctx, &s->afq);
 
@@ -1023,8 +1048,8 @@ AVCodec ff_aac_encoder = {
     .encode2        = aac_encode_frame,
     .close          = aac_encode_end,
     .supported_samplerates = mpeg4audio_sample_rates,
-    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME | AV_CODEC_CAP_DELAY |
-                      AV_CODEC_CAP_EXPERIMENTAL,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .capabilities   = AV_CODEC_CAP_SMALL_LAST_FRAME | AV_CODEC_CAP_DELAY,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLTP,
                                                      AV_SAMPLE_FMT_NONE },
     .priv_class     = &aacenc_class,

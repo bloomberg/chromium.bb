@@ -1,14 +1,4 @@
-Current Status as of November 10, 2015
-
-Upstream cherry-picks:
-  Commit a5034b324cad4c29d47ef285a30b0705e6eb0384 fixes crash in matroskadec.c.
-    See https://crbug.com/484423.
-
-  Commit 50ce510ac4e3ed093c051738242a9a75aeeb36ce fixes TSAN data race warning
-    in pthread_slice.c. See https://crbug.com/448215.
-
-  Commit 5e6ce28dabe002a6130f17b59c454bdee33088f7 fixes mp3 seeking for CBR
-    content. See https://crbug.com/545914.
+Current Status as of January 8, 2016
 
 Autorename:
   autorename_* files are renamed copies of various files that would cause
@@ -17,6 +7,12 @@ Autorename:
 
 Current patches:
   .gitignore has a "Chromium stuff" section.
+
+  Remove add_cflags "-mips64" from configure
+    This conflicts with --extra-cflags=-mips64r6 for mips64el. There are a
+    series of upstream patches changing how mips arch selection works, this may
+    be resolved shortly. (Those patches are not by Google though, and are also
+    the reason it broke.)
 
   Changes/additions to compat/msvcrt/{snprintf.c,snprintf.h}
   Changes/additions to compat/{strtod.c,strtod.h}

@@ -466,7 +466,7 @@ static int init_axis_color(ShowCQTContext *s, AVFrame *tmp)
     double *freq = NULL;
     int x, y, ret;
 
-    if (s->basefreq != BASEFREQ || s->endfreq != ENDFREQ) {
+    if (s->basefreq != (double) BASEFREQ || s->endfreq != (double) ENDFREQ) {
         av_log(s->ctx, AV_LOG_WARNING, "font axis rendering is not implemented in non-default frequency range,"
                " please use axisfile option instead.\n");
         return AVERROR(EINVAL);
@@ -993,7 +993,7 @@ static int plot_cqt(AVFilterContext *ctx)
 {
     AVFilterLink *outlink = ctx->outputs[0];
     ShowCQTContext *s = ctx->priv;
-    int ret;
+    int ret = 0;
 
     memcpy(s->fft_result, s->fft_data, s->fft_len * sizeof(*s->fft_data));
     av_fft_permute(s->fft_ctx, s->fft_result);

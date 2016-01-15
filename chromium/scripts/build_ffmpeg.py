@@ -303,6 +303,7 @@ def main(argv):
       '--disable-iconv',
       '--disable-lzo',
       '--disable-network',
+      '--disable-schannel',
       '--disable-sdl',
       '--disable-symver',
       '--disable-xlib',
@@ -452,7 +453,7 @@ def main(argv):
           '--arch=mips',
           '--extra-cflags=-mips32',
           '--disable-mipsfpu',
-          '--disable-mipsdspr1',
+          '--disable-mipsdsp',
           '--disable-mipsdspr2',
       ])
     elif target_arch == 'mips64el' and target_os == "android":

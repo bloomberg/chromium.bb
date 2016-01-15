@@ -216,6 +216,8 @@ typedef struct OptionsContext {
     int        nb_discard;
     SpecifierOpt *disposition;
     int        nb_disposition;
+    SpecifierOpt *program;
+    int        nb_program;
 } OptionsContext;
 
 typedef struct InputFilter {
@@ -414,13 +416,14 @@ typedef struct OutputStream {
     int64_t max_frames;
     AVFrame *filtered_frame;
     AVFrame *last_frame;
-    int last_droped;
+    int last_dropped;
     int last_nb0_frames[3];
 
     void  *hwaccel_ctx;
 
     /* video only */
     AVRational frame_rate;
+    int is_cfr;
     int force_fps;
     int top_field_first;
     int rotate_overridden;
@@ -451,7 +454,6 @@ typedef struct OutputStream {
     AVDictionary *sws_dict;
     AVDictionary *swr_opts;
     AVDictionary *resample_opts;
-    AVDictionary *bsf_args;
     char *apad;
     OSTFinished finished;        /* no more packets should be written for this stream */
     int unavailable;                     /* true if the steram is unavailable (possibly temporarily) */

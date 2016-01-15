@@ -171,9 +171,9 @@ static int alloc_scratch_buffers(H264SliceContext *sl, int linesize)
     // (= 21x21 for  h264)
     av_fast_malloc(&sl->edge_emu_buffer, &sl->edge_emu_buffer_allocated, alloc_size * 2 * 21);
 
-    av_fast_malloc(&sl->top_borders[0], &sl->top_borders_allocated[0],
+    av_fast_mallocz(&sl->top_borders[0], &sl->top_borders_allocated[0],
                    h->mb_width * 16 * 3 * sizeof(uint8_t) * 2);
-    av_fast_malloc(&sl->top_borders[1], &sl->top_borders_allocated[1],
+    av_fast_mallocz(&sl->top_borders[1], &sl->top_borders_allocated[1],
                    h->mb_width * 16 * 3 * sizeof(uint8_t) * 2);
 
     if (!sl->bipred_scratchpad || !sl->edge_emu_buffer ||
@@ -540,10 +540,7 @@ int ff_h264_update_thread_context(AVCodecContext *dst,
     h->dequant_coeff_pps = h1->dequant_coeff_pps;
 
     // POC timing
-    copy_fields(h, h1, poc_lsb, default_ref_list);
-
-    // reference lists
-    copy_fields(h, h1, short_ref, current_slice);
+    copy_fields(h, h1, poc_lsb, current_slice);
 
     copy_picture_range(h->short_ref, h1->short_ref, 32, h, h1);
     copy_picture_range(h->long_ref, h1->long_ref, 32, h, h1);
@@ -598,6 +595,7 @@ static int h264_frame_start(H264Context *h)
     pic->reference              = h->droppable ? 0 : h->picture_structure;
     pic->f->coded_picture_number = h->coded_picture_number++;
     pic->field_picture          = h->picture_structure != PICT_FRAME;
+    pic->frame_num               = h->frame_num;
 
     /*
      * Zero key_frame here; IDR markings per slice in frame or fields are ORed
@@ -783,7 +781,7 @@ static void implicit_weight_table(const H264Context *h, H264SliceContext *sl, in
             cur_poc = h->cur_pic_ptr->field_poc[h->picture_structure - 1];
         }
         if (sl->ref_count[0] == 1 && sl->ref_count[1] == 1 && !FRAME_MBAFF(h) &&
-            sl->ref_list[0][0].poc + sl->ref_list[1][0].poc == 2 * cur_poc) {
+            sl->ref_list[0][0].poc + (int64_t)sl->ref_list[1][0].poc == 2 * cur_poc) {
             sl->use_weight        = 0;
             sl->use_weight_chroma = 0;
             return;
@@ -804,7 +802,7 @@ static void implicit_weight_table(const H264Context *h, H264SliceContext *sl, in
     sl->chroma_log2_weight_denom = 5;
 
     for (ref0 = ref_start; ref0 < ref_count0; ref0++) {
-        int poc0 = sl->ref_list[0][ref0].poc;
+        int64_t poc0 = sl->ref_list[0][ref0].poc;
         for (ref1 = ref_start; ref1 < ref_count1; ref1++) {
             int w = 32;
             if (!sl->ref_list[0][ref0].parent->long_ref && !sl->ref_list[1][ref1].parent->long_ref) {
@@ -1097,6 +1095,7 @@ static int h264_slice_header_init(H264Context *h)
         nb_slices = max_slices;
     }
     h->slice_context_count = nb_slices;
+    h->max_contexts = FFMIN(h->max_contexts, nb_slices);
 
     if (!HAVE_THREADS || !(h->avctx->active_thread_type & FF_THREAD_SLICE)) {
         ret = ff_h264_slice_context_init(h, &h->slice_ctx[0]);
@@ -1227,7 +1226,6 @@ int ff_h264_decode_slice_header(H264Context *h, H264SliceContext *sl)
         sl->slice_type_fixed = 0;
 
     slice_type = golomb_to_pict_type[slice_type];
-
     sl->slice_type     = slice_type;
     sl->slice_type_nos = slice_type & 3;
 
@@ -1666,11 +1664,7 @@ int ff_h264_decode_slice_header(H264Context *h, H264SliceContext *sl)
             memset(h->slice_table, -1,
                 (h->mb_height * h->mb_stride - 1) * sizeof(*h->slice_table));
         }
-        h->last_slice_type = -1;
     }
-
-    if (!h->setup_finished)
-        h->cur_pic_ptr->frame_num = h->frame_num; // FIXME frame_num cleanup
 
     av_assert1(h->mb_num == h->mb_width * h->mb_height);
     if (first_mb_in_slice << FIELD_OR_MBAFF_PICTURE(h) >= h->mb_num ||
@@ -1694,7 +1688,7 @@ int ff_h264_decode_slice_header(H264Context *h, H264SliceContext *sl)
     }
 
     if (h->nal_unit_type == NAL_IDR_SLICE)
-        get_ue_golomb(&sl->gb); /* idr_pic_id */
+        get_ue_golomb_long(&sl->gb); /* idr_pic_id */
 
     if (h->sps.poc_type == 0) {
         int poc_lsb = get_bits(&sl->gb, h->sps.log2_max_poc_lsb);
@@ -1732,14 +1726,6 @@ int ff_h264_decode_slice_header(H264Context *h, H264SliceContext *sl)
     ret = ff_set_ref_count(h, sl);
     if (ret < 0)
         return ret;
-
-    if (slice_type != AV_PICTURE_TYPE_I &&
-        (h->current_slice == 0 ||
-         slice_type != h->last_slice_type ||
-         memcmp(h->last_ref_count, sl->ref_count, sizeof(sl->ref_count)))) {
-
-        ff_h264_fill_default_ref_list(h, sl);
-    }
 
     if (sl->slice_type_nos != AV_PICTURE_TYPE_I) {
        ret = ff_h264_decode_ref_pic_list_reordering(h, sl);
@@ -1884,8 +1870,6 @@ int ff_h264_decode_slice_header(H264Context *h, H264SliceContext *sl)
                           h->pps.chroma_qp_index_offset[1]) +
                    6 * (h->sps.bit_depth_luma - 8);
 
-    h->last_slice_type = slice_type;
-    memcpy(h->last_ref_count, sl->ref_count, sizeof(h->last_ref_count));
     sl->slice_num       = ++h->current_slice;
 
     if (sl->slice_num)
@@ -1992,12 +1976,12 @@ static av_always_inline void fill_filter_caches_inter(const H264Context *h,
         if (USES_LIST(top_type, list)) {
             const int b_xy  = h->mb2b_xy[top_xy] + 3 * b_stride;
             const int b8_xy = 4 * top_xy + 2;
-            int (*ref2frm)[64] = (void*)(sl->ref2frm[h->slice_table[top_xy] & (MAX_SLICES - 1)][0] + (MB_MBAFF(sl) ? 20 : 2));
+            int *ref2frm = sl->ref2frm[h->slice_table[top_xy] & (MAX_SLICES - 1)][list] + (MB_MBAFF(sl) ? 20 : 2);
             AV_COPY128(mv_dst - 1 * 8, h->cur_pic.motion_val[list][b_xy + 0]);
             ref_cache[0 - 1 * 8] =
-            ref_cache[1 - 1 * 8] = ref2frm[list][h->cur_pic.ref_index[list][b8_xy + 0]];
+            ref_cache[1 - 1 * 8] = ref2frm[h->cur_pic.ref_index[list][b8_xy + 0]];
             ref_cache[2 - 1 * 8] =
-            ref_cache[3 - 1 * 8] = ref2frm[list][h->cur_pic.ref_index[list][b8_xy + 1]];
+            ref_cache[3 - 1 * 8] = ref2frm[h->cur_pic.ref_index[list][b8_xy + 1]];
         } else {
             AV_ZERO128(mv_dst - 1 * 8);
             AV_WN32A(&ref_cache[0 - 1 * 8], ((LIST_NOT_USED) & 0xFF) * 0x01010101u);
@@ -2007,15 +1991,15 @@ static av_always_inline void fill_filter_caches_inter(const H264Context *h,
             if (USES_LIST(left_type[LTOP], list)) {
                 const int b_xy  = h->mb2b_xy[left_xy[LTOP]] + 3;
                 const int b8_xy = 4 * left_xy[LTOP] + 1;
-                int (*ref2frm)[64] =(void*)( sl->ref2frm[h->slice_table[left_xy[LTOP]] & (MAX_SLICES - 1)][0] + (MB_MBAFF(sl) ? 20 : 2));
+                int *ref2frm = sl->ref2frm[h->slice_table[left_xy[LTOP]] & (MAX_SLICES - 1)][list] + (MB_MBAFF(sl) ? 20 : 2);
                 AV_COPY32(mv_dst - 1 +  0, h->cur_pic.motion_val[list][b_xy + b_stride * 0]);
                 AV_COPY32(mv_dst - 1 +  8, h->cur_pic.motion_val[list][b_xy + b_stride * 1]);
                 AV_COPY32(mv_dst - 1 + 16, h->cur_pic.motion_val[list][b_xy + b_stride * 2]);
                 AV_COPY32(mv_dst - 1 + 24, h->cur_pic.motion_val[list][b_xy + b_stride * 3]);
                 ref_cache[-1 +  0] =
-                ref_cache[-1 +  8] = ref2frm[list][h->cur_pic.ref_index[list][b8_xy + 2 * 0]];
+                ref_cache[-1 +  8] = ref2frm[h->cur_pic.ref_index[list][b8_xy + 2 * 0]];
                 ref_cache[-1 + 16] =
-                ref_cache[-1 + 24] = ref2frm[list][h->cur_pic.ref_index[list][b8_xy + 2 * 1]];
+                ref_cache[-1 + 24] = ref2frm[h->cur_pic.ref_index[list][b8_xy + 2 * 1]];
             } else {
                 AV_ZERO32(mv_dst - 1 +  0);
                 AV_ZERO32(mv_dst - 1 +  8);
@@ -2040,9 +2024,9 @@ static av_always_inline void fill_filter_caches_inter(const H264Context *h,
 
     {
         int8_t *ref = &h->cur_pic.ref_index[list][4 * mb_xy];
-        int (*ref2frm)[64] = (void*)(sl->ref2frm[sl->slice_num & (MAX_SLICES - 1)][0] + (MB_MBAFF(sl) ? 20 : 2));
-        uint32_t ref01 = (pack16to32(ref2frm[list][ref[0]], ref2frm[list][ref[1]]) & 0x00FF00FF) * 0x0101;
-        uint32_t ref23 = (pack16to32(ref2frm[list][ref[2]], ref2frm[list][ref[3]]) & 0x00FF00FF) * 0x0101;
+        int *ref2frm = sl->ref2frm[sl->slice_num & (MAX_SLICES - 1)][list] + (MB_MBAFF(sl) ? 20 : 2);
+        uint32_t ref01 = (pack16to32(ref2frm[ref[0]], ref2frm[ref[1]]) & 0x00FF00FF) * 0x0101;
+        uint32_t ref23 = (pack16to32(ref2frm[ref[2]], ref2frm[ref[3]]) & 0x00FF00FF) * 0x0101;
         AV_WN32A(&ref_cache[0 * 8], ref01);
         AV_WN32A(&ref_cache[1 * 8], ref01);
         AV_WN32A(&ref_cache[2 * 8], ref23);
@@ -2371,9 +2355,11 @@ static int decode_slice(struct AVCodecContext *avctx, void *arg)
         align_get_bits(&sl->gb);
 
         /* init cabac */
-        ff_init_cabac_decoder(&sl->cabac,
+        ret = ff_init_cabac_decoder(&sl->cabac,
                               sl->gb.buffer + get_bits_count(&sl->gb) / 8,
                               (get_bits_left(&sl->gb) + 7) / 8);
+        if (ret < 0)
+            return ret;
 
         ff_h264_init_cabac_states(h, sl);
 

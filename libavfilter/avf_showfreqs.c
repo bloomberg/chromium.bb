@@ -32,19 +32,18 @@
 #include "video.h"
 #include "avfilter.h"
 #include "internal.h"
+#include "window_func.h"
 
 enum DisplayMode    { LINE, BAR, DOT, NB_MODES };
+enum ChannelMode    { COMBINED, SEPARATE, NB_CMODES };
 enum FrequencyScale { FS_LINEAR, FS_LOG, FS_RLOG, NB_FSCALES };
 enum AmplitudeScale { AS_LINEAR, AS_SQRT, AS_CBRT, AS_LOG, NB_ASCALES };
-enum WindowFunc     { WFUNC_RECT, WFUNC_HANNING, WFUNC_HAMMING, WFUNC_BLACKMAN,
-                      WFUNC_BARTLETT, WFUNC_WELCH, WFUNC_FLATTOP,
-                      WFUNC_BHARRIS, WFUNC_BNUTTALL, WFUNC_SINE, WFUNC_NUTTALL,
-                      WFUNC_BHANN, WFUNC_LANCZOS, WFUNC_GAUSS, NB_WFUNC };
 
 typedef struct ShowFreqsContext {
     const AVClass *class;
     int w, h;
     int mode;
+    int cmode;
     int fft_bits;
     int ascale, fscale;
     int avg;
@@ -112,9 +111,13 @@ static const AVOption showfreqs_options[] = {
         { "nuttall",  "Nuttall",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_NUTTALL},  0, 0, FLAGS, "win_func" },
         { "lanczos",  "Lanczos",          0, AV_OPT_TYPE_CONST, {.i64=WFUNC_LANCZOS},  0, 0, FLAGS, "win_func" },
         { "gauss",    "Gauss",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_GAUSS},    0, 0, FLAGS, "win_func" },
+        { "tukey",    "Tukey",            0, AV_OPT_TYPE_CONST, {.i64=WFUNC_TUKEY},    0, 0, FLAGS, "win_func" },
     { "overlap",  "set window overlap", OFFSET(overlap), AV_OPT_TYPE_FLOAT, {.dbl=1.}, 0., 1., FLAGS },
     { "averaging", "set time averaging", OFFSET(avg), AV_OPT_TYPE_INT, {.i64=1}, 0, INT32_MAX, FLAGS },
     { "colors", "set channels colors", OFFSET(colors), AV_OPT_TYPE_STRING, {.str = "red|green|blue|yellow|orange|lime|pink|magenta|brown" }, 0, 0, FLAGS },
+    { "cmode", "set channel mode", OFFSET(cmode), AV_OPT_TYPE_INT, {.i64=COMBINED}, 0, NB_CMODES-1, FLAGS, "cmode" },
+        { "combined", "show all channels in same window",  0, AV_OPT_TYPE_CONST, {.i64=COMBINED}, 0, 0, FLAGS, "cmode" },
+        { "separate", "show each channel in own window",   0, AV_OPT_TYPE_CONST, {.i64=SEPARATE}, 0, 0, FLAGS, "cmode" },
     { NULL }
 };
 
@@ -149,91 +152,6 @@ static int query_formats(AVFilterContext *ctx)
         return ret;
 
     return 0;
-}
-
-static void generate_window_func(float *lut, int N, int win_func, float *overlap)
-{
-    int n;
-
-    switch (win_func) {
-    case WFUNC_RECT:
-        for (n = 0; n < N; n++)
-            lut[n] = 1.;
-        *overlap = 0.;
-        break;
-    case WFUNC_BARTLETT:
-        for (n = 0; n < N; n++)
-            lut[n] = 1.-fabs((n-(N-1)/2.)/((N-1)/2.));
-        *overlap = 0.5;
-        break;
-    case WFUNC_HANNING:
-        for (n = 0; n < N; n++)
-            lut[n] = .5*(1-cos(2*M_PI*n/(N-1)));
-        *overlap = 0.5;
-        break;
-    case WFUNC_HAMMING:
-        for (n = 0; n < N; n++)
-            lut[n] = .54-.46*cos(2*M_PI*n/(N-1));
-        *overlap = 0.5;
-        break;
-    case WFUNC_BLACKMAN:
-        for (n = 0; n < N; n++)
-            lut[n] = .42659-.49656*cos(2*M_PI*n/(N-1))+.076849*cos(4*M_PI*n/(N-1));
-        *overlap = 0.661;
-        break;
-    case WFUNC_WELCH:
-        for (n = 0; n < N; n++)
-            lut[n] = 1.-(n-(N-1)/2.)/((N-1)/2.)*(n-(N-1)/2.)/((N-1)/2.);
-        *overlap = 0.293;
-        break;
-    case WFUNC_FLATTOP:
-        for (n = 0; n < N; n++)
-            lut[n] = 1.-1.985844164102*cos( 2*M_PI*n/(N-1))+1.791176438506*cos( 4*M_PI*n/(N-1))-
-                        1.282075284005*cos( 6*M_PI*n/(N-1))+0.667777530266*cos( 8*M_PI*n/(N-1))-
-                        0.240160796576*cos(10*M_PI*n/(N-1))+0.056656381764*cos(12*M_PI*n/(N-1))-
-                        0.008134974479*cos(14*M_PI*n/(N-1))+0.000624544650*cos(16*M_PI*n/(N-1))-
-                        0.000019808998*cos(18*M_PI*n/(N-1))+0.000000132974*cos(20*M_PI*n/(N-1));
-        *overlap = 0.841;
-        break;
-    case WFUNC_BHARRIS:
-        for (n = 0; n < N; n++)
-            lut[n] = 0.35875-0.48829*cos(2*M_PI*n/(N-1))+0.14128*cos(4*M_PI*n/(N-1))-0.01168*cos(6*M_PI*n/(N-1));
-        *overlap = 0.661;
-        break;
-    case WFUNC_BNUTTALL:
-        for (n = 0; n < N; n++)
-            lut[n] = 0.3635819-0.4891775*cos(2*M_PI*n/(N-1))+0.1365995*cos(4*M_PI*n/(N-1))-0.0106411*cos(6*M_PI*n/(N-1));
-        *overlap = 0.661;
-        break;
-    case WFUNC_BHANN:
-        for (n = 0; n < N; n++)
-            lut[n] = 0.62-0.48*fabs(n/(double)(N-1)-.5)-0.38*cos(2*M_PI*n/(N-1));
-        *overlap = 0.5;
-        break;
-    case WFUNC_SINE:
-        for (n = 0; n < N; n++)
-            lut[n] = sin(M_PI*n/(N-1));
-        *overlap = 0.75;
-        break;
-    case WFUNC_NUTTALL:
-        for (n = 0; n < N; n++)
-            lut[n] = 0.355768-0.487396*cos(2*M_PI*n/(N-1))+0.144232*cos(4*M_PI*n/(N-1))-0.012604*cos(6*M_PI*n/(N-1));
-        *overlap = 0.663;
-        break;
-    case WFUNC_LANCZOS:
-#define SINC(x) (!(x)) ? 1 : sin(M_PI * (x))/(M_PI * (x));
-        for (n = 0; n < N; n++)
-            lut[n] = SINC((2.*n)/(N-1)-1);
-        *overlap = 0.75;
-        break;
-    case WFUNC_GAUSS:
-        for (n = 0; n < N; n++)
-            lut[n] = pow(M_E,-0.5*pow((n-(N-1)/2)/(0.4*(N-1)/2.f),2));
-        *overlap = 0.75;
-        break;
-    default:
-        av_assert0(0);
-    }
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -284,7 +202,7 @@ static int config_output(AVFilterLink *outlink)
                                       sizeof(*s->window_func_lut));
     if (!s->window_func_lut)
         return AVERROR(ENOMEM);
-    generate_window_func(s->window_func_lut, s->win_size, s->win_func, &overlap);
+    ff_generate_window_func(s->window_func_lut, s->win_size, s->win_func, &overlap);
     if (s->overlap == 1.)
         s->overlap = overlap;
     s->skip_samples = (1. - s->overlap) * s->win_size;
@@ -357,6 +275,7 @@ static inline void plot_freq(ShowFreqsContext *s, int ch,
     const float avg = s->avg_data[ch][f];
     const float bsize = get_bsize(s, f);
     const int sx = get_sx(s, f);
+    int end = outlink->h;
     int x, y, i;
 
     switch(s->ascale) {
@@ -373,7 +292,16 @@ static inline void plot_freq(ShowFreqsContext *s, int ch,
         a = 1.0 - a;
         break;
     }
-    y = a * outlink->h - 1;
+
+    switch (s->cmode) {
+    case COMBINED:
+        y = a * outlink->h - 1;
+        break;
+    case SEPARATE:
+        end = (outlink->h / s->nb_channels) * (ch + 1);
+        y = (outlink->h / s->nb_channels) * ch + a * (outlink->h / s->nb_channels) - 1;
+        break;
+    }
     if (y < 0)
         return;
 
@@ -409,7 +337,7 @@ static inline void plot_freq(ShowFreqsContext *s, int ch,
         break;
     case BAR:
         for (x = sx; x < sx + bsize && x < w; x++)
-            for (i = y; i < outlink->h; i++)
+            for (i = y; i < end; i++)
                 draw_dot(out, x, i, fg);
         break;
     case DOT:
@@ -531,8 +459,10 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_fft_end(s->fft);
     for (i = 0; i < s->nb_channels; i++) {
-        av_freep(&s->fft_data[i]);
-        av_freep(&s->avg_data[i]);
+        if (s->fft_data)
+            av_freep(&s->fft_data[i]);
+        if (s->avg_data)
+            av_freep(&s->avg_data[i]);
     }
     av_freep(&s->fft_data);
     av_freep(&s->avg_data);

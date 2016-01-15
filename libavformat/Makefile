@@ -18,6 +18,7 @@ OBJS = allformats.o         \
        mux.o                \
        options.o            \
        os_support.o         \
+       qtpalette.o          \
        riff.o               \
        sdp.o                \
        url.o                \
@@ -170,6 +171,7 @@ OBJS-$(CONFIG_FOURXM_DEMUXER)            += 4xm.o
 OBJS-$(CONFIG_FRAMECRC_MUXER)            += framecrcenc.o framehash.o
 OBJS-$(CONFIG_FRAMEMD5_MUXER)            += md5enc.o framehash.o
 OBJS-$(CONFIG_FRM_DEMUXER)               += frmdec.o
+OBJS-$(CONFIG_FSB_DEMUXER)               += fsb.o
 OBJS-$(CONFIG_GIF_MUXER)                 += gif.o
 OBJS-$(CONFIG_GIF_DEMUXER)               += gifdec.o
 OBJS-$(CONFIG_GSM_DEMUXER)               += gsmdec.o
@@ -228,6 +230,7 @@ OBJS-$(CONFIG_ISS_DEMUXER)               += iss.o
 OBJS-$(CONFIG_IV8_DEMUXER)               += iv8.o
 OBJS-$(CONFIG_IVF_DEMUXER)               += ivfdec.o
 OBJS-$(CONFIG_IVF_MUXER)                 += ivfenc.o
+OBJS-$(CONFIG_IVR_DEMUXER)               += rmdec.o rm.o rmsipr.o
 OBJS-$(CONFIG_JACOSUB_DEMUXER)           += jacosubdec.o subtitles.o
 OBJS-$(CONFIG_JACOSUB_MUXER)             += jacosubenc.o rawenc.o
 OBJS-$(CONFIG_JV_DEMUXER)                += jvdec.o
@@ -262,7 +265,7 @@ OBJS-$(CONFIG_MMF_DEMUXER)               += mmf.o
 OBJS-$(CONFIG_MMF_MUXER)                 += mmf.o rawenc.o
 OBJS-$(CONFIG_MOV_DEMUXER)               += mov.o isom.o mov_chan.o replaygain.o
 OBJS-$(CONFIG_MOV_MUXER)                 += movenc.o isom.o avc.o hevc.o \
-                                            movenchint.o mov_chan.o rtp.o
+                                            movenchint.o mov_chan.o rtp.o movenccenc.o
 OBJS-$(CONFIG_MP2_MUXER)                 += mp3enc.o rawenc.o id3v2enc.o
 OBJS-$(CONFIG_MP3_DEMUXER)               += mp3dec.o replaygain.o
 OBJS-$(CONFIG_MP3_MUXER)                 += mp3enc.o rawenc.o id3v2enc.o
@@ -447,6 +450,8 @@ OBJS-$(CONFIG_TTA_DEMUXER)               += tta.o apetag.o img2.o
 OBJS-$(CONFIG_TTY_DEMUXER)               += tty.o sauce.o
 OBJS-$(CONFIG_TXD_DEMUXER)               += txd.o
 OBJS-$(CONFIG_UNCODEDFRAMECRC_MUXER)     += uncodedframecrcenc.o framehash.o
+OBJS-$(CONFIG_V210_DEMUXER)              += v210.o
+OBJS-$(CONFIG_V210X_DEMUXER)             += v210.o
 OBJS-$(CONFIG_VAG_DEMUXER)               += vag.o
 OBJS-$(CONFIG_VC1_DEMUXER)               += rawdec.o vc1dec.o
 OBJS-$(CONFIG_VC1_MUXER)                 += rawenc.o
@@ -457,6 +462,7 @@ OBJS-$(CONFIG_VMD_DEMUXER)               += sierravmd.o
 OBJS-$(CONFIG_VOBSUB_DEMUXER)            += subtitles.o # mpeg demuxer is in the dependencies
 OBJS-$(CONFIG_VOC_DEMUXER)               += vocdec.o voc.o
 OBJS-$(CONFIG_VOC_MUXER)                 += vocenc.o voc.o
+OBJS-$(CONFIG_VPK_DEMUXER)               += vpk.o
 OBJS-$(CONFIG_VPLAYER_DEMUXER)           += vplayerdec.o subtitles.o
 OBJS-$(CONFIG_VQF_DEMUXER)               += vqf.o
 OBJS-$(CONFIG_W64_DEMUXER)               += wavdec.o w64.o pcm.o
@@ -542,6 +548,7 @@ OBJS-$(CONFIG_SUBFILE_PROTOCOL)          += subfile.o
 OBJS-$(CONFIG_TCP_PROTOCOL)              += tcp.o
 OBJS-$(CONFIG_TLS_GNUTLS_PROTOCOL)       += tls_gnutls.o tls.o
 OBJS-$(CONFIG_TLS_OPENSSL_PROTOCOL)      += tls_openssl.o tls.o
+OBJS-$(CONFIG_TLS_SCHANNEL_PROTOCOL)     += tls_schannel.o tls.o
 OBJS-$(CONFIG_TLS_SECURETRANSPORT_PROTOCOL) += tls_securetransport.o tls.o
 OBJS-$(CONFIG_UDP_PROTOCOL)              += udp.o
 OBJS-$(CONFIG_UDPLITE_PROTOCOL)          += udp.o
@@ -563,6 +570,7 @@ TESTPROGS = async                                                       \
             srtp                                                        \
             url                                                         \
 
+TESTPROGS-$(CONFIG_MOV_MUXER)            += movenc
 TESTPROGS-$(CONFIG_NETWORK)              += noproxy
 TESTPROGS-$(CONFIG_FFRTMPCRYPT_PROTOCOL) += rtmpdh
 
