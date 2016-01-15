@@ -357,6 +357,11 @@ bool Character::isCJKIdeographOrSymbol(UChar32 c)
         0x2600, 0x2603,
         0x2660, 0x266F,
         0x2672, 0x267D,
+        // Emoji HEAVY HEART EXCLAMATION MARK ORNAMENT..HEAVY BLACK HEART
+        // Needed in order not to break Emoji heart-kiss sequences in
+        // CachingWordShapeIterator.
+        // cmp. http://www.unicode.org/emoji/charts/emoji-zwj-sequences.html
+        0x2763, 0x2764,
         0x2776, 0x277F,
         // Ideographic Description Characters, with CJK Symbols and Punctuation, excluding 0x3030.
         // Then Hiragana 0x3040 .. 0x309F, Katakana 0x30A0 .. 0x30FF, Bopomofo 0x3100 .. 0x312F

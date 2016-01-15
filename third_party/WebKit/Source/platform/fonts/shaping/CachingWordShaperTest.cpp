@@ -295,6 +295,97 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndNonCJKCommon)
     ASSERT_FALSE(iterator.next(&wordResult));
 }
 
+TEST_F(CachingWordShaperTest, SegmentEmojiZWJCommon)
+{
+    // A family followed by a couple with heart emoji sequence,
+    // the latter including a variation selector.
+    const UChar str[] = {
+        0xD83D, 0xDC68,
+        0x200D,
+        0xD83D, 0xDC69,
+        0x200D,
+        0xD83D, 0xDC67,
+        0x200D,
+        0xD83D, 0xDC66,
+        0xD83D, 0xDC69,
+        0x200D,
+        0x2764, 0xFE0F,
+        0x200D,
+        0xD83D, 0xDC8B,
+        0x200D,
+        0xD83D, 0xDC68,
+        0x0
+    };
+    TextRun textRun(str, 22);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(22u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentEmojiHeartZWJSequence)
+{
+    // A ZWJ, followed by two family ZWJ Sequences.
+    const UChar str[] = {
+        0xD83D, 0xDC69,
+        0x200D,
+        0x2764, 0xFE0F,
+        0x200D,
+        0xD83D, 0xDC8B,
+        0x200D,
+        0xD83D, 0xDC68,
+        0x0
+    };
+    TextRun textRun(str, 11);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(11u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
+TEST_F(CachingWordShaperTest, SegmentEmojiExtraZWJPrefix)
+{
+    // A ZWJ, followed by a family and a heart-kiss sequence.
+    const UChar str[] = {
+        0x200D,
+        0xD83D, 0xDC68,
+        0x200D,
+        0xD83D, 0xDC69,
+        0x200D,
+        0xD83D, 0xDC67,
+        0x200D,
+        0xD83D, 0xDC66,
+        0xD83D, 0xDC69,
+        0x200D,
+        0x2764, 0xFE0F,
+        0x200D,
+        0xD83D, 0xDC8B,
+        0x200D,
+        0xD83D, 0xDC68,
+        0x0
+    };
+    TextRun textRun(str, 23);
+
+    RefPtr<ShapeResult> wordResult;
+    CachingWordShapeIterator iterator(cache.get(), textRun, &font);
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(1u, wordResult->numCharacters());
+
+    ASSERT_TRUE(iterator.next(&wordResult));
+    EXPECT_EQ(22u, wordResult->numCharacters());
+
+    ASSERT_FALSE(iterator.next(&wordResult));
+}
+
 TEST_F(CachingWordShaperTest, SegmentCJKCommon)
 {
     const UChar str[] = {

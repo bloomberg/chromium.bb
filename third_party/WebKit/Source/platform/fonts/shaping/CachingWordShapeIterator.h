@@ -127,7 +127,9 @@ private:
                 bool hasAnyScript = !Character::isCommonOrInheritedScript(ch);
                 for (unsigned i = end; i < length; end = i) {
                     U16_NEXT(m_textRun.characters16(), i, length, ch);
-                    if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK))
+                    // ZWJ check in order not to split Emoji ZWJ sequences.
+                    if (U_GET_GC_MASK(ch) & (U_GC_M_MASK | U_GC_LM_MASK | U_GC_SK_MASK)
+                        || ch == zeroWidthJoinerCharacter)
                         continue;
                     // Avoid delimiting COMMON/INHERITED alone, which makes harder to
                     // identify the script.
@@ -146,10 +148,14 @@ private:
         }
 
         for (unsigned i = m_startIndex + 1; ; i++) {
-            if (i == length || isWordDelimiter(m_textRun[i])
-                || (!m_textRun.is8Bit()
-                    && Character::isCJKIdeographOrSymbol(m_textRun[i]))) {
+            if (i == length || isWordDelimiter(m_textRun[i])) {
                 return i;
+            }
+            if (!m_textRun.is8Bit()) {
+                UChar32 nextChar;
+                U16_GET(m_textRun.characters16(), 0, i, length, nextChar);
+                if (Character::isCJKIdeographOrSymbol(nextChar))
+                    return i;
             }
         }
     }
