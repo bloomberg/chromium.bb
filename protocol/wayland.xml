@@ -421,6 +421,12 @@
     <enum name="error">
       <entry name="invalid_finish" value="0"
 	     summary="finish request was called untimely"/>
+      <entry name="invalid_action_mask" value="1"
+	     summary="action mask contains invalid values"/>
+      <entry name="invalid_action" value="2"
+	     summary="action argument has an invalid value"/>
+      <entry name="invalid_offer" value="3"
+	     summary="offer doesn't accept this request"/>
     </enum>
 
     <request name="accept">
@@ -495,9 +501,98 @@
 	It is a client error to perform other requests than
 	wl_data_offer.destroy after this one. It is also an error to perform
 	this request after a NULL mime type has been set in
-	wl_data_offer.accept.
+	wl_data_offer.accept or no action was received through
+	wl_data_offer.action.
       </description>
     </request>
+
+    <request name="set_actions" since="3">
+      <description summary="set the available/preferred drag-and-drop actions">
+	Sets the actions that the destination side client supports for
+	this operation. This request may trigger the emission of
+	wl_data_source.action and wl_data_offer.action events if the compositor
+	need to change the selected action.
+
+	This request can be called multiple times throughout the
+	drag-and-drop operation, typically in response to wl_data_device.enter
+	or wl_data_device.motion events.
+
+	This request determines the final result of the drag-and-drop
+	operation. If the end result is that no action is accepted,
+	the drag source will receive wl_drag_source.cancelled.
+
+	The dnd_actions argument must contain only values expressed in the
+	wl_data_device_manager.dnd_actions enum, and the preferred_action
+	argument must only contain one of those values set, otherwise it
+	will result in a protocol error.
+
+	While managing an "ask" action, the destination drag-and-drop client
+	may perform further wl_data_offer.receive requests, and is expected
+	to perform one last wl_data_offer.set_actions request with a preferred
+	action other than "ask" (and optionally wl_data_offer.accept) before
+	requesting wl_data_offer.finish, in order to convey the action selected
+	by the user. If the preferred action is not in the
+	wl_data_offer.source_actions mask, an error will be raised.
+
+	If the "ask" action is dismissed (e.g. user cancellation), the client
+	is expected to perform wl_data_offer.destroy right away.
+
+	This request can only be made on drag-and-drop offers, a protocol error
+	will be raised otherwise.
+      </description>
+      <arg name="dnd_actions" type="uint"/>
+      <arg name="preferred_action" type="uint"/>
+    </request>
+
+    <event name="source_actions" since="3">
+      <description summary="notify the source-side available actions">
+	This event indicates the actions offered by the data source. It
+	will be sent right after wl_data_device.enter, or anytime the source
+	side changes its offered actions through wl_data_source.set_actions.
+      </description>
+      <arg name="source_actions" type="uint"/>
+    </event>
+
+    <event name="action" since="3">
+      <description summary="notify the selected action">
+	This event indicates the action selected by the compositor after
+	matching the source/destination side actions. Only one action (or
+	none) will be offered here.
+
+	This event can be emitted multiple times during the drag-and-drop
+	operation in response to destination side action changes through
+	wl_data_offer.set_actions.
+
+	This event will no longer be emitted after wl_data_device.drop
+	happened on the drag-and-drop destination, the client must
+	honor the last action received, or the last preferred one set
+	through wl_data_offer.set_actions when handling an "ask" action.
+
+	Compositors may also change the selected action on the fly, mainly
+	in response to keyboard modifier changes during the drag-and-drop
+	operation.
+
+	The most recent action received is always the valid one. Prior to
+	receiving wl_data_device.drop, the chosen action may change (e.g.
+	due to keyboard modifiers being pressed). At the time of receiving
+	wl_data_device.drop the drag-and-drop destination must honor the
+	last action received.
+
+	Action changes may still happen after wl_data_device.drop,
+	especially on "ask" actions, where the drag-and-drop destination
+	may choose another action afterwards. Action changes happening
+	at this stage are always the result of inter-client negotiation, the
+	compositor shall no longer be able to induce a different action.
+
+	Upon "ask" actions, it is expected that the drag-and-drop destination
+	may potentially choose different a different action and/or mime type,
+	based on wl_data_offer.source_actions and finally chosen by the
+	user (e.g. popping up a menu with the available options). The
+	final wl_data_offer.set_actions and wl_data_offer.accept requests
+	must happen before the call to wl_data_offer.finish.
+      </description>
+      <arg name="dnd_action" type="uint"/>
+    </event>
   </interface>
 
   <interface name="wl_data_source" version="3">
@@ -507,6 +602,13 @@
       provides a way to describe the offered data and a way to respond
       to requests to transfer the data.
     </description>
+
+    <enum name="error">
+      <entry name="invalid_action_mask" value="0"
+	     summary="action mask contains invalid values"/>
+      <entry name="invalid_source" value="1"
+	     summary="source doesn't accept this request"/>
+    </enum>
 
     <request name="offer">
       <description summary="add an offered mime type">
@@ -554,6 +656,9 @@
 	- The drag-and-drop operation was performed, but the drop destination
 	  did not accept any of the mimetypes offered through
 	  wl_data_source.target.
+	- The drag-and-drop operation was performed, but the drop destination
+	  did not select any of the actions present in the mask offered through
+	  wl_data_source.action.
 	- The drag-and-drop operation was performed but didn't happen over a
 	  surface.
 	- The compositor cancelled the drag-and-drop operation (e.g. compositor
@@ -568,6 +673,25 @@
     </event>
 
     <!-- Version 3 additions -->
+
+    <request name="set_actions" since="3">
+      <description summary="set the available drag-and-drop actions">
+	Sets the actions that the source side client supports for this
+	operation. This request may trigger wl_data_source.action and
+	wl_data_offer.action events if the compositor needs to change the
+	selected action.
+
+	The dnd_actions argument must contain only values expressed in the
+	wl_data_device_manager.dnd_actions enum, otherwise it will result
+	in a protocol error.
+
+	This request must be made once only, and can only be made on sources
+	used in drag-and-drop, so it must be performed before
+	wl_data_device.start_drag. Attempting to use the source other than
+	for drag-and-drop will raise a protocol error.
+      </description>
+      <arg name="dnd_actions" type="uint"/>
+    </request>
 
     <event name="dnd_drop_performed" since="3">
       <description summary="the drag-and-drop operation physically finished">
@@ -588,7 +712,41 @@
 	The drop destination finished interoperating with this data
 	source, so the client is now free to destroy this data source and
 	free all associated data.
+
+	If the action used to perform the operation was "move", the
+	source can now delete the transferred data.
       </description>
+    </event>
+
+    <event name="action" since="3">
+      <description summary="notify the selected action">
+	This event indicates the action selected by the compositor after
+	matching the source/destination side actions. Only one action (or
+	none) will be offered here.
+
+	This event can be emitted multiple times during the drag-and-drop
+	operation, mainly in response to destination side changes through
+	wl_data_offer.set_actions, and as the data device enters/leaves
+	surfaces.
+
+	It is only possible to receive this event after
+	wl_data_source.dnd_drop_performed if the drag-and-drop operation
+	ended in an "ask" action, in which case the final wl_data_source.action
+	event will happen immediately before wl_data_source.dnd_finished.
+
+	Compositors may also change the selected action on the fly, mainly
+	in response to keyboard modifier changes during the drag-and-drop
+	operation.
+
+	The most recent action received is always the valid one. The chosen
+	action may change alongside negotiation (e.g. an "ask" action can turn
+	into a "move" operation), so the effects of the final action must
+	always be applied in wl_data_offer.dnd_finished.
+
+	Clients can trigger cursor surface changes from this point, so
+	they reflect the current action.
+      </description>
+      <arg name="dnd_action" type="uint"/>
     </event>
   </interface>
 
@@ -705,6 +863,17 @@
       <description summary="end drag-and-drag session successfully">
 	The event is sent when a drag-and-drop operation is ended
 	because the implicit grab is removed.
+
+	The drag-and-drop destination is expected to honor the last action
+	received through wl_data_offer.action, if the resulting action is
+	"copy" or "move", the destination can still perform
+	wl_data_offer.receive requests, and is expected to end all
+	transfers with a wl_data_offer.finish request.
+
+	If the resulting action is "ask", the action will not be considered
+	final. The drag-and-drop destination is expected to perform one last
+	wl_data_offer.set_actions request, or wl_data_offer.destroy in order
+	to cancel the operation.
       </description>
     </event>
 
@@ -757,6 +926,40 @@
       <arg name="id" type="new_id" interface="wl_data_device"/>
       <arg name="seat" type="object" interface="wl_seat"/>
     </request>
+
+    <!-- Version 3 additions -->
+
+    <enum name="dnd_action" bitfield="true" since="3">
+      <description summary="drag and drop actions">
+	This is a bitmask of the available/preferred actions in a
+	drag-and-drop operation.
+
+	In the compositor, the selected action is a result of matching the
+	actions offered by the source and destination sides.  "action" events
+	with a "none" action will be sent to both source and destination if
+	there is no match. All further checks will effectively happen on
+	(source actions ∩ destination actions).
+
+	In addition, compositors may also pick different actions in
+	reaction to key modifiers being pressed, one common design that
+	is used in major toolkits (and the behavior recommended for
+	compositors) is:
+
+	- If no modifiers are pressed, the first match (in bit order)
+	  will be used.
+	- Pressing Shift selects "move", if enabled in the mask.
+	- Pressing Control selects "copy", if enabled in the mask.
+
+	Behavior beyond that is considered implementation-dependent.
+	Compositors may for example bind other modifiers (like Alt/Meta)
+	or drags initiated with other buttons than BTN_LEFT to specific
+	actions (e.g. "ask").
+      </description>
+      <entry name="none" value="0"/>
+      <entry name="copy" value="1"/>
+      <entry name="move" value="2"/>
+      <entry name="ask" value="4"/>
+    </enum>
   </interface>
 
   <interface name="wl_shell" version="1">
