@@ -23,7 +23,6 @@
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/country_combobox_model.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
@@ -210,9 +209,7 @@ void SetCountryData(const PersonalDataManager& manager,
 
 namespace options {
 
-AutofillOptionsHandler::AutofillOptionsHandler()
-    : personal_data_(NULL), observer_(this) {
-}
+AutofillOptionsHandler::AutofillOptionsHandler() : personal_data_(NULL) {}
 
 AutofillOptionsHandler::~AutofillOptionsHandler() {
   if (personal_data_)
@@ -239,7 +236,6 @@ void AutofillOptionsHandler::GetLocalizedValues(
     { "editAddressTitle", IDS_AUTOFILL_EDIT_ADDRESS_CAPTION },
     { "addCreditCardTitle", IDS_AUTOFILL_ADD_CREDITCARD_CAPTION },
     { "editCreditCardTitle", IDS_AUTOFILL_EDIT_CREDITCARD_CAPTION },
-    { "autofillWalletOption", IDS_AUTOFILL_USE_WALLET_DATA },
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -260,18 +256,6 @@ void AutofillOptionsHandler::GetLocalizedValues(
   localized_strings->SetString(
       "manageWalletPaymentMethodsUrl",
       autofill::wallet::GetManageInstrumentsUrl(0).spec());
-
-  // This is set in loadTimeData to minimize the chance of a load-time flash of
-  // content.
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(
-          Profile::FromWebUI(web_ui()));
-  if (service)
-    observer_.Add(service);
-
-  localized_strings->SetBoolean("autofillWalletIntegrationAvailable",
-                                autofill::WalletIntegrationAvailableForProfile(
-                                    Profile::FromWebUI(web_ui())));
 }
 
 void AutofillOptionsHandler::InitializeHandler() {
@@ -283,10 +267,6 @@ void AutofillOptionsHandler::InitializeHandler() {
 void AutofillOptionsHandler::InitializePage() {
   if (personal_data_)
     LoadAutofillData();
-
-  // Also update the visibility of the Wallet checkbox (which may have
-  // changed since the localized string dictionary was built).
-  OnStateChanged();
 }
 
 void AutofillOptionsHandler::RegisterMessages() {
@@ -323,14 +303,6 @@ void AutofillOptionsHandler::RegisterMessages() {
 // PersonalDataManagerObserver implementation:
 void AutofillOptionsHandler::OnPersonalDataChanged() {
   LoadAutofillData();
-  OnStateChanged();
-}
-
-void AutofillOptionsHandler::OnStateChanged() {
-  web_ui()->CallJavascriptFunction(
-      "AutofillOptions.walletIntegrationAvailableStateChanged",
-      base::FundamentalValue(autofill::WalletIntegrationAvailableForProfile(
-          Profile::FromWebUI(web_ui()))));
 }
 
 void AutofillOptionsHandler::SetAddressOverlayStrings(

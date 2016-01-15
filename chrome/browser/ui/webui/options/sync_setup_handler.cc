@@ -39,6 +39,8 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/google/core/browser/google_util.h"
 #include "components/signin/core/browser/signin_error_controller.h"
@@ -76,6 +78,7 @@ struct SyncConfigInfo {
   bool sync_everything;
   bool sync_nothing;
   syncer::ModelTypeSet data_types;
+  bool payments_integration_enabled;
   std::string passphrase;
   bool passphrase_is_gaia;
 };
@@ -84,8 +87,8 @@ SyncConfigInfo::SyncConfigInfo()
     : encrypt_all(false),
       sync_everything(false),
       sync_nothing(false),
-      passphrase_is_gaia(false) {
-}
+      payments_integration_enabled(false),
+      passphrase_is_gaia(false) {}
 
 SyncConfigInfo::~SyncConfigInfo() {}
 
@@ -109,6 +112,13 @@ bool GetConfiguration(const std::string& json, SyncConfigInfo* config) {
 
   DCHECK(!(config->sync_everything && config->sync_nothing))
       << "syncAllDataTypes and syncNothing cannot both be true";
+
+  if (!result->GetBoolean("paymentsIntegrationEnabled",
+                          &config->payments_integration_enabled)) {
+    DLOG(ERROR) << "GetConfiguration() not passed a paymentsIntegrationEnabled "
+                << "value";
+    return false;
+  }
 
   syncer::ModelTypeNameMap type_names = syncer::GetUserSelectableTypeNameMap();
 
@@ -180,6 +190,7 @@ void SyncSetupHandler::GetStaticLocalizedValues(
   localized_strings->SetString(
       "chooseDataTypesInstructions",
       GetStringFUTF16(IDS_SYNC_CHOOSE_DATATYPES_INSTRUCTIONS, product_name));
+  localized_strings->SetString("autofillHelpURL", autofill::kHelpURL);
   localized_strings->SetString(
       "encryptionInstructions",
       GetStringFUTF16(IDS_SYNC_ENCRYPTION_INSTRUCTIONS, product_name));
@@ -218,56 +229,57 @@ void SyncSetupHandler::GetStaticLocalizedValues(
       "syncErrorHelpURL", chrome::kSyncErrorsHelpURL);
 
   static OptionsStringResource resources[] = {
-    { "syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE },
-    { "syncSetupSpinnerTitle", IDS_SYNC_SETUP_SPINNER_TITLE },
-    { "syncSetupTimeoutTitle", IDS_SYNC_SETUP_TIME_OUT_TITLE },
-    { "syncSetupTimeoutContent", IDS_SYNC_SETUP_TIME_OUT_CONTENT },
-    { "errorLearnMore", IDS_LEARN_MORE },
-    { "cancel", IDS_CANCEL },
-    { "loginSuccess", IDS_SYNC_SUCCESS },
-    { "settingUp", IDS_SYNC_LOGIN_SETTING_UP },
-    { "syncAllDataTypes", IDS_SYNC_EVERYTHING },
-    { "chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES },
-    { "syncNothing", IDS_SYNC_NOTHING },
-    { "bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS },
-    { "preferences", IDS_SYNC_DATATYPE_PREFERENCES },
-    { "autofill", IDS_SYNC_DATATYPE_AUTOFILL },
-    { "themes", IDS_SYNC_DATATYPE_THEMES },
-    { "passwords", IDS_SYNC_DATATYPE_PASSWORDS },
-    { "extensions", IDS_SYNC_DATATYPE_EXTENSIONS },
-    { "typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS },
-    { "apps", IDS_SYNC_DATATYPE_APPS },
-    { "wifiCredentials", IDS_SYNC_DATATYPE_WIFI_CREDENTIALS },
-    { "openTabs", IDS_SYNC_DATATYPE_TABS },
-    { "serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR },
-    { "confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL },
-    { "emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR },
-    { "mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR },
-    { "customizeLinkLabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL },
-    { "confirmSyncPreferences", IDS_SYNC_CONFIRM_SYNC_PREFERENCES },
-    { "syncEverything", IDS_SYNC_SYNC_EVERYTHING },
-    { "useDefaultSettings", IDS_SYNC_USE_DEFAULT_SETTINGS },
-    { "enterPassphraseBody", IDS_SYNC_ENTER_PASSPHRASE_BODY },
-    { "enterGooglePassphraseBody", IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY },
-    { "passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL },
-    { "incorrectPassphrase", IDS_SYNC_INCORRECT_PASSPHRASE },
-    { "passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING },
-    { "yes", IDS_SYNC_PASSPHRASE_CANCEL_YES },
-    { "no", IDS_SYNC_PASSPHRASE_CANCEL_NO },
-    { "sectionExplicitMessagePrefix", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX },
-    { "sectionExplicitMessagePostfix",
-        IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX },
-    // TODO(rogerta): browser/resource/sync_promo/sync_promo.html and related
-    // file may not be needed any more.  If not, then the following promo
-    // strings can also be removed.
-    { "promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE },
-    { "promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON },
-    { "promoAdvanced", IDS_SYNC_PROMO_ADVANCED },
-    { "promoLearnMore", IDS_LEARN_MORE },
-    { "promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT },
-    { "encryptionSectionTitle", IDS_SYNC_ENCRYPTION_SECTION_TITLE },
-    { "basicEncryptionOption", IDS_SYNC_BASIC_ENCRYPTION_DATA },
-    { "fullEncryptionOption", IDS_SYNC_FULL_ENCRYPTION_DATA },
+      {"syncSetupConfigureTitle", IDS_SYNC_SETUP_CONFIGURE_TITLE},
+      {"syncSetupSpinnerTitle", IDS_SYNC_SETUP_SPINNER_TITLE},
+      {"syncSetupTimeoutTitle", IDS_SYNC_SETUP_TIME_OUT_TITLE},
+      {"syncSetupTimeoutContent", IDS_SYNC_SETUP_TIME_OUT_CONTENT},
+      {"errorLearnMore", IDS_LEARN_MORE},
+      {"cancel", IDS_CANCEL},
+      {"loginSuccess", IDS_SYNC_SUCCESS},
+      {"settingUp", IDS_SYNC_LOGIN_SETTING_UP},
+      {"syncAllDataTypes", IDS_SYNC_EVERYTHING},
+      {"chooseDataTypes", IDS_SYNC_CHOOSE_DATATYPES},
+      {"syncNothing", IDS_SYNC_NOTHING},
+      {"bookmarks", IDS_SYNC_DATATYPE_BOOKMARKS},
+      {"preferences", IDS_SYNC_DATATYPE_PREFERENCES},
+      {"autofill", IDS_SYNC_DATATYPE_AUTOFILL},
+      {"themes", IDS_SYNC_DATATYPE_THEMES},
+      {"passwords", IDS_SYNC_DATATYPE_PASSWORDS},
+      {"extensions", IDS_SYNC_DATATYPE_EXTENSIONS},
+      {"typedURLs", IDS_SYNC_DATATYPE_TYPED_URLS},
+      {"apps", IDS_SYNC_DATATYPE_APPS},
+      {"wifiCredentials", IDS_SYNC_DATATYPE_WIFI_CREDENTIALS},
+      {"openTabs", IDS_SYNC_DATATYPE_TABS},
+      {"enablePaymentsIntegration", IDS_AUTOFILL_USE_PAYMENTS_DATA},
+      {"serviceUnavailableError", IDS_SYNC_SETUP_ABORTED_BY_PENDING_CLEAR},
+      {"confirmLabel", IDS_SYNC_CONFIRM_PASSPHRASE_LABEL},
+      {"emptyErrorMessage", IDS_SYNC_EMPTY_PASSPHRASE_ERROR},
+      {"mismatchErrorMessage", IDS_SYNC_PASSPHRASE_MISMATCH_ERROR},
+      {"customizeLinkLabel", IDS_SYNC_CUSTOMIZE_LINK_LABEL},
+      {"confirmSyncPreferences", IDS_SYNC_CONFIRM_SYNC_PREFERENCES},
+      {"syncEverything", IDS_SYNC_SYNC_EVERYTHING},
+      {"useDefaultSettings", IDS_SYNC_USE_DEFAULT_SETTINGS},
+      {"enterPassphraseBody", IDS_SYNC_ENTER_PASSPHRASE_BODY},
+      {"enterGooglePassphraseBody", IDS_SYNC_ENTER_GOOGLE_PASSPHRASE_BODY},
+      {"passphraseLabel", IDS_SYNC_PASSPHRASE_LABEL},
+      {"incorrectPassphrase", IDS_SYNC_INCORRECT_PASSPHRASE},
+      {"passphraseWarning", IDS_SYNC_PASSPHRASE_WARNING},
+      {"yes", IDS_SYNC_PASSPHRASE_CANCEL_YES},
+      {"no", IDS_SYNC_PASSPHRASE_CANCEL_NO},
+      {"sectionExplicitMessagePrefix", IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_PREFIX},
+      {"sectionExplicitMessagePostfix",
+       IDS_SYNC_PASSPHRASE_MSG_EXPLICIT_POSTFIX},
+      // TODO(rogerta): browser/resource/sync_promo/sync_promo.html and related
+      // file may not be needed any more.  If not, then the following promo
+      // strings can also be removed.
+      {"promoPageTitle", IDS_SYNC_PROMO_TAB_TITLE},
+      {"promoSkipButton", IDS_SYNC_PROMO_SKIP_BUTTON},
+      {"promoAdvanced", IDS_SYNC_PROMO_ADVANCED},
+      {"promoLearnMore", IDS_LEARN_MORE},
+      {"promoTitleShort", IDS_SYNC_PROMO_MESSAGE_TITLE_SHORT},
+      {"encryptionSectionTitle", IDS_SYNC_ENCRYPTION_SECTION_TITLE},
+      {"basicEncryptionOption", IDS_SYNC_BASIC_ENCRYPTION_DATA},
+      {"fullEncryptionOption", IDS_SYNC_FULL_ENCRYPTION_DATA},
   };
 
   RegisterStrings(localized_strings, resources, arraysize(resources));
@@ -568,6 +580,10 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
   service->OnUserChoseDatatypes(configuration.sync_everything,
                                 configuration.data_types);
 
+  PrefService* pref_service = GetProfile()->GetPrefs();
+  pref_service->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
+                           configuration.payments_integration_enabled);
+
   // Need to call IsPassphraseRequiredForDecryption() *after* calling
   // OnUserChoseDatatypes() because the user may have just disabled the
   // encrypted datatypes (in which case we just want to exit, not prompt the
@@ -845,6 +861,7 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   //   syncNothing: true if the user wants to sync nothing
   //   <data_type>Registered: true if the associated data type is supported
   //   <data_type>Synced: true if the user wants to sync that specific data type
+  //   paymentsIntegrationEnabled: true if the user wants Payments integration
   //   encryptionEnabled: true if sync supports encryption
   //   encryptAllData: true if user wants to encrypt all data (not just
   //       passwords)
@@ -868,10 +885,14 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
     // TODO(treib): How do we want to handle pref groups, i.e. when only some of
     // the sync types behind a checkbox are force-enabled? crbug.com/403326
   }
-  sync_driver::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
+  PrefService* pref_service = GetProfile()->GetPrefs();
+  sync_driver::SyncPrefs sync_prefs(pref_service);
   args.SetBoolean("passphraseFailed", passphrase_failed);
   args.SetBoolean("syncAllDataTypes", sync_prefs.HasKeepEverythingSynced());
   args.SetBoolean("syncNothing", false);  // Always false during initial setup.
+  args.SetBoolean(
+      "paymentsIntegrationEnabled",
+      pref_service->GetBoolean(autofill::prefs::kAutofillWalletImportEnabled));
   args.SetBoolean("encryptAllData", service->IsEncryptEverythingEnabled());
   args.SetBoolean("encryptAllDataAllowed",
                   service->IsEncryptEverythingAllowed());
