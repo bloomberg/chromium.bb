@@ -356,4 +356,10 @@ void NetworkChangeNotifierDelegateAndroid::FakeDefaultNetwork(
   Java_NetworkChangeNotifier_fakeDefaultNetwork(env, network, type);
 }
 
+void NetworkChangeNotifierDelegateAndroid::FakeMaxBandwidthChanged(
+    double max_bandwidth_mbps) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_NetworkChangeNotifier_fakeMaxBandwidthChanged(env, max_bandwidth_mbps);
+}
+
 }  // namespace net

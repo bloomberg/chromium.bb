@@ -136,6 +136,7 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierDelegateAndroid {
   void FakeNetworkDisconnected(NetworkHandle network);
   void FakeUpdateActiveNetworkList(NetworkList networks);
   void FakeDefaultNetwork(NetworkHandle network, ConnectionType type);
+  void FakeMaxBandwidthChanged(double max_bandwidth_mbps);
 
   base::ThreadChecker thread_checker_;
   scoped_refptr<base::ObserverListThreadSafe<Observer>> observers_;

@@ -58,6 +58,30 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     }
 
     /**
+      * Listens for native notifications of max bandwidth change.
+      */
+    private static class TestNetworkChangeNotifier extends NetworkChangeNotifier {
+        private TestNetworkChangeNotifier(Context context) {
+            super(context);
+        }
+
+        @Override
+        void notifyObserversOfMaxBandwidthChange(double maxBandwidthMbps) {
+            mReceivedMaxBandwidthNotification = true;
+        }
+
+        public boolean hasReceivedMaxBandwidthNotification() {
+            return mReceivedMaxBandwidthNotification;
+        }
+
+        public void resetHasReceivedMaxBandwidthNotification() {
+            mReceivedMaxBandwidthNotification = false;
+        }
+
+        private boolean mReceivedMaxBandwidthNotification = false;
+    }
+
+    /**
      * Mocks out calls to the ConnectivityManager.
      */
     private static class MockConnectivityManagerDelegate extends ConnectivityManagerDelegate {
@@ -210,6 +234,7 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
     }
 
     // Network.Network(int netId) pointer.
+    private TestNetworkChangeNotifier mNotifier;
     private Constructor<Network> mNetworkConstructor;
     private NetworkChangeNotifierAutoDetect mReceiver;
     private MockConnectivityManagerDelegate mConnectivityDelegate;
@@ -227,7 +252,8 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
      */
     private void createTestNotifier(WatchForChanges watchForChanges) {
         Context context = getInstrumentation().getTargetContext();
-        NetworkChangeNotifier.resetInstanceForTests(context);
+        mNotifier = new TestNetworkChangeNotifier(context);
+        NetworkChangeNotifier.resetInstanceForTests(mNotifier);
         if (watchForChanges == WatchForChanges.ALWAYS) {
             NetworkChangeNotifier.registerToReceiveNotificationsAlways();
         } else {
@@ -465,6 +491,49 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // and a notification sent.
         policy.onApplicationStateChange(ApplicationState.HAS_RUNNING_ACTIVITIES);
         assertTrue(observer.hasReceivedNotification());
+    }
+
+    /**
+     * Tests that when Chrome gets an intent indicating a change in max bandwidth, it sends a
+     * notification to Java observers.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierMaxBandwidthNotifications() throws InterruptedException {
+        // Initialize the NetworkChangeNotifier with a connection.
+        mConnectivityDelegate.setActiveNetworkExists(true);
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_WIFI);
+        mWifiDelegate.setLinkSpeedInMbps(1);
+        Intent connectivityIntent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(mNotifier.hasReceivedMaxBandwidthNotification());
+        mNotifier.resetHasReceivedMaxBandwidthNotification();
+
+        // We shouldn't be re-notified if the connection hasn't actually changed.
+        NetworkChangeNotifierTestObserver observer = new NetworkChangeNotifierTestObserver();
+        NetworkChangeNotifier.addConnectionTypeObserver(observer);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertFalse(mNotifier.hasReceivedMaxBandwidthNotification());
+
+        // We should be notified if the bandwidth changed but not the connection type.
+        mWifiDelegate.setLinkSpeedInMbps(2);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(mNotifier.hasReceivedMaxBandwidthNotification());
+        mNotifier.resetHasReceivedMaxBandwidthNotification();
+
+        // We should be notified if bandwidth and connection type changed.
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_ETHERNET);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(mNotifier.hasReceivedMaxBandwidthNotification());
+        mNotifier.resetHasReceivedMaxBandwidthNotification();
+
+        // We should be notified if the connection type changed, but not the bandwidth.
+        // Note that TYPE_ETHERNET and TYPE_BLUETOOTH have the same +INFINITY max bandwidth.
+        // This test will fail if that changes.
+        mConnectivityDelegate.setNetworkType(ConnectivityManager.TYPE_BLUETOOTH);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), connectivityIntent);
+        assertTrue(mNotifier.hasReceivedMaxBandwidthNotification());
     }
 
     /**

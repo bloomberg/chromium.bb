@@ -35,6 +35,14 @@ PASS connection.type is types[count][0]
 PASS connection.downlinkMax is types[count][1]
 PASS connection.type is types[count][0]
 PASS connection.downlinkMax is types[count][1]
+PASS connection.type is types[count][0]
+PASS connection.downlinkMax is types[count][1]
+PASS connection.type is types[count][0]
+PASS connection.downlinkMax is types[count][1]
+PASS connection.type is types[count][0]
+PASS connection.downlinkMax is types[count][1]
+PASS connection.type is types[count][0]
+PASS connection.downlinkMax is types[count][1]
 PASS successfullyParsed is true
 
 TEST COMPLETE

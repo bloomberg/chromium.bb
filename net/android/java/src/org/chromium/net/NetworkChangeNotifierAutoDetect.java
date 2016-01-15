@@ -348,6 +348,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
     private int mConnectionType;
     private String mWifiSSID;
     private double mMaxBandwidthMbps;
+    private int mMaxBandwidthConnectionType;
 
     /**
      * Observer interface by which observer is notified of network changes.
@@ -420,6 +421,7 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
         mConnectionType = getCurrentConnectionType(networkState);
         mWifiSSID = getCurrentWifiSSID(networkState);
         mMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
+        mMaxBandwidthConnectionType = mConnectionType;
         mIntentFilter =
                 new NetworkConnectivityIntentFilter(mWifiManagerDelegate.getHasWifiPermission());
         mRegistrationPolicy = policy;
@@ -687,8 +689,12 @@ public class NetworkChangeNotifierAutoDetect extends BroadcastReceiver {
 
     private void maxBandwidthChanged(NetworkState networkState) {
         double newMaxBandwidthMbps = getCurrentMaxBandwidthInMbps(networkState);
-        if (newMaxBandwidthMbps == mMaxBandwidthMbps) return;
+        if (newMaxBandwidthMbps == mMaxBandwidthMbps
+                && mConnectionType == mMaxBandwidthConnectionType) {
+            return;
+        }
         mMaxBandwidthMbps = newMaxBandwidthMbps;
+        mMaxBandwidthConnectionType = mConnectionType;
         mObserver.onMaxBandwidthChanged(newMaxBandwidthMbps);
     }
 

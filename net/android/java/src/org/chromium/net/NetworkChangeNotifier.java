@@ -7,6 +7,7 @@ package org.chromium.net;
 import android.content.Context;
 
 import org.chromium.base.ObserverList;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
@@ -39,10 +40,12 @@ public class NetworkChangeNotifier {
     private NetworkChangeNotifierAutoDetect mAutoDetector;
     private int mCurrentConnectionType = ConnectionType.CONNECTION_UNKNOWN;
     private double mCurrentMaxBandwidth = Double.POSITIVE_INFINITY;
+    private int mMaxBandwidthConnectionType = mCurrentConnectionType;
 
     private static NetworkChangeNotifier sInstance;
 
-    private NetworkChangeNotifier(Context context) {
+    @VisibleForTesting
+    protected NetworkChangeNotifier(Context context) {
         mContext = context.getApplicationContext();
         mNativeChangeNotifiers = new ArrayList<Long>();
         mConnectionTypeObservers = new ObserverList<ConnectionTypeObserver>();
@@ -63,8 +66,8 @@ public class NetworkChangeNotifier {
         return sInstance != null;
     }
 
-    static void resetInstanceForTests(Context context) {
-        sInstance = new NetworkChangeNotifier(context);
+    static void resetInstanceForTests(NetworkChangeNotifier notifier) {
+        sInstance = notifier;
     }
 
     @CalledByNative
@@ -272,14 +275,25 @@ public class NetworkChangeNotifier {
         getInstance().notifyObserversOfConnectionTypeChange(connectionType, netId);
     }
 
+    // For testing, pretend the max bandwidth has changed.
+    @CalledByNative
+    public static void fakeMaxBandwidthChanged(double maxBandwidthMbps) {
+        setAutoDetectConnectivityState(false);
+        getInstance().notifyObserversOfMaxBandwidthChange(maxBandwidthMbps);
+    }
+
     private void updateCurrentConnectionType(int newConnectionType) {
         mCurrentConnectionType = newConnectionType;
         notifyObserversOfConnectionTypeChange(newConnectionType);
     }
 
     private void updateCurrentMaxBandwidth(double maxBandwidthMbps) {
-        if (maxBandwidthMbps == mCurrentMaxBandwidth) return;
+        if (maxBandwidthMbps == mCurrentMaxBandwidth
+                && mCurrentConnectionType == mMaxBandwidthConnectionType) {
+            return;
+        }
         mCurrentMaxBandwidth = maxBandwidthMbps;
+        mMaxBandwidthConnectionType = mCurrentConnectionType;
         notifyObserversOfMaxBandwidthChange(maxBandwidthMbps);
     }
 
