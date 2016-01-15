@@ -58,6 +58,10 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # Mac's popup behavior is different.
 [ Mac ] fast/forms/select/menulist-onchange-fired-with-key-up-down.html [ WontFix ]
 [ Mac ] fast/forms/select/popup-with-display-none-optgroup.html [ WontFix ]
+[ Mac ] fast/forms/select-popup [ WontFix ]
+
+# Android has a different popup menu implementation.
+[ Android ] fast/forms/select-popup [ WontFix ]
 
 # Pan-scroll tests are Windows-specific.
 [ Linux Mac ] fast/events/panScroll-click.html [ WontFix ]

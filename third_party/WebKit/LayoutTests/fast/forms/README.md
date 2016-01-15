@@ -101,6 +101,10 @@ to fast/dom/HTML*Element/ for HTML forms.
 
     `<select>`
 
+*   select-popup/
+
+    Popup menu for `<select>` on CrOS, Linux, and Windows.
+
 *   submit/
 
     `<input type=submit>`
