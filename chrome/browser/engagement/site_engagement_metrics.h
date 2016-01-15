@@ -53,7 +53,6 @@ class SiteEngagementMetrics {
   static const char kOriginsWithMaxDailyEngagementHistogram[];
   static const char kPercentOriginsWithMaxEngagementHistogram[];
   static const char kEngagementTypeHistogram[];
-  static const char kEngagementBucketHistogramBase[];
   static const char kDaysSinceLastShortcutLaunchHistogram[];
 };
 
