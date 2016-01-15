@@ -66,6 +66,7 @@ template("test") {
                              [
                                "android_manifest",
                                "deps",
+                               "enable_multidex",
                                "use_default_launcher",
                                "write_asset_list",
                              ])
