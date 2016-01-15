@@ -666,6 +666,40 @@ bool IsContentWithCertificateErrorsRelevantToUI(
               ssl_status.connection_status);
 }
 
+#if defined(OS_ANDROID)
+// Returns true if WMPI is enabled and is expected to be able to play the URL,
+// false if WMPA should be used instead.
+//
+// Note that HLS and WebM detection are pre-redirect and path-based. It is
+// possible to load such a URL and find different content, in which case
+// playback may fail.
+bool CanUseWebMediaPlayerImpl(const GURL& url) {
+  // WMPI does not support HLS.
+  if (media::MediaCodecUtil::IsHLSPath(url))
+    return false;
+
+  // If --enable-unified-media-pipeline was passed, always use WMPI. (This
+  // allows for testing the new path.)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnifiedMediaPipeline)) {
+    return true;
+  }
+
+  // Don't use WMPI for blob URLs (MSE in particular) yet.
+  if (url.SchemeIsBlob())
+    return false;
+
+  // WMPI can play VPX even without AVDA.
+  if (base::EndsWith(url.path(), ".webm", base::CompareCase::INSENSITIVE_ASCII))
+    return true;
+
+  // Only use WMPI if AVDA is available.
+  return (media::MediaCodecUtil::IsMediaCodecAvailable() &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kDisableAcceleratedVideoDecode));
+}
+#endif  // defined(OS_ANDROID)
+
 }  // namespace
 
 // static
@@ -2375,12 +2409,7 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
       GetMediaPermission(), initial_cdm);
 
 #if defined(OS_ANDROID)
-  // We must use WMPA in when accelerated video decode is disabled becuase WMPI
-  // is unlikely to have a fallback decoder.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableAcceleratedVideoDecode) ||
-      !media::MediaCodecUtil::IsMediaCodecAvailable() ||
-      media::MediaCodecUtil::IsHLSPath(url)) {
+  if (!CanUseWebMediaPlayerImpl(url)) {
     return CreateAndroidWebMediaPlayer(client, encrypted_client, params);
   } else {
     // TODO(dalecurtis): This experiment is temporary and should be removed once
