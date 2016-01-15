@@ -387,6 +387,22 @@ bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::isInTextSecurityMode() 
     return isTextSecurityNode(node());
 }
 
+template <typename Strategy>
+UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::characterAt(unsigned index) const
+{
+    // TODO(xiaochengh): Mostly copied from TextIteratorTextState::characterAt.
+    // Should try to improve the code quality by reusing the code.
+    ASSERT_WITH_SECURITY_IMPLICATION(index < static_cast<unsigned>(length()));
+    if (!(index < static_cast<unsigned>(length())))
+        return 0;
+    if (m_singleCharacterBuffer) {
+        ASSERT(index == 0);
+        ASSERT(length() == 1);
+        return m_singleCharacterBuffer;
+    }
+    return m_textContainer[m_textOffset + m_textLength - 1 - index];
+}
+
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 
