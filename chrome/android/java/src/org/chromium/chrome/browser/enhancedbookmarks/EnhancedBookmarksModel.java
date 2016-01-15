@@ -24,12 +24,10 @@ import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 /**
  * A class that encapsulates {@link BookmarksBridge} and provides extra features such as undo, large
@@ -270,7 +268,7 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
      * Retrieves the url to launch a bookmark or saved page. If latter, also marks it as being
      * accessed and reports the UMAs.
      *
-     * @parma context Context for checking connection.
+     * @param context Context for checking connection.
      * @param bookmarkId ID of the bookmark to launch.
      * @return The launch URL.
      */
@@ -278,35 +276,8 @@ public class EnhancedBookmarksModel extends BookmarksBridge {
         String url = getBookmarkById(bookmarkId).getUrl();
         if (mOfflinePageBridge == null) return url;
 
-        // Returns the original URL if the offline copy was not found.
-        OfflinePageItem page = mOfflinePageBridge.getPageByBookmarkId(bookmarkId);
-        if (page == null) return url;
-
-        boolean isConnected = OfflinePageUtils.isConnected(context);
-        RecordHistogram.recordBooleanHistogram("OfflinePages.OnlineOnOpen", isConnected);
-
-        // When there is a network connection, we visit original URL online.
-        if (isConnected) return url;
-
-        // The last access time was set to same as creation time when the page was created.
-        int currentMinutes = Calendar.getInstance().get(Calendar.MINUTE);
-        int maxMinutes = (int) TimeUnit.DAYS.toMinutes(90);
-        if (page.getCreationTimeMs() == page.getLastAccessTimeMs()) {
-            RecordHistogram.recordCustomCountHistogram("OfflinePages.FirstOpenSinceCreated",
-                    (int) (currentMinutes - page.getCreationTimeMs() / (1000 * 60)), 1, maxMinutes,
-                    50);
-        } else {
-            RecordHistogram.recordCustomCountHistogram("OfflinePages.OpenSinceLastOpen",
-                    (int) (currentMinutes - page.getLastAccessTimeMs() / (1000 * 60)), 1,
-                    maxMinutes, 50);
-        }
-
-        // Mark that the offline page has been accessed, that will cause last access time and access
-        // count being updated.
-        mOfflinePageBridge.markPageAccessed(bookmarkId);
-
-        // Returns the offline URL for offine access.
-        return page.getOfflineUrl();
+        return OfflinePageUtils.getLaunchUrlAndMarkAccessed(context, mOfflinePageBridge,
+                mOfflinePageBridge.getPageByBookmarkId(bookmarkId), url);
     }
 
     /**
