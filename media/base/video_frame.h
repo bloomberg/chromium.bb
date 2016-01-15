@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -408,6 +409,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // VideoFrame.
   // This method is thread safe. Both blink and compositor threads can call it.
   void UpdateReleaseSyncToken(SyncTokenClient* client);
+
+  // Returns a human-readable string describing |*this|.
+  std::string AsHumanReadableString();
 
  private:
   friend class base::RefCountedThreadSafe<VideoFrame>;

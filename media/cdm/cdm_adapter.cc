@@ -658,6 +658,8 @@ void CdmAdapter::DecryptAndDecodeVideo(
     const scoped_refptr<DecoderBuffer>& encrypted,
     const VideoDecodeCB& video_decode_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
+  DVLOG(3) << __FUNCTION__
+           << " encrypted: " << encrypted->AsHumanReadableString();
 
   cdm::InputBuffer input_buffer;
   std::vector<cdm::SubsampleEntry> subsamples;

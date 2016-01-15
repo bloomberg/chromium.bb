@@ -47,6 +47,35 @@ static std::string ConfigToString(const VideoPixelFormat format,
       visible_rect.ToString().c_str(), natural_size.ToString().c_str());
 }
 
+static std::string StorageTypeToString(
+    const VideoFrame::StorageType storage_type) {
+  switch (storage_type) {
+    case VideoFrame::STORAGE_UNKNOWN:
+      return "UNKNOWN";
+    case VideoFrame::STORAGE_OPAQUE:
+      return "OPAQUE";
+    case VideoFrame::STORAGE_UNOWNED_MEMORY:
+      return "UNOWNED_MEMORY";
+    case VideoFrame::STORAGE_OWNED_MEMORY:
+      return "OWNED_MEMORY";
+    case VideoFrame::STORAGE_SHMEM:
+      return "SHMEM";
+#if defined(OS_LINUX)
+    case VideoFrame::STORAGE_DMABUFS:
+      return "DMABUFS";
+#endif
+#if defined(VIDEO_HOLE)
+    case VideoFrame::STORAGE_HOLE:
+      return "HOLE";
+#endif
+    case VideoFrame::STORAGE_GPU_MEMORY_BUFFERS:
+      return "GPU_MEMORY_BUFFERS";
+  }
+
+  NOTREACHED() << "Invalid StorageType provided: " << storage_type;
+  return "INVALID";
+}
+
 // Returns true if |plane| is a valid plane index for the given |format|.
 static bool IsValidPlane(size_t plane, VideoPixelFormat format) {
   DCHECK_LE(VideoFrame::NumPlanes(format),
@@ -824,6 +853,20 @@ void VideoFrame::UpdateReleaseSyncToken(SyncTokenClient* client) {
   if (release_sync_token_.HasData())
     client->WaitSyncToken(release_sync_token_);
   client->GenerateSyncToken(&release_sync_token_);
+}
+
+std::string VideoFrame::AsHumanReadableString() {
+  if (metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
+    return "end of stream";
+
+  std::ostringstream s;
+  s << "format: " << VideoPixelFormatToString(format_)
+    << " storage_type: " << StorageTypeToString(storage_type_)
+    << " coded_size: " << coded_size_.ToString()
+    << " visible_rect: " << visible_rect_.ToString()
+    << " natural_size: " << natural_size_.ToString()
+    << " timestamp: " << timestamp_.InMicroseconds();
+  return s.str();
 }
 
 // static
