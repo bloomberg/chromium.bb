@@ -139,7 +139,6 @@
 //<include src="providers_model.js">
 //<include src="ui/actions_submenu.js">
 //<include src="ui/banners.js" >
-//<include src="ui/conflict_dialog.js">
 //<include src="ui/default_task_dialog.js">
 //<include src="ui/dialog_footer.js">
 //<include src="ui/directory_tree.js">

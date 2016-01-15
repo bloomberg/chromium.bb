@@ -63,13 +63,6 @@ function FileManagerUI(providersModel, element, launchParam) {
   this.deleteConfirmDialog.setOkLabel(str('DELETE_BUTTON_LABEL'));
 
   /**
-   * Prompt dialog.
-   * @type {!cr.ui.dialogs.PromptDialog}
-   * @const
-   */
-  this.promptDialog = new cr.ui.dialogs.PromptDialog(this.element);
-
-  /**
    * Share dialog.
    * @type {!ShareDialog}
    * @const
@@ -98,13 +91,6 @@ function FileManagerUI(providersModel, element, launchParam) {
    */
   this.suggestAppsDialog = new SuggestAppsDialog(
       providersModel, this.element, launchParam.suggestAppsDialogState);
-
-  /**
-   * Conflict dialog.
-   * @type {!ConflictDialog}
-   * @const
-   */
-  this.conflictDialog = new ConflictDialog(this.element);
 
   /**
    * The container element of the dialog.
