@@ -23,6 +23,10 @@ public class ExternalPrerenderHandler {
 
     /**
      * Add a prerender for the given url and given content view dimensions.
+     * <p>
+     * The generated {@link WebContents} does not actually contain the prerendered contents but
+     * must be used as the container that you load the prerendered URL into.
+     *
      * @param profile The profile to use for the prerender.
      * @param url The url to prerender.
      * @param referrer The referrer for the prerender request.
@@ -34,12 +38,29 @@ public class ExternalPrerenderHandler {
     public WebContents addPrerender(Profile profile, String url, String referrer, int width,
             int height) {
         WebContents webContents = WebContentsFactory.createWebContents(false, false);
-        if (nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents,
-                url, referrer, width, height)) {
+        if (addPrerender(profile, webContents, url, referrer, width, height)) {
             return webContents;
         }
         if (webContents != null) webContents.destroy();
         return null;
+    }
+
+    /**
+     * Adds a prerender for the given URL to an existing {@link WebContents} with the given
+     * dimensions.
+     *
+     * @param profile The profile to use for the prerender.
+     * @param webContents The WebContents to add the prerender to.
+     * @param url The url to prerender.
+     * @param referrer The referrer for the prerender request.
+     * @param width The width for the content view (render widget host view) for the prerender.
+     * @param height The height for the content view (render widget host view) for the prerender.
+     * @return Whether the prerender was successful.
+     */
+    public boolean addPrerender(Profile profile, WebContents webContents, String url,
+            String referrer, int width, int height) {
+        return nativeAddPrerender(mNativeExternalPrerenderHandler, profile, webContents,
+                url, referrer, width, height);
     }
 
     /**

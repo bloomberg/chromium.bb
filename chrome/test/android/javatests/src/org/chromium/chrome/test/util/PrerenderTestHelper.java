@@ -4,23 +4,17 @@
 
 package org.chromium.chrome.test.util;
 
-import android.util.Pair;
+import junit.framework.Assert;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.TabLoadStatus;
-import org.chromium.chrome.browser.omnibox.LocationBarLayout;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxResultItem;
-import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggestionDelegate;
-import org.chromium.chrome.browser.omnibox.OmniboxSuggestion;
+import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Utility class for common methods to test prerendering.
@@ -29,7 +23,6 @@ public class PrerenderTestHelper {
     private static final int UI_DELAY_MS = 100;
     private static final int WAIT_FOR_RESPONSE_MS = 10000;
     private static final int SHORT_TIMEOUT_MS = 200;
-    private static final int MAX_NUM_REPEATS_FOR_TRAINING = 7;
 
     private static boolean hasTabPrerenderedUrl(final Tab tab, final String url) {
         return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
@@ -62,29 +55,6 @@ public class PrerenderTestHelper {
         return hasTabPrerenderedUrl(tab, url);
     }
 
-    private static Pair<OmniboxSuggestion, Integer> waitForOmniboxSuggestion(
-            final LocationBarLayout locationBar, final String url) throws InterruptedException {
-        final AtomicReference<Pair<OmniboxSuggestion, Integer>> result =
-                new AtomicReference<Pair<OmniboxSuggestion, Integer>>();
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                OmniboxResultsAdapter adapter =
-                        (OmniboxResultsAdapter) locationBar.getSuggestionList().getAdapter();
-                for (int i = 0; i < adapter.getCount(); i++) {
-                    OmniboxResultItem popupItem = (OmniboxResultItem) adapter.getItem(i);
-                    OmniboxSuggestion matchedSuggestion = popupItem.getSuggestion();
-                    if (matchedSuggestion.getUrl().equals(url)) {
-                        result.set(new Pair<OmniboxSuggestion, Integer>(matchedSuggestion, i));
-                        return true;
-                    }
-                }
-                return false;
-            }
-        }, SHORT_TIMEOUT_MS, UI_DELAY_MS);
-        return result.get();
-    }
-
     /**
      * Clears the omnibox.
      *
@@ -113,43 +83,32 @@ public class PrerenderTestHelper {
      * @param testUrl Url to prerender
      * @param testBase ChromeTabbedActivityTestBase instance.
      */
-    public static void trainAutocompleteActionPredictorAndTestPrerender(final String testUrl,
-            ChromeTabbedActivityTestBase testBase)
-            throws InterruptedException {
-        // TODO(yusufo): Replace with external prerender handler instead of training.
-        ChromeTabUtils.newTabFromMenu(testBase.getInstrumentation(), testBase.getActivity());
-        for (int i = 0; i < MAX_NUM_REPEATS_FOR_TRAINING; i++) {
-            // Navigate to another URL otherwise pre-rendering won't happen.
-            // Sometimes calling clearOmnibox immediately after won't actually
-            // clear it. This seems to help.
-            clearOmnibox(testBase);
-            testBase.typeInOmnibox(testUrl, true);
-            final LocationBarLayout locationBar =
-                    (LocationBarLayout) testBase.getActivity().findViewById(R.id.location_bar);
-            if (waitForPrerenderUrl(testBase.getActivity().getActivityTab(), testUrl, true)) {
-                break;
-            }
+    public static ExternalPrerenderHandler prerenderUrlAndFocusOmnibox(
+            final String testUrl, final ChromeTabbedActivityTestBase testBase)
+                    throws InterruptedException {
+        final Tab currentTab = testBase.getActivity().getActivityTab();
 
-            final Pair<OmniboxSuggestion, Integer> suggestionPair =
-                    waitForOmniboxSuggestion(locationBar, testUrl);
-            ThreadUtils.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    OmniboxResultsAdapter ora =
-                            (OmniboxResultsAdapter) locationBar.getSuggestionList().getAdapter();
-                    OmniboxSuggestionDelegate suggestionDelegate =
-                            ora.getSuggestionDelegate();
-                    suggestionDelegate.onSelection(suggestionPair.first, suggestionPair.second);
-                }
-            });
-        }
-        ChromeTabUtils.closeCurrentTab(testBase.getInstrumentation(), testBase.getActivity());
-        clearOmnibox(testBase);
+        ExternalPrerenderHandler prerenderHandler = ThreadUtils.runOnUiThreadBlockingNoException(
+                new Callable<ExternalPrerenderHandler>() {
+                    @Override
+                    public ExternalPrerenderHandler call() throws Exception {
+                        ExternalPrerenderHandler prerenderHandler = new ExternalPrerenderHandler();
+                        boolean didPrerender = prerenderHandler.addPrerender(
+                                currentTab.getProfile(), currentTab.getWebContents(), testUrl, null,
+                                currentTab.getContentViewCore().getRenderCoordinates()
+                                        .getContentWidthPixInt(),
+                                currentTab.getContentViewCore().getRenderCoordinates()
+                                        .getContentHeightPixInt());
+                        Assert.assertTrue("Failed to prerender test url: " + testUrl, didPrerender);
+                        return prerenderHandler;
+                    }
+                });
 
-        testBase.typeInOmnibox(testUrl, true);
-        final Tab tab = testBase.getActivity().getActivityTab();
-        ChromeTabbedActivityTestBase.assertTrue("URL was not prerendered.",
-                PrerenderTestHelper.waitForPrerenderUrl(tab, testUrl, false));
+        testBase.typeInOmnibox(testUrl, false);
+        Assert.assertTrue("URL was not prerendered.",
+                PrerenderTestHelper.waitForPrerenderUrl(currentTab, testUrl, false));
+
+        return prerenderHandler;
     }
 
     /**

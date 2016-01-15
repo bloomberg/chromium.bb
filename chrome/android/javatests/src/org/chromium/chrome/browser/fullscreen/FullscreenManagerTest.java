@@ -309,7 +309,7 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
         final Tab tab = getActivity().getActivityTab();
         final String testUrl = TestHttpServerClient.getUrl(
                 "chrome/test/data/android/very_long_google.html");
-        PrerenderTestHelper.trainAutocompleteActionPredictorAndTestPrerender(testUrl, this);
+        PrerenderTestHelper.prerenderUrlAndFocusOmnibox(testUrl, this);
         assertTrue("loadUrl did not use pre-rendered page.",
                 PrerenderTestHelper.isLoadUrlResultPrerendered(loadUrl(testUrl)));
 
