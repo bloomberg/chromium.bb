@@ -244,9 +244,12 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
-        setUpResources(context);
+        final String webViewPackageName = WebViewFactory.getLoadedPackageInfo().packageName;
+        setUpResources(webViewPackageName, context);
         ResourceBundle.initializeLocalePaks(context, R.array.locale_paks);
         initPlatSupportLibrary();
+        final int extraBindFlags = 0;
+        AwBrowserProcess.configureChildProcessLauncher(webViewPackageName, extraBindFlags);
         AwBrowserProcess.start(context);
 
         if (isBuildDebuggable()) {
@@ -323,10 +326,9 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         mDevToolsServer.setRemoteDebuggingEnabled(enable);
     }
 
-    private void setUpResources(Context context) {
-        final String packageName = WebViewFactory.getLoadedPackageInfo().packageName;
+    private void setUpResources(String webViewPackageName, Context context) {
         ResourceRewriter.rewriteRValues(
-                mWebViewDelegate.getPackageId(context.getResources(), packageName));
+                mWebViewDelegate.getPackageId(context.getResources(), webViewPackageName));
 
         AwResource.setResources(context.getResources());
         AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);

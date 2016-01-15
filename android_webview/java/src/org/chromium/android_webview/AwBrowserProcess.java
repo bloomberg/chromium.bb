@@ -15,6 +15,7 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
+import org.chromium.content.browser.ChildProcessLauncher;
 import org.chromium.policy.CombinedPolicyProvider;
 
 import java.io.File;
@@ -49,6 +50,15 @@ public abstract class AwBrowserProcess {
         } catch (ProcessInitException e) {
             throw new RuntimeException("Cannot load WebView", e);
         }
+    }
+
+    /**
+     * Configures child process launcher. This is required only if child services are used in
+     * WebView.
+     */
+    public static void configureChildProcessLauncher(String packageName, int extraBindFlags) {
+        ChildProcessLauncher.setChildProcessCreationParams(
+                new ChildProcessLauncher.ChildProcessCreationParams(packageName, extraBindFlags));
     }
 
     /**

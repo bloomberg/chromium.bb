@@ -53,6 +53,44 @@ public class ChildProcessLauncher {
     private static final String SWITCH_UTILITY_PROCESS = "utility";
     private static final String SWITCH_GPU_PROCESS = "gpu-process";
 
+    /**
+     * Allows specifying the package name for looking up child services
+     * configuration and classes into (if it differs from the application
+     * package name, like in the case of Android WebView). Also allows
+     * specifying additional child service binging flags.
+     */
+    public static class ChildProcessCreationParams {
+        private final String mPackageName;
+        private final int mExtraBindFlags;
+
+        public ChildProcessCreationParams(String packageName, int extraBindFlags) {
+            mPackageName = packageName;
+            mExtraBindFlags = extraBindFlags;
+        }
+
+        public String getPackageName() {
+            return mPackageName;
+        }
+
+        /**
+         * Adds required extra flags to the given child service binding flags and returns them.
+         * Does not modify the state of the ChildProcessCreationParams instance.
+         *
+         * @param bindFlags Source bind flags to modify.
+         * @return Bind flags with extra flags added.
+         */
+        public int addExtraBindFlags(int bindFlags) {
+            return bindFlags | mExtraBindFlags;
+        }
+    }
+
+    /**
+     * Sets ChildProcessCreationParams to be used when creating child services.
+     */
+    public static void setChildProcessCreationParams(ChildProcessCreationParams params) {
+        sChildProcessCreationParams = params;
+    }
+
     private static class ChildConnectionAllocator {
         // Connections to services. Indices of the array correspond to the service numbers.
         private final ChildProcessConnection[] mChildProcessConnections;
@@ -79,7 +117,8 @@ public class ChildProcessLauncher {
         public ChildProcessConnection allocate(
                 Context context, ChildProcessConnection.DeathCallback deathCallback,
                 ChromiumLinkerParams chromiumLinkerParams,
-                boolean alwaysInForeground) {
+                boolean alwaysInForeground,
+                ChildProcessCreationParams creationParams) {
             synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
                     Log.d(TAG, "Ran out of services to allocate.");
@@ -89,7 +128,7 @@ public class ChildProcessLauncher {
                 assert mChildProcessConnections[slot] == null;
                 mChildProcessConnections[slot] = new ChildProcessConnectionImpl(context, slot,
                         mInSandbox, deathCallback, mChildClass, chromiumLinkerParams,
-                        alwaysInForeground);
+                        alwaysInForeground, creationParams);
                 Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox,
                         slot);
                 return mChildProcessConnections[slot];
@@ -211,6 +250,7 @@ public class ChildProcessLauncher {
         }
     }
 
+    private static ChildProcessCreationParams sChildProcessCreationParams;
     private static final PendingSpawnQueue sPendingSpawnQueue = new PendingSpawnQueue();
 
     // Service class for child process. As the default value it uses SandboxedProcessService0 and
@@ -229,7 +269,9 @@ public class ChildProcessLauncher {
     private static int getNumberOfServices(Context context, boolean inSandbox) {
         try {
             PackageManager packageManager = context.getPackageManager();
-            ApplicationInfo appInfo = packageManager.getApplicationInfo(context.getPackageName(),
+            final String packageName = sChildProcessCreationParams != null
+                    ? sChildProcessCreationParams.getPackageName() : context.getPackageName();
+            ApplicationInfo appInfo = packageManager.getApplicationInfo(packageName,
                     PackageManager.GET_META_DATA);
             int numServices = appInfo.metaData.getInt(inSandbox ? NUM_SANDBOXED_SERVICES_KEY
                     : NUM_PRIVILEGED_SERVICES_KEY, -1);
@@ -289,7 +331,7 @@ public class ChildProcessLauncher {
                 };
         initConnectionAllocatorsIfNecessary(context);
         return getConnectionAllocator(inSandbox).allocate(context, deathCallback,
-                chromiumLinkerParams, alwaysInForeground);
+                chromiumLinkerParams, alwaysInForeground, sChildProcessCreationParams);
     }
 
     private static boolean sLinkerInitialized = false;
@@ -325,8 +367,8 @@ public class ChildProcessLauncher {
     private static ChildProcessConnection allocateBoundConnection(Context context,
             String[] commandLine, boolean inSandbox, boolean alwaysInForeground) {
         ChromiumLinkerParams chromiumLinkerParams = getLinkerParamsForNewConnection();
-        ChildProcessConnection connection =
-                allocateConnection(context, inSandbox, chromiumLinkerParams, alwaysInForeground);
+        ChildProcessConnection connection = allocateConnection(context, inSandbox,
+                chromiumLinkerParams, alwaysInForeground);
         if (connection != null) {
             connection.start(commandLine);
 

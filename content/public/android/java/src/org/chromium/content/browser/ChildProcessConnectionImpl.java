@@ -104,16 +104,24 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         private boolean mBound = false;
 
         private final int mBindFlags;
+        private final ChildProcessLauncher.ChildProcessCreationParams mCreationParams;
 
         private Intent createServiceBindIntent() {
+            final String packageName = mCreationParams != null
+                    ? mCreationParams.getPackageName() : mContext.getPackageName();
             Intent intent = new Intent();
-            intent.setClassName(mContext, mServiceClass.getName() + mServiceNumber);
-            intent.setPackage(mContext.getPackageName());
+            intent.setComponent(
+                    new ComponentName(packageName, mServiceClass.getName() + mServiceNumber));
             return intent;
         }
 
-        public ChildServiceConnection(int bindFlags) {
+        public ChildServiceConnection(int bindFlags,
+                ChildProcessLauncher.ChildProcessCreationParams creationParams) {
+            if (creationParams != null) {
+                bindFlags = creationParams.addExtraBindFlags(bindFlags);
+            }
             mBindFlags = bindFlags;
+            mCreationParams = creationParams;
         }
 
         boolean bind(String[] commandLine) {
@@ -201,7 +209,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             ChildProcessConnection.DeathCallback deathCallback,
             Class<? extends ChildProcessService> serviceClass,
             ChromiumLinkerParams chromiumLinkerParams,
-            boolean alwaysInForeground) {
+            boolean alwaysInForeground,
+            ChildProcessLauncher.ChildProcessCreationParams creationParams) {
         mContext = context;
         mServiceNumber = number;
         mInSandbox = inSandbox;
@@ -211,12 +220,12 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         mAlwaysInForeground = alwaysInForeground;
         int initialFlags = Context.BIND_AUTO_CREATE;
         if (mAlwaysInForeground) initialFlags |= Context.BIND_IMPORTANT;
-        mInitialBinding = new ChildServiceConnection(initialFlags);
+        mInitialBinding = new ChildServiceConnection(initialFlags, creationParams);
         mStrongBinding = new ChildServiceConnection(
-                Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT);
+                Context.BIND_AUTO_CREATE | Context.BIND_IMPORTANT, creationParams);
         mWaivedBinding = new ChildServiceConnection(
-                Context.BIND_AUTO_CREATE | Context.BIND_WAIVE_PRIORITY);
-        mModerateBinding = new ChildServiceConnection(Context.BIND_AUTO_CREATE);
+                Context.BIND_AUTO_CREATE | Context.BIND_WAIVE_PRIORITY, creationParams);
+        mModerateBinding = new ChildServiceConnection(Context.BIND_AUTO_CREATE, creationParams);
     }
 
     @Override
