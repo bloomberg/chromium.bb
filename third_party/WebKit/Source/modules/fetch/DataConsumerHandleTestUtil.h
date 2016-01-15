@@ -191,7 +191,6 @@ public:
 
             using Result = WebDataConsumerHandle::Result;
             using Flags = WebDataConsumerHandle::Flags;
-            Result read(void*, size_t, Flags, size_t*) override { return WebDataConsumerHandle::ShouldWait; }
             Result beginRead(const void**, Flags, size_t*) override { return WebDataConsumerHandle::ShouldWait; }
             Result endRead(size_t) override { return WebDataConsumerHandle::UnexpectedError; }
 

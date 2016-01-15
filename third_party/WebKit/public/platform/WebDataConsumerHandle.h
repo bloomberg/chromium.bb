@@ -64,11 +64,11 @@ public:
     // destruction will not affect the reader functionality.
     // Reading functions may success (i.e. return Ok) or fail (otherwise), and
     // the behavior which is not specified is unspecified.
-    class Reader {
+    class BLINK_PLATFORM_EXPORT Reader {
     public:
         // Destructing a reader means it is released and a user can get another
         // Reader by calling |obtainReader| on any thread again.
-        virtual ~Reader() { }
+        virtual ~Reader() {}
 
         // Reads data into |data| up to |size| bytes. The actual read size will
         // be stored in |*readSize|. This function cannot be called when a
@@ -76,11 +76,8 @@ public:
         // Returns Done when it reaches to the end of the data.
         // Returns ShouldWait when the handle does not have data to read but
         // it is not closed or errored.
-        virtual Result read(void* data, size_t /* size */, Flags, size_t* readSize)
-        {
-            BLINK_ASSERT_NOT_REACHED();
-            return UnexpectedError;
-        }
+        // The default implementation uses beginRead and endRead.
+        virtual Result read(void* data, size_t /* size */, Flags, size_t* readSize);
 
         // Begins a two-phase read. On success, the function stores a buffer
         // that contains the read data of length |*available| into |*buffer|.
@@ -89,19 +86,11 @@ public:
         // it is not closed or errored.
         // On fail, you don't have to (and should not) call endRead, because the
         // read session implicitly ends in that case.
-        virtual Result beginRead(const void** buffer, Flags, size_t* available)
-        {
-            BLINK_ASSERT_NOT_REACHED();
-            return UnexpectedError;
-        }
+        virtual Result beginRead(const void** buffer, Flags, size_t* available) = 0;
 
         // Ends a two-phase read.
         // |readSize| indicates the actual read size.
-        virtual Result endRead(size_t readSize)
-        {
-            BLINK_ASSERT_NOT_REACHED();
-            return UnexpectedError;
-        }
+        virtual Result endRead(size_t readSize) = 0;
     };
 
     WebDataConsumerHandle();
@@ -119,15 +108,11 @@ public:
 #endif
 
     // Returns a string literal (e.g. class name) for debugging only.
-    virtual const char* debugName() const { return "WebDataConsumerHandle"; }
+    virtual const char* debugName() const = 0;
 
 private:
     // The caller takes ownership of the returned object.
-    virtual Reader* obtainReaderInternal(Client* client)
-    {
-        BLINK_ASSERT_NOT_REACHED();
-        return nullptr;
-    }
+    virtual Reader* obtainReaderInternal(Client*) = 0;
 };
 
 } // namespace blink

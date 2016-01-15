@@ -105,19 +105,6 @@ public:
             m_readingContext->detachReader();
         }
 
-        Result read(void* buffer, size_t size, Flags flags, size_t* readSize) override
-        {
-            *readSize = 0;
-            const void* src = nullptr;
-            size_t available;
-            Result r = beginRead(&src, flags, &available);
-            if (r != WebDataConsumerHandle::Ok)
-                return r;
-            *readSize = std::min(available, size);
-            memcpy(buffer, src, *readSize);
-            return endRead(*readSize);
-        }
-
         Result beginRead(const void** buffer, Flags, size_t* available) override
         {
             return m_readingContext->beginRead(buffer, available);

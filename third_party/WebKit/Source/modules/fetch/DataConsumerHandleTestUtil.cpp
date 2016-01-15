@@ -68,16 +68,6 @@ public:
         m_context->detachReader();
     }
 
-    Result read(void* buffer, size_t size, Flags flags, size_t* readSize) override
-    {
-        const void* src = nullptr;
-        Result result = beginRead(&src, flags, readSize);
-        if (result != Ok)
-            return result;
-        *readSize = std::min(*readSize, size);
-        memcpy(buffer, src, *readSize);
-        return endRead(*readSize);
-    }
     Result beginRead(const void** buffer, Flags flags, size_t* available) override
     {
         return m_context->beginRead(buffer, flags, available);

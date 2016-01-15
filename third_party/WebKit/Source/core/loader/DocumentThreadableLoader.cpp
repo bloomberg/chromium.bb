@@ -71,11 +71,6 @@ private:
             Platform::current()->currentThread()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&EmptyDataReader::notify, m_factory.createWeakPtr(), client)));
         }
     private:
-        Result read(void*, size_t, WebDataConsumerHandle::Flags, size_t *readSize) override
-        {
-            *readSize = 0;
-            return Done;
-        }
         Result beginRead(const void** buffer, WebDataConsumerHandle::Flags, size_t *available) override
         {
             *available = 0;
