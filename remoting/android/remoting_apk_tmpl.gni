@@ -3,15 +3,12 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
-import("//chrome/android/chrome_apk_version.gni")
 
 if (!is_component_build) {
   template("remoting_apk_tmpl") {
     android_apk(target_name) {
       forward_variables_from(invoker, "*")
 
-      version_name = chrome_apk_version_name
-      version_code = chrome_apk_version_code
       android_manifest = "$root_gen_dir/remoting/android/AndroidManifest.xml"
       native_libs = [ "libremoting_client_jni.so" ]
 
