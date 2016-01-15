@@ -154,7 +154,7 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
   return ShellIntegration::GetAppModelIdForProfile(app_name, profile_path);
 }
 
-void MigrateChromiumShortcutsCallback() {
+void MigrateTaskbarPinsCallback() {
   // This should run on the file thread.
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
@@ -163,42 +163,13 @@ void MigrateChromiumShortcutsCallback() {
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
     return;
 
-  // Locations to check for shortcuts migration.
-  static const struct {
-    int location_id;
-    const wchar_t* sub_dir;
-  } kLocations[] = {
-    {
-      base::DIR_TASKBAR_PINS,
-      NULL
-    }, {
-      base::DIR_USER_DESKTOP,
-      NULL
-    }, {
-      base::DIR_START_MENU,
-      NULL
-    }, {
-      base::DIR_APP_DATA,
-      L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned\\StartMenu"
-    }
-  };
-
-  for (size_t i = 0; i < arraysize(kLocations); ++i) {
-    base::FilePath path;
-    if (!PathService::Get(kLocations[i].location_id, &path)) {
-      NOTREACHED();
-      continue;
-    }
-
-    if (kLocations[i].sub_dir)
-      path = path.Append(kLocations[i].sub_dir);
-
-    // Clear |dual_mode| property from taskbar pins as those are user-level
-    // shortcuts which aren't handled by the installer.
-    bool clear_dual_mode = kLocations[i].location_id == base::DIR_TASKBAR_PINS;
-    ShellIntegration::MigrateShortcutsInPathInternal(chrome_exe, path,
-                                                     clear_dual_mode);
+  base::FilePath pins_path;
+  if (!PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
+    NOTREACHED();
+    return;
   }
+
+  ShellIntegration::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
 }
 
 // Windows 8 introduced a new protocol->executable binding system which cannot
@@ -509,24 +480,23 @@ base::string16 ShellIntegration::GetAppListAppModelIdForProfile(
   return GetAppModelIdForProfile(GetAppListAppName(), profile_path);
 }
 
-void ShellIntegration::MigrateChromiumShortcuts() {
+void ShellIntegration::MigrateTaskbarPins() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return;
 
   // This needs to happen eventually (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but this is not
   // urgent and shouldn't delay Chrome startup.
-  static const int64_t kMigrateChromiumShortcutsDelaySeconds = 15;
+  static const int64_t kMigrateTaskbarPinsDelaySeconds = 15;
   BrowserThread::PostDelayedTask(
       BrowserThread::FILE, FROM_HERE,
-      base::Bind(&MigrateChromiumShortcutsCallback),
-      base::TimeDelta::FromSeconds(kMigrateChromiumShortcutsDelaySeconds));
+      base::Bind(&MigrateTaskbarPinsCallback),
+      base::TimeDelta::FromSeconds(kMigrateTaskbarPinsDelaySeconds));
 }
 
 int ShellIntegration::MigrateShortcutsInPathInternal(
     const base::FilePath& chrome_exe,
-    const base::FilePath& path,
-    bool clear_dual_mode) {
+    const base::FilePath& path) {
   DCHECK(base::win::GetVersion() >= base::win::VERSION_WIN7);
 
   // Enumerate all pinned shortcuts in the given path directly.
@@ -599,12 +569,13 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
       }
     }
 
-    // Clear |dual_mode| property from any shortcuts that previously had it (as
-    // requested by caller).
+    // Clear dual_mode property from any shortcuts that previously had it (it
+    // was only ever installed on shortcuts with the
+    // |default_chromium_model_id|).
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     base::string16 default_chromium_model_id(
         ShellUtil::GetBrowserModelId(dist, is_per_user_install));
-    if (clear_dual_mode && expected_app_id == default_chromium_model_id) {
+    if (expected_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {

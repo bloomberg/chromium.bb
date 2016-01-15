@@ -155,20 +155,19 @@ class ShellIntegration {
   static base::string16 GetAppListAppModelIdForProfile(
       const base::FilePath& profile_path);
 
-  // Migrates existing chrome shortcuts by tagging them with correct app id.
+  // Migrates existing chrome taskbar pins by tagging them with correct app id.
   // see http://crbug.com/28104
-  static void MigrateChromiumShortcuts();
+  static void MigrateTaskbarPins();
 
   // Migrates all shortcuts in |path| which point to |chrome_exe| such that they
-  // have the appropriate AppUserModelId. Also clears the dual_mode property
-  // from shortcuts that previously had it if requested by |clear_dual_mode|.
+  // have the appropriate AppUserModelId. Also clears the legacy dual_mode
+  // property from shortcuts with the default chrome app id.
   // Returns the number of shortcuts migrated.
   // This method should not be called prior to Windows 7.
   // This method is only public for the sake of tests and shouldn't be called
   // externally otherwise.
   static int MigrateShortcutsInPathInternal(const base::FilePath& chrome_exe,
-                                            const base::FilePath& path,
-                                            bool clear_dual_mode);
+                                            const base::FilePath& path);
 
   // Returns the path to the Start Menu shortcut for the given Chrome.
   static base::FilePath GetStartMenuShortcut(const base::FilePath& chrome_exe);

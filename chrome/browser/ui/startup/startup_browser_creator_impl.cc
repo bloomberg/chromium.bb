@@ -386,7 +386,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
   // Active Setup versioning and on OS upgrades) instead of every startup.
   // http://crbug.com/577697
   if (process_startup)
-    ShellIntegration::MigrateChromiumShortcuts();
+    ShellIntegration::MigrateTaskbarPins();
 #endif  // defined(OS_WIN)
 
   return true;
