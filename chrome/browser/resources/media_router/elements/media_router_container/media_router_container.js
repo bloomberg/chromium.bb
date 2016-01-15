@@ -331,6 +331,7 @@ Polymer({
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
     this.showSinkList_();
+    this.updateMaxSinkListHeight(this.dialogHeight_);
   },
 
   attached: function() {
