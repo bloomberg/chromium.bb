@@ -88,7 +88,7 @@ class NET_EXPORT URLRequestContextBuilder {
     std::string trusted_spdy_proxy;
     bool use_alternative_services;
     bool enable_quic;
-    bool quic_store_server_configs_in_properties;
+    int quic_max_server_configs_stored_in_properties;
     bool quic_delay_tcp_race;
     int quic_max_number_of_lossy_connections;
     std::unordered_set<std::string> quic_host_whitelist;
@@ -198,10 +198,10 @@ class NET_EXPORT URLRequestContextBuilder {
         quic_connection_options;
   }
 
-  void set_quic_store_server_configs_in_properties(
-      bool quic_store_server_configs_in_properties) {
-    http_network_session_params_.quic_store_server_configs_in_properties =
-        quic_store_server_configs_in_properties;
+  void set_quic_max_server_configs_stored_in_properties(
+      int quic_max_server_configs_stored_in_properties) {
+    http_network_session_params_.quic_max_server_configs_stored_in_properties =
+        quic_max_server_configs_stored_in_properties;
   }
 
   void set_quic_delay_tcp_race(bool quic_delay_tcp_race) {

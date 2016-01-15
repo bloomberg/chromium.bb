@@ -35,7 +35,7 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
       // User-Agent request header field.
       "fake agent",
       // JSON encoded experimental options.
-      "{\"QUIC\":{\"store_server_configs_in_properties\":true,"
+      "{\"QUIC\":{\"max_server_configs_stored_in_properties\":2,"
       "\"delay_tcp_race\":true,"
       "\"max_number_of_lossy_connections\":10,"
       "\"packet_loss_threshold\":0.5,"
@@ -69,8 +69,8 @@ TEST(URLRequestContextConfigTest, SetQuicExperimentalOptions) {
   quic_connection_options.push_back(net::kREJ);
   EXPECT_EQ(quic_connection_options, params->quic_connection_options);
 
-  // Check store_server_configs_in_properties.
-  EXPECT_TRUE(params->quic_store_server_configs_in_properties);
+  // Check max_server_configs_stored_in_properties.
+  EXPECT_EQ(2u, params->quic_max_server_configs_stored_in_properties);
 
   // Check delay_tcp_race.
   EXPECT_TRUE(params->quic_delay_tcp_race);

@@ -134,6 +134,9 @@ class NET_EXPORT HttpServerPropertiesImpl
                          const std::string& server_info) override;
   const std::string* GetQuicServerInfo(const QuicServerId& server_id) override;
   const QuicServerInfoMap& quic_server_info_map() const override;
+  size_t max_server_configs_stored_in_properties() const override;
+  void SetMaxServerConfigsStoredInProperties(
+      size_t max_server_configs_stored_in_properties) override;
 
  private:
   friend class HttpServerPropertiesImplPeer;
@@ -187,6 +190,7 @@ class NET_EXPORT HttpServerPropertiesImpl
   double alternative_service_probability_threshold_;
 
   QuicServerInfoMap quic_server_info_map_;
+  size_t max_server_configs_stored_in_properties_;
 
   base::WeakPtrFactory<HttpServerPropertiesImpl> weak_ptr_factory_;
 

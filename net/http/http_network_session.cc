@@ -114,7 +114,7 @@ HttpNetworkSession::Params::Params()
       quic_packet_loss_threshold(1.0f),
       quic_socket_receive_buffer_size(kQuicSocketReceiveBufferSize),
       quic_delay_tcp_race(false),
-      quic_store_server_configs_in_properties(false),
+      quic_max_server_configs_stored_in_properties(0u),
       quic_clock(NULL),
       quic_random(NULL),
       quic_max_packet_length(kDefaultMaxPacketSize),
@@ -176,7 +176,7 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
           params.quic_threshold_timeouts_streams_open,
           params.quic_socket_receive_buffer_size,
           params.quic_delay_tcp_race,
-          params.quic_store_server_configs_in_properties,
+          params.quic_max_server_configs_stored_in_properties,
           params.quic_close_sessions_on_ip_change,
           params.quic_idle_connection_timeout_seconds,
           params.quic_migrate_sessions_on_network_change,
@@ -239,6 +239,8 @@ HttpNetworkSession::HttpNetworkSession(const Params& params)
 
   http_server_properties_->SetAlternativeServiceProbabilityThreshold(
       params.alternative_service_probability_threshold);
+  http_server_properties_->SetMaxServerConfigsStoredInProperties(
+      params.quic_max_server_configs_stored_in_properties);
 }
 
 HttpNetworkSession::~HttpNetworkSession() {
@@ -324,8 +326,8 @@ scoped_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_max_number_of_lossy_connections);
   dict->SetDouble("packet_loss_threshold", params_.quic_packet_loss_threshold);
   dict->SetBoolean("delay_tcp_race", params_.quic_delay_tcp_race);
-  dict->SetBoolean("store_server_configs_in_properties",
-                   params_.quic_store_server_configs_in_properties);
+  dict->SetInteger("max_server_configs_stored_in_properties",
+                   params_.quic_max_server_configs_stored_in_properties);
   dict->SetInteger("idle_connection_timeout_seconds",
                    params_.quic_idle_connection_timeout_seconds);
   dict->SetBoolean("disable_preconnect_if_0rtt",

@@ -1389,6 +1389,11 @@ TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
   HostPortPair google_server("www.google.com", 443);
   QuicServerId google_quic_server_id(google_server, PRIVACY_MODE_ENABLED);
 
+  EXPECT_EQ(QuicServerInfoMap::NO_AUTO_EVICT,
+            impl_.quic_server_info_map().max_size());
+  impl_.SetMaxServerConfigsStoredInProperties(10);
+  EXPECT_EQ(10u, impl_.quic_server_info_map().max_size());
+
   // Check empty map.
   QuicServerInfoMap init_quic_server_info_map(QuicServerInfoMap::NO_AUTO_EVICT);
   impl_.InitializeQuicServerInfoMap(&init_quic_server_info_map);
@@ -1449,6 +1454,22 @@ TEST_F(QuicServerInfoServerPropertiesTest, Initialize) {
   ++memory_map_it;
   EXPECT_EQ(memory_map_it->first, mail_quic_server_id);
   EXPECT_EQ(mail_server_info, memory_map_it->second);
+
+  // Shrink the size of |quic_server_info_map| and verify the MRU order is
+  // maintained.
+  impl_.SetMaxServerConfigsStoredInProperties(2);
+  EXPECT_EQ(2u, impl_.quic_server_info_map().max_size());
+
+  const QuicServerInfoMap& memory_map1 = impl_.quic_server_info_map();
+  ASSERT_EQ(2u, memory_map1.size());
+  QuicServerInfoMap::const_iterator memory_map1_it = memory_map1.begin();
+  EXPECT_EQ(memory_map1_it->first, docs_quic_server_id);
+  EXPECT_EQ(new_docs_server_info, memory_map1_it->second);
+  ++memory_map1_it;
+  EXPECT_EQ(memory_map1_it->first, google_quic_server_id);
+  EXPECT_EQ(google_server_info, memory_map1_it->second);
+  // |QuicServerInfo| for |mail_quic_server_id| shouldn't be there.
+  EXPECT_EQ(nullptr, impl_.GetQuicServerInfo(mail_quic_server_id));
 }
 
 TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {

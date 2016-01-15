@@ -276,7 +276,9 @@ TEST_P(HttpServerPropertiesManagerTest,
   http_server_properties_dict->SetWithoutPathExpansion("supports_quic",
                                                        supports_quic);
 
-  // Set quic_server_info for www.google.com:80 and mail.google.com:80.
+  // Set quic_server_info for www.google.com:80, mail.google.com:80 and
+  // play.google.com:80 and verify the MRU.
+  http_server_props_manager_->SetMaxServerConfigsStoredInProperties(3);
   base::DictionaryValue* quic_servers_dict = new base::DictionaryValue;
   base::DictionaryValue* quic_server_pref_dict1 = new base::DictionaryValue;
   std::string quic_server_info1("quic_server_info1");
@@ -286,6 +288,10 @@ TEST_P(HttpServerPropertiesManagerTest,
   std::string quic_server_info2("quic_server_info2");
   quic_server_pref_dict2->SetStringWithoutPathExpansion("server_info",
                                                         quic_server_info2);
+  base::DictionaryValue* quic_server_pref_dict3 = new base::DictionaryValue;
+  std::string quic_server_info3("quic_server_info3");
+  quic_server_pref_dict3->SetStringWithoutPathExpansion("server_info",
+                                                        quic_server_info3);
   // Set the quic_server_info1 for www.google.com server.
   QuicServerId google_quic_server_id("www.google.com", 80);
   quic_servers_dict->SetWithoutPathExpansion(google_quic_server_id.ToString(),
@@ -294,6 +300,10 @@ TEST_P(HttpServerPropertiesManagerTest,
   QuicServerId mail_quic_server_id("mail.google.com", 80);
   quic_servers_dict->SetWithoutPathExpansion(mail_quic_server_id.ToString(),
                                              quic_server_pref_dict2);
+  // Set the quic_server_info3 for play.google.com server.
+  QuicServerId play_quic_server_id("play.google.com", 80);
+  quic_servers_dict->SetWithoutPathExpansion(play_quic_server_id.ToString(),
+                                             quic_server_pref_dict3);
   http_server_properties_dict->SetWithoutPathExpansion("quic_servers",
                                                        quic_servers_dict);
 
@@ -375,6 +385,17 @@ TEST_P(HttpServerPropertiesManagerTest,
                                    google_quic_server_id));
   EXPECT_EQ(quic_server_info2, *http_server_props_manager_->GetQuicServerInfo(
                                    mail_quic_server_id));
+  EXPECT_EQ(quic_server_info3, *http_server_props_manager_->GetQuicServerInfo(
+                                   play_quic_server_id));
+
+  // Verify the MRU order.
+  http_server_props_manager_->SetMaxServerConfigsStoredInProperties(2);
+  EXPECT_EQ(nullptr, http_server_props_manager_->GetQuicServerInfo(
+                         google_quic_server_id));
+  EXPECT_EQ(quic_server_info2, *http_server_props_manager_->GetQuicServerInfo(
+                                   mail_quic_server_id));
+  EXPECT_EQ(quic_server_info3, *http_server_props_manager_->GetQuicServerInfo(
+                                   play_quic_server_id));
 }
 
 TEST_P(HttpServerPropertiesManagerTest, BadCachedHostPortPair) {

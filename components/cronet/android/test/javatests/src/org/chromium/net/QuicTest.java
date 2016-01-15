@@ -43,7 +43,7 @@ public class QuicTest extends CronetTestBase {
         JSONObject quicParams = new JSONObject()
                                         .put("connection_options", "PACE,IW10,FOO,DEADBEEF")
                                         .put("host_whitelist", "test.example.com")
-                                        .put("store_server_configs_in_properties", true)
+                                        .put("max_server_configs_stored_in_properties", 2)
                                         .put("delay_tcp_race", true)
                                         .put("max_number_of_lossy_connections", 10)
                                         .put("packet_loss_threshold", 0.5)

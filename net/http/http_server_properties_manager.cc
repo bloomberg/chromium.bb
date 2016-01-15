@@ -406,6 +406,20 @@ const QuicServerInfoMap& HttpServerPropertiesManager::quic_server_info_map()
   return http_server_properties_impl_->quic_server_info_map();
 }
 
+size_t HttpServerPropertiesManager::max_server_configs_stored_in_properties()
+    const {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_
+      ->max_server_configs_stored_in_properties();
+}
+
+void HttpServerPropertiesManager::SetMaxServerConfigsStoredInProperties(
+    size_t max_server_configs_stored_in_properties) {
+  DCHECK(network_task_runner_->RunsTasksOnCurrentThread());
+  return http_server_properties_impl_->SetMaxServerConfigsStoredInProperties(
+      max_server_configs_stored_in_properties);
+}
+
 //
 // Update the HttpServerPropertiesImpl's cache with data from preferences.
 //
@@ -497,7 +511,7 @@ void HttpServerPropertiesManager::UpdateCacheFromPrefsOnPrefThread() {
   scoped_ptr<ServerNetworkStatsMap> server_network_stats_map(
       new ServerNetworkStatsMap(kMaxServerNetworkStatsHostsToPersist));
   scoped_ptr<QuicServerInfoMap> quic_server_info_map(
-      new QuicServerInfoMap(kMaxQuicServersToPersist));
+      new QuicServerInfoMap(QuicServerInfoMap::NO_AUTO_EVICT));
 
   if (version < 4) {
     if (!AddServersData(*servers_dict, spdy_servers.get(),
@@ -980,7 +994,8 @@ void HttpServerPropertiesManager::UpdatePrefsFromCacheOnNetworkThread(
   const QuicServerInfoMap& main_quic_server_info_map =
       http_server_properties_impl_->quic_server_info_map();
   if (main_quic_server_info_map.size() > 0) {
-    quic_server_info_map = new QuicServerInfoMap(kMaxQuicServersToPersist);
+    quic_server_info_map =
+        new QuicServerInfoMap(max_server_configs_stored_in_properties());
     for (const std::pair<const QuicServerId, std::string>& entry :
          main_quic_server_info_map) {
       quic_server_info_map->Put(entry.first, entry.second);

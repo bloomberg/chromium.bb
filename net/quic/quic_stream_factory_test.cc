@@ -217,7 +217,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         threshold_public_resets_post_handshake_(2),
         receive_buffer_size_(0),
         delay_tcp_race_(false),
-        store_server_configs_in_properties_(false),
         close_sessions_on_ip_change_(false),
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         migrate_sessions_on_network_change_(false) {
@@ -239,11 +238,13 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
         max_number_of_lossy_connections_, packet_loss_threshold_,
         max_disabled_reasons_, threshold_timeouts_with_open_streams_,
         threshold_public_resets_post_handshake_, receive_buffer_size_,
-        delay_tcp_race_, store_server_configs_in_properties_,
+        delay_tcp_race_, /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_, idle_connection_timeout_seconds_,
         migrate_sessions_on_network_change_, QuicTagVector()));
     factory_->set_require_confirmation(false);
+    EXPECT_FALSE(factory_->has_quic_server_info_factory());
     factory_->set_quic_server_info_factory(new MockQuicServerInfoFactory());
+    EXPECT_TRUE(factory_->has_quic_server_info_factory());
   }
 
   void InitializeConnectionMigrationTest(
@@ -411,7 +412,6 @@ class QuicStreamFactoryTest : public ::testing::TestWithParam<TestParams> {
   int threshold_public_resets_post_handshake_;
   int receive_buffer_size_;
   bool delay_tcp_race_;
-  bool store_server_configs_in_properties_;
   bool close_sessions_on_ip_change_;
   int idle_connection_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
@@ -3099,7 +3099,6 @@ TEST_P(QuicStreamFactoryTest, EnableDelayTcpRace) {
 }
 
 TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
-  store_server_configs_in_properties_ = true;
   idle_connection_timeout_seconds_ = 500;
   Initialize();
   ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
@@ -3118,6 +3117,8 @@ TEST_P(QuicStreamFactoryTest, MaybeInitialize) {
 
   http_server_properties_.SetAlternativeServices(
       host_port_pair_, alternative_service_info_vector);
+  http_server_properties_.SetMaxServerConfigsStoredInProperties(
+      kMaxQuicServersToPersist);
 
   QuicServerId quic_server_id(kDefaultServerHostName, 80,
                               PRIVACY_MODE_DISABLED);

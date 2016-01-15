@@ -154,8 +154,9 @@ class NET_EXPORT HttpNetworkSession
     // Delay starting a TCP connection when QUIC believes it can speak
     // 0-RTT to a server.
     bool quic_delay_tcp_race;
-    // Store server configs in HttpServerProperties, instead of the disk cache.
-    bool quic_store_server_configs_in_properties;
+    // Maximum number of server configs that are to be stored in
+    // HttpServerProperties, instead of the disk cache.
+    size_t quic_max_server_configs_stored_in_properties;
     // If not empty, QUIC will be used for all connections to this origin.
     HostPortPair origin_to_force_quic_on;
     // Source of time for QUIC connections. Will be owned by QuicStreamFactory.

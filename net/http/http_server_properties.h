@@ -379,6 +379,13 @@ class NET_EXPORT HttpServerProperties {
   // Returns all persistent QuicServerInfo objects.
   virtual const QuicServerInfoMap& quic_server_info_map() const = 0;
 
+  // Returns the number of server configs (QuicServerInfo objects) persisted.
+  virtual size_t max_server_configs_stored_in_properties() const = 0;
+
+  // Sets the number of server configs (QuicServerInfo objects) to be persisted.
+  virtual void SetMaxServerConfigsStoredInProperties(
+      size_t max_server_configs_stored_in_properties) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpServerProperties);
 };

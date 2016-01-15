@@ -566,7 +566,7 @@ QuicStreamFactory::QuicStreamFactory(
     int threshold_timeouts_with_open_streams,
     int socket_receive_buffer_size,
     bool delay_tcp_race,
-    bool store_server_configs_in_properties,
+    int max_server_configs_stored_in_properties,
     bool close_sessions_on_ip_change,
     int idle_connection_timeout_seconds,
     bool migrate_sessions_on_network_change,
@@ -615,7 +615,6 @@ QuicStreamFactory::QuicStreamFactory(
       yield_after_packets_(kQuicYieldAfterPacketsRead),
       yield_after_duration_(QuicTime::Delta::FromMilliseconds(
           kQuicYieldAfterDurationMilliseconds)),
-      store_server_configs_in_properties_(store_server_configs_in_properties),
       close_sessions_on_ip_change_(close_sessions_on_ip_change),
       migrate_sessions_on_network_change_(
           migrate_sessions_on_network_change &&
@@ -653,7 +652,7 @@ QuicStreamFactory::QuicStreamFactory(
   // When disk cache is used to store the server configs, HttpCache code calls
   // |set_quic_server_info_factory| if |quic_server_info_factory_| wasn't
   // created.
-  if (store_server_configs_in_properties_) {
+  if (max_server_configs_stored_in_properties > 0) {
     quic_server_info_factory_.reset(
         new PropertiesBasedQuicServerInfoFactory(http_server_properties_));
   }
@@ -1546,7 +1545,7 @@ void QuicStreamFactory::MaybeInitialize() {
     }
   }
 
-  if (!store_server_configs_in_properties_)
+  if (http_server_properties_->max_server_configs_stored_in_properties() == 0)
     return;
   // Create a temporary QuicServerInfo object to deserialize and to populate the
   // in-memory crypto server config cache.

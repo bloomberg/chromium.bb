@@ -33,7 +33,8 @@ HttpServerPropertiesImpl::HttpServerPropertiesImpl()
       spdy_settings_map_(SpdySettingsMap::NO_AUTO_EVICT),
       server_network_stats_map_(ServerNetworkStatsMap::NO_AUTO_EVICT),
       alternative_service_probability_threshold_(1.0),
-      quic_server_info_map_(kMaxQuicServersToPersist),
+      quic_server_info_map_(QuicServerInfoMap::NO_AUTO_EVICT),
+      max_server_configs_stored_in_properties_(kMaxQuicServersToPersist),
       weak_ptr_factory_(this) {
   canonical_suffixes_.push_back(".c.youtube.com");
   canonical_suffixes_.push_back(".googlevideo.com");
@@ -184,7 +185,7 @@ void HttpServerPropertiesImpl::InitializeServerNetworkStats(
 void HttpServerPropertiesImpl::InitializeQuicServerInfoMap(
     QuicServerInfoMap* quic_server_info_map) {
   // Add the entries from persisted data.
-  QuicServerInfoMap temp_map(kMaxQuicServersToPersist);
+  QuicServerInfoMap temp_map(QuicServerInfoMap::NO_AUTO_EVICT);
   for (QuicServerInfoMap::reverse_iterator it = quic_server_info_map->rbegin();
        it != quic_server_info_map->rend(); ++it) {
     temp_map.Put(it->first, it->second);
@@ -674,6 +675,28 @@ const std::string* HttpServerPropertiesImpl::GetQuicServerInfo(
 const QuicServerInfoMap& HttpServerPropertiesImpl::quic_server_info_map()
     const {
   return quic_server_info_map_;
+}
+
+size_t HttpServerPropertiesImpl::max_server_configs_stored_in_properties()
+    const {
+  return max_server_configs_stored_in_properties_;
+}
+
+void HttpServerPropertiesImpl::SetMaxServerConfigsStoredInProperties(
+    size_t max_server_configs_stored_in_properties) {
+  max_server_configs_stored_in_properties_ =
+      max_server_configs_stored_in_properties;
+
+  // MRUCache doesn't allow the size of the cache to be changed. Thus create a
+  // new map with the new size and add current elements and swap the new map.
+  quic_server_info_map_.ShrinkToSize(max_server_configs_stored_in_properties_);
+  QuicServerInfoMap temp_map(max_server_configs_stored_in_properties_);
+  for (QuicServerInfoMap::reverse_iterator it = quic_server_info_map_.rbegin();
+       it != quic_server_info_map_.rend(); ++it) {
+    temp_map.Put(it->first, it->second);
+  }
+
+  quic_server_info_map_.Swap(temp_map);
 }
 
 void HttpServerPropertiesImpl::SetAlternativeServiceProbabilityThreshold(

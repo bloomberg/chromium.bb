@@ -182,7 +182,7 @@ URLRequestContextBuilder::HttpNetworkSessionParams::HttpNetworkSessionParams()
       next_protos(NextProtosDefaults()),
       use_alternative_services(true),
       enable_quic(false),
-      quic_store_server_configs_in_properties(false),
+      quic_max_server_configs_stored_in_properties(0),
       quic_delay_tcp_race(false),
       quic_max_number_of_lossy_connections(0),
       quic_packet_loss_threshold(1.0f),
@@ -391,8 +391,8 @@ scoped_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
       http_network_session_params_.trusted_spdy_proxy;
   network_session_params.next_protos = http_network_session_params_.next_protos;
   network_session_params.enable_quic = http_network_session_params_.enable_quic;
-  network_session_params.quic_store_server_configs_in_properties =
-      http_network_session_params_.quic_store_server_configs_in_properties;
+  network_session_params.quic_max_server_configs_stored_in_properties =
+      http_network_session_params_.quic_max_server_configs_stored_in_properties;
   network_session_params.quic_delay_tcp_race =
       http_network_session_params_.quic_delay_tcp_race;
   network_session_params.quic_max_number_of_lossy_connections =

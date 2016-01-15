@@ -147,7 +147,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int threshold_public_resets_post_handshake,
       int socket_receive_buffer_size,
       bool delay_tcp_race,
-      bool store_server_configs_in_properties,
+      int max_server_configs_stored_in_properties,
       bool close_sessions_on_ip_change,
       int idle_connection_timeout_seconds,
       bool migrate_sessions_on_network_change,
@@ -276,7 +276,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   bool enable_port_selection() const { return enable_port_selection_; }
 
   bool has_quic_server_info_factory() {
-    return !quic_server_info_factory_.get();
+    return quic_server_info_factory_.get() != nullptr;
   }
 
   void set_quic_server_info_factory(
@@ -290,10 +290,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int socket_receive_buffer_size() const { return socket_receive_buffer_size_; }
 
   bool delay_tcp_race() const { return delay_tcp_race_; }
-
-  bool store_server_configs_in_properties() const {
-    return store_server_configs_in_properties_;
-  }
 
  private:
   class Job;
@@ -481,9 +477,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // QuicPacketReader::StartReading() yields by doing a PostTask().
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;
-
-  // Set if server configs are to be stored in HttpServerProperties.
-  bool store_server_configs_in_properties_;
 
   // Set if all sessions should be closed when any local IP address changes.
   const bool close_sessions_on_ip_change_;
