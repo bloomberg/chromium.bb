@@ -783,8 +783,8 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
     return EmeConfigRule::NOT_SUPPORTED;
   }
 
-  if (key_system == kWidevineKeySystem) {
 #if defined(OS_CHROMEOS)
+  if (key_system == kWidevineKeySystem) {
     // TODO(ddorwin): Remove this once we have confirmed it is not necessary.
     // See https://crbug.com/482277
     if (robustness == EmeRobustness::EMPTY)
@@ -802,11 +802,16 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
         max_robustness == EmeRobustness::HW_SECURE_ALL) {
       return EmeConfigRule::IDENTIFIER_RECOMMENDED;
     }
-#elif defined(OS_ANDROID)
-    if (robustness > EmeRobustness::SW_SECURE_CRYPTO)
-      return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
-#endif  // defined(OS_CHROMEOS)
   }
+#elif defined(OS_ANDROID)
+  // Require hardware secure codecs for Widevine when SW_SECURE_DECODE or above
+  // is specified, or for all other key systems (excluding Clear Key).
+  if ((key_system == kWidevineKeySystem &&
+       robustness >= EmeRobustness::SW_SECURE_DECODE) ||
+      !IsClearKey(key_system)) {
+    return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+  }
+#endif  // defined(OS_CHROMEOS)
 
   return EmeConfigRule::SUPPORTED;
 }
