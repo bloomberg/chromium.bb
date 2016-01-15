@@ -15,16 +15,13 @@ div {
 <script>
 var longDiv = document.getElementById('long');
 var sel = window.getSelection();
+var text = 'GrumpywizardsmaketoxicbrewfortheevilQueenandJack';
+for (i = 0; i < 12; i++)
+    text = text + text;
+longDiv.appendChild(document.createTextNode(text));
 
 PerfTestRunner.measureTime({
     description: "Measures performance of detecting long word boundaries.",
-
-    setup: function() {
-        var text = 'GrumpywizardsmaketoxicbrewfortheevilQueenandJack';
-        for (i = 0; i < 12; i++)
-            text = text + text;
-        longDiv.appendChild(document.createTextNode(text));
-    },
 
     run: function() {
         sel.setPosition(longDiv, 0);
