@@ -18,6 +18,7 @@ public:
 
     virtual void notifyAnimationStarted(double monotonicTime, int group) = 0;
     virtual void notifyAnimationFinished(double monotonicTime, int group) = 0;
+    virtual void notifyAnimationAborted(double monotonicTime, int group) = 0;
 };
 
 } // namespace blink

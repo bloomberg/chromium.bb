@@ -39,6 +39,7 @@ public:
     void tickAnimation(double monotonicTime) override;
     void updateCompositorAnimations() override;
     void notifyCompositorAnimationFinished(int groupId) override;
+    void notifyCompositorAnimationAborted(int groupId) override { };
     void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override;
 
     DECLARE_TRACE();

@@ -125,6 +125,9 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                Animation::TargetProperty target_property,
                                int group) override;
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override{};
 
   // Tree structure.
   LayerImpl* parent() { return parent_; }

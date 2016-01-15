@@ -259,6 +259,17 @@ void ElementAnimations::NotifyAnimationFinished(
   }
 }
 
+void ElementAnimations::NotifyAnimationAborted(
+    base::TimeTicks monotonic_time,
+    Animation::TargetProperty target_property,
+    int group) {
+  for (PlayersListNode* node = players_list_->head();
+       node != players_list_->end(); node = node->next()) {
+    AnimationPlayer* player = node->value();
+    player->NotifyAnimationAborted(monotonic_time, target_property, group);
+  }
+}
+
 gfx::ScrollOffset ElementAnimations::ScrollOffsetForAnimation() const {
   DCHECK(layer_animation_controller_);
   if (animation_host()) {

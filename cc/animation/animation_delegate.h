@@ -20,6 +20,10 @@ class CC_EXPORT AnimationDelegate {
       Animation::TargetProperty target_property,
       int group) = 0;
 
+  virtual void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                                      Animation::TargetProperty target_property,
+                                      int group) = 0;
+
  protected:
   virtual ~AnimationDelegate() {}
 };

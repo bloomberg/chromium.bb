@@ -114,6 +114,9 @@ class AnimationHost::ScrollOffsetAnimations : public AnimationDelegate {
     DCHECK(animation_host_->mutator_host_client());
     animation_host_->mutator_host_client()->ScrollOffsetAnimationFinished();
   }
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {}
 
  private:
   void ReattachScrollOffsetPlayerIfNeeded(int layer_id) {

@@ -83,6 +83,7 @@ public:
     void cancelAnimation() override { }
     void updateCompositorAnimations() override { };
     void notifyCompositorAnimationFinished(int groupId) override { };
+    void notifyCompositorAnimationAborted(int groupId) override { };
     void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) override { };
 
     virtual void contentAreaWillPaint() const { }

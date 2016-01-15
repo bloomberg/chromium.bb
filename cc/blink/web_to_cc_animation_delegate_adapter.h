@@ -27,6 +27,9 @@ class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                cc::Animation::TargetProperty target_property,
                                int group) override;
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              cc::Animation::TargetProperty target_property,
+                              int group) override;
 
   blink::WebCompositorAnimationDelegate* delegate_;
 

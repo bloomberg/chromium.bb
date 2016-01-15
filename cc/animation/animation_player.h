@@ -80,6 +80,9 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                Animation::TargetProperty target_property,
                                int group);
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group);
 
  private:
   friend class base::RefCounted<AnimationPlayer>;

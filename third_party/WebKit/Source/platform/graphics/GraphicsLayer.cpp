@@ -1213,6 +1213,12 @@ void GraphicsLayer::notifyAnimationFinished(double, int group)
         m_scrollableArea->notifyCompositorAnimationFinished(group);
 }
 
+void GraphicsLayer::notifyAnimationAborted(double, int group)
+{
+    if (m_scrollableArea)
+        m_scrollableArea->notifyCompositorAnimationAborted(group);
+}
+
 void GraphicsLayer::didScroll()
 {
     if (m_scrollableArea) {

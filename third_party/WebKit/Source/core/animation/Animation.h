@@ -208,6 +208,7 @@ private:
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override { }
+    void notifyAnimationAborted(double monotonicTime, int group) override { }
 
     double startClipInternal() const { return m_startClip; }
     double endClipInternal() const { return m_endClip; }

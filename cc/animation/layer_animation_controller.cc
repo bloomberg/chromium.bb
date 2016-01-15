@@ -461,6 +461,9 @@ void LayerAnimationController::NotifyAnimationAborted(
         animations_[i]->target_property() == event.target_property) {
       animations_[i]->SetRunState(Animation::ABORTED, event.monotonic_time);
       animations_[i]->set_received_finished_event(true);
+      if (layer_animation_delegate_)
+        layer_animation_delegate_->NotifyAnimationAborted(
+            event.monotonic_time, event.target_property, event.group_id);
       if (event.target_property == Animation::TRANSFORM)
         aborted_transform_animation = true;
     }

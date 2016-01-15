@@ -130,6 +130,9 @@ class TestHooks : public AnimationDelegate {
   void NotifyAnimationFinished(base::TimeTicks monotonic_time,
                                Animation::TargetProperty target_property,
                                int group) override {}
+  void NotifyAnimationAborted(base::TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {}
 
   virtual void RequestNewOutputSurface() = 0;
 };

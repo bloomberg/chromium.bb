@@ -269,6 +269,13 @@ void ScrollAnimator::updateCompositorAnimations()
     }
 }
 
+void ScrollAnimator::notifyCompositorAnimationAborted(int groupId)
+{
+    // An animation aborted by the compositor is treated as a finished
+    // animation.
+    ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(groupId);
+}
+
 void ScrollAnimator::notifyCompositorAnimationFinished(int groupId)
 {
     ScrollAnimatorCompositorCoordinator::compositorAnimationFinished(groupId);

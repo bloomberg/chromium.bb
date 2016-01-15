@@ -182,6 +182,14 @@ void ScrollAnimatorCompositorCoordinator::notifyAnimationFinished(
     notifyCompositorAnimationFinished(group);
 }
 
+void ScrollAnimatorCompositorCoordinator::notifyAnimationAborted(
+    double monotonicTime, int group)
+{
+    // An animation aborted by the compositor is treated as a finished
+    // animation.
+    notifyCompositorAnimationFinished(group);
+}
+
 WebCompositorAnimationPlayer* ScrollAnimatorCompositorCoordinator::compositorPlayer() const
 {
     return m_compositorPlayer.get();

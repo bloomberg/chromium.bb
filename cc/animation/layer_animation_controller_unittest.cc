@@ -1018,7 +1018,10 @@ TEST(LayerAnimationControllerTest, ScrollOffsetRemovalClearsScrollDelta) {
 class FakeAnimationDelegate : public AnimationDelegate {
  public:
   FakeAnimationDelegate()
-      : started_(false), finished_(false), start_time_(base::TimeTicks()) {}
+      : started_(false),
+        finished_(false),
+        aborted_(false),
+        start_time_(base::TimeTicks()) {}
 
   void NotifyAnimationStarted(TimeTicks monotonic_time,
                               Animation::TargetProperty target_property,
@@ -1033,15 +1036,24 @@ class FakeAnimationDelegate : public AnimationDelegate {
     finished_ = true;
   }
 
+  void NotifyAnimationAborted(TimeTicks monotonic_time,
+                              Animation::TargetProperty target_property,
+                              int group) override {
+    aborted_ = true;
+  }
+
   bool started() { return started_; }
 
   bool finished() { return finished_; }
+
+  bool aborted() { return aborted_; }
 
   TimeTicks start_time() { return start_time_; }
 
  private:
   bool started_;
   bool finished_;
+  bool aborted_;
   TimeTicks start_time_;
 };
 
@@ -1843,6 +1855,8 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   scoped_refptr<LayerAnimationController> controller(
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
+  FakeAnimationDelegate delegate;
+  controller->set_layer_animation_delegate(&delegate);
 
   int animation_id =
       AddOpacityTransitionToController(controller.get(), 1.0, 0.f, 1.f, false);
@@ -1869,6 +1883,7 @@ TEST(LayerAnimationControllerTest, ImplThreadAbortedAnimationGetsDeleted) {
   controller->NotifyAnimationAborted(events.events_[0]);
   EXPECT_EQ(Animation::ABORTED,
             controller->GetAnimation(Animation::OPACITY)->run_state());
+  EXPECT_TRUE(delegate.aborted());
 
   controller->Animate(kInitialTickTime + TimeDelta::FromMilliseconds(500));
   controller->UpdateState(true, nullptr);

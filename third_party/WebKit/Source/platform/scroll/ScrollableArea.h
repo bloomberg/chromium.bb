@@ -219,6 +219,7 @@ public:
     virtual void deregisterForAnimation() { }
 
     void notifyCompositorAnimationFinished(int groupId);
+    void notifyCompositorAnimationAborted(int groupId);
 
     virtual bool usesCompositedScrolling() const { return false; }
 

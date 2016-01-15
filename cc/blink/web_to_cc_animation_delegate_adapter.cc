@@ -40,4 +40,12 @@ void WebToCCAnimationDelegateAdapter::NotifyAnimationFinished(
 #endif
 }
 
+void WebToCCAnimationDelegateAdapter::NotifyAnimationAborted(
+    base::TimeTicks monotonic_time,
+    cc::Animation::TargetProperty target_property,
+    int group) {
+  delegate_->notifyAnimationAborted(
+      (monotonic_time - base::TimeTicks()).InSecondsF(), group);
+}
+
 }  // namespace cc_blink

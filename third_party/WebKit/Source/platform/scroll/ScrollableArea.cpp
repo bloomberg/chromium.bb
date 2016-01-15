@@ -501,6 +501,15 @@ void ScrollableArea::notifyCompositorAnimationFinished(int groupId)
         scrollAnimator->notifyCompositorAnimationFinished(groupId);
 }
 
+void ScrollableArea::notifyCompositorAnimationAborted(int groupId)
+{
+    if (ProgrammaticScrollAnimator* programmaticScrollAnimator = existingProgrammaticScrollAnimator())
+        programmaticScrollAnimator->notifyCompositorAnimationAborted(groupId);
+
+    if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())
+        scrollAnimator->notifyCompositorAnimationAborted(groupId);
+}
+
 void ScrollableArea::cancelScrollAnimation()
 {
     if (ScrollAnimatorBase* scrollAnimator = existingScrollAnimator())

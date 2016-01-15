@@ -25,6 +25,7 @@ class MockWebCompositorAnimationDelegate
 
   MOCK_METHOD2(notifyAnimationStarted, void(double, int));
   MOCK_METHOD2(notifyAnimationFinished, void(double, int));
+  MOCK_METHOD2(notifyAnimationAborted, void(double, int));
 };
 
 // Test that when the animation delegate is null, the animation player

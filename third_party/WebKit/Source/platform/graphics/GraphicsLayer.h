@@ -245,6 +245,7 @@ public:
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
+    void notifyAnimationAborted(double monotonicTime, int group) override;
 
     // WebLayerScrollClient implementation.
     void didScroll() override;

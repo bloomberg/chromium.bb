@@ -34,6 +34,7 @@ public:
     virtual void tickAnimation(double monotonicTime) = 0;
     virtual void updateCompositorAnimations() = 0;
     virtual void notifyCompositorAnimationFinished(int groupId) = 0;
+    virtual void notifyCompositorAnimationAborted(int groupId) = 0;
     virtual void layerForCompositedScrollingDidChange(WebCompositorAnimationTimeline*) = 0;
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
@@ -51,6 +52,7 @@ protected:
     // WebCompositorAnimationDelegate implementation.
     void notifyAnimationStarted(double monotonicTime, int group) override;
     void notifyAnimationFinished(double monotonicTime, int group) override;
+    void notifyAnimationAborted(double monotonicTime, int group) override;
 
     // WebCompositorAnimationPlayerClient implementation.
     WebCompositorAnimationPlayer* compositorPlayer() const override;

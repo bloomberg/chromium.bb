@@ -203,6 +203,15 @@ void AnimationPlayer::NotifyAnimationFinished(
                                                        target_property, group);
 }
 
+void AnimationPlayer::NotifyAnimationAborted(
+    base::TimeTicks monotonic_time,
+    Animation::TargetProperty target_property,
+    int group) {
+  if (layer_animation_delegate_)
+    layer_animation_delegate_->NotifyAnimationAborted(monotonic_time,
+                                                      target_property, group);
+}
+
 void AnimationPlayer::SetNeedsCommit() {
   DCHECK(animation_host_);
   animation_host_->SetNeedsCommit();
