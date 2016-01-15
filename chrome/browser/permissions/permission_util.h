@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 
 namespace content {
 enum class PermissionType;
@@ -18,6 +19,15 @@ class PermissionUtil {
  public:
   // Returns the permission string for the given PermissionType.
   static std::string GetPermissionString(content::PermissionType permission);
+
+  // Limited conversion of ContentSettingsType to PermissionType. Intended for
+  // recording Permission UMA metrics from areas of the codebase which have not
+  // yet been converted to PermissionType. Returns true if the conversion was
+  // performed.
+  // TODO(tsergeant): Remove this function once callsites operate on
+  // PermissionType directly.
+  static bool GetPermissionType(ContentSettingsType type,
+                                content::PermissionType* out);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUtil);

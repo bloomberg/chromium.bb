@@ -30,6 +30,8 @@ class PermissionUmaUtil {
                                   const GURL& requesting_origin);
   static void PermissionIgnored(content::PermissionType permission,
                                 const GURL& requesting_origin);
+  static void PermissionRevoked(content::PermissionType permission,
+                                const GURL& revoked_origin);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PermissionUmaUtil);

@@ -31,6 +31,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/permissions/chooser_context_base.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
+#include "chrome/browser/permissions/permission_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
@@ -54,6 +56,7 @@
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cert_store.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -262,26 +265,6 @@ void WebsiteSettings::RecordWebsiteSettingsAction(
   }
 }
 
-// Get corresponding Rappor Metric. TODO(raymes): This should use the same
-// code that's in permission_context_uma_util.cc. Figure out how to do that.
-// crbug.com/544745.
-const std::string GetRapporMetric(ContentSettingsType permission) {
-  std::string permission_str;
-
-  if (permission == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
-    permission_str = "Geolocation";
-  } else if (permission == CONTENT_SETTINGS_TYPE_NOTIFICATIONS) {
-    permission_str = "Notifications";
-  } else if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC) {
-    permission_str = "Mic";
-  } else if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA) {
-    permission_str = "Camera";
-  }
-
-  return base::StringPrintf("ContentSettings.PermissionActions_%s.Revoked.Url",
-                            permission_str.c_str());
-}
-
 void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
                                               ContentSetting setting) {
   // Count how often a permission for a specific content type is changed using
@@ -300,10 +283,10 @@ void WebsiteSettings::OnSitePermissionChanged(ContentSettingsType type,
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", histogram_value,
         num_values);
     // Trigger Rappor sampling if it is a permission revoke action.
-    const std::string& rappor_metric = GetRapporMetric(type);
-    if (!rappor_metric.empty()) {
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), rappor_metric, this->site_url_);
+    content::PermissionType permission_type;
+    if (PermissionUtil::GetPermissionType(type, &permission_type)) {
+      PermissionUmaUtil::PermissionRevoked(permission_type,
+                                           this->site_url_);
     }
   }
 

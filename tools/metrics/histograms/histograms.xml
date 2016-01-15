@@ -73609,6 +73609,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="DENIED"/>
   <int value="2" label="DISMISSED"/>
   <int value="3" label="IGNORED"/>
+  <int value="4" label="REVOKED"/>
 </enum>
 
 <enum name="PermissionStatus" type="int">

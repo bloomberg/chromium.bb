@@ -69,6 +69,9 @@ const std::string GetRapporMetric(PermissionType permission,
     case IGNORED:
       action_str = "Ignored";
       break;
+    case REVOKED:
+      action_str = "Revoked";
+      break;
     default:
       NOTREACHED();
       break;
@@ -298,4 +301,16 @@ void PermissionUmaUtil::PermissionDismissed(PermissionType permission,
 void PermissionUmaUtil::PermissionIgnored(PermissionType permission,
                                           const GURL& requesting_origin) {
   RecordPermissionAction(permission, IGNORED, requesting_origin);
+}
+
+void PermissionUmaUtil::PermissionRevoked(PermissionType permission,
+                                          const GURL& revoked_origin) {
+  // TODO(tsergeant): Expand metrics definitions for revocation to include all
+  // permissions.
+  if (permission == PermissionType::NOTIFICATIONS ||
+      permission == PermissionType::GEOLOCATION ||
+      permission == PermissionType::AUDIO_CAPTURE ||
+      permission == PermissionType::VIDEO_CAPTURE) {
+    RecordPermissionAction(permission, REVOKED, revoked_origin);
+  }
 }
