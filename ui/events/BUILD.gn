@@ -142,7 +142,11 @@ component("events") {
   ]
 
   if (use_x11) {
-    sources += [ "x/events_x.cc" ]
+    sources += [
+      "x/events_x.cc",
+      "x/events_x_utils.cc",
+      "x/events_x_utils.h",
+    ]
     configs += [
       "//build/config/linux:glib",
       "//build/config/linux:x11",

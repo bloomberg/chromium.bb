@@ -153,6 +153,8 @@
         'win/system_event_state_lookup.cc',
         'win/system_event_state_lookup.h',
         'x/events_x.cc',
+        'x/events_x_utils.cc',
+        'x/events_x_utils.h',
       ],
       'conditions': [
         ['use_x11==1', {
