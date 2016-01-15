@@ -389,7 +389,6 @@ void HttpResponseInfo::Persist(base::Pickle* pickle,
 HttpResponseInfo::ConnectionInfo HttpResponseInfo::ConnectionInfoFromNextProto(
     NextProto next_proto) {
   switch (next_proto) {
-    case kProtoSPDY3:
     case kProtoSPDY31:
       return CONNECTION_INFO_SPDY3;
     case kProtoHTTP2:

@@ -24,9 +24,8 @@ enum NextProto {
   kProtoHTTP11 = 1,
   kProtoMinimumVersion = kProtoHTTP11,
 
-  kProtoSPDY3 = 101,
-  kProtoSPDYMinimumVersion = kProtoSPDY3,
   kProtoSPDY31 = 102,
+  kProtoSPDYMinimumVersion = kProtoSPDY31,
   // kProtoHTTP2_14 = 103,  // HTTP/2 draft-14
   // kProtoHTTP2_15 = 104,  // HTTP/2 draft-15
   // kProtoHTTP2_16 = 105,  // HTTP/2 draft-16

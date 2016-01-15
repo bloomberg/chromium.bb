@@ -1558,7 +1558,7 @@ TEST_P(SpdySessionTest, SendInitialDataOnNewSession) {
                             initial_max_concurrent_streams);
   scoped_ptr<SpdyFrame> server_settings_frame(
       spdy_util_.ConstructSpdySettings(server_settings));
-  if (GetProtocol() <= kProtoSPDY31) {
+  if (GetProtocol() == kProtoSPDY31) {
     writes.push_back(CreateMockWrite(*server_settings_frame));
   }
 

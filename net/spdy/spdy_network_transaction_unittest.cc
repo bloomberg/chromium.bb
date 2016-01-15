@@ -3532,7 +3532,7 @@ TEST_P(SpdyNetworkTransactionTest, NetLog) {
                                    NetLog::PHASE_END);
 
   // Check that we logged all the headers correctly
-  const NetLog::EventType type = (GetParam().protocol <= kProtoSPDY31)
+  const NetLog::EventType type = (GetParam().protocol == kProtoSPDY31)
                                      ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
                                      : NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
   pos = ExpectLogContainsSomewhere(entries, 0, type, NetLog::PHASE_NONE);
@@ -6138,8 +6138,7 @@ TEST_P(SpdyNetworkTransactionTest, FlowControlStallResumeAfterSettings) {
 
   scoped_ptr<SpdyFrame> session_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(0, kUploadDataSize));
-  if (GetParam().protocol >= kProtoSPDY31)
-    reads.push_back(CreateMockRead(*session_window_update, i++));
+  reads.push_back(CreateMockRead(*session_window_update, i++));
 
   scoped_ptr<SpdyFrame> settings_ack(spdy_util_.ConstructSpdySettingsAck());
   writes.push_back(CreateMockWrite(*settings_ack, i++));

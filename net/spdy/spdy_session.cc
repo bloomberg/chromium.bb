@@ -759,13 +759,9 @@ void SpdySession::InitializeWithSocket(
   if (protocol_ == kProtoHTTP2)
     send_connection_header_prefix_ = true;
 
-  if (protocol_ >= kProtoSPDY31) {
-    flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
-    session_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
-    session_recv_window_size_ = GetDefaultInitialWindowSize(protocol_);
-  } else {
-    flow_control_state_ = FLOW_CONTROL_STREAM;
-  }
+  flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
+  session_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
+  session_recv_window_size_ = GetDefaultInitialWindowSize(protocol_);
 
   buffered_spdy_framer_.reset(
       new BufferedSpdyFramer(NextProtoToSpdyMajorVersion(protocol_),
@@ -2857,7 +2853,7 @@ void SpdySession::SendInitialData() {
     }
   }
 
-  if (protocol_ <= kProtoSPDY31) {
+  if (protocol_ == kProtoSPDY31) {
     // Finally, notify the server about the settings they have
     // previously told us to use when communicating with them (after
     // applying them).

@@ -21,7 +21,6 @@ size_t kHeaderBufferMaxSize = 256 * 1024;
 
 SpdyMajorVersion NextProtoToSpdyMajorVersion(NextProto next_proto) {
   switch (next_proto) {
-    case kProtoSPDY3:
     case kProtoSPDY31:
       return SPDY3;
     case kProtoHTTP2:
