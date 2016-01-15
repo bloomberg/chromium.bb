@@ -37,12 +37,12 @@ def _ListTombstones(device):
     Tuples of (tombstone filename, date time of file on device).
   """
   try:
-    if not device.PathExists('/data/tombstones', timeout=60, retries=3):
+    if not device.PathExists('/data/tombstones', as_root=True):
       return
     # TODO(perezju): Introduce a DeviceUtils.Ls() method (crbug.com/552376).
     lines = device.RunShellCommand(
         ['ls', '-a', '-l', '/data/tombstones'],
-        as_root=True, check_return=True, env=_TZ_UTC, timeout=60)
+        as_root=True, check_return=True, env=_TZ_UTC)
     for line in lines:
       if 'tombstone' in line:
         details = line.split()
