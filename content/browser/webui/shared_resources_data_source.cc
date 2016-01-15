@@ -92,6 +92,9 @@ void SharedResourcesDataSource::StartDataRequest(
   if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS) {
     std::string css = webui::GetWebUiCssTextDefaults();
     bytes = base::RefCountedString::TakeString(&css);
+  } else if (idr == IDR_WEBUI_CSS_TEXT_DEFAULTS_MD) {
+    std::string css = webui::GetWebUiCssTextDefaultsMd();
+    bytes = base::RefCountedString::TakeString(&css);
   } else {
     bytes = GetContentClient()->GetDataResourceBytes(idr);
   }

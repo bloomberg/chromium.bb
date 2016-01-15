@@ -7,12 +7,12 @@
 
 h1 {
   font-size: 200%;
-  font-weight: normal;
+  font-weight: 300;
   margin-bottom: 1.33em;
 }
 
 p {
-  line-height: 1.7;
+  line-height: 1.5;
   margin-bottom: 2em;
   text-align: start;
 }
@@ -30,9 +30,10 @@ a:hover {
 .content {
   box-sizing: border-box;
   margin: 3.5em auto 0;
+  max-width: 420px;
+  min-width: 240px;
   padding: 30px 35px;
   text-align: center;
-  width: 420px;
 }
 
 html[hascustombackground='true'] .content {
@@ -53,6 +54,11 @@ html[hascustombackground='true'] .content {
 @media (max-width:400px) {
   body {
     margin: 3em 1.5em 2em;
+  }
+
+  /* Adjustment for narrow screen to prevent horizontal scrollbar. */
+  .content {
+    padding: 16px 8px;
   }
 }
 

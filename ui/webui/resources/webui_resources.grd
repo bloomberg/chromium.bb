@@ -16,9 +16,10 @@ without changes to the corresponding grd file. -->
       <include name="IDR_WEBUI_I18N_TEMPLATE_JS" file="js/i18n_template.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_JSTEMPLATE_JS" file="js/jstemplate_compiled.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_WEBUI_ANALYTICS_JS" file="js/analytics.js" flattenhtml="true" type="BINDATA" />
-      <!-- Roboto Font. Roboto-Regular is already available on Android, and
-        Roboto-Medium is not used on Android. -->
+      <!-- Roboto Font. Roboto-Regular and Roboto-Light is already available on
+           Android, and Roboto-Medium is not used on Android. -->
       <if expr="not android">
+        <include name="IDR_WEBUI_ROBOTO_ROBOTO_LIGHT_WOFF2" file="roboto/roboto-light.woff2" type="BINDATA" />
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_REGULAR_WOFF2" file="roboto/roboto-regular.woff2" type="BINDATA" />
         <include name="IDR_WEBUI_ROBOTO_ROBOTO_MEDIUM_WOFF2" file="roboto/roboto-medium.woff2" type="BINDATA" />
       </if>
@@ -230,6 +231,8 @@ without changes to the corresponding grd file. -->
                  flattenhtml="true" />
       <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS"
                  file="css/text_defaults.css" type="chrome_html" />
+      <structure name="IDR_WEBUI_CSS_TEXT_DEFAULTS_MD"
+                 file="css/text_defaults_md.css" type="chrome_html" />
       <structure name="IDR_WEBUI_CSS_OVERLAY"
                  file="css/overlay.css" type="chrome_html"
                  flattenhtml="true" />

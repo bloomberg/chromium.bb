@@ -10433,8 +10433,8 @@ I don't think this site should be blocked!
           Learn more
         </message>
         <message name="IDS_NEW_TAB_OTR_MESSAGE_WARNING"
-                 desc="OTR window warning message">
-          Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
+                 desc="OTR window warning message. This follows the IDS_NEW_TAB_OTR_DESCRIPTION paragraph">
+          However, you aren’t invisible. Going incognito doesn’t hide your browsing from your employer, your internet service provider, or the websites you visit.
         </message>
         <message name="IDS_NEW_TAB_GUEST_SESSION_HEADING"
               desc="Heading used when a person enters Guest Session">

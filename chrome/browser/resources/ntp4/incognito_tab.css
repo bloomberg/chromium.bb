@@ -2,6 +2,10 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
+body {
+  margin-top: 0;
+}
+
 .content {
   background-color: #323232;
   color: white;
@@ -20,4 +24,6 @@ h1 {
 
 a {
   color: rgb(3, 169, 244);
+  display: inline-block;
+  padding: 10.5px 12px;
 }

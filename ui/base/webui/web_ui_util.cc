@@ -122,19 +122,30 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
   localized_strings->SetString("textdirection", GetTextDirection());
 }
 
-std::string GetWebUiCssTextDefaults() {
+std::string GetWebUiCssTextDefaults(const std::string& css_template) {
   std::map<base::StringPiece, std::string> placeholders;
   placeholders["textDirection"] = GetTextDirection();
   placeholders["fontFamily"] = GetFontFamily();
   placeholders["fontSize"] = GetFontSize();
+  return ui::ReplaceTemplateExpressions(css_template, placeholders);
+}
 
+std::string GetWebUiCssTextDefaults() {
   const ui::ResourceBundle& resource_bundle =
       ui::ResourceBundle::GetSharedInstance();
   const std::string& css_template =
       resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS)
           .as_string();
+  return GetWebUiCssTextDefaults(css_template);
+}
 
-  return ui::ReplaceTemplateExpressions(css_template, placeholders);
+std::string GetWebUiCssTextDefaultsMd() {
+  const ui::ResourceBundle& resource_bundle =
+      ui::ResourceBundle::GetSharedInstance();
+  const std::string& css_template =
+      resource_bundle.GetRawDataResource(IDR_WEBUI_CSS_TEXT_DEFAULTS_MD)
+          .as_string();
+  return GetWebUiCssTextDefaults(css_template);
 }
 
 void AppendWebUiCssTextDefaults(std::string* html) {
