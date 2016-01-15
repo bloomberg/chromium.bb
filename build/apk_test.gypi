@@ -21,7 +21,7 @@
   'dependencies': [
     '<(DEPTH)/base/base.gyp:base_java',
     '<(DEPTH)/build/android/pylib/device/commands/commands.gyp:chromium_commands',
-    '<(DEPTH)/build/android/pylib/remote/device/dummy/dummy.gyp:require_remote_device_dummy_apk',
+    '<(DEPTH)/build/android/pylib/remote/device/dummy/dummy.gyp:remote_device_dummy_apk',
     '<(DEPTH)/testing/android/appurify_support.gyp:appurify_support_java',
     '<(DEPTH)/testing/android/on_device_instrumentation.gyp:reporter_java',
     '<(DEPTH)/tools/android/android_tools.gyp:android_tools',

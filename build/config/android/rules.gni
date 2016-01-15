@@ -1484,21 +1484,6 @@ template("android_apk") {
     _srcjar_deps += [ ":${_template_name}__native_libraries_java" ]
   }
 
-  if (!defined(invoker.apk_under_test)) {
-    java_cpp_template("${_template_name}__multidex_config_java") {
-      package_name = "org/chromium/base/multidex"
-      sources = [
-        "//base/android/java/templates/ChromiumMultiDex.template",
-      ]
-
-      defines = []
-      if (enable_multidex) {
-        defines += [ "ENABLE_MULTIDEX" ]
-      }
-    }
-    _srcjar_deps += [ ":${_template_name}__multidex_config_java" ]
-  }
-
   java_target = "${_template_name}__java"
   java_library_impl(java_target) {
     forward_variables_from(invoker, [ "run_findbugs" ])
@@ -2033,13 +2018,11 @@ template("unittest_apk") {
     native_libs = [ unittests_binary ]
     deps += [
       "//base:base_java",
+      "//build/android/pylib/remote/device/dummy:remote_device_dummy_apk",
       "//testing/android/appurify_support:appurify_support_java",
       "//testing/android/reporter:reporter_java",
     ]
-    data_deps += [
-      "//build/android/pylib/remote/device/dummy:remote_device_dummy_apk",
-      "//tools/android/md5sum",
-    ]
+    data_deps += [ "//tools/android/md5sum" ]
     if (host_os == "linux") {
       data_deps += [ "//tools/android/forwarder2" ]
     }

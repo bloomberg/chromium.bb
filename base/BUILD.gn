@@ -2057,10 +2057,9 @@ if (is_android) {
 
     DEPRECATED_java_in_dir = "android/java/src"
 
-    # New versions of ChromiumMultiDex.java and NativeLibraries.java
-    # (with the actual correct values) will be created when creating an apk.
+    # A new version of NativeLibraries.java (with the actual correct values)
+    # will be created when creating an apk.
     jar_excluded_patterns = [
-      "*/ChromiumMultiDex.class",
       "*/NativeLibraries.class",
       "*/NativeLibraries##*.class",
     ]
@@ -2095,7 +2094,6 @@ if (is_android) {
       "//third_party/robolectric:android-all-4.3_r2-robolectric-0",
       "//third_party/robolectric:robolectric_java",
     ]
-    srcjar_deps = [ ":base_multidex_gen" ]
   }
 
   # GYP: //base.gyp:base_junit_tests
@@ -2130,6 +2128,9 @@ if (is_android) {
     sources = [
       "android/java/templates/ChromiumMultiDex.template",
     ]
+    if (is_debug) {
+      defines = [ "MULTIDEX_CONFIGURATION_Debug" ]
+    }
     package_name = "org/chromium/base/multidex"
   }
 
