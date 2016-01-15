@@ -52,6 +52,7 @@ public:
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLImageElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLCanvasElement*, ExceptionState&);
     void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, HTMLVideoElement*, ExceptionState&);
+    void texSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLenum, GLenum, PassRefPtrWillBeRawPtr<ImageBitmap>, ExceptionState&);
     void copyTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLint, GLint, GLsizei, GLsizei);
     void compressedTexImage3D(GLenum, GLint, GLenum, GLsizei, GLsizei, GLsizei, GLint, DOMArrayBufferView*);
     void compressedTexSubImage3D(GLenum, GLint, GLint, GLint, GLint, GLsizei, GLsizei, GLsizei, GLenum, DOMArrayBufferView*);

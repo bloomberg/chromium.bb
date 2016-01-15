@@ -5,6 +5,7 @@
 #include "modules/webgl/WebGL2RenderingContextBase.h"
 
 #include "bindings/modules/v8/WebGLAny.h"
+#include "core/frame/ImageBitmap.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLVideoElement.h"
@@ -1027,6 +1028,18 @@ void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint
     if (!image)
         return;
     texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, image.get(), WebGLImageConversion::HtmlDomVideo, m_unpackFlipY, m_unpackPremultiplyAlpha);
+}
+
+void WebGL2RenderingContextBase::texSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLenum format, GLenum type, PassRefPtrWillBeRawPtr<ImageBitmap> bitmap, ExceptionState& exceptionState)
+{
+    ASSERT(bitmap->bitmapImage());
+    if (isContextLost() || !validateImageBitmap("texSubImage3D", bitmap.get(), exceptionState)
+        || !validateTexFunc3DTarget("texSubImage3D", target)
+        || !validateTexFunc("texSubImage3D", TexSubImage, SourceImageBitmap, target, level, 0, bitmap->width(), bitmap->height(), 1, 0, format, type, xoffset, yoffset, zoffset))
+        return;
+
+    StaticBitmapImage* imageForRender = bitmap->bitmapImage();
+    texSubImage3DImpl(target, level, xoffset, yoffset, zoffset, format, type, imageForRender, WebGLImageConversion::HtmlDomImage, m_unpackFlipY, m_unpackPremultiplyAlpha);
 }
 
 void WebGL2RenderingContextBase::copyTexSubImage3D(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLint x, GLint y, GLsizei width, GLsizei height)
