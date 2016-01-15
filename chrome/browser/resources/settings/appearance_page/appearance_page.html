@@ -46,11 +46,10 @@
                 >[[i18n('resetToDefaultTheme')]]</paper-button>
           </template>
         </div>
-        <div class="settings-box split">
-          <div class="start" i18n-content="showHomeButton"></div>
-          <paper-toggle-button id="showHomeButton"
-              checked="{{prefs.browser.show_home_button.value}}">
-          </paper-toggle-button>
+        <div class="settings-box split two-line">
+          <settings-checkbox class="start" i18n-values="label:showHomeButton"
+              pref="{{prefs.browser.show_home_button}}">
+          </settings-checkbox>
         </div>
         <template is="dom-if" if="[[prefs.browser.show_home_button.value]]">
           <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
@@ -66,10 +65,9 @@
           </div>
         </template>
         <div class="settings-box split">
-          <div class="start" i18n-content="showBookmarksBar"></div>
-          <paper-toggle-button
-              checked="{{prefs.bookmark_bar.show_on_all_tabs.value}}">
-          </paper-toggle-button>
+          <settings-checkbox class="start" i18n-values="label:showBookmarksBar"
+              pref="{{prefs.bookmark_bar.show_on_all_tabs}}">
+          </settings-checkbox>
         </div>
         <div class="settings-box split">
           <div class="start" i18n-content="fontSize"></div>
