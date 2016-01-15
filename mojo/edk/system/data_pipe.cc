@@ -24,15 +24,17 @@ namespace {
 const uint32_t kInvalidDataPipeHandleIndex = static_cast<uint32_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedDataPipeHandleDispatcher {
+  MOJO_ALIGNAS(4)
   uint32_t platform_handle_index;  // (Or |kInvalidDataPipeHandleIndex|.)
 
   // These are from MojoCreateDataPipeOptions
-  MojoCreateDataPipeOptionsFlags flags;
-  uint32_t element_num_bytes;
-  uint32_t capacity_num_bytes;
+  MOJO_ALIGNAS(4) MojoCreateDataPipeOptionsFlags flags;
+  MOJO_ALIGNAS(4) uint32_t element_num_bytes;
+  MOJO_ALIGNAS(4) uint32_t capacity_num_bytes;
 
+  MOJO_ALIGNAS(4)
   uint32_t shared_memory_handle_index;  // (Or |kInvalidDataPipeHandleIndex|.)
-  uint32_t shared_memory_size;
+  MOJO_ALIGNAS(4) uint32_t shared_memory_size;
 };
 
 }  // namespace

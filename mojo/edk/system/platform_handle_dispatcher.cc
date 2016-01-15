@@ -20,7 +20,8 @@ namespace {
 const uint32_t kInvalidPlatformHandleIndex = static_cast<uint32_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedPlatformHandleDispatcher {
-  uint32_t platform_handle_index;  // (Or |kInvalidPlatformHandleIndex|.)
+  MOJO_ALIGNAS(4) uint32_t
+      platform_handle_index;  // (Or |kInvalidPlatformHandleIndex|.)
 };
 
 }  // namespace

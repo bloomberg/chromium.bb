@@ -25,8 +25,8 @@ namespace edk {
 namespace {
 
 struct MOJO_ALIGNAS(8) SerializedSharedBufferDispatcher {
-  uint32_t num_bytes;
-  uint32_t platform_handle_index;
+  MOJO_ALIGNAS(4) uint32_t num_bytes;
+  MOJO_ALIGNAS(4) uint32_t platform_handle_index;
 };
 
 }  // namespace

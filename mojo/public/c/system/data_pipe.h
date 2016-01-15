@@ -43,10 +43,10 @@ const MojoCreateDataPipeOptionsFlags MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE =
 
 MOJO_STATIC_ASSERT(MOJO_ALIGNOF(int64_t) == 8, "int64_t has weird alignment");
 struct MOJO_ALIGNAS(8) MojoCreateDataPipeOptions {
-  uint32_t struct_size;
-  MojoCreateDataPipeOptionsFlags flags;
-  uint32_t element_num_bytes;
-  uint32_t capacity_num_bytes;
+  MOJO_ALIGNAS(4) uint32_t struct_size;
+  MOJO_ALIGNAS(4) MojoCreateDataPipeOptionsFlags flags;
+  MOJO_ALIGNAS(4) uint32_t element_num_bytes;
+  MOJO_ALIGNAS(4) uint32_t capacity_num_bytes;
 };
 MOJO_STATIC_ASSERT(sizeof(MojoCreateDataPipeOptions) == 16,
                    "MojoCreateDataPipeOptions has wrong size");

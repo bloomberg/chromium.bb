@@ -33,28 +33,29 @@ namespace {
 const uint32_t kInvalidMessagePipeHandleIndex = static_cast<uint32_t>(-1);
 
 struct MOJO_ALIGNAS(8) SerializedMessagePipeHandleDispatcher {
-  bool transferable;
-  bool write_error;
-  uint64_t pipe_id;  // If transferable is false.
+  MOJO_ALIGNAS(1) bool transferable;
+  MOJO_ALIGNAS(1) bool write_error;
+  MOJO_ALIGNAS(8) uint64_t pipe_id;  // If transferable is false.
   // The following members are only set if transferable is true.
   // Could be |kInvalidMessagePipeHandleIndex| if the other endpoint of the MP
   // was closed.
-  uint32_t platform_handle_index;
+  MOJO_ALIGNAS(4) uint32_t platform_handle_index;
 
-  uint32_t
+  MOJO_ALIGNAS(4) uint32_t
       shared_memory_handle_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
-  uint32_t shared_memory_size;
+  MOJO_ALIGNAS(4) uint32_t shared_memory_size;
 
-  uint32_t serialized_read_buffer_size;
-  uint32_t serialized_write_buffer_size;
-  uint32_t serialized_message_queue_size;
+  MOJO_ALIGNAS(4) uint32_t serialized_read_buffer_size;
+  MOJO_ALIGNAS(4) uint32_t serialized_write_buffer_size;
+  MOJO_ALIGNAS(4) uint32_t serialized_message_queue_size;
 
   // These are the FDs required as part of serializing channel_ and
   // message_queue_. This is only used on POSIX.
+  MOJO_ALIGNAS(4)
   uint32_t serialized_fds_index;  // (Or |kInvalidMessagePipeHandleIndex|.)
-  uint32_t serialized_read_fds_length;
-  uint32_t serialized_write_fds_length;
-  uint32_t serialized_message_fds_length;
+  MOJO_ALIGNAS(4) uint32_t serialized_read_fds_length;
+  MOJO_ALIGNAS(4) uint32_t serialized_write_fds_length;
+  MOJO_ALIGNAS(4) uint32_t serialized_message_fds_length;
 };
 
 char* SerializeBuffer(char* start, std::vector<char>* buffer) {
