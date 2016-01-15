@@ -61,7 +61,7 @@ void HistogramPrefSource(PrefSource source, bool enabled) {
 }  // namespace
 
 bool ConfigureAsyncDnsFieldTrial() {
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_IOS)
   // There is no DnsConfigService on those platforms so disable the field trial.
   HistogramPrefDefaultSource(PLATFORM, false);
   return false;
