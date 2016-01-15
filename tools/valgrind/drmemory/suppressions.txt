@@ -226,11 +226,6 @@ UNADDRESSABLE ACCESS
 name=::Crasher::Run deliberate crash
 *!base::`anonymous namespace'::Crasher::Run
 
-WARNING
-name=AllocationRegister guard page access deliberate crash
-base.dll!base::trace_event::AllocationRegister::Insert
-*!base::trace_event::AllocationRegisterTest_OverflowDeathTest_Test::TestBody
-
 ############################
 # Benign issues in Chromium
 
