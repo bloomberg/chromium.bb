@@ -128,7 +128,7 @@ class DocumentLoader {
   bool is_multipart_;
   std::string multipart_boundary_;
   uint32_t requests_count_;
-  std::list<std::vector<unsigned char> > chunk_buffer_;
+  std::vector<std::vector<unsigned char> > chunk_buffer_;
 };
 
 }  // namespace chrome_pdf

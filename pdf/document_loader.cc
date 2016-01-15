@@ -449,9 +449,9 @@ void DocumentLoader::DidRead(int32_t result) {
         // memory fragmentation issues on the large files and OOM exceptions.
         // To fix this, we collect all chunks of the file to the list and
         // concatenate them together after request is complete.
-        chunk_buffer_.push_back(std::vector<unsigned char>());
-        chunk_buffer_.back().resize(length);
-        memcpy(&(chunk_buffer_.back()[0]), start, length);
+        std::vector<unsigned char> buf(length);
+        memcpy(buf.data(), start, length);
+        chunk_buffer_.push_back(std::move(buf));
       }
       current_pos_ += length;
       current_chunk_read_ += length;
@@ -511,7 +511,7 @@ void DocumentLoader::ReadComplete() {
       chunk_stream_.Preallocate(current_pos_);
       uint32_t pos = 0;
       for (auto& chunk : chunk_buffer_) {
-        chunk_stream_.WriteData(pos, &(chunk[0]), chunk.size());
+        chunk_stream_.WriteData(pos, chunk.data(), chunk.size());
         pos += chunk.size();
       }
       chunk_buffer_.clear();
