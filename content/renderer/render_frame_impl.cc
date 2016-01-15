@@ -2450,9 +2450,16 @@ blink::WebMediaPlayer* RenderFrameImpl::createMediaPlayer(
   if (!url_index_.get() || url_index_->frame() != frame)
     url_index_.reset(new media::UrlIndex(frame));
 
-  return new media::WebMediaPlayerImpl(
+  media::WebMediaPlayerImpl* media_player = new media::WebMediaPlayerImpl(
       frame, client, encrypted_client, GetWebMediaPlayerDelegate()->AsWeakPtr(),
       std::move(media_renderer_factory), GetCdmFactory(), url_index_, params);
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  media_player->SetMediaPlayerManager(GetMediaPlayerManager());
+  media_player->SetDeviceScaleFactor(render_view_->GetDeviceScaleFactor());
+#endif
+
+  return media_player;
 }
 
 blink::WebMediaSession* RenderFrameImpl::createMediaSession() {

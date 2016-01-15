@@ -18,10 +18,10 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "cc/layers/video_frame_provider.h"
-#include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/renderer/media/android/media_source_delegate.h"
+#include "content/renderer/media/android/renderer_media_player_manager.h"
 #include "content/renderer/media/android/stream_texture_factory.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "media/base/android/media_player_android.h"
@@ -81,7 +81,8 @@ class RendererMediaPlayerManager;
 class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
                               public cc::VideoFrameProvider,
                               public RenderFrameObserver,
-                              public StreamTextureFactoryContextObserver {
+                              public StreamTextureFactoryContextObserver,
+                              public media::RendererMediaPlayerInterface {
  public:
   // Construct a WebMediaPlayerAndroid object. This class communicates with the
   // MediaPlayerAndroid object in the browser process through |proxy|.
@@ -191,37 +192,38 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Media player callback handlers.
   void OnMediaMetadataChanged(base::TimeDelta duration, int width,
-                              int height, bool success);
-  void OnPlaybackComplete();
-  void OnBufferingUpdate(int percentage);
-  void OnSeekRequest(const base::TimeDelta& time_to_seek);
-  void OnSeekComplete(const base::TimeDelta& current_time);
-  void OnMediaError(int error_type);
-  void OnVideoSizeChanged(int width, int height);
+                              int height, bool success) override;
+  void OnPlaybackComplete() override;
+  void OnBufferingUpdate(int percentage) override;
+  void OnSeekRequest(const base::TimeDelta& time_to_seek) override;
+  void OnSeekComplete(const base::TimeDelta& current_time) override;
+  void OnMediaError(int error_type) override;
+  void OnVideoSizeChanged(int width, int height) override;
   void OnDurationChanged(const base::TimeDelta& duration);
 
   // Called to update the current time.
   void OnTimeUpdate(base::TimeDelta current_timestamp,
-                    base::TimeTicks current_time_ticks);
+                    base::TimeTicks current_time_ticks) override;
 
   // Functions called when media player status changes.
-  void OnConnectedToRemoteDevice(const std::string& remote_playback_message);
-  void OnDisconnectedFromRemoteDevice();
-  void OnDidExitFullscreen();
-  void OnMediaPlayerPlay();
-  void OnMediaPlayerPause();
-  void OnRemoteRouteAvailabilityChanged(bool routes_available);
+  void OnConnectedToRemoteDevice(const std::string& remote_playback_message)
+      override;
+  void OnDisconnectedFromRemoteDevice() override;
+  void OnDidExitFullscreen() override;
+  void OnMediaPlayerPlay() override;
+  void OnMediaPlayerPause() override;
+  void OnRemoteRouteAvailabilityChanged(bool routes_available) override;
 
   // StreamTextureFactoryContextObserver implementation.
   void ResetStreamTextureProxy() override;
 
   // Called when the player is released.
-  virtual void OnPlayerReleased();
+  void OnPlayerReleased() override;
 
   // This function is called by the RendererMediaPlayerManager to pause the
   // video and release the media player and surface texture when we switch tabs.
   // However, the actual GlTexture is not released to keep the video screenshot.
-  void SuspendAndReleaseResources();
+  void SuspendAndReleaseResources() override;
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;
@@ -230,9 +232,9 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   // Calculate the boundary rectangle of the media player (i.e. location and
   // size of the video frame).
   // Returns true if the geometry has been changed since the last call.
-  bool UpdateBoundaryRectangle();
+  bool UpdateBoundaryRectangle() override;
 
-  const gfx::RectF GetBoundaryRectangle();
+  const gfx::RectF GetBoundaryRectangle() override;
 #endif  // defined(VIDEO_HOLE)
 
   MediaKeyException generateKeyRequest(const blink::WebString& key_system,
@@ -267,7 +269,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
 
   // Called when a decoder detects that the key needed to decrypt the stream
   // is not available.
-  void OnWaitingForDecryptionKey();
+  void OnWaitingForDecryptionKey() override;
 
  protected:
   // Helper method to update the playing state.

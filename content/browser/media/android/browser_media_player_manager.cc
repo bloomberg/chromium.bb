@@ -143,6 +143,7 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     bool hide_url_log,
     BrowserDemuxerAndroid* demuxer) {
   switch (media_player_params.type) {
+    case MEDIA_PLAYER_TYPE_REMOTE_ONLY:
     case MEDIA_PLAYER_TYPE_URL: {
       const std::string user_agent = GetContentClient()->GetUserAgent();
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
@@ -156,6 +157,10 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
                      weak_ptr_factory_.GetWeakPtr()),
           media_player_params.frame_url,
           media_player_params.allow_credentials);
+
+      if (media_player_params.type == MEDIA_PLAYER_TYPE_REMOTE_ONLY)
+        return media_player_bridge;
+
       bool should_block = false;
       bool extract_metadata =
           // Initialize the player will cause MediaMetadataExtractor to decode

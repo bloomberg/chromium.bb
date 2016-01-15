@@ -7,9 +7,9 @@
 
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/media/media_player_messages_enums_android.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/base/android/demuxer_stream_player_params.h"
+#include "media/blink/renderer_media_player_interface.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 

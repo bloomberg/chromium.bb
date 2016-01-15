@@ -16,6 +16,7 @@
         '../../cc/cc.gyp:cc',
         '../../cc/blink/cc_blink.gyp:cc_blink',
         '../../gpu/blink/gpu_blink.gyp:gpu_blink',
+        '../../gpu/gpu.gyp:gpu',
         '../../ui/gfx/gfx.gyp:gfx_geometry',
         '../../net/net.gyp:net',
         '../../skia/skia.gyp:skia',
@@ -92,6 +93,12 @@
         'websourcebuffer_impl.h',
       ],
       'conditions': [
+        ['OS=="android" and media_use_ffmpeg==1', {
+          'sources': [
+            'webmediaplayer_cast_android.cc',
+            'webmediaplayer_cast_android.h',
+          ],
+        }],
         ['OS=="android" and media_use_ffmpeg==0', {
           'sources!': [
             'encrypted_media_player_support.cc',

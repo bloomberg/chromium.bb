@@ -17,6 +17,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
+#include "build/build_config.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/pipeline.h"
 #include "media/base/renderer_factory.h"
@@ -35,6 +36,11 @@
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+// Delete this file when WMPI_CAST is no longer needed.
+#include "media/blink/webmediaplayer_cast_android.h"
+#endif
 
 namespace blink {
 class WebGraphicsContext3D;
@@ -189,9 +195,33 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnHidden() override;
   void OnShown() override;
 
+#if defined(OS_ANDROID)  // WMPI_CAST
+  bool isRemote() const override;
+  void requestRemotePlayback() override;
+  void requestRemotePlaybackControl() override;
+
+  void SetMediaPlayerManager(
+      RendererMediaPlayerManagerInterface* media_player_manager);
+  void OnRemotePlaybackEnded();
+  void OnDisconnectedFromRemoteDevice(double t);
+  void SuspendForRemote();
+  void DisplayCastFrameAfterSuspend(const scoped_refptr<VideoFrame>& new_frame,
+                                    PipelineStatus status);
+  gfx::Size GetCanvasSize() const;
+  void SetDeviceScaleFactor(float scale_factor);
+#endif
+
  private:
+  // Ask for the pipeline to be suspended, will call Suspend() when ready.
+  // (Possibly immediately.)
+  void ScheduleSuspend();
+
   // Initiate suspending the pipeline.
   void Suspend();
+
+  // Ask for the pipeline to be resumed, will call Resume() when ready.
+  // (Possibly immediately.)
+  void ScheduleResume();
 
   // Initiate resuming the pipeline.
   void Resume();
@@ -399,6 +429,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether a CDM has been successfully attached.
   bool is_cdm_attached_;
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  WebMediaPlayerCast cast_impl_;
+#endif
 
   scoped_ptr<RendererFactory> renderer_factory_;
 

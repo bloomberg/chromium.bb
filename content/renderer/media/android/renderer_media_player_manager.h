@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "content/common/media/media_player_messages_enums_android.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "media/base/android/media_player_android.h"
+#include "media/blink/renderer_media_player_interface.h"
 #include "url/gurl.h"
 
 namespace blink {
@@ -30,7 +30,9 @@ class WebMediaPlayerAndroid;
 
 // Class for managing all the WebMediaPlayerAndroid objects in the same
 // RenderFrame.
-class RendererMediaPlayerManager : public RenderFrameObserver {
+class RendererMediaPlayerManager :
+      public RenderFrameObserver,
+      public media::RendererMediaPlayerManagerInterface {
  public:
   // Constructs a RendererMediaPlayerManager object for the |render_frame|.
   explicit RendererMediaPlayerManager(RenderFrame* render_frame);
@@ -47,38 +49,38 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
                   const GURL& first_party_for_cookies,
                   int demuxer_client_id,
                   const GURL& frame_url,
-                  bool allow_credentials);
+                  bool allow_credentials) override;
 
   // Starts the player.
-  void Start(int player_id);
+  void Start(int player_id) override;
 
   // Pauses the player.
   // is_media_related_action should be true if this pause is coming from an
   // an action that explicitly pauses the video (user pressing pause, JS, etc.)
   // Otherwise it should be false if Pause is being called due to other reasons
   // (cleanup, freeing resources, etc.)
-  void Pause(int player_id, bool is_media_related_action);
+  void Pause(int player_id, bool is_media_related_action) override;
 
   // Performs seek on the player.
-  void Seek(int player_id, const base::TimeDelta& time);
+  void Seek(int player_id, const base::TimeDelta& time) override;
 
   // Sets the player volume.
-  void SetVolume(int player_id, double volume);
+  void SetVolume(int player_id, double volume) override;
 
   // Sets the poster image.
-  void SetPoster(int player_id, const GURL& poster);
+  void SetPoster(int player_id, const GURL& poster) override;
 
   // Releases resources for the player after being suspended.
-  void SuspendAndReleaseResources(int player_id);
+  void SuspendAndReleaseResources(int player_id) override;
 
   // Destroys the player in the browser process
-  void DestroyPlayer(int player_id);
+  void DestroyPlayer(int player_id) override;
 
   // Requests remote playback if possible
-  void RequestRemotePlayback(int player_id);
+  void RequestRemotePlayback(int player_id) override;
 
   // Requests control of remote playback
-  void RequestRemotePlaybackControl(int player_id);
+  void RequestRemotePlaybackControl(int player_id) override;
 
   // Requests the player to enter fullscreen.
   void EnterFullscreen(int player_id);
@@ -101,11 +103,11 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
 #endif  // defined(VIDEO_HOLE)
 
   // Registers and unregisters a WebMediaPlayerAndroid object.
-  int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
-  void UnregisterMediaPlayer(int player_id);
+  int RegisterMediaPlayer(media::RendererMediaPlayerInterface* player) override;
+  void UnregisterMediaPlayer(int player_id) override;
 
   // Gets the pointer to WebMediaPlayerAndroid given the |player_id|.
-  WebMediaPlayerAndroid* GetMediaPlayer(int player_id);
+  media::RendererMediaPlayerInterface* GetMediaPlayer(int player_id);
 
 #if defined(VIDEO_HOLE)
   // Gets the list of media players with video geometry changes.
@@ -140,15 +142,9 @@ class RendererMediaPlayerManager : public RenderFrameObserver {
   void OnPlayerPause(int player_id);
   void OnRemoteRouteAvailabilityChanged(int player_id, bool routes_available);
 
-  // Release all video player resources.
-  // If something is in progress the resource will not be freed. It will
-  // only be freed once the tab is destroyed or if the user navigates away
-  // via WebMediaPlayerAndroid::Destroy.
-  void ReleaseVideoResources();
-
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.
-  std::map<int, WebMediaPlayerAndroid*> media_players_;
+  std::map<int, media::RendererMediaPlayerInterface*> media_players_;
 
   int next_media_player_id_;
 

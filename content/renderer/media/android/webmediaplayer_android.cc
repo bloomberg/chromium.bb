@@ -46,6 +46,7 @@
 #include "media/base/timestamp_constants.h"
 #include "media/base/video_frame.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
+#include "media/blink/webmediaplayer_cast_android.h"
 #include "media/blink/webmediaplayer_delegate.h"
 #include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
@@ -1161,106 +1162,12 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
       static_cast<int>(video_size_css_px.width() * device_scale_factor),
       static_cast<int>(video_size_css_px.height() * device_scale_factor));
 
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(canvas_size.width(), canvas_size.height());
-
-  // Create the canvas and draw the "Casting to <Chromecast>" text on it.
-  SkCanvas canvas(bitmap);
-  canvas.drawColor(SK_ColorBLACK);
-
-  const SkScalar kTextSize(40);
-  const SkScalar kMinPadding(40);
-
-  SkPaint paint;
-  paint.setAntiAlias(true);
-  paint.setFilterQuality(kHigh_SkFilterQuality);
-  paint.setColor(SK_ColorWHITE);
-  paint.setTypeface(SkTypeface::CreateFromName("sans", SkTypeface::kBold));
-  paint.setTextSize(kTextSize);
-
-  // Calculate the vertical margin from the top
-  SkPaint::FontMetrics font_metrics;
-  paint.getFontMetrics(&font_metrics);
-  SkScalar sk_vertical_margin = kMinPadding - font_metrics.fAscent;
-
-  // Measure the width of the entire text to display
-  size_t display_text_width = paint.measureText(
-      remote_playback_message.c_str(), remote_playback_message.size());
-  std::string display_text(remote_playback_message);
-
-  if (display_text_width + (kMinPadding * 2) > canvas_size.width()) {
-    // The text is too long to fit in one line, truncate it and append ellipsis
-    // to the end.
-
-    // First, figure out how much of the canvas the '...' will take up.
-    const std::string kTruncationEllipsis("\xE2\x80\xA6");
-    SkScalar sk_ellipse_width = paint.measureText(
-        kTruncationEllipsis.c_str(), kTruncationEllipsis.size());
-
-    // Then calculate how much of the text can be drawn with the '...' appended
-    // to the end of the string.
-    SkScalar sk_max_original_text_width(
-        canvas_size.width() - (kMinPadding * 2) - sk_ellipse_width);
-    size_t sk_max_original_text_length = paint.breakText(
-        remote_playback_message.c_str(),
-        remote_playback_message.size(),
-        sk_max_original_text_width);
-
-    // Remove the part of the string that doesn't fit and append '...'.
-    display_text.erase(sk_max_original_text_length,
-        remote_playback_message.size() - sk_max_original_text_length);
-    display_text.append(kTruncationEllipsis);
-    display_text_width = paint.measureText(
-        display_text.c_str(), display_text.size());
-  }
-
-  // Center the text horizontally.
-  SkScalar sk_horizontal_margin =
-      (canvas_size.width() - display_text_width) / 2.0;
-  canvas.drawText(display_text.c_str(),
-      display_text.size(),
-      sk_horizontal_margin,
-      sk_vertical_margin,
-      paint);
-
-  GLES2Interface* gl = stream_texture_factory_->ContextGL();
-  GLuint remote_playback_texture_id = 0;
-  gl->GenTextures(1, &remote_playback_texture_id);
-  GLuint texture_target = GL_TEXTURE_2D;
-  gl->BindTexture(texture_target, remote_playback_texture_id);
-  gl->TexParameteri(texture_target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  gl->TexParameteri(texture_target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  gl->TexParameteri(texture_target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-  {
-    SkAutoLockPixels lock(bitmap);
-    gl->TexImage2D(texture_target,
-                   0 /* level */,
-                   GL_RGBA /* internalformat */,
-                   bitmap.width(),
-                   bitmap.height(),
-                   0 /* border */,
-                   GL_RGBA /* format */,
-                   GL_UNSIGNED_BYTE /* type */,
-                   bitmap.getPixels());
-  }
-
-  gpu::Mailbox texture_mailbox;
-  gl->GenMailboxCHROMIUM(texture_mailbox.name);
-  gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox.name);
-  gl->Flush();
-  gpu::SyncToken texture_mailbox_sync_token(gl->InsertSyncPointCHROMIUM());
-
-  scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
-      media::PIXEL_FORMAT_ARGB,
-      gpu::MailboxHolder(texture_mailbox, texture_mailbox_sync_token,
-                         texture_target),
-      media::BindToCurrentLoop(base::Bind(&OnReleaseTexture,
-                                          stream_texture_factory_,
-                                          remote_playback_texture_id)),
-      canvas_size /* coded_size */, gfx::Rect(canvas_size) /* visible_rect */,
-      canvas_size /* natural_size */, base::TimeDelta() /* timestamp */);
+  scoped_refptr<VideoFrame> new_frame(media::MakeTextFrameForCast(
+      remote_playback_message,
+      canvas_size,
+      canvas_size,
+      base::Bind(&StreamTextureFactory::ContextGL,
+                 stream_texture_factory_)));
   if (!new_frame)
     return;
   SetCurrentFrameInternal(new_frame);

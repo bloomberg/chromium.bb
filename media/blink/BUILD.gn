@@ -12,6 +12,7 @@ component("blink") {
     "//base",
     "//cc",
     "//cc/blink",
+    "//gpu",
     "//gpu/blink",
     "//media",
     "//media:shared_memory_support",
@@ -92,6 +93,12 @@ component("blink") {
       "webmediaplayer_impl.cc",
       "webmediaplayer_impl.h",
     ]
+    if (is_android) {
+      sources += [
+        "webmediaplayer_cast_android.cc",
+        "webmediaplayer_cast_android.h",
+      ]
+    }
   }
 }
 

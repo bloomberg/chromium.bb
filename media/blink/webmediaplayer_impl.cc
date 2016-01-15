@@ -64,6 +64,9 @@ using blink::WebMediaPlayer;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebString;
+using gpu::gles2::GLES2Interface;
+
+namespace media {
 
 namespace {
 
@@ -86,22 +89,19 @@ namespace {
 const double kMinRate = 0.0625;
 const double kMaxRate = 16.0;
 
-void SetSinkIdOnMediaThread(
-    scoped_refptr<media::WebAudioSourceProviderImpl> sink,
-    const std::string& device_id,
-    const url::Origin& security_origin,
-    const media::SwitchOutputDeviceCB& callback) {
+void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
+                            const std::string& device_id,
+                            const url::Origin& security_origin,
+                            const SwitchOutputDeviceCB& callback) {
   if (sink->GetOutputDevice()) {
     sink->GetOutputDevice()->SwitchOutputDevice(device_id, security_origin,
                                                 callback);
   } else {
-    callback.Run(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
+    callback.Run(OUTPUT_DEVICE_STATUS_ERROR_INTERNAL);
   }
 }
 
 }  // namespace
-
-namespace media {
 
 class BufferedDataSourceHostImpl;
 
@@ -182,6 +182,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                                           AsWeakPtr(),
                                           base::Bind(&IgnoreCdmAttached))),
       is_cdm_attached_(false),
+#if defined(OS_ANDROID)  // WMPI_CAST
+      cast_impl_(this, client_, params.context_3d_cb(), delegate),
+#endif
       renderer_factory_(std::move(renderer_factory)) {
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_);
@@ -302,13 +305,25 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
   data_source_->SetBufferingStrategy(buffering_strategy_);
   data_source_->Initialize(
       base::Bind(&WebMediaPlayerImpl::DataSourceInitialized, AsWeakPtr()));
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  cast_impl_.Initialize(url, frame_);
+#endif
 }
 
 void WebMediaPlayerImpl::play() {
   DVLOG(1) << __FUNCTION__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote()) {
+    cast_impl_.play();
+    return;
+  }
+#endif
+
   paused_ = false;
+
   pipeline_.SetPlaybackRate(playback_rate_);
   if (data_source_)
     data_source_->MediaIsPlaying();
@@ -325,6 +340,14 @@ void WebMediaPlayerImpl::pause() {
 
   const bool was_already_paused = paused_ || playback_rate_ == 0;
   paused_ = true;
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote()) {
+    cast_impl_.pause();
+    return;
+  }
+#endif
+
   pipeline_.SetPlaybackRate(0.0);
   UpdatePausedTime();
 
@@ -345,11 +368,18 @@ void WebMediaPlayerImpl::seek(double seconds) {
 
   ended_ = false;
 
+  base::TimeDelta new_seek_time = base::TimeDelta::FromSecondsD(seconds);
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote()) {
+    cast_impl_.seek(new_seek_time);
+    return;
+  }
+#endif
+
   ReadyState old_state = ready_state_;
   if (ready_state_ > WebMediaPlayer::ReadyStateHaveMetadata)
     SetReadyState(WebMediaPlayer::ReadyStateHaveMetadata);
-
-  base::TimeDelta new_seek_time = base::TimeDelta::FromSecondsD(seconds);
 
   if (seeking_ || suspended_) {
     // Once resuming, it's too late to change the resume time and so the
@@ -424,7 +454,6 @@ void WebMediaPlayerImpl::seek(double seconds) {
   if (chunk_demuxer_)
     chunk_demuxer_->StartWaitingForSeek(seek_time_);
 
-  // Kick off the asynchronous seek!
   pipeline_.Seek(seek_time_, BIND_TO_RENDER_LOOP1(
                                  &WebMediaPlayerImpl::OnPipelineSeeked, true));
 }
@@ -541,6 +570,10 @@ blink::WebSize WebMediaPlayerImpl::naturalSize() const {
 bool WebMediaPlayerImpl::paused() const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote())
+    return cast_impl_.paused();
+#endif
   return pipeline_.GetPlaybackRate() == 0.0f;
 }
 
@@ -588,7 +621,17 @@ double WebMediaPlayerImpl::currentTime() const {
                          : seek_time_.InSecondsF();
   }
 
-  return (paused_ ? paused_time_ : pipeline_.GetMediaTime()).InSecondsF();
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote()) {
+    return cast_impl_.currentTime();
+  }
+#endif
+
+  if (paused_) {
+    return paused_time_.InSecondsF();
+  }
+
+  return pipeline_.GetMediaTime().InSecondsF();
 }
 
 WebMediaPlayer::NetworkState WebMediaPlayerImpl::networkState() const {
@@ -915,6 +958,15 @@ void WebMediaPlayerImpl::OnPipelineSuspended(PipelineStatus status) {
 
   suspending_ = false;
 
+#if defined(OS_ANDROID)
+  if (isRemote()) {
+    scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
+    if (frame) {
+      compositor_->PaintFrameUsingOldRenderingPath(frame);
+    }
+  }
+#endif
+
   if (pending_resume_) {
     pending_resume_ = false;
     Resume();
@@ -1055,6 +1107,16 @@ void WebMediaPlayerImpl::OnHidden() {
     return;
   }
 
+#if defined(OS_ANDROID)
+  // If we're remote, the pipeline should already be suspended.
+  if (isRemote())
+    return;
+#endif
+
+  ScheduleSuspend();
+}
+
+void WebMediaPlayerImpl::ScheduleSuspend() {
   if (!pipeline_.IsRunning() || !hasVideo())
     return;
 
@@ -1096,6 +1158,16 @@ void WebMediaPlayerImpl::OnShown() {
     return;
   }
 
+#if defined(OS_ANDROID)
+  // If we're remote, the pipeline should stay suspended.
+  if (isRemote())
+    return;
+#endif
+
+  ScheduleResume();
+}
+
+void WebMediaPlayerImpl::ScheduleResume() {
   if (!pipeline_.IsRunning())
     return;
 
@@ -1109,12 +1181,9 @@ void WebMediaPlayerImpl::OnShown() {
     return;
   }
 
-  // We may not be suspended if we were not yet subscribed or the pipeline was
-  // not yet started when OnHidden() fired.
-  if (!suspended_)
-    return;
-
-  Resume();
+  // Might already be resuming iff we came back from remote playback recently.
+  if (suspended_ && !resuming_)
+    Resume();
 }
 
 void WebMediaPlayerImpl::Resume() {
@@ -1149,6 +1218,70 @@ void WebMediaPlayerImpl::Resume() {
                    BIND_TO_RENDER_LOOP1(&WebMediaPlayerImpl::OnPipelineSeeked,
                                         time_changed));
 }
+
+#if defined(OS_ANDROID)  // WMPI_CAST
+
+bool WebMediaPlayerImpl::isRemote() const {
+  return cast_impl_.isRemote();
+}
+
+void WebMediaPlayerImpl::SetMediaPlayerManager(
+    RendererMediaPlayerManagerInterface* media_player_manager) {
+  cast_impl_.SetMediaPlayerManager(media_player_manager);
+}
+
+void WebMediaPlayerImpl::requestRemotePlayback() {
+  cast_impl_.requestRemotePlayback();
+}
+
+void WebMediaPlayerImpl::requestRemotePlaybackControl() {
+  cast_impl_.requestRemotePlaybackControl();
+}
+
+void WebMediaPlayerImpl::OnRemotePlaybackEnded() {
+  DVLOG(1) << __FUNCTION__;
+  DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  ended_ = true;
+  client_->timeChanged();
+}
+
+void WebMediaPlayerImpl::OnDisconnectedFromRemoteDevice(double t) {
+  paused_time_ = base::TimeDelta::FromSecondsD(t);
+  pending_seek_ = true;
+  pending_seek_time_ = paused_time_;
+
+  ScheduleResume();
+
+  if (paused_time_ == pipeline_.GetMediaDuration()) {
+    ended_ = true;
+  }
+  // We already told the delegate we're paused when remoting started.
+  client_->playbackStateChanged();
+  client_->disconnectedFromRemoteDevice();
+}
+
+void WebMediaPlayerImpl::SuspendForRemote() {
+  if (suspended_ && !suspending_) {
+    scoped_refptr<VideoFrame> frame = cast_impl_.GetCastingBanner();
+    if (frame) {
+      compositor_->PaintFrameUsingOldRenderingPath(frame);
+    }
+  }
+  ScheduleSuspend();
+}
+
+gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
+  if (!video_weblayer_)
+    return pipeline_metadata_.natural_size;
+
+  return video_weblayer_->bounds();
+}
+
+void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {
+  cast_impl_.SetDeviceScaleFactor(scale_factor);
+}
+#endif  // defined(OS_ANDROID)  // WMPI_CAST
 
 void WebMediaPlayerImpl::DataSourceInitialized(bool success) {
   DVLOG(1) << __FUNCTION__;
@@ -1331,6 +1464,12 @@ void WebMediaPlayerImpl::UpdatePausedTime() {
 }
 
 void WebMediaPlayerImpl::NotifyPlaybackStarted() {
+#if defined(OS_ANDROID)  // WMPI_CAST
+  // We do not tell our delegates about remote playback, becuase that would
+  // keep the device awake, which is not what we want.
+  if (isRemote())
+    return;
+#endif
   if (delegate_)
     delegate_->DidPlay(this);
   if (!memory_usage_reporting_timer_.IsRunning()) {
@@ -1341,6 +1480,10 @@ void WebMediaPlayerImpl::NotifyPlaybackStarted() {
 }
 
 void WebMediaPlayerImpl::NotifyPlaybackPaused() {
+#if defined(OS_ANDROID)  // WMPI_CAST
+  if (isRemote())
+    return;
+#endif
   if (delegate_)
     delegate_->DidPause(this);
   memory_usage_reporting_timer_.Stop();
