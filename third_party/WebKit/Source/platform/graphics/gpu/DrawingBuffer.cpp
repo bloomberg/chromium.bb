@@ -256,9 +256,6 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     if (!m_contentsChanged)
         return false;
 
-    if (m_newMailboxCallback)
-        (*m_newMailboxCallback)();
-
     // Resolve the multisampled buffer into m_colorBuffer texture.
     if (m_antiAliasingMode != None)
         commit();
@@ -328,7 +325,6 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     frontColorBufferMailbox->m_parentDrawingBuffer = this;
     *outMailbox = frontColorBufferMailbox->mailbox;
     m_frontColorBuffer = { frontColorBufferMailbox->textureInfo, frontColorBufferMailbox->mailbox };
-
     return true;
 }
 

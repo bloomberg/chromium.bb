@@ -177,8 +177,6 @@ public:
 
     void styleDidChange(const ComputedStyle* oldStyle, const ComputedStyle& newStyle);
 
-    void notifyListenersCanvasChanged();
-
 protected:
     void didMoveToNewDocument(Document& oldDocument) override;
 
@@ -204,6 +202,8 @@ private:
     void setSurfaceSize(const IntSize&);
 
     bool paintsIntoCanvasBuffer() const;
+
+    void notifyListenersCanvasChanged();
 
     ImageData* toImageData(SourceDrawingBuffer) const;
     String toDataURLInternal(const String& mimeType, const double& quality, SourceDrawingBuffer) const;

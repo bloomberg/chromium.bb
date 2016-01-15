@@ -191,8 +191,6 @@ public:
     // Otherwise, bind to the default FBO.
     void restoreFramebufferBindings();
 
-    void addNewMailboxCallback(PassOwnPtr<Closure> closure) { m_newMailboxCallback = std::move(closure); }
-
 protected: // For unittests
     DrawingBuffer(
         PassOwnPtr<WebGraphicsContext3D>,
@@ -269,8 +267,6 @@ private:
         WebExternalTextureMailbox mailbox;
     };
     FrontBufferInfo m_frontColorBuffer;
-
-    OwnPtr<Closure> m_newMailboxCallback;
 
     // This is used when we have OES_packed_depth_stencil.
     Platform3DObject m_depthStencilBuffer;
