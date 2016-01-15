@@ -3966,9 +3966,8 @@ class PrerenderBrowserTestWithNaCl : public PrerenderBrowserTest {
 };
 
 // Check that NaCl plugins work when enabled, with prerendering.
-// Flaky on Linux and Windows, see crbug/569221.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTestWithNaCl,
-                       DISABLED_PrerenderNaClPluginEnabled) {
+                       PrerenderNaClPluginEnabled) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
