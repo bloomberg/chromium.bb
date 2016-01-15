@@ -350,6 +350,8 @@
             '<(libjingle_source)/talk/media/base/rtputils.h',
             '<(libjingle_source)/talk/media/base/streamparams.cc',
             '<(libjingle_source)/talk/media/base/streamparams.h',
+            '<(libjingle_source)/talk/media/base/turnutils.cc',
+            '<(libjingle_source)/talk/media/base/turnutils.h',
             '<(libjingle_source)/talk/media/base/videoadapter.cc',
             '<(libjingle_source)/talk/media/base/videoadapter.h',
             '<(libjingle_source)/talk/media/base/videocapturer.cc',

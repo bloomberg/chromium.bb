@@ -391,6 +391,8 @@ if (enable_webrtc) {
       "source/talk/media/base/rtputils.h",
       "source/talk/media/base/streamparams.cc",
       "source/talk/media/base/streamparams.h",
+      "source/talk/media/base/turnutils.cc",
+      "source/talk/media/base/turnutils.h",
       "source/talk/media/base/videoadapter.cc",
       "source/talk/media/base/videoadapter.h",
       "source/talk/media/base/videocapturer.cc",
