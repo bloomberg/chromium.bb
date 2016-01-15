@@ -64,8 +64,6 @@ using extensions::Extension;
 using extensions::UnloadedExtensionInfo;
 using ui::ResourceBundle;
 
-typedef ThemeProperties Properties;
-
 // The default theme if we haven't installed a theme yet or if we've clicked
 // the "Use Classic" button.
 const char ThemeService::kDefaultThemeID[] = "";
@@ -461,10 +459,10 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
   // of color IDs.
   int theme_supplier_id = id;
   if (otr) {
-    if (id == Properties::COLOR_FRAME)
-      theme_supplier_id = Properties::COLOR_FRAME_INCOGNITO;
-    else if (id == Properties::COLOR_FRAME_INACTIVE)
-      theme_supplier_id = Properties::COLOR_FRAME_INCOGNITO_INACTIVE;
+    if (id == ThemeProperties::COLOR_FRAME)
+      theme_supplier_id = ThemeProperties::COLOR_FRAME_INCOGNITO;
+    else if (id == ThemeProperties::COLOR_FRAME_INACTIVE)
+      theme_supplier_id = ThemeProperties::COLOR_FRAME_INCOGNITO_INACTIVE;
   }
 
   SkColor color;
@@ -473,65 +471,66 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
 
   // For backward compat with older themes, some newer colors are generated from
   // older ones if they are missing.
+  const int kNtpText = ThemeProperties::COLOR_NTP_TEXT;
+  const int kLabelBackground =
+      ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND;
   switch (id) {
-    case Properties::COLOR_TOOLBAR_BUTTON_ICON:
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON:
       return color_utils::HSLShift(gfx::kChromeIconGrey,
-                                   GetTint(Properties::TINT_BUTTONS, otr));
-    case Properties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
+                                   GetTint(ThemeProperties::TINT_BUTTONS, otr));
+    case ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_INACTIVE:
       // The active color is overridden in Gtk2UI.
-      return SkColorSetA(GetColor(Properties::COLOR_TOOLBAR_BUTTON_ICON, otr),
-                         0x33);
-    case Properties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
+      return SkColorSetA(
+          GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, otr), 0x33);
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_TOOLBAR, otr);
-    case Properties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
+    case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       if (UsingDefaultTheme())
         break;
       // Use 50% of bookmark text color as separator color.
       return SkColorSetA(GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, otr),
                          128);
-    case Properties::COLOR_NTP_SECTION_HEADER_TEXT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.30);
-    case Properties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
-      return GetColor(Properties::COLOR_NTP_TEXT, otr);
-    case Properties::COLOR_NTP_SECTION_HEADER_RULE:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.70);
-    case Properties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.86);
-    case Properties::COLOR_NTP_TEXT_LIGHT:
-      return IncreaseLightness(GetColor(Properties::COLOR_NTP_TEXT, otr), 0.40);
-    case Properties::COLOR_TAB_THROBBER_SPINNING:
-    case Properties::COLOR_TAB_THROBBER_WAITING: {
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT:
+      return IncreaseLightness(GetColor(kNtpText, otr), 0.30);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_TEXT_HOVER:
+      return GetColor(kNtpText, otr);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE:
+      return IncreaseLightness(GetColor(kNtpText, otr), 0.70);
+    case ThemeProperties::COLOR_NTP_SECTION_HEADER_RULE_LIGHT:
+      return IncreaseLightness(GetColor(kNtpText, otr), 0.86);
+    case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
+      return IncreaseLightness(GetColor(kNtpText, otr), 0.40);
+    case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:
+    case ThemeProperties::COLOR_TAB_THROBBER_WAITING: {
       SkColor base_color =
-          ui::GetAuraColor(id == Properties::COLOR_TAB_THROBBER_SPINNING
+          ui::GetAuraColor(id == ThemeProperties::COLOR_TAB_THROBBER_SPINNING
                                ? ui::NativeTheme::kColorId_ThrobberSpinningColor
                                : ui::NativeTheme::kColorId_ThrobberWaitingColor,
                            nullptr);
-      color_utils::HSL hsl = GetTint(Properties::TINT_BUTTONS, otr);
+      color_utils::HSL hsl = GetTint(ThemeProperties::TINT_BUTTONS, otr);
       return color_utils::HSLShift(base_color, hsl);
     }
 #if defined(ENABLE_SUPERVISED_USERS)
-    case Properties::COLOR_SUPERVISED_USER_LABEL:
-      return color_utils::GetReadableColor(
-          SK_ColorWHITE,
-          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND, otr));
-    case Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL:
+      return color_utils::GetReadableColor(SK_ColorWHITE,
+                                           GetColor(kLabelBackground, otr));
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND:
       return color_utils::BlendTowardOppositeLuminance(
-          GetColor(Properties::COLOR_FRAME, otr), 0x80);
-    case Properties::COLOR_SUPERVISED_USER_LABEL_BORDER:
-      return color_utils::AlphaBlend(
-          GetColor(Properties::COLOR_SUPERVISED_USER_LABEL_BACKGROUND, otr),
-          SK_ColorBLACK, 230);
+          GetColor(ThemeProperties::COLOR_FRAME, otr), 0x80);
+    case ThemeProperties::COLOR_SUPERVISED_USER_LABEL_BORDER:
+      return color_utils::AlphaBlend(GetColor(kLabelBackground, otr),
+                                     SK_ColorBLACK, 230);
 #endif
-    case Properties::COLOR_STATUS_BAR_TEXT: {
+    case ThemeProperties::COLOR_STATUS_BAR_TEXT: {
       // A long time ago, we blended the toolbar and the tab text together to
       // get the status bar text because, at the time, our text rendering in
       // views couldn't do alpha blending. Even though this is no longer the
       // case, this blending decision is built into the majority of themes that
       // exist, and we must keep doing it.
-      SkColor toolbar_color = GetColor(Properties::COLOR_TOOLBAR, otr);
-      SkColor text_color = GetColor(Properties::COLOR_TAB_TEXT, otr);
+      SkColor toolbar_color = GetColor(ThemeProperties::COLOR_TOOLBAR, otr);
+      SkColor text_color = GetColor(ThemeProperties::COLOR_TAB_TEXT, otr);
       return SkColorSetARGB(
           SkColorGetA(text_color),
           (SkColorGetR(text_color) + SkColorGetR(toolbar_color)) / 2,
@@ -540,7 +539,7 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
     }
   }
 
-  return Properties::GetDefaultColor(id, otr);
+  return ThemeProperties::GetDefaultColor(id, otr);
 }
 
 int ThemeService::GetDisplayProperty(int id) const {
@@ -550,19 +549,20 @@ int ThemeService::GetDisplayProperty(int id) const {
   }
 
   switch (id) {
-    case Properties::NTP_BACKGROUND_ALIGNMENT:
-      return Properties::ALIGN_CENTER;
+    case ThemeProperties::NTP_BACKGROUND_ALIGNMENT:
+      return ThemeProperties::ALIGN_CENTER;
 
-    case Properties::NTP_BACKGROUND_TILING:
-      return Properties::NO_REPEAT;
+    case ThemeProperties::NTP_BACKGROUND_TILING:
+      return ThemeProperties::NO_REPEAT;
 
-    case Properties::NTP_LOGO_ALTERNATE:
-      return UsingDefaultTheme() || UsingSystemTheme() ||
-                     (!HasCustomImage(IDR_THEME_NTP_BACKGROUND) &&
-                      IsColorGrayscale(
-                          GetColor(Properties::COLOR_NTP_BACKGROUND, false)))
-                 ? 0
-                 : 1;
+    case ThemeProperties::NTP_LOGO_ALTERNATE: {
+      if (UsingDefaultTheme() || UsingSystemTheme())
+        return 0;
+      if (HasCustomImage(IDR_THEME_NTP_BACKGROUND))
+        return 1;
+      return IsColorGrayscale(
+          GetColor(ThemeProperties::COLOR_NTP_BACKGROUND, false)) ? 0 : 1;
+    }
 
     default:
       return -1;
@@ -588,7 +588,7 @@ base::RefCountedMemory* ThemeService::GetRawData(
     int id,
     ui::ScaleFactor scale_factor) const {
   // Check to see whether we should substitute some images.
-  int ntp_alternate = GetDisplayProperty(Properties::NTP_LOGO_ALTERNATE);
+  int ntp_alternate = GetDisplayProperty(ThemeProperties::NTP_LOGO_ALTERNATE);
   if (id == IDR_PRODUCT_LOGO && ntp_alternate != 0)
     id = IDR_PRODUCT_LOGO_WHITE;
 
