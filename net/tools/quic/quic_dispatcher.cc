@@ -385,7 +385,6 @@ void QuicDispatcher::OnConnectionClosed(QuicConnectionId connection_id,
              << " does not exist in the session map.  Error: "
              << QuicUtils::ErrorToString(error);
     QUIC_BUG << base::debug::StackTrace().ToString();
-    ;
     return;
   }
 
