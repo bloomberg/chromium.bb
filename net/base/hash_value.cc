@@ -9,6 +9,7 @@
 #include "base/sha1.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "crypto/sha2.h"
 
 namespace net {
 
@@ -120,12 +121,12 @@ const unsigned char* HashValue::data() const {
   }
 }
 
-bool IsSHA1HashInSortedArray(const SHA1HashValue& hash,
-                             const uint8_t* array,
-                             size_t array_byte_len) {
-  DCHECK_EQ(0u, array_byte_len % base::kSHA1Length);
-  const size_t arraylen = array_byte_len / base::kSHA1Length;
-  return NULL != bsearch(hash.data, array, arraylen, base::kSHA1Length,
+bool IsSHA256HashInSortedArray(const SHA256HashValue& hash,
+                               const uint8_t* array,
+                               size_t array_byte_len) {
+  DCHECK_EQ(0u, array_byte_len % crypto::kSHA256Length);
+  const size_t arraylen = array_byte_len / crypto::kSHA256Length;
+  return NULL != bsearch(hash.data, array, arraylen, crypto::kSHA256Length,
                          CompareSHA1Hashes);
 }
 

@@ -281,9 +281,9 @@ bool IsIssuedByKnownRoot(PCCERT_CHAIN_CONTEXT chain_context) {
   PCERT_CHAIN_ELEMENT* element = first_chain->rgpElement;
   PCCERT_CONTEXT cert = element[num_elements - 1]->pCertContext;
 
-  SHA1HashValue hash = X509Certificate::CalculateFingerprint(cert);
-  return IsSHA1HashInSortedArray(
-      hash, &kKnownRootCertSHA1Hashes[0][0], sizeof(kKnownRootCertSHA1Hashes));
+  SHA256HashValue hash = X509Certificate::CalculateFingerprint256(cert);
+  return IsSHA256HashInSortedArray(hash, &kKnownRootCertSHA256Hashes[0][0],
+                                   sizeof(kKnownRootCertSHA256Hashes));
 }
 
 // Saves some information about the certificate chain |chain_context| in

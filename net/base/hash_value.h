@@ -113,12 +113,11 @@ class HashValuesEqual {
   const HashValue& fingerprint_;
 };
 
-
-// IsSHA1HashInSortedArray returns true iff |hash| is in |array|, a sorted
-// array of SHA1 hashes.
-bool IsSHA1HashInSortedArray(const SHA1HashValue& hash,
-                             const uint8_t* array,
-                             size_t array_byte_len);
+// IsSHA256HashInSortedArray returns true iff |hash| is in |array|, a sorted
+// array of SHA256 hashes.
+bool IsSHA256HashInSortedArray(const SHA256HashValue& hash,
+                               const uint8_t* array,
+                               size_t array_byte_len);
 
 }  // namespace net
 
