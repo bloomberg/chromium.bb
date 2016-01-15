@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,6 @@ class TestClient : public TestContentClient {
     if (message_id == kDummyStringId)
       return base::UTF8ToUTF16(kDummyString);
     return base::string16();
-
   }
 
   base::RefCountedStaticMemory* GetDataResourceBytes(
@@ -48,7 +47,7 @@ class TestClient : public TestContentClient {
   }
 };
 
-}
+}  // namespace
 
 class WebUIDataSourceTest : public testing::Test {
  public:
@@ -56,12 +55,9 @@ class WebUIDataSourceTest : public testing::Test {
   ~WebUIDataSourceTest() override {}
   WebUIDataSourceImpl* source() { return source_.get(); }
 
-  void StartDataRequest(const std::string& path) {
-     source_->StartDataRequest(
-        path,
-        0, 0,
-        base::Bind(&WebUIDataSourceTest::SendResult,
-        base::Unretained(this)));
+  void StartDataRequest(const std::string& path,
+                        const URLDataSource::GotDataCallback& callback) {
+    source_->StartDataRequest(path, 0, 0, callback);
   }
 
   std::string GetMimeType(const std::string& path) const {
@@ -74,8 +70,10 @@ class WebUIDataSourceTest : public testing::Test {
     return true;
   }
 
+  void RequestFilterQueryStringCallback(
+      scoped_refptr<base::RefCountedMemory> data);
+
  protected:
-  scoped_refptr<base::RefCountedMemory> result_data_;
   std::string request_path_;
 
  private:
@@ -88,61 +86,88 @@ class WebUIDataSourceTest : public testing::Test {
     source_ = make_scoped_refptr(source_impl);
   }
 
-  // Store response for later comparisons.
-  void SendResult(scoped_refptr<base::RefCountedMemory> data) {
-    result_data_ = data;
-  }
-
   TestBrowserThreadBundle thread_bundle_;
   scoped_refptr<WebUIDataSourceImpl> source_;
   TestClient client_;
 };
 
-TEST_F(WebUIDataSourceTest, EmptyStrings) {
-  source()->SetJsonPath("strings.js");
-  StartDataRequest("strings.js");
-  std::string result(result_data_->front_as<char>(), result_data_->size());
+void EmptyStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
   EXPECT_NE(result.find("loadTimeData.data = {"), std::string::npos);
   EXPECT_NE(result.find("};"), std::string::npos);
+}
+
+TEST_F(WebUIDataSourceTest, EmptyStrings) {
+  source()->SetJsonPath("strings.js");
+  StartDataRequest("strings.js", base::Bind(&EmptyStringsCallback));
+}
+
+void SomeStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
+  EXPECT_NE(result.find("\"button\":\"foo\""), std::string::npos);
 }
 
 TEST_F(WebUIDataSourceTest, SomeStrings) {
   source()->SetJsonPath("strings.js");
   source()->AddString("planet", base::ASCIIToUTF16("pluto"));
   source()->AddLocalizedString("button", kDummyStringId);
-  StartDataRequest("strings.js");
-  std::string result(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find("\"planet\":\"pluto\""), std::string::npos);
-  EXPECT_NE(result.find("\"button\":\"foo\""), std::string::npos);
+  StartDataRequest("strings.js", base::Bind(&SomeStringsCallback));
+}
+
+void DefaultResourceFoobarCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
+}
+
+void DefaultResourceStringsCallback(
+    scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
 TEST_F(WebUIDataSourceTest, DefaultResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
-  StartDataRequest("foobar");
-  std::string result(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
-  StartDataRequest("strings.js");
-  result = std::string(result_data_->front_as<char>(), result_data_->size());
+  StartDataRequest("foobar", base::Bind(&DefaultResourceFoobarCallback));
+  StartDataRequest("strings.js", base::Bind(&DefaultResourceStringsCallback));
+}
+
+void NamedResourceFoobarCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  EXPECT_NE(result.find(kDummyResource), std::string::npos);
+}
+
+void NamedResourceStringsCallback(scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
   EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
 TEST_F(WebUIDataSourceTest, NamedResource) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
-  StartDataRequest("foobar");
-  std::string result(result_data_->front_as<char>(), result_data_->size());
+  StartDataRequest("foobar", base::Bind(&NamedResourceFoobarCallback));
+  StartDataRequest("strings.js", base::Bind(&NamedResourceStringsCallback));
+}
+
+void NamedResourceWithQueryStringCallback(
+    scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
   EXPECT_NE(result.find(kDummyResource), std::string::npos);
-  StartDataRequest("strings.js");
-  result = std::string(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find(kDummyDefaultResource), std::string::npos);
 }
 
 TEST_F(WebUIDataSourceTest, NamedResourceWithQueryString) {
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
-  StartDataRequest("foobar?query?string");
-  std::string result(result_data_->front_as<char>(), result_data_->size());
-  EXPECT_NE(result.find(kDummyResource), std::string::npos);
+  StartDataRequest("foobar?query?string",
+                   base::Bind(&NamedResourceWithQueryStringCallback));
+}
+
+void WebUIDataSourceTest::RequestFilterQueryStringCallback(
+    scoped_refptr<base::RefCountedMemory> data) {
+  std::string result(data->front_as<char>(), data->size());
+  // Check that the query string is passed to the request filter (and not
+  // trimmed).
+  EXPECT_EQ("foobar?query?string", request_path_);
 }
 
 TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
@@ -151,10 +176,10 @@ TEST_F(WebUIDataSourceTest, RequestFilterQueryString) {
       base::Bind(&WebUIDataSourceTest::HandleRequest, base::Unretained(this)));
   source()->SetDefaultResource(kDummyDefaultResourceId);
   source()->AddResourcePath("foobar", kDummyResourceId);
-  StartDataRequest("foobar?query?string");
-  // Check that the query string is passed to the request filter (and not
-  // trimmed).
-  EXPECT_EQ("foobar?query?string", request_path_);
+  StartDataRequest(
+      "foobar?query?string",
+      base::Bind(&WebUIDataSourceTest::RequestFilterQueryStringCallback,
+                 base::Unretained(this)));
 }
 
 TEST_F(WebUIDataSourceTest, MimeType) {
