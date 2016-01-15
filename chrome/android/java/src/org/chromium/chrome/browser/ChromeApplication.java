@@ -263,9 +263,7 @@ public class ChromeApplication extends ContentApplication {
         updateAcceptLanguages();
         changeAppStatus(true);
         mVariationsSession.start(getApplicationContext());
-
-        mPowerBroadcastReceiver.registerReceiver(this);
-        mPowerBroadcastReceiver.runActions(this, true);
+        mPowerBroadcastReceiver.onForegroundSessionStart();
 
         // Track the ratio of Chrome startups that are caused by notification clicks.
         // TODO(johnme): Add other reasons (and switch to recordEnumeratedHistogram).
@@ -286,12 +284,7 @@ public class ChromeApplication extends ContentApplication {
         flushPersistentData();
         mIsStarted = false;
         changeAppStatus(false);
-
-        try {
-            mPowerBroadcastReceiver.unregisterReceiver(this);
-        } catch (IllegalArgumentException e) {
-            // This may happen when onStop get called very early in UI test.
-        }
+        mPowerBroadcastReceiver.onForegroundSessionEnd();
 
         ChildProcessLauncher.onSentToBackground();
         IntentHandler.clearPendingReferrer();

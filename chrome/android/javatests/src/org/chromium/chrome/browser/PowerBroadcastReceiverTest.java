@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,13 +6,12 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.Intent;
+import android.test.suitebuilder.annotation.MediumTest;
 
-import org.chromium.base.test.util.DisabledTest;
-import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
-import org.chromium.content.browser.test.util.Criteria;
-import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.UiUtils;
+import org.chromium.chrome.test.util.ApplicationTestUtils;
+import org.chromium.content.browser.test.util.CallbackHelper;
 
 /**
  * Tests for the PowerBroadcastReceiver.
@@ -27,21 +26,32 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
 
     /** Mocks out PowerBroadcastReceiver.ServiceRunnable. */
     private static class MockServiceRunnable extends PowerBroadcastReceiver.ServiceRunnable {
-        private boolean mRan;
-        private final long mDelay;
+        public CallbackHelper postHelper = new CallbackHelper();
+        public CallbackHelper cancelHelper = new CallbackHelper();
+        public CallbackHelper runHelper = new CallbackHelper();
+        public CallbackHelper runActionsHelper = new CallbackHelper();
 
-        MockServiceRunnable(long delay) {
-            mDelay = delay;
+        @Override
+        public void setState(int state) {
+            super.setState(state);
+            if (state == STATE_POSTED) {
+                postHelper.notifyCalled();
+            } else if (state == STATE_CANCELED) {
+                cancelHelper.notifyCalled();
+            } else if (state == STATE_COMPLETED) {
+                runHelper.notifyCalled();
+            }
         }
 
         @Override
-        public long delayToRun() {
-            return mDelay;
+        public long getDelayToRun() {
+            return MS_RUNNABLE_DELAY;
         }
 
         @Override
-        public void run() {
-            mRan = true;
+        public void runActions() {
+            // Don't let the real services start.
+            runActionsHelper.notifyCalled();
         }
     }
 
@@ -59,147 +69,98 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
         }
     }
 
+    private MockServiceRunnable mRunnable;
+    private PowerBroadcastReceiver mReceiver;
+
     @Override
     public void startMainActivity() throws InterruptedException {
         startMainActivityFromLauncher();
     }
 
-    private PowerBroadcastReceiver getPowerBroadcastReceiver() {
-        ChromeApplication app = (ChromeApplication) getActivity().getApplication();
-        return app.getPowerBroadcastReceiver();
-    }
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
 
-    /**
-     * Replaces the ServiceRunnable and PowerManagerHelper used by the PowerBroadcastReceiver
-     * with mocked versions.
-     * @return the MockServiceRunnable created by this function.
-     */
-    private MockServiceRunnable setUpMockRunnable() {
-        MockServiceRunnable runnable = new MockServiceRunnable(MS_RUNNABLE_DELAY);
-        getPowerBroadcastReceiver().setServiceRunnableForTests(runnable);
-        return runnable;
-    }
+        ChromeApplication application = (ChromeApplication) getActivity().getApplication();
+        mReceiver = application.getPowerBroadcastReceiver();
 
-    /**
-     * Pauses (and optionally resumes) Main by starting a different Activity.
-     * @param resumeAfterPause Resume Main after the pause.
-     */
-    private void pauseMain(boolean resumeAfterPause) throws Exception {
-        // Bring up the Preferences activity to put the Main activity in the background.
-        UiUtils.settleDownUI(getInstrumentation());
-        Preferences prefActivity = startPreferences(null);
-        assertNotNull("Could not launch preferences activity.", prefActivity);
+        // Set up our mock runnable.
+        mRunnable = new MockServiceRunnable();
+        mReceiver.setServiceRunnableForTests(mRunnable);
 
-        if (resumeAfterPause) {
-            // Finish the Activity to bring Main back.
-            UiUtils.settleDownUI(getInstrumentation());
-            prefActivity.finish();
-        }
-    }
-
-    /**
-     * Waits to see if the runnable was run.
-     */
-    public void waitForRunnableRan(final MockServiceRunnable runnable) throws Exception {
-        CriteriaHelper.pollForCriteria(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return runnable.mRan;
-            }
-        }, MS_TIMEOUT, MS_INTERVAL);
+        // Initially claim that the screen is on.
+        mReceiver.setPowerManagerHelperForTests(sScreenOn);
     }
 
     /**
      * Check if the runnable is posted and run while the screen is on.
-     * @MediumTest
-     * @Feature({"Omaha", "Sync"})
-     * crbug.com/571200
      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Omaha", "Sync"})
     public void testRunnableRunsWithScreenOn() throws Exception {
-        // Claim the screen is on.
-        PowerBroadcastReceiver receiver = getPowerBroadcastReceiver();
-        receiver.setPowerManagerHelperForTests(sScreenOn);
+        // Pause & resume to post the runnable.
+        ApplicationTestUtils.fireHomeScreenIntent(getInstrumentation().getTargetContext());
+        int postCount = mRunnable.postHelper.getCallCount();
+        int runCount = mRunnable.runHelper.getCallCount();
+        ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
 
-        // Switch out the PowerBroadcastReceiver's ServiceRunnable.
-        MockServiceRunnable runnable = setUpMockRunnable();
-
-        // Pause & resume to post our mocked runnable.
-        pauseMain(true);
-
-        // Check to see that the runnable gets run.
-        waitForRunnableRan(runnable);
-        assertFalse("PowerBroadcastReceiver was still registered.", receiver.isRegistered());
+        // Relaunching Chrome should cause the runnable to trigger.
+        mRunnable.postHelper.waitForCallback(postCount, 1);
+        mRunnable.runHelper.waitForCallback(runCount, 1);
+        assertEquals(0, mRunnable.cancelHelper.getCallCount());
+        assertFalse("Still listening for power broadcasts.", mReceiver.isRegistered());
     }
 
     /**
      * Check that the runnable gets posted and canceled when Main is sent to the background.
-     * @MediumTest
-     * @Feature({"Omaha", "Sync"})
-     * crbug.com/571200
      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Omaha", "Sync"})
     public void testRunnableGetsCanceled() throws Exception {
-        // Claim the screen is on.
-        PowerBroadcastReceiver receiver = getPowerBroadcastReceiver();
-        receiver.setPowerManagerHelperForTests(sScreenOn);
+        // Pause & resume to post the runnable.
+        ApplicationTestUtils.fireHomeScreenIntent(getInstrumentation().getTargetContext());
+        int postCount = mRunnable.postHelper.getCallCount();
+        ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
+        mRunnable.postHelper.waitForCallback(postCount, 1);
+        assertEquals(0, mRunnable.runHelper.getCallCount());
+        assertEquals(0, mRunnable.cancelHelper.getCallCount());
 
-        // Switch out the PowerBroadcastReceiver's Runnable with a MockServiceRunnable.
-        MockServiceRunnable runnable = setUpMockRunnable();
-
-        // Pause & resume to post our mocked runnable, then pause immediately after resuming so that
-        // Main's handler cancels the runnable.
-        pauseMain(true);
-        pauseMain(false);
-
-        // Wait enough time for the runnable to run(), if it's still in the handler.
-        try {
-            waitForRunnableRan(runnable);
-            fail("MockServiceRunnable ran after resuming Chrome.");
-        } catch (AssertionError e) {
-            // TODO(tedchoc): This is horrible.  This test should be rewritten.  It should not
-            //                require timing out a criteria to determine success.
-        }
-        assertFalse("PowerBroadcastReceiver was still registered.", receiver.isRegistered());
+        // Pause before the runnable has a chance to run.  Should cause the runnable to be canceled.
+        int cancelCount = mRunnable.cancelHelper.getCallCount();
+        ApplicationTestUtils.fireHomeScreenIntent(getInstrumentation().getTargetContext());
+        mRunnable.cancelHelper.waitForCallback(cancelCount, 1);
+        assertEquals(0, mRunnable.runHelper.getCallCount());
+        assertFalse("Still listening for power broadcasts.", mReceiver.isRegistered());
     }
 
     /**
      * Check that the runnable gets run only while the screen is on.
-     * @MediumTest
-     * @Feature({"Omaha", "Sync"})
-     * crbug.com/571200
      */
-    @DisabledTest
+    @MediumTest
+    @Feature({"Omaha", "Sync"})
     public void testRunnableGetsRunWhenScreenIsOn() throws Exception {
-        ChromeTabbedActivity main = getActivity();
-        PowerBroadcastReceiver receiver = getPowerBroadcastReceiver();
-
         // Claim the screen is off.
-        receiver.setPowerManagerHelperForTests(sScreenOff);
+        mReceiver.setPowerManagerHelperForTests(sScreenOff);
 
-        // Switch out the PowerBroadcastReceiver's Runnable with a MockServiceRunnable.
-        MockServiceRunnable runnable = setUpMockRunnable();
-
-        // Pause & resume to post our mocked runnable.
-        pauseMain(true);
-
-        // Wait enough time for the runnable to run(), if it's still in the handler.
-        try {
-            waitForRunnableRan(runnable);
-            fail("MockServiceRunnable ran after resuming Chrome.");
-        } catch (AssertionError e) {
-            // TODO(tedchoc): This is horrible.  This test should be rewritten.  It should not
-            //                require timing out a criteria to determine success.
-        }
-        assertTrue("PowerBroadcastReceiver was not registered.", receiver.isRegistered());
+        // Pause & resume.  Because the screen is off, nothing should happen.
+        ApplicationTestUtils.fireHomeScreenIntent(getInstrumentation().getTargetContext());
+        ApplicationTestUtils.launchChrome(getInstrumentation().getTargetContext());
+        assertTrue("Isn't waiting for power broadcasts.", mReceiver.isRegistered());
+        assertEquals(0, mRunnable.postHelper.getCallCount());
+        assertEquals(0, mRunnable.runHelper.getCallCount());
+        assertEquals(0, mRunnable.cancelHelper.getCallCount());
 
         // Pretend to turn the screen on.
-        receiver.setPowerManagerHelperForTests(sScreenOn);
+        int postCount = mRunnable.postHelper.getCallCount();
+        int runCount = mRunnable.runHelper.getCallCount();
+        mReceiver.setPowerManagerHelperForTests(sScreenOn);
         Intent intent = new Intent(Intent.ACTION_SCREEN_ON);
-        receiver.onReceive(main, intent);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
 
-        // Wait enough time for the runnable to run(), if it's still in the handler.
-        waitForRunnableRan(runnable);
-        assertFalse("PowerBroadcastReceiver wasn't unregistered.", receiver.isRegistered());
+        // The runnable should run now that the screen is on.
+        mRunnable.postHelper.waitForCallback(postCount, 1);
+        mRunnable.runHelper.waitForCallback(runCount, 1);
+        assertEquals(0, mRunnable.cancelHelper.getCallCount());
+        assertFalse("Still listening for power broadcasts.", mReceiver.isRegistered());
     }
 }
