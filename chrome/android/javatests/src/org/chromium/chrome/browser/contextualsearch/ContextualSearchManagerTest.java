@@ -1556,52 +1556,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Tests the tap triggered promo limit for opt-out.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
-     */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
-    @FlakyTest
-    public void testTapTriggeredPromoLimitForOptOut()
-            throws InterruptedException, TimeoutException {
-        mPolicy.setPromoTapTriggeredLimitForTesting(2);
-        mPolicy.overrideDecidedStateForTesting(false);
-
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-
-        // 3rd click won't peek the panel.
-        clickNode("states");
-        assertPanelClosedOrUndefined();
-        // The Tap should not select any text either!
-        assertNull(getSelectedText());
-
-        // A long-press should still show the promo bar.
-        longPressNode("states");
-        waitForPanelToPeek();
-
-        // Expanding the panel should deactivate the limit.
-        tapBarToExpandAndClosePanel();
-        // Clear the long-press selection.
-        clickNode("states-far");
-
-        // Three taps should work now.
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-        clickWordNode("states");
-        clickNode("states-far");
-        waitForPanelToCloseAndSelectionDissolved();
-    }
-
-    /**
      * Tests expanding the panel before the search term has resolved, verifies that nothing
      * loads until the resolve completes and that it's now a normal priority URL.
      */
@@ -1773,17 +1727,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      *
      * This test is very similar to an existing test for this same feature, so I'm proactively
      * marking this as a FlakyTest too (since we're landing right before upstreaming).
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @FlakyTest
     public void testPromoTapCount() throws InterruptedException, TimeoutException {
         mPolicy.setPromoTapTriggeredLimitForTesting(2);
-        // Note that this tests the basic underlying counter used by
-        // testTapTriggeredPromoLimitForOptOut.
-        // TODO(donnd): consider removing either this test or testTapTriggeredPromoLimitForOptOut.
         mPolicy.overrideDecidedStateForTesting(false);
         assertTapPromoCounterEnabledAt(0);
 
@@ -1803,7 +1752,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         // An open should disable the counter, but we need to use long-press (tap is now disabled).
         longPressNode("states-far");
         tapPeekingBarToExpandAndAssert();
-        tapBasePageToClosePanel();
+        pressBackButton();
+        waitForPanelToClose();
         assertTapPromoCounterDisabledAt(2);
 
         // Even though we closed the panel, the long-press selection is still there.
