@@ -227,6 +227,7 @@
         '../components/components.gyp:breakpad_host',
         '../components/components.gyp:cdm_browser',
         '../components/components.gyp:cdm_renderer',
+        '../components/components.gyp:component_metrics_proto',
         '../components/components.gyp:crash_component',
         '../components/components.gyp:data_reduction_proxy_core_browser',
         '../components/components.gyp:devtools_discovery',
