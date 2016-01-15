@@ -147,7 +147,8 @@ bool PlatformChannelSendHandles(PlatformHandle h,
 ssize_t PlatformChannelRecvmsg(PlatformHandle h,
                                void* buf,
                                size_t num_bytes,
-                               std::deque<PlatformHandle>* platform_handles) {
+                               std::deque<PlatformHandle>* platform_handles,
+                               bool should_block) {
   DCHECK(buf);
   DCHECK_GT(num_bytes, 0u);
   DCHECK(platform_handles);
@@ -166,7 +167,8 @@ ssize_t PlatformChannelRecvmsg(PlatformHandle h,
   int id = 0;
   socklen_t peek_off_size = sizeof(id);
   getsockopt(h.handle, SOL_SOCKET, SO_PEEK_OFF, &id, &peek_off_size);
-  ssize_t result = HANDLE_EINTR(recvmsg(h.handle, &msg, MSG_DONTWAIT));
+  ssize_t result =
+      HANDLE_EINTR(recvmsg(h.handle, &msg, should_block ? 0 : MSG_DONTWAIT));
   if (result < 0)
     return result;
 
