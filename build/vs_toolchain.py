@@ -21,6 +21,10 @@ json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 import gyp
 
 
+# Use MSVS2013 as the default toolchain.
+CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2013'
+
+
 def SetEnvironmentAndGetRuntimeDllDirs():
   """Sets up os.environ to use the depot_tools VS toolchain with gyp, and
   returns the location of the VS runtime DLLs so they can be copied into
@@ -33,7 +37,7 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   # been downloaded before (in which case json_data_file will exist).
   if ((sys.platform in ('win32', 'cygwin') or os.path.exists(json_data_file))
       and depot_tools_win_toolchain):
-    if not os.path.exists(json_data_file):
+    if ShouldUpdateToolchain():
       Update()
     with open(json_data_file, 'r') as tempf:
       toolchain_data = json.load(tempf)
@@ -99,9 +103,9 @@ def _RegistryGetValue(key, value):
 
 
 def GetVisualStudioVersion():
-  """Return GYP_MSVS_VERSION of Visual Studio, default to 2013 for now.
+  """Return GYP_MSVS_VERSION of Visual Studio.
   """
-  return os.environ.get('GYP_MSVS_VERSION', '2013')
+  return os.environ.get('GYP_MSVS_VERSION', CURRENT_DEFAULT_TOOLCHAIN_VERSION)
 
 
 def DetectVisualStudioPath():
@@ -270,6 +274,19 @@ def _GetDesiredVsToolchainHashes():
   else:
     # Default to VS2013.
     return ['9ff97c632ae1fee0c98bcd53e71770eb3a0d8deb']
+
+
+def ShouldUpdateToolchain():
+  """Check if the toolchain should be upgraded."""
+  if not os.path.exists(json_data_file):
+    return True
+  with open(json_data_file, 'r') as tempf:
+    toolchain_data = json.load(tempf)
+  version = toolchain_data['version']
+  env_version = GetVisualStudioVersion()
+  # If there's a mismatch between the version set in the environment and the one
+  # in the json file then the toolchain should be updated.
+  return version != env_version
 
 
 def Update(force=False):
