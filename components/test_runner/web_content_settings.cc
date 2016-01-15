@@ -61,7 +61,6 @@ bool WebContentSettings::allowPlugins(bool enabled_per_settings) {
 
 bool WebContentSettings::allowDisplayingInsecureContent(
     bool enabled_per_settings,
-    const blink::WebSecurityOrigin&,
     const blink::WebURL&) {
   return enabled_per_settings || displaying_insecure_content_allowed_;
 }

@@ -139,7 +139,7 @@ public:
     bool allowPlugins(bool enabledPerSettings) override;
     bool allowImage(bool enabledPerSettings, const KURL& imageURL) override;
     bool allowMedia(const KURL& mediaURL) override;
-    bool allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
+    bool allowDisplayingInsecureContent(bool enabledPerSettings, const KURL&) override;
     bool allowRunningInsecureContent(bool enabledPerSettings, SecurityOrigin*, const KURL&) override;
     void didNotAllowScript() override;
     void didNotAllowPlugins() override;

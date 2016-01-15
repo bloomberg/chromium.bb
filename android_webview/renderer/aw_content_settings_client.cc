@@ -35,7 +35,6 @@ AwContentSettingsClient::~AwContentSettingsClient() {
 
 bool AwContentSettingsClient::allowDisplayingInsecureContent(
       bool enabled_per_settings,
-      const blink::WebSecurityOrigin& origin,
       const blink::WebURL& url) {
   return enabled_per_settings ? true : AllowMixedContent(url);
 }

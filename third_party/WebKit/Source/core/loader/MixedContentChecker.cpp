@@ -326,7 +326,7 @@ bool MixedContentChecker::shouldBlockFetch(LocalFrame* frame, WebURLRequest::Req
 
     switch (contextType) {
     case ContextTypeOptionallyBlockable:
-        allowed = !strictMode && client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), securityOrigin, url);
+        allowed = !strictMode && client->allowDisplayingInsecureContent(settings && settings->allowDisplayOfInsecureContent(), url);
         if (allowed)
             client->didDisplayInsecureContent();
         break;

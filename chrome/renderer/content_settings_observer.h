@@ -80,7 +80,6 @@ class ContentSettingsObserver
   void didNotAllowScript() override;
   void didUseKeygen() override;
   bool allowDisplayingInsecureContent(bool allowed_per_settings,
-                                      const blink::WebSecurityOrigin& context,
                                       const blink::WebURL& url) override;
   bool allowRunningInsecureContent(bool allowed_per_settings,
                                    const blink::WebSecurityOrigin& context,

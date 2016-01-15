@@ -264,10 +264,10 @@ bool FrameLoaderClientImpl::allowMedia(const KURL& mediaURL)
     return true;
 }
 
-bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, SecurityOrigin* context, const KURL& url)
+bool FrameLoaderClientImpl::allowDisplayingInsecureContent(bool enabledPerSettings, const KURL& url)
 {
     if (m_webFrame->contentSettingsClient())
-        return m_webFrame->contentSettingsClient()->allowDisplayingInsecureContent(enabledPerSettings, WebSecurityOrigin(context), WebURL(url));
+        return m_webFrame->contentSettingsClient()->allowDisplayingInsecureContent(enabledPerSettings, WebURL(url));
 
     return enabledPerSettings;
 }

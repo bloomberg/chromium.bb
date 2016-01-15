@@ -67872,41 +67872,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <enum name="InsecureContentType" type="int">
   <int value="0" label="Displayed"/>
-  <int value="1" label="Displayed by *.google.com"/>
-  <int value="2" label="Displayed by www.google.com"/>
+  <int value="1" label="Displayed by *.google.com (deprecated)"/>
+  <int value="2" label="Displayed by www.google.com (deprecated)"/>
   <int value="3" label="Displayed due to an iframe"/>
   <int value="4" label="Ran"/>
-  <int value="5" label="Ran by *.google.com"/>
-  <int value="6" label="Ran by www.google.com"/>
-  <int value="7" label="Ran from www.youtube.com"/>
+  <int value="5" label="Ran by *.google.com (deprecated)"/>
+  <int value="6" label="Ran by www.google.com (deprecated)"/>
+  <int value="7" label="Ran from www.youtube.com (deprecated)"/>
   <int value="8" label="Ran due to script"/>
   <int value="9" label="Ran due to CSS"/>
   <int value="10" label="Ran due to a plug-in"/>
-  <int value="11" label="Displayed by www.youtube.com"/>
-  <int value="12" label="Ran by www.youtube.com"/>
-  <int value="13" label="Ran by *.googleusercontent.com"/>
-  <int value="14" label="Displayed by mail.google.com"/>
-  <int value="15" label="Ran by mail.google.com"/>
-  <int value="16" label="Displayed by plus.google.com"/>
-  <int value="17" label="Ran by plus.google.com"/>
-  <int value="18" label="Displayed by docs.google.com"/>
-  <int value="19" label="Ran by docs.google.com"/>
-  <int value="20" label="Displayed by sites.google.com"/>
-  <int value="21" label="Ran by sites.google.com"/>
-  <int value="22" label="Displayed by picasaweb.google.com"/>
-  <int value="23" label="Ran by picasaweb.google.com"/>
-  <int value="24" label="Displayed by google.com/reader/"/>
-  <int value="25" label="Ran by google.com/reader/"/>
-  <int value="26" label="Displayed by code.google.com"/>
-  <int value="27" label="Ran by code.google.com"/>
-  <int value="28" label="Displayed by groups.google.com"/>
-  <int value="29" label="Ran by groups.google.com"/>
-  <int value="30" label="Displayed by maps.google.com"/>
-  <int value="31" label="Ran by maps.google.com"/>
-  <int value="32" label="Displayed by google.com/support/"/>
-  <int value="33" label="Ran by google.com/support/"/>
-  <int value="34" label="Displayed by google.com/intl/"/>
-  <int value="35" label="Ran by google.com/intl/"/>
+  <int value="11" label="Displayed by www.youtube.com (deprecated)"/>
+  <int value="12" label="Ran by www.youtube.com (deprecated)"/>
+  <int value="13" label="Ran by *.googleusercontent.com (deprecated)"/>
+  <int value="14" label="Displayed by mail.google.com (deprecated)"/>
+  <int value="15" label="Ran by mail.google.com (deprecated)"/>
+  <int value="16" label="Displayed by plus.google.com (deprecated)"/>
+  <int value="17" label="Ran by plus.google.com (deprecated)"/>
+  <int value="18" label="Displayed by docs.google.com (deprecated)"/>
+  <int value="19" label="Ran by docs.google.com (deprecated)"/>
+  <int value="20" label="Displayed by sites.google.com (deprecated)"/>
+  <int value="21" label="Ran by sites.google.com (deprecated)"/>
+  <int value="22" label="Displayed by picasaweb.google.com (deprecated)"/>
+  <int value="23" label="Ran by picasaweb.google.com (deprecated)"/>
+  <int value="24" label="Displayed by google.com/reader/ (deprecated)"/>
+  <int value="25" label="Ran by google.com/reader/ (deprecated)"/>
+  <int value="26" label="Displayed by code.google.com (deprecated)"/>
+  <int value="27" label="Ran by code.google.com (deprecated)"/>
+  <int value="28" label="Displayed by groups.google.com (deprecated)"/>
+  <int value="29" label="Ran by groups.google.com (deprecated)"/>
+  <int value="30" label="Displayed by maps.google.com (deprecated)"/>
+  <int value="31" label="Ran by maps.google.com (deprecated)"/>
+  <int value="32" label="Displayed by google.com/support/ (deprecated)"/>
+  <int value="33" label="Ran by google.com/support/ (deprecated)"/>
+  <int value="34" label="Displayed by google.com/intl/ (deprecated)"/>
+  <int value="35" label="Ran by google.com/intl/ (deprecated)"/>
 </enum>
 
 <enum name="InstallStatus" type="int">

@@ -26,7 +26,6 @@ class WebContentSettings : public blink::WebContentSettingsClient {
   bool allowStorage(bool local) override;
   bool allowPlugins(bool enabledPerSettings) override;
   bool allowDisplayingInsecureContent(bool enabledPerSettings,
-                                      const blink::WebSecurityOrigin&,
                                       const blink::WebURL&) override;
   bool allowRunningInsecureContent(bool enabledPerSettings,
                                    const blink::WebSecurityOrigin&,
