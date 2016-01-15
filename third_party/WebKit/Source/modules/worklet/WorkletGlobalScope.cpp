@@ -11,13 +11,14 @@ namespace blink {
 // static
 PassRefPtrWillBeRawPtr<WorkletGlobalScope> WorkletGlobalScope::create(const KURL& url, const String& userAgent, v8::Isolate* isolate)
 {
-    return adoptRefWillBeNoop(new WorkletGlobalScope(url, userAgent, isolate));
+    RefPtrWillBeRawPtr<WorkletGlobalScope> workletGlobalScope = adoptRefWillBeNoop(new WorkletGlobalScope(url, userAgent, isolate));
+    workletGlobalScope->script()->initializeContextIfNeeded();
+    return workletGlobalScope.release();
 }
 
 WorkletGlobalScope::WorkletGlobalScope(const KURL& url, const String& userAgent, v8::Isolate* isolate)
     : m_script(WorkerOrWorkletScriptController::create(this, isolate))
 {
-    m_script->initializeContextIfNeeded();
 }
 
 WorkletGlobalScope::~WorkletGlobalScope()

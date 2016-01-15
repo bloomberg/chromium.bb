@@ -391,6 +391,7 @@
       'webgl/WebGLRenderingContextBase.idl',
       'webmidi/NavigatorWebMIDI.idl',
       'webusb/NavigatorUSB.idl',
+      'worklet/WindowWorklet.idl',
     ],
     # interfaces that inherit from Event
     'modules_event_idl_files': [
@@ -1839,6 +1840,8 @@
       'webusb/USBInterface.cpp',
       'webusb/USBInterface.h',
       'webusb/USBOutTransferResult.h',
+      'worklet/DOMWindowWorklet.cpp',
+      'worklet/DOMWindowWorklet.h',
       'worklet/Worklet.cpp',
       'worklet/Worklet.h',
       'worklet/WorkletGlobalScope.cpp',
