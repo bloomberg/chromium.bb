@@ -4,10 +4,10 @@
 
 #include "ui/gfx/color_utils.h"
 
-#include <math.h>
 #include <stdint.h>
 
 #include <algorithm>
+#include <cmath>
 
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
@@ -196,32 +196,35 @@ void MakeHSLShiftValid(HSL* hsl) {
 }
 
 SkColor HSLShift(SkColor color, const HSL& shift) {
-  HSL hsl;
   SkAlpha alpha = SkColorGetA(color);
-  SkColorToHSL(color, &hsl);
 
-  // Replace the hue with the tint's hue.
-  if (shift.h >= 0)
-    hsl.h = shift.h;
+  if (shift.h >= 0 || shift.s >= 0) {
+    HSL hsl;
+    SkColorToHSL(color, &hsl);
 
-  // Change the saturation.
-  if (shift.s >= 0) {
-    if (shift.s <= 0.5)
-      hsl.s *= shift.s * 2.0;
-    else
-      hsl.s += (1.0 - hsl.s) * ((shift.s - 0.5) * 2.0);
+    // Replace the hue with the tint's hue.
+    if (shift.h >= 0)
+      hsl.h = shift.h;
+
+    // Change the saturation.
+    if (shift.s >= 0) {
+      if (shift.s <= 0.5)
+        hsl.s *= shift.s * 2.0;
+      else
+        hsl.s += (1.0 - hsl.s) * ((shift.s - 0.5) * 2.0);
+    }
+
+    color = HSLToSkColor(hsl, alpha);
   }
 
-  SkColor result = HSLToSkColor(hsl, alpha);
-
   if (shift.l < 0)
-    return result;
+    return color;
 
   // Lightness shifts in the style of popular image editors aren't actually
   // represented in HSL - the L value does have some effect on saturation.
-  double r = static_cast<double>(SkColorGetR(result));
-  double g = static_cast<double>(SkColorGetG(result));
-  double b = static_cast<double>(SkColorGetB(result));
+  double r = static_cast<double>(SkColorGetR(color));
+  double g = static_cast<double>(SkColorGetG(color));
+  double b = static_cast<double>(SkColorGetB(color));
   if (shift.l <= 0.5) {
     r *= (shift.l * 2.0);
     g *= (shift.l * 2.0);
@@ -232,9 +235,9 @@ SkColor HSLShift(SkColor color, const HSL& shift) {
     b += (255.0 - b) * ((shift.l - 0.5) * 2.0);
   }
   return SkColorSetARGB(alpha,
-                        static_cast<int>(r),
-                        static_cast<int>(g),
-                        static_cast<int>(b));
+                        static_cast<int>(std::round(r)),
+                        static_cast<int>(std::round(g)),
+                        static_cast<int>(std::round(b)));
 }
 
 void BuildLumaHistogram(const SkBitmap& bitmap, int histogram[256]) {
