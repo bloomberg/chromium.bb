@@ -44,7 +44,17 @@ void BlimpInputHandlerWrapper::HandleWebInputEvent(
   ui::InputHandlerProxy::EventDisposition disposition =
       input_handler_proxy_->HandleInputEvent(*input_event);
 
-  bool consumed = disposition == ui::InputHandlerProxy::DID_NOT_HANDLE;
+  bool consumed = false;
+
+  switch (disposition) {
+    case ui::InputHandlerProxy::EventDisposition::DID_HANDLE:
+    case ui::InputHandlerProxy::EventDisposition::DROP_EVENT:
+      consumed = true;
+      break;
+    case ui::InputHandlerProxy::EventDisposition::DID_NOT_HANDLE:
+      consumed = false;
+      break;
+  }
 
   main_task_runner_->PostTask(
       FROM_HERE,
