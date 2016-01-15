@@ -53,7 +53,7 @@ class BattOrAgent : public BattOrConnection::Listener,
 
   // Returns whether the BattOr is able to record clock sync markers in its own
   // trace log.
-  static bool SupportsExplicitClockSync() { return true; }
+  static bool SupportsExplicitClockSync() { return false; }
 
   // BattOrConnection::Listener implementation.
   void OnConnectionOpened(bool success) override;
