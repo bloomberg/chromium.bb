@@ -9,7 +9,7 @@
 namespace views {
 
 // Amount to scale the opacity.
-static const double kTrackOpacityScale = 0.5;
+static const double kTrackOpacityScale = 0.25;
 static const double kHighlightOpacityScale = 1.0;
 
 // How long the hover state takes.

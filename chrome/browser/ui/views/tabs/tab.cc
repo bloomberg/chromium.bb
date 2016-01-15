@@ -1335,9 +1335,10 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
   // position within the frame background image.
   const int x_offset = GetMirroredX() + background_offset_.x();
 
-  const SkScalar radius = SkFloatToScalar(width() / 3.f);
-  const bool draw_hover =
-      !is_active && hover_controller_.ShouldDraw() && radius > 0;
+  const SkScalar kMinHoverRadius = 16;
+  const SkScalar radius =
+      std::max(SkFloatToScalar(width() / 4.f), kMinHoverRadius);
+  const bool draw_hover = !is_active && hover_controller_.ShouldDraw();
   SkPoint hover_location(PointToSkPoint(hover_controller_.location()));
   const SkAlpha hover_alpha = hover_controller_.GetAlpha();
 
