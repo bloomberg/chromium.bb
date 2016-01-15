@@ -15,9 +15,10 @@ import tempfile
 from profile_creators import profile_extender
 from telemetry.core import discover
 from telemetry.core import util
+from telemetry.internal import story_runner
 from telemetry.internal.browser import browser_finder
 from telemetry.internal.browser import browser_options
-from telemetry.internal import story_runner
+from telemetry.internal.util import binary_manager
 
 
 def _DiscoverProfileExtenderClasses():
@@ -195,6 +196,7 @@ def ProcessCommandLineArgs(parser, args):
 
 
 def Main():
+  binary_manager.InitDependencyManager(None)
   options = browser_options.BrowserFinderOptions()
   parser = options.CreateParser(
       "%%prog <--profile-type-to-generate=...> <--browser=...> <--output-dir>")

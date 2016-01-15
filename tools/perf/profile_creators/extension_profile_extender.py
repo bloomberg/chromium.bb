@@ -47,8 +47,8 @@ class ExtensionProfileExtender(profile_extender.ProfileExtender):
   def __init__(self, finder_options):
     super(ExtensionProfileExtender, self).__init__(finder_options)
     self._extensions = []
-    finder_options.browser_options.disable_default_apps = False
-    finder_options.browser_options.AppendExtraBrowserArgs(
+    self.finder_options.browser_options.disable_default_apps = False
+    self.finder_options.browser_options.AppendExtraBrowserArgs(
         '--prompt-for-external-extensions=0')
 
   def Run(self):
