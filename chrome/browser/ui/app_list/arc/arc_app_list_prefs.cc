@@ -75,6 +75,14 @@ bool InstallIconFromFileThread(const std::string& app_id,
   return true;
 }
 
+void DeleteAppFolderFromFileThread(const base::FilePath& path) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+  DCHECK(path.DirName().BaseName().MaybeAsASCII() == prefs::kArcApps &&
+         (!base::PathExists(path) || base::DirectoryExists(path)));
+  const bool deleted = base::DeleteFile(path, true);
+  DCHECK(deleted);
+}
+
 }  // namespace
 
 // static
@@ -86,9 +94,7 @@ ArcAppListPrefs* ArcAppListPrefs::Create(const base::FilePath& base_path,
 // static
 void ArcAppListPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterDictionaryPref(
-      prefs::kArcApps,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterDictionaryPref(prefs::kArcApps);
 }
 
 // static
@@ -105,32 +111,38 @@ std::string ArcAppListPrefs::GetAppId(const std::string& package,
 
 ArcAppListPrefs::ArcAppListPrefs(const base::FilePath& base_path,
                                  PrefService* prefs)
-    : prefs_(prefs), binding_(this), weak_ptr_factory_(this) {
+    : prefs_(prefs), bridge_service_(arc::ArcBridgeService::Get()),
+      binding_(this), weak_ptr_factory_(this) {
   base_path_ = base_path.AppendASCII(prefs::kArcApps);
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Bridge service is not available. Cannot init.";
+  if (!bridge_service_) {
+    NOTREACHED();
     return;
   }
 
-  bridge_service->AddObserver(this);
-  if (bridge_service->app_instance())
+  bridge_service_->AddObserver(this);
+  if (bridge_service_->app_instance())
     OnAppInstanceReady();
-  OnStateChanged(bridge_service->state());
+  OnStateChanged(bridge_service_->state());
 }
 
 ArcAppListPrefs::~ArcAppListPrefs() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (bridge_service) {
-    bridge_service->RemoveObserver(this);
+  if (!bridge_service_) {
+    NOTREACHED();
+    return;
   }
+
+  bridge_service_->RemoveObserver(this);
+}
+
+base::FilePath ArcAppListPrefs::GetAppPath(const std::string& app_id) const {
+  return base_path_.AppendASCII(app_id);
 }
 
 base::FilePath ArcAppListPrefs::GetIconPath(
     const std::string& app_id,
     ui::ScaleFactor scale_factor) const {
-  base::FilePath app_path = base_path_.AppendASCII(app_id);
+  const base::FilePath app_path = GetAppPath(app_id);
   switch (scale_factor) {
   case ui::SCALE_FACTOR_100P:
     return app_path.AppendASCII("icon_100p.png");
@@ -171,13 +183,11 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to load icon when bridge service is not ready: "
-            << app_id << ".";
+  if (!bridge_service_) {
+    NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::AppInstance* app_instance = bridge_service_->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to load icon when bridge service is not ready: "
             <<  app_id << ".";
@@ -205,12 +215,13 @@ void ArcAppListPrefs::RemoveObserver(Observer* observer) {
 std::vector<std::string> ArcAppListPrefs::GetAppIds() const {
   std::vector<std::string> ids;
 
-  // crx_file::id_util is de-factor utility for id generation.
+  // crx_file::id_util is de-facto utility for id generation.
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   for (base::DictionaryValue::Iterator app_id(*apps);
        !app_id.IsAtEnd(); app_id.Advance()) {
     if (!crx_file::id_util::IdIsValid(app_id.key()))
       continue;
+
     ids.push_back(app_id.key());
   }
 
@@ -238,7 +249,7 @@ scoped_ptr<ArcAppListPrefs::AppInfo> ArcAppListPrefs::GetApp(
   return app_info;
 }
 
-bool ArcAppListPrefs::IsRegistered(const std::string& app_id) {
+bool ArcAppListPrefs::IsRegistered(const std::string& app_id) const {
   const base::DictionaryValue* app = nullptr;
   const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
   if (!apps || !apps->GetDictionary(app_id, &app))
@@ -262,12 +273,11 @@ void ArcAppListPrefs::OnStateChanged(arc::ArcBridgeService::State state) {
 }
 
 void ArcAppListPrefs::OnAppInstanceReady() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  if (!bridge_service) {
-    VLOG(2) << "Request to refresh app list when bridge service is not ready.";
+  if (!bridge_service_) {
+    NOTREACHED();
     return;
   }
-  arc::AppInstance* app_instance = bridge_service->app_instance();
+  arc::AppInstance* app_instance = bridge_service_->app_instance();
   if (!app_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -279,7 +289,7 @@ void ArcAppListPrefs::OnAppInstanceReady() {
   app_instance->RefreshAppList();
 }
 
-void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
+void ArcAppListPrefs::AddApp(const arc::AppInfo& app) {
   if (app.name.get().empty() || app.package.get().empty() ||
       app.activity.get().empty()) {
     VLOG(2) << "Name, package and activity cannot be empty.";
@@ -302,7 +312,7 @@ void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
   app_dict->SetString(kPackage, app.package);
   app_dict->SetString(kActivity, app.activity);
 
-  // From now, app is ready.
+  // From now, app is available.
   if (!ready_apps_.count(app_id))
     ready_apps_.insert(app_id);
 
@@ -329,21 +339,70 @@ void ArcAppListPrefs::OnAppReady(const arc::AppInfo& app) {
   }
 }
 
+void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
+  // From now, app is not available.
+  ready_apps_.erase(app_id);
+  FOR_EACH_OBSERVER(Observer,
+                    observer_list_,
+                    OnAppRemoved(app_id));
+
+  // Remove from prefs.
+  DictionaryPrefUpdate update(prefs_, prefs::kArcApps);
+  base::DictionaryValue* apps = update.Get();
+  const bool removed = apps->Remove(app_id, nullptr);
+  DCHECK(removed);
+
+  // Remove local data on file system.
+  const base::FilePath app_path = GetAppPath(app_id);
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&DeleteAppFolderFromFileThread, app_path));
+}
+
 void ArcAppListPrefs::OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) {
-  std::set<std::string> old_ready_apps;
-  old_ready_apps.swap(ready_apps_);
+  std::vector<std::string> old_apps = GetAppIds();
 
+  ready_apps_.clear();
   for (size_t i = 0; i < apps.size(); ++i)
-    OnAppReady(*apps[i]);
+    AddApp(*apps[i]);
 
-  // Detect unavailable apps after current refresh.
-  for (auto& app_id : old_ready_apps) {
-    if (!ready_apps_.count(app_id)) {
-      FOR_EACH_OBSERVER(Observer,
-                        observer_list_,
-                        OnAppReadyChanged(app_id, false));
-    }
+  // Detect removed ARC apps after current refresh.
+  for (const auto& app_id : old_apps) {
+    if (!ready_apps_.count(app_id))
+      RemoveApp(app_id);
   }
+}
+
+void ArcAppListPrefs::OnAppAdded(arc::AppInfoPtr app) {
+  AddApp(*app);
+}
+
+void ArcAppListPrefs::OnPackageRemoved(const mojo::String& package) {
+  const base::DictionaryValue* apps = prefs_->GetDictionary(prefs::kArcApps);
+  std::vector<std::string> apps_to_remove;
+  for (base::DictionaryValue::Iterator app_it(*apps);
+       !app_it.IsAtEnd(); app_it.Advance()) {
+    const base::Value* value = &app_it.value();
+    const base::DictionaryValue* app;
+    if (!value->GetAsDictionary(&app)) {
+      NOTREACHED();
+      continue;
+    }
+
+    std::string app_package;
+    if (!app->GetString(kPackage, &app_package)) {
+      NOTREACHED();
+      continue;
+    }
+
+    if (package != app_package)
+      continue;
+
+    apps_to_remove.push_back(app_it.key());
+  }
+
+  for (auto& app_id : apps_to_remove)
+    RemoveApp(app_id);
 }
 
 void ArcAppListPrefs::OnAppIcon(const mojo::String& package,

@@ -62,6 +62,10 @@ void ArcAppModelBuilder::OnAppReadyChanged(const std::string& app_id,
   app_item->SetReady(ready);
 }
 
+void ArcAppModelBuilder::OnAppRemoved(const std::string& app_id) {
+  RemoveApp(app_id);
+}
+
 void ArcAppModelBuilder::OnAppIconUpdated(const std::string& app_id,
                                           ui::ScaleFactor scale_factor) {
   ArcAppItem* app_item = GetArcAppItem(app_id);

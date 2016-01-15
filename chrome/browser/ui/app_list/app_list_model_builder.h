@@ -49,6 +49,9 @@ class AppListModelBuilder : public app_list::AppListItemListObserver {
   // Inserts an app based on app ordinal prefs.
   void InsertApp(scoped_ptr<app_list::AppListItem> app);
 
+  // Removes an app based on app id.
+  void RemoveApp(const std::string& id);
+
   const app_list::AppListSyncableService::SyncItem* GetSyncItem(
       const std::string& id);
 

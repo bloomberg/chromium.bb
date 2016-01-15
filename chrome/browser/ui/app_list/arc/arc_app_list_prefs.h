@@ -24,13 +24,17 @@
 
 class PrefService;
 
+namespace arc {
+class ArcBridgeService;
+}  // namespace arc
+
 namespace content {
 class BrowserContext;
-}
+}  // namespace content
 
 namespace user_prefs {
 class PrefRegistrySyncable;
-}
+}  // namespace user_prefs
 
 // Declares shareable ARC app specific preferences, that keep information
 // about app attributes (name, package, activity) and its state. This
@@ -59,6 +63,8 @@ class ArcAppListPrefs : public KeyedService,
                                  const AppInfo& app_info) = 0;
     // Notifies an observer that app ready state has been changed.
     virtual void OnAppReadyChanged(const std::string& id, bool ready) = 0;
+    // Notifies an observer that app was removed.
+    virtual void OnAppRemoved(const std::string& id) = 0;
     // Notifies an observer that app icon has been installed or updated.
     virtual void OnAppIconUpdated(const std::string& id,
                                   ui::ScaleFactor scale_factor) = 0;
@@ -93,6 +99,9 @@ class ArcAppListPrefs : public KeyedService,
   // not found.
   scoped_ptr<AppInfo> GetApp(const std::string& app_id) const;
 
+  // Constructs path to app local data.
+  base::FilePath GetAppPath(const std::string& app_id) const;
+
   // Constructs path to app icon for specific scale factor.
   base::FilePath GetIconPath(const std::string& app_id,
                              ui::ScaleFactor scale_factor) const;
@@ -104,7 +113,7 @@ class ArcAppListPrefs : public KeyedService,
   void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
 
   // Returns true if app is registered.
-  bool IsRegistered(const std::string& app_id);
+  bool IsRegistered(const std::string& app_id) const;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -119,12 +128,15 @@ class ArcAppListPrefs : public KeyedService,
 
   // arc::AppHost:
   void OnAppListRefreshed(mojo::Array<arc::AppInfoPtr> apps) override;
+  void OnAppAdded(arc::AppInfoPtr app) override;
+  void OnPackageRemoved(const mojo::String& package) override;
   void OnAppIcon(const mojo::String& package,
                  const mojo::String& activity,
                  arc::ScaleFactor scale_factor,
                  mojo::Array<uint8_t> icon_png_data) override;
 
-  void OnAppReady(const arc::AppInfo& app);
+  void AddApp(const arc::AppInfo& app);
+  void RemoveApp(const std::string& app_id);
   void DisableAllApps();
 
   // Installs an icon to file system in the special folder of the profile
@@ -138,6 +150,10 @@ class ArcAppListPrefs : public KeyedService,
 
   // Owned by the BrowserContext.
   PrefService* prefs_;
+
+  // Unowned pointer. arc::ArcBridgeService exists during whole user session
+  // and owned by arc::ArcServiceManager.
+  arc::ArcBridgeService* const bridge_service_;
 
   // List of observers.
   base::ObserverList<Observer> observer_list_;

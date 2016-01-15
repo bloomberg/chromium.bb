@@ -81,10 +81,7 @@ void ExtensionAppModelBuilder::OnProfilePreferenceChanged() {
                               gfx::ImageSkia(),
                               (*app)->is_platform_app()));
     } else {
-      if (service())
-        service()->RemoveItem((*app)->id());
-      else
-        model()->DeleteItem((*app)->id());
+      RemoveApp((*app)->id());
     }
   }
 }

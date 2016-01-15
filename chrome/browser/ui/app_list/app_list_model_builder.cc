@@ -50,6 +50,14 @@ void AppListModelBuilder::InsertApp(scoped_ptr<app_list::AppListItem> app) {
   model_->AddItem(std::move(app));
 }
 
+void AppListModelBuilder::RemoveApp(const std::string& id) {
+  if (service_) {
+    service_->RemoveUninstalledItem(id);
+    return;
+  }
+  model_->DeleteUninstalledItem(id);
+}
+
 const app_list::AppListSyncableService::SyncItem*
     AppListModelBuilder::GetSyncItem(const std::string& id) {
   return service_ ? service_->GetSyncItem(id) : nullptr;

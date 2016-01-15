@@ -253,7 +253,7 @@ TEST_F(ArcAppModelBuilderTest, MultipleRefreshAll) {
   std::vector<arc::AppInfo> apps2(fake_apps().begin() + 1, fake_apps().end());
   app_instance()->SendRefreshAppList(apps2);
   // At this point all apps should exist but first one should be non-ready.
-  ValidateHaveApps(fake_apps());
+  ValidateHaveApps(apps2);
   ValidateAppReadyState(apps2, true);
 
   // Send info about all fake apps.
@@ -263,13 +263,13 @@ TEST_F(ArcAppModelBuilderTest, MultipleRefreshAll) {
   ValidateAppReadyState(fake_apps(), true);
 
   // Send info no app available.
-  app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
-  // At this point all apps should exist and be non-ready.
-  ValidateHaveApps(fake_apps());
-  ValidateAppReadyState(fake_apps(), false);
+  std::vector<arc::AppInfo> no_apps;
+  app_instance()->SendRefreshAppList(no_apps);
+  // At this point no app should exist.
+  ValidateHaveApps(no_apps);
 }
 
-TEST_F(ArcAppModelBuilderTest, StopServiceDisablesApps) {
+TEST_F(ArcAppModelBuilderTest, StopStartServicePreserveApps) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_NE(nullptr, prefs);
 
@@ -287,6 +287,35 @@ TEST_F(ArcAppModelBuilderTest, StopServiceDisablesApps) {
   bridge_service()->SetStopped();
   // Ids should be the same.
   EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateAppReadyState(fake_apps(), false);
+
+  // Setting service ready does not change anything because RefreshAppList is
+  // not called.
+  bridge_service()->SetReady();
+  // Ids should be the same.
+  EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateAppReadyState(fake_apps(), false);
+
+  // Refreshing app list makes apps available.
+  app_instance()->SendRefreshAppList(fake_apps());
+  EXPECT_EQ(ids, prefs->GetAppIds());
+  ValidateAppReadyState(fake_apps(), true);
+}
+
+TEST_F(ArcAppModelBuilderTest, RestartPreserveApps) {
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  // Start from scratch and fill with apps.
+  bridge_service()->SetReady();
+  app_instance()->SendRefreshAppList(fake_apps());
+  std::vector<std::string> ids = prefs->GetAppIds();
+  EXPECT_EQ(fake_apps().size(), ids.size());
+  ValidateAppReadyState(fake_apps(), true);
+
+  // This recreates model and ARC apps will be read from prefs.
+  bridge_service()->SetStopped();
+  CreateBuilder();
   ValidateAppReadyState(fake_apps(), false);
 }
 
@@ -320,7 +349,7 @@ TEST_F(ArcAppModelBuilderTest, LaunchApps) {
   EXPECT_EQ(true, launch_requests[2]->IsForApp(app_first));
 
   // Test an attempt to launch of a not-ready app.
-  app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  bridge_service()->SetStopped();
   item_first = FindArcItem(GetAppId(app_first));
   ASSERT_NE(nullptr, item_first);
   size_t launch_request_count_before = app_instance()->launch_requests().size();
@@ -442,4 +471,43 @@ TEST_F(ArcAppModelBuilderTest, InstallIcon) {
   // Read the file from disk and compare with reference data.
   EXPECT_EQ(true, base::ReadFileToString(icon_path, &icon_data));
   ASSERT_EQ(icon_data, png_data);
+}
+
+TEST_F(ArcAppModelBuilderTest, RemoveAppCleanUpFolder) {
+  // Make sure we are on UI thread.
+  ASSERT_EQ(true,
+            content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  bridge_service()->SetReady();
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(
+      std::vector<arc::AppInfo>(fake_apps().begin(), fake_apps().begin() + 1));
+  const arc::AppInfo& app = fake_apps()[0];
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  const std::string app_id = GetAppId(app);
+  const base::FilePath app_path = prefs->GetAppPath(app_id);
+  const ui::ScaleFactor scale_factor = ui::GetSupportedScaleFactors()[0];
+
+  // No app folder by default.
+  EXPECT_EQ(true, !base::PathExists(app_path));
+
+  // Request icon, this will create app folder.
+  prefs->RequestIcon(app_id, scale_factor);
+  // Now send generated icon for the app.
+  std::string png_data;
+  EXPECT_EQ(true,
+            app_instance()->GenerateAndSendIcon(
+                app, static_cast<arc::ScaleFactor>(scale_factor), &png_data));
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(true, base::PathExists(app_path));
+
+  // Send empty app list. This will delete app and its folder.
+  app_instance()->SendRefreshAppList(std::vector<arc::AppInfo>());
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(true, !base::PathExists(app_path));
 }

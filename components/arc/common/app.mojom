@@ -30,15 +30,25 @@ struct AppInfo {
 interface AppHost {
   // Receives a list of available ARC apps to Chrome. Members of AppInfo must
   // contain non-empty string.
-  OnAppListRefreshed(array<AppInfo> apps);
+  OnAppListRefreshed@0(array<AppInfo> apps);
+
+  // Sends newly added ARC app to Chrome. This message is sent when ARC receives
+  // package added notification. Multiple apps may be added in the one package.
+  [MinVersion=1] OnAppAdded@2(AppInfo app);
+
+  // Sends removed ARC package to Chrome. |package| must contain non-empty
+  // string. This message is sent when ARC receives package removed
+  // notification. Removing one package can potentially remove more than one
+  // app.
+  [MinVersion=1] OnPackageRemoved@3(string package);
 
   // Receives an icon of required |scale_factor| for specific ARC app. The app
   // is defined by |package| and |activity|. The icon content cannot be empty
   // and must match to |scale_factor| assuming 48x48 for SCALE_FACTOR_100P.
   // |scale_factor| is an enum defined at ui/base/layout.h. |icon_png_data| is
   // a png-encoded image.
-  OnAppIcon(string package, string activity,
-            ScaleFactor scale_factor, array<uint8> icon_png_data);
+  OnAppIcon@1(string package, string activity,
+              ScaleFactor scale_factor, array<uint8> icon_png_data);
 };
 
 // TODO(lhchavez): Migrate all request/response messages to Mojo.
@@ -57,6 +67,6 @@ interface AppInstance {
 
   // Sends a request to ARC for the ARC app icon of a required scale factor.
   // Scale factor is an enum defined at ui/base/layout.h. App is defined by
-  // package and activity, which cannot be empty.
+  // |package| and |activity|, which cannot be empty.
   RequestAppIcon(string package, string activity, ScaleFactor scale_factor);
 };
