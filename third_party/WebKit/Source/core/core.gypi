@@ -845,6 +845,7 @@
             'animation/CSSImageInterpolationType.h',
             'animation/CSSImageListInterpolationType.cpp',
             'animation/CSSImageListInterpolationType.h',
+            'animation/CSSInterpolationType.cpp',
             'animation/CSSInterpolationType.h',
             'animation/CSSLengthInterpolationType.cpp',
             'animation/CSSLengthInterpolationType.h',

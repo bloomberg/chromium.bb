@@ -108,6 +108,27 @@ void CSSVariableResolver::resolveVariableReferencesFromTokens(CSSParserTokenRang
     return;
 }
 
+PassRefPtrWillBeRawPtr<CSSValue> CSSVariableResolver::resolveVariableReferences(StyleVariableData* styleVariableData, CSSPropertyID id, const CSSVariableReferenceValue& value)
+{
+    ASSERT(!isShorthandProperty(id));
+
+    CSSVariableResolver resolver(styleVariableData);
+    Vector<CSSParserToken> tokens;
+    ResolutionState resolutionContext;
+    resolver.resolveVariableReferencesFromTokens(value.variableDataValue()->tokens(), tokens, resolutionContext);
+
+    if (!resolutionContext.success)
+        return cssValuePool().createUnsetValue();
+
+    CSSParserContext context(HTMLStandardMode, nullptr);
+    WillBeHeapVector<CSSProperty, 256> parsedProperties;
+    // TODO(timloh): This should be CSSParser::parseSingleValue and not need a vector.
+    if (!CSSPropertyParser::parseValue(id, false, CSSParserTokenRange(tokens), context, parsedProperties, StyleRule::Type::Style))
+        return cssValuePool().createUnsetValue();
+    ASSERT(parsedProperties.size() == 1);
+    return parsedProperties[0].value();
+}
+
 void CSSVariableResolver::resolveAndApplyVariableReferences(StyleResolverState& state, CSSPropertyID id, const CSSVariableReferenceValue& value)
 {
 

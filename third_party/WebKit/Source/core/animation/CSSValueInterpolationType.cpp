@@ -5,6 +5,7 @@
 #include "core/animation/CSSValueInterpolationType.h"
 
 #include "core/animation/InterpolationEnvironment.h"
+#include "core/animation/StringKeyframe.h"
 #include "core/css/resolver/StyleBuilder.h"
 
 namespace blink {

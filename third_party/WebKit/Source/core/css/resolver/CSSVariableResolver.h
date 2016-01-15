@@ -23,6 +23,9 @@ public:
     static void resolveVariableDefinitions(StyleVariableData*);
     static void resolveAndApplyVariableReferences(StyleResolverState&, CSSPropertyID, const CSSVariableReferenceValue&);
 
+    // Shorthand properties are not supported.
+    static PassRefPtrWillBeRawPtr<CSSValue> resolveVariableReferences(StyleVariableData*, CSSPropertyID, const CSSVariableReferenceValue&);
+
 private:
     CSSVariableResolver(StyleVariableData*);
     CSSVariableResolver(StyleVariableData*, AtomicString& variable);
