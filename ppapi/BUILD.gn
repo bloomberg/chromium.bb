@@ -165,17 +165,36 @@ executable("pepper_hash_for_uma") {
   ]
 }
 
-static_library("ppapi_cpp_lib") {
-  # This library is distributed as a part of the SDK and as such has to
-  # be a static library rather than a source set.
-  sources = ppapi_sources.cpp_source_files
-  sources += [
-    "cpp/module_embedder.h",
-    "cpp/ppp_entrypoints.cc",
-  ]
-  deps = [
-    "//build/config/nacl:nacl_base",
-  ]
+if (is_nacl_glibc) {
+  shared_library("ppapi_cpp_lib") {
+    # When using gcc, we hide all symbols by default, but that breaks at
+    # link time as the test executable requires symbols defined in the
+    # shared library.
+    configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
+
+    sources = ppapi_sources.cpp_source_files
+    sources += [
+      "cpp/module_embedder.h",
+      "cpp/ppp_entrypoints.cc",
+    ]
+    cflags = [ "-fPIC" ]
+    deps = [
+      "//build/config/nacl:nacl_base",
+    ]
+  }
+} else {
+  static_library("ppapi_cpp_lib") {
+    # This library is distributed as a part of the SDK and as such has to
+    # be a static library rather than a source set.
+    sources = ppapi_sources.cpp_source_files
+    sources += [
+      "cpp/module_embedder.h",
+      "cpp/ppp_entrypoints.cc",
+    ]
+    deps = [
+      "//build/config/nacl:nacl_base",
+    ]
+  }
 }
 
 source_set("ppapi_gles2_lib") {
@@ -192,27 +211,6 @@ source_set("ppapi_gles2_lib") {
 
 if (enable_nacl) {
   if (is_nacl) {
-    shared_library("ppapi_cpp_lib_shared") {
-      output_name = "libppapi_cpp"
-
-      # When using gcc, we hide all symbols by default, but that breaks at
-      # link time as the test executable requires symbols defined in the
-      # shared library.
-      if (is_nacl_glibc) {
-        configs -= [ "//build/config/gcc:symbol_visibility_hidden" ]
-      }
-
-      sources = ppapi_sources.cpp_source_files
-      sources += [
-        "cpp/module_embedder.h",
-        "cpp/ppp_entrypoints.cc",
-      ]
-      cflags = [ "-fPIC" ]
-      deps = [
-        "//build/config/nacl:nacl_base",
-      ]
-    }
-
     executable("ppapi_nacl_tests_nexe") {
       output_name = "ppapi_nacl_tests"
       include_dirs = [ "lib/gl/include" ]
@@ -224,14 +222,10 @@ if (enable_nacl) {
       ]
       ldflags = [ "-pthread" ]
       deps = [
+        ":ppapi_cpp_lib",
         "//build/config/nacl:nacl_base",
         "//ppapi/native_client:ppapi_lib",
       ]
-      if (is_nacl_glibc) {
-        deps += [ ":ppapi_cpp_lib_shared" ]
-      } else {
-        deps += [ ":ppapi_cpp_lib" ]
-      }
     }
 
     if (current_cpu == "pnacl") {

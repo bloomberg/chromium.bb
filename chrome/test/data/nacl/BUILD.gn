@@ -141,6 +141,9 @@ if (is_nacl) {
     sources = [
       "manifest_file/irt_manifest_file_test.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     nmfflags = [
       "-xtest_file:test_file.txt",
       "-xnmf says hello world:test_file.txt",
@@ -172,11 +175,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "simple.cc",
     ]
-    if (is_nacl_glibc) {
-      deps = [
-        "//ppapi:ppapi_cpp_lib_shared",
-      ]
-    }
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "nacl_test_data"
     test_files = [ "nacl_load_test.html" ]
   }
@@ -186,11 +187,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "exit_status/pm_exit_status_test.cc",
     ]
-    if (is_nacl_glibc) {
-      deps = [
-        "//ppapi:ppapi_cpp_lib_shared",
-      ]
-    }
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "nacl_test_data"
     test_files = [ "exit_status/pm_exit_status_test.html" ]
   }
@@ -199,11 +198,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "simple.cc",
     ]
-    if (is_nacl_glibc) {
-      deps = [
-        "//ppapi:ppapi_cpp_lib_shared",
-      ]
-    }
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
 
     # Need a new directory to not clash with with other extension
     # tests's files (e.g., manifest.json).
@@ -228,11 +225,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.cc",
     ]
-    if (is_nacl_glibc) {
-      deps = [
-        "//ppapi:ppapi_cpp_lib_shared",
-      ]
-    }
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "nacl_test_data"
     test_files =
         [ "sysconf_nprocessors_onln/sysconf_nprocessors_onln_test.html" ]
@@ -370,6 +365,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "simple.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
       debug_pexe = true
@@ -387,6 +385,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     output_name = "pnacl_errors"
     sources = [
       "simple.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     generate_nmf = false
     if (current_cpu == "pnacl") {
@@ -417,6 +418,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     output_name = "pnacl_options"
     sources = [
       "simple.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     generate_nmf = false
     destination_dir = "nacl_test_data"

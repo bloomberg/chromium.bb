@@ -30,6 +30,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "background_keepalive/background.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "test_data/ppapi/tests/extensions/background_keepalive"
     test_files = [
       "background_keepalive/background.js",
@@ -40,6 +43,9 @@ if (is_nacl && !is_nacl_nonsfi) {
   nacl_test_data("ppapi_tests_extensions_load_unload") {
     sources = [
       "load_unload/load_unload.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/load_unload"
     test_files = [
@@ -55,6 +61,9 @@ if (is_nacl && !is_nacl_nonsfi) {
       "//ppapi/tests/test_utils.h",
       "media_galleries/test_galleries.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "test_data/ppapi/tests/extensions/media_galleries"
     test_files = [
       "media_galleries/background.js",
@@ -67,6 +76,9 @@ if (is_nacl && !is_nacl_nonsfi) {
   nacl_test_data("ppapi_tests_extensions_multicast_permissions") {
     sources = [
       "multicast_permissions/test_multicast_permissions.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/multicast_permissions"
     test_files = [
@@ -81,6 +93,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "no_socket_permissions/test_no_socket_permissions.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "test_data/ppapi/tests/extensions/no_socket_permissions"
     test_files = [
       "no_socket_permissions/controller.js",
@@ -94,6 +109,9 @@ if (is_nacl && !is_nacl_nonsfi) {
     sources = [
       "popup/module.cc",
     ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
+    ]
     destination_dir = "test_data/ppapi/tests/extensions/popup"
     test_files = [
       "popup/background.js",
@@ -106,6 +124,9 @@ if (is_nacl && !is_nacl_nonsfi) {
   nacl_test_data("ppapi_tests_extensions_socket_permissions") {
     sources = [
       "socket_permissions/test_socket_permissions.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/socket_permissions"
     test_files = [
@@ -121,6 +142,9 @@ if (is_nacl) {
   nacl_test_data("ppapi_tests_extensions_packaged_app") {
     sources = [
       "packaged_app/test_packaged_app.cc",
+    ]
+    deps = [
+      "//ppapi:ppapi_cpp_lib",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/packaged_app"
     test_files = [
