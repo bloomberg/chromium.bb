@@ -50,7 +50,7 @@ template<typename AddressType, typename EntryType>
 bool RangeMap<AddressType, EntryType>::StoreRange(const AddressType &base,
                                                   const AddressType &size,
                                                   const EntryType &entry) {
-  AddressType high = base + size - 1;
+  AddressType high = base + (size - 1);
 
   // Check for undersize or overflow.
   if (size <= 0 || high < base) {
