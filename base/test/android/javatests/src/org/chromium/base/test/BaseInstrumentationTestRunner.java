@@ -18,7 +18,7 @@ import junit.framework.TestResult;
 
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
-import org.chromium.base.multidex.ChromiumMultiDexInstaller;
+import org.chromium.base.multidex.ChromiumMultiDex;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisableIfSkipCheck;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -37,7 +37,7 @@ public class BaseInstrumentationTestRunner extends InstrumentationTestRunner {
 
     @Override
     public void onCreate(Bundle arguments) {
-        ChromiumMultiDexInstaller.install(getTargetContext());
+        ChromiumMultiDex.install(getTargetContext());
         super.onCreate(arguments);
     }
 

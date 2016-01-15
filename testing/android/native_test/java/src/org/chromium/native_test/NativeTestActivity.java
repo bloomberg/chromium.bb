@@ -15,7 +15,6 @@ import android.os.Process;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 import org.chromium.test.reporter.TestStatusReporter;
 
 import java.io.File;
@@ -51,9 +50,7 @@ public class NativeTestActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        ChromiumMultiDexInstaller.install(this);
         super.onCreate(savedInstanceState);
-
         CommandLine.init(new String[]{});
 
         parseArgumentsFromIntent(getIntent());
