@@ -22,10 +22,9 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
     private static final String TAG = "OfflinePageTO";
     private ChromeActivity mActivity;
     private boolean mConnected;
-    private boolean mShouldSave;
     private long mBookmarkId;
-    private boolean mWasHidden = false;
-    private OfflinePageConnectivityListener mListener = null;
+    private boolean mWasHidden;
+    private OfflinePageConnectivityListener mListener;
 
     private static final Map<Integer, OfflinePageConnectivityListener> sConnectivityListeners =
             new TreeMap<Integer, OfflinePageConnectivityListener>();
@@ -34,23 +33,32 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
      * Builds a new OfflinePageTabObserver.
      * @param activity The ChromeActivity of this instance of the browser.
      * @param connected True if the phone is connected when the observer is created.
-     * @param shouldSave True if we should show a snackbar offering to save the page offline.
      * @param bookmarkId Id of the bookmark (offline page) that is associated with this observer.
      */
     public OfflinePageTabObserver(
-            ChromeActivity activity, boolean connected, boolean shouldSave, long bookmarkId) {
+            ChromeActivity activity, Tab tab, boolean connected, long bookmarkId) {
         mActivity = activity;
         mConnected = connected;
-        mShouldSave = shouldSave;
         mBookmarkId = bookmarkId;
+        // Remember if the tab was hidden when we started, so we can show the snackbar when
+        // the tab becomes visible.
+        mWasHidden = tab.isHidden();
+
+        mListener = new OfflinePageConnectivityListener(activity, tab);
+        sConnectivityListeners.put(tab.getId(), mListener);
         Log.d(TAG, "OfflinePageTabObserver built");
     }
 
     @Override
     public void onShown(Tab visibleTab) {
         if (mWasHidden) {
-            OfflinePageUtils.showOfflineSnackbar(
-                    mActivity, visibleTab.getId(), mShouldSave, mConnected, mBookmarkId);
+            // TODO(petewil): Connectivity listener should channel NCN.isOnline().
+            if (mConnected) {
+                OfflinePageUtils.showReloadSnackbar(mActivity, visibleTab.getId(), mBookmarkId);
+            } else {
+                OfflinePageUtils.showEditSnackbar(mActivity, visibleTab.getId(), mBookmarkId);
+            }
+
             mWasHidden = false;
             Log.d(TAG, "onShown, showing 'delayed' snackbar");
         }
@@ -82,23 +90,5 @@ public class OfflinePageTabObserver extends EmptyTabObserver {
             sConnectivityListeners.remove(reloadingTab.getId());
             Log.d(TAG, "onUrlUpdated");
         }
-    }
-
-    /**
-     * Attaches a connectivity listener if needed by this observer.
-     * @param tabId The index of the tab that this listener is listening to.
-     * @param listener The listener itself.
-     */
-    public void setConnectivityListener(int tabId, OfflinePageConnectivityListener listener) {
-        mListener = listener;
-        sConnectivityListeners.put(tabId, mListener);
-    }
-
-    /**
-     * Remembers if the page started hidden, so we know to show it if we get 'onShown'
-     * @param wasHidden True if the tab was hidden when the listener was set up.
-     */
-    public void setWasHidden(boolean wasHidden) {
-        mWasHidden = wasHidden;
     }
 }
