@@ -203,6 +203,13 @@ scoped_refptr<DecoderBuffer> MojoDecryptorService::ReadDecoderBuffer(
   if (media_buffer->end_of_stream())
     return media_buffer;
 
+  // Wait for the data to become available in the DataPipe.
+  MojoHandleSignalsState state;
+  CHECK_EQ(MOJO_RESULT_OK,
+           MojoWait(consumer_handle_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                    MOJO_DEADLINE_INDEFINITE, &state));
+  CHECK_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
+
   // Read the inner data for the DecoderBuffer from our DataPipe.
   uint32_t bytes_to_read =
       base::checked_cast<uint32_t>(media_buffer->data_size());

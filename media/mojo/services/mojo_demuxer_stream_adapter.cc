@@ -115,6 +115,13 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   if (!media_buffer->end_of_stream()) {
     DCHECK_GT(media_buffer->data_size(), 0u);
 
+    // Wait for the data to become available in the DataPipe.
+    MojoHandleSignalsState state;
+    CHECK_EQ(MOJO_RESULT_OK,
+             MojoWait(stream_pipe_.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
+                      MOJO_DEADLINE_INDEFINITE, &state));
+    CHECK_EQ(MOJO_HANDLE_SIGNAL_READABLE, state.satisfied_signals);
+
     // Read the inner data for the DecoderBuffer from our DataPipe.
     uint32_t bytes_to_read =
         base::checked_cast<uint32_t>(media_buffer->data_size());
