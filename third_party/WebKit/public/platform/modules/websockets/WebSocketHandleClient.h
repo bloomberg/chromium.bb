@@ -31,9 +31,9 @@
 #ifndef WebSocketHandleClient_h
 #define WebSocketHandleClient_h
 
-#include "WebCommon.h"
-#include "WebString.h"
-#include "public/platform/WebSocketHandle.h"
+#include "public/platform/WebCommon.h"
+#include "public/platform/WebString.h"
+#include "public/platform/modules/websockets/WebSocketHandle.h"
 
 namespace blink {
 

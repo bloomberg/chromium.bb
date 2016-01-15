@@ -15,10 +15,10 @@
 #include "mojo/services/network/public/cpp/web_socket_write_queue.h"
 #include "mojo/services/network/public/interfaces/web_socket_factory.mojom.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
-#include "third_party/WebKit/public/platform/WebSocketHandleClient.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
+#include "third_party/WebKit/public/platform/modules/websockets/WebSocketHandleClient.h"
 
 using blink::WebSecurityOrigin;
 using blink::WebSocketHandle;

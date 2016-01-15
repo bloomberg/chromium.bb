@@ -12,7 +12,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "mojo/message_pump/handle_watcher.h"
 #include "mojo/services/network/public/interfaces/web_socket.mojom.h"
-#include "third_party/WebKit/public/platform/WebSocketHandle.h"
+#include "third_party/WebKit/public/platform/modules/websockets/WebSocketHandle.h"
 
 namespace mojo {
 class WebSocketFactory;

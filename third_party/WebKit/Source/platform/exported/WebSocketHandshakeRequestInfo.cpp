@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/platform/WebSocketHandshakeRequestInfo.h"
+#include "public/platform/modules/websockets/WebSocketHandshakeRequestInfo.h"
 
 #include "platform/network/WebSocketHandshakeRequest.h"
 #include "public/platform/WebString.h"

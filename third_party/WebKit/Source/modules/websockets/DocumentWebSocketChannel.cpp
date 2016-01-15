@@ -50,11 +50,11 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebSecurityOrigin.h"
-#include "public/platform/WebSocketHandshakeRequestInfo.h"
-#include "public/platform/WebSocketHandshakeResponseInfo.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
+#include "public/platform/modules/websockets/WebSocketHandshakeRequestInfo.h"
+#include "public/platform/modules/websockets/WebSocketHandshakeResponseInfo.h"
 
 using blink::WebSocketHandle;
 
