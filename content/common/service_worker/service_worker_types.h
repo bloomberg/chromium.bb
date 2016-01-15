@@ -126,7 +126,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ~ServiceWorkerFetchRequest();
 
   FetchRequestMode mode;
-  bool is_main_resource_load;
   RequestContextType request_context_type;
   RequestContextFrameType frame_type;
   GURL url;
@@ -137,7 +136,6 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
   FetchRedirectMode redirect_mode;
-  std::string client_id;
   bool is_reload;
 };
 

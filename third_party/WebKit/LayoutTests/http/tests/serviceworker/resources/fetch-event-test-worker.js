@@ -11,16 +11,6 @@ function handleReferrer(event) {
     ['Referrer: ' + event.request.referrer])));
 }
 
-function handleClientId(event) {
-  var body;
-  if (event.clientId !== null) {
-    body = 'Client ID Found: ' + event.clientId;
-  } else {
-    body = 'Client ID Not Found';
-  }
-  event.respondWith(new Response(body));
-}
-
 function handleNullBody(event) {
   event.respondWith(new Response());
 }
@@ -33,23 +23,18 @@ function handleFormPost(event) {
   event.respondWith(new Promise(function(resolve) {
       event.request.text()
         .then(function(result) {
-            resolve(new Response(event.request.method + ':' +
-                                 event.request.headers.get('Content-Type') + ':' +
-                                 result));
+            resolve(new Response(event.request.method + ':' + result));
           });
     }));
 }
 
+var logForMultipleRespondWith = '';
+
 function handleMultipleRespondWith(event) {
-  var logForMultipleRespondWith = '';
   for (var i = 0; i < 3; ++i) {
     logForMultipleRespondWith += '(' + i + ')';
     try {
-      event.respondWith(new Promise(function(resolve) {
-        setTimeout(function() {
-          resolve(new Response(logForMultipleRespondWith));
-        }, 0);
-      }));
+      event.respondWith(new Response(logForMultipleRespondWith));
     } catch (e) {
       logForMultipleRespondWith += '[' + e.name + ']';
     }
@@ -76,7 +61,6 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?string', fn: handleString },
       { pattern: '?blob', fn: handleBlob },
       { pattern: '?referrer', fn: handleReferrer },
-      { pattern: '?clientId', fn: handleClientId },
       { pattern: '?ignore', fn: function() {} },
       { pattern: '?null', fn: handleNullBody },
       { pattern: '?fetch', fn: handleFetch },

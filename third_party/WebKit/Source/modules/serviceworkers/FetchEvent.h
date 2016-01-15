@@ -31,7 +31,6 @@ public:
     static PassRefPtrWillBeRawPtr<FetchEvent> create(const AtomicString& type, const FetchEventInit&, RespondWithObserver*);
 
     Request* request() const;
-    String clientId() const;
     bool isReload() const;
 
     void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
@@ -47,7 +46,6 @@ protected:
 private:
     PersistentWillBeMember<RespondWithObserver> m_observer;
     PersistentWillBeMember<Request> m_request;
-    String m_clientId;
     bool m_isReload;
 };
 

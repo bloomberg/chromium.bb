@@ -30,11 +30,6 @@ Request* FetchEvent::request() const
     return m_request;
 }
 
-String FetchEvent::clientId() const
-{
-    return m_clientId;
-}
-
 bool FetchEvent::isReload() const
 {
     return m_isReload;
@@ -62,7 +57,6 @@ FetchEvent::FetchEvent(const AtomicString& type, const FetchEventInit& initializ
 {
     if (initializer.hasRequest())
         m_request = initializer.request();
-    m_clientId = initializer.clientId();
     m_isReload = initializer.isReload();
 }
 
