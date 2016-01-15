@@ -33,6 +33,10 @@ class GLContext;
 class GLSurface;
 }
 
+namespace gpu {
+class SyncPointClient;
+}
+
 namespace mus {
 
 class CommandBufferDriver;
@@ -152,6 +156,9 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   int32_t next_image_id_;
   uint64_t next_fence_sync_release_;
   uint64_t flushed_fence_sync_release_;
+
+  // This sync point client is only for out of order Wait on client thread.
+  scoped_ptr<gpu::SyncPointClient> sync_point_client_waiter_;
 
   base::WeakPtr<CommandBufferLocal> weak_ptr_;
 

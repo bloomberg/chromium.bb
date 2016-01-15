@@ -83,6 +83,8 @@ CommandBufferLocal::CommandBufferLocal(CommandBufferLocalClient* client,
       next_image_id_(0),
       next_fence_sync_release_(1),
       flushed_fence_sync_release_(0),
+      sync_point_client_waiter_(
+          gpu_state->sync_point_manager()->CreateSyncPointClientWaiter()),
       weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
@@ -384,8 +386,18 @@ bool CommandBufferLocal::IsFenceSyncFlushReceived(uint64_t release) {
 void CommandBufferLocal::SignalSyncToken(const gpu::SyncToken& sync_token,
                                          const base::Closure& callback) {
   DCHECK(CalledOnValidThread());
-  // TODO(dyen)
-  NOTIMPLEMENTED();
+  scoped_refptr<gpu::SyncPointClientState> release_state =
+      gpu_state_->sync_point_manager()->GetSyncPointClientState(
+          sync_token.namespace_id(), sync_token.command_buffer_id());
+  if (!release_state ||
+      release_state->IsFenceSyncReleased(sync_token.release_count())) {
+    callback.Run();
+    return;
+  }
+
+  sync_point_client_waiter_->WaitOutOfOrderNonThreadSafe(
+      release_state.get(), sync_token.release_count(),
+      client_thread_task_runner_, callback);
 }
 
 bool CommandBufferLocal::CanWaitUnverifiedSyncToken(
