@@ -318,14 +318,8 @@ data_source_send(void *data, struct wl_data_source *source,
 }
 
 static void
-data_source_cancelled(void *data, struct wl_data_source *source)
+dnd_drag_destroy(struct dnd_drag *dnd_drag)
 {
-	struct dnd_drag *dnd_drag = data;
-
-	/* The 'cancelled' event means that the source is no longer in
-	 * use by the drag (or current selection).  We need to clean
-	 * up the drag object created and the local state. */
-
 	wl_data_source_destroy(dnd_drag->data_source);
 
 	/* Destroy the item that has been dragged out */
@@ -339,10 +333,39 @@ data_source_cancelled(void *data, struct wl_data_source *source)
 	free(dnd_drag);
 }
 
+static void
+data_source_cancelled(void *data, struct wl_data_source *source)
+{
+	struct dnd_drag *dnd_drag = data;
+
+	/* The 'cancelled' event means that the source is no longer in
+	 * use by the drag (or current selection).  We need to clean
+	 * up the drag object created and the local state. */
+	dnd_drag_destroy(dnd_drag);
+}
+
+static void
+data_source_dnd_drop_performed(void *data, struct wl_data_source *source)
+{
+}
+
+static void
+data_source_dnd_finished(void *data, struct wl_data_source *source)
+{
+	struct dnd_drag *dnd_drag = data;
+
+	/* The operation is already finished, we can destroy all
+	 * related data.
+	 */
+	dnd_drag_destroy(dnd_drag);
+}
+
 static const struct wl_data_source_listener data_source_listener = {
 	data_source_target,
 	data_source_send,
-	data_source_cancelled
+	data_source_cancelled,
+	data_source_dnd_drop_performed,
+	data_source_dnd_finished,
 };
 
 static cairo_surface_t *

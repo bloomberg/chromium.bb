@@ -3812,6 +3812,7 @@ offer_io_func(struct task *task, uint32_t events)
 {
 	struct data_offer *offer =
 		container_of(task, struct data_offer, io_task);
+	struct display *display = offer->input->display;
 	unsigned int len;
 	char buffer[4096];
 
@@ -3820,6 +3821,9 @@ offer_io_func(struct task *task, uint32_t events)
 		    offer->x, offer->y, offer->user_data);
 
 	if (len == 0) {
+		if (display->data_device_manager_version >=
+		    WL_DATA_OFFER_FINISH_SINCE_VERSION)
+			wl_data_offer_finish(offer->offer);
 		close(offer->fd);
 		data_offer_destroy(offer);
 	}
@@ -5413,7 +5417,7 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 		d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
 		wl_shm_add_listener(d->shm, &shm_listener, d);
 	} else if (strcmp(interface, "wl_data_device_manager") == 0) {
-		d->data_device_manager_version = MIN(version, 2);
+		d->data_device_manager_version = MIN(version, 3);
 		d->data_device_manager =
 			wl_registry_bind(registry, id,
 					 &wl_data_device_manager_interface,

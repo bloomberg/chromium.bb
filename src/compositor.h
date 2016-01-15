@@ -327,6 +327,9 @@ struct weston_data_source {
 	struct wl_resource *resource;
 	struct wl_signal destroy_signal;
 	struct wl_array mime_types;
+	struct weston_data_offer *offer;
+	struct weston_seat *seat;
+	bool accepted;
 
 	void (*accept)(struct weston_data_source *source,
 		       uint32_t serial, const char *mime_type);

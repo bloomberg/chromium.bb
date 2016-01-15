@@ -62,12 +62,16 @@ data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
+	/* Protect against untimely calls from older data offers */
+	if (!offer->source || offer != offer->source->offer)
+		return;
+
 	/* FIXME: Check that client is currently focused by the input
 	 * device that is currently dragging this data source.  Should
 	 * this be a wl_data_device request? */
 
-	if (offer->source)
-		offer->source->accept(offer->source, serial, mime_type);
+	offer->source->accept(offer->source, serial, mime_type);
+	offer->source->accepted = mime_type != NULL;
 }
 
 static void
@@ -76,7 +80,7 @@ data_offer_receive(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
-	if (offer->source)
+	if (offer->source && offer == offer->source->offer)
 		offer->source->send(offer->source, mime_type, fd);
 	else
 		close(fd);
@@ -88,10 +92,44 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource);
 }
 
+static void
+data_source_notify_finish(struct weston_data_source *source)
+{
+	if (wl_resource_get_version(source->resource) >=
+	    WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
+		wl_data_source_send_dnd_finished(source->resource);
+	}
+
+	source->offer = NULL;
+}
+
+static void
+data_offer_finish(struct wl_client *client, struct wl_resource *resource)
+{
+	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
+
+	if (!offer->source || offer->source->offer != offer)
+		return;
+
+	/* Disallow finish while we have a grab driving drag-and-drop, or
+	 * if the negotiation is not at the right stage
+	 */
+	if (offer->source->seat ||
+	    !offer->source->accepted) {
+		wl_resource_post_error(offer->resource,
+				       WL_DATA_OFFER_ERROR_INVALID_FINISH,
+				       "premature finish request");
+		return;
+	}
+
+	data_source_notify_finish(offer->source);
+}
+
 static const struct wl_data_offer_interface data_offer_interface = {
 	data_offer_accept,
 	data_offer_receive,
 	data_offer_destroy,
+	data_offer_finish,
 };
 
 static void
@@ -99,8 +137,28 @@ destroy_data_offer(struct wl_resource *resource)
 {
 	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
 
-	if (offer->source)
-		wl_list_remove(&offer->source_destroy_listener.link);
+	if (!offer->source)
+		goto out;
+
+	wl_list_remove(&offer->source_destroy_listener.link);
+
+	if (offer->source->offer != offer)
+		goto out;
+
+	/* If the drag destination has version < 3, wl_data_offer.finish
+	 * won't be called, so do this here as a safety net, because
+	 * we still want the version >=3 drag source to be happy.
+	 */
+	if (wl_resource_get_version(offer->resource) <
+	    WL_DATA_OFFER_ACTION_SINCE_VERSION) {
+		data_source_notify_finish(offer->source);
+	} else if (wl_resource_get_version(offer->source->resource) >=
+		   WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
+		wl_data_source_send_cancelled(offer->source->resource);
+	}
+
+	offer->source->offer = NULL;
+out:
 	free(offer);
 }
 
@@ -128,7 +186,8 @@ weston_data_source_send_offer(struct weston_data_source *source,
 
 	offer->resource =
 		wl_resource_create(wl_resource_get_client(target),
-				   &wl_data_offer_interface, 1, 0);
+				   &wl_data_offer_interface,
+				   wl_resource_get_version(target), 0);
 	if (offer->resource == NULL) {
 		free(offer);
 		return NULL;
@@ -146,6 +205,9 @@ weston_data_source_send_offer(struct weston_data_source *source,
 
 	wl_array_for_each(p, &source->mime_types)
 		wl_data_offer_send_offer(offer->resource, *p);
+
+	source->offer = offer;
+	source->accepted = false;
 
 	return offer->resource;
 }
@@ -270,8 +332,9 @@ weston_drag_set_focus(struct weston_drag *drag,
 			struct weston_view *view,
 			wl_fixed_t sx, wl_fixed_t sy)
 {
-	struct wl_resource *resource, *offer = NULL;
+	struct wl_resource *resource, *offer_resource = NULL;
 	struct wl_display *display = seat->compositor->wl_display;
+	struct weston_data_offer *offer;
 	uint32_t serial;
 
 	if (drag->focus && view && drag->focus->surface == view->surface) {
@@ -293,6 +356,15 @@ weston_drag_set_focus(struct weston_drag *drag,
 	    wl_resource_get_client(view->surface->resource) != drag->client)
 		return;
 
+	if (drag->data_source &&
+	    drag->data_source->offer) {
+		/* Unlink the offer from the source */
+		offer = drag->data_source->offer;
+		offer->source = NULL;
+		drag->data_source->offer = NULL;
+		wl_list_remove(&offer->source_destroy_listener.link);
+	}
+
 	resource = wl_resource_find_for_client(&seat->drag_resource_list,
 					       wl_resource_get_client(view->surface->resource));
 	if (!resource)
@@ -301,14 +373,15 @@ weston_drag_set_focus(struct weston_drag *drag,
 	serial = wl_display_next_serial(display);
 
 	if (drag->data_source) {
-		offer = weston_data_source_send_offer(drag->data_source,
-						      resource);
-		if (offer == NULL)
+		drag->data_source->accepted = false;
+		offer_resource = weston_data_source_send_offer(drag->data_source,
+							       resource);
+		if (offer_resource == NULL)
 			return;
 	}
 
 	wl_data_device_send_enter(resource, serial, view->surface->resource,
-				  sx, sy, offer);
+				  sx, sy, offer_resource);
 
 	drag->focus = view;
 	drag->focus_listener.notify = destroy_drag_focus;
@@ -396,11 +469,25 @@ drag_grab_button(struct weston_pointer_grab *grab,
 		container_of(grab, struct weston_pointer_drag, grab);
 	struct weston_pointer *pointer = drag->grab.pointer;
 	enum wl_pointer_button_state state = state_w;
+	struct weston_data_source *data_source = drag->base.data_source;
 
-	if (drag->base.focus_resource &&
+	if (data_source &&
 	    pointer->grab_button == button &&
-	    state == WL_POINTER_BUTTON_STATE_RELEASED)
-		wl_data_device_send_drop(drag->base.focus_resource);
+	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
+		if (drag->base.focus_resource &&
+		    data_source->accepted) {
+			wl_data_device_send_drop(drag->base.focus_resource);
+
+			if (wl_resource_get_version(data_source->resource) >=
+			    WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION)
+				wl_data_source_send_dnd_drop_performed(data_source->resource);
+
+			data_source->seat = NULL;
+		} else if (wl_resource_get_version(data_source->resource) >=
+			   WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
+			wl_data_source_send_cancelled(data_source->resource);
+		}
+	}
 
 	if (pointer->button_count == 0 &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
@@ -724,6 +811,8 @@ data_device_start_drag(struct wl_client *client, struct wl_resource *resource,
 
 	if (ret < 0)
 		wl_resource_post_no_memory(resource);
+	else
+		source->seat = seat;
 }
 
 static void
@@ -894,7 +983,8 @@ create_data_source(struct wl_client *client,
 	}
 
 	source->resource =
-		wl_resource_create(client, &wl_data_source_interface, 1, id);
+		wl_resource_create(client, &wl_data_source_interface,
+				   wl_resource_get_version(resource), id);
 	if (source->resource == NULL) {
 		free(source);
 		wl_resource_post_no_memory(resource);
@@ -905,6 +995,9 @@ create_data_source(struct wl_client *client,
 	source->accept = client_source_accept;
 	source->send = client_source_send;
 	source->cancel = client_source_cancel;
+	source->offer = NULL;
+	source->accepted = false;
+	source->seat = NULL;
 
 	wl_array_init(&source->mime_types);
 
@@ -983,7 +1076,7 @@ WL_EXPORT int
 wl_data_device_manager_init(struct wl_display *display)
 {
 	if (wl_global_create(display,
-			     &wl_data_device_manager_interface, 2,
+			     &wl_data_device_manager_interface, 3,
 			     NULL, bind_manager) == NULL)
 		return -1;
 
