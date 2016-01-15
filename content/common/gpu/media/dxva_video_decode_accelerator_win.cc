@@ -859,6 +859,23 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   }
 
   RETURN_ON_HR_FAILURE(hr, "Failed to create video format converter", false);
+
+  base::win::ScopedComPtr<IMFAttributes> converter_attributes;
+  hr = video_format_converter_mft_->GetAttributes(
+      converter_attributes.Receive());
+  RETURN_ON_HR_FAILURE(hr, "Failed to get converter attributes", false);
+
+  hr = converter_attributes->SetUINT32(MF_XVP_PLAYBACK_MODE, TRUE);
+  RETURN_ON_HR_FAILURE(
+      hr,
+      "Failed to set MF_XVP_PLAYBACK_MODE attribute on converter",
+      false);
+
+  hr = converter_attributes->SetUINT32(MF_LOW_LATENCY, FALSE);
+  RETURN_ON_HR_FAILURE(
+      hr,
+      "Failed to set MF_LOW_LATENCY attribute on converter",
+      false);
   return true;
 }
 
@@ -1268,23 +1285,7 @@ bool DXVAVideoDecodeAccelerator::SetDecoderInputMediaType() {
 
 bool DXVAVideoDecodeAccelerator::SetDecoderOutputMediaType(
     const GUID& subtype) {
-  base::win::ScopedComPtr<IMFMediaType> out_media_type;
-
-  for (uint32_t i = 0; SUCCEEDED(
-           decoder_->GetOutputAvailableType(0, i, out_media_type.Receive()));
-       ++i) {
-    GUID out_subtype = {0};
-    HRESULT hr = out_media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
-    RETURN_ON_HR_FAILURE(hr, "Failed to get output major type", false);
-
-    if (out_subtype == subtype) {
-      hr = decoder_->SetOutputType(0, out_media_type.get(), 0);  // No flags
-      RETURN_ON_HR_FAILURE(hr, "Failed to set decoder output type", false);
-      return true;
-    }
-    out_media_type.Release();
-  }
-  return false;
+  return SetTransformOutputType(decoder_.get(), subtype, 0, 0);
 }
 
 bool DXVAVideoDecodeAccelerator::SendMFTMessage(MFT_MESSAGE_TYPE msg,
@@ -2186,29 +2187,6 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set input sub type",
       PLATFORM_FAILURE, false);
 
-  hr = media_type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-      "Failed to set attributes on media type", PLATFORM_FAILURE, false);
-
-  hr = media_type->SetUINT32(MF_MT_INTERLACE_MODE,
-                             MFVideoInterlace_Progressive);
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-      "Failed to set attributes on media type", PLATFORM_FAILURE, false);
-
-  base::win::ScopedComPtr<IMFAttributes> converter_attributes;
-  hr = video_format_converter_mft_->GetAttributes(
-      converter_attributes.Receive());
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get converter attributes",
-      PLATFORM_FAILURE, false);
-
-  hr = converter_attributes->SetUINT32(MF_XVP_PLAYBACK_MODE, TRUE);
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set converter attributes",
-      PLATFORM_FAILURE, false);
-
-  hr = converter_attributes->SetUINT32(MF_LOW_LATENCY, FALSE);
-  RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set converter attributes",
-      PLATFORM_FAILURE, false);
-
   hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, width, height);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set media type attributes",
       PLATFORM_FAILURE, false);
@@ -2224,50 +2202,31 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set converter input type",
       PLATFORM_FAILURE, false);
 
-  base::win::ScopedComPtr<IMFMediaType> out_media_type;
-
-  for (uint32_t i = 0;
-       SUCCEEDED(video_format_converter_mft_->GetOutputAvailableType(
-           0, i, out_media_type.Receive()));
-       ++i) {
-    GUID out_subtype = {0};
-    hr = out_media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
-    RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to get output major type",
-      PLATFORM_FAILURE, false);
-
-    if (out_subtype == MFVideoFormat_ARGB32) {
-      hr = out_media_type->SetUINT32(MF_MT_ALL_SAMPLES_INDEPENDENT, TRUE);
-      RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-          "Failed to set attributes on media type", PLATFORM_FAILURE, false);
-
-      hr = out_media_type->SetUINT32(MF_MT_INTERLACE_MODE,
-                                     MFVideoInterlace_Progressive);
-      RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-          "Failed to set attributes on media type", PLATFORM_FAILURE, false);
-
-      hr = MFSetAttributeSize(out_media_type.get(), MF_MT_FRAME_SIZE, width,
-                              height);
-      RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-          "Failed to set media type attributes", PLATFORM_FAILURE, false);
-
-      hr = video_format_converter_mft_->SetOutputType(
-          0, out_media_type.get(), 0);  // No flags
-      if (FAILED(hr)) {
-        base::debug::Alias(&hr);
-        // TODO(ananta)
-        // Remove this CHECK when the change to use DX11 for H/W decoding
-        // stablizes.
-        CHECK(false);
-      }
-      RETURN_AND_NOTIFY_ON_HR_FAILURE(hr,
-          "Failed to set converter output type", PLATFORM_FAILURE, false);
-
-      dx11_video_format_converter_media_type_needs_init_ = false;
-      return true;
-    }
-    out_media_type.Release();
+  // It appears that we fail to set MFVideoFormat_ARGB32 as the output media
+  // type in certain configurations. Try to fallback to MFVideoFormat_RGB32
+  // in such cases. If both fail, then bail.
+  bool media_type_set =
+      SetTransformOutputType(video_format_converter_mft_.get(),
+                             MFVideoFormat_ARGB32,
+                             width,
+                             height);
+  if (!media_type_set) {
+    media_type_set =
+        SetTransformOutputType(video_format_converter_mft_.get(),
+                               MFVideoFormat_RGB32,
+                               width,
+                               height);
   }
-  return false;
+
+  if (!media_type_set) {
+    // Remove this once this stabilizes in the field.
+    CHECK(false);
+    LOG(ERROR) << "Failed to find a matching RGB output type in the converter";
+    return false;
+  }
+
+  dx11_video_format_converter_media_type_needs_init_ = false;
+  return true;
 }
 
 bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(
@@ -2306,6 +2265,43 @@ bool DXVAVideoDecodeAccelerator::GetVideoFrameDimensions(
     *height = surface_desc.Height;
   }
   return true;
+}
+
+bool DXVAVideoDecodeAccelerator::SetTransformOutputType(
+    IMFTransform* transform,
+    const GUID& output_type,
+    int width,
+    int height) {
+  HRESULT hr = E_FAIL;
+  base::win::ScopedComPtr<IMFMediaType> media_type;
+
+  for (uint32_t i = 0;
+       SUCCEEDED(transform->GetOutputAvailableType(
+           0, i, media_type.Receive()));
+       ++i) {
+    GUID out_subtype = {0};
+    hr = media_type->GetGUID(MF_MT_SUBTYPE, &out_subtype);
+    RETURN_ON_HR_FAILURE(hr, "Failed to get output major type", false);
+
+    if (out_subtype == output_type) {
+      if (width && height) {
+        hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, width,
+                                height);
+        RETURN_ON_HR_FAILURE(hr, "Failed to set media type attributes", false);
+      }
+      hr = transform->SetOutputType(0, media_type.get(), 0);  // No flags
+      if (FAILED(hr)) {
+        base::debug::Alias(&hr);
+        // TODO(ananta)
+        // Remove this CHECK when this stabilizes in the field.
+        CHECK(false);
+      }
+      RETURN_ON_HR_FAILURE(hr, "Failed to set output type", false);
+      return true;
+    }
+    media_type.Release();
+  }
+  return false;
 }
 
 }  // namespace content

@@ -246,6 +246,17 @@ class CONTENT_EXPORT DXVAVideoDecodeAccelerator
   // Returns true on success.
   bool GetVideoFrameDimensions(IMFSample* sample, int* width, int* height);
 
+  // Sets the output type on the |transform| to the GUID identified by the
+  // the |output_type| parameter. The GUID can be MFVideoFormat_RGB32,
+  // MFVideoFormat_ARGB32, MFVideoFormat_NV12, etc.
+  // Additionally if the |width| and |height| parameters are non zero, then
+  // this function also sets the MF_MT_FRAME_SIZE attribute on the type.
+  // Returns true on success.
+  bool SetTransformOutputType(IMFTransform* transform,
+                              const GUID& output_type,
+                              int width,
+                              int height);
+
   // To expose client callbacks from VideoDecodeAccelerator.
   media::VideoDecodeAccelerator::Client* client_;
 
