@@ -45,13 +45,11 @@ cvox.ChromeVox.MAX_INIT_TIMEOUT_ = 30000;
 
 /**
  * Flag indicating if ChromeVox Classic is enabled based on the Next
- * background page. Initializes to true for non-top level
- * (i.e. iframes) windows. For top level windows, left undefined and
- * set when background page replies.
+ * background page  which sends the state at page load.
  * @type {boolean|undefined}
  * @private
  */
-cvox.ChromeVox.isClassicEnabled_ = window.top == window ? undefined : true;
+cvox.ChromeVox.isClassicEnabled_ = undefined;
 
 
 /**
