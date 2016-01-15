@@ -62,6 +62,12 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   extensions::ContextMenuMatcher& extension_items() { return extension_items_; }
 #endif
 
+  void set_protocol_handler_registry(ProtocolHandlerRegistry* registry) {
+    protocol_handler_registry_ = registry;
+  }
+
+  using RenderViewContextMenu::AppendImageItems;
+
   void Show() override;
 
  private:

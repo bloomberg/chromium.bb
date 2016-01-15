@@ -8,7 +8,6 @@
 #include <map>
 #include <string>
 
-#include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
@@ -87,7 +86,7 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
 
  private:
   friend class RenderViewContextMenuTest;
-  friend class RenderViewContextMenuPrefsTest;
+  friend class TestRenderViewContextMenu;
 
   static bool IsDevToolsURL(const GURL& url);
   static bool IsInternalResourcesURL(const GURL& url);
