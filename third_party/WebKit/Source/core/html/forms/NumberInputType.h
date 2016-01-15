@@ -62,6 +62,7 @@ private:
     String visibleValue() const override;
     String convertFromVisibleValue(const String&) const override;
     String sanitizeValue(const String&) const override;
+    void warnIfValueIsInvalid(const String&) const override;
     bool hasBadInput() const override;
     String badInputText() const override;
     String rangeOverflowText(const Decimal& maxmum) const override;
