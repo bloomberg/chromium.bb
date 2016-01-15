@@ -4,6 +4,8 @@
 
 #include "chromeos/binder/buffer_reader.h"
 
+#include <string.h>
+
 namespace binder {
 
 BufferReader::BufferReader(const char* data, size_t size)
