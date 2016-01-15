@@ -234,6 +234,8 @@ ScopedJavaLocalRef<jstring> OfflinePageBridge::GetOfflineUrlForOnlineUrl(
   GURL online_url(ConvertJavaStringToUTF8(env, j_online_url));
   GURL offline_url =
       OfflinePageUtils::GetOfflineURLForOnlineURL(browser_context_, online_url);
+  if (!offline_url.is_valid())
+    return ScopedJavaLocalRef<jstring>();
   return ConvertUTF8ToJavaString(env, offline_url.spec());
 }
 
