@@ -752,7 +752,13 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnInputAfterAutofill) {
 }
 
 // Test that a JavaScript onchange event is fired after auto-filling a form.
-IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, OnChangeAfterAutofill) {
+// Flaky on CrOS only.  http://crbug.com/578095
+#if defined(OS_CHROMEOS)
+#define MAYBE_OnChangeAfterAutofill DISABLED_OnChangeAfterAutofill
+#else
+#define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_OnChangeAfterAutofill) {
   CreateTestProfile();
 
   const char kOnChangeScript[] =
@@ -902,8 +908,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, InputFiresBeforeChange) {
 }
 
 // Test that we can autofill forms distinguished only by their |id| attribute.
+// Flaky on CrOS only.  http://crbug.com/578095
+#if defined(OS_CHROMEOS)
+#define MAYBE_AutofillFormsDistinguishedById DISABLED_AutofillFormsDistinguishedById
+#else
+#define MAYBE_AutofillFormsDistinguishedById AutofillFormsDistinguishedById
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
-                       AutofillFormsDistinguishedById) {
+                       MAYBE_AutofillFormsDistinguishedById) {
   CreateTestProfile();
 
   // Load the test page.
