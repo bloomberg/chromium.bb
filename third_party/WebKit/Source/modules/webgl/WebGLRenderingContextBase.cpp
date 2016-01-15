@@ -975,6 +975,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     }
 
     m_drawingBuffer = buffer.release();
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&HTMLCanvasElement::notifyListenersCanvasChanged, canvas()));
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
@@ -6652,6 +6653,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
 
     m_drawingBuffer = buffer.release();
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&HTMLCanvasElement::notifyListenersCanvasChanged, canvas()));
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     m_lostContextErrors.clear();

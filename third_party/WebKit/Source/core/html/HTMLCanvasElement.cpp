@@ -418,6 +418,9 @@ bool HTMLCanvasElement::paintsIntoCanvasBuffer() const
 
 void HTMLCanvasElement::notifyListenersCanvasChanged()
 {
+    if (m_listeners.size() == 0)
+        return;
+
     if (!originClean()) {
         m_listeners.clear();
         return;
@@ -432,7 +435,7 @@ void HTMLCanvasElement::notifyListenersCanvasChanged()
 
     if (listenerNeedsNewFrameCapture) {
         SourceImageStatus status;
-        RefPtr<Image> sourceImage = getSourceImageForCanvas(&status, PreferNoAcceleration);
+        RefPtr<Image> sourceImage = getSourceImageForCanvas(&status, PreferAcceleration);
         if (status != NormalSourceImageStatus)
             return;
         RefPtr<SkImage> image = sourceImage->imageForCurrentFrame();
