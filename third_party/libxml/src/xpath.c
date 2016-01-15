@@ -14732,8 +14732,12 @@ xmlXPathTryStreamCompile(xmlXPathContextPtr ctxt, const xmlChar *str) {
 #endif /* XPATH_STREAMING */
 
 static void
-xmlXPathOptimizeExpression(xmlXPathCompExprPtr comp, xmlXPathStepOpPtr op)
+xmlXPathOptimizeExpressionInternal(xmlXPathCompExprPtr comp, xmlXPathStepOpPtr op)
 {
+    /* Already optimized? */
+    if (op->cacheURI != 0)
+        return;
+
     /*
     * Try to rewrite "descendant-or-self::node()/foo" to an optimized
     * internal representation.
@@ -14784,11 +14788,27 @@ xmlXPathOptimizeExpression(xmlXPathCompExprPtr comp, xmlXPathStepOpPtr op)
 	}
     }
 
+    /* Mark the node. */
+    op->cacheURI = (void*)(~0);
+
     /* Recurse */
     if (op->ch1 != -1)
-        xmlXPathOptimizeExpression(comp, &comp->steps[op->ch1]);
+        xmlXPathOptimizeExpressionInternal(comp, &comp->steps[op->ch1]);
     if (op->ch2 != -1)
-	xmlXPathOptimizeExpression(comp, &comp->steps[op->ch2]);
+	xmlXPathOptimizeExpressionInternal(comp, &comp->steps[op->ch2]);
+}
+
+static void
+xmlXPathOptimizeExpression(xmlXPathCompExprPtr comp, int root)
+{
+    int i;
+    // The expression tree/graph traversal is linear, visiting
+    // each node at most once. Mark each xmlXPathStepOp node
+    // upon visiting, taking care of clearing out the marks
+    // afterwards
+    xmlXPathOptimizeExpressionInternal(comp, &comp->steps[root]);
+    for (i = 0; i <= root; ++i)
+        comp->steps[i].cacheURI = 0;
 }
 
 /**
@@ -14847,7 +14867,7 @@ xmlXPathCtxtCompile(xmlXPathContextPtr ctxt, const xmlChar *str) {
 	comp->nb = 0;
 #endif
 	if ((comp->nbStep > 1) && (comp->last >= 0)) {
-	    xmlXPathOptimizeExpression(comp, &comp->steps[comp->last]);
+	    xmlXPathOptimizeExpression(comp, comp->last);
 	}
     }
     return(comp);
@@ -15029,8 +15049,7 @@ xmlXPathEvalExpr(xmlXPathParserContextPtr ctxt) {
 	    (ctxt->comp->nbStep > 1) &&
 	    (ctxt->comp->last >= 0))
 	{
-	    xmlXPathOptimizeExpression(ctxt->comp,
-		&ctxt->comp->steps[ctxt->comp->last]);
+	    xmlXPathOptimizeExpression(ctxt->comp, ctxt->comp->last);
 	}
     }
     CHECK_ERROR;
