@@ -249,20 +249,20 @@ bool AUAudioInputStream::Open() {
     HandleError(result);
     return false;
   }
-  DLOG_IF(WARNING, buffer_size_was_changed_) << "IO buffer size was changed to "
-                                             << number_of_frames_;
 
-  // Verify that the IO buffer size is set correctly. We just log a warning if
-  // this happens since there is logic in AUAudioInputStream::InputProc() which
-  // us able to compensate for minor differences.
-  // TODO(henrika): perhaps add to UMA stat to track if this can happen.
-  UInt32 io_buffer_size_frames;
-  property_size = sizeof(io_buffer_size_frames);
-  result = AudioUnitGetProperty(
-      audio_unit_, kAudioDevicePropertyBufferFrameSize, kAudioUnitScope_Global,
-      1, &io_buffer_size_frames, &property_size);
-  LOG_IF(WARNING, io_buffer_size_frames != number_of_frames_)
-      << "AUHAL uses an invalid IO buffer size: " << io_buffer_size_frames;
+  // If |number_of_frames_| is out of range, the closest valid buffer size will
+  // be set instead. Check the current setting and log a warning for a non
+  // perfect match. Any such mismatch will be compensated for in InputProc().
+  if (buffer_size_was_changed_) {
+    UInt32 io_buffer_size_frames;
+    property_size = sizeof(io_buffer_size_frames);
+    result = AudioUnitGetProperty(
+        audio_unit_, kAudioDevicePropertyBufferFrameSize,
+        kAudioUnitScope_Global, 0, &io_buffer_size_frames, &property_size);
+    LOG_IF(WARNING, io_buffer_size_frames != number_of_frames_)
+        << "AUHAL is using best match of IO buffer size: "
+        << io_buffer_size_frames;
+  }
 
   // Channel mapping should be supported but add a warning just in case.
   // TODO(henrika): perhaps add to UMA stat to track if this can happen.
