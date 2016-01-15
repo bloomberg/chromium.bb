@@ -42,7 +42,7 @@ class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
 class PopupMenu;
 
-class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, public TypeAheadDataSource {
+class CORE_EXPORT HTMLSelectElement final : public HTMLFormControlElementWithState, private TypeAheadDataSource {
     DEFINE_WRAPPERTYPEINFO();
 public:
     static PassRefPtrWillBeRawPtr<HTMLSelectElement> create(Document&);
@@ -63,9 +63,12 @@ public:
     void resetImpl() override;
 
     unsigned length() const;
+    void setLength(unsigned, ExceptionState&);
 
     unsigned size() const { return m_size; }
+    void setSize(unsigned);
     bool multiple() const { return m_multiple; }
+    void setMultiple(bool);
 
     bool usesMenuList() const;
 
@@ -88,17 +91,13 @@ public:
     void invalidateSelectedItems();
     void updateListItemSelectedStates();
 
-    const WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>& listItems() const;
+    using ListItems = WillBeHeapVector<RawPtrWillBeMember<HTMLElement>>;
+    const ListItems& listItems() const;
 
     void accessKeyAction(bool sendMouseEvents) override;
     void accessKeySetSelectedIndex(int);
 
-    void setMultiple(bool);
-
-    void setSize(unsigned);
-
     void setOption(unsigned index, HTMLOptionElement*, ExceptionState&);
-    void setLength(unsigned, ExceptionState&);
 
     Element* namedItem(const AtomicString& name);
     HTMLOptionElement* item(unsigned index);
@@ -249,8 +248,9 @@ private:
     int optionCount() const override;
     String optionAtIndex(int index) const override;
 
-    // m_listItems contains HTMLOptionElement, HTMLOptGroupElement, and HTMLHRElement objects.
-    mutable WillBeHeapVector<RawPtrWillBeMember<HTMLElement>> m_listItems;
+    // m_listItems contains HTMLOptionElement, HTMLOptGroupElement, and
+    // HTMLHRElement objects.
+    mutable ListItems m_listItems;
     Vector<bool> m_lastOnChangeSelection;
     Vector<bool> m_cachedStateForActiveSelection;
     TypeAhead m_typeAhead;
