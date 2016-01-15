@@ -221,7 +221,7 @@ public:
 
     String uuid() const { return m_uuid.isolatedCopy(); }
     String type() const { return m_type.isolatedCopy(); }
-    unsigned long long size() { return m_size; }
+    unsigned long long size() const { return m_size; }
 
     ~BlobDataHandle();
 
