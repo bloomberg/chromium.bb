@@ -41,18 +41,21 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
 
-        Notification notification = new StandardNotificationBuilder(context)
-                                            .setSmallIcon(R.drawable.ic_chrome)
-                                            .setLargeIcon(largeIcon)
-                                            .setTitle("title")
-                                            .setBody("body")
-                                            .setOrigin("origin")
-                                            .setTicker(new SpannableStringBuilder("ticker"))
-                                            .setDefaults(Notification.DEFAULT_ALL)
-                                            .setVibrate(new long[] {100L})
-                                            .setContentIntent(pendingContentIntent)
-                                            .setDeleteIntent(pendingDeleteIntent)
-                                            .build();
+        Notification notification =
+                new StandardNotificationBuilder(context)
+                        .setSmallIcon(R.drawable.ic_chrome)
+                        .setLargeIcon(largeIcon)
+                        .setTitle("title")
+                        .setBody("body")
+                        .setOrigin("origin")
+                        .setTicker(new SpannableStringBuilder("ticker"))
+                        .setDefaults(Notification.DEFAULT_ALL)
+                        .setVibrate(new long[] {100L})
+                        .setContentIntent(pendingContentIntent)
+                        .setDeleteIntent(pendingDeleteIntent)
+                        .addAction(0 /* iconId */, "button", null /* intent */)
+                        .addSettingsAction(0 /* iconId */, "settings", null /* intent */)
+                        .build();
 
         assertEquals(R.drawable.ic_chrome, notification.icon);
         assertNotNull(notification.largeIcon);
@@ -65,6 +68,8 @@ public class StandardNotificationBuilderTest extends InstrumentationTestCase {
         assertEquals(100L, notification.vibrate[0]);
         assertEquals(pendingContentIntent, notification.contentIntent);
         assertEquals(pendingDeleteIntent, notification.deleteIntent);
-        // TODO(mvanouwerkerk): Add coverage for action buttons.
+        assertEquals(2, notification.actions.length);
+        assertEquals("button", notification.actions[0].title);
+        assertEquals("settings", notification.actions[1].title);
     }
 }
