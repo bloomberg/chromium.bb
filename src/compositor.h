@@ -336,6 +336,7 @@ struct weston_data_source {
 	bool actions_set;
 	uint32_t dnd_actions;
 	enum wl_data_device_manager_dnd_action current_dnd_action;
+	enum wl_data_device_manager_dnd_action compositor_action;
 
 	void (*accept)(struct weston_data_source *source,
 		       uint32_t serial, const char *mime_type);

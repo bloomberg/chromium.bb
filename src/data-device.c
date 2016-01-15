@@ -44,6 +44,7 @@ struct weston_drag {
 	struct weston_view *icon;
 	struct wl_listener icon_destroy_listener;
 	int32_t dx, dy;
+	struct weston_keyboard_grab keyboard_grab;
 };
 
 struct weston_pointer_drag {
@@ -138,6 +139,10 @@ data_offer_choose_action(struct weston_data_offer *offer)
 
 	if (!available_actions)
 		return WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+
+	if (offer->source->seat &&
+	    offer->source->compositor_action & available_actions)
+		return offer->source->compositor_action;
 
 	/* If the dest side has a preferred DnD action, use it */
 	if ((preferred_action & available_actions) != 0)
@@ -611,9 +616,11 @@ static void
 data_device_end_pointer_drag_grab(struct weston_pointer_drag *drag)
 {
 	struct weston_pointer *pointer = drag->grab.pointer;
+	struct weston_keyboard *keyboard = drag->base.keyboard_grab.keyboard;
 
 	data_device_end_drag_grab(&drag->base, pointer->seat);
 	weston_pointer_end_grab(pointer);
+	weston_keyboard_end_grab(keyboard);
 	free(drag);
 }
 
@@ -706,9 +713,11 @@ static void
 data_device_end_touch_drag_grab(struct weston_touch_drag *drag)
 {
 	struct weston_touch *touch = drag->grab.touch;
+	struct weston_keyboard *keyboard = drag->base.keyboard_grab.keyboard;
 
 	data_device_end_drag_grab(&drag->base, touch->seat);
 	weston_touch_end_grab(touch);
+	weston_keyboard_end_grab(keyboard);
 	free(drag);
 }
 
@@ -800,6 +809,61 @@ static const struct weston_touch_grab_interface touch_drag_grab_interface = {
 };
 
 static void
+drag_grab_keyboard_key(struct weston_keyboard_grab *grab,
+		       uint32_t time, uint32_t key, uint32_t state)
+{
+}
+
+static void
+drag_grab_keyboard_modifiers(struct weston_keyboard_grab *grab,
+			     uint32_t serial, uint32_t mods_depressed,
+			     uint32_t mods_latched,
+			     uint32_t mods_locked, uint32_t group)
+{
+	struct weston_keyboard *keyboard = grab->keyboard;
+	struct weston_drag *drag =
+		container_of(grab, struct weston_drag, keyboard_grab);
+	uint32_t compositor_action;
+
+	if (mods_depressed & (1 << keyboard->xkb_info->shift_mod))
+		compositor_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
+	else if (mods_depressed & (1 << keyboard->xkb_info->ctrl_mod))
+		compositor_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
+	else
+		compositor_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+
+	drag->data_source->compositor_action = compositor_action;
+
+	if (drag->data_source->offer)
+		data_offer_update_action(drag->data_source->offer);
+}
+
+static void
+drag_grab_keyboard_cancel(struct weston_keyboard_grab *grab)
+{
+	struct weston_drag *drag =
+		container_of(grab, struct weston_drag, keyboard_grab);
+	struct weston_pointer *pointer = grab->keyboard->seat->pointer_state;
+	struct weston_touch *touch = grab->keyboard->seat->touch_state;
+
+	if (pointer && pointer->grab->interface == &pointer_drag_grab_interface) {
+		struct weston_touch_drag *touch_drag =
+			(struct weston_touch_drag *) drag;
+		drag_grab_touch_cancel(&touch_drag->grab);
+	} else if (touch && touch->grab->interface == &touch_drag_grab_interface) {
+		struct weston_pointer_drag *pointer_drag =
+			(struct weston_pointer_drag *) drag;
+		drag_grab_cancel(&pointer_drag->grab);
+	}
+}
+
+static const struct weston_keyboard_grab_interface keyboard_drag_grab_interface = {
+	drag_grab_keyboard_key,
+	drag_grab_keyboard_modifiers,
+	drag_grab_keyboard_cancel
+};
+
+static void
 destroy_pointer_data_device_source(struct wl_listener *listener, void *data)
 {
 	struct weston_pointer_drag *drag = container_of(listener,
@@ -824,12 +888,15 @@ weston_pointer_start_drag(struct weston_pointer *pointer,
 		       struct wl_client *client)
 {
 	struct weston_pointer_drag *drag;
+	struct weston_keyboard *keyboard =
+		weston_seat_get_keyboard(pointer->seat);
 
 	drag = zalloc(sizeof *drag);
 	if (drag == NULL)
 		return -1;
 
 	drag->grab.interface = &pointer_drag_grab_interface;
+	drag->base.keyboard_grab.interface = &keyboard_drag_grab_interface;
 	drag->base.client = client;
 	drag->base.data_source = source;
 
@@ -859,7 +926,10 @@ weston_pointer_start_drag(struct weston_pointer *pointer,
 	}
 
 	weston_pointer_clear_focus(pointer);
+	weston_keyboard_set_focus(keyboard, NULL);
+
 	weston_pointer_start_grab(pointer, &drag->grab);
+	weston_keyboard_start_grab(keyboard, &drag->base.keyboard_grab);
 
 	return 0;
 }
@@ -880,6 +950,8 @@ weston_touch_start_drag(struct weston_touch *touch,
 		       struct wl_client *client)
 {
 	struct weston_touch_drag *drag;
+	struct weston_keyboard *keyboard =
+		weston_seat_get_keyboard(touch->seat);
 
 	drag = zalloc(sizeof *drag);
 	if (drag == NULL)
@@ -914,7 +986,10 @@ weston_touch_start_drag(struct weston_touch *touch,
 			      &drag->base.data_source_listener);
 	}
 
+	weston_keyboard_set_focus(keyboard, NULL);
+
 	weston_touch_start_grab(touch, &drag->grab);
+	weston_keyboard_start_grab(keyboard, &drag->base.keyboard_grab);
 
 	drag_grab_touch_focus(drag);
 
@@ -1172,6 +1247,7 @@ create_data_source(struct wl_client *client,
 	source->actions_set = false;
 	source->dnd_actions = 0;
 	source->current_dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+	source->compositor_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
 	wl_array_init(&source->mime_types);
 
