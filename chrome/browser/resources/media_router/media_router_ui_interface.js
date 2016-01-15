@@ -50,16 +50,18 @@ cr.define('media_router.ui', function() {
   /**
    * Populates the WebUI with data obtained from Media Router.
    *
-   * @param {deviceMissingUrl: string,
-   *         sinks: !Array<!media_router.Sink>,
-   *         routes: !Array<!media_router.Route>,
-   *         castModes: !Array<!media_router.CastMode>,
-   *         wasFirstRunFlowAcknowledged: boolean} data
+   * @param {{deviceMissingUrl: string,
+   *          sinks: !Array<!media_router.Sink>,
+   *          routes: !Array<!media_router.Route>,
+   *          castModes: !Array<!media_router.CastMode>,
+   *          wasFirstRunFlowAcknowledged: boolean}} data
    * Parameters in data:
    *   deviceMissingUrl - url to be opened on "Device missing?" clicked.
    *   sinks - list of sinks to be displayed.
    *   routes - list of routes that are associated with the sinks.
    *   castModes - list of available cast modes.
+   *   wasFirstRunFlowAcknowledged - true if first run flow was previously
+   *       acknowledged by user.
    */
   function setInitialData(data) {
     container.deviceMissingUrl = data['deviceMissingUrl'];
@@ -185,7 +187,7 @@ cr.define('media_router.browserApi', function() {
     chrome.send('reportClickedSinkIndex', [sinkIndex]);
   }
 
-  /*
+  /**
    * Reports the initial dialog view.
    *
    * @param {string} view

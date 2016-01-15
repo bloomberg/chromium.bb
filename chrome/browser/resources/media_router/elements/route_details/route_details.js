@@ -44,7 +44,9 @@ Polymer({
     stopCastingButtonText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('stopCastingButton'),
+      value: function() {
+        return loadTimeData.getString('stopCastingButton');
+      },
     },
 
     /**

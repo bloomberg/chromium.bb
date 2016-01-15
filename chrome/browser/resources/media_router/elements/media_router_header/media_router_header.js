@@ -37,11 +37,11 @@ Polymer({
 
     /**
      * The current view that this header should reflect.
-     * @type {media_router.MediaRouterView}
+     * @type {?media_router.MediaRouterView}
      */
     view: {
       type: String,
-      value: '',
+      value: null,
     },
 
     /**
@@ -61,7 +61,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @return {string} The current arrow-drop-* icon to use.
    * @private
    */
@@ -71,8 +71,8 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
-   * @return {string} Whether or not the arrow drop icon should be hidden.
+   * @param {?media_router.MediaRouterView} view The current view.
+   * @return {boolean} Whether or not the arrow drop icon should be hidden.
    * @private
    */
   computeArrowDropIconHidden_: function(view) {
@@ -81,8 +81,8 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
-   * @return {string} Whether or not the back button should be hidden.
+   * @param {?media_router.MediaRouterView} view The current view.
+   * @return {boolean} Whether or not the back button should be hidden.
    * @private
    */
   computeBackButtonHidden_: function(view) {

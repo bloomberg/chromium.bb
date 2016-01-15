@@ -13,7 +13,10 @@ cr.define('media_router', function() {
   // @const {number}
   var KEYCODE_ESC = 27;
 
-  // The media-router-container element. Initialized after polymer is ready.
+  /**
+   * The media-router-container element. Initialized after polymer is ready.
+   * @type {?MediaRouterContainerElement}
+   */
   var container = null;
 
   /**
@@ -23,7 +26,8 @@ cr.define('media_router', function() {
   function initialize() {
     media_router.browserApi.requestInitialData();
 
-    container = $('media-router-container');
+    container = /** @type {!MediaRouterContainerElement} */
+        ($('media-router-container'));
     media_router.ui.setContainer(container);
 
     container.addEventListener('acknowledge-first-run-flow',
@@ -62,12 +66,14 @@ cr.define('media_router', function() {
    * Reports the selected cast mode.
    * Called when the user selects a cast mode from the picker.
    *
-   * @param {{detail: {castModeType: number}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   castModeType - type of cast mode selected by the user.
    */
-  function onCastModeSelected(data) {
-    media_router.browserApi.reportSelectedCastMode(data.detail.castModeType);
+  function onCastModeSelected(event) {
+    /** @type {{castModeType: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportSelectedCastMode(detail.castModeType);
   }
 
   /**
@@ -94,12 +100,14 @@ cr.define('media_router', function() {
    * Called when the user explicitly interacts with the dialog to perform an
    * action.
    *
-   * @param {{detail: {action: number}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   action - the first action taken by the user.
    */
-  function onInitialAction(data) {
-    media_router.browserApi.reportInitialAction(data.detail.action);
+  function onInitialAction(event) {
+    /** @type {{action: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportInitialAction(detail.action);
   }
 
   /**
@@ -107,29 +115,32 @@ cr.define('media_router', function() {
    * first action the user took after opening the dialog.
    * Called when the user closes the dialog without taking any other action.
    *
-   * @param {{detail: {timeMs: number}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   timeMs - time in ms for the user to close the dialog.
    */
-  function onInitialActionClose(data) {
-    media_router.browserApi.reportTimeToInitialActionClose(data.detail.timeMs);
+  function onInitialActionClose(event) {
+    /** @type {{timeMs: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportTimeToInitialActionClose(detail.timeMs);
   }
 
   /**
    * Acts on an issue and dismisses it from the UI.
    * Called when the user performs an action on an issue.
    *
-   * @param {{detail: {id: string, actionType: number, helpPageId: number}}}
-   *     data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   id - issue ID.
    *   actionType - type of action performed by the user.
    *   helpPageId - the numeric help center ID.
    */
-  function onIssueActionClick(data) {
-    media_router.browserApi.actOnIssue(data.detail.id,
-                                       data.detail.actionType,
-                                       data.detail.helpPageId);
+  function onIssueActionClick(event) {
+    /** @type {{id: string, actionType: number, helpPageId: number}} */
+    var detail = event.detail;
+    media_router.browserApi.actOnIssue(detail.id,
+                                       detail.actionType,
+                                       detail.helpPageId);
     container.issue = null;
   }
 
@@ -137,50 +148,44 @@ cr.define('media_router', function() {
    * Creates a media route.
    * Called when the user requests to create a media route.
    *
-   * @param {{detail: {sinkId: string, selectedCastModeValue: number}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   sinkId - sink ID selected by the user.
    *   selectedCastModeValue - cast mode selected by the user.
    */
-  function onCreateRoute(data) {
-    media_router.browserApi.requestRoute(data.detail.sinkId,
-                                         data.detail.selectedCastModeValue);
+  function onCreateRoute(event) {
+    /** @type {{sinkId: string, selectedCastModeValue, number}} */
+    var detail = event.detail;
+    media_router.browserApi.requestRoute(detail.sinkId,
+                                         detail.selectedCastModeValue);
   }
 
   /**
    * Stops a route.
    * Called when the user requests to stop a media route.
    *
-   * @param {{detail: {route: media_router.Route}}} data
-   * Parameters in |data|.detail:
-   *   route - route to close.
+   * @param {!Event} event
+   * Parameters in |event|.detail:
+   *   route - The route to close.
    */
-  function onCloseRouteClick(data) {
-    media_router.browserApi.closeRoute(data.detail.route);
+  function onCloseRouteClick(event) {
+    /** @type {{route: !media_router.Route}} */
+    var detail = event.detail;
+    media_router.browserApi.closeRoute(detail.route);
   }
 
   /**
    * Joins a route.
    * Called when the user requests to join a media route.
    *
-   * @param {{detail: {route: media_router.Route}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   route - route to join.
    */
-  function onJoinRouteClick(data) {
-    media_router.browserApi.joinRoute(data.detail.route);
-  }
-
-  /**
-   * Reports the index of the sink that was clicked.
-   * Called when the user selects a sink on the sink list.
-   *
-   * @param {{detail: {index: number}}} data
-   * Paramters in |data|.detail:
-   *   index - the index of the clicked sink.
-   */
-  function onSinkClick(data) {
-    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
+  function onJoinRouteClick(event) {
+    /** @type {{route: !media_router.Route}} */
+    var detail = event.detail;
+    media_router.browserApi.joinRoute(detail.route);
   }
 
   /**
@@ -213,52 +218,60 @@ cr.define('media_router', function() {
         media_router.MediaRouterView.SINK_LIST);
   }
 
-  /*
+  /**
    * Reports the initial state of the dialog after it is opened.
    * Called after initial data is populated.
    *
-   * @param {{detail: {currentView: string}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   currentView - the current dialog's current view.
    */
-  function onShowInitialState(data) {
-    media_router.browserApi.reportInitialState(data.detail.currentView);
+  function onShowInitialState(event) {
+    /** @type {{currentView: string}} */
+    var detail = event.detail;
+    media_router.browserApi.reportInitialState(detail.currentView);
   }
 
   /**
    * Reports the index of the sink that was clicked.
    * Called when the user selects a sink on the sink list.
    *
-   * @param {{detail: {index: number}}} data
-   * Paramters in |data|.detail:
+   * @param {!Event} event
+   * Paramters in |event|.detail:
    *   index - the index of the clicked sink.
    */
-  function onSinkClick(data) {
-    media_router.browserApi.reportClickedSinkIndex(data.detail.index);
+  function onSinkClick(event) {
+    /** @type {{index: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportClickedSinkIndex(detail.index);
   }
 
   /**
    * Reports the time it took for the user to select a sink to create a route
    * after the list was popuated and shown.
    *
-   * @param {{detail: {timeMs: number}}} data
-   * Paramters in |data|.detail:
+   * @param {!Event} event
+   * Paramters in |event|.detail:
    *   timeMs - the time it took for the user to select a sink.
    */
-  function onSinkClickTimeReported(data) {
-    media_router.browserApi.reportTimeToClickSink(data.detail.timeMs);
+  function onSinkClickTimeReported(event) {
+    /** @type {{timeMs: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportTimeToClickSink(detail.timeMs);
   }
 
   /**
    * Reports the current sink count.
    * Called 3 seconds after the dialog is initially opened.
    *
-   * @param {{detail: {sinkCount: number}}} data
-   * Parameters in |data|.detail:
+   * @param {!Event} event
+   * Parameters in |event|.detail:
    *   sinkCount - the number of sinks.
    */
-  function onSinkCountReported(data) {
-    media_router.browserApi.reportSinkCount(data.detail.sinkCount);
+  function onSinkCountReported(event) {
+    /** @type {{sinkCount: number}} */
+    var detail = event.detail;
+    media_router.browserApi.reportSinkCount(detail.sinkCount);
   }
 
   return {

@@ -52,7 +52,7 @@ Polymer({
      */
     currentView_: {
       type: String,
-      value: '',
+      value: null,
     },
 
     /**
@@ -62,7 +62,9 @@ Polymer({
     deviceMissingText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('deviceMissing'),
+      value: function() {
+        return loadTimeData.getString('deviceMissing');
+      },
     },
 
     /**
@@ -99,7 +101,9 @@ Polymer({
     firstRunFlowButtonText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('firstRunFlowButton'),
+      value: function() {
+        return loadTimeData.getString('firstRunFlowButton');
+      },
     },
 
     /**
@@ -109,7 +113,9 @@ Polymer({
     firstRunFlowText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('firstRunFlowText'),
+      value: function() {
+        return loadTimeData.getString('firstRunFlowText');
+      },
     },
 
     /**
@@ -119,7 +125,9 @@ Polymer({
     firstRunFlowTitle_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('firstRunFlowTitle'),
+      value: function() {
+        return loadTimeData.getString('firstRunFlowTitle');
+      },
     },
 
     /**
@@ -134,11 +142,11 @@ Polymer({
     /**
      * The header text tooltip. This would be descriptive of the
      * source origin, whether a host name, tab URL, etc.
-     * @type {string}
+     * @type {?string}
      */
     headerTextTooltip: {
       type: String,
-      value: '',
+      value: null,
     },
 
     /**
@@ -158,7 +166,9 @@ Polymer({
     issueHeaderText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('issueHeader'),
+      value: function() {
+        return loadTimeData.getString('issueHeader');
+      },
     },
 
     /**
@@ -216,7 +226,9 @@ Polymer({
     selectCastModeHeaderText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('selectCastModeHeader'),
+      value: function() {
+        return loadTimeData.getString('selectCastModeHeader');
+      },
     },
 
     /**
@@ -226,7 +238,9 @@ Polymer({
     shareYourScreenSubheadingText_: {
       type: String,
       readOnly: true,
-      value: loadTimeData.getString('shareYourScreenSubheading'),
+      value: function() {
+        return loadTimeData.getString('shareYourScreenSubheading');
+      },
     },
 
     /**
@@ -345,6 +359,7 @@ Polymer({
    * Fires a 'report-initial-action' event when the user takes their first
    * action after the dialog opens. Also fires a 'report-initial-action-close'
    * event if that initial action is to close the dialog.
+   * @param {!media_router.MediaRouterUserAction} initialAction
    */
   maybeReportUserFirstAction: function(initialAction) {
     if (this.userHasTakenInitialAction_)
@@ -408,7 +423,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @return {boolean} Whether or not to hide the cast mode list.
    * @private
    */
@@ -451,7 +466,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the header.
    * @private
@@ -463,7 +478,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {string} headerText The header text for the sink list.
    * @return {string} The text for the header.
    * @private
@@ -485,7 +500,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {string} headerTooltip The tooltip for the header for the sink
    *     list.
    * @return {string} The tooltip for the header.
@@ -496,8 +511,8 @@ Polymer({
   },
 
   /**
-   * @param {string} The ID of the sink that is currently launching, or empty
-   *     string if none exists.
+   * @param {string} currentLaunchingSinkId ID of the sink that is currently
+   *     launching, or empty string if none exists.
    * @private
    */
   computeIsLaunching_: function(currentLaunchingSinkId) {
@@ -514,7 +529,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to show the issue banner.
    * @private
@@ -538,7 +553,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide the route details.
    * @private
@@ -561,7 +576,7 @@ Polymer({
   /**
    * @param {boolean} showFirstRunFlow Whether or not to show the first run
    *     flow.
-   * @param {!media_router.MediaRouterView} currentView The current view.
+   * @param {?media_router.MediaRouterView} currentView The current view.
    * @private
    */
   computeShowFirstRunFlow_: function(showFirstRunFlow, currentView) {
@@ -606,9 +621,10 @@ Polymer({
   },
 
   /**
-   * @param {!string} currentLauchingSinkid The ID of the sink that is
+   * @param {!string} currentLaunchingSinkId The ID of the sink that is
    *     currently launching.
    * @param {!string} sinkId A sink ID.
+   * @return {boolean} |true| if given sink is currently launching.
    * @private
    */
   computeSinkIsLaunching_: function(currentLaunchingSinkId, sinkId) {
@@ -616,7 +632,7 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!media_router.Sink>} The list of sinks.
+   * @param {!Array<!media_router.Sink>} sinksToShow The list of sinks.
    * @return {boolean} Whether or not to hide the sink list.
    * @private
    */
@@ -625,7 +641,7 @@ Polymer({
   },
 
   /**
-   * @param {media_router.MediaRouterView} view The current view.
+   * @param {?media_router.MediaRouterView} view The current view.
    * @param {?media_router.Issue} issue The current issue.
    * @return {boolean} Whether or not to hide entire the sink list view.
    * @private
@@ -653,7 +669,7 @@ Polymer({
    * |sinkToRouteMap|.
    * @param {!media_router.Sink} sink
    * @param {!Object<!string, ?media_router.Route>} sinkToRouteMap
-   * @return {string} The subtext to be shown.
+   * @return {?string} The subtext to be shown.
    * @private
    */
   computeSinkSubtext_: function(sink, sinkToRouteMap) {
@@ -813,16 +829,17 @@ Polymer({
    * to close the dialog if there is no click within three seconds.
    *
    * @param {!Event} event The event object.
-   * @param {{detail: {route: media_router.Route}}} data
-   * Parameters in |data|.detail:
+   * Parameters in |event|.detail:
    *   route - route to close.
    * @private
    */
-  onCloseRouteClick_: function(event, data) {
+  onCloseRouteClick_: function(event) {
+    /** @type {{route: media_router.Route}} */
+    var detail = event.detail;
     this.showSinkList_();
     this.startTapTimer_();
 
-    if (data.route.isLocal) {
+    if (detail.route.isLocal) {
       this.maybeReportUserFirstAction(
           media_router.MediaRouterUserAction.STOP_LOCAL);
     }
@@ -890,7 +907,7 @@ Polymer({
    */
   onSinkClick_: function(event) {
     this.showOrCreateRoute_(this.$.sinkList.itemForElement(event.target));
-    this.fire('sink-click', {index: event.model.index});
+    this.fire('sink-click', {index: event['model'].index});
   },
 
   /**
@@ -985,7 +1002,7 @@ Polymer({
    * @param {!media_router.CastMode} castMode
    */
   setShownCastMode_: function(castMode) {
-    if (this.shownCastMode_ == castMode.type)
+    if (this.shownCastModeValue_ == castMode.type)
       return;
 
     this.shownCastModeValue_ = castMode.type;

@@ -113,7 +113,8 @@ Polymer({
    * @private
    */
   onClickOptAction_: function(event) {
-    this.fireIssueActionClick_(this.issue.secondaryActionType);
+    this.fireIssueActionClick_(
+        /** @type {number} */(this.issue.secondaryActionType));
   },
 
   /**
