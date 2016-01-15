@@ -32,14 +32,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Fails on all platforms
     self.Fail('deqp/data/gles2/shaders/functions.html',
         bug=478572)
-    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
-        bug=478572)
     self.Fail('deqp/data/gles2/shaders/scoping.html',
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
-    self.Fail('conformance/textures/misc/cube-incomplete-fbo.html',
-        bug=559362)
     # Once we fix the CopyTexSubImage out-of-bounds behavior, this test will
     # still fail on Win7/Intel and Android/Qualcomm/Adreno420.
     self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
@@ -52,22 +48,17 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
 
     # Win failures
+    # Note that the following two tests pass with OpenGL.
     self.Fail('conformance/glsl/bugs/' +
               'pow-of-small-constant-in-user-defined-function.html',
         ['win'], bug=485641)
     self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
         ['win'], bug=485642)
+    # Note that the following test seems to pass, but it may still be flaky.
     self.Fail('conformance/glsl/constructors/' +
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
 
-    # Win7 / Intel failures
-    self.Fail('conformance/rendering/gl-scissor-test.html',
-        ['win7', 'intel'], bug=314997)
-    self.Fail('conformance/context/premultiplyalpha-test.html',
-        ['win7', 'intel'])
-    self.Fail('conformance/rendering/gl-viewport-test.html',
-        ['win7', 'intel'], bug=372511)
 
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
@@ -76,8 +67,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / AMD D3D9 failures
-    self.Fail('conformance/textures/misc/texparameter-test.html',
-        ['win', 'amd', 'd3d9'], bug=839) # angle bug ID
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['win', 'amd', 'd3d9'], bug=475095)
     self.Fail('conformance/rendering/more-than-65536-indices.html',
@@ -99,13 +88,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
         ['win', 'intel', 'd3d9'], bug=540538)
 
-    # Win / OpenGL failures
-    self.Fail('conformance/context/'+
-        'context-attributes-alpha-depth-stencil-antialias.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/conditionals.html',
-        ['win', 'opengl'], bug=1007) # angle bug ID
-
     # Win / OpenGL / NVIDIA failures
     self.Fail('conformance/attribs/gl-disabled-vertex-attrib.html',
         ['win', 'nvidia', 'opengl'], bug=1007) # angle bug ID
@@ -117,14 +99,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/rendering/gl-scissor-test.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/constant_expressions.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/constants.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('deqp/data/gles2/shaders/swizzles.html',
-        ['win', 'amd', 'opengl'], bug=1007) # angle bug ID
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
+        ['win', 'amd', 'opengl'], bug=478572)
 
     # Win / OpenGL / Intel failures
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
@@ -139,44 +115,16 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Mac failures
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['mac'], bug=421710)
-
-    # Mac / Intel failures
-    # Radar 13499466
-    self.Fail('conformance/limits/gl-max-texture-dimensions.html',
-        ['mac', 'intel'], bug=225642)
-    # Radar 13499623
-    self.Fail('conformance/textures/misc/texture-size.html',
-        ['mac', 'intel'], bug=225642)
-
-    # Mac / Intel HD 3000 failures
-    self.Skip('conformance/ogles/GL/control_flow/control_flow_009_to_010.html',
-        ['mac', ('intel', 0x116)], bug=322795)
-    # Radar 13499677
-    self.Fail('conformance/glsl/functions/' +
-        'glsl-function-smoothstep-gentype.html',
-        ['mac', ('intel', 0x116)], bug=225642)
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['mac', ('intel', 0x116)], bug=369349)
-
-    # Mac 10.9 / Intel HD 3000 failures
-    self.Fail('conformance/ogles/GL/operators/operators_009_to_016.html',
-        ['mavericks', ('intel', 0x116)], bug=417415)
-    self.Fail('conformance/rendering/gl-scissor-test.html',
-        ['mavericks', ('intel', 0x116)], bug=417415)
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
+        ['mac'], bug=478572)
 
     # Mac Retina failures
     self.Fail(
         'conformance/glsl/bugs/array-of-struct-with-int-first-position.html',
         ['mac', ('nvidia', 0xfd5), ('nvidia', 0xfe9)], bug=368912)
 
-    # Mac / AMD Failures
-    self.Fail('deqp/data/gles2/shaders/conversions.html',
-        ['mac', 'amd'], bug=478572)
-
     # Linux failures
     # NVIDIA
-    self.Fail('conformance/textures/misc/default-texture.html',
-        ['linux', ('nvidia', 0x104a)], bug=422152)
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
               ['linux', 'nvidia'], bug=544989) # Too flaky to retry
     self.Flaky('conformance/extensions/oes-element-index-uint.html',
@@ -184,6 +132,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',
                ['linux', 'amd'], bug=550989)
+    self.Fail('deqp/data/gles2/shaders/preprocessor.html',
+              ['linux', 'amd'], bug=478572)
     # AMD Radeon 5450
     self.Fail('conformance/programs/program-test.html',
         ['linux', ('amd', 0x68f9)], bug=436212)
@@ -238,26 +188,30 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # AMD Radeon 6450
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['linux', ('amd', 0x6779)], bug=479260)
-    self.Fail('conformance/extensions/ext-texture-filter-anisotropic.html',
+    self.Flaky('conformance/extensions/ext-texture-filter-anisotropic.html',
         ['linux', ('amd', 0x6779)], bug=436212)
-    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
+    self.Flaky('conformance/glsl/misc/shader-struct-scope.html',
         ['linux', ('amd', 0x6779)], bug=436212)
-    self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
+    self.Flaky('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['linux', ('amd', 0x6779)], bug=436212)
-    self.Fail('conformance/rendering/point-size.html',
+    self.Flaky('conformance/rendering/point-size.html',
         ['linux', ('amd', 0x6779)], bug=436212)
-    self.Fail('conformance/textures/misc/texture-sub-image-cube-maps.html',
+    self.Flaky('conformance/textures/misc/texture-sub-image-cube-maps.html',
         ['linux', ('amd', 0x6779)], bug=436212)
-    self.Fail('conformance/more/functions/uniformf.html',
+    self.Flaky('conformance/more/functions/uniformf.html',
         ['linux', ('amd', 0x6779)], bug=436212)
     self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
         ['linux', ('amd', 0x6779)], bug=479952)
-    self.Fail('conformance/textures/misc/texture-mips.html',
+    self.Flaky('conformance/textures/misc/texture-mips.html',
         ['linux', ('amd', 0x6779)], bug=479981)
-    self.Fail('conformance/textures/misc/texture-size-cube-maps.html',
+    self.Flaky('conformance/textures/misc/texture-size-cube-maps.html',
         ['linux', ('amd', 0x6779)], bug=479983)
-    self.Fail('conformance/uniforms/uniform-default-values.html',
+    self.Flaky('conformance/uniforms/uniform-default-values.html',
         ['linux', ('amd', 0x6779)], bug=482013)
+    self.Flaky('conformance/glsl/samplers/glsl-function-texture2dlod.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
+    self.Flaky('conformance/glsl/samplers/glsl-function-texture2dprojlod.html',
+        ['linux', ('amd', 0x6779)], bug=436212)
     # Intel
     self.Skip('conformance/glsl/bugs/temp-expressions-should-not-crash.html',
         ['linux', 'intel'], bug=540543)  # GPU timeout
