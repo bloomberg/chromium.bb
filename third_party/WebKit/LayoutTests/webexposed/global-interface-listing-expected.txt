@@ -3219,6 +3219,30 @@ interface MIDIPort : EventTarget
     method constructor
     method open
     setter onstatechange
+interface MatrixTransformComponent : TransformComponent
+    getter a
+    getter b
+    getter c
+    getter d
+    getter e
+    getter f
+    getter m11
+    getter m12
+    getter m13
+    getter m14
+    getter m21
+    getter m22
+    getter m23
+    getter m24
+    getter m31
+    getter m32
+    getter m33
+    getter m34
+    getter m41
+    getter m42
+    getter m43
+    getter m44
+    method constructor
 interface MediaDevices
     method constructor
     method enumerateDevices
