@@ -59,7 +59,7 @@ class BlimpInputManager : public ui::GestureProviderClient {
   // the compositor thread.
   // |consumed| is false if the event was not handled by the compositor and
   // should be sent to the engine.
-  void DidHandleWebInputEvent(const blink::WebInputEvent& input_event,
+  void DidHandleWebInputEvent(scoped_ptr<blink::WebInputEvent> input_event,
                               bool consumed);
 
  private:
@@ -77,7 +77,7 @@ class BlimpInputManager : public ui::GestureProviderClient {
       base::WeakPtr<BlimpInputManager> input_manager_weak_ptr,
       const base::WeakPtr<cc::InputHandler>& input_handler);
   void HandleWebInputEventOnCompositorThread(
-      const blink::WebInputEvent& input_event);
+      scoped_ptr<blink::WebInputEvent> input_event);
   void ShutdownOnCompositorThread(base::WaitableEvent* shutdown_event);
 
   bool IsMainThread() const;

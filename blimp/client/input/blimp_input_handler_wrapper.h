@@ -32,7 +32,7 @@ class BlimpInputHandlerWrapper : public ui::InputHandlerProxyClient {
   // Called by the BlimpInputManager to process a web input event. This will
   // call BlimpInputManager::HandleWebInputEvent with the result on the main
   // thread.
-  void HandleWebInputEvent(const blink::WebInputEvent& input_event);
+  void HandleWebInputEvent(scoped_ptr<blink::WebInputEvent> input_event);
 
  private:
   // InputHandlerProxyClient implementation.
