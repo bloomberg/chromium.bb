@@ -43,7 +43,7 @@ void SVGImagePainter::paint(const PaintInfo& paintInfo)
 
     if (m_layoutSVGImage.style()->outlineWidth()) {
         PaintInfo outlinePaintInfo(paintInfoBeforeFiltering);
-        outlinePaintInfo.phase = PaintPhaseSelfOutline;
+        outlinePaintInfo.phase = PaintPhaseSelfOutlineOnly;
         ObjectPainter(m_layoutSVGImage).paintOutline(outlinePaintInfo, LayoutPoint(boundingBox.location()));
     }
 }

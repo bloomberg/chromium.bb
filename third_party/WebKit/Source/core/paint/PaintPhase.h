@@ -50,11 +50,11 @@ enum PaintPhase {
     // the two backgrounds are often painted with different scroll offsets and clips.
     //
     // Paint background of the current object only.
-    PaintPhaseSelfBlockBackground = 1,
+    PaintPhaseSelfBlockBackgroundOnly = 1,
     // Paint backgrounds of non-self-painting descendants only. The painter should call
     // each non-self-painting child's paint method by passing paintInfo.forDescendants() which
-    // converts PaintPhaseDescendantsBlockBackgrounds to PaintPhaseBlockBackground.
-    PaintPhaseDescendantBlockBackgrounds = 2,
+    // converts PaintPhaseDescendantsBlockBackgroundsOnly to PaintPhaseBlockBackground.
+    PaintPhaseDescendantBlockBackgroundsOnly = 2,
 
     // Float phase
     PaintPhaseFloat = 3,
@@ -71,11 +71,11 @@ enum PaintPhase {
     // outlines of the object itself and for descendants.
     //
     // Paint outline for the current object only.
-    PaintPhaseSelfOutline = 6,
+    PaintPhaseSelfOutlineOnly = 6,
     // Paint outlines of non-self-painting descendants only. The painter should call each
     // non-self-painting child's paint method by passing paintInfo.forDescendants() which
-    // converts PaintPhaseDescendantsOutliness to PaintPhaseBlockOutline.
-    PaintPhaseDescendantOutlines = 7,
+    // converts PaintPhaseDescendantsOutlinesOnly to PaintPhaseBlockOutline.
+    PaintPhaseDescendantOutlinesOnly = 7,
 
     // The below are auxiliary phases which are used to paint special effects.
     PaintPhaseSelection = 8,
@@ -86,6 +86,26 @@ enum PaintPhase {
     PaintPhaseMax = PaintPhaseClippingMask,
     // These values must be kept in sync with DisplayItem::Type and DisplayItem::typeAsDebugString().
 };
+
+inline bool shouldPaintSelfBlockBackground(PaintPhase phase)
+{
+    return phase == PaintPhaseBlockBackground || phase == PaintPhaseSelfBlockBackgroundOnly;
+}
+
+inline bool shouldPaintSelfOutline(PaintPhase phase)
+{
+    return phase == PaintPhaseOutline || phase == PaintPhaseSelfOutlineOnly;
+}
+
+inline bool shouldPaintDescendantBlockBackgrounds(PaintPhase phase)
+{
+    return phase == PaintPhaseBlockBackground || phase == PaintPhaseDescendantBlockBackgroundsOnly;
+}
+
+inline bool shouldPaintDescendantOutlines(PaintPhase phase)
+{
+    return phase == PaintPhaseOutline || phase == PaintPhaseDescendantOutlinesOnly;
+}
 
 // Those flags are meant as global tree operations. This means
 // that they should be constant for a paint phase.

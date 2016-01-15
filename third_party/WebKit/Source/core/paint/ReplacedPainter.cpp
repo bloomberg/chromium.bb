@@ -41,9 +41,8 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (paintInfo.phase == PaintPhaseClippingMask && (!m_layoutReplaced.hasLayer() || !m_layoutReplaced.layer()->hasCompositedClippingMask()))
         return;
 
-    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) {
-        if (m_layoutReplaced.styleRef().outlineWidth())
-            ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, adjustedPaintOffset);
+    if (shouldPaintSelfOutline(paintInfo.phase)) {
+        ObjectPainter(m_layoutReplaced).paintOutline(paintInfo, adjustedPaintOffset);
         return;
     }
 

@@ -79,9 +79,9 @@ struct CORE_EXPORT PaintInfo {
     PaintInfo forDescendants() const
     {
         PaintInfo result(*this);
-        if (phase == PaintPhaseDescendantOutlines)
+        if (phase == PaintPhaseDescendantOutlinesOnly)
             result.phase = PaintPhaseOutline;
-        else if (phase == PaintPhaseDescendantBlockBackgrounds)
+        else if (phase == PaintPhaseDescendantBlockBackgroundsOnly)
             result.phase = PaintPhaseBlockBackground;
         return result;
     }

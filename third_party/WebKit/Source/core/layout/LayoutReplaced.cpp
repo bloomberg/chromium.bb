@@ -116,7 +116,7 @@ void LayoutReplaced::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
 
 bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseOutline && paintInfo.phase != PaintPhaseSelfOutline
+    if (paintInfo.phase != PaintPhaseForeground && !shouldPaintSelfOutline(paintInfo.phase)
         && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask && paintInfo.phase != PaintPhaseClippingMask)
         return false;
 

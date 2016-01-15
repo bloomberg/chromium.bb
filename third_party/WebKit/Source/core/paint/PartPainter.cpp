@@ -55,7 +55,7 @@ void PartPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
         return;
     }
 
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutPart.style()->hasOutline())
+    if (shouldPaintSelfOutline(paintInfo.phase))
         ObjectPainter(m_layoutPart).paintOutline(paintInfo, adjustedPaintOffset);
 
     if (paintInfo.phase != PaintPhaseForeground)

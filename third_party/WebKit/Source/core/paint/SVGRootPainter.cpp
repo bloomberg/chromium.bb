@@ -24,7 +24,7 @@ void SVGRootPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintO
         return;
 
     // SVG outlines are painted during PaintPhaseForeground.
-    if (paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline)
+    if (shouldPaintSelfOutline(paintInfo.phase))
         return;
 
     // An empty viewBox also disables rendering.

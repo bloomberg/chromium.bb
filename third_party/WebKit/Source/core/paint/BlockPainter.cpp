@@ -42,37 +42,39 @@ void BlockPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOff
     if (m_layoutBlock.hasOverflowClip() && !m_layoutBlock.hasControlClip() && !(m_layoutBlock.shouldPaintSelectionGaps() && originalPhase == PaintPhaseForeground) && !m_layoutBlock.hasCaret())
         contentsClipBehavior = SkipContentsClipIfPossible;
 
-    if (localPaintInfo.phase == PaintPhaseOutline) {
-        localPaintInfo.phase = PaintPhaseDescendantOutlines;
-    } else if (localPaintInfo.phase == PaintPhaseBlockBackground) {
-        localPaintInfo.phase = PaintPhaseSelfBlockBackground;
+    if (originalPhase == PaintPhaseOutline) {
+        localPaintInfo.phase = PaintPhaseDescendantOutlinesOnly;
+    } else if (shouldPaintSelfBlockBackground(originalPhase)) {
+        localPaintInfo.phase = PaintPhaseSelfBlockBackgroundOnly;
         m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
-        localPaintInfo.phase = PaintPhaseDescendantBlockBackgrounds;
+        if (shouldPaintDescendantBlockBackgrounds(originalPhase))
+            localPaintInfo.phase = PaintPhaseDescendantBlockBackgroundsOnly;
     }
 
-    {
+    if (originalPhase != PaintPhaseSelfBlockBackgroundOnly && originalPhase != PaintPhaseSelfOutlineOnly) {
         BoxClipper boxClipper(m_layoutBlock, localPaintInfo, adjustedPaintOffset, contentsClipBehavior);
         m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
     }
 
-    if (originalPhase == PaintPhaseOutline) {
-        localPaintInfo.phase = PaintPhaseSelfOutline;
+    if (shouldPaintSelfOutline(originalPhase)) {
+        localPaintInfo.phase = PaintPhaseSelfOutlineOnly;
         m_layoutBlock.paintObject(localPaintInfo, adjustedPaintOffset);
-        localPaintInfo.phase = originalPhase;
-    } else if (originalPhase == PaintPhaseBlockBackground) {
-        localPaintInfo.phase = originalPhase;
     }
 
     // Our scrollbar widgets paint exactly when we tell them to, so that they work properly with
     // z-index. We paint after we painted the background/border, so that the scrollbars will
     // sit above the background/border.
+    localPaintInfo.phase = originalPhase;
     paintOverflowControlsIfNeeded(localPaintInfo, adjustedPaintOffset);
 }
 
 void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    PaintPhase phase = paintInfo.phase;
-    if (m_layoutBlock.hasOverflowClip() && m_layoutBlock.style()->visibility() == VISIBLE && (phase == PaintPhaseSelfBlockBackground || phase == PaintPhaseBlockBackground) && paintInfo.shouldPaintWithinRoot(&m_layoutBlock) && !paintInfo.paintRootBackgroundOnly()) {
+    if (m_layoutBlock.hasOverflowClip()
+        && m_layoutBlock.style()->visibility() == VISIBLE
+        && shouldPaintSelfBlockBackground(paintInfo.phase)
+        && paintInfo.shouldPaintWithinRoot(&m_layoutBlock)
+        && !paintInfo.paintRootBackgroundOnly()) {
         Optional<ClipRecorder> clipRecorder;
         if (!m_layoutBlock.layer()->isSelfPaintingLayer()) {
             LayoutRect clipRect = m_layoutBlock.borderBoxRect();
@@ -136,10 +138,16 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     const PaintPhase paintPhase = paintInfo.phase;
 
-    if ((paintPhase == PaintPhaseSelfBlockBackground || paintPhase == PaintPhaseBlockBackground)
-        && m_layoutBlock.style()->visibility() == VISIBLE
-        && m_layoutBlock.hasBoxDecorationBackground())
-        m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
+    if (shouldPaintSelfBlockBackground(paintPhase)) {
+        if (m_layoutBlock.style()->visibility() == VISIBLE && m_layoutBlock.hasBoxDecorationBackground())
+            m_layoutBlock.paintBoxDecorationBackground(paintInfo, paintOffset);
+        // We're done. We don't bother painting any children.
+        if (paintPhase == PaintPhaseSelfBlockBackgroundOnly)
+            return;
+    }
+
+    if (paintInfo.paintRootBackgroundOnly())
+        return;
 
     if (paintPhase == PaintPhaseMask && m_layoutBlock.style()->visibility() == VISIBLE) {
         m_layoutBlock.paintMask(paintInfo, paintOffset);
@@ -156,7 +164,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
     if (paintPhase == PaintPhaseForeground && paintInfo.isPrinting())
         ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
-    {
+    if (paintPhase != PaintPhaseSelfOutlineOnly) {
         Optional<ScrollRecorder> scrollRecorder;
         Optional<PaintInfo> scrolledPaintInfo;
         if (m_layoutBlock.hasOverflowClip()) {
@@ -170,14 +178,9 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             }
         }
 
-        // We're done. We don't bother painting any children.
-        if (paintPhase == PaintPhaseSelfBlockBackground || paintInfo.paintRootBackgroundOnly())
-            return;
-
         const PaintInfo& contentsPaintInfo = scrolledPaintInfo ? *scrolledPaintInfo : paintInfo;
 
-        if (paintPhase != PaintPhaseSelfOutline)
-            paintContents(contentsPaintInfo, paintOffset);
+        paintContents(contentsPaintInfo, paintOffset);
 
         if (paintPhase == PaintPhaseForeground && !paintInfo.isPrinting())
             m_layoutBlock.paintSelection(contentsPaintInfo, paintOffset); // Fill in gaps in selection on lines and between blocks.
@@ -186,7 +189,7 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
             m_layoutBlock.paintFloats(contentsPaintInfo, paintOffset);
     }
 
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutBlock.style()->hasOutline() && m_layoutBlock.style()->visibility() == VISIBLE)
+    if (shouldPaintSelfOutline(paintPhase))
         ObjectPainter(m_layoutBlock).paintOutline(paintInfo, paintOffset);
 
     // If the caret's node's layout object's containing block is this block, and the paint action is PaintPhaseForeground,
@@ -231,19 +234,14 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
         return;
 
     if (m_layoutBlock.childrenInline()) {
-        if (paintInfo.phase == PaintPhaseDescendantOutlines)
+        if (shouldPaintDescendantOutlines(paintInfo.phase))
             ObjectPainter(m_layoutBlock).paintInlineChildrenOutlines(paintInfo, paintOffset);
         else
             LineBoxListPainter(m_layoutBlock.lineBoxes()).paint(m_layoutBlock, paintInfo, paintOffset);
     } else {
-        PaintPhase newPhase = (paintInfo.phase == PaintPhaseDescendantOutlines) ? PaintPhaseOutline : paintInfo.phase;
-        newPhase = (newPhase == PaintPhaseDescendantBlockBackgrounds) ? PaintPhaseBlockBackground : newPhase;
-
-        // We don't paint our own background, but we do let the kids paint their backgrounds.
-        PaintInfo paintInfoForChild(paintInfo);
-        paintInfoForChild.phase = newPhase;
-        paintInfoForChild.updatePaintingRootForChildren(&m_layoutBlock);
-        m_layoutBlock.paintChildren(paintInfoForChild, paintOffset);
+        PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
+        paintInfoForDescendants.updatePaintingRootForChildren(&m_layoutBlock);
+        m_layoutBlock.paintChildren(paintInfoForDescendants, paintOffset);
     }
 }
 

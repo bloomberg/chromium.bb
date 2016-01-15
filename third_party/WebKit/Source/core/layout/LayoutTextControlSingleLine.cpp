@@ -73,7 +73,7 @@ void LayoutTextControlSingleLine::paint(const PaintInfo& paintInfo, const Layout
 {
     LayoutTextControl::paint(paintInfo, paintOffset);
 
-    if (paintInfo.phase == PaintPhaseSelfBlockBackground && m_shouldDrawCapsLockIndicator) {
+    if (shouldPaintSelfBlockBackground(paintInfo.phase) && m_shouldDrawCapsLockIndicator) {
         if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, *this, paintInfo.phase, paintOffset))
             return;
 

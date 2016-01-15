@@ -188,7 +188,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext, const Vector<IntRect>
 
 void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline);
+    ASSERT(shouldPaintSelfOutline(paintInfo.phase));
 
     const ComputedStyle& styleToUse = m_layoutObject.styleRef();
     if (!styleToUse.hasOutline() || styleToUse.visibility() != VISIBLE)
@@ -241,14 +241,12 @@ void ObjectPainter::paintOutline(const PaintInfo& paintInfo, const LayoutPoint& 
 
 void ObjectPainter::paintInlineChildrenOutlines(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    ASSERT(paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseDescendantOutlines);
+    ASSERT(shouldPaintDescendantOutlines(paintInfo.phase));
 
-    PaintInfo childPaintInfo(paintInfo);
-    childPaintInfo.phase = paintInfo.phase == PaintPhaseDescendantOutlines ? PaintPhaseOutline : paintInfo.phase;
-
+    PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
     for (LayoutObject* child = m_layoutObject.slowFirstChild(); child; child = child->nextSibling()) {
         if (child->isLayoutInline() && !toLayoutInline(child)->hasSelfPaintingLayer())
-            child->paint(childPaintInfo, paintOffset);
+            child->paint(paintInfoForDescendants, paintOffset);
     }
 }
 
@@ -536,23 +534,25 @@ void ObjectPainter::drawSolidBoxSide(GraphicsContext& graphicsContext, int x1, i
 
 void ObjectPainter::paintAsPseudoStackingContext(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    bool preservePhase = paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip;
-    if (!preservePhase && paintInfo.phase != PaintPhaseForeground)
+    // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that they will paint
+    // for selection and text clip respectively. We don't need complete painting for these phases.
+    if (paintInfo.phase == PaintPhaseSelection || paintInfo.phase == PaintPhaseTextClip) {
+        m_layoutObject.paint(paintInfo, paintOffset);
+        return;
+    }
+
+    if (paintInfo.phase != PaintPhaseForeground)
         return;
 
     PaintInfo info(paintInfo);
-    info.phase = preservePhase ? paintInfo.phase : PaintPhaseSelfBlockBackground;
+    info.phase = PaintPhaseBlockBackground;
     m_layoutObject.paint(info, paintOffset);
-    if (!preservePhase) {
-        info.phase = PaintPhaseDescendantBlockBackgrounds;
-        m_layoutObject.paint(info, paintOffset);
-        info.phase = PaintPhaseFloat;
-        m_layoutObject.paint(info, paintOffset);
-        info.phase = PaintPhaseForeground;
-        m_layoutObject.paint(info, paintOffset);
-        info.phase = PaintPhaseOutline;
-        m_layoutObject.paint(info, paintOffset);
-    }
+    info.phase = PaintPhaseFloat;
+    m_layoutObject.paint(info, paintOffset);
+    info.phase = PaintPhaseForeground;
+    m_layoutObject.paint(info, paintOffset);
+    info.phase = PaintPhaseOutline;
+    m_layoutObject.paint(info, paintOffset);
 }
 
 } // namespace blink

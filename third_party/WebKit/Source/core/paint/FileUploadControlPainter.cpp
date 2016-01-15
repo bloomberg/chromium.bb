@@ -23,7 +23,7 @@ void FileUploadControlPainter::paintObject(const PaintInfo& paintInfo, const Lay
 
     // Push a clip.
     Optional<ClipRecorder> clipRecorder;
-    if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseDescendantBlockBackgrounds) {
+    if (paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseDescendantBlockBackgroundsOnly) {
         IntRect clipRect = enclosingIntRect(LayoutRect(
             LayoutPoint(paintOffset.x() + m_layoutFileUploadControl.borderLeft(), paintOffset.y() + m_layoutFileUploadControl.borderTop()),
             m_layoutFileUploadControl.size() + LayoutSize(0, -m_layoutFileUploadControl.borderWidth() + buttonShadowHeight)));

@@ -20,54 +20,50 @@ namespace blink {
 void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     PaintPhase paintPhase = paintInfo.phase;
-    if ((paintPhase == PaintPhaseSelfBlockBackground || paintPhase == PaintPhaseBlockBackground) && m_layoutTable.hasBoxDecorationBackground() && m_layoutTable.style()->visibility() == VISIBLE)
+
+    if (shouldPaintSelfBlockBackground(paintPhase)) {
         paintBoxDecorationBackground(paintInfo, paintOffset);
+        if (paintPhase == PaintPhaseSelfBlockBackgroundOnly)
+            return;
+    }
 
     if (paintPhase == PaintPhaseMask) {
         paintMask(paintInfo, paintOffset);
         return;
     }
 
-    // We're done. We don't bother painting any children.
-    if (paintPhase == PaintPhaseSelfBlockBackground)
-        return;
+    if (paintPhase != PaintPhaseSelfOutlineOnly) {
+        PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
+        paintInfoForDescendants.updatePaintingRootForChildren(&m_layoutTable);
 
-    // We don't paint our own background, but we do let the kids paint their backgrounds.
-    if (paintPhase == PaintPhaseDescendantBlockBackgrounds)
-        paintPhase = PaintPhaseBlockBackground;
-
-    PaintInfo info(paintInfo);
-    info.phase = paintPhase;
-    info.updatePaintingRootForChildren(&m_layoutTable);
-
-    for (LayoutObject* child = m_layoutTable.firstChild(); child; child = child->nextSibling()) {
-        if (child->isBox() && !toLayoutBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
-            LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(toLayoutBox(child), paintOffset);
-            child->paint(info, childPoint);
+        for (LayoutObject* child = m_layoutTable.firstChild(); child; child = child->nextSibling()) {
+            if (child->isBox() && !toLayoutBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
+                LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(toLayoutBox(child), paintOffset);
+                child->paint(paintInfoForDescendants, childPoint);
+            }
         }
-    }
 
-    if (m_layoutTable.collapseBorders() && paintPhase == PaintPhaseBlockBackground && m_layoutTable.style()->visibility() == VISIBLE) {
-        // Using our cached sorted styles, we then do individual passes,
-        // painting each style of border from lowest precedence to highest precedence.
-        LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
-        size_t count = collapsedBorders.size();
-        for (size_t i = 0; i < count; ++i) {
-            for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
-                LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(section, paintOffset);
-                TableSectionPainter(*section).paintCollapsedBorders(info, childPoint, collapsedBorders[i]);
+        if (m_layoutTable.collapseBorders() && shouldPaintDescendantBlockBackgrounds(paintPhase) && m_layoutTable.style()->visibility() == VISIBLE) {
+            // Using our cached sorted styles, we then do individual passes,
+            // painting each style of border from lowest precedence to highest precedence.
+            LayoutTable::CollapsedBorderValues collapsedBorders = m_layoutTable.collapsedBorders();
+            size_t count = collapsedBorders.size();
+            for (size_t i = 0; i < count; ++i) {
+                for (LayoutTableSection* section = m_layoutTable.bottomSection(); section; section = m_layoutTable.sectionAbove(section)) {
+                    LayoutPoint childPoint = m_layoutTable.flipForWritingModeForChild(section, paintOffset);
+                    TableSectionPainter(*section).paintCollapsedBorders(paintInfoForDescendants, childPoint, collapsedBorders[i]);
+                }
             }
         }
     }
 
-    // Paint outline.
-    if ((paintPhase == PaintPhaseOutline || paintPhase == PaintPhaseSelfOutline) && m_layoutTable.style()->hasOutline() && m_layoutTable.style()->visibility() == VISIBLE)
+    if (shouldPaintSelfOutline(paintPhase))
         ObjectPainter(m_layoutTable).paintOutline(paintInfo, paintOffset);
 }
 
 void TablePainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutTable))
+    if (!m_layoutTable.hasBoxDecorationBackground() || m_layoutTable.style()->visibility() != VISIBLE || !paintInfo.shouldPaintWithinRoot(&m_layoutTable))
         return;
 
     LayoutRect rect(paintOffset, m_layoutTable.size());

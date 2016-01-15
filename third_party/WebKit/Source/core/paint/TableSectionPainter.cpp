@@ -26,6 +26,11 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
     if (m_layoutTableSection.needsLayout())
         return;
 
+    // Table sections don't paint self background. The cells paint table section's background
+    // behind them when needed during PaintPhaseBlockBackground or PaintPhaseDescendantBlockBackgroundOnly.
+    if (paintInfo.phase == PaintPhaseSelfBlockBackgroundOnly)
+        return;
+
     unsigned totalRows = m_layoutTableSection.numRows();
     unsigned totalCols = m_layoutTableSection.table()->columns().size();
 
@@ -33,12 +38,13 @@ void TableSectionPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& p
         return;
 
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutTableSection.location();
-    {
+
+    if (paintInfo.phase != PaintPhaseSelfOutlineOnly) {
         BoxClipper boxClipper(m_layoutTableSection, paintInfo, adjustedPaintOffset, ForceContentsClip);
         paintObject(paintInfo, adjustedPaintOffset);
     }
 
-    if ((paintInfo.phase == PaintPhaseOutline || paintInfo.phase == PaintPhaseSelfOutline) && m_layoutTableSection.style()->visibility() == VISIBLE)
+    if (shouldPaintSelfOutline(paintInfo.phase))
         ObjectPainter(m_layoutTableSection).paintOutline(paintInfo, adjustedPaintOffset);
 }
 
@@ -105,11 +111,13 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
     if (dirtiedColumns.start() >= dirtiedColumns.end())
         return;
 
+    PaintInfo paintInfoForCells = paintInfo.forDescendants();
     const HashSet<LayoutTableCell*>& overflowingCells = m_layoutTableSection.overflowingCells();
     if (!m_layoutTableSection.hasMultipleCellLevels() && !overflowingCells.size()) {
         // Draw the dirty cells in the order that they appear.
         for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
             const LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
+            // TODO(wangxianzhu): This painting order is inconsistent with other outlines. crbug.com/577282.
             if (row && !row->hasSelfPaintingLayer())
                 TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
             for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
@@ -117,7 +125,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
                 const LayoutTableCell* cell = current.primaryCell();
                 if (!cell || (r > dirtiedRows.start() && m_layoutTableSection.primaryCellAt(r - 1, c) == cell) || (c > dirtiedColumns.start() && m_layoutTableSection.primaryCellAt(r, c - 1) == cell))
                     continue;
-                paintCell(*cell, paintInfo, paintOffset);
+                paintCell(*cell, paintInfoForCells, paintOffset);
             }
         }
     } else {
@@ -136,6 +144,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
 
         for (unsigned r = dirtiedRows.start(); r < dirtiedRows.end(); r++) {
             const LayoutTableRow* row = m_layoutTableSection.rowLayoutObjectAt(r);
+            // TODO(wangxianzhu): This painting order is inconsistent with other outlines. crbug.com/577282.
             if (row && !row->hasSelfPaintingLayer())
                 TableRowPainter(*row).paintOutlineForRowIfNeeded(paintInfo, paintOffset);
             for (unsigned c = dirtiedColumns.start(); c < dirtiedColumns.end(); c++) {
@@ -163,7 +172,7 @@ void TableSectionPainter::paintObject(const PaintInfo& paintInfo, const LayoutPo
             std::sort(cells.begin(), cells.end(), compareCellPositionsWithOverflowingCells);
 
         for (unsigned i = 0; i < cells.size(); ++i)
-            paintCell(*cells[i], paintInfo, paintOffset);
+            paintCell(*cells[i], paintInfoForCells, paintOffset);
     }
 }
 
@@ -173,7 +182,7 @@ void TableSectionPainter::paintCell(const LayoutTableCell& cell, const PaintInfo
     PaintPhase paintPhase = paintInfo.phase;
     const LayoutTableRow* row = toLayoutTableRow(cell.parent());
 
-    if ((paintPhase == PaintPhaseSelfBlockBackground || paintPhase == PaintPhaseBlockBackground)
+    if (shouldPaintSelfBlockBackground(paintPhase)
         && BlockPainter(cell).intersectsPaintRect(paintInfo, paintOffset)) {
         // We need to handle painting a stack of backgrounds. This stack (from bottom to top) consists of
         // the column group, column, row group, row, and then the cell.
