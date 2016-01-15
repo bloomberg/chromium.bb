@@ -210,8 +210,8 @@ const char* const kSafeManifestEntries[] = {
     // Descriptive statement about the app.
     emk::kRequirements,
 
-    // Execute some pages in a separate sandbox.  (Note:
-    // extensions::manifest_keys only has constants for sub-keys.)
+    // Execute some pages in a separate sandbox.  (Note: Using string literal
+    // since extensions::manifest_keys only has constants for sub-keys.)
     "sandbox",
 
     // TBD, doc missing
@@ -220,7 +220,8 @@ const char* const kSafeManifestEntries[] = {
     // Network access.
     emk::kSockets,
 
-    // TBD.  (Note: extensions::manifest_keys only has constants for sub-keys.)
+    // TBD.  (Note: Using string literal since extensions::manifest_keys only
+    // has constants for sub-keys.)
     // "storage",
 
     // TBD, doc missing
@@ -286,7 +287,7 @@ const char* const kSafePermissions[] = {
     // Writing to clipboard is safe.
     "clipboardWrite",
 
-    // TBD
+    // Potentially risky: Could be used to spoof system UI.
     // "contextMenus",
 
     // Dev channel only.  Not evaluated.
@@ -314,7 +315,8 @@ const char* const kSafePermissions[] = {
     // TBD
     // "fileSystemProvider",
 
-    // Just another type of connectivity.
+    // Just another type of connectivity.  On the system side, no user data is
+    // involved, implicitly or explicity.
     "gcm",
 
     // Risky: Accessing location without explicit user consent.
@@ -336,19 +338,22 @@ const char* const kSafePermissions[] = {
     // without their consent.
     // "mediaGalleries",
 
-    // Just UX.
-    "notifications",
+    // Potentially risky: Could be used to spoof system UI.
+    // "notifications",
 
     // TBD.  Could allow UX spoofing.
     // "pointerLock",
 
-    // Power settings.
-    "power",
+    // Potentiall risky: chrome.power.requestKeepAwake can inhibit idle time
+    // detection and prevent idle time logout and that way reduce isolation
+    // between subsequent Public Session users.
+    // "power",
 
     // Risky: Could be used to siphon printed documents.
     // "printerProvider",
 
-    // Access serial port.
+    // Access serial port.  It's hard to conceive a case in which private data
+    // is stored on a serial device and being read without the user's consent.
     "serial",
 
     // Just another type of connectivity.
@@ -357,7 +362,8 @@ const char* const kSafePermissions[] = {
     // Just another type of connectivity.
     "sockets",
 
-    // Per-app sandbox.
+    // Per-app sandbox.  User cannot log into Public Session, thus storage
+    // cannot be sync'ed to the cloud.
     "storage",
 
     // Access system parameters.
@@ -381,9 +387,11 @@ const char* const kSafePermissions[] = {
     // Excessive resource usage is not a risk.
     "unlimitedStorage",
 
-    // Raw peripheral access is out of scope.
-    // TODO(tnagel): Explain in greater detail.
-    "usb",
+    // Risky: Raw peripheral access could allow an app to read user data from
+    // USB storage devices that have been plugged in by the user.  Not sure if
+    // that can happen though, because the system might claim storage devices
+    // for itself.  Still, leaving disallowed for now to be on the safe side.
+    // "usb",
 
     // TBD: What if one user connects and the next one is unaware of that?
     // "vpnProvider",
