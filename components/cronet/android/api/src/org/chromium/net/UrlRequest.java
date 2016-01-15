@@ -279,7 +279,7 @@ public interface UrlRequest {
          * @param newLocationUrl Location where request is redirected.
          */
         public abstract void onRedirectReceived(
-                UrlRequest request, UrlResponseInfo info, String newLocationUrl);
+                UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception;
 
         /**
          * Invoked when the final set of headers, after all redirects, is received.
@@ -295,7 +295,8 @@ public interface UrlRequest {
          * @param request Request that started to get response.
          * @param info Response information.
          */
-        public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info);
+        public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info)
+                throws Exception;
 
         /**
          * Invoked whenever part of the response body has been read. Only part of
@@ -317,7 +318,7 @@ public interface UrlRequest {
          *         the received data. The buffer's limit is not changed.
          */
         public abstract void onReadCompleted(
-                UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer);
+                UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception;
 
         /**
          * Invoked when request is completed successfully. Once invoked, no other

@@ -771,7 +771,7 @@ final class JavaUrlRequest implements UrlRequest {
         void onResponseStarted(UrlResponseInfo info) {
             execute(State.AWAITING_READ, new CheckedRunnable() {
                 @Override
-                public void run() {
+                public void run() throws Exception {
                     if (mState.compareAndSet(State.STARTED, State.AWAITING_READ)) {
                         mCallback.onResponseStarted(JavaUrlRequest.this, mUrlResponseInfo);
                     }
@@ -782,7 +782,7 @@ final class JavaUrlRequest implements UrlRequest {
         void onReadCompleted(final UrlResponseInfo info, final ByteBuffer byteBuffer) {
             execute(State.AWAITING_READ, new CheckedRunnable() {
                 @Override
-                public void run() {
+                public void run() throws Exception {
                     if (mState.compareAndSet(State.READING, State.AWAITING_READ)) {
                         mCallback.onReadCompleted(JavaUrlRequest.this, info, byteBuffer);
                     }
