@@ -808,6 +808,7 @@
         'common/gpu/media/avda_codec_image.cc',
         'common/gpu/media/avda_codec_image.h',
         'common/gpu/media/avda_return_on_failure.h',
+        'common/gpu/media/avda_shared_state.cc',
         'common/gpu/media/avda_shared_state.h',
         'common/gpu/media/avda_state_provider.h',
       ],

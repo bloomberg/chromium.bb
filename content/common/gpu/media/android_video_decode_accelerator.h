@@ -53,7 +53,8 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
 
     // Called before the AVDA does any Destroy() work.  This will be
     // the last call that the BackingStrategy receives.
-    virtual void Cleanup(const OutputBufferMap& buffer_map) = 0;
+    virtual void Cleanup(bool have_context,
+                         const OutputBufferMap& buffer_map) = 0;
 
     // Return the GL texture target that the PictureBuffer textures use.
     virtual uint32_t GetTextureTarget() const = 0;

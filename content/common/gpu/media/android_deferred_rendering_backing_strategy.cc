@@ -29,17 +29,28 @@ void AndroidDeferredRenderingBackingStrategy::Initialize(
     AVDAStateProvider* state_provider) {
   state_provider_ = state_provider;
   shared_state_ = new AVDASharedState();
+
+  // Create a texture for the SurfaceTexture to use.  We don't attach it here
+  // so that it gets attached in the compositor gl context in the common case.
+  GLuint service_id = 0;
+  glGenTextures(1, &service_id);
+  DCHECK(service_id);
+  shared_state_->set_surface_texture_service_id(service_id);
 }
 
 void AndroidDeferredRenderingBackingStrategy::Cleanup(
+    bool have_context,
     const AndroidVideoDecodeAccelerator::OutputBufferMap& buffers) {
-  for (const std::pair<int, media::PictureBuffer>& entry : buffers) {
-    AVDACodecImage* avImage = GetImageForPicture(entry.second);
-    if (avImage) {
-      avImage->SetMediaCodecBufferIndex(-1);
-      avImage->SetMediaCodec(nullptr);
-    }
-  }
+  // Make sure that no PictureBuffer textures refer to the SurfaceTexture or to
+  // the service_id that we created for it.
+  for (const std::pair<int, media::PictureBuffer>& entry : buffers)
+    SetImageForPicture(entry.second, nullptr);
+
+  // Now that no AVDACodecImages refer to the SurfaceTexture's texture, delete
+  // the texture name.
+  GLuint service_id = shared_state_->surface_texture_service_id();
+  if (service_id > 0 && have_context)
+    glDeleteTextures(1, &service_id);
 }
 
 uint32_t AndroidDeferredRenderingBackingStrategy::GetTextureTarget() const {
@@ -98,12 +109,22 @@ void AndroidDeferredRenderingBackingStrategy::SetImageForPicture(
                                   size.width(), size.height(), 1, 0, GL_RGBA,
                                   GL_UNSIGNED_BYTE, gfx::Rect());
 
-    texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
-                                   image.get(), gpu::gles2::Texture::UNBOUND);
+    // Override the texture's service_id, so that it will use the one that
+    // will be / is attached to the SurfaceTexture.
+    DCHECK(shared_state_->surface_texture_service_id());
+    texture_ref->texture()->SetUnownedServiceId(
+        shared_state_->surface_texture_service_id());
 
     static_cast<AVDACodecImage*>(image.get())
         ->setTexture(texture_ref->texture());
+  } else {
+    // Clear the unowned service_id, so that this texture is no longer going
+    // to depend on the surface texture at all.
+    texture_ref->texture()->SetUnownedServiceId(0);
   }
+
+  texture_manager->SetLevelImage(texture_ref, GetTextureTarget(), 0,
+                                 image.get(), gpu::gles2::Texture::UNBOUND);
 }
 
 void AndroidDeferredRenderingBackingStrategy::UseCodecBufferForPictureBuffer(
@@ -162,13 +183,10 @@ void AndroidDeferredRenderingBackingStrategy::DismissOnePictureBuffer(
   // release it.
   ReleaseCodecBufferForPicture(picture_buffer);
 
-  // Paranoia.  The texture will be dropped anyway, causing the picture to be
-  // deleted then.
-  SetImageForPicture(picture_buffer, 0);
-
-  // TODO(liberato): If we really want to re-use a picture buffer's texture as
-  // the surface texture's consumer texture id, then we could manage
-  // re-assigning it here.
+  // This makes sure that the Texture no longer refers to the codec or to the
+  // SurfaceTexture's service_id.  That's important, so that it doesn't refer
+  // to the texture by name after we've deleted it.
+  SetImageForPicture(picture_buffer, nullptr);
 }
 
 void AndroidDeferredRenderingBackingStrategy::CodecChanged(

@@ -1878,6 +1878,10 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                            GLint location,
                                            const std::string& name);
 
+  // If |texture_manager_version_| doesn't match the current version, then this
+  // will rebind all external textures to match their current service_id.
+  void RestoreAllExternalTextureBindingsIfNeeded() override;
+
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
 #define GLES2_CMD_OP(name) \
@@ -2073,6 +2077,11 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kStartPoint];
+
+  // Most recent generation of the TextureManager.  If this no longer matches
+  // the current generation when our context becomes current, then we'll rebind
+  // all the textures to stay up-to-date with Texture::service_id() changes.
+  uint32_t texture_manager_service_id_generation_;
 
   bool force_shader_name_hashing_for_test;
 
@@ -2557,6 +2566,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       validation_texture_(0),
       validation_fbo_multisample_(0),
       validation_fbo_(0),
+      texture_manager_service_id_generation_(0),
       force_shader_name_hashing_for_test(false) {
   DCHECK(group);
 }
@@ -3591,6 +3601,9 @@ bool GLES2DecoderImpl::MakeCurrent() {
     RestoreFramebufferBindings();
 
   framebuffer_state_.clear_state_dirty = true;
+
+  // Rebind textures if the service ids may have changed.
+  RestoreAllExternalTextureBindingsIfNeeded();
 
   return true;
 }
@@ -15577,6 +15590,32 @@ error::Error GLES2DecoderImpl::HandleProgramPathFragmentInputGenCHROMIUM(
   glProgramPathFragmentInputGenNV(program->service_id(), real_location,
                                   gen_mode, components, coeffs);
   return error::kNoError;
+}
+
+void GLES2DecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
+  if (texture_manager()->GetServiceIdGeneration() ==
+      texture_manager_service_id_generation_)
+    return;
+
+  // Texture manager's version has changed, so rebind all external textures
+  // in case their service ids have changed.
+  for (unsigned texture_unit_index = 0;
+       texture_unit_index < state_.texture_units.size(); texture_unit_index++) {
+    TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
+    if (texture_unit.bind_target != GL_TEXTURE_EXTERNAL_OES)
+      continue;
+
+    if (TextureRef* texture_ref =
+            texture_unit.bound_texture_external_oes.get()) {
+      glActiveTexture(GL_TEXTURE0 + texture_unit_index);
+      glBindTexture(GL_TEXTURE_EXTERNAL_OES, texture_ref->service_id());
+    }
+  }
+
+  glActiveTexture(GL_TEXTURE0 + state_.active_texture_unit);
+
+  texture_manager_service_id_generation_ =
+      texture_manager()->GetServiceIdGeneration();
 }
 
 // Include the auto-generated part of this file. We split this because it means

@@ -47,6 +47,9 @@ class TextureTestHelper {
   static bool IsCubeComplete(const Texture* texture) {
     return texture->cube_complete();
   }
+  static GLuint owned_service_id(const Texture* texture) {
+    return texture->owned_service_id();
+  }
 };
 
 class TextureManagerTest : public GpuServiceTest {
@@ -465,6 +468,48 @@ TEST_F(TextureManagerTest, ValidForTargetNPOT) {
   // Check NPOT height on level 1
   EXPECT_TRUE(manager.ValidForTarget(GL_TEXTURE_2D, 1, 2, 5, 1));
   manager.Destroy(false);
+}
+
+TEST_F(TextureManagerTest, OverrideServiceID) {
+  // Create a texture.
+  const GLuint kClientId = 1;
+  const GLuint kServiceId = 11;
+  manager_->CreateTexture(kClientId, kServiceId);
+  scoped_refptr<TextureRef> texture_ref(manager_->GetTexture(kClientId));
+  manager_->SetTarget(texture_ref.get(), GL_TEXTURE_EXTERNAL_OES);
+
+  Texture* texture = texture_ref->texture();
+  GLuint owned_service_id = TextureTestHelper::owned_service_id(texture);
+  GLuint service_id = texture->service_id();
+  // Initially, the texture should use the same service id that it owns.
+  EXPECT_EQ(owned_service_id, service_id);
+
+  // Override the service_id.
+  GLuint unowned_service_id = service_id + 1;
+  texture->SetUnownedServiceId(unowned_service_id);
+
+  // Make sure that service_id() changed but owned_service_id() didn't.
+  EXPECT_EQ(unowned_service_id, texture->service_id());
+  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
+
+  // Undo the override.
+  texture->SetUnownedServiceId(0);
+
+  // The service IDs should be back as they were.
+  EXPECT_EQ(service_id, texture->service_id());
+  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
+
+  // Override again, so that we can check delete behavior.
+  texture->SetUnownedServiceId(unowned_service_id);
+  EXPECT_EQ(unowned_service_id, texture->service_id());
+  EXPECT_EQ(owned_service_id, TextureTestHelper::owned_service_id(texture));
+
+  // Remove the texture.  It should delete the texture id that it owns, even
+  // though it is overridden.
+  EXPECT_CALL(*gl_, DeleteTextures(1, ::testing::Pointee(owned_service_id)))
+      .Times(1)
+      .RetiresOnSaturation();
+  manager_->RemoveTexture(kClientId);
 }
 
 class TextureTestBase : public GpuServiceTest {

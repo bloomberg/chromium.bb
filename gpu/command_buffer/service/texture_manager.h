@@ -128,6 +128,12 @@ class GPU_EXPORT Texture {
     service_id_ = service_id;
   }
 
+  // Causes us to report |service_id| as our service id, but does not delete
+  // it when we are destroyed.  Will rebind any OES_EXTERNAL texture units to
+  // our new service id in all contexts.  If |service_id| is zero, then we
+  // revert to our original service id.
+  void SetUnownedServiceId(GLuint service_id);
+
   // Returns the target this texure was first bound to or 0 if it has not
   // been bound. Once a texture is bound to a specific target it can never be
   // bound to a different target.
@@ -426,6 +432,15 @@ class GPU_EXPORT Texture {
   void UpdateMaxLevel(GLint max_level);
   void UpdateNumMipLevels();
 
+  // Increment the generation counter for all managers that have a reference to
+  // this texture.
+  void IncrementManagerServiceIdGeneration();
+
+  // Return the service id of the texture that we will delete when we are
+  // destroyed.  Normally, this is the same as service_id(), unless it is
+  // overridden by SetUnownedServiceId.
+  GLuint owned_service_id() const { return owned_service_id_; }
+
   MailboxManager* mailbox_manager_;
 
   // Info about each face and level of texture.
@@ -441,6 +456,15 @@ class GPU_EXPORT Texture {
 
   // The id of the texure
   GLuint service_id_;
+
+  // The id of the texture that we are responsible for deleting.  Normally,
+  // this is the same as service_id_, unless a call to SetUnownedServiceId
+  // overrides it.  In that case, we'll use the overridden service id (stored
+  // in |service_id_|) for all purposes except deleting the texture name.
+  // Whoever calls SetUnownedServiceId is assumed to handle deleting that id,
+  // and only after we are either deleted or told to stop using it via
+  // another call to SetUnownedServiceId.
+  GLuint owned_service_id_;
 
   // Whether all renderable mips of this texture have been cleared.
   bool cleared_;
@@ -932,6 +956,11 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
                                    const gfx::Rect& rect2,
                                    gfx::Rect* result);
 
+  // Get / set the current generation number of this manager.  This generation
+  // number changes whenever the service_id of one or more Textures change.
+  uint32_t GetServiceIdGeneration() const;
+  void IncrementServiceIdGeneration();
+
  private:
   friend class Texture;
   friend class TextureRef;
@@ -1007,6 +1036,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   scoped_refptr<TextureRef> default_textures_[kNumDefaultTextures];
 
   std::vector<DestructionObserver*> destruction_observers_;
+
+  uint32_t current_service_id_generation_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureManager);
 };

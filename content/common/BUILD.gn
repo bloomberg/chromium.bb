@@ -360,6 +360,7 @@ source_set("common") {
       "gpu/media/avda_codec_image.cc",
       "gpu/media/avda_codec_image.h",
       "gpu/media/avda_return_on_failure.h",
+      "gpu/media/avda_shared_state.cc",
       "gpu/media/avda_shared_state.h",
       "gpu/media/avda_state_provider.h",
     ]

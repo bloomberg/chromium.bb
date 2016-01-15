@@ -62,8 +62,7 @@ class AVDACodecImage : public gl::GLImage {
 
  private:
   // Make sure that the surface texture's front buffer is current.
-  // Returns true if the ST's texture was bound to the active unit.
-  bool UpdateSurfaceTexture();
+  void UpdateSurfaceTexture();
 
   // Attach the surface texture to our GL context, with a texture that we
   // create for it.

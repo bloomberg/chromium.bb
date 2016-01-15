@@ -33,7 +33,8 @@ class CONTENT_EXPORT AndroidCopyingBackingStrategy
 
   // AndroidVideoDecodeAccelerator::BackingStrategy
   void Initialize(AVDAStateProvider*) override;
-  void Cleanup(const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
+  void Cleanup(bool have_context,
+               const AndroidVideoDecodeAccelerator::OutputBufferMap&) override;
   uint32_t GetTextureTarget() const override;
   scoped_refptr<gfx::SurfaceTexture> CreateSurfaceTexture() override;
   void UseCodecBufferForPictureBuffer(int32_t codec_buffer_index,

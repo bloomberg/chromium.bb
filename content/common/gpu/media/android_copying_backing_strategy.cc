@@ -32,12 +32,13 @@ void AndroidCopyingBackingStrategy::Initialize(
 }
 
 void AndroidCopyingBackingStrategy::Cleanup(
+    bool have_context,
     const AndroidVideoDecodeAccelerator::OutputBufferMap&) {
   DCHECK(state_provider_->ThreadChecker().CalledOnValidThread());
   if (copier_)
     copier_->Destroy();
 
-  if (surface_texture_id_)
+  if (surface_texture_id_ && have_context)
     glDeleteTextures(1, &surface_texture_id_);
 }
 

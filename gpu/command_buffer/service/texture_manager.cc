@@ -25,7 +25,9 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
+#include "ui/gl/gl_state_restorer.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/trace_util.h"
 
@@ -314,6 +316,7 @@ Texture::Texture(GLuint service_id)
     : mailbox_manager_(NULL),
       memory_tracking_ref_(NULL),
       service_id_(service_id),
+      owned_service_id_(service_id),
       cleared_(true),
       num_uncleared_mips_(0),
       num_npot_faces_(0),
@@ -342,8 +345,7 @@ Texture::Texture(GLuint service_id)
       has_images_(false),
       estimated_size_(0),
       can_render_condition_(CAN_RENDER_ALWAYS),
-      texture_max_anisotropy_initialized_(false) {
-}
+      texture_max_anisotropy_initialized_(false) {}
 
 Texture::~Texture() {
   if (mailbox_manager_)
@@ -367,10 +369,8 @@ void Texture::RemoveTextureRef(TextureRef* ref, bool have_context) {
   size_t result = refs_.erase(ref);
   DCHECK_EQ(result, 1u);
   if (refs_.empty()) {
-    if (have_context) {
-      GLuint id = service_id();
-      glDeleteTextures(1, &id);
-    }
+    if (have_context)
+      glDeleteTextures(1, &owned_service_id_);
     delete this;
   } else if (memory_tracking_ref_ == NULL) {
     // TODO(piman): tune ownership semantics for cross-context group shared
@@ -1302,6 +1302,7 @@ void Texture::SetLevelImage(GLenum target,
   DCHECK_EQ(info.level, level);
   info.image = image;
   info.image_state = state;
+
   UpdateCanRenderCondition();
   UpdateHasImages();
 }
@@ -1367,6 +1368,30 @@ void Texture::DumpLevelMemory(base::trace_event::ProcessMemoryDump* pmd,
   }
 }
 
+void Texture::SetUnownedServiceId(GLuint service_id) {
+  GLuint new_service_id = service_id;
+
+  // Take no action if this isn't an OES_EXTERNAL texture.
+  if (target_ && target_ != GL_TEXTURE_EXTERNAL_OES)
+    return;
+
+  if (!service_id)
+    new_service_id = owned_service_id_;
+
+  if (service_id_ != new_service_id) {
+    service_id_ = new_service_id;
+    IncrementManagerServiceIdGeneration();
+    if (gfx::GLContext* context = gfx::GLContext::GetCurrent()) {
+      // It would be preferable to pass in the decoder, and ask it to do this
+      // instead.  However, there are several cases, such as TextureDefinition,
+      // that show up without a clear context owner.  So, instead, we use the
+      // current state's state restorer.
+      if (gfx::GLStateRestorer* restorer = context->GetGLStateRestorer())
+        restorer->RestoreAllExternalTextureBindingsIfNeeded();
+    }
+  }
+}
+
 TextureRef::TextureRef(TextureManager* manager,
                        GLuint client_id,
                        Texture* texture)
@@ -1426,7 +1451,8 @@ TextureManager::TextureManager(MemoryTracker* memory_tracker,
       num_uncleared_mips_(0),
       num_images_(0),
       texture_count_(0),
-      have_context_(true) {
+      have_context_(true),
+      current_service_id_generation_(0) {
   for (int ii = 0; ii < kNumDefaultTextures; ++ii) {
     black_texture_ids_[ii] = 0;
   }
@@ -2625,6 +2651,21 @@ GLenum TextureManager::ExtractTypeFromStorageFormat(GLenum internalformat) {
     default:
       return GL_NONE;
   }
+}
+
+void Texture::IncrementManagerServiceIdGeneration() {
+  for (auto ref : refs_) {
+    TextureManager* manager = ref->manager();
+    manager->IncrementServiceIdGeneration();
+  }
+}
+
+uint32_t TextureManager::GetServiceIdGeneration() const {
+  return current_service_id_generation_;
+}
+
+void TextureManager::IncrementServiceIdGeneration() {
+  current_service_id_generation_++;
 }
 
 }  // namespace gles2

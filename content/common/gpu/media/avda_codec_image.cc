@@ -38,18 +38,7 @@ AVDACodecImage::AVDACodecImage(
 
 AVDACodecImage::~AVDACodecImage() {}
 
-void AVDACodecImage::Destroy(bool have_context) {
-  // If the SurfaceTexture is using our texture, then detach from it.
-  if (detach_surface_texture_on_destruction_) {
-    // We don't really care if we have no context, since it doesn't
-    // matter if the texture is destroyed here or not.  As long as the
-    // surface texture doesn't try to delete this handle later (after
-    // it might have been reused), it's fine.  Somebody else will delete
-    // our texture when the picture buffer is destroyed.
-    surface_texture_->DetachFromGLContext();
-    shared_state_->set_surface_texture_service_id(0);
-  }
-}
+void AVDACodecImage::Destroy(bool have_context) {}
 
 gfx::Size AVDACodecImage::GetSize() {
   return size_;
@@ -69,27 +58,23 @@ bool AVDACodecImage::CopyTexImage(unsigned target) {
   if (target != GL_TEXTURE_EXTERNAL_OES)
     return false;
 
-  // Have we bound the SurfaceTexture's texture handle to the active
-  // texture unit yet?
-  bool bound_texture = false;
+  // Verify that the currently bound texture is the right one.  If we're not
+  // copying to a Texture that shares our service_id, then we can't do much.
+  // This will force a copy.
+  // TODO(liberato): Fall back to a copy that uses the texture matrix.
+  GLint bound_service_id = 0;
+  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &bound_service_id);
+  if (bound_service_id != shared_state_->surface_texture_service_id())
+    return false;
 
   // Attach the surface texture to our GL context if needed.
-  if (!shared_state_->surface_texture_service_id()) {
+  if (!shared_state_->surface_texture_is_attached())
     AttachSurfaceTextureToContext();
-    bound_texture = true;
-  }
 
   // Make sure that we have the right image in the front buffer.
-  bound_texture |= UpdateSurfaceTexture();
+  UpdateSurfaceTexture();
 
   InstallTextureMatrix();
-
-  // Sneakily bind the ST texture handle in the real GL context.
-  // If we called UpdateTexImage() to update the ST front buffer, then we can
-  // skip this.  Since one draw/frame is the common case, we optimize for it.
-  if (!bound_texture)
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES,
-                  shared_state_->surface_texture_service_id());
 
   // TODO(liberato): Handle the texture matrix properly.
   // Either we can update the shader with it or we can move all of the logic
@@ -124,36 +109,32 @@ void AVDACodecImage::OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd,
                                   uint64_t process_tracing_id,
                                   const std::string& dump_name) {}
 
-bool AVDACodecImage::UpdateSurfaceTexture() {
+void AVDACodecImage::UpdateSurfaceTexture() {
   // Render via the media codec if needed.
-  if (codec_buffer_index_ > -1 && media_codec_) {
-    // We have been given a codec buffer to render, so render it.
-    // We might want to ask the avda to release any buffers that come
-    // before us without rendering, just for good measure.  However,
-    // to prevent doing lots of work on the drawing path, we skip it.
+  if (codec_buffer_index_ <= -1 || !media_codec_)
+    return;
 
-    // The decoder buffer was still pending.
-    // This must be synchronous, so wait for OnFrameAvailable.
-    media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
-    {
-      SCOPED_UMA_HISTOGRAM_TIMER("Media.AvdaCodecImage.WaitTimeForFrame");
-      shared_state_->WaitForFrameAvailable();
-    }
-
-    // Don't bother to check if we're rendered again.
-    codec_buffer_index_ = -1;
-
-    // Swap the rendered image to the front.
-    surface_texture_->UpdateTexImage();
-
-    // Helpfully, this is already column major.
-    surface_texture_->GetTransformMatrix(gl_matrix_);
-
-    // UpdateTexImage() binds the ST's texture.
-    return true;
+  // The decoder buffer is still pending.
+  // This must be synchronous, so wait for OnFrameAvailable.
+  media_codec_->ReleaseOutputBuffer(codec_buffer_index_, true);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER("Media.AvdaCodecImage.WaitTimeForFrame");
+    shared_state_->WaitForFrameAvailable();
   }
 
-  return false;
+  // Don't bother to check if we're rendered again.
+  codec_buffer_index_ = -1;
+
+  // Swap the rendered image to the front.
+  scoped_ptr<ui::ScopedMakeCurrent> scoped_make_current;
+  if (!shared_state_->context()->IsCurrent(NULL)) {
+    scoped_make_current.reset(new ui::ScopedMakeCurrent(
+        shared_state_->context(), shared_state_->surface()));
+  }
+  surface_texture_->UpdateTexImage();
+
+  // Helpfully, this is already column major.
+  surface_texture_->GetTransformMatrix(gl_matrix_);
 }
 
 void AVDACodecImage::SetMediaCodecBufferIndex(int buffer_index) {
@@ -177,25 +158,19 @@ void AVDACodecImage::setTexture(gpu::gles2::Texture* texture) {
 }
 
 void AVDACodecImage::AttachSurfaceTextureToContext() {
-  GLint surface_texture_service_id;
-  // Use the PictureBuffer's texture.  We could also generate a new texture
-  // here, but cleaning it up is problematic.
-  glGetIntegerv(GL_TEXTURE_BINDING_EXTERNAL_OES, &surface_texture_service_id);
-  DCHECK(surface_texture_service_id);
+  // Attach the surface texture to the first context we're bound on, so that
+  // no context switch is needed later.
 
-  // Attach to our service id.
-  glBindTexture(GL_TEXTURE_EXTERNAL_OES, surface_texture_service_id);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
   // The surface texture is already detached, so just attach it.
+  // We could do this earlier, but SurfaceTexture has context affinity, and we
+  // don't want to require a context switch.
   surface_texture_->AttachToGLContext();
-  shared_state_->set_surface_texture_service_id(surface_texture_service_id);
-  detach_surface_texture_on_destruction_ = true;
-
-  // We do not restore the GL state here.
+  shared_state_->did_attach_surface_texture();
 }
 
 void AVDACodecImage::InstallTextureMatrix() {

@@ -755,7 +755,11 @@ void AndroidVideoDecodeAccelerator::Reset() {
 void AndroidVideoDecodeAccelerator::Destroy() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  strategy_->Cleanup(output_picture_buffers_);
+  bool have_context = make_context_current_.Run();
+  if (!have_context)
+    LOG(WARNING) << "Failed make GL context current for Destroy, continuing.";
+
+  strategy_->Cleanup(have_context, output_picture_buffers_);
 
   // If we have an OnFrameAvailable handler, tell it that we're going away.
   if (on_frame_available_handler_) {

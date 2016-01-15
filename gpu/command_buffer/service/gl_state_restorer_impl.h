@@ -29,6 +29,7 @@ class GPU_EXPORT GLStateRestorerImpl : public gfx::GLStateRestorer {
    void RestoreState(const gfx::GLStateRestorer* prev_state) override;
    void RestoreAllTextureUnitBindings() override;
    void RestoreActiveTextureUnitBinding(unsigned int target) override;
+   void RestoreAllExternalTextureBindingsIfNeeded() override;
    void RestoreFramebufferBindings() override;
    void PauseQueries() override;
    void ResumeQueries() override;
