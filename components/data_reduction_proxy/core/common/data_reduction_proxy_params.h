@@ -63,6 +63,9 @@ bool IsIncludedInLoFiControlFieldTrial();
 // trial.
 bool IsIncludedInLoFiPreviewFieldTrial();
 
+// Returns true if this client is part of the tamper detection experiment.
+bool IsIncludedInTamperDetectionExperiment();
+
 // Returns true if this client has any of the values to enable Lo-Fi mode for
 // the "data-reduction-proxy-lo-fi" command line switch. This includes the
 // "always-on", "cellular-only", and "slow-connections-only" values.

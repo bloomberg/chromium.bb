@@ -99,6 +99,11 @@ bool IsIncludedInLoFiPreviewFieldTrial() {
   return FieldTrialList::FindFullName(GetLoFiFieldTrialName()) == kPreview;
 }
 
+bool IsIncludedInTamperDetectionExperiment() {
+  return FieldTrialList::FindFullName("DataReductionProxyServerExperiments")
+             .find("TamperDetection_Enabled") == 0;
+}
+
 bool IsLoFiOnViaFlags() {
   return IsLoFiAlwaysOnViaFlags() || IsLoFiCellularOnlyViaFlags() ||
          IsLoFiSlowConnectionsOnlyViaFlags();

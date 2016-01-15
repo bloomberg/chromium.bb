@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 
@@ -263,7 +264,11 @@ DataReductionProxyBypassType GetDataReductionProxyBypassType(
       data_reduction_proxy_info->bypass_duration = TimeDelta::FromSeconds(1);
       return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_4XX;
     }
-    return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
+
+    // Missing the via header should not trigger bypass if the client is
+    // included in the tamper detection experiment.
+    if (!params::IsIncludedInTamperDetectionExperiment())
+      return BYPASS_EVENT_TYPE_MISSING_VIA_HEADER_OTHER;
   }
   // There is no bypass event.
   return BYPASS_EVENT_TYPE_MAX;
