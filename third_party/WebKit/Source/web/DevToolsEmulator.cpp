@@ -269,6 +269,7 @@ void DevToolsEmulator::enableMobileEmulation()
     m_originalDefaultMinimumPageScaleFactor = m_webViewImpl->defaultMinimumPageScaleFactor();
     m_originalDefaultMaximumPageScaleFactor = m_webViewImpl->defaultMaximumPageScaleFactor();
     m_webViewImpl->setDefaultPageScaleLimits(0.25f, 5);
+    m_webViewImpl->mainFrameImpl()->frameView()->layout();
 }
 
 void DevToolsEmulator::disableMobileEmulation()
@@ -294,6 +295,7 @@ void DevToolsEmulator::disableMobileEmulation()
     m_webViewImpl->setDefaultPageScaleLimits(
         m_originalDefaultMinimumPageScaleFactor,
         m_originalDefaultMaximumPageScaleFactor);
+    m_webViewImpl->mainFrameImpl()->frameView()->layout();
 }
 
 void DevToolsEmulator::setTouchEventEmulationEnabled(bool enabled)
