@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.media.remote;
 
-import android.test.FlakyTest;
+import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
 import org.chromium.base.test.util.Feature;
@@ -24,13 +24,11 @@ public class CastSwitchVideoTest extends CastTestBase {
     private static final String VIDEO_ELEMENT_2 = "video2";
 
     @Feature({"VideoFling"})
-    // Appears to be flaky, see crbug.com/515085
-    // @LargeTest
-    @FlakyTest
-    public void testNewVideoInNewTab() throws InterruptedException, TimeoutException {
+    @LargeTest
+    public void testPlayNewVideoInNewTab() throws InterruptedException, TimeoutException {
         // This won't currently work in document mode because we can't create new tabs
         if (FeatureUtilities.isDocumentMode(getActivity())) return;
-        checkSwitchVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
+        checkPlaySecondVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -45,8 +43,8 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    public void testNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
-        checkSwitchVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
+    public void testPlayNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
+        checkPlaySecondVideo(DEFAULT_VIDEO_PAGE, VIDEO_ELEMENT, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -61,8 +59,8 @@ public class CastSwitchVideoTest extends CastTestBase {
 
     @Feature({"VideoFling"})
     @LargeTest
-    public void testTwoVideosSamePage() throws InterruptedException, TimeoutException {
-        checkSwitchVideo(TWO_VIDEO_PAGE, VIDEO_ELEMENT_2, new Runnable() {
+    public void testPlayTwoVideosSamePage() throws InterruptedException, TimeoutException {
+        checkPlaySecondVideo(TWO_VIDEO_PAGE, VIDEO_ELEMENT_2, new Runnable() {
             @Override
             public void run() {
                 try {
@@ -74,7 +72,55 @@ public class CastSwitchVideoTest extends CastTestBase {
         });
     }
 
-    private void checkSwitchVideo(
+    @Feature({"VideoFling"})
+    @LargeTest
+    public void testCastNewVideoInNewTab() throws InterruptedException, TimeoutException {
+        // This won't currently work in document mode because we can't create new tabs
+        if (FeatureUtilities.isDocumentMode(getActivity())) return;
+        checkCastSecondVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    loadUrlInNewTab(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    castVideoFromCurrentTab(VIDEO_ELEMENT);
+                } catch (Exception e) {
+                    fail("Failed to start second video; " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    @Feature({"VideoFling"})
+    @LargeTest
+    public void testCastNewVideoNewPageSameTab() throws InterruptedException, TimeoutException {
+        checkCastSecondVideo(DEFAULT_VIDEO_PAGE, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    loadUrl(TestHttpServerClient.getUrl(TEST_VIDEO_PAGE_2));
+                    castVideoFromCurrentTab(VIDEO_ELEMENT);
+                } catch (Exception e) {
+                    fail("Failed to start second video; " + e.getMessage());
+                }
+            }
+        });
+    }
+
+    @Feature({"VideoFling"})
+    @LargeTest
+    public void testCastTwoVideosSamePage() throws InterruptedException, TimeoutException {
+        checkCastSecondVideo(TWO_VIDEO_PAGE, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    castVideoFromCurrentTab(VIDEO_ELEMENT_2);
+                } catch (Exception e) {
+                    fail("Failed to start second video; " + e.getMessage());
+                }
+            }
+        });
+    }
+    private void checkPlaySecondVideo(
             String firstVideoPage, String secondVideoId, final Runnable startSecondVideo)
                     throws InterruptedException, TimeoutException {
         // TODO(aberent) Checking position is flaky, because it is timing dependent, but probably
@@ -94,6 +140,29 @@ public class CastSwitchVideoTest extends CastTestBase {
         WebContents webContents = tab.getWebContents();
         assertFalse("Other video is not playing",
                 DOMUtils.isMediaPaused(webContents, secondVideoId));
+    }
+
+    private void checkCastSecondVideo(String firstVideoPage,  final Runnable startSecondVideo)
+            throws InterruptedException, TimeoutException {
+        // TODO(aberent) Checking position is flaky, because it is timing dependent, but probably
+        // a good idea in principle. Need to find a way of unflaking it.
+        // int position = castAndPauseDefaultVideoFromPage(firstVideoPage);
+        castAndPauseDefaultVideoFromPage(firstVideoPage);
+
+        startSecondVideo.run();
+
+        // Check that we switch to playing the right video
+        checkVideoStarted(TEST_VIDEO_2);
+    }
+
+    private void castVideoFromCurrentTab(String videoElement) throws InterruptedException,
+            TimeoutException {
+        final Tab tab = getActivity().getActivityTab();
+        WebContents webContents = tab.getWebContents();
+        waitUntilVideoReady(videoElement, webContents);
+        Rect videoRect = DOMUtils.getNodeBounds(webContents, videoElement);
+
+        castVideoAndWaitUntilPlaying(CAST_TEST_ROUTE, tab, videoRect);
     }
 
     private void playVideoFromCurrentTab(String videoElement) throws InterruptedException,

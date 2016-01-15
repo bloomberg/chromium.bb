@@ -5,22 +5,34 @@
 package org.chromium.chrome.browser.media.remote;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.MediaRouteChooserDialog;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
-import android.support.v7.app.MediaRouteControllerDialog;
-import android.support.v7.app.MediaRouteControllerDialogFragment;
 import android.support.v7.app.MediaRouteDialogFactory;
+import android.support.v7.media.MediaRouter;
 import android.view.View;
 import android.widget.FrameLayout;
+
+import org.chromium.chrome.browser.media.remote.MediaRouteController.MediaStateListener;
 
 /**
  * The Chrome implementation of the dialog factory so custom behavior can
  * be injected for the disconnect button.
  */
-public class ChromeMediaRouteDialogFactory extends MediaRouteDialogFactory {
+public class MediaRouteChooserDialogFactory extends MediaRouteDialogFactory {
+
+    private final MediaRouteController mController;
+    private final Context mContext;
+    private final MediaStateListener mPlayer;
+
+    MediaRouteChooserDialogFactory(MediaStateListener player, MediaRouteController controller,
+            Context context) {
+        mPlayer = player;
+        mController = controller;
+        mContext = context;
+    }
 
     private static class SystemVisibilitySaver {
         private int mSystemVisibility;
@@ -50,28 +62,10 @@ public class ChromeMediaRouteDialogFactory extends MediaRouteDialogFactory {
     }
 
     @Override
-    public MediaRouteControllerDialogFragment onCreateControllerDialogFragment() {
-        return new MediaRouteControllerDialogFragment() {
-            final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
-
-            @Override
-            public Dialog onCreateDialog(Bundle saved) {
-                mVisibilitySaver.saveSystemVisibility(getActivity());
-                return new MediaRouteControllerDialog(getActivity());
-            }
-
-            @Override
-            public void onStop() {
-                super.onStop();
-                mVisibilitySaver.restoreSystemVisibility(getActivity());
-            }
-        };
-    }
-
-    @Override
     public MediaRouteChooserDialogFragment onCreateChooserDialogFragment() {
         return new MediaRouteChooserDialogFragment() {
             final SystemVisibilitySaver mVisibilitySaver = new SystemVisibilitySaver();
+            boolean mCancelled = false;
 
             @Override
             public MediaRouteChooserDialog onCreateChooserDialog(
@@ -84,6 +78,22 @@ public class ChromeMediaRouteDialogFactory extends MediaRouteDialogFactory {
             public void onStop() {
                 super.onStop();
                 mVisibilitySaver.restoreSystemVisibility(getActivity());
+            }
+
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                mCancelled = true;
+
+                super.onCancel(dialog);
+            }
+
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                super.onDismiss(dialog);
+
+                if (mCancelled) return;
+                MediaRouter router = MediaRouter.getInstance(mContext);
+                mController.onRouteSelected(mPlayer, router, router.getSelectedRoute());
             }
         };
     }

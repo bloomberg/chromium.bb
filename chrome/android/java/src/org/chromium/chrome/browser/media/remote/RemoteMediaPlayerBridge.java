@@ -225,7 +225,6 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     private void setNativePlayer() {
         if (mDebug) Log.i(TAG, "setNativePlayer");
         if (mRouteController == null) return;
-        mRouteController.setMediaStateListener(mMediaStateListener);
         mActive = true;
     }
 

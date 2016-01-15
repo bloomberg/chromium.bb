@@ -94,6 +94,10 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
      * selected route.
      */
     private class DeviceSelectionCallback extends MediaRouter.Callback {
+        // Note that this doesn't use onRouteSelected, but instead casting is started directly
+        // by the selection dialog. It has to be done that way, since selecting the current route
+        // on a new video doesn't call onRouteSelected.
+
         private Runnable mConnectionFailureNotifier = new Runnable() {
                 @Override
             public void run() {
@@ -137,11 +141,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
                     mConnectionFailureNotifierQueued = false;
                 }
             }
-        }
-
-        @Override
-        public void onRouteSelected(MediaRouter router, RouteInfo route) {
-            onRouteSelectedEvent(router, route);
         }
 
         @Override
@@ -375,7 +374,16 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
     protected abstract void onRouteAddedEvent(MediaRouter router, RouteInfo route);
 
-    protected abstract void onRouteSelectedEvent(MediaRouter router, RouteInfo route);
+    // TODO: Merge with onRouteSelected(). Needs two sided patch for downstream implementations
+    protected void onRouteSelectedEvent(MediaRouter router, RouteInfo route) {
+    }
+
+    @Override
+    public void onRouteSelected(MediaStateListener player, MediaRouter router, RouteInfo route) {
+        if (mMediaStateListener != null) mMediaStateListener.onCastStopping();
+        setMediaStateListener(player);
+        onRouteSelectedEvent(router, route);
+    }
 
     protected abstract void onRouteUnselectedEvent(MediaRouter router, RouteInfo route);
 

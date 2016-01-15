@@ -474,7 +474,8 @@ public class AbstractMediaRouteControllerTest {
         }
 
         @Override
-        protected void onRouteSelectedEvent(MediaRouter router, RouteInfo route) {
+        public void onRouteSelected(MediaStateListener player, MediaRouter router,
+                RouteInfo route) {
             throw new UnsupportedOperationException();
         }
 

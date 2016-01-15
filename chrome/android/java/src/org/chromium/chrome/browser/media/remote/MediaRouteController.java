@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.media.remote;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.support.v7.media.MediaRouteSelector;
+import android.support.v7.media.MediaRouter;
+import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
@@ -343,4 +345,14 @@ public interface MediaRouteController extends TransportControl.Listener {
      * @return the poster bitmap, or Null.
      */
     Bitmap getPoster();
+
+    /**
+     * Called when a new route has been selected
+     * @param player TODO
+     * @param router The MediaRouter.
+     * @param route The selected route.
+     */
+    void onRouteSelected(MediaStateListener player, MediaRouter router, RouteInfo route);
+
+
 }
