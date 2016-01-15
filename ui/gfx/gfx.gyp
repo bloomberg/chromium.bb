@@ -310,8 +310,6 @@
         'win/dpi.h',
         'win/hwnd_util.cc',
         'win/hwnd_util.h',
-        "win/physical_size.cc",
-        "win/physical_size.h",
         'win/scoped_set_map_mode.h',
         'win/singleton_hwnd.cc',
         'win/singleton_hwnd.h',

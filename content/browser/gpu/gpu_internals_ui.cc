@@ -42,7 +42,6 @@
 #endif
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
-#include "ui/gfx/win/physical_size.h"
 #endif
 
 #if defined(OS_LINUX) && defined(USE_X11)
@@ -148,21 +147,6 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   if (GpuDataManagerImpl::GetInstance()->ShouldUseWarp()) {
     basic_info->Append(NewDescriptionValuePair("Using WARP",
         new base::FundamentalValue(true)));
-  }
-
-  std::vector<gfx::PhysicalDisplaySize> display_sizes =
-      gfx::GetPhysicalSizeForDisplays();
-  for (const auto& display_size : display_sizes) {
-    const int w = display_size.width_mm;
-    const int h = display_size.height_mm;
-    const double size_mm = sqrt(w * w + h * h);
-    const double size_inches = 0.0393701 * size_mm;
-    const double rounded_size_inches = floor(10.0 * size_inches) / 10.0;
-    std::string size_string = base::StringPrintf("%.1f\"", rounded_size_inches);
-    std::string description_string = base::StringPrintf(
-        "Diagonal Monitor Size of %s", display_size.display_name.c_str());
-    basic_info->Append(
-        NewDescriptionValuePair(description_string, size_string));
   }
 #endif
 
