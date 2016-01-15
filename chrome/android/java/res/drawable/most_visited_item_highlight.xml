@@ -5,5 +5,5 @@
      found in the LICENSE file.
 -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:state_pressed="true" android:drawable="@drawable/icon_most_visited_item_highlight_plain" />
+    <item android:state_pressed="true" android:drawable="@drawable/most_visited_item_highlight_plain" />
 </selector>

@@ -18,12 +18,12 @@ import org.chromium.chrome.R;
  * A new-fangled most visited item. Displays the title of the page beneath a large icon. If a large
  * icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
-public class IconMostVisitedItemView extends FrameLayout {
+public class MostVisitedItemView extends FrameLayout {
 
     /**
      * Constructor for inflating from XML.
      */
-    public IconMostVisitedItemView(Context context, AttributeSet attrs) {
+    public MostVisitedItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

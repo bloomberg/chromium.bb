@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.util.MathUtils;
  *
  * Intended for use with the new icon-based most visited items.
  */
-public class IconMostVisitedLayout extends FrameLayout {
+public class MostVisitedLayout extends FrameLayout {
 
     private static final int MAX_COLUMNS = 4;
 
@@ -33,16 +33,16 @@ public class IconMostVisitedLayout extends FrameLayout {
      * @param context The view context in which this item will be shown.
      * @param attrs The attributes of the XML tag that is inflating the view.
      */
-    public IconMostVisitedLayout(Context context, AttributeSet attrs) {
+    public MostVisitedLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Resources res = getResources();
-        mVerticalSpacing = res.getDimensionPixelOffset(R.dimen.icon_most_visited_vertical_spacing);
+        mVerticalSpacing = res.getDimensionPixelOffset(R.dimen.most_visited_vertical_spacing);
         mMinHorizontalSpacing = res.getDimensionPixelOffset(
-                R.dimen.icon_most_visited_min_horizontal_spacing);
+                R.dimen.most_visited_min_horizontal_spacing);
         mMaxHorizontalSpacing = res.getDimensionPixelOffset(
-                R.dimen.icon_most_visited_max_horizontal_spacing);
-        mMaxWidth = res.getDimensionPixelOffset(R.dimen.icon_most_visited_layout_max_width);
+                R.dimen.most_visited_max_horizontal_spacing);
+        mMaxWidth = res.getDimensionPixelOffset(R.dimen.most_visited_layout_max_width);
     }
 
     /**

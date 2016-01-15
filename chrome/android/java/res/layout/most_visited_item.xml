@@ -4,17 +4,17 @@
      found in the LICENSE file. -->
 
 <!-- A most visited item, for display on the new tab page. -->
-<org.chromium.chrome.browser.ntp.IconMostVisitedItemView
+<org.chromium.chrome.browser.ntp.MostVisitedItemView
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="@dimen/icon_most_visited_tile_width"
+    android:layout_width="@dimen/most_visited_tile_width"
     android:layout_height="wrap_content"
     android:paddingStart="4dp"
     android:paddingEnd="4dp" >
 
     <ImageView
         android:id="@+id/most_visited_icon"
-        android:layout_width="@dimen/icon_most_visited_icon_size"
-        android:layout_height="@dimen/icon_most_visited_icon_size"
+        android:layout_width="@dimen/most_visited_icon_size"
+        android:layout_height="@dimen/most_visited_icon_size"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="12dp"
@@ -22,8 +22,8 @@
 
     <ImageView
         android:id="@+id/offline_badge"
-        android:layout_width="@dimen/icon_most_visited_offline_badge_size"
-        android:layout_height="@dimen/icon_most_visited_offline_badge_size"
+        android:layout_width="@dimen/most_visited_offline_badge_size"
+        android:layout_height="@dimen/most_visited_offline_badge_size"
         android:layout_marginStart="48dp"
         android:visibility="gone"
         android:background="@drawable/offline_badge_background"
@@ -31,12 +31,12 @@
         android:src="@drawable/eb_filter_offline_pages" />
 
     <View
-        android:layout_width="@dimen/icon_most_visited_icon_size"
-        android:layout_height="@dimen/icon_most_visited_icon_size"
+        android:layout_width="@dimen/most_visited_icon_size"
+        android:layout_height="@dimen/most_visited_icon_size"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginTop="12dp"
-        android:background="@drawable/icon_most_visited_item_highlight" />
+        android:background="@drawable/most_visited_item_highlight" />
 
     <TextView
         android:id="@+id/most_visited_title"
@@ -50,4 +50,4 @@
         android:textColor="#787878"
         android:textSize="12sp" />
 
-</org.chromium.chrome.browser.ntp.IconMostVisitedItemView>
+</org.chromium.chrome.browser.ntp.MostVisitedItemView>

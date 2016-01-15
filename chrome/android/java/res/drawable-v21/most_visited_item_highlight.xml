@@ -9,6 +9,6 @@
 
     <item
         android:id="@android:id/mask"
-        android:drawable="@drawable/icon_most_visited_item_highlight_mask"/>
+        android:drawable="@drawable/most_visited_item_highlight_mask"/>
 
 </ripple>
