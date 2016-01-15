@@ -389,10 +389,10 @@ LayoutUnit RootInlineBox::selectionTop() const
         // This line has actually been moved further down, probably from a large line-height, but possibly because the
         // line was forced to clear floats.  If so, let's check the offsets, and only be willing to use the previous
         // line's bottom if the offsets are greater on both sides.
-        LayoutUnit prevLeft = block().logicalLeftOffsetForLine(prevBottom, false);
-        LayoutUnit prevRight = block().logicalRightOffsetForLine(prevBottom, false);
-        LayoutUnit newLeft = block().logicalLeftOffsetForLine(selectionTop, false);
-        LayoutUnit newRight = block().logicalRightOffsetForLine(selectionTop, false);
+        LayoutUnit prevLeft = block().logicalLeftOffsetForLine(prevBottom, DoNotIndentText);
+        LayoutUnit prevRight = block().logicalRightOffsetForLine(prevBottom, DoNotIndentText);
+        LayoutUnit newLeft = block().logicalLeftOffsetForLine(selectionTop, DoNotIndentText);
+        LayoutUnit newRight = block().logicalRightOffsetForLine(selectionTop, DoNotIndentText);
         if (prevLeft > newLeft || prevRight < newRight)
             return selectionTop;
     }
@@ -440,10 +440,10 @@ LayoutUnit RootInlineBox::selectionBottom() const
         // The next line has actually been moved further over, probably from a large line-height, but possibly because the
         // line was forced to clear floats.  If so, let's check the offsets, and only be willing to use the next
         // line's top if the offsets are greater on both sides.
-        LayoutUnit nextLeft = block().logicalLeftOffsetForLine(nextTop, false);
-        LayoutUnit nextRight = block().logicalRightOffsetForLine(nextTop, false);
-        LayoutUnit newLeft = block().logicalLeftOffsetForLine(selectionBottom, false);
-        LayoutUnit newRight = block().logicalRightOffsetForLine(selectionBottom, false);
+        LayoutUnit nextLeft = block().logicalLeftOffsetForLine(nextTop, DoNotIndentText);
+        LayoutUnit nextRight = block().logicalRightOffsetForLine(nextTop, DoNotIndentText);
+        LayoutUnit newLeft = block().logicalLeftOffsetForLine(selectionBottom, DoNotIndentText);
+        LayoutUnit newRight = block().logicalRightOffsetForLine(selectionBottom, DoNotIndentText);
         if (nextLeft > newLeft || nextRight < newRight)
             return selectionBottom;
     }

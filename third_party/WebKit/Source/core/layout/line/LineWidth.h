@@ -39,13 +39,12 @@ namespace blink {
 class FloatingObject;
 class LineLayoutRubyRun;
 
-enum IndentTextOrNot { DoNotIndentText, IndentText };
 enum WhitespaceTreatment { ExcludeWhitespace, IncludeWhitespace };
 
 class LineWidth {
     STACK_ALLOCATED();
 public:
-    LineWidth(LineLayoutBlockFlow, bool isFirstLine, IndentTextOrNot shouldIndentText);
+    LineWidth(LineLayoutBlockFlow, bool isFirstLine, IndentTextOrNot);
 
     bool fitsOnLine() const { return currentWidth() <= (m_availableWidth + LayoutUnit::epsilon()); }
     bool fitsOnLine(float extra) const { return currentWidth() + extra <= (m_availableWidth + LayoutUnit::epsilon()); }
@@ -74,7 +73,7 @@ public:
     void setTrailingWhitespaceWidth(float width) { m_trailingWhitespaceWidth = width; }
     void snapUncommittedWidth() { m_uncommittedWidth = LayoutUnit(m_uncommittedWidth).toFloat(); }
 
-    bool shouldIndentText() const { return m_shouldIndentText == IndentText; }
+    IndentTextOrNot indentText() const { return m_indentText; }
 
 private:
     void computeAvailableWidthFromLeftAndRight();
@@ -90,7 +89,7 @@ private:
     float m_right;
     float m_availableWidth;
     bool m_isFirstLine;
-    IndentTextOrNot m_shouldIndentText;
+    IndentTextOrNot m_indentText;
 };
 
 }

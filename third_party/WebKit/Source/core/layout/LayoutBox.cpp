@@ -1563,14 +1563,14 @@ LayoutUnit LayoutBox::shrinkLogicalWidthToAvoidFloats(LayoutUnit childMarginStar
     LayoutUnit logicalTopPosition = logicalTop();
     LayoutUnit startOffsetForContent = cb->startOffsetForContent();
     LayoutUnit endOffsetForContent = cb->endOffsetForContent();
-    LayoutUnit startOffsetForLine = cb->startOffsetForLine(logicalTopPosition, false);
-    LayoutUnit endOffsetForLine = cb->endOffsetForLine(logicalTopPosition, false);
+    LayoutUnit startOffsetForLine = cb->startOffsetForLine(logicalTopPosition, DoNotIndentText);
+    LayoutUnit endOffsetForLine = cb->endOffsetForLine(logicalTopPosition, DoNotIndentText);
 
     // If there aren't any floats constraining us then allow the margins to shrink/expand the width as much as they want.
     if (startOffsetForContent == startOffsetForLine && endOffsetForContent == endOffsetForLine)
-        return cb->availableLogicalWidthForLine(logicalTopPosition, false) - childMarginStart - childMarginEnd;
+        return cb->availableLogicalWidthForLine(logicalTopPosition, DoNotIndentText) - childMarginStart - childMarginEnd;
 
-    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, false) - std::max(LayoutUnit(), childMarginStart) - std::max(LayoutUnit(), childMarginEnd);
+    LayoutUnit width = cb->availableLogicalWidthForLine(logicalTopPosition, DoNotIndentText) - std::max(LayoutUnit(), childMarginStart) - std::max(LayoutUnit(), childMarginEnd);
     // We need to see if margins on either the start side or the end side can contain the floats in question. If they can,
     // then just using the line width is inaccurate. In the case where a float completely fits, we don't need to use the line
     // offset at all, but can instead push all the way to the content edge of the containing block. In the case where the float
@@ -1618,7 +1618,7 @@ LayoutUnit LayoutBox::containingBlockAvailableLineWidth() const
 {
     LayoutBlock* cb = containingBlock();
     if (cb->isLayoutBlockFlow())
-        return toLayoutBlockFlow(cb)->availableLogicalWidthForLine(logicalTop(), false, availableLogicalHeight(IncludeMarginBorderPadding));
+        return toLayoutBlockFlow(cb)->availableLogicalWidthForLine(logicalTop(), DoNotIndentText, availableLogicalHeight(IncludeMarginBorderPadding));
     return LayoutUnit();
 }
 

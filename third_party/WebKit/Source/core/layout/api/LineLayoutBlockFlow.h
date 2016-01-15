@@ -43,9 +43,9 @@ public:
         return LineLayoutItem(toBlockFlow()->lastChild());
     }
 
-    LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText)
+    LayoutUnit startAlignedOffsetForLine(LayoutUnit position, IndentTextOrNot indentText)
     {
-        return toBlockFlow()->startAlignedOffsetForLine(position, shouldIndentText);
+        return toBlockFlow()->startAlignedOffsetForLine(position, indentText);
     }
 
     LayoutUnit textIndentOffset() const
@@ -108,9 +108,9 @@ public:
         toBlockFlow()->setStaticInlinePositionForChild(*toLayoutBox(box), inlinePosition);
     }
 
-    void updateStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit logicalTop, bool shouldIndentText = false)
+    void updateStaticInlinePositionForChild(LineLayoutBox box, LayoutUnit logicalTop, IndentTextOrNot indentText = DoNotIndentText)
     {
-        toBlockFlow()->updateStaticInlinePositionForChild(*toLayoutBox(box), logicalTop, shouldIndentText);
+        toBlockFlow()->updateStaticInlinePositionForChild(*toLayoutBox(box), logicalTop, indentText);
     }
 
     FloatingObject* insertFloatingObject(LayoutBox& box)
@@ -168,14 +168,14 @@ public:
         return toBlockFlow()->logicalWidthForFloat(floatingObject);
     }
 
-    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalRightOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
     {
-        return toBlockFlow()->logicalRightOffsetForLine(position, shouldIndentText, logicalHeight);
+        return toBlockFlow()->logicalRightOffsetForLine(position, indentText, logicalHeight);
     }
 
-    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, bool shouldIndentText, LayoutUnit logicalHeight = 0) const
+    LayoutUnit logicalLeftOffsetForLine(LayoutUnit position, IndentTextOrNot indentText, LayoutUnit logicalHeight = 0) const
     {
-        return toBlockFlow()->logicalLeftOffsetForLine(position, shouldIndentText, logicalHeight);
+        return toBlockFlow()->logicalLeftOffsetForLine(position, indentText, logicalHeight);
     }
 
 private:

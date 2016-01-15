@@ -475,7 +475,7 @@ void LayoutBlockFlow::determineLogicalLeftPositionForChild(LayoutBox& child)
     LayoutUnit newPosition = startPosition + childMarginStart;
 
     if (child.avoidsFloats() && containsFloats()) {
-        LayoutUnit positionToAvoidFloats = startOffsetForLine(logicalTopForChild(child), false, logicalHeightForChild(child));
+        LayoutUnit positionToAvoidFloats = startOffsetForLine(logicalTopForChild(child), DoNotIndentText, logicalHeightForChild(child));
 
         // If the child has an offset from the content edge to avoid floats then use that, otherwise let any negative
         // margin pull it back over the content edge or any positive margin push it out.
@@ -1852,7 +1852,7 @@ LayoutUnit LayoutBlockFlow::getClearDelta(LayoutBox* child, LayoutUnit logicalTo
         LayoutRect borderBox = child->borderBoxRect();
         LayoutUnit childLogicalWidthAtOldLogicalTopOffset = isHorizontalWritingMode() ? borderBox.width() : borderBox.height();
         while (true) {
-            LayoutUnit availableLogicalWidthAtNewLogicalTopOffset = availableLogicalWidthForLine(newLogicalTop, false, logicalHeightForChild(*child));
+            LayoutUnit availableLogicalWidthAtNewLogicalTopOffset = availableLogicalWidthForLine(newLogicalTop, DoNotIndentText, logicalHeightForChild(*child));
             if (availableLogicalWidthAtNewLogicalTopOffset == availableLogicalWidthForContent())
                 return newLogicalTop - logicalTop;
 
@@ -1964,10 +1964,10 @@ void LayoutBlockFlow::updateBlockChildDirtyBitsBeforeLayout(bool relayoutChildre
     LayoutBlock::updateBlockChildDirtyBitsBeforeLayout(relayoutChildren, child);
 }
 
-void LayoutBlockFlow::updateStaticInlinePositionForChild(LayoutBox& child, LayoutUnit logicalTop, bool shouldIndentText)
+void LayoutBlockFlow::updateStaticInlinePositionForChild(LayoutBox& child, LayoutUnit logicalTop, IndentTextOrNot indentText)
 {
     if (child.style()->isOriginalDisplayInlineType())
-        setStaticInlinePositionForChild(child, startAlignedOffsetForLine(logicalTop, shouldIndentText));
+        setStaticInlinePositionForChild(child, startAlignedOffsetForLine(logicalTop, indentText));
     else
         setStaticInlinePositionForChild(child, startOffsetForContent());
 }
@@ -2181,7 +2181,7 @@ LayoutUnit LayoutBlockFlow::logicalLeftOffsetForPositioningFloat(LayoutUnit logi
     LayoutUnit offset = fixedOffset;
     if (m_floatingObjects && m_floatingObjects->hasLeftObjects())
         offset = m_floatingObjects->logicalLeftOffsetForPositioningFloat(fixedOffset, logicalTop, heightRemaining);
-    return adjustLogicalLeftOffsetForLine(offset, false);
+    return adjustLogicalLeftOffsetForLine(offset, DoNotIndentText);
 }
 
 LayoutUnit LayoutBlockFlow::logicalRightOffsetForPositioningFloat(LayoutUnit logicalTop, LayoutUnit fixedOffset, LayoutUnit* heightRemaining) const
@@ -2189,24 +2189,24 @@ LayoutUnit LayoutBlockFlow::logicalRightOffsetForPositioningFloat(LayoutUnit log
     LayoutUnit offset = fixedOffset;
     if (m_floatingObjects && m_floatingObjects->hasRightObjects())
         offset = m_floatingObjects->logicalRightOffsetForPositioningFloat(fixedOffset, logicalTop, heightRemaining);
-    return adjustLogicalRightOffsetForLine(offset, false);
+    return adjustLogicalRightOffsetForLine(offset, DoNotIndentText);
 }
 
-LayoutUnit LayoutBlockFlow::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
+LayoutUnit LayoutBlockFlow::adjustLogicalLeftOffsetForLine(LayoutUnit offsetFromFloats, IndentTextOrNot applyTextIndent) const
 {
     LayoutUnit left = offsetFromFloats;
 
-    if (applyTextIndent && style()->isLeftToRightDirection())
+    if (applyTextIndent == IndentText && style()->isLeftToRightDirection())
         left += textIndentOffset();
 
     return left;
 }
 
-LayoutUnit LayoutBlockFlow::adjustLogicalRightOffsetForLine(LayoutUnit offsetFromFloats, bool applyTextIndent) const
+LayoutUnit LayoutBlockFlow::adjustLogicalRightOffsetForLine(LayoutUnit offsetFromFloats, IndentTextOrNot applyTextIndent) const
 {
     LayoutUnit right = offsetFromFloats;
 
-    if (applyTextIndent && !style()->isLeftToRightDirection())
+    if (applyTextIndent == IndentText && !style()->isLeftToRightDirection())
         right -= textIndentOffset();
 
     return right;
@@ -2984,7 +2984,7 @@ void LayoutBlockFlow::moveChildrenTo(LayoutBoxModelObject* toBoxModelObject, Lay
 
 LayoutUnit LayoutBlockFlow::logicalLeftSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const
 {
-    LayoutUnit logicalLeft = logicalLeftOffsetForLine(position, false);
+    LayoutUnit logicalLeft = logicalLeftOffsetForLine(position, DoNotIndentText);
     if (logicalLeft == logicalLeftOffsetForContent())
         return LayoutBlock::logicalLeftSelectionOffset(rootBlock, position);
 
@@ -2998,7 +2998,7 @@ LayoutUnit LayoutBlockFlow::logicalLeftSelectionOffset(const LayoutBlock* rootBl
 
 LayoutUnit LayoutBlockFlow::logicalRightSelectionOffset(const LayoutBlock* rootBlock, LayoutUnit position) const
 {
-    LayoutUnit logicalRight = logicalRightOffsetForLine(position, false);
+    LayoutUnit logicalRight = logicalRightOffsetForLine(position, DoNotIndentText);
     if (logicalRight == logicalRightOffsetForContent())
         return LayoutBlock::logicalRightSelectionOffset(rootBlock, position);
 

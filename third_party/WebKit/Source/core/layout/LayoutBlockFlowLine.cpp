@@ -568,11 +568,11 @@ void LayoutBlockFlow::updateLogicalWidthForAlignment(const ETextAlign& textAlign
         logicalLeft += verticalScrollbarWidth();
 }
 
-static void updateLogicalInlinePositions(LayoutBlockFlow* block, LayoutUnit& lineLogicalLeft, LayoutUnit& lineLogicalRight, LayoutUnit& availableLogicalWidth, bool firstLine, IndentTextOrNot shouldIndentText, LayoutUnit boxLogicalHeight)
+static void updateLogicalInlinePositions(LayoutBlockFlow* block, LayoutUnit& lineLogicalLeft, LayoutUnit& lineLogicalRight, LayoutUnit& availableLogicalWidth, bool firstLine, IndentTextOrNot indentText, LayoutUnit boxLogicalHeight)
 {
     LayoutUnit lineLogicalHeight = block->minLineHeightForReplacedObject(firstLine, boxLogicalHeight);
-    lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
-    lineLogicalRight = block->logicalRightOffsetForLine(block->logicalHeight(), shouldIndentText == IndentText, lineLogicalHeight);
+    lineLogicalLeft = block->logicalLeftOffsetForLine(block->logicalHeight(), indentText, lineLogicalHeight);
+    lineLogicalRight = block->logicalRightOffsetForLine(block->logicalHeight(), indentText, lineLogicalHeight);
     availableLogicalWidth = lineLogicalRight - lineLogicalLeft;
 }
 
@@ -587,16 +587,16 @@ void LayoutBlockFlow::computeInlineDirectionPositionsForLine(RootInlineBox* line
     // but does not affect lines after a soft wrap break.
     bool isFirstLine = lineInfo.isFirstLine() && !(isAnonymousBlock() && parent()->slowFirstChild() != this);
     bool isAfterHardLineBreak = lineBox->prevRootBox() && lineBox->prevRootBox()->endsWithBreak();
-    IndentTextOrNot shouldIndentText = requiresIndent(isFirstLine, isAfterHardLineBreak, styleRef());
+    IndentTextOrNot indentText = requiresIndent(isFirstLine, isAfterHardLineBreak, styleRef());
     LayoutUnit lineLogicalLeft;
     LayoutUnit lineLogicalRight;
     LayoutUnit availableLogicalWidth;
-    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, 0);
+    updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, 0);
     bool needsWordSpacing;
 
     if (firstRun && firstRun->m_object->isAtomicInlineLevel()) {
         LayoutBox* layoutBox = toLayoutBox(firstRun->m_object);
-        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, shouldIndentText, layoutBox->logicalHeight());
+        updateLogicalInlinePositions(this, lineLogicalLeft, lineLogicalRight, availableLogicalWidth, isFirstLine, indentText, layoutBox->logicalHeight());
     }
 
     computeInlineDirectionPositionsForSegment(lineBox, lineInfo, textAlign, lineLogicalLeft, availableLogicalWidth, firstRun, trailingSpaceRun, textBoxDataMap, verticalPositionCache, wordMeasurements);
@@ -911,12 +911,12 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
                     LayoutUnit adjustment = 0;
                     adjustLinePositionForPagination(*lineBox, adjustment);
                     if (adjustment) {
-                        LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine());
+                        LayoutUnit oldLineWidth = availableLogicalWidthForLine(oldLogicalHeight, layoutState.lineInfo().isFirstLine() ? IndentText : DoNotIndentText);
                         lineBox->moveInBlockDirection(adjustment);
                         if (layoutState.usesPaintInvalidationBounds())
                             layoutState.updatePaintInvalidationRangeFromBox(lineBox);
 
-                        if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine()) != oldLineWidth) {
+                        if (availableLogicalWidthForLine(oldLogicalHeight + adjustment, layoutState.lineInfo().isFirstLine() ? IndentText: DoNotIndentText) != oldLineWidth) {
                             // We have to delete this line, remove all floats that got added, and let line layout re-run.
                             lineBox->deleteLine();
                             endOfLine = restartLayoutRunsAndFloatsInRange(oldLogicalHeight, oldLogicalHeight + adjustment, lastFloatFromPreviousLine, resolver, previousEndofLine);
@@ -931,7 +931,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
 
         if (!logicalWidthIsAvailable) {
             for (size_t i = 0; i < lineBreaker.positionedObjects().size(); ++i)
-                setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]), false);
+                setStaticPositions(LineLayoutBlockFlow(this), LineLayoutBox(lineBreaker.positionedObjects()[i]), DoNotIndentText);
 
             if (!layoutState.lineInfo().isEmpty())
                 layoutState.lineInfo().setFirstLine(false);
@@ -1907,20 +1907,20 @@ void LayoutBlockFlow::addOverflowFromInlineChildren()
 void LayoutBlockFlow::deleteEllipsisLineBoxes()
 {
     ETextAlign textAlign = style()->textAlign();
-    bool firstLine = true;
+    IndentTextOrNot indentText = IndentText;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         if (curr->hasEllipsisBox()) {
             curr->clearTruncation();
 
             // Shift the line back where it belongs if we cannot accomodate an ellipsis.
-            LayoutUnit logicalLeft = logicalLeftOffsetForLine(curr->lineTop(), firstLine);
-            LayoutUnit availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), false) - logicalLeft;
+            LayoutUnit logicalLeft = logicalLeftOffsetForLine(curr->lineTop(), indentText);
+            LayoutUnit availableLogicalWidth = logicalRightOffsetForLine(curr->lineTop(), DoNotIndentText) - logicalLeft;
             LayoutUnit totalLogicalWidth = curr->logicalWidth();
             updateLogicalWidthForAlignment(textAlign, curr, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 
             curr->moveInInlineDirection(logicalLeft - curr->logicalLeft());
         }
-        firstLine = false;
+        indentText = DoNotIndentText;
     }
 }
 
@@ -1969,11 +1969,11 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
     // Include the scrollbar for overflow blocks, which means we want to use "contentWidth()"
     bool ltr = style()->isLeftToRightDirection();
     ETextAlign textAlign = style()->textAlign();
-    bool firstLine = true;
+    IndentTextOrNot indentText = IndentText;
     for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
         LayoutUnit currLogicalLeft = curr->logicalLeft();
-        LayoutUnit blockRightEdge = logicalRightOffsetForLine(curr->lineTop(), firstLine);
-        LayoutUnit blockLeftEdge = logicalLeftOffsetForLine(curr->lineTop(), firstLine);
+        LayoutUnit blockRightEdge = logicalRightOffsetForLine(curr->lineTop(), indentText);
+        LayoutUnit blockLeftEdge = logicalLeftOffsetForLine(curr->lineTop(), indentText);
         LayoutUnit lineBoxEdge = ltr ? currLogicalLeft + curr->logicalWidth() : currLogicalLeft;
         if ((ltr && lineBoxEdge > blockRightEdge) || (!ltr && lineBoxEdge < blockLeftEdge)) {
             // This line spills out of our box in the appropriate direction.  Now we need to see if the line
@@ -1981,7 +1981,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
             // accommodate our truncation string, and no replaced elements (images, tables) can overlap the ellipsis
             // space.
 
-            LayoutUnit width = firstLine ? firstLineEllipsisWidth : ellipsisWidth;
+            LayoutUnit width = indentText == IndentText ? firstLineEllipsisWidth : ellipsisWidth;
             LayoutUnit blockEdge = ltr ? blockRightEdge : blockLeftEdge;
             if (curr->lineCanAccommodateEllipsis(ltr, blockEdge, lineBoxEdge, width)) {
                 LayoutUnit totalLogicalWidth = curr->placeEllipsis(selectedEllipsisStr, ltr, blockLeftEdge, blockRightEdge, width);
@@ -1994,7 +1994,7 @@ void LayoutBlockFlow::checkLinesForTextOverflow()
                     curr->moveInInlineDirection(logicalLeft - (availableLogicalWidth - totalLogicalWidth));
             }
         }
-        firstLine = false;
+        indentText = DoNotIndentText;
     }
 }
 
@@ -2049,17 +2049,17 @@ bool LayoutBlockFlow::positionNewFloatOnLine(FloatingObject& newFloat, FloatingO
     return true;
 }
 
-LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(LayoutUnit position, bool firstLine)
+LayoutUnit LayoutBlockFlow::startAlignedOffsetForLine(LayoutUnit position, IndentTextOrNot indentText)
 {
     ETextAlign textAlign = style()->textAlign();
 
     if (textAlign == TASTART) // FIXME: Handle TAEND here
-        return startOffsetForLine(position, firstLine);
+        return startOffsetForLine(position, indentText);
 
     // updateLogicalWidthForAlignment() handles the direction of the block so no need to consider it here
     LayoutUnit totalLogicalWidth;
-    LayoutUnit logicalLeft = logicalLeftOffsetForLine(logicalHeight(), false);
-    LayoutUnit availableLogicalWidth = logicalRightOffsetForLine(logicalHeight(), false) - logicalLeft;
+    LayoutUnit logicalLeft = logicalLeftOffsetForLine(logicalHeight(), DoNotIndentText);
+    LayoutUnit availableLogicalWidth = logicalRightOffsetForLine(logicalHeight(), DoNotIndentText) - logicalLeft;
     updateLogicalWidthForAlignment(textAlign, 0, 0, logicalLeft, totalLogicalWidth, availableLogicalWidth, 0);
 
     if (!style()->isLeftToRightDirection())
