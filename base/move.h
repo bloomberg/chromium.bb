@@ -31,7 +31,7 @@
 // for more details.
 // TODO(crbug.com/566182): Remove this macro and use DISALLOW_COPY_AND_ASSIGN
 // everywhere instead.
-#if defined(OS_ANDROID) || defined(OS_LINUX)
+#if defined(OS_ANDROID) || defined(OS_LINUX) || defined(OS_MACOSX)
 #define DISALLOW_COPY_AND_ASSIGN_WITH_MOVE_FOR_BIND(type)       \
  private:                                                       \
   type(const type&) = delete;                                   \
