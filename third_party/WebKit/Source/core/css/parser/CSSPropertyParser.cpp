@@ -2923,6 +2923,17 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeScrollSnapPoints(CSSParserTokenRa
     return nullptr;
 }
 
+static PassRefPtrWillBeRawPtr<CSSValue> consumeBorderRadiusCorner(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSValue> parsedValue1 = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+    if (!parsedValue1)
+        return nullptr;
+    RefPtrWillBeRawPtr<CSSValue> parsedValue2 = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+    if (!parsedValue2)
+        parsedValue2 = parsedValue1;
+    return CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::DropIdenticalValues);
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3175,6 +3186,11 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
         return consumeScrollSnapPoints(m_range, m_context.mode());
+    case CSSPropertyBorderTopRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+        return consumeBorderRadiusCorner(m_range, m_context.mode());
     default:
         return nullptr;
     }
@@ -3656,6 +3672,49 @@ bool CSSPropertyParser::consume4Values(const StylePropertyShorthand& shorthand, 
     return m_range.atEnd();
 }
 
+static bool consumeRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4], RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRadii[4], CSSParserTokenRange& range, CSSParserMode cssParserMode, bool useLegacyParsing)
+{
+#if ENABLE(OILPAN)
+    // Unconditionally zero initialize the arrays of raw pointers.
+    memset(horizontalRadii, 0, 4 * sizeof(horizontalRadii[0]));
+    memset(verticalRadii, 0, 4 * sizeof(verticalRadii[0]));
+#endif
+    unsigned i = 0;
+    for (; i < 4 && !range.atEnd() && range.peek().type() != DelimiterToken; ++i) {
+        horizontalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+        if (!horizontalRadii[i])
+            return false;
+    }
+    if (!horizontalRadii[0])
+        return false;
+    if (range.atEnd()) {
+        // Legacy syntax: -webkit-border-radius: l1 l2; is equivalent to border-radius: l1 / l2;
+        if (useLegacyParsing && i == 2) {
+            verticalRadii[0] = horizontalRadii[1];
+            horizontalRadii[1] = nullptr;
+        } else {
+            completeBorderRadii(horizontalRadii);
+            for (unsigned i = 0; i < 4; ++i)
+                verticalRadii[i] = horizontalRadii[i];
+            return true;
+        }
+    } else {
+        if (range.peek().type() != DelimiterToken || range.peek().delimiter() != '/')
+            return false;
+        range.consumeIncludingWhitespace();
+        for (i = 0; i < 4 && !range.atEnd(); ++i) {
+            verticalRadii[i] = consumeLengthOrPercent(range, cssParserMode, ValueRangeNonNegative);
+            if (!verticalRadii[i])
+                return false;
+        }
+        if (!verticalRadii[0] || !range.atEnd())
+            return false;
+    }
+    completeBorderRadii(horizontalRadii);
+    completeBorderRadii(verticalRadii);
+    return true;
+}
+
 bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool important)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3770,6 +3829,17 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeShorthandGreedily(webkitColumnRuleShorthand(), important);
     case CSSPropertyListStyle:
         return consumeShorthandGreedily(listStyleShorthand(), important);
+    case CSSPropertyBorderRadius: {
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> horizontalRadii[4];
+        RefPtrWillBeRawPtr<CSSPrimitiveValue> verticalRadii[4];
+        if (!consumeRadii(horizontalRadii, verticalRadii, m_range, m_context.mode(), unresolvedProperty == CSSPropertyAliasWebkitBorderRadius))
+            return false;
+        addProperty(CSSPropertyBorderTopLeftRadius, CSSValuePair::create(horizontalRadii[0].release(), verticalRadii[0].release(), CSSValuePair::DropIdenticalValues), important);
+        addProperty(CSSPropertyBorderTopRightRadius, CSSValuePair::create(horizontalRadii[1].release(), verticalRadii[1].release(), CSSValuePair::DropIdenticalValues), important);
+        addProperty(CSSPropertyBorderBottomRightRadius, CSSValuePair::create(horizontalRadii[2].release(), verticalRadii[2].release(), CSSValuePair::DropIdenticalValues), important);
+        addProperty(CSSPropertyBorderBottomLeftRadius, CSSValuePair::create(horizontalRadii[3].release(), verticalRadii[3].release(), CSSValuePair::DropIdenticalValues), important);
+        return true;
+    }
     default:
         m_currentShorthand = oldShorthand;
         return false;

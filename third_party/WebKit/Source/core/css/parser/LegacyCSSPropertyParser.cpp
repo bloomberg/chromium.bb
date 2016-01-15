@@ -483,42 +483,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         }
         break;
     }
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius: {
-        validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-        if (!validPrimitive)
-            return false;
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue1 = createPrimitiveNumericValue(value);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue2 = nullptr;
-        value = m_valueList->next();
-        if (value) {
-            validPrimitive = validUnit(value, FLength | FPercent | FNonNeg);
-            if (!validPrimitive)
-                return false;
-            parsedValue2 = createPrimitiveNumericValue(value);
-        } else
-            parsedValue2 = parsedValue1;
-
-        if (m_valueList->next())
-            return false;
-        addProperty(propId, CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::DropIdenticalValues), important);
-        return true;
-    }
-    case CSSPropertyBorderRadius: {
-        ShorthandScope scope(this, unresolvedProperty);
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4];
-        RefPtrWillBeRawPtr<CSSPrimitiveValue> radii2[4];
-        if (!parseRadii(radii, radii2, m_valueList, unresolvedProperty))
-            return false;
-        ImplicitScope implicitScope(this);
-        addProperty(CSSPropertyBorderTopLeftRadius, CSSValuePair::create(radii[0].release(), radii2[0].release(), CSSValuePair::DropIdenticalValues), important);
-        addProperty(CSSPropertyBorderTopRightRadius, CSSValuePair::create(radii[1].release(), radii2[1].release(), CSSValuePair::DropIdenticalValues), important);
-        addProperty(CSSPropertyBorderBottomRightRadius, CSSValuePair::create(radii[2].release(), radii2[2].release(), CSSValuePair::DropIdenticalValues), important);
-        addProperty(CSSPropertyBorderBottomLeftRadius, CSSValuePair::create(radii[3].release(), radii2[3].release(), CSSValuePair::DropIdenticalValues), important);
-        return true;
-    }
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
             validPrimitive = true;
@@ -879,6 +843,12 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyScrollSnapCoordinate:
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
+    case CSSPropertyBorderTopRightRadius:
+    case CSSPropertyBorderTopLeftRadius:
+    case CSSPropertyBorderBottomLeftRadius:
+    case CSSPropertyBorderBottomRightRadius:
+    case CSSPropertyBorderRadius:
+    case CSSPropertyAliasWebkitBorderRadius:
         validPrimitive = false;
         break;
 
@@ -2592,7 +2562,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseGridAutoFlow(CSSParserV
     return parsedValues;
 }
 
-static void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
+void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4])
 {
     if (radii[3])
         return;

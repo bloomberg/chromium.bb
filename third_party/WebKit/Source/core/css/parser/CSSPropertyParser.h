@@ -328,6 +328,9 @@ private:
 CSSPropertyID unresolvedCSSPropertyID(const CSSParserString&);
 CSSValueID cssValueKeywordID(const CSSParserString&);
 
+// TODO(rwlbuis): move to CSSPropertyParser.cpp once CSSParserToken conversion is done.
+void completeBorderRadii(RefPtrWillBeRawPtr<CSSPrimitiveValue> radii[4]);
+
 } // namespace blink
 
 #endif // CSSPropertyParser_h
