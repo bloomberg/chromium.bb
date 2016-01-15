@@ -45,10 +45,11 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     // Paint our children.
     PaintInfo childInfo(paintInfo);
-    if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(&m_inlineFlowBox.layoutObject()))
+    LayoutObject* inlineFlowBoxLayoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem());
+    if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(inlineFlowBoxLayoutObject))
         childInfo.paintingRoot = 0;
     else
-        childInfo.updatePaintingRootForChildren(&m_inlineFlowBox.layoutObject());
+        childInfo.updatePaintingRootForChildren(inlineFlowBoxLayoutObject);
 
     for (InlineBox* curr = m_inlineFlowBox.firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->lineLayoutItem().isText() || !curr->boxModelObject().hasSelfPaintingLayer())
@@ -182,7 +183,8 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
 void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& cullRect)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
-    if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.layoutObject()) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE)
+    LayoutObject* inlineFlowBoxLayoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem());
+    if (!paintInfo.shouldPaintWithinRoot(inlineFlowBoxLayoutObject) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE)
         return;
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
@@ -190,7 +192,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     const ComputedStyle* styleToUse = m_inlineFlowBox.lineLayoutItem().style(m_inlineFlowBox.isFirstLineStyle());
     bool shouldPaintBoxDecorationBackground;
     if (m_inlineFlowBox.parent())
-        shouldPaintBoxDecorationBackground = m_inlineFlowBox.layoutObject().hasBoxDecorationBackground();
+        shouldPaintBoxDecorationBackground = inlineFlowBoxLayoutObject->hasBoxDecorationBackground();
     else
         shouldPaintBoxDecorationBackground = m_inlineFlowBox.isFirstLineStyle() && styleToUse != m_inlineFlowBox.lineLayoutItem().style();
 
@@ -218,7 +220,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
     if (!m_inlineFlowBox.boxModelObject().boxShadowShouldBeAppliedToBackground(BackgroundBleedNone, &m_inlineFlowBox))
         paintBoxShadow(paintInfo, *styleToUse, Normal, adjustedFrameRect);
 
-    Color backgroundColor = m_inlineFlowBox.layoutObject().resolveColor(*styleToUse, CSSPropertyBackgroundColor);
+    Color backgroundColor = inlineFlowBoxLayoutObject->resolveColor(*styleToUse, CSSPropertyBackgroundColor);
     paintFillLayers(paintInfo, backgroundColor, styleToUse->backgroundLayers(), adjustedFrameRect);
     paintBoxShadow(paintInfo, *styleToUse, Inset, adjustedFrameRect);
 
@@ -241,7 +243,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
 void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_inlineFlowBox.layoutObject()) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (!paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem())) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
     LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();
