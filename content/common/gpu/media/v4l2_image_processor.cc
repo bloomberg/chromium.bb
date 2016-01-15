@@ -561,6 +561,10 @@ void V4L2ImageProcessor::Dequeue() {
             output_visible_size_,
             output_record.fds,
             job_record->frame->timestamp());
+    if (!output_frame) {
+      NOTIFY_ERROR();
+      return;
+    }
     output_frame->AddDestructionObserver(media::BindToCurrentLoop(
         base::Bind(&V4L2ImageProcessor::ReuseOutputBuffer,
                    device_weak_factory_.GetWeakPtr(),

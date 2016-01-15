@@ -87,18 +87,21 @@ class VideoResourceUpdaterTest : public testing::Test {
     static uint8_t u_data[kDimension * kDimension / 2] = {0};
     static uint8_t v_data[kDimension * kDimension / 2] = {0};
 
-    return media::VideoFrame::WrapExternalYuvData(
-        media::PIXEL_FORMAT_YV16,  // format
-        size,                      // coded_size
-        gfx::Rect(size),           // visible_rect
-        size,                      // natural_size
-        size.width(),              // y_stride
-        size.width() / 2,          // u_stride
-        size.width() / 2,          // v_stride
-        y_data,                    // y_data
-        u_data,                    // u_data
-        v_data,                    // v_data
-        base::TimeDelta());        // timestamp
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::WrapExternalYuvData(
+            media::PIXEL_FORMAT_YV16,  // format
+            size,                      // coded_size
+            gfx::Rect(size),           // visible_rect
+            size,                      // natural_size
+            size.width(),              // y_stride
+            size.width() / 2,          // u_stride
+            size.width() / 2,          // v_stride
+            y_data,                    // y_data
+            u_data,                    // u_data
+            v_data,                    // v_data
+            base::TimeDelta());        // timestamp
+    EXPECT_TRUE(video_frame);
+    return video_frame;
   }
 
   static void ReleaseMailboxCB(const gpu::SyncToken& sync_token) {}
@@ -112,14 +115,17 @@ class VideoResourceUpdaterTest : public testing::Test {
 
     const gpu::SyncToken sync_token(7);
     const unsigned target = GL_TEXTURE_2D;
-    return media::VideoFrame::WrapNativeTexture(
-        media::PIXEL_FORMAT_ARGB,
-        gpu::MailboxHolder(mailbox, sync_token, target),
-        base::Bind(&ReleaseMailboxCB),
-        size,                // coded_size
-        gfx::Rect(size),     // visible_rect
-        size,                // natural_size
-        base::TimeDelta());  // timestamp
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::WrapNativeTexture(
+            media::PIXEL_FORMAT_ARGB,
+            gpu::MailboxHolder(mailbox, sync_token, target),
+            base::Bind(&ReleaseMailboxCB),
+            size,                // coded_size
+            gfx::Rect(size),     // visible_rect
+            size,                // natural_size
+            base::TimeDelta());  // timestamp
+    EXPECT_TRUE(video_frame);
+    return video_frame;
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVHardareVideoFrame() {
@@ -133,18 +139,21 @@ class VideoResourceUpdaterTest : public testing::Test {
     }
     const gpu::SyncToken sync_token(7);
     const unsigned target = GL_TEXTURE_RECTANGLE_ARB;
-    return media::VideoFrame::WrapYUV420NativeTextures(
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], sync_token,
-                           target),
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], sync_token,
-                           target),
-        gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], sync_token,
-                           target),
-        base::Bind(&ReleaseMailboxCB),
-        size,                // coded_size
-        gfx::Rect(size),     // visible_rect
-        size,                // natural_size
-        base::TimeDelta());  // timestamp
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::WrapYUV420NativeTextures(
+            gpu::MailboxHolder(mailbox[media::VideoFrame::kYPlane], sync_token,
+                               target),
+            gpu::MailboxHolder(mailbox[media::VideoFrame::kUPlane], sync_token,
+                               target),
+            gpu::MailboxHolder(mailbox[media::VideoFrame::kVPlane], sync_token,
+                               target),
+            base::Bind(&ReleaseMailboxCB),
+            size,                // coded_size
+            gfx::Rect(size),     // visible_rect
+            size,                // natural_size
+            base::TimeDelta());  // timestamp
+    EXPECT_TRUE(video_frame);
+    return video_frame;
   }
 
   WebGraphicsContext3DUploadCounter* context3d_;

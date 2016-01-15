@@ -95,6 +95,8 @@ class WebRtcVideoCapturerAdapter::MediaVideoFrameFactory
     const gfx::Size output_size(output_width, output_height);
     scoped_refptr<media::VideoFrame> video_frame =
         media::VideoFrame::WrapVideoFrame(frame_, visible_rect, output_size);
+    if (!video_frame)
+      return nullptr;
     video_frame->AddDestructionObserver(
         base::Bind(&ReleaseOriginalFrame, frame_));
 

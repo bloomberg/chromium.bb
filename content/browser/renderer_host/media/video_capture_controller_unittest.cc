@@ -122,11 +122,14 @@ class VideoCaptureControllerTest : public testing::Test {
 
   scoped_refptr<media::VideoFrame> WrapI420Buffer(gfx::Size dimensions,
                                                   uint8_t* data) {
-    return media::VideoFrame::WrapExternalSharedMemory(
-        media::PIXEL_FORMAT_I420, dimensions, gfx::Rect(dimensions), dimensions,
-        data,
-        media::VideoFrame::AllocationSize(media::PIXEL_FORMAT_I420, dimensions),
-        base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+    scoped_refptr<media::VideoFrame> video_frame =
+        media::VideoFrame::WrapExternalSharedMemory(
+            media::PIXEL_FORMAT_I420, dimensions, gfx::Rect(dimensions),
+            dimensions, data, media::VideoFrame::AllocationSize(
+                                  media::PIXEL_FORMAT_I420, dimensions),
+            base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
+    EXPECT_TRUE(video_frame);
+    return video_frame;
   }
 
   TestBrowserThreadBundle bundle_;
@@ -317,6 +320,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8_t*>(buffer->data()));
+  ASSERT_TRUE(video_frame);
   ASSERT_FALSE(video_frame->metadata()->HasKey(
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
@@ -346,6 +350,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer2->data(), buffer_no++, buffer2->mapped_size());
   video_frame = WrapI420Buffer(capture_resolution,
                                static_cast<uint8_t*>(buffer2->data()));
+  ASSERT_TRUE(video_frame);
   ASSERT_FALSE(video_frame->metadata()->HasKey(
       media::VideoFrameMetadata::RESOURCE_UTILIZATION));
   client_a_->resource_utilization_ = 0.5;
@@ -392,6 +397,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     memset(buffer->data(), buffer_no++, buffer->mapped_size());
     video_frame = WrapI420Buffer(capture_resolution,
                                  static_cast<uint8_t*>(buffer->data()));
+    ASSERT_TRUE(video_frame);
     device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                           base::TimeTicks());
   }
@@ -440,6 +446,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer3->data(), buffer_no++, buffer3->mapped_size());
   video_frame = WrapI420Buffer(capture_resolution,
                                static_cast<uint8_t*>(buffer3->data()));
+  ASSERT_TRUE(video_frame);
   device_->OnIncomingCapturedVideoFrame(std::move(buffer3), video_frame,
                                         base::TimeTicks());
 
@@ -457,6 +464,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   memset(buffer4->data(), buffer_no++, buffer4->mapped_size());
   video_frame = WrapI420Buffer(capture_resolution,
                                static_cast<uint8_t*>(buffer4->data()));
+  ASSERT_TRUE(video_frame);
   device_->OnIncomingCapturedVideoFrame(std::move(buffer4), video_frame,
                                         base::TimeTicks());
   // B2 is the only client left, and is the only one that should
@@ -505,6 +513,7 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   ASSERT_TRUE(buffer.get());
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(capture_resolution, static_cast<uint8_t*>(buffer->data()));
+  ASSERT_TRUE(video_frame);
   device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                         base::TimeTicks());
 
@@ -542,6 +551,7 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
 
   scoped_refptr<media::VideoFrame> video_frame =
       WrapI420Buffer(dims, static_cast<uint8_t*>(buffer->data()));
+  ASSERT_TRUE(video_frame);
   device_->OnError(FROM_HERE, "Test Error");
   device_->OnIncomingCapturedVideoFrame(std::move(buffer), video_frame,
                                         base::TimeTicks());

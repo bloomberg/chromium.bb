@@ -115,6 +115,8 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::RenderFrame(
         const_cast<uint8_t*>(frame->GetYPlane()),
         const_cast<uint8_t*>(frame->GetUPlane()),
         const_cast<uint8_t*>(frame->GetVPlane()), elapsed_timestamp);
+    if (!video_frame)
+      return;
     video_frame->AddDestructionObserver(
         base::Bind(&base::DeletePointer<cricket::VideoFrame>, frame->Copy()));
   }

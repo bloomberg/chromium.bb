@@ -358,6 +358,8 @@ int32_t PepperMediaStreamVideoTrackHost::SendFrameToTrack(int32_t index) {
         u_data,
         v_data,
         base::TimeDelta::FromMilliseconds(ts_ms));
+    if (!frame)
+      return PP_ERROR_FAILED;
 
     frame_deliverer_->DeliverVideoFrame(frame);
   }

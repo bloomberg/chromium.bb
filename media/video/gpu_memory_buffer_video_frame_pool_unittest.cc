@@ -101,18 +101,21 @@ class GpuMemoryBufferVideoFramePoolTest : public ::testing::Test {
     DCHECK_LE(dimension, kDimension);
     gfx::Size size(dimension, dimension);
 
-    return media::VideoFrame::WrapExternalYuvData(
-        media::PIXEL_FORMAT_YV12,  // format
-        size,                      // coded_size
-        gfx::Rect(size),           // visible_rect
-        size,                      // natural_size
-        size.width(),              // y_stride
-        size.width() / 2,          // u_stride
-        size.width() / 2,          // v_stride
-        y_data,                    // y_data
-        u_data,                    // u_data
-        v_data,                    // v_data
-        base::TimeDelta());        // timestamp
+    scoped_refptr<VideoFrame> video_frame =
+        media::VideoFrame::WrapExternalYuvData(
+            media::PIXEL_FORMAT_YV12,  // format
+            size,                      // coded_size
+            gfx::Rect(size),           // visible_rect
+            size,                      // natural_size
+            size.width(),              // y_stride
+            size.width() / 2,          // u_stride
+            size.width() / 2,          // v_stride
+            y_data,                    // y_data
+            u_data,                    // u_data
+            v_data,                    // v_data
+            base::TimeDelta());        // timestamp
+    EXPECT_TRUE(video_frame);
+    return video_frame;
   }
 
  protected:

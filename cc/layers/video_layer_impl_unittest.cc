@@ -343,6 +343,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
           mailbox_holder, mailbox_holder, mailbox_holder,
           base::Bind(EmptyCallback), gfx::Size(10, 10), gfx::Rect(10, 10),
           gfx::Size(10, 10), base::TimeDelta());
+  ASSERT_TRUE(video_frame);
   video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                       true);
   FakeVideoFrameProvider provider;

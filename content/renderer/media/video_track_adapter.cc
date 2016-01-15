@@ -201,6 +201,11 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
     const base::TimeTicks& estimated_capture_time) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
 
+  if (!frame) {
+    DLOG(ERROR) << "Incoming frame is not valid.";
+    return;
+  }
+
   double frame_rate;
   if (!frame->metadata()->GetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                     &frame_rate)) {
@@ -263,6 +268,8 @@ void VideoTrackAdapter::VideoFrameResolutionAdapter::DeliverFrame(
 
     video_frame =
         media::VideoFrame::WrapVideoFrame(frame, region_in_frame, desired_size);
+    if (!video_frame)
+      return;
     video_frame->AddDestructionObserver(
         base::Bind(&ReleaseOriginalFrame, frame));
 

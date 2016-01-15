@@ -631,6 +631,10 @@ scoped_refptr<media::VideoFrame> PepperVideoEncoderHost::CreateVideoFrame(
           input_coded_size_, static_cast<uint8_t*>(buffer->video.data),
           buffer->video.data_size, buffer_manager_.shm()->handle(), shm_offset,
           base::TimeDelta());
+  if (!frame) {
+    NotifyPepperError(PP_ERROR_FAILED);
+    return frame;
+  }
   frame->AddDestructionObserver(
       base::Bind(&PepperVideoEncoderHost::FrameReleased,
                  weak_ptr_factory_.GetWeakPtr(), reply_context, frame_id));

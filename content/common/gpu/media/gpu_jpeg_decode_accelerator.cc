@@ -248,9 +248,6 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
             params.output_video_frame_handle,  // handle
             0,                                 // data_offset
             base::TimeDelta());                // timestamp
-    frame->AddDestructionObserver(
-        base::Bind(DecodeFinished, base::Passed(&output_shm)));
-
     if (!frame.get()) {
       LOG(ERROR) << "Could not create VideoFrame for input buffer id "
                  << params.input_buffer_id;
@@ -260,6 +257,8 @@ class GpuJpegDecodeAccelerator::MessageFilter : public IPC::MessageFilter {
       base::SharedMemory::CloseHandle(params.input_buffer_handle);
       return;
     }
+    frame->AddDestructionObserver(
+        base::Bind(DecodeFinished, base::Passed(&output_shm)));
 
     DCHECK_GT(client_map_.count(*route_id), 0u);
     Client* client = client_map_[*route_id];

@@ -372,6 +372,10 @@ void RTCVideoDecoder::PictureReady(const media::Picture& picture) {
 
   scoped_refptr<media::VideoFrame> frame =
       CreateVideoFrame(picture, pb, timestamp, visible_rect);
+  if (!frame) {
+    NotifyError(media::VideoDecodeAccelerator::PLATFORM_FAILURE);
+    return;
+  }
   bool inserted =
       picture_buffers_at_display_.insert(std::make_pair(
                                              picture.picture_buffer_id(),
@@ -407,15 +411,15 @@ scoped_refptr<media::VideoFrame> RTCVideoDecoder::CreateVideoFrame(
   // as ARGB. This prevents the compositor from messing with it, since the
   // underlying platform can handle the former format natively. Make sure the
   // correct format is used and everyone down the line understands it.
-  scoped_refptr<media::VideoFrame> frame(media::VideoFrame::WrapNativeTexture(
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapNativeTexture(
       media::PIXEL_FORMAT_ARGB,
       gpu::MailboxHolder(pb.texture_mailbox(), gpu::SyncToken(),
                          decoder_texture_target_),
       media::BindToCurrentLoop(base::Bind(
           &RTCVideoDecoder::ReleaseMailbox, weak_factory_.GetWeakPtr(),
           factories_, picture.picture_buffer_id(), pb.texture_id())),
-      pb.size(), visible_rect, visible_rect.size(), timestamp_ms));
-  if (picture.allow_overlay()) {
+      pb.size(), visible_rect, visible_rect.size(), timestamp_ms);
+  if (frame && picture.allow_overlay()) {
     frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                   true);
   }

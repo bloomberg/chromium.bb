@@ -592,6 +592,9 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
         vpx_image->planes[VPX_PLANE_U],
         vpx_image->planes[VPX_PLANE_V],
         kNoTimestamp());
+    if (!(*video_frame))
+      return false;
+
     video_frame->get()->AddDestructionObserver(
         memory_pool_->CreateFrameCallback(vpx_image->fb_priv));
 
@@ -610,6 +613,8 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
   *video_frame = frame_pool_.CreateFrame(
       codec_format, visible_size, gfx::Rect(visible_size),
       config_.natural_size(), kNoTimestamp());
+  if (!(*video_frame))
+    return false;
 
   libyuv::I420Copy(
       vpx_image->planes[VPX_PLANE_Y], vpx_image->stride[VPX_PLANE_Y],

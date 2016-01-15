@@ -368,7 +368,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
           base::SharedMemory::NULLHandle(), 0u, base::TimeDelta());
       break;
   }
-  DCHECK(frame.get());
+  if (!frame)
+    return;
   frame->metadata()->SetDouble(media::VideoFrameMetadata::FRAME_RATE,
                                frame_format.frame_rate);
   OnIncomingCapturedVideoFrame(std::move(buffer), frame, timestamp);

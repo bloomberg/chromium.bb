@@ -374,7 +374,11 @@ void VideoCaptureImpl::OnBufferReceived(
       NOTREACHED();
       break;
   }
-  DCHECK(frame);
+  if (!frame) {
+    Send(new VideoCaptureHostMsg_BufferReady(device_id_, buffer_id,
+                                             gpu::SyncToken(), -1.0));
+    return;
+  }
 
   frame->metadata()->SetTimeTicks(media::VideoFrameMetadata::REFERENCE_TIME,
                                   timestamp);

@@ -1261,6 +1261,8 @@ void WebMediaPlayerAndroid::DrawRemotePlaybackText(
                                           remote_playback_texture_id)),
       canvas_size /* coded_size */, gfx::Rect(canvas_size) /* visible_rect */,
       canvas_size /* natural_size */, base::TimeDelta() /* timestamp */);
+  if (!new_frame)
+    return;
   SetCurrentFrameInternal(new_frame);
 }
 

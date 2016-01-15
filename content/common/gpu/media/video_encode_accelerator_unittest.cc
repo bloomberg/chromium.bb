@@ -1321,14 +1321,18 @@ scoped_refptr<media::VideoFrame> VEAClient::CreateFrame(off_t position) {
   uint8_t* frame_data_v = frame_data_u + test_stream_->aligned_plane_size[1];
   CHECK_GT(current_framerate_, 0U);
 
-  return media::VideoFrame::WrapExternalYuvData(
-      kInputFormat, input_coded_size_, gfx::Rect(test_stream_->visible_size),
-      test_stream_->visible_size, input_coded_size_.width(),
-      input_coded_size_.width() / 2, input_coded_size_.width() / 2,
-      frame_data_y, frame_data_u, frame_data_v,
-      base::TimeDelta().FromMilliseconds(next_input_id_ *
-                                         base::Time::kMillisecondsPerSecond /
-                                         current_framerate_));
+  scoped_refptr<media::VideoFrame> video_frame =
+      media::VideoFrame::WrapExternalYuvData(
+          kInputFormat, input_coded_size_,
+          gfx::Rect(test_stream_->visible_size), test_stream_->visible_size,
+          input_coded_size_.width(), input_coded_size_.width() / 2,
+          input_coded_size_.width() / 2, frame_data_y, frame_data_u,
+          frame_data_v,
+          base::TimeDelta().FromMilliseconds(
+              next_input_id_ * base::Time::kMillisecondsPerSecond /
+              current_framerate_));
+  EXPECT_NE(nullptr, video_frame.get());
+  return video_frame;
 }
 
 scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(
@@ -1338,6 +1342,7 @@ scoped_refptr<media::VideoFrame> VEAClient::PrepareInputFrame(
            test_stream_->mapped_aligned_in_file.length());
 
   scoped_refptr<media::VideoFrame> frame = CreateFrame(position);
+  EXPECT_TRUE(frame);
   frame->AddDestructionObserver(
           media::BindToCurrentLoop(
               base::Bind(&VEAClient::InputNoLongerNeededCallback,

@@ -602,7 +602,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
           mailbox_holders[VideoFrame::kVPlane], release_mailbox_callback,
           coded_size, gfx::Rect(visible_size), video_frame->natural_size(),
           video_frame->timestamp());
-      if (video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
+      if (frame &&
+          video_frame->metadata()->IsTrue(VideoFrameMetadata::ALLOW_OVERLAY))
         frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
     case PIXEL_FORMAT_NV12:
@@ -611,10 +612,17 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
           output_format_, mailbox_holders[VideoFrame::kYPlane],
           release_mailbox_callback, coded_size, gfx::Rect(visible_size),
           video_frame->natural_size(), video_frame->timestamp());
-      frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
+      if (frame)
+        frame->metadata()->SetBoolean(VideoFrameMetadata::ALLOW_OVERLAY, true);
       break;
     default:
       NOTREACHED();
+  }
+
+  if (!frame) {
+    release_mailbox_callback.Run(gpu::SyncToken());
+    frame_ready_cb.Run(video_frame);
+    return;
   }
 
   base::TimeTicks render_time;

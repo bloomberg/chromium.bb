@@ -64,6 +64,7 @@ scoped_refptr<::media::VideoFrame> HoleFrameFactory::CreateHoleFrame(
             gfx::Rect(size),     // visible rect
             size,                // natural size
             base::TimeDelta());  // timestamp
+    CHECK(frame);
     frame->metadata()->SetBoolean(::media::VideoFrameMetadata::ALLOW_OVERLAY,
                                   true);
     return frame;

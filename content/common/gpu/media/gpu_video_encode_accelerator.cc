@@ -276,7 +276,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
 
   if (!shm->MapAt(map_offset.ValueOrDie(), map_size.ValueOrDie())) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
-                   "could not map frame_id=" << params.frame_id;
+                << "could not map frame_id=" << params.frame_id;
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);
     return;
   }
@@ -294,7 +294,7 @@ void GpuVideoEncodeAccelerator::OnEncode(
           params.buffer_handle,
           params.buffer_offset,
           params.timestamp);
-  if (!frame.get()) {
+  if (!frame) {
     DLOG(ERROR) << "GpuVideoEncodeAccelerator::OnEncode(): "
                 << "could not create a frame";
     NotifyError(media::VideoEncodeAccelerator::kPlatformFailureError);

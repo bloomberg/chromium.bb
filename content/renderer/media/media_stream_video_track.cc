@@ -178,6 +178,8 @@ MediaStreamVideoTrack::FrameDeliverer::GetBlackFrame(
       media::VideoFrame::WrapVideoFrame(
           black_frame_, black_frame_->visible_rect(),
           black_frame_->natural_size());
+  if (!wrapped_black_frame)
+    return nullptr;
   wrapped_black_frame->AddDestructionObserver(
       base::Bind(&ReleaseOriginalFrame, black_frame_));
 
