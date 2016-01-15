@@ -14,7 +14,6 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -26,6 +25,7 @@ import org.chromium.chrome.test.util.TestHttpServerClient;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
@@ -205,16 +205,12 @@ public class ContextMenuTest extends DownloadTestBase {
         saveMediaFromContextMenu("testImage", R.id.contextmenu_save_image, "test_image.png");
     }
 
-    /*
-     * Long-pressing on a video tag doesn't show a context menu, so this test fails.
-     * Bug: http://crbug.com/514745
-     *
-     * @LargeTest
-     * @Feature({"Browser"})
-     */
-    @DisabledTest
+    @LargeTest
+    @Feature({"Browser"})
     public void testSaveVideo()
             throws InterruptedException, TimeoutException, SecurityException, IOException {
+        // Click the video to enable playback
+        DOMUtils.clickNode(this, getActivity().getCurrentContentViewCore(), "videoDOMElement");
         saveMediaFromContextMenu("videoDOMElement", R.id.contextmenu_save_video, "test.mp4");
     }
 
