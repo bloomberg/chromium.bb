@@ -36,6 +36,7 @@ const char* const kPublicSessionWhitelist[] = {
     "ngjnkanfphagcaokhjecbgkboelgfcnf",  // Print button
     "gbchcmhmhahfdphkhkmpfmihenigjmpp",  // Chrome Remote Desktop
     "cjanmonomjogheabiocdamfpknlpdehm",  // HP printer driver
+    "pmnllmkmjilbojkpgplbdmckghmaocjh",  // Scan app by François Beaufort
 
     // Libraries:
     "aclofikceldphonlfmghmimkodjdmhck",  // Ancoris login component
