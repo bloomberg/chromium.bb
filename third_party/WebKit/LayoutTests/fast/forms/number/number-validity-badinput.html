@@ -72,6 +72,28 @@ number.value = '123';
 shouldBeFalse('number.validity.badInput');
 shouldBeTrue('number.checkValidity()');
 
+number.value = '';
+debug("' ' is not a badInput.");
+document.execCommand('InsertText', false, ' ');
+shouldBeFalse('number.validity.badInput');
+shouldBeEqualToString('number.value', '');
+debug("' +' is a badInput.");
+document.execCommand('InsertText', false, '+');
+shouldBeTrue('number.validity.badInput');
+shouldBeEqualToString('number.value', '');
+debug("' +1' is not a badInput.");
+document.execCommand('InsertText', false, '1');
+shouldBeFalse('number.validity.badInput');
+shouldBeEqualToString('number.value', '1');
+debug("' +1.' is not a badInput.");
+document.execCommand('InsertText', false, '.');
+shouldBeFalse('number.validity.badInput');
+shouldBeEqualToString('number.value', '1');
+debug("' +1. ' is not a badInput.");
+document.execCommand('InsertText', false, ' ');
+shouldBeFalse('number.validity.badInput');
+shouldBeEqualToString('number.value', '1');
+
 document.getElementById('parent').innerHTML = '';
 </script>
 </body>

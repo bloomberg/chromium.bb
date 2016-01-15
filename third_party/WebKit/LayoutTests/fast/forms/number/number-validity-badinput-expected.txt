@@ -33,6 +33,21 @@ PASS number.validity.badInput is true
 PASS number.checkValidity() is false
 PASS number.validity.badInput is false
 PASS number.checkValidity() is true
+' ' is not a badInput.
+PASS number.validity.badInput is false
+PASS number.value is ""
+' +' is a badInput.
+PASS number.validity.badInput is true
+PASS number.value is ""
+' +1' is not a badInput.
+PASS number.validity.badInput is false
+PASS number.value is "1"
+' +1.' is not a badInput.
+PASS number.validity.badInput is false
+PASS number.value is "1"
+' +1. ' is not a badInput.
+PASS number.validity.badInput is false
+PASS number.value is "1"
 PASS successfullyParsed is true
 
 TEST COMPLETE
