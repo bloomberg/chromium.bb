@@ -351,6 +351,10 @@ void HTMLMetaElement::processViewportKeyValuePair(Document* document, const Stri
             // Ignore vendor-specific argument.
             return;
         }
+        CASE("shrink-to-fit") {
+            // Ignore vendor-specific argument.
+            return;
+        }
     }
     reportViewportWarning(document, UnrecognizedViewportArgumentKeyError, keyString, String());
 }
