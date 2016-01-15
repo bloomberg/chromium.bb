@@ -51,9 +51,9 @@ struct HashHostnameHash {
 
 struct SupervisedUserURLFilter::Contents {
   URLMatcher url_matcher;
-  base::hash_set<HostnameHash, HashHostnameHash> hostname_hashes;
-  // TODO(treib,bauerb): Add infrastructure to track from which whitelist each
-  // hash came. crbug.com/557651
+  base::hash_multimap<HostnameHash,
+                      scoped_refptr<SupervisedUserSiteList>,
+                      HashHostnameHash> hostname_hashes;
   // This only tracks pattern lists.
   std::map<URLMatcherConditionSet::ID, scoped_refptr<SupervisedUserSiteList>>
       site_lists_by_matcher_id;
@@ -81,9 +81,6 @@ class FilterBuilder {
 
   // Adds a single URL pattern and returns the id of its matcher.
   URLMatcherConditionSet::ID AddPattern(const std::string& pattern);
-
-  // Adds a single hostname SHA1 hash.
-  void AddHostnameHash(const HostnameHash& hash);
 
   // Adds all the sites in |site_list|, with URL patterns and hostname hashes.
   void AddSiteList(const scoped_refptr<SupervisedUserSiteList>& site_list);
@@ -133,10 +130,6 @@ URLMatcherConditionSet::ID FilterBuilder::AddPattern(
   return matcher_id_;
 }
 
-void FilterBuilder::AddHostnameHash(const HostnameHash& hash) {
-  contents_->hostname_hashes.insert(hash);
-}
-
 void FilterBuilder::AddSiteList(
     const scoped_refptr<SupervisedUserSiteList>& site_list) {
   for (const std::string& pattern : site_list->patterns()) {
@@ -147,7 +140,7 @@ void FilterBuilder::AddSiteList(
   }
 
   for (const HostnameHash& hash : site_list->hostname_hashes())
-    AddHostnameHash(hash);
+    contents_->hostname_hashes.insert(std::make_pair(hash, site_list));
 }
 
 scoped_ptr<SupervisedUserURLFilter::Contents> FilterBuilder::Build() {
@@ -430,6 +423,14 @@ SupervisedUserURLFilter::GetMatchingWhitelistTitles(const GURL& url) const {
         contents_->site_lists_by_matcher_id[matching_id];
     whitelists[site_list->id()] = site_list->title();
   }
+
+  // Add the site lists that match the URL hostname hash to the map of
+  // whitelists (IDs -> titles).
+  const auto& range =
+      contents_->hostname_hashes.equal_range(HostnameHash(url.host()));
+  for (auto it = range.first; it != range.second; ++it)
+    whitelists[it->second->id()] = it->second->title();
+
   return whitelists;
 }
 

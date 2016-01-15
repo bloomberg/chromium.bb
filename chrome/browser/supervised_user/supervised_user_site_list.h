@@ -78,16 +78,21 @@ class SupervisedUserSiteList
  private:
   friend class base::RefCountedThreadSafe<SupervisedUserSiteList>;
   friend class SupervisedUserURLFilterTest;
-  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest, Whitelists);
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest, WhitelistsPatterns);
+  FRIEND_TEST_ALL_PREFIXES(SupervisedUserURLFilterTest,
+                           WhitelistsHostnameHashes);
 
   SupervisedUserSiteList(const std::string& id,
                          const base::string16& title,
                          const GURL& entry_point,
                          const base::ListValue* patterns,
                          const base::ListValue* hostname_hashes);
+  // Used for testing.
   SupervisedUserSiteList(const std::string& id,
                          const base::string16& title,
-                         const std::vector<std::string>& patterns);
+                         const GURL& entry_point,
+                         const std::vector<std::string>& patterns,
+                         const std::vector<std::string>& hostname_hashes);
   ~SupervisedUserSiteList();
 
   // Static private so it can access the private constructor.
