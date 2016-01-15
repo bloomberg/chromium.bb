@@ -432,12 +432,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   virtual void CreateGattConnection(const GattConnectionCallback& callback,
                                     const ConnectErrorCallback& error_callback);
 
-  // Set the gatt services discovery complete flag for this device.
-  void SetGattServicesDiscoveryComplete(bool complete);
-
-  // Indicates whether service discovery is complete for this device.
-  bool IsGattServicesDiscoveryComplete() const;
-
   // Returns the list of discovered GATT services.
   virtual std::vector<BluetoothGattService*> GetGattServices() const;
 
@@ -468,8 +462,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
       BluetoothGattConnection_DisconnectGatt_SimulateDisconnect);
   FRIEND_TEST_ALL_PREFIXES(BluetoothTest,
                            BluetoothGattConnection_ErrorAfterConnection);
-  FRIEND_TEST_ALL_PREFIXES(BluetoothTest,
-                           BluetoothGattConnection_DisconnectGatt_Cleanup);
 
   BluetoothDevice(BluetoothAdapter* adapter);
 
@@ -527,7 +519,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   typedef base::ScopedPtrHashMap<std::string, scoped_ptr<BluetoothGattService>>
       GattServiceMap;
   GattServiceMap gatt_services_;
-  bool gatt_services_discovery_complete_;
 
   // Mapping from service UUID represented as a std::string of a bluetooth
   // service to

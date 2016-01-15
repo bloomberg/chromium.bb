@@ -322,6 +322,7 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     characteristic_id_to_notify_session_.clear();
     active_characteristic_threads_.clear();
     connections_.clear();
+    devices_with_discovered_services_.clear();
   }
 
   set_adapter(std::move(mock_adapter));
@@ -522,6 +523,8 @@ void BluetoothDispatcherHost::GattServicesDiscovered(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string& device_id = device->GetAddress();
   VLOG(1) << "Services discovered for device: " << device_id;
+
+  devices_with_discovered_services_.insert(device_id);
 
   auto iter = pending_primary_services_requests_.find(device_id);
   if (iter == pending_primary_services_requests_.end()) {
@@ -785,7 +788,7 @@ void BluetoothDispatcherHost::OnGetPrimaryService(
   }
 
   // 3.
-  if (query_result.device->IsGattServicesDiscoveryComplete()) {
+  if (IsServicesDiscoveryCompleteForDevice(device_id)) {
     VLOG(1) << "Service not found in device.";
     RecordGetPrimaryServiceOutcome(UMAGetPrimaryServiceOutcome::NOT_FOUND);
     Send(new BluetoothMsg_GetPrimaryServiceError(
@@ -1339,6 +1342,11 @@ BluetoothDispatcherHost::QueryCacheForCharacteristic(
   }
 
   return result;
+}
+
+bool BluetoothDispatcherHost::IsServicesDiscoveryCompleteForDevice(
+    const std::string& device_id) {
+  return ContainsKey(devices_with_discovered_services_, device_id);
 }
 
 void BluetoothDispatcherHost::AddToPendingPrimaryServicesRequest(

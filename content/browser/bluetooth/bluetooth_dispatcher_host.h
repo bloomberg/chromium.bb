@@ -222,6 +222,12 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   CacheQueryResult QueryCacheForCharacteristic(
       const std::string& characteristic_instance_id);
 
+  // Returns true if all services have been discovered for the device.
+  // When the host gets a ServiceChanged indication, it automatically
+  // re-discovers services, and only forwards the ServiceChanged event to this
+  // class when it's done re-discovering.
+  bool IsServicesDiscoveryCompleteForDevice(const std::string& device_id);
+
   // Adds the PrimaryServicesRequest to the vector of pending services requests
   // for that device.
   void AddToPendingPrimaryServicesRequest(
@@ -275,6 +281,9 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   // Retain BluetoothGattConnection objects to keep connections open.
   // TODO(scheib): Destroy as connections are closed. http://crbug.com/539643
   ScopedVector<device::BluetoothGattConnection> connections_;
+
+  // Keeps track of which devices have had their services discovered.
+  std::set<std::string> devices_with_discovered_services_;
 
   // Map of device_id's to primary-services requests that need responses when
   // that device's service discovery completes.

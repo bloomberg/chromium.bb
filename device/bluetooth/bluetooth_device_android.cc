@@ -210,9 +210,6 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
   if (gatt_connected_) {
     DidConnectGatt();
   } else {
-    gatt_services_.clear();
-    SetGattServicesDiscoveryComplete(false);
-
     switch (status) {   // Constants are from android.bluetooth.BluetoothGatt.
       case 0x0000008f:  // GATT_CONNECTION_CONGESTED
         return DidFailToConnectGatt(ERROR_CONNECTION_CONGESTED);
@@ -244,7 +241,6 @@ void BluetoothDeviceAndroid::OnConnectionStateChange(
 void BluetoothDeviceAndroid::OnGattServicesDiscovered(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  SetGattServicesDiscoveryComplete(true);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, GetAdapter()->GetObservers(),
                     GattServicesDiscovered(GetAdapter(), this));
 }
