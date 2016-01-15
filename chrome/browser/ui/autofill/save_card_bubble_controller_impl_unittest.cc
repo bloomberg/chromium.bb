@@ -17,6 +17,7 @@
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "content/public/browser/navigation_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,12 +70,13 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
     ASSERT_TRUE(value->GetAsDictionary(&dictionary));
     scoped_ptr<base::DictionaryValue> legal_message =
         dictionary->CreateDeepCopy();
-    controller()->ShowBubbleForUpload(base::Bind(&SaveCardCallback),
-                                      std::move(legal_message));
+    controller()->ShowBubbleForUpload(CreditCard(), std::move(legal_message),
+                                      base::Bind(&SaveCardCallback));
   }
 
   void ShowLocalBubble() {
-    controller()->ShowBubbleForLocalSave(base::Bind(&SaveCardCallback));
+    controller()->ShowBubbleForLocalSave(CreditCard(),
+                                         base::Bind(&SaveCardCallback));
   }
 
   void ShowUploadBubble() {

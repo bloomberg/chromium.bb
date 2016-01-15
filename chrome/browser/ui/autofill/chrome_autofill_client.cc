@@ -195,7 +195,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
         web_contents());
     autofill::SaveCardBubbleControllerImpl* controller =
         autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-    controller->ShowBubbleForLocalSave(callback);
+    controller->ShowBubbleForLocalSave(card, callback);
     return;
   }
 
@@ -218,7 +218,7 @@ void ChromeAutofillClient::ConfirmSaveCreditCardToCloud(
   autofill::SaveCardBubbleControllerImpl::CreateForWebContents(web_contents());
   autofill::SaveCardBubbleControllerImpl* controller =
       autofill::SaveCardBubbleControllerImpl::FromWebContents(web_contents());
-  controller->ShowBubbleForUpload(callback, std::move(legal_message));
+  controller->ShowBubbleForUpload(card, std::move(legal_message), callback);
 #endif
 }
 

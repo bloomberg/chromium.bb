@@ -7,6 +7,7 @@
 #import "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill {
@@ -25,6 +26,10 @@ class TestSaveCardBubbleController : public SaveCardBubbleController {
 
   base::string16 GetExplanatoryMessage() const override {
     return base::string16();
+  }
+
+  const CreditCard GetCard() const override {
+    return CreditCard();
   }
 
   void OnSaveButton() override {}

@@ -43,6 +43,7 @@ SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
 }
 
 void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
+    const CreditCard& card,
     const base::Closure& save_card_callback) {
   is_uploading_ = false;
   is_reshow_ = false;
@@ -50,13 +51,15 @@ void SaveCardBubbleControllerImpl::ShowBubbleForLocalSave(
       AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, is_uploading_,
       is_reshow_);
 
+  card_ = card;
   save_card_callback_ = save_card_callback;
   ShowBubble();
 }
 
 void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
-    const base::Closure& save_card_callback,
-    scoped_ptr<base::DictionaryValue> legal_message) {
+    const CreditCard& card,
+    scoped_ptr<base::DictionaryValue> legal_message,
+    const base::Closure& save_card_callback) {
   is_uploading_ = true;
   is_reshow_ = false;
   AutofillMetrics::LogSaveCardPromptMetric(
@@ -70,6 +73,7 @@ void SaveCardBubbleControllerImpl::ShowBubbleForUpload(
     return;
   }
 
+  card_ = card;
   save_card_callback_ = save_card_callback;
   ShowBubble();
 }
@@ -109,6 +113,10 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
   return is_uploading_ ? l10n_util::GetStringUTF16(
                              IDS_AUTOFILL_SAVE_CARD_PROMPT_UPLOAD_EXPLANATION)
                        : base::string16();
+}
+
+const CreditCard SaveCardBubbleControllerImpl::GetCard() const {
+  return card_;
 }
 
 void SaveCardBubbleControllerImpl::OnSaveButton() {

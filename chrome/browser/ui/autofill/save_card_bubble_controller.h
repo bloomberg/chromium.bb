@@ -15,6 +15,7 @@
 
 namespace autofill {
 
+class CreditCard;
 class SaveCardBubbleView;
 
 // Interface that exposes controller functionality to SaveCardBubbleView.
@@ -26,6 +27,9 @@ class SaveCardBubbleController {
   // Returns the explanatory text that should be displayed in the bubble.
   // Returns an empty string if no message should be displayed.
   virtual base::string16 GetExplanatoryMessage() const = 0;
+
+  // Returns the card that will be uploaded if the user accepts.
+  virtual const CreditCard GetCard() const = 0;
 
   // Interaction.
   virtual void OnSaveButton() = 0;

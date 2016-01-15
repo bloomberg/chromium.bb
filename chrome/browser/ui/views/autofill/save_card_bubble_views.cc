@@ -10,9 +10,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/legal_message_line.h"
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/blue_button.h"
 #include "ui/views/controls/button/label_button.h"
@@ -20,10 +22,7 @@
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/grid_layout.h"
 #include "ui/views/layout/layout_constants.h"
-
-using views::GridLayout;
 
 namespace autofill {
 
@@ -78,16 +77,12 @@ void SaveCardBubbleViews::Hide() {
   Close();
 }
 
+gfx::Size SaveCardBubbleViews::GetPreferredSize() const {
+  return gfx::Size(kBubbleWidth, GetHeightForWidth(kBubbleWidth));
+}
+
 views::View* SaveCardBubbleViews::GetInitiallyFocusedView() {
   return save_button_;
-}
-
-base::string16 SaveCardBubbleViews::GetWindowTitle() const {
-  return controller_->GetWindowTitle();
-}
-
-bool SaveCardBubbleViews::ShouldShowWindowTitle() const {
-  return true;
 }
 
 void SaveCardBubbleViews::WindowClosing() {
@@ -136,81 +131,82 @@ void SaveCardBubbleViews::StyledLabelLinkClicked(views::StyledLabel* label,
 
 // Create view containing everything except for the footnote.
 scoped_ptr<views::View> SaveCardBubbleViews::CreateMainContentView() {
-  enum {
-    COLUMN_SET_ID_SPACER,
-    COLUMN_SET_ID_EXPLANATION,
-    COLUMN_SET_ID_BUTTONS,
-  };
-
   scoped_ptr<View> view(new View());
-  GridLayout* layout = new GridLayout(view.get());
-  view->SetLayoutManager(layout);
+  view->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           GetBubbleFrameView()->GetTitleInsets().left(),
+                           views::kUnrelatedControlHorizontalSpacing,
+                           views::kUnrelatedControlLargeHorizontalSpacing));
 
-  // Add a column set with padding to establish a minimum width.
-  views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_ID_SPACER);
-  cs->AddPaddingColumn(0, kBubbleWidth);
-  layout->StartRow(0, COLUMN_SET_ID_SPACER);
+  // Add a title label. (We don't use GetWindowTitle because it doesn't support
+  // multi-line.)
+  ui::ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  views::Label* title_label =
+      new views::Label(controller_->GetWindowTitle(),
+                       rb.GetFontList(ui::ResourceBundle::MediumFont));
+  title_label->SetMultiLine(true);
+  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  view->AddChildView(title_label);
 
-  int horizontal_inset = GetBubbleFrameView()->GetTitleInsets().left();
-  // Optionally set up ColumnSet and label that will contain an explanation for
-  // upload.
+  // Add the card type icon, last four digits and expiration date.
+  views::View* description_view = new views::View();
+  description_view->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, views::kRelatedButtonHSpacing));
+  view->AddChildView(description_view);
+
+  const CreditCard& card = controller_->GetCard();
+  views::ImageView* card_type_icon = new views::ImageView();
+  card_type_icon->SetImage(
+      rb.GetImageNamed(CreditCard::IconResourceId(card.type())).AsImageSkia());
+  card_type_icon->SetTooltipText(card.TypeForDisplay());
+  card_type_icon->SetBorder(
+      views::Border::CreateSolidBorder(1, kSubtleBorderColor));
+  description_view->AddChildView(card_type_icon);
+
+  // Midline horizontal ellipsis follwed by last four digits:
+  description_view->AddChildView(new views::Label(
+      base::UTF8ToUTF16("\xE2\x8B\xAF") + card.LastFourDigits()));
+  description_view->AddChildView(
+      new views::Label(card.AbbreviatedExpirationDateForDisplay()));
+
+  // Optionally add label that will contain an explanation for upload.
   base::string16 explanation = controller_->GetExplanatoryMessage();
   if (!explanation.empty()) {
-    cs = layout->AddColumnSet(COLUMN_SET_ID_EXPLANATION);
-    cs->AddPaddingColumn(0, horizontal_inset);
-    // Fix the width of the label to ensure it breaks within the preferred size
-    // of the bubble.
-    cs->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::FIXED,
-                  kBubbleWidth - (2 * horizontal_inset), 0);
-    cs->AddPaddingColumn(0, horizontal_inset);
-
-    layout->StartRow(0, COLUMN_SET_ID_EXPLANATION);
     views::Label* explanation_label = new views::Label(explanation);
     explanation_label->SetMultiLine(true);
     explanation_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    layout->AddView(explanation_label);
-
-    layout->AddPaddingRow(0, views::kUnrelatedControlLargeHorizontalSpacing);
+    view->AddChildView(explanation_label);
   }
 
-  // Set up ColumnSet that will contain the buttons and "learn more" link.
-  cs = layout->AddColumnSet(COLUMN_SET_ID_BUTTONS);
-  cs->AddPaddingColumn(0, horizontal_inset);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(1, 0);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, views::kRelatedButtonHSpacing);
-  cs->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                GridLayout::USE_PREF, 0, 0);
-  cs->AddPaddingColumn(0, horizontal_inset);
+  // Add "learn more" link and accept/cancel buttons.
+  views::View* button_view = new views::View();
+  views::BoxLayout* button_view_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, 0, 0, views::kRelatedButtonHSpacing);
+  button_view->SetLayoutManager(button_view_layout);
+  view->AddChildView(button_view);
 
-  // Create "learn more" link and add it to layout.
   learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
+  learn_more_link_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   learn_more_link_->SetUnderline(false);
   learn_more_link_->set_listener(this);
-  layout->StartRow(0, COLUMN_SET_ID_BUTTONS);
-  layout->AddView(learn_more_link_);
+  button_view->AddChildView(learn_more_link_);
+  button_view_layout->SetFlexForView(learn_more_link_, 1);
 
-  // Create accept button.
   save_button_ = new views::BlueButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_ACCEPT));
   save_button_->SetIsDefault(true);
 
-  // Create cancel button.
   cancel_button_ = new views::LabelButton(
       this, l10n_util::GetStringUTF16(IDS_AUTOFILL_SAVE_CARD_PROMPT_DENY));
   cancel_button_->SetStyle(views::Button::STYLE_BUTTON);
 
   if (kIsOkButtonOnLeftSide) {
-    layout->AddView(save_button_);
-    layout->AddView(cancel_button_);
+    button_view->AddChildView(save_button_);
+    button_view->AddChildView(cancel_button_);
   } else {
-    layout->AddView(cancel_button_);
-    layout->AddView(save_button_);
+    button_view->AddChildView(cancel_button_);
+    button_view->AddChildView(save_button_);
   }
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
 
   return view;
 }
@@ -222,7 +218,7 @@ scoped_ptr<views::View> SaveCardBubbleViews::CreateFootnoteView() {
   view->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical,
                            GetBubbleFrameView()->GetTitleInsets().left(),
-                           views::kRelatedControlVerticalSpacing, 0));
+                           views::kUnrelatedControlHorizontalSpacing, 0));
   view->SetBorder(
       views::Border::CreateSolidSidedBorder(1, 0, 0, 0, kSubtleBorderColor));
   view->set_background(

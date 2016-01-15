@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ui/autofill/save_card_bubble_controller.h"
+#include "components/autofill/core/browser/credit_card.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -24,13 +25,15 @@ class SaveCardBubbleControllerImpl
   // Sets up the controller for local save and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed.
-  void ShowBubbleForLocalSave(const base::Closure& save_card_callback);
+  void ShowBubbleForLocalSave(const CreditCard& card,
+                              const base::Closure& save_card_callback);
 
   // Sets up the controller for upload and shows the bubble.
   // |save_card_callback| will be invoked if and when the Save button is
   // pressed. The contents of |legal_message| will be displayed in the bubble.
-  void ShowBubbleForUpload(const base::Closure& save_card_callback,
-                           scoped_ptr<base::DictionaryValue> legal_message);
+  void ShowBubbleForUpload(const CreditCard& card,
+                           scoped_ptr<base::DictionaryValue> legal_message,
+                           const base::Closure& save_card_callback);
 
   void HideBubble();
   void ReshowBubble();
@@ -44,6 +47,7 @@ class SaveCardBubbleControllerImpl
   // SaveCardBubbleController:
   base::string16 GetWindowTitle() const override;
   base::string16 GetExplanatoryMessage() const override;
+  const CreditCard GetCard() const override;
   void OnSaveButton() override;
   void OnCancelButton() override;
   void OnLearnMoreClicked() override;
@@ -88,6 +92,9 @@ class SaveCardBubbleControllerImpl
 
   // Whether ReshowBubble() has been called since ShowBubbleFor*() was called.
   bool is_reshow_;
+
+  // Contains the details of the card that will be saved if the user accepts.
+  CreditCard card_;
 
   // If no legal message should be shown then this variable is an empty vector.
   LegalMessageLines legal_message_lines_;

@@ -44,10 +44,11 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   // SaveCardBubbleView
   void Hide() override;
 
+  // views::View
+  gfx::Size GetPreferredSize() const override;
+
   // views::WidgetDelegate
   views::View* GetInitiallyFocusedView() override;
-  base::string16 GetWindowTitle() const override;
-  bool ShouldShowWindowTitle() const override;
   void WindowClosing() override;
 
   // views::ButtonListener
