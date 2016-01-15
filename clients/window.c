@@ -1265,6 +1265,19 @@ static const char *watches[] = {
 	"0426c94ea35c87780ff01dc239897213"
 };
 
+static const char *move_draggings[] = {
+	"dnd-move"
+};
+
+static const char *copy_draggings[] = {
+	"dnd-copy"
+};
+
+static const char *forbidden_draggings[] = {
+	"dnd-none",
+	"dnd-no-drop"
+};
+
 struct cursor_alternatives {
 	const char **names;
 	size_t count;
@@ -1284,6 +1297,9 @@ static const struct cursor_alternatives cursors[] = {
 	{xterms, ARRAY_LENGTH(xterms)},
 	{hand1s, ARRAY_LENGTH(hand1s)},
 	{watches, ARRAY_LENGTH(watches)},
+	{move_draggings, ARRAY_LENGTH(move_draggings)},
+	{copy_draggings, ARRAY_LENGTH(copy_draggings)},
+	{forbidden_draggings, ARRAY_LENGTH(forbidden_draggings)},
 };
 
 static void
