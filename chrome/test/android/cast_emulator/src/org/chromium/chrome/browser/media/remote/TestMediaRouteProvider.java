@@ -22,10 +22,11 @@ import android.support.v7.media.MediaRouteProvider;
 import android.support.v7.media.MediaRouteProviderDescriptor;
 import android.support.v7.media.MediaRouter.ControlRequestCallback;
 import android.support.v7.media.MediaSessionStatus;
-import android.util.Log;
 
 import com.google.android.gms.cast.CastMediaControlIntent;
 
+import org.chromium.base.Log;
+import org.chromium.base.annotations.RemovableInRelease;
 import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.util.ArrayList;
@@ -39,7 +40,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
     private static final String MANIFEST_CAST_KEY =
             "com.google.android.apps.chrome.tests.support.CAST_ID";
 
-    private static final String TAG = "TestMediaRouteProvider";
+    private static final String TAG = "CastEmulator";
 
     private static final String VARIABLE_VOLUME_SESSION_ROUTE_ID = "variable_session";
     private static final int VOLUME_MAX = 10;
@@ -127,39 +128,39 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                 }
             });
             setVolumeInternal(mVolume);
-            Log.d(TAG, mRouteId + ": Controller created");
+            Log.v(TAG, "%s: Controller created", mRouteId);
         }
 
         @Override
         public void onRelease() {
-            Log.d(TAG, mRouteId + ": Controller released");
+            Log.v(TAG, "%s: Controller released", mRouteId);
         }
 
         @Override
         public void onSelect() {
-            Log.d(TAG, mRouteId + ": Selected");
+            Log.v(TAG, "%s: Selected", mRouteId);
         }
 
         @Override
         public void onUnselect() {
-            Log.d(TAG, mRouteId + ": Unselected");
+            Log.v(TAG, "%s: Unselected", mRouteId);
         }
 
         @Override
         public void onSetVolume(int volume) {
-            Log.d(TAG, mRouteId + ": Set volume to " + volume);
+            Log.v(TAG, "%s: Set volume to %d", mRouteId, volume);
             setVolumeInternal(volume);
         }
 
         @Override
         public void onUpdateVolume(int delta) {
-            Log.d(TAG, mRouteId + ": Update volume by " + delta);
+            Log.v(TAG, "%s: Update volume by %d", mRouteId, delta);
             setVolumeInternal(mVolume + delta);
         }
 
         @Override
         public boolean onControlRequest(Intent intent, ControlRequestCallback callback) {
-            Log.d(TAG, mRouteId + ": Received control request " + intent);
+            Log.v(TAG, "%s: Received control request %s", mRouteId, intent);
             String action = intent.getAction();
             if (intent.hasCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK)
                     || intent.hasCategory(CastMediaControlIntent.categoryForRemotePlayback())) {
@@ -185,7 +186,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                 } else if (action.equals(CastMediaControlIntent.ACTION_SYNC_STATUS)) {
                     success = handleSyncStatus(intent, callback);
                 }
-                Log.d(TAG, mSessionManager.getSessionStatusString());
+                Log.v(TAG, mSessionManager.getSessionStatusString());
                 return success;
             }
 
@@ -199,7 +200,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
          */
         private boolean handleSyncStatus(Intent intent, ControlRequestCallback callback) {
             String sid = intent.getStringExtra(MediaControlIntent.EXTRA_SESSION_ID);
-            Log.d(TAG, mRouteId + ": Received syncStatus request, sid=" + sid);
+            Log.v(TAG, "%s: Received syncStatus request, sid=%s", mRouteId, sid);
 
             MediaItem item = mSessionManager.getCurrentItem();
             if (callback != null) {
@@ -221,7 +222,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
         private void setVolumeInternal(int volume) {
             if (volume >= 0 && volume <= VOLUME_MAX) {
                 mVolume = volume;
-                Log.d(TAG, mRouteId + ": New volume is " + mVolume);
+                Log.v(TAG, "%s: New volume is %d", mRouteId, mVolume);
                 AudioManager audioManager = (AudioManager) getContext()
                         .getSystemService(Context.AUDIO_SERVICE);
                 audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, 0);
@@ -232,7 +233,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
         private boolean handlePlay(Intent intent, ControlRequestCallback callback) {
             String sid = intent.getStringExtra(MediaControlIntent.EXTRA_SESSION_ID);
             if (sid != null && !sid.equals(mSessionManager.getSessionId())) {
-                Log.d(TAG, "handlePlay fails because of bad sid=" + sid);
+                Log.v(TAG, "handlePlay fails because of bad sid=%s", sid);
                 return false;
             }
             if (mSessionManager.hasSession()) {
@@ -241,22 +242,18 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
 
             Uri uri = intent.getData();
             if (uri == null) {
-                Log.d(TAG, "handlePlay fails because of null uri");
+                Log.v(TAG, "handlePlay fails because of null uri");
                 return false;
             }
 
-            String mime = intent.getType();
-            long pos = intent.getLongExtra(MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, 0);
             mMetadata = intent.getBundleExtra(MediaControlIntent.EXTRA_ITEM_METADATA);
-            Bundle headers = intent.getBundleExtra(MediaControlIntent.EXTRA_ITEM_HTTP_HEADERS);
             PendingIntent receiver = (PendingIntent) intent.getParcelableExtra(
                     MediaControlIntent.EXTRA_ITEM_STATUS_UPDATE_RECEIVER);
 
-            Log.d(TAG, mRouteId + ": Received play request, uri=" + uri + ", mime=" + mime
-                    + ", sid=" + sid + ", pos=" + pos + ", metadata=" + mMetadata + ", headers="
-                    + headers + ", receiver=" + receiver);
+            Log.v(TAG, "%s: Received play request {%s}", mRouteId,
+                    getMediaControlIntentDebugString(intent));
             // Add the video to the session manager.
-            MediaItem item = mSessionManager.add(uri, mime, receiver);
+            MediaItem item = mSessionManager.add(uri, intent.getType(), receiver);
             // And start it playing.
             mSessionManager.resume();
             if (callback != null) {
@@ -282,7 +279,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
 
             String iid = intent.getStringExtra(MediaControlIntent.EXTRA_ITEM_ID);
             long pos = intent.getLongExtra(MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, 0);
-            Log.d(TAG, mRouteId + ": Received seek request, pos=" + pos);
+            Log.v(TAG, "%s: Received seek request, pos=%d", mRouteId, pos);
             MediaItem item = mSessionManager.seek(iid, pos);
             if (callback != null) {
                 Bundle result = new Bundle();
@@ -295,7 +292,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
         private boolean handleGetStatus(Intent intent, ControlRequestCallback callback) {
             String sid = intent.getStringExtra(MediaControlIntent.EXTRA_SESSION_ID);
             String iid = intent.getStringExtra(MediaControlIntent.EXTRA_ITEM_ID);
-            Log.d(TAG, mRouteId + ": Received getStatus request, sid=" + sid + ", iid=" + iid);
+            Log.v(TAG, "%s: Received getStatus request, sid=%s, iid=%s", mRouteId, sid, iid);
             MediaItem item = mSessionManager.getStatus(iid);
             if (callback != null) {
                 if (item != null) {
@@ -304,8 +301,7 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                             item.getStatus().asBundle());
                     callback.onResult(result);
                 } else {
-                    callback.onError("Failed to get status" + ", sid=" + sid + ", iid=" + iid,
-                            null);
+                    callback.onError("Failed to get status, sid=" + sid + ", iid=" + iid, null);
                 }
             }
             return (item != null);
@@ -361,14 +357,14 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
             boolean relaunch = intent.getBooleanExtra(
                     CastMediaControlIntent.EXTRA_CAST_RELAUNCH_APPLICATION, true);
             String sid = mSessionManager.startSession(relaunch);
-            Log.d(TAG, "StartSession returns sessionId " + sid);
+            Log.v(TAG, "StartSession returns sessionId %s", sid);
             if (callback != null) {
                 if (sid != null) {
                     Bundle result = new Bundle();
                     result.putString(MediaControlIntent.EXTRA_SESSION_ID, sid);
                     result.putBundle(MediaControlIntent.EXTRA_SESSION_STATUS,
                             mSessionManager.getSessionStatus(sid).asBundle());
-                    Log.d(TAG, "StartSession sends result of " + result);
+                    Log.v(TAG, "StartSession sends result of $s", result);
                     callback.onResult(result);
                     mSessionReceiver = (PendingIntent) intent.getParcelableExtra(
                             MediaControlIntent.EXTRA_SESSION_STATUS_UPDATE_RECEIVER);
@@ -432,9 +428,9 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                             item.getStatus().asBundle());
                     try {
                         receiver.send(getContext(), 0, intent);
-                        Log.d(TAG, mRouteId + ": Sending status update from provider");
+                        Log.v(TAG, "%s: Sending status update from provider", mRouteId);
                     } catch (PendingIntent.CanceledException e) {
-                        Log.d(TAG, mRouteId + ": Failed to send status update!");
+                        Log.v(TAG, "%s: Failed to send status update!", mRouteId);
                     }
                 }
             }
@@ -448,12 +444,24 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
                         mSessionManager.getSessionStatus(sid).asBundle());
                 try {
                     mSessionReceiver.send(getContext(), 0, intent);
-                    Log.d(TAG, mRouteId + ": Sending session status update from provider");
+                    Log.v(TAG, "%s: Sending session status update from provider", mRouteId);
                 } catch (PendingIntent.CanceledException e) {
-                    Log.d(TAG, mRouteId + ": Failed to send session status update!");
+                    Log.v(TAG, "%s: Failed to send session status update!", mRouteId);
                 }
             }
         }
+    }
+
+    @RemovableInRelease
+    private String getMediaControlIntentDebugString(Intent intent) {
+        return "uri=" + intent.getData()
+                + ", mime=" + intent.getType()
+                + ", sid=" +  intent.getStringExtra(MediaControlIntent.EXTRA_SESSION_ID)
+                + ", pos=" + intent.getLongExtra(
+                        MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, 0)
+                + ", metadata=" + intent.getBundleExtra(MediaControlIntent.EXTRA_ITEM_METADATA)
+                + ", headers=" + intent.getBundleExtra(
+                        MediaControlIntent.EXTRA_ITEM_HTTP_HEADERS);
     }
 
     private static void addDataTypeUnchecked(IntentFilter filter, String type) {

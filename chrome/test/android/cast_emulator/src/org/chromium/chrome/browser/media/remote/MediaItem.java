@@ -8,7 +8,8 @@ import android.app.PendingIntent;
 import android.net.Uri;
 import android.os.SystemClock;
 import android.support.v7.media.MediaItemStatus;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 /**
  * PlaylistItem helps keep track of the current status of an media item.
@@ -25,8 +26,7 @@ final class MediaItem {
     private long mContentDuration;
     private long mTimestamp;
     private String mRemoteItemId;
-    private static final String TAG = "MediaItem";
-
+    private static final String TAG = "CastEmulator";
 
     public MediaItem(String qid, String iid, Uri uri, String mime, PendingIntent pi) {
         mSessionId = qid;
@@ -42,7 +42,7 @@ final class MediaItem {
 
     public void setState(int state) {
         mPlaybackState = state;
-        Log.d(TAG, "State set to " + state);
+        Log.v(TAG, "State set to %d", state);
     }
 
     public void setPosition(long pos) {

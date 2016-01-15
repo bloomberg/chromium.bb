@@ -10,7 +10,8 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.support.v7.media.MediaItemStatus;
 import android.support.v7.media.MediaRouter.RouteInfo;
-import android.util.Log;
+
+import org.chromium.base.Log;
 
 import java.io.IOException;
 
@@ -20,8 +21,7 @@ import java.io.IOException;
 public class DummyPlayer implements MediaPlayer.OnPreparedListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnSeekCompleteListener {
-    private static final String TAG = "CastDummyPlayer";
-    private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final String TAG = "CastEmulator";
 
     private static final int STATE_IDLE = 0;
     private static final int STATE_PLAY_PENDING = 1;
@@ -53,11 +53,11 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     }
 
     public void connect(RouteInfo route) {
-        if (DEBUG) Log.d(TAG, "connecting to: " + route);
+        Log.v(TAG, "connecting to: %s", route);
     }
 
     public void release() {
-        if (DEBUG) Log.d(TAG, "releasing");
+        Log.v(TAG, "releasing");
         // release media player
         if (mMediaPlayer != null) {
             mMediaPlayer.stop();
@@ -68,20 +68,20 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
 
     // Player
     public void play(final MediaItem item) {
-        if (DEBUG) Log.d(TAG, "play: item=" + item);
+        Log.v(TAG, "play: item=%s", item);
         reset();
         mSeekToPos = (int) item.getPosition();
         try {
             mMediaPlayer.setDataSource(mContext, item.getUri());
             mMediaPlayer.prepare();
         } catch (IllegalStateException e) {
-            Log.e(TAG, "MediaPlayer throws IllegalStateException, uri=" + item.getUri());
+            Log.e(TAG, "MediaPlayer throws IllegalStateException, uri=%s", item.getUri());
         } catch (IOException e) {
-            Log.e(TAG, "MediaPlayer throws IOException, uri=" + item.getUri());
+            Log.e(TAG, "MediaPlayer throws IOException, uri=%s", item.getUri());
         } catch (IllegalArgumentException e) {
-            Log.e(TAG, "MediaPlayer throws IllegalArgumentException, uri=" + item.getUri());
+            Log.e(TAG, "MediaPlayer throws IllegalArgumentException, uri=%s", item.getUri());
         } catch (SecurityException e) {
-            Log.e(TAG, "MediaPlayer throws SecurityException, uri=" + item.getUri());
+            Log.e(TAG, "MediaPlayer throws SecurityException, uri=%s", item.getUri());
         }
         if (item.getState() == MediaItemStatus.PLAYBACK_STATE_PLAYING) {
             resume();
@@ -91,7 +91,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     }
 
     public void seek(final MediaItem item) {
-        if (DEBUG) Log.d(TAG, "seek: item=" + item);
+        Log.v(TAG, "seek: item=%s", item);
         int pos = (int) item.getPosition();
         if (mState == STATE_PLAYING || mState == STATE_PAUSED) {
             mMediaPlayer.seekTo(pos);
@@ -114,7 +114,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     }
 
     public void pause() {
-        if (DEBUG) Log.d(TAG, "pause");
+        Log.v(TAG, "pause");
         if (mState == STATE_PLAYING) {
             mMediaPlayer.pause();
             mState = STATE_PAUSED;
@@ -122,7 +122,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     }
 
     public void resume() {
-        if (DEBUG) Log.d(TAG, "resume");
+        Log.v(TAG, "resume");
         if (mState == STATE_READY || mState == STATE_PAUSED) {
             mMediaPlayer.start();
             mState = STATE_PLAYING;
@@ -132,7 +132,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     }
 
     public void stop() {
-        if (DEBUG) Log.d(TAG, "stop");
+        Log.v(TAG, "stop");
         if (mState == STATE_PLAYING || mState == STATE_PAUSED) {
             mMediaPlayer.stop();
             mState = STATE_IDLE;
@@ -142,7 +142,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
     // MediaPlayer Listeners
     @Override
     public void onPrepared(MediaPlayer mp) {
-        if (DEBUG) Log.d(TAG, "onPrepared");
+        Log.v(TAG, "onPrepared");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -151,7 +151,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
                 } else if (mState == STATE_PLAY_PENDING) {
                     mState = STATE_PLAYING;
                     if (mSeekToPos > 0) {
-                        if (DEBUG) Log.d(TAG, "seek to initial pos: " + mSeekToPos);
+                        Log.v(TAG, "seek to initial pos: %d", mSeekToPos);
                         mMediaPlayer.seekTo(mSeekToPos);
                     }
                     mMediaPlayer.start();
@@ -165,7 +165,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        if (DEBUG) Log.d(TAG, "onCompletion");
+        Log.v(TAG, "onCompletion");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -178,7 +178,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        if (DEBUG) Log.d(TAG, "onError");
+        Log.v(TAG, "onError");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
@@ -193,7 +193,7 @@ public class DummyPlayer implements MediaPlayer.OnPreparedListener,
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-        if (DEBUG) Log.d(TAG, "onSeekComplete");
+        Log.v(TAG, "onSeekComplete");
         mHandler.post(new Runnable() {
             @Override
             public void run() {
