@@ -134,57 +134,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
                ['linux', 'amd'], bug=550989)
     self.Fail('deqp/data/gles2/shaders/preprocessor.html',
               ['linux', 'amd'], bug=478572)
-    # AMD Radeon 5450
-    self.Fail('conformance/programs/program-test.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/rendering/multisample-corruption.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/misc/default-texture.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/video/' +
-        'tex-image-and-sub-image-2d-with-video-rgb-rgb-unsigned_byte.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgb-rgb-unsigned_short_5_6_5.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/video/' +
-        'tex-image-and-sub-image-2d-with-video-rgba-rgba-unsigned_byte.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/video/tex-image-and-sub-image-2d-with-' +
-        'video-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/webgl_canvas/tex-image-and-sub-image-2d-' +
-        'with-webgl-canvas-rgb-rgb-unsigned_byte.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/webgl_canvas/tex-image-and-sub-image-2d-' +
-        'with-webgl-canvas-rgb-rgb-unsigned_short_5_6_5.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/webgl_canvas/tex-image-and-sub-image-2d-' +
-        'with-webgl-canvas-rgba-rgba-unsigned_byte.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/webgl_canvas/tex-image-and-sub-image-2d-' +
-        'with-webgl-canvas-rgba-rgba-unsigned_short_4_4_4_4.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/webgl_canvas/tex-image-and-sub-image-2d-' +
-        'with-webgl-canvas-rgba-rgba-unsigned_short_5_5_5_1.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/misc/texture-mips.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/misc/texture-npot-video.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/textures/misc/texture-size.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/more/functions/drawArraysOutOfBounds.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/more/functions/texImage2DHTML.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
-    self.Fail('conformance/more/functions/texSubImage2DHTML.html',
-        ['linux', ('amd', 0x68f9)], bug=436212)
     # AMD Radeon 6450
     self.Fail('conformance/extensions/angle-instanced-arrays.html',
         ['linux', ('amd', 0x6779)], bug=479260)
