@@ -50,6 +50,7 @@
 #include "modules/webaudio/DelayNode.h"
 #include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/GainNode.h"
+#include "modules/webaudio/IIRFilterNode.h"
 #include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
@@ -63,6 +64,7 @@
 #include "modules/webaudio/StereoPannerNode.h"
 #include "modules/webaudio/WaveShaperNode.h"
 #include "platform/ThreadSafeFunctional.h"
+#include "platform/audio/IIRFilter.h"
 #include "public/platform/Platform.h"
 #include "wtf/text/WTFString.h"
 
@@ -588,6 +590,90 @@ PeriodicWave* AbstractAudioContext::createPeriodicWave(DOMFloat32Array* real, DO
     DictionaryHelper::getWithUndefinedOrNullCheck(options, "disableNormalization", isNormalizationDisabled);
 
     return PeriodicWave::create(sampleRate(), real, imag, isNormalizationDisabled);
+}
+
+IIRFilterNode* AbstractAudioContext::createIIRFilter(Vector<double> feedforwardCoef, Vector<double> feedbackCoef,  ExceptionState& exceptionState)
+{
+    ASSERT(isMainThread());
+
+    if (isContextClosed()) {
+        throwExceptionForClosedState(exceptionState);
+        return nullptr;
+    }
+
+    if (feedbackCoef.size() == 0 || (feedbackCoef.size() > IIRFilter::kMaxOrder + 1)) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange<size_t>(
+                "number of feedback coefficients",
+                feedbackCoef.size(),
+                1,
+                ExceptionMessages::InclusiveBound,
+                IIRFilter::kMaxOrder + 1,
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    if (feedforwardCoef.size() == 0 || (feedforwardCoef.size() > IIRFilter::kMaxOrder + 1)) {
+        exceptionState.throwDOMException(
+            NotSupportedError,
+            ExceptionMessages::indexOutsideRange<size_t>(
+                "number of feedforward coefficients",
+                feedforwardCoef.size(),
+                1,
+                ExceptionMessages::InclusiveBound,
+                IIRFilter::kMaxOrder + 1,
+                ExceptionMessages::InclusiveBound));
+        return nullptr;
+    }
+
+    if (feedbackCoef[0] == 0) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "First feedback coefficient cannot be zero.");
+        return nullptr;
+    }
+
+    bool hasNonZeroCoef = false;
+
+    for (size_t k = 0; k < feedforwardCoef.size(); ++k) {
+        if (feedforwardCoef[k] != 0) {
+            hasNonZeroCoef = true;
+            break;
+        }
+    }
+
+    if (!hasNonZeroCoef) {
+        exceptionState.throwDOMException(
+            InvalidStateError,
+            "At least one feedforward coefficient must be non-zero.");
+        return nullptr;
+    }
+
+    // Make sure all coefficents are finite.
+    for (size_t k = 0; k < feedforwardCoef.size(); ++k) {
+        double c = feedforwardCoef[k];
+        if (!std::isfinite(c)) {
+            String name = "feedforward coefficient " + String::number(k);
+            exceptionState.throwDOMException(
+                InvalidStateError,
+                ExceptionMessages::notAFiniteNumber(c, name.ascii().data()));
+            return nullptr;
+        }
+    }
+
+    for (size_t k = 0; k < feedbackCoef.size(); ++k) {
+        double c = feedbackCoef[k];
+        if (!std::isfinite(c)) {
+            String name = "feedback coefficient " + String::number(k);
+            exceptionState.throwDOMException(
+                InvalidStateError,
+                ExceptionMessages::notAFiniteNumber(c, name.ascii().data()));
+            return nullptr;
+        }
+    }
+
+    return IIRFilterNode::create(*this, sampleRate(), feedforwardCoef, feedbackCoef);
 }
 
 PeriodicWave* AbstractAudioContext::periodicWave(int type)

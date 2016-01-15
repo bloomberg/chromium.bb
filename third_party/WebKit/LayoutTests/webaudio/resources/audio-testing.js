@@ -417,6 +417,13 @@ var Should = (function () {
         // If the number of array elements is greater than this, the rest of
         // elements will be omitted.
         this.NUM_ARRAY_LOG = opts.numberOfArrayLog;
+
+        // If true, verbose output for the failure case is printed, for methods where this makes
+        // sense.
+        this.verbose = opts.verbose;
+
+        // If set, this is the precision with which numbers will be printed.
+        this.PRINT_PRECISION = opts.precision;
     }
 
     // Internal methods starting with a underscore.
@@ -434,11 +441,13 @@ var Should = (function () {
         return arg instanceof Array || arg instanceof Float32Array;
     };
 
-    ShouldModel.prototype._assert = function (expression, reason) {
+    ShouldModel.prototype._assert = function (expression, reason, value) {
         if (expression)
             return;
 
         var failureMessage = 'Assertion failed: ' + reason + ' ' + this.desc +'.';
+        if (arguments.length >= 3)
+            failureMessage += ": " + value;
         testFailed(failureMessage);
         throw failureMessage;
     };
@@ -493,7 +502,7 @@ var Should = (function () {
     ShouldModel.prototype.beEqualTo = function (value) {
         var type = typeof value;
         this._assert(type === 'number' || type === 'string',
-            'value should be number or string for');
+            'value should be number or string for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -513,7 +522,7 @@ var Should = (function () {
     ShouldModel.prototype.notBeEqualTo = function (value) {
         var type = typeof value;
         this._assert(type === 'number' || type === 'string',
-            'value should be number or string for');
+            'value should be number or string for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -534,7 +543,7 @@ var Should = (function () {
     ShouldModel.prototype.beGreaterThanOrEqualTo = function (value) {
         var type = typeof value;
         this._assert(type === 'number' || type === 'string',
-            'value should be number or string for');
+            'value should be number or string for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -556,7 +565,7 @@ var Should = (function () {
     // "FAIL max error (1e-6) is not less than or equal to -1"
     ShouldModel.prototype.beLessThanOrEqualTo = function (value) {
         var type = typeof value;
-        this._assert(type === 'number', 'value should be number or string for');
+        this._assert(type === 'number', 'value should be number or string for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -581,7 +590,7 @@ var Should = (function () {
     // "FAIL One is not 1 within a relative error of 0.1: 2"
     ShouldModel.prototype.beCloseTo = function (value, errorThreshold, precision) {
         var type = typeof value;
-        this._assert(type === 'number', 'value should be number for');
+        this._assert(type === 'number', 'value should be number for', value);
 
         this._checkNaN(value, 'EXPECTED');
 
@@ -642,7 +651,7 @@ var Should = (function () {
             else if (self.hasOwnProperty(errorType) && error instanceof self[errorType])
                 this._testPassed('threw ' + errorType + ': ' + error.message);
             else
-                this._testFailed('threw ' + error.name + ' instead of ' + exception);
+                this._testFailed('threw ' + error.name + ' instead of ' + errorType);
         }
         return this._success;
     };
@@ -707,7 +716,7 @@ var Should = (function () {
     // "PASS [1, 2, 3] is identical to the array [1,2,3]."
     ShouldModel.prototype.beEqualToArray = function (array) {
         this._assert(this._isArray(array) && this.target.length === array.length,
-            'Invalid array or the length does not match.');
+            'Invalid array or the length does not match.', array);
 
         this._checkNaN(array, 'EXPECTED');
 
@@ -741,37 +750,95 @@ var Should = (function () {
     };
 
     // Check if |target| array is close to |expected| array element-wise within
-    // the range of |maxAllowedError|.
+    // an certain error bound given by |absoluteThresholdOrOptions|.
+    //
+    // The error criterion is:
+    //
+    //   Math.abs(target[k] - expected[k]) < Math.max(abserr, relerr * Math.abs(expected))
+    //
+    // If |absoluteThresholdOrOptions| is a number, t, then abserr = t and relerr = 0.  That is the
+    // max difference is bounded by t.
+    //
+    // If |absoluteThresholdOrOptions| is a property bag, then abserr is the value of the
+    // absoluteThreshold property and relerr is the value of the relativeThreshold property.  If
+    // nothing is given, then abserr = relerr = 0.  If abserr = 0, then the error criterion is a
+    // relative error.  A non-zero abserr value produces a mix intended to handle the case where the
+    // expected value is 0, allowing the target value to differ by abserr from the expected.
     //
     // Example:
     // Should('My array', [0.11, 0.19]).beCloseToArray([0.1, 0.2], 0.02);
     // Result:
     // "PASS My array equals [0.1,0.2] within an element-wise tolerance of 0.02."
-    ShouldModel.prototype.beCloseToArray = function (array, maxAllowedError) {
+    ShouldModel.prototype.beCloseToArray = function (expected, absoluteThresholdOrOptions) {
         // For the comparison, the target length must be bigger than the expected.
-        this._assert(this.target.length >= array.length,
-            'The target array length must be longer than ' + array.length +
+        this._assert(this.target.length >= expected.length,
+            'The target array length must be longer than ' + expected.length +
             ' but got ' + this.target.length + '.');
 
-        this._checkNaN(array, 'EXPECTED');
+        this._checkNaN(expected, 'EXPECTED');
 
+        var absoluteErrorThreshold = 0;
+        var relativeErrorThreshold = 0;
+
+        // A collection of all of the values that satisfy the error criterion.  This holds the
+        // absolute difference between the target element and the expected element.
         var mismatches = {};
-        var maxDiff = 0.0;
-        var maxDiffIndex = 0;
-        for (var i = 0; i < array.length; i++) {
-            var diff = Math.abs(this.target[i] - array[i]);
-            if (diff > maxAllowedError)
+
+        // Keep track of the max absolute error found
+        var maxAbsError = -Infinity;
+        var maxAbsErrorIndex = -1;
+        // Keep trac of the max relative error found, ignoring cases where the relative error is
+        // Infinity because the expected value is 0.
+        var maxRelError = -Infinity;
+        var maxRelErrorIndex = -1;
+
+        // A number or string for printing out the actual thresholds used for the error criterion.
+        var maxAllowedError;
+
+        // Set up the thresholds based on |absoluteThresholdOrOptions|.
+        if (typeof(absoluteThresholdOrOptions) === 'number') {
+            absoluteErrorThreshold = absoluteThresholdOrOptions;
+            maxAllowedError = absoluteErrorThreshold;
+        } else {
+            var opts = absoluteThresholdOrOptions;
+            if (opts.hasOwnProperty('absoluteThreshold'))
+                absoluteErrorThreshold = opts.absoluteThreshold;
+            if (opts.hasOwnProperty('relativeThreshold'))
+                relativeErrorThreshold = opts.relativeThreshold;
+            maxAllowedError = '{absoluteThreshold: ' + absoluteErrorThreshold
+              + ', relativeThreshold: ' + relativeErrorThreshold
+              + '}';
+        }
+
+        for (var i = 0; i < expected.length; i++) {
+            var diff = Math.abs(this.target[i] - expected[i]);
+            if (diff > Math.max(absoluteErrorThreshold, relativeErrorThreshold * Math.abs(expected[i]))) {
                 mismatches[i] = diff;
-            if (diff > maxDiff) {
-                maxDiff = diff;
-                maxDiffIndex = i;
+                // Keep track of the location of the absolute max difference.
+                if (diff > maxAbsError) {
+                    maxAbsErrorIndex = i;
+                    maxAbsError = diff;
+                }
+                // Keep track of the location of the max relative error, ignoring cases where the
+                // relative error is ininfinity (because the expected value = 0).
+                var relError = diff / Math.abs(expected[i]);
+                if (isFinite(relError) && relError > maxRelError) {
+                    maxRelErrorIndex = i;
+                    maxRelError = relError;
+                }
             }
         }
 
         var numberOfmismatches = Object.keys(mismatches).length;
-        var arrStr = (array.length > this.NUM_ARRAY_LOG) ?
-        array.slice(0, this.NUM_ARRAY_LOG).toString() + ',...' : array.toString();
+        var arrSlice = expected.slice(0, Math.min(expected.length, this.NUM_ARRAY_LOG));
+        var arrStr;
 
+        arrStr = arrSlice[0].toPrecision(this.PRINT_PRECISION);
+        for (var k = 1; k < arrSlice.length; ++k)
+            arrStr += ',' + arrSlice[k].toPrecision(this.PRINT_PRECISION);
+
+        if (expected.length > this.NUM_ARRAY_LOG)
+            arrStr += ',...';
         if (numberOfmismatches === 0) {
             this._testPassed('equals [' + arrStr +
                 '] with an element-wise tolerance of ' + maxAllowedError);
@@ -779,14 +846,59 @@ var Should = (function () {
             var counter = 0;
             var failureMessage = 'does not equal [' + arrStr +
                 '] with an element-wise tolerance of ' + maxAllowedError;
-            failureMessage += '\nIndex\t    Diff\t\t    Actual\t\t    Expected';
+
+            // Print a nice header for the  table to follow.
+            if (this.verbose)
+                failureMessage += "\nIndex     Actual                  Expected                Diff                   Relative";
+            else
+                failureMessage += "\nDifference between expected and actual:";
+
             for (var index in mismatches) {
-                failureMessage += '\n[' + index + '] :\t' + mismatches[index] +
-                    '\t' + this.target[index] + '\t' + array[index];
-                if (++counter >= this.NUM_ERRORS_LOG || counter === numberOfmismatches) {
+                failureMessage += '\n[' + index + ']:    ';
+                if (this.verbose) {
+                    // When verbose, print out actual, expected, absolute error, and relative error.
+                    // TODO: print these out in nice columns to make it easier to read.
+                    var relError = Math.abs(this.target[index] - expected[index]) / Math.abs(expected[index]);
+                    failureMessage += this.target[index].toExponential(16) + '   '
+                            + expected[index].toExponential(16) + '   '
+                            + mismatches[index].toExponential(16) + '  '
+                            + relError.toExponential(16) + '  '
+                            + Math.max(absoluteErrorThreshold,
+                                       relativeErrorThreshold * Math.abs(expected[index]));
+                } else {
+                    // Otherwise, just the print the absolute error.
+                    failureMessage += mismatches[index];
+                }
+                if (++counter >= this.NUM_ERRORS_LOG) {
                     failureMessage += '\nand ' + (numberOfmismatches - counter) +
-                        ' more differences with the maximum error of ' + maxDiff +
-                        ' at index ' + maxDiffIndex;
+                            ' more differences, with max absolute error';
+                    if (this.verbose) {
+                        // When verbose, print out the location of both the max absolute error and
+                        // the max relative error so we can adjust thresholds appropriately in the
+                        // test.
+                        var relError = Math.abs(this.target[maxAbsErrorIndex] - expected[maxAbsErrorIndex])
+                                / Math.abs(expected[maxAbsErrorIndex]);
+                        failureMessage += ' at index ' + maxAbsErrorIndex + ':';
+                        failureMessage += '\n[' + maxAbsErrorIndex + ']:    ';
+                        failureMessage += this.target[maxAbsErrorIndex].toExponential(16) + '   '
+                                + expected[maxAbsErrorIndex].toExponential(16) + '   '
+                                + mismatches[maxAbsErrorIndex].toExponential(16) + '   '
+                                + relError.toExponential(16) + '  '
+                                + Math.max(absoluteErrorThreshold,
+                                    relativeErrorThreshold * Math.abs(expected[maxAbsErrorIndex]));
+                        failureMessage += '\nand max relative error';
+                        failureMessage += ' at index ' + maxRelErrorIndex + ':';
+                        failureMessage += '\n[' + maxRelErrorIndex + ']:    ';
+                        failureMessage += this.target[maxRelErrorIndex].toExponential(16) + '   '
+                                + expected[maxRelErrorIndex].toExponential(16) + '   '
+                                + mismatches[maxRelErrorIndex].toExponential(16) + '   '
+                                + maxRelError.toExponential(16) + '  '
+                                + Math.max(absoluteErrorThreshold,
+                                    relativeErrorThreshold * Math.abs(expected[maxRelErrorIndex]));
+                    } else {
+                        // Not verbose, so just print out the max absolute error
+                        failureMessage += ' of ' + maxAbsError + ' at index ' + maxAbsErrorIndex;
+                    }
                     break;
                 }
             }
@@ -892,6 +1004,10 @@ var Should = (function () {
                 _opts.numberOfErrorLog = opts.numberOfErrorLog;
             if (opts.hasOwnProperty('numberOfArrayLog'))
                 _opts.numberOfArrayLog = opts.numberOfArrayLog;
+            if (opts.hasOwnProperty('verbose'))
+                _opts.verbose = opts.verbose;
+            if (opts.hasOwnProperty('precision'))
+                _opts.precision = opts.precision;
         }
 
         return new ShouldModel(desc, target, _opts);

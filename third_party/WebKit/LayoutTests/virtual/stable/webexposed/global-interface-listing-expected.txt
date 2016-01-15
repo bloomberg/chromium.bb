@@ -134,6 +134,7 @@ interface AudioContext : EventTarget
     method createDelay
     method createDynamicsCompressor
     method createGain
+    method createIIRFilter
     method createMediaElementSource
     method createMediaStreamDestination
     method createMediaStreamSource
@@ -2693,6 +2694,9 @@ interface IDBVersionChangeEvent : Event
     getter newVersion
     getter oldVersion
     method constructor
+interface IIRFilterNode : AudioNode
+    method constructor
+    method getFrequencyResponse
 interface IdleDeadline
     getter didTimeout
     method constructor
@@ -5550,6 +5554,7 @@ interface webkitAudioContext : EventTarget
     method createDelay
     method createDynamicsCompressor
     method createGain
+    method createIIRFilter
     method createMediaElementSource
     method createMediaStreamDestination
     method createMediaStreamSource

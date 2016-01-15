@@ -1,0 +1,38 @@
+Test Basic IIRFilterNode Operation
+
+On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
+
+
+PASS createIIRFilter with normalized coefficients did not throw an exception.
+PASS createIIRFilter with unnormalized coefficients did not throw an exception.
+PASS Output of IIR filter with unnormalized coefficients equals [1,-0.8999999761581421,0.8100000023841858,-0.7289999723434448,0.6560999751091003,-0.5904899835586548,0.5314409732818604,-0.4782969057559967,0.4304672181606293,-0.3874204754829407,0.34867843985557556,-0.3138105869293213,0.2824295461177826,-0.25418657064437866,0.22876793146133423,-0.20589113235473633,...] with an element-wise tolerance of 2.1958e-38.
+PASS IIRFilter coefficients correctly normalized.
+
+PASS IIR 1-zero output equals [0.5,0.5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,...] with an element-wise tolerance of 0.
+PASS IIR 1-pole output equals [1,-0.9,0.81,-0.7290000000000001,0.6561000000000001,-0.5904900000000002,0.5314410000000002,-0.47829690000000014,0.43046721000000016,-0.38742048900000015,0.34867844010000015,-0.31381059609000017,0.28242953648100017,-0.25418658283290013,0.22876792454961012,-0.2058911320946491,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 5.723e-8}.
+PASS IIRFilter for Biquad lowpass equals [0.00052084,0.0025955,0.0067179,0.012850,0.020949,0.030969,0.042863,0.056577,0.072058,0.089246,0.10808,0.12850,0.15044,0.17382,0.19859,0.22467,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000415}.
+PASS SNR for IIRFIlter for Biquad lowpass is greater than or equal to 91.222.
+PASS IIRFilter for Biquad highpass equals [0.99220,0.97568,0.95737,0.93733,0.91563,0.89234,0.86753,0.84127,0.81364,0.78472,0.75459,0.72332,0.69100,0.65772,0.62354,0.58857,...] with an element-wise tolerance of {absoluteThreshold: 0.0000029, relativeThreshold: 0.00003}.
+PASS SNR for IIRFIlter for Biquad highpass is greater than or equal to 107.246.
+PASS IIRFilter for Biquad bandpass equals [0.0022847,0.0068389,0.011358,0.015833,0.020254,0.024612,0.028899,0.033106,0.037224,0.041246,0.045163,0.048967,0.052652,0.056209,0.059632,0.062915,...] with an element-wise tolerance of {absoluteThreshold: 2e-7, relativeThreshold: 0.00087}.
+PASS SNR for IIRFIlter for Biquad bandpass is greater than or equal to 104.06.
+PASS IIRFilter for Biquad notch equals [0.99772,0.99316,0.98864,0.98417,0.97975,0.97539,0.97110,0.96689,0.96278,0.95875,0.95484,0.95103,0.94735,0.94379,0.94037,0.93708,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000422}.
+PASS SNR for IIRFIlter for Biquad notch is greater than or equal to 91.312.
+PASS IIRFilter for Biquad allpass equals [0.99543,0.98632,0.97728,0.96833,0.95949,0.95078,0.94220,0.93379,0.92555,0.91751,0.90967,0.90207,0.89470,0.88758,0.88074,0.87417,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000431}.
+PASS SNR for IIRFIlter for Biquad allpass is greater than or equal to 91.319.
+PASS IIRFilter for Biquad lowshelf equals [1.0191,1.0576,1.0966,1.1362,1.1763,1.2168,1.2575,1.2986,1.3398,1.3812,1.4227,1.4642,1.5057,1.5471,1.5884,1.6296,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000298}.
+PASS SNR for IIRFIlter for Biquad lowshelf is greater than or equal to 90.609.
+PASS IIRFilter for Biquad highshelf equals [3.1031,2.9859,2.8713,2.7596,2.6507,2.5450,2.4425,2.3434,2.2476,2.1553,2.0665,1.9812,1.8995,1.8214,1.7467,1.6756,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000124}.
+PASS SNR for IIRFIlter for Biquad highshelf is greater than or equal to 103.159.
+PASS IIRFilter for Biquad peaking equals [1.0028,1.0083,1.0138,1.0193,1.0247,1.0301,1.0354,1.0406,1.0456,1.0506,1.0555,1.0602,1.0648,1.0693,1.0736,1.0777,...] with an element-wise tolerance of {absoluteThreshold: 0, relativeThreshold: 0.0000505}.
+PASS SNR for IIRFIlter for Biquad peaking is greater than or equal to 91.504.
+PASS Max difference between IIR and Biquad on channel 0 is less than or equal to 0.000037671.
+PASS Max difference between IIR and Biquad on channel 1 is less than or equal to 0.000030071.
+PASS Max difference between IIR and Biquad on channel 2 is less than or equal to 0.000026241.
+PASS IIRFilter correctly processed 3-channel input.
+PASS 4-th order IIRFilter (biquad ref) equals [2.6800e-7,0.0000021286,0.0000084372,0.000022949,0.000049452,0.000091471,0.00015227,0.00023485,0.00034194,0.00047598,0.00063917,0.00083341,0.0010603,0.0013213,0.0016175,0.0019496,...] with an element-wise tolerance of {absoluteThreshold: 8.4e-8, relativeThreshold: 5e-7}.
+PASS SNR of 4-th order IIRFilter (biquad ref) is greater than or equal to 110.684.
+PASS successfullyParsed is true
+
+TEST COMPLETE
+

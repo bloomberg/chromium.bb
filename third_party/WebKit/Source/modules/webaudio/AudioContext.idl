@@ -70,6 +70,7 @@ enum AudioContextState {
     [RaisesException, MeasureAs=AudioContextCreateGain] GainNode createGain();
     [RaisesException, MeasureAs=AudioContextCreateDelay] DelayNode createDelay(optional double maxDelayTime);
     [RaisesException, MeasureAs=AudioContextCreateBiquadFilter] BiquadFilterNode createBiquadFilter();
+    [RaisesException, MeasureAs=AudioContextCreateIIRFilter] IIRFilterNode createIIRFilter(sequence<double> feedForward, sequence<double> feedBack);
     [RaisesException, MeasureAs=AudioContextCreateWaveShaper] WaveShaperNode createWaveShaper();
     [RaisesException, MeasureAs=AudioContextCreatePanner] PannerNode createPanner();
     [RaisesException, MeasureAs=AudioContextCreateConvolver] ConvolverNode createConvolver();

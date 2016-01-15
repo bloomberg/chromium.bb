@@ -35,6 +35,7 @@
 #include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioDestinationNode.h"
 #include "modules/webaudio/DeferredTaskHandler.h"
+#include "modules/webaudio/IIRFilterNode.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -63,6 +64,7 @@ class DynamicsCompressorNode;
 class ExceptionState;
 class GainNode;
 class HTMLMediaElement;
+class IIRFilterNode;
 class MediaElementAudioSourceNode;
 class MediaStreamAudioDestinationNode;
 class MediaStreamAudioSourceNode;
@@ -176,6 +178,10 @@ public:
 
     // Resume
     virtual ScriptPromise resumeContext(ScriptState*) = 0;
+
+    // IIRFilter
+    IIRFilterNode* createIIRFilter(Vector<double> feedforwardCoef, Vector<double> feedbackCoef,
+        ExceptionState&);
 
     // When a source node has started processing and needs to be protected,
     // this method tells the context to protect the node.

@@ -209,6 +209,8 @@
       'audio/HRTFKernel.h',
       'audio/HRTFPanner.cpp',
       'audio/HRTFPanner.h',
+      'audio/IIRFilter.cpp',
+      'audio/IIRFilter.h',
       'audio/MultiChannelResampler.cpp',
       'audio/MultiChannelResampler.h',
       'audio/Panner.cpp',
