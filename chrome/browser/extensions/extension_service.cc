@@ -379,8 +379,6 @@ void ExtensionService::Shutdown() {
   extensions::ExtensionManagementFactory::GetInstance()
       ->GetForBrowserContext(profile())
       ->RemoveObserver(this);
-  system_->management_policy()->UnregisterProvider(
-      shared_module_policy_provider_.get());
 }
 
 const Extension* ExtensionService::GetExtensionById(

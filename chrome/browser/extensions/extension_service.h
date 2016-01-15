@@ -25,7 +25,6 @@
 #include "extensions/browser/crx_file_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/browser/install_flag.h"
-#include "extensions/browser/management_policy.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
@@ -726,8 +725,6 @@ class ExtensionService
 
   scoped_ptr<extensions::ExtensionActionStorageManager>
       extension_action_storage_manager_;
-  scoped_ptr<extensions::ManagementPolicy::Provider>
-      shared_module_policy_provider_;
 
   // The SharedModuleService used to check for import dependencies.
   scoped_ptr<extensions::SharedModuleService> shared_module_service_;
