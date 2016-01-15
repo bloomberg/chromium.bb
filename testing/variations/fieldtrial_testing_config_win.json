@@ -280,6 +280,11 @@
             }
         }
     ],
+    "WebFontsIntervention": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "WebRTC-LocalIPPermissionCheck": [
         {
             "group_name": "Enabled"
