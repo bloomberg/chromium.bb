@@ -18,6 +18,11 @@ public:
     {
         return item.layoutObject();
     }
+
+    static const LayoutObject* constLayoutObjectFrom(LineLayoutItem item)
+    {
+        return item.layoutObject();
+    }
 };
 
 } // namespace blink
