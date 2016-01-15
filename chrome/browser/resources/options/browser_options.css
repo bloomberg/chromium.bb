@@ -149,17 +149,6 @@ input[type='range'] {
   vertical-align: middle;
 }
 
-/* CSS tweak to fix crbug.com/151788. Inconsistencies in the CSS rules across
- * platforms and elements. Too risky to attempt a general fix for M23 at this
- * time. This fix addresses the immediate problem in the bug report by forcing
- * the button to align consistently with its neighboring select element.
- * TODO(kevers): Revisit padding rules for select and buttons to ensure
- * consistency in the size and baseline across all platforms. */
-#manage-default-search-engines {
-  padding-bottom: 0;
-  padding-top: 0;
-}
-
 .extension-controlled-warning-box {
   background-color: #fbfbfb;
   border: 1px solid #cecece;
@@ -173,14 +162,6 @@ input[type='range'] {
   margin-bottom: 14px;
   padding-bottom: 6px;
   padding-top: 3px;
-}
-
-/* Override a platform specific rule in Widgets that may no longer be relevant.
- * Too late in the development cycle to update Widgets.css due to the number
- * of pages that depend on it.
- * TODO(kevers): Rivisit padding rules. */
-#default-search-engine {
-  padding-bottom: 0;
 }
 
 .setting-extra-description {
