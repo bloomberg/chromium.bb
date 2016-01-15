@@ -68,7 +68,9 @@ class InfiniteScrollPageSet(story.StorySet):
         ('https://www.facebook.com/shakira', 'facebook', SCROLL_FAR, 0, 0),
         ('https://twitter.com/taylorswift13', 'twitter', SCROLL_PAGE, 10, 30),
         ('http://techcrunch.tumblr.com/', 'tumblr', SCROLL_FAR, 0, 0),
-        ('https://www.flickr.com/explore', 'flickr', SCROLL_FAR, 0, 0)
+        ('https://www.flickr.com/explore', 'flickr', SCROLL_FAR, 0, 0),
+        ('https://meta.discourse.org/t/the-official-discourse-tags-plugin-discourse-tagging/26482',
+         'discourse', SCROLL_PAGE, 10, 30)
     ]
     for (url, name, scroll_amount, delay, repeat) in pages:
       page_class = _CreateInfiniteScrollPageClass(InfiniteScrollPage)
