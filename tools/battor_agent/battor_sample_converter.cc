@@ -51,8 +51,8 @@ BattOrSampleConverter::BattOrSampleConverter(
 
 BattOrSampleConverter::~BattOrSampleConverter() {}
 
-BattOrSample BattOrSampleConverter::ToSample(
-    const RawBattOrSample& sample) const {
+BattOrSample BattOrSampleConverter::ToSample(const RawBattOrSample& sample,
+                                             size_t sample_number) const {
   // Subtract out the baseline current and voltage that the BattOr reads even
   // when it's not attached to anything.
   double current = ToUnitfulVoltage(sample.current_raw) - baseline_current_;
@@ -86,7 +86,9 @@ BattOrSample BattOrSampleConverter::ToSample(
   current -= eeprom_.low_gain_correction_offset;
   current /= eeprom_.low_gain_correction_factor;
 
-  return BattOrSample{voltage, current};
+  double time_ms = double(sample_number) / eeprom_.sd_sample_rate * 1000;
+
+  return BattOrSample{time_ms, voltage, current};
 }
 
 }  // namespace battor

@@ -104,6 +104,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
                              BattOrError error) override {
     is_command_complete_ = true;
     command_error_ = error;
+    trace_ = trace;
   }
 
  protected:
@@ -216,8 +217,17 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
     if (end_state == BattOrAgentState::EEPROM_REQUEST_SENT)
       return;
 
+    BattOrEEPROM eeprom;
+    eeprom.r1 = 1;
+    eeprom.r2 = 1;
+    eeprom.r3 = 1;
+    eeprom.low_gain = 1;
+    eeprom.low_gain_correction_offset = 0;
+    eeprom.low_gain_correction_factor = 1;
+    eeprom.sd_sample_rate = 1000;
+
     GetAgent()->OnMessageRead(true, BATTOR_MESSAGE_TYPE_CONTROL_ACK,
-                              ToCharVector(BattOrEEPROM()));
+                              ToCharVector(eeprom));
     GetTaskRunner()->RunUntilIdle();
 
     if (end_state == BattOrAgentState::EEPROM_RECEIVED)
@@ -246,6 +256,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
 
   bool IsCommandComplete() { return is_command_complete_; }
   BattOrError GetCommandError() { return command_error_; }
+  std::string GetTrace() { return trace_; }
 
  private:
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
@@ -255,7 +266,7 @@ class BattOrAgentTest : public testing::Test, public BattOrAgent::Listener {
   scoped_ptr<TestableBattOrAgent> agent_;
   bool is_command_complete_;
   BattOrError command_error_;
-  std::string stop_tracing_trace_;
+  std::string trace_;
 };
 
 TEST_F(BattOrAgentTest, StartTracing) {
@@ -467,6 +478,8 @@ TEST_F(BattOrAgentTest, StopTracing) {
 
   EXPECT_TRUE(IsCommandComplete());
   EXPECT_EQ(BATTOR_ERROR_NONE, GetCommandError());
+  EXPECT_EQ("0.00 -0.3 -0.6\n1.00 0.3 0.6\n2.00 0.9 1.8\n3.00 -0.3 -0.6\n",
+            GetTrace());
 }
 
 TEST_F(BattOrAgentTest, StopTracingFailsWithoutConnection) {

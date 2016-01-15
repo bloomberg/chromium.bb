@@ -113,6 +113,9 @@ class BattOrAgent : public BattOrConnection::Listener,
   // Completes the command with the specified error.
   void CompleteCommand(BattOrError error);
 
+  // Returns a formatted version of samples_ with timestamps and real units.
+  std::string SamplesToString();
+
   // The listener that handles the commands' results. It must outlive the agent.
   Listener* listener_;
 

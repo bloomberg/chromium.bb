@@ -21,6 +21,7 @@ TEST(BattOrSampleConverterTest, ToSampleSimple) {
   eeprom.low_gain = 1;
   eeprom.low_gain_correction_offset = 0;
   eeprom.low_gain_correction_factor = 1;
+  eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
@@ -29,8 +30,9 @@ TEST(BattOrSampleConverterTest, ToSampleSimple) {
 
   // Set both the voltage and current to their max values.
   RawBattOrSample raw_one{2048, 2048};
-  BattOrSample one = converter.ToSample(raw_one);
+  BattOrSample one = converter.ToSample(raw_one, 0);
 
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
   ASSERT_DOUBLE_EQ(2401.172447484123, one.voltage_mV);
   ASSERT_DOUBLE_EQ(1200.5862237420615, one.current_mA);
 }
@@ -43,6 +45,7 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroBaseline) {
   eeprom.low_gain = 1;
   eeprom.low_gain_correction_offset = 0;
   eeprom.low_gain_correction_factor = 1;
+  eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
@@ -51,8 +54,9 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroBaseline) {
 
   // Set both the voltage and current to their max values.
   RawBattOrSample raw_one{2048, 2048};
-  BattOrSample one = converter.ToSample(raw_one);
+  BattOrSample one = converter.ToSample(raw_one, 0);
 
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
   ASSERT_DOUBLE_EQ(1200.586223742061, one.voltage_mV);
   ASSERT_DOUBLE_EQ(600.29311187103076, one.current_mA);
 }
@@ -65,6 +69,7 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroMultiSampleBaseline) {
   eeprom.low_gain = 1;
   eeprom.low_gain_correction_offset = 0;
   eeprom.low_gain_correction_factor = 1;
+  eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
@@ -74,8 +79,9 @@ TEST(BattOrSampleConverterTest, ToSampleNonZeroMultiSampleBaseline) {
 
   // Set both the voltage and current to their max values.
   RawBattOrSample raw_one{2048, 2048};
-  BattOrSample one = converter.ToSample(raw_one);
+  BattOrSample one = converter.ToSample(raw_one, 0);
 
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
   ASSERT_DOUBLE_EQ(1200.5862237420615, one.voltage_mV);
   ASSERT_DOUBLE_EQ(600.29311187103076, one.current_mA);
 }
@@ -88,6 +94,7 @@ TEST(BattOrSampleConverterTest, ToSampleRealValues) {
   eeprom.low_gain = 1.5;
   eeprom.low_gain_correction_offset = 0.03;
   eeprom.low_gain_correction_factor = 4;
+  eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
@@ -97,8 +104,9 @@ TEST(BattOrSampleConverterTest, ToSampleRealValues) {
 
   // Set both the voltage and current to their max values.
   RawBattOrSample raw_one{1900, 2000};
-  BattOrSample one = converter.ToSample(raw_one);
+  BattOrSample one = converter.ToSample(raw_one, 0);
 
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
   ASSERT_DOUBLE_EQ(1068.996209287540, one.voltage_mV);
   ASSERT_DOUBLE_EQ(9.7628957011935285, one.current_mA);
 }
@@ -111,6 +119,7 @@ TEST(BattOrSampleConverterTest, ToSampleRealNegativeValues) {
   eeprom.low_gain = 1.5;
   eeprom.low_gain_correction_offset = 0.03;
   eeprom.low_gain_correction_factor = 4;
+  eeprom.sd_sample_rate = 1000;
 
   // Create a calibration frame with a baseline voltage and current of zero.
   std::vector<RawBattOrSample> calibration_frame;
@@ -119,10 +128,34 @@ TEST(BattOrSampleConverterTest, ToSampleRealNegativeValues) {
 
   // Set both the voltage and current to their max values.
   RawBattOrSample raw_one{-1900, -2000};
-  BattOrSample one = converter.ToSample(raw_one);
+  BattOrSample one = converter.ToSample(raw_one, 0);
 
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
   ASSERT_DOUBLE_EQ(-2885.2980205462577, one.voltage_mV);
   ASSERT_DOUBLE_EQ(-28.332106130755665, one.current_mA);
+}
+
+TEST(BattOrSampleConverterTest, ToSampleMultipleSamples) {
+  BattOrEEPROM eeprom;
+  eeprom.r1 = 1;
+  eeprom.r2 = 1;
+  eeprom.r3 = 1;
+  eeprom.low_gain = 1;
+  eeprom.low_gain_correction_offset = 0;
+  eeprom.low_gain_correction_factor = 1;
+  eeprom.sd_sample_rate = 50;
+
+  std::vector<RawBattOrSample> calibration_frame;
+  calibration_frame.push_back(RawBattOrSample{0, 0});
+  BattOrSampleConverter converter(eeprom, calibration_frame);
+
+  BattOrSample one = converter.ToSample(RawBattOrSample{0, 0}, 0);
+  BattOrSample two = converter.ToSample(RawBattOrSample{0, 0}, 1);
+  BattOrSample three = converter.ToSample(RawBattOrSample{0, 0}, 2);
+
+  ASSERT_DOUBLE_EQ(0, one.time_ms);
+  ASSERT_DOUBLE_EQ(20, two.time_ms);
+  ASSERT_DOUBLE_EQ(40, three.time_ms);
 }
 
 }  // namespace battor

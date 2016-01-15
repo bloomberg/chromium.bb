@@ -4,9 +4,12 @@
 
 #include "tools/battor_agent/battor_agent.h"
 
+#include <iomanip>
+
 #include "base/bind.h"
 #include "base/thread_task_runner_handle.h"
 #include "tools/battor_agent/battor_connection_impl.h"
+#include "tools/battor_agent/battor_sample_converter.h"
 
 using std::vector;
 
@@ -85,16 +88,6 @@ bool ParseSampleFrame(BattOrMessageType type,
   memcpy(samples->data(), frame_ptr, remaining_bytes);
 
   return true;
-}
-
-std::string SamplesToString(const vector<RawBattOrSample>& samples) {
-  // TODO(charliea): Print the samples in a better trace format.
-  std::stringstream trace_stream;
-  for (auto sample : samples)
-    trace_stream << sample.voltage_raw << "/" << sample.current_raw
-                 << std::endl;
-
-  return trace_stream.str();
 }
 
 }  // namespace
@@ -399,7 +392,7 @@ void BattOrAgent::CompleteCommand(BattOrError error) {
       listener_->OnStartTracingComplete(error);
       break;
     case Command::STOP_TRACING: {
-      listener_->OnStopTracingComplete(SamplesToString(samples_), error);
+      listener_->OnStopTracingComplete(SamplesToString(), error);
       break;
     }
     case Command::INVALID:
@@ -411,6 +404,24 @@ void BattOrAgent::CompleteCommand(BattOrError error) {
   battor_eeprom_.reset();
   calibration_frame_.clear();
   samples_.clear();
+}
+
+std::string BattOrAgent::SamplesToString() {
+  if (calibration_frame_.empty() || samples_.empty() || !battor_eeprom_)
+    return "";
+
+  BattOrSampleConverter converter(*battor_eeprom_, calibration_frame_);
+
+  std::stringstream trace_stream;
+  trace_stream << std::fixed;
+  for (size_t i = 0; i < samples_.size(); i++) {
+    BattOrSample sample = converter.ToSample(samples_[i], i);
+    trace_stream << std::setprecision(2) << sample.time_ms << " "
+                 << std::setprecision(1) << sample.current_mA << " "
+                 << sample.voltage_mV << std::endl;
+  }
+
+  return trace_stream.str();
 }
 
 }  // namespace battor

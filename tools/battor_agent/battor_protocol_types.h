@@ -101,7 +101,7 @@ struct BattOrEEPROM {
   float high_gain_correction_factor;
   float high_gain_correction_offset;
   uint16_t high_gain_amppot;
-  uint32_t sd_sr;
+  uint32_t sd_sample_rate;
   uint16_t sd_tdiv;
   uint16_t sd_tovf;
   uint16_t sd_filpot;
@@ -128,8 +128,10 @@ struct RawBattOrSample {
   int16_t current_raw;
 };
 
-// A single BattOr sample after conversion to a real number with units.
+// A single BattOr sample after timestamp assignment and conversion to unitful
+// numbers.
 struct BattOrSample {
+  double time_ms;
   double voltage_mV;
   double current_mA;
 };

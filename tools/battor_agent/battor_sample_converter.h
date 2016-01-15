@@ -5,6 +5,7 @@
 #ifndef TOOLS_BATTOR_AGENT_BATTOR_SAMPLE_CONVERTER_H_
 #define TOOLS_BATTOR_AGENT_BATTOR_SAMPLE_CONVERTER_H_
 
+#include <stddef.h>
 #include <vector>
 
 #include "tools/battor_agent/battor_protocol_types.h"
@@ -27,8 +28,9 @@ class BattOrSampleConverter {
                         const std::vector<RawBattOrSample>& calibration_frame);
   virtual ~BattOrSampleConverter();
 
-  // Converts a raw sample to a calibrated one.
-  BattOrSample ToSample(const RawBattOrSample& sample) const;
+  // Converts a raw sample to a unitful one with a timestamp.
+  BattOrSample ToSample(const RawBattOrSample& sample,
+                        size_t sample_number) const;
 
  private:
   // The BattOr's EEPROM, which stores some conversion parameters we need.
