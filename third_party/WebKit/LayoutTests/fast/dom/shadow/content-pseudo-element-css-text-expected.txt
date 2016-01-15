@@ -7,7 +7,7 @@ PASS document.getElementById('style1').sheet.cssRules.item(0).cssText is ".foo::
 PASS document.getElementById('style1').sheet.cssRules.item(1).cssText is "::content { display: block; }"
 PASS document.getElementById('style1').sheet.cssRules.item(2).cssText is "div content::content div content::content div.green { color: green; }"
 PASS document.getElementById('style1').sheet.cssRules.item(3).cssText is "::content * { color: blue; }"
-PASS document.getElementById('style1').sheet.cssRules.item(4).cssText is "div::shadow::shadow::content { }"
+PASS document.getElementById('style1').sheet.cssRules.length is 4
 PASS successfullyParsed is true
 
 TEST COMPLETE

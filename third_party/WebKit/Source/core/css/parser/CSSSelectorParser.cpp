@@ -163,21 +163,108 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParse
     return selector.release();
 }
 
+namespace {
+
+bool isScrollbarPseudoClass(CSSSelector::PseudoType pseudo)
+{
+    switch (pseudo) {
+    case CSSSelector::PseudoEnabled:
+    case CSSSelector::PseudoDisabled:
+    case CSSSelector::PseudoHover:
+    case CSSSelector::PseudoActive:
+    case CSSSelector::PseudoHorizontal:
+    case CSSSelector::PseudoVertical:
+    case CSSSelector::PseudoDecrement:
+    case CSSSelector::PseudoIncrement:
+    case CSSSelector::PseudoStart:
+    case CSSSelector::PseudoEnd:
+    case CSSSelector::PseudoDoubleButton:
+    case CSSSelector::PseudoSingleButton:
+    case CSSSelector::PseudoNoButton:
+    case CSSSelector::PseudoCornerPresent:
+    case CSSSelector::PseudoWindowInactive:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isUserActionPseudoClass(CSSSelector::PseudoType pseudo)
+{
+    switch (pseudo) {
+    case CSSSelector::PseudoHover:
+    case CSSSelector::PseudoFocus:
+    case CSSSelector::PseudoActive:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool isPseudoClassValidAfterPseudoElement(CSSSelector::PseudoType pseudoClass, CSSSelector::PseudoType compoundPseudoElement)
+{
+    switch (compoundPseudoElement) {
+    case CSSSelector::PseudoResizer:
+    case CSSSelector::PseudoScrollbar:
+    case CSSSelector::PseudoScrollbarCorner:
+    case CSSSelector::PseudoScrollbarButton:
+    case CSSSelector::PseudoScrollbarThumb:
+    case CSSSelector::PseudoScrollbarTrack:
+    case CSSSelector::PseudoScrollbarTrackPiece:
+        return isScrollbarPseudoClass(pseudoClass);
+    case CSSSelector::PseudoSelection:
+        return pseudoClass == CSSSelector::PseudoWindowInactive;
+    case CSSSelector::PseudoWebKitCustomElement:
+        return isUserActionPseudoClass(pseudoClass);
+    default:
+        return false;
+    }
+}
+
+bool isSimpleSelectorValidAfterPseudoElement(const CSSParserSelector& simpleSelector, CSSSelector::PseudoType compoundPseudoElement)
+{
+    if (compoundPseudoElement == CSSSelector::PseudoUnknown)
+        return true;
+    if (simpleSelector.match() != CSSSelector::PseudoClass)
+        return false;
+    CSSSelector::PseudoType pseudo = simpleSelector.pseudoType();
+    if (pseudo == CSSSelector::PseudoNot) {
+        ASSERT(simpleSelector.selectorList());
+        ASSERT(simpleSelector.selectorList()->first());
+        ASSERT(!simpleSelector.selectorList()->first()->tagHistory());
+        pseudo = simpleSelector.selectorList()->first()->pseudoType();
+    }
+    return isPseudoClassValidAfterPseudoElement(pseudo, compoundPseudoElement);
+}
+
+} // namespace
+
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeCompoundSelector(CSSParserTokenRange& range)
 {
     OwnPtr<CSSParserSelector> compoundSelector;
 
     AtomicString namespacePrefix;
     AtomicString elementName;
+    CSSSelector::PseudoType compoundPseudoElement = CSSSelector::PseudoUnknown;
     if (!consumeName(range, elementName, namespacePrefix)) {
         compoundSelector = consumeSimpleSelector(range);
         if (!compoundSelector)
             return nullptr;
+        if (compoundSelector->match() == CSSSelector::PseudoElement)
+            compoundPseudoElement = compoundSelector->pseudoType();
     }
     if (m_context.isHTMLDocument())
         elementName = elementName.lower();
 
     while (OwnPtr<CSSParserSelector> simpleSelector = consumeSimpleSelector(range)) {
+        // TODO(rune@opera.com): crbug.com/578131
+        // The UASheetMode check is a work-around to allow this selector in mediaControls(New).css:
+        // video::-webkit-media-text-track-region-container.scrolling
+        if (m_context.mode() != UASheetMode && !isSimpleSelectorValidAfterPseudoElement(*simpleSelector.get(), compoundPseudoElement))
+            return nullptr;
+        if (simpleSelector->match() == CSSSelector::PseudoElement)
+            compoundPseudoElement = simpleSelector->pseudoType();
+
         if (compoundSelector)
             compoundSelector = addSimpleSelectorToCompound(compoundSelector.release(), simpleSelector.release());
         else

@@ -16,6 +16,6 @@ shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(0).
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(1).cssText", "::content { display: block; }");
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(2).cssText", "div content::content div content::content div.green { color: green; }");
 shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(3).cssText", "::content * { color: blue; }");
-shouldBeEqualToString("document.getElementById('style1').sheet.cssRules.item(4).cssText", "div::shadow::shadow::content { }"); // Should be dropped, really.
+shouldBe("document.getElementById('style1').sheet.cssRules.length", "4");
 </script>
 </html>

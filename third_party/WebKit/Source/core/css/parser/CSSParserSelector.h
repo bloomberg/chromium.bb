@@ -59,6 +59,7 @@ public:
 
     CSSSelector::Match match() const { return m_selector->match(); }
     CSSSelector::PseudoType pseudoType() const { return m_selector->pseudoType(); }
+    const CSSSelectorList* selectorList() const { return m_selector->selectorList(); }
 
     bool needsImplicitShadowCrossingCombinatorForMatching() const { return pseudoType() == CSSSelector::PseudoWebKitCustomElement || pseudoType() == CSSSelector::PseudoCue || pseudoType() == CSSSelector::PseudoShadow; }
 
