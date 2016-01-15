@@ -100,35 +100,45 @@ Polymer({
   },
 
   observers: [
-    'onCategoryChanged_(prefs.profile.content_settings.exceptions.*, ' +
-        'category, categorySubtype)',
+    'initialize_(prefs.profile.content_settings.exceptions.*,' +
+        'category, categorySubtype)'
   ],
-
-  ready: function() {
-    CrSettingsPrefs.initialized.then(function() {
-      this.initialize_();
-    }.bind(this));
-  },
 
   /**
    * One-time initialization routines for this class.
    * @private
    */
   initialize_: function() {
-    this.setUpActionMenu_();
+    CrSettingsPrefs.initialized.then(function() {
+      this.setUpActionMenu_();
+      this.ensureOpened_();
+    }.bind(this));
 
-    if (this.categorySubtype == settings.PermissionValues.ALLOW) {
-      this.$.category.opened = true;
-    }
+    this.populateList_();
   },
 
   /**
-   * Handles changes to the category, either via the underlying exceptions pref
-   * changing or direct manipulation of the |category| variable.
-   * @private
+   * Ensures the widget is |opened| when needed when displayed initially.
    */
-  onCategoryChanged_: function() {
-    this.populateList_();
+  ensureOpened_: function() {
+    // Allowed list is always shown opened by default.
+    if (this.categorySubtype == settings.PermissionValues.ALLOW) {
+      this.$.category.opened = true;
+      return;
+    }
+
+    // Block list should only be shown opened if there is nothing to show in
+    // the allowed list.
+    var pref = this.getPref(
+        this.computeCategoryExceptionsPrefName(this.category));
+    var sites = pref.value;
+    for (var origin in sites) {
+      var site = /** @type {{setting: number}} */(sites[origin]);
+      if (site.setting == settings.PermissionValues.ALLOW)
+        return;
+    }
+
+    this.$.category.opened = true;
   },
 
   /**
