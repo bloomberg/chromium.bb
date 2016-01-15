@@ -53,79 +53,97 @@ TEST(ChromeNetworkDailyDataSavingMetricsTest,
   };
   const TestCase test_cases[] = {
       {
-       GURL("http://foo.com"),
-       origin,
-       base::TimeDelta(),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
-       VIA_DATA_REDUCTION_PROXY,
+          GURL("http://foo.com"), origin, base::TimeDelta(), net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+          VIA_DATA_REDUCTION_PROXY,
       },
       {
-       GURL("https://foo.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta(),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       HTTPS,
+          GURL("https://foo.com"), net::ProxyServer::Direct(),
+          base::TimeDelta(), net::LOAD_NORMAL, "HTTP/1.1 200 OK\r\n\r\n", HTTPS,
       },
       {
-       GURL("http://foo.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta::FromSeconds(1),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       SHORT_BYPASS,
+          GURL("http://foo.com"), net::ProxyServer::Direct(),
+          base::TimeDelta::FromSeconds(1), net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\n\r\n", SHORT_BYPASS,
       },
       {
-       GURL("http://foo.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta::FromMinutes(60),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       LONG_BYPASS,
+          GURL("http://foo.com"), net::ProxyServer::Direct(),
+          base::TimeDelta::FromSeconds(1), net::LOAD_NORMAL,
+          "HTTP/1.1 304 Not Modified\r\n\r\n", SHORT_BYPASS,
+      },
+      {
+          GURL("http://foo.com"), net::ProxyServer::Direct(),
+          base::TimeDelta::FromMinutes(60), net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\n\r\n", LONG_BYPASS,
+      },
+      {
+          GURL("http://foo.com"), net::ProxyServer::Direct(),
+          base::TimeDelta::FromMinutes(60), net::LOAD_NORMAL,
+          "HTTP/1.1 304 Not Modified\r\n\r\n", LONG_BYPASS,
       },
       // Requests with LOAD_BYPASS_PROXY (e.g. block-once) should be classified
-      // as
-      // SHORT_BYPASS.
+      // as SHORT_BYPASS.
       {
-       GURL("http://foo.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta(),
-       net::LOAD_BYPASS_PROXY,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       SHORT_BYPASS,
+          GURL("http://foo.com"), net::ProxyServer::Direct(), base::TimeDelta(),
+          net::LOAD_BYPASS_PROXY, "HTTP/1.1 200 OK\r\n\r\n", SHORT_BYPASS,
       },
       // Another proxy overriding the Data Reduction Proxy should be classified
-      // as
-      // SHORT_BYPASS.
+      // as SHORT_BYPASS.
       {
-       GURL("http://foo.com"),
-       net::ProxyServer::FromPacString("PROXY otherproxy.net:80"),
-       base::TimeDelta(),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       SHORT_BYPASS,
+          GURL("http://foo.com"),
+          net::ProxyServer::FromPacString("PROXY otherproxy.net:80"),
+          base::TimeDelta(), net::LOAD_NORMAL, "HTTP/1.1 200 OK\r\n\r\n",
+          SHORT_BYPASS,
       },
       // Bypasses due to local bypass rules should be classified as
       // SHORT_BYPASS.
       {
-       GURL("http://localbypass.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta(),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       SHORT_BYPASS,
+          GURL("http://localbypass.com"), net::ProxyServer::Direct(),
+          base::TimeDelta(), net::LOAD_NORMAL, "HTTP/1.1 200 OK\r\n\r\n",
+          SHORT_BYPASS,
       },
       // Responses that seem like they should have come through the Data
-      // Reduction
-      // Proxy, but did not, should be classified as UNKNOWN_TYPE.
+      // Reduction Proxy, but did not, should be classified as UNKNOWN_TYPE.
       {
-       GURL("http://foo.com"),
-       net::ProxyServer::Direct(),
-       base::TimeDelta(),
-       net::LOAD_NORMAL,
-       "HTTP/1.1 200 OK\r\n\r\n",
-       UNKNOWN_TYPE,
+          GURL("http://foo.com"), net::ProxyServer::Direct(), base::TimeDelta(),
+          net::LOAD_NORMAL, "HTTP/1.1 200 OK\r\n\r\n", UNKNOWN_TYPE,
+      },
+      {
+          GURL("http://foo.com"), origin, base::TimeDelta(), net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\n\r\n", UNKNOWN_TYPE,
+      },
+      // The proxy is currently bypassed, but the response still came through
+      // the Data Reduction Proxy, so it should be classified as
+      // VIA_DATA_REDUCTION_PROXY.
+      {
+          GURL("http://foo.com"), origin, base::TimeDelta::FromMinutes(60),
+          net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+          VIA_DATA_REDUCTION_PROXY,
+      },
+      // The request was sent over a direct connection, but the response still
+      // has the Data Reduction Proxy Via header, so it should be classified as
+      // VIA_DATA_REDUCTION_PROXY.
+      {
+          GURL("http://foo.com"), net::ProxyServer::Direct(), base::TimeDelta(),
+          net::LOAD_NORMAL,
+          "HTTP/1.1 200 OK\r\nVia: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+          VIA_DATA_REDUCTION_PROXY,
+      },
+      // A 304 response with a DRP Via header should be classified as
+      // VIA_DATA_REDUCTION_PROXY.
+      {
+          GURL("http://foo.com"), net::ProxyServer::Direct(), base::TimeDelta(),
+          net::LOAD_NORMAL,
+          "HTTP/1.1 304 Not Modified\r\n"
+          "Via: 1.1 Chrome-Compression-Proxy\r\n\r\n",
+          VIA_DATA_REDUCTION_PROXY,
+      },
+      // A 304 response without a DRP Via header where the request was sent
+      // through the DRP should be classified as VIA_DATA_REDUCTION_PROXY.
+      {
+          GURL("http://foo.com"), origin, base::TimeDelta(), net::LOAD_NORMAL,
+          "HTTP/1.1 304 Not Modified\r\n\r\n", VIA_DATA_REDUCTION_PROXY,
       },
   };
 
