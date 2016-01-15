@@ -195,12 +195,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     }
   }
 
-  // TODO(crbug.com/450311): Remove this compile-time flag once bots are passing
-  // the compile-time flag.
-#if defined(FORCE_ENABLE_WKWEBVIEW)
-  if (web::IsWKWebViewSupported())
-    command_line->AppendSwitch(switches::kEnableIOSWKWebView);
-#else
   // Populate command line flags from EnableWKWebView.
   NSString* enableWKWebViewValue = [defaults stringForKey:@"EnableWKWebView"];
   if ([enableWKWebViewValue isEqualToString:@"Enabled"]) {
@@ -208,7 +202,6 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
   } else if ([enableWKWebViewValue isEqualToString:@"Disabled"]) {
     command_line->AppendSwitch(switches::kDisableIOSWKWebView);
   }
-#endif
 
   // Populate command line flags from TabEviction.
   NSString* tabEviction = [defaults stringForKey:@"TabEviction"];
