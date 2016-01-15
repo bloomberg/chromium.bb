@@ -66,9 +66,8 @@ class TabManager : public TabStripModelObserver {
   // See member comment.
   bool recent_tab_discard() const { return recent_tab_discard_; }
 
-  // If |discard_once| is set, tabs that get discarded once will never get
-  // discarded again.
-  void Start(bool discard_once);
+  // Start/Stop the Tab Manager.
+  void Start();
   void Stop();
 
   // Returns the list of the stats for all renderers. Must be called on the UI

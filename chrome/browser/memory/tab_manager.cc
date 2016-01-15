@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/metrics/field_trial.h"
@@ -39,8 +40,10 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/metrics/system_memory_stats_recorder.h"
+#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_process_host.h"
@@ -122,8 +125,26 @@ TabManager::~TabManager() {
   Stop();
 }
 
-void TabManager::Start(bool discard_once) {
-  discard_once_ = discard_once;
+void TabManager::Start() {
+#if defined(OS_WIN) || defined(OS_MACOSX)
+  // If the feature is not enabled, do nothing.
+  if (!base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding))
+    return;
+
+  // Check the variation parameter to see if a tab be discarded more than once.
+  // Default is to only discard once per tab.
+  std::string allow_multiple_discards = variations::GetVariationParamValue(
+      features::kAutomaticTabDiscarding.name, "AllowMultipleDiscards");
+  if (allow_multiple_discards == "true")
+    discard_once_ = true;
+  else
+    discard_once_ = false;
+#elif defined(OS_CHROMEOS)
+  // On Chrome OS, tab manager is always started and tabs can be discarded more
+  // than once.
+  discard_once_ = false;
+#endif
+
   if (!update_timer_.IsRunning()) {
     update_timer_.Start(FROM_HERE,
                         TimeDelta::FromSeconds(kAdjustmentIntervalSeconds),

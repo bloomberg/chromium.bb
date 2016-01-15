@@ -95,7 +95,6 @@
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/common/chrome_switches.h"
@@ -1185,16 +1184,8 @@ void ChromeBrowserMainParts::PreBrowserStart() {
 
 // Start the tab manager here so that we give the most amount of time for the
 // other services to start up before we start adjusting the oom priority.
-//
-// On CrOS, it is always enabled. On other platforms, it's behind a flag for
-// now.
-#if defined(OS_CHROMEOS)
-  g_browser_process->GetTabManager()->Start(false);
-#elif defined(OS_WIN) || defined(OS_MACOSX)
-  if (base::FeatureList::IsEnabled(features::kAutomaticTabDiscarding)) {
-    // The default behavior is to only discard once (for now).
-    g_browser_process->GetTabManager()->Start(true);
-  }
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+  g_browser_process->GetTabManager()->Start();
 #endif
 }
 
