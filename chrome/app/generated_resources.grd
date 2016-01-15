@@ -7136,6 +7136,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_APP_UPGRADE_RECOMMENDED" desc="The accessible name for the app menu when software update is available.">
         <ph name="ACCNAME_APP">$1<ex>Chrome</ex></ph> (Update is available)
       </message>
+      <message name="IDS_ACCNAME_BACK" desc="The accessible name for the back button.">
+        Back
+      </message>
+      <message name="IDS_ACCNAME_FORWARD" desc="The accessible name for the forward button.">
+        Forward
+      </message>
       <message name="IDS_ACCNAME_FULLSCREEN" desc="The accessible name of the fullscreen button in the new merged menu">
         Full screen
       </message>
@@ -7144,6 +7150,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ACCNAME_RELOAD" desc="The accessible name for the reload/stop button.">
         Reload
+      </message>
+      <message name="IDS_ACCNAME_LOCATION" desc="The accessible name for the editable-text portion of the omnibox.">
+        Address and search bar
       </message>
       <message name="IDS_ACCNAME_ZOOM" desc="The accessible name for the zoom button.">
         Zoom
@@ -7187,9 +7196,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ACCNAME_RESTORE" desc="The accessible name for the Restore button.">
         Restore
       </message>
+      <message name="IDS_ACCNAME_CLOSE" desc="The accessible name for the Close button.">
+        Close
+      </message>
       <message name="IDS_ACCNAME_CLOSE_TAB" desc="The accessible name for the button that is used to close a specific tab.">
         Close <ph name="TAB_NAME">$1<ex>Google Search</ex></ph>
       </message>
+      <if expr="is_ios">
+        <message name="IDS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">
+          Clear Text
+        </message>
+        <message name="IDS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
+          Voice Search
+        </message>
+      </if>
 
       <!-- Browser Hung Plugin Detector -->
       <if expr="is_win">

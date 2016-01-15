@@ -299,14 +299,6 @@ brand. [Length: 70em]">
       <message name="IDS_IOS_UPGRADE_AVAILABLE_BUTTON" desc="Displayed on a button the user can use to upgrade the a more recent version of the application. [Length: 10em]">
         Update
       </message>
-
-      <!-- Accessibility labels -->
-      <message name="IDS_IOS_ACCNAME_CLEAR_TEXT" desc="The accessibility label for the clear text button in the location bar [Length: unlimited].">
-        Clear Text
-      </message>
-      <message name="IDS_IOS_ACCNAME_VOICE_SEARCH" desc="The accessibility label for the voice search button in the location bar [Length: unlimited]">
-        Voice Search
-      </message>
     </messages>
   </release>
 </grit>

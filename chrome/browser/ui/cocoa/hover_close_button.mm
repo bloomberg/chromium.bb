@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
-#include "grit/components_strings.h"
 #include "grit/theme_resources.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMKeyValueAnimation.h"
 #include "ui/base/cocoa/animation_utils.h"
