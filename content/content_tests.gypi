@@ -764,7 +764,6 @@
       'browser/renderer_host/p2p/socket_host_test_utils.cc',
       'browser/renderer_host/p2p/socket_host_test_utils.h',
       'browser/renderer_host/p2p/socket_host_udp_unittest.cc',
-      'browser/renderer_host/p2p/socket_host_unittest.cc',
       'renderer/media/audio_repetition_detector_unittest.cc',
       'renderer/media/audio_track_recorder_unittest.cc',
       'renderer/media/canvas_capture_handler_unittest.cc',

@@ -31,33 +31,6 @@ struct PacketOptions;
 namespace content {
 class P2PMessageThrottler;
 
-namespace packet_processing_helpers {
-
-// This method can handle only RTP packet, otherwise this method must not be
-// called. It will try to do, 1. update absolute send time extension header
-// if present with current time and 2. update HMAC in RTP packet.
-// If abs_send_time is 0, ApplyPacketOption will get current time from system.
-CONTENT_EXPORT bool ApplyPacketOptions(char* data,
-                                       size_t length,
-                                       const rtc::PacketOptions& options,
-                                       uint32_t abs_send_time);
-
-// Helper method which finds RTP ofset and length if the packet is encapsulated
-// in a TURN Channel Message or TURN Send Indication message.
-CONTENT_EXPORT bool GetRtpPacketStartPositionAndLength(
-    const char* data,
-    size_t length,
-    size_t* rtp_start_pos,
-    size_t* rtp_packet_length);
-
-// Helper method which updates absoulute send time extension if present.
-CONTENT_EXPORT bool UpdateRtpAbsSendTimeExtension(char* rtp,
-                                                  size_t length,
-                                                  int extension_id,
-                                                  uint32_t abs_send_time);
-
-}  // packet_processing_helpers
-
 // Base class for P2P sockets.
 class CONTENT_EXPORT P2PSocketHost {
  public:

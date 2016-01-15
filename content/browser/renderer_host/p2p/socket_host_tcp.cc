@@ -23,7 +23,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/libjingle/source/talk/media/base/rtputils.h"
 
 namespace {
 
@@ -528,10 +528,10 @@ void P2PSocketHostTcp::DoSend(const net::IPEndPoint& to,
   *reinterpret_cast<uint16_t*>(buffer->data()) = base::HostToNet16(data.size());
   memcpy(buffer->data() + kPacketHeaderSize, &data[0], data.size());
 
-  packet_processing_helpers::ApplyPacketOptions(
-      buffer->data() + kPacketHeaderSize,
-      buffer->BytesRemaining() - kPacketHeaderSize,
-      options, 0);
+  cricket::ApplyPacketOptions(
+      reinterpret_cast<uint8_t*>(buffer->data()) + kPacketHeaderSize,
+      buffer->BytesRemaining() - kPacketHeaderSize, options.packet_time_params,
+      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
 
   WriteOrQueue(buffer);
 }
@@ -601,8 +601,10 @@ void P2PSocketHostStunTcp::DoSend(const net::IPEndPoint& to,
       new net::DrainableIOBuffer(new net::IOBuffer(size), size);
   memcpy(buffer->data(), &data[0], data.size());
 
-  packet_processing_helpers::ApplyPacketOptions(
-      buffer->data(), data.size(), options, 0);
+  cricket::ApplyPacketOptions(
+      reinterpret_cast<uint8_t*>(buffer->data()), data.size(),
+      options.packet_time_params,
+      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds());
 
   if (pad_bytes) {
     char padding[4] = {0};

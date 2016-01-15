@@ -19,7 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
-#include "third_party/webrtc/base/asyncpacketsocket.h"
+#include "third_party/libjingle/source/talk/media/base/rtputils.h"
 
 namespace {
 
@@ -294,9 +294,10 @@ void P2PSocketHostUdp::DoSend(const PendingPacket& packet) {
   }
 
   base::TimeTicks send_time = base::TimeTicks::Now();
-
-  packet_processing_helpers::ApplyPacketOptions(
-      packet.data->data(), packet.size, packet.packet_options, 0);
+  cricket::ApplyPacketOptions(reinterpret_cast<uint8_t*>(packet.data->data()),
+                              packet.size,
+                              packet.packet_options.packet_time_params,
+                              (send_time - base::TimeTicks()).InMicroseconds());
   auto callback_binding =
       base::Bind(&P2PSocketHostUdp::OnSend, base::Unretained(this), packet.id,
                  packet.packet_options.packet_id, send_time);
