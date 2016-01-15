@@ -133,32 +133,26 @@ def BuildFileList():
       result.append((combined, to))
 
   if VS_VERSION == '2015':
+    # The Windows 10 Universal C Runtime installers are needed when packaging
+    # VS 2015. They can be download from here:
+    # https://support.microsoft.com/en-us/kb/2999226
+    # and they must be downloaded to the current user's downloads directory.
+    # The versions needed are those for 64-bit Windows 7, Windows 8, and
+    # Windows 8.1. The 64-bit Server 2008 R2, Server 2012, and Server 2012 R2
+    # versions are identical (same name and contents).
+    universal_runtime_installers = [
+        'Windows6.1-KB2999226-x64.msu',
+        'Windows8-RT-KB2999226-x64.msu',
+        'Windows8.1-KB2999226-x64.msu',
+    ]
+
+    for installer in universal_runtime_installers:
+      result.append((os.path.join(os.environ['userprofile'], 'downloads',
+                                  installer),
+                     os.path.join('installers', installer)))
 
     system_crt_files = [
-        'api-ms-win-core-file-l1-2-0.dll',
-        'api-ms-win-core-file-l2-1-0.dll',
-        'api-ms-win-core-localization-l1-2-0.dll',
-        'api-ms-win-core-processthreads-l1-1-1.dll',
-        'api-ms-win-core-synch-l1-2-0.dll',
-        'api-ms-win-core-timezone-l1-1-0.dll',
-        'api-ms-win-core-xstate-l2-1-0.dll',
-        'api-ms-win-crt-conio-l1-1-0.dll',
-        'api-ms-win-crt-convert-l1-1-0.dll',
-        'api-ms-win-crt-environment-l1-1-0.dll',
-        'api-ms-win-crt-filesystem-l1-1-0.dll',
-        'api-ms-win-crt-heap-l1-1-0.dll',
-        'api-ms-win-crt-locale-l1-1-0.dll',
-        'api-ms-win-crt-math-l1-1-0.dll',
-        'api-ms-win-crt-multibyte-l1-1-0.dll',
-        'api-ms-win-crt-private-l1-1-0.dll',
-        'api-ms-win-crt-process-l1-1-0.dll',
-        'api-ms-win-crt-runtime-l1-1-0.dll',
-        'api-ms-win-crt-stdio-l1-1-0.dll',
-        'api-ms-win-crt-string-l1-1-0.dll',
-        'api-ms-win-crt-time-l1-1-0.dll',
-        'api-ms-win-crt-utility-l1-1-0.dll',
-        'api-ms-win-eventing-provider-l1-1-0.dll',
-        'ucrtbase.dll',
+        # Needed to let debug binaries run.
         'ucrtbased.dll',
     ]
     bitness = platform.architecture()[0]
