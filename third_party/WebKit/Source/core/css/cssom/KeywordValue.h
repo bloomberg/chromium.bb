@@ -25,19 +25,17 @@ public:
 
     StyleValueType type() const override { return KeywordValueType; }
 
-    virtual const String& keywordValue() const;
+    const String& keywordValue() const;
 
     String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
 
 private:
-    KeywordValue(const String& keyword) : m_keywordValue(keywordValueFromString(keyword)) {}
+    KeywordValue(const String& keyword) : m_keywordValue(keyword.lower()) {}
 
-    KeywordValueName m_keywordValue;
-
-    static KeywordValueName keywordValueFromString(const String& keyword);
+    String m_keywordValue;
 };
 
-}
+} // namespace blink
 
 #endif

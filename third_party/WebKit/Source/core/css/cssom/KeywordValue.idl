@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-enum StyleValueKeyword {"initial", "inherit", "default", "unset"};
-
 [
     Constructor(DOMString keyword),
     RuntimeEnabled=CSSTypedOM
 ] interface KeywordValue : StyleValue {
-    readonly attribute StyleValueKeyword keywordValue;
+    readonly attribute DOMString keywordValue;
 };

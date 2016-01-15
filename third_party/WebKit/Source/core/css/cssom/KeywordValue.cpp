@@ -30,36 +30,19 @@ KeywordTable& keywordTable()
 
 } // namespace
 
-const String& KeywordValue::keywordValue() const
-{
-    DEFINE_STATIC_LOCAL(const String, InitialStr, ("initial"));
-    DEFINE_STATIC_LOCAL(const String, InheritStr, ("inherit"));
-    DEFINE_STATIC_LOCAL(const String, RevertStr, ("revert"));
-    DEFINE_STATIC_LOCAL(const String, UnsetStr, ("unset"));
-
-    switch (m_keywordValue) {
-    case Initial:
-        return InitialStr;
-    case Inherit:
-        return InheritStr;
-    case Revert:
-        return RevertStr;
-    case Unset:
-        return UnsetStr;
-    default:
-        ASSERT_NOT_REACHED();
-        return emptyString();
-    }
-}
-
 String KeywordValue::cssString() const
 {
-    return keywordValue();
+    return m_keywordValue;
+}
+
+const String& KeywordValue::keywordValue() const
+{
+    return m_keywordValue;
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
 {
-    switch (m_keywordValue) {
+    switch (keywordTable().get(m_keywordValue)) {
     case Initial:
         return cssValuePool().createExplicitInitialValue();
     case Inherit:
@@ -69,14 +52,10 @@ PassRefPtrWillBeRawPtr<CSSValue> KeywordValue::toCSSValue() const
     case Unset:
         return cssValuePool().createUnsetValue();
     default:
+        // TODO: Support other keywords
         ASSERT_NOT_REACHED();
         return nullptr;
     }
 }
 
-KeywordValue::KeywordValueName KeywordValue::keywordValueFromString(const String& keyword)
-{
-    return keywordTable().get(keyword.lower());
-}
-
-}
+} // namespace blink
