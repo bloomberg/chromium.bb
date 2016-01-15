@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -51,6 +52,7 @@ class UrlManager {
     private static final String PREFS_RESOLVED_URLS_KEY = "resolved_urls";
     private static final String DEPRECATED_PREFS_URLS_KEY = "urls";
     private static final int PREFS_VERSION = 2;
+    private static final long STALE_NOTIFICATION_TIMEOUT_MILLIS = 30 * 60 * 1000;
     private static UrlManager sInstance = null;
     private final Context mContext;
     private NotificationManagerProxy mNotificationManager;
@@ -91,7 +93,7 @@ class UrlManager {
         boolean isOnboarding = PhysicalWeb.isOnboarding(mContext);
         Set<String> nearbyUrls = getCachedNearbyUrls();
 
-        boolean wasUrlListEmpty = (isOnboarding && nearbyUrls.isEmpty())
+        boolean isUrlListEmptyBefore = (isOnboarding && nearbyUrls.isEmpty())
                 || (!isOnboarding && getUrls().isEmpty());
 
         nearbyUrls.add(url);
@@ -101,11 +103,8 @@ class UrlManager {
             resolveUrl(url);
         }
 
-        boolean isUrlListEmpty = !isOnboarding && getUrls().isEmpty();
-
-        if (wasUrlListEmpty && !isUrlListEmpty) {
-            showNotification();
-        }
+        boolean isUrlListEmptyAfter = !isOnboarding && getUrls().isEmpty();
+        updateNotification(isUrlListEmptyBefore, isUrlListEmptyAfter);
     }
 
     /**
@@ -121,12 +120,9 @@ class UrlManager {
         nearbyUrls.remove(url);
         putCachedNearbyUrls(nearbyUrls);
 
-        boolean isUrlListEmpty = (isOnboarding && nearbyUrls.isEmpty())
+        boolean isUrlListEmptyAfter = (isOnboarding && nearbyUrls.isEmpty())
                 || (!isOnboarding && getUrls().isEmpty());
-
-        if (isUrlListEmpty) {
-            clearNotification();
-        }
+        updateNotification(false, isUrlListEmptyAfter);
     }
 
     /**
@@ -166,22 +162,26 @@ class UrlManager {
         putCachedNearbyUrls(emptySet);
         putCachedResolvedUrls(emptySet);
         clearNotification();
+        cancelClearNotificationAlarm();
+    }
+
+    /**
+     * Clear the URLManager's notification.
+     * Typically, this should not be called except when we want to clear the notification without
+     * modifying the list of URLs, as is the case when we want to remove stale notifications.
+     */
+    public void clearNotification() {
+        mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
     }
 
     private void addResolvedUrl(String url) {
         Log.d(TAG, "PWS resolved: %s", url);
         Set<String> resolvedUrls = getCachedResolvedUrls();
-
-        boolean wasUrlListEmpty = getUrls().isEmpty();
+        boolean isUrlListEmptyBefore = getUrls().isEmpty();
 
         resolvedUrls.add(url);
         putCachedResolvedUrls(resolvedUrls);
-
-        boolean isUrlListEmpty = getUrls().isEmpty();
-
-        if (wasUrlListEmpty && !isUrlListEmpty) {
-            showNotification();
-        }
+        updateNotification(isUrlListEmptyBefore, getUrls().isEmpty());
     }
 
     private void removeResolvedUrl(String url) {
@@ -189,10 +189,7 @@ class UrlManager {
         Set<String> resolvedUrls = getCachedResolvedUrls();
         resolvedUrls.remove(url);
         putCachedResolvedUrls(resolvedUrls);
-
-        if (getUrls().isEmpty()) {
-            clearNotification();
-        }
+        updateNotification(false, getUrls().isEmpty());
     }
 
     private void initSharedPreferences() {
@@ -282,6 +279,21 @@ class UrlManager {
         });
     }
 
+    private void updateNotification(boolean isUrlListEmptyBefore, boolean isUrlListEmptyAfter) {
+        if (isUrlListEmptyAfter) {
+            clearNotification();
+            cancelClearNotificationAlarm();
+            return;
+        }
+
+        // We only call showNotification if the list was empty before because we need to be able to
+        // count the number of times we show the OptIn notification.
+        if (isUrlListEmptyBefore) {
+            showNotification();
+        }
+        scheduleClearNotificationAlarm();
+    }
+
     private void showNotification() {
         if (PhysicalWeb.isOnboarding(mContext)) {
             if (PhysicalWeb.getOptInNotifyCount(mContext) < PhysicalWeb.OPTIN_NOTIFY_MAX_TRIES) {
@@ -294,10 +306,7 @@ class UrlManager {
                 createOptInNotification(false);
                 PhysicalWebUma.onOptInMinPriorityNotificationShown(mContext);
             }
-            return;
-        }
-
-        if (PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext)) {
+        } else if (PhysicalWeb.isPhysicalWebPreferenceEnabled(mContext)) {
             createNotification();
         }
     }
@@ -350,8 +359,22 @@ class UrlManager {
                                     notification);
     }
 
-    private void clearNotification() {
-        mNotificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
+    private PendingIntent createClearNotificationAlarmIntent() {
+        Intent intent = new Intent(mContext, ClearNotificationAlarmReceiver.class);
+        return PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+    }
+
+    private void scheduleClearNotificationAlarm() {
+        PendingIntent pendingIntent = createClearNotificationAlarmIntent();
+        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        long time = SystemClock.elapsedRealtime() + STALE_NOTIFICATION_TIMEOUT_MILLIS;
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME, time, pendingIntent);
+    }
+
+    private void cancelClearNotificationAlarm() {
+        PendingIntent pendingIntent = createClearNotificationAlarmIntent();
+        AlarmManager alarmManager = (AlarmManager) mContext.getSystemService(Context.ALARM_SERVICE);
+        alarmManager.cancel(pendingIntent);
     }
 
     @VisibleForTesting

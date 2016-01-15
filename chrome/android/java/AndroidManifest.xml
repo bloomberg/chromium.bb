@@ -415,6 +415,12 @@ by a child template that "extends" this file.
             android:exported="false">
         </activity>
 
+        <!-- Broadcast receiver that will clean up Physical web notifications at scheduled
+             intervals -->
+        <receiver android:name="org.chromium.chrome.browser.physicalweb.ClearNotificationAlarmReceiver"
+            android:exported="false">
+        </receiver>
+
         <!-- Providers for chrome data. -->
         <provider android:name="org.chromium.chrome.browser.ChromeBrowserProvider"
             android:authorities="{{ manifest_package }}.ChromeBrowserProvider;{{ manifest_package }}.browser;{{ manifest_package }}"
