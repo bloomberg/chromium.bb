@@ -938,6 +938,7 @@ void BluetoothAdapterBlueZ::NotifyGattServicesDiscovered(
     BluetoothDeviceBlueZ* device) {
   DCHECK(device->adapter_ == this);
 
+  device->SetGattServicesDiscoveryComplete(true);
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     GattServicesDiscovered(this, device));
 }
