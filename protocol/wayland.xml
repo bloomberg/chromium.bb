@@ -408,7 +408,7 @@
   </interface>
 
 
-  <interface name="wl_data_offer" version="1">
+  <interface name="wl_data_offer" version="3">
     <description summary="offer to transfer data">
       A wl_data_offer represents a piece of data offered for transfer
       by another client (the source client).  It is used by the
@@ -418,12 +418,27 @@
       data directly from the source client.
     </description>
 
+    <enum name="error">
+      <entry name="invalid_finish" value="0"
+	     summary="finish request was called untimely"/>
+    </enum>
+
     <request name="accept">
       <description summary="accept one of the offered mime types">
 	Indicate that the client can accept the given mime type, or
 	NULL for not accepted.
 
-	Used for feedback during drag-and-drop.
+	For objects of version 2 or older, this request is used by the
+	client to give feedback whether the client can receive the given
+	mime type, or NULL if none is accepted; the feedback does not
+	determine whether the drag-and-drop operation succeeds or not.
+
+	For objects of version 3 or newer, this request determines the
+	final result of the drag-and-drop operation. If the end result
+	is that no mime types were accepted, the drag-and-drop operation
+	will be cancelled and the corresponding drag source will receive
+	wl_data_source.cancelled. Clients may still use this event in
+	conjunction with wl_data_source.action for feedback.
       </description>
 
       <arg name="serial" type="uint"/>
@@ -442,6 +457,11 @@
 	The receiving client reads from the read end of the pipe until
 	EOF and then closes its end, at which point the transfer is
 	complete.
+
+	This request may happen multiple times for different mimetypes,
+	both before and after wl_data_device.drop. Drag-and-drop destination
+	clients may preemptively fetch data or examine it more closely to
+	determine acceptance.
       </description>
       <arg name="mime_type" type="string"/>
       <arg name="fd" type="fd"/>
@@ -461,9 +481,26 @@
 
       <arg name="mime_type" type="string"/>
     </event>
+
+    <!-- Version 3 additions -->
+
+    <request name="finish" since="3">
+      <description summary="the offer will no longer be used">
+	Notifies the compositor that the drag destination successfully
+	finished the drag-and-drop operation.
+
+	Upon receiving this request, the compositor will emit
+	wl_data_source.dnd_finished on the drag source client.
+
+	It is a client error to perform other requests than
+	wl_data_offer.destroy after this one. It is also an error to perform
+	this request after a NULL mime type has been set in
+	wl_data_offer.accept.
+      </description>
+    </request>
   </interface>
 
-  <interface name="wl_data_source" version="1">
+  <interface name="wl_data_source" version="3">
     <description summary="offer to transfer data">
       The wl_data_source object is the source side of a wl_data_offer.
       It is created by the source client in a data transfer and
@@ -510,14 +547,52 @@
 
     <event name="cancelled">
       <description summary="selection was cancelled">
-	This data source has been replaced by another data source.
+	This data source is no longer valid. There are several reasons why
+	this could happen:
+
+	- The data source has been replaced by another data source.
+	- The drag-and-drop operation was performed, but the drop destination
+	  did not accept any of the mimetypes offered through
+	  wl_data_source.target.
+	- The drag-and-drop operation was performed but didn't happen over a
+	  surface.
+	- The compositor cancelled the drag-and-drop operation (e.g. compositor
+	  dependent timeouts to avoid stale drag-and-drop transfers).
+
 	The client should clean up and destroy this data source.
+
+	For objects of version 2 or older, wl_data_source.cancelled will
+	only be emitted if the data source was replaced by another data
+	source.
       </description>
     </event>
 
+    <!-- Version 3 additions -->
+
+    <event name="dnd_drop_performed" since="3">
+      <description summary="the drag-and-drop operation physically finished">
+	The user performed the drop action. This event does not indicate
+	acceptance, wl_data_source.cancelled may still be emitted afterwards
+	if the drop destination does not accept any mimetype.
+
+	However, this event might however not be received if the compositor
+	cancelled the drag-and-drop operation before this event could happen.
+
+	Note that the data_source may still be used in the future and should
+	not be destroyed here.
+      </description>
+    </event>
+
+    <event name="dnd_finished" since="3">
+      <description summary="the drag-and-drop operation concluded">
+	The drop destination finished interoperating with this data
+	source, so the client is now free to destroy this data source and
+	free all associated data.
+      </description>
+    </event>
   </interface>
 
-  <interface name="wl_data_device" version="2">
+  <interface name="wl_data_device" version="3">
     <description summary="data transfer device">
       There is one wl_data_device per seat which can be obtained
       from the global wl_data_device_manager singleton.
@@ -659,7 +734,7 @@
     </request>
   </interface>
 
-  <interface name="wl_data_device_manager" version="2">
+  <interface name="wl_data_device_manager" version="3">
     <description summary="data transfer interface">
       The wl_data_device_manager is a singleton global object that
       provides access to inter-client data transfer mechanisms such as
