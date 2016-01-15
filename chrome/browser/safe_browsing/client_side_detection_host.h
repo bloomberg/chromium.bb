@@ -38,7 +38,8 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   ~ClientSideDetectionHost() override;
 
   // From content::WebContentsObserver.
-  bool OnMessageReceived(const IPC::Message& message) override;
+  bool OnMessageReceived(const IPC::Message& message,
+                         content::RenderFrameHost* render_frame_host) override;
   void DidGetResourceResponseStart(
       const content::ResourceRequestDetails& details) override;
 

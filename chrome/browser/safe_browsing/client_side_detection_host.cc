@@ -340,7 +340,9 @@ ClientSideDetectionHost::~ClientSideDetectionHost() {
     ui_manager_->RemoveObserver(this);
 }
 
-bool ClientSideDetectionHost::OnMessageReceived(const IPC::Message& message) {
+bool ClientSideDetectionHost::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* render_frame_host) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ClientSideDetectionHost, message)
     IPC_MESSAGE_HANDLER(SafeBrowsingHostMsg_PhishingDetectionDone,
