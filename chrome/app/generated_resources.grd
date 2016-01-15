@@ -14526,40 +14526,40 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
       <!-- Update Menu Item Flags -->
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NAME" desc="Name of the flag to force show the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NAME" desc="Name of the flag to force show the update menu item." translateable="false">
         Force show update menu item
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DESCRIPTION" desc="Description of the flag to force show the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DESCRIPTION" desc="Description of the flag to force show the update menu item." translateable="false">
         When enabled, an "Update Chrome" item will be shown in the app menu.
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_NAME" desc="Name of the flag to show a summary below the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_NAME" desc="Name of the flag to show a summary below the update menu item." translateable="false">
         Update menu item summary
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_DESCRIPTION" desc="Description of the flag to show a summary below the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_SUMMARY_DESCRIPTION" desc="Description of the flag to show a summary below the update menu item." translateable="false">
         When this flag and the force show update menu item flag are enabled, a summary will be displayed below the update menu item.
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY" desc="Option to not show a summary for the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NO_SUMMARY" desc="Option to not show a summary for the update menu item." translateable="false">
         No summary
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY" desc="Option to show the default summary for the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_DEFAULT_SUMMARY" desc="Option to show the default summary for the update menu item." translateable="false">
         Default summary
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NEW_FEATURES_SUMMARY" desc="Option to show a summary for the update menu item prompting users to 'get the latest features'.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_NEW_FEATURES_SUMMARY" desc="Option to show a summary for the update menu item prompting users to 'get the latest features'." translateable="false">
         New features summary
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_CUSTOM_SUMMARY" desc="Option to show a custom summary for the update menu item.">
+      <message name="IDS_FLAGS_UPDATE_MENU_ITEM_CUSTOM_SUMMARY" desc="Option to show a custom summary for the update menu item." translateable="false">
         Custom summary
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_NAME" desc="Name of the flag to force show the update menu badge.">
+      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_NAME" desc="Name of the flag to force show the update menu badge." translateable="false">
         Force show update menu badge
       </message>
-      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_DESCRIPTION" desc="Description of the flag to force show the update menu badge.">
+      <message name="IDS_FLAGS_UPDATE_MENU_BADGE_DESCRIPTION" desc="Description of the flag to force show the update menu badge." translateable="false">
         When enabled, an update badge will be shown on the app menu button.
       </message>
-      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_NAME" desc="Name of the flag to set a market URL for testing the update menu item.">
+      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_NAME" desc="Name of the flag to set a market URL for testing the update menu item." translateable="false">
         Set market URL for testing
       </message>
-      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_DESCRIPTION" desc="Description of the flag to set a market URL for testing the update menu item.">
+      <message name="IDS_FLAGS_SET_MARKET_URL_FOR_TESTING_DESCRIPTION" desc="Description of the flag to set a market URL for testing the update menu item." translateable="false">
         When enabled, sets the market URL for use in testing the update menu item.
       </message>
     </if>
