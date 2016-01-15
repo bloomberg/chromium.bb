@@ -29,6 +29,7 @@ public class Snackbar {
     private boolean mSingleLine = true;
     private int mDurationMs;
     private Bitmap mProfileImage;
+    private boolean mForceDisplay = false;
 
     // Prevent instantiation.
     private Snackbar() {}
@@ -100,6 +101,27 @@ public class Snackbar {
     public Snackbar setBackgroundColor(int color) {
         mBackgroundColor = color;
         return this;
+    }
+
+    /**
+     * Forces this snackbar to be shown when {@link #dismissAllSnackbars(SnackbarManager)} is called
+     * from a timeout. If {@link #showSnackbar(SnackbarManager)} is called while this snackbar is
+     * showing, the new snackbar will be added to the stack and this snackbar will not be
+     * overwritten.
+     */
+    public Snackbar setForceDisplay() {
+        mForceDisplay = true;
+        return this;
+    }
+
+    /**
+     * Returns true if this snackbar should still be shown when @link
+     * #dismissAllSnackbars(SnackbarManager)} is called from a timeout. If
+     * {@link #showSnackbar(SnackbarManager)} is called while this snackbar is showing, the new
+     * snackbar will be added to the stack and this snackbar will not be overwritten.
+     */
+    public boolean getForceDisplay() {
+        return mForceDisplay;
     }
 
     SnackbarController getController() {

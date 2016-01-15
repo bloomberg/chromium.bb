@@ -97,7 +97,8 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
                         : R.string.data_reduction_lo_fi_snackbar_action);
         mSnackbarManager.showSnackbar(Snackbar.make(message, this)
                 .setAction(buttonText, tab.getId())
-                .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS));
+                .setDuration(DEFAULT_LO_FI_SNACKBAR_SHOW_DURATION_MS)
+                .setForceDisplay());
         DataReductionProxySettings.getInstance().incrementLoFiSnackbarShown();
         DataReductionProxyUma.dataReductionProxyLoFiUIAction(
                 DataReductionProxyUma.ACTION_LOAD_IMAGES_SNACKBAR_SHOWN);

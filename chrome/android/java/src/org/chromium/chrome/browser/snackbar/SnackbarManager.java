@@ -133,10 +133,16 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
 
     /**
      * Shows a snackbar at the bottom of the screen, or above the keyboard if the keyboard is
-     * visible.
+     * visible. If the currently displayed snackbar is forcing display, the new snackbar is added as
+     * the next to be displayed on the stack.
      */
     public void showSnackbar(Snackbar snackbar) {
         if (!mActivityInForeground) return;
+
+        if (mPopup != null && !mStack.empty() && mStack.peek().getForceDisplay()) {
+            mStack.add(mStack.size() - 1, snackbar);
+            return;
+        }
 
         int durationMs = snackbar.getDuration();
         if (durationMs == 0) {
@@ -189,6 +195,11 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
                 controllers.add(snackbar.getController());
             }
             snackbar.getController().onDismissNoAction(snackbar.getActionData());
+
+            if (isTimeout && !mStack.isEmpty() && mStack.peek().getForceDisplay()) {
+                showSnackbar(mStack.pop());
+                return;
+            }
         }
         mDecor.getViewTreeObserver().removeOnGlobalLayoutListener(this);
     }

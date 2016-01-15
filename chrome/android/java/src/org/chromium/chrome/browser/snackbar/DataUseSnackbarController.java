@@ -42,7 +42,8 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_use_tracking_started_snackbar_message), this)
                 .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        STARTED_SNACKBAR));
+                        STARTED_SNACKBAR)
+                .setForceDisplay());
         DataUseTabUIManager.recordDataUseUIAction(DataUseUIActions.STARTED_SNACKBAR_SHOWN);
     }
 
@@ -50,7 +51,8 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
         mSnackbarManager.showSnackbar(Snackbar.make(
                 mContext.getString(R.string.data_use_tracking_ended_snackbar_message), this)
                 .setAction(mContext.getString(R.string.data_use_tracking_snackbar_action),
-                        ENDED_SNACKBAR));
+                        ENDED_SNACKBAR)
+                .setForceDisplay());
         DataUseTabUIManager.recordDataUseUIAction(DataUseUIActions.ENDED_SNACKBAR_SHOWN);
     }
 
