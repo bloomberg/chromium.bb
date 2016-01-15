@@ -121,13 +121,23 @@ remoting_apk_tmpl("remoting_apk") {
   ]
 }
 
+remoting_localize("remoting_test_apk_manifest") {
+  sources = [
+    "javatests/AndroidManifest.xml.jinja2",
+  ]
+  locales = [ "en" ]
+  variables = [ branding_path ]
+  output = "$root_gen_dir/remoting/android_test/{{source_name_part}}"
+}
+
 instrumentation_test_apk("remoting_test_apk") {
-  android_manifest = "javatests/AndroidManifest.xml"
+  android_manifest = "$root_gen_dir/remoting/android_test/AndroidManifest.xml"
   apk_name = "ChromotingTest"
   apk_under_test = ":remoting_apk"
   DEPRECATED_java_in_dir = "javatests/src"
   deps = [
     ":remoting_android_client_java",
+    ":remoting_test_apk_manifest",
     "//base:base_java",
     "//base:base_java_test_support",
   ]
