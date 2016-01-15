@@ -176,6 +176,10 @@
         'host_arch%': '<(host_arch)',
         'target_arch%': '<(target_arch)',
 
+        # Set to true to instrument the code with function call logger.
+        # See src/third_party/cygprofile/cyg-profile.cc for details.
+        'order_profiling%': 0,
+
         'target_subarch%': '',
 
         # The channel to build on Android: stable, beta, dev, canary, or
@@ -368,11 +372,7 @@
       'sysroot%': '<(sysroot)',
       'chroot_cmd%': '<(chroot_cmd)',
       'system_libdir%': '<(system_libdir)',
-
-      # Set to 1 to enable fast builds. Set to 2 for even faster builds
-      # (it disables debug info for fastest compilation - only for use
-      # on compile-only bots).
-      'fastbuild%': 0,
+      'order_profiling%': '<(order_profiling)',
 
       # Set to 1 to not store any build metadata, e.g. ifdef out all __DATE__
       # and __TIME__. Set to 0 to reenable the use of these macros in the code
@@ -536,10 +536,6 @@
       # stdlibc++ as standard library. This is intended to use for instrumented
       # builds.
       'use_custom_libcxx%': 0,
-
-      # Set to true to instrument the code with function call logger.
-      # See src/third_party/cygprofile/cyg-profile.cc for details.
-      'order_profiling%': 0,
 
       # Use the provided profiled order file to link Chrome image with it.
       # This makes Chrome faster by better using CPU cache when executing code.
@@ -1046,6 +1042,18 @@
           'enable_webvr%': 1,
         }, {
           'enable_webvr%': 0,
+        }],
+
+        ['order_profiling==0', {
+          # Set to 1 to enable fast builds. Set to 2 for even faster builds
+          # (it disables debug info for fastest compilation - only for use
+          # on compile-only bots).
+          'fastbuild%': 0,
+        }, {
+          # With instrumentation enabled, debug info puts libchrome.so over 4gb,
+          # which causes the linker to produce an invalid ELF.
+          # http://crbug.com/574476
+          'fastbuild%': 2,
         }],
       ],
 

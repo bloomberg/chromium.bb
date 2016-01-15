@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/android/config.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
@@ -22,6 +23,12 @@ declare_args() {
 # If it wasn't manually set, set to an appropriate default.
 assert(symbol_level >= -1 && symbol_level <= 2, "Invalid symbol_level")
 if (symbol_level == -1) {
+  if (is_android && use_order_profiling) {
+    # With instrumentation enabled, debug info puts libchrome.so over 4gb, which
+    # causes the linker to produce an invalid ELF. http://crbug.com/574476
+    symbol_level = 0
+  }
+
   # Linux is slowed by having symbols as part of the target binary, whereas
   # Mac and Windows have them separate, so in Release Linux, default them off,
   # but keep them on for Official builds.
