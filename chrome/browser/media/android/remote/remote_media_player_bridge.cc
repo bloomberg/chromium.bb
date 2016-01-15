@@ -41,7 +41,6 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
     : MediaPlayerAndroid(local_player->player_id(), manager,
                          base::Bind(&DoNothing),
                          local_player->frame_url()),
-      start_position_millis_(0),
       local_player_(local_player),
       width_(0),
       height_(0),
@@ -51,8 +50,6 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
       first_party_for_cookies_(local_player->GetFirstPartyForCookies()),
       user_agent_(user_agent),
       weak_factory_(this) {
-  if (local_player->GetCurrentTime().InMilliseconds() > 0)
-    start_position_millis_ = local_player->GetCurrentTime().InMilliseconds();
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
   ScopedJavaLocalRef<jstring> j_url_string;
@@ -67,8 +64,8 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
         env, local_player->frame_url().spec());
   }
   java_bridge_.Reset(Java_RemoteMediaPlayerBridge_create(
-      env, reinterpret_cast<intptr_t>(this), start_position_millis_,
-      j_url_string.obj(), j_frame_url_string.obj(),
+      env, reinterpret_cast<intptr_t>(this), j_url_string.obj(),
+      j_frame_url_string.obj(),
       ConvertUTF8ToJavaString(env, user_agent).obj()));
 }
 
@@ -242,7 +239,8 @@ void RemoteMediaPlayerBridge::RequestRemotePlayback() {
   CHECK(env);
 
   Java_RemoteMediaPlayerBridge_requestRemotePlayback(
-      env, java_bridge_.obj());
+      env, java_bridge_.obj(),
+      local_player_->GetCurrentTime().InMilliseconds());
 }
 
 void RemoteMediaPlayerBridge::RequestRemotePlaybackControl() {

@@ -27,7 +27,7 @@ import org.chromium.media.MediaPlayerBridge;
  */
 @JNINamespace("remote_media")
 public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
-    private final long mStartPositionMillis;
+    private long mStartPositionMillis;
     private long mNativeRemoteMediaPlayerBridge;
 
     // TODO(dgn) We don't create MediaPlayerListener using a RemoteMediaPlayerBridge anymore so
@@ -174,14 +174,12 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
         }
     };
 
-    private RemoteMediaPlayerBridge(long nativeRemoteMediaPlayerBridge, long startPositionMillis,
-            String sourceUrl, String frameUrl, String userAgent) {
-
+    private RemoteMediaPlayerBridge(long nativeRemoteMediaPlayerBridge, String sourceUrl,
+            String frameUrl, String userAgent) {
         mDebug = CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_CAST_DEBUG_LOGS);
 
         if (mDebug) Log.i(TAG, "Creating RemoteMediaPlayerBridge");
         mNativeRemoteMediaPlayerBridge = nativeRemoteMediaPlayerBridge;
-        mStartPositionMillis = startPositionMillis;
         mSourceUrl = sourceUrl;
         mFrameUrl = frameUrl;
         mUserAgent = userAgent;
@@ -192,9 +190,9 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
 
     @CalledByNative
     private static RemoteMediaPlayerBridge create(long nativeRemoteMediaPlayerBridge,
-            long startPositionMillis, String sourceUrl, String frameUrl, String userAgent) {
-        return new RemoteMediaPlayerBridge(nativeRemoteMediaPlayerBridge, startPositionMillis,
-                sourceUrl, frameUrl, userAgent);
+            String sourceUrl, String frameUrl, String userAgent) {
+        return new RemoteMediaPlayerBridge(
+                nativeRemoteMediaPlayerBridge, sourceUrl, frameUrl, userAgent);
     }
 
     /**
@@ -202,12 +200,13 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
      * from Blink when the cast button is pressed on the default video controls.
      */
     @CalledByNative
-    private void requestRemotePlayback() {
-        if (mDebug) Log.i(TAG, "requestRemotePlayback");
+    private void requestRemotePlayback(long startPositionMillis) {
+        if (mDebug) Log.i(TAG, "requestRemotePlayback at t=%d", startPositionMillis);
         if (mRouteController == null) return;
         // Clear out the state
         mPauseRequested = false;
         mSeekRequested = false;
+        mStartPositionMillis = startPositionMillis;
         RemoteMediaPlayerController.instance().requestRemotePlayback(
                 mMediaStateListener, mRouteController);
     }

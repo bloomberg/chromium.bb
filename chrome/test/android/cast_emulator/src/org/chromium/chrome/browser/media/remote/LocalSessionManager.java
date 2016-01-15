@@ -44,9 +44,9 @@ public class LocalSessionManager {
      * @param receiver the pending intent to use to send state changes
      * @return the new media item
      */
-    public MediaItem add(Uri uri, String mime, PendingIntent receiver) {
+    public MediaItem add(Uri uri, String mime, PendingIntent receiver, long contentPosition) {
         if (!hasSession()) mRemoteManager = RemoteSessionManager.connect(this, mContext);
-        return mRemoteManager.add(uri, mime, receiver);
+        return mRemoteManager.add(uri, mime, receiver, contentPosition);
     }
 
     /**

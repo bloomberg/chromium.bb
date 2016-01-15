@@ -61,10 +61,11 @@ public class RemoteSessionManager implements DummyPlayer.Callback {
      * @param uri the URI of the video
      * @param mime the mime type
      * @param receiver the pending intent to use to send state changes
+     * @param contentPosition
      * @return the new media item
      */
-    public MediaItem add(Uri uri, String mime, PendingIntent receiver) {
-        Log.v(TAG, "%s: add: uri=%s, receiver=%s", mName, uri, receiver);
+    public MediaItem add(Uri uri, String mime, PendingIntent receiver, long contentPosition) {
+        Log.v(TAG, "%s: add: uri=%s, receiver=%s, pos=%d", mName, uri, receiver, contentPosition);
         // create new session if needed
         startSession(false);
         checkPlayerAndSession();
@@ -73,6 +74,8 @@ public class RemoteSessionManager implements DummyPlayer.Callback {
         mItemId++;
         mCurrentItem = new MediaItem(Integer.toString(mSessionId), Integer.toString(mItemId), uri,
                 mime, receiver);
+        mCurrentItem.setPosition(contentPosition);
+
         Log.v(TAG, "%s: add: new item id = %s", mName, mCurrentItem);
         return mCurrentItem;
     }

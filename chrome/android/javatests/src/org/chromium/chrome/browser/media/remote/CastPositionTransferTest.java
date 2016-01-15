@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.media.remote;
 import android.graphics.Rect;
 import android.test.suitebuilder.annotation.LargeTest;
 
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
@@ -60,10 +59,8 @@ public class CastPositionTransferTest extends CastTestBase {
     }
 
     /** Test for crbug.com/428409 */
-    @DisabledTest
-//  BUG:http://crbug/517597
-//    @Feature({"VideoFling"})
-//    @LargeTest
+    @Feature({"VideoFling"})
+    @LargeTest
     public void testLocalToRemotePositionTransfer() throws InterruptedException, TimeoutException {
         final Tab tab = getActivity().getActivityTab();
         final Rect videoRect = prepareDefaultVideofromPage(DEFAULT_VIDEO_PAGE, tab);

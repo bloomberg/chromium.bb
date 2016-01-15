@@ -117,7 +117,6 @@ class RemoteMediaPlayerBridge : public media::MediaPlayerAndroid {
   // are retrieved.
   void OnCookiesRetrieved(const std::string& cookies);
 
-  long start_position_millis_;
   MediaPlayerAndroid* local_player_;
   int width_;
   int height_;

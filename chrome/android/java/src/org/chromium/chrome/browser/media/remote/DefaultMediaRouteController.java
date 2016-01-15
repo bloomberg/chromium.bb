@@ -816,6 +816,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         switch (sessionState) {
             case MediaSessionStatus.SESSION_STATE_ACTIVE:
                 // TODO(aberent): This should not be needed. Remove this once b/12921924 is fixed.
+                // TODO(dgn): It's fixed now. Should be looked at in the context of
+                // https://crbug.com/577110
                 syncStatus(mCurrentSessionId, new ResultBundleHandler() {
                     @Override
                     public void onResult(Bundle data) {
@@ -1025,7 +1027,10 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     @Override
     public void prepareAsync(String frameUrl, long startPositionMillis) {
-        if (mDebug) Log.d(TAG, "prepareAsync called, mLocalVideoUri = " + mLocalVideoUri);
+        if (mDebug) {
+            Log.d(TAG, "prepareAsync called, mLocalVideoUri = " + mLocalVideoUri + ", pos = "
+                            + startPositionMillis);
+        }
         if (mLocalVideoUri == null) return;
 
         RecordCastAction.castPlayRequested();

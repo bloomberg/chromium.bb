@@ -249,11 +249,12 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
             mMetadata = intent.getBundleExtra(MediaControlIntent.EXTRA_ITEM_METADATA);
             PendingIntent receiver = (PendingIntent) intent.getParcelableExtra(
                     MediaControlIntent.EXTRA_ITEM_STATUS_UPDATE_RECEIVER);
+            long position = intent.getLongExtra(MediaControlIntent.EXTRA_ITEM_CONTENT_POSITION, 0);
 
             Log.v(TAG, "%s: Received play request {%s}", mRouteId,
                     getMediaControlIntentDebugString(intent));
             // Add the video to the session manager.
-            MediaItem item = mSessionManager.add(uri, intent.getType(), receiver);
+            MediaItem item = mSessionManager.add(uri, intent.getType(), receiver, position);
             // And start it playing.
             mSessionManager.resume();
             if (callback != null) {
