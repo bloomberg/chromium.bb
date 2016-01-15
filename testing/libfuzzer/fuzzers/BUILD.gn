@@ -286,3 +286,13 @@ fuzzer_test("libexif_parser_fuzzer") {
     "//third_party/libexif:libexif_fuzzers",
   ]
 }
+
+fuzzer_test("libpng_read_fuzzer") {
+  sources = [
+    "libpng_read_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+    "//third_party/libpng",
+  ]
+}
