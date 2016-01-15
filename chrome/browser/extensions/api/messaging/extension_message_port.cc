@@ -45,6 +45,12 @@ class ExtensionMessagePort::FrameTracker : public content::WebContentsObserver,
     port_->UnregisterFrame(render_frame_host);
   }
 
+  // TODO(robwu): This should be superfluous with RenderFrameDeleted above, but
+  // we are not entirely sure.
+  void FrameDeleted(content::RenderFrameHost* render_frame_host) override {
+    port_->UnregisterFrame(render_frame_host);
+  }
+
   void DidNavigateAnyFrame(content::RenderFrameHost* render_frame_host,
                            const content::LoadCommittedDetails& details,
                            const content::FrameNavigateParams&) override {
@@ -102,7 +108,7 @@ ExtensionMessagePort::ExtensionMessagePort(
       background_host_ptr_(nullptr),
       frame_tracker_(new FrameTracker(this)) {
   content::WebContents* tab = content::WebContents::FromRenderFrameHost(rfh);
-  DCHECK(tab);
+  CHECK(tab);
   frame_tracker_->TrackTabFrames(tab);
   if (include_child_frames) {
     tab->ForEachFrame(base::Bind(&ExtensionMessagePort::RegisterFrame,
