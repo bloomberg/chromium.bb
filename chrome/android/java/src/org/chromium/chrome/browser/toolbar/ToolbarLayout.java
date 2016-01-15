@@ -259,7 +259,7 @@ abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         toast.setGravity(
                 Gravity.TOP | Gravity.END,
                 screenWidth - screenPos[0] - width / 2,
-                getHeight());
+                screenPos[1] + getHeight() / 2);
         toast.show();
         return true;
     }
