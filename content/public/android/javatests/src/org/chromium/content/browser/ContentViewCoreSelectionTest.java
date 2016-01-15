@@ -12,7 +12,6 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
@@ -451,12 +450,8 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertNotSame(mContentViewCore.getSelectedText(), "SampleTextToCopy");
     }
 
-    /**
-     * Disabled due to being flaky. crbug.com/552387
-     * @SmallTest
-     * @Feature({"TextInput"})
-     */
-    @DisabledTest
+    @SmallTest
+    @Feature({"TextInput"})
     public void testSelectActionBarInputPaste() throws Exception {
         copyStringToClipboard("SampleTextToCopy");
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
@@ -464,7 +459,6 @@ public class ContentViewCoreSelectionTest extends ContentShellTestBase {
         assertTrue(mContentViewCore.hasSelection());
         assertNotNull(mContentViewCore.getSelectActionHandler());
         selectActionBarPaste();
-        DOMUtils.clickNode(this, mContentViewCore, "plain_text_1");
         DOMUtils.longPressNode(this, mContentViewCore, "input_text");
         waitForSelectActionBarVisible(true);
         assertTrue(mContentViewCore.hasSelection());
