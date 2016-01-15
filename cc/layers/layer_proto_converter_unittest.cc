@@ -86,6 +86,35 @@ TEST_F(LayerProtoConverterTest, TestKeepingRoot) {
   EXPECT_EQ(child_c_node->id(), child_c->id());
 }
 
+TEST_F(LayerProtoConverterTest, TestNoExistingRoot) {
+  /* Test deserialization of a tree that looks like:
+         root
+        /
+       a
+     There is no existing root node before serialization.
+  */
+  int new_root_id = 244;
+  proto::LayerNode root_node;
+  root_node.set_id(new_root_id);
+  root_node.set_type(proto::LayerType::LAYER);
+
+  proto::LayerNode* child_a_node = root_node.add_children();
+  child_a_node->set_id(442);
+  child_a_node->set_type(proto::LayerType::LAYER);
+  child_a_node->set_parent_id(new_root_id);  // root_node
+
+  scoped_refptr<Layer> new_root =
+      LayerProtoConverter::DeserializeLayerHierarchy(nullptr, root_node);
+
+  // The new root should not be the same as the old root.
+  EXPECT_EQ(new_root_id, new_root->id());
+  ASSERT_EQ(1u, new_root->children().size());
+  scoped_refptr<Layer> child_a = new_root->children()[0];
+
+  EXPECT_EQ(child_a_node->id(), child_a->id());
+  EXPECT_EQ(0u, child_a->children().size());
+}
+
 TEST_F(LayerProtoConverterTest, TestSwappingRoot) {
   /* Test deserialization of a tree that looks like:
          root

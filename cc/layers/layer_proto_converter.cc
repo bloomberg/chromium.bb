@@ -31,7 +31,8 @@ scoped_refptr<Layer> LayerProtoConverter::DeserializeLayerHierarchy(
     scoped_refptr<Layer> existing_root,
     const proto::LayerNode& root_node) {
   LayerIdMap layer_id_map;
-  RecursivelyFindAllLayers(existing_root, &layer_id_map);
+  if (existing_root)
+    RecursivelyFindAllLayers(existing_root, &layer_id_map);
 
   scoped_refptr<Layer> new_root = existing_root;
   if (!existing_root ||
@@ -55,6 +56,7 @@ void LayerProtoConverter::SerializeLayerProperties(
 void LayerProtoConverter::DeserializeLayerProperties(
     Layer* existing_root,
     const proto::LayerUpdate& layer_update) {
+  DCHECK(existing_root);
   LayerIdMap layer_id_map;
   RecursivelyFindAllLayers(existing_root, &layer_id_map);
 

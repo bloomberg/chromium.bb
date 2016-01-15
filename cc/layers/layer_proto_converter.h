@@ -27,7 +27,8 @@ class CC_EXPORT LayerProtoConverter {
   // Recursively iterate over the given LayerNode proto and read the structure
   // into a local Layer structure, re-using existing Layers. returns the new
   // root Layer after updating the hierarchy (may be the same as
-  // |existing_root|).
+  // |existing_root|). |existing_root| may be null, which might happen during
+  // the first deserialize.
   static scoped_refptr<Layer> DeserializeLayerHierarchy(
       const scoped_refptr<Layer> existing_root,
       const proto::LayerNode& root_node);
@@ -40,7 +41,8 @@ class CC_EXPORT LayerProtoConverter {
                                        proto::LayerUpdate* layer_update);
 
   // Iterate over all updated layers from the LayerUpdate, and update the
-  // local Layers.
+  // local Layers. |existing_root| must not be null, as that will make it
+  // impossible to find the layer to apply the properties to.
   static void DeserializeLayerProperties(
       Layer* existing_root,
       const proto::LayerUpdate& layer_update);
