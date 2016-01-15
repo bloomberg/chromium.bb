@@ -114,7 +114,7 @@ class TestURLFetcher : public URLFetcher {
   void AddExtraRequestHeader(const std::string& header_line) override;
   void SetRequestContext(
       URLRequestContextGetter* request_context_getter) override;
-  void SetFirstPartyForCookies(const GURL& first_party_for_cookies) override;
+  void SetInitiatorURL(const GURL& initiator) override;
   void SetURLRequestUserData(
       const void* key,
       const CreateDataCallback& create_data_callback) override;

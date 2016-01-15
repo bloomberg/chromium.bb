@@ -987,7 +987,7 @@ void CookieMonster::GetAllCookiesForURLAsync(
     const GetCookieListCallback& callback) {
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only();
+  options.set_include_first_party_only_cookies();
   scoped_refptr<GetAllCookiesForURLWithOptionsTask> task =
       new GetAllCookiesForURLWithOptionsTask(this, url, options, callback);
 
@@ -1163,7 +1163,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only();
+  options.set_include_first_party_only_cookies();
   if (enforce_strict_secure)
     options.set_enforce_strict_secure();
   return SetCanonicalCookie(&cc, creation_time, options);
@@ -1179,7 +1179,7 @@ bool CookieMonster::ImportCookies(const CookieList& list) {
     scoped_ptr<CanonicalCookie> cookie(new CanonicalCookie(*iter));
     CookieOptions options;
     options.set_include_httponly();
-    options.set_include_first_party_only();
+    options.set_include_first_party_only_cookies();
     if (!SetCanonicalCookie(&cookie, cookie->CreationDate(), options))
       return false;
   }
@@ -1392,7 +1392,7 @@ void CookieMonster::DeleteCookie(const GURL& url,
 
   CookieOptions options;
   options.set_include_httponly();
-  options.set_include_first_party_only();
+  options.set_include_first_party_only_cookies();
   // Get the cookies for this host and its domain(s).
   std::vector<CanonicalCookie*> cookies;
   FindCookiesForHostAndDomain(url, options, true, &cookies);
@@ -2484,7 +2484,7 @@ void CookieMonster::RunCallbacks(const CanonicalCookie& cookie, bool removed) {
   lock_.AssertAcquired();
   CookieOptions opts;
   opts.set_include_httponly();
-  opts.set_include_first_party_only();
+  opts.set_include_first_party_only_cookies();
   // Note that the callbacks in hook_map_ are wrapped with MakeAsync(), so they
   // are guaranteed to not take long - they just post a RunAsync task back to
   // the appropriate thread's message loop and return. It is important that this

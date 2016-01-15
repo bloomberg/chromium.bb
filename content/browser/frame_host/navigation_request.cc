@@ -181,6 +181,10 @@ NavigationRequest::NavigationRequest(
         frame_tree_node->current_frame_host()->GetSiteInstance();
   }
 
+  // TODO(mkwst): This is incorrect. It ought to use the definition from
+  // 'Document::firstPartyForCookies()' in Blink, which walks the ancestor tree
+  // and verifies that all origins are PSL-matches (and special-cases extension
+  // URLs).
   const GURL& first_party_for_cookies =
       frame_tree_node->IsMainFrame()
           ? common_params.url
@@ -189,8 +193,8 @@ NavigationRequest::NavigationRequest(
       false : frame_tree_node->parent()->IsMainFrame();
   info_.reset(new NavigationRequestInfo(
       common_params, begin_params, first_party_for_cookies,
-      frame_tree_node->IsMainFrame(), parent_is_main_frame,
-      frame_tree_node->frame_tree_node_id(), body));
+      frame_tree_node->frame_origin(), frame_tree_node->IsMainFrame(),
+      parent_is_main_frame, frame_tree_node->frame_tree_node_id(), body));
 }
 
 NavigationRequest::~NavigationRequest() {

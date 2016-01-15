@@ -788,6 +788,7 @@ scoped_ptr<ResourceHostMsg_Request> ResourceDispatcher::CreateRequest(
   request->method = request_info.method;
   request->url = request_info.url;
   request->first_party_for_cookies = request_info.first_party_for_cookies;
+  request->request_initiator = request_info.request_initiator;
   request->referrer = request_info.referrer.url;
   request->referrer_policy = request_info.referrer.policy;
   request->headers = request_info.headers;

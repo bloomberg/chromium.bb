@@ -10,31 +10,35 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 namespace net {
 
 class NET_EXPORT CookieOptions {
  public:
-  // Default is to exclude httponly completely, and exclude first-party from
-  // being read, which means:
-  // - reading operations will not return httponly or first-party cookies.
-  // - writing operations will not write httponly cookies (first-party will be
-  // written).
+  // Creates a CookieOptions object which:
   //
-  // If a first-party URL is set, then first-party cookies which match that URL
-  // will be returned.
+  // * Excludes HttpOnly cookies
+  // * Excludes First-Party-Only cookies
+  // * Does not enforce prefix restrictions (e.g. "$Secure-*")
+  //
+  // These settings can be altered by calling:
+  //
+  // * |set_{include,exclude}_httponly()|
+  // * |set_include_first_party_only_cookies()|
+  // * |set_enforce_prefixes()|
   CookieOptions();
 
   void set_exclude_httponly() { exclude_httponly_ = true; }
   void set_include_httponly() { exclude_httponly_ = false; }
   bool exclude_httponly() const { return exclude_httponly_; }
 
-  void set_include_first_party_only() { include_first_party_only_ = true; }
-  bool include_first_party_only() const { return include_first_party_only_; }
-
-  void set_first_party(const url::Origin& origin) { first_party_ = origin; }
-  const url::Origin& first_party() const { return first_party_; }
+  // Default is to exclude 'first-party-only' cookies.
+  void set_include_first_party_only_cookies() {
+    include_first_party_only_cookies_ = true;
+  }
+  bool include_first_party_only_cookies() const {
+    return include_first_party_only_cookies_;
+  }
 
   // TODO(jww): Remove once we decide whether to ship modifying 'secure' cookies
   // only from secure schemes. https://crbug.com/546820
@@ -52,8 +56,7 @@ class NET_EXPORT CookieOptions {
 
  private:
   bool exclude_httponly_;
-  bool include_first_party_only_;
-  url::Origin first_party_;
+  bool include_first_party_only_cookies_;
   bool enforce_strict_secure_;
   base::Time server_time_;
 };

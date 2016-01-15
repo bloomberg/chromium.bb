@@ -85,7 +85,7 @@ TEST(CanonicalCookieTest, Create) {
 
   // Test creating http only cookies.
   CookieOptions first_party_options;
-  first_party_options.set_first_party(url::Origin(url));
+  first_party_options.set_include_first_party_only_cookies();
   cookie.reset(CanonicalCookie::Create(url, "A=2; First-Party-Only",
                                        creation_time, httponly_options));
   EXPECT_TRUE(cookie.get());
@@ -446,43 +446,37 @@ TEST(CanonicalCookieTest, IncludeFirstPartyForFirstPartyURL) {
   CookieOptions options;
   scoped_ptr<CanonicalCookie> cookie;
 
-  // First-party-only cookies are not inlcuded if a top-level URL is unset.
+  // First-party-only cookies are not included for non-first-party requests,
+  // even if other properties match:
   cookie.reset(CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
                                        creation_time, options));
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
-  options.set_first_party(url::Origin());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-
-  // First-party-only cookies are included only if the cookie's origin matches
-  // the
-  // first-party origin.
-  options.set_first_party(url::Origin(secure_url));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  options.set_first_party(url::Origin(insecure_url));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  options.set_first_party(url::Origin(third_party_url));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-
-  // "First-Party-Only" doesn't override the 'secure' flag.
   cookie.reset(CanonicalCookie::Create(
       secure_url, "A=2; Secure; First-Party-Only", creation_time, options));
-  options.set_first_party(url::Origin(secure_url));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(insecure_url, options));
-  options.set_first_party(url::Origin(insecure_url));
+  EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(insecure_url, options));
-
-  // "First-Party-Only" doesn't override the 'path' flag.
   cookie.reset(CanonicalCookie::Create(secure_url_with_path,
                                        "A=2; First-Party-Only; path=/foo/bar",
                                        creation_time, options));
-  options.set_first_party(url::Origin(secure_url_with_path));
-  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url_with_path, options));
+  EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  options.set_first_party(url::Origin(secure_url));
+
+  // First-party-only cookies are included for first-party requests:
+  options.set_include_first_party_only_cookies();
+  cookie.reset(CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
+                                       creation_time, options));
+  EXPECT_TRUE(cookie->IsFirstPartyOnly());
+  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
+  cookie.reset(CanonicalCookie::Create(
+      secure_url, "A=2; Secure; First-Party-Only", creation_time, options));
+  EXPECT_TRUE(cookie->IsFirstPartyOnly());
+  EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
+  cookie.reset(CanonicalCookie::Create(secure_url_with_path,
+                                       "A=2; First-Party-Only; path=/foo/bar",
+                                       creation_time, options));
+  EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url_with_path, options));
-  EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
 }
 
 TEST(CanonicalCookieTest, PartialCompare) {

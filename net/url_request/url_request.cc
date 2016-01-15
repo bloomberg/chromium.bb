@@ -474,6 +474,11 @@ void URLRequest::set_first_party_url_policy(
   first_party_url_policy_ = first_party_url_policy;
 }
 
+void URLRequest::set_initiator(const url::Origin& initiator) {
+  DCHECK(!is_pending_);
+  initiator_ = initiator;
+}
+
 void URLRequest::set_method(const std::string& method) {
   DCHECK(!is_pending_);
   method_ = method;

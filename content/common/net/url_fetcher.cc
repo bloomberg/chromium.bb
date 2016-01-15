@@ -21,10 +21,10 @@ base::SupportsUserData::Data* CreateURLRequestUserData(
 }  // namespace
 
 void AssociateURLFetcherWithRenderFrame(net::URLFetcher* url_fetcher,
-                                        const GURL& first_party_for_cookies,
+                                        const GURL& initiator,
                                         int render_process_id,
                                         int render_frame_id) {
-  url_fetcher->SetFirstPartyForCookies(first_party_for_cookies);
+  url_fetcher->SetInitiatorURL(initiator);
   url_fetcher->SetURLRequestUserData(
       URLRequestUserData::kUserDataKey,
       base::Bind(&CreateURLRequestUserData,

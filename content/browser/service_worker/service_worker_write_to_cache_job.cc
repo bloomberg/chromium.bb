@@ -192,6 +192,7 @@ void ServiceWorkerWriteToCacheJob::InitNetRequest(
       request()->url(), request()->priority(), this);
   net_request_->set_first_party_for_cookies(
       request()->first_party_for_cookies());
+  net_request_->set_initiator(request()->initiator());
   net_request_->SetReferrer(request()->referrer());
   if (extra_load_flags)
     net_request_->SetLoadFlags(net_request_->load_flags() | extra_load_flags);

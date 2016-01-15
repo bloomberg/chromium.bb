@@ -3575,7 +3575,8 @@ void RenderFrameImpl::willSendRequest(
     return;
 
   // Set the first party for cookies url if it has not been set yet (new
-  // requests). For redirects, it is updated by WebURLLoaderImpl.
+  // requests). This value will be updated during redirects, consistent with
+  // https://tools.ietf.org/html/draft-west-first-party-cookies-04#section-2.1.1
   if (request.firstPartyForCookies().isEmpty()) {
     if (request.frameType() == blink::WebURLRequest::FrameTypeTopLevel) {
       request.setFirstPartyForCookies(request.url());
@@ -3588,6 +3589,10 @@ void RenderFrameImpl::willSendRequest(
             frame->top()->document().firstPartyForCookies());
       }
     }
+
+    // If we need to set the first party, then we need to set the request's
+    // initiator as well; it will not be updated during redirects.
+    request.setRequestorOrigin(frame->document().securityOrigin());
   }
 
   WebDataSource* provisional_data_source = frame->provisionalDataSource();

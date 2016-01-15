@@ -45,6 +45,7 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/url_request/url_request_data_job.h"
 #include "third_party/WebKit/public/platform/WebHTTPLoadInfo.h"
+#include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebTraceLocation.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
@@ -467,6 +468,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
   request_info.method = method;
   request_info.url = url;
   request_info.first_party_for_cookies = request.firstPartyForCookies();
+  request_info.request_initiator = request.requestorOrigin();
   referrer_policy_ = request.referrerPolicy();
   request_info.referrer = Referrer(referrer_url, referrer_policy_);
   request_info.headers = GetWebURLRequestHeaders(request);

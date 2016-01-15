@@ -245,10 +245,9 @@ void URLFetcherCore::SetRequestContext(
   request_context_getter_ = request_context_getter;
 }
 
-void URLFetcherCore::SetFirstPartyForCookies(
-    const GURL& first_party_for_cookies) {
-  DCHECK(first_party_for_cookies_.is_empty());
-  first_party_for_cookies_ = first_party_for_cookies;
+void URLFetcherCore::SetInitiatorURL(const GURL& initiator) {
+  DCHECK(initiator_.is_empty());
+  initiator_ = initiator;
 }
 
 void URLFetcherCore::SetURLRequestUserData(
@@ -556,8 +555,10 @@ void URLFetcherCore::StartURLRequest() {
   request_->SetLoadFlags(flags);
   request_->SetReferrer(referrer_);
   request_->set_referrer_policy(referrer_policy_);
-  request_->set_first_party_for_cookies(first_party_for_cookies_.is_empty() ?
-      original_url_ : first_party_for_cookies_);
+  request_->set_first_party_for_cookies(initiator_.is_empty() ? original_url_
+                                                              : initiator_);
+  request_->set_initiator(initiator_.is_empty() ? url::Origin(original_url_)
+                                                : url::Origin(initiator_));
   if (url_request_data_key_ && !url_request_create_data_callback_.is_null()) {
     request_->SetUserData(url_request_data_key_,
                           url_request_create_data_callback_.Run());
@@ -696,7 +697,7 @@ void URLFetcherCore::CancelURLRequest(int error) {
   // delete the object, but we cannot delay the destruction of the request
   // context.
   request_context_getter_ = NULL;
-  first_party_for_cookies_ = GURL();
+  initiator_ = GURL();
   url_request_data_key_ = NULL;
   url_request_create_data_callback_.Reset();
   was_cancelled_ = true;
@@ -787,7 +788,7 @@ void URLFetcherCore::RetryOrCompleteUrlFetch() {
   }
 
   request_context_getter_ = NULL;
-  first_party_for_cookies_ = GURL();
+  initiator_ = GURL();
   url_request_data_key_ = NULL;
   url_request_create_data_callback_.Reset();
   bool posted = delegate_task_runner_->PostTask(

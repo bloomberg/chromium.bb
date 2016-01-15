@@ -36,6 +36,7 @@
 #include "net/url_request/url_request_test_job.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -185,9 +186,9 @@ class NavigationURLLoaderTest : public testing::Test {
                                        REQUEST_CONTEXT_TYPE_LOCATION);
     CommonNavigationParams common_params;
     common_params.url = url;
-    scoped_ptr<NavigationRequestInfo> request_info(
-        new NavigationRequestInfo(common_params, begin_params, url, true, false,
-                                  -1, scoped_refptr<ResourceRequestBody>()));
+    scoped_ptr<NavigationRequestInfo> request_info(new NavigationRequestInfo(
+        common_params, begin_params, url, url::Origin(url), true, false, -1,
+        scoped_refptr<ResourceRequestBody>()));
 
     return NavigationURLLoader::Create(
         browser_context_.get(), std::move(request_info), nullptr, delegate);

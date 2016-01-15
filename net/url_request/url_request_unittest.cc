@@ -2650,13 +2650,13 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
   LocalHttpTestServer test_server;
   ASSERT_TRUE(test_server.Start());
 
+  TestNetworkDelegate network_delegate;
+  network_delegate.set_experimental_cookie_features_enabled(true);
+  default_context_.set_network_delegate(&network_delegate);
+
   // Set up a 'First-Party-Only' cookie (on '127.0.0.1', as that's where
   // LocalHttpTestServer points).
   {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(true);
-    default_context_.set_network_delegate(&network_delegate);
-
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
         test_server.GetURL(
@@ -2671,13 +2671,11 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
 
   // Verify that the cookie is sent for first-party requests.
   {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(true);
-    default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
     req->set_first_party_for_cookies(test_server.GetURL("/"));
+    req->set_initiator(url::Origin(test_server.GetURL("/")));
     req->Start();
     base::RunLoop().Run();
 
@@ -2687,15 +2685,48 @@ TEST_F(URLRequestTest, FirstPartyOnlyCookiesEnabled) {
     EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
   }
 
-  // Verify that the cookie is not-sent for non-first-party requests.
+  // Verify that the cookie is not sent for non-first-party requests.
   {
-    TestNetworkDelegate network_delegate;
-    network_delegate.set_experimental_cookie_features_enabled(true);
-    default_context_.set_network_delegate(&network_delegate);
     TestDelegate d;
     scoped_ptr<URLRequest> req(default_context_.CreateRequest(
         test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
     req->set_first_party_for_cookies(GURL("http://third-party.test/"));
+    req->set_initiator(url::Origin(GURL("http://third-party.test/")));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_TRUE(d.data_received().find("FirstPartyCookieToSet=1") ==
+                std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookie is sent for non-first-party initiators when the
+  // method is "safe".
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(default_context_.CreateRequest(
+        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->set_first_party_for_cookies(test_server.GetURL("/"));
+    req->set_initiator(url::Origin(GURL("http://third-party.test/")));
+    req->Start();
+    base::RunLoop().Run();
+
+    EXPECT_FALSE(d.data_received().find("FirstPartyCookieToSet=1") ==
+                 std::string::npos);
+    EXPECT_EQ(0, network_delegate.blocked_get_cookies_count());
+    EXPECT_EQ(0, network_delegate.blocked_set_cookie_count());
+  }
+
+  // Verify that the cookie is not sent for non-first-party initiators when the
+  // method is unsafe (e.g. POST).
+  {
+    TestDelegate d;
+    scoped_ptr<URLRequest> req(default_context_.CreateRequest(
+        test_server.GetURL("/echoheader?Cookie"), DEFAULT_PRIORITY, &d));
+    req->set_first_party_for_cookies(test_server.GetURL("/"));
+    req->set_initiator(url::Origin(GURL("http://third-party.test/")));
+    req->set_method("POST");
     req->Start();
     base::RunLoop().Run();
 

@@ -21,6 +21,7 @@
 #include "third_party/WebKit/public/platform/WebTaskRunner.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace blink {
 class WebTaskRunner;
@@ -39,9 +40,12 @@ struct CONTENT_EXPORT RequestInfo {
   // Absolute URL encoded in ASCII per the rules of RFC-2396.
   GURL url;
 
-  // URL of the document in the top-level window, which may be checked by the
-  // third-party cookie blocking policy.
+  // URL representing the first-party origin for the request, which may be
+  // checked by the third-party cookie blocking policy.
   GURL first_party_for_cookies;
+
+  // The origin of the context which initiated the request.
+  url::Origin request_initiator;
 
   // Optional parameter, the referrer to use for the request for the url member.
   Referrer referrer;

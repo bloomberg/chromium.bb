@@ -113,6 +113,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
   new_request->set_method(for_request.method());
   new_request->set_first_party_for_cookies(
       for_request.first_party_for_cookies());
+  new_request->set_initiator(for_request.initiator());
   new_request->set_first_party_url_policy(for_request.first_party_url_policy());
 
   new_request->SetReferrer(for_request.referrer());

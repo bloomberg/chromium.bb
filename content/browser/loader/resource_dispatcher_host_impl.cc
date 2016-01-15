@@ -1331,6 +1331,7 @@ void ResourceDispatcherHostImpl::BeginRequest(
   new_request->set_method(request_data.method);
   new_request->set_first_party_for_cookies(
       request_data.first_party_for_cookies);
+  new_request->set_initiator(request_data.request_initiator);
 
   // If the request is a MAIN_FRAME request, the first-party URL gets updated on
   // redirects.
@@ -2119,6 +2120,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
   new_request->set_method(info.begin_params.method);
   new_request->set_first_party_for_cookies(
       info.first_party_for_cookies);
+  new_request->set_initiator(info.request_initiator);
   if (info.is_main_frame) {
     new_request->set_first_party_url_policy(
         net::URLRequest::UPDATE_FIRST_PARTY_URL_ON_REDIRECT);

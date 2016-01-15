@@ -34,6 +34,7 @@
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace base {
 class Value;
@@ -255,7 +256,8 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   const GURL& url() const { return url_chain_.back(); }
 
   // The URL that should be consulted for the third-party cookie blocking
-  // policy.
+  // policy, as defined in Section 2.1.1 and 2.1.2 of
+  // https://tools.ietf.org/html/draft-west-first-party-cookies.
   //
   // WARNING: This URL must only be used for the third-party cookie blocking
   //          policy. It MUST NEVER be used for any kind of SECURITY check.
@@ -270,7 +272,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
   // TODO(mkwst): Convert this to a 'url::Origin'. Several callsites are using
   // this value as a proxy for the "top-level frame URL", which is simply
   // incorrect and fragile. We don't need the full URL for any //net checks,
-  // so we should drop the pieces we don't need.
+  // so we should drop the pieces we don't need. https://crbug.com/577565
   const GURL& first_party_for_cookies() const {
     return first_party_for_cookies_;
   }
@@ -284,6 +286,26 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
     return first_party_url_policy_;
   }
   void set_first_party_url_policy(FirstPartyURLPolicy first_party_url_policy);
+
+  // The origin of the context which initiated the request. This is distinct
+  // from the "first party for cookies" discussed above in a number of ways:
+  //
+  // 1. The request's initiator does not change during a redirect. If a form
+  //    submission from `https://example.com/` redirects through a number of
+  //    sites before landing on `https://not-example.com/`, the initiator for
+  //    each of those requests will be `https://example.com/`.
+  //
+  // 2. The request's initiator is the origin of the frame or worker which made
+  //    the request, even for top-level navigations. That is, if
+  //    `https://example.com/`'s form submission is made in the top-level frame,
+  //    the first party for cookies would be the target URL's origin. The
+  //    initiator remains `https://example.com/`.
+  //
+  // This value is used to perform the cross-origin check specified in Section
+  // 4.3 of https://tools.ietf.org/html/draft-west-first-party-cookies.
+  const url::Origin& initiator() const { return initiator_; }
+  // This method may only be called before Start().
+  void set_initiator(const url::Origin& initiator);
 
   // The request method, as an uppercase string.  "GET" is the default value.
   // The request method may only be changed before Start() is called and
@@ -766,6 +788,7 @@ class NET_EXPORT URLRequest : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   std::vector<GURL> url_chain_;
   GURL first_party_for_cookies_;
+  url::Origin initiator_;
   GURL delegate_redirect_url_;
   std::string method_;  // "GET", "POST", etc. Should be all uppercase.
   std::string referrer_;

@@ -92,9 +92,8 @@ void URLFetcherImpl::SetRequestContext(
   core_->SetRequestContext(request_context_getter);
 }
 
-void URLFetcherImpl::SetFirstPartyForCookies(
-    const GURL& first_party_for_cookies) {
-  core_->SetFirstPartyForCookies(first_party_for_cookies);
+void URLFetcherImpl::SetInitiatorURL(const GURL& initiator) {
+  core_->SetInitiatorURL(initiator);
 }
 
 void URLFetcherImpl::SetURLRequestUserData(

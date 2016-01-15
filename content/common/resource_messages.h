@@ -166,6 +166,10 @@ IPC_STRUCT_BEGIN(ResourceHostMsg_Request)
   // only be done if there really is no way to determine the correct value.
   IPC_STRUCT_MEMBER(GURL, first_party_for_cookies)
 
+  // The origin of the context which initiated the request, which will be used
+  // for cookie checks like 'First-Party-Only'.
+  IPC_STRUCT_MEMBER(url::Origin, request_initiator)
+
   // The referrer to use (may be empty).
   IPC_STRUCT_MEMBER(GURL, referrer)
 

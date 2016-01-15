@@ -56,6 +56,16 @@
 
 static const char kAvailDictionaryHeader[] = "Avail-Dictionary";
 
+namespace {
+
+// True if the request method is "safe" (per section 4.2.1 of RFC 7231).
+bool IsMethodSafe(const std::string& method) {
+  return method == "GET" || method == "HEAD" || method == "OPTIONS" ||
+         method == "TRACE";
+}
+
+}  // namespace
+
 namespace net {
 
 class URLRequestHttpJob::HttpFilterContext : public FilterContext {
@@ -674,13 +684,20 @@ void URLRequestHttpJob::DoLoadCookies() {
   CookieOptions options;
   options.set_include_httponly();
 
-  // TODO(mkwst): Drop this `if` once we decide whether or not to ship
-  // first-party cookies: https://crbug.com/459154
-  if (network_delegate() &&
-      network_delegate()->AreExperimentalCookieFeaturesEnabled())
-    options.set_first_party(url::Origin(request_->first_party_for_cookies()));
-  else
-    options.set_include_first_party_only();
+  // TODO(mkwst): If first-party-only cookies aren't enabled, pretend the
+  // request is first-party regardless, in order to include all cookies. Drop
+  // this check once we decide whether or not we're shipping this feature:
+  // https://crbug.com/459154
+  url::Origin requested_origin(request_->url());
+  if (!network_delegate() ||
+      !network_delegate()->AreExperimentalCookieFeaturesEnabled()) {
+    options.set_include_first_party_only_cookies();
+  } else if (requested_origin.IsSameOriginWith(
+                 url::Origin(request_->first_party_for_cookies())) &&
+             (IsMethodSafe(request_->method()) ||
+              requested_origin.IsSameOriginWith(request_->initiator()))) {
+    options.set_include_first_party_only_cookies();
+  }
 
   request_->context()->cookie_store()->GetCookiesWithOptionsAsync(
       request_->url(), options, base::Bind(&URLRequestHttpJob::OnCookiesLoaded,

@@ -125,9 +125,7 @@ void TestURLFetcher::SetRequestContext(
     URLRequestContextGetter* request_context_getter) {
 }
 
-void TestURLFetcher::SetFirstPartyForCookies(
-    const GURL& first_party_for_cookies) {
-}
+void TestURLFetcher::SetInitiatorURL(const GURL& initiator) {}
 
 void TestURLFetcher::SetURLRequestUserData(
     const void* key,
