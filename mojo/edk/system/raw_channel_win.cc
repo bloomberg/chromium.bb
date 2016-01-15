@@ -157,7 +157,8 @@ class RawChannelWin final : public RawChannel {
 
       if (write_wait_object_)
         UnregisterWaitEx(write_wait_object_, INVALID_HANDLE_VALUE);
-      DCHECK(ShouldSelfDestruct());
+      DCHECK(ShouldSelfDestruct() ||
+             !base::MessageLoop::current()->is_running());
     }
 
     HANDLE handle() const { return handle_.get().handle; }
@@ -226,7 +227,9 @@ class RawChannelWin final : public RawChannel {
         preserved_write_buffer_after_detach_ = write_buffer.Pass();
 
       owner_ = nullptr;
-      if (ShouldSelfDestruct())
+      // On shutdown, the message loop won't be running. Since we'll never get
+      // notifications after this point, delete the object to avoid leaks.
+      if (ShouldSelfDestruct() || !base::MessageLoop::current()->is_running())
         delete this;
     }
 
