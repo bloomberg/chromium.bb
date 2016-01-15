@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayContentDelegate;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayContentProgressObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.contextualsearch.ContextualSearchPanel;
+import org.chromium.chrome.browser.contextualsearch.ContextualSearchFakeServer.FakeSlowResolveSearch;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
 import org.chromium.chrome.browser.omnibox.UrlBar;
@@ -90,6 +91,9 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     private ContextualSearchSelectionController mSelectionController;
     private ContextualSearchPolicy mPolicy;
     private ActivityMonitor mActivityMonitor;
+
+    // State for an individual test.
+    FakeSlowResolveSearch mLatestSlowResolveSearch;
 
     public ContextualSearchManagerTest() {
         super(ChromeActivity.class);
@@ -227,7 +231,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     }
 
     /**
-     * Simulates a tap triggered search.
+     * Simulates a tap-triggered search.
      *
      * @param nodeId The id of the node to be tapped.
      * @throws InterruptedException
@@ -240,6 +244,28 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         waitForPanelToPeek();
     }
 
+    /**
+     * Simulates a tap-triggered search with slow server response.
+     *
+     * @param nodeId The id of the node to be tapped.
+     * @throws InterruptedException
+     * @throws TimeoutException
+     */
+    private void simulateSlowResolveSearch(String nodeId)
+            throws InterruptedException, TimeoutException {
+        mLatestSlowResolveSearch = mFakeServer.getFakeSlowResolveSearch(nodeId);
+        mLatestSlowResolveSearch.simulate();
+        waitForPanelToPeek();
+    }
+
+    /**
+     * Simulates a slow response for the most recent {@link FakeSlowResolveSearch} set up
+     * by calling simulateSlowResolveSearch.
+     */
+    private void simulateSlowResolveFinished() {
+        mLatestSlowResolveSearch.simulateSearchTermResolution();
+        assertLoadedSearchTermMatches(mLatestSlowResolveSearch.getSearchTerm());
+    }
     /**
      * Registers all fake searches to be used in tests.
      */
@@ -565,14 +591,6 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     private void waitForPanelToClose() throws InterruptedException {
         waitForPanelToEnterState(PanelState.CLOSED);
-    }
-
-    /**
-     * Asserts that the panel was never opened.
-     * @throws InterruptedException
-     */
-    private void assertPanelNeverOpened() throws InterruptedException {
-        waitForPanelToEnterState(PanelState.UNDEFINED);
     }
 
     /**
@@ -1362,20 +1380,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /*
      * Test that tapping on the Search Bar before having a resolved search term does not
      * promote to a tab, and that after the resolution it does promote to a tab.
-     *
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
      */
-    @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
-    @FlakyTest
     public void testTapSearchBarPromotesToTab() throws InterruptedException, TimeoutException {
-        // Tap on a word.
-        clickWordNode("intelligence");
-        assertSearchTermRequested();
-
-        // Wait for the panel to peek.
-        waitForPanelToPeek();
+        // Tap on a word when the server is slow to resolve.
+        simulateSlowResolveSearch("search");
 
         // Swipe Panel up and wait for it to maximize.
         flingPanelUpToTop();
@@ -1392,29 +1404,29 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         };
         getActivity().getTabModelSelector().addObserver(observer);
 
-        // Tap the Search Bar.
+        // Tap the Search Bar -- should not promote since we are still waiting to Resolve.
         clickPanelBar(0.05f);
 
         // The Search Term Resolution response hasn't arrived yet, so the Panel should not
         // be promoted. Therefore, we are asserting that the Panel is still maximized.
         waitForPanelToMaximize();
 
-        // Get a Search Term Resolution response.
-        fakeResponse(false, 200, "Intelligence", "display-text", "alternate-term", false);
-        assertContainsParameters("Intelligence", "alternate-term");
+        // Let the Search Term Resolution finish.
+        simulateSlowResolveFinished();
 
-        // Tap the Search Bar again.
+        // Tap the Search Bar again -- should promote to a separate tab.
         clickPanelBar(0.05f);
 
         // Now that the response has arrived, tapping on the Search Panel should promote it
         // to a Tab. Therefore, we are asserting that the Panel got closed.
         waitForPanelToClose();
 
-        // Finally, make sure a tab was created.
-        if (!FeatureUtilities.isDocumentMode(getInstrumentation().getContext())) {
-            // TODO(donnd): figure out how to check for tab creation in Document mode.
-            tabCreatedHelper.waitForCallback(tabCreatedHelperCallCount);
-        }
+        // Should not fail -- this test was set up to disable document mode.
+        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getContext()));
+
+        // Make sure a tab was created.
+        tabCreatedHelper.waitForCallback(tabCreatedHelperCallCount);
+
         getActivity().getTabModelSelector().removeObserver(observer);
     }
 
