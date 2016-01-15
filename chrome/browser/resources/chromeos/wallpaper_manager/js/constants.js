@@ -91,5 +91,10 @@
   WallpaperDirNameEnum: {
       ORIGINAL: 'original',
       THUMBNAIL: 'thumbnail'
-  }
+  },
+
+  /**
+   * The filename prefix for a third party wallpaper.
+   */
+  ThirdPartyWallpaperPrefix: 'third_party_'
 };

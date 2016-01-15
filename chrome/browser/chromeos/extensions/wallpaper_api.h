@@ -41,7 +41,8 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
                          scoped_ptr<gfx::ImageSkia> image);
 
   // Thumbnail is ready. Calls api function javascript callback.
-  void ThumbnailGenerated(base::RefCountedBytes* data);
+  void ThumbnailGenerated(base::RefCountedBytes* original_data,
+                          base::RefCountedBytes* thumbnail_data);
 
   // Called by OnURLFetchComplete().
   void OnWallpaperFetched(bool success, const std::string& response);

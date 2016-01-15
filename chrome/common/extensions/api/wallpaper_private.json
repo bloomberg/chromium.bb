@@ -260,7 +260,23 @@
       {
         "name": "onWallpaperChangedBy3rdParty",
         "type": "function",
-        "description": "This event is sent when the current wallpaper was set by a third party application."
+        "description": "This event is sent when the current wallpaper was set by a third party application.",
+        "parameters": [
+          {
+            "type": "binary",
+            "name": "wallpaper",
+            "description": "The third party custom wallpaper data."
+          },
+          {
+            "type": "binary",
+            "name": "thumbnail",
+            "description": "The third party custom wallpaper thumbnail data."
+          },
+          {
+            "name": "layout",
+            "$ref": "wallpaper.WallpaperLayout"
+          }
+        ]
       }
     ]
   }

@@ -77,13 +77,28 @@ WallpaperUtil.deleteWallpaperFromSyncFS = function(wallpaperFilename) {
                     function(fe) {
                       fe.remove(function() {}, null);
                     },
-                    WallpaperUtil.onFileSystemError);
+                    function(e) {
+                      // NotFoundError is expected under the following scenario:
+                      // The user uses a same account on device A and device B.
+                      // The current wallpaper is a third party wallpaper. Then
+                      // the user changes it to a ONLINE wallpaper on device A.
+                      // Sync file system change and local file system change
+                      // will then both be fired on device B, which makes the
+                      // third party wallpaper be deleted twice from the sync
+                      // file system. We should ignore this error.
+                      if (e.name != 'NotFoundError')
+                        WallpaperUtil.onFileSystemError(e);
+                    });
     fs.root.getFile(thumbnailFilename,
                     {create: false},
                     function(fe) {
                       fe.remove(function() {}, null);
                     },
-                    WallpaperUtil.onFileSystemError);
+                    function(e) {
+                      // Same as above.
+                      if (e.name != 'NotFoundError')
+                        WallpaperUtil.onFileSystemError(e);
+                    });
   };
   WallpaperUtil.requestSyncFS(success);
 };

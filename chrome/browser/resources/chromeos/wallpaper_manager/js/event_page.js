@@ -320,6 +320,16 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         }
       }
 
+      if (changes[Constants.AccessLocalWallpaperInfoKey]) {
+        // If the old wallpaper is a third party wallpaper we should remove it
+        // from the local & sync file system to free space.
+        var oldInfo = changes[Constants.AccessLocalWallpaperInfoKey].oldValue;
+        if (oldInfo.url.indexOf(Constants.ThirdPartyWallpaperPrefix) != -1) {
+          WallpaperUtil.deleteWallpaperFromLocalFS(oldInfo.url);
+          WallpaperUtil.deleteWallpaperFromSyncFS(oldInfo.url);
+        }
+      }
+
       if (changes[Constants.AccessSyncWallpaperInfoKey]) {
         var syncInfo = changes[Constants.AccessSyncWallpaperInfoKey].newValue;
 
@@ -368,6 +378,15 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                               Constants.WallpaperSourceEnum.Default) {
                     chrome.wallpaperPrivate.resetWallpaper();
                   }
+
+                  // If the old wallpaper is a third party wallpaper we should
+                  // remove it from the local & sync file system to free space.
+                  if (localInfo && localInfo.url.indexOf(
+                      Constants.ThirdPartyWallpaperPrefix) != -1) {
+                    WallpaperUtil.deleteWallpaperFromLocalFS(localInfo.url);
+                    WallpaperUtil.deleteWallpaperFromSyncFS(localInfo.url);
+                  }
+
                   WallpaperUtil.saveToLocalStorage(
                       Constants.AccessLocalWallpaperInfoKey, syncInfo);
                 }
@@ -394,11 +413,21 @@ chrome.alarms.onAlarm.addListener(function() {
   SurpriseWallpaper.getInstance().next();
 });
 
-chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function() {
+chrome.wallpaperPrivate.onWallpaperChangedBy3rdParty.addListener(function(
+    wallpaper, thumbnail, layout) {
   WallpaperUtil.saveToLocalStorage(
       Constants.AccessLocalSurpriseMeEnabledKey, false, function() {
     WallpaperUtil.saveToSyncStorage(Constants.AccessSyncSurpriseMeEnabledKey,
                                     false);
   });
   SurpriseWallpaper.getInstance().disable();
+
+  // Make third party wallpaper syncable through different devices.
+  // TODO(xdai): also sync the third party app name.
+  var filename = Constants.ThirdPartyWallpaperPrefix + new Date().getTime();
+  var thumbnailFilename = filename + Constants.CustomWallpaperThumbnailSuffix;
+  WallpaperUtil.storeWallpaperToSyncFS(filename, wallpaper);
+  WallpaperUtil.storeWallpaperToSyncFS(thumbnailFilename, thumbnail);
+  WallpaperUtil.saveWallpaperInfo(filename, layout,
+                                  Constants.WallpaperSourceEnum.Custom);
 });
