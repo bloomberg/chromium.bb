@@ -57,6 +57,7 @@ WHITELISTED_LICENSES = [
     'BSD-like MIT/X11 (BSD like)',
 
     'BSL (v1.0)',
+    'BSL (v1) LGPL (v2.1 or later)',
     'FreeType (BSD like) with patent clause',
     'FreeType (BSD like)',
     'GPL (v2 or later) with Bison parser exception',
