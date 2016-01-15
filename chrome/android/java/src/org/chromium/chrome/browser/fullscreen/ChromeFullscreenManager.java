@@ -26,6 +26,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.BaseChromiumApplication.WindowFocusChangedListener;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.fullscreen.FullscreenHtmlApiHandler.FullscreenHtmlApiDelegate;
@@ -275,6 +276,8 @@ public class ChromeFullscreenManager
      */
     @VisibleForTesting
     public void disableBrowserOverrideForTest() {
+        ThreadUtils.assertOnUiThread();
+
         mDisableBrowserOverride = true;
         mPersistentControlTokens.clear();
         mHandler.removeMessages(MSG_ID_HIDE_CONTROLS);
