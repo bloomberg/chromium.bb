@@ -58,11 +58,16 @@ PermissionMenuModel::PermissionMenuModel(
        permission_.type == CONTENT_SETTINGS_TYPE_MOUSELOCK) &&
       url.SchemeIsFile();
 
+  // Notifications does not support CONTENT_SETTING_ALLOW in incognito.
+  bool allow_disabled_for_notifications =
+      permission_.is_incognito &&
+      permission_.type == CONTENT_SETTINGS_TYPE_NOTIFICATIONS;
   // Media only supports CONTENT_SETTTING_ALLOW for secure origins.
   bool is_media_permission =
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
-  if ((!is_media_permission || content::IsOriginSecure(url)) &&
+  if (!allow_disabled_for_notifications &&
+      (!is_media_permission || content::IsOriginSecure(url)) &&
       !is_exclusive_access_on_file) {
     label = l10n_util::GetStringUTF16(
         IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);

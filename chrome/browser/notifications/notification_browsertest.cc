@@ -668,18 +668,6 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ(0U, settings.size());
 }
 
-IN_PROC_BROWSER_TEST_F(NotificationsTest, TestIncognitoNotification) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  // Test notifications in incognito window.
-  Browser* browser = CreateIncognitoBrowser();
-  ui_test_utils::NavigateToURL(browser, GetTestPageURL());
-  browser->tab_strip_model()->ActivateTabAt(0, true);
-  ASSERT_TRUE(RequestAndAcceptPermission(browser));
-  CreateSimpleNotification(browser, true);
-  ASSERT_EQ(1, GetNotificationCount());
-}
-
 IN_PROC_BROWSER_TEST_F(NotificationsTest, TestCloseTabWithPermissionRequestUI) {
   ASSERT_TRUE(embedded_test_server()->Start());
 

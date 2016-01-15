@@ -28,10 +28,18 @@ class NotificationPermissionContext : public PermissionContextBase {
                            NoSecureOriginRequirement);
 
   // PermissionContextBase implementation.
+  void DecidePermission(content::WebContents* web_contents,
+                        const PermissionRequestID& id,
+                        const GURL& requesting_origin,
+                        const GURL& embedding_origin,
+                        bool user_gesture,
+                        const BrowserPermissionCallback& callback) override;
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedder_origin,
                             ContentSetting content_setting) override;
   bool IsRestrictedToSecureOrigins() const override;
+
+  base::WeakPtrFactory<NotificationPermissionContext> weak_factory_ui_thread_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_PERMISSION_CONTEXT_H_

@@ -699,6 +699,7 @@ void WebsiteSettings::PresentSitePermissions() {
     }
 
     permission_info.source = info.source;
+    permission_info.is_incognito = profile_->IsOffTheRecord();
 
     if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
         info.secondary_pattern == ContentSettingsPattern::Wildcard()) {

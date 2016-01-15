@@ -73,6 +73,8 @@ class WebsiteSettingsUI {
     ContentSetting default_setting;
     // The settings source e.g. user, extensions, policy, ... .
     content_settings::SettingSource source;
+    // Whether the profile is off the record.
+    bool is_incognito;
   };
 
   // |ChosenObjectInfo| contains information about a single |object| of a

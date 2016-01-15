@@ -161,6 +161,7 @@ TEST_F(WebsiteSettingsPopupViewTest, SetPermissionInfo) {
   PermissionInfoList list(1);
   list.back().type = CONTENT_SETTINGS_TYPE_GEOLOCATION;
   list.back().source = content_settings::SETTING_SOURCE_USER;
+  list.back().is_incognito = false;
 
   EXPECT_EQ(0, api_->permissions_content()->child_count());
 

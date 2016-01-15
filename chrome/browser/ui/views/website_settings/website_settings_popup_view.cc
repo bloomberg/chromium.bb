@@ -590,6 +590,9 @@ void WebsiteSettingsPopupView::SetCookieInfo(
     WebsiteSettingsUI::PermissionInfo info;
     info.type = CONTENT_SETTINGS_TYPE_COOKIES;
     info.setting = CONTENT_SETTING_ALLOW;
+    info.is_incognito =
+        Profile::FromBrowserContext(web_contents_->GetBrowserContext())
+            ->IsOffTheRecord();
     views::ImageView* icon = new views::ImageView();
     const gfx::Image& image = WebsiteSettingsUI::GetPermissionIcon(info);
     icon->SetImage(image.ToImageSkia());

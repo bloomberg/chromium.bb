@@ -173,6 +173,8 @@ void ContentSettingsRegistry::Init() {
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK,
                          CONTENT_SETTING_ASK),
            WebsiteSettingsInfo::REQUESTING_ORIGIN_ONLY_SCOPE,
+           // See also NotificationPermissionContext::DecidePermission which
+           // implements additional incognito exceptions.
            ContentSettingsInfo::INHERIT_IN_INCOGNITO_EXCEPT_ALLOW);
 
   Register(CONTENT_SETTINGS_TYPE_FULLSCREEN, "fullscreen", CONTENT_SETTING_ASK,

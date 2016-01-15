@@ -1355,6 +1355,8 @@ NSPoint AnchorPointForWindow(NSWindow* parent) {
   WebsiteSettingsUI::PermissionInfo info;
   info.type = CONTENT_SETTINGS_TYPE_COOKIES;
   info.setting = CONTENT_SETTING_ALLOW;
+  // info.default_setting, info.source, and info.is_incognito have not been set,
+  // but GetPermissionIcon doesn't use any of those.
   NSImage* image = WebsiteSettingsUI::GetPermissionIcon(info).ToNSImage();
   NSImageView* imageView = [self addImageWithSize:[image size]
                                            toView:cookiesView_

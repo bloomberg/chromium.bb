@@ -110,6 +110,9 @@ void PermissionBubbleManager::AddRequest(PermissionBubbleRequest* request) {
           .IsSameOriginWith(url::Origin(request->GetRequestingHostname()));
 
   // Don't re-add an existing request or one with a duplicate text request.
+  // TODO(johnme): Instead of dropping duplicate requests, we should queue them
+  // and eventually run their PermissionGranted/PermissionDenied/Cancelled
+  // callback (crbug.com/577313).
   bool same_object = false;
   if (ExistingRequest(request, requests_, &same_object) ||
       ExistingRequest(request, queued_requests_, &same_object) ||

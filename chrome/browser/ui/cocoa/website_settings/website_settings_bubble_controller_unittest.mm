@@ -224,6 +224,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
       if (info.setting == CONTENT_SETTING_DEFAULT)
         info.default_setting = kTestDefaultSettings[i];
       info.source = kTestSettingSources[i];
+      info.is_incognito = false;
       permission_info_list.push_back(info);
     }
     ChosenObjectInfoList chosen_object_info_list;

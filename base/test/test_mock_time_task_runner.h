@@ -50,6 +50,9 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner {
   // whose time ticks will start at zero.
   TestMockTimeTaskRunner();
 
+  // Constructs an instance starting at the given virtual time and time ticks.
+  TestMockTimeTaskRunner(Time start_time, TimeTicks start_ticks);
+
   // Fast-forwards virtual time by |delta|, causing all tasks with a remaining
   // delay less than or equal to |delta| to be executed. |delta| must be
   // non-negative.
