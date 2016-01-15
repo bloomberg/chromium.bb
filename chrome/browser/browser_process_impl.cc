@@ -1085,17 +1085,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
 #endif
 #endif  // defined(ENABLE_PLUGINS)
 
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kDisableWebResources)) {
-    DCHECK(!promo_resource_service_.get());
-    promo_resource_service_.reset(new web_resource::PromoResourceService(
-        local_state(), chrome::GetChannel(), GetApplicationLocale(),
-        system_request_context(), switches::kDisableBackgroundNetworking,
-        base::Bind(safe_json::SafeJsonParser::Parse)));
-    promo_resource_service_->StartAfterDelay();
-  }
-
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   storage_monitor::StorageMonitor::Create();
 #endif

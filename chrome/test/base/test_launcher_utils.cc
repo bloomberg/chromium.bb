@@ -23,9 +23,6 @@
 namespace test_launcher_utils {
 
 void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
-  // Turn off tip loading for tests; see http://crbug.com/17725.
-  command_line->AppendSwitch(switches::kDisableWebResources);
-
   // Turn off preconnects because they break the brittle python webserver;
   // see http://crbug.com/60035.
   command_line->AppendSwitch(switches::kDisablePreconnect);

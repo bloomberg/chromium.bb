@@ -98,7 +98,6 @@ extern const char kDisableQuicPortSelection[];
 extern const char kDisableSessionCrashedBubble[];
 extern const char kDisableSiteEngagementService[];
 extern const char kDisableWebNotificationCustomLayouts[];
-extern const char kDisableWebResources[];
 extern const char kDisableZeroBrowsersOpenForTests[];
 extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];

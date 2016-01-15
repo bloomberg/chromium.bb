@@ -336,9 +336,6 @@ const char kDisableSiteEngagementService[] = "disable-site-engagement-service";
 const char kDisableWebNotificationCustomLayouts[] =
     "disable-web-notification-custom-layouts";
 
-// Disables the backend service for web resources.
-const char kDisableWebResources[]           = "disable-web-resources";
-
 // Some tests seem to require the application to close when the last
 // browser window is closed. Thus, we need a switch to force this behavior
 // for ChromeOS Aura, disable "zero window mode".
