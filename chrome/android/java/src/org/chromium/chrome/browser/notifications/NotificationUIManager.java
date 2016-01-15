@@ -182,14 +182,16 @@ public class NotificationUIManager {
         if (NotificationConstants.ACTION_CLICK_NOTIFICATION.equals(intent.getAction())) {
             int actionIndex = intent.getIntExtra(
                     NotificationConstants.EXTRA_NOTIFICATION_INFO_ACTION_INDEX, -1);
-            return sInstance.onNotificationClicked(
+            sInstance.onNotificationClicked(
                     persistentNotificationId, origin, profileId, incognito, tag, actionIndex);
+            return true;
         } else if (NotificationConstants.ACTION_CLOSE_NOTIFICATION.equals(intent.getAction())) {
             // Notification deleteIntent is executed only "when the notification is explicitly
             // dismissed by the user, either with the 'Clear All' button or by swiping it away
             // individually" (though a third-party NotificationListenerService may also trigger it).
-            return sInstance.onNotificationClosed(
+            sInstance.onNotificationClosed(
                     persistentNotificationId, origin, profileId, incognito, tag, true /* byUser */);
+            return true;
         }
 
         Log.e(TAG, "Unrecognized Notification action: " + intent.getAction());
@@ -616,13 +618,12 @@ public class NotificationUIManager {
      * @param profileId Id of the profile that showed the notification.
      * @param incognito if the profile session was an off the record one.
      * @param tag The tag of the notification. May be NULL.
-     * @return Whether the manager could handle the click event.
      */
-    private boolean onNotificationClicked(long persistentNotificationId, String origin,
+    private void onNotificationClicked(long persistentNotificationId, String origin,
             String profileId, boolean incognito, String tag, int actionIndex) {
         mLastNotificationClickMs = System.currentTimeMillis();
-        return nativeOnNotificationClicked(mNativeNotificationManager, persistentNotificationId,
-                origin, profileId, incognito, tag, actionIndex);
+        nativeOnNotificationClicked(mNativeNotificationManager, persistentNotificationId, origin,
+                profileId, incognito, tag, actionIndex);
     }
 
     /**
@@ -635,20 +636,19 @@ public class NotificationUIManager {
      * @param incognito if the profile session was an off the record one.
      * @param tag The tag of the notification. May be NULL.
      * @param byUser Whether the notification was closed by a user gesture.
-     * @return Whether the manager could handle the close event.
      */
-    private boolean onNotificationClosed(long persistentNotificationId, String origin,
+    private void onNotificationClosed(long persistentNotificationId, String origin,
             String profileId, boolean incognito, String tag, boolean byUser) {
-        return nativeOnNotificationClosed(mNativeNotificationManager, persistentNotificationId,
-                origin, profileId, incognito, tag, byUser);
+        nativeOnNotificationClosed(mNativeNotificationManager, persistentNotificationId, origin,
+                profileId, incognito, tag, byUser);
     }
 
     private static native void nativeInitializeNotificationUIManager();
 
-    private native boolean nativeOnNotificationClicked(long nativeNotificationUIManagerAndroid,
+    private native void nativeOnNotificationClicked(long nativeNotificationUIManagerAndroid,
             long persistentNotificationId, String origin, String profileId, boolean incognito,
             String tag, int actionIndex);
-    private native boolean nativeOnNotificationClosed(long nativeNotificationUIManagerAndroid,
+    private native void nativeOnNotificationClosed(long nativeNotificationUIManagerAndroid,
             long persistentNotificationId, String origin, String profileId, boolean incognito,
             String tag, boolean byUser);
 }

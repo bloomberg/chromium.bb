@@ -32,7 +32,7 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
   ~NotificationUIManagerAndroid() override;
 
   // Called by the Java implementation when the notification has been clicked.
-  bool OnNotificationClicked(
+  void OnNotificationClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_object,
       jlong persistent_notification_id,
@@ -43,7 +43,7 @@ class NotificationUIManagerAndroid : public NotificationUIManager {
       jint action_index);
 
   // Called by the Java implementation when the notification has been closed.
-  bool OnNotificationClosed(
+  void OnNotificationClosed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& java_object,
       jlong persistent_notification_id,

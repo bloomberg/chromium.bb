@@ -2068,7 +2068,7 @@
       'browser/notifications/notification_permission_context_factory.h',
       'browser/notifications/notification_ui_manager.h',
       'browser/notifications/notification_ui_manager_mac.h',
-      'browser/notifications/notification_ui_manager_mac.mm',        
+      'browser/notifications/notification_ui_manager_mac.mm',
       'browser/notifications/notifier_state_tracker.cc',
       'browser/notifications/notifier_state_tracker.h',
       'browser/notifications/notifier_state_tracker_factory.cc',

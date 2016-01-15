@@ -48,7 +48,14 @@ namespace {
 NSString* const kNotificationOriginKey = @"notification_origin";
 NSString* const kNotificationPersistentIdKey = @"notification_persistent_id";
 NSString* const kNotificationDelegateIdKey = @"notification_delegate_id";
+
+// TODO(miguelg) get rid of this key once ProfileID has been ported
+// from the void* it is today to the stable identifier provided
+// in kNotificationProfilePersistentIdKey.
 NSString* const kNotificationProfileIdKey = @"notification_profile_id";
+NSString* const kNotificationProfilePersistentIdKey =
+    @"notification_profile_persistent_id";
+NSString* const kNotificationIncognitoKey = @"notification_incognito";
 
 }  // namespace
 
@@ -135,7 +142,11 @@ void NotificationUIManagerMac::Add(const Notification& notification,
         [NSNumber numberWithLongLong:persistent_notification_id],
     kNotificationDelegateIdKey :
         base::SysUTF8ToNSString(notification.delegate_id()),
-    kNotificationProfileIdKey : [NSNumber numberWithLongLong:profile_id]
+    kNotificationProfileIdKey : [NSNumber numberWithLongLong:profile_id],
+    kNotificationProfilePersistentIdKey :
+        base::SysUTF8ToNSString(profile->GetPath().BaseName().value()),
+    kNotificationIncognitoKey :
+        [NSNumber numberWithBool:profile->IsOffTheRecord()]
   };
 
   [[NSUserNotificationCenter defaultUserNotificationCenter]
@@ -190,6 +201,7 @@ std::set<std::string> NotificationUIManagerMac::GetAllIdsByProfile(
     ProfileID profile_id) {
   // ProfileID in mac is not safe to use across browser restarts
   // Therefore because when chrome quits we cancel all pending notifications.
+  // TODO(miguelg) get rid of ProfileID as a void* for native notifications.
   std::set<std::string> delegate_ids;
   NSUserNotificationCenter* notificationCenter =
       [NSUserNotificationCenter defaultUserNotificationCenter];
@@ -240,15 +252,19 @@ void NotificationUIManagerMac::CancelAll() {
       [notification.userInfo objectForKey:kNotificationOriginKey]);
   NSNumber* persistentNotificationId =
       [notification.userInfo objectForKey:kNotificationPersistentIdKey];
+  NSString* persistentProfileId =
+      [notification.userInfo objectForKey:kNotificationProfilePersistentIdKey];
+  NSNumber* isIncognito =
+      [notification.userInfo objectForKey:kNotificationIncognitoKey];
 
   GURL origin(notificationOrigin);
 
-  // TODO(miguelg):We cannot ship like this since we could be
-  // delivering messages to the wrong profile.
-  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      ProfileManager::GetLastUsedProfile(),
-      persistentNotificationId.longLongValue, origin,
-      -1 /* buttons not yet implemented */);
+  PlatformNotificationServiceImpl::GetInstance()
+      ->ProcessPersistentNotificationOperation(
+          PlatformNotificationServiceImpl::NOTIFICATION_CLICK,
+          base::SysNSStringToUTF8(persistentProfileId), [isIncognito boolValue],
+          origin, persistentNotificationId.longLongValue,
+          -1 /* buttons not yet implemented */);
 }
 
 - (BOOL)userNotificationCenter:(NSUserNotificationCenter*)center

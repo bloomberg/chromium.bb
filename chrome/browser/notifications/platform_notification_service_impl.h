@@ -16,12 +16,12 @@
 #include "base/memory/singleton.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/platform_notification_service.h"
 #include "content/public/common/persistent_notification_status.h"
 
 class NotificationDelegate;
 class NotificationUIManager;
-class Profile;
 
 namespace content {
 class BrowserContext;
@@ -36,9 +36,26 @@ class PushMessagingBrowserTest;
 class PlatformNotificationServiceImpl
     : public content::PlatformNotificationService {
  public:
+  // Things you can do to a notification.
+  enum NotificationOperation {
+    NOTIFICATION_CLICK,
+    NOTIFICATION_CLOSE,
+    NOTIFICATION_SETTINGS
+  };
+
   // Returns the active instance of the service in the browser process. Safe to
   // be called from any thread.
   static PlatformNotificationServiceImpl* GetInstance();
+
+  // Load the profile corresponding to |profile_id| and perform the
+  // |operation| on the given notification once it has been loaded.
+  void ProcessPersistentNotificationOperation(
+      NotificationOperation operation,
+      const std::string& profile_id,
+      bool incognito,
+      const GURL& origin,
+      int64_t persistent_notification_id,
+      int action_index);
 
   // To be called when a persistent notification has been clicked on. The
   // Service Worker associated with the registration will be started if

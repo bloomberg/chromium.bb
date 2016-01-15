@@ -21,6 +21,7 @@
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
@@ -87,6 +88,47 @@ void CancelNotification(const std::string& id, ProfileID profile_id) {
       ->GetNotificationUIManager()->CancelById(id, profile_id);
 }
 
+// Callback to run once the profile has been loaded in order to perform a
+// given |operation| in a notification.
+void ProfileLoadedCallback(
+    PlatformNotificationServiceImpl::NotificationOperation operation,
+    const GURL& origin,
+    int64_t persistent_notification_id,
+    int action_index,
+    bool incognito,
+    Profile* profile,
+    Profile::CreateStatus status) {
+  if (status == Profile::CREATE_STATUS_CREATED) {
+    // This is an intermediate state, we will be also called
+    // again with CREATE_STATUS_INITIALIZED once everything is ready
+    // so ignore it.
+    return;
+  }
+  if (status != Profile::CREATE_STATUS_INITIALIZED) {
+    LOG(WARNING) << "Profile not loaded correctly";
+    return;
+  }
+  DCHECK(profile);
+  profile = incognito ? profile->GetOffTheRecordProfile() : profile;
+
+  switch (operation) {
+    case PlatformNotificationServiceImpl::NOTIFICATION_CLICK:
+      PlatformNotificationServiceImpl::GetInstance()
+          ->OnPersistentNotificationClick(profile, persistent_notification_id,
+                                          origin, action_index);
+      break;
+    case PlatformNotificationServiceImpl::NOTIFICATION_CLOSE:
+      PlatformNotificationServiceImpl::GetInstance()
+          ->OnPersistentNotificationClose(profile, persistent_notification_id,
+                                          origin, true);
+      break;
+    case PlatformNotificationServiceImpl::NOTIFICATION_SETTINGS:
+      LOG(WARNING) << "NOTIFICATION_SETTINGS action not implemented";
+      break;
+  }
+  // TODO(miguelg) Implement the site settings operation.
+}
+
 }  // namespace
 
 // static
@@ -101,6 +143,37 @@ PlatformNotificationServiceImpl::PlatformNotificationServiceImpl()
       notification_ui_manager_for_tests_(nullptr) {}
 
 PlatformNotificationServiceImpl::~PlatformNotificationServiceImpl() {}
+
+void PlatformNotificationServiceImpl::ProcessPersistentNotificationOperation(
+    NotificationOperation operation,
+    const std::string& profile_id,
+    bool incognito,
+    const GURL& origin,
+    int64_t persistent_notification_id,
+    int action_index) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  DCHECK(profile_manager);
+
+  // ProfileManager does not offer a good interface to load a profile or
+  // fail. Instead it offers a method to create the profile and simply load it
+  // if it already exist. We therefore check first that the profile is there
+  // and fail early otherwise.
+  const base::FilePath profile_path =
+      profile_manager->GetProfileInfoCache().GetUserDataDir().AppendASCII(
+          profile_id);
+
+  if (profile_manager->GetProfileInfoCache().GetIndexOfProfileWithPath(
+          profile_path) == std::string::npos) {
+    LOG(ERROR) << "Loading a path that does not exist";
+    return;
+  }
+
+  profile_manager->CreateProfileAsync(
+      profile_path,
+      base::Bind(&ProfileLoadedCallback, operation, origin,
+                 persistent_notification_id, action_index, incognito),
+      base::string16(), std::string(), std::string());
+}
 
 void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
     BrowserContext* browser_context,

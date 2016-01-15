@@ -28,32 +28,6 @@ using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 
-namespace {
-
-// Return the profile belonging to |profile_id| taking into account if the
-// incognito version is neeeded.
-// Note that this works in Android because there is only one profile
-// but on desktop platforms we need an async version in case the profile
-// to load is on disk but not loaded yet.
-Profile* GetProfileFromId(const std::string& profile_id, bool incognito) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  DCHECK(profile_manager);
-  const base::FilePath profile_path =
-      profile_manager->GetProfileInfoCache().GetUserDataDir().Append(
-          profile_id);
-
-  // TODO(miguelg) verify that the profile exists using the
-  // ProfileInfoCache so we can fail with a more graceful error.
-  Profile* profile = profile_manager->GetProfileByPath(profile_path);
-  if (!profile)
-    return nullptr;
-  if (incognito)
-    profile = profile->GetOffTheRecordProfile();
-  return profile;
-}
-
-}  // namespace
-
 // Called by the Java side when a notification event has been received, but the
 // NotificationUIManager has not been initialized yet. Enforce initialization of
 // the class.
@@ -86,7 +60,7 @@ NotificationUIManagerAndroid::~NotificationUIManagerAndroid() {
                                      java_object_.obj());
 }
 
-bool NotificationUIManagerAndroid::OnNotificationClicked(
+void NotificationUIManagerAndroid::OnNotificationClicked(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
@@ -102,20 +76,13 @@ bool NotificationUIManagerAndroid::OnNotificationClicked(
   regenerated_notification_infos_[persistent_notification_id] =
       std::make_pair(origin.spec(), tag);
 
-  Profile* profile = GetProfileFromId(profile_id, incognito);
-
-  if (!profile) {
-    LOG(ERROR) << "Profile not found for " << profile_id;
-    return false;
-  }
-
-  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClick(
-      profile, persistent_notification_id, origin, action_index);
-
-  return true;
+  PlatformNotificationServiceImpl::GetInstance()
+      ->ProcessPersistentNotificationOperation(
+          PlatformNotificationServiceImpl::NOTIFICATION_CLICK, profile_id,
+          incognito, origin, persistent_notification_id, action_index);
 }
 
-bool NotificationUIManagerAndroid::OnNotificationClosed(
+void NotificationUIManagerAndroid::OnNotificationClosed(
     JNIEnv* env,
     const JavaParamRef<jobject>& java_object,
     jlong persistent_notification_id,
@@ -130,16 +97,10 @@ bool NotificationUIManagerAndroid::OnNotificationClosed(
 
   // The notification was closed by the platform, so clear all local state.
   regenerated_notification_infos_.erase(persistent_notification_id);
-  Profile* profile = GetProfileFromId(profile_id, incognito);
-  if (!profile) {
-    LOG(ERROR) << "Profile not found for " << profile_id;
-    return false;
-  }
-
-  PlatformNotificationServiceImpl::GetInstance()->OnPersistentNotificationClose(
-      profile, persistent_notification_id, origin, by_user);
-
-  return true;
+  PlatformNotificationServiceImpl::GetInstance()
+      ->ProcessPersistentNotificationOperation(
+          PlatformNotificationServiceImpl::NOTIFICATION_CLOSE, profile_id,
+          incognito, origin, persistent_notification_id, -1);
 }
 
 void NotificationUIManagerAndroid::Add(const Notification& notification,
