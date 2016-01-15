@@ -1530,6 +1530,9 @@ void Element::removedFrom(ContainerNode* insertionPoint)
 
         if (isUpgradedCustomElement())
             CustomElement::didDetach(this, insertionPoint->document());
+
+        if (needsStyleInvalidation())
+            document().styleEngine().styleInvalidator().clearInvalidation(*this);
     }
 
     document().removeFromTopLayer(this);

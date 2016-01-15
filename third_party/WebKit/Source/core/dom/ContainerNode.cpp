@@ -606,7 +606,7 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
 
     AttachContext context;
     context.clearInvalidation = true;
-    if (!needsAttach() || !oldChild.needsAttach())
+    if (!oldChild.needsAttach())
         oldChild.detach(context);
 
     if (nextChild)
