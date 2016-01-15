@@ -1024,7 +1024,6 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(new MemoryMessageFilter(this));
   AddFilter(new PushMessagingMessageFilter(
       GetID(), storage_partition_impl_->GetServiceWorkerContext()));
-  // TODO(mfomitchev): Screen Orientation APIs on Aura - crbug.com/546719.
 #if defined(OS_ANDROID) && !defined(USE_AURA)
   AddFilter(new ScreenOrientationMessageFilterAndroid());
 #endif

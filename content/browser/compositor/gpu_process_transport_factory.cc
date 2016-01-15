@@ -124,7 +124,6 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
 #if defined(OS_ANDROID)
-  // TODO(mfomitchev): crbug.com/546716
   return CreateContextCommon(scoped_refptr<GpuChannelHost>(nullptr), 0);
 #else
   CauseForGpuLaunch cause =

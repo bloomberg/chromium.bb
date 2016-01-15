@@ -644,7 +644,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
           BrowserSurfaceTextureManager::GetInstance());
     }
   }
-  // TODO(mfomitchev): Screen Orientation APIs on Aura - crbug.com/546719.
 #if !defined(USE_AURA)
   if (!parsed_command_line_.HasSwitch(
       switches::kDisableScreenOrientationLock)) {

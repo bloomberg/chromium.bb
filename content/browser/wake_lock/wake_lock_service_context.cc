@@ -65,7 +65,6 @@ void WakeLockServiceContext::CreateWakeLock() {
       PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
       PowerSaveBlocker::kReasonOther, "Wake Lock API");
 
-  //TODO(mfomitchev): Support PowerSaveBlocker on Aura - crbug.com/546718.
 #if defined(OS_ANDROID) && !defined(USE_AURA)
   // On Android, additionaly associate the blocker with this WebContents.
   DCHECK(web_contents());

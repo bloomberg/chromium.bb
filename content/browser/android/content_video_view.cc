@@ -203,8 +203,6 @@ JavaObjectWeakGlobalRef ContentVideoView::CreateJavaObject() {
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> j_content_view_core;
 
-  // TODO(mfomitchev): Support fullscreen video underlay on Android Aura.
-  // crbug.com/548024
 #if !defined(USE_AURA)
   ContentViewCore* content_view_core = manager_->GetContentViewCore();
   j_content_view_core = content_view_core->GetJavaObject();

@@ -481,7 +481,6 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
 
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 
-  //TODO(mfomitchev): Support PowerSaveBlocker on Aura - crbug.com/546718.
 #if defined(OS_ANDROID) && !defined(USE_AURA)
   power_save_blocker_.reset(static_cast<PowerSaveBlockerImpl*>(
       PowerSaveBlocker::Create(

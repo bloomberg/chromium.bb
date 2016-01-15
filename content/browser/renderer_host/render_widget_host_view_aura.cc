@@ -1413,9 +1413,7 @@ RenderWidgetHostViewAura::CreateBrowserAccessibilityManager(
 #if defined(OS_WIN)
   manager = new BrowserAccessibilityManagerWin(
       BrowserAccessibilityManagerWin::GetEmptyDocument(), delegate);
-#elif defined (OS_ANDROID)
-  // TODO(mfomitchev): Accessibility on Android Aura: crbug.com/543262
-#else
+#elif !defined(OS_ANDROID)
   manager = BrowserAccessibilityManager::Create(
       BrowserAccessibilityManager::GetEmptyDocument(), delegate);
 #endif

@@ -489,7 +489,6 @@ void RenderWidgetHostViewChildFrame::SetBeginFrameSource(
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate) {
-  // TODO(mfomitchev): Accessibility on Android Aura: crbug.com/543262
 #if defined(OS_ANDROID) && defined(USE_AURA)
   return nullptr;
 #else

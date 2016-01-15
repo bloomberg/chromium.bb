@@ -14,7 +14,6 @@ scoped_ptr<PowerSaveBlocker> PowerSaveBlocker::Create(
     PowerSaveBlockerType type,
     Reason reason,
     const std::string& description) {
-  //TODO(mfomitchev): Support PowerSaveBlocker on Aura - crbug.com/546718.
 #if defined(OS_ANDROID) && defined(USE_AURA)
   return nullptr;
 #else
