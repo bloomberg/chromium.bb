@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import static org.chromium.base.test.util.Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE;
 
+import android.test.FlakyTest;
 import android.test.MoreAsserts;
 import android.test.suitebuilder.annotation.LargeTest;
 import android.view.KeyEvent;
@@ -58,9 +59,13 @@ public class PrerenderTest extends ChromeTabbedActivityTestBase {
                 loadUrlInTab(testUrl, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, tab));
     }
 
+    /*
+    crbug.com/339668
     @LargeTest
     @Restriction({RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @Feature({"TabContents"})
+    */
+    @FlakyTest
     public void testPrerenderNotDead() throws InterruptedException, TimeoutException {
         String testUrl = TestHttpServerClient.getUrl(
                 "chrome/test/data/android/prerender/google.html");
