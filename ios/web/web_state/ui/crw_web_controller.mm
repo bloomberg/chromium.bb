@@ -2815,9 +2815,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       return NO;
     }
 
-    // Abort load if navigation is believed to be happening on the main frame.
+    // Stop load if navigation is believed to be happening on the main frame.
     if ([self isPutativeMainFrameRequest:request targetFrame:targetFrame])
-      [self abortLoad];
+      [self stopLoading];
 
     if ([_delegate openExternalURL:requestURL]) {
       // Record the URL so that errors reported following the 'NO' reply can be
