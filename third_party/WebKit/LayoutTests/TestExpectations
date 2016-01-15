@@ -1471,5 +1471,3 @@ crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
-
-crbug.com/577936 bluetooth/getPrimaryService.html [ Timeout ]
