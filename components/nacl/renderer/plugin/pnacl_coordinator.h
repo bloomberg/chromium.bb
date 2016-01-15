@@ -15,7 +15,6 @@
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_resources.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -88,8 +87,6 @@ class PnaclCoordinator {
   void BitcodeStreamDidFinish(int32_t pp_error);
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
-
   // BitcodeToNative is the factory method for PnaclCoordinators.
   // Therefore the constructor is private.
   PnaclCoordinator(Plugin* plugin,
@@ -188,6 +185,8 @@ class PnaclCoordinator {
   // It accesses fields of PnaclCoordinator so it must have a
   // shorter lifetime.
   scoped_ptr<PnaclTranslateThread> translate_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(PnaclCoordinator);
 };
 
 //----------------------------------------------------------------------

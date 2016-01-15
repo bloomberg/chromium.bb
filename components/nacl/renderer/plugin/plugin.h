@@ -21,7 +21,6 @@
 #include "components/nacl/renderer/plugin/service_runtime.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/private/uma_private.h"
 #include "ppapi/cpp/url_loader.h"
@@ -97,7 +96,6 @@ class Plugin : public pp::Instance {
   const PPB_NaCl_Private* nacl_interface() const { return nacl_interface_; }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(Plugin);
   // The browser will invoke the destructor via the pp::Instance
   // pointer to this object, not from base's Delete().
   ~Plugin() override;
@@ -148,6 +146,8 @@ class Plugin : public pp::Instance {
 
   const PPB_NaCl_Private* nacl_interface_;
   pp::UMAPrivate uma_interface_;
+
+  DISALLOW_COPY_AND_ASSIGN(Plugin);
 };
 
 }  // namespace plugin

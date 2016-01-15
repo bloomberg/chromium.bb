@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "ppapi/cpp/completion_callback.h"
@@ -159,7 +158,7 @@ class PnaclTranslateThread {
   base::ProcessId ld_channel_peer_pid_;
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
+  DISALLOW_COPY_AND_ASSIGN(PnaclTranslateThread);
 };
 
 }

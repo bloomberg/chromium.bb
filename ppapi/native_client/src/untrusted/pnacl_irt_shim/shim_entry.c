@@ -8,7 +8,6 @@
 
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf_auxv.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/untrusted/nacl/nacl_startup.h"
 #include "ppapi/native_client/src/untrusted/pnacl_irt_shim/shim_ppapi.h"
 

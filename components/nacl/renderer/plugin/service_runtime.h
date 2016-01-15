@@ -16,7 +16,6 @@
 #include "base/process/process_handle.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "ipc/ipc_sync_channel.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "ppapi/cpp/completion_callback.h"
 
@@ -68,8 +67,6 @@ class ServiceRuntime {
   base::ProcessId get_process_id() { return process_id_; }
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
-
   Plugin* plugin_;
   PP_Instance pp_instance_;
   bool main_service_runtime_;
@@ -77,6 +74,8 @@ class ServiceRuntime {
 
   scoped_ptr<IPC::SyncChannel> translator_channel_;
   base::ProcessId process_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceRuntime);
 };
 
 }  // namespace plugin

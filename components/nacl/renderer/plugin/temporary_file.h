@@ -10,7 +10,6 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
-#include "native_client/src/include/nacl_macros.h"
 
 #include "ppapi/c/private/pp_file_handle.h"
 
@@ -59,10 +58,10 @@ class TempFile {
   PP_FileHandle GetFileHandle();
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(TempFile);
-
   Plugin* plugin_;
   base::File file_handle_;
+
+  DISALLOW_COPY_AND_ASSIGN(TempFile);
 };
 
 }  // namespace plugin

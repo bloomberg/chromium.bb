@@ -15,7 +15,6 @@
 
 #include "base/macros.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
-#include "native_client/src/include/nacl_macros.h"
 
 namespace plugin {
 
@@ -41,7 +40,7 @@ class ErrorInfo {
  private:
   PP_NaClError error_code_;
   std::string message_;
-  NACL_DISALLOW_COPY_AND_ASSIGN(ErrorInfo);
+  DISALLOW_COPY_AND_ASSIGN(ErrorInfo);
 };
 
 }  // namespace plugin

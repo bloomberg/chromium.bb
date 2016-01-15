@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
-#include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
 namespace plugin {
@@ -48,12 +47,12 @@ class NaClSubprocess {
   void Shutdown();
 
  private:
-  NACL_DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
-
   std::string description_;
 
   // The service runtime representing the NaCl module instance.
   scoped_ptr<ServiceRuntime> service_runtime_;
+
+  DISALLOW_COPY_AND_ASSIGN(NaClSubprocess);
 };
 
 }  // namespace plugin
