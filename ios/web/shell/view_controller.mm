@@ -286,9 +286,7 @@ NSString* const kWebShellAddressFieldAccessibilityLabel = @"Address field";
   return nil;
 }
 
-- (CRWWebController*)webPageOrderedOpenBlankWithReferrer:
-                         (const web::Referrer&)referrer
-                                            inBackground:(BOOL)inBackground {
+- (CRWWebController*)webPageOrderedOpen {
   return nil;
 }
 

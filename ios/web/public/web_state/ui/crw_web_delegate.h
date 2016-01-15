@@ -71,9 +71,7 @@ typedef void (^SSLErrorCallback)(BOOL);
 // Called when the page wants to open a new window by DOM.
 // CRWSessionController's openedByDOM property of the returned CRWWebController
 // must be YES.
-- (CRWWebController*)webPageOrderedOpenBlankWithReferrer:
-    (const web::Referrer&)referrer
-        inBackground:(BOOL)inBackground;
+- (CRWWebController*)webPageOrderedOpen;
 
 // Called when the page calls window.close() on itself. Begin the shut-down
 // sequence for this controller.

@@ -1194,12 +1194,8 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [self.containerView displayWebViewContentView:webViewContentView];
 }
 
-- (CRWWebController*)createChildWebControllerWithReferrerURL:
-    (const GURL&)referrerURL {
-  web::Referrer referrer(referrerURL, web::ReferrerPolicyDefault);
-  CRWWebController* result =
-      [self.delegate webPageOrderedOpenBlankWithReferrer:referrer
-                                            inBackground:NO];
+- (CRWWebController*)createChildWebController {
+  CRWWebController* result = [self.delegate webPageOrderedOpen];
   DCHECK(!result || result.sessionController.openedByDOM);
   return result;
 }
