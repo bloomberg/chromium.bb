@@ -245,7 +245,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
       // plus sign, question mark, unmapped
       /* 37 */ {{0x002B, 0x003F, 0x2461, DomCode::MINUS}, VKEY_OEM_PLUS},
       // plus sign, question mark, reverse solidus
-      /* 38 */ {{0x002B, 0x003F, 0x005C, DomCode::MINUS}, VKEY_OEM_MINUS},
+      /* 38 */ {{0x002B, 0x003F, 0x005C, DomCode::MINUS}, VKEY_OEM_PLUS},
       // plus sign, question mark, o double acute
       /* 39 */ {{0x002B, 0x003F, 0x0151, DomCode::MINUS}, VKEY_OEM_PLUS},
       // plus sign, *, *
