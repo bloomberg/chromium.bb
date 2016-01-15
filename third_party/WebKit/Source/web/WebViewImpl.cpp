@@ -2760,8 +2760,13 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
+    // If SPv2 is on, the layer tree may not be created yet (and can't be
+    // created right away because RuntimeEnabledFeatures may not initialized yet
+    // when the layer tree view is initialized. But if it is initialized, then
+    // we at least intend to use accelerated compositing.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return m_paintArtifactCompositor.webLayer();
+        return m_layerTreeView;
+
     return m_rootLayer;
 }
 

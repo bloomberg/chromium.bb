@@ -12,7 +12,7 @@ include_rules = [
     "+skia/ext",
     "+third_party/khronos",
     "+third_party/skia",
-    "+ui/gfx/geometry",
+    "+ui/gfx",
     "+url",
     "+webp",
     "-bindings",

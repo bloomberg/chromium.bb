@@ -9,6 +9,7 @@
 #include "platform/PlatformExport.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace cc {
 class Layer;
@@ -49,8 +50,14 @@ public:
     WebLayer* webLayer() const { return m_webLayer.get(); }
 
 private:
+    class ContentLayerClientImpl;
+
     scoped_refptr<cc::Layer> m_rootLayer;
     OwnPtr<WebLayer> m_webLayer;
+    Vector<OwnPtr<ContentLayerClientImpl>> m_contentLayerClients;
+
+    // For ~PaintArtifactCompositor on MSVC.
+    friend struct WTF::OwnedPtrDeleter<ContentLayerClientImpl>;
 };
 
 } // namespace blink

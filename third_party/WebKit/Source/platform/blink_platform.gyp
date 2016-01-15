@@ -136,6 +136,7 @@
       '<(DEPTH)/third_party/libwebp/libwebp.gyp:libwebp',
       '<(DEPTH)/third_party/ots/ots.gyp:ots',
       '<(DEPTH)/third_party/qcms/qcms.gyp:qcms',
+      '<(DEPTH)/ui/gfx/gfx.gyp:gfx',
       '<(DEPTH)/ui/gfx/gfx.gyp:gfx_geometry',
       '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/v8/tools/gyp/v8.gyp:v8',
