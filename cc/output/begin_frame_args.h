@@ -36,6 +36,10 @@ class TracedValue;
 
 namespace cc {
 
+namespace proto {
+class BeginFrameArgs;
+}
+
 struct CC_EXPORT BeginFrameArgs {
   enum BeginFrameArgsType {
     INVALID,
@@ -46,6 +50,8 @@ struct CC_EXPORT BeginFrameArgs {
     BEGIN_FRAME_ARGS_TYPE_MAX,
   };
   static const char* TypeToString(BeginFrameArgsType type);
+  void BeginFrameArgsTypeToProtobuf(proto::BeginFrameArgs* proto) const;
+  void BeginFrameArgsTypeFromProtobuf(const proto::BeginFrameArgs& proto);
 
   // Creates an invalid set of values.
   BeginFrameArgs();
@@ -78,6 +84,9 @@ struct CC_EXPORT BeginFrameArgs {
 
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* dict) const;
+
+  void ToProtobuf(proto::BeginFrameArgs* proto) const;
+  void FromProtobuf(const proto::BeginFrameArgs& proto);
 
   base::TimeTicks frame_time;
   base::TimeTicks deadline;

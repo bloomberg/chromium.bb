@@ -13,6 +13,7 @@
 #include "cc/proto/size.pb.h"
 #include "cc/proto/sizef.pb.h"
 #include "cc/proto/transform.pb.h"
+#include "cc/proto/vector2d.pb.h"
 #include "cc/proto/vector2df.pb.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point3_f.h"
@@ -22,6 +23,7 @@
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {
@@ -135,6 +137,15 @@ void ScrollOffsetToProto(const gfx::ScrollOffset& scroll_offset,
 
 gfx::ScrollOffset ProtoToScrollOffset(const proto::ScrollOffset& proto) {
   return gfx::ScrollOffset(proto.x(), proto.y());
+}
+
+void Vector2dToProto(const gfx::Vector2d& vector, proto::Vector2d* proto) {
+  proto->set_x(vector.x());
+  proto->set_y(vector.y());
+}
+
+gfx::Vector2d ProtoToVector2d(const proto::Vector2d& proto) {
+  return gfx::Vector2d(proto.x(), proto.y());
 }
 
 }  // namespace cc

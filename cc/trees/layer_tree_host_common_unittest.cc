@@ -24,6 +24,8 @@
 #include "cc/layers/render_surface_impl.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
+#include "cc/proto/begin_main_frame_and_commit_state.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
@@ -9636,6 +9638,43 @@ TEST_F(LayerTreeHostCommonTest, LargeTransformTest) {
   bool render_surface2_in_rsll =
       std::find(rsll->begin(), rsll->end(), render_surface2) != rsll->end();
   EXPECT_FALSE(render_surface2_in_rsll);
+}
+
+TEST_F(LayerTreeHostCommonTest, SerializeScrollUpdateInfo) {
+  LayerTreeHostCommon::ScrollUpdateInfo scroll;
+  scroll.layer_id = 2;
+  scroll.scroll_delta = gfx::Vector2d(5, 10);
+
+  proto::ScrollUpdateInfo proto;
+  scroll.ToProtobuf(&proto);
+  LayerTreeHostCommon::ScrollUpdateInfo new_scroll;
+  new_scroll.FromProtobuf(proto);
+
+  EXPECT_EQ(scroll, new_scroll);
+}
+
+TEST_F(LayerTreeHostCommonTest, SerializeScrollAndScale) {
+  ScrollAndScaleSet scroll_and_scale_set;
+
+  LayerTreeHostCommon::ScrollUpdateInfo scroll1;
+  scroll1.layer_id = 1;
+  scroll1.scroll_delta = gfx::Vector2d(5, 10);
+  LayerTreeHostCommon::ScrollUpdateInfo scroll2;
+  scroll2.layer_id = 2;
+  scroll2.scroll_delta = gfx::Vector2d(1, 5);
+  scroll_and_scale_set.scrolls.push_back(scroll1);
+  scroll_and_scale_set.scrolls.push_back(scroll2);
+
+  scroll_and_scale_set.page_scale_delta = 0.3f;
+  scroll_and_scale_set.elastic_overscroll_delta = gfx::Vector2dF(0.5f, 0.6f);
+  scroll_and_scale_set.top_controls_delta = 0.9f;
+
+  proto::ScrollAndScaleSet proto;
+  scroll_and_scale_set.ToProtobuf(&proto);
+  ScrollAndScaleSet new_scroll_and_scale_set;
+  new_scroll_and_scale_set.FromProtobuf(proto);
+
+  EXPECT_TRUE(scroll_and_scale_set.EqualsForTesting(new_scroll_and_scale_set));
 }
 
 }  // namespace

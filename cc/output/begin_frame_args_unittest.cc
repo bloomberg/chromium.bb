@@ -5,6 +5,7 @@
 #include <string>
 
 #include "cc/output/begin_frame_args.h"
+#include "cc/proto/begin_main_frame_and_commit_state.pb.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -82,6 +83,37 @@ TEST(BeginFrameArgsTest, Create) {
   EXPECT_EQ(2, args2.deadline.ToInternalValue()) << args2;
   EXPECT_EQ(3, args2.interval.ToInternalValue()) << args2;
   EXPECT_EQ(BeginFrameArgs::NORMAL, args2.type) << args2;
+}
+
+TEST(BeginFrameArgsSerializationTest, BeginFrameArgsType) {
+  for (size_t i = 0;
+       i < BeginFrameArgs::BeginFrameArgsType::BEGIN_FRAME_ARGS_TYPE_MAX; ++i) {
+    BeginFrameArgs::BeginFrameArgsType type =
+        static_cast<BeginFrameArgs::BeginFrameArgsType>(i);
+    BeginFrameArgs args;
+    args.type = type;
+
+    proto::BeginFrameArgs proto;
+    args.BeginFrameArgsTypeToProtobuf(&proto);
+
+    BeginFrameArgs new_args;
+    new_args.BeginFrameArgsTypeFromProtobuf(proto);
+    EXPECT_EQ(args.type, new_args.type);
+  }
+}
+
+TEST(BeginFrameArgsSerializationTest, BeginFrameArgs) {
+  BeginFrameArgs args = BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, base::TimeTicks::FromInternalValue(1),
+      base::TimeTicks::FromInternalValue(2),
+      base::TimeDelta::FromInternalValue(3), BeginFrameArgs::NORMAL);
+  proto::BeginFrameArgs proto;
+  args.ToProtobuf(&proto);
+
+  BeginFrameArgs new_args;
+  new_args.FromProtobuf(proto);
+
+  EXPECT_EQ(args, new_args);
 }
 
 #ifndef NDEBUG

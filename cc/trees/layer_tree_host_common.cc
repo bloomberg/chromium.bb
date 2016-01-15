@@ -16,6 +16,8 @@
 #include "cc/layers/layer_iterator.h"
 #include "cc/layers/render_surface_draw_properties.h"
 #include "cc/layers/render_surface_impl.h"
+#include "cc/proto/begin_main_frame_and_commit_state.pb.h"
+#include "cc/proto/gfx_conversions.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_impl.h"
@@ -149,11 +151,55 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                                         render_surface_layer_list,
                                         current_render_surface_layer_list_id) {}
 
+bool LayerTreeHostCommon::ScrollUpdateInfo::operator==(
+    const LayerTreeHostCommon::ScrollUpdateInfo& other) const {
+  return layer_id == other.layer_id && scroll_delta == other.scroll_delta;
+}
+
+void LayerTreeHostCommon::ScrollUpdateInfo::ToProtobuf(
+    proto::ScrollUpdateInfo* proto) const {
+  proto->set_layer_id(layer_id);
+  Vector2dToProto(scroll_delta, proto->mutable_scroll_delta());
+}
+
+void LayerTreeHostCommon::ScrollUpdateInfo::FromProtobuf(
+    const proto::ScrollUpdateInfo& proto) {
+  layer_id = proto.layer_id();
+  scroll_delta = ProtoToVector2d(proto.scroll_delta());
+}
+
 ScrollAndScaleSet::ScrollAndScaleSet()
     : page_scale_delta(1.f), top_controls_delta(0.f) {
 }
 
 ScrollAndScaleSet::~ScrollAndScaleSet() {}
+
+bool ScrollAndScaleSet::EqualsForTesting(const ScrollAndScaleSet& other) const {
+  return scrolls == other.scrolls &&
+         page_scale_delta == other.page_scale_delta &&
+         elastic_overscroll_delta == other.elastic_overscroll_delta &&
+         top_controls_delta == other.top_controls_delta;
+}
+
+void ScrollAndScaleSet::ToProtobuf(proto::ScrollAndScaleSet* proto) const {
+  for (const auto& scroll : scrolls)
+    scroll.ToProtobuf(proto->add_scrolls());
+  proto->set_page_scale_delta(page_scale_delta);
+  Vector2dFToProto(elastic_overscroll_delta,
+                   proto->mutable_elastic_overscroll_delta());
+  proto->set_top_controls_delta(top_controls_delta);
+}
+
+void ScrollAndScaleSet::FromProtobuf(const proto::ScrollAndScaleSet& proto) {
+  DCHECK_EQ(scrolls.size(), 0u);
+  for (int i = 0; i < proto.scrolls_size(); ++i) {
+    scrolls.push_back(LayerTreeHostCommon::ScrollUpdateInfo());
+    scrolls[i].FromProtobuf(proto.scrolls(i));
+  }
+  page_scale_delta = proto.page_scale_delta();
+  elastic_overscroll_delta = ProtoToVector2dF(proto.elastic_overscroll_delta());
+  top_controls_delta = proto.top_controls_delta();
+}
 
 static gfx::Vector2dF GetEffectiveScrollDelta(LayerImpl* layer) {
   // Layer's scroll offset can have an integer part and fractional part.

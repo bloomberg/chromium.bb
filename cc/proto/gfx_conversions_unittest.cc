@@ -13,6 +13,7 @@
 #include "cc/proto/size.pb.h"
 #include "cc/proto/sizef.pb.h"
 #include "cc/proto/transform.pb.h"
+#include "cc/proto/vector2d.pb.h"
 #include "cc/proto/vector2df.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/point.h"
@@ -267,6 +268,19 @@ TEST(GfxProtoConversionsTest, SerializeDeserializeScrollOffset) {
 
   // Test ProtoToScrollOffset
   EXPECT_EQ(scroll_offset3, ProtoToScrollOffset(proto3));
+}
+
+TEST(GfxProtoConversionsTest, SerializeDeserializeVector2d) {
+  const gfx::Vector2d vector(5, 10);
+
+  // Test Vector2dToProto
+  proto::Vector2d proto;
+  Vector2dToProto(vector, &proto);
+  EXPECT_EQ(vector.x(), proto.x());
+  EXPECT_EQ(vector.y(), proto.y());
+
+  // Test ProtoToVector2d
+  EXPECT_EQ(vector, ProtoToVector2d(proto));
 }
 
 }  // namespace

@@ -17,6 +17,7 @@ class ScrollOffset;
 class Size;
 class SizeF;
 class Transform;
+class Vector2d;
 class Vector2dF;
 }  // namespace gfx
 
@@ -32,6 +33,7 @@ class ScrollOffset;
 class Size;
 class SizeF;
 class Transform;
+class Vector2d;
 class Vector2dF;
 }  // namespace proto
 
@@ -70,6 +72,10 @@ CC_EXPORT void ScrollOffsetToProto(const gfx::ScrollOffset& scroll_offset,
                                    proto::ScrollOffset* proto);
 CC_EXPORT gfx::ScrollOffset ProtoToScrollOffset(
     const proto::ScrollOffset& proto);
+
+CC_EXPORT void Vector2dToProto(const gfx::Vector2d& vector,
+                               proto::Vector2d* proto);
+CC_EXPORT gfx::Vector2d ProtoToVector2d(const proto::Vector2d& proto);
 
 }  // namespace cc
 

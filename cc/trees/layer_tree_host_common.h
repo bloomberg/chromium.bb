@@ -22,6 +22,11 @@
 
 namespace cc {
 
+namespace proto {
+class ScrollUpdateInfo;
+class ScrollAndScaleSet;
+}
+
 class LayerImpl;
 class Layer;
 class SwapPromise;
@@ -154,11 +159,16 @@ class CC_EXPORT LayerTreeHostCommon {
     return layers[index];
   }
 
-  struct ScrollUpdateInfo {
+  struct CC_EXPORT ScrollUpdateInfo {
     int layer_id;
     // TODO(miletus): Use ScrollOffset once LayerTreeHost/Blink fully supports
     // franctional scroll offset.
     gfx::Vector2d scroll_delta;
+
+    bool operator==(const ScrollUpdateInfo& other) const;
+
+    void ToProtobuf(proto::ScrollUpdateInfo* proto) const;
+    void FromProtobuf(const proto::ScrollUpdateInfo& proto);
   };
 };
 
@@ -171,6 +181,10 @@ struct CC_EXPORT ScrollAndScaleSet {
   gfx::Vector2dF elastic_overscroll_delta;
   float top_controls_delta;
   std::vector<scoped_ptr<SwapPromise>> swap_promises;
+
+  bool EqualsForTesting(const ScrollAndScaleSet& other) const;
+  void ToProtobuf(proto::ScrollAndScaleSet* proto) const;
+  void FromProtobuf(const proto::ScrollAndScaleSet& proto);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ScrollAndScaleSet);

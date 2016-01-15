@@ -379,6 +379,8 @@
         'playback/largest_display_item.h',
         'playback/transform_display_item.cc',
         'playback/transform_display_item.h',
+        'proto/base_conversions.cc',
+        'proto/base_conversions.h',
         'proto/cc_conversions.cc',
         'proto/cc_conversions.h',
         'proto/gfx_conversions.cc',
@@ -605,6 +607,7 @@
       'target_name': 'cc_proto',
       'type': '<(component)',
       'sources': [
+        'proto/begin_main_frame_and_commit_state.proto',
         'proto/commit_earlyout_reason.proto',
         'proto/compositor_message.proto',
         'proto/display_item.proto',
@@ -632,6 +635,7 @@
         'proto/skrrect.proto',
         'proto/skxfermode.proto',
         'proto/transform.proto',
+        'proto/vector2d.proto',
         'proto/vector2df.proto',
       ],
       'defines': [
