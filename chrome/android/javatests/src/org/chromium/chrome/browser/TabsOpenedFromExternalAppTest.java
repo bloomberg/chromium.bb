@@ -419,9 +419,9 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
         // Launch a first URL from an app.
         launchUrlFromExternalApp(url1, EXTERNAL_APP_1_ID, false);
 
-        // Click the text-field and type something.
+        // Focus the text-field and type something.
         Tab tab = getActivity().getActivityTab();
-        DOMUtils.clickNode(this, tab.getContentViewCore(), "textField");
+        DOMUtils.focusNode(tab.getContentViewCore().getWebContents(), "textField");
 
         // Some processing needs to happen before the test-field has the focus.
         CriteriaHelper.pollForCriteria(new ElementFocusedCriteria(
