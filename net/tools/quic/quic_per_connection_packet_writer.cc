@@ -9,9 +9,8 @@ namespace net {
 namespace tools {
 
 QuicPerConnectionPacketWriter::QuicPerConnectionPacketWriter(
-    QuicPacketWriter* shared_writer,
-    QuicConnection* connection)
-    : shared_writer_(shared_writer), connection_(connection) {}
+    QuicPacketWriter* shared_writer)
+    : shared_writer_(shared_writer) {}
 
 QuicPerConnectionPacketWriter::~QuicPerConnectionPacketWriter() {}
 

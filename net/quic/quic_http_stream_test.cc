@@ -66,11 +66,11 @@ class TestQuicConnection : public QuicConnection {
                      QuicConnectionId connection_id,
                      IPEndPoint address,
                      QuicConnectionHelper* helper,
-                     const QuicConnection::PacketWriterFactory& writer_factory)
+                     QuicPacketWriter* writer)
       : QuicConnection(connection_id,
                        address,
                        helper,
-                       writer_factory,
+                       writer,
                        true /* owns_writer */,
                        Perspective::IS_CLIENT,
                        versions) {}
@@ -94,20 +94,6 @@ class AutoClosingStream : public QuicHttpStream {
   }
 
   void OnDataAvailable() override { Close(false); }
-};
-
-class TestPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  explicit TestPacketWriterFactory(DatagramClientSocket* socket)
-      : socket_(socket) {}
-  ~TestPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* connection) const override {
-    return new QuicDefaultPacketWriter(socket_);
-  }
-
- private:
-  DatagramClientSocket* socket_;
 };
 
 }  // namespace
@@ -216,10 +202,9 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
     helper_.reset(
         new QuicConnectionHelper(runner_.get(), &clock_, &random_generator_));
-    TestPacketWriterFactory writer_factory(socket);
-    connection_ =
-        new TestQuicConnection(SupportedVersions(GetParam()), connection_id_,
-                               peer_addr_, helper_.get(), writer_factory);
+    connection_ = new TestQuicConnection(
+        SupportedVersions(GetParam()), connection_id_, peer_addr_,
+        helper_.get(), new QuicDefaultPacketWriter(socket));
     connection_->set_visitor(&visitor_);
     connection_->SetSendAlgorithm(send_algorithm_);
     session_.reset(new QuicChromiumClientSession(

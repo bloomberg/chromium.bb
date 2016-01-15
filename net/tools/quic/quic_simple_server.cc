@@ -32,33 +32,30 @@ const char kSourceAddressTokenSecret[] = "secret";
 // the limit.
 const int kReadBufferSize = 2 * kMaxPacketSize;
 
-// A packet writer factory which wraps a shared QuicSimpleServerPacketWriter
-// inside of a QuicPerConnectionPacketWriter. Instead of checking that
-// the shared_writer is the expected writer, this could instead cast
-// from QuicPacketWriter to QuicSimpleServerPacketWriter.
-class CustomPacketWriterFactory : public QuicDispatcher::PacketWriterFactory {
+class SimpleQuicDispatcher : public QuicDispatcher {
  public:
-  ~CustomPacketWriterFactory() override {}
+  SimpleQuicDispatcher(const QuicConfig& config,
+                       const QuicCryptoServerConfig* crypto_config,
+                       const QuicVersionVector& supported_versions,
+                       QuicConnectionHelperInterface* helper)
+      : QuicDispatcher(config, crypto_config, supported_versions, helper) {}
 
-  QuicPacketWriter* Create(QuicPacketWriter* writer,
-                           QuicConnection* connection) override {
-    if (writer == nullptr) {
-      LOG(DFATAL) << "shared_writer not initialized";
-      return nullptr;
-    }
-    if (writer != shared_writer_) {
-      LOG(DFATAL) << "writer mismatch";
-      return nullptr;
-    }
-    return new QuicSimplePerConnectionPacketWriter(shared_writer_, connection);
+ protected:
+  QuicServerSessionBase* CreateQuicSession(
+      QuicConnectionId connection_id,
+      const IPEndPoint& client_address) override {
+    QuicServerSessionBase* session =
+        QuicDispatcher::CreateQuicSession(connection_id, client_address);
+    static_cast<QuicSimplePerConnectionPacketWriter*>(
+        session->connection()->writer())
+        ->set_connection(session->connection());
+    return session;
   }
 
-  void set_shared_writer(QuicSimpleServerPacketWriter* shared_writer) {
-    shared_writer_ = shared_writer;
+  QuicPacketWriter* CreatePerConnectionWriter() override {
+    return new QuicSimplePerConnectionPacketWriter(
+        static_cast<QuicSimpleServerPacketWriter*>(writer()));
   }
-
- private:
-  QuicSimpleServerPacketWriter* shared_writer_;  // Not owned.
 };
 
 }  // namespace
@@ -147,12 +144,10 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
 
   socket_.swap(socket);
 
-  CustomPacketWriterFactory* factory = new CustomPacketWriterFactory();
-  dispatcher_.reset(new QuicDispatcher(config_, &crypto_config_,
-                                       supported_versions_, factory, helper_));
+  dispatcher_.reset(new SimpleQuicDispatcher(config_, &crypto_config_,
+                                             supported_versions_, helper_));
   QuicSimpleServerPacketWriter* writer =
       new QuicSimpleServerPacketWriter(socket_.get(), dispatcher_.get());
-  factory->set_shared_writer(writer);
   dispatcher_->InitializeWithWriter(writer);
 
   StartReading();

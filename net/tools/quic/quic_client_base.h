@@ -33,18 +33,6 @@ namespace tools {
 
 class QuicClientBase {
  public:
-  // A packet writer factory that always returns the same writer.
-  class DummyPacketWriterFactory : public QuicConnection::PacketWriterFactory {
-   public:
-    explicit DummyPacketWriterFactory(QuicPacketWriter* writer);
-    ~DummyPacketWriterFactory() override;
-
-    QuicPacketWriter* Create(QuicConnection* connection) const override;
-
-   private:
-    QuicPacketWriter* writer_;
-  };
-
   QuicClientBase(const QuicServerId& server_id,
                  const QuicVersionVector& supported_versions,
                  const QuicConfig& config,

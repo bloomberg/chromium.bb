@@ -205,11 +205,6 @@ void MockConnectionHelper::AdvanceTime(QuicTime::Delta delta) {
   clock_.AdvanceTime(delta);
 }
 
-QuicPacketWriter* NiceMockPacketWriterFactory::Create(
-    QuicConnection* /*connection*/) const {
-  return new testing::NiceMock<MockPacketWriter>();
-}
-
 MockConnection::MockConnection(MockConnectionHelper* helper,
                                Perspective perspective)
     : MockConnection(kTestConnectionId,
@@ -253,7 +248,7 @@ MockConnection::MockConnection(QuicConnectionId connection_id,
     : QuicConnection(connection_id,
                      address,
                      helper,
-                     NiceMockPacketWriterFactory(),
+                     new testing::NiceMock<MockPacketWriter>(),
                      /* owns_writer= */ true,
                      perspective,
                      supported_versions) {
@@ -704,51 +699,6 @@ QuicVersionVector SupportedVersions(QuicVersion version) {
   QuicVersionVector versions;
   versions.push_back(version);
   return versions;
-}
-
-TestWriterFactory::TestWriterFactory() : current_writer_(nullptr) {}
-TestWriterFactory::~TestWriterFactory() {}
-
-QuicPacketWriter* TestWriterFactory::Create(QuicPacketWriter* writer,
-                                            QuicConnection* connection) {
-  return new PerConnectionPacketWriter(this, writer, connection);
-}
-
-void TestWriterFactory::OnPacketSent(WriteResult result) {
-  if (current_writer_ != nullptr && result.status == WRITE_STATUS_ERROR) {
-    current_writer_->connection()->OnWriteError(result.error_code);
-    current_writer_ = nullptr;
-  }
-}
-
-void TestWriterFactory::Unregister(PerConnectionPacketWriter* writer) {
-  if (current_writer_ == writer) {
-    current_writer_ = nullptr;
-  }
-}
-
-TestWriterFactory::PerConnectionPacketWriter::PerConnectionPacketWriter(
-    TestWriterFactory* factory,
-    QuicPacketWriter* writer,
-    QuicConnection* connection)
-    : QuicPerConnectionPacketWriter(writer, connection), factory_(factory) {}
-
-TestWriterFactory::PerConnectionPacketWriter::~PerConnectionPacketWriter() {
-  factory_->Unregister(this);
-}
-
-WriteResult TestWriterFactory::PerConnectionPacketWriter::WritePacket(
-    const char* buffer,
-    size_t buf_len,
-    const IPAddressNumber& self_address,
-    const IPEndPoint& peer_address) {
-  // A DCHECK(factory_current_writer_ == nullptr) would be wrong here -- this
-  // class may be used in a setting where connection()->OnPacketSent() is called
-  // in a different way, so TestWriterFactory::OnPacketSent might never be
-  // called.
-  factory_->current_writer_ = this;
-  return tools::QuicPerConnectionPacketWriter::WritePacket(
-      buffer, buf_len, self_address, peer_address);
 }
 
 MockQuicConnectionDebugVisitor::MockQuicConnectionDebugVisitor() {}

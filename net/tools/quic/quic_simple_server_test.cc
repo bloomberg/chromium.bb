@@ -27,7 +27,6 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
                        CryptoTestUtils::ProofSourceForTesting()),
         dispatcher_(config_,
                     &crypto_config_,
-                    new tools::QuicDispatcher::DefaultPacketWriterFactory(),
                     new net::test::MockConnectionHelper) {
     dispatcher_.InitializeWithWriter(nullptr);
   }

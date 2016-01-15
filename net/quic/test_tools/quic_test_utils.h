@@ -328,17 +328,6 @@ class MockConnectionHelper : public QuicConnectionHelperInterface {
   DISALLOW_COPY_AND_ASSIGN(MockConnectionHelper);
 };
 
-class NiceMockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  NiceMockPacketWriterFactory() {}
-  ~NiceMockPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* /*connection*/) const override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(NiceMockPacketWriterFactory);
-};
-
 class MockConnection : public QuicConnection {
  public:
   // Uses a ConnectionId of 42 and 127.0.0.1:123.
@@ -690,46 +679,6 @@ class MockNetworkChangeVisitor
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockNetworkChangeVisitor);
-};
-
-// Creates per-connection packet writers that register themselves with the
-// TestWriterFactory on each write so that TestWriterFactory::OnPacketSent can
-// be routed to the appropriate QuicConnection.
-class TestWriterFactory : public tools::QuicDispatcher::PacketWriterFactory {
- public:
-  TestWriterFactory();
-  ~TestWriterFactory() override;
-
-  QuicPacketWriter* Create(QuicPacketWriter* writer,
-                           QuicConnection* connection) override;
-
-  // Calls OnPacketSent on the last QuicConnection to write through one of the
-  // packet writers created by this factory.
-  void OnPacketSent(WriteResult result);
-
- private:
-  class PerConnectionPacketWriter
-      : public tools::QuicPerConnectionPacketWriter {
-   public:
-    PerConnectionPacketWriter(TestWriterFactory* factory,
-                              QuicPacketWriter* writer,
-                              QuicConnection* connection);
-    ~PerConnectionPacketWriter() override;
-
-    WriteResult WritePacket(const char* buffer,
-                            size_t buf_len,
-                            const IPAddressNumber& self_address,
-                            const IPEndPoint& peer_address) override;
-
-   private:
-    TestWriterFactory* factory_;
-  };
-
-  // If an asynchronous write is happening and |writer| gets deleted, this
-  // clears the pointer to it to prevent use-after-free.
-  void Unregister(PerConnectionPacketWriter* writer);
-
-  PerConnectionPacketWriter* current_writer_;
 };
 
 class MockQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {

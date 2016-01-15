@@ -117,26 +117,6 @@ QuicConfig InitializeQuicConfig(const QuicTagVector& connection_options,
   return config;
 }
 
-class DefaultPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  explicit DefaultPacketWriterFactory(DatagramClientSocket* socket)
-      : socket_(socket) {}
-  ~DefaultPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* connection) const override;
-
- private:
-  DatagramClientSocket* socket_;
-};
-
-QuicPacketWriter* DefaultPacketWriterFactory::Create(
-    QuicConnection* connection) const {
-  scoped_ptr<QuicDefaultPacketWriter> writer(
-      new QuicDefaultPacketWriter(socket_));
-  writer->SetConnection(connection);
-  return writer.release();
-}
-
 }  // namespace
 
 // Responsible for creating a new QUIC session to the specified server, and
@@ -1269,9 +1249,8 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
     scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
         socket.get(), clock_.get(), session, yield_after_packets_,
         yield_after_duration_, session->net_log()));
-    DefaultPacketWriterFactory packet_writer_factory(socket.get());
     scoped_ptr<QuicPacketWriter> new_writer(
-        packet_writer_factory.Create(connection));
+        new QuicDefaultPacketWriter(socket.get()));
 
     if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
                                   std::move(new_writer))) {
@@ -1416,17 +1395,18 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
     DCHECK_EQ(0u, port_suggester->call_count());
   }
 
-  DefaultPacketWriterFactory packet_writer_factory(socket.get());
   if (!helper_.get()) {
     helper_.reset(
         new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
                                  clock_.get(), random_generator_));
   }
 
+  QuicDefaultPacketWriter* writer = new QuicDefaultPacketWriter(socket.get());
   QuicConnectionId connection_id = random_generator_->RandUint64();
   QuicConnection* connection = new QuicConnection(
-      connection_id, addr, helper_.get(), packet_writer_factory,
-      true /* owns_writer */, Perspective::IS_CLIENT, supported_versions_);
+      connection_id, addr, helper_.get(), writer, true /* owns_writer */,
+      Perspective::IS_CLIENT, supported_versions_);
+  writer->SetConnection(connection);
   connection->SetMaxPacketLength(max_packet_length_);
 
   InitializeCachedStateInCryptoConfig(server_id, server_info);

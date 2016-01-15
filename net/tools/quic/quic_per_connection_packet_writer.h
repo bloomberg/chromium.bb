@@ -15,17 +15,14 @@ namespace net {
 
 namespace tools {
 
-// A connection-specific packet writer that wraps a shared writer and keeps a
-// reference to the connection.
+// A connection-specific packet writer that wraps a shared writer.
 class QuicPerConnectionPacketWriter : public QuicPacketWriter {
  public:
-  // Does not take ownership of |shared_writer| or |connection|.
-  QuicPerConnectionPacketWriter(QuicPacketWriter* shared_writer,
-                                QuicConnection* connection);
+  // Does not take ownership of |shared_writer|.
+  QuicPerConnectionPacketWriter(QuicPacketWriter* shared_writer);
   ~QuicPerConnectionPacketWriter() override;
 
   QuicPacketWriter* shared_writer() const { return shared_writer_; }
-  QuicConnection* connection() const { return connection_; }
 
   // Default implementation of the QuicPacketWriter interface: Passes everything
   // to |shared_writer_|.
@@ -40,7 +37,6 @@ class QuicPerConnectionPacketWriter : public QuicPacketWriter {
 
  private:
   QuicPacketWriter* shared_writer_;  // Not owned.
-  QuicConnection* connection_;       // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicPerConnectionPacketWriter);
 };

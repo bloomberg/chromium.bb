@@ -129,22 +129,6 @@ class FakeP2PDatagramSocket : public Socket {
   base::WeakPtrFactory<FakeP2PDatagramSocket> weak_factory_;
 };
 
-class DefaultPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  explicit DefaultPacketWriterFactory(Socket* socket) : socket_(socket) {}
-  ~DefaultPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* connection) const override {
-    scoped_ptr<net::QuicDefaultPacketWriter> writer(
-        new net::QuicDefaultPacketWriter(socket_));
-    writer->SetConnection(connection);
-    return writer.release();
-  }
-
- private:
-  Socket* socket_;
-};
-
 class TestP2PStreamDelegate : public QuicP2PStream::Delegate {
  public:
   TestP2PStreamDelegate() {}
@@ -241,11 +225,13 @@ class QuicP2PSessionTest : public ::testing::Test {
   scoped_ptr<QuicP2PSession> CreateP2PSession(scoped_ptr<Socket> socket,
                                               QuicP2PCryptoConfig crypto_config,
                                               Perspective perspective) {
-    DefaultPacketWriterFactory writer_factory(socket.get());
+    net::QuicDefaultPacketWriter* writer =
+        new net::QuicDefaultPacketWriter(socket.get());
     net::IPAddressNumber ip(net::kIPv4AddressSize, 0);
     scoped_ptr<QuicConnection> quic_connection1(new QuicConnection(
-        0, net::IPEndPoint(ip, 0), &quic_helper_, writer_factory,
+        0, net::IPEndPoint(ip, 0), &quic_helper_, writer,
         true /* owns_writer */, perspective, QuicSupportedVersions()));
+    writer->SetConnection(quic_connection1.get());
 
     scoped_ptr<QuicP2PSession> result(
         new QuicP2PSession(config_, crypto_config, std::move(quic_connection1),

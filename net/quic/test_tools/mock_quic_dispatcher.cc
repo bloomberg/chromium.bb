@@ -12,12 +12,10 @@ namespace test {
 MockQuicDispatcher::MockQuicDispatcher(
     const QuicConfig& config,
     const QuicCryptoServerConfig* crypto_config,
-    QuicDispatcher::PacketWriterFactory* packet_writer_factory,
     QuicConnectionHelperInterface* helper)
     : QuicDispatcher(config,
                      crypto_config,
                      QuicSupportedVersions(),
-                     packet_writer_factory,
                      helper) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}

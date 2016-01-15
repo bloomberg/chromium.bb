@@ -53,23 +53,6 @@ const char kServerHostname[] = "test.example.com";
 const uint16_t kServerPort = 443;
 const size_t kMaxReadersPerQuicSession = 5;
 
-class DefaultPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  explicit DefaultPacketWriterFactory(DatagramClientSocket* socket)
-      : socket_(socket) {}
-  ~DefaultPacketWriterFactory() override {}
-
-  QuicPacketWriter* Create(QuicConnection* connection) const override {
-    scoped_ptr<net::QuicDefaultPacketWriter> writer(
-        new net::QuicDefaultPacketWriter(socket_));
-    writer->SetConnection(connection);
-    return writer.release();
-  }
-
- private:
-  DatagramClientSocket* socket_;
-};
-
 class QuicChromiumClientSessionTest
     : public ::testing::TestWithParam<QuicVersion> {
  protected:
@@ -89,10 +72,12 @@ class QuicChromiumClientSessionTest
                                                    base::Bind(&base::RandInt),
                                                    &net_log_, NetLog::Source());
     socket->Connect(kIpEndPoint);
-    DefaultPacketWriterFactory writer_factory(socket.get());
+    QuicDefaultPacketWriter* writer =
+        new net::QuicDefaultPacketWriter(socket.get());
     QuicConnection* connection = new QuicConnection(
-        0, kIpEndPoint, &helper_, writer_factory, true, Perspective::IS_CLIENT,
+        0, kIpEndPoint, &helper_, writer, true, Perspective::IS_CLIENT,
         SupportedVersions(GetParam()));
+    writer->SetConnection(connection);
     session_.reset(new QuicChromiumClientSession(
         connection, std::move(socket),
         /*stream_factory=*/nullptr, &crypto_client_stream_factory_, &clock_,
@@ -140,7 +125,6 @@ class QuicChromiumClientSessionTest
   MockClock clock_;
   MockRandom random_;
   QuicConnectionHelper helper_;
-  scoped_ptr<DefaultPacketWriterFactory> writer_factory_;
   TransportSecurityState transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   scoped_ptr<QuicChromiumClientSession> session_;

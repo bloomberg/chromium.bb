@@ -20,7 +20,6 @@ class MockQuicDispatcher : public tools::QuicDispatcher {
  public:
   MockQuicDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig* crypto_config,
-                     PacketWriterFactory* packet_writer_factory,
                      QuicConnectionHelperInterface* helper);
 
   ~MockQuicDispatcher() override;

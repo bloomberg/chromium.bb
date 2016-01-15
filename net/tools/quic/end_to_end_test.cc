@@ -68,7 +68,6 @@ using net::test::QuicSentPacketManagerPeer;
 using net::test::QuicSessionPeer;
 using net::test::QuicSpdySessionPeer;
 using net::test::ReliableQuicStreamPeer;
-using net::test::TestWriterFactory;
 using net::test::ValueRestore;
 using net::test::kClientDataStreamId1;
 using net::test::kInitialSessionFlowControlWindowForTest;
@@ -389,7 +388,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
 
   void SetUp() override {
     // The ownership of these gets transferred to the QuicPacketWriterWrapper
-    // and TestWriterFactory when Initialize() is executed.
+    // when Initialize() is executed.
     client_writer_ = new PacketDroppingTestWriter();
     server_writer_ = new PacketDroppingTestWriter();
   }
@@ -413,9 +412,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
         IPEndPoint(server_address_.address(), server_thread_->GetPort());
     QuicDispatcher* dispatcher =
         QuicServerPeer::GetDispatcher(server_thread_->server());
-    TestWriterFactory* packet_writer_factory = new TestWriterFactory();
-    QuicDispatcherPeer::SetPacketWriterFactory(dispatcher,
-                                               packet_writer_factory);
     QuicDispatcherPeer::UseWriter(dispatcher, server_writer_);
 
     FLAGS_enable_quic_stateless_reject_support =

@@ -11,10 +11,9 @@ namespace net {
 namespace tools {
 
 QuicSimplePerConnectionPacketWriter::QuicSimplePerConnectionPacketWriter(
-    QuicSimpleServerPacketWriter* shared_writer,
-    QuicConnection* connection)
+    QuicSimpleServerPacketWriter* shared_writer)
     : shared_writer_(shared_writer),
-      connection_(connection),
+      connection_(nullptr),
       weak_factory_(this) {}
 
 QuicSimplePerConnectionPacketWriter::~QuicSimplePerConnectionPacketWriter() {}

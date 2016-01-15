@@ -25,11 +25,11 @@ class QuicSimplePerConnectionPacketWriter : public QuicPacketWriter {
  public:
   // Does not take ownership of |shared_writer| or |connection|.
   QuicSimplePerConnectionPacketWriter(
-      QuicSimpleServerPacketWriter* shared_writer,
-      QuicConnection* connection);
+      QuicSimpleServerPacketWriter* shared_writer);
   ~QuicSimplePerConnectionPacketWriter() override;
 
   QuicPacketWriter* shared_writer() const;
+  void set_connection(QuicConnection* connection) { connection_ = connection; }
   QuicConnection* connection() const { return connection_; }
 
   // Default implementation of the QuicPacketWriter interface: Passes everything

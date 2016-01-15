@@ -231,8 +231,6 @@ void QuicClient::StartConnect() {
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
 
-  DummyPacketWriterFactory factory(writer);
-
   if (connected_or_attempting_connect()) {
     // Before we destroy the last session and create a new one, gather its stats
     // and update the stats for the overall connection.
@@ -248,7 +246,7 @@ void QuicClient::StartConnect() {
   }
 
   CreateQuicClientSession(new QuicConnection(
-      GetNextConnectionId(), server_address_, helper(), factory,
+      GetNextConnectionId(), server_address_, helper(), writer,
       /* owns_writer= */ false, Perspective::IS_CLIENT, supported_versions()));
 
   // Reset |writer_| after |session()| so that the old writer outlives the old
@@ -376,7 +374,6 @@ bool QuicClient::MigrateSocket(const IPAddressNumber& new_host) {
   session()->connection()->SetSelfAddress(client_address_);
 
   QuicPacketWriter* writer = CreateQuicPacketWriter();
-  DummyPacketWriterFactory factory(writer);
   set_writer(writer);
   session()->connection()->SetQuicPacketWriter(writer, false);
 

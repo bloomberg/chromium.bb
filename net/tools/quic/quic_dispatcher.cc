@@ -144,36 +144,15 @@ class QuicDispatcher::QuicFramerVisitor : public QuicFramerVisitorInterface {
   QuicConnectionId connection_id_;
 };
 
-QuicPacketWriter* QuicDispatcher::DefaultPacketWriterFactory::Create(
-    QuicPacketWriter* writer,
-    QuicConnection* connection) {
-  return new QuicPerConnectionPacketWriter(writer, connection);
-}
-
-QuicDispatcher::PacketWriterFactoryAdapter::PacketWriterFactoryAdapter(
-    QuicDispatcher* dispatcher)
-    : dispatcher_(dispatcher) {}
-
-QuicDispatcher::PacketWriterFactoryAdapter::~PacketWriterFactoryAdapter() {}
-
-QuicPacketWriter* QuicDispatcher::PacketWriterFactoryAdapter::Create(
-    QuicConnection* connection) const {
-  return dispatcher_->packet_writer_factory_->Create(dispatcher_->writer_.get(),
-                                                     connection);
-}
-
 QuicDispatcher::QuicDispatcher(const QuicConfig& config,
                                const QuicCryptoServerConfig* crypto_config,
                                const QuicVersionVector& supported_versions,
-                               PacketWriterFactory* packet_writer_factory,
                                QuicConnectionHelperInterface* helper)
     : config_(config),
       crypto_config_(crypto_config),
       helper_(helper),
       delete_sessions_alarm_(
           helper_->CreateAlarm(new DeleteSessionsAlarm(this))),
-      packet_writer_factory_(packet_writer_factory),
-      connection_writer_factory_(this),
       supported_versions_(supported_versions),
       current_packet_(nullptr),
       framer_(supported_versions,
@@ -451,7 +430,7 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
     const IPEndPoint& client_address) {
   // The QuicServerSessionBase takes ownership of |connection| below.
   QuicConnection* connection = new QuicConnection(
-      connection_id, client_address, helper_.get(), connection_writer_factory_,
+      connection_id, client_address, helper_.get(), CreatePerConnectionWriter(),
       /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions_);
 
   QuicServerSessionBase* session =
@@ -463,8 +442,7 @@ QuicServerSessionBase* QuicDispatcher::CreateQuicSession(
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
   // TODO(rjshade): The QuicTimeWaitListManager should take ownership of the
   // per-connection packet writer.
-  time_wait_list_writer_.reset(
-      packet_writer_factory_->Create(writer_.get(), nullptr));
+  time_wait_list_writer_.reset(CreatePerConnectionWriter());
   return new QuicTimeWaitListManager(time_wait_list_writer_.get(), this,
                                      helper_.get());
 }
@@ -484,6 +462,10 @@ bool QuicDispatcher::HandlePacketForTimeWait(
   // Continue parsing the packet to extract the packet number.  Then
   // send it to the time wait manager in OnUnathenticatedHeader.
   return true;
+}
+
+QuicPacketWriter* QuicDispatcher::CreatePerConnectionWriter() {
+  return new QuicPerConnectionPacketWriter(writer_.get());
 }
 
 void QuicDispatcher::SetLastError(QuicErrorCode error) {

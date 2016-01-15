@@ -68,9 +68,8 @@ class QuicTestDispatcher : public QuicDispatcher {
   QuicTestDispatcher(const QuicConfig& config,
                      const QuicCryptoServerConfig* crypto_config,
                      const QuicVersionVector& versions,
-                     PacketWriterFactory* factory,
                      QuicConnectionHelperInterface* helper)
-      : QuicDispatcher(config, crypto_config, versions, factory, helper),
+      : QuicDispatcher(config, crypto_config, versions, helper),
         session_factory_(nullptr),
         stream_factory_(nullptr),
         crypto_stream_factory_(nullptr) {}
@@ -83,7 +82,7 @@ class QuicTestDispatcher : public QuicDispatcher {
       return QuicDispatcher::CreateQuicSession(id, client);
     }
     QuicConnection* connection = new QuicConnection(
-        id, client, helper(), connection_writer_factory(),
+        id, client, helper(), CreatePerConnectionWriter(),
         /* owns_writer= */ true, Perspective::IS_SERVER, supported_versions());
 
     QuicServerSessionBase* session = nullptr;
@@ -137,10 +136,9 @@ QuicTestServer::QuicTestServer(ProofSource* proof_source,
     : QuicServer(proof_source, config, supported_versions) {}
 
 QuicDispatcher* QuicTestServer::CreateQuicDispatcher() {
-  return new QuicTestDispatcher(
-      config(), &crypto_config(), supported_versions(),
-      new QuicDispatcher::DefaultPacketWriterFactory(),
-      new QuicEpollConnectionHelper(epoll_server()));
+  return new QuicTestDispatcher(config(), &crypto_config(),
+                                supported_versions(),
+                                new QuicEpollConnectionHelper(epoll_server()));
 }
 
 void QuicTestServer::SetSessionFactory(SessionFactory* factory) {

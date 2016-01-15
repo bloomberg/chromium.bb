@@ -45,28 +45,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
                        public ProcessPacketInterface,
                        public QuicBlockedWriterInterface {
  public:
-  // Creates per-connection packet writers out of the QuicDispatcher's shared
-  // QuicPacketWriter. The per-connection writers' IsWriteBlocked() state must
-  // always be the same as the shared writer's IsWriteBlocked(), or else the
-  // QuicDispatcher::OnCanWrite logic will not work. (This will hopefully be
-  // cleaned up for bug 16950226.)
-  class PacketWriterFactory {
-   public:
-    virtual ~PacketWriterFactory() {}
-
-    virtual QuicPacketWriter* Create(QuicPacketWriter* writer,
-                                     QuicConnection* connection) = 0;
-  };
-
-  // Creates ordinary QuicPerConnectionPacketWriter instances.
-  class DefaultPacketWriterFactory : public PacketWriterFactory {
-   public:
-    ~DefaultPacketWriterFactory() override {}
-
-    QuicPacketWriter* Create(QuicPacketWriter* writer,
-                             QuicConnection* connection) override;
-  };
-
   // Ideally we'd have a linked_hash_set: the  boolean is unused.
   typedef linked_hash_map<QuicBlockedWriterInterface*, bool> WriteBlockedList;
 
@@ -77,7 +55,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
   QuicDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig* crypto_config,
                  const QuicVersionVector& supported_versions,
-                 PacketWriterFactory* packet_writer_factory,
                  QuicConnectionHelperInterface* helper);
 
   ~QuicDispatcher() override;
@@ -189,30 +166,18 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   QuicPacketWriter* writer() { return writer_.get(); }
 
-  const QuicConnection::PacketWriterFactory& connection_writer_factory() {
-    return connection_writer_factory_;
-  }
+  // Creates per-connection packet writers out of the QuicDispatcher's shared
+  // QuicPacketWriter. The per-connection writers' IsWriteBlocked() state must
+  // always be the same as the shared writer's IsWriteBlocked(), or else the
+  // QuicDispatcher::OnCanWrite logic will not work. (This will hopefully be
+  // cleaned up for bug 16950226.)
+  virtual QuicPacketWriter* CreatePerConnectionWriter();
 
   void SetLastError(QuicErrorCode error);
 
  private:
   class QuicFramerVisitor;
   friend class net::tools::test::QuicDispatcherPeer;
-
-  // An adapter that creates packet writers using the dispatcher's
-  // PacketWriterFactory and shared writer. Essentially, it just curries the
-  // writer argument away from QuicDispatcher::PacketWriterFactory.
-  class PacketWriterFactoryAdapter
-      : public QuicConnection::PacketWriterFactory {
-   public:
-    explicit PacketWriterFactoryAdapter(QuicDispatcher* dispatcher);
-    ~PacketWriterFactoryAdapter() override;
-
-    QuicPacketWriter* Create(QuicConnection* connection) const override;
-
-   private:
-    QuicDispatcher* dispatcher_;
-  };
 
   // Called by |framer_visitor_| when the private header has been parsed
   // of a data packet that is destined for the time wait manager.
@@ -251,12 +216,6 @@ class QuicDispatcher : public QuicServerSessionVisitor,
 
   // A per-connection writer that is passed to the time wait list manager.
   scoped_ptr<QuicPacketWriter> time_wait_list_writer_;
-
-  // Used to create per-connection packet writers, not |writer_| itself.
-  scoped_ptr<PacketWriterFactory> packet_writer_factory_;
-
-  // Passed in to QuicConnection for it to create the per-connection writers
-  PacketWriterFactoryAdapter connection_writer_factory_;
 
   // This vector contains QUIC versions which we currently support.
   // This should be ordered such that the highest supported version is the first

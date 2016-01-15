@@ -29,10 +29,6 @@ class QuicDispatcherPeer {
 
   static QuicPacketWriter* GetWriter(QuicDispatcher* dispatcher);
 
-  static void SetPacketWriterFactory(
-      QuicDispatcher* dispatcher,
-      QuicDispatcher::PacketWriterFactory* packet_writer_factory);
-
   static QuicConnectionHelperInterface* GetHelper(QuicDispatcher* dispatcher);
 
   static QuicDispatcher::WriteBlockedList* GetWriteBlockedList(

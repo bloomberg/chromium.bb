@@ -36,17 +36,6 @@ bool QuicClientBase::Initialize() {
   return true;
 }
 
-QuicClientBase::DummyPacketWriterFactory::DummyPacketWriterFactory(
-    QuicPacketWriter* writer)
-    : writer_(writer) {}
-
-QuicClientBase::DummyPacketWriterFactory::~DummyPacketWriterFactory() {}
-
-QuicPacketWriter* QuicClientBase::DummyPacketWriterFactory::Create(
-    QuicConnection* /*connection*/) const {
-  return writer_;
-}
-
 ProofVerifier* QuicClientBase::proof_verifier() const {
   return crypto_config_.proof_verifier();
 }

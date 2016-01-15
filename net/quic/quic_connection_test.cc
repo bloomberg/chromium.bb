@@ -413,20 +413,20 @@ class TestConnection : public QuicConnection {
   TestConnection(QuicConnectionId connection_id,
                  IPEndPoint address,
                  TestConnectionHelper* helper,
-                 const PacketWriterFactory& factory,
+                 TestPacketWriter* writer,
                  Perspective perspective,
                  QuicVersion version)
       : QuicConnection(connection_id,
                        address,
                        helper,
-                       factory,
+                       writer,
                        /* owns_writer= */ false,
                        perspective,
                        SupportedVersions(version)) {
     // Disable tail loss probes for most tests.
     QuicSentPacketManagerPeer::SetMaxTailLossProbes(
         QuicConnectionPeer::GetSentPacketManager(this), 0);
-    writer()->set_perspective(perspective);
+    writer->set_perspective(perspective);
   }
 
   void SendAck() { QuicConnectionPeer::SendAck(this); }
@@ -628,16 +628,6 @@ class FecQuicConnectionDebugVisitor : public QuicConnectionDebugVisitor {
   QuicPacketHeader revived_header_;
 };
 
-class MockPacketWriterFactory : public QuicConnection::PacketWriterFactory {
- public:
-  explicit MockPacketWriterFactory(QuicPacketWriter* writer) {
-    ON_CALL(*this, Create(_)).WillByDefault(Return(writer));
-  }
-  ~MockPacketWriterFactory() override {}
-
-  MOCK_CONST_METHOD1(Create, QuicPacketWriter*(QuicConnection* connection));
-};
-
 // Run tests with combinations of {QuicVersion, fec_send_policy}.
 struct TestParams {
   TestParams(QuicVersion version, FecSendPolicy fec_send_policy)
@@ -680,11 +670,10 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
                       &buffer_allocator_,
                       /*delegate=*/nullptr),
         writer_(new TestPacketWriter(version(), &clock_)),
-        factory_(writer_.get()),
         connection_(connection_id_,
                     kPeerAddress,
                     helper_.get(),
-                    factory_,
+                    writer_.get(),
                     Perspective::IS_CLIENT,
                     version()),
         creator_(QuicConnectionPeer::GetPacketCreator(&connection_)),
@@ -1106,7 +1095,6 @@ class QuicConnectionTest : public ::testing::TestWithParam<TestParams> {
   scoped_ptr<TestConnectionHelper> helper_;
   QuicPacketCreator peer_creator_;
   scoped_ptr<TestPacketWriter> writer_;
-  NiceMock<MockPacketWriterFactory> factory_;
   TestConnection connection_;
   QuicPacketCreator* creator_;
   QuicPacketGenerator* generator_;
@@ -1137,7 +1125,7 @@ TEST_P(QuicConnectionTest, MaxPacketSize) {
 TEST_P(QuicConnectionTest, SmallerServerMaxPacketSize) {
   QuicConnectionId connection_id = 42;
   TestConnection connection(connection_id, kPeerAddress, helper_.get(),
-                            factory_, Perspective::IS_SERVER, version());
+                            writer_.get(), Perspective::IS_SERVER, version());
   EXPECT_EQ(Perspective::IS_SERVER, connection.perspective());
   EXPECT_EQ(1000u, connection.max_packet_length());
 }
@@ -1223,7 +1211,7 @@ TEST_P(QuicConnectionTest, LimitMaxPacketSizeByWriterForNewConnection) {
   const QuicByteCount lower_max_packet_size = 1240;
   writer_->set_max_packet_size(lower_max_packet_size);
   TestConnection connection(connection_id, kPeerAddress, helper_.get(),
-                            factory_, Perspective::IS_CLIENT, version());
+                            writer_.get(), Perspective::IS_CLIENT, version());
   EXPECT_EQ(Perspective::IS_CLIENT, connection.perspective());
   EXPECT_EQ(lower_max_packet_size, connection.max_packet_length());
 }
@@ -5430,10 +5418,10 @@ TEST_P(QuicConnectionTest, OnPacketHeaderDebugVisitor) {
 }
 
 TEST_P(QuicConnectionTest, Pacing) {
-  TestConnection server(connection_id_, kSelfAddress, helper_.get(), factory_,
-                        Perspective::IS_SERVER, version());
-  TestConnection client(connection_id_, kPeerAddress, helper_.get(), factory_,
-                        Perspective::IS_CLIENT, version());
+  TestConnection server(connection_id_, kSelfAddress, helper_.get(),
+                        writer_.get(), Perspective::IS_SERVER, version());
+  TestConnection client(connection_id_, kPeerAddress, helper_.get(),
+                        writer_.get(), Perspective::IS_CLIENT, version());
   EXPECT_FALSE(client.sent_packet_manager().using_pacing());
   EXPECT_FALSE(server.sent_packet_manager().using_pacing());
 }
