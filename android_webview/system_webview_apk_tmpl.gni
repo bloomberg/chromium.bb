@@ -26,5 +26,10 @@ template("system_webview_apk_tmpl") {
         rebase_path("$root_gen_dir/CHROME_VERSION.json", root_out_dir)
     native_lib_version_arg = "@FileArg($_native_lib_file:full-quoted)"
     extensions_to_not_compress = ".lpak,.pak,.bin,.dat"
+
+    if (!is_debug) {
+      proguard_enabled = true
+      proguard_configs = [ "//android_webview/apk/java/proguard.flags" ]
+    }
   }
 }
