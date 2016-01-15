@@ -184,6 +184,9 @@ def _CopyRuntime(target_dir, source_dir, target_cpu, debug):
   suffix = "d.dll" if debug else ".dll"
   if GetVisualStudioVersion() == '2015':
     _CopyRuntime2015(target_dir, source_dir, '%s140' + suffix)
+    if debug:
+      _CopyRuntimeImpl(os.path.join(target_dir, 'ucrtbased.dll'),
+                       os.path.join(source_dir, 'ucrtbased.dll'))
   else:
     _CopyRuntime2013(target_dir, source_dir, 'msvc%s120' + suffix)
 
@@ -262,7 +265,8 @@ def _GetDesiredVsToolchainHashes():
   """Load a list of SHA1s corresponding to the toolchains that we want installed
   to build with."""
   if GetVisualStudioVersion() == '2015':
-    return ['17c7ddb3595be5c6b9c98b6f930adad7e4456671'] # Update 1
+    # Update 1 with Debuggers, UCRT installers and ucrtbased.dll
+    return ['524956ec6e64e68fead3773e3ce318537657b404']
   else:
     # Default to VS2013.
     return ['9ff97c632ae1fee0c98bcd53e71770eb3a0d8deb']
