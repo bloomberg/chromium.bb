@@ -45,7 +45,7 @@ class HostResolver;
 class HttpServerProperties;
 class QuicClock;
 class QuicChromiumClientSession;
-class QuicConnectionHelper;
+class QuicChromiumConnectionHelper;
 class QuicCryptoClientStreamFactory;
 class QuicRandom;
 class QuicServerId;
@@ -271,7 +271,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // It returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob(const QuicServerId& server_id);
 
-  QuicConnectionHelper* helper() { return helper_.get(); }
+  QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 
   bool enable_port_selection() const { return enable_port_selection_; }
 
@@ -389,7 +389,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   SocketPerformanceWatcherFactory* socket_performance_watcher_factory_;
 
   // The helper used for all connections.
-  scoped_ptr<QuicConnectionHelper> helper_;
+  scoped_ptr<QuicChromiumConnectionHelper> helper_;
 
   // Contains owning pointers to all sessions that currently exist.
   SessionIdMap all_sessions_;

@@ -23,7 +23,7 @@ class QuicSpdySession;
 
 // A client-initiated ReliableQuicStream.  Instances of this class
 // are owned by the QuicClientSession which created them.
-class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicSpdyStream {
+class NET_EXPORT_PRIVATE QuicChromiumClientStream : public QuicSpdyStream {
  public:
   // Delegate handles protocol specific behavior of a quic stream.
   class NET_EXPORT_PRIVATE Delegate {
@@ -53,11 +53,11 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicSpdyStream {
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
 
-  QuicReliableClientStream(QuicStreamId id,
+  QuicChromiumClientStream(QuicStreamId id,
                            QuicSpdySession* session,
                            const BoundNetLog& net_log);
 
-  ~QuicReliableClientStream() override;
+  ~QuicChromiumClientStream() override;
 
   // QuicSpdyStream
   void OnStreamHeadersComplete(bool fin, size_t frame_len) override;
@@ -106,9 +106,9 @@ class NET_EXPORT_PRIVATE QuicReliableClientStream : public QuicSpdyStream {
 
   CompletionCallback callback_;
 
-  base::WeakPtrFactory<QuicReliableClientStream> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumClientStream> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicReliableClientStream);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumClientStream);
 };
 
 }  // namespace net

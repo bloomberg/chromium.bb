@@ -11,8 +11,8 @@
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
 #include "net/quic/crypto/quic_random.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_packet_reader.h"
@@ -377,9 +377,10 @@ QuicConnectionId QuicSimpleClient::GenerateNewConnectionId() {
   return helper()->GetRandomGenerator()->RandUint64();
 }
 
-QuicConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
-  return new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
-                                  &clock_, QuicRandom::GetInstance());
+QuicChromiumConnectionHelper* QuicSimpleClient::CreateQuicConnectionHelper() {
+  return new QuicChromiumConnectionHelper(
+      base::ThreadTaskRunnerHandle::Get().get(), &clock_,
+      QuicRandom::GetInstance());
 }
 
 QuicPacketWriter* QuicSimpleClient::CreateQuicPacketWriter() {

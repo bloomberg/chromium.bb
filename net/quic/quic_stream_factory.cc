@@ -34,9 +34,9 @@
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/port_suggester.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
@@ -1396,9 +1396,9 @@ int QuicStreamFactory::CreateSession(const QuicServerId& server_id,
   }
 
   if (!helper_.get()) {
-    helper_.reset(
-        new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
-                                 clock_.get(), random_generator_));
+    helper_.reset(new QuicChromiumConnectionHelper(
+        base::ThreadTaskRunnerHandle::Get().get(), clock_.get(),
+        random_generator_));
   }
 
   QuicDefaultPacketWriter* writer = new QuicDefaultPacketWriter(socket.get());

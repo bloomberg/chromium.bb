@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 
 #include "net/quic/test_tools/mock_clock.h"
 #include "net/quic/test_tools/mock_random.h"
@@ -29,27 +29,27 @@ class TestDelegate : public QuicAlarm::Delegate {
   bool fired_;
 };
 
-class QuicConnectionHelperTest : public ::testing::Test {
+class QuicChromiumConnectionHelperTest : public ::testing::Test {
  protected:
-  QuicConnectionHelperTest()
+  QuicChromiumConnectionHelperTest()
       : runner_(new TestTaskRunner(&clock_)),
         helper_(runner_.get(), &clock_, &random_generator_) {}
 
   scoped_refptr<TestTaskRunner> runner_;
-  QuicConnectionHelper helper_;
+  QuicChromiumConnectionHelper helper_;
   MockClock clock_;
   MockRandom random_generator_;
 };
 
-TEST_F(QuicConnectionHelperTest, GetClock) {
+TEST_F(QuicChromiumConnectionHelperTest, GetClock) {
   EXPECT_EQ(&clock_, helper_.GetClock());
 }
 
-TEST_F(QuicConnectionHelperTest, GetRandomGenerator) {
+TEST_F(QuicChromiumConnectionHelperTest, GetRandomGenerator) {
   EXPECT_EQ(&random_generator_, helper_.GetRandomGenerator());
 }
 
-TEST_F(QuicConnectionHelperTest, CreateAlarm) {
+TEST_F(QuicChromiumConnectionHelperTest, CreateAlarm) {
   TestDelegate* delegate = new TestDelegate();
   scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
@@ -66,7 +66,7 @@ TEST_F(QuicConnectionHelperTest, CreateAlarm) {
   EXPECT_TRUE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, CreateAlarmAndCancel) {
+TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndCancel) {
   TestDelegate* delegate = new TestDelegate();
   scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
@@ -84,7 +84,7 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndCancel) {
   EXPECT_FALSE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, CreateAlarmAndReset) {
+TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndReset) {
   TestDelegate* delegate = new TestDelegate();
   scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
@@ -111,7 +111,7 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndReset) {
   EXPECT_TRUE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, CreateAlarmAndResetEarlier) {
+TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndResetEarlier) {
   TestDelegate* delegate = new TestDelegate();
   scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 
@@ -140,7 +140,7 @@ TEST_F(QuicConnectionHelperTest, CreateAlarmAndResetEarlier) {
   EXPECT_FALSE(delegate->fired());
 }
 
-TEST_F(QuicConnectionHelperTest, CreateAlarmAndUpdate) {
+TEST_F(QuicChromiumConnectionHelperTest, CreateAlarmAndUpdate) {
   TestDelegate* delegate = new TestDelegate();
   scoped_ptr<QuicAlarm> alarm(helper_.CreateAlarm(delegate));
 

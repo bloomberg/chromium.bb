@@ -8,13 +8,12 @@
 #ifndef NET_QUIC_QUIC_CONNECTION_HELPER_H_
 #define NET_QUIC_QUIC_CONNECTION_HELPER_H_
 
-#include "net/quic/quic_connection.h"
-
 #include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/quic_connection.h"
 #include "net/quic/quic_protocol.h"
 #include "net/quic/quic_simple_buffer_allocator.h"
 #include "net/quic/quic_time.h"
@@ -29,13 +28,13 @@ namespace net {
 class QuicClock;
 class QuicRandom;
 
-class NET_EXPORT_PRIVATE QuicConnectionHelper
+class NET_EXPORT_PRIVATE QuicChromiumConnectionHelper
     : public QuicConnectionHelperInterface {
  public:
-  QuicConnectionHelper(base::TaskRunner* task_runner,
-                       const QuicClock* clock,
-                       QuicRandom* random_generator);
-  ~QuicConnectionHelper() override;
+  QuicChromiumConnectionHelper(base::TaskRunner* task_runner,
+                               const QuicClock* clock,
+                               QuicRandom* random_generator);
+  ~QuicChromiumConnectionHelper() override;
 
   // QuicConnectionHelperInterface
   const QuicClock* GetClock() const override;
@@ -48,9 +47,9 @@ class NET_EXPORT_PRIVATE QuicConnectionHelper
   const QuicClock* clock_;
   QuicRandom* random_generator_;
   SimpleBufferAllocator buffer_allocator_;
-  base::WeakPtrFactory<QuicConnectionHelper> weak_factory_;
+  base::WeakPtrFactory<QuicChromiumConnectionHelper> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(QuicConnectionHelper);
+  DISALLOW_COPY_AND_ASSIGN(QuicChromiumConnectionHelper);
 };
 
 }  // namespace net

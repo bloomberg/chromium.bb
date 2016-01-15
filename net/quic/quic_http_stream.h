@@ -15,7 +15,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_stream.h"
 #include "net/quic/quic_chromium_client_session.h"
-#include "net/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_chromium_client_stream.h"
 
 namespace net {
 
@@ -24,11 +24,11 @@ class QuicHttpStreamPeer;
 }  // namespace test
 
 // The QuicHttpStream is a QUIC-specific HttpStream subclass.  It holds a
-// non-owning pointer to a QuicReliableClientStream which it uses to
+// non-owning pointer to a QuicChromiumClientStream which it uses to
 // send and receive data.
 class NET_EXPORT_PRIVATE QuicHttpStream
     : public QuicChromiumClientSession::Observer,
-      public QuicReliableClientStream::Delegate,
+      public QuicChromiumClientStream::Delegate,
       public HttpStream {
  public:
   explicit QuicHttpStream(
@@ -65,7 +65,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   void PopulateNetErrorDetails(NetErrorDetails* details) override;
   void SetPriority(RequestPriority priority) override;
 
-  // QuicReliableClientStream::Delegate implementation
+  // QuicChromiumClientStream::Delegate implementation
   void OnHeadersAvailable(const SpdyHeaderBlock& headers,
                           size_t frame_len) override;
   void OnDataAvailable() override;
@@ -117,7 +117,7 @@ class NET_EXPORT_PRIVATE QuicHttpStream
   int session_error_;             // Error code from the connection shutdown.
   bool was_handshake_confirmed_;  // True if the crypto handshake succeeded.
   QuicChromiumClientSession::StreamRequest stream_request_;
-  QuicReliableClientStream* stream_;  // Non-owning.
+  QuicChromiumClientStream* stream_;  // Non-owning.
 
   // The following three fields are all owned by the caller and must
   // outlive this object, according to the HttpStream contract.

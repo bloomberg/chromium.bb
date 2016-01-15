@@ -22,7 +22,7 @@
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_flags.h"
@@ -124,7 +124,7 @@ class QuicChromiumClientSessionTest
   scoped_ptr<SequencedSocketData> socket_data_;
   MockClock clock_;
   MockRandom random_;
-  QuicConnectionHelper helper_;
+  QuicChromiumConnectionHelper helper_;
   TransportSecurityState transport_security_state_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   scoped_ptr<QuicChromiumClientSession> session_;
@@ -156,9 +156,9 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreams) {
   CompleteCryptoHandshake();
   const size_t kMaxOpenStreams = session_->get_max_open_streams();
 
-  std::vector<QuicReliableClientStream*> streams;
+  std::vector<QuicChromiumClientStream*> streams;
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    QuicReliableClientStream* stream =
+    QuicChromiumClientStream* stream =
         session_->CreateOutgoingDynamicStream(kDefaultPriority);
     EXPECT_TRUE(stream);
     streams.push_back(stream);
@@ -191,15 +191,15 @@ TEST_P(QuicChromiumClientSessionTest, MaxNumStreamsViaRequest) {
   CompleteCryptoHandshake();
   const size_t kMaxOpenStreams = session_->get_max_open_streams();
 
-  std::vector<QuicReliableClientStream*> streams;
+  std::vector<QuicChromiumClientStream*> streams;
   for (size_t i = 0; i < kMaxOpenStreams; i++) {
-    QuicReliableClientStream* stream =
+    QuicChromiumClientStream* stream =
         session_->CreateOutgoingDynamicStream(kDefaultPriority);
     EXPECT_TRUE(stream);
     streams.push_back(stream);
   }
 
-  QuicReliableClientStream* stream;
+  QuicChromiumClientStream* stream;
   QuicChromiumClientSession::StreamRequest stream_request;
   TestCompletionCallback callback;
   ASSERT_EQ(ERR_IO_PENDING,

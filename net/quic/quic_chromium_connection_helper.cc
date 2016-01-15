@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -91,29 +91,31 @@ class QuicChromeAlarm : public QuicAlarm {
 
 }  // namespace
 
-QuicConnectionHelper::QuicConnectionHelper(base::TaskRunner* task_runner,
-                                           const QuicClock* clock,
-                                           QuicRandom* random_generator)
+QuicChromiumConnectionHelper::QuicChromiumConnectionHelper(
+    base::TaskRunner* task_runner,
+    const QuicClock* clock,
+    QuicRandom* random_generator)
     : task_runner_(task_runner),
       clock_(clock),
       random_generator_(random_generator),
       weak_factory_(this) {}
 
-QuicConnectionHelper::~QuicConnectionHelper() {}
+QuicChromiumConnectionHelper::~QuicChromiumConnectionHelper() {}
 
-const QuicClock* QuicConnectionHelper::GetClock() const {
+const QuicClock* QuicChromiumConnectionHelper::GetClock() const {
   return clock_;
 }
 
-QuicRandom* QuicConnectionHelper::GetRandomGenerator() {
+QuicRandom* QuicChromiumConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
-QuicAlarm* QuicConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
+QuicAlarm* QuicChromiumConnectionHelper::CreateAlarm(
+    QuicAlarm::Delegate* delegate) {
   return new QuicChromeAlarm(clock_, task_runner_, delegate);
 }
 
-QuicBufferAllocator* QuicConnectionHelper::GetBufferAllocator() {
+QuicBufferAllocator* QuicChromiumConnectionHelper::GetBufferAllocator() {
   return &buffer_allocator_;
 }
 

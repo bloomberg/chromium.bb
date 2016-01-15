@@ -24,12 +24,12 @@
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_server_info.h"
 #include "net/quic/quic_chromium_client_session.h"
+#include "net/quic/quic_chromium_client_stream.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_connection.h"
-#include "net/quic/quic_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/quic/quic_http_utils.h"
 #include "net/quic/quic_packet_reader.h"
-#include "net/quic/quic_reliable_client_stream.h"
 #include "net/quic/quic_write_blocked_list.h"
 #include "net/quic/spdy_utils.h"
 #include "net/quic/test_tools/crypto_test_utils.h"
@@ -65,7 +65,7 @@ class TestQuicConnection : public QuicConnection {
   TestQuicConnection(const QuicVersionVector& versions,
                      QuicConnectionId connection_id,
                      IPEndPoint address,
-                     QuicConnectionHelper* helper,
+                     QuicChromiumConnectionHelper* helper,
                      QuicPacketWriter* writer)
       : QuicConnection(connection_id,
                        address,
@@ -100,7 +100,7 @@ class AutoClosingStream : public QuicHttpStream {
 
 class QuicHttpStreamPeer {
  public:
-  static QuicReliableClientStream* GetQuicReliableClientStream(
+  static QuicChromiumClientStream* GetQuicChromiumClientStream(
       QuicHttpStream* stream) {
     return stream->stream_;
   }
@@ -200,8 +200,8 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_CALL(*send_algorithm_, BandwidthEstimate())
         .WillRepeatedly(Return(QuicBandwidth::Zero()));
     EXPECT_CALL(*send_algorithm_, SetFromConfig(_, _)).Times(AnyNumber());
-    helper_.reset(
-        new QuicConnectionHelper(runner_.get(), &clock_, &random_generator_));
+    helper_.reset(new QuicChromiumConnectionHelper(runner_.get(), &clock_,
+                                                   &random_generator_));
     connection_ = new TestQuicConnection(
         SupportedVersions(GetParam()), connection_id_, peer_addr_,
         helper_.get(), new QuicDefaultPacketWriter(socket));
@@ -304,7 +304,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<QuicVersion> {
   scoped_ptr<MockWrite[]> mock_writes_;
   MockClock clock_;
   TestQuicConnection* connection_;
-  scoped_ptr<QuicConnectionHelper> helper_;
+  scoped_ptr<QuicChromiumConnectionHelper> helper_;
   testing::StrictMock<MockConnectionVisitor> visitor_;
   scoped_ptr<QuicHttpStream> stream_;
   TransportSecurityState transport_security_state_;
@@ -870,8 +870,8 @@ TEST_P(QuicHttpStreamTest, Priority) {
                                           callback_.callback()));
 
   // Check that priority is highest.
-  QuicReliableClientStream* reliable_stream =
-      QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
+  QuicChromiumClientStream* reliable_stream =
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   DCHECK(reliable_stream);
   DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
 
@@ -919,10 +919,10 @@ TEST_P(QuicHttpStreamTest, CheckPriorityWithNoDelegate) {
                                           callback_.callback()));
 
   // Check that priority is highest.
-  QuicReliableClientStream* reliable_stream =
-      QuicHttpStreamPeer::GetQuicReliableClientStream(stream_.get());
+  QuicChromiumClientStream* reliable_stream =
+      QuicHttpStreamPeer::GetQuicChromiumClientStream(stream_.get());
   DCHECK(reliable_stream);
-  QuicReliableClientStream::Delegate* delegate = reliable_stream->GetDelegate();
+  QuicChromiumClientStream::Delegate* delegate = reliable_stream->GetDelegate();
   DCHECK(delegate);
   DCHECK_EQ(kV3HighestPriority, reliable_stream->Priority());
 

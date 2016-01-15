@@ -64,9 +64,10 @@ QuicSimpleServer::QuicSimpleServer(ProofSource* proof_source,
                                    const QuicConfig& config,
                                    const QuicVersionVector& supported_versions)
     : helper_(
-          new QuicConnectionHelper(base::ThreadTaskRunnerHandle::Get().get(),
-                                   &clock_,
-                                   QuicRandom::GetInstance())),
+          new QuicChromiumConnectionHelper(base::ThreadTaskRunnerHandle::Get()
+                                               .get(),
+                                           &clock_,
+                                           QuicRandom::GetInstance())),
       config_(config),
       crypto_config_(kSourceAddressTokenSecret,
                      QuicRandom::GetInstance(),

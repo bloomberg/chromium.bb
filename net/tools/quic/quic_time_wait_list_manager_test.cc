@@ -10,7 +10,7 @@
 #include "net/quic/crypto/null_encrypter.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_data_reader.h"
 #include "net/quic/quic_flags.h"
 #include "net/quic/quic_framer.h"

@@ -14,9 +14,9 @@
 #include "net/base/ip_endpoint.h"
 #include "net/log/net_log.h"
 #include "net/quic/crypto/quic_crypto_server_config.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_clock.h"
 #include "net/quic/quic_config.h"
-#include "net/quic/quic_connection_helper.h"
 
 namespace net {
 
@@ -71,7 +71,7 @@ class QuicSimpleServer {
   QuicClock clock_;
 
   // Used to manage the message loop. Owned by dispatcher_.
-  QuicConnectionHelper* helper_;
+  QuicChromiumConnectionHelper* helper_;
 
   // Listening socket. Also used for outbound client communication.
   scoped_ptr<UDPServerSocket> socket_;

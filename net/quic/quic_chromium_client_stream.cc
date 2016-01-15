@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_chromium_client_stream.h"
 
 #include "base/callback_helpers.h"
 #include "base/location.h"
@@ -15,7 +15,7 @@
 
 namespace net {
 
-QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
+QuicChromiumClientStream::QuicChromiumClientStream(QuicStreamId id,
                                                    QuicSpdySession* session,
                                                    const BoundNetLog& net_log)
     : QuicSpdyStream(id, session),
@@ -24,19 +24,19 @@ QuicReliableClientStream::QuicReliableClientStream(QuicStreamId id,
       headers_delivered_(false),
       weak_factory_(this) {}
 
-QuicReliableClientStream::~QuicReliableClientStream() {
+QuicChromiumClientStream::~QuicChromiumClientStream() {
   if (delegate_)
     delegate_->OnClose(connection_error());
 }
 
-void QuicReliableClientStream::OnStreamHeadersComplete(bool fin,
+void QuicChromiumClientStream::OnStreamHeadersComplete(bool fin,
                                                        size_t frame_len) {
   QuicSpdyStream::OnStreamHeadersComplete(fin, frame_len);
   // The delegate will read the headers via a posted task.
   NotifyDelegateOfHeadersCompleteLater(frame_len);
 }
 
-void QuicReliableClientStream::OnDataAvailable() {
+void QuicChromiumClientStream::OnDataAvailable() {
   // TODO(rch): buffer data if we don't have a delegate.
   if (!delegate_) {
     DLOG(ERROR) << "Missing delegate";
@@ -54,7 +54,7 @@ void QuicReliableClientStream::OnDataAvailable() {
   NotifyDelegateOfDataAvailableLater();
 }
 
-void QuicReliableClientStream::OnClose() {
+void QuicChromiumClientStream::OnClose() {
   if (delegate_) {
     delegate_->OnClose(connection_error());
     delegate_ = nullptr;
@@ -62,7 +62,7 @@ void QuicReliableClientStream::OnClose() {
   ReliableQuicStream::OnClose();
 }
 
-void QuicReliableClientStream::OnCanWrite() {
+void QuicChromiumClientStream::OnCanWrite() {
   ReliableQuicStream::OnCanWrite();
 
   if (!HasBufferedData() && !callback_.is_null()) {
@@ -70,14 +70,14 @@ void QuicReliableClientStream::OnCanWrite() {
   }
 }
 
-SpdyPriority QuicReliableClientStream::Priority() const {
+SpdyPriority QuicChromiumClientStream::Priority() const {
   if (delegate_ && delegate_->HasSendHeadersComplete()) {
     return QuicSpdyStream::Priority();
   }
   return net::kV3HighestPriority;
 }
 
-int QuicReliableClientStream::WriteStreamData(
+int QuicChromiumClientStream::WriteStreamData(
     base::StringPiece data,
     bool fin,
     const CompletionCallback& callback) {
@@ -93,8 +93,8 @@ int QuicReliableClientStream::WriteStreamData(
   return ERR_IO_PENDING;
 }
 
-void QuicReliableClientStream::SetDelegate(
-    QuicReliableClientStream::Delegate* delegate) {
+void QuicChromiumClientStream::SetDelegate(
+    QuicChromiumClientStream::Delegate* delegate) {
   DCHECK(!(delegate_ && delegate));
   delegate_ = delegate;
   if (delegate == nullptr && sequencer()->IsClosed()) {
@@ -102,15 +102,15 @@ void QuicReliableClientStream::SetDelegate(
   }
 }
 
-void QuicReliableClientStream::OnError(int error) {
+void QuicChromiumClientStream::OnError(int error) {
   if (delegate_) {
-    QuicReliableClientStream::Delegate* delegate = delegate_;
+    QuicChromiumClientStream::Delegate* delegate = delegate_;
     delegate_ = nullptr;
     delegate->OnError(error);
   }
 }
 
-int QuicReliableClientStream::Read(IOBuffer* buf, int buf_len) {
+int QuicChromiumClientStream::Read(IOBuffer* buf, int buf_len) {
   if (sequencer()->IsClosed())
     return 0;  // EOF
 
@@ -123,7 +123,7 @@ int QuicReliableClientStream::Read(IOBuffer* buf, int buf_len) {
   return Readv(&iov, 1);
 }
 
-bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
+bool QuicChromiumClientStream::CanWrite(const CompletionCallback& callback) {
   bool can_write = session()->connection()->CanWrite(HAS_RETRANSMITTABLE_DATA);
   if (!can_write) {
     session()->MarkConnectionLevelWriteBlocked(id(), Priority());
@@ -133,16 +133,16 @@ bool QuicReliableClientStream::CanWrite(const CompletionCallback& callback) {
   return can_write;
 }
 
-void QuicReliableClientStream::NotifyDelegateOfHeadersCompleteLater(
+void QuicChromiumClientStream::NotifyDelegateOfHeadersCompleteLater(
     size_t frame_len) {
   DCHECK(delegate_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicReliableClientStream::NotifyDelegateOfHeadersComplete,
+      base::Bind(&QuicChromiumClientStream::NotifyDelegateOfHeadersComplete,
                  weak_factory_.GetWeakPtr(), frame_len));
 }
 
-void QuicReliableClientStream::NotifyDelegateOfHeadersComplete(
+void QuicChromiumClientStream::NotifyDelegateOfHeadersComplete(
     size_t frame_len) {
   if (!delegate_)
     return;
@@ -162,15 +162,15 @@ void QuicReliableClientStream::NotifyDelegateOfHeadersComplete(
   delegate_->OnHeadersAvailable(headers, frame_len);
 }
 
-void QuicReliableClientStream::NotifyDelegateOfDataAvailableLater() {
+void QuicChromiumClientStream::NotifyDelegateOfDataAvailableLater() {
   DCHECK(delegate_);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&QuicReliableClientStream::NotifyDelegateOfDataAvailable,
+      base::Bind(&QuicChromiumClientStream::NotifyDelegateOfDataAvailable,
                  weak_factory_.GetWeakPtr()));
 }
 
-void QuicReliableClientStream::NotifyDelegateOfDataAvailable() {
+void QuicChromiumClientStream::NotifyDelegateOfDataAvailable() {
   if (delegate_)
     delegate_->OnDataAvailable();
 }

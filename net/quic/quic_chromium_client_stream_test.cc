@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/quic_reliable_client_stream.h"
+#include "net/quic/quic_chromium_client_stream.h"
 
 #include "base/macros.h"
 #include "net/base/net_errors.h"
@@ -28,7 +28,7 @@ namespace {
 
 const QuicStreamId kTestStreamId = 5u;
 
-class MockDelegate : public QuicReliableClientStream::Delegate {
+class MockDelegate : public QuicChromiumClientStream::Delegate {
  public:
   MockDelegate() {}
 
@@ -45,16 +45,16 @@ class MockDelegate : public QuicReliableClientStream::Delegate {
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
-class QuicReliableClientStreamTest
+class QuicChromiumClientStreamTest
     : public ::testing::TestWithParam<QuicVersion> {
  public:
-  QuicReliableClientStreamTest()
+  QuicChromiumClientStreamTest()
       : crypto_config_(CryptoTestUtils::ProofVerifierForTesting()),
         session_(new MockConnection(&helper_,
                                     Perspective::IS_CLIENT,
                                     SupportedVersions(GetParam()))) {
     stream_ =
-        new QuicReliableClientStream(kTestStreamId, &session_, BoundNetLog());
+        new QuicChromiumClientStream(kTestStreamId, &session_, BoundNetLog());
     session_.ActivateStream(stream_);
     stream_->SetDelegate(&delegate_);
   }
@@ -101,15 +101,15 @@ class QuicReliableClientStreamTest
   testing::StrictMock<MockDelegate> delegate_;
   MockConnectionHelper helper_;
   MockQuicSpdySession session_;
-  QuicReliableClientStream* stream_;
+  QuicChromiumClientStream* stream_;
   SpdyHeaderBlock headers_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
-                        QuicReliableClientStreamTest,
+                        QuicChromiumClientStreamTest,
                         ::testing::ValuesIn(QuicSupportedVersions()));
 
-TEST_P(QuicReliableClientStreamTest, OnFinRead) {
+TEST_P(QuicChromiumClientStreamTest, OnFinRead) {
   InitializeHeaders();
   std::string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
@@ -127,14 +127,14 @@ TEST_P(QuicReliableClientStreamTest, OnFinRead) {
   stream_->OnStreamFrame(frame2);
 }
 
-TEST_P(QuicReliableClientStreamTest, OnDataAvailableBeforeHeaders) {
+TEST_P(QuicChromiumClientStreamTest, OnDataAvailableBeforeHeaders) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
   EXPECT_CALL(delegate_, OnDataAvailable()).Times(0);
   stream_->OnDataAvailable();
 }
 
-TEST_P(QuicReliableClientStreamTest, OnDataAvailable) {
+TEST_P(QuicChromiumClientStreamTest, OnDataAvailable) {
   InitializeHeaders();
   std::string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
@@ -152,14 +152,14 @@ TEST_P(QuicReliableClientStreamTest, OnDataAvailable) {
 
   EXPECT_CALL(delegate_, OnDataAvailable())
       .WillOnce(testing::Invoke(
-          CreateFunctor(this, &QuicReliableClientStreamTest::ReadData,
+          CreateFunctor(this, &QuicChromiumClientStreamTest::ReadData,
                         StringPiece(data, arraysize(data) - 1))));
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
 
-TEST_P(QuicReliableClientStreamTest, ProcessHeadersWithError) {
+TEST_P(QuicChromiumClientStreamTest, ProcessHeadersWithError) {
   std::string bad_headers = "...";
   stream_->OnStreamHeaders(StringPiece(bad_headers));
   stream_->OnStreamHeadersComplete(false, bad_headers.length());
@@ -171,7 +171,7 @@ TEST_P(QuicReliableClientStreamTest, ProcessHeadersWithError) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
 
-TEST_P(QuicReliableClientStreamTest, OnDataAvailableWithError) {
+TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   InitializeHeaders();
   std::string uncompressed_headers =
       SpdyUtils::SerializeUncompressedHeaders(headers_);
@@ -188,20 +188,20 @@ TEST_P(QuicReliableClientStreamTest, OnDataAvailableWithError) {
                                          /*offset=*/0, data));
   EXPECT_CALL(delegate_, OnDataAvailable())
       .WillOnce(testing::Invoke(CreateFunctor(
-          stream_, &QuicReliableClientStream::Reset, QUIC_STREAM_CANCELLED)));
+          stream_, &QuicChromiumClientStream::Reset, QUIC_STREAM_CANCELLED)));
   base::MessageLoop::current()->RunUntilIdle();
 
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 }
 
-TEST_P(QuicReliableClientStreamTest, OnError) {
+TEST_P(QuicChromiumClientStreamTest, OnError) {
   EXPECT_CALL(delegate_, OnError(ERR_INTERNET_DISCONNECTED));
 
   stream_->OnError(ERR_INTERNET_DISCONNECTED);
   EXPECT_FALSE(stream_->GetDelegate());
 }
 
-TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
+TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 
   const char kData1[] = "hello world";
@@ -215,7 +215,7 @@ TEST_P(QuicReliableClientStreamTest, WriteStreamData) {
                                          true, callback.callback()));
 }
 
-TEST_P(QuicReliableClientStreamTest, WriteStreamDataAsync) {
+TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   EXPECT_CALL(delegate_, HasSendHeadersComplete()).Times(AnyNumber());
   EXPECT_CALL(delegate_, OnClose(QUIC_NO_ERROR));
 

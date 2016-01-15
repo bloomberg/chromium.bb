@@ -18,7 +18,7 @@
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/p2p/quic_p2p_crypto_config.h"
 #include "net/quic/p2p/quic_p2p_stream.h"
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_default_packet_writer.h"
 #include "net/socket/socket.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -245,7 +245,7 @@ class QuicP2PSessionTest : public ::testing::Test {
                             QuicStreamId expected_stream_id);
 
   QuicClock quic_clock_;
-  QuicConnectionHelper quic_helper_;
+  QuicChromiumConnectionHelper quic_helper_;
   QuicConfig config_;
 
   base::WeakPtr<FakeP2PDatagramSocket> socket1_;

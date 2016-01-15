@@ -21,7 +21,7 @@
 #include "net/http/transport_security_state.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/crypto/quic_server_info.h"
-#include "net/quic/quic_connection_helper.h"
+#include "net/quic/quic_chromium_connection_helper.h"
 #include "net/quic/quic_crypto_client_stream_factory.h"
 #include "net/quic/quic_server_id.h"
 #include "net/quic/quic_stream_factory.h"
@@ -130,7 +130,7 @@ QuicChromiumClientSession::StreamRequest::~StreamRequest() {
 
 int QuicChromiumClientSession::StreamRequest::StartRequest(
     const base::WeakPtr<QuicChromiumClientSession>& session,
-    QuicReliableClientStream** stream,
+    QuicChromiumClientStream** stream,
     const CompletionCallback& callback) {
   session_ = session;
   stream_ = stream;
@@ -150,7 +150,7 @@ void QuicChromiumClientSession::StreamRequest::CancelRequest() {
 }
 
 void QuicChromiumClientSession::StreamRequest::OnRequestCompleteSuccess(
-    QuicReliableClientStream* stream) {
+    QuicChromiumClientStream* stream) {
   session_.reset();
   *stream_ = stream;
   ResetAndReturn(&callback_).Run(OK);
@@ -373,7 +373,7 @@ void QuicChromiumClientSession::RemoveObserver(Observer* observer) {
 
 int QuicChromiumClientSession::TryCreateStream(
     StreamRequest* request,
-    QuicReliableClientStream** stream) {
+    QuicChromiumClientStream** stream) {
   if (!crypto_stream_->encryption_established()) {
     DLOG(DFATAL) << "Encryption not established.";
     return ERR_CONNECTION_CLOSED;
@@ -413,7 +413,7 @@ void QuicChromiumClientSession::CancelRequest(StreamRequest* request) {
   }
 }
 
-QuicReliableClientStream*
+QuicChromiumClientStream*
 QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
   if (!crypto_stream_->encryption_established()) {
     DVLOG(1) << "Encryption not active so no outgoing stream created.";
@@ -436,11 +436,11 @@ QuicChromiumClientSession::CreateOutgoingDynamicStream(SpdyPriority priority) {
   return CreateOutgoingReliableStreamImpl();
 }
 
-QuicReliableClientStream*
+QuicChromiumClientStream*
 QuicChromiumClientSession::CreateOutgoingReliableStreamImpl() {
   DCHECK(connection()->connected());
-  QuicReliableClientStream* stream =
-      new QuicReliableClientStream(GetNextOutgoingStreamId(), this, net_log_);
+  QuicChromiumClientStream* stream =
+      new QuicChromiumClientStream(GetNextOutgoingStreamId(), this, net_log_);
   ActivateStream(stream);
   ++num_total_streams_;
   UMA_HISTOGRAM_COUNTS("Net.QuicSession.NumOpenStreams",
@@ -869,7 +869,7 @@ void QuicChromiumClientSession::CloseAllStreams(int net_error) {
   while (!dynamic_streams().empty()) {
     ReliableQuicStream* stream = dynamic_streams().begin()->second;
     QuicStreamId id = stream->id();
-    static_cast<QuicReliableClientStream*>(stream)->OnError(net_error);
+    static_cast<QuicChromiumClientStream*>(stream)->OnError(net_error);
     CloseStream(id);
   }
 }

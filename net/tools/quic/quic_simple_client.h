@@ -27,7 +27,7 @@
 namespace net {
 
 struct HttpRequestInfo;
-class QuicConnectionHelper;
+class QuicChromiumConnectionHelper;
 class UDPClientSocket;
 
 namespace tools {
@@ -166,7 +166,7 @@ class QuicSimpleClient : public QuicClientBase,
   const std::string& latest_response_body() const;
 
  protected:
-  virtual QuicConnectionHelper* CreateQuicConnectionHelper();
+  virtual QuicChromiumConnectionHelper* CreateQuicConnectionHelper();
   virtual QuicPacketWriter* CreateQuicPacketWriter();
 
  private:
