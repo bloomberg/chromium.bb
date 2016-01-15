@@ -52,6 +52,12 @@ PrefService* AutofillClientIOS::GetPrefs() {
   return browser_state_->GetPrefs();
 }
 
+// TODO(jdonnelly): Implement this when adding credit card upload.
+sync_driver::SyncService* AutofillClientIOS::GetSyncService() {
+  NOTIMPLEMENTED();
+  return nullptr;
+}
+
 IdentityProvider* AutofillClientIOS::GetIdentityProvider() {
   return identity_provider_.get();
 }

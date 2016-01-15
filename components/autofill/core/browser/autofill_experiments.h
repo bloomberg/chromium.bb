@@ -7,6 +7,10 @@
 
 #include <string>
 
+namespace sync_driver {
+class SyncService;
+}
+
 class PrefService;
 
 namespace autofill {
@@ -30,6 +34,7 @@ bool OfferStoreUnmaskedCards();
 // requires the appropriate flags and user settings to be true and the user to
 // be a member of a supported domain.
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
+                               const sync_driver::SyncService* sync_service,
                                const std::string& user_email);
 
 }  // namespace autofill

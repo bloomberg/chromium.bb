@@ -28,6 +28,10 @@ namespace password_manager {
 class PasswordGenerationManager;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 namespace autofill {
 
 class PersonalDataManager;
@@ -48,6 +52,7 @@ class AutofillClientIOS : public AutofillClient {
   // AutofillClient implementation.
   PersonalDataManager* GetPersonalDataManager() override;
   PrefService* GetPrefs() override;
+  sync_driver::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporService* GetRapporService() override;
   void HideRequestAutocompleteDialog() override;

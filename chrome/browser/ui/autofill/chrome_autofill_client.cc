@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/create_card_unmask_prompt_view.h"
@@ -38,6 +39,7 @@
 #include "components/autofill/core/browser/ui/card_unmask_prompt_view.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/user_prefs/user_prefs.h"
@@ -131,6 +133,12 @@ scoped_refptr<AutofillWebDataService> ChromeAutofillClient::GetDatabase() {
 PrefService* ChromeAutofillClient::GetPrefs() {
   return Profile::FromBrowserContext(web_contents()->GetBrowserContext())
       ->GetPrefs();
+}
+
+sync_driver::SyncService* ChromeAutofillClient::GetSyncService() {
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+  return ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
 }
 
 IdentityProvider* ChromeAutofillClient::GetIdentityProvider() {

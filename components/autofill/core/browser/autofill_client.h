@@ -30,6 +30,10 @@ namespace rappor {
 class RapporService;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 class GURL;
 class PrefService;
 
@@ -99,6 +103,9 @@ class AutofillClient {
 
   // Gets the preferences associated with the client.
   virtual PrefService* GetPrefs() = 0;
+
+  // Gets the sync service associated with the client.
+  virtual sync_driver::SyncService* GetSyncService() = 0;
 
   // Gets the IdentityProvider associated with the client (for OAuth2).
   virtual IdentityProvider* GetIdentityProvider() = 0;

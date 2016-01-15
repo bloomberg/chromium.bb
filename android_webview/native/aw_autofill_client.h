@@ -35,6 +35,10 @@ namespace gfx {
 class RectF;
 }
 
+namespace sync_driver {
+class SyncService;
+}
+
 class PersonalDataManager;
 class PrefService;
 
@@ -59,6 +63,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   autofill::PersonalDataManager* GetPersonalDataManager() override;
   scoped_refptr<autofill::AutofillWebDataService> GetDatabase() override;
   PrefService* GetPrefs() override;
+  sync_driver::SyncService* GetSyncService() override;
   IdentityProvider* GetIdentityProvider() override;
   rappor::RapporService* GetRapporService() override;
   void HideRequestAutocompleteDialog() override;

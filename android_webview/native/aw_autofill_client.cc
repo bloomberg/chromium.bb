@@ -68,6 +68,10 @@ PrefService* AwAutofillClient::GetPrefs() {
       AwContentBrowserClient::GetAwBrowserContext());
 }
 
+sync_driver::SyncService* AwAutofillClient::GetSyncService() {
+  return nullptr;
+}
+
 IdentityProvider* AwAutofillClient::GetIdentityProvider() {
   return nullptr;
 }

@@ -920,7 +920,8 @@ bool AutofillManager::IsAutofillEnabled() const {
 
 bool AutofillManager::IsCreditCardUploadEnabled() {
   return ::autofill::IsCreditCardUploadEnabled(
-      client_->GetPrefs(), GetIdentityProvider()->GetActiveUsername());
+      client_->GetPrefs(), client_->GetSyncService(),
+      GetIdentityProvider()->GetActiveUsername());
 }
 
 bool AutofillManager::ShouldUploadForm(const FormStructure& form) {

@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "components/sync_driver/sync_service.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace autofill {
@@ -51,12 +52,27 @@ bool OfferStoreUnmaskedCards() {
 }
 
 bool IsCreditCardUploadEnabled(const PrefService* pref_service,
+                               const sync_driver::SyncService* sync_service,
                                const std::string& user_email) {
   // Query the field trial first to ensure UMA always reports the correct group.
   std::string group_name =
       base::FieldTrialList::FindFullName("OfferUploadCreditCards");
 
-  // Check user settings.
+  // Check Autofill sync setting.
+  if (!(sync_service && sync_service->CanSyncStart() &&
+        sync_service->GetPreferredDataTypes().Has(syncer::AUTOFILL_PROFILE))) {
+    return false;
+  }
+
+  // Users who have enabled a passphrase have chosen to not make their sync
+  // information accessible to Google. Since upload makes credit card data
+  // available to other Google systems, disable it for passphrase users.
+  if (sync_service->HasSyncSetupCompleted() &&
+      sync_service->IsUsingSecondaryPassphrase()) {
+    return false;
+  }
+
+  // Check Payments integration setting.
   if (!pref_service->GetBoolean(prefs::kAutofillWalletSyncExperimentEnabled) ||
       !pref_service->GetBoolean(prefs::kAutofillWalletImportEnabled)) {
     return false;

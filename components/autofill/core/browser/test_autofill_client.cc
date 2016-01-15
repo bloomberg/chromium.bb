@@ -30,6 +30,10 @@ PrefService* TestAutofillClient::GetPrefs() {
   return prefs_.get();
 }
 
+sync_driver::SyncService* TestAutofillClient::GetSyncService() {
+  return nullptr;
+}
+
 IdentityProvider* TestAutofillClient::GetIdentityProvider() {
   return identity_provider_.get();
 }
