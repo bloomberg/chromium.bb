@@ -657,6 +657,10 @@ Background.prototype = {
             target: 'next',
             isClassicEnabled: isClassicEnabled
           });
+        } else if (action == 'onCommand') {
+          this.onGotCommand(msg['command']);
+        } else if (action == 'flushNextUtterance') {
+          Output.flushNextSpeechUtterance();
         }
         break;
     }

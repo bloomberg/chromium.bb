@@ -44,10 +44,11 @@
             }],
             ['chromevox_compress_js==1', {
               'dependencies': [
+                'chromevox_background_script',
                 'chromevox_content_script',
                 'chromevox_kbexplorer_script',
+                'chromevox_min_content_script',
                 'chromevox_options_script',
-                'chromevox_background_script',
                 'chromevox_panel_script',
               ],
             }, {  # chromevox_compress_js==0
@@ -210,6 +211,15 @@
                 'output_file': '<(chromevox_dest_dir)/chromeVoxPanelScript.js',
               },
               'sources': [ '<(chromevox_panel_script_loader_file)' ],
+              'includes': [ 'compress_js.gypi', ],
+            },
+            {
+              'target_name': 'chromevox_min_content_script',
+              'type': 'none',
+              'variables': {
+                'output_file': '<(chromevox_dest_dir)/chromeVox2ChromePageScript.js',
+              },
+              'sources': [ '<(chromevox_min_content_script_loader_file)' ],
               'includes': [ 'compress_js.gypi', ],
             },
           ],
