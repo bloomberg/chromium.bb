@@ -2068,8 +2068,9 @@ void LayoutBox::computeLogicalWidth(LogicalExtentComputedValues& computedValues)
     // https://bugs.webkit.org/show_bug.cgi?id=46418
     bool inVerticalBox = parent()->isDeprecatedFlexibleBox() && (parent()->style()->boxOrient() == VERTICAL);
     bool stretching = (parent()->style()->boxAlign() == BSTRETCH);
-    bool treatAsReplaced = shouldComputeSizeAsReplaced() && (!inVerticalBox || !stretching);
-
+    // TODO (lajava): Stretching is the only reason why we don't want the box to be treated as a replaced element, so we could perhaps
+    // refactor all this logic, not only for flex and grid since alignment is intended to be applied to any block.
+    bool treatAsReplaced = shouldComputeSizeAsReplaced() && (!inVerticalBox || !stretching) && (!isGridItem() || !hasStretchedLogicalWidth());
     const ComputedStyle& styleToUse = styleRef();
     Length logicalWidthLength = treatAsReplaced ? Length(computeReplacedLogicalWidth(), Fixed) : styleToUse.logicalWidth();
 
@@ -2220,16 +2221,25 @@ static bool isStretchingColumnFlexItem(const LayoutObject* flexitem)
     return false;
 }
 
+// TODO (lajava) can/should move this inside specific layout classes (flex. grid)  ? Can we reactoring columnFlexItemHasStretchAlignment logic ?
+bool LayoutBox::hasStretchedLogicalWidth() const
+{
+    LayoutBlock* cb = containingBlock();
+    const ComputedStyle& style = styleRef();
+    bool hasPerpendicularContainingBlock = cb->isHorizontalWritingMode() != isHorizontalWritingMode();
+    bool allowedToStretch = style.logicalWidth().isAuto() && !style.marginStart().isAuto() && !style.marginEnd().isAuto();
+    if (hasPerpendicularContainingBlock)
+        return allowedToStretch && ComputedStyle::resolveAlignment(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
+    return allowedToStretch && ComputedStyle::resolveJustification(cb->styleRef(), style, ItemPositionStretch) == ItemPositionStretch;
+}
+
 bool LayoutBox::sizesLogicalWidthToFitContent(const Length& logicalWidth) const
 {
     if (isFloating() || isInlineBlockOrInlineTable())
         return true;
 
-    if (parent()->isLayoutGrid()) {
-        bool hasAutoSizeInRowAxis = isHorizontalWritingMode() ? styleRef().width().isAuto() : styleRef().height().isAuto();
-        bool allowedToStretchChildAlongRowAxis = hasAutoSizeInRowAxis && !styleRef().marginStartUsing(parent()->style()).isAuto() && !styleRef().marginEndUsing(parent()->style()).isAuto();
-        return !allowedToStretchChildAlongRowAxis || ComputedStyle::resolveJustification(parent()->styleRef(), styleRef(), ItemPositionStretch) != ItemPositionStretch;
-    }
+    if (isGridItem())
+        return !hasStretchedLogicalWidth();
 
     // Flexible box items should shrink wrap, so we lay them out at their intrinsic widths.
     // In the case of columns that have a stretch alignment, we go ahead and layout at the
