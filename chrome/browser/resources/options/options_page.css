@@ -446,7 +446,7 @@ html:not([enablePepperFlashSettings]) .pepper-flash-settings {
   padding: 0;
 }
 
-:-webkit-any(.checkbox, .radio) label + a {
+:-webkit-any(.checkbox, .radio) label ~ a {
   display: inline-block;
   /* Matches padding of -webkit-any(.checkbox, .radio) */
   padding-bottom: 7px;
