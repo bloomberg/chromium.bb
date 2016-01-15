@@ -127,7 +127,9 @@ ContentMetadataProvider.prototype.get = function(requests) {
  */
 ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
   if (entry.isDirectory) {
-    setTimeout(callback.bind(null, {}), 0);
+    setTimeout(callback.bind(null, this.createError_(entry.toURL(),
+        'get',
+        'we don\'t generate thumbnails for directory')), 0);
     return;
   }
   // TODO(ryoh): mediaGalleries API does not handle
@@ -147,8 +149,7 @@ ContentMetadataProvider.prototype.getImpl_ = function(entry, names, callback) {
     }
     return;
   }
-  this.getFromMediaGalleries_(entry, names)
-      .then(callback, callback);
+  this.getFromMediaGalleries_(entry, names).then(callback);
 };
 
 /**
@@ -174,7 +175,7 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
         metadataType = 'all';
       }
       setTimeout(function() {
-        reject(self.createError_(entry.toURL(),
+        resolve(self.createError_(entry.toURL(),
             'parsing metadata',
             'chrome.mediaGalleries does not respond.'));
       }, ContentMetadataProvider.MEDIA_GALLERIES_WATCHDOG_TIMEOUT);
@@ -184,7 +185,7 @@ ContentMetadataProvider.prototype.getFromMediaGalleries_ =
                 .then(resolve, reject);
           });
     }, function(err) {
-      reject(self.createError_(entry.toURL(),
+      resolve(self.createError_(entry.toURL(),
           'loading file entry',
           'failed to open file entry'));
     });

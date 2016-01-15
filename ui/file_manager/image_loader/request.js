@@ -287,8 +287,8 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
 /**
  * Creates a video thumbnail data url from video file.
  *
- * @param {Blob}  blob Blob object of video file
- * @return {Promise<String>}  Promise that resolves with the data url of video
+ * @param {!Blob}  blob Blob object of video file
+ * @return {!Promise<!String>}  Promise that resolves with the data url of video
  *    thumbnail.
  * @private
  */
