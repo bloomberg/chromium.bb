@@ -478,9 +478,6 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.touch_adjustment_enabled =
       !command_line.HasSwitch(switches::kDisableTouchAdjustment);
 
-  prefs.slimming_paint_v2_enabled =
-      command_line.HasSwitch(switches::kEnableSlimmingPaintV2);
-
   prefs.enable_scroll_animator =
       !command_line.HasSwitch(switches::kDisableSmoothScrolling) &&
       gfx::Animation::ShouldRenderRichAnimation();

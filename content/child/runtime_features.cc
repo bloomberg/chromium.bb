@@ -196,6 +196,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kWebFontsIntervention))
     WebRuntimeFeatures::enableWebFontsIntervention(true);
 
+  if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))
+    WebRuntimeFeatures::enableSlimmingPaintV2(true);
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   if (command_line.HasSwitch(switches::kEnableBlinkFeatures)) {
