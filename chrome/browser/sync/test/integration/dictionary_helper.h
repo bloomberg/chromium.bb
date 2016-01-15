@@ -43,6 +43,11 @@ bool DictionaryMatchesVerifier(int index);
 // if |word| is valid and not a duplicate. Otherwise returns false.
 bool AddWord(int index, const std::string& word);
 
+// Add |n| words with the given |prefix| to the specified client |index|. Also
+// adds to the verifier if not disAbled. Return value is true iff all words are
+// not duplicates and valid.
+bool AddWords(int index, int n, const std::string& prefix);
+
 // Removes |word| from the dictionary for profile with index |index|. Also
 // removes |word| from the verifier if DisableVerifier() hasn't been called.
 // Returns true if |word| was found. Otherwise returns false.

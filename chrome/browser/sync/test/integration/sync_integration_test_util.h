@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_INTEGRATION_TEST_UTIL_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_SYNC_INTEGRATION_TEST_UTIL_H_
 
+#include "sync/internal_api/public/base/model_type.h"
+
 class ProfileSyncService;
+
+namespace fake_server {
+class FakeServer;
+}  // namespace fake_server
 
 namespace sync_integration_test_util {
 
@@ -18,6 +24,9 @@ bool AwaitPassphraseAccepted(ProfileSyncService* service);
 // Wait until the |service| is fully synced.
 // This can be a bit flaky.  See UpdatedProgressMarkerChecker for details.
 bool AwaitCommitActivityCompletion(ProfileSyncService* service);
+
+// Wait until the fake server has a specific count for the given type.
+bool AwaitServerCount(syncer::ModelType type, size_t count);
 
 }  // namespace sync_integration_test_util
 

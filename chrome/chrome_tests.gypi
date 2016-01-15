@@ -1492,6 +1492,8 @@
       'browser/sync/test/integration/extensions_helper.h',
       'browser/sync/test/integration/fake_server_invalidation_service.cc',
       'browser/sync/test/integration/fake_server_invalidation_service.h',
+      'browser/sync/test/integration/fake_server_match_status_checker.cc',
+      'browser/sync/test/integration/fake_server_match_status_checker.h',
       'browser/sync/test/integration/migration_waiter.cc',
       'browser/sync/test/integration/migration_waiter.h',
       'browser/sync/test/integration/migration_watcher.cc',

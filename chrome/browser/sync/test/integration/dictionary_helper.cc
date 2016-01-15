@@ -10,6 +10,7 @@
 #include "base/format_macros.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/spellchecker/spellcheck_custom_dictionary.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
@@ -26,16 +27,16 @@ class DictionarySyncIntegrationTestHelper {
  public:
   // Same as SpellcheckCustomDictionary::AddWord/RemoveWord, except does not
   // write to disk.
-  static bool ApplyChange(
-      SpellcheckCustomDictionary* dictionary,
-      SpellcheckCustomDictionary::Change& change) {
-    int result = change.Sanitize(dictionary->GetWords());
-    dictionary->Apply(change);
-    dictionary->Notify(change);
-    dictionary->Sync(change);
+  static bool ApplyChange(SpellcheckCustomDictionary* dictionary,
+                          SpellcheckCustomDictionary::Change* change) {
+    int result = change->Sanitize(dictionary->GetWords());
+    dictionary->Apply(*change);
+    dictionary->Notify(*change);
+    dictionary->Sync(*change);
     return !result;
   }
 
+ private:
   DISALLOW_COPY_AND_ASSIGN(DictionarySyncIntegrationTestHelper);
 };
 
@@ -183,10 +184,18 @@ bool AddWord(int index, const std::string& word) {
   SpellcheckCustomDictionary::Change dictionary_change;
   dictionary_change.AddWord(word);
   bool result = DictionarySyncIntegrationTestHelper::ApplyChange(
-      GetDictionary(index), dictionary_change);
+      GetDictionary(index), &dictionary_change);
   if (sync_datatype_helper::test()->use_verifier()) {
     result &= DictionarySyncIntegrationTestHelper::ApplyChange(
-        GetVerifierDictionary(), dictionary_change);
+        GetVerifierDictionary(), &dictionary_change);
+  }
+  return result;
+}
+
+bool AddWords(int index, int n, const std::string& prefix) {
+  bool result = true;
+  for (int i = 0; i < n; ++i) {
+    result &= AddWord(index, prefix + base::IntToString(i));
   }
   return result;
 }
@@ -195,10 +204,10 @@ bool RemoveWord(int index, const std::string& word) {
   SpellcheckCustomDictionary::Change dictionary_change;
   dictionary_change.RemoveWord(word);
   bool result = DictionarySyncIntegrationTestHelper::ApplyChange(
-      GetDictionary(index), dictionary_change);
+      GetDictionary(index), &dictionary_change);
   if (sync_datatype_helper::test()->use_verifier()) {
     result &= DictionarySyncIntegrationTestHelper::ApplyChange(
-        GetVerifierDictionary(), dictionary_change);
+        GetVerifierDictionary(), &dictionary_change);
   }
   return result;
 }

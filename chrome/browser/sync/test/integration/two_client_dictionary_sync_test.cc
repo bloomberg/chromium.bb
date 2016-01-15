@@ -9,10 +9,12 @@
 #include "chrome/browser/sync/test/integration/sync_integration_test_util.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/common/spellcheck_common.h"
+#include "sync/internal_api/public/base/model_type.h"
 
 using chrome::spellcheck_common::MAX_SYNCABLE_DICTIONARY_WORDS;
 using dictionary_helper::AwaitNumDictionaryEntries;
 using sync_integration_test_util::AwaitCommitActivityCompletion;
+using sync_integration_test_util::AwaitServerCount;
 
 class TwoClientDictionarySyncTest : public SyncTest {
  public:
@@ -112,73 +114,46 @@ IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, RemoveOnAAddOnB) {
   ASSERT_EQ(1UL, dictionary_helper::GetDictionarySize(0));
 }
 
-// Tests the case where the Nth client pushes the server beyond its
+// Tests the case where a client has more words added than the
 // MAX_SYNCABLE_DICTIONARY_WORDS limit.
-// Used to crash on Windows; now failing on Linux after conversion to
-// 2-client test. See crbug.com/575316
-IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, DISABLED_Limit) {
+IN_PROC_BROWSER_TEST_F(TwoClientDictionarySyncTest, Limit) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
   dictionary_helper::LoadDictionaries();
   ASSERT_TRUE(dictionary_helper::AwaitDictionariesMatch());
 
-  const int n = num_clients();
+  // Disable client #1 before client #0 starts adding anything.
+  GetClient(1)->DisableSyncForAllDatatypes();
 
-  // Pick a number of initial words per client such that
-  // (num-clients()-1) * initial_words
-  //     < MAX_SYNCABLE_DICTIONARY_WORDS
-  //     < num_clients() * initial_words
-  size_t initial_words =
-      (MAX_SYNCABLE_DICTIONARY_WORDS + n) / n;
+  // Pick a size between 1/2 and 1/3 of MAX_SYNCABLE_DICTIONARY_WORDS. This will
+  // allow the test to verify that while we crossed the limit the client not
+  // actively making changes is still recieving sync updates but stops exactly
+  // on the limit.
+  size_t chunk_size = MAX_SYNCABLE_DICTIONARY_WORDS * 2 / 5;
 
-  // Add |initial_words| words to each of the clients before sync.
-  for (int i = 0; i < n; ++i) {
-    GetClient(i)->DisableSyncForAllDatatypes();
-    for (size_t j = 0; j < initial_words; ++j) {
-      ASSERT_TRUE(dictionary_helper::AddWord(
-          i, "foo-" + base::IntToString(i) + "-" + base::Uint64ToString(j)));
-    }
-    ASSERT_EQ(initial_words, dictionary_helper::GetDictionarySize(i));
-  }
+  ASSERT_TRUE(dictionary_helper::AddWords(0, chunk_size, "foo-0-"));
+  ASSERT_EQ(chunk_size, dictionary_helper::GetDictionarySize(0));
 
-  // As long as we don't get involved in any race conditions where two clients
-  // are committing at once, we should be able to guarantee that the server has
-  // at most MAX_SYNCABLE_DICTIONARY_WORDS words.  Every client will be able to
-  // sync these items.  Clients are allowed to have more words if they're
-  // available locally, but they won't be able to commit any words once the
-  // server is full.
-  //
-  // As we enable clients one-by-one, all but the (N-1)th client should be able
-  // to commit all of their items.  The last one will have some local data left
-  // over.
+  // We must wait for the server here. This test was originally an n-client test
+  // where n-1 clients waited to have the same state. We cannot do that on 2
+  // clients because one needs to be disconnected during this process, because
+  // part of what we're testing is that when it comes online it pulls remote
+  // changes before pushing local changes, with the limit in mind. So we check
+  // the server count here to make sure client #0 is done pushing its changes
+  // out. In there real world there's a race condition here, if multiple clients
+  // are adding words simultaneously then we're go over the limit slightly,
+  // though we'd expect this to be relatively small.
+  AwaitServerCount(syncer::DICTIONARY, chunk_size);
 
-  // Open the floodgates.   Allow N-1 clients to sync their items.
-  for (int i = 0; i < n-1; ++i) {
-    SCOPED_TRACE(i);
+  ASSERT_TRUE(dictionary_helper::AddWords(1, 2 * chunk_size, "foo-1-"));
+  ASSERT_EQ(2 * chunk_size, dictionary_helper::GetDictionarySize(1));
 
-    // Client #i has |initial_words| words before sync.
-    ASSERT_EQ(initial_words, dictionary_helper::GetDictionarySize(i));
-    ASSERT_TRUE(GetClient(i)->EnableSyncForAllDatatypes());
-  }
-
-  // Wait for clients to catch up.  All should be in sync with the server
-  // and have exactly (initial_words * (N-1)) words in their dictionaries.
-  for (int i = 0; i < n-1; ++i) {
-    SCOPED_TRACE(i);
-    ASSERT_TRUE(AwaitNumDictionaryEntries(i, initial_words*(n-1)));
-  }
-
-  // Add the client that has engough new words to cause an overflow.
-  ASSERT_EQ(initial_words, dictionary_helper::GetDictionarySize(n-1));
-  ASSERT_TRUE(GetClient(n-1)->EnableSyncForAllDatatypes());
-
-  // The Nth client will receive the initial_words * (n-1) entries that were on
-  // the server.  It will commit some of the entries it had locally.  And it
-  // will have a few uncommittable items left over.
-  ASSERT_TRUE(AwaitNumDictionaryEntries(n-1, initial_words*n));
-
-  // Everyone else should be at the limit.
-  for (int i = 0; i < n-1; ++i) {
-    SCOPED_TRACE(i);
-    ASSERT_TRUE(AwaitNumDictionaryEntries(i, MAX_SYNCABLE_DICTIONARY_WORDS));
-  }
+  // Client #1 should first pull remote changes, apply them, without capping at
+  // any sort of limit. This will cause client #1 to have 3 * chunk_size. When
+  // client #1 then tries to commit changes, that is when it obeys the limit
+  // and will cause client #0 to only see the limit worth of words.
+  ASSERT_TRUE(GetClient(1)->EnableSyncForAllDatatypes());
+  ASSERT_TRUE(AwaitNumDictionaryEntries(1, 3 * chunk_size));
+  ASSERT_TRUE(
+      AwaitServerCount(syncer::DICTIONARY, MAX_SYNCABLE_DICTIONARY_WORDS));
+  ASSERT_TRUE(AwaitNumDictionaryEntries(0, MAX_SYNCABLE_DICTIONARY_WORDS));
 }
