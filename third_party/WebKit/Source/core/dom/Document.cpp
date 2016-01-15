@@ -2499,7 +2499,7 @@ PassRefPtrWillBeRawPtr<DocumentParser> Document::implicitOpen(ParserSynchronizat
 
 HTMLElement* Document::body() const
 {
-    if (!documentElement())
+    if (!documentElement() || !isHTMLHtmlElement(documentElement()))
         return 0;
 
     for (HTMLElement* child = Traversal<HTMLElement>::firstChild(*documentElement()); child; child = Traversal<HTMLElement>::nextSibling(*child)) {
