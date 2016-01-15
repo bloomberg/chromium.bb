@@ -257,16 +257,12 @@ final class TestMediaRouteProvider extends MediaRouteProvider {
             // And start it playing.
             mSessionManager.resume();
             if (callback != null) {
-                if (item != null) {
-                    Bundle result = new Bundle();
-                    result.putString(MediaControlIntent.EXTRA_SESSION_ID, item.getSessionId());
-                    result.putString(MediaControlIntent.EXTRA_ITEM_ID, item.getItemId());
-                    result.putBundle(MediaControlIntent.EXTRA_ITEM_STATUS,
-                            item.getStatus().asBundle());
-                    callback.onResult(result);
-                } else {
-                    callback.onError("Failed to open " + uri.toString(), null);
-                }
+                Bundle result = new Bundle();
+                result.putString(MediaControlIntent.EXTRA_SESSION_ID, item.getSessionId());
+                result.putString(MediaControlIntent.EXTRA_ITEM_ID, item.getItemId());
+                result.putBundle(MediaControlIntent.EXTRA_ITEM_STATUS,
+                        item.getStatus().asBundle());
+                callback.onResult(result);
             }
             return true;
         }
