@@ -754,8 +754,6 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
   EmeRobustness robustness = ConvertRobustness(requested_robustness);
   if (robustness == EmeRobustness::INVALID)
     return EmeConfigRule::NOT_SUPPORTED;
-  if (robustness == EmeRobustness::EMPTY)
-    return EmeConfigRule::SUPPORTED;
 
   KeySystemInfoMap::const_iterator key_system_iter =
       concrete_key_system_map_.find(key_system);
@@ -787,6 +785,11 @@ EmeConfigRule KeySystemsImpl::GetRobustnessConfigRule(
 
   if (key_system == kWidevineKeySystem) {
 #if defined(OS_CHROMEOS)
+    // TODO(ddorwin): Remove this once we have confirmed it is not necessary.
+    // See https://crbug.com/482277
+    if (robustness == EmeRobustness::EMPTY)
+      return EmeConfigRule::SUPPORTED;
+
     // Hardware security requires remote attestation.
     if (robustness >= EmeRobustness::HW_SECURE_CRYPTO)
       return EmeConfigRule::IDENTIFIER_REQUIRED;
