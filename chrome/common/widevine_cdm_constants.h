@@ -9,9 +9,6 @@
 
 #include "base/files/file_path.h"
 
-// The Widevine CDM adapter and Widevine CDM are in this directory.
-extern const base::FilePath::CharType kWidevineCdmBaseDirectory[];
-
 extern const char kWidevineCdmPluginExtension[];
 
 // Permission bits for Widevine CDM plugin.
