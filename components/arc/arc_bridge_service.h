@@ -85,6 +85,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnClipboardInstanceReady() {}
     virtual void OnClipboardInstanceClosed() {}
 
+    // Called whenever the ARC IME interface state changes.
+    virtual void OnImeInstanceReady() {}
+    virtual void OnImeInstanceClosed() {}
+
     // Called whenever the ARC input interface state changes.
     virtual void OnInputInstanceReady() {}
     virtual void OnInputInstanceClosed() {}
@@ -149,6 +153,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstance* app_instance() { return app_ptr_.get(); }
   AuthInstance* auth_instance() { return auth_ptr_.get(); }
   ClipboardInstance* clipboard_instance() { return clipboard_ptr_.get(); }
+  ImeInstance* ime_instance() { return ime_ptr_.get(); }
   InputInstance* input_instance() { return input_ptr_.get(); }
   NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
@@ -161,6 +166,7 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t app_version() const { return app_ptr_.version(); }
   int32_t auth_version() const { return auth_ptr_.version(); }
   int32_t clipboard_version() const { return clipboard_ptr_.version(); }
+  int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t input_version() const { return input_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
@@ -172,6 +178,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppInstanceReady(AppInstancePtr app_ptr) override;
   void OnAuthInstanceReady(AuthInstancePtr auth_ptr) override;
   void OnClipboardInstanceReady(ClipboardInstancePtr clipboard_ptr) override;
+  void OnImeInstanceReady(ImeInstancePtr ime_ptr) override;
   void OnInputInstanceReady(InputInstancePtr input_ptr) override;
   void OnNotificationsInstanceReady(
       NotificationsInstancePtr notifications_ptr) override;
@@ -213,6 +220,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseAppChannel();
   void CloseAuthChannel();
   void CloseClipboardChannel();
+  void CloseImeChannel();
   void CloseInputChannel();
   void CloseNotificationsChannel();
   void ClosePowerChannel();
@@ -224,6 +232,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnAppVersionReady(int32_t version);
   void OnAuthVersionReady(int32_t version);
   void OnClipboardVersionReady(int32_t version);
+  void OnImeVersionReady(int32_t version);
   void OnInputVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
@@ -235,6 +244,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr app_ptr_;
   AuthInstancePtr auth_ptr_;
   ClipboardInstancePtr clipboard_ptr_;
+  ImeInstancePtr ime_ptr_;
   InputInstancePtr input_ptr_;
   NotificationsInstancePtr notifications_ptr_;
   PowerInstancePtr power_ptr_;
@@ -251,6 +261,7 @@ class ArcBridgeService : public ArcBridgeHost {
   AppInstancePtr temporary_app_ptr_;
   AuthInstancePtr temporary_auth_ptr_;
   ClipboardInstancePtr temporary_clipboard_ptr_;
+  ImeInstancePtr temporary_ime_ptr_;
   InputInstancePtr temporary_input_ptr_;
   NotificationsInstancePtr temporary_notifications_ptr_;
   PowerInstancePtr temporary_power_ptr_;

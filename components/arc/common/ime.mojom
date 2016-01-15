@@ -1,0 +1,59 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module arc;
+
+// Represents the type of text input field currently focused.
+enum TextInputType {
+  NONE,
+  TEXT,
+  PASSWORD,
+  SEARCH,
+  EMAIL,
+  NUMBER,
+  TELEPHONE,
+  URL,
+  DATE,
+  TIME,
+  DATETIME,
+};
+
+// Represents the text insertion points in the container screen coordinates.
+struct CursorRect {
+  int32 left;
+  int32 top;
+  int32 right;
+  int32 bottom;
+};
+
+// Represents a single segment of text currently composed by IME.
+struct CompositionSegment {
+  // Start offset of the segment in UTF-16 index.
+  uint32 start_offset;
+  // End offset of the segment in UTF-16 index.
+  uint32 end_offset;
+  // Indicates that this segment should be emphasized.
+  bool emphasized;
+};
+
+interface ImeHost {
+  // Notifies Chrome that the text input focus is changed.
+  OnTextInputTypeChanged(TextInputType type);
+
+  // Notifies Chrome that the cursor poisition has changed.
+  OnCursorRectChanged(CursorRect rect);
+};
+
+interface ImeInstance {
+  Init(ImeHost host_ptr);
+
+  // Sets composition text and attributes requested by the host IME.
+  SetCompositionText(string text, array<CompositionSegment> segments);
+
+  // Commits the last set composition text and clears the composition.
+  ConfirmCompositionText();
+
+  // Commits the specified text and clears the composition.
+  InsertText(string text);
+};

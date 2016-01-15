@@ -129,6 +129,30 @@ void ArcBridgeService::CloseClipboardChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnClipboardInstanceClosed());
 }
 
+void ArcBridgeService::OnImeInstanceReady(ImeInstancePtr ime_ptr) {
+  DCHECK(CalledOnValidThread());
+  temporary_ime_ptr_ = std::move(ime_ptr);
+  temporary_ime_ptr_.QueryVersion(base::Bind(
+      &ArcBridgeService::OnImeVersionReady, weak_factory_.GetWeakPtr()));
+}
+
+void ArcBridgeService::OnImeVersionReady(int32_t version) {
+  DCHECK(CalledOnValidThread());
+  ime_ptr_ = std::move(temporary_ime_ptr_);
+  ime_ptr_.set_connection_error_handler(base::Bind(
+      &ArcBridgeService::CloseImeChannel, weak_factory_.GetWeakPtr()));
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnImeInstanceReady());
+}
+
+void ArcBridgeService::CloseImeChannel() {
+  DCHECK(CalledOnValidThread());
+  if (!ime_ptr_)
+    return;
+
+  ime_ptr_.reset();
+  FOR_EACH_OBSERVER(Observer, observer_list(), OnImeInstanceClosed());
+}
+
 void ArcBridgeService::OnInputInstanceReady(InputInstancePtr input_ptr) {
   DCHECK(CalledOnValidThread());
   temporary_input_ptr_ = std::move(input_ptr);
@@ -302,6 +326,7 @@ void ArcBridgeService::CloseAllChannels() {
   CloseAppChannel();
   CloseAuthChannel();
   CloseClipboardChannel();
+  CloseImeChannel();
   CloseInputChannel();
   CloseNotificationsChannel();
   ClosePowerChannel();

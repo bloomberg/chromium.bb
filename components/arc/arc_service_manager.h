@@ -15,6 +15,7 @@ namespace arc {
 class ArcAuthService;
 class ArcBridgeService;
 class ArcClipboardBridge;
+class ArcImeBridge;
 class ArcInputBridge;
 class ArcNotificationManager;
 class ArcPowerBridge;
@@ -48,6 +49,7 @@ class ArcServiceManager {
   // Individual services
   scoped_ptr<ArcAuthService> arc_auth_service_;
   scoped_ptr<ArcClipboardBridge> arc_clipboard_bridge_;
+  scoped_ptr<ArcImeBridge> arc_ime_bridge_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
   scoped_ptr<ArcNotificationManager> arc_notification_manager_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
