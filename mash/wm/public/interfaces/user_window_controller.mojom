@@ -4,14 +4,20 @@
 
 module mash.wm.mojom;
 
+struct UserWindow {
+  uint32 window_id;
+  string window_title;
+};
+
 // An observer of user windows within mojom::CONTAINER_USER_WINDOWS.
 // TODO(msw): Observe focus changes, title/icon changes, etc.
 interface UserWindowObserver {
   // Called when the observer is first added to supply the initial state.
-  OnUserWindowObserverAdded(array<uint32> window_ids);
+  OnUserWindowObserverAdded(array<UserWindow> user_windows);
 
-  OnUserWindowAdded(uint32 window_id);
+  OnUserWindowAdded(UserWindow user_window);
   OnUserWindowRemoved(uint32 window_id);
+  OnUserWindowTitleChanged(uint32 window_id, string window_title);
 };
 
 // An interface allowing system UIs to manage the set of user windows.

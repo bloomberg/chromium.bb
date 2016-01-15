@@ -16,12 +16,17 @@ namespace mash {
 namespace wm {
 
 class WindowManagerApplication;
+class WindowTitleObserver;
 
-class UserWindowControllerImpl : public mash::wm::mojom::UserWindowController,
+class UserWindowControllerImpl : public mojom::UserWindowController,
                                  public mus::WindowObserver {
  public:
   UserWindowControllerImpl();
   ~UserWindowControllerImpl() override;
+
+  mojom::UserWindowObserver* user_window_observer() const {
+    return user_window_observer_.get();
+  }
 
   void Initialize(WindowManagerApplication* state);
 
@@ -32,13 +37,13 @@ class UserWindowControllerImpl : public mash::wm::mojom::UserWindowController,
   // mus::WindowObserver:
   void OnTreeChanging(const TreeChangeParams& params) override;
 
-  // mash::wm::mojom::UserWindowController:
-  void AddUserWindowObserver(
-      mash::wm::mojom::UserWindowObserverPtr observer) override;
+  // mojom::UserWindowController:
+  void AddUserWindowObserver(mojom::UserWindowObserverPtr observer) override;
   void FocusUserWindow(uint32_t window_id) override;
 
   WindowManagerApplication* state_;
-  mash::wm::mojom::UserWindowObserverPtr user_window_observer_;
+  mojom::UserWindowObserverPtr user_window_observer_;
+  scoped_ptr<WindowTitleObserver> window_title_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(UserWindowControllerImpl);
 };

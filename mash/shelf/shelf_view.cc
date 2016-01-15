@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/common/common_type_converters.h"
 #include "mojo/shell/public/cpp/application_impl.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/controls/button/label_button.h"
@@ -14,12 +15,7 @@
 namespace mash {
 namespace shelf {
 
-enum ShelfButtonID {
-  SHELF_BUTTON_VIEWS_EXAMPLES,
-  SHELF_BUTTON_TASK_VIEWER,
-};
-
-ShelfView::ShelfView(mojo::ApplicationImpl* app) : app_(app), binding_(this) {
+ShelfView::ShelfView(mojo::ApplicationImpl* app) : binding_(this) {
   app->ConnectToService("mojo:desktop_wm", &user_window_controller_);
 
   mash::wm::mojom::UserWindowObserverPtr observer;
@@ -30,19 +26,16 @@ ShelfView::ShelfView(mojo::ApplicationImpl* app) : app_(app), binding_(this) {
 
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
-
-  views::LabelButton* views_examples =
-      new views::LabelButton(this, base::ASCIIToUTF16("Views Examples"));
-  views_examples->set_tag(SHELF_BUTTON_VIEWS_EXAMPLES);
-  AddChildView(views_examples);
-
-  views::LabelButton* task_viewer =
-      new views::LabelButton(this, base::ASCIIToUTF16("Task Viewer"));
-  task_viewer->set_tag(SHELF_BUTTON_TASK_VIEWER);
-  AddChildView(task_viewer);
 }
 
 ShelfView::~ShelfView() {}
+
+size_t ShelfView::GetButtonIndexById(uint32_t window_id) const {
+  for (size_t i = 0; i < open_window_buttons_.size(); ++i)
+    if (static_cast<uint32_t>(open_window_buttons_[i]->tag()) == window_id)
+      return i;
+  return open_window_buttons_.size();
+}
 
 void ShelfView::OnPaint(gfx::Canvas* canvas) {
   canvas->FillRect(GetLocalBounds(), SK_ColorYELLOW);
@@ -58,24 +51,19 @@ views::View* ShelfView::GetContentsView() {
 }
 
 void ShelfView::ButtonPressed(views::Button* sender, const ui::Event& event) {
-  if (sender->tag() == SHELF_BUTTON_VIEWS_EXAMPLES)
-    app_->ConnectToApplication("mojo:views_examples");
-  else if (sender->tag() == SHELF_BUTTON_TASK_VIEWER)
-    app_->ConnectToApplication("mojo:task_viewer");
-  else
-    user_window_controller_->FocusUserWindow(sender->tag());
+  user_window_controller_->FocusUserWindow(sender->tag());
 }
 
-void ShelfView::OnUserWindowObserverAdded(mojo::Array<uint32_t> window_ids) {
-  for (size_t i = 0; i < window_ids.size(); ++i)
-    OnUserWindowAdded(window_ids[i]);
+void ShelfView::OnUserWindowObserverAdded(
+    mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) {
+  for (size_t i = 0; i < user_windows.size(); ++i)
+    OnUserWindowAdded(std::move(user_windows[i]));
 }
 
-void ShelfView::OnUserWindowAdded(uint32_t window_id) {
-  // TODO(msw): Get the actual window title and icon.
+void ShelfView::OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) {
   views::LabelButton* open_window_button = new views::LabelButton(
-      this, base::ASCIIToUTF16(base::StringPrintf("Window %d", window_id)));
-  open_window_button->set_tag(window_id);
+      this, user_window->window_title.To<base::string16>());
+  open_window_button->set_tag(user_window->window_id);
   open_window_buttons_.push_back(open_window_button);
   AddChildView(open_window_button);
   Layout();
@@ -83,15 +71,28 @@ void ShelfView::OnUserWindowAdded(uint32_t window_id) {
 }
 
 void ShelfView::OnUserWindowRemoved(uint32_t window_id) {
-  for (size_t i = 0; i < open_window_buttons_.size(); ++i) {
-    if (static_cast<uint32_t>(open_window_buttons_[i]->tag()) == window_id) {
-      views::LabelButton* button = open_window_buttons_[i];
-      open_window_buttons_.erase(open_window_buttons_.begin() + i);
-      RemoveChildView(button);
-      delete button;
-      return;
-    }
-  }
+  const size_t index = GetButtonIndexById(window_id);
+  if (index >= open_window_buttons_.size())
+    return;
+
+  views::LabelButton* button = open_window_buttons_[index];
+  open_window_buttons_.erase(open_window_buttons_.begin() + index);
+  RemoveChildView(button);
+  delete button;
+  Layout();
+  SchedulePaint();
+}
+
+void ShelfView::OnUserWindowTitleChanged(uint32_t window_id,
+                                         const mojo::String& window_title) {
+  const size_t index = GetButtonIndexById(window_id);
+  if (index >= open_window_buttons_.size())
+    return;
+
+  open_window_buttons_[index]->SetText(window_title.To<base::string16>());
+  open_window_buttons_[index]->SetMinSize(gfx::Size());
+  Layout();
+  SchedulePaint();
 }
 
 }  // namespace shelf

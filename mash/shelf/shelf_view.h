@@ -33,6 +33,9 @@ class ShelfView : public views::WidgetDelegateView,
   ~ShelfView() override;
 
  private:
+  // Return the index in |open_window_buttons_| corresponding to |window_id|.
+  size_t GetButtonIndexById(uint32_t window_id) const;
+
   // Overridden from views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   gfx::Size GetPreferredSize() const override;
@@ -44,11 +47,13 @@ class ShelfView : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Overridden from mash::wm::mojom::UserWindowObserver:
-  void OnUserWindowObserverAdded(mojo::Array<uint32_t> window_ids) override;
-  void OnUserWindowAdded(uint32_t window_id) override;
+  void OnUserWindowObserverAdded(
+      mojo::Array<mash::wm::mojom::UserWindowPtr> user_windows) override;
+  void OnUserWindowAdded(mash::wm::mojom::UserWindowPtr user_window) override;
   void OnUserWindowRemoved(uint32_t window_id) override;
+  void OnUserWindowTitleChanged(uint32_t window_id,
+                                const mojo::String& window_title) override;
 
-  mojo::ApplicationImpl* app_;
   std::vector<views::LabelButton*> open_window_buttons_;
   mash::wm::mojom::UserWindowControllerPtr user_window_controller_;
   mojo::Binding<mash::wm::mojom::UserWindowObserver> binding_;
