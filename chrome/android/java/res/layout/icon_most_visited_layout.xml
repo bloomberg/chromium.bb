@@ -7,4 +7,5 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="0dp"
     android:layout_height="0dp"
-    android:paddingTop="@dimen/icon_most_visited_layout_padding_top" />
+    android:paddingTop="@dimen/icon_most_visited_layout_padding_top"
+    android:paddingBottom="@dimen/icon_most_visited_layout_padding_bottom" />

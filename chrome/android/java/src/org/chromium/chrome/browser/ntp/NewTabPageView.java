@@ -929,7 +929,7 @@ public class NewTabPageView extends FrameLayout
             int paddingTop = getResources().getDimensionPixelSize(hasLogo
                     ? R.dimen.icon_most_visited_layout_padding_top
                     : R.dimen.icon_most_visited_layout_no_logo_padding_top);
-            mostVisitedLayout.setPadding(0, paddingTop, 0, 0);
+            mostVisitedLayout.setPadding(0, paddingTop, 0, mMostVisitedLayout.getPaddingBottom());
         }
 
         class LargeIconCallbackImpl implements LargeIconCallback {
