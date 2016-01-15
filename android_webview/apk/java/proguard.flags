@@ -68,6 +68,11 @@
   public java.lang.String KEY;
 }
 -dontnote com.android.webview.chromium.Drp
+-keep class com.android.webview.chromium.PlatformServiceBridgeGoogle {
+  void setMetricsSettingListener(...);
+  PlatformServiceBridgeGoogle(...);
+}
+-dontnote com.android.webview.chromium.PlatformServiceBridgeGoogle
 
 # Keep framework support for SmartClip.
 -keep class com.android.webview.chromium.WebViewChromium {
