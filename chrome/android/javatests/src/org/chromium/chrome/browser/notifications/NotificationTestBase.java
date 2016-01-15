@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 /**
- * Instrumentation tests for the Notification UI Manager implementation on Android.
+ * Base class for instrumentation tests using Web Notifications on Android.
  *
  * Web Notifications are only supported on Android JellyBean and beyond.
  */
