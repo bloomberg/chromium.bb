@@ -25,6 +25,7 @@
 #include "core/dom/NodeIterator.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
@@ -74,13 +75,16 @@ NodeIterator::NodeIterator(PassRefPtrWillBeRawPtr<Node> rootNode, unsigned whatT
     : NodeIteratorBase(rootNode, whatToShow, filter)
     , m_referenceNode(root(), true)
 {
-    root()->document().attachNodeIterator(this);
+    // If NodeIterator target is Attr node, don't subscribe for nodeWillBeRemoved, as it would never have child nodes.
+    if (!root()->isAttributeNode())
+        root()->document().attachNodeIterator(this);
 }
 
 #if !ENABLE(OILPAN)
 NodeIterator::~NodeIterator()
 {
-    root()->document().detachNodeIterator(this);
+    if (!root()->isAttributeNode())
+        root()->document().detachNodeIterator(this);
 }
 #endif
 
