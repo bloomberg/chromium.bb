@@ -1390,6 +1390,13 @@ wl_resource_create(struct wl_client *client,
 {
 	struct wl_resource *resource;
 
+	if (version < 1 || version > interface->version) {
+		wl_log("wl_resource_create: invalid resource version %d "
+		       "for interface '%s' - must be in range [1, %d]\n",
+		       version, interface->name, interface->version);
+		return NULL;
+	}
+
 	resource = malloc(sizeof *resource);
 	if (resource == NULL)
 		return NULL;
