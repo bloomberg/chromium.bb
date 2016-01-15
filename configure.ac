@@ -47,8 +47,17 @@ LT_INIT
 
 PKG_PROG_PKG_CONFIG()
 
+AC_ARG_ENABLE([fatal-warnings],
+	      AC_HELP_STRING([--enable-fatal-warnings],
+			     [Build with -Werror]),
+	      [enable_fatal_warnings=$enableval],
+	      [enable_fatal_warnings=no])
+AS_IF([test x"$enable_fatal_warnings" != "xno"], [
+      WERROR_CFLAGS="-Werror"
+])
+
 if test "x$GCC" = "xyes"; then
-	GCC_CFLAGS="-Wall -Wextra -Wno-unused-parameter -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
+	GCC_CFLAGS="$WERROR_CFLAGS -Wall -Wextra -Wno-unused-parameter -g -Wstrict-prototypes -Wmissing-prototypes -fvisibility=hidden"
 fi
 AC_SUBST(GCC_CFLAGS)
 
