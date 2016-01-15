@@ -73,6 +73,8 @@ scoped_ptr<base::ListValue> SinksToValue(
     sink_val->SetInteger("iconType", sink.icon_type());
     if (!sink.description().empty())
       sink_val->SetString("description", sink.description());
+    if (!sink.domain().empty())
+      sink_val->SetString("domain", sink.domain());
 
     int cast_mode_bits = 0;
     for (MediaCastMode cast_mode : sink_with_cast_modes.cast_modes)

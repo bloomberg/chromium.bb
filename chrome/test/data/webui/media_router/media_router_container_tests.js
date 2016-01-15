@@ -142,13 +142,13 @@ cr.define('media_router_container', function() {
 
         var castModeBitset = 0x2 | 0x4 | 0x8;
         fakeSinkList = [
-          new media_router.Sink('sink id 1', 'Sink 1', null,
+          new media_router.Sink('sink id 1', 'Sink 1', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, castModeBitset),
-          new media_router.Sink('sink id 2', 'Sink 2', null,
+          new media_router.Sink('sink id 2', 'Sink 2', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, castModeBitset),
-          new media_router.Sink('sink id 3', 'Sink 3', null,
+          new media_router.Sink('sink id 3', 'Sink 3', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.PENDING, castModeBitset),
         ];
@@ -343,6 +343,36 @@ cr.define('media_router_container', function() {
         });
       });
 
+      // Tests that text shown for sink with domain matches the name and domain.
+      test('sink with domain text', function(done) {
+        // Sink 1 - sink, no domain -> text = name
+        // Sink 2 - sink, domain -> text = sink + domain
+        container.allSinks = [
+            new media_router.Sink('sink id 1', 'Sink 1', null, null,
+                media_router.SinkIconType.HANGOUT,
+                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+            new media_router.Sink('sink id 2', 'Sink 2',
+                null, 'example.com',
+                media_router.SinkIconType.HANGOUT,
+                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+        ];
+
+        setTimeout(function() {
+          var sinkList =
+              container.$['sink-list'].querySelectorAll('paper-item');
+          assertEquals(2, sinkList.length);
+
+          // |sinkList[0]| has sink name only.
+          checkElementText(container.allSinks[0].name, sinkList[0]);
+          // |sinkList[1]| contains sink name and domain.
+          assertTrue(sinkList[1].textContent.trim().startsWith(
+              container.allSinks[1].name.trim()));
+          assertTrue(sinkList[1].textContent.trim().indexOf(
+              container.allSinks[1].domain.trim()) != -1);
+          done();
+        });
+      });
+
       // Tests the text shown for the sink list.
       test('initial sink list route text', function(done) {
         // Sink 1 - no sink description, no route -> no subtext
@@ -350,16 +380,18 @@ cr.define('media_router_container', function() {
         // Sink 3 - no sink description, route -> subtext = route description
         // Sink 4 - sink description, route -> subtext = route description
         container.allSinks = [
-            new media_router.Sink('sink id 1', 'Sink 1', null,
+            new media_router.Sink('sink id 1', 'Sink 1', null, null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 2', 'Sink 2', 'Sink 2 description',
+            new media_router.Sink('sink id 2', 'Sink 2',
+                'Sink 2 description', null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 3', 'Sink 3', null,
+            new media_router.Sink('sink id 3', 'Sink 3', null, null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.PENDING, [1, 2, 3]),
-            new media_router.Sink('sink id 4', 'Sink 4', 'Sink 4 description',
+            new media_router.Sink('sink id 4', 'Sink 4',
+                'Sink 4 description', null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.PENDING, [1, 2, 3])
         ];
@@ -589,13 +621,13 @@ cr.define('media_router_container', function() {
           // When sink list changes to only 1 compatible cast mode, the mode is
           // switched, and all sinks are shown.
           container.allSinks = [
-            new media_router.Sink('sink id 10', 'Sink 10', null,
+            new media_router.Sink('sink id 10', 'Sink 10', null, null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.ACTIVE, 0x4),
-            new media_router.Sink('sink id 20', 'Sink 20', null,
+            new media_router.Sink('sink id 20', 'Sink 20', null, null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.ACTIVE, 0x4),
-            new media_router.Sink('sink id 30', 'Sink 30', null,
+            new media_router.Sink('sink id 30', 'Sink 30', null, null,
                 media_router.SinkIconType.CAST,
                 media_router.SinkStatus.PENDING, 0x4),
           ];
@@ -636,13 +668,13 @@ cr.define('media_router_container', function() {
       // route.
       test('sink list in user selected cast mode', function(done) {
         var newSinks = [
-          new media_router.Sink('sink id 10', 'Sink 10', null,
+          new media_router.Sink('sink id 10', 'Sink 10', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, 0x4 | 0x8),
-          new media_router.Sink('sink id 20', 'Sink 20', null,
+          new media_router.Sink('sink id 20', 'Sink 20', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.ACTIVE, 0x2 | 0x4 | 0x8),
-          new media_router.Sink('sink id 30', 'Sink 30', null,
+          new media_router.Sink('sink id 30', 'Sink 30', null, null,
               media_router.SinkIconType.CAST,
               media_router.SinkStatus.PENDING, 0x4 | 0x8),
         ];

@@ -65,6 +65,8 @@ TypeConverter<media_router::MediaSink, MediaSinkPtr>::Convert(
                                SinkIconTypeFromMojo(input->icon_type));
   if (!input->description.get().empty())
     sink.set_description(input->description);
+  if (!input->domain.get().empty())
+    sink.set_domain(input->domain);
 
   return sink;
 }

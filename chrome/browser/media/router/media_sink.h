@@ -34,6 +34,10 @@ class MediaSink {
     description_ = description;
   }
   const std::string& description() const { return description_; }
+  void set_domain(const std::string& domain) {
+    domain_ = domain;
+  }
+  const std::string& domain() const { return domain_; }
   IconType icon_type() const { return icon_type_; }
 
   bool Equals(const MediaSink& other) const;
@@ -47,6 +51,9 @@ class MediaSink {
 
   // Optional description of the MediaSink.
   std::string description_;
+
+  // Optional domain of the MediaSink.
+  std::string domain_;
 
   // The type of icon that corresponds with the MediaSink.
   IconType icon_type_;

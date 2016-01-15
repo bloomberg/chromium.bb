@@ -96,7 +96,13 @@
               </div>
               <div>
                 <div class="sink-text">
-                  <span>[[item.name]]</span>
+                  <span dir="auto">[[item.name]]</span>
+                  <template is="dom-if"
+                      if="[[!computeSinkDomainHidden_(item)]]">
+                    <span class="sink-domain">
+                      [[item.domain]]
+                    </span>
+                  </template>
                 </div>
                 <template is="dom-if"
                     if="[[!computeSinkSubtextHidden_(item, sinkToRouteMap_)]]">

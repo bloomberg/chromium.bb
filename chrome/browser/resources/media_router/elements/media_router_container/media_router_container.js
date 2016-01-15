@@ -636,6 +636,18 @@ Polymer({
   },
 
   /**
+   * Returns whether the sink domain for |sink| should be hidden.
+   * @param {!media_router.Sink} sink
+   * @return {boolean} |true| if the domain should be hidden.
+   * @private
+   */
+  computeSinkDomainHidden_: function(sink) {
+    // TODO(amp): Check the domain of Chrome profile identity and only show the
+    // sink domain if it doesn't match the profile domain. crbug.com/570797
+    return this.isEmptyOrWhitespace_(sink.domain);
+  },
+
+  /**
    * Returns the subtext to be shown for |sink|. Only called if
    * |computeSinkSubtextHidden_| returns false for the same |sink| and
    * |sinkToRouteMap|.
@@ -691,13 +703,14 @@ Polymer({
   },
 
   /**
-   * Returns whether given string is null, empty, or whitespaces only.
+   * Returns whether given string is undefined, null, empty, or whitespace only.
    * @param {?string} str String to be tested.
-   * @return {boolean} |true| if the string is null, empty, or whitespaces.
+   * @return {boolean} |true| if the string is undefined, null, empty, or
+   *     whitespace.
    * @private
    */
   isEmptyOrWhitespace_: function(str) {
-    return str === null || (/^\s*$/).test(str);
+    return str === undefined || str === null || (/^\s*$/).test(str);
   },
 
   /**

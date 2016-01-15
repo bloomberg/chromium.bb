@@ -15,11 +15,13 @@ namespace media_router {
 TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   MediaSink expected_media_sink("sinkId1", "Sink 1", MediaSink::IconType::CAST);
   expected_media_sink.set_description("description");
+  expected_media_sink.set_domain("domain");
 
   interfaces::MediaSinkPtr mojo_sink(interfaces::MediaSink::New());
   mojo_sink->sink_id = "sinkId1";
   mojo_sink->name = "Sink 1";
   mojo_sink->description = "description";
+  mojo_sink->domain = "domain";
   mojo_sink->icon_type =
       media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
 
@@ -32,6 +34,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   EXPECT_EQ(expected_media_sink.id(), media_sink.id());
   EXPECT_FALSE(media_sink.description().empty());
   EXPECT_EQ(expected_media_sink.description(), media_sink.description());
+  EXPECT_FALSE(media_sink.domain().empty());
+  EXPECT_EQ(expected_media_sink.domain(), media_sink.domain());
   EXPECT_EQ(expected_media_sink.icon_type(), media_sink.icon_type());
   EXPECT_TRUE(expected_media_sink.Equals(media_sink));
 }

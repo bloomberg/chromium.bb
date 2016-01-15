@@ -180,13 +180,15 @@ cr.define('media_router', function() {
    * @param {string} id The ID of the media sink.
    * @param {string} name The name of the sink.
    * @param {?string} description Optional description of the sink.
+   * @param {?string} domain Optional domain of the sink.
    * @param {media_router.SinkIconType} iconType the type of icon for the sink.
    * @param {media_router.SinkStatus} status The readiness state of the sink.
    * @param {number} castModes Bitset of cast modes compatible with the sink.
    * @constructor
    * @struct
    */
-  var Sink = function(id, name, description, iconType, status, castModes) {
+  var Sink = function(id, name, description, domain, iconType, status,
+      castModes) {
     /** @type {string} */
     this.id = id;
 
@@ -195,6 +197,9 @@ cr.define('media_router', function() {
 
     /** @type {?string} */
     this.description = description;
+
+    /** @type {?string} */
+    this.domain = domain;
 
     /** @type {SinkIconType} */
     this.iconType = iconType;

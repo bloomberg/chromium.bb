@@ -30,6 +30,7 @@ define('media_router_bindings', [
     return new mediaRouterMojom.MediaSink({
       'name': sink.friendlyName,
       'description': sink.description,
+      'domain': sink.domain,
       'sink_id': sink.id,
       'icon_type': sinkIconTypeToMojo(sink.iconType),
     });
