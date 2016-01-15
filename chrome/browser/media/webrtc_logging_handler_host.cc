@@ -833,12 +833,13 @@ void WebRtcLoggingHandlerHost::DoStartAudioDebugRecordings(
     return;
   }
 
-  BrowserThread::PostTask(
+  BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&WebRtcLoggingHandlerHost::DoStopAudioDebugRecordings, this,
                  host, false /* no manual stop */,
                  current_audio_debug_recordings_id_, callback, error_callback,
-                 prefix_path));
+                 prefix_path),
+      delay);
 }
 
 void WebRtcLoggingHandlerHost::DoStopAudioDebugRecordings(
