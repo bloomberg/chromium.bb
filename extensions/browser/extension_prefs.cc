@@ -81,10 +81,6 @@ const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 // run of this profile.
 const char kPrefExternalInstallFirstRun[] = "external_first_run";
 
-// DO NOT USE, use kPrefDisableReasons instead.
-// Indicates whether the extension was updated while it was disabled.
-const char kDeprecatedPrefDisableReason[] = "disable_reason";
-
 // A bitmask of all the reasons an extension is disabled.
 const char kPrefDisableReasons[] = "disable_reasons";
 
@@ -998,33 +994,6 @@ void ExtensionPrefs::MigratePermissions(const ExtensionIdList& extension_ids) {
   }
 }
 
-void ExtensionPrefs::MigrateDisableReasons(
-    const ExtensionIdList& extension_ids) {
-  for (ExtensionIdList::const_iterator ext_id =
-       extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
-    int value = -1;
-    if (ReadPrefAsInteger(*ext_id, kDeprecatedPrefDisableReason, &value)) {
-      int new_value = Extension::DISABLE_NONE;
-      switch (value) {
-        case Extension::DEPRECATED_DISABLE_USER_ACTION:
-          new_value = Extension::DISABLE_USER_ACTION;
-          break;
-        case Extension::DEPRECATED_DISABLE_PERMISSIONS_INCREASE:
-          new_value = Extension::DISABLE_PERMISSIONS_INCREASE;
-          break;
-        case Extension::DEPRECATED_DISABLE_RELOAD:
-          new_value = Extension::DISABLE_RELOAD;
-          break;
-      }
-
-      UpdateExtensionPref(*ext_id, kPrefDisableReasons,
-                          new base::FundamentalValue(new_value));
-      // Remove the old disable reason.
-      UpdateExtensionPref(*ext_id, kDeprecatedPrefDisableReason, NULL);
-    }
-  }
-}
-
 scoped_ptr<const PermissionSet> ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id) const {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
@@ -1739,7 +1708,6 @@ void ExtensionPrefs::InitPrefStore() {
 
   FixMissingPrefs(extension_ids);
   MigratePermissions(extension_ids);
-  MigrateDisableReasons(extension_ids);
 
   InitExtensionControlledPrefs(extension_pref_value_map_);
 
