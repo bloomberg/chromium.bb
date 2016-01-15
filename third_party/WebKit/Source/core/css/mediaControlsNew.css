@@ -431,14 +431,14 @@ video::cue(:future) {
     color: gray;
 }
 
-video::-webkit-media-text-track-container b {
+video::cue(b) {
     font-weight: bold;
 }
 
-video::-webkit-media-text-track-container u {
+video::cue(u) {
     text-decoration: underline;
 }
 
-video::-webkit-media-text-track-container i {
+video::cue(i) {
     font-style: italic;
 }
