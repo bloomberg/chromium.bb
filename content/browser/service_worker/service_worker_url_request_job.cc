@@ -109,6 +109,7 @@ bool ServiceWorkerURLRequestJob::Delegate::RequestStillValid(
 ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
+    const std::string& client_id,
     base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
     const ResourceContext* resource_context,
     FetchRequestMode request_mode,
@@ -124,6 +125,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
       response_type_(NOT_DETERMINED),
       is_started_(false),
       service_worker_response_type_(blink::WebServiceWorkerResponseTypeDefault),
+      client_id_(client_id),
       blob_storage_context_(blob_storage_context),
       resource_context_(resource_context),
       stream_pending_buffer_size_(0),
@@ -448,6 +450,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   scoped_ptr<ServiceWorkerFetchRequest> request(
       new ServiceWorkerFetchRequest());
   request->mode = request_mode_;
+  request->is_main_resource_load = is_main_resource_load_;
   request->request_context_type = request_context_type_;
   request->frame_type = frame_type_;
   request->url = request_->url();
@@ -462,6 +465,7 @@ ServiceWorkerURLRequestJob::CreateFetchRequest() {
   request->blob_size = blob_size;
   request->credentials_mode = credentials_mode_;
   request->redirect_mode = redirect_mode_;
+  request->client_id = client_id_;
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request_);
   if (info) {
     request->is_reload = ui::PageTransitionCoreTypeIs(

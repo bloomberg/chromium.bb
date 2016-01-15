@@ -100,6 +100,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate,
+      const std::string& client_id,
       base::WeakPtr<storage::BlobStorageContext> blob_storage_context,
       const ResourceContext* resource_context,
       FetchRequestMode request_mode,
@@ -249,6 +250,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob
 
   // Used when response type is FORWARD_TO_SERVICE_WORKER.
   scoped_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  std::string client_id_;
   base::WeakPtr<storage::BlobStorageContext> blob_storage_context_;
   const ResourceContext* resource_context_;
   scoped_ptr<net::URLRequest> blob_request_;

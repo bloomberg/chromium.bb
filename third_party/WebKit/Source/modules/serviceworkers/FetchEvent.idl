@@ -4,10 +4,11 @@
 
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#fetch-event-interface
 [
-    Constructor(DOMString type, optional FetchEventInit eventInitDict),
+    Constructor(DOMString type, FetchEventInit eventInitDict),
     Exposed=ServiceWorker,
 ] interface FetchEvent : ExtendableEvent {
-    readonly attribute Request request;
+    [SameObject] readonly attribute Request request;
+    readonly attribute DOMString? clientId;
     readonly attribute boolean isReload;
 
     [CallWith=ScriptState, RaisesException] void respondWith(Promise<Response> r);
