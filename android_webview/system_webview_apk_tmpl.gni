@@ -15,6 +15,10 @@ template("system_webview_apk_tmpl") {
       "//base:base_java",
     ]
 
+    if (!defined(alternative_android_sdk_jar)) {
+      alternative_android_sdk_jar = webview_framework_jar
+    }
+
     shared_resources = true
     native_libs = [ "libwebviewchromium.so" ]
     native_lib_version_rule = "//build/util:chrome_version_json"
