@@ -27,6 +27,7 @@ class IntersectionObserver final : public GarbageCollectedFinalized<Intersection
 public:
     static IntersectionObserver* create(const IntersectionObserverInit&, IntersectionObserverCallback&, ExceptionState&);
     static void resumeSuspendedObservers();
+    static void rootDisappearedCallback(Visitor*, void*);
 
     // API methods
     void observe(Element*, ExceptionState&);
@@ -55,8 +56,6 @@ public:
 
 private:
     explicit IntersectionObserver(IntersectionObserverCallback&, Node&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
-
-    void checkRootAndDetachIfNeeded();
 
     Member<IntersectionObserverCallback> m_callback;
     WeakPtrWillBeWeakMember<Node> m_root;
