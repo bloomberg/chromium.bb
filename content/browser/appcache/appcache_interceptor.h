@@ -21,6 +21,7 @@ class URLRequest;
 namespace content {
 class AppCacheRequestHandler;
 class AppCacheServiceImpl;
+class ResourceMessageFilter;
 
 // An interceptor to hijack requests and potentially service them out of
 // the appcache.
@@ -45,7 +46,8 @@ class CONTENT_EXPORT AppCacheInterceptor : public net::URLRequestInterceptor {
                                           int old_process_id);
   static void CompleteCrossSiteTransfer(net::URLRequest* request,
                                         int new_process_id,
-                                        int new_host_id);
+                                        int new_host_id,
+                                        ResourceMessageFilter* filter);
   static void MaybeCompleteCrossSiteTransferInOldProcess(
       net::URLRequest* request,
       int old_process_id);

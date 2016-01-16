@@ -1233,7 +1233,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   AppCacheInterceptor::CompleteCrossSiteTransfer(
       loader->request(),
       child_id,
-      request_data.appcache_host_id);
+      request_data.appcache_host_id,
+      filter_);
 
   ServiceWorkerRequestHandler* handler =
       ServiceWorkerRequestHandler::GetHandler(loader->request());

@@ -25,6 +25,7 @@ class URLRequestJob;
 
 namespace content {
 class AppCacheRequestHandlerTest;
+class AppCacheService;
 class AppCacheURLRequestJob;
 
 // An instance is created for each net::URLRequest. The instance survives all
@@ -57,6 +58,12 @@ class CONTENT_EXPORT AppCacheRequestHandler
   void PrepareForCrossSiteTransfer(int old_process_id);
   void CompleteCrossSiteTransfer(int new_process_id, int new_host_id);
   void MaybeCompleteCrossSiteTransferInOldProcess(int old_process_id);
+
+  // Useful for detecting storage partition mismatches in the context
+  // of cross site transfer navigations.
+  bool SanityCheckIsSameService(AppCacheService* service) {
+    return !host_ || (host_->service() == service);
+  }
 
   static bool IsMainResourceType(ResourceType type) {
     return IsResourceTypeFrame(type) ||
