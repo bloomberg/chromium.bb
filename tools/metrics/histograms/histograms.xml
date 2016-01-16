@@ -6575,6 +6575,57 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataUsage.MatchingRulesCount.Invalid" units="count">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The number of invalid matching rules fetched from the platform external data
+    use observer. A sample is recorded everytime fetch done callback is called.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.MatchingRulesCount.Valid" units="count">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The number of valid matching rules fetched from the platform external data
+    use observer. A sample is recorded everytime fetch done callback is called.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.Perf.MatchingRuleFirstFetchDuration" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The time taken in milliseconds to fetch the matching rules for the first
+    time from the platform external data use observer. This measures the
+    duration from the start time of Chromium to the time the rules are returned
+    asynchronously. A sample is recorded when the first fetch done callback is
+    called.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.Perf.ReportSubmissionDuration" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The time taken in milliseconds to submit the data use reports to the
+    platform external data use observer. This measures the duration from the
+    time of report submission to the time report submission done asynchronous
+    callback is received. A sample is recorded everytime report submission done
+    callback is received.
+  </summary>
+</histogram>
+
+<histogram name="DataUsage.Perf.URLRegexMatchDuration" units="ms">
+  <owner>bengr@chromium.org</owner>
+  <owner>rajendrant@chromium.org</owner>
+  <summary>
+    The time taken in milliseconds for a regular expression to parse an URL. A
+    sample is recorded evertime regular expression parsing is done for an URL.
+  </summary>
+</histogram>
+
 <histogram name="DataUsage.ReportSubmission.Bytes" units="bytes">
   <owner>bengr@chromium.org</owner>
   <owner>tbansal@chromium.org</owner>

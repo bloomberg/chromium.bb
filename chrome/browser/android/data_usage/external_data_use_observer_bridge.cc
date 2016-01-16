@@ -10,6 +10,7 @@
 #include "base/android/jni_string.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/data_use_tab_model.h"
@@ -36,7 +37,9 @@ namespace chrome {
 
 namespace android {
 
-ExternalDataUseObserverBridge::ExternalDataUseObserverBridge() {
+ExternalDataUseObserverBridge::ExternalDataUseObserverBridge()
+    : construct_time_(base::TimeTicks::Now()),
+      is_first_matching_rule_fetch_(true) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Detach from IO thread since rest of ExternalDataUseObserverBridge lives on
@@ -96,6 +99,7 @@ void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
     const base::android::JavaParamRef<jobjectArray>& domain_path_regex,
     const base::android::JavaParamRef<jobjectArray>& label) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(!construct_time_.is_null());
 
   // Convert to native objects.
   std::vector<std::string> app_package_name_native;
@@ -116,6 +120,12 @@ void ExternalDataUseObserverBridge::FetchMatchingRulesDone(
 
   if (!data_use_tab_model_)
     return;
+
+  if (is_first_matching_rule_fetch_) {
+    is_first_matching_rule_fetch_ = false;
+    UMA_HISTOGRAM_TIMES("DataUsage.Perf.MatchingRuleFirstFetchDuration",
+                        base::TimeTicks::Now() - construct_time_);
+  }
 
   data_use_tab_model_->RegisterURLRegexes(
       app_package_name_native, domain_path_regex_native, label_native);

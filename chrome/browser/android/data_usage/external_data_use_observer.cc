@@ -205,6 +205,9 @@ void ExternalDataUseObserver::OnReportDataUseDone(bool success) {
     RecordDataUsageReportSubmission(DATAUSAGE_REPORT_SUBMISSION_FAILED,
                                     pending_report_bytes_);
   }
+  UMA_HISTOGRAM_TIMES(
+      "DataUsage.Perf.ReportSubmissionDuration",
+      base::TimeTicks::Now() - last_data_report_submitted_ticks_);
 
   last_data_report_submitted_ticks_ = base::TimeTicks();
   pending_report_bytes_ = 0;

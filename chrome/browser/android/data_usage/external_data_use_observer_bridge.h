@@ -21,6 +21,7 @@
 namespace base {
 class SingleThreadTaskRunner;
 class Time;
+class TimeTicks;
 }
 
 namespace chrome {
@@ -100,6 +101,12 @@ class ExternalDataUseObserverBridge {
 
   // |data_use_tab_model_| is notified of the matching rules on UI thread.
   base::WeakPtr<DataUseTabModel> data_use_tab_model_;
+
+  // The construction time of |this|.
+  const base::TimeTicks construct_time_;
+
+  // True if matching rules are fetched for the first time.
+  bool is_first_matching_rule_fetch_;
 
   // |io_task_runner_| accesses ExternalDataUseObserver members on IO thread.
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

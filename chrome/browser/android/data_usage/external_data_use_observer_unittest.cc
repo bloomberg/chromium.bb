@@ -33,6 +33,11 @@
 
 namespace {
 
+const char kUMAMatchingRuleFirstFetchDurationHistogram[] =
+    "DataUsage.Perf.MatchingRuleFirstFetchDuration";
+const char kUMAReportSubmissionDurationHistogram[] =
+    "DataUsage.Perf.ReportSubmissionDuration";
+
 const char kDefaultLabel[] = "label";
 const SessionID::id_type kDefaultTabId = 0;
 const char kDefaultURL[] = "http://www.google.com/#q=abc";
@@ -467,6 +472,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
   histogram_tester.ExpectUniqueSample(
       "DataUsage.ReportSubmission.Bytes.Successful",
       external_data_use_observer()->data_use_report_min_bytes_, 1);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 1);
 
   // Verify that metrics were updated correctly for the report that was not
   // successfully submitted.
@@ -479,6 +485,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
   histogram_tester.ExpectUniqueSample(
       "DataUsage.ReportSubmission.Bytes.Failed",
       external_data_use_observer()->data_use_report_min_bytes_, 1);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 2);
 }
 
 #if defined(OS_ANDROID)
@@ -486,6 +493,7 @@ TEST_F(ExternalDataUseObserverTest, BufferDataUseReports) {
 // Report should be submitted even if the number of bytes is less than the
 // threshold. Report should not be submitted if there is a pending report.
 TEST_F(ExternalDataUseObserverTest, DataUseReportingOnApplicationStatusChange) {
+  base::HistogramTester histogram_tester;
   AddDefaultMatchingRule();
   TriggerTabTrackingOnDefaultTab();
 
@@ -507,6 +515,7 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportingOnApplicationStatusChange) {
   EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
   EXPECT_EQ(2, external_data_use_observer()->pending_report_bytes_);
   external_data_use_observer()->OnReportDataUseDone(true);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 1);
 
   // Create pending report.
   OnDataUse(default_data_use());
@@ -527,6 +536,7 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportingOnApplicationStatusChange) {
   EXPECT_EQ(2, external_data_use_observer()->total_bytes_buffered_);
   EXPECT_EQ(default_upload_bytes() + default_download_bytes(),
             external_data_use_observer()->pending_report_bytes_);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 1);
 
   // Once pending report submission done callback was received, report should be
   // submitted on next application state change.
@@ -535,6 +545,7 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportingOnApplicationStatusChange) {
       base::android::APPLICATION_STATE_HAS_PAUSED_ACTIVITIES);
   EXPECT_EQ(0, external_data_use_observer()->total_bytes_buffered_);
   EXPECT_EQ(2, external_data_use_observer()->pending_report_bytes_);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 2);
 }
 #endif // OS_ANDROID
 
@@ -565,15 +576,18 @@ TEST_F(ExternalDataUseObserverTest, Variations) {
 
 // Tests if the metrics are recorded correctly.
 TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
+  base::HistogramTester histogram_tester;
   std::map<std::string, std::string> variation_params;
   variation_params["data_report_submit_timeout_msec"] = "0";
   variation_params["data_use_report_min_bytes"] = "0";
 
   // Create another ExternalDataUseObserver object.
   ReplaceExternalDataUseObserver(variation_params);
+  histogram_tester.ExpectTotalCount(kUMAMatchingRuleFirstFetchDurationHistogram,
+                                    1);
+
   AddDefaultMatchingRule();
 
-  base::HistogramTester histogram_tester;
   TriggerTabTrackingOnDefaultTab();
   OnDataUse(default_data_use());
   OnDataUse(default_data_use());
@@ -584,6 +598,7 @@ TEST_F(ExternalDataUseObserverTest, DataUseReportTimedOut) {
   histogram_tester.ExpectUniqueSample(
       "DataUsage.ReportSubmission.Bytes.TimedOut",
       default_upload_bytes() + default_download_bytes(), 1);
+  histogram_tester.ExpectTotalCount(kUMAReportSubmissionDurationHistogram, 0);
 }
 
 }  // namespace android

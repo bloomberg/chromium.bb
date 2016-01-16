@@ -10,9 +10,11 @@
 #include <utility>
 
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
@@ -46,6 +48,7 @@ void DataUseMatcher::RegisterURLRegexes(
   DCHECK_EQ(app_package_names.size(), labels.size());
 
   base::hash_set<std::string> removed_matching_rule_labels;
+  uint32_t invalid_rules = 0;
 
   for (const auto& matching_rule : matching_rules_)
     removed_matching_rule_labels.insert(matching_rule->label());
@@ -61,11 +64,15 @@ void DataUseMatcher::RegisterURLRegexes(
     const base::TimeTicks now_ticks = tick_clock_->NowTicks();
 
     ParsePackageField(app_package_names.at(i), &app_package_name, &expiration);
-    if (url_regex.empty() && app_package_name.empty())
+    if (url_regex.empty() && app_package_name.empty()) {
+      invalid_rules++;
       continue;
+    }
     scoped_ptr<re2::RE2> pattern(new re2::RE2(url_regex, options));
-    if (!pattern->ok())
+    if (!pattern->ok()) {
+      invalid_rules++;
       continue;
+    }
 
     if (expiration <= now_ticks)
       continue;  // skip expired matching rules.
@@ -80,6 +87,11 @@ void DataUseMatcher::RegisterURLRegexes(
     if (data_use_tab_model_)
       data_use_tab_model_->OnTrackingLabelRemoved(label);
   }
+  UMA_HISTOGRAM_COUNTS_100("DataUsage.MatchingRulesCount.Valid",
+                           matching_rules_.size());
+  UMA_HISTOGRAM_COUNTS_100("DataUsage.MatchingRulesCount.Invalid",
+                           invalid_rules);
+
   DCHECK(io_task_runner_);
 
   // Notify |external_data_use_observer_| if it should register as a data use
@@ -101,7 +113,11 @@ bool DataUseMatcher::MatchesURL(const GURL& url, std::string* label) const {
   for (const auto& matching_rule : matching_rules_) {
     if (matching_rule->expiration() <= now_ticks)
       continue;  // skip expired matching rules.
-    if (re2::RE2::FullMatch(url.spec(), *(matching_rule->pattern()))) {
+    base::TimeTicks begin = base::TimeTicks::Now();
+    bool match = re2::RE2::FullMatch(url.spec(), *(matching_rule->pattern()));
+    UMA_HISTOGRAM_TIMES("DataUsage.Perf.URLRegexMatchDuration",
+                        base::TimeTicks::Now() - begin);
+    if (match) {
       *label = matching_rule->label();
       return true;
     }

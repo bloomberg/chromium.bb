@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/data_usage/external_data_use_observer.h"
@@ -22,6 +23,13 @@
 #include "url/gurl.h"
 
 namespace {
+
+const char kUMAMatchingRulesCountValidHistogram[] =
+    "DataUsage.MatchingRulesCount.Valid";
+const char kUMAMatchingRulesCountInvalidHistogram[] =
+    "DataUsage.MatchingRulesCount.Invalid";
+const char kUMAURLRegexMatchDurationHistogram[] =
+    "DataUsage.Perf.URLRegexMatchDuration";
 
 const char kRegexFoo[] = "http://foo.com/";
 const char kLabelFoo[] = "label_foo";
@@ -94,39 +102,52 @@ TEST_F(DataUseMatcherTest, SingleRegex) {
     std::string url;
     std::string regex;
     bool expect_match;
+    int expect_count_valid_rules;
+    int expect_count_url_match_duration_samples;
   } tests[] = {
-      {"http://www.google.com", "http://www.google.com/", true},
-      {"http://www.Google.com", "http://www.google.com/", true},
-      {"http://www.googleacom", "http://www.google.com/", true},
-      {"http://www.googleaacom", "http://www.google.com/", false},
-      {"http://www.google.com", "https://www.google.com/", false},
+      {"http://www.google.com", "http://www.google.com/", true, 1, 1},
+      {"http://www.Google.com", "http://www.google.com/", true, 1, 1},
+      {"http://www.googleacom", "http://www.google.com/", true, 1, 1},
+      {"http://www.googleaacom", "http://www.google.com/", false, 1, 1},
+      {"http://www.google.com", "https://www.google.com/", false, 1, 1},
       {"http://www.google.com", "{http|https}://www[.]google[.]com/search.*",
-       false},
+       false, 1, 1},
       {"https://www.google.com/search=test",
-       "https://www[.]google[.]com/search.*", true},
+       "https://www[.]google[.]com/search.*", true, 1, 1},
       {"https://www.googleacom/search=test",
-       "https://www[.]google[.]com/search.*", false},
+       "https://www[.]google[.]com/search.*", false, 1, 1},
       {"https://www.google.com/Search=test",
-       "https://www[.]google[.]com/search.*", true},
-      {"www.google.com", "http://www.google.com", false},
-      {"www.google.com:80", "http://www.google.com", false},
-      {"http://www.google.com:80", "http://www.google.com", false},
-      {"http://www.google.com:80/", "http://www.google.com/", true},
-      {"", "http://www.google.com", false},
-      {"", "", false},
-      {"https://www.google.com", "http://www.google.com", false},
+       "https://www[.]google[.]com/search.*", true, 1, 1},
+      {"www.google.com", "http://www.google.com", false, 1, 0},
+      {"www.google.com:80", "http://www.google.com", false, 1, 1},
+      {"http://www.google.com:80", "http://www.google.com", false, 1, 1},
+      {"http://www.google.com:80/", "http://www.google.com/", true, 1, 1},
+      {"", "http://www.google.com", false, 1, 0},
+      {"", "", false, 0, 0},
+      {"https://www.google.com", "http://www.google.com", false, 1, 1},
+      {"https://www.google.com", "[", false, 0},
+      {"https://www.google.com", "]", false, 1, 1},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::HistogramTester histogram_tester;
     std::string label("");
     RegisterURLRegexes(
         // App package name not specified in the matching rule.
         std::vector<std::string>(1, std::string()),
         std::vector<std::string>(1, tests[i].regex),
         std::vector<std::string>(1, "label"));
+    histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram,
+                                        tests[i].expect_count_valid_rules, 1);
+    histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram,
+                                        1 - tests[i].expect_count_valid_rules,
+                                        1);
     EXPECT_EQ(tests[i].expect_match,
               data_use_matcher()->MatchesURL(GURL(tests[i].url), &label))
         << i;
+    histogram_tester.ExpectTotalCount(
+        kUMAURLRegexMatchDurationHistogram,
+        tests[i].expect_count_url_match_duration_samples);
 
     // Verify label matches the expected label.
     std::string expected_label = "";
@@ -151,37 +172,40 @@ TEST_F(DataUseMatcherTest, TwoRegex) {
     std::string regex1;
     std::string regex2;
     bool expect_match;
+    int expect_count_valid_rules;
+    int expect_count_url_match_duration_samples;
   } tests[] = {
       {"http://www.google.com", "http://www.google.com/",
-       "https://www.google.com/", true},
+       "https://www.google.com/", true, 1, 1},
       {"http://www.googleacom", "http://www.google.com/",
-       "http://www.google.com/", true},
+       "http://www.google.com/", true, 1, 1},
       {"https://www.google.com", "http://www.google.com/",
-       "https://www.google.com/", true},
+       "https://www.google.com/", true, 1, 1},
       {"https://www.googleacom", "http://www.google.com/",
-       "https://www.google.com/", true},
+       "https://www.google.com/", true, 1, 1},
       {"http://www.google.com", "{http|https}://www[.]google[.]com/search.*",
-       "", false},
+       "", false, 1, 1},
       {"http://www.google.com/search=test",
        "http://www[.]google[.]com/search.*",
-       "https://www[.]google[.]com/search.*", true},
+       "https://www[.]google[.]com/search.*", true, 1, 1},
       {"https://www.google.com/search=test",
        "http://www[.]google[.]com/search.*",
-       "https://www[.]google[.]com/search.*", true},
+       "https://www[.]google[.]com/search.*", true, 1, 1},
       {"http://google.com/search=test", "http://www[.]google[.]com/search.*",
-       "https://www[.]google[.]com/search.*", false},
+       "https://www[.]google[.]com/search.*", false, 1, 1},
       {"https://www.googleacom/search=test", "",
-       "https://www[.]google[.]com/search.*", false},
+       "https://www[.]google[.]com/search.*", false, 1, 1},
       {"https://www.google.com/Search=test", "",
-       "https://www[.]google[.]com/search.*", true},
-      {"www.google.com", "http://www.google.com", "", false},
-      {"www.google.com:80", "http://www.google.com", "", false},
-      {"http://www.google.com:80", "http://www.google.com", "", false},
-      {"", "http://www.google.com", "", false},
-      {"https://www.google.com", "http://www.google.com", "", false},
+       "https://www[.]google[.]com/search.*", true, 1, 1},
+      {"www.google.com", "http://www.google.com", "", false, 1, 0},
+      {"www.google.com:80", "http://www.google.com", "", false, 1, 1},
+      {"http://www.google.com:80", "http://www.google.com", "", false, 1, 1},
+      {"", "http://www.google.com", "", false, 1, 0},
+      {"https://www.google.com", "http://www.google.com", "", false, 1, 1},
   };
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
+    base::HistogramTester histogram_tester;
     std::string got_label("");
     std::vector<std::string> url_regexes;
     url_regexes.push_back(tests[i].regex1 + "|" + tests[i].regex2);
@@ -189,9 +213,20 @@ TEST_F(DataUseMatcherTest, TwoRegex) {
     RegisterURLRegexes(
         std::vector<std::string>(url_regexes.size(), "com.example.helloworld"),
         url_regexes, std::vector<std::string>(url_regexes.size(), label));
+    histogram_tester.ExpectTotalCount(kUMAMatchingRulesCountValidHistogram, 1);
+    histogram_tester.ExpectTotalCount(kUMAMatchingRulesCountInvalidHistogram,
+                                      1);
+    histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram,
+                                        tests[i].expect_count_valid_rules, 1);
+    histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram,
+                                        1 - tests[i].expect_count_valid_rules,
+                                        1);
     EXPECT_EQ(tests[i].expect_match,
               data_use_matcher()->MatchesURL(GURL(tests[i].url), &got_label))
         << i;
+    histogram_tester.ExpectTotalCount(
+        kUMAURLRegexMatchDurationHistogram,
+        tests[i].expect_count_url_match_duration_samples);
     const std::string expected_label =
         tests[i].expect_match ? label : std::string();
     EXPECT_EQ(expected_label, got_label);
@@ -204,6 +239,7 @@ TEST_F(DataUseMatcherTest, TwoRegex) {
 }
 
 TEST_F(DataUseMatcherTest, MultipleRegex) {
+  base::HistogramTester histogram_tester;
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "https?://www[.]google[.]com/#q=.*|https?://www[.]google[.]com[.]ph/"
@@ -211,6 +247,10 @@ TEST_F(DataUseMatcherTest, MultipleRegex) {
   RegisterURLRegexes(
       std::vector<std::string>(url_regexes.size(), std::string()), url_regexes,
       std::vector<std::string>(url_regexes.size(), "label"));
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram, 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
+                                      1);
 
   const struct {
     std::string url;
@@ -285,6 +325,7 @@ TEST_F(DataUseMatcherTest, ChangeRegex) {
 }
 
 TEST_F(DataUseMatcherTest, MultipleAppPackageName) {
+  base::HistogramTester histogram_tester;
   std::vector<std::string> url_regexes;
   url_regexes.push_back(
       "http://www[.]foo[.]com/#q=.*|https://www[.]foo[.]com/#q=.*");
@@ -307,6 +348,10 @@ TEST_F(DataUseMatcherTest, MultipleAppPackageName) {
   app_package_names.push_back(kAppBaz);
 
   RegisterURLRegexes(app_package_names, url_regexes, labels);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram, 3,
+                                      1);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
+                                      1);
 
   // Test if labels are matched properly for app package names.
   std::string got_label;
@@ -387,6 +432,7 @@ TEST_F(DataUseMatcherTest, ParsePackageField) {
 // Tests if the expiration time encoded as milliseconds since epoch is parsed
 // correctly.
 TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
+  base::HistogramTester histogram_tester;
   NowTestTickClock* tick_clock = new NowTestTickClock();
 
   // |tick_clock| will be owned by |data_use_matcher_|.
@@ -396,12 +442,16 @@ TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
   url_regexes.push_back(kRegexFoo);
   labels.push_back(kLabelFoo);
 
-  // Set current time to to Epoch.
+  // Set current time to Epoch.
   tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch());
 
   app_package_names.push_back(base::StringPrintf("%s|%d", kAppFoo, 10000));
   RegisterURLRegexes(app_package_names, url_regexes, labels);
   EXPECT_FALSE(IsExpired(0));
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram, 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
+                                      1);
   // Fast forward 10 seconds, and matching rule expires.
   tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
                             base::TimeDelta::FromMilliseconds(10000 + 1));
@@ -420,6 +470,7 @@ TEST_F(DataUseMatcherTest, EncodeExpirationTimeInPackageName) {
 
 // Tests if the expiration time encoded in Java format is parsed correctly.
 TEST_F(DataUseMatcherTest, EncodeJavaExpirationTimeInPackageName) {
+  base::HistogramTester histogram_tester;
   std::vector<std::string> url_regexes, labels, app_package_names;
   url_regexes.push_back(kRegexFoo);
   labels.push_back(kLabelFoo);
@@ -433,6 +484,10 @@ TEST_F(DataUseMatcherTest, EncodeJavaExpirationTimeInPackageName) {
       static_cast<long long int>(expiration_time.ToJavaTime())));
   RegisterURLRegexes(app_package_names, url_regexes, labels);
   EXPECT_FALSE(IsExpired(0));
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram, 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
+                                      1);
 
   // Check if expiration duration is close to 10 seconds.
   EXPECT_GE(base::TimeDelta::FromMilliseconds(10001),
@@ -445,6 +500,7 @@ TEST_F(DataUseMatcherTest, EncodeJavaExpirationTimeInPackageName) {
 // Tests that expired matching rules are ignored by MatchesURL and
 // MatchesAppPackageName.
 TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
+  base::HistogramTester histogram_tester;
   std::vector<std::string> url_regexes, labels, app_package_names;
   std::string got_label;
   NowTestTickClock* tick_clock = new NowTestTickClock();
@@ -457,6 +513,10 @@ TEST_F(DataUseMatcherTest, MatchesIgnoresExpiredRules) {
   labels.push_back(kLabelFoo);
   app_package_names.push_back(base::StringPrintf("%s|%d", kAppFoo, 10000));
   RegisterURLRegexes(app_package_names, url_regexes, labels);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountValidHistogram, 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(kUMAMatchingRulesCountInvalidHistogram, 0,
+                                      1);
 
   tick_clock->set_now_ticks(base::TimeTicks::UnixEpoch() +
                             base::TimeDelta::FromMilliseconds(1));
