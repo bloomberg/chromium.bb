@@ -5,7 +5,6 @@
 #include "ipc/unix_domain_socket_util.h"
 
 #include <errno.h>
-#include <fcntl.h>
 #include <stddef.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -55,8 +54,8 @@ int MakeUnixAddrForPath(const std::string& socket_name,
   }
 
   // Make socket non-blocking
-  if (HANDLE_EINTR(fcntl(fd.get(), F_SETFL, O_NONBLOCK)) < 0) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK)";
+  if (!base::SetNonBlocking(fd.get())) {
+    PLOG(ERROR) << "base::SetNonBlocking() failed " << fd.get();
     return -1;
   }
 
@@ -189,8 +188,8 @@ bool ServerAcceptConnection(int server_listen_fd, int* server_socket) {
   base::ScopedFD accept_fd(HANDLE_EINTR(accept(server_listen_fd, NULL, 0)));
   if (!accept_fd.is_valid())
     return IsRecoverableError(errno);
-  if (HANDLE_EINTR(fcntl(accept_fd.get(), F_SETFL, O_NONBLOCK)) < 0) {
-    PLOG(ERROR) << "fcntl(O_NONBLOCK) " << accept_fd.get();
+  if (!base::SetNonBlocking(accept_fd.get())) {
+    PLOG(ERROR) << "base::SetNonBlocking() failed " << accept_fd.get();
     // It's safe to keep listening on |server_listen_fd| even if the attempt to
     // set O_NONBLOCK failed on the client fd.
     return true;
