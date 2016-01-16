@@ -40148,8 +40148,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The cpu usage range reported for the browser process when the chromeos
     device memory pressure (which is the percentage of total memory used by the
-    system) is moderate or critical. This is emitted only when memory pressure
-    changes from a low pressure to a higher pressure.
+    system) is critical. This is emitted only when memory pressure changes from
+    a low pressure to a higher pressure.
   </summary>
 </histogram>
 
@@ -40159,8 +40159,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The system memory usage range reported for the browser process when the
     chromeos device memory pressure (which is the percentage of total memory
-    used by the system) is moderate or critical. This is emitted only when
-    memory pressure changes from a low pressure to a higher pressure.
+    used by the system) is critical. This is emitted only when memory pressure
+    changes from a low pressure to a higher pressure.
   </summary>
 </histogram>
 
@@ -40170,8 +40170,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The cpu usage range reported for the GPU process when the chromeos device
     memory pressure (which is the percentage of total memory used by the system)
-    is moderate or critical. This is emitted only when memory pressure changes
-    from a low pressure to a higher pressure.
+    is critical. This is emitted only when memory pressure changes from a low
+    pressure to a higher pressure.
   </summary>
 </histogram>
 
@@ -40181,8 +40181,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The system's RAM memory usage range reported for the GPU process when the
     chromeos device memory pressure (which is the percentage of total memory
-    used by the system) is moderate or critical. This is emitted only when
-    memory pressure changes from a low pressure to a higher pressure.
+    used by the system) is critical. This is emitted only when memory pressure
+    changes from a low pressure to a higher pressure.
   </summary>
 </histogram>
 

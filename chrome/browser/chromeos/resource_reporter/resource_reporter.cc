@@ -359,8 +359,8 @@ ResourceReporter::SampleTaskByMemory() const {
 void ResourceReporter::OnMemoryPressure(
     MemoryPressureLevel memory_pressure_level) {
   if (have_seen_first_task_manager_refresh_ &&
-      memory_pressure_level >=
-      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_MODERATE) {
+      memory_pressure_level ==
+      MemoryPressureLevel::MEMORY_PRESSURE_LEVEL_CRITICAL) {
     // Report browser and GPU processes usage using UMA histograms.
     UMA_HISTOGRAM_ENUMERATION(
         "ResourceReporter.BrowserProcess.CpuUsage",
@@ -384,8 +384,8 @@ void ResourceReporter::OnMemoryPressure(
     if (!rappor_service)
       return;
 
-    // We only record Rappor samples only if it's the first ever moderate or
-    // critical memory pressure event we receive, or it has been more than
+    // We only record Rappor samples only if it's the first ever critical memory
+    // pressure event we receive, or it has been more than
     // |kMinimumTimeBetweenReportsInMs| since the last time we recorded samples.
     if (!have_seen_first_memory_pressure_event_) {
       have_seen_first_memory_pressure_event_ = true;

@@ -25,7 +25,7 @@ namespace chromeos {
 
 // A system that tracks the top |kTopConsumersCount| CPU and memory consumer
 // Chrome tasks and reports a weighted random sample of them via Rappor whenever
-// memory pressure is moderate or higher. The reporting is limited to once per
+// memory pressure is critical. The reporting is limited to once per
 // |kMinimumTimeBetweenReportsInMS|.
 class ResourceReporter : public task_management::TaskManagerObserver {
  public:
@@ -159,7 +159,7 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   void OnMemoryPressure(MemoryPressureLevel memory_pressure_level);
 
   // We'll use this to watch for memory pressure events so that we can trigger
-  // Rappor sampling at moderate memory pressure or higher.
+  // Rappor sampling at at the critical memory pressure level.
   scoped_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Contains the collected data about the currently running tasks from the most
@@ -174,9 +174,9 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   // descending order by their memory usage.
   std::vector<TaskRecord*> task_records_by_memory_;
 
-  // The time at which the previous memory pressure event (moderate or higher)
-  // was received at which we recorded Rappor samples. This is used to limit
-  // generating a Rappor report to once per |kMinimumTimeBetweenReportsInMS|.
+  // The time at which the previous critical memory pressure event was received
+  // at which we recorded Rappor samples. This is used to limit generating a
+  // Rappor report to once per |kMinimumTimeBetweenReportsInMS|.
   // This is needed to avoid generating a lot of samples that can lower the
   // Rappor privacy guarantees.
   base::TimeTicks last_memory_pressure_event_time_;
@@ -185,7 +185,7 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   const CpuCoresNumberRange system_cpu_cores_range_;
 
   // The most recent reading for the browser and GPU processes to be reported as
-  // UMA histograms when the system is under moderate memory pressure or higher.
+  // UMA histograms when the system is under critical memory pressure.
   double last_browser_process_cpu_ = 0.0;
   double last_gpu_process_cpu_ = 0.0;
   int64_t last_browser_process_memory_ = 0;
@@ -194,7 +194,7 @@ class ResourceReporter : public task_management::TaskManagerObserver {
   // Tracks whether monitoring started or not.
   bool is_monitoring_ = false;
 
-  // True after we've seen a moderate memory pressure event or higher.
+  // True after we've seen a critical memory pressure event.
   bool have_seen_first_memory_pressure_event_ = false;
 
   // True after the first task manager OnTasksRefreshed() event is received.
