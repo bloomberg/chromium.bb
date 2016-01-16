@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "components/nacl/loader/nacl_validation_db.h"
 #include "crypto/nss_util.h"
-#include "native_client/src/include/portability.h"
 #include "native_client/src/public/validation_cache.h"
 
 NaClValidationQueryContext::NaClValidationQueryContext(

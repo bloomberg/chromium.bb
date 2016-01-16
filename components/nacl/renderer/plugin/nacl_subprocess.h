@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
-#include "native_client/src/include/portability.h"
 
 namespace plugin {
 

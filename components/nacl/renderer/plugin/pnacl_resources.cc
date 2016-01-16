@@ -11,7 +11,6 @@
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
-#include "native_client/src/include/portability_io.h"
 #include "ppapi/c/pp_errors.h"
 
 namespace plugin {

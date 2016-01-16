@@ -9,8 +9,6 @@
 #include <string.h>
 
 #include "components/nacl/renderer/plugin/utility.h"
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_process.h"
 #include "ppapi/cpp/module.h"
 
 namespace plugin {

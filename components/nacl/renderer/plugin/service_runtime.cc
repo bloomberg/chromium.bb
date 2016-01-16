@@ -14,8 +14,6 @@
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/utility.h"
-#include "native_client/src/include/portability_io.h"
-#include "native_client/src/include/portability_string.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/completion_callback.h"

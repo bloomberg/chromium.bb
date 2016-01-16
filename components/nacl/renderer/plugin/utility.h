@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include "components/nacl/renderer/ppb_nacl_private.h"
-#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_time.h"
 #include "ppapi/c/private/pp_file_handle.h"
