@@ -144,6 +144,7 @@
 #include "content/public/browser/worker_service.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/process_type.h"
@@ -2494,7 +2495,17 @@ void RenderProcessHostImpl::OnProcessLaunched() {
     is_process_backgrounded_ =
         child_process_launcher_->GetProcess().IsProcessBackgrounded();
 
+#if defined(OS_WIN)
+    // Experiment with not setting the initial priority of a renderer, as this
+    // might be a visible tab but since no widgets are currently present, it
+    // will get backgrounded. See https://crbug.com/560446.
+    if (base::FeatureList::IsEnabled(
+            features::kUpdateRendererPriorityOnStartup)) {
+      UpdateProcessPriority();
+    }
+#else
     UpdateProcessPriority();
+#endif
   }
 
   // NOTE: This needs to be before sending queued messages because

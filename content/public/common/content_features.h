@@ -19,6 +19,7 @@ namespace features {
 CONTENT_EXPORT extern const base::Feature kBrotliEncoding;
 CONTENT_EXPORT extern const base::Feature kDownloadResumption;
 CONTENT_EXPORT extern const base::Feature kExperimentalFramework;
+CONTENT_EXPORT extern const base::Feature kUpdateRendererPriorityOnStartup;
 CONTENT_EXPORT extern const base::Feature kWebFontsIntervention;
 
 #if defined(OS_ANDROID)
