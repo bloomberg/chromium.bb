@@ -95,7 +95,7 @@ public:
             if (r->m_object->isText()) {
                 unsigned opportunitiesInRun = m_runsWithExpansions[i++];
 
-                ASSERT(opportunitiesInRun <= m_totalOpportunities);
+                RELEASE_ASSERT(opportunitiesInRun <= m_totalOpportunities);
 
                 // Don't justify for white-space: pre.
                 if (r->m_object->style()->whiteSpace() != PRE) {
