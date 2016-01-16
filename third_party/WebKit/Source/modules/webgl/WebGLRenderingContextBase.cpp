@@ -672,6 +672,7 @@ static const GLenum kSupportedInternalFormatsTexImageES3[] = {
     GL_DEPTH_COMPONENT24,
     GL_DEPTH_COMPONENT32F,
     GL_DEPTH24_STENCIL8,
+    GL_DEPTH32F_STENCIL8,
 };
 
 // ES2 enums
@@ -747,6 +748,7 @@ static const GLenum kSupportedTypesES3[] = {
     GL_UNSIGNED_INT_10F_11F_11F_REV,
     GL_UNSIGNED_INT_5_9_9_9_REV,
     GL_UNSIGNED_INT_24_8,
+    GL_FLOAT_32_UNSIGNED_INT_24_8_REV,
 };
 
 // ES2 enums
@@ -860,6 +862,7 @@ static const FormatType kSupportedFormatTypesES3[] = {
     { GL_DEPTH_COMPONENT24, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT },
     { GL_DEPTH_COMPONENT32F, GL_DEPTH_COMPONENT, GL_FLOAT },
     { GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8 },
+    { GL_DEPTH32F_STENCIL8, GL_DEPTH_STENCIL, GL_FLOAT_32_UNSIGNED_INT_24_8_REV },
 };
 
 bool isUnsignedIntegerFormat(GLenum internalformat)
@@ -5906,6 +5909,9 @@ bool WebGLRenderingContextBase::validateTexFuncData(const char* functionName, GL
             return false;
         }
         break;
+    case GL_FLOAT_32_UNSIGNED_INT_24_8_REV:
+        synthesizeGLError(GL_INVALID_OPERATION, functionName, "type FLOAT_32_UNSIGNED_INT_24_8_REV but ArrayBufferView is not NULL");
+        return false;
     default:
         ASSERT_NOT_REACHED();
     }
