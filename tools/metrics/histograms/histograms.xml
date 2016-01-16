@@ -6391,6 +6391,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.LoFi.TransformationType"
+    enum="DataReductionProxyLoFiTransformationType">
+  <owner>bengr@chromium.org</owner>
+  <owner>megjablon@chromium.org</owner>
+  <summary>
+    Counts of pageloads that received or requested, but did not receive, various
+    Lo-Fi transformations.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LoFi.UIAction"
     enum="DataReductionProxyLoFiUIAction">
   <owner>bengr@chromium.org</owner>
@@ -59535,6 +59545,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="3"
       label="Lo-Fi was not used because the user implicitly temporarily opted
              out"/>
+</enum>
+
+<enum name="DataReductionProxyLoFiTransformationType" type="int">
+  <int value="0" label="Pageloads that are Lo-Fi previews"/>
+  <int value="1"
+      label="Pageloads that requested Lo-Fi previews, but did not have the
+             transformation"/>
 </enum>
 
 <enum name="DataReductionProxyLoFiUIAction" type="int">

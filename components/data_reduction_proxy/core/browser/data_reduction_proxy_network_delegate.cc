@@ -19,6 +19,7 @@
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_event_creator.h"
 #include "components/data_reduction_proxy/core/common/lofi_decider.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_info.h"
 #include "net/proxy/proxy_server.h"
@@ -221,6 +222,7 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
   if (data_reduction_proxy_bypass_stats_)
     data_reduction_proxy_bypass_stats_->OnUrlRequestCompleted(request, started);
 
+  net::HttpRequestHeaders request_headers;
   if (data_reduction_proxy_io_data_ && request->response_headers() &&
       request->response_headers()->HasHeaderValue(
           chrome_proxy_header(), chrome_proxy_lo_fi_directive())) {
@@ -232,6 +234,15 @@ void DataReductionProxyNetworkDelegate::OnCompletedInternal(
                  chrome_proxy_lo_fi_preview_directive())) {
     data_reduction_proxy_io_data_->lofi_ui_service()->OnLoFiReponseReceived(
         *request, true);
+    RecordLoFiTransformationType(PREVIEW);
+  } else if (request->GetFullRequestHeaders(&request_headers) &&
+             request_headers.HasHeader(chrome_proxy_header())) {
+    std::string header_value;
+    request_headers.GetHeader(chrome_proxy_header(), &header_value);
+    if (header_value.find(chrome_proxy_lo_fi_preview_directive()) !=
+        std::string::npos) {
+      RecordLoFiTransformationType(NO_TRANSFORMATION_PREVIEW_REQUESTED);
+    }
   }
 
   if (!request->response_info().network_accessed ||
@@ -361,6 +372,12 @@ void OnResolveProxyHandler(const GURL& url,
     if (!data_reduction_proxy_info.proxy_server().is_direct())
       result->OverrideProxyList(data_reduction_proxy_info.proxy_list());
   }
+}
+
+void DataReductionProxyNetworkDelegate::RecordLoFiTransformationType(
+    LoFiTransformationType type) {
+  UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.LoFi.TransformationType", type,
+                            LO_FI_TRANSFORMATION_TYPES_INDEX_BOUNDARY);
 }
 
 }  // namespace data_reduction_proxy

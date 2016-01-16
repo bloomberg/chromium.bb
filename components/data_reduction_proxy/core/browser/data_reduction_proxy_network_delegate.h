@@ -44,6 +44,16 @@ class DataReductionProxyExperimentsStats;
 class DataReductionProxyIOData;
 class DataReductionProxyRequestOptions;
 
+// Values of the UMA DataReductionProxy.LoFi.TransformationType histogram.
+// This enum must remain synchronized with
+// DataReductionProxyLoFiTransformationType in
+// metrics/histograms/histograms.xml.
+enum LoFiTransformationType {
+  PREVIEW = 0,
+  NO_TRANSFORMATION_PREVIEW_REQUESTED,
+  LO_FI_TRANSFORMATION_TYPES_INDEX_BOUNDARY,
+};
+
 // DataReductionProxyNetworkDelegate is a LayeredNetworkDelegate that wraps a
 // NetworkDelegate and adds Data Reduction Proxy specific logic.
 class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
@@ -133,6 +143,10 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   void RecordContentLength(const net::URLRequest& request,
                            DataReductionProxyRequestType request_type,
                            int64_t original_content_length);
+
+  // Records UMA that counts how many pages were transformed by various Lo-Fi
+  // transformations.
+  void RecordLoFiTransformationType(LoFiTransformationType type);
 
   // Total size of all content that has been received over the network.
   int64_t total_received_bytes_;

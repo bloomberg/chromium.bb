@@ -188,6 +188,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
   // an HTTP/0.9 response, since HTTP/0.9 responses don't have headers.
   scoped_ptr<net::URLRequest> FetchURLRequest(
       const GURL& url,
+      net::HttpRequestHeaders* request_headers,
       const std::string& response_headers,
       int64_t response_content_length) {
     const std::string response_body(
@@ -201,6 +202,9 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     net::TestDelegate delegate;
     scoped_ptr<net::URLRequest> request =
         context_.CreateRequest(url, net::IDLE, &delegate);
+    if (request_headers)
+      request->SetExtraRequestHeaders(*request_headers);
+
     request->Start();
     base::RunLoop().RunUntilIdle();
     return request;
@@ -263,8 +267,8 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 };
 
 TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
-  scoped_ptr<net::URLRequest> fake_request(
-      FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+  scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+      GURL("http://www.google.com/"), nullptr, std::string(), 0));
 
   net::ProxyInfo data_reduction_proxy_info;
   std::string data_reduction_proxy;
@@ -320,8 +324,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       // Main frame loaded. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
 
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
       lofi_decider()->SetIsUsingLoFiMode(
           config()->ShouldEnableLoFiMode(*fake_request.get()));
@@ -334,8 +338,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     {
       // Lo-Fi is already off. Lo-Fi should not be used.
       net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
@@ -348,8 +352,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     {
       // Lo-Fi is already on. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
 
       lofi_decider()->SetIsUsingLoFiMode(true);
       network_delegate()->NotifyBeforeSendProxyHeaders(
@@ -366,8 +370,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
       // Main frame request with Lo-Fi off. Lo-Fi should not be used.
       // State of Lo-Fi should persist until next page load.
       net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
@@ -379,8 +383,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     {
       // Lo-Fi is off. Lo-Fi is still not used.
       net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
       lofi_decider()->SetIsUsingLoFiMode(false);
       network_delegate()->NotifyBeforeSendProxyHeaders(
           fake_request.get(), data_reduction_proxy_info, &headers);
@@ -393,8 +397,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
     {
       // Main frame request. Lo-Fi should be used.
       net::HttpRequestHeaders headers;
-      scoped_ptr<net::URLRequest> fake_request(
-          FetchURLRequest(GURL("http://www.google.com/"), std::string(), 0));
+      scoped_ptr<net::URLRequest> fake_request(FetchURLRequest(
+          GURL("http://www.google.com/"), nullptr, std::string(), 0));
       fake_request->SetLoadFlags(net::LOAD_MAIN_FRAME);
       lofi_decider()->SetIsUsingLoFiMode(
           config()->ShouldEnableLoFiMode(*fake_request.get()));
@@ -447,7 +451,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
       base::Int64ToString(kOriginalContentLength) + "\r\n\r\n";
 
   scoped_ptr<net::URLRequest> fake_request(
-      FetchURLRequest(GURL("http://www.google.com/"), response_headers,
+      FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
                       kResponseContentLength));
 
   base::TimeDelta freshness_lifetime =
@@ -523,7 +527,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, NetHistograms) {
     lofi_decider()->SetIsUsingLoFiMode(
         config()->ShouldEnableLoFiMode(*fake_request.get()));
 
-    fake_request = (FetchURLRequest(GURL("http://www.example.com/"),
+    fake_request = (FetchURLRequest(GURL("http://www.example.com/"), nullptr,
                                     response_headers, kResponseContentLength));
 
     // Histograms are accumulative, so get the sum of all the tests so far.
@@ -686,7 +690,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFi) {
       response_headers += "Chrome-Proxy: q=low\r\n";
 
     response_headers += "\r\n";
-    FetchURLRequest(GURL("http://www.google.com/"), response_headers, 140);
+    FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
+                    140);
 
     VerifyDidNotifyLoFiResponse(tests[i].lofi_response);
   }
@@ -712,11 +717,41 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedInternalLoFiPreview) {
       response_headers += "Chrome-Proxy: q=preview\r\n";
 
     response_headers += "\r\n";
-    FetchURLRequest(GURL("http://www.google.com/"), response_headers, 140);
+    FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
+                    140);
 
     VerifyDidNotifyLoFiResponse(tests[i].is_preview);
     VerifyLoFiPreviewResponse(tests[i].is_preview);
   }
+}
+
+TEST_F(DataReductionProxyNetworkDelegateTest,
+       TestLoFiTransformationTypeHistogram) {
+  const char kLoFiTransformationTypeHistogram[] =
+      "DataReductionProxy.LoFi.TransformationType";
+  base::HistogramTester histogram_tester;
+
+  net::HttpRequestHeaders request_headers;
+  request_headers.SetHeader("Chrome-Proxy", "q=preview");
+  FetchURLRequest(GURL("http://www.google.com/"), &request_headers,
+                  std::string(), 140);
+  histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram,
+                                     NO_TRANSFORMATION_PREVIEW_REQUESTED, 1);
+
+  std::string response_headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Chrome-Proxy: q=preview\r\n"
+      "Date: Wed, 28 Nov 2007 09:40:09 GMT\r\n"
+      "Expires: Mon, 24 Nov 2014 12:45:26 GMT\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy\r\n"
+      "x-original-content-length: 200\r\n";
+
+  response_headers += "\r\n";
+  FetchURLRequest(GURL("http://www.google.com/"), nullptr, response_headers,
+                  140);
+
+  histogram_tester.ExpectBucketCount(kLoFiTransformationTypeHistogram, PREVIEW,
+                                     1);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedSizeFor200) {
@@ -736,7 +771,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedSizeFor200) {
       "Content-Length: 1000\r\n\r\n";
 
   scoped_ptr<net::URLRequest> request = FetchURLRequest(
-      GURL("http://example.com/path/"), kDrpResponseHeaders, 1000);
+      GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 1000);
 
   EXPECT_EQ(request->GetTotalReceivedBytes(),
             total_received_bytes() - baseline_received_bytes);
@@ -757,8 +792,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest, OnCompletedSizeFor304) {
       "Via: 1.1 Chrome-Compression-Proxy\r\n"
       "X-Original-Content-Length: 10000\r\n\r\n";
 
-  scoped_ptr<net::URLRequest> request =
-      FetchURLRequest(GURL("http://example.com/path/"), kDrpResponseHeaders, 0);
+  scoped_ptr<net::URLRequest> request = FetchURLRequest(
+      GURL("http://example.com/path/"), nullptr, kDrpResponseHeaders, 0);
 
   EXPECT_EQ(request->GetTotalReceivedBytes(),
             total_received_bytes() - baseline_received_bytes);
