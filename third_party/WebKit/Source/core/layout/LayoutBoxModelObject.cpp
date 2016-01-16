@@ -349,7 +349,7 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(PaintInvalidationState& paintI
         return;
 
     bool establishesNewPaintInvalidationContainer = isPaintInvalidationContainer();
-    const LayoutBoxModelObject& newPaintInvalidationContainer = *adjustCompositedContainerForSpecialAncestors(establishesNewPaintInvalidationContainer ? this : &paintInvalidationState.paintInvalidationContainer());
+    const LayoutBoxModelObject& newPaintInvalidationContainer = establishesNewPaintInvalidationContainer ? *this : paintInvalidationState.paintInvalidationContainer();
     // FIXME: This assert should be re-enabled when we move paint invalidation to after compositing update. crbug.com/360286
     // ASSERT(&newPaintInvalidationContainer == &containerForPaintInvalidation());
 

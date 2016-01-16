@@ -17,6 +17,15 @@ class LayoutObject;
 class LayoutSVGModelObject;
 class LayoutView;
 
+// PaintInvalidationState is an optimization used during the paint
+// invalidation phase.
+//
+// This class is extremely close to LayoutState so see the documentation
+// of LayoutState for the class existence and performance benefits.
+//
+// The main difference with LayoutState is that it was customized for the
+// needs of the paint invalidation systems (keeping visual rectangles
+// instead of layout specific information).
 class PaintInvalidationState {
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(PaintInvalidationState);
@@ -77,6 +86,9 @@ private:
     // x/y offset from paint invalidation container. Includes relative positioning and scroll offsets.
     LayoutSize m_paintOffset;
 
+    // The current paint invalidation container.
+    //
+    // It is the enclosing composited object.
     const LayoutBoxModelObject& m_paintInvalidationContainer;
 
     // Transform from the initial viewport coordinate system of an outermost

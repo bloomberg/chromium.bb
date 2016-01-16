@@ -1040,12 +1040,15 @@ public:
 
     void getTextDecorations(unsigned decorations, AppliedTextDecoration& underline, AppliedTextDecoration& overline, AppliedTextDecoration& linethrough, bool quirksMode = false, bool firstlineStyle = false);
 
-    // Return the LayoutBoxModelObject in the container chain which is responsible for painting this object, or layout view
-    // if painting is root-relative. This is the container that should be passed to the 'forPaintInvalidation'
-    // methods.
+    // Return the LayoutBoxModelObject in the container chain which
+    // is responsible for painting this object. The function crosses
+    // frames boundaries so the returned value can be in a
+    // different document.
+    //
+    // This is the container that should be passed to
+    // the '*forPaintInvalidation' methods.
     const LayoutBoxModelObject& containerForPaintInvalidation() const;
 
-    const LayoutBoxModelObject* adjustCompositedContainerForSpecialAncestors(const LayoutBoxModelObject* paintInvalidationContainer) const;
     bool isPaintInvalidationContainer() const;
 
     LayoutRect computePaintInvalidationRect()

@@ -1076,10 +1076,17 @@ const LayoutBoxModelObject& LayoutObject::containerForPaintInvalidation() const
 {
     RELEASE_ASSERT(isRooted());
 
-    const LayoutBoxModelObject* paintInvalidationContainer = adjustCompositedContainerForSpecialAncestors(enclosingCompositedContainer());
-    ASSERT(paintInvalidationContainer);
+    if (const LayoutBoxModelObject* paintInvalidationContainer = enclosingCompositedContainer())
+        return *paintInvalidationContainer;
 
-    return *paintInvalidationContainer;
+    // If the current frame is not composited, we send just return
+    // the main frame's LayoutView so that we generate invalidations
+    // on the window.
+    const LayoutView* layoutView = view();
+    while (layoutView->frame()->ownerLayoutObject())
+        layoutView = layoutView->frame()->ownerLayoutObject()->view();
+    ASSERT(layoutView);
+    return *layoutView;
 }
 
 const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
@@ -1091,17 +1098,6 @@ const LayoutBoxModelObject* LayoutObject::enclosingCompositedContainer() const
     if (PaintLayer* compositingLayer = enclosingLayer()->enclosingLayerForPaintInvalidationCrossingFrameBoundaries())
         container = compositingLayer->layoutObject();
     return container;
-}
-
-const LayoutBoxModelObject* LayoutObject::adjustCompositedContainerForSpecialAncestors(const LayoutBoxModelObject* paintInvalidationContainer) const
-{
-    if (paintInvalidationContainer)
-        return paintInvalidationContainer;
-
-    LayoutView* layoutView = view();
-    while (layoutView->frame()->ownerLayoutObject())
-        layoutView = layoutView->frame()->ownerLayoutObject()->view();
-    return layoutView;
 }
 
 String LayoutObject::decoratedName() const
