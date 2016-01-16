@@ -276,6 +276,7 @@ void BackgroundImageGeometry::calculate(const LayoutBoxModelObject& obj, const L
 
     EFillRepeat backgroundRepeatX = fillLayer.repeatX();
     EFillRepeat backgroundRepeatY = fillLayer.repeatY();
+    positioningAreaSize = LayoutSize(snapSizeToPixel(positioningAreaSize.width(), m_destRect.x()), snapSizeToPixel(positioningAreaSize.height(), m_destRect.y()));
     LayoutUnit availableWidth = positioningAreaSize.width() - tileSize().width();
     LayoutUnit availableHeight = positioningAreaSize.height() - tileSize().height();
 

@@ -1423,6 +1423,10 @@ crbug.com/568559 [ Android Linux Win ] fast/forms/select-popup/popup-menu-appear
 crbug.com/569950 svg/batik/filters/feTile.svg [ NeedsRebaseline ]
 crbug.com/569950 svg/filters/feTile.svg [ NeedsRebaseline ]
 
+crbug.com/570611 fast/inline/inline-box-background-repeat-x.html [ NeedsRebaseline ]
+crbug.com/570611 [ Mac Linux Android XP Win7 ] fast/text/emphasis-combined-text.html [ NeedsRebaseline ]
+crbug.com/570611 ietestcenter/css3/bordersbackgrounds/background-repeat-space-padding-box.htm [ NeedsRebaseline ]
+
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-deep.html [ Failure ]
 crbug.com/568867 [ Win Debug ] transforms/3d/point-mapping/3d-point-mapping-preserve-3d.html [ Failure ]
 
