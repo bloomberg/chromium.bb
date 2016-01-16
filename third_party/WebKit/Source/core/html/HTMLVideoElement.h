@@ -39,6 +39,7 @@ namespace blink {
 class WebGraphicsContext3D;
 class ExceptionState;
 class GraphicsContext;
+class ImageBitmapOptions;
 
 // GL types as defined in OpenGL ES 2.0 header file gl2.h from khronos.org.
 // That header cannot be included directly due to a conflict with NPAPI headers.
@@ -89,7 +90,7 @@ public:
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override;
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
 
 private:
     HTMLVideoElement(Document&);

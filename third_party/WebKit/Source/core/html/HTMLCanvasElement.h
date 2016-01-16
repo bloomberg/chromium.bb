@@ -57,6 +57,7 @@ class CanvasRenderingContextFactory;
 class GraphicsContext;
 class HTMLCanvasElement;
 class Image;
+class ImageBitmapOptions;
 class ImageBuffer;
 class ImageBufferSurface;
 class ImageData;
@@ -166,7 +167,7 @@ public:
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override;
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
 
     DECLARE_VIRTUAL_TRACE();
 

@@ -15,11 +15,12 @@
 namespace blink {
 
 class ImageBitmap;
+class ImageBitmapOptions;
 
 class CORE_EXPORT ImageBitmapSource {
 public:
     virtual IntSize bitmapSourceSize() const { return IntSize(); }
-    virtual ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&);
+    virtual ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&);
 
     virtual bool isBlob() const { return false; }
 

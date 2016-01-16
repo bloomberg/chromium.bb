@@ -9,6 +9,7 @@
 #include "core/CoreExport.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/canvas/CanvasImageSource.h"
+#include "core/imagebitmap/ImageBitmapOptions.h"
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/Image.h"
@@ -28,13 +29,13 @@ class CORE_EXPORT ImageBitmap final : public RefCountedWillBeGarbageCollectedFin
     DEFINE_WRAPPERTYPEINFO();
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ImageBitmap);
 public:
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&, Document*);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&, Document*);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageData*, const IntRect&);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions& = ImageBitmapOptions());
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageData*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(ImageBitmap*, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
     static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>);
-    static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&);
+    static PassRefPtrWillBeRawPtr<ImageBitmap> create(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions& = ImageBitmapOptions());
 
     StaticBitmapImage* bitmapImage() const { return (m_image) ? m_image.get() : nullptr; }
     unsigned long width() const;
@@ -55,18 +56,18 @@ public:
 
     // ImageBitmapSource implementation
     IntSize bitmapSourceSize() const override { return size(); }
-    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, ExceptionState&) override;
+    ScriptPromise createImageBitmap(ScriptState*, EventTarget&, int sx, int sy, int sw, int sh, const ImageBitmapOptions&, ExceptionState&) override;
 
     DECLARE_VIRTUAL_TRACE();
 
 private:
-    ImageBitmap(HTMLImageElement*, const IntRect&, Document*);
-    ImageBitmap(HTMLVideoElement*, const IntRect&, Document*);
-    ImageBitmap(HTMLCanvasElement*, const IntRect&);
-    ImageBitmap(ImageData*, const IntRect&);
-    ImageBitmap(ImageBitmap*, const IntRect&);
+    ImageBitmap(HTMLImageElement*, const IntRect&, Document*, const ImageBitmapOptions&);
+    ImageBitmap(HTMLVideoElement*, const IntRect&, Document*, const ImageBitmapOptions&);
+    ImageBitmap(HTMLCanvasElement*, const IntRect&, const ImageBitmapOptions&);
+    ImageBitmap(ImageData*, const IntRect&, const ImageBitmapOptions&);
+    ImageBitmap(ImageBitmap*, const IntRect&, const ImageBitmapOptions&);
     ImageBitmap(PassRefPtr<StaticBitmapImage>);
-    ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&);
+    ImageBitmap(PassRefPtr<StaticBitmapImage>, const IntRect&, const ImageBitmapOptions&);
 
     // ImageLoaderClient
     void notifyImageSourceChanged() override;

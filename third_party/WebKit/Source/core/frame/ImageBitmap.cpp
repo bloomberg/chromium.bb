@@ -45,13 +45,13 @@ static PassRefPtr<StaticBitmapImage> cropImage(Image* image, const IntRect& crop
     return StaticBitmapImage::create(adoptRef(surface->newImageSnapshot()));
 }
 
-ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document)
+ImageBitmap::ImageBitmap(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     m_image = cropImage(image->cachedImage()->image(), cropRect);
     m_image->setOriginClean(!image->wouldTaintOrigin(document->securityOrigin()));
 }
 
-ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document)
+ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntSize playerSize;
     if (video->webMediaPlayer())
@@ -69,14 +69,14 @@ ImageBitmap::ImageBitmap(HTMLVideoElement* video, const IntRect& cropRect, Docum
     m_image->setOriginClean(!video->wouldTaintOrigin(document->securityOrigin()));
 }
 
-ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     ASSERT(canvas->isPaintable());
     m_image = cropImage(canvas->copiedImage(BackBuffer, PreferAcceleration).get(), cropRect);
     m_image->setOriginClean(canvas->originClean());
 }
 
-ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect srcRect = intersection(cropRect, IntRect(IntPoint(), data->size()));
 
@@ -98,13 +98,13 @@ ImageBitmap::ImageBitmap(ImageData* data, const IntRect& cropRect)
     m_image = StaticBitmapImage::create(buffer->newSkImageSnapshot(PreferNoAcceleration));
 }
 
-ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     m_image = cropImage(bitmap->bitmapImage(), cropRect);
     m_image->setOriginClean(bitmap->originClean());
 }
 
-ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect)
+ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     m_image = cropImage(image.get(), cropRect);
     m_image->setOriginClean(image->originClean());
@@ -126,40 +126,40 @@ ImageBitmap::~ImageBitmap()
 {
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLImageElement* image, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, document));
+    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, document, options));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLVideoElement* video, const IntRect& cropRect, Document* document, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(video, normalizedCropRect, document));
+    return adoptRefWillBeNoop(new ImageBitmap(video, normalizedCropRect, document, options));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(HTMLCanvasElement* canvas, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(canvas, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(canvas, normalizedCropRect, options));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageData* data, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(data, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(data, normalizedCropRect, options));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(ImageBitmap* bitmap, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(bitmap, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(bitmap, normalizedCropRect, options));
 }
 
-PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect)
+PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image, const IntRect& cropRect, const ImageBitmapOptions& options)
 {
     IntRect normalizedCropRect = normalizeRect(cropRect);
-    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect));
+    return adoptRefWillBeNoop(new ImageBitmap(image, normalizedCropRect, options));
 }
 
 PassRefPtrWillBeRawPtr<ImageBitmap> ImageBitmap::create(PassRefPtr<StaticBitmapImage> image)
@@ -191,13 +191,13 @@ IntSize ImageBitmap::size() const
     return IntSize(m_image->width(), m_image->height());
 }
 
-ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, ExceptionState& exceptionState)
+ScriptPromise ImageBitmap::createImageBitmap(ScriptState* scriptState, EventTarget& eventTarget, int sx, int sy, int sw, int sh, const ImageBitmapOptions& options, ExceptionState& exceptionState)
 {
     if (!sw || !sh) {
         exceptionState.throwDOMException(IndexSizeError, String::format("The source %s provided is 0.", sw ? "height" : "width"));
         return ScriptPromise();
     }
-    return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh)));
+    return ImageBitmapSource::fulfillImageBitmap(scriptState, create(this, IntRect(sx, sy, sw, sh), options));
 }
 
 void ImageBitmap::notifyImageSourceChanged()

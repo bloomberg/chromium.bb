@@ -44,7 +44,11 @@ typedef (HTMLImageElement or
     RuntimeEnabled=ExperimentalCanvasFeatures,
 ] interface ImageBitmapFactories {
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap);
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, ImageBitmapOptions options);
     [CallWith=ScriptState, RaisesException] Promise createImageBitmap(ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh);
+    [CallWith=ScriptState, RaisesException, RuntimeEnabled=ExperimentalCanvasFeatures] Promise createImageBitmap(
+        ImageBitmapSource imageBitmap, long sx, long sy, long sw, long sh, ImageBitmapOptions options);
 };
 
 Window implements ImageBitmapFactories;
