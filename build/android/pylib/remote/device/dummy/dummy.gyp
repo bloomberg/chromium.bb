@@ -7,13 +7,18 @@
 # APK, so we build a dummy APK to upload as the app.
 
 {
+  'variables': {
+    'remote_device_dummy_apk_name': 'remote_device_dummy',
+    'remote_device_dummy_apk_path': '<(PRODUCT_DIR)/apks/<(remote_device_dummy_apk_name).apk',
+  },
   'targets': [
     {
       # GN: //build/android/pylib/remote/device/dummy:remote_device_dummy_apk
       'target_name': 'remote_device_dummy_apk',
       'type': 'none',
       'variables': {
-        'apk_name': 'remote_device_dummy',
+        'apk_name': '<(remote_device_dummy_apk_name)',
+        'final_apk_path': '<(remote_device_dummy_apk_path)',
         'java_in_dir': '.',
         'android_manifest_path': '../../../../../../build/android/AndroidManifest.xml',
       },
@@ -21,5 +26,22 @@
         '../../../../../../build/java_apk.gypi',
       ]
     },
+    {
+      'target_name': 'require_remote_device_dummy_apk',
+      'message': 'Making sure <(remote_device_dummy_apk_path) has been built.',
+      'type': 'none',
+      'variables': {
+        'required_file': '<(PRODUCT_DIR)/remote_device_dummy_apk/<(remote_device_dummy_apk_name).apk.required',
+      },
+      'inputs': [
+        '<(remote_device_dummy_apk_path)',
+      ],
+      'outputs': [
+        '<(required_file)',
+      ],
+      'action': [
+        'python', '../../build/android/gyp/touch.py', '<(required_file)',
+      ],
+    }
   ]
 }

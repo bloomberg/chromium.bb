@@ -34,7 +34,6 @@
 {
   # Location where all generated Java sources will be placed.
   'variables': {
-    'additional_gcc_preprocess_options': [],
     'include_path%': '<(DEPTH)',
     'output_dir': '<(SHARED_INTERMEDIATE_DIR)/templates/<(_target_name)/<(package_name)',
   },
@@ -75,7 +74,6 @@
         '--include-path=<(include_path)',
         '--output=<(output_path)',
         '--template=<(RULE_INPUT_PATH)',
-        '<@(additional_gcc_preprocess_options)',
       ],
       'message': 'Generating Java from cpp template <(RULE_INPUT_PATH)',
     }
