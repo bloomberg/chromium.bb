@@ -77,7 +77,7 @@ public class NewTabPageView extends FrameLayout
     private View mSearchBoxView;
     private TextView mSearchBoxTextView;
     private ImageView mVoiceSearchButton;
-    private ViewGroup mMostVisitedLayout;
+    private MostVisitedLayout mMostVisitedLayout;
     private View mMostVisitedPlaceholder;
     private View mOptOutView;
     private View mNoSearchLogoSpacer;
@@ -259,9 +259,7 @@ public class NewTabPageView extends FrameLayout
         mContentView = (ViewGroup) findViewById(R.id.ntp_content);
 
         mMostVisitedDesign = new MostVisitedDesign(getContext());
-        ViewStub mostVisitedLayoutStub = (ViewStub) findViewById(R.id.most_visited_layout_stub);
-        mostVisitedLayoutStub.setLayoutResource(R.layout.most_visited_layout);
-        mMostVisitedLayout = (ViewGroup) mostVisitedLayoutStub.inflate();
+        mMostVisitedLayout = (MostVisitedLayout) findViewById(R.id.most_visited_layout);
         mMostVisitedDesign.initMostVisitedLayout(mMostVisitedLayout, searchProviderHasLogo);
 
         mSearchProviderLogoView = (LogoView) findViewById(R.id.search_provider_logo);
@@ -878,7 +876,7 @@ public class NewTabPageView extends FrameLayout
     }
 
     /**
-     * The new-fangled design for most visited tiles, where each tile shows a large icon and title.
+     * The design for most visited tiles: each tile shows a large icon and the site's title.
      */
     private class MostVisitedDesign {
 
@@ -919,10 +917,9 @@ public class NewTabPageView extends FrameLayout
             return mMostVisitedLayoutBleed;
         }
 
-        public void initMostVisitedLayout(ViewGroup mostVisitedLayout,
+        public void initMostVisitedLayout(MostVisitedLayout mostVisitedLayout,
                 boolean searchProviderHasLogo) {
-            ((MostVisitedLayout) mostVisitedLayout).setMaxRows(
-                    searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
+            mostVisitedLayout.setMaxRows(searchProviderHasLogo ? MAX_ROWS : MAX_ROWS_NO_LOGO);
         }
 
         public void setSearchProviderHasLogo(View mostVisitedLayout, boolean hasLogo) {

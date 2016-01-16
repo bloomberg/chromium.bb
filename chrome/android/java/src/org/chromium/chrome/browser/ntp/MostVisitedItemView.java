@@ -15,7 +15,7 @@ import android.widget.TextView;
 import org.chromium.chrome.R;
 
 /**
- * A new-fangled most visited item. Displays the title of the page beneath a large icon. If a large
+ * The view for a most visited item. Displays the title of the page beneath a large icon. If a large
  * icon isn't available, displays a rounded rectangle with a single letter in its place.
  */
 public class MostVisitedItemView extends FrameLayout {

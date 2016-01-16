@@ -16,8 +16,6 @@ import org.chromium.chrome.browser.util.MathUtils;
 
 /**
  * A layout that arranges most visited items in a grid.
- *
- * Intended for use with the new icon-based most visited items.
  */
 public class MostVisitedLayout extends FrameLayout {
 

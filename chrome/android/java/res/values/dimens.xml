@@ -252,7 +252,6 @@
     <dimen name="most_visited_bg_corner_radius">2dp</dimen>
     <dimen name="most_visited_layout_max_width">504dp</dimen>
     <dimen name="most_visited_layout_padding_top">8dp</dimen>
-    <dimen name="most_visited_layout_padding_bottom">4dp</dimen>
     <dimen name="most_visited_layout_no_logo_padding_top">20dp</dimen>
     <dimen name="most_visited_layout_bleed">8dp</dimen>
     <dimen name="most_visited_vertical_spacing">3dp</dimen>
