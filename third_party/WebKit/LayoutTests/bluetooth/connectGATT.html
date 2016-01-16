@@ -123,4 +123,17 @@ promise_test(() => {
     .then(device => device.connectGATT())
     .then(gattServer => assert_true(gattServer.connected));
 }, 'Device will connect');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('');
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => {
+      return Promise.all([device.connectGATT(), device.connectGATT()])
+    }).then(gattServers => {
+      // connectGATT should return the same object if it was created earlier.
+      // TODO(ortuno): change to assert_equals.
+      assert_not_equals(gattServers[0], gattServers[1]);
+    });
+});
 </script>

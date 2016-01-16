@@ -31,6 +31,7 @@ enum class UMAWebBluetoothFunction {
   CHARACTERISTIC_WRITE_VALUE = 5,
   CHARACTERISTIC_START_NOTIFICATIONS = 6,
   CHARACTERISTIC_STOP_NOTIFICATIONS = 7,
+  REMOTE_GATT_SERVER_DISCONNECT = 8,
   // NOTE: Add new actions immediately above this line. Make sure to update
   // the enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT

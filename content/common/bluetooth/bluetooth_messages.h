@@ -232,6 +232,12 @@ IPC_MESSAGE_CONTROL4(BluetoothHostMsg_ConnectGATT,
                      int /* frame_routing_id */,
                      std::string /* device_id */)
 
+// Disconnect from a device.
+IPC_MESSAGE_CONTROL3(BluetoothHostMsg_Disconnect,
+                     int /* thread_id */,
+                     int /* frame_routing_id */,
+                     std::string /* device_id */)
+
 // Gets primary service from bluetooth device.
 IPC_MESSAGE_CONTROL5(BluetoothHostMsg_GetPrimaryService,
                      int /* thread_id */,

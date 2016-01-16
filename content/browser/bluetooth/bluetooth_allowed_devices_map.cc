@@ -60,13 +60,15 @@ const std::string& BluetoothAllowedDevicesMap::AddDevice(
     VLOG(1) << "Device already in map of allowed devices.";
     return origin_to_device_address_to_id_map_[origin][device_address];
   }
-  const std::string device_id = GenerateDeviceId(origin);
+  const std::string device_id = GenerateDeviceId();
   VLOG(1) << "Id generated for device: " << device_id;
 
   origin_to_device_address_to_id_map_[origin][device_address] = device_id;
   origin_to_device_id_to_address_map_[origin][device_id] = device_address;
   origin_to_device_id_to_services_map_[origin][device_id] =
       UnionOfServices(filters, optional_services);
+
+  CHECK(device_id_set_.insert(device_id).second);
 
   return origin_to_device_address_to_id_map_[origin][device_address];
 }
@@ -88,6 +90,9 @@ void BluetoothAllowedDevicesMap::RemoveDevice(
     CHECK(origin_to_device_id_to_address_map_.erase(origin));
     CHECK(origin_to_device_id_to_services_map_.erase(origin));
   }
+
+  // 3. Remove from set of ids.
+  CHECK(device_id_set_.erase(device_id));
 }
 
 const std::string& BluetoothAllowedDevicesMap::GetDeviceId(
@@ -123,14 +128,9 @@ const std::string& BluetoothAllowedDevicesMap::GetDeviceAddress(
                                                    : id_iter->second;
 }
 
-std::string BluetoothAllowedDevicesMap::GenerateDeviceId(
-    const url::Origin& origin) {
+std::string BluetoothAllowedDevicesMap::GenerateDeviceId() {
   std::string device_id = GetBase64Id();
-  auto id_map_iter = origin_to_device_id_to_address_map_.find(origin);
-  if (id_map_iter == origin_to_device_id_to_address_map_.end()) {
-    return device_id;
-  }
-  while (ContainsKey(id_map_iter->second, device_id)) {
+  while (ContainsKey(device_id_set_, device_id)) {
     LOG(WARNING) << "Generated repeated id.";
     device_id = GetBase64Id();
   }

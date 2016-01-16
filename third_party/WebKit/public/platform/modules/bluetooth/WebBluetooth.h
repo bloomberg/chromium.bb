@@ -60,7 +60,7 @@ public:
 
     // BluetoothGATTRemoteServer methods:
     // See https://webbluetoothchrome.github.io/web-bluetooth/#idl-def-bluetoothgattremoteserver
-    virtual void disconnect() { }
+    virtual void disconnect(const WebString& deviceId) = 0;
     virtual void getPrimaryService(const WebString& deviceId,
         const WebString& serviceUUID,
         WebBluetoothGetPrimaryServiceCallbacks*) { }

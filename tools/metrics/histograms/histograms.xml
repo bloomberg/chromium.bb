@@ -80258,12 +80258,13 @@ To add a new entry, add it with any value and run test to compute valid value.
 <enum name="WebBluetoothFunction" type="int">
   <int value="0" label="requestDevice()"/>
   <int value="1" label="connectGATT()"/>
-  <int value="2" label="getPrimaryService()"/>
+  <int value="2" label="RemoteGATTServer.getPrimaryService()"/>
   <int value="3" label="getCharacteristic()"/>
   <int value="4" label="Characteristic.readValue()"/>
   <int value="5" label="Characteristic.writeValue()"/>
   <int value="6" label="Characteristic.startNotifications()"/>
   <int value="7" label="Characteristic.stopNotifications()"/>
+  <int value="8" label="RemoteGATTServer.disconnect()"/>
 </enum>
 
 <enum name="WebBluetoothGATTOperationOutcome" type="int">

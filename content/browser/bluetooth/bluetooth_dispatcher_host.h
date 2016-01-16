@@ -107,6 +107,9 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
                      int request_id,
                      int frame_routing_id,
                      const std::string& device_id);
+  void OnDisconnect(int thread_id,
+                    int frame_routing_id,
+                    const std::string& device_id);
   void OnGetPrimaryService(int thread_id,
                            int request_id,
                            int frame_routing_id,
@@ -298,8 +301,8 @@ class CONTENT_EXPORT BluetoothDispatcherHost final
   base::Timer discovery_session_timer_;
 
   // Retain BluetoothGattConnection objects to keep connections open.
-  // TODO(scheib): Destroy as connections are closed. http://crbug.com/539643
-  ScopedVector<device::BluetoothGattConnection> connections_;
+  std::map<std::string, scoped_ptr<device::BluetoothGattConnection>>
+      device_id_to_connection_map_;
 
   // Map of device_address's to primary-services requests that need responses
   // when that device's service discovery completes.

@@ -279,6 +279,7 @@ bool BluetoothDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(BluetoothDispatcherHost, message)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_RequestDevice, OnRequestDevice)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ConnectGATT, OnConnectGATT)
+  IPC_MESSAGE_HANDLER(BluetoothHostMsg_Disconnect, OnDisconnect)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetPrimaryService, OnGetPrimaryService)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_GetCharacteristic, OnGetCharacteristic)
   IPC_MESSAGE_HANDLER(BluetoothHostMsg_ReadValue, OnReadValue)
@@ -321,7 +322,7 @@ void BluetoothDispatcherHost::SetBluetoothAdapterForTesting(
     characteristic_to_service_.clear();
     characteristic_id_to_notify_session_.clear();
     active_characteristic_threads_.clear();
-    connections_.clear();
+    device_id_to_connection_map_.clear();
   }
 
   set_adapter(std::move(mock_adapter));
@@ -434,7 +435,6 @@ struct BluetoothDispatcherHost::PrimaryServicesRequest {
 void BluetoothDispatcherHost::set_adapter(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  connections_.clear();
   if (adapter_.get())
     adapter_->RemoveObserver(this);
   adapter_ = adapter;
@@ -732,6 +732,17 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
     return;
   }
 
+  // If we are already connected no need to connect again.
+  auto connection_iter = device_id_to_connection_map_.find(device_id);
+  if (connection_iter != device_id_to_connection_map_.end()) {
+    if (connection_iter->second->IsConnected()) {
+      VLOG(1) << "Already connected.";
+      Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id,
+                                               device_id));
+      return;
+    }
+  }
+
   query_result.device->CreateGattConnection(
       base::Bind(&BluetoothDispatcherHost::OnGATTConnectionCreated,
                  weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
@@ -739,6 +750,31 @@ void BluetoothDispatcherHost::OnConnectGATT(int thread_id,
       base::Bind(&BluetoothDispatcherHost::OnCreateGATTConnectionError,
                  weak_ptr_on_ui_thread_, thread_id, request_id, device_id,
                  start_time));
+}
+
+void BluetoothDispatcherHost::OnDisconnect(int thread_id,
+                                           int frame_routing_id,
+                                           const std::string& device_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RecordWebBluetoothFunctionCall(
+      UMAWebBluetoothFunction::REMOTE_GATT_SERVER_DISCONNECT);
+
+  // Make sure the origin is allowed to access the device. We perform this check
+  // in case a hostile renderer is trying to disconnect a device that the
+  // renderer is not allowed to access.
+  if (allowed_devices_map_.GetDeviceAddress(GetOrigin(frame_routing_id),
+                                            device_id)
+          .empty()) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::BDH_DEVICE_NOT_ALLOWED_FOR_ORIGIN);
+    return;
+  }
+
+  // The last BluetoothGattConnection for a device closes the connection when
+  // it's destroyed.
+  if (device_id_to_connection_map_.erase(device_id)) {
+    VLOG(1) << "Disconnecting device: " << device_id;
+  }
 }
 
 void BluetoothDispatcherHost::OnGetPrimaryService(
@@ -1188,7 +1224,7 @@ void BluetoothDispatcherHost::OnGATTConnectionCreated(
     base::TimeTicks start_time,
     scoped_ptr<device::BluetoothGattConnection> connection) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  connections_.push_back(std::move(connection));
+  device_id_to_connection_map_[device_id] = std::move(connection);
   RecordConnectGATTTimeSuccess(base::TimeTicks::Now() - start_time);
   RecordConnectGATTOutcome(UMAConnectGATTOutcome::SUCCESS);
   Send(new BluetoothMsg_ConnectGATTSuccess(thread_id, request_id, device_id));

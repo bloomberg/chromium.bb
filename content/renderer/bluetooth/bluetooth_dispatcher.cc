@@ -227,6 +227,12 @@ void BluetoothDispatcher::connectGATT(
                                         frame_routing_id, device_id.utf8()));
 }
 
+void BluetoothDispatcher::disconnect(int frame_routing_id,
+                                     const blink::WebString& device_id) {
+  Send(new BluetoothHostMsg_Disconnect(CurrentWorkerId(), frame_routing_id,
+                                       device_id.utf8()));
+}
+
 void BluetoothDispatcher::getPrimaryService(
     int frame_routing_id,
     const blink::WebString& device_id,

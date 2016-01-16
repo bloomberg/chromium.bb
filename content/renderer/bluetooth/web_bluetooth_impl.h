@@ -39,6 +39,7 @@ class CONTENT_EXPORT WebBluetoothImpl
       blink::WebBluetoothRequestDeviceCallbacks* callbacks) override;
   void connectGATT(const blink::WebString& device_id,
                    blink::WebBluetoothConnectGATTCallbacks* callbacks) override;
+  void disconnect(const blink::WebString& device_id) override;
   void getPrimaryService(
       const blink::WebString& device_id,
       const blink::WebString& service_uuid,

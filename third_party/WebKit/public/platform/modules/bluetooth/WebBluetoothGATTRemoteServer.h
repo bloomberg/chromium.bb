@@ -10,17 +10,17 @@
 namespace blink {
 
 struct WebBluetoothGATTRemoteServer {
-    WebBluetoothGATTRemoteServer(const WebString& deviceInstanceID,
+    WebBluetoothGATTRemoteServer(const WebString& deviceId,
         bool connected)
-        : deviceInstanceID(deviceInstanceID)
+        : deviceId(deviceId)
         , connected(connected)
     {
     }
 
     // Members corresponding to BluetoothGATTRemoteServer attributes as
     // specified in the IDL.
-    const WebString deviceInstanceID;
-    const bool connected;
+    const WebString deviceId;
+    bool connected;
 };
 
 } // namespace blink

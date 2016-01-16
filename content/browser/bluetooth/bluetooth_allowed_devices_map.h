@@ -25,15 +25,14 @@ struct BluetoothScanFilter;
 // their services.
 //
 // |AddDevice| generates device ids, which are random strings that are unique
-// for each (origin, device address) pair.
+// in the map.
 class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
  public:
   BluetoothAllowedDevicesMap();
   ~BluetoothAllowedDevicesMap();
 
   // Adds the Bluetooth Device with |device_address| to the map of allowed
-  // devices for that origin. Generates and returns a device id for the
-  // (|origin|, |device_address|) pair.
+  // devices for that origin. Generates and returns a device id.
   const std::string& AddDevice(
       const url::Origin& origin,
       const std::string& device_address,
@@ -50,7 +49,7 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   // https://crbug.com/493460
 
   // Returns the Bluetooth Device's id for |origin|. Returns an empty string
-  // if the origin is not allowed to access the device.
+  // if |origin| is not allowed to access the device.
   const std::string& GetDeviceId(const url::Origin& origin,
                                  const std::string& device_address);
 
@@ -64,9 +63,9 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
   typedef std::map<std::string, std::string> DeviceIdToAddressMap;
   typedef std::map<std::string, std::set<std::string>> DeviceIdToServicesMap;
 
-  // Returns an id guaranteed to be unique for the origin. The id is randomly
+  // Returns an id guaranteed to be unique for the map. The id is randomly
   // generated so that an origin can't guess the id used in another origin.
-  std::string GenerateDeviceId(const url::Origin& origin);
+  std::string GenerateDeviceId();
   std::set<std::string> UnionOfServices(
       const std::vector<BluetoothScanFilter>& filters,
       const std::vector<device::BluetoothUUID>& optional_services);
@@ -77,6 +76,9 @@ class CONTENT_EXPORT BluetoothAllowedDevicesMap final {
       origin_to_device_id_to_address_map_;
   std::map<url::Origin, DeviceIdToServicesMap>
       origin_to_device_id_to_services_map_;
+
+  // Keep track of all device_ids in the map.
+  std::set<std::string> device_id_set_;
 };
 
 }  //  namespace content

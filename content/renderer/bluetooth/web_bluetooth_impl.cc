@@ -33,6 +33,10 @@ void WebBluetoothImpl::connectGATT(
   GetDispatcher()->connectGATT(frame_routing_id_, device_id, callbacks);
 }
 
+void WebBluetoothImpl::disconnect(const blink::WebString& device_id) {
+  GetDispatcher()->disconnect(frame_routing_id_, device_id);
+}
+
 void WebBluetoothImpl::getPrimaryService(
     const blink::WebString& device_id,
     const blink::WebString& service_uuid,

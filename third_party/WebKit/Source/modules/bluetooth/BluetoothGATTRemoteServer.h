@@ -41,6 +41,7 @@ public:
 
     // IDL exposed interface:
     bool connected() { return m_webGATT->connected; }
+    void disconnect(ScriptState*);
     ScriptPromise getPrimaryService(ScriptState*, const StringOrUnsignedLong& service, ExceptionState&);
 
 private:

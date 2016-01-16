@@ -29,6 +29,13 @@ BluetoothGATTRemoteServer* BluetoothGATTRemoteServer::take(ScriptPromiseResolver
     return new BluetoothGATTRemoteServer(webGATT);
 }
 
+void BluetoothGATTRemoteServer::disconnect(ScriptState* scriptState)
+{
+    m_webGATT->connected = false;
+    WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
+    webbluetooth->disconnect(m_webGATT->deviceId);
+}
+
 ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptState, const StringOrUnsignedLong& service, ExceptionState& exceptionState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
@@ -39,7 +46,7 @@ ScriptPromise BluetoothGATTRemoteServer::getPrimaryService(ScriptState* scriptSt
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->getPrimaryService(m_webGATT->deviceInstanceID, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
+    webbluetooth->getPrimaryService(m_webGATT->deviceId, serviceUUID, new CallbackPromiseAdapter<BluetoothGATTService, BluetoothError>(resolver));
 
     return promise;
 }
