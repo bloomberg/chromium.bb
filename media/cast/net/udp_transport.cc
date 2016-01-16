@@ -30,11 +30,6 @@ bool IsEmpty(const net::IPEndPoint& addr) {
          !addr.port();
 }
 
-bool IsEqual(const net::IPEndPoint& addr1, const net::IPEndPoint& addr2) {
-  return addr1.port() == addr2.port() && std::equal(addr1.address().begin(),
-                                                    addr1.address().end(),
-                                                    addr2.address().begin());
-}
 }  // namespace
 
 UdpTransport::UdpTransport(
@@ -187,7 +182,7 @@ void UdpTransport::ReceiveNextPacket(int length_or_status) {
         VLOG(1) << "Packet was not valid, resetting remote address.";
         remote_addr_ = net::IPEndPoint();
       }
-    } else if (!IsEqual(remote_addr_, recv_addr_)) {
+    } else if (!(remote_addr_ == recv_addr_)) {
       VLOG(1) << "Ignoring packet received from an unrecognized address: "
               << recv_addr_.ToString() << ".";
     } else {
