@@ -70,4 +70,9 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
 
 void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {}
 
+ExtensionFunction::ResponseAction InputImeCreateWindowFunction::Run() {
+  // TODO(shuchen): Implement this API.
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

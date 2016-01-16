@@ -98,6 +98,36 @@
         "type": "string",
         "description": "Which mouse buttons was clicked.",
         "enum": ["left", "middle", "right"]
+      },
+      {
+        "id": "WindowType",
+        "type": "string",
+        "description": "The IME window types.",
+        "platforms": ["win", "linux"],
+        "enum": ["normal", "followCursor"]
+      },
+      {
+        "id": "Bounds",
+        "type": "object",
+        "description": "Describes the screen coordinates of a rect.",
+        "platforms": ["win", "linux"],
+        "properties": {
+          "left": {"type": "integer", "description": "The left of the bounds."},
+          "top": {"type": "integer", "description": "The top of the bounds."},
+          "width": {"type": "integer", "description": "The width of the bounds." },
+          "height": {"type": "integer", "description": "The height of the bounds ."}
+        }
+      },
+      {
+        "id": "CreateWindowOptions",
+        "type": "object",
+        "description": "The options to create an IME window",
+        "platforms": ["win", "linux"],
+        "properties": {
+          "windowType": {"$ref": "WindowType"},
+          "url": {"type": "string", "optional": true},
+          "bounds": {"$ref": "Bounds", "optional": true}
+        }
       }
     ],
     "functions": [
@@ -541,6 +571,32 @@
         "parameters": [
           {"type": "string", "name": "requestId", "description": "Request id of the event that was handled.  This should come from keyEvent.requestId"},
           {"type": "boolean", "name": "response", "description": "True if the keystroke was handled, false if not"}
+        ]
+      },
+      {
+        "name": "createWindow",
+        "type": "function",
+        "description": "Creates IME window.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "$ref": "CreateWindowOptions",
+            "name": "options",
+            "description": "The options of the newly created IME window."
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "description": "Called when the operation completes.",
+            "parameters": [
+              {
+                "name": "windowObject",
+                "type": "object",
+                "isInstanceOf": "Window",
+                "description": "The JavaScript 'window' object of the newly created IME window."
+              }
+            ]
+          }
         ]
       }
     ],

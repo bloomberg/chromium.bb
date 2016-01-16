@@ -7,10 +7,12 @@
 
 #include "chrome/browser/extensions/api/input_ime/input_ime_event_router_base.h"
 #include "chrome/browser/profiles/profile.h"
+#include "extensions/browser/extension_function.h"
 
 class Profile;
 
 namespace extensions {
+
 class InputImeEventRouterBase;
 
 class InputImeEventRouter : public InputImeEventRouterBase {
@@ -19,6 +21,17 @@ class InputImeEventRouter : public InputImeEventRouterBase {
   ~InputImeEventRouter() override;
 
   DISALLOW_COPY_AND_ASSIGN(InputImeEventRouter);
+};
+
+class InputImeCreateWindowFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("input.ime.createWindow", INPUT_IME_CREATEWINDOW)
+
+ protected:
+  ~InputImeCreateWindowFunction() override {}
+
+  // ExtensionFunction:
+  ExtensionFunction::ResponseAction Run() override;
 };
 
 }  // namespace extensions
