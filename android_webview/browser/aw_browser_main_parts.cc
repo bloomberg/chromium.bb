@@ -17,6 +17,7 @@
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/i18n/rtl.h"
 #include "base/path_service.h"
 #include "components/crash/content/browser/crash_micro_dump_manager_android.h"
 #include "content/public/browser/android/synchronous_compositor.h"
@@ -65,6 +66,7 @@ int AwBrowserMainParts::PreCreateThreads() {
     LOG(WARNING) << "Failed to load locale .pak from the apk. "
         "Bringing up WebView without any locale";
   }
+  base::i18n::SetICUDefaultLocale(locale);
 
   // Try to directly mmap the webviewchromium.pak from the apk. Fall back to
   // load from file, using PATH_SERVICE, otherwise.
