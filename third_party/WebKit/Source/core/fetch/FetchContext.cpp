@@ -93,7 +93,7 @@ void FetchContext::willStartLoadingResource(ResourceRequest&)
 {
 }
 
-void FetchContext::didLoadResource()
+void FetchContext::didLoadResource(Resource*)
 {
 }
 

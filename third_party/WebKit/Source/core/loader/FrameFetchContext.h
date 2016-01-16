@@ -82,7 +82,7 @@ public:
 
     bool shouldLoadNewResource(Resource::Type) const override;
     void willStartLoadingResource(ResourceRequest&) override;
-    void didLoadResource() override;
+    void didLoadResource(Resource*) override;
 
     void addResourceTiming(const ResourceTimingInfo&) override;
     bool allowImage(bool imagesEnabled, const KURL&) const override;

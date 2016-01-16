@@ -105,7 +105,7 @@ public:
     void stopFetching();
     bool isFetching() const;
 
-    void didLoadResource();
+    void didLoadResource(Resource*);
     void redirectReceived(Resource*, const ResourceResponse&);
     void didFinishLoading(Resource*, double finishTime, int64_t encodedDataLength);
     void didFailLoading(const Resource*, const ResourceError&);

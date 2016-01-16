@@ -338,9 +338,10 @@ void FrameFetchContext::willStartLoadingResource(ResourceRequest& request)
         m_documentLoader->applicationCacheHost()->willStartLoadingResource(request);
 }
 
-void FrameFetchContext::didLoadResource()
+void FrameFetchContext::didLoadResource(Resource* resource)
 {
-    frame()->loader().checkCompleted();
+    if (resource->isLoadEventBlockingResourceType())
+        frame()->loader().checkCompleted();
 }
 
 void FrameFetchContext::addResourceTiming(const ResourceTimingInfo& info)

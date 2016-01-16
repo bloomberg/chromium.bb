@@ -176,7 +176,7 @@ public:
 
     virtual bool isImage() const { return false; }
     bool shouldBlockLoadEvent() const;
-    bool isNonBlockingResourceType() const;
+    bool isLoadEventBlockingResourceType() const;
 
     // Computes the status of an object after loading.
     // Updates the expire date on the cache entry file

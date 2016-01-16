@@ -13,6 +13,7 @@ var count = 10;  // The crash doesn't always happen. Repeat to capture it.
 
 function openXHR() {
   xhr.open('GET', '/');
+  openAndSendCrossOriginNonSimpleXHR();
 }
 
 function openAndSendCrossOriginNonSimpleXHR() {

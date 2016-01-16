@@ -329,7 +329,7 @@ ResourcePtr<Resource> ResourceFetcher::preCacheData(const FetchRequest& request,
 void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(Resource* resource, const FetchRequest& request)
 {
     // TODO(yoav): Test that non-blocking resources (video/audio/track) continue to not-block even after being preloaded and discovered.
-    if (resource && resource->loader() && resource->isNonBlockingResourceType() && resource->avoidBlockingOnLoad() && !request.forPreload()) {
+    if (resource && resource->loader() && resource->isLoadEventBlockingResourceType() && resource->avoidBlockingOnLoad() && !request.forPreload()) {
         if (m_nonBlockingLoaders)
             m_nonBlockingLoaders->remove(resource->loader());
         if (!m_loaders)
@@ -791,9 +791,9 @@ void ResourceFetcher::redirectReceived(Resource* resource, const ResourceRespons
         it->value->addRedirect(redirectResponse);
 }
 
-void ResourceFetcher::didLoadResource()
+void ResourceFetcher::didLoadResource(Resource* resource)
 {
-    context().didLoadResource();
+    context().didLoadResource(resource);
 }
 
 int ResourceFetcher::requestCount() const
@@ -944,7 +944,7 @@ void ResourceFetcher::subresourceLoaderFinishedLoadingOnePart(ResourceLoader* lo
         m_nonBlockingLoaders = ResourceLoaderSet::create();
     m_nonBlockingLoaders->add(loader);
     m_loaders->remove(loader);
-    context().didLoadResource();
+    didLoadResource(loader->cachedResource());
 }
 
 void ResourceFetcher::didInitializeResourceLoader(ResourceLoader* loader)

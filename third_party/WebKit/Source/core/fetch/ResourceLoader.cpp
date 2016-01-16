@@ -95,7 +95,7 @@ void ResourceLoader::releaseResources()
 {
     ASSERT(m_state != Terminated);
     ASSERT(m_notifiedLoadComplete);
-    m_fetcher->didLoadResource();
+    m_fetcher->didLoadResource(m_resource.get());
     if (m_state == Terminated)
         return;
     m_resource->clearLoader();

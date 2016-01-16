@@ -1132,16 +1132,31 @@ const char* Resource::resourceTypeToString(Type type, const FetchInitiatorInfo& 
 
 bool Resource::shouldBlockLoadEvent() const
 {
-    return !m_avoidBlockingOnLoad && isNonBlockingResourceType();
+    return !m_avoidBlockingOnLoad && isLoadEventBlockingResourceType();
 }
 
-bool Resource::isNonBlockingResourceType() const
+bool Resource::isLoadEventBlockingResourceType() const
 {
-    return type() != LinkPrefetch
-        && type() != LinkSubresource
-        && type() != Media
-        && type() != Raw
-        && type() != TextTrack;
+    switch (m_type) {
+    case Resource::MainResource:
+    case Resource::Image:
+    case Resource::CSSStyleSheet:
+    case Resource::Script:
+    case Resource::Font:
+    case Resource::SVGDocument:
+    case Resource::XSLStyleSheet:
+    case Resource::ImportResource:
+        return true;
+    case Resource::Raw:
+    case Resource::LinkPrefetch:
+    case Resource::LinkSubresource:
+    case Resource::TextTrack:
+    case Resource::Media:
+    case Resource::Manifest:
+        return false;
+    }
+    ASSERT_NOT_REACHED();
+    return false;
 }
 
 #if !LOG_DISABLED
