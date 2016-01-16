@@ -413,6 +413,16 @@ public:
         bool everHadLayout;
     };
 
+    // MarginValues holds the margins in the block direction
+    // used during collapsing margins computation.
+    // CSS mandates to keep track of both positive and negative margins:
+    // "When two or more margins collapse, the resulting margin width is the
+    // maximum of the collapsing margins' widths. In the case of negative
+    // margins, the maximum of the absolute values of the negative adjoining
+    // margins is deducted from the maximum of the positive adjoining margins.
+    // If there are no positive margins, the maximum of the absolute values of
+    // the adjoining margins is deducted from zero."
+    // https://drafts.csswg.org/css2/box.html#collapsing-margins
     class MarginValues {
         DISALLOW_NEW();
     public:

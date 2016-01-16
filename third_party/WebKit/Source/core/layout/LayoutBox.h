@@ -531,6 +531,10 @@ public:
     LayoutUnit adjustContentBoxLogicalWidthForBoxSizing(LayoutUnit width) const;
     LayoutUnit adjustContentBoxLogicalHeightForBoxSizing(LayoutUnit height) const;
 
+    // ComputedMarginValues holds the actual values for margins. It ignores
+    // margin collapsing as they are handled in LayoutBlockFlow.
+    // The margins are stored in logical coordinates (see COORDINATE
+    // SYSTEMS in LayoutBoxModel) for use during layout.
     struct ComputedMarginValues {
         DISALLOW_NEW();
         ComputedMarginValues() { }
@@ -540,14 +544,28 @@ public:
         LayoutUnit m_start;
         LayoutUnit m_end;
     };
+
+    // LogicalExtentComputedValues is used both for the
+    // block-flow and inline-direction axis.
     struct LogicalExtentComputedValues {
         STACK_ALLOCATED();
         LogicalExtentComputedValues() { }
 
+        // This is the dimension in the measured direction
+        // (logical height or logical width).
         LayoutUnit m_extent;
+
+        // This is the offset in the measured direction
+        // (logical top or logical left).
         LayoutUnit m_position;
+
+        // |m_margins| represents the margins in the measured direction.
+        // Note that ComputedMarginValues has also the margins in
+        // the orthogonal direction to have clearer names but they are
+        // ignored in the code.
         ComputedMarginValues m_margins;
     };
+
     // Resolve auto margins in the chosen direction of the containing block so that objects can be pushed to the start, middle or end
     // of the containing block.
     void computeMarginsForDirection(MarginDirection forDirection, const LayoutBlock* containingBlock, LayoutUnit containerWidth, LayoutUnit childWidth, LayoutUnit& marginStart, LayoutUnit& marginEnd, Length marginStartLength, Length marginStartEnd) const;
