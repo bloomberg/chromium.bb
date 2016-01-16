@@ -484,9 +484,7 @@ class ContextualSearchPolicy {
      * @return Whether any translation feature for Contextual Search is enabled.
      */
     boolean isTranslationEnabled() {
-        // For M-48 CS translation features are completely disabled except for testing.
-        // TODO(donnd): fallback onto non-testing flags when ready.
-        return ContextualSearchFieldTrial.isTranslationForTestingEnabled();
+        return ContextualSearchFieldTrial.isTranslationEnabled();
     }
 
     /**

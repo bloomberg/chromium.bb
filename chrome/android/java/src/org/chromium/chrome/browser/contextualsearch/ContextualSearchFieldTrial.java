@@ -21,28 +21,41 @@ public class ContextualSearchFieldTrial {
     private static final String DISABLED_PARAM = "disabled";
     private static final String ENABLED_VALUE = "true";
 
-    static final String PEEK_PROMO_FORCED = "peek_promo_forced";
-    static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
-    static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
-    static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
-
-    static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
-    static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS = "disable_extra_search_bar_animations";
-    static final String ENABLE_DIGIT_BLACKLIST = "enable_digit_blacklist";
-
-    // Translation.
+    private static final String PEEK_PROMO_FORCED = "peek_promo_forced";
     @VisibleForTesting
-    static final String ENABLE_TRANSLATION_FOR_TESTING = "enable_translation_for_testing";
+    static final String PEEK_PROMO_ENABLED = "peek_promo_enabled";
+    private static final String PEEK_PROMO_MAX_SHOW_COUNT = "peek_promo_max_show_count";
+    private static final int PEEK_PROMO_DEFAULT_MAX_SHOW_COUNT = 10;
+
+    private static final String DISABLE_SEARCH_TERM_RESOLUTION = "disable_search_term_resolution";
+    private static final String DISABLE_EXTRA_SEARCH_BAR_ANIMATIONS =
+            "disable_extra_search_bar_animations";
+    private static final String ENABLE_DIGIT_BLACKLIST = "enable_digit_blacklist";
+
+    // Translation.  All these members are private, except for usage by testing.
+    // Master switch, needed to enable any translate code for Contextual Search.
+    @VisibleForTesting
+    static final String ENABLE_TRANSLATION = "enable_translation";
+    // Switch to disable translation, but not logging, used for experiment comparison.
     @VisibleForTesting
     static final String DISABLE_FORCE_TRANSLATION_ONEBOX = "disable_force_translation_onebox";
+    // Disables translation when we need to auto-detect the source language (when we don't resolve).
     @VisibleForTesting
     static final String DISABLE_AUTO_DETECT_TRANSLATION_ONEBOX =
             "disable_auto_detect_translation_onebox";
-    static final String DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION =
+    // Disables using the keyboard languages to determine the target language.
+    private static final String DISABLE_KEYBOARD_LANGUAGES_FOR_TRANSLATION =
             "disable_keyboard_languages_for_translation";
-    static final String DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION =
+    // Disables using the accept-languages list to determine the target language.
+    private static final String DISABLE_ACCEPT_LANGUAGES_FOR_TRANSLATION =
             "disable_accept_languages_for_translation";
-    static final String ENABLE_ENGLISH_TARGET_TRANSLATION = "enable_english_target_translation";
+    // Enables usage of English as the target language even when it's the primary UI language.
+    private static final String ENABLE_ENGLISH_TARGET_TRANSLATION =
+            "enable_english_target_translation";
+    // Enables relying on the server to control whether the onebox is actually shown, rather
+    // than checking if translation is needed client-side based on source/target languages.
+    @VisibleForTesting
+    static final String ENABLE_SERVER_CONTROLLED_ONEBOX = "enable_server_controlled_onebox";
 
     // Quick Answers.
     private static final String ENABLE_QUICK_ANSWERS = "enable_quick_answers";
@@ -52,12 +65,13 @@ public class ContextualSearchFieldTrial {
     private static Boolean sDisableSearchTermResolution;
     private static Boolean sIsPeekPromoEnabled;
     private static Integer sPeekPromoMaxCount;
-    private static Boolean sIsTranslationForTestingEnabled;
+    private static Boolean sIsTranslationEnabled;
     private static Boolean sIsForceTranslationOneboxDisabled;
     private static Boolean sIsAutoDetectTranslationOneboxDisabled;
     private static Boolean sIsAcceptLanguagesForTranslationDisabled;
     private static Boolean sIsKeyboardLanguagesForTranslationDisabled;
     private static Boolean sIsEnglishTargetTranslationEnabled;
+    private static Boolean sIsServerControlledOneboxEnabled;
     private static Boolean sIsQuickAnswersEnabled;
 
     /**
@@ -169,13 +183,13 @@ public class ContextualSearchFieldTrial {
     }
 
     /**
-     * @return Whether any translate is enabled, used for testing only.
+     * @return Whether any translate code is enabled.
      */
-    static boolean isTranslationForTestingEnabled() {
-        if (sIsTranslationForTestingEnabled == null) {
-            sIsTranslationForTestingEnabled = getBooleanParam(ENABLE_TRANSLATION_FOR_TESTING);
+    static boolean isTranslationEnabled() {
+        if (sIsTranslationEnabled == null) {
+            sIsTranslationEnabled = getBooleanParam(ENABLE_TRANSLATION);
         }
-        return sIsTranslationForTestingEnabled.booleanValue();
+        return sIsTranslationEnabled.booleanValue();
     }
 
     /**
@@ -230,6 +244,16 @@ public class ContextualSearchFieldTrial {
             sIsEnglishTargetTranslationEnabled = getBooleanParam(ENABLE_ENGLISH_TARGET_TRANSLATION);
         }
         return sIsEnglishTargetTranslationEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether relying on server-control of showing the translation one-box is enabled.
+     */
+    static boolean isServerControlledOneboxEnabled() {
+        if (sIsServerControlledOneboxEnabled == null) {
+            sIsServerControlledOneboxEnabled = getBooleanParam(ENABLE_SERVER_CONTROLLED_ONEBOX);
+        }
+        return sIsServerControlledOneboxEnabled.booleanValue();
     }
 
     /**

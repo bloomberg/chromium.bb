@@ -207,25 +207,22 @@ class ContextualSearchRequest {
     /**
      * Makes the given {@code Uri} into a similar Uri that triggers a Translate one-box.
      * @param baseUri The base Uri to build off of.
-     * @param sourceLanguage The language of the original search term.
-     * @param targetLanguage The language the that the user prefers.
+     * @param sourceLanguage The language of the original search term, or an empty string to
+     *        auto-detect the source language.
+     * @param targetLanguage The language that the user prefers, or an empty string to
+     *        use server-side heuristics for the target language.
      * @return A {@link Uri} that has additional parameters for Translate appropriately set.
      */
     private Uri makeTranslateUri(Uri baseUri, String sourceLanguage, String targetLanguage) {
-        Uri resultUri = baseUri;
-        if (!sourceLanguage.isEmpty() || !targetLanguage.isEmpty()) {
-            Uri.Builder builder = baseUri.buildUpon();
-            if (!sourceLanguage.isEmpty()) {
-                builder.appendQueryParameter(TLITE_SOURCE_LANGUAGE_PARAM, sourceLanguage);
-            }
-            if (!targetLanguage.isEmpty()) {
-                builder.appendQueryParameter(TLITE_TARGET_LANGUAGE_PARAM, targetLanguage);
-            }
-            builder.appendQueryParameter(
-                    TLITE_QUERY_PARAM, baseUri.getQueryParameter(GWS_QUERY_PARAM));
-            builder.appendQueryParameter(CTXSL_TRANS_PARAM, CTXSL_TRANS_PARAM_VALUE);
-            resultUri = builder.build();
+        Uri.Builder builder = baseUri.buildUpon();
+        builder.appendQueryParameter(CTXSL_TRANS_PARAM, CTXSL_TRANS_PARAM_VALUE);
+        if (!sourceLanguage.isEmpty()) {
+            builder.appendQueryParameter(TLITE_SOURCE_LANGUAGE_PARAM, sourceLanguage);
         }
-        return resultUri;
+        if (!targetLanguage.isEmpty()) {
+            builder.appendQueryParameter(TLITE_TARGET_LANGUAGE_PARAM, targetLanguage);
+        }
+        builder.appendQueryParameter(TLITE_QUERY_PARAM, baseUri.getQueryParameter(GWS_QUERY_PARAM));
+        return builder.build();
     }
 }
