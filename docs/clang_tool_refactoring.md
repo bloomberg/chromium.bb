@@ -39,16 +39,15 @@ writing a new tool.
 
 Chromium clang tools generally follow this pattern:
 
-1.  Instantiate a [`clang::ast_matchers::MatchFinder`](
-    http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder.html).
-2.  Call `addMatcher()` to register [`clang::ast_matchers::MatchFinder::MatchCallback`](
-    http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html) actions to execute when [matching](http://clang.llvm.org/docs/LibASTMatchersReference.html) the AST.
+1.  Instantiate a [`clang::ast_matchers::MatchFinder`](http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder.html).
+2.  Call `addMatcher()` to register [`clang::ast_matchers::MatchFinder::MatchCallback`](http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html)
+    actions to execute when [matching](http://clang.llvm.org/docs/LibASTMatchersReference.html)
+    the AST.
 3.  Create a new `clang::tooling::FrontendActionFactory` from the `MatchFinder`.
 4.  Run the action across the specified files with
     [`clang::tooling::ClangTool::run`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1ClangTool.html#acec91f63b45ac7ee2d6c94cb9c10dab3).
-5.  Serialize generated [`clang::tooling::Replacement`](
-    http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1Replacement.html)s to
-    `stdout`.
+5.  Serialize generated [`clang::tooling::Replacement`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1Replacement.html)s
+    to `stdout`.
 
 Other useful references when writing the tool:
 
@@ -85,10 +84,9 @@ TODO: Document more about `SourceLocation` and how spelling loc differs from
 expansion loc, etc.
 
 ### Why not RefactoringTool?
-While clang has a [`clang::tooling::RefactoringTool`](
-http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1RefactoringTool.html) to
-automatically apply the generated replacements and save the results, it doesn't
-work well for Chromium:
+While clang has a [`clang::tooling::RefactoringTool`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1RefactoringTool.html)
+to automatically apply the generated replacements and save the results, it
+doesn't work well for Chromium:
 
 *   Clang tools run actions serially, so runtime scales poorly to tens of
     thousands of files.
@@ -97,10 +95,12 @@ work well for Chromium:
 
 ## Building
 Synopsis:
+
 ```shell
 tools/clang/scripts/update.py --force-local-build --without-android \
   --tools blink_gc_plugin plugins rewrite_to_chrome_style
 ```
+
 Running this command builds the [Oilpan plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/blink_gc_plugin/),
 the [Chrome style
 plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/plugins/),
@@ -112,6 +112,7 @@ Generally, `--tools` should always include `blink_gc_plugin` and `plugins`: othe
 ## Running
 First, build all chromium targets to avoid failures due to missing dependecies
 that are generated as part of the build:
+
 ```shell
 ninja -C out/Debug
 ```
