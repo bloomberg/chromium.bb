@@ -53,9 +53,6 @@ WebRtcBrowserTest.CallInsideIframe
 # https://crbug.com/536881
 IndexedDBBrowserTest.DiskFullOnCommit
 
-# https://crbug.com/569752
-SitePerProcessBrowserTest.*
-
 # https://crbug.com/571264
 WebRtcMediaRecorderTest.MediaRecorderPausePreventsDataavailableFromBeingFired
 
