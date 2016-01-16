@@ -70,7 +70,6 @@ class FakeRtcpTransport : public PacedPacketSender {
   base::SimpleTestTickClock* const clock_;
   base::TimeDelta packet_delay_;
   RtcpSession* rtcp_session_;  //  RTCP destination.
-  bool paused_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeRtcpTransport);
 };

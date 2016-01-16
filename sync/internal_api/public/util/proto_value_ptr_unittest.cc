@@ -100,7 +100,6 @@ class TestValue {
   static int g_delete_count;
 
   scoped_ptr<IntValue> value_;
-  bool is_initialized_;
   bool is_default_;
 
   DISALLOW_COPY_AND_ASSIGN(TestValue);

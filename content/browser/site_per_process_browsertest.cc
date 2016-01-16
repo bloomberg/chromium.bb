@@ -545,7 +545,6 @@ class RenderWidgetHostVisibilityObserver : public NotificationObserver {
       message_loop_runner_->Quit();
   }
 
-  RenderWidgetHostImpl* render_widget_host_;
   bool expected_visibility_state_;
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
   NotificationRegistrar registrar_;

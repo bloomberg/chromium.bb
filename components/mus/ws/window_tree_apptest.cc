@@ -122,9 +122,8 @@ std::string WindowParentToString(Id window, Id parent) {
 class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
                                  public TestChangeTracker::Delegate {
  public:
-  explicit TestWindowTreeClientImpl(mojo::ApplicationImpl* app)
+  TestWindowTreeClientImpl()
       : binding_(this),
-        app_(app),
         connection_id_(0),
         root_window_id_(0),
         // Start with a random large number so tests can use lower ids if they
@@ -378,7 +377,6 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
   scoped_ptr<WaitState> wait_state_;
 
   mojo::Binding<WindowTreeClient> binding_;
-  mojo::ApplicationImpl* app_;
   Id connection_id_;
   Id root_window_id_;
   uint32_t next_change_id_;
@@ -395,7 +393,7 @@ class TestWindowTreeClientImpl : public mojom::WindowTreeClient,
 class WindowTreeClientFactory
     : public mojo::InterfaceFactory<WindowTreeClient> {
  public:
-  explicit WindowTreeClientFactory(mojo::ApplicationImpl* app) : app_(app) {}
+  WindowTreeClientFactory() {}
   ~WindowTreeClientFactory() override {}
 
   // Runs a nested MessageLoop until a new instance has been created.
@@ -413,13 +411,12 @@ class WindowTreeClientFactory
   // InterfaceFactory<WindowTreeClient>:
   void Create(ApplicationConnection* connection,
               InterfaceRequest<WindowTreeClient> request) override {
-    client_impl_.reset(new TestWindowTreeClientImpl(app_));
+    client_impl_.reset(new TestWindowTreeClientImpl());
     client_impl_->Bind(std::move(request));
     if (run_loop_.get())
       run_loop_->Quit();
   }
 
-  mojo::ApplicationImpl* app_;
   scoped_ptr<TestWindowTreeClientImpl> client_impl_;
   scoped_ptr<base::RunLoop> run_loop_;
 
@@ -531,13 +528,13 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
   ApplicationDelegate* GetApplicationDelegate() override { return this; }
   void SetUp() override {
     ApplicationTestBase::SetUp();
-    client_factory_.reset(new WindowTreeClientFactory(application_impl()));
+    client_factory_.reset(new WindowTreeClientFactory());
 
     mojom::WindowTreeHostFactoryPtr factory;
     application_impl()->ConnectToService("mojo:mus", &factory);
 
     mojom::WindowTreeClientPtr tree_client_ptr;
-    ws_client1_.reset(new TestWindowTreeClientImpl(application_impl()));
+    ws_client1_.reset(new TestWindowTreeClientImpl());
     ws_client1_->Bind(GetProxy(&tree_client_ptr));
 
     factory->CreateWindowTreeHost(GetProxy(&host_),
@@ -1642,7 +1639,7 @@ TEST_F(WindowTreeAppTest, DontCleanMapOnDestroy) {
 TEST_F(WindowTreeAppTest, EmbedSupplyingWindowTreeClient) {
   ASSERT_TRUE(ws_client1()->NewWindow(1));
 
-  TestWindowTreeClientImpl client2(application_impl());
+  TestWindowTreeClientImpl client2;
   mojom::WindowTreeClientPtr client2_ptr;
   mojo::Binding<WindowTreeClient> client2_binding(&client2, &client2_ptr);
   ASSERT_TRUE(Embed(ws1(), BuildWindowId(connection_id_1(), 1),

@@ -243,8 +243,7 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 // value of IsAppPinned(...) is configurable.
 class TestShelfDelegateForShelfView : public ShelfDelegate {
  public:
-  explicit TestShelfDelegateForShelfView(ShelfModel* model)
-      : model_(model) {}
+  TestShelfDelegateForShelfView() {}
   ~TestShelfDelegateForShelfView() override {}
 
   void set_is_app_pinned(bool is_pinned) { is_app_pinned_ = is_pinned; }
@@ -278,8 +277,6 @@ class TestShelfDelegateForShelfView : public ShelfDelegate {
   void UnpinAppWithID(const std::string& app_id) override { NOTREACHED(); }
 
  private:
-  ShelfModel* model_;
-
   // Tracks whether apps are pinned or not.
   bool is_app_pinned_ = false;
 
@@ -681,7 +678,7 @@ class ShelfViewTest : public AshTestBase {
     // Replace ShelfDelegate.
     test::ShellTestApi shell_test_api(Shell::GetInstance());
     shell_test_api.SetShelfDelegate(NULL);
-    shelf_delegate_ = new TestShelfDelegateForShelfView(model_);
+    shelf_delegate_ = new TestShelfDelegateForShelfView();
     shell_test_api.SetShelfDelegate(shelf_delegate_);
     test::ShelfTestAPI(Shelf::ForPrimaryDisplay())
         .SetShelfDelegate(shelf_delegate_);

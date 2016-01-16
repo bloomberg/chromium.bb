@@ -55,8 +55,8 @@ void ServiceFactoryImpl::CreateRenderer(
 void ServiceFactoryImpl::CreateCdm(
     mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request) {
   // The created object is owned by the pipe.
-  new MojoCdmService(cdm_service_context_.GetWeakPtr(), service_provider_,
-                     GetCdmFactory(), std::move(request));
+  new MojoCdmService(cdm_service_context_.GetWeakPtr(), GetCdmFactory(),
+                     std::move(request));
 }
 
 RendererFactory* ServiceFactoryImpl::GetRendererFactory() {

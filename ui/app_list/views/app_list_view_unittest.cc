@@ -727,7 +727,11 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
   class AppListViewTestViewsDelegate : public views::TestViewsDelegate {
    public:
     explicit AppListViewTestViewsDelegate(AppListViewTestDesktop* parent)
-        : parent_(parent) {}
+#if defined(OS_CHROMEOS)
+        : parent_(parent)
+#endif
+    {
+    }
 
     // Overridden from views::ViewsDelegate:
     void OnBeforeWidgetInit(
@@ -735,7 +739,9 @@ class AppListViewTestDesktop : public views::ViewsTestBase,
         views::internal::NativeWidgetDelegate* delegate) override;
 
    private:
+#if defined(OS_CHROMEOS)
     AppListViewTestDesktop* parent_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(AppListViewTestViewsDelegate);
   };

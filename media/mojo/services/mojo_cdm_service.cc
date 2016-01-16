@@ -79,12 +79,10 @@ scoped_refptr<MediaKeys> MojoCdmService::GetCdm(int cdm_id) {
 
 MojoCdmService::MojoCdmService(
     base::WeakPtr<MojoCdmServiceContext> context,
-    mojo::ServiceProvider* service_provider,
     CdmFactory* cdm_factory,
     mojo::InterfaceRequest<interfaces::ContentDecryptionModule> request)
     : binding_(this, std::move(request)),
       context_(context),
-      service_provider_(service_provider),
       cdm_factory_(cdm_factory),
       cdm_id_(CdmContext::kInvalidCdmId),
       weak_factory_(this) {
