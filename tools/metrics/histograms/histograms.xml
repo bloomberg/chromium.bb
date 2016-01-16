@@ -44564,6 +44564,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Settings.SearchSections" enum="SettingsSections">
+  <owner>dschuyler@chromium.org</owner>
+  <summary>
+    If there is no further activity in the search box for 1 second, this records
+    one tick each time a settings section is shown as a result of searching
+    withing the chrome://settings page.  If multiple matches are found within
+    the same section, the section match is only recorded once.
+  </summary>
+</histogram>
+
 <histogram name="Settings.SearchSubpageMatchCount">
   <owner>dschuyler@chromium.org</owner>
   <summary>
@@ -76843,6 +76853,54 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="7" label="No errors, not default">
     No errors were encountered yet Chrome is still not the default web client.
   </int>
+</enum>
+
+<enum name="SettingsSections" type="int">
+  <summary>
+    A collection of sections from chrome://settings. Used for metrics about
+    searching within the settings options.
+  </summary>
+  <int value="0" label="No Match Found"/>
+  <int value="1" label="Unknown Section"/>
+  <int value="2" label="Network CROS"/>
+  <int value="3" label="Proxy"/>
+  <int value="4" label="Appearance"/>
+  <int value="5" label="Device"/>
+  <int value="6" label="Search"/>
+  <int value="7" label="Sync Users"/>
+  <int value="8" label="Set Default Browser"/>
+  <int value="9" label="Date Time"/>
+  <int value="10" label="Device Control"/>
+  <int value="11" label="Privacy"/>
+  <int value="12" label="Bluetooth Devices"/>
+  <int value="13" label="Passwords and Autofill"/>
+  <int value="14" label="Easy Unlock"/>
+  <int value="15" label="Web Content"/>
+  <int value="16" label="Network"/>
+  <int value="17" label="Languages"/>
+  <int value="18" label="Downloads"/>
+  <int value="19" label="Certificates"/>
+  <int value="20" label="Cloudprint Options"/>
+  <int value="21" label="A11y"/>
+  <int value="22" label="Factory Reset"/>
+  <int value="23" label="System"/>
+  <int value="24" label="Reset Profile"/>
+  <int value="25" label="Sync"/>
+  <int value="26" label="Startup"/>
+  <int value="27" label="Mouselock"/>
+  <int value="28" label="Page Zoom Levels"/>
+  <int value="29" label="Status"/>
+  <int value="30" label="Main"/>
+  <int value="31" label="Pointer Touchpad"/>
+  <int value="32" label="Pointer Mouse"/>
+  <int value="33" label="Prefs Blocked Languages"/>
+  <int value="34" label="Prefs Language Blacklist"/>
+  <int value="35" label="Prefs Site Blacklist"/>
+  <int value="36" label="Prefs Whitelists"/>
+  <int value="37" label="Prefs Supported Languages"/>
+  <int value="38" label="Prefs Cld Version"/>
+  <int value="39" label="Prefs Cld Data Source"/>
+  <int value="40" label="Prefs Dump"/>
 </enum>
 
 <enum name="SHA1Status" type="int">

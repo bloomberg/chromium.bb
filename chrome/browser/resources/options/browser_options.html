@@ -7,7 +7,7 @@
   <link rel="import" href="chrome://resources/cr_elements/network/cr_network_icon.html">
   <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
   <include src="secondary_user_banner.html">
-  <section>
+  <section id="network-section-cros">
     <div id="network-section-header" class="section-header">
       <h3 i18n-content="sectionTitleInternet"></h3>
       <span class="controlled-setting-indicator" plural></span>
@@ -102,7 +102,7 @@
 </if>
   </section>
 <if expr="chromeos">
-  <section>
+  <section id="device-section">
     <h3 i18n-content="sectionTitleDevice"></h3>
     <div>
       <span i18n-content="deviceGroupDescription"></span>
@@ -137,7 +137,7 @@
     </div>
   </section>
 </if>
-  <section>
+  <section id="search-section">
     <h3 i18n-content="sectionTitleSearch"></h3>
       <div id="search-section-content">
         <span id="default-search-engine-label"
@@ -283,7 +283,7 @@
 <div id="advanced-settings" hidden>
 <div id="advanced-settings-container">
 <if expr="chromeos">
-  <section>
+  <section id="date-time-section">
     <h3 i18n-content="datetimeTitle"></h3>
     <div class="option-control-table">
       <div guest-visibility="disabled">
@@ -727,7 +727,7 @@
       </div>
     </div>
   </section>
-  <section>
+  <section id="certificates-section">
       <h3 i18n-content="advancedSectionTitleCertificates"></h3>
       <div>
 <if expr="use_nss_certs or is_win or is_macosx">
@@ -772,7 +772,7 @@
   <include src="startup_section.html">
 </if>
 
-<section>
+<section id="a11y-section">
   <h3 i18n-content="accessibilityTitle"></h3>
 
   <div>

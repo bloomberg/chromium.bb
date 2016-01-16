@@ -2,6 +2,55 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Section IDs use for metrics.  The integer values should match up with the
+ * |SettingsSections| in histograms.xml.
+ * @type {Object<string, number>}
+ */
+var SettingsSections = {
+  'None': 0,
+  'Unknown': 1,
+  'network-section-cros': 2,
+  'proxy-section': 3,
+  'appearance-section': 4,
+  'device-section': 5,
+  'search-section': 6,
+  'sync-users-section': 7,
+  'set-default-browser-section': 8,
+  'date-time-section': 9,
+  'device-control-section': 10,
+  'privacy-section': 11,
+  'bluetooth-devices': 12,
+  'passwords-and-autofill-section': 13,
+  'easy-unlock-section': 14,
+  'web-content-section': 15,
+  'network-section': 16,
+  'languages-section': 17,
+  'downloads-section': 18,
+  'certificates-section': 19,
+  'cloudprint-options-mdns': 20,
+  'a11y-section': 21,
+  'factory-reset-section': 22,
+  'system-section': 23,
+  'reset-profile-settings-section': 24,
+  'sync-section': 25,
+  'startup-section': 26,
+  'mouselock-section': 27,
+  'page-zoom-levels': 28,
+  'status-section': 29,
+  'main-section': 30,
+  'pointer-section-touchpad': 31,
+  'pointer-section-mouse': 32,
+  'prefs-blocked-languages': 33,
+  'prefs-language-blacklist': 34,
+  'prefs-site-blacklist': 35,
+  'prefs-whitelists': 36,
+  'prefs-supported-languages': 37,
+  'prefs-cld-version': 38,
+  'prefs-cld-data-source': 39,
+  'prefs-dump': 40,
+};
+
 cr.define('options', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
   /** @const */ var PageManager = cr.ui.pageManager.PageManager;
@@ -353,6 +402,7 @@ cr.define('options', function() {
       var bubbleControls = [];
       var pageMatchesForMetrics = 0;
       var subpageMatchesForMetrics = 0;
+      var sectionMatchesForMetrics = {};
 
       // Generate search text by applying lowercase and escaping any characters
       // that would be problematic for regular expressions.
@@ -373,6 +423,9 @@ cr.define('options', function() {
               if (!node.hidden) {
                 foundMatches = true;
                 pageMatchesForMetrics += 1;
+                var section = SettingsSections[node.id] ||
+                    SettingsSections['Unknown'];
+                sectionMatchesForMetrics[section] = section;
               }
             }
           }
@@ -410,7 +463,17 @@ cr.define('options', function() {
         if (!foundMatches) {
           chrome.metricsPrivate.recordSmallCount(
             'Settings.SearchLengthNoMatch', text.length);
+          chrome.metricsPrivate.recordSmallCount(
+            'Settings.SearchSections', SettingsSections['None']);
+        } else {
+          for (var section in sectionMatchesForMetrics) {
+            var sectionId = sectionMatchesForMetrics[section];
+            assert(sectionId !== undefined);
+            chrome.metricsPrivate.recordSmallCount(
+              'Settings.SearchSections', sectionId);
+          }
         }
+
         chrome.metricsPrivate.recordUserAction('Settings.Searching');
         chrome.metricsPrivate.recordSmallCount(
             'Settings.SearchLength', text.length);
