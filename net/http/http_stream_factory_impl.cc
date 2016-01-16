@@ -375,12 +375,8 @@ bool HttpStreamFactoryImpl::IsQuicWhitelistedForHost(const std::string& host) {
   if (session_->params().transport_security_state->IsGooglePinnedHost(host))
     return true;
 
-  std::string lower_host = base::ToLowerASCII(host);
-  if (ContainsKey(session_->params().quic_host_whitelist, lower_host))
-    return true;
-
-  return base::EndsWith(lower_host, ".snapchat.com",
-                        base::CompareCase::SENSITIVE);
+  return ContainsKey(session_->params().quic_host_whitelist,
+                     base::ToLowerASCII(host));
 }
 
 }  // namespace net
