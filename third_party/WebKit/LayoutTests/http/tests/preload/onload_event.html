@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script>
+    var t = async_test('Makes sure that preloaded resources trigger the onload event');
+    var scriptLoaded = false;
+    var styleLoaded = false;
+</script>
+<link rel=preload href="../resources/dummy.js" as=script onload="scriptLoaded = true;">
+<link rel=preload href="../resources/dummy.css" as=style onload="styleLoaded = true;">
+<script src="../resources/slow-script.pl?delay=500"></script>
+<script>
+    window.onload = t.step(function(){
+        assert_true(window.scriptLoaded, "script triggered load event");
+        assert_true(styleLoaded, "style triggered load event");
+        t.done();
+    });
+</script>
+
