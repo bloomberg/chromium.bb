@@ -793,8 +793,6 @@ crbug.com/368946 virtual/stable/web-animations-api/eased-keyframes.html [ Pass ]
 crbug.com/441559 virtual/stable/web-animations-api/partial-keyframes-unsupported.html [ Pass ]
 crbug.com/437696 virtual/stable/web-animations-api/additive-animations-unsupported.html [ Pass ]
 
-crbug.com/578255 [ Win ] fast/text/emphasis-combined-text.html [ Failure ]
-
 # switching to apache-win32: needs triaging.
 crbug.com/528062 [ Win ] http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
 crbug.com/528062 [ Win ] http/tests/local/blob/send-data-blob.html [ Failure ]
@@ -1133,8 +1131,7 @@ crbug.com/521730 [ Win10 ] virtual/threaded/printing/subframes-percentage-height
 crbug.com/521730 [ Win10 ] virtual/threaded/printing/webgl-repeated-printing-preservedrawingbuffer.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/dynamic/text-combine.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/ruby/base-shorter-than-text.html [ Failure ]
-# Uncomment after https://code.google.com/p/chromium/issues/detail?id=578255.
-# crbug.com/521730 [ Win10 ] fast/text/emphasis-combined-text.html [ Failure ]
+crbug.com/521730 [ Win10 ] fast/text/emphasis-combined-text.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/emphasis-complex.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/font-weight-variant.html [ Failure ]
 crbug.com/521730 [ Win10 ] fast/text/international/003.html [ Failure ]
