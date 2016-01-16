@@ -15,7 +15,6 @@
 #include "ui/views/view.h"
 
 class ExtensionAction;
-class Profile;
 
 namespace extensions {
 class Extension;
@@ -67,7 +66,6 @@ class ToolbarActionView : public views::MenuButton,
   using ContextMenuCallback = base::Callback<void(ToolbarActionView*)>;
 
   ToolbarActionView(ToolbarActionViewController* view_controller,
-                    Profile* profile,
                     Delegate* delegate);
   ~ToolbarActionView() override;
 
@@ -139,9 +137,6 @@ class ToolbarActionView : public views::MenuButton,
 
   // The controller for this toolbar action view.
   ToolbarActionViewController* view_controller_;
-
-  // The associated profile.
-  Profile* profile_;
 
   // Delegate that usually represents a container for ToolbarActionView.
   Delegate* delegate_;

@@ -165,9 +165,6 @@ class UserScriptLoader : public content::NotificationObserver {
   // finishes.  This boolean tracks whether another load is pending.
   bool pending_load_;
 
-  // Whether or not we are currently loading.
-  bool is_loading_;
-
   // The browser_context for which the scripts managed here are installed.
   content::BrowserContext* browser_context_;
 

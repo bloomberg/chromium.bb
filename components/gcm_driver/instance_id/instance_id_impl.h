@@ -73,9 +73,6 @@ class InstanceIDImpl : public InstanceID {
 
   gcm::GCMDelayedTaskController delayed_task_controller_;
 
-  // Flag to indicate that we have tries to load the data from the store.
-  bool load_from_store_;
-
   // The generated Instance ID.
   std::string id_;
 

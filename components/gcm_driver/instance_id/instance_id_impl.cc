@@ -56,7 +56,6 @@ InstanceIDImpl::InstanceIDImpl(const std::string& app_id,
                                gcm::GCMDriver* gcm_driver)
     : InstanceID(app_id),
       gcm_driver_(gcm_driver),
-      load_from_store_(false),
       weak_ptr_factory_(this) {
   GetInstanceIDHandler()->GetInstanceIDData(
       app_id,

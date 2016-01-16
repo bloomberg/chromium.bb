@@ -78,8 +78,10 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 
     bool allow_user_level_hosts_;
 
+#if defined(OS_WIN)
     // Handle of the native window corresponding to the extension.
     intptr_t window_handle_;
+#endif // OS_WIN
 
     DISALLOW_COPY_AND_ASSIGN(Core);
   };
@@ -92,9 +94,11 @@ class NativeProcessLauncherImpl : public NativeProcessLauncher {
 NativeProcessLauncherImpl::Core::Core(bool allow_user_level_hosts,
                                       intptr_t window_handle)
     : detached_(false),
-      allow_user_level_hosts_(allow_user_level_hosts),
-      window_handle_(window_handle) {
-}
+      allow_user_level_hosts_(allow_user_level_hosts)
+#if defined(OS_WIN)
+      , window_handle_(window_handle)
+#endif // OS_WIN
+{}
 
 NativeProcessLauncherImpl::Core::~Core() {
   DCHECK(detached_);

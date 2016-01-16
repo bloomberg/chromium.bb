@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
@@ -56,11 +55,9 @@ ToolbarActionView::ContextMenuCallback* context_menu_callback = nullptr;
 
 ToolbarActionView::ToolbarActionView(
     ToolbarActionViewController* view_controller,
-    Profile* profile,
     ToolbarActionView::Delegate* delegate)
     : MenuButton(nullptr, base::string16(), this, false),
       view_controller_(view_controller),
-      profile_(profile),
       delegate_(delegate),
       called_register_command_(false),
       wants_to_run_(false),

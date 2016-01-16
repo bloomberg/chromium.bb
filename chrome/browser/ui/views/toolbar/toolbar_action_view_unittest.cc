@@ -155,7 +155,7 @@ TEST_F(ToolbarActionViewUnitTest, BasicToolbarActionViewTest) {
   generator.MoveMouseTo(gfx::Point(300, 300));
 
   // Create a new toolbar action view.
-  ToolbarActionView view(&controller, &profile, &action_view_delegate);
+  ToolbarActionView view(&controller, &action_view_delegate);
   view.set_owned_by_client();
   view.SetBoundsRect(gfx::Rect(0, 0, 200, 20));
   widget()->SetContentsView(&view);

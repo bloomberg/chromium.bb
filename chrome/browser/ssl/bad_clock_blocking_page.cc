@@ -60,7 +60,6 @@ BadClockBlockingPage::BadClockBlockingPage(
     const base::Callback<void(bool)>& callback)
     : SecurityInterstitialPage(web_contents, request_url),
       callback_(callback),
-      cert_error_(cert_error),
       ssl_info_(ssl_info),
       time_triggered_(time_triggered),
       controller_(new ChromeControllerClient(web_contents)) {

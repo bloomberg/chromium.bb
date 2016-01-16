@@ -148,9 +148,6 @@ class NativeBackendGnome : public PasswordStoreX::NativeBackend,
                            TimestampToCompare date_to_compare,
                            password_manager::PasswordStoreChangeList* changes);
 
-  // The local profile id, used to generate the app string.
-  const LocalProfileId profile_id_;
-
   // The app string, possibly based on the local profile id.
   std::string app_string_;
 

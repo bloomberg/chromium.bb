@@ -66,7 +66,6 @@ class BadClockBlockingPage : public SecurityInterstitialPage {
   void NotifyDenyCertificate();
 
   base::Callback<void(bool)> callback_;
-  const int cert_error_;
   const net::SSLInfo ssl_info_;
   const base::Time time_triggered_;
   scoped_ptr<ChromeControllerClient> controller_;

@@ -223,8 +223,7 @@ void BrowserActionsContainer::AddViewForAction(
   if (chevron_)
     chevron_->CloseMenu();
 
-  ToolbarActionView* view =
-      new ToolbarActionView(view_controller, browser_->profile(), this);
+  ToolbarActionView* view = new ToolbarActionView(view_controller, this);
   toolbar_action_views_.insert(toolbar_action_views_.begin() + index, view);
   AddChildViewAt(view, index);
 }

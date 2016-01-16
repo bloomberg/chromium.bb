@@ -133,7 +133,9 @@ bool ShouldClearSavedMetrics() {
 ChromeMetricsServiceClient::ChromeMetricsServiceClient(
     metrics::MetricsStateManager* state_manager)
     : metrics_state_manager_(state_manager),
+#if defined(OS_CHROMEOS)
       chromeos_metrics_provider_(nullptr),
+#endif
       waiting_for_collect_final_metrics_step_(false),
       num_async_histogram_fetches_in_progress_(0),
       profiler_metrics_provider_(nullptr),

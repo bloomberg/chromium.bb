@@ -45,7 +45,7 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
 
     // Sets delegate on |media_router_action_|.
     toolbar_action_view_.reset(
-        new ToolbarActionView(media_router_action_.get(), browser()->profile(),
+        new ToolbarActionView(media_router_action_.get(),
                               browser_actions_container));
   }
 

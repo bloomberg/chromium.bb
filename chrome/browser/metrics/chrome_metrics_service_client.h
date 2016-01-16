@@ -149,9 +149,11 @@ class ChromeMetricsServiceClient
 
   content::NotificationRegistrar registrar_;
 
+#if defined(OS_CHROMEOS)
   // On ChromeOS, holds a weak pointer to the ChromeOSMetricsProvider instance
   // that has been registered with MetricsService. On other platforms, is NULL.
   ChromeOSMetricsProvider* chromeos_metrics_provider_;
+#endif
 
   // Saved callback received from CollectFinalMetricsForLog().
   base::Closure collect_final_metrics_done_callback_;

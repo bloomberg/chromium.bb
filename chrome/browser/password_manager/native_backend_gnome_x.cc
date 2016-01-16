@@ -526,7 +526,7 @@ std::string GetProfileSpecificAppString(LocalProfileId profile_id) {
 }  // namespace
 
 NativeBackendGnome::NativeBackendGnome(LocalProfileId id)
-    : profile_id_(id), app_string_(GetProfileSpecificAppString(id)) {
+    : app_string_(GetProfileSpecificAppString(id)) {
 }
 
 NativeBackendGnome::~NativeBackendGnome() {
