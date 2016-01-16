@@ -9344,19 +9344,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         pixels += leading_bytes;
       }
       for (GLint iy = rect.y(); iy < rect.bottom(); ++iy) {
-        bool reset_row_length = false;
-        if (iy + 1 == max_y && pixels_shm_id == 0 &&
-            workarounds().pack_parameters_workaround_with_pack_buffer &&
-            state_.pack_row_length > 0 && state_.pack_row_length < width) {
-          // Some drivers (for example, Mac AMD) incorrecly limit the last
-          // row to ROW_LENGTH in this case.
-          glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-          reset_row_length = true;
-        }
         glReadPixels(rect.x(), iy, rect.width(), 1, format, type, pixels);
-        if (reset_row_length) {
-          glPixelStorei(GL_PACK_ROW_LENGTH, state_.pack_row_length);
-        }
         pixels += padded_row_size;
       }
     }
@@ -9396,19 +9384,15 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
         workarounds().pack_parameters_workaround_with_pack_buffer) {
       if (state_.pack_row_length > 0 && state_.pack_row_length < width) {
         // Some drivers (for example, NVidia Linux) reset in this case.
-        // Some drivers (for example, Mac AMD) incorrecly limit the last
-        // row to ROW_LENGTH in this case.
-        glPixelStorei(GL_PACK_ROW_LENGTH, 0);
-        for (GLint iy = y; iy < max_y; ++iy) {
+        for (GLint iy = y; iy < y + height; ++iy) {
           // Need to set PACK_ALIGNMENT for last row. See comment below.
-          if (iy + 1 == max_y && padding > 0)
+          if (iy + 1 == y + height && padding > 0)
             glPixelStorei(GL_PACK_ALIGNMENT, 1);
           glReadPixels(x, iy, width, 1, format, type, pixels);
-          if (iy + 1 == max_y && padding > 0)
+          if (iy + 1 == y + height && padding > 0)
             glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
           pixels += padded_row_size;
         }
-        glPixelStorei(GL_PACK_ROW_LENGTH, state_.pack_row_length);
       } else if (padding > 0) {
         // Some drivers (for example, NVidia Linux) incorrectly require the
         // pack buffer to have padding for the last row.
@@ -9416,7 +9400,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
           glReadPixels(x, y, width, height - 1, format, type, pixels);
         glPixelStorei(GL_PACK_ALIGNMENT, 1);
         pixels += padded_row_size * (height - 1);
-        glReadPixels(x, max_y - 1, width, 1, format, type, pixels);
+        glReadPixels(x, y + height - 1, width, 1, format, type, pixels);
         glPixelStorei(GL_PACK_ALIGNMENT, state_.pack_alignment);
       } else {
         glReadPixels(x, y, width, height, format, type, pixels);

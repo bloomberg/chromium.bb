@@ -81,6 +81,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/forbidden-operators.html', bug=483282)
     self.Fail('conformance2/extensions/promoted-extensions-in-shaders.html',
         bug=295792)
+    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
+        bug=483282)
     self.Fail('conformance2/samplers/sampler-drawing-test.html', bug=483282)
     self.Fail('conformance2/state/gl-object-get-calls.html', bug=483282)
     # Note that this test fails on ['win', 'intel'] with bug=483282
@@ -204,8 +206,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('conformance2/glsl3/array-in-complex-expression.html',
         ['win'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
-        ['win'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)

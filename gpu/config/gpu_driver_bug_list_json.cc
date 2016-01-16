@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "8.41",
+  "version": "8.40",
   "entries": [
     {
       "id": 1,
@@ -1710,17 +1710,6 @@ LONG_STRING_CONST(
       "disabled_extensions": [
         "GL_ARB_timer_query",
         "GL_EXT_timer_query"
-      ]
-    },
-    {
-      "id": 144,
-      "cr_bugs": [563714],
-      "description": "Pack parameters work incorrectly with pack buffer bound",
-      "os": {
-        "type": "macosx"
-      },
-      "features": [
-        "pack_parameters_workaround_with_pack_buffer"
       ]
     }
   ]
