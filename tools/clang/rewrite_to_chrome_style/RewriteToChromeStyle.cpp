@@ -14,8 +14,10 @@
 
 #include <assert.h>
 #include <algorithm>
+#include <fstream>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 #include "clang/AST/ASTContext.h"
@@ -221,17 +223,28 @@ class RewriterBase : public MatchFinder::MatchCallback {
 
   void run(const MatchFinder::MatchResult& result) override {
     std::string name;
-    if (!GetNameForDecl(*result.Nodes.getNodeAs<DeclNode>("decl"), name))
+    const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
+    if (!GetNameForDecl(*decl, name))
       return;
-    replacements_->emplace(*result.SourceManager,
-                           TargetNodeTraits<TargetNode>::GetRange(
-                               *result.Nodes.getNodeAs<TargetNode>(
-                                   TargetNodeTraits<TargetNode>::kName)),
-                           name);
+    auto r = replacements_->emplace(
+        *result.SourceManager, TargetNodeTraits<TargetNode>::GetRange(
+                                   *result.Nodes.getNodeAs<TargetNode>(
+                                       TargetNodeTraits<TargetNode>::kName)),
+        name);
+    auto from = decl->getNameAsString();
+    auto to = r.first->getReplacementText().str();
+    if (from != to)
+      replacement_names_.emplace(std::move(from), std::move(to));
+  }
+
+  const std::unordered_map<std::string, std::string>& replacement_names()
+      const {
+    return replacement_names_;
   }
 
  private:
   Replacements* const replacements_;
+  std::unordered_map<std::string, std::string> replacement_names_;
 };
 
 using FieldDeclRewriter = RewriterBase<clang::FieldDecl, clang::NamedDecl>;
@@ -487,6 +500,18 @@ int main(int argc, const char* argv[]) {
   int result = tool.run(factory.get());
   if (result != 0)
     return result;
+
+  std::ofstream replacement_db_file("rewrite-sym.txt",
+                                    std::ios_base::out | std::ios_base::app);
+  for (const auto& p : field_decl_rewriter.replacement_names())
+    replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
+  for (const auto& p : var_decl_rewriter.replacement_names())
+    replacement_db_file << "var:" << p.first << ":" << p.second << "\n";
+  for (const auto& p : function_decl_rewriter.replacement_names())
+    replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
+  for (const auto& p : method_decl_rewriter.replacement_names())
+    replacement_db_file << "fun:" << p.first << ":" << p.second << "\n";
+  replacement_db_file.close();
 
   // Serialization format is documented in tools/clang/scripts/run_tool.py
   llvm::outs() << "==== BEGIN EDITS ====\n";
