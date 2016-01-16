@@ -27,12 +27,10 @@ if (symbol_level == -1) {
     # With instrumentation enabled, debug info puts libchrome.so over 4gb, which
     # causes the linker to produce an invalid ELF. http://crbug.com/574476
     symbol_level = 0
-  }
-
-  # Linux is slowed by having symbols as part of the target binary, whereas
-  # Mac and Windows have them separate, so in Release Linux, default them off,
-  # but keep them on for Official builds.
-  if (!is_linux || (is_debug || is_official_build)) {
+  } else if (!is_linux || (is_debug || is_official_build)) {
+    # Linux is slowed by having symbols as part of the target binary, whereas
+    # Mac and Windows have them separate, so in Release Linux, default them off,
+    # but keep them on for Official builds.
     symbol_level = 2
   } else if (using_sanitizer) {
     # Sanitizers require symbols for filename suppressions to work.
