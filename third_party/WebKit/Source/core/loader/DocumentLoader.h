@@ -146,7 +146,7 @@ public:
 
     bool loadingMultipartContent() const;
 
-    ResourcePtr<Resource> startPreload(Resource::Type, FetchRequest&);
+    void startPreload(Resource::Type, FetchRequest&);
 
     DECLARE_VIRTUAL_TRACE();
 

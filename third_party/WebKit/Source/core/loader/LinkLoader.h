@@ -36,7 +36,6 @@
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/ResourceOwner.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/LinkPreloadResourceClients.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
 #include "platform/Timer.h"
@@ -67,8 +66,6 @@ public:
     void didSendLoadForPrerender() override;
     void didSendDOMContentLoadedForPrerender() override;
 
-    void triggerEvents(const Resource*);
-
     void released();
     bool loadLink(const LinkRelAttribute&, CrossOriginAttributeValue, const String& type, const String& as, const KURL&, Document&, const NetworkHintsInterface&);
     enum CanLoadResources { LoadResources, DoNotLoadResources };
@@ -80,7 +77,6 @@ public:
 private:
     void linkLoadTimerFired(Timer<LinkLoader>*);
     void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
-    void createLinkPreloadResourceClient(ResourcePtr<Resource>);
 
     LinkLoaderClient* m_client;
 
@@ -88,7 +84,6 @@ private:
     Timer<LinkLoader> m_linkLoadingErrorTimer;
 
     OwnPtrWillBeMember<PrerenderHandle> m_prerender;
-    OwnPtrWillBeMember<LinkPreloadResourceClient> m_linkPreloadResourceClient;
 };
 
 }

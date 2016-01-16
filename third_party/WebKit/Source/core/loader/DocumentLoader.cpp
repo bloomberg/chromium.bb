@@ -160,7 +160,7 @@ const KURL& DocumentLoader::url() const
     return m_request.url();
 }
 
-ResourcePtr<Resource> DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
+void DocumentLoader::startPreload(Resource::Type type, FetchRequest& request)
 {
     ResourcePtr<Resource> resource;
     switch (type) {
@@ -194,7 +194,6 @@ ResourcePtr<Resource> DocumentLoader::startPreload(Resource::Type type, FetchReq
 
     if (resource)
         fetcher()->preloadStarted(resource.get());
-    return resource;
 }
 
 void DocumentLoader::didChangePerformanceTiming()
