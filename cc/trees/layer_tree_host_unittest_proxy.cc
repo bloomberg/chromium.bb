@@ -293,16 +293,28 @@ class ProxyMainThreadedCommitWaitsForActivation : public ProxyMainThreaded {
         // completion event is cleared.
         EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
         EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
+
+        // Set next commit waits for activation and start another commit.
+        commits_completed_++;
+        PostNextCommitWaitsForActivationToMainThread();
+        PostSetNeedsCommitToMainThread();
         break;
       case 1:
         // The second commit should be held until activation.
         EXPECT_TRUE(GetProxyImplForTest()->HasCommitCompletionEvent());
         EXPECT_TRUE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
+
+        // Start another commit to verify that this is not held until
+        // activation.
+        commits_completed_++;
+        PostSetNeedsCommitToMainThread();
         break;
       case 2:
         // The third commit should not wait for activation.
         EXPECT_FALSE(GetProxyImplForTest()->HasCommitCompletionEvent());
         EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
+
+        commits_completed_++;
     }
   }
 
@@ -310,28 +322,16 @@ class ProxyMainThreadedCommitWaitsForActivation : public ProxyMainThreaded {
     // The next_commit_waits_for_activation should have been cleared after the
     // sync tree is activated.
     EXPECT_FALSE(GetProxyImplForTest()->GetNextCommitWaitsForActivation());
+    if (commits_completed_ == 3)
+      EndTest();
   }
 
-  void DidCommit() override {
-    switch (commits_completed_) {
-      case 0:
-        // The first commit has been completed. Set next commit waits for
-        // activation and start another commit.
-        commits_completed_++;
-        proxy()->SetNextCommitWaitsForActivation();
-        proxy()->SetNeedsCommit();
-      case 1:
-        // Start another commit to verify that this is not held until
-        // activation.
-        commits_completed_++;
-        proxy()->SetNeedsCommit();
-      case 2:
-        commits_completed_++;
-        EndTest();
-    }
+  void AfterTest() override {
+    // It is safe to read commits_completed_ on the main thread now since
+    // AfterTest() runs after the LayerTreeHost is destroyed and the impl thread
+    // tear down is finished.
+    EXPECT_EQ(3, commits_completed_);
   }
-
-  void AfterTest() override { EXPECT_EQ(3, commits_completed_); }
 
  private:
   int commits_completed_;

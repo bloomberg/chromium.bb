@@ -90,6 +90,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void PostSetVisibleToMainThread(bool visible);
   void PostSetNextCommitForcesRedrawToMainThread();
   void PostCompositeImmediatelyToMainThread();
+  void PostNextCommitWaitsForActivationToMainThread();
 
   void DoBeginTest();
   void Timeout();
@@ -123,6 +124,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void DispatchSetNextCommitForcesRedraw();
   void DispatchDidAddAnimation();
   void DispatchCompositeImmediately();
+  void DispatchNextCommitWaitsForActivation();
 
   virtual void AfterTest() = 0;
   virtual void WillBeginTest();

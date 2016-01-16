@@ -653,6 +653,13 @@ void LayerTreeTest::PostCompositeImmediatelyToMainThread() {
                  main_thread_weak_ptr_));
 }
 
+void LayerTreeTest::PostNextCommitWaitsForActivationToMainThread() {
+  main_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&LayerTreeTest::DispatchNextCommitWaitsForActivation,
+                 main_thread_weak_ptr_));
+}
+
 void LayerTreeTest::WillBeginTest() {
   layer_tree_host_->SetVisible(true);
 }
@@ -798,6 +805,12 @@ void LayerTreeTest::DispatchCompositeImmediately() {
   DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
   if (layer_tree_host_)
     layer_tree_host_->Composite(base::TimeTicks::Now());
+}
+
+void LayerTreeTest::DispatchNextCommitWaitsForActivation() {
+  DCHECK(!task_runner_provider() || task_runner_provider()->IsMainThread());
+  if (layer_tree_host_)
+    layer_tree_host_->SetNextCommitWaitsForActivation();
 }
 
 void LayerTreeTest::RunTest(CompositorMode mode, bool delegating_renderer) {
