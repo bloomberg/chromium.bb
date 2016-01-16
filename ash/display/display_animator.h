@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CONFIGURATOR_ANIMATION_H_
-#define ASH_DISPLAY_DISPLAY_CONFIGURATOR_ANIMATION_H_
+#ifndef ASH_DISPLAY_DISPLAY_ANIMATOR_H_
+#define ASH_DISPLAY_DISPLAY_ANIMATOR_H_
 
 #include <map>
 
@@ -25,14 +25,13 @@ class Layer;
 
 namespace ash {
 
-// DisplayConfiguratorAnimation provides the visual effects for
+// DisplayAnimator provides the visual effects for
 // ui::DisplayConfigurator, such like fade-out/in during changing
 // the display mode.
-class ASH_EXPORT DisplayConfiguratorAnimation
-    : public ui::DisplayConfigurator::Observer {
+class ASH_EXPORT DisplayAnimator : public ui::DisplayConfigurator::Observer {
  public:
-  DisplayConfiguratorAnimation();
-  ~DisplayConfiguratorAnimation() override;
+  DisplayAnimator();
+  ~DisplayAnimator() override;
 
   // Starts the fade-out animation for the all root windows.  It will
   // call |callback| once all of the animations have finished.
@@ -58,11 +57,11 @@ class ASH_EXPORT DisplayConfiguratorAnimation
 
   std::map<aura::Window*, ui::Layer*> hiding_layers_;
   scoped_ptr<base::OneShotTimer> timer_;
-  base::WeakPtrFactory<DisplayConfiguratorAnimation> weak_ptr_factory_;
+  base::WeakPtrFactory<DisplayAnimator> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DisplayConfiguratorAnimation);
+  DISALLOW_COPY_AND_ASSIGN(DisplayAnimator);
 };
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_DISPLAY_CONFIGURATION_CONTROLLER_H_
+#endif  // ASH_DISPLAY_DISPLAY_ANIMATOR_H_

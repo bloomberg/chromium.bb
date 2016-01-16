@@ -43,7 +43,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/display_configurator_animation.h"
+#include "ash/display/display_animator.h"
 #include "base/sys_info.h"
 #endif
 
@@ -948,9 +948,8 @@ void DisplayManager::SetMirrorMode(bool mirror) {
   multi_display_mode_ =
       mirror ? MIRRORING : current_default_multi_display_mode_;
   ReconfigureDisplays();
-  if (Shell::GetInstance()->display_configurator_animation()) {
-    Shell::GetInstance()->display_configurator_animation()->
-        StartFadeInAnimation();
+  if (Shell::GetInstance()->display_animator()) {
+    Shell::GetInstance()->display_animator()->StartFadeInAnimation();
   }
   RunPendingTasksForTest();
 #endif

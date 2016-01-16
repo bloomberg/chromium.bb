@@ -128,7 +128,7 @@ void AshTestHelper::SetUp(bool start_session) {
   }
 
   test::DisplayManagerTestApi().DisableChangeDisplayUponHostResize();
-  ShellTestApi(shell).DisableDisplayConfiguratorAnimation();
+  ShellTestApi(shell).DisableDisplayAnimator();
 
   test_screenshot_delegate_ = new TestScreenshotDelegate();
   shell->accelerator_controller()->SetScreenshotDelegate(

@@ -10,7 +10,7 @@
 #include "ash/shell.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/display_configurator_animation.h"
+#include "ash/display/display_animator.h"
 #include "ui/display/chromeos/display_configurator.h"
 #endif
 
@@ -51,12 +51,12 @@ AppListController* ShellTestApi::app_list_controller() {
   return shell_->app_list_controller_.get();
 }
 
-void ShellTestApi::DisableDisplayConfiguratorAnimation() {
+void ShellTestApi::DisableDisplayAnimator() {
 #if defined(OS_CHROMEOS)
-  if (shell_->display_configurator_animation_) {
+  if (shell_->display_animator_) {
     shell_->display_configurator_->RemoveObserver(
-        shell_->display_configurator_animation_.get());
-    shell_->display_configurator_animation_.reset();
+        shell_->display_animator_.get());
+    shell_->display_animator_.reset();
   }
 #endif  // defined(OS_CHROMEOS)
 }

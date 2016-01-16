@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_configurator_animation.h"
+#include "ash/display/display_animator.h"
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -28,9 +28,7 @@ const int kFadingTimeoutDurationInSeconds = 10;
 class CallbackRunningObserver {
  public:
   CallbackRunningObserver(base::Closure callback)
-      : completed_counter_(0),
-        animation_aborted_(false),
-        callback_(callback) {}
+      : completed_counter_(0), animation_aborted_(false), callback_(callback) {}
 
   void AddNewAnimator(ui::LayerAnimator* animator) {
     Observer* observer = new Observer(animator, this);
@@ -56,10 +54,8 @@ class CallbackRunningObserver {
   // The actual observer to listen each animation completion.
   class Observer : public ui::LayerAnimationObserver {
    public:
-    Observer(ui::LayerAnimator* animator,
-             CallbackRunningObserver* observer)
-        : animator_(animator),
-          observer_(observer) {}
+    Observer(ui::LayerAnimator* animator, CallbackRunningObserver* observer)
+        : animator_(animator), observer_(observer) {}
 
    protected:
     // ui::LayerAnimationObserver overrides:
@@ -95,16 +91,13 @@ class CallbackRunningObserver {
 
 }  // namespace
 
-DisplayConfiguratorAnimation::DisplayConfiguratorAnimation()
-    : weak_ptr_factory_(this) {
-}
+DisplayAnimator::DisplayAnimator() : weak_ptr_factory_(this) {}
 
-DisplayConfiguratorAnimation::~DisplayConfiguratorAnimation() {
+DisplayAnimator::~DisplayAnimator() {
   ClearHidingLayers();
 }
 
-void DisplayConfiguratorAnimation::StartFadeOutAnimation(
-    base::Closure callback) {
+void DisplayAnimator::StartFadeOutAnimation(base::Closure callback) {
   CallbackRunningObserver* observer = new CallbackRunningObserver(callback);
   ClearHidingLayers();
 
@@ -112,24 +105,20 @@ void DisplayConfiguratorAnimation::StartFadeOutAnimation(
   // hiding the root windows, we put a black layer over a root window for
   // safety.  These layers remain to hide root windows and will be deleted
   // after the animation of OnDisplayModeChanged().
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it) {
-    aura::Window* root_window = *it;
+  for (aura::Window* root_window : Shell::GetInstance()->GetAllRootWindows()) {
     ui::Layer* hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
     hiding_layer->SetBounds(root_window->bounds());
-    ui::Layer* parent =
-        ash::Shell::GetContainer(root_window,
-                                 ash::kShellWindowId_OverlayContainer)->layer();
+    ui::Layer* parent = ash::Shell::GetContainer(
+                            root_window, ash::kShellWindowId_OverlayContainer)
+                            ->layer();
     parent->Add(hiding_layer);
 
     hiding_layer->SetOpacity(0.0);
 
     ui::ScopedLayerAnimationSettings settings(hiding_layer->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kFadingAnimationDurationInMS));
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kFadingAnimationDurationInMS));
     observer->AddNewAnimator(hiding_layer->GetAnimator());
     hiding_layer->SetOpacity(1.0f);
     hiding_layer->SetVisible(true);
@@ -142,23 +131,20 @@ void DisplayConfiguratorAnimation::StartFadeOutAnimation(
   timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kFadingTimeoutDurationInSeconds),
-                this,
-                &DisplayConfiguratorAnimation::ClearHidingLayers);
+                this, &DisplayAnimator::ClearHidingLayers);
 }
 
-void DisplayConfiguratorAnimation::StartFadeInAnimation() {
+void DisplayAnimator::StartFadeInAnimation() {
   // We want to make sure clearing all of hiding layers after the animation
   // finished.  Note that this callback can be canceled, but the cancel only
   // happens when the next animation is scheduled.  Thus the hiding layers
   // should be deleted eventually.
-  CallbackRunningObserver* observer = new CallbackRunningObserver(
-      base::Bind(&DisplayConfiguratorAnimation::ClearHidingLayers,
-                 weak_ptr_factory_.GetWeakPtr()));
+  CallbackRunningObserver* observer = new CallbackRunningObserver(base::Bind(
+      &DisplayAnimator::ClearHidingLayers, weak_ptr_factory_.GetWeakPtr()));
 
   // Ensure that layers are not animating.
-  for (std::map<aura::Window*, ui::Layer*>::iterator it =
-           hiding_layers_.begin(); it != hiding_layers_.end(); ++it) {
-    ui::LayerAnimator* animator = it->second->GetAnimator();
+  for (std::map<aura::Window*, ui::Layer*>::value_type& e : hiding_layers_) {
+    ui::LayerAnimator* animator = e.second->GetAnimator();
     if (animator->is_animating())
       animator->StopAnimating();
   }
@@ -166,12 +152,8 @@ void DisplayConfiguratorAnimation::StartFadeInAnimation() {
   // Schedules the fade-in effect for all root windows.  Because we put the
   // black layers for fade-out, here we actually turn those black layers
   // invisible.
-  aura::Window::Windows root_windows =
-      Shell::GetInstance()->GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator it = root_windows.begin();
-       it != root_windows.end(); ++it) {
-    aura::Window* root_window = *it;
-    ui::Layer* hiding_layer = NULL;
+  for (aura::Window* root_window : Shell::GetInstance()->GetAllRootWindows()) {
+    ui::Layer* hiding_layer = nullptr;
     if (hiding_layers_.find(root_window) == hiding_layers_.end()) {
       // In case of the transition from mirroring->non-mirroring, new root
       // windows appear and we do not have the black layers for them.  Thus
@@ -179,9 +161,9 @@ void DisplayConfiguratorAnimation::StartFadeInAnimation() {
       hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
       hiding_layer->SetColor(SK_ColorBLACK);
       hiding_layer->SetBounds(root_window->bounds());
-      ui::Layer* parent =
-          ash::Shell::GetContainer(
-              root_window, ash::kShellWindowId_OverlayContainer)->layer();
+      ui::Layer* parent = ash::Shell::GetContainer(
+                              root_window, ash::kShellWindowId_OverlayContainer)
+                              ->layer();
       parent->Add(hiding_layer);
       hiding_layer->SetOpacity(1.0f);
       hiding_layer->SetVisible(true);
@@ -193,34 +175,34 @@ void DisplayConfiguratorAnimation::StartFadeInAnimation() {
     }
 
     ui::ScopedLayerAnimationSettings settings(hiding_layer->GetAnimator());
-    settings.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        kFadingAnimationDurationInMS));
+    settings.SetTransitionDuration(
+        base::TimeDelta::FromMilliseconds(kFadingAnimationDurationInMS));
     observer->AddNewAnimator(hiding_layer->GetAnimator());
     hiding_layer->SetOpacity(0.0f);
     hiding_layer->SetVisible(false);
   }
 }
 
-void DisplayConfiguratorAnimation::OnDisplayModeChanged(
+void DisplayAnimator::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void DisplayConfiguratorAnimation::OnDisplayModeChangeFailed(
+void DisplayAnimator::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void DisplayConfiguratorAnimation::ClearHidingLayers() {
+void DisplayAnimator::ClearHidingLayers() {
   if (timer_) {
     timer_->Stop();
     timer_.reset();
   }
-  STLDeleteContainerPairSecondPointers(
-      hiding_layers_.begin(), hiding_layers_.end());
+  STLDeleteContainerPairSecondPointers(hiding_layers_.begin(),
+                                       hiding_layers_.end());
   hiding_layers_.clear();
 }
 

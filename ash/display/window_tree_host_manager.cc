@@ -49,7 +49,7 @@
 #include "ui/wm/public/activation_client.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/display_configurator_animation.h"
+#include "ash/display/display_animator.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
 #endif  // defined(OS_CHROMEOS)
@@ -438,8 +438,7 @@ void WindowTreeHostManager::ToggleMirrorMode() {
   }
 #if defined(OS_CHROMEOS)
   Shell* shell = Shell::GetInstance();
-  DisplayConfiguratorAnimation* animation =
-      shell->display_configurator_animation();
+  DisplayAnimator* animation = shell->display_animator();
   animation->StartFadeOutAnimation(base::Bind(
       &WindowTreeHostManager::SetMirrorModeAfterAnimation,
       weak_ptr_factory_.GetWeakPtr(), !display_manager->IsInMirrorMode()));
@@ -455,8 +454,7 @@ void WindowTreeHostManager::SwapPrimaryDisplay() {
 
   if (Shell::GetScreen()->GetNumDisplays() > 1) {
 #if defined(OS_CHROMEOS)
-    DisplayConfiguratorAnimation* animation =
-        Shell::GetInstance()->display_configurator_animation();
+    DisplayAnimator* animation = Shell::GetInstance()->display_animator();
     if (animation) {
       animation->StartFadeOutAnimation(
           base::Bind(&WindowTreeHostManager::OnFadeOutForSwapDisplayFinished,
@@ -924,9 +922,7 @@ AshWindowTreeHost* WindowTreeHostManager::AddWindowTreeHostForDisplay(
 void WindowTreeHostManager::OnFadeOutForSwapDisplayFinished() {
 #if defined(OS_CHROMEOS)
   SetPrimaryDisplay(ScreenUtil::GetSecondaryDisplay());
-  Shell::GetInstance()
-      ->display_configurator_animation()
-      ->StartFadeInAnimation();
+  Shell::GetInstance()->display_animator()->StartFadeInAnimation();
 #endif
 }
 

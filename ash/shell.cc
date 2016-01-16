@@ -120,9 +120,9 @@
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
 #include "ash/ash_constants.h"
+#include "ash/display/display_animator.h"
 #include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_color_manager_chromeos.h"
-#include "ash/display/display_configurator_animation.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/projecting_observer_chromeos.h"
 #include "ash/display/resolution_notification_controller.h"
@@ -814,9 +814,8 @@ Shell::~Shell() {
   display_color_manager_.reset();
   if (display_change_observer_)
     display_configurator_->RemoveObserver(display_change_observer_.get());
-  if (display_configurator_animation_)
-    display_configurator_->RemoveObserver(
-        display_configurator_animation_.get());
+  if (display_animator_)
+    display_configurator_->RemoveObserver(display_animator_.get());
   if (display_error_observer_)
     display_configurator_->RemoveObserver(display_error_observer_.get());
   if (projecting_observer_) {
@@ -840,8 +839,8 @@ void Shell::Init(const ShellInitParams& init_params) {
   bool display_initialized = display_manager_->InitFromCommandLine();
 #if defined(OS_CHROMEOS)
   display_configurator_->Init(!gpu_support_->IsPanelFittingDisabled());
-  display_configurator_animation_.reset(new DisplayConfiguratorAnimation());
-  display_configurator_->AddObserver(display_configurator_animation_.get());
+  display_animator_.reset(new DisplayAnimator());
+  display_configurator_->AddObserver(display_animator_.get());
 
   // The DBusThreadManager must outlive this Shell. See the DCHECK in ~Shell.
   chromeos::DBusThreadManager* dbus_thread_manager =

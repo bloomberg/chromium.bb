@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "ash/display/display_configurator_animation.h"
+#include "ash/display/display_animator.h"
 #include "ash/display/display_manager.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -350,8 +350,7 @@ void DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished(
     int position, int offset) {
   SetCurrentDisplayLayout(
       ash::DisplayLayout::FromInts(position, offset));
-  ash::Shell::GetInstance()->display_configurator_animation()->
-      StartFadeInAnimation();
+  ash::Shell::GetInstance()->display_animator()->StartFadeInAnimation();
 }
 
 void DisplayOptionsHandler::HandleDisplayInfo(
@@ -365,11 +364,9 @@ void DisplayOptionsHandler::HandleMirroring(const base::ListValue* args) {
       base::UserMetricsAction("Options_DisplayToggleMirroring"));
   bool is_mirroring = false;
   args->GetBoolean(0, &is_mirroring);
-  ash::Shell::GetInstance()->display_configurator_animation()->
-      StartFadeOutAnimation(base::Bind(
-          &DisplayOptionsHandler::OnFadeOutForMirroringFinished,
-          base::Unretained(this),
-          is_mirroring));
+  ash::Shell::GetInstance()->display_animator()->StartFadeOutAnimation(
+      base::Bind(&DisplayOptionsHandler::OnFadeOutForMirroringFinished,
+                 base::Unretained(this), is_mirroring));
 }
 
 void DisplayOptionsHandler::HandleSetPrimary(const base::ListValue* args) {
@@ -394,12 +391,10 @@ void DisplayOptionsHandler::HandleDisplayLayout(const base::ListValue* args) {
   DCHECK_LE(ash::DisplayLayout::TOP, layout);
   DCHECK_GE(ash::DisplayLayout::LEFT, layout);
   content::RecordAction(base::UserMetricsAction("Options_DisplayRearrange"));
-  ash::Shell::GetInstance()->display_configurator_animation()->
-      StartFadeOutAnimation(base::Bind(
-          &DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished,
-          base::Unretained(this),
-          static_cast<int>(layout),
-          static_cast<int>(offset)));
+  ash::Shell::GetInstance()->display_animator()->StartFadeOutAnimation(
+      base::Bind(&DisplayOptionsHandler::OnFadeOutForDisplayLayoutFinished,
+                 base::Unretained(this), static_cast<int>(layout),
+                 static_cast<int>(offset)));
 }
 
 void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
