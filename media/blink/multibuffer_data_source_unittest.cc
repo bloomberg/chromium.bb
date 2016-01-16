@@ -201,9 +201,6 @@ class MockMultibufferDataSource : public MultibufferDataSource {
   // Whether the resource is downloading or deferred.
   bool downloading_;
 
-  // Whether the resource load has starting loading but yet to been cancelled.
-  bool loading_;
-
   DISALLOW_COPY_AND_ASSIGN(MockMultibufferDataSource);
 };
 

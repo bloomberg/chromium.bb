@@ -23,7 +23,7 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
   static devtools_http_handler::DevToolsHttpHandler* CreateHttpHandler(
       BrowserContext* browser_context);
 
-  explicit ShellDevToolsManagerDelegate(BrowserContext* browser_context);
+  ShellDevToolsManagerDelegate();
   ~ShellDevToolsManagerDelegate() override;
 
   // DevToolsManagerDelegate implementation.
@@ -35,8 +35,6 @@ class ShellDevToolsManagerDelegate : public DevToolsManagerDelegate {
                                        base::DictionaryValue* command) override;
 
  private:
-  BrowserContext* browser_context_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsManagerDelegate);
 };
 

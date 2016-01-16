@@ -34,7 +34,6 @@ class FakeMessageCenterTrayDelegate : public MessageCenterTrayDelegate {
  private:
   scoped_ptr<MessageCenterTray> tray_;
   base::Closure quit_closure_;
-  bool displayed_first_run_balloon_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeMessageCenterTrayDelegate);
 };

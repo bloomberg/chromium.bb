@@ -161,13 +161,10 @@ class ShellDevToolsDelegate :
       HandleWebSocketConnection(const std::string& path) override;
 
  private:
-  BrowserContext* browser_context_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsDelegate);
 };
 
-ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+ShellDevToolsDelegate::ShellDevToolsDelegate(BrowserContext* browser_context) {
   devtools_discovery::DevToolsDiscoveryManager::GetInstance()->
       SetCreateCallback(base::Bind(&CreateNewShellTarget,
                                    base::Unretained(browser_context)));
@@ -224,9 +221,7 @@ ShellDevToolsManagerDelegate::CreateHttpHandler(
       GetShellUserAgent());
 }
 
-ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate(
-    BrowserContext* browser_context)
-    : browser_context_(browser_context) {
+ShellDevToolsManagerDelegate::ShellDevToolsManagerDelegate() {
 }
 
 ShellDevToolsManagerDelegate::~ShellDevToolsManagerDelegate() {

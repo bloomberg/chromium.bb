@@ -101,7 +101,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
                                      base::Bind(&MockCallback)),
         message_loop_runner_(runner),
         use_validation_(false),
-        sign_in_user_index_(0U),
         weak_ptr_factory_(this) {
     Profile* profile =
         Profile::FromBrowserContext(contents->GetBrowserContext());
@@ -199,9 +198,6 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   // A list of notifications to show in the notification area of the dialog.
   // This is used to control what |CurrentNotifications()| returns for testing.
   std::vector<DialogNotification> notifications_;
-
-  // The user index that is assigned in IsSignInContinueUrl().
-  size_t sign_in_user_index_;
 
   // Allows generation of WeakPtrs, so controller liveness can be tested.
   base::WeakPtrFactory<TestAutofillDialogController> weak_ptr_factory_;

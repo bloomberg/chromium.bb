@@ -276,8 +276,6 @@ class RemoteCommandsServiceTest : public testing::Test {
   scoped_refptr<ScopedMockTimeTaskRunner> task_runner_;
 
  private:
-  bool service_started_ = false;
-
   base::ThreadTaskRunnerHandle runner_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCommandsServiceTest);

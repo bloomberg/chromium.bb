@@ -200,7 +200,6 @@ class BlinkTestRunner : public RenderViewObserver,
   bool focus_on_next_commit_;
 
   scoped_ptr<LeakDetector> leak_detector_;
-  bool needs_leak_detector_;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };

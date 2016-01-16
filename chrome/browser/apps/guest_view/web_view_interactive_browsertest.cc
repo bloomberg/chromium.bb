@@ -369,7 +369,6 @@ class WebViewInteractiveTest
     size_t initial_widget_count_;
     content::RenderWidgetHost* last_render_widget_host_;
     scoped_refptr<content::MessageLoopRunner> message_loop_;
-    bool seen_new_widget_;
 
     DISALLOW_COPY_AND_ASSIGN(PopupCreatedObserver);
   };

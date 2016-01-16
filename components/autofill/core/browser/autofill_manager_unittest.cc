@@ -479,7 +479,6 @@ class TestAutofillManager : public AutofillManager {
         autofill_enabled_(true),
         credit_card_upload_enabled_(false),
         credit_card_was_uploaded_(false),
-        expect_all_unknown_possible_types_(false),
         expected_observed_submission_(true) {
     set_payments_client(
         new TestPaymentsClient(driver->GetURLRequestContext(), this));
@@ -605,7 +604,6 @@ class TestAutofillManager : public AutofillManager {
   bool autofill_enabled_;
   bool credit_card_upload_enabled_;
   bool credit_card_was_uploaded_;
-  bool expect_all_unknown_possible_types_;
   bool expected_observed_submission_;
 
   scoped_ptr<base::RunLoop> run_loop_;

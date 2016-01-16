@@ -58,9 +58,7 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
                            public drive::FakeDriveService::ChangeObserver {
  public:
   SyncFileSystemTest()
-      : fake_drive_service_(NULL),
-        local_service_(NULL),
-        remote_service_(NULL) {
+      : remote_service_(NULL) {
   }
 
   void SetUpInProcessBrowserTestFixture() override {
@@ -156,8 +154,6 @@ class SyncFileSystemTest : public extensions::PlatformAppBrowserTest,
 
   scoped_ptr<FakeSigninManagerForTesting> fake_signin_manager_;
 
-  drive::FakeDriveService* fake_drive_service_;
-  LocalFileSyncService* local_service_;
   drive_backend::SyncEngine* remote_service_;
 
   int64_t real_minimum_preserved_space_;
