@@ -14,7 +14,7 @@ MessageInTransitQueue::MessageInTransitQueue() {
 
 MessageInTransitQueue::~MessageInTransitQueue() {
   if (!IsEmpty()) {
-    LOG(WARNING) << "Destroying nonempty message queue";
+    DVLOG(1) << "Destroying nonempty message queue";
     Clear();
   }
 }
