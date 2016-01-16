@@ -38,7 +38,7 @@ class TimelineController(object):
     for delay in page.GetSyntheticDelayCategories():
       config.tracing_category_filter.AddSyntheticDelay(delay)
     config.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config)
+    tab.browser.platform.tracing_controller.StartTracing(config)
 
   def Start(self, tab):
     # Start the smooth marker for all actions.
@@ -53,7 +53,7 @@ class TimelineController(object):
     if self._enable_auto_issuing_record:
       self._interaction.End()
     # Stop tracing.
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     results.AddValue(trace.TraceValue(
         results.current_page, timeline_data))
     self._model = TimelineModel(timeline_data)
@@ -89,7 +89,7 @@ class TimelineController(object):
 
   def CleanUp(self, platform):
     if platform.tracing_controller.is_tracing_running:
-      platform.tracing_controller.Stop()
+      platform.tracing_controller.StopTracing()
 
   @property
   def model(self):

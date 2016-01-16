@@ -44,7 +44,7 @@ class ImageDecoding(page_test.PageTest):
     for c in [ 'blink', 'devtools.timeline', 'webkit.console', 'blink.console']:
       config.tracing_category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config)
+    tab.browser.platform.tracing_controller.StartTracing(config)
 
   def StopBrowserAfterPage(self, browser, page):
     return not browser.tabs[0].ExecuteJavaScript("""
@@ -54,7 +54,7 @@ class ImageDecoding(page_test.PageTest):
     """)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = model.TimelineModel(timeline_data)
     self._power_metric.Stop(page, tab)
     self._power_metric.AddResults(tab, results)
@@ -93,4 +93,4 @@ class ImageDecoding(page_test.PageTest):
   def DidRunPage(self, platform):
     self._power_metric.Close()
     if platform.tracing_controller.is_tracing_running:
-      platform.tracing_controller.Stop()
+      platform.tracing_controller.StopTracing()

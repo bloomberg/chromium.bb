@@ -27,18 +27,18 @@ class V8GCTimes(page_test.PageTest):
     for category in self._CATEGORIES:
       config.tracing_category_filter.AddIncludedCategory(category)
     config.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(
+    tab.browser.platform.tracing_controller.StartTracing(
         config, self._TIME_OUT_IN_SECONDS)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    trace_data = tab.browser.platform.tracing_controller.Stop()
+    trace_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(trace_data)
     renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)
     self._AddV8MetricsToResults(renderer_process, results)
 
   def DidRunPage(self, platform):
     if platform.tracing_controller.is_tracing_running:
-      platform.tracing_controller.Stop()
+      platform.tracing_controller.StopTracing()
 
   def _AddV8MetricsToResults(self, process, results):
     if process is None:

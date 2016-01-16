@@ -46,11 +46,11 @@ class TaskExecutionTime(page_test.PageTest):
       config.tracing_category_filter.AddIncludedCategory(category)
     config.enable_chrome_trace = True
 
-    tab.browser.platform.tracing_controller.Start(
+    tab.browser.platform.tracing_controller.StartTracing(
         config, self._TIME_OUT_IN_SECONDS)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    trace_data = tab.browser.platform.tracing_controller.Stop()
+    trace_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(trace_data)
 
     self._renderer_process = timeline_model.GetRendererProcessFromTabId(tab.id)

@@ -141,10 +141,10 @@ class _OilpanGCTimesBase(page_test.PageTest):
     for c in ['webkit.console', 'blink.console', 'blink_gc']:
       config.tracing_category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config, timeout=1000)
+    tab.browser.platform.tracing_controller.StartTracing(config, timeout=1000)
 
   def ValidateAndMeasurePage(self, page, tab, results):
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = TimelineModel(timeline_data)
     threads = timeline_model.GetAllThreads()
     for thread in threads:
@@ -153,7 +153,7 @@ class _OilpanGCTimesBase(page_test.PageTest):
 
   def DidRunPage(self, platform):
     if platform.tracing_controller.is_tracing_running:
-      platform.tracing_controller.Stop()
+      platform.tracing_controller.StopTracing()
 
 
 class OilpanGCTimesForSmoothness(_OilpanGCTimesBase):

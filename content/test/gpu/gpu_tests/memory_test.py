@@ -64,7 +64,7 @@ test_harness_script = r"""
 
 class MemoryValidator(gpu_test_base.ValidatorBase):
   def ValidateAndMeasurePage(self, page, tab, results):
-    timeline_data = tab.browser.platform.tracing_controller.Stop()
+    timeline_data = tab.browser.platform.tracing_controller.StopTracing()
     timeline_model = model.TimelineModel(timeline_data)
     for process in timeline_model.GetAllProcesses():
       if 'gpu.GpuMemoryUsage' in process.counters:
@@ -89,7 +89,7 @@ class MemoryValidator(gpu_test_base.ValidatorBase):
     for c in ['webkit.console', 'blink.console', 'gpu']:
       config.tracing_category_filter.AddIncludedCategory(c)
     config.enable_chrome_trace = True
-    tab.browser.platform.tracing_controller.Start(config, 60)
+    tab.browser.platform.tracing_controller.StartTracing(config, 60)
 
   def _FormatException(self, low_or_high, mb_used):
     return 'Memory allocation too %s (was %d MB, should be %d MB +/- %d MB)' % (

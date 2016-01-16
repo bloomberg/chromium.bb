@@ -19,7 +19,7 @@ import mock
 class FakeTracingController(object):
   def __init__(self):
     self.config = None
-  def Start(self, config):
+  def StartTracing(self, config):
     self.config = config
 
   def IsChromeTracingSupported(self):
