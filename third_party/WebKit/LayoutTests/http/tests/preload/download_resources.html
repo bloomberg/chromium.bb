@@ -10,26 +10,10 @@
 <link rel=preload href="../resources/square.png?background" as=image>
 <link rel=preload href="../resources/Ahem.ttf" as=font crossorigin>
 <script src="../resources/slow-script.pl?delay=200"></script>
-<style>
-    #background {
-        width: 200px;
-        height: 200px;
-        background-image: url(../resources/square.png?background);
-    }
-    @font-face {
-      font-family:ahem;
-      src: url(../resources/Ahem.ttf);
-    }
-    span { font-family: ahem, Arial; }
-</style>
-<link rel="stylesheet" href="../resources/dummy.css">
-<script src="../resources/dummy.js"></script>
-<div id="background"></div>
-<img src="../resources/square.png">
 <script>
     window.addEventListener("load", t.step_func(function() {
         assert_equals(performance.getEntriesByType("resource").length, 8);
         t.done();
     }));
 </script>
-<span>PASS - this text is here just so that the browser will download the font.</span
+
