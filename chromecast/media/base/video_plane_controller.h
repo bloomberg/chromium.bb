@@ -59,6 +59,20 @@ class VideoPlaneController {
   // no-op.
   void SetGraphicsPlaneResolution(const Size& resolution);
 
+  // After Pause is called, no further calls to VideoPlane::SetGeometry will be
+  // made except for any pending calls already scheduled on the media thread.
+  // The Set methods will however update cached parameters that will take
+  // effect once the class is resumed. Safe to call multiple times.
+  // TODO(esum): Handle the case where there are pending calls already on the
+  // media thread. When this returns, the caller needs to know that absolutely
+  // no more SetGeometry calls will be made.
+  void Pause();
+  // Makes class active again. Also resets the video plane by posting a call to
+  // VideoPlane::SetGeometry with most recent resolution and geometry parameters
+  // (assuming they are all set). Safe to call multiple times.
+  void Resume();
+  bool is_paused() const;
+
  private:
   class RateLimitedSetVideoPlaneGeometry;
   friend struct base::DefaultSingletonTraits<VideoPlaneController>;
@@ -73,6 +87,8 @@ class VideoPlaneController {
   // Checks if all data has been collected to make calls to
   // VideoPlane::SetGeometry.
   bool HaveDataForSetGeometry() const;
+
+  bool is_paused_;
 
   // Current resolutions
   bool have_output_res_;

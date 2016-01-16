@@ -10,9 +10,9 @@ void CastResource::SetCastResourceClient(Client* client) {
   client_ = client;
 }
 
-void CastResource::NotifyResourceAcquired() {
+void CastResource::RegisterWithClient() {
   if (client_)
-    client_->OnResourceAcquired(this);
+    client_->RegisterCastResource(this);
 }
 
 void CastResource::NotifyResourceReleased(Resource remain) {

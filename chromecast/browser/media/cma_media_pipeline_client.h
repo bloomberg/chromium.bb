@@ -32,6 +32,7 @@ class CmaMediaPipelineClient : public base::RefCounted<CmaMediaPipelineClient>,
   virtual void OnMediaPipelineBackendDestroyed();
 
   // cast::CastResource implementation:
+  void AcquireResource(CastResource::Resource resource) override;
   void ReleaseResource(CastResource::Resource resource) override;
 
  protected:

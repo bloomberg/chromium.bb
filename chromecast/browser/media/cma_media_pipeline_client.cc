@@ -25,7 +25,7 @@ void CmaMediaPipelineClient::OnMediaPipelineBackendCreated() {
   media_pipeline_count_++;
 
   if (media_pipeline_count_ == 1)
-    NotifyResourceAcquired();
+    CastResource::RegisterWithClient();
 }
 
 void CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed() {
@@ -35,6 +35,8 @@ void CmaMediaPipelineClient::OnMediaPipelineBackendDestroyed() {
   if (media_pipeline_count_ == 0)
     NotifyResourceReleased(CastResource::kResourceNone);
 }
+
+void CmaMediaPipelineClient::AcquireResource(CastResource::Resource resource) {}
 
 void CmaMediaPipelineClient::ReleaseResource(CastResource::Resource resource) {
   CastResource::Resource audio_video_resource =

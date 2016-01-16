@@ -206,8 +206,27 @@ void VideoPlaneController::SetGraphicsPlaneResolution(const Size& resolution) {
   MaybeRunSetGeometry();
 }
 
+void VideoPlaneController::Pause() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "Pausing controller. No more VideoPlane SetGeometry calls.";
+  is_paused_ = true;
+}
+
+void VideoPlaneController::Resume() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  VLOG(1) << "Resuming controller. VideoPlane SetGeometry calls are active.";
+  is_paused_ = false;
+  MaybeRunSetGeometry();
+}
+
+bool VideoPlaneController::is_paused() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return is_paused_;
+}
+
 VideoPlaneController::VideoPlaneController()
-    : have_output_res_(false),
+    : is_paused_(false),
+      have_output_res_(false),
       have_graphics_res_(false),
       output_res_(0, 0),
       graphics_res_(0, 0),
@@ -222,8 +241,15 @@ VideoPlaneController::~VideoPlaneController() {}
 
 void VideoPlaneController::MaybeRunSetGeometry() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!HaveDataForSetGeometry())
+  if (is_paused_) {
+    VLOG(2) << "All VideoPlane SetGeometry calls are paused. Ignoring request.";
     return;
+  }
+
+  if (!HaveDataForSetGeometry()) {
+    VLOG(2) << "Don't have all VideoPlane SetGeometry data. Ignoring request.";
+    return;
+  }
 
   DCHECK(graphics_res_.width != 0 && graphics_res_.height != 0);
 
