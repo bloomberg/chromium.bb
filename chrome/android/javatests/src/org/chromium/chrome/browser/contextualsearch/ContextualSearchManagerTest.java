@@ -1380,11 +1380,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /*
      * Test that tapping on the Search Bar before having a resolved search term does not
      * promote to a tab, and that after the resolution it does promote to a tab.
+     *
+     * Re-enable the test after fixing http://crbug.com/578334.
+     * @SmallTest
+     * @Feature({"ContextualSearch"})
      */
-    @SmallTest
-    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
+    @FlakyTest
     public void testTapSearchBarPromotesToTab() throws InterruptedException, TimeoutException {
         // Tap on a word when the server is slow to resolve.
         simulateSlowResolveSearch("search");
