@@ -51,6 +51,7 @@ PassOwnPtrWillBeRawPtr<AutoscrollController> AutoscrollController::create(Page& 
 AutoscrollController::AutoscrollController(Page& page)
     : m_page(&page)
     , m_autoscrollLayoutObject(nullptr)
+    , m_pressedLayoutObject(nullptr)
     , m_autoscrollType(NoAutoscroll)
     , m_dragAndDropAutoscrollStartTime(0)
 {
@@ -81,6 +82,8 @@ void AutoscrollController::startAutoscrollForSelection(LayoutObject* layoutObjec
         scrollable = layoutObject->isListBox() ? toLayoutListBox(layoutObject) : nullptr;
     if (!scrollable)
         return;
+
+    m_pressedLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
     m_autoscrollType = AutoscrollForSelection;
     m_autoscrollLayoutObject = scrollable;
     startAutoscroll();
@@ -88,13 +91,16 @@ void AutoscrollController::startAutoscrollForSelection(LayoutObject* layoutObjec
 
 void AutoscrollController::stopAutoscroll()
 {
+    if (m_pressedLayoutObject) {
+        m_pressedLayoutObject->stopAutoscroll();
+        m_pressedLayoutObject = nullptr;
+    }
     LayoutBox* scrollable = m_autoscrollLayoutObject;
     m_autoscrollLayoutObject = nullptr;
 
     if (!scrollable)
         return;
 
-    scrollable->stopAutoscroll();
 #if OS(WIN)
     if (panScrollInProgress()) {
         if (FrameView* view = scrollable->frame()->view()) {
@@ -108,6 +114,9 @@ void AutoscrollController::stopAutoscroll()
 
 void AutoscrollController::stopAutoscrollIfNeeded(LayoutObject* layoutObject)
 {
+    if (m_pressedLayoutObject == layoutObject)
+        m_pressedLayoutObject = nullptr;
+
     if (m_autoscrollLayoutObject != layoutObject)
         return;
     m_autoscrollLayoutObject = nullptr;
@@ -133,7 +142,7 @@ void AutoscrollController::updateAutoscrollLayoutObject()
 
     LayoutBox* autoscrollLayoutObject = layoutObject && layoutObject->isBox() ? toLayoutBox(layoutObject) : nullptr;
     if (m_autoscrollLayoutObject && !autoscrollLayoutObject)
-        stopAutoscrollIfNeeded(m_autoscrollLayoutObject);
+        m_autoscrollType = NoAutoscroll;
 
     m_autoscrollLayoutObject = autoscrollLayoutObject;
 }

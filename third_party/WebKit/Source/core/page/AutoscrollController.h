@@ -85,6 +85,7 @@ private:
 
     RawPtrWillBeMember<Page> m_page;
     LayoutBox* m_autoscrollLayoutObject;
+    LayoutBox* m_pressedLayoutObject;
     AutoscrollType m_autoscrollType;
     IntPoint m_dragAndDropAutoscrollReferencePosition;
     double m_dragAndDropAutoscrollStartTime;
