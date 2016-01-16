@@ -5,6 +5,7 @@
 #include "cc/layers/layer_proto_converter.h"
 
 #include "cc/layers/empty_content_layer_client.h"
+#include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/layers/picture_layer.h"
@@ -401,6 +402,38 @@ TEST_F(LayerProtoConverterTest, PictureLayerTypeDeserialization) {
   proto::LayerNode layer_node;
   new_root->SetTypeForProtoSerialization(&layer_node);
   EXPECT_EQ(proto::LayerType::PICTURE_LAYER, layer_node.type());
+}
+
+TEST_F(LayerProtoConverterTest, HudLayerTypeSerialization) {
+  // Make sure that PictureLayers serialize to the
+  // proto::LayerType::HEADS_UP_DISPLAY_LAYER type.
+  scoped_refptr<HeadsUpDisplayLayer> layer =
+      HeadsUpDisplayLayer::Create(LayerSettings());
+
+  proto::LayerNode layer_hierarchy;
+  LayerProtoConverter::SerializeLayerHierarchy(layer.get(), &layer_hierarchy);
+  EXPECT_EQ(proto::LayerType::HEADS_UP_DISPLAY_LAYER, layer_hierarchy.type());
+}
+
+TEST_F(LayerProtoConverterTest, HudLayerTypeDeserialization) {
+  // Make sure that proto::LayerType::HEADS_UP_DISPLAY_LAYER ends up building a
+  // HeadsUpDisplayLayer.
+  scoped_refptr<Layer> old_root = HeadsUpDisplayLayer::Create(LayerSettings());
+  proto::LayerNode root_node;
+  root_node.set_id(old_root->id());
+  root_node.set_type(proto::LayerType::HEADS_UP_DISPLAY_LAYER);
+
+  scoped_refptr<Layer> new_root =
+      LayerProtoConverter::DeserializeLayerHierarchy(old_root, root_node);
+
+  // Validate that the ids are equal.
+  EXPECT_EQ(old_root->id(), new_root->id());
+
+  // Check that the layer type is equal by using the type this layer would
+  // serialize to.
+  proto::LayerNode layer_node;
+  new_root->SetTypeForProtoSerialization(&layer_node);
+  EXPECT_EQ(proto::LayerType::HEADS_UP_DISPLAY_LAYER, layer_node.type());
 }
 
 }  // namespace

@@ -26,6 +26,7 @@ enum LayerType {
   UNKNOWN = 0;
   LAYER = 1;
   PICTURE_LAYER = 2;
+  HEADS_UP_DISPLAY_LAYER = 3;
 
   // TODO(nyquist): Add the rest of the necessary LayerTypes.
 };

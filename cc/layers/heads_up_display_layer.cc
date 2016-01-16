@@ -8,6 +8,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "cc/layers/heads_up_display_layer_impl.h"
+#include "cc/proto/layer.pb.h"
 #include "cc/trees/layer_tree_host.h"
 
 namespace cc {
@@ -59,6 +60,11 @@ bool HeadsUpDisplayLayer::HasDrawableContent() const {
 scoped_ptr<LayerImpl> HeadsUpDisplayLayer::CreateLayerImpl(
     LayerTreeImpl* tree_impl) {
   return HeadsUpDisplayLayerImpl::Create(tree_impl, layer_id_);
+}
+
+void HeadsUpDisplayLayer::SetTypeForProtoSerialization(
+    proto::LayerNode* proto) const {
+  proto->set_type(proto::LayerType::HEADS_UP_DISPLAY_LAYER);
 }
 
 }  // namespace cc

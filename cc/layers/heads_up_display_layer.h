@@ -14,6 +14,10 @@
 
 namespace cc {
 
+namespace proto {
+class LayerNode;
+}  // namespace proto
+
 class CC_EXPORT HeadsUpDisplayLayer : public Layer {
  public:
   static scoped_refptr<HeadsUpDisplayLayer> Create(
@@ -23,6 +27,8 @@ class CC_EXPORT HeadsUpDisplayLayer : public Layer {
       const gfx::Size& device_viewport, float device_scale_factor);
 
   scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
+
+  void SetTypeForProtoSerialization(proto::LayerNode* proto) const override;
 
  protected:
   explicit HeadsUpDisplayLayer(const LayerSettings& settings);

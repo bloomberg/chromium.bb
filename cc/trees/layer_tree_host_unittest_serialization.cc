@@ -107,6 +107,19 @@ class LayerTreeHostSerializationTest : public testing::Test {
     if (layer_tree_host_src_->hud_layer_) {
       EXPECT_EQ(layer_tree_host_src_->hud_layer_->id(),
                 layer_tree_host_dst_->hud_layer_->id());
+      // The HUD layer member is a HeadsUpDisplayLayer instead of Layer, so
+      // inspect the proto to see if it contains the the right layer type.
+      bool found_hud_layer_type = false;
+      for (int i = 0; i < proto.root_layer().children_size(); ++i) {
+        if (proto.root_layer().children(i).id() ==
+            layer_tree_host_src_->hud_layer_->id()) {
+          EXPECT_EQ(proto::HEADS_UP_DISPLAY_LAYER,
+                    proto.root_layer().children(i).type());
+          found_hud_layer_type = true;
+          break;
+        }
+      }
+      EXPECT_TRUE(found_hud_layer_type);
     } else {
       EXPECT_EQ(nullptr, layer_tree_host_dst_->hud_layer_);
     }
