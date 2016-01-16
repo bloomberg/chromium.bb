@@ -58,6 +58,14 @@ public class CustomTabsIntent {
             "android.support.customtabs.extra.ACTION_BUTTON_BUNDLE";
 
     /**
+     * List<Bundle> used for adding items to the top and bottom action bars. The client should
+     * provide an ID, a description, an icon {@link Bitmap} for each item. They may also provide a
+     * {@link PendingIntent} if the item is a button.
+     */
+    public static final String EXTRA_ACTION_BAR_ITEMS =
+            "android.support.customtabs.extra.ACTION_BAR_ITEMS";
+
+    /**
      * Key that specifies the {@link Bitmap} to be used as the image source for the action button.
      */
     public static final String KEY_ICON = "android.support.customtabs.customaction.ICON";

@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.customtabs;
 
 import android.app.PendingIntent;
-import android.app.PendingIntent.CanceledException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -16,8 +15,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.text.TextUtils;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
@@ -25,6 +27,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -108,9 +111,10 @@ class CustomButtonParams {
      * Builds an {@link ImageButton} from the data in this params. Generated buttons should be
      * placed on the bottom bar. The button's tag will be its id.
      * @param parent The parent that the inflated {@link ImageButton}.
+     * @param listener {@link OnClickListener} that should be used with the button.
      * @return Parsed list of {@link CustomButtonParams}, which is empty if the input is invalid.
      */
-    ImageButton buildBottomBarButton(Context context, ViewGroup parent) {
+    ImageButton buildBottomBarButton(Context context, ViewGroup parent, OnClickListener listener) {
         if (mIsOnToolbar) return null;
 
         ImageButton button = (ImageButton) LayoutInflater.from(context)
@@ -121,18 +125,26 @@ class CustomButtonParams {
         if (mPendingIntent == null) {
             button.setEnabled(false);
         } else {
-            // TODO(ianwen): add UMA for button clicking.
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        mPendingIntent.send();
-                    } catch (CanceledException e) {
-                        Log.e(TAG, "CanceledException while sending pending intent in custom tab");
-                    }
-                }
-            });
+            button.setOnClickListener(listener);
         }
+        button.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                final int screenWidth = view.getResources().getDisplayMetrics().widthPixels;
+                final int[] screenPos = new int[2];
+                view.getLocationOnScreen(screenPos);
+                final int width = view.getWidth();
+
+                Toast toast = Toast.makeText(
+                        view.getContext(), view.getContentDescription(), Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.BOTTOM | Gravity.END,
+                        screenWidth - screenPos[0] - width / 2,
+                        view.getResources().getDimensionPixelSize(
+                                R.dimen.toolbar_height_no_shadow));
+                toast.show();
+                return true;
+            }
+        });
         return button;
     }
 
@@ -148,13 +160,11 @@ class CustomButtonParams {
         Bundle singleBundle = IntentUtils.safeGetBundleExtra(intent,
                 CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
         ArrayList<Bundle> bundleList = IntentUtils.getParcelableArrayListExtra(intent,
-                CustomTabsIntent.EXTRA_ACTION_BUTTON_BUNDLE);
+                CustomTabsIntent.EXTRA_ACTION_BAR_ITEMS);
         boolean tinted = IntentUtils.safeGetBooleanExtra(intent,
                 CustomTabsIntent.EXTRA_TINT_ACTION_BUTTON, false);
-        if (singleBundle != null) {
-            CustomButtonParams params = fromBundle(context, singleBundle, tinted, false);
-            paramsList.add(params);
-        } else if (bundleList != null) {
+        if (singleBundle != null) paramsList.add(fromBundle(context, singleBundle, tinted, false));
+        if (bundleList != null) {
             Set<Integer> ids = new HashSet<>();
             for (Bundle bundle : bundleList) {
                 CustomButtonParams params = fromBundle(context, bundle, tinted, true);

@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
+import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -482,6 +484,7 @@ public class CustomTabActivity extends ChromeActivity {
      * Inflates the bottom bar {@link ViewStub} and its shadow, and populates it with items.
      */
     private void showBottomBarIfNecessary() {
+        // TODO (yusufo): Find a better place for the layout code here and in CustomButtonParams.
         // TODO (ianwen): if button icon is too wide, show them in overflow menu instead. If button
         // id is not specified, the overflow sequence should be toolbar -> bottom bar -> menu.
         if (!mIntentDataProvider.shouldShowBottomBar()) return;
@@ -501,7 +504,24 @@ public class CustomTabActivity extends ChromeActivity {
         List<CustomButtonParams> items = mIntentDataProvider.getCustomButtonsOnBottombar();
         for (CustomButtonParams params : items) {
             if (params.showOnToolbar()) continue;
-            ImageButton button = params.buildBottomBarButton(this, bottomBar);
+            final PendingIntent pendingIntent = params.getPendingIntent();
+            OnClickListener clickListener = null;
+            if (pendingIntent != null) {
+                clickListener = new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent addedIntent = new Intent();
+                        addedIntent.setData(Uri.parse(getActivityTab().getUrl()));
+                        try {
+                            pendingIntent.send(CustomTabActivity.this, 0, addedIntent, null, null);
+                        } catch (CanceledException e) {
+                            Log.e(TAG,
+                                    "CanceledException while sending pending intent in custom tab");
+                        }
+                    }
+                };
+            }
+            ImageButton button = params.buildBottomBarButton(this, bottomBar, clickListener);
             bottomBar.addView(button);
         }
     }
