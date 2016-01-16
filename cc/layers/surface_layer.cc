@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/output/swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
@@ -94,6 +95,7 @@ void SurfaceLayer::SetLayerTreeHost(LayerTreeHost* host) {
 
 void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
+  TRACE_EVENT0("cc", "SurfaceLayer::PushPropertiesTo");
   SurfaceLayerImpl* layer_impl = static_cast<SurfaceLayerImpl*>(layer);
 
   layer_impl->SetSurfaceId(surface_id_);

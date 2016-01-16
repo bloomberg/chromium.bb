@@ -8,6 +8,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/synchronization/lock.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/layers/texture_layer_client.h"
 #include "cc/layers/texture_layer_impl.h"
@@ -226,6 +227,7 @@ bool TextureLayer::Update() {
 
 void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
+  TRACE_EVENT0("cc", "TextureLayer::PushPropertiesTo");
 
   TextureLayerImpl* texture_layer = static_cast<TextureLayerImpl*>(layer);
   texture_layer->SetFlipped(flipped_);

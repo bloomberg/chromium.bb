@@ -4,6 +4,7 @@
 
 #include "cc/layers/ui_resource_layer.h"
 
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/ui_resource_layer_impl.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -149,6 +150,7 @@ bool UIResourceLayer::HasDrawableContent() const {
 
 void UIResourceLayer::PushPropertiesTo(LayerImpl* layer) {
   Layer::PushPropertiesTo(layer);
+  TRACE_EVENT0("cc", "UIResourceLayer::PushPropertiesTo");
   UIResourceLayerImpl* layer_impl = static_cast<UIResourceLayerImpl*>(layer);
 
   if (!ui_resource_holder_) {

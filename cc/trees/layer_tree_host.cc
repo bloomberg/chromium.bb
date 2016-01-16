@@ -382,6 +382,7 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
     TreeSynchronizer::PushProperties(root_layer(), sync_tree->root_layer());
 
     if (animation_host_) {
+      TRACE_EVENT0("cc", "LayerTreeHost::AnimationHost::PushProperties");
       DCHECK(host_impl->animation_host());
       animation_host_->PushPropertiesTo(host_impl->animation_host());
     }

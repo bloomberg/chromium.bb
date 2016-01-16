@@ -4,6 +4,7 @@
 
 #include "cc/layers/nine_patch_layer.h"
 
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/nine_patch_layer_impl.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/resources/ui_resource_bitmap.h"
@@ -52,6 +53,7 @@ void NinePatchLayer::SetFillCenter(bool fill_center) {
 
 void NinePatchLayer::PushPropertiesTo(LayerImpl* layer) {
   UIResourceLayer::PushPropertiesTo(layer);
+  TRACE_EVENT0("cc", "NinePatchLayer::PushPropertiesTo");
   NinePatchLayerImpl* layer_impl = static_cast<NinePatchLayerImpl*>(layer);
 
   if (!ui_resource_holder_) {

@@ -5,6 +5,7 @@
 #include "cc/layers/picture_layer.h"
 
 #include "base/auto_reset.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/playback/display_list_recording_source.h"
@@ -50,6 +51,7 @@ scoped_ptr<LayerImpl> PictureLayer::CreateLayerImpl(LayerTreeImpl* tree_impl) {
 
 void PictureLayer::PushPropertiesTo(LayerImpl* base_layer) {
   Layer::PushPropertiesTo(base_layer);
+  TRACE_EVENT0("cc", "PictureLayer::PushPropertiesTo");
   PictureLayerImpl* layer_impl = static_cast<PictureLayerImpl*>(base_layer);
   // TODO(danakj): Make is_mask_ a constructor parameter for PictureLayer.
   DCHECK_EQ(layer_impl->is_mask(), is_mask_);

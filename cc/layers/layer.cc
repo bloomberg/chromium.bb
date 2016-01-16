@@ -1162,6 +1162,7 @@ static void PostCopyCallbackToMainThread(
 }
 
 void Layer::PushPropertiesTo(LayerImpl* layer) {
+  TRACE_EVENT0("cc", "Layer::PushPropertiesTo");
   DCHECK(layer_tree_host_);
 
   // If we did not SavePaintProperties() for the layer this frame, then push the
@@ -1284,26 +1285,28 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
     layer->PushScrollOffsetFromMainThread(scroll_offset_);
   layer->SetScrollCompensationAdjustment(ScrollCompensationAdjustment());
 
-  // Wrap the copy_requests_ in a PostTask to the main thread.
-  std::vector<scoped_ptr<CopyOutputRequest>> main_thread_copy_requests;
-  for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
-        layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
-    scoped_ptr<CopyOutputRequest> original_request = std::move(*it);
-    const CopyOutputRequest& original_request_ref = *original_request;
-    scoped_ptr<CopyOutputRequest> main_thread_request =
-        CopyOutputRequest::CreateRelayRequest(
-            original_request_ref,
-            base::Bind(&PostCopyCallbackToMainThread,
-                       main_thread_task_runner,
-                       base::Passed(&original_request)));
-    main_thread_copy_requests.push_back(std::move(main_thread_request));
-  }
-  if (!copy_requests_.empty() && layer_tree_host_)
-    layer_tree_host_->property_trees()->needs_rebuild = true;
+  {
+    TRACE_EVENT0("cc", "Layer::PushPropertiesTo::CopyOutputRequests");
+    // Wrap the copy_requests_ in a PostTask to the main thread.
+    std::vector<scoped_ptr<CopyOutputRequest>> main_thread_copy_requests;
+    for (auto it = copy_requests_.begin(); it != copy_requests_.end(); ++it) {
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner =
+          layer_tree_host()->task_runner_provider()->MainThreadTaskRunner();
+      scoped_ptr<CopyOutputRequest> original_request = std::move(*it);
+      const CopyOutputRequest& original_request_ref = *original_request;
+      scoped_ptr<CopyOutputRequest> main_thread_request =
+          CopyOutputRequest::CreateRelayRequest(
+              original_request_ref,
+              base::Bind(&PostCopyCallbackToMainThread, main_thread_task_runner,
+                         base::Passed(&original_request)));
+      main_thread_copy_requests.push_back(std::move(main_thread_request));
+    }
+    if (!copy_requests_.empty() && layer_tree_host_)
+      layer_tree_host_->property_trees()->needs_rebuild = true;
 
-  copy_requests_.clear();
-  layer->PassCopyRequests(&main_thread_copy_requests);
+    copy_requests_.clear();
+    layer->PassCopyRequests(&main_thread_copy_requests);
+  }
 
   // If the main thread commits multiple times before the impl thread actually
   // draws, then damage tracking will become incorrect if we simply clobber the
