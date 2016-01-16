@@ -118,7 +118,8 @@ ninja -C out/Debug
 ```
 
 Then run the actual tool:
-```
+
+```shell
 tools/clang/scripts/run_tool.py <toolname> \
   --generate-compdb
   out/Debug <path 1> <path 2> ...
@@ -140,28 +141,33 @@ tools/clang/scripts/run_tool.py empty_string  \
 
 ## Debugging
 Dumping the AST for a file:
+
 ```shell
 clang++ -cc1 -ast-dump foo.cc
 ```
 
 Using `clang-query` to dynamically test matchers (requires checking out
 and building [clang-tools-extras](https://github.com/llvm-mirror/clang-tools-extra)):
+
 ```shell
 clang-query -p path/to/compdb base/memory/ref_counted.cc
 ```
 
 `printf` debugging:
+
 ```c++
   clang::Decl* decl = result.Nodes.getNodeAs<clang::Decl>("decl");
   decl->dumpColor();
   clang::Stmt* stmt = result.Nodes.getNodeAs<clang::Stmt>("stmt");
   stmt->dumpColor();
 ```
+
 By default, the script hides the output of the tool. The easiest way to change
 that is to `return 1` from the `main()` function of the clang tool.
 
 ## Testing
 Synposis:
+
 ```shell
 test_tool.py <tool name>
 ```
