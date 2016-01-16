@@ -35,6 +35,7 @@
 
 using ::gfx::MockGLInterface;
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Invoke;
@@ -2925,6 +2926,41 @@ TEST_P(GLES2DecoderManualInitTest, InvalidateFramebufferBinding) {
   EXPECT_TRUE(
       gfx::MockGLInterface::GetGLProcAddress("glInvalidateFramebuffer") !=
       gfx::MockGLInterface::GetGLProcAddress("glDiscardFramebufferEXT"));
+}
+
+TEST_P(GLES2DecoderTest, ClearBackbufferBitsOnFlipSwap) {
+  surface_->set_buffers_flipped(true);
+
+  EXPECT_EQ(0u, GetAndClearBackbufferClearBitsForTest());
+
+  SwapBuffers& cmd = *GetImmediateAs<SwapBuffers>();
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(0u, GetAndClearBackbufferClearBitsForTest());
+
+  EXPECT_CALL(*gl_, Finish()).Times(AnyNumber());
+  ResizeCHROMIUM& resize_cmd = *GetImmediateAs<ResizeCHROMIUM>();
+  resize_cmd.Init(1, 1, 1.0f, GL_TRUE);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(resize_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  cmd.Init();
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(static_cast<uint32_t>(GL_COLOR_BUFFER_BIT),
+            GetAndClearBackbufferClearBitsForTest());
+
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_EQ(0u, GetAndClearBackbufferClearBitsForTest());
 }
 
 TEST_P(GLES2DecoderManualInitTest, DiscardFramebufferEXT) {

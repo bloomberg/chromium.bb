@@ -102,6 +102,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
                             const Rect& bounds_rect,
                             const RectF& crop_rect) override;
   bool FlipsVertically() const override;
+  bool BuffersFlipped() const override;
 
   // Create a NativeViewGLSurfaceEGL with an externally provided VSyncProvider.
   // Takes ownership of the VSyncProvider.

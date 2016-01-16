@@ -769,6 +769,10 @@ bool NativeViewGLSurfaceEGL::FlipsVertically() const {
   return flips_vertically_;
 }
 
+bool NativeViewGLSurfaceEGL::BuffersFlipped() const {
+  return g_use_direct_composition;
+}
+
 gfx::SwapResult NativeViewGLSurfaceEGL::PostSubBuffer(int x,
                                                       int y,
                                                       int width,

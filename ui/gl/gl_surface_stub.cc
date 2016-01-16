@@ -9,6 +9,12 @@ namespace gfx {
 void GLSurfaceStub::Destroy() {
 }
 
+bool GLSurfaceStub::Resize(const gfx::Size& size,
+                           float scale_factor,
+                           bool has_alpha) {
+  return true;
+}
+
 bool GLSurfaceStub::IsOffscreen() {
   return false;
 }
@@ -23,6 +29,10 @@ gfx::Size GLSurfaceStub::GetSize() {
 
 void* GLSurfaceStub::GetHandle() {
   return NULL;
+}
+
+bool GLSurfaceStub::BuffersFlipped() const {
+  return buffers_flipped_;
 }
 
 GLSurfaceStub::~GLSurfaceStub() {}

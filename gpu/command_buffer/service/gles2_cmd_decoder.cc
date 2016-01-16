@@ -1983,6 +1983,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Backbuffer attachments that are currently undefined.
   uint32_t backbuffer_needs_clear_bits_;
 
+  uint64_t swaps_since_resize_;
+
   // The current decoder error communicates the decoder error through command
   // processing functions that do not return the error value. Should be set only
   // if not returning an error.
@@ -2533,6 +2535,7 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       back_buffer_draw_buffer_(GL_BACK),
       surfaceless_(false),
       backbuffer_needs_clear_bits_(0),
+      swaps_since_resize_(0),
       current_decoder_error_(error::kNoError),
       validators_(group_->feature_info()->validators()),
       feature_info_(group_->feature_info()),
@@ -3655,8 +3658,7 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     if (surfaceless_)
       return false;
     if (backbuffer_needs_clear_bits_) {
-      glClearColor(0, 0, 0, (GLES2Util::GetChannelsForFormat(
-          offscreen_target_color_format_) & 0x0008) != 0 ? 0 : 1.f);
+      glClearColor(0, 0, 0, BackBufferHasAlpha() ? 0 : 1.f);
       state_.SetDeviceColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
       glClearStencil(0);
       state_.SetDeviceStencilMaskSeparate(GL_FRONT, kDefaultStencilMask);
@@ -4351,7 +4353,12 @@ error::Error GLES2DecoderImpl::HandleResizeCHROMIUM(
                  << "current after resize callback.";
       return error::kLostContext;
     }
+    if (surface_->BuffersFlipped()) {
+      backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
+    }
   }
+
+  swaps_since_resize_ = 0;
 
   return error::kNoError;
 }
@@ -12230,6 +12237,12 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
       MarkContextLost(error::kUnknown);
       group_->LoseContexts(error::kUnknown);
     }
+  }
+  ++swaps_since_resize_;
+  if (swaps_since_resize_ == 1 && surface_->BuffersFlipped()) {
+    // The second buffer after a resize is new and needs to be cleared to
+    // known values.
+    backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
   }
 }
 
