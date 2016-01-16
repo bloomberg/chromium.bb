@@ -228,15 +228,8 @@ private:
     // unique words [1]. 1: http://www.mine-control.com/zack/guttenberg/
     // Our definition of a word is somewhat different from the norm in that we
     // only segment on space. Thus "foo", "foo-", and "foo)" would count as
-    // three separate words. Given that 10,000 seems like a reasonable maximum
-    // for desktop.
-#if !OS(ANDROID)
+    // three separate words. Given that 10,000 seems like a reasonable maximum.
     static const unsigned s_maxSize = 10000;
-#else
-    // On Android, we use a more conservative value of 2,500 due to memory
-    // constraints. crbug.com/577306
-    static const unsigned s_maxSize = 2500;
-#endif
 
     SingleCharMap m_singleCharMap;
     SmallStringMap m_shortStringMap;
