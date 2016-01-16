@@ -53,7 +53,8 @@ class TestAdvertisementObserver : public BluetoothAdvertisement::Observer {
 class BluetoothAdvertisementBlueZTest : public testing::Test {
  public:
   void SetUp() override {
-    bluez::BluezDBusManager::Initialize(NULL, true);
+    bluez::BluezDBusManager::Initialize(nullptr /* bus */,
+                                        true /* use_dbus_stub */);
 
     callback_count_ = 0;
     error_callback_count_ = 0;

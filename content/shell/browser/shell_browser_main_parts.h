@@ -44,6 +44,7 @@ class ShellBrowserMainParts : public BrowserMainParts {
   void PreMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
   void PostMainMessageLoopRun() override;
+  void PostDestroyThreads() override;
 
   devtools_http_handler::DevToolsHttpHandler* devtools_http_handler() {
     return devtools_http_handler_.get();

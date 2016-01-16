@@ -73,9 +73,6 @@ BluetoothEventRouter::~BluetoothEventRouter() {
 }
 
 bool BluetoothEventRouter::IsBluetoothSupported() const {
-#if defined(OS_LINUX)
-  return true;
-#endif
   return adapter_.get() ||
          device::BluetoothAdapterFactory::IsBluetoothAdapterAvailable();
 }

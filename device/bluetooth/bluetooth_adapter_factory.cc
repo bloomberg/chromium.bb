@@ -59,9 +59,8 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
   // instance even on platforms that would otherwise not support it.
   if (default_adapter.Get())
     return true;
-// Even though the adapter is available on Linux, we only want to use it for
-// the Chrome API, which is why defines(OS_LINUX) is missing from here.
-#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_LINUX)
   return true;
 #elif defined(OS_MACOSX)
   return base::mac::IsOSLionOrLater();
@@ -72,12 +71,7 @@ bool BluetoothAdapterFactory::IsBluetoothAdapterAvailable() {
 
 // static
 void BluetoothAdapterFactory::GetAdapter(const AdapterCallback& callback) {
-// TODO(rkc): This is a very slight hack to allow us to be able to create
-// an adapter on Linux, 'without' exposing the adapter to all Bluetooth
-// services within the browser.
-#if !defined(OS_LINUX)
   DCHECK(IsBluetoothAdapterAvailable());
-#endif
 
 #if defined(OS_WIN)
   if (!default_adapter.Get()) {
