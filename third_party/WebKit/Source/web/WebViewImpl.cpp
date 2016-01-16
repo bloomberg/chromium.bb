@@ -2760,12 +2760,10 @@ void WebViewImpl::setTextDirection(WebTextDirection direction)
 
 bool WebViewImpl::isAcceleratedCompositingActive() const
 {
-    // If SPv2 is on, the layer tree may not be created yet (and can't be
-    // created right away because RuntimeEnabledFeatures may not initialized yet
-    // when the layer tree view is initialized. But if it is initialized, then
-    // we at least intend to use accelerated compositing.
+    // For SPv2, accelerated compositing is managed by the
+    // PaintArtifactCompositor.
     if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
-        return m_layerTreeView;
+        return m_paintArtifactCompositor.rootLayer();
 
     return m_rootLayer;
 }
@@ -4375,6 +4373,9 @@ void WebViewImpl::initializeLayerTreeView()
         m_linkHighlightsTimeline = adoptPtr(Platform::current()->compositorSupport()->createAnimationTimeline());
         attachCompositorAnimationTimeline(m_linkHighlightsTimeline.get());
     }
+
+    if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+        attachPaintArtifactCompositor();
 }
 
 void WebViewImpl::applyViewportDeltas(

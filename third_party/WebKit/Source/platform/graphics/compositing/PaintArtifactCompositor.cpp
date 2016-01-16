@@ -97,7 +97,6 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
 
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
-    initializeIfNeeded();
     ASSERT(m_rootLayer);
 
     // TODO(jbroman): This should be incremental.
