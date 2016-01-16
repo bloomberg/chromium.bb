@@ -316,8 +316,8 @@ void WebMediaPlayerImpl::play() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
 #if defined(OS_ANDROID)  // WMPI_CAST
+  cast_impl_.play();
   if (isRemote()) {
-    cast_impl_.play();
     return;
   }
 #endif
@@ -342,8 +342,8 @@ void WebMediaPlayerImpl::pause() {
   paused_ = true;
 
 #if defined(OS_ANDROID)  // WMPI_CAST
+  cast_impl_.pause();
   if (isRemote()) {
-    cast_impl_.pause();
     return;
   }
 #endif
