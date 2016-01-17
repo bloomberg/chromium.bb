@@ -11,9 +11,12 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+
+namespace OnChanged = extensions::api::input_method_private::OnChanged;
 
 namespace chromeos {
 
@@ -36,19 +39,17 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   DCHECK(profile->IsSameProfile(Profile::FromBrowserContext(context_)));
   extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
-  if (!router->HasEventListener(
-          extensions::InputMethodAPI::kOnInputMethodChanged)) {
+  if (!router->HasEventListener(OnChanged::kEventName))
     return;
-  }
 
   scoped_ptr<base::ListValue> args(new base::ListValue());
   args->Append(new base::StringValue(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id()));
 
   // The router will only send the event to extensions that are listening.
-  scoped_ptr<extensions::Event> event(new extensions::Event(
-      extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
-      extensions::InputMethodAPI::kOnInputMethodChanged, std::move(args)));
+  scoped_ptr<extensions::Event> event(
+      new extensions::Event(extensions::events::INPUT_METHOD_PRIVATE_ON_CHANGED,
+                            OnChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
   router->BroadcastEvent(std::move(event));
 }

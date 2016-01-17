@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function.h"
@@ -20,124 +21,127 @@ class ExtensionInputMethodEventRouter;
 namespace extensions {
 
 // Implements the inputMethodPrivate.getInputMethodConfig  method.
-class GetInputMethodConfigFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateGetInputMethodConfigFunction
+    : public UIThreadExtensionFunction {
  public:
-  GetInputMethodConfigFunction() {}
+  InputMethodPrivateGetInputMethodConfigFunction() {}
 
  protected:
-  ~GetInputMethodConfigFunction() override {}
+  ~InputMethodPrivateGetInputMethodConfigFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethodConfig",
                              INPUTMETHODPRIVATE_GETINPUTMETHODCONFIG)
-  DISALLOW_COPY_AND_ASSIGN(GetInputMethodConfigFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetInputMethodConfigFunction);
 };
 
 // Implements the inputMethodPrivate.getCurrentInputMethod method.
-class GetCurrentInputMethodFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateGetCurrentInputMethodFunction
+    : public UIThreadExtensionFunction {
  public:
-  GetCurrentInputMethodFunction() {}
+  InputMethodPrivateGetCurrentInputMethodFunction() {}
 
  protected:
-  ~GetCurrentInputMethodFunction() override {}
+  ~InputMethodPrivateGetCurrentInputMethodFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getCurrentInputMethod",
                              INPUTMETHODPRIVATE_GETCURRENTINPUTMETHOD)
-  DISALLOW_COPY_AND_ASSIGN(GetCurrentInputMethodFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetCurrentInputMethodFunction);
 };
 
 // Implements the inputMethodPrivate.setCurrentInputMethod method.
-class SetCurrentInputMethodFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateSetCurrentInputMethodFunction
+    : public UIThreadExtensionFunction {
  public:
-  SetCurrentInputMethodFunction() {}
+  InputMethodPrivateSetCurrentInputMethodFunction() {}
 
  protected:
-  ~SetCurrentInputMethodFunction() override {}
+  ~InputMethodPrivateSetCurrentInputMethodFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setCurrentInputMethod",
                              INPUTMETHODPRIVATE_SETCURRENTINPUTMETHOD)
-  DISALLOW_COPY_AND_ASSIGN(SetCurrentInputMethodFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetCurrentInputMethodFunction);
 };
 
 // Implements the inputMethodPrivate.getInputMethods method.
-class GetInputMethodsFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateGetInputMethodsFunction
+    : public UIThreadExtensionFunction {
  public:
-  GetInputMethodsFunction() {}
+  InputMethodPrivateGetInputMethodsFunction() {}
 
  protected:
-  ~GetInputMethodsFunction() override {}
+  ~InputMethodPrivateGetInputMethodsFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getInputMethods",
                              INPUTMETHODPRIVATE_GETINPUTMETHODS)
-  DISALLOW_COPY_AND_ASSIGN(GetInputMethodsFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetInputMethodsFunction);
 };
 
 // Implements the inputMethodPrivate.fetchAllDictionaryWords method.
-class FetchAllDictionaryWordsFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateFetchAllDictionaryWordsFunction
+    : public UIThreadExtensionFunction {
  public:
-  FetchAllDictionaryWordsFunction() {}
+  InputMethodPrivateFetchAllDictionaryWordsFunction() {}
 
  protected:
-  ~FetchAllDictionaryWordsFunction() override {}
+  ~InputMethodPrivateFetchAllDictionaryWordsFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.fetchAllDictionaryWords",
                              INPUTMETHODPRIVATE_FETCHALLDICTIONARYWORDS)
-  DISALLOW_COPY_AND_ASSIGN(FetchAllDictionaryWordsFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateFetchAllDictionaryWordsFunction);
 };
 
 // Implements the inputMethodPrivate.addWordToDictionary method.
-class AddWordToDictionaryFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateAddWordToDictionaryFunction
+    : public UIThreadExtensionFunction {
  public:
-  AddWordToDictionaryFunction() {}
+  InputMethodPrivateAddWordToDictionaryFunction() {}
 
  protected:
-  ~AddWordToDictionaryFunction() override {}
+  ~InputMethodPrivateAddWordToDictionaryFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.addWordToDictionary",
                              INPUTMETHODPRIVATE_ADDWORDTODICTIONARY)
-  DISALLOW_COPY_AND_ASSIGN(AddWordToDictionaryFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateAddWordToDictionaryFunction);
 };
 
 // Implements the inputMethodPrivate.getEncryptSyncEnabled method.
-class GetEncryptSyncEnabledFunction : public UIThreadExtensionFunction {
+class InputMethodPrivateGetEncryptSyncEnabledFunction
+    : public UIThreadExtensionFunction {
  public:
-  GetEncryptSyncEnabledFunction() {}
+  InputMethodPrivateGetEncryptSyncEnabledFunction() {}
 
  protected:
-  ~GetEncryptSyncEnabledFunction() override {}
+  ~InputMethodPrivateGetEncryptSyncEnabledFunction() override {}
 
   ResponseAction Run() override;
 
  private:
   DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getEncryptSyncEnabled",
                              INPUTMETHODPRIVATE_GETENCRYPTSYNCENABLED)
-  DISALLOW_COPY_AND_ASSIGN(GetEncryptSyncEnabledFunction);
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetEncryptSyncEnabledFunction);
 };
 
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:
-  static const char kOnDictionaryChanged[];
-  static const char kOnDictionaryLoaded[];
-  static const char kOnInputMethodChanged[];
-
   explicit InputMethodAPI(content::BrowserContext* context);
   ~InputMethodAPI() override;
 

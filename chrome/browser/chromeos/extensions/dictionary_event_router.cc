@@ -11,9 +11,15 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_system.h"
+
+namespace OnDictionaryChanged =
+    extensions::api::input_method_private::OnDictionaryChanged;
+namespace OnDictionaryLoaded =
+    extensions::api::input_method_private::OnDictionaryLoaded;
 
 namespace chromeos {
 
@@ -39,8 +45,7 @@ void ExtensionDictionaryEventRouter::DispatchLoadedEventIfLoaded() {
     return;
 
   extensions::EventRouter* router = extensions::EventRouter::Get(context_);
-  if (!router->HasEventListener(
-      extensions::InputMethodAPI::kOnDictionaryLoaded)) {
+  if (!router->HasEventListener(OnDictionaryLoaded::kEventName)) {
     return;
   }
 
@@ -48,7 +53,7 @@ void ExtensionDictionaryEventRouter::DispatchLoadedEventIfLoaded() {
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_LOADED,
-      extensions::InputMethodAPI::kOnDictionaryLoaded, std::move(args)));
+      OnDictionaryLoaded::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
   router->BroadcastEvent(std::move(event));
 }
@@ -62,8 +67,7 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
     const SpellcheckCustomDictionary::Change& dictionary_change) {
   extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
-  if (!router->HasEventListener(
-      extensions::InputMethodAPI::kOnDictionaryChanged)) {
+  if (!router->HasEventListener(OnDictionaryChanged::kEventName)) {
     return;
   }
 
@@ -82,7 +86,7 @@ void ExtensionDictionaryEventRouter::OnCustomDictionaryChanged(
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::events::INPUT_METHOD_PRIVATE_ON_DICTIONARY_CHANGED,
-      extensions::InputMethodAPI::kOnDictionaryChanged, std::move(args)));
+      OnDictionaryChanged::kEventName, std::move(args)));
   event->restrict_to_browser_context = context_;
   router->BroadcastEvent(std::move(event));
 }

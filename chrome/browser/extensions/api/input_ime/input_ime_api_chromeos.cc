@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/extensions/api/input_ime.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
@@ -37,14 +38,14 @@ namespace SetCandidateWindowProperties =
 namespace CommitText = extensions::api::input_ime::CommitText;
 namespace ClearComposition = extensions::api::input_ime::ClearComposition;
 namespace SetComposition = extensions::api::input_ime::SetComposition;
+namespace OnCompositionBoundsChanged =
+    extensions::api::input_method_private::OnCompositionBoundsChanged;
 using ui::IMEEngineHandlerInterface;
 
 namespace {
 const char kErrorEngineNotAvailable[] = "Engine is not available";
 const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
 const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
-const char kOnCompositionBoundsChangedEventName[] =
-    "inputMethodPrivate.onCompositionBoundsChanged";
 
 void SetMenuItemToMenu(const input_ime::MenuItem& input,
                        IMEEngineHandlerInterface::MenuItem* out) {
@@ -151,7 +152,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
   void OnCompositionBoundsChanged(
       const std::vector<gfx::Rect>& bounds) override {
     if (extension_id_.empty() ||
-        !HasListener(kOnCompositionBoundsChangedEventName))
+        !HasListener(OnCompositionBoundsChanged::kEventName))
       return;
 
     // Note: this is a private API event.
@@ -178,7 +179,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
     DispatchEventToExtension(
         extensions::events::INPUT_METHOD_PRIVATE_ON_COMPOSITION_BOUNDS_CHANGED,
-        kOnCompositionBoundsChangedEventName, std::move(args));
+        OnCompositionBoundsChanged::kEventName, std::move(args));
   }
 
  private:

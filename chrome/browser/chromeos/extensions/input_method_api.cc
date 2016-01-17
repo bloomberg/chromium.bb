@@ -20,6 +20,7 @@
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/spellchecker/spellcheck_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/extensions/api/input_method_private.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "extensions/browser/extension_function_registry.h"
@@ -28,6 +29,16 @@
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/keyboard/keyboard_util.h"
+
+namespace AddWordToDictionary =
+    extensions::api::input_method_private::AddWordToDictionary;
+namespace SetCurrentInputMethod =
+    extensions::api::input_method_private::SetCurrentInputMethod;
+namespace OnChanged = extensions::api::input_method_private::OnChanged;
+namespace OnDictionaryChanged =
+    extensions::api::input_method_private::OnDictionaryChanged;
+namespace OnDictionaryLoaded =
+    extensions::api::input_method_private::OnDictionaryLoaded;
 
 namespace {
 
@@ -38,7 +49,8 @@ const char kXkbPrefix[] = "xkb:";
 
 namespace extensions {
 
-ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetInputMethodConfigFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
@@ -51,7 +63,8 @@ ExtensionFunction::ResponseAction GetInputMethodConfigFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction GetCurrentInputMethodFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetCurrentInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
@@ -62,20 +75,23 @@ ExtensionFunction::ResponseAction GetCurrentInputMethodFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction SetCurrentInputMethodFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateSetCurrentInputMethodFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  std::string new_input_method;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &new_input_method));
+  scoped_ptr<SetCurrentInputMethod::Params> params(
+      SetCurrentInputMethod::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
       chromeos::input_method::InputMethodManager::Get()->GetActiveIMEState();
   const std::vector<std::string>& input_methods =
       ime_state->GetActiveInputMethodIds();
   for (size_t i = 0; i < input_methods.size(); ++i) {
     const std::string& input_method = input_methods[i];
-    if (input_method == new_input_method) {
-      ime_state->ChangeInputMethod(new_input_method, false /* show_message */);
+    if (input_method == params->input_method_id) {
+      ime_state->ChangeInputMethod(params->input_method_id,
+                                   false /* show_message */);
       return RespondNow(NoArguments());
     }
   }
@@ -83,7 +99,8 @@ ExtensionFunction::ResponseAction SetCurrentInputMethodFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetInputMethodsFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
@@ -108,7 +125,8 @@ ExtensionFunction::ResponseAction GetInputMethodsFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction FetchAllDictionaryWordsFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateFetchAllDictionaryWordsFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
@@ -131,12 +149,14 @@ ExtensionFunction::ResponseAction FetchAllDictionaryWordsFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateAddWordToDictionaryFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
-  std::string word;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &word));
+  scoped_ptr<AddWordToDictionary::Params> params(
+      AddWordToDictionary::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
   SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
       context_);
   if (!spellcheck) {
@@ -147,7 +167,7 @@ ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
     return RespondNow(Error("Custom dictionary not loaded yet."));
   }
 
-  if (dictionary->AddWord(word))
+  if (dictionary->AddWord(params->word))
     return RespondNow(NoArguments());
   // Invalid words:
   // - Already in the dictionary.
@@ -159,7 +179,8 @@ ExtensionFunction::ResponseAction AddWordToDictionaryFunction::Run() {
 #endif
 }
 
-ExtensionFunction::ResponseAction GetEncryptSyncEnabledFunction::Run() {
+ExtensionFunction::ResponseAction
+InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
 #if !defined(OS_CHROMEOS)
   EXTENSION_FUNCTION_VALIDATE(false);
 #else
@@ -174,32 +195,23 @@ ExtensionFunction::ResponseAction GetEncryptSyncEnabledFunction::Run() {
 #endif
 }
 
-// static
-const char InputMethodAPI::kOnDictionaryChanged[] =
-    "inputMethodPrivate.onDictionaryChanged";
-
-// static
-const char InputMethodAPI::kOnDictionaryLoaded[] =
-    "inputMethodPrivate.onDictionaryLoaded";
-
-// static
-const char InputMethodAPI::kOnInputMethodChanged[] =
-    "inputMethodPrivate.onChanged";
-
 InputMethodAPI::InputMethodAPI(content::BrowserContext* context)
     : context_(context) {
-  EventRouter::Get(context_)->RegisterObserver(this, kOnInputMethodChanged);
-  EventRouter::Get(context_)->RegisterObserver(this, kOnDictionaryChanged);
-  EventRouter::Get(context_)->RegisterObserver(this, kOnDictionaryLoaded);
+  EventRouter::Get(context_)->RegisterObserver(this, OnChanged::kEventName);
+  EventRouter::Get(context_)
+      ->RegisterObserver(this, OnDictionaryChanged::kEventName);
+  EventRouter::Get(context_)
+      ->RegisterObserver(this, OnDictionaryLoaded::kEventName);
   ExtensionFunctionRegistry* registry =
       ExtensionFunctionRegistry::GetInstance();
-  registry->RegisterFunction<GetInputMethodConfigFunction>();
-  registry->RegisterFunction<GetCurrentInputMethodFunction>();
-  registry->RegisterFunction<SetCurrentInputMethodFunction>();
-  registry->RegisterFunction<GetInputMethodsFunction>();
-  registry->RegisterFunction<FetchAllDictionaryWordsFunction>();
-  registry->RegisterFunction<AddWordToDictionaryFunction>();
-  registry->RegisterFunction<GetEncryptSyncEnabledFunction>();
+  registry->RegisterFunction<InputMethodPrivateGetInputMethodConfigFunction>();
+  registry->RegisterFunction<InputMethodPrivateGetCurrentInputMethodFunction>();
+  registry->RegisterFunction<InputMethodPrivateSetCurrentInputMethodFunction>();
+  registry->RegisterFunction<InputMethodPrivateGetInputMethodsFunction>();
+  registry
+      ->RegisterFunction<InputMethodPrivateFetchAllDictionaryWordsFunction>();
+  registry->RegisterFunction<InputMethodPrivateAddWordToDictionaryFunction>();
+  registry->RegisterFunction<InputMethodPrivateGetEncryptSyncEnabledFunction>();
 }
 
 InputMethodAPI::~InputMethodAPI() {
@@ -220,18 +232,17 @@ void InputMethodAPI::Shutdown() {
 
 void InputMethodAPI::OnListenerAdded(
     const extensions::EventListenerInfo& details) {
-  if (details.event_name == kOnInputMethodChanged) {
-    if (!input_method_event_router_.get()) {
-      input_method_event_router_.reset(
-          new chromeos::ExtensionInputMethodEventRouter(context_));
-    }
-  } else if (details.event_name == kOnDictionaryChanged ||
-             details.event_name == kOnDictionaryLoaded) {
+  if (details.event_name == OnChanged::kEventName &&
+      !input_method_event_router_.get()) {
+    input_method_event_router_.reset(
+        new chromeos::ExtensionInputMethodEventRouter(context_));
+  } else if (details.event_name == OnDictionaryChanged::kEventName ||
+             details.event_name == OnDictionaryLoaded::kEventName) {
     if (!dictionary_event_router_.get()) {
       dictionary_event_router_.reset(
           new chromeos::ExtensionDictionaryEventRouter(context_));
     }
-    if (details.event_name == kOnDictionaryLoaded) {
+    if (details.event_name == OnDictionaryLoaded::kEventName) {
       dictionary_event_router_->DispatchLoadedEventIfLoaded();
     }
   }

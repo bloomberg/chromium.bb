@@ -120,6 +120,7 @@
       'file_system_provider_internal.idl',
       'first_run_private.json',
       'input_ime.json',
+      'input_method_private.json',
       'launcher_search_provider.idl',
       'log_private.idl',
       'platform_keys.idl',
