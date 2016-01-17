@@ -193,16 +193,20 @@ source_set("unit_tests") {
     "scored_history_match_unittest.cc",
     "shortcuts_database_unittest.cc",
     "suggestion_answer_unittest.cc",
+    "zero_suggest_provider_unittest.cc",
   ]
 
   deps = [
     ":browser",
     ":test_support",
     "//base",
+    "//base:prefs",
+    "//base:prefs_test_support",
     "//components/open_from_clipboard:test_support",
     "//components/search",
     "//components/search_engines",
     "//components/variations",
+    "//net:test_support",
     "//sql",
     "//sql:test_support",
     "//testing/gmock",

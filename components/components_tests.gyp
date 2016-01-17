@@ -418,6 +418,7 @@
       'omnibox/browser/scored_history_match_unittest.cc',
       'omnibox/browser/shortcuts_database_unittest.cc',
       'omnibox/browser/suggestion_answer_unittest.cc',
+      'omnibox/browser/zero_suggest_provider_unittest.cc',
     ],
     'open_from_clipboard_unittest_sources': [
       'open_from_clipboard/clipboard_recent_content_ios_unittest.mm',
