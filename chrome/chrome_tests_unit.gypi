@@ -30,7 +30,6 @@
       'browser/android/shortcut_info_unittest.cc',
       'browser/android/thumbnail/scoped_ptr_expiring_cache_unittest.cc',
       'browser/app_controller_mac_unittest.mm',
-      'browser/autocomplete/bookmark_provider_unittest.cc',
       'browser/autocomplete/builtin_provider_unittest.cc',
       'browser/autocomplete/history_quick_provider_unittest.cc',
       'browser/autocomplete/history_url_provider_unittest.cc',
