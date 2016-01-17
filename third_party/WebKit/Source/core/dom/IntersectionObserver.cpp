@@ -186,6 +186,7 @@ bool IntersectionObserver::isDescendantOfRoot(const Element* target) const
 
 void IntersectionObserver::observe(Element* target, ExceptionState& exceptionState)
 {
+    checkRootAndDetachIfNeeded();
     if (!m_root) {
         exceptionState.throwDOMException(HierarchyRequestError, "Invalid observer: root element or containing document has been deleted.");
         return;
@@ -220,6 +221,7 @@ void IntersectionObserver::observe(Element* target, ExceptionState& exceptionSta
 
 void IntersectionObserver::unobserve(Element* target, ExceptionState&)
 {
+    checkRootAndDetachIfNeeded();
     if (!target || !target->intersectionObserverData())
         return;
     // TODO(szager): unobserve callback
@@ -229,6 +231,7 @@ void IntersectionObserver::unobserve(Element* target, ExceptionState&)
 
 void IntersectionObserver::computeIntersectionObservations(double timestamp)
 {
+    checkRootAndDetachIfNeeded();
     if (!m_root)
         return;
     for (auto& observation : m_observations)
@@ -251,6 +254,7 @@ void IntersectionObserver::removeObservation(IntersectionObservation& observatio
 
 HeapVector<Member<IntersectionObserverEntry>> IntersectionObserver::takeRecords()
 {
+    checkRootAndDetachIfNeeded();
     HeapVector<Member<IntersectionObserverEntry>> entries;
     entries.swap(m_entries);
     return entries;
@@ -295,6 +299,8 @@ unsigned IntersectionObserver::firstThresholdGreaterThan(float ratio) const
 
 void IntersectionObserver::deliver()
 {
+    checkRootAndDetachIfNeeded();
+
     if (m_entries.isEmpty())
         return;
 
@@ -305,6 +311,7 @@ void IntersectionObserver::deliver()
 
 void IntersectionObserver::setActive(bool active)
 {
+    checkRootAndDetachIfNeeded();
     for (auto& observation : m_observations)
         observation->setActive(m_root && active && isDescendantOfRoot(observation->target()));
 }
@@ -317,17 +324,25 @@ bool IntersectionObserver::hasPercentMargin() const
         || m_leftMargin.type() == Percent);
 }
 
-void IntersectionObserver::rootDisappearedCallback(Visitor* visitor, void* self)
+void IntersectionObserver::checkRootAndDetachIfNeeded()
 {
-    IntersectionObserver* observer = static_cast<IntersectionObserver*>(self);
-    observer->disconnect();
+#if ENABLE(OILPAN)
+    // TODO(szager): Pre-oilpan, ElementIntersectionObserverData::dispose() will take
+    // care of this cleanup.  When oilpan ships, there will be a potential leak of the
+    // callback's execution context when the root goes away.  For a detailed explanation:
+    //
+    //   https://goo.gl/PC2Baj
+    //
+    // When that happens, this method should catch most potential leaks, but a complete
+    // solution will still be needed, along the lines described in the above link.
+    if (m_root)
+        return;
+    disconnect();
+#endif
 }
 
 DEFINE_TRACE(IntersectionObserver)
 {
-#if ENABLE(OILPAN)
-    visitor->registerWeakMembers(this, m_root.get(), IntersectionObserver::rootDisappearedCallback);
-#endif
     visitor->trace(m_callback);
     visitor->trace(m_root);
     visitor->trace(m_observations);
