@@ -15,7 +15,7 @@ Modifications:
 - Import https://git.gnome.org/browse/libxml2/commit/?id=7580ce0a7f53891de520fed2c0e360266c286da6
   from upstream.
 - Self-assignment removed https://bugzilla.gnome.org/show_bug.cgi?id=751679.
-
+- Include fix for runtime blowups on larger xpath expressions, https://bugzilla.gnome.org/show_bug.cgi?id=760325
 
 To import a new snapshot:
 
@@ -49,4 +49,3 @@ Then copy config.h and include/libxml/xmlversion.h to win32/ on Linux.
 
 
 Update BUILD.gn and libxml.gyp as necessary to add/remove files, etc.
-
