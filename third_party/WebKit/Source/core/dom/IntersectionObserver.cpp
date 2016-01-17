@@ -317,22 +317,19 @@ bool IntersectionObserver::hasPercentMargin() const
         || m_leftMargin.type() == Percent);
 }
 
-#if ENABLE(OILPAN)
-void IntersectionObserver::clearWeakMembers(Visitor* visitor)
+void IntersectionObserver::rootDisappearedCallback(Visitor* visitor, void* self)
 {
-    if (Heap::isHeapObjectAlive(m_root))
-        return;
-    disconnect();
-    m_root = nullptr;
+    IntersectionObserver* observer = static_cast<IntersectionObserver*>(self);
+    observer->disconnect();
 }
-#endif
 
 DEFINE_TRACE(IntersectionObserver)
 {
 #if ENABLE(OILPAN)
-    visitor->template registerWeakMembers<IntersectionObserver, &IntersectionObserver::clearWeakMembers>(this);
+    visitor->registerWeakMembers(this, m_root.get(), IntersectionObserver::rootDisappearedCallback);
 #endif
     visitor->trace(m_callback);
+    visitor->trace(m_root);
     visitor->trace(m_observations);
     visitor->trace(m_entries);
 }
