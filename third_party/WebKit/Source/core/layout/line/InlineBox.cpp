@@ -228,15 +228,17 @@ bool InlineBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& locati
     if (parent()->lineLayoutItem().hasFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = layoutObject().containingBlock()->flipForWritingModeForChild(&toLayoutBox(layoutObject()), childPoint);
 
+    if (lineLayoutItem().hitTest(result, locationInContainer, childPoint))
+        return true;
+
     if (lineLayoutItem().style()->hasBorderRadius()) {
         LayoutRect borderRect = logicalFrameRect();
         borderRect.moveBy(accumulatedOffset);
         FloatRoundedRect border = lineLayoutItem().style()->getRoundedBorderFor(borderRect);
-        if (!locationInContainer.intersects(border))
-            return false;
+        if (locationInContainer.intersects(border))
+            return true;
     }
-
-    return lineLayoutItem().hitTest(result, locationInContainer, childPoint);
+    return false;
 }
 
 const RootInlineBox& InlineBox::root() const
