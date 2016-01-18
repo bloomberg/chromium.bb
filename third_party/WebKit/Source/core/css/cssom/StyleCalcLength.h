@@ -16,8 +16,12 @@ class SimpleLength;
 class CORE_EXPORT StyleCalcLength final : public LengthValue {
     DEFINE_WRAPPERTYPEINFO();
 public:
-    static StyleCalcLength* create(const LengthValue*, ExceptionState&);
+    static StyleCalcLength* create(const LengthValue*);
     static StyleCalcLength* create(const CalcDictionary&, ExceptionState&);
+    static StyleCalcLength* create(const LengthValue* length, ExceptionState&)
+    {
+        return create(length);
+    }
 
 #define GETTER_SETTER_MACRO(name, capsName, index) \
     double name(bool& isNull) { isNull = !has(index); return get(index); } \

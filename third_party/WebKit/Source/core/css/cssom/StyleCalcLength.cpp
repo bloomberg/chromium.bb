@@ -26,14 +26,14 @@ StyleCalcLength::StyleCalcLength(const SimpleLength& other) :
     set(other.value(), other.lengthUnit());
 }
 
-StyleCalcLength* StyleCalcLength::create(const LengthValue* other, ExceptionState&)
+StyleCalcLength* StyleCalcLength::create(const LengthValue* length)
 {
-    if (other->type() == SimpleLengthType) {
-        const SimpleLength* simpleLength = toSimpleLength(other);
+    if (length->type() == SimpleLengthType) {
+        const SimpleLength* simpleLength = toSimpleLength(length);
         return new StyleCalcLength(*simpleLength);
     }
 
-    return new StyleCalcLength(*toStyleCalcLength(other));
+    return new StyleCalcLength(*toStyleCalcLength(length));
 }
 
 StyleCalcLength* StyleCalcLength::create(const CalcDictionary& dictionary, ExceptionState& exceptionState)

@@ -44,6 +44,8 @@ public:
     static LengthValue* fromValue(double value, const String& typeStr, ExceptionState&);
     static LengthValue* fromDictionary(const CalcDictionary&, ExceptionState&);
 
+    LengthValue* clone();
+
 protected:
     LengthValue() {}
 
