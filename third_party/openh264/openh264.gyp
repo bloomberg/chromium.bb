@@ -9,41 +9,52 @@
   ],
   # Settings shared by all openh264 targets.
   'target_defaults': {
-    'variables': {
-      'conditions': [
-        ['OS!="win"', {
-          # GCC/clang flags
+    'conditions': [
+      ['OS!="win"', {
+        # GCC and clang flags.
+        'variables': {
           'openh264_cflags_add': [
             '-Wno-format',
-            '-Wno-header-hygiene',
             '-Wno-unused-value',
           ],
           'openh264_cflags_remove': [
             '-Wall',
             '-Wheader-hygiene',
           ],
-        },{
-          # Windows uses 'msvs_disabled_warnings' instead, for MSVC flags.
-          'openh264_cflags_add': [],
-          'openh264_cflags_remove': [],
-        }],
-      ],
-    },
-    'cflags': [ '<@(openh264_cflags_add)' ],
-    'cflags!': [ '<@(openh264_cflags_remove)' ],
-    'xcode_settings': {
-      'WARNING_CFLAGS': [ '<@(openh264_cflags_add)' ],
-      'WARNING_CFLAGS!': [ '<@(openh264_cflags_remove)' ],
-    },
-    'msvs_disabled_warnings': [
-      4324,  # structure was padded
-      4245,  # signed/unsigned mismatch
-      4701,  # uninitialized variable used
-      4702,  # unreachable code
-    ],
-
-    # Platform-specific defines.
-    'conditions': [
+        },
+        'cflags': [ '<@(openh264_cflags_add)' ],
+        'cflags!': [ '<@(openh264_cflags_remove)' ],
+        'xcode_settings': {
+          'WARNING_CFLAGS': [ '<@(openh264_cflags_add)' ],
+          'WARNING_CFLAGS!': [ '<@(openh264_cflags_remove)' ],
+        },
+      }, {
+        # The land of special cases: Windows.
+        'conditions': [
+          ['clang==0', {
+            # MSVS compiler uses warning numbers instead of cflags.
+            'msvs_disabled_warnings': [
+              4324,  # structure was padded
+              4245,  # signed/unsigned mismatch
+              4701,  # uninitialized variable used
+              4702,  # unreachable code
+            ],
+          }, {
+            # For clang on windows, |cflags| is mysteriously ignored and we
+            # resort to using |AdditionalOptions| instead.
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'AdditionalOptions!': [
+                  '-Wheader-hygiene',
+                ],
+                'AdditionalOptions': [
+                  '-Wno-unused-value',
+                ],
+              },
+            },
+          }],
+        ],
+      }],
       ['OS=="android"', {
         'defines': [
           # Android NDK is necessary for its cpufeatures and this define is

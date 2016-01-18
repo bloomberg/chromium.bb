@@ -14,9 +14,8 @@ config("config") {
   cflags = []
   defines = []
 
-  # Compiler warnings to ignore.
-  if (!is_win) {
-    # GCC/clang flags
+  # GCC and clang flags. MSVS (is_win && !is_clang) does not use cflags.
+  if (!is_win || is_clang) {
     cflags += [
       "-Wno-format",
       "-Wno-header-hygiene",
