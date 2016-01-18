@@ -333,7 +333,8 @@ default_grab_pointer_button(struct weston_pointer_grab *grab,
  */
 WL_EXPORT void
 weston_pointer_send_axis(struct weston_pointer *pointer,
-			 uint32_t time, uint32_t axis, wl_fixed_t value)
+			 uint32_t time,
+			 struct weston_pointer_axis_event *event)
 {
 	struct wl_resource *resource;
 	struct wl_list *resource_list;
@@ -343,14 +344,16 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 
 	resource_list = &pointer->focus_client->pointer_resources;
 	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_axis(resource, time, axis, value);
+		wl_pointer_send_axis(resource, time,
+				     event->axis, event->value);
 }
 
 static void
 default_grab_pointer_axis(struct weston_pointer_grab *grab,
-			  uint32_t time, uint32_t axis, wl_fixed_t value)
+			  uint32_t time,
+			  struct weston_pointer_axis_event *event)
 {
-	weston_pointer_send_axis(grab->pointer, time, axis, value);
+	weston_pointer_send_axis(grab->pointer, time, event);
 }
 
 static void
@@ -1266,22 +1269,22 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 }
 
 WL_EXPORT void
-notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
-	    wl_fixed_t value)
+notify_axis(struct weston_seat *seat, uint32_t time,
+	    struct weston_pointer_axis_event *event)
 {
 	struct weston_compositor *compositor = seat->compositor;
 	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
 
 	weston_compositor_wake(compositor);
 
-	if (!value)
+	if (!event->value)
 		return;
 
 	if (weston_compositor_run_axis_binding(compositor, pointer,
-					       time, axis, value))
+					       time, event))
 		return;
 
-	pointer->grab->interface->axis(pointer->grab, time, axis, value);
+	pointer->grab->interface->axis(pointer->grab, time, event);
 }
 
 WL_EXPORT int

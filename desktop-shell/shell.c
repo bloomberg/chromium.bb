@@ -1598,7 +1598,7 @@ noop_grab_focus(struct weston_pointer_grab *grab)
 
 static void
 noop_grab_axis(struct weston_pointer_grab *grab,
-	       uint32_t time, uint32_t axis, wl_fixed_t value)
+	       uint32_t time, struct weston_pointer_axis_event *event)
 {
 }
 
@@ -3207,9 +3207,10 @@ popup_grab_button(struct weston_pointer_grab *grab,
 
 static void
 popup_grab_axis(struct weston_pointer_grab *grab,
-		uint32_t time, uint32_t axis, wl_fixed_t value)
+		uint32_t time,
+		struct weston_pointer_axis_event *event)
 {
-	weston_pointer_send_axis(grab->pointer, time, axis, value);
+	weston_pointer_send_axis(grab->pointer, time, event);
 }
 
 static void
@@ -4720,7 +4721,8 @@ resize_binding(struct weston_pointer *pointer, uint32_t time,
 
 static void
 surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
-			uint32_t axis, wl_fixed_t value, void *data)
+			struct weston_pointer_axis_event *event,
+			void *data)
 {
 	float step = 0.005;
 	struct shell_surface *shsurf;
@@ -4736,7 +4738,7 @@ surface_opacity_binding(struct weston_pointer *pointer, uint32_t time,
 	if (!shsurf)
 		return;
 
-	shsurf->view->alpha -= wl_fixed_to_double(value) * step;
+	shsurf->view->alpha -= wl_fixed_to_double(event->value) * step;
 
 	if (shsurf->view->alpha > 1.0)
 		shsurf->view->alpha = 1.0;
@@ -4799,9 +4801,10 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 
 static void
 zoom_axis_binding(struct weston_pointer *pointer, uint32_t time,
-		  uint32_t axis, wl_fixed_t value, void *data)
+		  struct weston_pointer_axis_event *event,
+		  void *data)
 {
-	do_zoom(pointer->seat, time, 0, axis, value);
+	do_zoom(pointer->seat, time, 0, event->axis, event->value);
 }
 
 static void

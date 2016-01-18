@@ -1047,6 +1047,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		(xcb_button_press_event_t *) event;
 	uint32_t button;
 	struct x11_output *output;
+	struct weston_pointer_axis_event weston_event;
 
 	output = x11_backend_find_output(b, button_event->event);
 	if (!output)
@@ -1082,32 +1083,44 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	case 4:
 		/* Axis are measured in pixels, but the xcb events are discrete
 		 * steps. Therefore move the axis by some pixels every step. */
-		if (state)
+		if (state) {
+			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.axis =
+				WL_POINTER_AXIS_VERTICAL_SCROLL;
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
-				    WL_POINTER_AXIS_VERTICAL_SCROLL,
-				    -DEFAULT_AXIS_STEP_DISTANCE);
+				    &weston_event);
+		}
 		return;
 	case 5:
-		if (state)
+		if (state) {
+			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.axis =
+				WL_POINTER_AXIS_VERTICAL_SCROLL;
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
-				    WL_POINTER_AXIS_VERTICAL_SCROLL,
-				    DEFAULT_AXIS_STEP_DISTANCE);
+				    &weston_event);
+		}
 		return;
 	case 6:
-		if (state)
+		if (state) {
+			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.axis =
+				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
-				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-				    -DEFAULT_AXIS_STEP_DISTANCE);
+				    &weston_event);
+		}
 		return;
 	case 7:
-		if (state)
+		if (state) {
+			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.axis =
+				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
 			notify_axis(&b->core_seat,
 				    weston_compositor_get_time(),
-				    WL_POINTER_AXIS_HORIZONTAL_SCROLL,
-				    DEFAULT_AXIS_STEP_DISTANCE);
+				    &weston_event);
+		}
 		return;
 	default:
 		button = button_event->detail + BTN_SIDE - 8;

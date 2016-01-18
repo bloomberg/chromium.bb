@@ -160,8 +160,12 @@ ss_seat_handle_axis(void *data, struct wl_pointer *pointer,
 		    uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 	struct ss_seat *seat = data;
+	struct weston_pointer_axis_event weston_event;
 
-	notify_axis(&seat->base, time, axis, value);
+	weston_event.axis = axis;
+	weston_event.value = value;
+
+	notify_axis(&seat->base, time, &weston_event);
 }
 
 static const struct wl_pointer_listener ss_seat_pointer_listener = {

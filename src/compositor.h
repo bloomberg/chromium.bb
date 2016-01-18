@@ -251,6 +251,11 @@ struct weston_pointer_motion_event {
 	double dy;
 };
 
+struct weston_pointer_axis_event {
+	uint32_t axis;
+	wl_fixed_t value;
+};
+
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
 	void (*focus)(struct weston_pointer_grab *grab);
@@ -259,7 +264,8 @@ struct weston_pointer_grab_interface {
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
 	void (*axis)(struct weston_pointer_grab *grab,
-		     uint32_t time, uint32_t axis, wl_fixed_t value);
+		     uint32_t time,
+		     struct weston_pointer_axis_event *event);
 	void (*cancel)(struct weston_pointer_grab *grab);
 };
 
@@ -395,7 +401,8 @@ void
 weston_pointer_destroy(struct weston_pointer *pointer);
 void
 weston_pointer_send_axis(struct weston_pointer *pointer,
-			 uint32_t time, uint32_t axis, wl_fixed_t value);
+			 uint32_t time,
+			 struct weston_pointer_axis_event *event);
 void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct weston_view *view,
@@ -1133,8 +1140,8 @@ void
 notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 	      enum wl_pointer_button_state state);
 void
-notify_axis(struct weston_seat *seat, uint32_t time, uint32_t axis,
-	    wl_fixed_t value);
+notify_axis(struct weston_seat *seat, uint32_t time,
+	    struct weston_pointer_axis_event *event);
 void
 notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state,
@@ -1258,8 +1265,9 @@ weston_compositor_add_touch_binding(struct weston_compositor *compositor,
 				    void *data);
 
 typedef void (*weston_axis_binding_handler_t)(struct weston_pointer *pointer,
-					      uint32_t time, uint32_t axis,
-					      wl_fixed_t value, void *data);
+					      uint32_t time,
+					      struct weston_pointer_axis_event *event,
+					      void *data);
 struct weston_binding *
 weston_compositor_add_axis_binding(struct weston_compositor *compositor,
 			           uint32_t axis,
@@ -1305,7 +1313,7 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_pointer *pointer, uint32_t time,
-				   uint32_t axis, int32_t value);
+				   struct weston_pointer_axis_event *event);
 int
 weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 				    struct weston_keyboard *keyboard, uint32_t time,

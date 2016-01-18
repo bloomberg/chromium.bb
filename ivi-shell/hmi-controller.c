@@ -1511,9 +1511,10 @@ pointer_noop_grab_focus(struct weston_pointer_grab *grab)
 
 static void
 pointer_default_grab_axis(struct weston_pointer_grab *grab,
-			  uint32_t time, uint32_t axis, wl_fixed_t value)
+			  uint32_t time,
+			  struct weston_pointer_axis_event *event)
 {
-	weston_pointer_send_axis(grab->pointer, time, axis, value);
+	weston_pointer_send_axis(grab->pointer, time, event);
 }
 
 static void

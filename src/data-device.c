@@ -412,7 +412,7 @@ drag_grab_button(struct weston_pointer_grab *grab,
 
 static void
 drag_grab_axis(struct weston_pointer_grab *grab,
-	       uint32_t time, uint32_t axis, wl_fixed_t value)
+	       uint32_t time, struct weston_pointer_axis_event *event)
 {
 }
 

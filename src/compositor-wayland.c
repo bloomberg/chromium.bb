@@ -1431,8 +1431,12 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 		  uint32_t time, uint32_t axis, wl_fixed_t value)
 {
 	struct wayland_input *input = data;
+	struct weston_pointer_axis_event weston_event;
 
-	notify_axis(&input->base, time, axis, value);
+	weston_event.axis = axis;
+	weston_event.value = value;
+
+	notify_axis(&input->base, time, &weston_event);
 }
 
 static const struct wl_pointer_listener pointer_listener = {

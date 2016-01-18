@@ -390,20 +390,20 @@ weston_compositor_run_touch_binding(struct weston_compositor *compositor,
 int
 weston_compositor_run_axis_binding(struct weston_compositor *compositor,
 				   struct weston_pointer *pointer,
-				   uint32_t time, uint32_t axis,
-				   wl_fixed_t value)
+				   uint32_t time,
+				   struct weston_pointer_axis_event *event)
 {
 	struct weston_binding *b, *tmp;
 
 	/* Invalidate all active modifier bindings. */
 	wl_list_for_each(b, &compositor->modifier_binding_list, link)
-		b->key = axis;
+		b->key = event->axis;
 
 	wl_list_for_each_safe(b, tmp, &compositor->axis_binding_list, link) {
-		if (b->axis == axis &&
+		if (b->axis == event->axis &&
 		    b->modifier == pointer->seat->modifier_state) {
 			weston_axis_binding_handler_t handler = b->handler;
-			handler(pointer, time, axis, value, b->data);
+			handler(pointer, time, event, b->data);
 			return 1;
 		}
 	}
