@@ -104,6 +104,17 @@ class Request(object):
       setattr(result, k, v)
     return result
 
+  def GetContentType(self):
+    """Returns the content type, or None."""
+    content_type = self.response_headers.get('Content-Type', None)
+    if not content_type or ';' not in content_type:
+      return content_type
+    else:
+      return content_type[:content_type.index(';')]
+
+  def IsDataRequest(self):
+    return self.protocol == 'data'
+
   # For testing.
   def __eq__(self, o):
     return self.__dict__ == o.__dict__

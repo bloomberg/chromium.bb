@@ -19,7 +19,7 @@ from devil.android import device_utils
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 import device_setup
-import trace_recorder
+import page_track
 import tracing
 
 
@@ -37,7 +37,7 @@ def main():
        file(args.output + '.page', 'w') as page_output, \
        device_setup.DeviceConnection(device) as connection:
     track = tracing.TracingTrack(connection, fetch_stream=False)
-    page = trace_recorder.PageTrack(connection)
+    page = page_track.PageTrack(connection)
     connection.SetUpMonitoring()
     connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
     connection.StartMonitoring()

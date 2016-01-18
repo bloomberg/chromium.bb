@@ -19,46 +19,7 @@ import devil_chromium
 
 import device_setup
 import devtools_monitor
-
-
-class PageTrack(devtools_monitor.Track):
-  """Records the events from the page track."""
-  def __init__(self, connection):
-    super(PageTrack, self).__init__(connection)
-    self._connection = connection
-    self._events = []
-    self._main_frame_id = None
-    if self._connection:
-      self._connection.RegisterListener('Page.frameStartedLoading', self)
-      self._connection.RegisterListener('Page.frameStoppedLoading', self)
-
-  def Handle(self, method, msg):
-    params = msg['params']
-    frame_id = params['frameId']
-    should_stop = False
-    if method == 'Page.frameStartedLoading' and self._main_frame_id is None:
-      self._main_frame_id = params['frameId']
-    elif (method == 'Page.frameStoppedLoading'
-          and params['frameId'] == self._main_frame_id):
-      should_stop = True
-    self._events.append((method, frame_id))
-    if should_stop:
-      self._connection.StopMonitoring()
-
-  def GetEvents(self):
-    return self._events
-
-  def ToJsonDict(self):
-    return {'events': [event for event in self._events]}
-
-  @classmethod
-  def FromJsonDict(cls, json_dict):
-    assert 'events' in json_dict
-    result = PageTrack(None)
-    events = [event for event in json_dict['events']]
-    result._events = events
-    return result
-
+import page_track
 
 class AndroidTraceRecorder(object):
   """Records a loading trace."""
@@ -69,8 +30,7 @@ class AndroidTraceRecorder(object):
 
   def Go(self, connection):
     self.devtools_connection = connection
-    self.page_track = PageTrack(self.devtools_connection)
-
+    self.page_track = page_track.PageTrack(self.devtools_connection)
     self.devtools_connection.SetUpMonitoring()
     self.devtools_connection.SendAndIgnoreResponse(
         'Page.navigate', {'url': self.url})

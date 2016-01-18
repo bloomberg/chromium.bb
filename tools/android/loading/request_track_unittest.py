@@ -8,6 +8,17 @@ import unittest
 from request_track import (Request, RequestTrack, _TimingFromDict)
 
 
+class RequestTestCase(unittest.TestCase):
+  def testContentType(self):
+    r = Request()
+    r.response_headers = {}
+    self.assertEquals(None, r.GetContentType())
+    r.response_headers = {'Content-Type': 'application/javascript'}
+    self.assertEquals('application/javascript', r.GetContentType())
+    r.response_headers = {'Content-Type': 'application/javascript;bla'}
+    self.assertEquals('application/javascript', r.GetContentType())
+
+
 class RequestTrackTestCase(unittest.TestCase):
   _REQUEST_WILL_BE_SENT = {
       'method': 'Network.requestWillBeSent',
