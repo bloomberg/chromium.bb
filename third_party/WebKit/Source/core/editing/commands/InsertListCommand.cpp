@@ -355,71 +355,81 @@ static HTMLElement* adjacentEnclosingList(const VisiblePosition& pos, const Visi
 
 void InsertListCommand::listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag)
 {
-    VisiblePosition start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
-    VisiblePosition end = endOfParagraph(start, CanSkipOverEditingBoundary);
+    const VisiblePosition& start = startOfParagraph(originalStart, CanSkipOverEditingBoundary);
+    const VisiblePosition& end = endOfParagraph(start, CanSkipOverEditingBoundary);
 
     if (start.isNull() || end.isNull())
         return;
 
     // Check for adjoining lists.
-    RefPtrWillBeRawPtr<HTMLElement> listItemElement = HTMLLIElement::create(document());
-    RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
-    appendNode(placeholder, listItemElement);
+    HTMLElement* const previousList = adjacentEnclosingList(start, previousPositionOf(start, CannotCrossEditingBoundary), listTag);
+    HTMLElement* const nextList = adjacentEnclosingList(start, nextPositionOf(end, CannotCrossEditingBoundary), listTag);
+    if (previousList || nextList) {
+        // Place list item into adjoining lists.
+        const RefPtrWillBeRawPtr<HTMLLIElement> listItemElement = HTMLLIElement::create(document());
+        if (previousList)
+            appendNode(listItemElement, previousList);
+        else
+            insertNodeAt(listItemElement, Position::beforeNode(nextList));
 
-    // Place list item into adjoining lists.
-    HTMLElement* previousList = adjacentEnclosingList(start, previousPositionOf(start, CannotCrossEditingBoundary), listTag);
-    HTMLElement* nextList = adjacentEnclosingList(start, nextPositionOf(end, CannotCrossEditingBoundary), listTag);
-    RefPtrWillBeRawPtr<HTMLElement> listElement = nullptr;
-    if (previousList) {
-        appendNode(listItemElement, previousList);
-    } else if (nextList) {
-        insertNodeAt(listItemElement, positionBeforeNode(nextList));
-    } else {
-        // Create the list.
-        listElement = createHTMLElement(document(), listTag);
-        appendNode(listItemElement, listElement);
+        moveParagraphOverPositionIntoEmptyListItem(start, listItemElement);
 
-        if (start.deepEquivalent() == end.deepEquivalent() && isEnclosingBlock(start.deepEquivalent().anchorNode())) {
-            // Inserting the list into an empty paragraph that isn't held open
-            // by a br or a '\n', will invalidate start and end.  Insert
-            // a placeholder and then recompute start and end.
-            RefPtrWillBeRawPtr<HTMLBRElement> placeholder = insertBlockPlaceholder(start.deepEquivalent());
-            start = createVisiblePosition(positionBeforeNode(placeholder.get()));
-            end = start;
-        }
+        if (canMergeLists(previousList, nextList))
+            mergeIdenticalElements(previousList, nextList);
 
-        // Insert the list at a position visually equivalent to start of the
-        // paragraph that is being moved into the list.
-        // Try to avoid inserting it somewhere where it will be surrounded by
-        // inline ancestors of start, since it is easier for editing to produce
-        // clean markup when inline elements are pushed down as far as possible.
-        Position insertionPos(mostBackwardCaretPosition(start.deepEquivalent()));
-        // Also avoid the containing list item.
-        Node* listChild = enclosingListChild(insertionPos.anchorNode());
-        if (isHTMLLIElement(listChild))
-            insertionPos = positionInParentBeforeNode(*listChild);
-
-        insertNodeAt(listElement, insertionPos);
-
-        // We inserted the list at the start of the content we're about to move
-        // Update the start of content, so we don't try to move the list into itself.  bug 19066
-        // Layout is necessary since start's node's inline layoutObjects may have been destroyed by the insertion
-        // The end of the content may have changed after the insertion and layout so update it as well.
-        if (insertionPos == start.deepEquivalent())
-            start = originalStart;
+        return;
     }
 
+    // Create new list element.
+
+    // Inserting the list into an empty paragraph that isn't held open
+    // by a br or a '\n', will invalidate start and end.  Insert
+    // a placeholder and then recompute start and end.
+    Position startPos = start.deepEquivalent();
+    if (start.deepEquivalent() == end.deepEquivalent() && isEnclosingBlock(start.deepEquivalent().anchorNode())) {
+        const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = insertBlockPlaceholder(startPos);
+        startPos = Position::beforeNode(placeholder.get());
+    }
+
+    // Insert the list at a position visually equivalent to start of the
+    // paragraph that is being moved into the list.
+    // Try to avoid inserting it somewhere where it will be surrounded by
+    // inline ancestors of start, since it is easier for editing to produce
+    // clean markup when inline elements are pushed down as far as possible.
+    Position insertionPos(mostBackwardCaretPosition(startPos));
+    // Also avoid the containing list item.
+    Node* const listChild = enclosingListChild(insertionPos.anchorNode());
+    if (isHTMLLIElement(listChild))
+        insertionPos = positionInParentBeforeNode(*listChild);
+
+    const RefPtrWillBeRawPtr<HTMLElement> listElement = createHTMLElement(document(), listTag);
+    insertNodeAt(listElement, insertionPos);
+    const RefPtrWillBeRawPtr<HTMLLIElement> listItemElement = HTMLLIElement::create(document());
+    appendNode(listItemElement, listElement);
+
+    // We inserted the list at the start of the content we're about to move
+    // Update the start of content, so we don't try to move the list into itself.  bug 19066
+    // Layout is necessary since start's node's inline layoutObjects may have been destroyed by the insertion
+    // The end of the content may have changed after the insertion and layout so update it as well.
+    if (insertionPos == startPos)
+        moveParagraphOverPositionIntoEmptyListItem(originalStart, listItemElement);
+    else
+        moveParagraphOverPositionIntoEmptyListItem(createVisiblePosition(startPos), listItemElement);
+
+    mergeWithNeighboringLists(listElement);
+}
+
+void InsertListCommand::moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition& pos, PassRefPtrWillBeRawPtr<HTMLLIElement> listItemElement)
+{
+    ASSERT(!listItemElement->hasChildren());
+    const RefPtrWillBeRawPtr<HTMLBRElement> placeholder = HTMLBRElement::create(document());
+    appendNode(placeholder, listItemElement);
     // Inserting list element and list item list may change start of pargraph
     // to move. We calculate start of paragraph again.
     document().updateLayoutIgnorePendingStylesheets();
-    start = startOfParagraph(start, CanSkipOverEditingBoundary);
-    end = endOfParagraph(start, CanSkipOverEditingBoundary);
+    const VisiblePosition& start = startOfParagraph(pos, CanSkipOverEditingBoundary);
+    const VisiblePosition& end = endOfParagraph(pos, CanSkipOverEditingBoundary);
     moveParagraph(start, end, createVisiblePosition(positionBeforeNode(placeholder.get())), true);
-
-    if (listElement)
-        mergeWithNeighboringLists(listElement);
-    else if (canMergeLists(previousList, nextList))
-        mergeIdenticalElements(previousList, nextList);
 }
 
 DEFINE_TRACE(InsertListCommand)

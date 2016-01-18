@@ -58,6 +58,7 @@ private:
     bool doApplyForSingleParagraph(bool forceCreateList, const HTMLQualifiedName&, Range& currentSelection);
     void unlistifyParagraph(const VisiblePosition& originalStart, HTMLElement* listNode, Node* listChildNode);
     void listifyParagraph(const VisiblePosition& originalStart, const HTMLQualifiedName& listTag);
+    void moveParagraphOverPositionIntoEmptyListItem(const VisiblePosition&, PassRefPtrWillBeRawPtr<HTMLLIElement>);
 
     Type m_type;
 };
