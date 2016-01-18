@@ -280,6 +280,9 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/539315
 "race:MojoCreateMessagePipe\n"
 
+// http://crbug.com/559117
+"base::trace_event::TraceConfig::AsConvertableToTraceFormat\n"
+
 // https://crbug.com/569682
 "race:blink::ThreadState::visitStackRoots\n"
 
