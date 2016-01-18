@@ -57,13 +57,10 @@ public:
 
     Node* node() const { return m_node; }
 
-    template<typename BufferType>
-    void prependTextTo(BufferType& output) { prependTextTo(output, 0, m_textLength); }
-
     // Prepend characters with offset range [position, position + copyLength)
     // to the output buffer.
     template<typename BufferType>
-    void prependTextTo(BufferType& output, int position, int copyLength)
+    void copyTextTo(BufferType& output, int position, int copyLength) const
     {
         ASSERT(position >= 0);
         ASSERT(copyLength >= 0);
@@ -79,6 +76,9 @@ public:
         else
             m_textContainer.prependTo(output, m_textOffset + m_textLength - position - copyLength, copyLength);
     }
+
+    template<typename BufferType>
+    void copyTextTo(BufferType& output, int position = 0) const { copyTextTo(output, position, m_textLength - position); }
 
     Node* startContainer() const;
     int endOffset() const;

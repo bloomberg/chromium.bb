@@ -673,7 +673,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionTemplate<Strategy>::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
-            forwardsIterator.appendTextTo(characters);
+            forwardsIterator.copyTextTo(characters);
             int i = endOfFirstWordBoundaryContext(characters.data(), characters.size());
             string.append(characters.data(), i);
             suffixLength += i;
@@ -693,7 +693,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         // TODO(xiaochengh): Iterative prepending has quadratic running time
         // in the worst case. Should improve it to linear.
         if (!inTextSecurityMode) {
-            it.prependTextTo(string);
+            it.copyTextTo(string);
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries
@@ -753,7 +753,7 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         SimplifiedBackwardsTextIteratorAlgorithm<Strategy> backwardsIterator(PositionTemplate<Strategy>::firstPositionInNode(&d), start);
         while (!backwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
-            backwardsIterator.prependTextTo(characters);
+            backwardsIterator.copyTextTo(characters);
             int length = characters.size();
             int i = startOfLastWordBoundaryContext(characters.data(), length);
             // TODO(xiaochengh): Iterative prepending has quadratic running
@@ -779,7 +779,7 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         // it.
         bool inTextSecurityMode = it.isInTextSecurityMode();
         if (!inTextSecurityMode) {
-            it.appendTextTo(string);
+            it.copyTextTo(string);
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries

@@ -386,7 +386,7 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     EXPECT_EQ(3, TextIterator::rangeLength(range->startPosition(), range->endPosition()));
 }
 
-TEST_F(TextIteratorTest, appendTextTo)
+TEST_F(TextIteratorTest, copyTextTo)
 {
     const char* bodyContent = "<a id=host><b id=one>one</b> not appeared <b id=two>two</b></a>";
     const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
@@ -400,40 +400,40 @@ TEST_F(TextIteratorTest, appendTextTo)
     EphemeralRangeTemplate<EditingStrategy> range1(EphemeralRangeTemplate<EditingStrategy>::rangeOfContents(*host));
     TextIteratorAlgorithm<EditingStrategy> iter1(range1.startPosition(), range1.endPosition());
     Vector<UChar> output1;
-    iter1.appendTextTo(output1, 0, 2);
+    iter1.copyTextTo(output1, 0, 2);
     EXPECT_EQ("on", String(output1)) << String::format(message, 1, "on").utf8().data();
-    iter1.appendTextTo(output1, 2, 1);
+    iter1.copyTextTo(output1, 2, 1);
     EXPECT_EQ("one", String(output1)) << String::format(message, 1, "one").utf8().data();
     iter1.advance();
-    iter1.appendTextTo(output1, 0, 1);
+    iter1.copyTextTo(output1, 0, 1);
     EXPECT_EQ("onet", String(output1)) << String::format(message, 1, "onet").utf8().data();
-    iter1.appendTextTo(output1, 1, 2);
+    iter1.copyTextTo(output1, 1, 2);
     EXPECT_EQ("onetwo", String(output1)) << String::format(message, 1, "onetwo").utf8().data();
 
     EphemeralRangeTemplate<EditingInComposedTreeStrategy> range2(EphemeralRangeTemplate<EditingInComposedTreeStrategy>::rangeOfContents(*host));
     TextIteratorAlgorithm<EditingInComposedTreeStrategy> iter2(range2.startPosition(), range2.endPosition());
     Vector<UChar> output2;
-    iter2.appendTextTo(output2, 0, 3);
+    iter2.copyTextTo(output2, 0, 3);
     EXPECT_EQ("thr", String(output2)) << String::format(message, 2, "thr").utf8().data();
-    iter2.appendTextTo(output2, 3, 3);
+    iter2.copyTextTo(output2, 3, 3);
     EXPECT_EQ("three ", String(output2)) << String::format(message, 2, "three ").utf8().data();
     iter2.advance();
-    iter2.appendTextTo(output2, 0, 2);
+    iter2.copyTextTo(output2, 0, 2);
     EXPECT_EQ("three tw", String(output2)) << String::format(message, 2, "three tw").utf8().data();
-    iter2.appendTextTo(output2, 2, 1);
+    iter2.copyTextTo(output2, 2, 1);
     EXPECT_EQ("three two", String(output2)) << String::format(message, 2, "three two").utf8().data();
     iter2.advance();
-    iter2.appendTextTo(output2, 0, 1);
+    iter2.copyTextTo(output2, 0, 1);
     EXPECT_EQ("three two ", String(output2)) << String::format(message, 2, "three two ").utf8().data();
     iter2.advance();
-    iter2.appendTextTo(output2, 0, 1);
+    iter2.copyTextTo(output2, 0, 1);
     EXPECT_EQ("three two o", String(output2)) << String::format(message, 2, "three two o").utf8().data();
-    iter2.appendTextTo(output2, 1, 2);
+    iter2.copyTextTo(output2, 1, 2);
     EXPECT_EQ("three two one", String(output2)) << String::format(message, 2, "three two one").utf8().data();
     iter2.advance();
-    iter2.appendTextTo(output2, 0, 2);
+    iter2.copyTextTo(output2, 0, 2);
     EXPECT_EQ("three two one z", String(output2)) << String::format(message, 2, "three two one z").utf8().data();
-    iter2.appendTextTo(output2, 2, 3);
+    iter2.copyTextTo(output2, 2, 3);
     EXPECT_EQ("three two one zero", String(output2)) << String::format(message, 2, "three two one zero").utf8().data();
 }
 
