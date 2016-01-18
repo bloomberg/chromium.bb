@@ -134,7 +134,7 @@ static base::FilePath GetFirstNonSigninProfile(const ProfileInfoCache& cache) {
 #endif
 }
 
-} // namespace
+}  // namespace
 
 // This file contains tests for the ProfileManager that require a heavyweight
 // InProcessBrowserTest.  These include tests involving profile deletion.
@@ -273,8 +273,8 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   // Create a profile, make sure callback is invoked before any callbacks are
   // invoked (so they can do things like sign in the profile, etc).
   ProfileManager::CreateMultiProfileAsync(
-      base::string16(), // name
-      std::string(), // icon url
+      base::string16(),  // name
+      std::string(),  // icon url
       base::Bind(ProfileCreationComplete),
       std::string());
   // Wait for profile to finish loading.
@@ -466,3 +466,31 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeletePasswords) {
   EXPECT_EQ(0u, verify_delete.GetPasswords().size());
 }
 #endif  // !defined(OS_WIN) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+
+// Tests Profile::HasOffTheRecordProfile, Profile::IsValidProfile and the
+// profile counts in ProfileManager with respect to the creation and destruction
+// of incognito profiles.
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, IncognitoProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ASSERT_TRUE(profile_manager);
+
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  ASSERT_TRUE(profile);
+  EXPECT_FALSE(profile->HasOffTheRecordProfile());
+
+  size_t initial_profile_count = profile_manager->GetNumberOfProfiles();
+
+  // Create an incognito profile.
+  Profile* incognito_profile = profile->GetOffTheRecordProfile();
+
+  EXPECT_TRUE(profile->HasOffTheRecordProfile());
+  ASSERT_TRUE(profile_manager->IsValidProfile(incognito_profile));
+  EXPECT_EQ(initial_profile_count, profile_manager->GetNumberOfProfiles());
+
+  // Delete the incognito profile.
+  incognito_profile->GetOriginalProfile()->DestroyOffTheRecordProfile();
+
+  EXPECT_FALSE(profile->HasOffTheRecordProfile());
+  EXPECT_FALSE(profile_manager->IsValidProfile(incognito_profile));
+  EXPECT_EQ(initial_profile_count, profile_manager->GetNumberOfProfiles());
+}
