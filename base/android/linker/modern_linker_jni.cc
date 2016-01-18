@@ -290,8 +290,10 @@ bool GetLibraryLoadSize(void* addr, size_t* load_size, size_t* min_vaddr) {
 
 // Helper for LoadLibrary(). We reserve an address space larger than
 // needed. After library loading we want to trim that reservation to only
-// what is needed.
-bool ResizeReservedAddressSpace(void* addr,
+// what is needed. Failure to trim should not occur, but if it does then
+// everything will still run, so we treat it as a warning rather than
+// an error.
+void ResizeReservedAddressSpace(void* addr,
                                 size_t reserved_size,
                                 size_t load_size,
                                 size_t min_vaddr) {
@@ -301,38 +303,35 @@ bool ResizeReservedAddressSpace(void* addr,
 
   const uintptr_t uintptr_addr = reinterpret_cast<uintptr_t>(addr);
 
-  if (reserved_size < load_size) {
+  if (reserved_size > load_size) {
+    // Unmap the part of the reserved address space that is beyond the end of
+    // the loaded library data.
+    void* unmap = reinterpret_cast<void*>(uintptr_addr + load_size);
+    const size_t length = reserved_size - load_size;
+    if (munmap(unmap, length) == -1) {
+      LOG_ERROR("WARNING: unmap of %d bytes at %p failed: %s",
+                static_cast<int>(length), unmap, strerror(errno));
+    }
+  } else {
     LOG_ERROR("WARNING: library reservation was too small");
-    return true;
-  }
-
-  // Unmap the part of the reserved address space that is beyond the end of
-  // the loaded library data.
-  void* unmap = reinterpret_cast<void*>(uintptr_addr + load_size);
-  size_t length = reserved_size - load_size;
-  if (munmap(unmap, length) == -1) {
-    LOG_ERROR("Failed to unmap %d at %p", static_cast<int>(length), unmap);
-    return false;
   }
 
 #if RESERVE_BREAKPAD_GUARD_REGION
-  if (min_vaddr > kBreakpadGuardRegionBytes) {
+  if (kBreakpadGuardRegionBytes > min_vaddr) {
+    // Unmap the part of the reserved address space that is ahead of where we
+    // actually need the guard region to start. Resizes the guard region to
+    // min_vaddr bytes.
+    void* unmap =
+        reinterpret_cast<void*>(uintptr_addr - kBreakpadGuardRegionBytes);
+    const size_t length = kBreakpadGuardRegionBytes - min_vaddr;
+    if (munmap(unmap, length) == -1) {
+      LOG_ERROR("WARNING: unmap of %d bytes at %p failed: %s",
+                static_cast<int>(length), unmap, strerror(errno));
+    }
+  } else {
     LOG_ERROR("WARNING: breakpad guard region reservation was too small");
-    return true;
-  }
-
-  // Unmap the part of the reserved address space that is ahead of where we
-  // actually need the guard region to start. Resizes the guard region to
-  // min_vaddr bytes.
-  unmap = reinterpret_cast<void*>(uintptr_addr - kBreakpadGuardRegionBytes);
-  length = kBreakpadGuardRegionBytes - min_vaddr;
-  if (munmap(unmap, length) == -1) {
-    LOG_ERROR("Failed to unmap %d at %p", static_cast<int>(length), unmap);
-    return false;
   }
 #endif
-
-  return true;
 }
 
 // Load a library with the chromium linker, using android_dlopen_ext().
@@ -420,17 +419,29 @@ jboolean LoadLibrary(JNIEnv* env,
     return false;
   }
 
-  // After loading, trim the mapping to match the library's actual size.
+  // For https://crbug.com/568880.
+  //
+  // Release the scoped mapping. Now that the library has loaded we can no
+  // longer assume we have control of all of this area. libdl knows addr and
+  // has loaded the library into some portion of the reservation. It will
+  // not expect that portion of memory to be arbitrarily unmapped.
+  mapping.Release();
+
+  // After loading we can find the actual size of the library. It should
+  // be less than the space we reserved for it.
   size_t load_size = 0;
   size_t min_vaddr = 0;
   if (!GetLibraryLoadSize(addr, &load_size, &min_vaddr)) {
     LOG_ERROR("Unable to find size for load at %p", addr);
     return false;
   }
-  if (!ResizeReservedAddressSpace(addr, size, load_size, min_vaddr)) {
-    LOG_ERROR("Unable to resize reserved address mapping");
-    return false;
-  }
+
+  // Trim the reservation mapping to match the library's actual size. Failure
+  // to resize is not a fatal error. At worst we lose a portion of virtual
+  // address space that we might otherwise have recovered. Note that trimming
+  // the mapping here requires that we have already released the scoped
+  // mapping.
+  ResizeReservedAddressSpace(addr, size, load_size, min_vaddr);
 
   // Locate and if found then call the loaded library's JNI_OnLoad() function.
   using JNI_OnLoadFunctionPtr = int (*)(void* vm, void* reserved);
@@ -444,9 +455,6 @@ jboolean LoadLibrary(JNIEnv* env,
       return false;
     }
   }
-
-  // Release mapping before returning so that we do not unmap reserved space.
-  mapping.Release();
 
   // Note the load address and load size in the supplied libinfo object.
   const size_t cast_addr = reinterpret_cast<size_t>(addr);
@@ -532,11 +540,31 @@ jboolean CreateSharedRelro(JNIEnv* env,
     return false;
   }
 
-  // Unload the library from this address. The reserved space is
-  // automatically unmapped on exit from this function.
+  // For https://crbug.com/568880.
+  //
+  // Release the scoped mapping. See comment in LoadLibrary() above for more.
+  mapping.Release();
+
+  // For https://crbug.com/568880.
+  //
+  // Unload the library from this address. Calling dlclose() will unmap the
+  // part of the reservation occupied by the libary, but will leave the
+  // remainder of the reservation mapped, and we have no effective way of
+  // unmapping the leftover portions because we don't know where dlclose's
+  // unmap ended.
+  //
+  // For now we live with this. It is a loss of some virtual address space
+  // (but not actual memory), and because it occurs only once and only in
+  // the browser process, and never in renderer processes, it is not a
+  // significant issue.
+  //
+  // TODO(simonb): Between mapping.Release() and here, consider calling the
+  // functions that trim the reservation down to the size of the loaded
+  // library. This may help recover some or all of the virtual address space
+  // that is otherwise lost.
   dlclose(handle);
 
-  // Reopen the shared RELFO fd in read-only mode. This ensures that nothing
+  // Reopen the shared RELRO fd in read-only mode. This ensures that nothing
   // can write to it through the RELRO fd that we return in libinfo.
   close(relro_fd);
   relro_fd = open(filepath, O_RDONLY);
