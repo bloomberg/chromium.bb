@@ -344,7 +344,10 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
       return false;
 
     if (Started() && IsThreaded()) {
-      delegate->RemoveThreadedAnimation(animation_id());
+      LayerThreadedAnimationDelegate* threaded =
+          delegate->GetThreadedAnimationDelegate();
+      DCHECK(threaded);
+      threaded->RemoveThreadedAnimation(animation_id());
     }
 
     OnEnd(delegate);
@@ -353,7 +356,10 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
 
   void OnAbort(LayerAnimationDelegate* delegate) override {
     if (delegate && Started() && IsThreaded()) {
-      delegate->RemoveThreadedAnimation(animation_id());
+      LayerThreadedAnimationDelegate* threaded =
+          delegate->GetThreadedAnimationDelegate();
+      DCHECK(threaded);
+      threaded->RemoveThreadedAnimation(animation_id());
     }
   }
 
@@ -366,7 +372,11 @@ class ThreadedLayerAnimationElement : public LayerAnimationElement {
     set_effective_start_time(base::TimeTicks());
     scoped_ptr<cc::Animation> animation = CreateCCAnimation();
     animation->set_needs_synchronized_start_time(true);
-    delegate->AddThreadedAnimation(std::move(animation));
+
+    LayerThreadedAnimationDelegate* threaded =
+        delegate->GetThreadedAnimationDelegate();
+    DCHECK(threaded);
+    threaded->AddThreadedAnimation(std::move(animation));
   }
 
   virtual void OnEnd(LayerAnimationDelegate* delegate) = 0;

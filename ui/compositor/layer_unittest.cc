@@ -1605,41 +1605,41 @@ TEST_F(LayerWithRealCompositorTest, AddRemoveThreadedAnimations) {
   l1->SetAnimator(LayerAnimator::CreateImplicitAnimator());
   l2->SetAnimator(LayerAnimator::CreateImplicitAnimator());
 
-  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
 
   // Trigger a threaded animation.
   l1->SetOpacity(0.5f);
 
-  EXPECT_TRUE(l1->HasPendingThreadedAnimations());
+  EXPECT_TRUE(l1->HasPendingThreadedAnimationsForTesting());
 
   // Ensure we can remove a pending threaded animation.
   l1->GetAnimator()->StopAnimating();
 
-  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
 
   // Trigger another threaded animation.
   l1->SetOpacity(0.2f);
 
-  EXPECT_TRUE(l1->HasPendingThreadedAnimations());
+  EXPECT_TRUE(l1->HasPendingThreadedAnimationsForTesting());
 
   root->Add(l1.get());
   GetCompositor()->SetRootLayer(root.get());
 
   // Now that l1 is part of a tree, it should have dispatched the pending
   // animation.
-  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
 
   // Ensure that l1 no longer holds on to animations.
   l1->SetOpacity(0.1f);
-  EXPECT_FALSE(l1->HasPendingThreadedAnimations());
+  EXPECT_FALSE(l1->HasPendingThreadedAnimationsForTesting());
 
   // Ensure that adding a layer to an existing tree causes its pending
   // animations to get dispatched.
   l2->SetOpacity(0.5f);
-  EXPECT_TRUE(l2->HasPendingThreadedAnimations());
+  EXPECT_TRUE(l2->HasPendingThreadedAnimationsForTesting());
 
   l1->Add(l2.get());
-  EXPECT_FALSE(l2->HasPendingThreadedAnimations());
+  EXPECT_FALSE(l2->HasPendingThreadedAnimationsForTesting());
 }
 
 // Tests that in-progress threaded animations complete when a Layer's

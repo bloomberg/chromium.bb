@@ -84,6 +84,11 @@ class CC_EXPORT AnimationPlayer : public base::RefCounted<AnimationPlayer>,
                               Animation::TargetProperty target_property,
                               int group);
 
+  // Whether this player has animations waiting to get sent to LAC.
+  bool has_pending_animations_for_testing() const {
+    return !animations_.empty();
+  }
+
  private:
   friend class base::RefCounted<AnimationPlayer>;
 

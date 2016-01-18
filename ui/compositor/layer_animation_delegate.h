@@ -5,8 +5,6 @@
 #ifndef UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 #define UI_COMPOSITOR_LAYER_ANIMATION_DELEGATE_H_
 
-#include "base/memory/scoped_ptr.h"
-#include "cc/animation/animation.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -19,6 +17,7 @@ class Layer;
 namespace ui {
 
 class LayerAnimatorCollection;
+class LayerThreadedAnimationDelegate;
 
 // Layer animations interact with the layers using this interface.
 class COMPOSITOR_EXPORT LayerAnimationDelegate {
@@ -39,14 +38,9 @@ class COMPOSITOR_EXPORT LayerAnimationDelegate {
   virtual float GetGrayscaleForAnimation() const = 0;
   virtual SkColor GetColorForAnimation() const = 0;
   virtual float GetDeviceScaleFactor() const = 0;
-
-  // TODO(loyso): Extract these 3 methods as a separate
-  // LayerThreadedAnimationDelegate.
-  virtual void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) = 0;
-  virtual void RemoveThreadedAnimation(int animation_id) = 0;
   virtual cc::Layer* GetCcLayer() const = 0;
-
   virtual LayerAnimatorCollection* GetLayerAnimatorCollection() = 0;
+  virtual LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() = 0;
 
  protected:
   virtual ~LayerAnimationDelegate() {}

@@ -18,6 +18,7 @@
 #include "cc/animation/layer_animation_event_observer.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_threaded_animation_delegate.h"
 #include "ui/gfx/animation/tween.h"
 
 namespace cc {
@@ -53,6 +54,7 @@ class ScopedLayerAnimationSettings;
 // must guarantee that |this| is valid.
 class COMPOSITOR_EXPORT LayerAnimator
     : public base::RefCounted<LayerAnimator>,
+      public LayerThreadedAnimationDelegate,
       NON_EXPORTED_BASE(public cc::LayerAnimationEventObserver) {
  public:
   enum PreemptionStrategy {
@@ -117,10 +119,8 @@ class COMPOSITOR_EXPORT LayerAnimator
   // Detach AnimationPlayer from Layer and AnimationTimeline
   void ResetCompositor(Compositor* compositor);
 
-  // TODO(loyso): Rework it as an implementation for
-  // LayerThreadedAnimationDelegate and make it private.
-  void AddThreadedAnimation(scoped_ptr<cc::Animation> animation);
-  void RemoveThreadedAnimation(int animation_id);
+  // Whether this animator has animations waiting to get sent to cc::LAC.
+  bool HasPendingThreadedAnimationsForTesting() const;
 
   // Sets the animation preemption strategy. This determines the behaviour if
   // a property is set during an animation. The default is
@@ -338,6 +338,10 @@ class COMPOSITOR_EXPORT LayerAnimator
 
   // LayerAnimationEventObserver
   void OnAnimationStarted(const cc::AnimationEvent& event) override;
+
+  // Implementation of LayerThreadedAnimationDelegate.
+  void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) override;
+  void RemoveThreadedAnimation(int animation_id) override;
 
   void AttachLayerToAnimationPlayer(int layer_id);
   void DetachLayerFromAnimationPlayer();

@@ -8,10 +8,22 @@
 #include "base/compiler_specific.h"
 #include "cc/layers/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
+#include "ui/compositor/layer_threaded_animation_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
+
+class TestLayerThreadedAnimationDelegate
+    : public LayerThreadedAnimationDelegate {
+ public:
+  TestLayerThreadedAnimationDelegate();
+  ~TestLayerThreadedAnimationDelegate() override;
+
+  // Implementation of LayerThreadedAnimationDelegate
+  void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) override;
+  void RemoveThreadedAnimation(int animation_id) override;
+};
 
 class TestLayerAnimationDelegate : public LayerAnimationDelegate {
  public:
@@ -36,13 +48,14 @@ class TestLayerAnimationDelegate : public LayerAnimationDelegate {
   float GetGrayscaleForAnimation() const override;
   SkColor GetColorForAnimation() const override;
   float GetDeviceScaleFactor() const override;
-  void AddThreadedAnimation(scoped_ptr<cc::Animation> animation) override;
-  void RemoveThreadedAnimation(int animation_id) override;
   LayerAnimatorCollection* GetLayerAnimatorCollection() override;
   cc::Layer* GetCcLayer() const override;
+  LayerThreadedAnimationDelegate* GetThreadedAnimationDelegate() override;
 
  private:
   void CreateCcLayer();
+
+  TestLayerThreadedAnimationDelegate threaded_delegate_;
 
   gfx::Rect bounds_;
   gfx::Transform transform_;

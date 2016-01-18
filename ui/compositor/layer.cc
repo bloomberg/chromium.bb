@@ -529,6 +529,13 @@ void Layer::SwitchToLayer(scoped_refptr<cc::Layer> new_layer) {
   SetLayerBackgroundFilters();
 }
 
+bool Layer::HasPendingThreadedAnimationsForTesting() const {
+  if (UILayerSettings().use_compositor_animation_timelines)
+    return animator_->HasPendingThreadedAnimationsForTesting();
+  else
+    return !pending_threaded_animations_.empty();
+}
+
 void Layer::SwitchCCLayerForTest() {
   scoped_refptr<cc::Layer> new_layer =
       cc::PictureLayer::Create(UILayerSettings(), this);
@@ -973,15 +980,11 @@ float Layer::GetDeviceScaleFactor() const {
 
 void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
   DCHECK(cc_layer_);
+  DCHECK(!UILayerSettings().use_compositor_animation_timelines);
   // Until this layer has a compositor (and hence cc_layer_ has a
   // LayerTreeHost), addAnimation will fail.
   if (GetCompositor()) {
-    if (UILayerSettings().use_compositor_animation_timelines) {
-      DCHECK(animator_);
-      animator_->AddThreadedAnimation(std::move(animation));
-    } else {
-      cc_layer_->AddAnimation(std::move(animation));
-    }
+    cc_layer_->AddAnimation(std::move(animation));
   } else {
     pending_threaded_animations_.push_back(std::move(animation));
   }
@@ -989,13 +992,9 @@ void Layer::AddThreadedAnimation(scoped_ptr<cc::Animation> animation) {
 
 void Layer::RemoveThreadedAnimation(int animation_id) {
   DCHECK(cc_layer_);
+  DCHECK(!UILayerSettings().use_compositor_animation_timelines);
   if (pending_threaded_animations_.size() == 0) {
-    if (UILayerSettings().use_compositor_animation_timelines) {
-      DCHECK(animator_);
-      animator_->RemoveThreadedAnimation(animation_id);
-    } else {
-      cc_layer_->RemoveAnimation(animation_id);
-    }
+    cc_layer_->RemoveAnimation(animation_id);
     return;
   }
 
@@ -1018,15 +1017,23 @@ cc::Layer* Layer::GetCcLayer() const {
   return cc_layer_;
 }
 
-void Layer::SendPendingThreadedAnimations() {
-  for (auto& animation : pending_threaded_animations_) {
-    if (UILayerSettings().use_compositor_animation_timelines) {
-      DCHECK(animator_);
-      animator_->AddThreadedAnimation(std::move(animation));
-    } else {
-      cc_layer_->AddAnimation(std::move(animation));
-    }
+LayerThreadedAnimationDelegate* Layer::GetThreadedAnimationDelegate() {
+  if (UILayerSettings().use_compositor_animation_timelines) {
+    DCHECK(animator_);
+    return animator_.get();
+  } else {
+    return this;
   }
+}
+
+void Layer::SendPendingThreadedAnimations() {
+  if (UILayerSettings().use_compositor_animation_timelines) {
+    DCHECK(pending_threaded_animations_.empty());
+    return;
+  }
+
+  for (auto& animation : pending_threaded_animations_)
+    cc_layer_->AddAnimation(std::move(animation));
   pending_threaded_animations_.clear();
 
   for (auto* child : children_)

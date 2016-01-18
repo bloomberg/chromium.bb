@@ -211,6 +211,11 @@ void LayerAnimator::RemoveThreadedAnimation(int animation_id) {
   animation_player_->RemoveAnimation(animation_id);
 }
 
+bool LayerAnimator::HasPendingThreadedAnimationsForTesting() const {
+  DCHECK(animation_player_);
+  return animation_player_->has_pending_animations_for_testing();
+}
+
 void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
   scoped_refptr<LayerAnimator> retain(this);
   OnScheduled(animation);
