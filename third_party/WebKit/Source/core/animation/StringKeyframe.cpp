@@ -14,6 +14,7 @@
 #include "core/animation/CSSLengthListInterpolationType.h"
 #include "core/animation/CSSNumberInterpolationType.h"
 #include "core/animation/CSSPaintInterpolationType.h"
+#include "core/animation/CSSPathInterpolationType.h"
 #include "core/animation/CSSShadowListInterpolationType.h"
 #include "core/animation/CSSValueInterpolationType.h"
 #include "core/animation/CSSVisibilityInterpolationType.h"
@@ -260,6 +261,9 @@ const InterpolationTypes* applicableTypesForProperty(PropertyHandle property)
         case CSSPropertyFill:
         case CSSPropertyStroke:
             applicableTypes->append(adoptPtr(new CSSPaintInterpolationType(cssProperty)));
+            break;
+        case CSSPropertyD:
+            applicableTypes->append(adoptPtr(new CSSPathInterpolationType(cssProperty)));
             break;
         case CSSPropertyBoxShadow:
         case CSSPropertyTextShadow:
