@@ -2103,8 +2103,6 @@ content.dll!content::RenderWidgetHostViewAura::SetIsLoading
 content.dll!content::RenderWidgetHostImpl::SetIsLoading
 content.dll!content::RenderFrameHostManager::SetIsLoading
 content.dll!content::WebContentsImpl::SetIsLoading
-content.dll!content::WebContentsImpl::DidStopLoading
-content.dll!content::FrameTreeNode::DidStopLoading
 
 HANDLE LEAK
 name=bug_571554_a
