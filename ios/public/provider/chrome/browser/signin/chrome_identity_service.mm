@@ -74,6 +74,12 @@ void ChromeIdentityService::GetHostedDomainForIdentity(
     ChromeIdentity* identity,
     GetHostedDomainCallback callback) {}
 
+bool ChromeIdentityService::HandleMDMNotification(ChromeIdentity* identity,
+                                                  NSDictionary* user_info,
+                                                  MDMStatusCallback callback) {
+  return false;
+}
+
 void ChromeIdentityService::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }

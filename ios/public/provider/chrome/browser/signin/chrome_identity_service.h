@@ -42,6 +42,10 @@ typedef void (^GetAvatarCallback)(UIImage* avatar);
 typedef void (^GetHostedDomainCallback)(NSString* hosted_domain,
                                         NSError* error);
 
+// Callback passed to method |HandleMDMNotification()|. |is_blocked| is true if
+// the device is blocked.
+typedef void (^MDMStatusCallback)(bool is_blocked);
+
 // ChromeIdentityService abstracts the signin flow on iOS.
 class ChromeIdentityService {
  public:
@@ -142,6 +146,14 @@ class ChromeIdentityService {
   // back on the main thread.
   virtual void GetHostedDomainForIdentity(ChromeIdentity* identity,
                                           GetHostedDomainCallback callback);
+
+  // Handles a potential MDM (Mobile Device Management) notification. Returns
+  // true if the notification linked to |identity| and |user_info| was an MDM
+  // one. In this case, |callback| will be called later with the status of the
+  // device.
+  virtual bool HandleMDMNotification(ChromeIdentity* identity,
+                                     NSDictionary* user_info,
+                                     MDMStatusCallback callback);
 
   // Adds and removes observers.
   void AddObserver(Observer* observer);
