@@ -12,8 +12,6 @@ import org.chromium.chrome.browser.ChromeBrowserProviderClient;
 import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment;
 import org.chromium.chrome.browser.signin.SigninManager;
 
-import java.util.EnumSet;
-
 /**
  * Modal dialog for clearing sync data. This allows the user to clear browsing data as well as
  * other synced data types like bookmarks.
@@ -33,12 +31,12 @@ public class ClearSyncDataDialogFragment extends ClearBrowsingDataDialogFragment
     }
 
     @Override
-    protected EnumSet<DialogOption> getDefaultDialogOptionsSelections() {
-        return EnumSet.allOf(DialogOption.class);
+    protected boolean isOptionSelectedByDefault(DialogOption option) {
+        return true;
     }
 
     @Override
-    protected void onOptionSelected(final EnumSet<DialogOption> optionsSelected) {
+    protected void onOptionSelected() {
         if (mApplicationContext == null) return;
 
         showProgressDialog();
@@ -51,7 +49,7 @@ public class ClearSyncDataDialogFragment extends ClearBrowsingDataDialogFragment
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... arg0) {
-                if (optionsSelected.contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
+                if (getSelectedOptions().contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
                     ChromeBrowserProviderClient.removeAllUserBookmarks(mApplicationContext);
                 }
                 return null;
@@ -59,9 +57,9 @@ public class ClearSyncDataDialogFragment extends ClearBrowsingDataDialogFragment
 
             @Override
             protected void onPostExecute(Void result) {
-                clearBrowsingData(optionsSelected);
+                clearBrowsingData();
 
-                if (optionsSelected.contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
+                if (getSelectedOptions().contains(DialogOption.CLEAR_BOOKMARKS_DATA)) {
                     // onPostExecute is back in the UI thread.
                     SigninManager.get(mApplicationContext).clearLastSignedInUser();
                 }

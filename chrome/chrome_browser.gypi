@@ -650,6 +650,8 @@
       'browser/android/bookmarks/partner_bookmarks_shim.h',
       'browser/android/bottombar/overlay_panel_content.cc',
       'browser/android/bottombar/overlay_panel_content.h',
+      'browser/android/browsing_data/browsing_data_counter_bridge.cc',
+      'browser/android/browsing_data/browsing_data_counter_bridge.h',
       'browser/android/chrome_application.cc',
       'browser/android/chrome_application.h',
       'browser/android/chrome_feature_list.cc',
@@ -1888,6 +1890,7 @@
       'android/java/src/org/chromium/chrome/browser/profiles/MostVisitedSites.java',
       'android/java/src/org/chromium/chrome/browser/profiles/Profile.java',
       'android/java/src/org/chromium/chrome/browser/profiles/ProfileDownloader.java',
+      'android/java/src/org/chromium/chrome/browser/preferences/privacy/BrowsingDataCounterBridge.java',
       'android/java/src/org/chromium/chrome/browser/prerender/ExternalPrerenderHandler.java',
       'android/java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java',
       'android/java/src/org/chromium/chrome/browser/rappor/RapporServiceBridge.java',
@@ -4042,6 +4045,15 @@
           'type': 'none',
           'variables': {
             'source_file': 'browser/android/activity_type_ids.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //chrome/android:chrome_android_java_enums_srcjar
+          'target_name': 'browsing_data_type_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'browser/browsing_data/browsing_data_counter_utils.h',
           },
           'includes': [ '../build/android/java_cpp_enum.gypi' ],
         },

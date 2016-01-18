@@ -825,7 +825,7 @@ public class ChromeApplication extends ContentApplication {
             // So cache-clearing may not be effective if URL rendering can happen before
             // OnBrowsingDataRemoverDone() is called, in which case we may have to reload as well.
             // Check if it can happen.
-            instance.clearBrowsingData(null, false, true /* cache */, false, false, false);
+            instance.clearBrowsingData(null, new int[]{ BrowsingDataType.CACHE });
         }
     }
 

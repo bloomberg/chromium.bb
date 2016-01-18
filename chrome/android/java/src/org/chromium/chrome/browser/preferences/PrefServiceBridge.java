@@ -639,17 +639,38 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * Checks the state of deletion preference for a certain browsing data type.
+     * @param dataType The requested browsing data type (from the shared enum
+     *      {@link org.chromium.chrome.browser.BrowsingDataType}).
+     * @return The state of the corresponding deletion preference.
+     */
+    public boolean getBrowsingDataDeletionPreference(int dataType) {
+        return nativeGetBrowsingDataDeletionPreference(dataType);
+    }
+
+    /**
+     * Sets the state of deletion preference for a certain browsing data type.
+     * @param dataType The requested browsing data type (from the shared enum
+     *      {@link org.chromium.chrome.browser.BrowsingDataType}).
+     * @param value The state to be set.
+     */
+    public void setBrowsingDataDeletionPreference(int dataType, boolean value) {
+        nativeSetBrowsingDataDeletionPreference(dataType, value);
+    }
+
+    /**
      * Clear the specified types of browsing data asynchronously.
      * |listener| is an object to be notified when clearing completes.
      * It can be null, but many operations (e.g. navigation) are
      * ill-advised while browsing data is being cleared.
+     * @param listener A listener to call back when the clearing is finished.
+     * @param dataTypes An array of browsing data types to delete, represented as values from
+     *      the shared enum {@link org.chromium.chrome.browser.BrowsingDataType}.
      */
-    public void clearBrowsingData(OnClearBrowsingDataListener listener,
-            boolean history, boolean cache, boolean cookiesAndSiteData,
-            boolean passwords, boolean formData) {
+    public void clearBrowsingData(OnClearBrowsingDataListener listener, int[] dataTypes) {
         assert mClearBrowsingDataListener == null;
         mClearBrowsingDataListener = listener;
-        nativeClearBrowsingData(history, cache, cookiesAndSiteData, passwords, formData);
+        nativeClearBrowsingData(dataTypes);
     }
 
     /*
@@ -977,8 +998,9 @@ public final class PrefServiceBridge {
     private native void nativeResetTranslateDefaults();
     private native void nativeMigrateJavascriptPreference();
     private native void nativeSetJavaScriptAllowed(String pattern, int setting);
-    private native void nativeClearBrowsingData(boolean history, boolean cache,
-            boolean cookiesAndSiteData, boolean passwords, boolean formData);
+    private native boolean nativeGetBrowsingDataDeletionPreference(int dataType);
+    private native void nativeSetBrowsingDataDeletionPreference(int dataType, boolean value);
+    private native void nativeClearBrowsingData(int[] dataTypes);
     private native boolean nativeCanDeleteBrowsingHistory();
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBlockThirdPartyCookiesEnabled(boolean enabled);

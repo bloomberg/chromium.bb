@@ -11,6 +11,7 @@ import android.widget.Button;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.preferences.privacy.ClearBrowsingDataDialogFragment.DialogOption;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.content.browser.test.util.Criteria;
@@ -112,8 +113,8 @@ public class ClearBrowsingDataDialogFragmentTest
         }
 
         @Override
-        protected EnumSet<DialogOption> getDefaultDialogOptionsSelections() {
-            return mDefaultOptions;
+        protected boolean isOptionSelectedByDefault(DialogOption option) {
+            return mDefaultOptions.contains(option);
         }
     }
 }

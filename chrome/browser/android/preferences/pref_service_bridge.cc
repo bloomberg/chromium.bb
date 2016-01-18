@@ -10,6 +10,7 @@
 
 #include "base/android/build_info.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/files/file_path.h"
@@ -20,6 +21,7 @@
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browsing_data/browsing_data_counter_utils.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
 #include "chrome/browser/browsing_data/browsing_data_remover_factory.h"
@@ -500,32 +502,79 @@ class ClearBrowsingDataObserver : public BrowsingDataRemover::Observer {
 
 }  // namespace
 
+static jboolean GetBrowsingDataDeletionPreference(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint data_type) {
+  DCHECK_GE(data_type, 0);
+  DCHECK_LT(data_type, BrowsingDataType::NUM_TYPES);
+
+  // If there is no corresponding preference for this |data_type|, pretend
+  // that it's set to false.
+  // TODO(msramek): Consider defining native-side preferences for all Java UI
+  // data types for consistency.
+  std::string pref;
+  if (!GetDeletionPreferenceFromDataType(
+      static_cast<BrowsingDataType>(data_type), &pref)) {
+    return false;
+  }
+
+  return GetOriginalProfile()->GetPrefs()->GetBoolean(pref);
+}
+
+static void SetBrowsingDataDeletionPreference(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    jint data_type,
+    jboolean value) {
+  DCHECK_GE(data_type, 0);
+  DCHECK_LT(data_type, BrowsingDataType::NUM_TYPES);
+
+  std::string pref;
+  if (!GetDeletionPreferenceFromDataType(
+      static_cast<BrowsingDataType>(data_type), &pref)) {
+    return;
+  }
+
+  GetOriginalProfile()->GetPrefs()->SetBoolean(pref, value);
+}
+
 static void ClearBrowsingData(JNIEnv* env,
                               const JavaParamRef<jobject>& obj,
-                              jboolean history,
-                              jboolean cache,
-                              jboolean cookies_and_site_data,
-                              jboolean passwords,
-                              jboolean form_data) {
+                              const JavaParamRef<jintArray>& data_types) {
   BrowsingDataRemover* browsing_data_remover =
       BrowsingDataRemoverFactory::GetForBrowserContext(GetOriginalProfile());
-  // ClearBrowsingDataObserver removes itself when |browsing_data_remover| is
+  // ClearBrowsingDataObserver deletes itself when |browsing_data_remover| is
   // done.
   new ClearBrowsingDataObserver(env, obj, browsing_data_remover);
 
+  std::vector<int> data_types_vector;
+  base::android::JavaIntArrayToIntVector(env, data_types, &data_types_vector);
+
   int remove_mask = 0;
-  if (history)
-    remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
-  if (cache)
-    remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
-  if (cookies_and_site_data) {
-    remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
-    remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
+  for (const int data_type : data_types_vector) {
+    switch (static_cast<BrowsingDataType>(data_type)) {
+      case HISTORY:
+        remove_mask |= BrowsingDataRemover::REMOVE_HISTORY;
+        break;
+      case CACHE:
+        remove_mask |= BrowsingDataRemover::REMOVE_CACHE;
+        break;
+      case COOKIES:
+        remove_mask |= BrowsingDataRemover::REMOVE_COOKIES;
+        remove_mask |= BrowsingDataRemover::REMOVE_SITE_DATA;
+        break;
+      case PASSWORDS:
+        remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
+        break;
+      case FORM_DATA:
+        remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
+        break;
+      default:
+        NOTREACHED();
+    }
   }
-  if (passwords)
-    remove_mask |= BrowsingDataRemover::REMOVE_PASSWORDS;
-  if (form_data)
-    remove_mask |= BrowsingDataRemover::REMOVE_FORM_DATA;
+
   browsing_data_remover->Remove(BrowsingDataRemover::Unbounded(), remove_mask,
                                 BrowsingDataHelper::UNPROTECTED_WEB);
 }

@@ -15,6 +15,27 @@ bool AreCountersEnabled();
 base::string16 GetCounterTextFromResult(
     const BrowsingDataCounter::Result* result);
 
+// Browsing data types as seen in the Android UI.
+// TODO(msramek): Reuse this enum as the canonical representation of the
+// user-facing browsing data types in the Desktop UI as well.
+//
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser
+enum BrowsingDataType {
+  HISTORY,
+  CACHE,
+  COOKIES,
+  PASSWORDS,
+  FORM_DATA,
+  BOOKMARKS,
+  NUM_TYPES
+};
+
+// Copies the name of the deletion preference corresponding to the given
+// |data_type| to |out_pref|. Returns false if no such preference exists.
+bool GetDeletionPreferenceFromDataType(
+    BrowsingDataType data_type, std::string* out_pref);
+
 // Creates a new instance of BrowsingDataCounter that is counting the data
 // related to a given deletion preference |pref_name|.
 BrowsingDataCounter* CreateCounterForPreference(std::string pref_name);

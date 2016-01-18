@@ -19,6 +19,7 @@
 #include "chrome/browser/android/bookmarks/edit_bookmark_helper.h"
 #include "chrome/browser/android/bookmarks/partner_bookmarks_reader.h"
 #include "chrome/browser/android/bottombar/overlay_panel_content.h"
+#include "chrome/browser/android/browsing_data/browsing_data_counter_bridge.h"
 #include "chrome/browser/android/chrome_application.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
@@ -217,6 +218,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
      BackgroundSyncLauncherAndroid::RegisterLauncher},
     {"BluetoothChooserAndroid", BluetoothChooserAndroid::Register},
     {"BookmarksBridge", BookmarksBridge::RegisterBookmarksBridge},
+    {"BrowsingDataCounterBridge", BrowsingDataCounterBridge::Register},
     {"CardUnmaskPrompt", autofill::CardUnmaskPromptViewAndroid::Register},
     {"CertificateViewer", RegisterCertificateViewer},
     {"ChildAccountFeedbackReporter", RegisterChildAccountFeedbackReporter},

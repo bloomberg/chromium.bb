@@ -533,6 +533,7 @@
           'type': 'none',
           'dependencies': [
             'activity_type_ids_java',
+            'browsing_data_type_java',
             'chrome_locale_paks',
             'chrome_resources.gyp:chrome_strings',
             'chrome_strings_grd',
