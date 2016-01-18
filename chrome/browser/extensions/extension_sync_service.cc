@@ -207,12 +207,15 @@ syncer::SyncMergeResult ExtensionSyncService::MergeDataAndStartSyncing(
     }
   }
 
-  // Now push those local changes to sync.
-  // TODO(treib,kalman): We should only have to send out changes for extensions
-  // which have NeedsSync set (i.e. |GetLocalSyncDataList(type, false)|). That
-  // makes some sync_integration_tests fail though - figure out why and fix it!
-  std::vector<ExtensionSyncData> data_list = GetLocalSyncDataList(type, true);
+  // Now push the local state to sync.
+  // Note: We'd like to only send out changes for extensions which have
+  // NeedsSync set. However, we can't tell if our changes ever made it to the
+  // sync server (they might not e.g. when there's a temporary auth error), so
+  // we couldn't safely clear the flag. So just send out everything and let the
+  // sync client handle no-op changes.
+  std::vector<ExtensionSyncData> data_list = GetLocalSyncDataList(type);
   bundle->PushSyncDataList(ToSyncerSyncDataList(data_list));
+
   for (const ExtensionSyncData& data : data_list)
     ExtensionPrefs::Get(profile_)->SetNeedsSync(data.id(), false);
 
@@ -232,8 +235,7 @@ syncer::SyncDataList ExtensionSyncService::GetAllSyncData(
   if (!bundle->IsSyncing())
     return syncer::SyncDataList();
 
-  std::vector<ExtensionSyncData> sync_data_list =
-      GetLocalSyncDataList(type, true);
+  std::vector<ExtensionSyncData> sync_data_list = GetLocalSyncDataList(type);
 
   // Add pending data (where the local extension is not installed yet).
   std::vector<ExtensionSyncData> pending_extensions =
@@ -675,8 +677,7 @@ const SyncBundle* ExtensionSyncService::GetSyncBundle(
 }
 
 std::vector<ExtensionSyncData> ExtensionSyncService::GetLocalSyncDataList(
-    syncer::ModelType type,
-    bool include_everything) const {
+    syncer::ModelType type) const {
   // Collect the local state.
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile_);
   std::vector<ExtensionSyncData> data;
@@ -686,25 +687,18 @@ std::vector<ExtensionSyncData> ExtensionSyncService::GetLocalSyncDataList(
   // hasn't been updated on all clients by the time sync has kicked in -
   // so it's safest not to. Take care to add any other extension lists here
   // in the future if they are added.
-  FillSyncDataList(
-      registry->enabled_extensions(), type, include_everything, &data);
-  FillSyncDataList(
-      registry->disabled_extensions(), type, include_everything, &data);
-  FillSyncDataList(
-      registry->terminated_extensions(), type, include_everything, &data);
+  FillSyncDataList(registry->enabled_extensions(), type, &data);
+  FillSyncDataList(registry->disabled_extensions(), type, &data);
+  FillSyncDataList(registry->terminated_extensions(), type, &data);
   return data;
 }
 
 void ExtensionSyncService::FillSyncDataList(
     const ExtensionSet& extensions,
     syncer::ModelType type,
-    bool include_everything,
     std::vector<ExtensionSyncData>* sync_data_list) const {
   for (const scoped_refptr<const Extension>& extension : extensions) {
-    if (IsCorrectSyncType(*extension, type) &&
-        ShouldSync(*extension) &&
-        (include_everything ||
-         ExtensionPrefs::Get(profile_)->NeedsSync(extension->id()))) {
+    if (IsCorrectSyncType(*extension, type) && ShouldSync(*extension)) {
       // We should never have pending data for an installed extension.
       DCHECK(!GetSyncBundle(type)->HasPendingExtensionData(extension->id()));
       sync_data_list->push_back(CreateSyncData(*extension));
