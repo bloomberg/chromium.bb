@@ -78,6 +78,12 @@ public:
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }
 
+    template<typename BufferType>
+    void appendTextTo(BufferType& output, int position = 0) const { appendTextTo(output, position, length() - position); }
+
+    template<typename BufferType>
+    void appendTextTo(BufferType& output, int position, int appendLength) const { m_textState.appendTextTo(output, position, appendLength); }
+
     // Computes the length of the given range using a text iterator. The default
     // iteration behavior is to always emit object replacement characters for
     // replaced elements. When |forSelectionPreservation| is set to true, it

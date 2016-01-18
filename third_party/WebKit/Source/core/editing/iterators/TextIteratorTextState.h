@@ -63,9 +63,6 @@ public:
     }
 
     template<typename BufferType>
-    void appendTextTo(BufferType& output, unsigned position = 0) const { appendTextTo(output, position, length() - position); }
-
-    template<typename BufferType>
     void appendTextTo(BufferType& output, unsigned position, unsigned lengthToAppend) const
     {
         ASSERT_WITH_SECURITY_IMPLICATION(position + lengthToAppend <= static_cast<unsigned>(length()));

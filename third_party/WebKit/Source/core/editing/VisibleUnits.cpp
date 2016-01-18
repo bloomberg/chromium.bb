@@ -673,7 +673,7 @@ static VisiblePositionTemplate<Strategy> previousBoundary(const VisiblePositionT
         TextIteratorAlgorithm<Strategy> forwardsIterator(end, PositionTemplate<Strategy>::afterNode(boundary));
         while (!forwardsIterator.atEnd()) {
             Vector<UChar, 1024> characters;
-            forwardsIterator.text().appendTextTo(characters);
+            forwardsIterator.appendTextTo(characters);
             int i = endOfFirstWordBoundaryContext(characters.data(), characters.size());
             string.append(characters.data(), i);
             suffixLength += i;
@@ -779,7 +779,7 @@ static VisiblePositionTemplate<Strategy> nextBoundary(const VisiblePositionTempl
         // it.
         bool inTextSecurityMode = it.isInTextSecurityMode();
         if (!inTextSecurityMode) {
-            it.text().appendTextTo(string);
+            it.appendTextTo(string);
         } else {
             // Treat bullets used in the text security mode as regular
             // characters when looking for boundaries

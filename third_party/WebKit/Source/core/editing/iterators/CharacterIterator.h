@@ -53,7 +53,7 @@ public:
     UChar characterAt(unsigned index) const { return m_textIterator.text().characterAt(m_runOffset + index); }
 
     template<typename BufferType>
-    void appendTextTo(BufferType& output) { m_textIterator.text().appendTextTo(output, m_runOffset); }
+    void appendTextTo(BufferType& output) { m_textIterator.appendTextTo(output, m_runOffset); }
 
     int characterOffset() const { return m_offset; }
     EphemeralRangeTemplate<Strategy> range() const;

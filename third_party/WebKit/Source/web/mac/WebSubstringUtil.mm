@@ -97,7 +97,7 @@ static NSAttributedString* attributedSubstringFromRange(const EphemeralRange& ra
             [attrs removeObjectForKey:NSBackgroundColorAttributeName];
 
         Vector<UChar> characters;
-        it.text().appendTextTo(characters);
+        it.appendTextTo(characters);
         NSString* substring =
             [[[NSString alloc] initWithCharacters:characters.data()
                                            length:characters.size()] autorelease];
