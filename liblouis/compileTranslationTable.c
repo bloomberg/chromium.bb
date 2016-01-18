@@ -5745,7 +5745,6 @@ compileTranslationTable (const char *tableList)
 {
   char **tableFiles;
   char **subTable;
-  int i;
   errorCount = warningCount = fileCount = 0;
   table = NULL;
   characterClasses = NULL;

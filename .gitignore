@@ -211,3 +211,4 @@ output.txt
 /windows/liblouis.dll
 /windows/liblouis.lib
 /windows/liblouis.exp
+/windows/check_yaml.exe

@@ -1,4 +1,4 @@
 EXTRA_DIST = \
 	liblouis.h \
-	config.h
-
+	config.h \
+	unistd.h

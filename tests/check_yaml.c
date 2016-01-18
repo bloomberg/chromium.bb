@@ -21,10 +21,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA *
 #include <stdio.h>
 #include <assert.h>
 #include <error.h>
+#include "liblouis.h"
 #include "louis.h"
 #include "brl_checks.h"
 
 #define EXIT_SKIPPED 77
+
+#ifdef _WIN32
+// FIXME: use gnulib module progname and remove this #ifdef
+char *program_name;
+#endif
 
 #ifdef HAVE_LIBYAML
 #include <yaml.h>
@@ -120,15 +126,15 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
       yaml_event_delete(&event);
       if (!yaml_parser_parse(parser, &event) ||
 	  (event.type != YAML_SCALAR_EVENT))
-	yaml_error(YAML_SCALAR_EVENT, &event);
+        yaml_error(YAML_SCALAR_EVENT, &event);
       if (!strcmp(event.data.scalar.value, "forward")) {
-	*direction = 0;
+        *direction = 0;
       } else if (!strcmp(event.data.scalar.value, "backward")) {
-	*direction = 1;
+        *direction = 1;
       } else if (!strcmp(event.data.scalar.value, "hyphenate")) {
-	*hyphenation = 1;
+        *hyphenation = 1;
       } else {
-	error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		      "Testmode '%s' not supported\n", event.data.scalar.value);
       }
     } else {
@@ -421,7 +427,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   if (cursorPos) {
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
       if (description)
-	fprintf(stderr, "%s\n", description);
+        fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -429,7 +435,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   } else if (hyphenation) {
     if (xfail != check_hyphenation(tables_list, word, translation)) {
       if (description)
-	fprintf(stderr, "%s\n", description);
+        fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -438,7 +444,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     if (xfail != check_with_mode(tables_list, word, typeform,
 				 translation, translation_mode, direction)) {
       if (description)
-	fprintf(stderr, "%s\n", description);
+        fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -483,10 +489,16 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
   }
 }
 
-#endif
+#endif // HAVE_LIBYAML
 
 int
 main(int argc, char *argv[]) {
+#ifdef _WIN32
+  // FIXME: use gnulib module progname:
+  // set_program_name(argv[0]);
+  // ... and remove this #ifdef
+  program_name = argv[0];
+#endif
   if (argc != 2) {
     printf("Usage: %s file.yaml\n", argv[0]);
     return 0;
@@ -537,7 +549,8 @@ main(int argc, char *argv[]) {
   }
   yaml_event_delete(&event);
 
-  char *tables_list = malloc(sizeof(char) * 512);
+  char *tables_list = malloc(sizeof(char) * MAXSTRING);
+  tables_list[0] = '\0';
   read_tables(&parser, tables_list);
 
   if (!yaml_parser_parse(&parser, &event) ||
@@ -596,6 +609,6 @@ main(int argc, char *argv[]) {
 
   return errors ? 1 : 0;
 
-#endif
+#endif // not HAVE_LIBYAML
 }
 

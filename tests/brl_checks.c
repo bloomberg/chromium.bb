@@ -99,7 +99,7 @@ x = 0400 0000 .. 7FFF FFFF;	FC + x/2**30;
 int ucs_to_utf8 (widechar ucs, unsigned char * utf8)
 {
     if (ucs < 0x80) {
-      utf8[0] = ucs;
+      utf8[0] = (unsigned char)ucs; // Safe cast to 7-bit value
       utf8[1] = '\0';
       return 1;
     } else if (ucs < 0x800) {
