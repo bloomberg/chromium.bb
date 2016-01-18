@@ -118,7 +118,7 @@ void ExternalExtensionWrapper::AddSearchProvider(
     return;
 
   GURL osdd_url = GURL(webframe->document().url()).Resolve(osdd_string);
-  if (!osdd_url.is_empty() && osdd_url.is_valid()) {
+  if (osdd_url.is_valid()) {
     webframe->didCallAddSearchProvider();
     render_view->Send(new ChromeViewHostMsg_PageHasOSDD(
         render_view->GetRoutingID(), webframe->document().url(), osdd_url,

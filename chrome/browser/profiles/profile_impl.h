@@ -64,7 +64,7 @@ class PrefServiceSyncable;
 }
 
 namespace user_prefs {
-class refRegistrySyncable;
+class PrefRegistrySyncable;
 }
 
 // The default profile implementation.
