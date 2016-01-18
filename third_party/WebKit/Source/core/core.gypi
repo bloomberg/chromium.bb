@@ -1272,8 +1272,6 @@
             'css/cssom/TransformValue.h',
             'css/invalidation/InvalidationSet.cpp',
             'css/invalidation/InvalidationSet.h',
-            'css/invalidation/InvalidationData.cpp',
-            'css/invalidation/InvalidationData.h',
             'css/invalidation/PendingInvalidations.h',
             'css/invalidation/StyleInvalidator.cpp',
             'css/invalidation/StyleInvalidator.h',

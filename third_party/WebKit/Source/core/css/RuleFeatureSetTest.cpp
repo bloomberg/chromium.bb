@@ -132,7 +132,7 @@ public:
         EXPECT_TRUE(classes.contains(siblingName));
         EXPECT_EQ(maxDirectAdjacentSelectors, siblingInvalidationSet.maxDirectAdjacentSelectors());
 
-        HashSet<AtomicString> descendantClasses = classSet(siblingInvalidationSet.descendants());
+        HashSet<AtomicString> descendantClasses = classSet(*siblingInvalidationSet.siblingDescendants());
         EXPECT_EQ(1u, descendantClasses.size());
         EXPECT_TRUE(descendantClasses.contains(descendantName));
     }

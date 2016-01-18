@@ -168,10 +168,15 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& elemen
         }
 
         const SiblingInvalidationSet& invalidationSet = *m_invalidationEntries[index].m_invalidationSet;
+        ++index;
+        if (!invalidationSet.invalidatesElement(element))
+            continue;
 
-        if (invalidationSet.invalidatesElement(element)) {
-            const DescendantInvalidationSet& descendants = invalidationSet.descendants();
-            if (descendants.wholeSubtreeInvalid()) {
+        if (invalidationSet.invalidatesSelf())
+            thisElementNeedsStyleRecalc = true;
+
+        if (const DescendantInvalidationSet* descendants = invalidationSet.siblingDescendants()) {
+            if (descendants->wholeSubtreeInvalid()) {
                 // Avoid directly setting SubtreeStyleChange on element, or ContainerNode::checkForChildrenAdjacentRuleChanges()
                 // may propagate the SubtreeStyleChange to our own siblings' subtrees.
 
@@ -181,14 +186,10 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& elemen
                 return true;
             }
 
-            if (descendants.invalidatesSelf())
-                thisElementNeedsStyleRecalc = true;
-
-            if (!descendants.isEmpty())
-                recursionData.pushInvalidationSet(descendants);
+            if (!descendants->isEmpty())
+                recursionData.pushInvalidationSet(*descendants);
         }
 
-        ++index;
     }
     return thisElementNeedsStyleRecalc;
 }

@@ -43,7 +43,6 @@
 
 namespace blink {
 
-class DescendantInvalidationSet;
 class Element;
 class TracedValue;
 
@@ -54,12 +53,37 @@ enum InvalidationType {
 
 // Tracks data to determine which descendants in a DOM subtree, or
 // siblings and their descendants, need to have style recalculated.
+//
+// Some example invalidation sets:
+//
+// .z {}
+//   For class z we will have a DescendantInvalidationSet with invalidatesSelf (the element itself is invalidated).
+//
+// .y .z {}
+//   For class y we will have a DescendantInvalidationSet containing class z.
+//
+// .x ~ .z {}
+//   For class x we will have a SiblingInvalidationSet containing class z, with invalidatesSelf (the sibling itself is invalidated).
+//
+// .w ~ .y .z {}
+//   For class w we will have a SiblingInvalidationSet containing class y, with the SiblingInvalidationSet havings siblingDescendants containing class z.
+//
+// .v * {}
+//   For class v we will have a DescendantInvalidationSet with wholeSubtreeInvalid.
+//
+// .u ~ * {}
+//   For class u we will have a SiblingInvalidationSet with wholeSubtreeInvalid and invalidatesSelf (for all siblings, the sibling itself is invalidated).
+//
+// .t .v, .t ~ .z {}
+//   For class t we will have a SiblingInvalidationSet containing class z, with the SiblingInvalidationSet also holding descendants containing class v.
+//
 class CORE_EXPORT InvalidationSet : public RefCounted<InvalidationSet> {
     WTF_MAKE_NONCOPYABLE(InvalidationSet);
     USING_FAST_MALLOC_WITH_TYPE_NAME(blink::InvalidationSet);
 public:
-    bool isDescendantInvalidationSet() const { return m_type == InvalidateDescendants; }
-    bool isSiblingInvalidationSet() const { return m_type == InvalidateSiblings; }
+    InvalidationType type() const { return static_cast<InvalidationType>(m_type); }
+    bool isDescendantInvalidationSet() const { return type() == InvalidateDescendants; }
+    bool isSiblingInvalidationSet() const { return type() == InvalidateSiblings; }
 
     static void cacheTracingFlag();
 
@@ -105,10 +129,10 @@ public:
         destroy();
     }
 
+    void combine(const InvalidationSet& other);
+
 protected:
     InvalidationSet(InvalidationType);
-
-    void combine(const InvalidationSet& other);
 
 private:
     void destroy();
@@ -129,7 +153,7 @@ private:
     // If true, all descendants might be invalidated, so a full subtree recalc is required.
     unsigned m_allDescendantsMightBeInvalid : 1;
 
-    // If true, the element itself is invalid.
+    // If true, the element or sibling itself is invalid.
     unsigned m_invalidatesSelf : 1;
 
     // If true, all descendants which are custom pseudo elements must be invalidated.
@@ -149,11 +173,6 @@ public:
         return adoptRef(new DescendantInvalidationSet);
     }
 
-    void combine(const DescendantInvalidationSet& other)
-    {
-        InvalidationSet::combine(other);
-    }
-
 private:
     DescendantInvalidationSet()
         : InvalidationSet(InvalidateDescendants) {}
@@ -161,26 +180,31 @@ private:
 
 class CORE_EXPORT SiblingInvalidationSet final : public InvalidationSet {
 public:
-    static PassRefPtr<SiblingInvalidationSet> create()
+    static PassRefPtr<SiblingInvalidationSet> create(PassRefPtr<DescendantInvalidationSet> descendants)
     {
-        return adoptRef(new SiblingInvalidationSet);
+        return adoptRef(new SiblingInvalidationSet(descendants));
     }
-
-    void combine(const SiblingInvalidationSet& other);
-
-    DescendantInvalidationSet& descendants() { return *m_descendantInvalidationSet; }
-    const DescendantInvalidationSet& descendants() const { return *m_descendantInvalidationSet; }
 
     unsigned maxDirectAdjacentSelectors() const { return m_maxDirectAdjacentSelectors; }
     void updateMaxDirectAdjacentSelectors(unsigned value) { m_maxDirectAdjacentSelectors = std::max(value, m_maxDirectAdjacentSelectors); }
 
+    const DescendantInvalidationSet* siblingDescendants() const { return m_siblingDescendantInvalidationSet.get(); }
+    DescendantInvalidationSet& ensureSiblingDescendants();
+
+    DescendantInvalidationSet* descendants() const { return m_descendantInvalidationSet.get(); }
+    DescendantInvalidationSet& ensureDescendants();
+
 private:
-    SiblingInvalidationSet();
+    explicit SiblingInvalidationSet(PassRefPtr<DescendantInvalidationSet> descendants);
 
     // Indicates the maximum possible number of siblings affected.
     unsigned m_maxDirectAdjacentSelectors;
 
     // Indicates the descendants of siblings.
+    RefPtr<DescendantInvalidationSet> m_siblingDescendantInvalidationSet;
+
+    // Null if a given feature (class, attribute, id, pseudo-class) has only
+    // a SiblingInvalidationSet and not also a DescendantInvalidationSet.
     RefPtr<DescendantInvalidationSet> m_descendantInvalidationSet;
 };
 
