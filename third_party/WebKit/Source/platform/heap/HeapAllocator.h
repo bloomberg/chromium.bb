@@ -393,4 +393,155 @@ public:
 
 } // namespace blink
 
+namespace WTF {
+
+template <typename T> struct VectorTraits<blink::Member<T>> : VectorTraitsBase<blink::Member<T>> {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T> struct VectorTraits<blink::WeakMember<T>> : VectorTraitsBase<blink::WeakMember<T>> {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T> struct VectorTraits<blink::UntracedMember<T>> : VectorTraitsBase<blink::UntracedMember<T>> {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T> struct VectorTraits<blink::HeapVector<T, 0>> : VectorTraitsBase<blink::HeapVector<T, 0>> {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T> struct VectorTraits<blink::HeapDeque<T, 0>> : VectorTraitsBase<blink::HeapDeque<T, 0>> {
+    static const bool needsDestruction = false;
+    static const bool canInitializeWithMemset = true;
+    static const bool canClearUnusedSlotsWithMemset = true;
+    static const bool canMoveWithMemcpy = true;
+};
+
+template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapVector<T, inlineCapacity>> : VectorTraitsBase<blink::HeapVector<T, inlineCapacity>> {
+    static const bool needsDestruction = VectorTraits<T>::needsDestruction;
+    static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
+    static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+};
+
+template <typename T, size_t inlineCapacity> struct VectorTraits<blink::HeapDeque<T, inlineCapacity>> : VectorTraitsBase<blink::HeapDeque<T, inlineCapacity>> {
+    static const bool needsDestruction = VectorTraits<T>::needsDestruction;
+    static const bool canInitializeWithMemset = VectorTraits<T>::canInitializeWithMemset;
+    static const bool canClearUnusedSlotsWithMemset = VectorTraits<T>::canClearUnusedSlotsWithMemset;
+    static const bool canMoveWithMemcpy = VectorTraits<T>::canMoveWithMemcpy;
+};
+
+template<typename T> struct HashTraits<blink::Member<T>> : SimpleClassHashTraits<blink::Member<T>> {
+    // FIXME: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // FIXME: Implement proper const'ness for iterator types. Requires support
+    // in the marking Visitor.
+    using PeekInType = RawPtr<T>;
+    using PassInType = RawPtr<T>;
+    using IteratorGetType = blink::Member<T>*;
+    using IteratorConstGetType = const blink::Member<T>*;
+    using IteratorReferenceType = blink::Member<T>&;
+    using IteratorConstReferenceType = const blink::Member<T>&;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
+    // FIXME: Similarly, there is no need for a distinction between PeekOutType
+    // and PassOutType without reference counting.
+    using PeekOutType = T*;
+    using PassOutType = T*;
+
+    template<typename U>
+    static void store(const U& value, blink::Member<T>& storage) { storage = value; }
+
+    static PeekOutType peek(const blink::Member<T>& value) { return value; }
+    static PassOutType passOut(const blink::Member<T>& value) { return value; }
+};
+
+template<typename T> struct HashTraits<blink::WeakMember<T>> : SimpleClassHashTraits<blink::WeakMember<T>> {
+    static const bool needsDestruction = false;
+    // FIXME: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // FIXME: Implement proper const'ness for iterator types. Requires support
+    // in the marking Visitor.
+    using PeekInType = RawPtr<T>;
+    using PassInType = RawPtr<T>;
+    using IteratorGetType = blink::WeakMember<T>*;
+    using IteratorConstGetType = const blink::WeakMember<T>*;
+    using IteratorReferenceType = blink::WeakMember<T>&;
+    using IteratorConstReferenceType = const blink::WeakMember<T>&;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
+    // FIXME: Similarly, there is no need for a distinction between PeekOutType
+    // and PassOutType without reference counting.
+    using PeekOutType = T*;
+    using PassOutType = T*;
+
+    template<typename U>
+    static void store(const U& value, blink::WeakMember<T>& storage) { storage = value; }
+
+    static PeekOutType peek(const blink::WeakMember<T>& value) { return value; }
+    static PassOutType passOut(const blink::WeakMember<T>& value) { return value; }
+
+    template<typename VisitorDispatcher>
+    static bool traceInCollection(VisitorDispatcher visitor, blink::WeakMember<T>& weakMember, ShouldWeakPointersBeMarkedStrongly strongify)
+    {
+        if (strongify == WeakPointersActStrong) {
+            visitor->trace(weakMember.get()); // Strongified visit.
+            return false;
+        }
+        return !blink::Heap::isHeapObjectAlive(weakMember);
+    }
+};
+
+template<typename T> struct HashTraits<blink::UntracedMember<T>> : SimpleClassHashTraits<blink::UntracedMember<T>> {
+    static const bool needsDestruction = false;
+    // FIXME: The distinction between PeekInType and PassInType is there for
+    // the sake of the reference counting handles. When they are gone the two
+    // types can be merged into PassInType.
+    // FIXME: Implement proper const'ness for iterator types.
+    using PeekInType = RawPtr<T>;
+    using PassInType = RawPtr<T>;
+    using IteratorGetType = blink::UntracedMember<T>*;
+    using IteratorConstGetType = const blink::UntracedMember<T>*;
+    using IteratorReferenceType = blink::UntracedMember<T>&;
+    using IteratorConstReferenceType = const blink::UntracedMember<T>&;
+    static IteratorReferenceType getToReferenceConversion(IteratorGetType x) { return *x; }
+    static IteratorConstReferenceType getToReferenceConstConversion(IteratorConstGetType x) { return *x; }
+    // FIXME: Similarly, there is no need for a distinction between PeekOutType
+    // and PassOutType without reference counting.
+    using PeekOutType = T*;
+    using PassOutType = T*;
+
+    template<typename U>
+    static void store(const U& value, blink::UntracedMember<T>& storage) { storage = value; }
+
+    static PeekOutType peek(const blink::UntracedMember<T>& value) { return value; }
+    static PassOutType passOut(const blink::UntracedMember<T>& value) { return value; }
+};
+
+template<typename T, size_t inlineCapacity>
+struct NeedsTracing<ListHashSetNode<T, blink::HeapListHashSetAllocator<T, inlineCapacity>> *> {
+    static_assert(sizeof(T), "T must be fully defined");
+    // All heap allocated node pointers need visiting to keep the nodes alive,
+    // regardless of whether they contain pointers to other heap allocated
+    // objects.
+    static const bool value = true;
+};
+
+} // namespace WTF
+
 #endif

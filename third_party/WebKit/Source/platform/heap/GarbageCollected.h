@@ -393,4 +393,12 @@ public:
 
 } // namespace blink
 
+namespace WTF {
+
+// Adoption is not needed nor wanted for RefCountedGarbageCollected<>-derived types.
+template<typename T>
+PassRefPtr<T> adoptRef(blink::RefCountedGarbageCollected<T>*) = delete;
+
+} // namespace WTF
+
 #endif
