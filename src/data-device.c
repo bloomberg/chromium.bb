@@ -56,6 +56,10 @@ struct weston_touch_drag {
 	struct weston_touch_grab grab;
 };
 
+#define ALL_ACTIONS (WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY | \
+		     WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE | \
+		     WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK)
+
 static void
 data_offer_accept(struct wl_client *client, struct wl_resource *resource,
 		  uint32_t serial, const char *mime_type)
@@ -95,12 +99,107 @@ data_offer_destroy(struct wl_client *client, struct wl_resource *resource)
 static void
 data_source_notify_finish(struct weston_data_source *source)
 {
+	if (source->offer->in_ask &&
+	    wl_resource_get_version(source->resource) >=
+	    WL_DATA_SOURCE_ACTION_SINCE_VERSION) {
+		wl_data_source_send_action(source->resource,
+					   source->current_dnd_action);
+	}
+
 	if (wl_resource_get_version(source->resource) >=
 	    WL_DATA_SOURCE_DND_FINISHED_SINCE_VERSION) {
 		wl_data_source_send_dnd_finished(source->resource);
 	}
 
 	source->offer = NULL;
+}
+
+static uint32_t
+data_offer_choose_action(struct weston_data_offer *offer)
+{
+	uint32_t available_actions, preferred_action = 0;
+	uint32_t source_actions, offer_actions;
+
+	if (wl_resource_get_version(offer->resource) >=
+	    WL_DATA_OFFER_ACTION_SINCE_VERSION) {
+		offer_actions = offer->dnd_actions;
+		preferred_action = offer->preferred_dnd_action;
+	} else {
+		offer_actions = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
+	}
+
+	if (wl_resource_get_version(offer->source->resource) >=
+	    WL_DATA_SOURCE_ACTION_SINCE_VERSION)
+		source_actions = offer->source->dnd_actions;
+	else
+		source_actions = WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY;
+
+	available_actions = offer_actions & source_actions;
+
+	if (!available_actions)
+		return WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
+
+	/* If the dest side has a preferred DnD action, use it */
+	if ((preferred_action & available_actions) != 0)
+		return preferred_action;
+
+	/* Use the first found action, in bit order */
+	return 1 << (ffs(available_actions) - 1);
+}
+
+static void
+data_offer_update_action(struct weston_data_offer *offer)
+{
+	uint32_t action;
+
+	if (!offer->source)
+		return;
+
+	action = data_offer_choose_action(offer);
+
+	if (offer->source->current_dnd_action == action)
+		return;
+
+	offer->source->current_dnd_action = action;
+
+	if (offer->in_ask)
+		return;
+
+	if (wl_resource_get_version(offer->source->resource) >=
+	    WL_DATA_SOURCE_ACTION_SINCE_VERSION)
+		wl_data_source_send_action(offer->source->resource, action);
+
+	if (wl_resource_get_version(offer->resource) >=
+	    WL_DATA_OFFER_ACTION_SINCE_VERSION)
+		wl_data_offer_send_action(offer->resource, action);
+}
+
+static void
+data_offer_set_actions(struct wl_client *client,
+		       struct wl_resource *resource,
+		       uint32_t dnd_actions, uint32_t preferred_action)
+{
+	struct weston_data_offer *offer = wl_resource_get_user_data(resource);
+
+	if (dnd_actions & ~ALL_ACTIONS) {
+		wl_resource_post_error(offer->resource,
+				       WL_DATA_OFFER_ERROR_INVALID_ACTION_MASK,
+				       "invalid action mask %x", dnd_actions);
+		return;
+	}
+
+	if (preferred_action &&
+	    (!(preferred_action & dnd_actions) ||
+	     __builtin_popcount(preferred_action) > 1)) {
+		wl_resource_post_error(offer->resource,
+				       WL_DATA_OFFER_ERROR_INVALID_ACTION,
+				       "invalid action %x", preferred_action);
+		return;
+	}
+
+	offer->dnd_actions = dnd_actions;
+	offer->preferred_dnd_action = preferred_action;
+	data_offer_update_action(offer);
 }
 
 static void
@@ -122,6 +221,17 @@ data_offer_finish(struct wl_client *client, struct wl_resource *resource)
 		return;
 	}
 
+	switch (offer->source->current_dnd_action) {
+	case WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE:
+	case WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK:
+		wl_resource_post_error(offer->resource,
+				       WL_DATA_OFFER_ERROR_INVALID_OFFER,
+				       "offer finished with an invalid action");
+		return;
+	default:
+		break;
+	}
+
 	data_source_notify_finish(offer->source);
 }
 
@@ -130,6 +240,7 @@ static const struct wl_data_offer_interface data_offer_interface = {
 	data_offer_receive,
 	data_offer_destroy,
 	data_offer_finish,
+	data_offer_set_actions,
 };
 
 static void
@@ -196,6 +307,9 @@ weston_data_source_send_offer(struct weston_data_source *source,
 	wl_resource_set_implementation(offer->resource, &data_offer_interface,
 				       offer, destroy_data_offer);
 
+	offer->in_ask = false;
+	offer->dnd_actions = 0;
+	offer->preferred_dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 	offer->source = source;
 	offer->source_destroy_listener.notify = destroy_offer_data_source;
 	wl_signal_add(&source->destroy_signal,
@@ -208,6 +322,7 @@ weston_data_source_send_offer(struct weston_data_source *source,
 
 	source->offer = offer;
 	source->accepted = false;
+	data_offer_update_action(offer);
 
 	return offer->resource;
 }
@@ -234,9 +349,44 @@ data_source_destroy(struct wl_client *client, struct wl_resource *resource)
 	wl_resource_destroy(resource);
 }
 
+static void
+data_source_set_actions(struct wl_client *client,
+			struct wl_resource *resource,
+			uint32_t dnd_actions)
+{
+	struct weston_data_source *source =
+		wl_resource_get_user_data(resource);
+
+	if (source->actions_set) {
+		wl_resource_post_error(source->resource,
+				       WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK,
+				       "cannot set actions more than once");
+		return;
+	}
+
+	if (dnd_actions & ~ALL_ACTIONS) {
+		wl_resource_post_error(source->resource,
+				       WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK,
+				       "invalid action mask %x", dnd_actions);
+		return;
+	}
+
+	if (source->seat) {
+		wl_resource_post_error(source->resource,
+				       WL_DATA_SOURCE_ERROR_INVALID_ACTION_MASK,
+				       "invalid action change after "
+				       "wl_data_device.start_drag");
+		return;
+	}
+
+	source->dnd_actions = dnd_actions;
+	source->actions_set = true;
+}
+
 static struct wl_data_source_interface data_source_interface = {
 	data_source_offer,
-	data_source_destroy
+	data_source_destroy,
+	data_source_set_actions
 };
 
 static void
@@ -378,6 +528,12 @@ weston_drag_set_focus(struct weston_drag *drag,
 							       resource);
 		if (offer_resource == NULL)
 			return;
+
+		if (wl_resource_get_version (offer_resource) >=
+		    WL_DATA_OFFER_SOURCE_ACTIONS_SINCE_VERSION) {
+			wl_data_offer_send_source_actions (offer_resource,
+			                                   drag->data_source->dnd_actions);
+		}
 	}
 
 	wl_data_device_send_enter(resource, serial, view->surface->resource,
@@ -475,12 +631,17 @@ drag_grab_button(struct weston_pointer_grab *grab,
 	    pointer->grab_button == button &&
 	    state == WL_POINTER_BUTTON_STATE_RELEASED) {
 		if (drag->base.focus_resource &&
-		    data_source->accepted) {
+		    data_source->accepted &&
+		    data_source->current_dnd_action) {
 			wl_data_device_send_drop(drag->base.focus_resource);
 
 			if (wl_resource_get_version(data_source->resource) >=
 			    WL_DATA_SOURCE_DND_DROP_PERFORMED_SINCE_VERSION)
 				wl_data_source_send_dnd_drop_performed(data_source->resource);
+
+			data_source->offer->in_ask =
+				data_source->current_dnd_action ==
+				WL_DATA_DEVICE_MANAGER_DND_ACTION_ASK;
 
 			data_source->seat = NULL;
 		} else if (wl_resource_get_version(data_source->resource) >=
@@ -912,13 +1073,23 @@ data_device_set_selection(struct wl_client *client,
 			  struct wl_resource *resource,
 			  struct wl_resource *source_resource, uint32_t serial)
 {
+	struct weston_data_source *source;
+
 	if (!source_resource)
 		return;
 
+	source = wl_resource_get_user_data(source_resource);
+
+	if (source->actions_set) {
+		wl_resource_post_error(source_resource,
+				       WL_DATA_SOURCE_ERROR_INVALID_SOURCE,
+				       "cannot set drag-and-drop source as selection");
+		return;
+	}
+
 	/* FIXME: Store serial and check against incoming serial here. */
 	weston_seat_set_selection(wl_resource_get_user_data(resource),
-				  wl_resource_get_user_data(source_resource),
-				  serial);
+				  source, serial);
 }
 static void
 data_device_release(struct wl_client *client, struct wl_resource *resource)
@@ -998,6 +1169,9 @@ create_data_source(struct wl_client *client,
 	source->offer = NULL;
 	source->accepted = false;
 	source->seat = NULL;
+	source->actions_set = false;
+	source->dnd_actions = 0;
+	source->current_dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_NONE;
 
 	wl_array_init(&source->mime_types);
 

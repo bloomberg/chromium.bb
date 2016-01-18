@@ -321,6 +321,9 @@ struct weston_data_offer {
 	struct wl_resource *resource;
 	struct weston_data_source *source;
 	struct wl_listener source_destroy_listener;
+	uint32_t dnd_actions;
+	enum wl_data_device_manager_dnd_action preferred_dnd_action;
+	bool in_ask;
 };
 
 struct weston_data_source {
@@ -330,6 +333,9 @@ struct weston_data_source {
 	struct weston_data_offer *offer;
 	struct weston_seat *seat;
 	bool accepted;
+	bool actions_set;
+	uint32_t dnd_actions;
+	enum wl_data_device_manager_dnd_action current_dnd_action;
 
 	void (*accept)(struct weston_data_source *source,
 		       uint32_t serial, const char *mime_type);

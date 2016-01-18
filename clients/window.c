@@ -3418,6 +3418,8 @@ struct data_offer {
 	int fd;
 	data_func_t func;
 	int32_t x, y;
+	uint32_t dnd_action;
+	uint32_t source_actions;
 	void *user_data;
 };
 
@@ -3431,8 +3433,26 @@ data_offer_offer(void *data, struct wl_data_offer *wl_data_offer, const char *ty
 	*p = strdup(type);
 }
 
+static void
+data_offer_source_actions(void *data, struct wl_data_offer *wl_data_offer, uint32_t source_actions)
+{
+	struct data_offer *offer = data;
+
+	offer->source_actions = source_actions;
+}
+
+static void
+data_offer_action(void *data, struct wl_data_offer *wl_data_offer, uint32_t dnd_action)
+{
+	struct data_offer *offer = data;
+
+	offer->dnd_action = dnd_action;
+}
+
 static const struct wl_data_offer_listener data_offer_listener = {
 	data_offer_offer,
+	data_offer_source_actions,
+	data_offer_action
 };
 
 static void
@@ -3496,6 +3516,14 @@ data_device_enter(void *data, struct wl_data_device *data_device,
 		*p = NULL;
 
 		types_data = input->drag_offer->types.data;
+
+		if (input->display->data_device_manager_version >=
+		    WL_DATA_OFFER_SET_ACTIONS_SINCE_VERSION) {
+			wl_data_offer_set_actions(offer,
+						  WL_DATA_DEVICE_MANAGER_DND_ACTION_COPY |
+						  WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE,
+						  WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE);
+		}
 	} else {
 		input->drag_offer = NULL;
 		types_data = NULL;
@@ -5930,6 +5958,12 @@ void
 display_exit(struct display *display)
 {
 	display->running = 0;
+}
+
+int
+display_get_data_device_manager_version(struct display *display)
+{
+	return display->data_device_manager_version;
 }
 
 void

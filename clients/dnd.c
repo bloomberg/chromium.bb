@@ -72,6 +72,7 @@ struct dnd_drag {
 	struct item *item;
 	int x_offset, y_offset;
 	int width, height;
+	uint32_t dnd_action;
 	const char *mime_type;
 
 	struct wl_surface *drag_surface;
@@ -266,16 +267,13 @@ dnd_get_item(struct dnd *dnd, int32_t x, int32_t y)
 }
 
 static void
-data_source_target(void *data,
-		   struct wl_data_source *source, const char *mime_type)
+dnd_drag_update_surface(struct dnd_drag *dnd_drag)
 {
-	struct dnd_drag *dnd_drag = data;
 	struct dnd *dnd = dnd_drag->dnd;
 	cairo_surface_t *surface;
 	struct wl_buffer *buffer;
 
-	dnd_drag->mime_type = mime_type;
-	if (mime_type)
+	if (dnd_drag->mime_type && dnd_drag->dnd_action)
 		surface = dnd_drag->opaque;
 	else
 		surface = dnd_drag->translucent;
@@ -285,6 +283,16 @@ data_source_target(void *data,
 	wl_surface_damage(dnd_drag->drag_surface, 0, 0,
 			  dnd_drag->width, dnd_drag->height);
 	wl_surface_commit(dnd_drag->drag_surface);
+}
+
+static void
+data_source_target(void *data,
+		   struct wl_data_source *source, const char *mime_type)
+{
+	struct dnd_drag *dnd_drag = data;
+
+	dnd_drag->mime_type = mime_type;
+	dnd_drag_update_surface(dnd_drag);
 }
 
 static void
@@ -360,12 +368,22 @@ data_source_dnd_finished(void *data, struct wl_data_source *source)
 	dnd_drag_destroy(dnd_drag);
 }
 
+static void
+data_source_action(void *data, struct wl_data_source *source, uint32_t dnd_action)
+{
+	struct dnd_drag *dnd_drag = data;
+
+	dnd_drag->dnd_action = dnd_action;
+	dnd_drag_update_surface(dnd_drag);
+}
+
 static const struct wl_data_source_listener data_source_listener = {
 	data_source_target,
 	data_source_send,
 	data_source_cancelled,
 	data_source_dnd_drop_performed,
 	data_source_dnd_finished,
+	data_source_action,
 };
 
 static cairo_surface_t *
@@ -428,6 +446,8 @@ create_drag_source(struct dnd *dnd,
 		dnd_drag->item = item;
 		dnd_drag->x_offset = x - item->x;
 		dnd_drag->y_offset = y - item->y;
+		dnd_drag->dnd_action = WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE;
+		dnd_drag->mime_type = NULL;
 
 		for (i = 0; i < ARRAY_LENGTH(dnd->items); i++) {
 			if (item == dnd->items[i]){
@@ -454,6 +474,12 @@ create_drag_source(struct dnd *dnd,
 					     flower_mime_type);
 			wl_data_source_offer(dnd_drag->data_source,
 					     text_mime_type);
+		}
+
+		if (display_get_data_device_manager_version(display) >=
+		    WL_DATA_SOURCE_SET_ACTIONS_SINCE_VERSION) {
+			wl_data_source_set_actions(dnd_drag->data_source,
+						   WL_DATA_DEVICE_MANAGER_DND_ACTION_MOVE);
 		}
 
 		wl_data_device_start_drag(input_get_data_device(input),

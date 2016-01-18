@@ -175,6 +175,9 @@ display_run(struct display *d);
 void
 display_exit(struct display *d);
 
+int
+display_get_data_device_manager_version(struct display *d);
+
 enum cursor_type {
 	CURSOR_BOTTOM_LEFT,
 	CURSOR_BOTTOM_RIGHT,
