@@ -372,12 +372,8 @@ public class TabsOpenedFromExternalAppTest extends ChromeTabbedActivityTestBase 
      * when the user has navigated elsewhere manually in the same tab.
      * @throws InterruptedException
      */
-    /**
-     * @LargeTest
-     * @Feature({"Navigation"})
-     * Bug 6467101
-     */
-    @FlakyTest
+    @LargeTest
+    @Feature({"Navigation"})
     public void testNewTabAfterNavigation() throws InterruptedException {
         startMainActivityFromLauncher();
 
