@@ -211,7 +211,7 @@ static uint64_t scaleDown(uint64_t x, int n)
 static uint64_t scaleUp(uint64_t x, int n)
 {
     ASSERT(n >= 0);
-    ASSERT(n < Precision);
+    ASSERT(n <= Precision);
 
     uint64_t y = 1;
     uint64_t z = 10;
