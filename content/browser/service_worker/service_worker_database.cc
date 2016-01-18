@@ -196,54 +196,6 @@ std::string CreateRegistrationIdToOriginKey(int64_t registration_id) {
                             base::Int64ToString(registration_id).c_str());
 }
 
-void PutRegistrationDataToBatch(
-    const ServiceWorkerDatabase::RegistrationData& input,
-    leveldb::WriteBatch* batch) {
-  DCHECK(batch);
-
-  // Convert RegistrationData to ServiceWorkerRegistrationData.
-  ServiceWorkerRegistrationData data;
-  data.set_registration_id(input.registration_id);
-  data.set_scope_url(input.scope.spec());
-  data.set_script_url(input.script.spec());
-  data.set_version_id(input.version_id);
-  data.set_is_active(input.is_active);
-  data.set_has_fetch_handler(input.has_fetch_handler);
-  data.set_last_update_check_time(input.last_update_check.ToInternalValue());
-  data.set_resources_total_size_bytes(input.resources_total_size_bytes);
-  for (const GURL& url : input.foreign_fetch_scopes) {
-    DCHECK(ServiceWorkerUtils::ScopeMatches(input.scope, url))
-        << "Foreign fetch scope '" << url
-        << "' does not match service worker scope '" << input.scope << "'.";
-    data.add_foreign_fetch_scope(url.spec());
-  }
-
-  std::string value;
-  bool success = data.SerializeToString(&value);
-  DCHECK(success);
-  GURL origin = input.scope.GetOrigin();
-  batch->Put(CreateRegistrationKey(data.registration_id(), origin), value);
-}
-
-void PutResourceRecordToBatch(
-    const ServiceWorkerDatabase::ResourceRecord& input,
-    int64_t version_id,
-    leveldb::WriteBatch* batch) {
-  DCHECK(batch);
-  DCHECK_GE(input.size_bytes, 0);
-
-  // Convert ResourceRecord to ServiceWorkerResourceRecord.
-  ServiceWorkerResourceRecord record;
-  record.set_resource_id(input.resource_id);
-  record.set_url(input.url.spec());
-  record.set_size_bytes(input.size_bytes);
-
-  std::string value;
-  bool success = record.SerializeToString(&value);
-  DCHECK(success);
-  batch->Put(CreateResourceRecordKey(version_id, input.resource_id), value);
-}
-
 void PutUniqueOriginToBatch(const GURL& origin,
                             leveldb::WriteBatch* batch) {
   // Value should be empty.
@@ -269,69 +221,6 @@ ServiceWorkerDatabase::Status ParseId(const std::string& serialized,
   if (!base::StringToInt64(serialized, &id) || id < 0)
     return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
   *out = id;
-  return ServiceWorkerDatabase::STATUS_OK;
-}
-
-ServiceWorkerDatabase::Status ParseRegistrationData(
-    const std::string& serialized,
-    ServiceWorkerDatabase::RegistrationData* out) {
-  DCHECK(out);
-  ServiceWorkerRegistrationData data;
-  if (!data.ParseFromString(serialized))
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-
-  GURL scope_url(data.scope_url());
-  GURL script_url(data.script_url());
-  if (!scope_url.is_valid() ||
-      !script_url.is_valid() ||
-      scope_url.GetOrigin() != script_url.GetOrigin()) {
-    DLOG(ERROR) << "Scope URL '" << data.scope_url() << "' and/or script url '"
-                << data.script_url()
-                << "' are invalid or have mismatching origins.";
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-  }
-
-  // Convert ServiceWorkerRegistrationData to RegistrationData.
-  out->registration_id = data.registration_id();
-  out->scope = scope_url;
-  out->script = script_url;
-  out->version_id = data.version_id();
-  out->is_active = data.is_active();
-  out->has_fetch_handler = data.has_fetch_handler();
-  out->last_update_check =
-      base::Time::FromInternalValue(data.last_update_check_time());
-  out->resources_total_size_bytes = data.resources_total_size_bytes();
-  for (int i = 0; i < data.foreign_fetch_scope_size(); ++i) {
-    GURL sub_scope_url(data.foreign_fetch_scope(i));
-    if (!sub_scope_url.is_valid() ||
-        !ServiceWorkerUtils::ScopeMatches(scope_url, sub_scope_url)) {
-      DLOG(ERROR) << "Foreign fetch scope '" << data.foreign_fetch_scope(i)
-                  << "' is not valid or does not match Scope URL '" << scope_url
-                  << "'.";
-      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-    }
-    out->foreign_fetch_scopes.push_back(sub_scope_url);
-  }
-
-  return ServiceWorkerDatabase::STATUS_OK;
-}
-
-ServiceWorkerDatabase::Status ParseResourceRecord(
-    const std::string& serialized,
-    ServiceWorkerDatabase::ResourceRecord* out) {
-  DCHECK(out);
-  ServiceWorkerResourceRecord record;
-  if (!record.ParseFromString(serialized))
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-
-  GURL url(record.url());
-  if (!url.is_valid())
-    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
-
-  // Convert ServiceWorkerResourceRecord to ResourceRecord.
-  out->resource_id = record.resource_id();
-  out->url = url;
-  out->size_bytes = record.size_bytes();
   return ServiceWorkerDatabase::STATUS_OK;
 }
 
@@ -710,7 +599,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
       << "The total size in the registration must match the cumulative "
       << "sizes of the resources.";
 
-  PutRegistrationDataToBatch(registration, &batch);
+  WriteRegistrationDataInBatch(registration, &batch);
   batch.Put(CreateRegistrationIdToOriginKey(registration.registration_id),
             registration.scope.GetOrigin().spec());
 
@@ -726,7 +615,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
     DCHECK(pushed_resources.insert(itr->resource_id).second);
     DCHECK(pushed_urls.insert(itr->url).second);
 
-    PutResourceRecordToBatch(*itr, registration.version_id, &batch);
+    WriteResourceRecordInBatch(*itr, registration.version_id, &batch);
 
     // Delete a resource from the uncommitted list.
     batch.Delete(CreateResourceIdKey(
@@ -807,7 +696,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateVersionToActive(
   registration.is_active = true;
 
   leveldb::WriteBatch batch;
-  PutRegistrationDataToBatch(registration, &batch);
+  WriteRegistrationDataInBatch(registration, &batch);
   return WriteBatch(&batch);
 }
 
@@ -832,7 +721,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::UpdateLastCheckTime(
   registration.last_update_check = time;
 
   leveldb::WriteBatch batch;
-  PutRegistrationDataToBatch(registration, &batch);
+  WriteRegistrationDataInBatch(registration, &batch);
   return WriteBatch(&batch);
 }
 
@@ -1255,6 +1144,94 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadRegistrationData(
   return status;
 }
 
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
+    const std::string& serialized,
+    RegistrationData* out) {
+  DCHECK(out);
+  ServiceWorkerRegistrationData data;
+  if (!data.ParseFromString(serialized))
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+
+  GURL scope_url(data.scope_url());
+  GURL script_url(data.script_url());
+  if (!scope_url.is_valid() || !script_url.is_valid() ||
+      scope_url.GetOrigin() != script_url.GetOrigin()) {
+    DLOG(ERROR) << "Scope URL '" << data.scope_url() << "' and/or script url '"
+                << data.script_url()
+                << "' are invalid or have mismatching origins.";
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+  }
+
+  if (data.registration_id() >= next_avail_registration_id_ ||
+      data.version_id() >= next_avail_version_id_) {
+    // The stored registration should not have the higher registration id or
+    // version id than the next available id.
+    DLOG(ERROR) << "Registration id " << data.registration_id()
+                << " and/or version id " << data.version_id()
+                << " is higher than the next available id.";
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+  }
+
+  // Convert ServiceWorkerRegistrationData to RegistrationData.
+  out->registration_id = data.registration_id();
+  out->scope = scope_url;
+  out->script = script_url;
+  out->version_id = data.version_id();
+  out->is_active = data.is_active();
+  out->has_fetch_handler = data.has_fetch_handler();
+  out->last_update_check =
+      base::Time::FromInternalValue(data.last_update_check_time());
+  out->resources_total_size_bytes = data.resources_total_size_bytes();
+  for (int i = 0; i < data.foreign_fetch_scope_size(); ++i) {
+    GURL sub_scope_url(data.foreign_fetch_scope(i));
+    if (!sub_scope_url.is_valid() ||
+        !ServiceWorkerUtils::ScopeMatches(scope_url, sub_scope_url)) {
+      DLOG(ERROR) << "Foreign fetch scope '" << data.foreign_fetch_scope(i)
+                  << "' is not valid or does not match Scope URL '" << scope_url
+                  << "'.";
+      return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+    }
+    out->foreign_fetch_scopes.push_back(sub_scope_url);
+  }
+
+  return ServiceWorkerDatabase::STATUS_OK;
+}
+
+void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
+    const RegistrationData& registration,
+    leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+
+  // The registration id and version id should be bumped before this.
+  DCHECK_GT(next_avail_registration_id_, registration.registration_id);
+  DCHECK_GT(next_avail_version_id_, registration.version_id);
+
+  // Convert RegistrationData to ServiceWorkerRegistrationData.
+  ServiceWorkerRegistrationData data;
+  data.set_registration_id(registration.registration_id);
+  data.set_scope_url(registration.scope.spec());
+  data.set_script_url(registration.script.spec());
+  data.set_version_id(registration.version_id);
+  data.set_is_active(registration.is_active);
+  data.set_has_fetch_handler(registration.has_fetch_handler);
+  data.set_last_update_check_time(
+      registration.last_update_check.ToInternalValue());
+  data.set_resources_total_size_bytes(registration.resources_total_size_bytes);
+  for (const GURL& url : registration.foreign_fetch_scopes) {
+    DCHECK(ServiceWorkerUtils::ScopeMatches(registration.scope, url))
+        << "Foreign fetch scope '" << url
+        << "' does not match service worker scope '" << registration.scope
+        << "'.";
+    data.add_foreign_fetch_scope(url.spec());
+  }
+
+  std::string value;
+  bool success = data.SerializeToString(&value);
+  DCHECK(success);
+  GURL origin = registration.scope.GetOrigin();
+  batch->Put(CreateRegistrationKey(data.registration_id(), origin), value);
+}
+
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
     int64_t version_id,
     std::vector<ResourceRecord>* resources) {
@@ -1287,6 +1264,59 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ReadResourceRecords(
 
   HandleReadResult(FROM_HERE, status);
   return status;
+}
+
+ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseResourceRecord(
+    const std::string& serialized,
+    ServiceWorkerDatabase::ResourceRecord* out) {
+  DCHECK(out);
+  ServiceWorkerResourceRecord record;
+  if (!record.ParseFromString(serialized))
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+
+  GURL url(record.url());
+  if (!url.is_valid())
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+
+  if (record.resource_id() >= next_avail_resource_id_) {
+    // The stored resource should not have a higher resource id than the next
+    // available resource id.
+    return ServiceWorkerDatabase::STATUS_ERROR_CORRUPTED;
+  }
+
+  // Convert ServiceWorkerResourceRecord to ResourceRecord.
+  out->resource_id = record.resource_id();
+  out->url = url;
+  out->size_bytes = record.size_bytes();
+  return ServiceWorkerDatabase::STATUS_OK;
+}
+
+void ServiceWorkerDatabase::WriteResourceRecordInBatch(
+    const ResourceRecord& resource,
+    int64_t version_id,
+    leveldb::WriteBatch* batch) {
+  DCHECK(batch);
+  DCHECK_GE(resource.size_bytes, 0);
+
+  // The next available resource id should be bumped when a resource is recorded
+  // in the uncommitted list and this should be nop. However, we attempt it here
+  // for some unit tests that bypass WriteUncommittedResourceIds() when setting
+  // up a dummy registration. Otherwise, tests fail due to a corruption error in
+  // ParseResourceRecord().
+  // TODO(nhiroki): Remove this hack by making tests appropriately set up
+  // uncommitted resource ids before writing a registration.
+  BumpNextResourceIdIfNeeded(resource.resource_id, batch);
+
+  // Convert ResourceRecord to ServiceWorkerResourceRecord.
+  ServiceWorkerResourceRecord data;
+  data.set_resource_id(resource.resource_id);
+  data.set_url(resource.url.spec());
+  data.set_size_bytes(resource.size_bytes);
+
+  std::string value;
+  bool success = data.SerializeToString(&value);
+  DCHECK(success);
+  batch->Put(CreateResourceRecordKey(version_id, data.resource_id()), value);
 }
 
 ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteResourceRecords(

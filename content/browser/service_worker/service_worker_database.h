@@ -259,11 +259,28 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
                               const GURL& origin,
                               RegistrationData* registration);
 
+  // Parses |serialized| as a RegistrationData object and pushes it into |out|.
+  ServiceWorkerDatabase::Status ParseRegistrationData(
+      const std::string& serialized,
+      RegistrationData* out);
+
+  void WriteRegistrationDataInBatch(const RegistrationData& registration,
+                                    leveldb::WriteBatch* batch);
+
   // Reads resource records for |version_id| from the database. Returns OK if
   // it's successfully read or not found in the database. Otherwise, returns an
   // error.
   Status ReadResourceRecords(int64_t version_id,
                              std::vector<ResourceRecord>* resources);
+
+  // Parses |serialized| as a ResourceRecord object and pushes it into |out|.
+  ServiceWorkerDatabase::Status ParseResourceRecord(
+      const std::string& serialized,
+      ResourceRecord* out);
+
+  void WriteResourceRecordInBatch(const ResourceRecord& resource,
+                                  int64_t version_id,
+                                  leveldb::WriteBatch* batch);
 
   // Deletes resource records for |version_id| from the database. Returns OK if
   // they are successfully deleted or not found in the database. Otherwise,

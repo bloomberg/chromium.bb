@@ -196,6 +196,9 @@ class ServiceWorkerVersionTest : public testing::Test {
   void SetUp() override {
     helper_ = GetMessageReceiver();
 
+    helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
+    base::RunLoop().RunUntilIdle();
+
     pattern_ = GURL("http://www.example.com/test/");
     registration_ = new ServiceWorkerRegistration(
         pattern_,
@@ -203,7 +206,8 @@ class ServiceWorkerVersionTest : public testing::Test {
         helper_->context()->AsWeakPtr());
     version_ = new ServiceWorkerVersion(
         registration_.get(),
-        GURL("http://www.example.com/test/service_worker.js"), 1L,
+        GURL("http://www.example.com/test/service_worker.js"),
+        helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(
@@ -211,8 +215,6 @@ class ServiceWorkerVersionTest : public testing::Test {
     version_->script_cache_map()->SetResources(records);
 
     // Make the registration findable via storage functions.
-    helper_->context()->storage()->LazyInitialize(base::Bind(&base::DoNothing));
-    base::RunLoop().RunUntilIdle();
     ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(),

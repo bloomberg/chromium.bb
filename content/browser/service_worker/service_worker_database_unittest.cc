@@ -246,7 +246,33 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
   EXPECT_EQ(0, ids.ver_id);
   EXPECT_EQ(0, ids.res_id);
 
-  // Writing a registration bumps the next available ids.
+  // Writing uncommitted resources bumps the next available resource id.
+  const int64_t kUncommittedIds[] = {0, 1, 3, 5, 6, 10};
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->WriteUncommittedResourceIds(std::set<int64_t>(
+          kUncommittedIds, kUncommittedIds + arraysize(kUncommittedIds))));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
+  EXPECT_EQ(0, ids.reg_id);
+  EXPECT_EQ(0, ids.ver_id);
+  EXPECT_EQ(11, ids.res_id);
+
+  // Writing purgeable resources bumps the next available id.
+  const int64_t kPurgeableIds[] = {4, 12, 16, 17, 20};
+  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
+            database->WriteUncommittedResourceIds(std::set<int64_t>(
+                kPurgeableIds, kPurgeableIds + arraysize(kPurgeableIds))));
+  EXPECT_EQ(
+      ServiceWorkerDatabase::STATUS_OK,
+      database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
+  EXPECT_EQ(0, ids.reg_id);
+  EXPECT_EQ(0, ids.ver_id);
+  EXPECT_EQ(21, ids.res_id);
+
+  // Writing a registration bumps the next available registration and version
+  // ids.
   std::vector<Resource> resources1;
   RegistrationData data1;
   ServiceWorkerDatabase::RegistrationData deleted_version;
@@ -261,30 +287,6 @@ TEST(ServiceWorkerDatabaseTest, GetNextAvailableIds) {
             database->WriteRegistration(data1, resources1, &deleted_version,
                                         &newly_purgeable_resources));
 
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK, database->GetNextAvailableIds(
-      &ids.reg_id, &ids.ver_id, &ids.res_id));
-  EXPECT_EQ(101, ids.reg_id);
-  EXPECT_EQ(201, ids.ver_id);
-  EXPECT_EQ(0, ids.res_id);
-
-  // Writing uncommitted resources bumps the next available id.
-  const int64_t kUncommittedIds[] = {0, 1, 3, 5, 6, 10};
-  EXPECT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->WriteUncommittedResourceIds(std::set<int64_t>(
-          kUncommittedIds, kUncommittedIds + arraysize(kUncommittedIds))));
-  EXPECT_EQ(
-      ServiceWorkerDatabase::STATUS_OK,
-      database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
-  EXPECT_EQ(101, ids.reg_id);
-  EXPECT_EQ(201, ids.ver_id);
-  EXPECT_EQ(11, ids.res_id);
-
-  // Writing purgeable resources bumps the next available id.
-  const int64_t kPurgeableIds[] = {4, 12, 16, 17, 20};
-  EXPECT_EQ(ServiceWorkerDatabase::STATUS_OK,
-            database->WriteUncommittedResourceIds(std::set<int64_t>(
-                kPurgeableIds, kPurgeableIds + arraysize(kPurgeableIds))));
   EXPECT_EQ(
       ServiceWorkerDatabase::STATUS_OK,
       database->GetNextAvailableIds(&ids.reg_id, &ids.ver_id, &ids.res_id));
