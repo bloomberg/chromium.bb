@@ -10,6 +10,7 @@
 #include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -121,8 +122,14 @@ class CallbackHelper {
 
 class HandleWatcherTest : public testing::TestWithParam<MessageLoopConfig> {
  public:
-  HandleWatcherTest() : message_loop_(CreateMessageLoop(GetParam())) {}
+  HandleWatcherTest()
+      : at_exit_(new base::ShadowingAtExitManager),
+        message_loop_(CreateMessageLoop(GetParam())) {}
   virtual ~HandleWatcherTest() {
+    // By explicitly destroying |at_exit_| before resetting the tick clock, it
+    // ensures that the handle watcher thread (if there is one) is shut down,
+    // preventing a race with users of the tick clock in MessagePumpMojo.
+    at_exit_.reset();
     test::SetTickClockForTest(NULL);
   }
 
@@ -131,6 +138,8 @@ class HandleWatcherTest : public testing::TestWithParam<MessageLoopConfig> {
     message_loop_.reset();
   }
 
+  // This should be called at the beginning of any test that needs it, so that
+  // it is installed before the handle watcher thread starts.
   void InstallTickClock() {
     test::SetTickClockForTest(&tick_clock_);
   }
@@ -138,7 +147,7 @@ class HandleWatcherTest : public testing::TestWithParam<MessageLoopConfig> {
   base::SimpleTestTickClock tick_clock_;
 
  private:
-  base::ShadowingAtExitManager at_exit_;
+  scoped_ptr<base::ShadowingAtExitManager> at_exit_;
   scoped_ptr<base::MessageLoop> message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(HandleWatcherTest);

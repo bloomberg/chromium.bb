@@ -271,10 +271,6 @@ char kTSanDefaultSuppressions[] =
 // https://crbug.com/455638
 "deadlock:dbus::Bus::ShutdownAndBlock\n"
 
-// https://crbug.com/455665
-"race:mojo::common::*::tick_clock\n"
-"race:mojo::common::internal::NowTicks\n"
-
 // https://crbug.com/459429
 "race:randomnessPid\n"
 
