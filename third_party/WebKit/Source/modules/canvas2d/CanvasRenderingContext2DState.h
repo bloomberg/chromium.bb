@@ -84,7 +84,7 @@ public:
     void setFilter(PassRefPtrWillBeRawPtr<CSSValue>);
     void setUnparsedFilter(const String& filterString) { m_unparsedFilter = filterString; }
     const String& unparsedFilter() const { return m_unparsedFilter; }
-    SkImageFilter* getFilter(Element*, const Font&) const;
+    SkImageFilter* getFilter(Element*, const Font&, IntSize canvasSize) const;
     bool hasFilter() const { return m_filterValue; }
 
     void setStrokeStyle(CanvasStyle*);

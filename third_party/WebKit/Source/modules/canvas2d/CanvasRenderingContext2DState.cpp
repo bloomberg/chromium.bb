@@ -341,7 +341,7 @@ void CanvasRenderingContext2DState::resetTransform()
     m_isTransformInvertible = true;
 }
 
-SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, const Font& font) const
+SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolutionHost, const Font& font, IntSize canvasSize) const
 {
     if (!m_filterValue)
         return nullptr;
@@ -365,8 +365,9 @@ SkImageFilter* CanvasRenderingContext2DState::getFilter(Element* styleResolution
         m_strokeStyle->applyToPaint(strokePaintForFilter);
         fillPaintForFilter.setColor(m_fillStyle->paintColor());
         strokePaintForFilter.setColor(m_strokeStyle->paintColor());
+        FloatSize floatCanvasSize(canvasSize);
         const double effectiveZoom = 1.0; // Deliberately ignore zoom on the canvas element
-        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &fillPaintForFilter, &strokePaintForFilter);
+        filterEffectBuilder->build(styleResolutionHost, filterStyle->filter(), effectiveZoom, &floatCanvasSize, &fillPaintForFilter, &strokePaintForFilter);
 
         SkiaImageFilterBuilder imageFilterBuilder;
         RefPtrWillBeRawPtr<FilterEffect> lastEffect = filterEffectBuilder->lastEffect();

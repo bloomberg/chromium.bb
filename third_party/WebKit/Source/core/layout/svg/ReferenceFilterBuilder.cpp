@@ -69,7 +69,7 @@ void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperatio
 }
 #endif
 
-PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const SkPaint* fillPaint, const SkPaint* strokePaint)
+PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element* element, FilterEffect* previousEffect, const ReferenceFilterOperation& filterOperation, const FloatSize* referenceBoxSize, const SkPaint* fillPaint, const SkPaint* strokePaint)
 {
     TreeScope* treeScope = &element->treeScope();
 
@@ -101,8 +101,12 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
 
     FloatRect referenceBox;
     if (element->inDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
-        FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
-        referenceBox = FloatRect(FloatPoint(), size);
+        if (referenceBoxSize) {
+            referenceBox = FloatRect(FloatPoint(), *referenceBoxSize);
+        } else {
+            FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
+            referenceBox = FloatRect(FloatPoint(), size);
+        }
     }
     referenceBox.scale(1.0f / zoom);
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);

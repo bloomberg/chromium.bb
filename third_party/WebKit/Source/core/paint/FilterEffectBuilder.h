@@ -53,7 +53,7 @@ public:
     virtual ~FilterEffectBuilder();
     DECLARE_TRACE();
 
-    bool build(Element*, const FilterOperations&, float zoom, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
+    bool build(Element*, const FilterOperations&, float zoom, const FloatSize* referenceBoxSize = nullptr, const SkPaint* fillPaint = nullptr, const SkPaint* strokePaint = nullptr);
 
     PassRefPtrWillBeRawPtr<FilterEffect> lastEffect() const
     {

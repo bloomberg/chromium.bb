@@ -828,7 +828,7 @@ static bool isFullCanvasCompositeMode(SkXfermode::Mode op)
 template<typename DrawFunc>
 void CanvasRenderingContext2D::compositedDraw(const DrawFunc& drawFunc, SkCanvas* c, CanvasRenderingContext2DState::PaintType paintType, CanvasRenderingContext2DState::ImageType imageType)
 {
-    SkImageFilter* filter = state().getFilter(canvas(), accessFont());
+    SkImageFilter* filter = state().getFilter(canvas(), accessFont(), canvas()->size());
     ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
     SkMatrix ctm = c->getTotalMatrix();
     c->resetMatrix();
