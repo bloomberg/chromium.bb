@@ -24,7 +24,7 @@ import devtools_monitor
 class PageTrack(devtools_monitor.Track):
   """Records the events from the page track."""
   def __init__(self, connection):
-    super(PageTrack, self).__init__()
+    super(PageTrack, self).__init__(connection)
     self._connection = connection
     self._events = []
     self._main_frame_id = None
@@ -67,9 +67,8 @@ class AndroidTraceRecorder(object):
     self.devtools_connection = None
     self.page_track = None
 
-  def Go(self):
-    self.devtools_connection = devtools_monitor.DevToolsConnection(
-        device_setup.DEVTOOLS_HOSTNAME, device_setup.DEVTOOLS_PORT)
+  def Go(self, connection):
+    self.devtools_connection = connection
     self.page_track = PageTrack(self.devtools_connection)
 
     self.devtools_connection.SetUpMonitoring()

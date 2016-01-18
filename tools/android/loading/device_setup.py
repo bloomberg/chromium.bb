@@ -17,17 +17,21 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 from pylib import constants
 from pylib import flag_changer
 
+import devtools_monitor
+
 DEVTOOLS_PORT = 9222
 DEVTOOLS_HOSTNAME = 'localhost'
+DEFAULT_CHROME_PACKAGE = 'chrome'
 
 @contextlib.contextmanager
-def FlagChanger(device, command_line_path, new_flags):
-  """Changes the flags in a context, restores them afterwards.
+def FlagReplacer(device, command_line_path, new_flags):
+  """Replaces chrome flags in a context, restores them afterwards.
 
   Args:
-    device: Device to target, from DeviceUtils.
+    device: Device to target, from DeviceUtils. Can be None, in which case this
+      context manager is a no-op.
     command_line_path: Full path to the command-line file.
-    new_flags: Flags to add.
+    new_flags: Flags to replace.
   """
   # If we're logging requests from a local desktop chrome instance there is no
   # device.
@@ -35,7 +39,7 @@ def FlagChanger(device, command_line_path, new_flags):
     yield
     return
   changer = flag_changer.FlagChanger(device, command_line_path)
-  changer.AddFlags(new_flags)
+  changer.ReplaceFlags(new_flags)
   try:
     yield
   finally:
@@ -63,28 +67,30 @@ def _SetUpDevice(device, package_info):
   device.KillAll(package_info.package, quiet=True)
 
 
-def SetUpAndExecute(device, package, fn):
-  """Start logging process.
+@contextlib.contextmanager
+def DeviceConnection(device,
+                     package=DEFAULT_CHROME_PACKAGE,
+                     hostname=DEVTOOLS_HOSTNAME,
+                     port=DEVTOOLS_PORT):
+  """Context for starting recording on a device.
 
-  Sets up any device and tracing appropriately and then executes the core
-  logging function.
+  Sets up and restores any device and tracing appropriately
 
   Args:
-    device: Android device, or None for a local run.
+    device: Android device, or None for a local run (in which case chrome needs
+      to have been started with --remote-debugging-port=XXX).
     package: the key for chrome package info.
-    fn: the function to execute that launches chrome and performs the
-        appropriate instrumentation, see _Log*Internal().
 
   Returns:
-    As fn() returns.
+    A context manager type which evaluates to a DevToolsConnection.
   """
   package_info = constants.PACKAGE_INFO[package]
   command_line_path = '/data/local/chrome-command-line'
   new_flags = ['--enable-test-events',
-               '--remote-debugging-port=%d' % DEVTOOLS_PORT]
+               '--remote-debugging-port=%d' % port]
   if device:
     _SetUpDevice(device, package_info)
-  with FlagChanger(device, command_line_path, new_flags):
+  with FlagReplacer(device, command_line_path, new_flags):
     if device:
       start_intent = intent.Intent(
           package=package_info.package, activity=package_info.activity,
@@ -92,6 +98,25 @@ def SetUpAndExecute(device, package, fn):
       device.StartActivity(start_intent, blocking=True)
       time.sleep(2)
     # If no device, we don't care about chrome startup so skip the about page.
-    with ForwardPort(device, 'tcp:%d' % DEVTOOLS_PORT,
+    with ForwardPort(device, 'tcp:%d' % port,
                      'localabstract:chrome_devtools_remote'):
-      return fn()
+      yield devtools_monitor.DevToolsConnection(hostname, port)
+
+
+def SetUpAndExecute(device, package, fn):
+  """Start logging process.
+
+  Wrapper for DeviceConnection for those functionally inclined.
+
+  Args:
+    device: Android device, or None for a local run.
+    package: the key for chrome package info.
+    fn: the function to execute that launches chrome and performs the
+        appropriate instrumentation. The function will receive a
+        DevToolsConnection as its sole parameter.
+
+  Returns:
+    As fn() returns.
+  """
+  with DeviceConnection(device, package) as connection:
+    return fn(connection)
