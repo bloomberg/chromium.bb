@@ -910,6 +910,11 @@
       copy-and-paste and drag-and-drop.  These mechanisms are tied to
       a wl_seat and this interface lets a client get a wl_data_device
       corresponding to a wl_seat.
+
+      Depending on the version bound, the objects created from the bound
+      wl_data_device_manager object will have different requirements for
+      functioning properly. See wl_data_source.set_actions,
+      wl_data_offer.accept and wl_data_offer.finish for details.
     </description>
 
     <request name="create_data_source">
