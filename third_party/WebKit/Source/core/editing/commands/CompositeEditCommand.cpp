@@ -234,6 +234,11 @@ bool CompositeEditCommand::isTypingCommand() const
     return false;
 }
 
+bool CompositeEditCommand::isReplaceSelectionCommand() const
+{
+    return false;
+}
+
 void CompositeEditCommand::setShouldRetainAutocorrectionIndicator(bool)
 {
 }

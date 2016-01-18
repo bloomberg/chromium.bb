@@ -59,6 +59,7 @@ private:
 
     void doApply() override;
     EditAction editingAction() const override;
+    bool isReplaceSelectionCommand() const override;
 
     class InsertedNodes {
         STACK_ALLOCATED();
@@ -118,6 +119,8 @@ private:
     bool m_sanitizeFragment;
     bool m_shouldMergeEnd;
 };
+
+DEFINE_TYPE_CASTS(ReplaceSelectionCommand, CompositeEditCommand, command, command->isReplaceSelectionCommand(), command.isReplaceSelectionCommand());
 
 } // namespace blink
 

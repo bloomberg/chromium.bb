@@ -80,6 +80,7 @@ public:
     EditCommandComposition* composition() { return m_composition.get(); }
     EditCommandComposition* ensureComposition();
 
+    virtual bool isReplaceSelectionCommand() const;
     virtual bool isTypingCommand() const;
     virtual bool preservesTypingStyle() const;
     virtual void setShouldRetainAutocorrectionIndicator(bool);
