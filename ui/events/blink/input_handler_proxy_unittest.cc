@@ -242,6 +242,18 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
   return point;
 }
 
+const cc::InputHandler::ScrollStatus kImplThreadScrollState(
+    cc::InputHandler::SCROLL_ON_IMPL_THREAD,
+    cc::InputHandler::NOT_SCROLLING_ON_MAIN);
+
+const cc::InputHandler::ScrollStatus kMainThreadScrollState(
+    cc::InputHandler::SCROLL_ON_MAIN_THREAD,
+    cc::InputHandler::EVENT_HANDLERS);
+
+const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
+    cc::InputHandler::SCROLL_IGNORED,
+    cc::InputHandler::NOT_SCROLLABLE);
+
 }  // namespace
 
 class InputHandlerProxyTest
@@ -321,7 +333,7 @@ class InputHandlerProxyTest
     VERIFY_AND_RESET_MOCKS();
 
     EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-        .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+        .WillOnce(testing::Return(kImplThreadScrollState));
     gesture_.type = WebInputEvent::GestureScrollBegin;
     gesture_.sourceDevice = source_device;
     EXPECT_EQ(expected_disposition_,
@@ -330,7 +342,7 @@ class InputHandlerProxyTest
     VERIFY_AND_RESET_MOCKS();
 
     EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-        .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+        .WillOnce(testing::Return(kImplThreadScrollState));
     EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
 
     gesture_ =
@@ -404,7 +416,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_MouseWheelWithPreciseScrollingDeltas) {
   // Smooth scroll because hasPreciseScrollingDeltas is set to false.
   wheel.hasPreciseScrollingDeltas = false;
   EXPECT_CALL(mock_input_handler_, ScrollAnimated(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
 
   VERIFY_AND_RESET_MOCKS();
@@ -412,7 +424,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_MouseWheelWithPreciseScrollingDeltas) {
   // No smooth scroll because hasPreciseScrollingDeltas is set to true.
   wheel.hasPreciseScrollingDeltas = true;
   EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollBy(::testing::_))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
@@ -433,7 +445,7 @@ TEST_P(InputHandlerProxyTest, DISABLED_MouseWheelScrollIgnored) {
   wheel.type = WebInputEvent::MouseWheel;
 
   EXPECT_CALL(mock_input_handler_, ScrollAnimated(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
+      .WillOnce(testing::Return(kScrollIgnoredScrollState));
 
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(wheel));
   VERIFY_AND_RESET_MOCKS();
@@ -445,7 +457,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollStarted) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_,input_handler_->HandleInputEvent(gesture_));
@@ -492,7 +504,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -524,7 +536,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollIgnored) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
+      .WillOnce(testing::Return(kScrollIgnoredScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -544,7 +556,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollBeginThatTargetViewport) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, RootScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.data.scrollBegin.targetViewport = true;
@@ -640,7 +652,7 @@ TEST_P(InputHandlerProxyTest, GesturePinchAfterScrollOnMainThread) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(::testing::_, ::testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -717,7 +729,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchpad) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
 
@@ -740,7 +752,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingOnMainThreadTouchpad) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
@@ -764,7 +776,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingIgnoredTouchpad) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
+      .WillOnce(testing::Return(kScrollIgnoredScrollState));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchpad;
@@ -801,7 +813,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -822,7 +834,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   // The second call should start scrolling in the -X direction.
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
@@ -839,7 +851,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchpad) {
   // rest of the fling can be
   // transferred to the main thread.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
   // Expected wheel fling animation parameters:
@@ -907,7 +919,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
@@ -926,7 +938,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   // The second call should start scrolling in the -X direction.
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_x, testing::Lt(0))))
@@ -943,7 +955,8 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   // rest of the fling can be
   // transferred to the main thread.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
+
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
 
@@ -1007,7 +1020,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1026,7 +1039,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
   // Tick the second fling once normally.
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
@@ -1039,7 +1052,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingTransferResetsTouchpad) {
 
   // Then abort the second fling.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_)).Times(0);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_)).Times(0);
 
@@ -1072,7 +1085,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1080,7 +1093,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStartedTouchscreen) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
 
   gesture_.type = WebInputEvent::GestureFlingStart;
@@ -1106,7 +1119,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingOnMainThreadTouchscreen) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_ON_MAIN_THREAD));
+      .WillOnce(testing::Return(kMainThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1133,7 +1146,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1145,7 +1158,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
   // Flings ignored by the InputHandler should be dropped, signalling the end
   // of the touch scroll sequence.
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_IGNORED));
+      .WillOnce(testing::Return(kScrollIgnoredScrollState));
 
   gesture_.type = WebInputEvent::GestureFlingStart;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1157,7 +1170,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingIgnoredTouchscreen) {
   // GestureFlingCancel, as the original GestureFlingStart was dropped.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1171,7 +1184,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1193,7 +1206,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingAnimatesTouchscreen) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1232,7 +1245,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1256,7 +1269,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithValidTimestamp) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1288,7 +1301,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithInvalidTimestamp) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1315,7 +1328,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithInvalidTimestamp) {
   gesture_.modifiers = modifiers;
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1353,7 +1366,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollOnImplThreadFlagClearedAfterFling) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1378,7 +1391,7 @@ TEST_P(InputHandlerProxyTest, GestureScrollOnImplThreadFlagClearedAfterFling) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   // |gesture_scroll_on_impl_thread_| should still be true after
@@ -1426,7 +1439,7 @@ TEST_P(InputHandlerProxyTest,
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1448,7 +1461,7 @@ TEST_P(InputHandlerProxyTest,
                          fling_point, fling_global_point, modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   // |gesture_scroll_on_impl_thread_| should still be true after
@@ -1461,7 +1474,7 @@ TEST_P(InputHandlerProxyTest,
   // result, this scroll begin will cancel the previous fling.
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1484,7 +1497,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1498,7 +1511,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
 
   // The second animate starts scrolling in the positive X and Y directions.
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Lt(0))))
@@ -1517,7 +1530,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   overscroll.accumulated_root_overscroll = gfx::Vector2dF(0, 100);
   overscroll.unused_scroll_delta = gfx::Vector2dF(0, 10);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Lt(0))))
@@ -1538,7 +1551,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingStopsAtContentEdge) {
   // The next call to animate will no longer scroll vertically.
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(
       mock_input_handler_,
       ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Eq(0))))
@@ -1555,7 +1568,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1579,7 +1592,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingNotCancelledBySmallTimeDelta) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -1636,7 +1649,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1649,7 +1662,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledAfterBothAxesStopScrolling) {
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   VERIFY_AND_RESET_MOCKS();
@@ -1790,7 +1803,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -1811,7 +1824,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingCancelledByKeyboardEvent) {
   gesture_.data.flingStart.velocityX = fling_delta.x;
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
   EXPECT_TRUE(input_handler_->gesture_scroll_on_impl_thread_for_testing());
@@ -1842,7 +1855,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   gesture_.type = WebInputEvent::GestureScrollBegin;
   gesture_.sourceDevice = blink::WebGestureDeviceTouchscreen;
@@ -1866,7 +1879,7 @@ TEST_P(InputHandlerProxyTest, GestureFlingWithNegativeTimeDelta) {
                          modifiers);
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, FlingScrollBegin())
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
@@ -2051,7 +2064,7 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollTargetsDifferentLayer) {
       .WillOnce(testing::Return(false));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
 
   time += dt;
   gesture_.timeStampSeconds = InSecondsF(time);
@@ -2092,7 +2105,7 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollDelayed) {
   time += base::TimeDelta::FromMilliseconds(100);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
@@ -2137,7 +2150,7 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfNotAnimated) {
   gesture_.data.scrollUpdate.deltaY = -40;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollBy(testing::_))
       .WillOnce(testing::Return(scroll_result_did_scroll_));
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
@@ -2220,7 +2233,7 @@ TEST_P(InputHandlerProxyTest, NoFlingBoostIfScrollInDifferentDirection) {
   gesture_.data.scrollUpdate.deltaX = -fling_delta.x;
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_,
               ScrollBy(testing::Property(&cc::ScrollState::delta_x,
                                          testing::Eq(fling_delta.x))))
@@ -2327,7 +2340,7 @@ TEST_P(InputHandlerProxyTest, FlingBoostTerminatedDuringScrollSequence) {
       .WillOnce(testing::Return(scroll_result_did_not_scroll_));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   Animate(time);
 
   VERIFY_AND_RESET_MOCKS();
@@ -2377,7 +2390,7 @@ TEST_P(InputHandlerProxyTest, DidReceiveInputEvent_ForFling) {
   gesture_.data.flingStart.velocityY = fling_delta.y;
   EXPECT_SET_NEEDS_ANIMATE_INPUT(1);
   EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
-      .WillOnce(testing::Return(cc::InputHandler::SCROLL_STARTED));
+      .WillOnce(testing::Return(kImplThreadScrollState));
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_));
   EXPECT_EQ(InputHandlerProxy::DID_HANDLE,
       input_handler_->HandleInputEvent(gesture_));

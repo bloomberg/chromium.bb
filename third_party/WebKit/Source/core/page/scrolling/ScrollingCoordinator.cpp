@@ -344,7 +344,7 @@ void ScrollingCoordinator::scrollableAreaScrollbarLayerDidChange(ScrollableArea*
     if (!platformSupportsCoordinatedScrollbar) {
         if (scrollbarGraphicsLayer) {
             WebLayer* scrollbarLayer = toWebLayer(scrollbarGraphicsLayer);
-            scrollbarLayer->setShouldScrollOnMainThread(true);
+            scrollbarLayer->addMainThreadScrollingReasons(WebMainThreadScrollingReason::ScrollBarScrolling);
         }
         return;
     }
@@ -399,7 +399,7 @@ bool ScrollingCoordinator::scrollableAreaScrollLayerDidChange(ScrollableArea* sc
         // to set the WebLayer's scroll position at fractional precision otherwise the
         // WebLayer's position after snapping to device pixel can be off with regard to
         // fixed position elements.
-        if (m_lastMainThreadScrollingReasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects) {
+        if (m_lastMainThreadScrollingReasons & WebMainThreadScrollingReason::HasNonLayerViewportConstrainedObjects) {
             webLayer->setScrollPositionDouble(DoublePoint(scrollableArea->scrollPosition() - scrollableArea->minimumScrollPosition()));
         } else {
             DoublePoint scrollPosition(scrollableArea->scrollPositionDouble() - scrollableArea->minimumScrollPositionDouble());
@@ -714,7 +714,10 @@ void ScrollingCoordinator::setShouldUpdateScrollLayerPositionOnMainThread(MainTh
         return;
     if (WebLayer* scrollLayer = toWebLayer(m_page->deprecatedLocalMainFrame()->view()->layerForScrolling())) {
         m_lastMainThreadScrollingReasons = reasons;
-        scrollLayer->setShouldScrollOnMainThread(reasons);
+        if (reasons)
+            scrollLayer->addMainThreadScrollingReasons(static_cast<WebMainThreadScrollingReason::WebMainThreadScrollingReason>(reasons));
+        else
+            scrollLayer->clearMainThreadScrollingReasons();
     }
 }
 
@@ -1023,7 +1026,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     MainThreadScrollingReasons reasons = static_cast<MainThreadScrollingReasons>(0);
 
     if (!m_page->settings().threadedScrollingEnabled())
-        reasons |= ThreadedScrollingDisabled;
+        reasons |= WebMainThreadScrollingReason::ThreadedScrollingDisabled;
 
     if (!m_page->mainFrame()->isLocalFrame())
         return reasons;
@@ -1032,7 +1035,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
         return reasons;
 
     if (frameView->hasBackgroundAttachmentFixedObjects())
-        reasons |= HasBackgroundAttachmentFixedObjects;
+        reasons |= WebMainThreadScrollingReason::HasBackgroundAttachmentFixedObjects;
     FrameView::ScrollingReasons scrollingReasons = frameView->scrollingReasons();
     const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
     const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==
@@ -1043,7 +1046,7 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
     // not let this move there path as an optimization, when we have slow-repaint
     // elements.
     if (mayBeScrolledByScript && hasVisibleSlowRepaintViewportConstrainedObjects(frameView)) {
-        reasons |= HasNonLayerViewportConstrainedObjects;
+        reasons |= WebMainThreadScrollingReason::HasNonLayerViewportConstrainedObjects;
     }
 
     return reasons;
@@ -1053,11 +1056,11 @@ String ScrollingCoordinator::mainThreadScrollingReasonsAsText(MainThreadScrollin
 {
     StringBuilder stringBuilder;
 
-    if (reasons & ScrollingCoordinator::HasBackgroundAttachmentFixedObjects)
+    if (reasons & WebMainThreadScrollingReason::HasBackgroundAttachmentFixedObjects)
         stringBuilder.appendLiteral("Has background-attachment:fixed, ");
-    if (reasons & ScrollingCoordinator::HasNonLayerViewportConstrainedObjects)
+    if (reasons & WebMainThreadScrollingReason::HasNonLayerViewportConstrainedObjects)
         stringBuilder.appendLiteral("Has non-layer viewport-constrained objects, ");
-    if (reasons & ScrollingCoordinator::ThreadedScrollingDisabled)
+    if (reasons & WebMainThreadScrollingReason::ThreadedScrollingDisabled)
         stringBuilder.appendLiteral("Threaded scrolling is disabled, ");
 
     if (stringBuilder.length())

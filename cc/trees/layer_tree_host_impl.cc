@@ -140,7 +140,7 @@ enum ScrollThread { MAIN_THREAD, CC_THREAD };
 
 void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
                                       ScrollThread scroll_thread) {
-  bool scroll_on_main_thread = (scroll_thread == ScrollThread::MAIN_THREAD);
+  bool scroll_on_main_thread = (scroll_thread == MAIN_THREAD);
   if (type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) {
     UMA_HISTOGRAM_BOOLEAN("Renderer4.CompositorWheelScrollUpdateThread",
                           scroll_on_main_thread);
@@ -548,8 +548,10 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
   bool scroll_on_main_thread = false;
+  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons;
   LayerImpl* test_layer_impl = FindScrollLayerForDeviceViewportPoint(
-      device_viewport_point, type, layer_impl, &scroll_on_main_thread, NULL);
+      device_viewport_point, type, layer_impl, &scroll_on_main_thread, nullptr,
+      &main_thread_scrolling_reasons);
 
   if (!test_layer_impl)
     return false;
@@ -2476,8 +2478,12 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     InputHandler::ScrollInputType type,
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
-    bool* optional_has_ancestor_scroll_handler) const {
+    bool* optional_has_ancestor_scroll_handler,
+    InputHandler::MainThreadScrollingReason* main_thread_scrolling_reasons)
+    const {
   DCHECK(scroll_on_main_thread);
+  DCHECK(main_thread_scrolling_reasons);
+  *main_thread_scrolling_reasons = InputHandler::NOT_SCROLLING_ON_MAIN;
 
   ScrollBlocksOn block_mode = EffectiveScrollBlocksOn(layer_impl);
 
@@ -2488,8 +2494,17 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     // thread.
     ScrollStatus status =
         layer_impl->TryScroll(device_viewport_point, type, block_mode);
-    if (status == SCROLL_ON_MAIN_THREAD) {
+    if (status.thread == SCROLL_ON_MAIN_THREAD) {
+      if (layer_impl->should_scroll_on_main_thread()) {
+        DCHECK(status.main_thread_scrolling_reasons <=
+               InputHandler::MaxNonTransientScrollingReason);
+      } else {
+        DCHECK(status.main_thread_scrolling_reasons >
+               InputHandler::MaxNonTransientScrollingReason);
+      }
+
       *scroll_on_main_thread = true;
+      *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
       return NULL;
     }
 
@@ -2499,9 +2514,19 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
 
     status =
         scroll_layer_impl->TryScroll(device_viewport_point, type, block_mode);
+
     // If any layer wants to divert the scroll event to the main thread, abort.
-    if (status == SCROLL_ON_MAIN_THREAD) {
+    if (status.thread == SCROLL_ON_MAIN_THREAD) {
+      if (layer_impl->should_scroll_on_main_thread()) {
+        DCHECK(status.main_thread_scrolling_reasons <=
+               InputHandler::MaxNonTransientScrollingReason);
+      } else {
+        DCHECK(status.main_thread_scrolling_reasons >
+               InputHandler::MaxNonTransientScrollingReason);
+      }
+
       *scroll_on_main_thread = true;
+      *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
       return NULL;
     }
 
@@ -2509,8 +2534,10 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
         scroll_layer_impl->have_scroll_event_handlers())
       *optional_has_ancestor_scroll_handler = true;
 
-    if (status == SCROLL_STARTED && !potentially_scrolling_layer_impl)
+    if (status.thread == InputHandler::SCROLL_ON_IMPL_THREAD &&
+        !potentially_scrolling_layer_impl) {
       potentially_scrolling_layer_impl = scroll_layer_impl;
+    }
   }
 
   // Falling back to the root scroll layer ensures generation of root overscroll
@@ -2553,9 +2580,14 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   DCHECK(scroll_state);
   DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
 
-  if (!scrolling_layer_impl)
-    return SCROLL_IGNORED;
-
+  InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
+  if (!scrolling_layer_impl) {
+    scroll_status.thread = SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons = NO_SCROLLING_LAYER;
+    return scroll_status;
+  }
+  scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   ScrollAnimationAbort(scrolling_layer_impl);
 
   top_controls_manager_->ScrollBegin();
@@ -2570,12 +2602,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   DistributeScrollDelta(scroll_state);
 
   client_->RenewTreePriority();
-  RecordCompositorSlowScrollMetric(type, ScrollThread::CC_THREAD);
+  RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
   // TODO(lanwei): Will remove this metric in M50 when we have used the new
   // metrics for one milestone, see https://crbug.com/557787.
   UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", false);
-  return SCROLL_STARTED;
+  return scroll_status;
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
@@ -2591,6 +2623,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::RootScrollBegin(
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     ScrollState* scroll_state,
     InputHandler::ScrollInputType type) {
+  ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
   ClearCurrentlyScrollingLayer();
@@ -2607,22 +2641,29 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     LayerImpl* scroll_layer_impl =
         active_tree_->FindFirstScrollingLayerThatIsHitByPoint(
             device_viewport_point);
-    if (scroll_layer_impl && !HasScrollAncestor(layer_impl, scroll_layer_impl))
-      return SCROLL_UNKNOWN;
+    if (scroll_layer_impl &&
+        !HasScrollAncestor(layer_impl, scroll_layer_impl)) {
+      scroll_status.thread = SCROLL_UNKNOWN;
+      scroll_status.main_thread_scrolling_reasons =
+          InputHandler::FAILED_HIT_TEST;
+      return scroll_status;
+    }
   }
 
   bool scroll_on_main_thread = false;
   LayerImpl* scrolling_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread,
-      &scroll_affects_scroll_handler_);
+      &scroll_affects_scroll_handler_,
+      &scroll_status.main_thread_scrolling_reasons);
 
   if (scroll_on_main_thread) {
-    RecordCompositorSlowScrollMetric(type, ScrollThread::MAIN_THREAD);
+    RecordCompositorSlowScrollMetric(type, MAIN_THREAD);
 
     // TODO(lanwei): Will remove this metric in M50 when we have used the new
     // metrics for one milestone, see https://crbug.com/557787.
     UMA_HISTOGRAM_BOOLEAN("TryScroll.SlowScroll", true);
-    return SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = SCROLL_ON_MAIN_THREAD;
+    return scroll_status;
   }
 
   return ScrollBeginImpl(scroll_state, scrolling_layer_impl, type);
@@ -2631,10 +2672,16 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
 InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
+  InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
   if (LayerImpl* layer_impl = CurrentlyScrollingLayer()) {
-    return ScrollAnimationUpdateTarget(layer_impl, scroll_delta)
-               ? SCROLL_STARTED
-               : SCROLL_IGNORED;
+    if (ScrollAnimationUpdateTarget(layer_impl, scroll_delta)) {
+      scroll_status.thread = SCROLL_ON_IMPL_THREAD;
+    } else {
+      scroll_status.thread = SCROLL_IGNORED;
+      scroll_status.main_thread_scrolling_reasons = NOT_SCROLLABLE;
+    }
+    return scroll_status;
   }
 
   ScrollState scroll_state(0, 0, viewport_point.x(), viewport_point.y(), 0, 0,
@@ -2643,9 +2690,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
   // that can scroll and set up an animation of its scroll offset. Note that
   // this does not currently go through the scroll customization and viewport
   // machinery that ScrollBy uses for non-animated wheel scrolls.
-  InputHandler::ScrollStatus scroll_status =
-      ScrollBegin(&scroll_state, ANIMATED_WHEEL);
-  if (scroll_status == SCROLL_STARTED) {
+  scroll_status = ScrollBegin(&scroll_state, ANIMATED_WHEEL);
+  if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
     gfx::Vector2dF pending_delta = scroll_delta;
     for (LayerImpl* layer_impl = CurrentlyScrollingLayer(); layer_impl;
          layer_impl = NextLayerInScrollOrder(layer_impl)) {
@@ -2674,7 +2720,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       ScrollAnimationCreate(layer_impl, target_offset, current_offset);
 
       SetNeedsOneBeginImplFrame();
-      return SCROLL_STARTED;
+      return scroll_status;
     }
   }
   scroll_state.set_is_ending(true);
@@ -3006,9 +3052,16 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state) {
 }
 
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
-  if (!CurrentlyScrollingLayer())
-    return SCROLL_IGNORED;
-  return SCROLL_STARTED;
+  InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons =
+      InputHandler::NOT_SCROLLING_ON_MAIN;
+  if (!CurrentlyScrollingLayer()) {
+    scroll_status.thread = SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons = NO_SCROLLING_LAYER;
+  } else {
+    scroll_status.thread = SCROLL_ON_IMPL_THREAD;
+  }
+  return scroll_status;
 }
 
 float LayerTreeHostImpl::DeviceSpaceDistanceToLayer(
@@ -3036,9 +3089,10 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
     return;
 
   bool scroll_on_main_thread = false;
+  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons;
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::GESTURE, layer_impl,
-      &scroll_on_main_thread, NULL);
+      &scroll_on_main_thread, NULL, &main_thread_scrolling_reasons);
   if (scroll_layer_impl == InnerViewportScrollLayer())
     scroll_layer_impl = OuterViewportScrollLayer();
   if (scroll_on_main_thread || !scroll_layer_impl)

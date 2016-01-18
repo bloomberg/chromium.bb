@@ -23,6 +23,7 @@
 #include "cc/base/region.h"
 #include "cc/debug/frame_timing_request.h"
 #include "cc/debug/micro_benchmark.h"
+#include "cc/input/input_handler.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/paint_properties.h"
@@ -276,9 +277,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
-  void SetShouldScrollOnMainThread(bool should_scroll_on_main_thread);
+  void AddMainThreadScrollingReasons(
+      InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons);
+  void ClearMainThreadScrollingReasons();
   bool should_scroll_on_main_thread() const {
-    return should_scroll_on_main_thread_;
+    return !!main_thread_scrolling_reasons_;
   }
 
   void SetHaveWheelEventHandlers(bool have_wheel_event_handlers);
@@ -723,8 +726,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   uint64_t element_id_;
   uint32_t mutable_properties_;
   gfx::Vector2dF offset_to_transform_parent_;
+  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons_;
   bool should_flatten_transform_from_property_tree_ : 1;
-  bool should_scroll_on_main_thread_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
   bool user_scrollable_horizontal_ : 1;

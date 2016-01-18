@@ -31,6 +31,7 @@
 #include "core/frame/FrameHost.h"
 #include "core/frame/Settings.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/GraphicsLayerClient.h"
@@ -84,7 +85,7 @@ void PageOverlay::update()
 
         // This is required for contents of overlay to stay in sync with the page while scrolling.
         WebLayer* platformLayer = m_layer->platformLayer();
-        platformLayer->setShouldScrollOnMainThread(true);
+        platformLayer->addMainThreadScrollingReasons(WebMainThreadScrollingReason::PageOverlay);
         page->frameHost().visualViewport().containerLayer()->addChild(m_layer.get());
     }
 

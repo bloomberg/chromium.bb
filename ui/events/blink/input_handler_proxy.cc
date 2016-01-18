@@ -359,6 +359,51 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   return DID_NOT_HANDLE;
 }
 
+void RecordMainThreadScrollingReasons(
+    WebInputEvent::Type type,
+    cc::InputHandler::MainThreadScrollingReason reasons) {
+  static const char* kGestureHistogramName =
+      "Renderer4.MainThreadGestureScrollReason";
+  static const char* kWheelHistogramName =
+      "Renderer4.MainThreadWheelScrollReason";
+
+  DCHECK(type == WebInputEvent::GestureScrollBegin ||
+         type == WebInputEvent::MouseWheel);
+
+  if (type != WebInputEvent::GestureScrollBegin &&
+      type != WebInputEvent::MouseWheel) {
+    return;
+  }
+
+  if (reasons == cc::InputHandler::NOT_SCROLLING_ON_MAIN) {
+    if (type == WebInputEvent::GestureScrollBegin) {
+      UMA_HISTOGRAM_ENUMERATION(
+          kGestureHistogramName, cc::InputHandler::NOT_SCROLLING_ON_MAIN,
+          cc::InputHandler::MainThreadScrollingReasonCount);
+    } else {
+      UMA_HISTOGRAM_ENUMERATION(
+          kWheelHistogramName, cc::InputHandler::NOT_SCROLLING_ON_MAIN,
+          cc::InputHandler::MainThreadScrollingReasonCount);
+    }
+  }
+
+  for (int i = 0; i < cc::InputHandler::MainThreadScrollingReasonCount - 1;
+       ++i) {
+    unsigned val = 1 << i;
+    if (reasons & val) {
+      if (type == WebInputEvent::GestureScrollBegin) {
+        UMA_HISTOGRAM_ENUMERATION(
+            kGestureHistogramName, i + 1,
+            cc::InputHandler::MainThreadScrollingReasonCount);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION(
+            kWheelHistogramName, i + 1,
+            cc::InputHandler::MainThreadScrollingReasonCount);
+      }
+    }
+  }
+}
+
 bool InputHandlerProxy::ShouldAnimate(
     const blink::WebMouseWheelEvent& event) const {
 #if defined(OS_MACOSX)
@@ -396,8 +441,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     cc::InputHandler::ScrollStatus scroll_status =
         input_handler_->ScrollAnimated(gfx::Point(wheel_event.x, wheel_event.y),
                                        scroll_delta);
-    switch (scroll_status) {
-      case cc::InputHandler::SCROLL_STARTED:
+
+    RecordMainThreadScrollingReasons(
+        wheel_event.type, scroll_status.main_thread_scrolling_reasons);
+
+    switch (scroll_status.thread) {
+      case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
         result = DID_HANDLE;
         break;
       case cc::InputHandler::SCROLL_IGNORED:
@@ -410,11 +459,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
   } else {
     cc::ScrollState scroll_state_begin(0, 0, wheel_event.x, wheel_event.y, 0, 0,
                                        true, false, false);
-    cc::InputHandler::ScrollStatus scroll_status =
-        input_handler_->ScrollBegin(&scroll_state_begin,
-                                    cc::InputHandler::WHEEL);
-    switch (scroll_status) {
-      case cc::InputHandler::SCROLL_STARTED: {
+    cc::InputHandler::ScrollStatus scroll_status = input_handler_->ScrollBegin(
+        &scroll_state_begin, cc::InputHandler::WHEEL);
+
+    RecordMainThreadScrollingReasons(
+        wheel_event.type, scroll_status.main_thread_scrolling_reasons);
+
+    switch (scroll_status.thread) {
+      case cc::InputHandler::SCROLL_ON_IMPL_THREAD: {
         TRACE_EVENT_INSTANT2("input",
                              "InputHandlerProxy::handle_input wheel scroll",
                              TRACE_EVENT_SCOPE_THREAD, "deltaX",
@@ -487,10 +539,14 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
         input_handler_->ScrollBegin(&scroll_state, cc::InputHandler::GESTURE);
   }
   UMA_HISTOGRAM_ENUMERATION("Renderer4.CompositorScrollHitTestResult",
-                            scroll_status,
+                            scroll_status.thread,
                             cc::InputHandler::ScrollStatusCount);
-  switch (scroll_status) {
-    case cc::InputHandler::SCROLL_STARTED:
+
+  RecordMainThreadScrollingReasons(gesture_event.type,
+                                   scroll_status.main_thread_scrolling_reasons);
+
+  switch (scroll_status.thread) {
+    case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
       TRACE_EVENT_INSTANT0("input",
                            "InputHandlerProxy::handle_input gesture scroll",
                            TRACE_EVENT_SCOPE_THREAD);
@@ -542,8 +598,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     const WebGestureEvent& gesture_event) {
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-  cc::InputHandler::ScrollStatus scroll_status =
-      cc::InputHandler::SCROLL_ON_MAIN_THREAD;
+  cc::InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons =
+      cc::InputHandler::NOT_SCROLLING_ON_MAIN;
   switch (gesture_event.sourceDevice) {
   case blink::WebGestureDeviceTouchpad:
     if (gesture_event.data.flingStart.targetViewport) {
@@ -555,10 +612,13 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     }
     break;
   case blink::WebGestureDeviceTouchscreen:
-    if (!gesture_scroll_on_impl_thread_)
-      scroll_status = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
-    else
+    if (!gesture_scroll_on_impl_thread_) {
+      scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
+      scroll_status.main_thread_scrolling_reasons =
+          cc::InputHandler::CONTINUING_MAIN_THREAD_SCROLL;
+    } else {
       scroll_status = input_handler_->FlingScrollBegin();
+    }
     break;
   case blink::WebGestureDeviceUninitialized:
     NOTREACHED();
@@ -569,8 +629,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
   expect_scroll_update_end_ = false;
 #endif
 
-  switch (scroll_status) {
-    case cc::InputHandler::SCROLL_STARTED: {
+  switch (scroll_status.thread) {
+    case cc::InputHandler::SCROLL_ON_IMPL_THREAD: {
       if (gesture_event.sourceDevice == blink::WebGestureDeviceTouchpad) {
         scroll_state.set_is_ending(true);
         input_handler_->ScrollEnd(&scroll_state);

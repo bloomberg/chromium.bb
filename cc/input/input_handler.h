@@ -77,14 +77,51 @@ class CC_EXPORT InputHandler {
  public:
   // Note these are used in a histogram. Do not reorder or delete existing
   // entries.
-  enum ScrollStatus {
+  enum ScrollThread {
     SCROLL_ON_MAIN_THREAD = 0,
-    SCROLL_STARTED,
+    SCROLL_ON_IMPL_THREAD,
     SCROLL_IGNORED,
     SCROLL_UNKNOWN,
     // This must be the last entry.
     ScrollStatusCount
   };
+
+  // Ensure this stays in sync with MainThreadScrollingReason in histograms.xml,
+  // and that this extends ScrollingCoordinator::MainThreadScrollingReason.
+  // ScrollingCoordinator::MainThreadScrollingReason contains the flags
+  // which are associated with a layer. The flags only contained in
+  // InputHandler::MainThreadScrollingReason are computed for each scroll
+  // begin.
+  enum MainThreadScrollingReason {
+    NOT_SCROLLING_ON_MAIN = 0,
+    HAS_BACKGROUND_ATTACHMENT_FIXED_OBJECTS = 1 << 0,
+    HAS_NON_LAYER_VIEWPORT_CONSTRAINED_OBJECTS = 1 << 1,
+    THREADED_SCROLLING_DISABLED = 1 << 2,
+    SCROLL_BAR_SCROLLING = 1 << 3,
+    PAGE_OVERLAY = 1 << 4,
+    MaxNonTransientScrollingReason = PAGE_OVERLAY,
+    NON_FAST_SCROLLABLE_REGION = 1 << 5,
+    EVENT_HANDLERS = 1 << 6,
+    FAILED_HIT_TEST = 1 << 7,
+    NO_SCROLLING_LAYER = 1 << 8,
+    NOT_SCROLLABLE = 1 << 9,
+    CONTINUING_MAIN_THREAD_SCROLL = 1 << 10,
+    NON_INVERTIBLE_TRANSFORM = 1 << 11,
+    MainThreadScrollingReasonCount = 13
+  };
+
+  struct ScrollStatus {
+    ScrollStatus()
+        : thread(SCROLL_ON_IMPL_THREAD),
+          main_thread_scrolling_reasons(NOT_SCROLLING_ON_MAIN) {}
+    ScrollStatus(ScrollThread thread,
+                 MainThreadScrollingReason main_thread_scrolling_reasons)
+        : thread(thread),
+          main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
+    ScrollThread thread;
+    MainThreadScrollingReason main_thread_scrolling_reasons;
+  };
+
   enum ScrollInputType { GESTURE, WHEEL, ANIMATED_WHEEL, NON_BUBBLING_GESTURE };
 
   // Binds a client to this handler to receive notifications. Only one client
@@ -180,6 +217,13 @@ class CC_EXPORT InputHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
+
+inline const InputHandler::MainThreadScrollingReason& operator|=(
+    InputHandler::MainThreadScrollingReason& a,
+    InputHandler::MainThreadScrollingReason b) {
+  return a = static_cast<InputHandler::MainThreadScrollingReason>(
+             static_cast<unsigned>(a) | static_cast<unsigned>(b));
+}
 
 }  // namespace cc
 

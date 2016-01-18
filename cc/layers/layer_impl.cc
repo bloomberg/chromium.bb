@@ -57,7 +57,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_tree_impl_(tree_impl),
       scroll_offset_(scroll_offset),
       scroll_clip_layer_id_(Layer::INVALID_ID),
-      should_scroll_on_main_thread_(false),
+      main_thread_scrolling_reasons_(InputHandler::NOT_SCROLLING_ON_MAIN),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
       scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
@@ -507,15 +507,24 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     const gfx::PointF& screen_space_point,
     InputHandler::ScrollInputType type,
     ScrollBlocksOn effective_block_mode) const {
+  InputHandler::ScrollStatus scroll_status;
+  scroll_status.main_thread_scrolling_reasons =
+      InputHandler::NOT_SCROLLING_ON_MAIN;
   if (should_scroll_on_main_thread()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
-    return InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons =
+        main_thread_scrolling_reasons_;
+    return scroll_status;
   }
 
   gfx::Transform screen_space_transform = ScreenSpaceTransform();
   if (!screen_space_transform.IsInvertible()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
-    return InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons =
+        InputHandler::NON_INVERTIBLE_TRANSFORM;
+    return scroll_status;
   }
 
   if (!non_fast_scrollable_region().IsEmpty()) {
@@ -535,26 +544,35 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
             gfx::ToRoundedPoint(hit_test_point_in_layer_space))) {
       TRACE_EVENT0("cc",
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
-      return InputHandler::SCROLL_ON_MAIN_THREAD;
+      scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+      scroll_status.main_thread_scrolling_reasons =
+          InputHandler::NON_FAST_SCROLLABLE_REGION;
+      return scroll_status;
     }
   }
 
   if (have_scroll_event_handlers() &&
       effective_block_mode & SCROLL_BLOCKS_ON_SCROLL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed ScrollEventHandlers");
-    return InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons = InputHandler::EVENT_HANDLERS;
+    return scroll_status;
   }
 
   if ((type == InputHandler::WHEEL || type == InputHandler::ANIMATED_WHEEL) &&
       have_wheel_event_handlers() &&
       effective_block_mode & SCROLL_BLOCKS_ON_WHEEL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
-    return InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons = InputHandler::EVENT_HANDLERS;
+    return scroll_status;
   }
 
   if (!scrollable()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
-    return InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons = InputHandler::NOT_SCROLLABLE;
+    return scroll_status;
   }
 
   gfx::ScrollOffset max_scroll_offset = MaxScrollOffset();
@@ -562,10 +580,13 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
-    return InputHandler::SCROLL_IGNORED;
+    scroll_status.thread = InputHandler::SCROLL_IGNORED;
+    scroll_status.main_thread_scrolling_reasons = InputHandler::NOT_SCROLLABLE;
+    return scroll_status;
   }
 
-  return InputHandler::SCROLL_STARTED;
+  scroll_status.thread = InputHandler::SCROLL_ON_IMPL_THREAD;
+  return scroll_status;
 }
 
 skia::RefPtr<SkPicture> LayerImpl::GetPicture() {
@@ -594,7 +615,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->SetFilters(filters());
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
-  layer->SetShouldScrollOnMainThread(should_scroll_on_main_thread_);
+  layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
   layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetScrollBlocksOn(scroll_blocks_on_);

@@ -50,7 +50,7 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(const LayerSettings& settings,
       has_thumb_(scrollbar_->HasThumb()),
       thumb_opacity_(scrollbar_->ThumbOpacity()) {
   if (!scrollbar_->IsOverlay())
-    SetShouldScrollOnMainThread(true);
+    AddMainThreadScrollingReasons(InputHandler::SCROLL_BAR_SCROLLING);
 }
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() {}

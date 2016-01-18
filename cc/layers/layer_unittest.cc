@@ -131,8 +131,8 @@ class LayerSerializationTest : public testing::Test {
     EXPECT_EQ(src->hide_layer_and_subtree_, dest->hide_layer_and_subtree_);
     EXPECT_EQ(src->has_render_surface_, dest->has_render_surface_);
     EXPECT_EQ(src->masks_to_bounds_, dest->masks_to_bounds_);
-    EXPECT_EQ(src->should_scroll_on_main_thread_,
-              dest->should_scroll_on_main_thread_);
+    EXPECT_EQ(src->main_thread_scrolling_reasons_,
+              dest->main_thread_scrolling_reasons_);
     EXPECT_EQ(src->have_wheel_event_handlers_,
               dest->have_wheel_event_handlers_);
     EXPECT_EQ(src->have_scroll_event_handlers_,
@@ -249,7 +249,7 @@ class LayerSerializationTest : public testing::Test {
     layer->hide_layer_and_subtree_ = false;
     layer->has_render_surface_ = false;
     layer->masks_to_bounds_ = true;
-    layer->should_scroll_on_main_thread_ = false;
+    layer->main_thread_scrolling_reasons_ = InputHandler::NOT_SCROLLING_ON_MAIN;
     layer->have_wheel_event_handlers_ = true;
     layer->have_scroll_event_handlers_ = false;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
@@ -299,8 +299,8 @@ class LayerSerializationTest : public testing::Test {
     layer->hide_layer_and_subtree_ = !layer->hide_layer_and_subtree_;
     layer->has_render_surface_ = !layer->has_render_surface_;
     layer->masks_to_bounds_ = !layer->masks_to_bounds_;
-    layer->should_scroll_on_main_thread_ =
-        !layer->should_scroll_on_main_thread_;
+    layer->main_thread_scrolling_reasons_ =
+        InputHandler::HAS_BACKGROUND_ATTACHMENT_FIXED_OBJECTS;
     layer->have_wheel_event_handlers_ = !layer->have_wheel_event_handlers_;
     layer->have_scroll_event_handlers_ = !layer->have_scroll_event_handlers_;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
@@ -967,7 +967,8 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetUserScrollable(true, false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
       gfx::ScrollOffset(10, 10)));
-  EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetShouldScrollOnMainThread(true));
+  EXPECT_SET_NEEDS_COMMIT(1, test_layer->AddMainThreadScrollingReasons(
+                                 InputHandler::EVENT_HANDLERS));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHaveWheelEventHandlers(true));

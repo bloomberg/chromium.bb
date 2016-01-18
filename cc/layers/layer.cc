@@ -66,8 +66,8 @@ Layer::Layer(const LayerSettings& settings)
       property_tree_sequence_number_(-1),
       element_id_(0),
       mutable_properties_(kMutablePropertyNone),
+      main_thread_scrolling_reasons_(InputHandler::NOT_SCROLLING_ON_MAIN),
       should_flatten_transform_from_property_tree_(false),
-      should_scroll_on_main_thread_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
       user_scrollable_horizontal_(true),
@@ -947,11 +947,21 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
   SetNeedsCommit();
 }
 
-void Layer::SetShouldScrollOnMainThread(bool should_scroll_on_main_thread) {
+void Layer::AddMainThreadScrollingReasons(
+    InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
-  if (should_scroll_on_main_thread_ == should_scroll_on_main_thread)
+  DCHECK(main_thread_scrolling_reasons);
+  if (main_thread_scrolling_reasons_ == main_thread_scrolling_reasons)
     return;
-  should_scroll_on_main_thread_ = should_scroll_on_main_thread;
+  main_thread_scrolling_reasons_ |= main_thread_scrolling_reasons;
+  SetNeedsCommit();
+}
+
+void Layer::ClearMainThreadScrollingReasons() {
+  DCHECK(IsPropertyChangeAllowed());
+  if (!main_thread_scrolling_reasons_)
+    return;
+  main_thread_scrolling_reasons_ = InputHandler::NOT_SCROLLING_ON_MAIN;
   SetNeedsCommit();
 }
 
@@ -1196,7 +1206,7 @@ void Layer::PushPropertiesTo(LayerImpl* layer) {
   DCHECK(!(FilterIsAnimating() && layer->FilterIsAnimatingOnImplOnly()));
   layer->SetBackgroundFilters(background_filters());
   layer->SetMasksToBounds(masks_to_bounds_);
-  layer->SetShouldScrollOnMainThread(should_scroll_on_main_thread_);
+  layer->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
   layer->SetHaveWheelEventHandlers(have_wheel_event_handlers_);
   layer->SetHaveScrollEventHandlers(have_scroll_event_handlers_);
   layer->SetNonFastScrollableRegion(non_fast_scrollable_region_);
@@ -1467,7 +1477,7 @@ void Layer::LayerSpecificPropertiesToProto(proto::LayerProperties* proto) {
   // |filters_| and |background_filters_|. See crbug.com/541321.
 
   base->set_masks_to_bounds(masks_to_bounds_);
-  base->set_should_scroll_on_main_thread(should_scroll_on_main_thread_);
+  base->set_main_thread_scrolling_reasons(main_thread_scrolling_reasons_);
   base->set_have_wheel_event_handlers(have_wheel_event_handlers_);
   base->set_have_scroll_event_handlers(have_scroll_event_handlers_);
   RegionToProto(non_fast_scrollable_region_,
@@ -1553,7 +1563,9 @@ void Layer::FromLayerSpecificPropertiesProto(
   hide_layer_and_subtree_ = base.hide_layer_and_subtree();
   has_render_surface_ = base.has_render_surface();
   masks_to_bounds_ = base.masks_to_bounds();
-  should_scroll_on_main_thread_ = base.should_scroll_on_main_thread();
+  main_thread_scrolling_reasons_ =
+      static_cast<InputHandler::MainThreadScrollingReason>(
+          base.main_thread_scrolling_reasons());
   have_wheel_event_handlers_ = base.have_wheel_event_handlers();
   have_scroll_event_handlers_ = base.have_scroll_event_handlers();
   non_fast_scrollable_region_ =

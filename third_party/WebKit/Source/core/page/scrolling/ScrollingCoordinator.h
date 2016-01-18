@@ -31,6 +31,7 @@
 #include "platform/PlatformWheelEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "public/platform/WebMainThreadScrollingReason.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 
@@ -94,12 +95,6 @@ public:
     // Dispatched by the scrolling tree during handleWheelEvent. This is required as long as scrollbars are painted on the main thread.
     void handleWheelEventPhase(PlatformWheelEventPhase);
 #endif
-
-    enum MainThreadScrollingReasonFlags {
-        HasBackgroundAttachmentFixedObjects = 1 << 0,
-        HasNonLayerViewportConstrainedObjects = 1 << 1,
-        ThreadedScrollingDisabled = 1 << 2
-    };
 
     MainThreadScrollingReasons mainThreadScrollingReasons() const;
     bool shouldUpdateScrollLayerPositionOnMainThread() const { return mainThreadScrollingReasons() != 0; }

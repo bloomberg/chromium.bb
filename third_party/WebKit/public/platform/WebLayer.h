@@ -32,6 +32,7 @@
 #include "WebCompositorAnimation.h"
 #include "WebDoublePoint.h"
 #include "WebFloatPoint3D.h"
+#include "WebMainThreadScrollingReason.h"
 #include "WebPoint.h"
 #include "WebRect.h"
 #include "WebScrollBlocksOn.h"
@@ -207,7 +208,10 @@ public:
     virtual void setHaveScrollEventHandlers(bool) = 0;
     virtual bool haveScrollEventHandlers() const = 0;
 
-    virtual void setShouldScrollOnMainThread(bool) = 0;
+    // Indicates that this layer will always scroll on the main thread for the provided reason.
+    virtual void addMainThreadScrollingReasons(WebMainThreadScrollingReason::WebMainThreadScrollingReason) = 0;
+    // Indicates that the layer could scroll on the compositor thread.
+    virtual void clearMainThreadScrollingReasons() = 0;
     virtual bool shouldScrollOnMainThread() const = 0;
 
     virtual void setNonFastScrollableRegion(const WebVector<WebRect>&) = 0;
