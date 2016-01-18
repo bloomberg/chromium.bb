@@ -1085,6 +1085,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		 * steps. Therefore move the axis by some pixels every step. */
 		if (state) {
 			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.discrete = -1;
+			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
 			notify_axis(&b->core_seat,
@@ -1095,6 +1097,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	case 5:
 		if (state) {
 			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.discrete = 1;
+			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_VERTICAL_SCROLL;
 			notify_axis(&b->core_seat,
@@ -1105,6 +1109,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	case 6:
 		if (state) {
 			weston_event.value = -DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.discrete = -1;
+			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
 			notify_axis(&b->core_seat,
@@ -1115,6 +1121,8 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 	case 7:
 		if (state) {
 			weston_event.value = DEFAULT_AXIS_STEP_DISTANCE;
+			weston_event.discrete = 1;
+			weston_event.has_discrete = true;
 			weston_event.axis =
 				WL_POINTER_AXIS_HORIZONTAL_SCROLL;
 			notify_axis(&b->core_seat,
@@ -1131,6 +1139,7 @@ x11_backend_deliver_button_event(struct x11_backend *b,
 		      weston_compositor_get_time(), button,
 		      state ? WL_POINTER_BUTTON_STATE_PRESSED :
 			      WL_POINTER_BUTTON_STATE_RELEASED);
+	notify_pointer_frame(&b->core_seat);
 }
 
 static void
@@ -1162,6 +1171,7 @@ x11_backend_deliver_motion_event(struct x11_backend *b,
 
 	notify_motion(&b->core_seat, weston_compositor_get_time(),
 		      &motion_event);
+	notify_pointer_frame(&b->core_seat);
 
 	b->prev_x = x;
 	b->prev_y = y;

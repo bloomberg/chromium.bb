@@ -70,7 +70,7 @@
 #include "pixman-renderer.h"
 
 #define MAX_FREERDP_FDS 32
-#define DEFAULT_AXIS_STEP_DISTANCE wl_fixed_from_int(10)
+#define DEFAULT_AXIS_STEP_DISTANCE 10
 #define RDP_MODE_FREQ 60 * 1000
 
 struct rdp_backend_config {
@@ -942,10 +942,11 @@ static BOOL xf_peer_post_connect(freerdp_peer *client)
 static FREERDP_CB_RET_TYPE
 xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 {
-	wl_fixed_t wl_x, wl_y, axis;
+	wl_fixed_t wl_x, wl_y;
 	RdpPeerContext *peerContext = (RdpPeerContext *)input->context;
 	struct rdp_output *output;
 	uint32_t button = 0;
+	bool need_frame = false;
 
 	if (flags & PTR_FLAGS_MOVE) {
 		output = peerContext->rdpBackend->output;
@@ -954,6 +955,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 			wl_y = wl_fixed_from_int((int)y);
 			notify_motion_absolute(&peerContext->item.seat, weston_compositor_get_time(),
 					wl_x, wl_y);
+			need_frame = true;
 		}
 	}
 
@@ -968,10 +970,12 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		notify_button(&peerContext->item.seat, weston_compositor_get_time(), button,
 			(flags & PTR_FLAGS_DOWN) ? WL_POINTER_BUTTON_STATE_PRESSED : WL_POINTER_BUTTON_STATE_RELEASED
 		);
+		need_frame = true;
 	}
 
 	if (flags & PTR_FLAGS_WHEEL) {
 		struct weston_pointer_axis_event weston_event;
+		double value;
 
 		/* DEFAULT_AXIS_STEP_DISTANCE is stolen from compositor-x11.c
 		 * The RDP specs says the lower bits of flags contains the "the number of rotation
@@ -979,16 +983,22 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		 *
 		 * https://blogs.msdn.microsoft.com/oldnewthing/20130123-00/?p=5473 explains the 120 value
 		 */
-		axis = (DEFAULT_AXIS_STEP_DISTANCE * (flags & 0xff)) / 120;
+		value = (flags & 0xff) / 120.0;
 		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
-			axis = -axis;
+			value = -value;
 
 		weston_event.axis = WL_POINTER_AXIS_VERTICAL_SCROLL;
-		weston_event.value = axis;
+		weston_event.value = wl_fixed_from_double(DEFAULT_AXIS_STEP_DISTANCE * value);
+		weston_event.discrete = (int)value;
+		weston_event.has_discrete = true;
 
 		notify_axis(&peerContext->item.seat, weston_compositor_get_time(),
 			    &weston_event);
+		need_frame = true;
 	}
+
+	if (need_frame)
+		notify_pointer_frame(&peerContext->item.seat);
 
 	FREERDP_CB_RETURN(TRUE);
 }

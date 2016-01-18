@@ -343,9 +343,56 @@ weston_pointer_send_axis(struct weston_pointer *pointer,
 		return;
 
 	resource_list = &pointer->focus_client->pointer_resources;
+	wl_resource_for_each(resource, resource_list) {
+		if (event->has_discrete &&
+		    wl_resource_get_version(resource) >=
+		    WL_POINTER_AXIS_DISCRETE_SINCE_VERSION)
+			wl_pointer_send_axis_discrete(resource, event->axis,
+						      event->discrete);
+
+		if (event->value)
+			wl_pointer_send_axis(resource, time,
+					     event->axis, event->value);
+		else if (wl_resource_get_version(resource) >=
+			 WL_POINTER_AXIS_STOP_SINCE_VERSION)
+			wl_pointer_send_axis_stop(resource, time,
+						  event->axis);
+	}
+}
+
+WL_EXPORT void
+weston_pointer_send_axis_source(struct weston_pointer *pointer, uint32_t source)
+{
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
+
+	resource_list = &pointer->focus_client->pointer_resources;
+	wl_resource_for_each(resource, resource_list) {
+		if (wl_resource_get_version(resource) >=
+		    WL_POINTER_AXIS_SOURCE_SINCE_VERSION) {
+			wl_pointer_send_axis_source(resource, source);
+		}
+	}
+}
+
+static void
+pointer_send_frame(struct wl_resource *resource)
+{
+	if (wl_resource_get_version(resource) >=
+	    WL_POINTER_FRAME_SINCE_VERSION) {
+		wl_pointer_send_frame(resource);
+	}
+}
+
+WL_EXPORT void
+weston_pointer_send_frame(struct weston_pointer *pointer)
+{
+	struct wl_resource *resource;
+	struct wl_list *resource_list;
+
+	resource_list = &pointer->focus_client->pointer_resources;
 	wl_resource_for_each(resource, resource_list)
-		wl_pointer_send_axis(resource, time,
-				     event->axis, event->value);
+		pointer_send_frame(resource);
 }
 
 static void
@@ -354,6 +401,19 @@ default_grab_pointer_axis(struct weston_pointer_grab *grab,
 			  struct weston_pointer_axis_event *event)
 {
 	weston_pointer_send_axis(grab->pointer, time, event);
+}
+
+static void
+default_grab_pointer_axis_source(struct weston_pointer_grab *grab,
+				 uint32_t source)
+{
+	weston_pointer_send_axis_source(grab->pointer, source);
+}
+
+static void
+default_grab_pointer_frame(struct weston_pointer_grab *grab)
+{
+	weston_pointer_send_frame(grab->pointer);
 }
 
 static void
@@ -367,6 +427,8 @@ static const struct weston_pointer_grab_interface
 	default_grab_pointer_motion,
 	default_grab_pointer_button,
 	default_grab_pointer_axis,
+	default_grab_pointer_axis_source,
+	default_grab_pointer_frame,
 	default_grab_pointer_cancel,
 };
 
@@ -830,6 +892,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 			wl_resource_for_each(resource, focus_resource_list) {
 				wl_pointer_send_leave(resource, serial,
 						      surface_resource);
+				pointer_send_frame(resource);
 			}
 		}
 
@@ -856,6 +919,7 @@ weston_pointer_set_focus(struct weston_pointer *pointer,
 					      serial,
 					      view->surface->resource,
 					      sx, sy);
+			pointer_send_frame(resource);
 		}
 
 		pointer->focus_serial = serial;
@@ -1277,14 +1341,33 @@ notify_axis(struct weston_seat *seat, uint32_t time,
 
 	weston_compositor_wake(compositor);
 
-	if (!event->value)
-		return;
-
 	if (weston_compositor_run_axis_binding(compositor, pointer,
 					       time, event))
 		return;
 
 	pointer->grab->interface->axis(pointer->grab, time, event);
+}
+
+WL_EXPORT void
+notify_axis_source(struct weston_seat *seat, uint32_t source)
+{
+	struct weston_compositor *compositor = seat->compositor;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+
+	weston_compositor_wake(compositor);
+
+	pointer->grab->interface->axis_source(pointer->grab, source);
+}
+
+WL_EXPORT void
+notify_pointer_frame(struct weston_seat *seat)
+{
+	struct weston_compositor *compositor = seat->compositor;
+	struct weston_pointer *pointer = weston_seat_get_pointer(seat);
+
+	weston_compositor_wake(compositor);
+
+	pointer->grab->interface->frame(pointer->grab);
 }
 
 WL_EXPORT int
@@ -1979,6 +2062,7 @@ seat_get_pointer(struct wl_client *client, struct wl_resource *resource,
 				      pointer->focus_serial,
 				      pointer->focus->surface->resource,
 				      sx, sy);
+		pointer_send_frame(cr);
 	}
 }
 
@@ -2557,7 +2641,7 @@ weston_seat_init(struct weston_seat *seat, struct weston_compositor *ec,
 	wl_signal_init(&seat->destroy_signal);
 	wl_signal_init(&seat->updated_caps_signal);
 
-	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 4,
+	seat->global = wl_global_create(ec->wl_display, &wl_seat_interface, 5,
 					seat, bind_seat);
 
 	seat->compositor = ec;

@@ -282,6 +282,10 @@ struct widget {
 	widget_touch_frame_handler_t touch_frame_handler;
 	widget_touch_cancel_handler_t touch_cancel_handler;
 	widget_axis_handler_t axis_handler;
+	widget_pointer_frame_handler_t pointer_frame_handler;
+	widget_axis_source_handler_t axis_source_handler;
+	widget_axis_stop_handler_t axis_stop_handler;
+	widget_axis_discrete_handler_t axis_discrete_handler;
 	void *user_data;
 	int opaque;
 	int tooltip_count;
@@ -1930,6 +1934,26 @@ widget_set_axis_handler(struct widget *widget,
 	widget->axis_handler = handler;
 }
 
+void
+widget_set_pointer_frame_handler(struct widget *widget,
+				 widget_pointer_frame_handler_t handler)
+{
+	widget->pointer_frame_handler = handler;
+}
+
+void
+widget_set_axis_handlers(struct widget *widget,
+			widget_axis_handler_t axis_handler,
+			widget_axis_source_handler_t axis_source_handler,
+			widget_axis_stop_handler_t axis_stop_handler,
+			widget_axis_discrete_handler_t axis_discrete_handler)
+{
+	widget->axis_handler = axis_handler;
+	widget->axis_source_handler = axis_source_handler;
+	widget->axis_stop_handler = axis_stop_handler;
+	widget->axis_discrete_handler = axis_discrete_handler;
+}
+
 static void
 window_schedule_redraw_task(struct window *window);
 
@@ -2780,12 +2804,83 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 					widget->user_data);
 }
 
+static void
+pointer_handle_frame(void *data, struct wl_pointer *pointer)
+{
+	struct input *input = data;
+	struct widget *widget;
+
+	widget = input->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	if (widget && widget->pointer_frame_handler)
+		(*widget->pointer_frame_handler)(widget,
+						 input,
+						 widget->user_data);
+}
+
+static void
+pointer_handle_axis_source(void *data, struct wl_pointer *pointer,
+			   uint32_t source)
+{
+	struct input *input = data;
+	struct widget *widget;
+
+	widget = input->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	if (widget && widget->axis_source_handler)
+		(*widget->axis_source_handler)(widget,
+					       input,
+					       source,
+					       widget->user_data);
+}
+
+static void
+pointer_handle_axis_stop(void *data, struct wl_pointer *pointer,
+			 uint32_t time, uint32_t axis)
+{
+	struct input *input = data;
+	struct widget *widget;
+
+	widget = input->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	if (widget && widget->axis_stop_handler)
+		(*widget->axis_stop_handler)(widget,
+					     input, time,
+					     axis,
+					     widget->user_data);
+}
+
+static void
+pointer_handle_axis_discrete(void *data, struct wl_pointer *pointer,
+			     uint32_t axis, int32_t discrete)
+{
+	struct input *input = data;
+	struct widget *widget;
+
+	widget = input->focus_widget;
+	if (input->grab)
+		widget = input->grab;
+	if (widget && widget->axis_discrete_handler)
+		(*widget->axis_discrete_handler)(widget,
+						 input,
+						 axis,
+						 discrete,
+						 widget->user_data);
+}
+
 static const struct wl_pointer_listener pointer_listener = {
 	pointer_handle_enter,
 	pointer_handle_leave,
 	pointer_handle_motion,
 	pointer_handle_button,
 	pointer_handle_axis,
+	pointer_handle_frame,
+	pointer_handle_axis_source,
+	pointer_handle_axis_stop,
+	pointer_handle_axis_discrete,
 };
 
 static void
@@ -5178,7 +5273,7 @@ static void
 display_add_input(struct display *d, uint32_t id, int display_seat_version)
 {
 	struct input *input;
-	int seat_version = MIN(display_seat_version, 4);
+	int seat_version = MIN(display_seat_version, 5);
 
 	input = xzalloc(sizeof *input);
 	input->display = d;

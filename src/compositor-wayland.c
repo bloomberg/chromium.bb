@@ -185,6 +185,8 @@ struct wayland_input {
 	struct wayland_output *output;
 	struct wayland_output *touch_focus;
 	struct wayland_output *keyboard_focus;
+
+	struct weston_pointer_axis_event vert, horiz;
 };
 
 struct gl_renderer_interface *gl_renderer;
@@ -1340,6 +1342,7 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 	struct wayland_input *input = data;
 	int32_t fx, fy;
 	enum theme_location location;
+	bool want_frame = false;
 
 	if (!input->output)
 		return;
@@ -1364,16 +1367,23 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 		input_set_cursor(input);
 		notify_pointer_focus(&input->base, NULL, 0, 0);
 		input->has_focus = false;
+		want_frame = true;
 	} else if (!input->has_focus &&
 		   location == THEME_LOCATION_CLIENT_AREA) {
 		wl_pointer_set_cursor(input->parent.pointer,
 				      input->enter_serial, NULL, 0, 0);
 		notify_pointer_focus(&input->base, &input->output->base, x, y);
 		input->has_focus = true;
+		want_frame = true;
 	}
 
-	if (location == THEME_LOCATION_CLIENT_AREA)
+	if (location == THEME_LOCATION_CLIENT_AREA) {
 		notify_motion_absolute(&input->base, time, x, y);
+		want_frame = true;
+	}
+
+	if (want_frame && input->seat_version < WL_POINTER_FRAME_SINCE_VERSION)
+		notify_pointer_frame(&input->base);
 }
 
 static void
@@ -1422,8 +1432,11 @@ input_handle_button(void *data, struct wl_pointer *pointer,
 		location = THEME_LOCATION_CLIENT_AREA;
 	}
 
-	if (location == THEME_LOCATION_CLIENT_AREA)
+	if (location == THEME_LOCATION_CLIENT_AREA) {
 		notify_button(&input->base, time, button, state);
+		if (input->seat_version < WL_POINTER_FRAME_SINCE_VERSION)
+			notify_pointer_frame(&input->base);
+	}
 }
 
 static void
@@ -1436,7 +1449,67 @@ input_handle_axis(void *data, struct wl_pointer *pointer,
 	weston_event.axis = axis;
 	weston_event.value = value;
 
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL &&
+	    input->vert.has_discrete) {
+		weston_event.has_discrete = true;
+		weston_event.discrete = input->vert.discrete;
+		input->vert.has_discrete = false;
+	} else if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL &&
+		   input->horiz.has_discrete) {
+		weston_event.has_discrete = true;
+		weston_event.discrete = input->horiz.discrete;
+		input->horiz.has_discrete = false;
+	}
+
 	notify_axis(&input->base, time, &weston_event);
+
+	if (input->seat_version < WL_POINTER_FRAME_SINCE_VERSION)
+		notify_pointer_frame(&input->base);
+}
+
+static void
+input_handle_frame(void *data, struct wl_pointer *pointer)
+{
+	struct wayland_input *input = data;
+
+	notify_pointer_frame(&input->base);
+}
+
+static void
+input_handle_axis_source(void *data, struct wl_pointer *pointer,
+			 uint32_t source)
+{
+	struct wayland_input *input = data;
+
+	notify_axis_source(&input->base, source);
+}
+
+static void
+input_handle_axis_stop(void *data, struct wl_pointer *pointer,
+		       uint32_t time, uint32_t axis)
+{
+	struct wayland_input *input = data;
+	struct weston_pointer_axis_event weston_event;
+
+	weston_event.axis = axis;
+	weston_event.value = 0;
+
+	notify_axis(&input->base, time, &weston_event);
+}
+
+static void
+input_handle_axis_discrete(void *data, struct wl_pointer *pointer,
+			   uint32_t axis, int32_t discrete)
+{
+	struct wayland_input *input = data;
+
+	if (axis == WL_POINTER_AXIS_VERTICAL_SCROLL) {
+		input->vert.has_discrete = true;
+		input->vert.discrete = discrete;
+	} else if (axis == WL_POINTER_AXIS_HORIZONTAL_SCROLL) {
+		input->horiz.has_discrete = true;
+		input->horiz.discrete = discrete;
+	}
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -1445,6 +1518,10 @@ static const struct wl_pointer_listener pointer_listener = {
 	input_handle_motion,
 	input_handle_button,
 	input_handle_axis,
+	input_handle_frame,
+	input_handle_axis_source,
+	input_handle_axis_stop,
+	input_handle_axis_discrete,
 };
 
 static void
@@ -1851,6 +1928,9 @@ display_add_seat(struct wayland_backend *b, uint32_t id, uint32_t available_vers
 
 	input->parent.cursor.surface =
 		wl_compositor_create_surface(b->parent.compositor);
+
+	input->vert.axis = WL_POINTER_AXIS_VERTICAL_SCROLL;
+	input->horiz.axis = WL_POINTER_AXIS_HORIZONTAL_SCROLL;
 }
 
 static void

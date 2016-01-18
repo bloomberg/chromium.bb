@@ -143,6 +143,7 @@ ss_seat_handle_motion(void *data, struct wl_pointer *pointer,
 	 * always receiving the input in the same coordinates as the output. */
 
 	notify_motion_absolute(&seat->base, time, x, y);
+	notify_pointer_frame(&seat->base);
 }
 
 static void
@@ -153,6 +154,7 @@ ss_seat_handle_button(void *data, struct wl_pointer *pointer,
 	struct ss_seat *seat = data;
 
 	notify_button(&seat->base, time, button, state);
+	notify_pointer_frame(&seat->base);
 }
 
 static void
@@ -164,8 +166,10 @@ ss_seat_handle_axis(void *data, struct wl_pointer *pointer,
 
 	weston_event.axis = axis;
 	weston_event.value = value;
+	weston_event.has_discrete = false;
 
 	notify_axis(&seat->base, time, &weston_event);
+	notify_pointer_frame(&seat->base);
 }
 
 static const struct wl_pointer_listener ss_seat_pointer_listener = {

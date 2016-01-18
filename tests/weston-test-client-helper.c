@@ -197,12 +197,44 @@ pointer_handle_axis(void *data, struct wl_pointer *wl_pointer,
 		axis, wl_fixed_to_double(value));
 }
 
+static void
+pointer_handle_frame(void *data, struct wl_pointer *wl_pointer)
+{
+	fprintf(stderr, "test-client: got pointer frame\n");
+}
+
+static void
+pointer_handle_axis_source(void *data, struct wl_pointer *wl_pointer,
+			     uint32_t source)
+{
+	fprintf(stderr, "test-client: got pointer axis source %u\n", source);
+}
+
+static void
+pointer_handle_axis_stop(void *data, struct wl_pointer *wl_pointer,
+			 uint32_t time, uint32_t axis)
+{
+	fprintf(stderr, "test-client: got pointer axis stop\n");
+}
+
+static void
+pointer_handle_axis_discrete(void *data, struct wl_pointer *wl_pointer,
+			     uint32_t axis, int32_t value)
+{
+	fprintf(stderr, "test-client: got pointer axis discrete %u %d\n",
+		axis, value);
+}
+
 static const struct wl_pointer_listener pointer_listener = {
 	pointer_handle_enter,
 	pointer_handle_leave,
 	pointer_handle_motion,
 	pointer_handle_button,
 	pointer_handle_axis,
+	pointer_handle_frame,
+	pointer_handle_axis_source,
+	pointer_handle_axis_stop,
+	pointer_handle_axis_discrete,
 };
 
 static void

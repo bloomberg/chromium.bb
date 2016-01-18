@@ -417,6 +417,16 @@ drag_grab_axis(struct weston_pointer_grab *grab,
 }
 
 static void
+drag_grab_axis_source(struct weston_pointer_grab *grab, uint32_t source)
+{
+}
+
+static void
+drag_grab_frame(struct weston_pointer_grab *grab)
+{
+}
+
+static void
 drag_grab_cancel(struct weston_pointer_grab *grab)
 {
 	struct weston_pointer_drag *drag =
@@ -433,6 +443,8 @@ static const struct weston_pointer_grab_interface pointer_drag_grab_interface = 
 	drag_grab_motion,
 	drag_grab_button,
 	drag_grab_axis,
+	drag_grab_axis_source,
+	drag_grab_frame,
 	drag_grab_cancel,
 };
 

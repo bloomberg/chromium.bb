@@ -254,6 +254,8 @@ struct weston_pointer_motion_event {
 struct weston_pointer_axis_event {
 	uint32_t axis;
 	wl_fixed_t value;
+	bool has_discrete;
+	int32_t discrete;
 };
 
 struct weston_pointer_grab;
@@ -266,6 +268,8 @@ struct weston_pointer_grab_interface {
 	void (*axis)(struct weston_pointer_grab *grab,
 		     uint32_t time,
 		     struct weston_pointer_axis_event *event);
+	void (*axis_source)(struct weston_pointer_grab *grab, uint32_t source);
+	void (*frame)(struct weston_pointer_grab *grab);
 	void (*cancel)(struct weston_pointer_grab *grab);
 };
 
@@ -403,6 +407,12 @@ void
 weston_pointer_send_axis(struct weston_pointer *pointer,
 			 uint32_t time,
 			 struct weston_pointer_axis_event *event);
+void
+weston_pointer_send_axis_source(struct weston_pointer *pointer,
+				uint32_t source);
+void
+weston_pointer_send_frame(struct weston_pointer *pointer);
+
 void
 weston_pointer_set_focus(struct weston_pointer *pointer,
 			 struct weston_view *view,
@@ -1142,6 +1152,12 @@ notify_button(struct weston_seat *seat, uint32_t time, int32_t button,
 void
 notify_axis(struct weston_seat *seat, uint32_t time,
 	    struct weston_pointer_axis_event *event);
+void
+notify_axis_source(struct weston_seat *seat, uint32_t source);
+
+void
+notify_pointer_frame(struct weston_seat *seat);
+
 void
 notify_key(struct weston_seat *seat, uint32_t time, uint32_t key,
 	   enum wl_keyboard_key_state state,

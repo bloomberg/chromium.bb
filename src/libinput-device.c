@@ -80,7 +80,7 @@ handle_keyboard_key(struct libinput_device *libinput_device,
 		   STATE_UPDATE_AUTOMATIC);
 }
 
-static void
+static bool
 handle_pointer_motion(struct libinput_device *libinput_device,
 		      struct libinput_event_pointer *pointer_event)
 {
@@ -97,9 +97,11 @@ handle_pointer_motion(struct libinput_device *libinput_device,
 	notify_motion(device->seat,
 		      libinput_event_pointer_get_time(pointer_event),
 		      &event);
+
+	return true;
 }
 
-static void
+static bool
 handle_pointer_motion_absolute(
 	struct libinput_device *libinput_device,
 	struct libinput_event_pointer *pointer_event)
@@ -112,7 +114,7 @@ handle_pointer_motion_absolute(
 	uint32_t width, height;
 
 	if (!output)
-		return;
+		return false;
 
 	time = libinput_event_pointer_get_time(pointer_event);
 	width = device->output->current_mode->width;
@@ -127,9 +129,11 @@ handle_pointer_motion_absolute(
 
 	weston_output_transform_coordinate(device->output, x, y, &x, &y);
 	notify_motion_absolute(device->seat, time, x, y);
+
+	return true;
 }
 
-static void
+static bool
 handle_pointer_button(struct libinput_device *libinput_device,
 		      struct libinput_event_pointer *pointer_event)
 {
@@ -145,21 +149,21 @@ handle_pointer_button(struct libinput_device *libinput_device,
 	     seat_button_count != 1) ||
 	    (button_state == LIBINPUT_BUTTON_STATE_RELEASED &&
 	     seat_button_count != 0))
-		return;
+		return false;
 
 	notify_button(device->seat,
 		      libinput_event_pointer_get_time(pointer_event),
 		      libinput_event_pointer_get_button(pointer_event),
 		      libinput_event_pointer_get_button_state(pointer_event));
+	return true;
 }
 
 static double
 normalize_scroll(struct libinput_event_pointer *pointer_event,
 		 enum libinput_pointer_axis axis)
 {
-	static int warned;
 	enum libinput_pointer_axis_source source;
-	double value;
+	double value = 0.0;
 
 	source = libinput_event_pointer_get_axis_source(pointer_event);
 	/* libinput < 0.8 sent wheel click events with value 10. Since 0.8
@@ -178,48 +182,101 @@ normalize_scroll(struct libinput_event_pointer *pointer_event,
 		value = libinput_event_pointer_get_axis_value(pointer_event,
 							      axis);
 		break;
-	default:
-		value = 0;
-		if (warned < 5) {
-			weston_log("Unknown scroll source %d. Event discarded\n",
-				   source);
-			warned++;
-		}
-		break;
 	}
 
 	return value;
 }
 
-static void
+static int32_t
+get_axis_discrete(struct libinput_event_pointer *pointer_event,
+		  enum libinput_pointer_axis axis)
+{
+	enum libinput_pointer_axis_source source;
+
+	source = libinput_event_pointer_get_axis_source(pointer_event);
+
+	if (source != LIBINPUT_POINTER_AXIS_SOURCE_WHEEL)
+		return 0;
+
+	return libinput_event_pointer_get_axis_value_discrete(pointer_event,
+							      axis);
+}
+
+static bool
 handle_pointer_axis(struct libinput_device *libinput_device,
 		    struct libinput_event_pointer *pointer_event)
 {
+	static int warned;
 	struct evdev_device *device =
 		libinput_device_get_user_data(libinput_device);
-	double value;
+	double vert, horiz;
+	int32_t vert_discrete, horiz_discrete;
 	enum libinput_pointer_axis axis;
 	struct weston_pointer_axis_event weston_event;
+	enum libinput_pointer_axis_source source;
+	uint32_t wl_axis_source;
+	bool has_vert, has_horiz;
 
-	axis = LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL;
-	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
-		value = normalize_scroll(pointer_event, axis);
-		weston_event.value = wl_fixed_from_double(value);
+	has_vert = libinput_event_pointer_has_axis(pointer_event,
+				   LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL);
+	has_horiz = libinput_event_pointer_has_axis(pointer_event,
+				   LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL);
+
+	if (!has_vert && !has_horiz)
+		return false;
+
+	source = libinput_event_pointer_get_axis_source(pointer_event);
+	switch (source) {
+	case LIBINPUT_POINTER_AXIS_SOURCE_WHEEL:
+		wl_axis_source = WL_POINTER_AXIS_SOURCE_WHEEL;
+		break;
+	case LIBINPUT_POINTER_AXIS_SOURCE_FINGER:
+		wl_axis_source = WL_POINTER_AXIS_SOURCE_FINGER;
+		break;
+	case LIBINPUT_POINTER_AXIS_SOURCE_CONTINUOUS:
+		wl_axis_source = WL_POINTER_AXIS_SOURCE_CONTINUOUS;
+		break;
+	default:
+		if (warned < 5) {
+			weston_log("Unknown scroll source %d.\n", source);
+			warned++;
+		}
+		return false;
+	}
+
+	notify_axis_source(device->seat, wl_axis_source);
+
+	if (has_vert) {
+		axis = LIBINPUT_POINTER_AXIS_SCROLL_VERTICAL;
+		vert_discrete = get_axis_discrete(pointer_event, axis);
+		vert = normalize_scroll(pointer_event, axis);
+
 		weston_event.axis = WL_POINTER_AXIS_VERTICAL_SCROLL;
+		weston_event.value = wl_fixed_from_double(vert);
+		weston_event.discrete = vert_discrete;
+		weston_event.has_discrete = (vert_discrete != 0);
+
 		notify_axis(device->seat,
 			    libinput_event_pointer_get_time(pointer_event),
 			    &weston_event);
 	}
 
-	axis = LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL;
-	if (libinput_event_pointer_has_axis(pointer_event, axis)) {
-		value = normalize_scroll(pointer_event, axis);
-		weston_event.value = wl_fixed_from_double(value);
+	if (has_horiz) {
+		axis = LIBINPUT_POINTER_AXIS_SCROLL_HORIZONTAL;
+		horiz_discrete = get_axis_discrete(pointer_event, axis);
+		horiz = normalize_scroll(pointer_event, axis);
+
 		weston_event.axis = WL_POINTER_AXIS_HORIZONTAL_SCROLL;
+		weston_event.value = wl_fixed_from_double(horiz);
+		weston_event.discrete = horiz_discrete;
+		weston_event.has_discrete = (horiz_discrete != 0);
+
 		notify_axis(device->seat,
 			    libinput_event_pointer_get_time(pointer_event),
 			    &weston_event);
 	}
+
+	return true;
 }
 
 static void
@@ -296,7 +353,10 @@ evdev_device_process_event(struct libinput_event *event)
 {
 	struct libinput_device *libinput_device =
 		libinput_event_get_device(event);
+	struct evdev_device *device =
+		libinput_device_get_user_data(libinput_device);
 	int handled = 1;
+	bool need_frame = false;
 
 	switch (libinput_event_get_type(event)) {
 	case LIBINPUT_EVENT_KEYBOARD_KEY:
@@ -304,21 +364,22 @@ evdev_device_process_event(struct libinput_event *event)
 				    libinput_event_get_keyboard_event(event));
 		break;
 	case LIBINPUT_EVENT_POINTER_MOTION:
-		handle_pointer_motion(libinput_device,
+		need_frame = handle_pointer_motion(libinput_device,
 				      libinput_event_get_pointer_event(event));
 		break;
 	case LIBINPUT_EVENT_POINTER_MOTION_ABSOLUTE:
-		handle_pointer_motion_absolute(
-			libinput_device,
-			libinput_event_get_pointer_event(event));
+		need_frame = handle_pointer_motion_absolute(
+				libinput_device,
+				libinput_event_get_pointer_event(event));
 		break;
 	case LIBINPUT_EVENT_POINTER_BUTTON:
-		handle_pointer_button(libinput_device,
+		need_frame = handle_pointer_button(libinput_device,
 				      libinput_event_get_pointer_event(event));
 		break;
 	case LIBINPUT_EVENT_POINTER_AXIS:
-		handle_pointer_axis(libinput_device,
-				    libinput_event_get_pointer_event(event));
+		need_frame = handle_pointer_axis(
+				 libinput_device,
+				 libinput_event_get_pointer_event(event));
 		break;
 	case LIBINPUT_EVENT_TOUCH_DOWN:
 		handle_touch_down(libinput_device,
@@ -341,6 +402,9 @@ evdev_device_process_event(struct libinput_event *event)
 		weston_log("unknown libinput event %d\n",
 			   libinput_event_get_type(event));
 	}
+
+	if (need_frame)
+		notify_pointer_frame(device->seat);
 
 	return handled;
 }

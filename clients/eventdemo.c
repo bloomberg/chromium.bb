@@ -259,6 +259,54 @@ axis_handler(struct widget *widget, struct input *input, uint32_t time,
 	       wl_fixed_to_double(value));
 }
 
+static void
+pointer_frame_handler(struct widget *widget, struct input *input, void *data)
+{
+	printf("pointer frame\n");
+}
+
+static void
+axis_source_handler(struct widget *widget, struct input *input,
+		    uint32_t source, void *data)
+{
+	const char *axis_source;
+
+	switch (source) {
+	case WL_POINTER_AXIS_SOURCE_WHEEL:
+		axis_source = "wheel";
+		break;
+	case WL_POINTER_AXIS_SOURCE_FINGER:
+		axis_source = "finger";
+		break;
+	case WL_POINTER_AXIS_SOURCE_CONTINUOUS:
+		axis_source = "continuous";
+		break;
+	default:
+		axis_source = "<invalid source value>";
+		break;
+	}
+
+	printf("axis source: %s\n", axis_source);
+}
+
+static void
+axis_stop_handler(struct widget *widget, struct input *input,
+		  uint32_t time, uint32_t axis,
+		  void *data)
+{
+	printf("axis stop time: %d, axis: %s\n",
+	       time,
+	       axis == WL_POINTER_AXIS_VERTICAL_SCROLL ? "vertical" :
+							 "horizontal");
+}
+
+static void
+axis_discrete_handler(struct widget *widget, struct input *input,
+		      uint32_t axis, int32_t discrete, void *data)
+{
+	printf("axis discrete axis: %d value: %d\n", axis, discrete);
+}
+
 /**
  * \brief CALLBACK function, Waylands informs about pointer motion
  * \param widget widget
@@ -347,8 +395,15 @@ eventdemo_create(struct display *d)
 	/* Set the callback motion handler for the window */
 	widget_set_motion_handler(e->widget, motion_handler);
 
+	/* Set the callback pointer frame handler for the window */
+	widget_set_pointer_frame_handler(e->widget, pointer_frame_handler);
+
 	/* Set the callback axis handler for the window */
-	widget_set_axis_handler(e->widget, axis_handler);
+	widget_set_axis_handlers(e->widget,
+				 axis_handler,
+				 axis_source_handler,
+				 axis_stop_handler,
+				 axis_discrete_handler);
 
 	/* Initial drawing of the window */
 	window_schedule_resize(e->window, width, height);

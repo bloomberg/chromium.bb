@@ -1518,6 +1518,19 @@ pointer_default_grab_axis(struct weston_pointer_grab *grab,
 }
 
 static void
+pointer_default_grab_axis_source(struct weston_pointer_grab *grab,
+				 uint32_t source)
+{
+	weston_pointer_send_axis_source(grab->pointer, source);
+}
+
+static void
+pointer_default_grab_frame(struct weston_pointer_grab *grab)
+{
+	weston_pointer_send_frame(grab->pointer);
+}
+
+static void
 move_grab_update(struct move_grab *move, wl_fixed_t pointer[2])
 {
 	struct timespec timestamp = {0};
@@ -1664,6 +1677,8 @@ static const struct weston_pointer_grab_interface pointer_move_grab_workspace_in
 	pointer_move_grab_motion,
 	pointer_move_workspace_grab_button,
 	pointer_default_grab_axis,
+	pointer_default_grab_axis_source,
+	pointer_default_grab_frame,
 	pointer_move_workspace_grab_cancel
 };
 
