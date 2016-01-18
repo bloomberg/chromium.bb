@@ -512,7 +512,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
                 if (chosePlainText)
                     options |= ReplaceSelectionCommand::MatchStyle;
                 ASSERT(m_documentUnderMouse);
-                ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options)->apply();
+                ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), fragment, options, EditActionDrag)->apply();
             }
         }
     } else {
@@ -522,7 +522,7 @@ bool DragController::concludeEditDrag(DragData* dragData)
 
         if (setSelectionToDragCaret(innerFrame.get(), dragCaret, range, point)) {
             ASSERT(m_documentUnderMouse);
-            ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(EphemeralRange(range.get()), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting)->apply();
+            ReplaceSelectionCommand::create(*m_documentUnderMouse.get(), createFragmentFromText(EphemeralRange(range.get()), text),  ReplaceSelectionCommand::SelectReplacement | ReplaceSelectionCommand::MatchStyle | ReplaceSelectionCommand::PreventNesting, EditActionDrag)->apply();
         }
     }
 
