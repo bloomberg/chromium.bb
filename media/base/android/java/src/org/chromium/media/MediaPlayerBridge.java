@@ -99,34 +99,32 @@ public class MediaPlayerBridge {
 
     @CalledByNative
     protected boolean hasVideo() {
-        TrackInfo trackInfo[] = getLocalPlayer().getTrackInfo();
-
-        // HLS media does not have the track info, so we treat them conservatively.
-        if (trackInfo.length == 0) return true;
-
-        for (TrackInfo info : trackInfo) {
-            // TODO(zqzhang): may be we can have a histogram recording
-            // media track types in the future.
-            // See http://crbug.com/571411
-            if (TrackInfo.MEDIA_TRACK_TYPE_VIDEO == info.getTrackType()) return true;
-            if (TrackInfo.MEDIA_TRACK_TYPE_UNKNOWN == info.getTrackType()) return true;
-        }
-        return false;
+        return hasTrack(TrackInfo.MEDIA_TRACK_TYPE_VIDEO);
     }
 
     @CalledByNative
     protected boolean hasAudio() {
-        TrackInfo trackInfo[] = getLocalPlayer().getTrackInfo();
+        return hasTrack(TrackInfo.MEDIA_TRACK_TYPE_AUDIO);
+    }
 
-        // HLS media does not have the track info, so we treat them conservatively.
-        if (trackInfo.length == 0) return true;
+    private boolean hasTrack(int trackType) {
+        try {
+            TrackInfo trackInfo[] = getLocalPlayer().getTrackInfo();
 
-        for (TrackInfo info : trackInfo) {
-            // TODO(zqzhang): may be we can have a histogram recording
-            // media track types in the future.
-            // See http://crbug.com/571411
-            if (TrackInfo.MEDIA_TRACK_TYPE_AUDIO == info.getTrackType()) return true;
-            if (TrackInfo.MEDIA_TRACK_TYPE_UNKNOWN == info.getTrackType()) return true;
+            // HLS media does not have the track info, so we treat them conservatively.
+            if (trackInfo.length == 0) return true;
+
+            for (TrackInfo info : trackInfo) {
+                // TODO(zqzhang): may be we can have a histogram recording
+                // media track types in the future.
+                // See http://crbug.com/571411
+                if (trackType == info.getTrackType()) return true;
+                if (TrackInfo.MEDIA_TRACK_TYPE_UNKNOWN == info.getTrackType()) return true;
+            }
+        } catch (RuntimeException e) {
+            // Exceptions may come from getTrackInfo (IllegalStateException/RuntimeException), or
+            // from some customized OS returning null TrackInfos (NullPointerException).
+            return true;
         }
         return false;
     }

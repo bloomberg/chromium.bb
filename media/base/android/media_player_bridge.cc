@@ -311,11 +311,13 @@ bool MediaPlayerBridge::IsPlaying() {
 }
 
 bool MediaPlayerBridge::HasVideo() const {
+  DCHECK(prepared_);
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_MediaPlayerBridge_hasVideo(env, j_media_player_bridge_.obj());
 }
 
 bool MediaPlayerBridge::HasAudio() const {
+  DCHECK(prepared_);
   JNIEnv* env = base::android::AttachCurrentThread();
   return Java_MediaPlayerBridge_hasAudio(env, j_media_player_bridge_.obj());
 }
