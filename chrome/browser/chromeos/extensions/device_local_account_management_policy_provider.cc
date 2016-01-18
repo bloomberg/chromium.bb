@@ -248,16 +248,16 @@ const char* const kSafeManifestEntries[] = {
     emk::kWebview,
 };
 
-// List of permissions based on [1] and [2].  Since Public Session users may be
-// fully unaware of any apps being installed, their consent to access any kind
-// of sensitive information cannot be assumed.  Therefore only APIs are
-// whitelisted which should not leak sensitive data to the caller.  Since the
-// privacy boundary is drawn at the API level, no safeguards are required to
-// prevent exfiltration and thus apps may communicate freely over any kind of
-// network.
+// List of permission strings based on [1] and [2].  See |kSafePermissionDicts|
+// for permission dicts.  Since Public Session users may be fully unaware of any
+// apps being installed, their consent to access any kind of sensitive
+// information cannot be assumed.  Therefore only APIs are whitelisted which
+// should not leak sensitive data to the caller.  Since the privacy boundary is
+// drawn at the API level, no safeguards are required to prevent exfiltration
+// and thus apps may communicate freely over any kind of network.
 // [1] https://developer.chrome.com/apps/declare_permissions
 // [2] https://developer.chrome.com/apps/api_other
-const char* const kSafePermissions[] = {
+const char* const kSafePermissionStrings[] = {
     // Risky: Reading accessibility settings could allow to infer health
     // information.
     // "accessibilityFeatures.read",
@@ -310,9 +310,6 @@ const char* const kSafePermissions[] = {
     "overrideEscFullscreen",
 
     // TBD
-    // "fileSystem",
-
-    // TBD
     // "fileSystemProvider",
 
     // Just another type of connectivity.  On the system side, no user data is
@@ -356,12 +353,6 @@ const char* const kSafePermissions[] = {
     // is stored on a serial device and being read without the user's consent.
     "serial",
 
-    // Just another type of connectivity.
-    "socket",
-
-    // Just another type of connectivity.
-    "sockets",
-
     // Per-app sandbox.  User cannot log into Public Session, thus storage
     // cannot be sync'ed to the cloud.
     "storage",
@@ -403,6 +394,16 @@ const char* const kSafePermissions[] = {
     "webview",
 };
 
+// Some permissions take the form of a dictionary.  See |kSafePermissionStrings|
+// for permission strings (and for more documentation).
+const char* const kSafePermissionDicts[] = {
+    // TBD
+    // "fileSystem",
+
+    // Just another type of connectivity.
+    "socket",
+};
+
 // Return true iff |entry| is contained in |char_array|.
 bool ArrayContainsImpl(const char* const char_array[],
                        size_t entry_count,
@@ -426,7 +427,7 @@ bool ArrayContains(const char* const (&char_array)[N],
 // Returns true for platform apps that are considered safe for Public Sessions,
 // which among other things requires the manifest top-level entries to be
 // contained in the |kSafeManifestEntries| whitelist and all permissions to be
-// contained in |kSafePermissions|.
+// contained in |kSafePermissionStrings| or |kSafePermissionDicts|.
 bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
   if (extension->GetType() != extensions::Manifest::TYPE_PLATFORM_APP) {
     LOG(ERROR) << extension->id() << " is not a platform app.";
@@ -439,22 +440,45 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
       continue;
     }
 
-    // Permissions must be whitelisted in |kSafePermissions|.
+    // Permissions must be whitelisted in |kSafePermissionStrings| or
+    // |kSafePermissionDicts|.
     if (it.key() == emk::kPermissions ||
         it.key() == emk::kOptionalPermissions) {
       const base::ListValue* list_value;
       if (!it.value().GetAsList(&list_value)) {
-        LOG(ERROR) << it.key() << " is not a list.";
+        LOG(ERROR) << extension->id() << ": " << it.key() << " is not a list.";
         return false;
       }
       for (auto it2 = list_value->begin(); it2 != list_value->end(); ++it2) {
+        // Try to read as dictionary.
+        const base::DictionaryValue *dict_value;
+        if ((*it2)->GetAsDictionary(&dict_value)) {
+          if (dict_value->size() != 1) {
+            LOG(ERROR) << extension->id()
+                       << " has dict in permission list with size "
+                       << dict_value->size() << ".";
+            return false;
+          }
+          for (base::DictionaryValue::Iterator it3(*dict_value);
+               !it3.IsAtEnd(); it3.Advance()) {
+            if (!ArrayContains(kSafePermissionDicts, it3.key())) {
+              LOG(ERROR) << extension->id()
+                         << " has non-whitelisted dict in permission list: "
+                         << it3.key();
+              return false;
+            }
+          }
+          continue;
+        }
+        // Try to read as string.
         std::string permission_string;
         if (!(*it2)->GetAsString(&permission_string)) {
-          LOG(ERROR) << it.key() << " contains a non-string.";
+          LOG(ERROR) << extension->id() << ": " << it.key()
+                     << " contains a token that's neither a string nor a dict.";
           return false;
         }
         // Accept whitelisted permissions.
-        if (ArrayContains(kSafePermissions, permission_string)) {
+        if (ArrayContains(kSafePermissionStrings, permission_string)) {
           continue;
         }
         // Allow arbitrary web requests.  Don't include <all_urls> because that
@@ -473,7 +497,7 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
     } else if (it.key() == emk::kApp) {
       const base::DictionaryValue *dict_value;
       if (!it.value().GetAsDictionary(&dict_value)) {
-        LOG(ERROR) << extension->id() << " app is not a dictionary.";
+        LOG(ERROR) << extension->id() << ": app is not a dictionary.";
         return false;
       }
       for (base::DictionaryValue::Iterator it2(*dict_value);
@@ -485,12 +509,11 @@ bool IsPlatformAppSafeForPublicSession(const extensions::Extension* extension) {
           return false;
         }
       }
-    // Require v2 because that's the only version
-    // IsPlatformAppSafeForPublicSession() understands.
+    // Require v2 because that's the only version we understand.
     } else if (it.key() == emk::kManifestVersion) {
       int version;
       if (!it.value().GetAsInteger(&version)) {
-        LOG(ERROR) << extension->id() << " " << emk::kManifestVersion
+        LOG(ERROR) << extension->id() << ": " << emk::kManifestVersion
                    << " is not an integer.";
         return false;
       }

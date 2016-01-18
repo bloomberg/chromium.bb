@@ -377,6 +377,52 @@ TEST(DeviceLocalAccountManagementPolicyProviderTest, PublicSession) {
     EXPECT_NE(base::string16(), error);
     error.clear();
   }
+
+  // Verify that a platform app with socket dictionary permission can be
+  // installed.
+  {
+    base::DictionaryValue* const socket = new base::DictionaryValue();
+    base::ListValue* const tcp_list = new base::ListValue();
+    tcp_list->AppendString("tcp-connect");
+    socket->Set("socket", tcp_list);
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->Append(socket);
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_TRUE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_EQ(base::string16(), error);
+    error.clear();
+  }
+
+  // Verify that a platform app with unknown dictionary permission cannot be
+  // installed.
+  {
+    base::DictionaryValue* const socket = new base::DictionaryValue();
+    base::ListValue* const tcp_list = new base::ListValue();
+    tcp_list->AppendString("unknown_value");
+    socket->Set("unknown_key", tcp_list);
+    base::ListValue* const permissions = new base::ListValue();
+    permissions->Append(socket);
+    base::DictionaryValue values;
+    values.Set(extensions::manifest_keys::kPermissions, permissions);
+
+    extension = CreatePlatformAppWithExtraValues(
+        &values,
+        extensions::Manifest::EXTERNAL_POLICY,
+        extensions::Extension::NO_FLAGS);
+    ASSERT_TRUE(extension);
+
+    EXPECT_FALSE(provider.UserMayLoad(extension.get(), &error));
+    EXPECT_NE(base::string16(), error);
+    error.clear();
+  }
 }
 
 TEST(DeviceLocalAccountManagementPolicyProviderTest, KioskAppSession) {
