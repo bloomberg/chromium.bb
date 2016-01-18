@@ -682,17 +682,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case UseCase::MAIN_THREAD_GESTURE:
       // In main thread gestures we don't have perfect knowledge about which
-      // things we should be prioritizing. The following is best guess
-      // heuristic which lets us produce frames quickly but does not prevent
-      // loading of additional content.
+      // things we should be prioritizing, so we don't attempt to block
+      // expensive tasks because we don't know whether they were integral to the
+      // page's functionality or not.
       new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
-      if (touchstart_expected_soon) {
-        block_expensive_loading_tasks = true;
-        block_expensive_timer_tasks = true;
-      } else {
-        block_expensive_loading_tasks = false;
-        block_expensive_timer_tasks = true;
-      }
       break;
 
     case UseCase::TOUCHSTART:
@@ -705,7 +698,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       break;
 
     case UseCase::NONE:
-      if (touchstart_expected_soon) {
+      // It's only safe to block tasks that are (likely to be) compositor
+      // driven.
+      if (touchstart_expected_soon &&
+          AnyThread().last_gesture_was_compositor_driven) {
         block_expensive_loading_tasks = true;
         block_expensive_timer_tasks = true;
       }
@@ -852,7 +848,6 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
 
   // TODO(alexclarke): return UseCase::LOADING if signals suggest the system is
   // in the initial 1s of RAIL loading.
-
   return UseCase::NONE;
 }
 
