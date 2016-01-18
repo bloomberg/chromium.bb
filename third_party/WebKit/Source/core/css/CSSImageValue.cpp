@@ -43,6 +43,14 @@ CSSImageValue::CSSImageValue(const AtomicString& rawValue, const KURL& url, Styl
 {
 }
 
+CSSImageValue::CSSImageValue(const AtomicString& absoluteURL)
+    : CSSValue(ImageClass)
+    , m_relativeURL(absoluteURL)
+    , m_absoluteURL(absoluteURL)
+    , m_isCachePending(true)
+{
+}
+
 CSSImageValue::~CSSImageValue()
 {
 }

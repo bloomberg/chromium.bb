@@ -37,6 +37,7 @@
 #include "core/style/StyleFetchedImageSet.h"
 #include "core/style/StyleGeneratedImage.h"
 #include "core/style/StyleImage.h"
+#include "core/style/StyleInvalidImage.h"
 #include "core/style/StylePendingImage.h"
 #include "platform/graphics/filters/FilterOperation.h"
 
@@ -133,8 +134,11 @@ void ElementStyleResources::loadPendingSVGDocuments(ComputedStyle* computedStyle
 
 PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::loadPendingImage(StylePendingImage* pendingImage, CrossOriginAttributeValue crossOrigin)
 {
-    if (CSSImageValue* imageValue = pendingImage->cssImageValue())
-        return imageValue->cacheImage(m_document, crossOrigin);
+    if (CSSImageValue* imageValue = pendingImage->cssImageValue()) {
+        if (RefPtrWillBeRawPtr<StyleImage> cachedImage = imageValue->cacheImage(m_document, crossOrigin))
+            return cachedImage.release();
+        return StyleInvalidImage::create(imageValue->url());
+    }
 
     if (CSSImageGeneratorValue* imageGeneratorValue = pendingImage->cssImageGeneratorValue()) {
         imageGeneratorValue->loadSubimages(m_document);
@@ -147,6 +151,7 @@ PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::loadPendingImage(Style
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
         return imageSetValue->cacheImageSet(m_document, m_deviceScaleFactor, crossOrigin);
 
+    ASSERT_NOT_REACHED();
     return nullptr;
 }
 
@@ -183,11 +188,8 @@ void ElementStyleResources::loadPendingImages(ComputedStyle* style)
             for (ContentData* contentData = const_cast<ContentData*>(style->contentData()); contentData; contentData = contentData->next()) {
                 if (contentData->isImage()) {
                     StyleImage* image = toImageContentData(contentData)->image();
-                    if (image->isPendingImage()) {
-                        RefPtrWillBeRawPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(image));
-                        if (loadedImage)
-                            toImageContentData(contentData)->setImage(loadedImage.release());
-                    }
+                    if (image->isPendingImage())
+                        toImageContentData(contentData)->setImage(loadPendingImage(toStylePendingImage(image)));
                 }
             }
             break;

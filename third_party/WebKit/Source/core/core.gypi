@@ -791,6 +791,7 @@
             'style/StyleGridData.cpp',
             'style/StyleGridItemData.cpp',
             'style/StyleInheritedData.cpp',
+            'style/StyleInvalidImage.h',
             'style/StyleMotionData.cpp',
             'style/StyleMotionData.h',
             'style/StyleMotionPath.h',

@@ -73,6 +73,7 @@ public:
     ALWAYS_INLINE bool isPendingImage() const { return m_isPendingImage; }
     ALWAYS_INLINE bool isGeneratedImage() const { return m_isGeneratedImage; }
     ALWAYS_INLINE bool isImageResourceSet() const { return m_isImageResourceSet; }
+    ALWAYS_INLINE bool isInvalidImage() const { return m_isInvalidImage; }
 
     DEFINE_INLINE_VIRTUAL_TRACE() { }
 
@@ -82,12 +83,14 @@ protected:
         , m_isPendingImage(false)
         , m_isGeneratedImage(false)
         , m_isImageResourceSet(false)
+        , m_isInvalidImage(false)
     {
     }
     bool m_isImageResource:1;
     bool m_isPendingImage:1;
     bool m_isGeneratedImage:1;
     bool m_isImageResourceSet:1;
+    bool m_isInvalidImage:1;
 };
 
 #define DEFINE_STYLE_IMAGE_TYPE_CASTS(thisType, function) \

@@ -49,6 +49,10 @@ public:
     {
         return adoptRefWillBeNoop(new CSSImageValue(rawValue, url, image));
     }
+    static PassRefPtrWillBeRawPtr<CSSImageValue> create(const AtomicString& absoluteURL)
+    {
+        return adoptRefWillBeNoop(new CSSImageValue(absoluteURL));
+    }
     ~CSSImageValue();
 
     bool isCachePending() const { return m_isCachePending; }
@@ -82,6 +86,7 @@ public:
 
 private:
     CSSImageValue(const AtomicString& rawValue, const KURL&, StyleFetchedImage*);
+    CSSImageValue(const AtomicString& absoluteURL);
 
     AtomicString m_relativeURL;
     AtomicString m_absoluteURL;
