@@ -168,6 +168,11 @@ void GetExtensionKeyboardEventFromKeyEvent(
 
 }  // namespace
 
+InputMethodEngineBase::KeyboardEvent::KeyboardEvent()
+    : alt_key(false), ctrl_key(false), shift_key(false), caps_lock(false) {}
+
+InputMethodEngineBase::KeyboardEvent::~KeyboardEvent() {}
+
 InputMethodEngineBase::InputMethodEngineBase()
     : current_input_type_(ui::TEXT_INPUT_TYPE_NONE),
       context_id_(0),
@@ -180,7 +185,7 @@ InputMethodEngineBase::InputMethodEngineBase()
 InputMethodEngineBase::~InputMethodEngineBase() {}
 
 void InputMethodEngineBase::Initialize(
-    scoped_ptr<ui::IMEEngineObserver> observer,
+    scoped_ptr<InputMethodEngineBase::Observer> observer,
     const char* extension_id,
     Profile* profile) {
   DCHECK(observer) << "Observer must not be null.";

@@ -11,6 +11,7 @@
 namespace input_ime = extensions::api::input_ime;
 namespace KeyEventHandled = extensions::api::input_ime::KeyEventHandled;
 using ui::IMEEngineHandlerInterface;
+using input_method::InputMethodEngineBase;
 
 namespace ui {
 
@@ -61,7 +62,7 @@ void ImeObserver::OnBlur(int context_id) {
 
 void ImeObserver::OnKeyEvent(
     const std::string& component_id,
-    const IMEEngineHandlerInterface::KeyboardEvent& event,
+    const InputMethodEngineBase::KeyboardEvent& event,
     IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) {
   if (extension_id_.empty())
     return;

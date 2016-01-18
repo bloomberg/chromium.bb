@@ -14,6 +14,7 @@
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
+#include "chrome/browser/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -21,9 +22,10 @@
 #include "ui/base/ime/chromeos/mock_ime_input_context_handler.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/ime_engine_observer.h"
 #include "ui/base/ime/text_input_flags.h"
 #include "ui/gfx/geometry/rect.h"
+
+using input_method::InputMethodEngineBase;
 
 namespace chromeos {
 
@@ -70,7 +72,7 @@ void InitInputMethod() {
   InitializeForTesting(manager);
 }
 
-class TestObserver : public ui::IMEEngineObserver {
+class TestObserver : public InputMethodEngineBase::Observer {
  public:
   TestObserver() : calls_bitmap_(NONE) {}
   ~TestObserver() override {}
@@ -89,13 +91,14 @@ class TestObserver : public ui::IMEEngineObserver {
   bool IsInterestedInKeyEvent() const override { return true; }
   void OnKeyEvent(
       const std::string& engine_id,
-      const ui::IMEEngineHandlerInterface::KeyboardEvent& event,
+      const InputMethodEngineBase::KeyboardEvent& event,
       ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override {}
   void OnInputContextUpdate(
       const ui::IMEEngineHandlerInterface::InputContext& context) override {}
-  void OnCandidateClicked(const std::string& engine_id,
-                          int candidate_id,
-                          MouseButtonEvent button) override {}
+  void OnCandidateClicked(
+      const std::string& engine_id,
+      int candidate_id,
+      InputMethodEngineBase::MouseButtonEvent button) override {}
   void OnMenuItemActivated(const std::string& engine_id,
                            const std::string& menu_id) override {}
   void OnSurroundingTextChanged(const std::string& engine_id,
@@ -142,7 +145,7 @@ class InputMethodEngineTest : public testing::Test {
   void CreateEngine(bool whitelisted) {
     engine_.reset(new InputMethodEngine());
     observer_ = new TestObserver();
-    scoped_ptr<ui::IMEEngineObserver> observer_ptr(observer_);
+    scoped_ptr<InputMethodEngineBase::Observer> observer_ptr(observer_);
     engine_->Initialize(std::move(observer_ptr),
                         whitelisted ? kTestExtensionId : kTestExtensionId2,
                         ProfileManager::GetActiveUserProfile());
@@ -245,7 +248,7 @@ TEST_F(InputMethodEngineTest, TestHistograms) {
   CreateEngine(true);
   FocusIn(ui::TEXT_INPUT_TYPE_TEXT);
   engine_->Enable(kTestImeComponentId);
-  std::vector<ui::IMEEngineHandlerInterface::SegmentInfo> segments;
+  std::vector<InputMethodEngineBase::SegmentInfo> segments;
   int context = engine_->GetCotextIdForTesting();
   std::string error;
   base::HistogramTester histograms;

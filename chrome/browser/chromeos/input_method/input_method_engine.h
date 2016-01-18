@@ -15,7 +15,6 @@
 #include "chrome/browser/input_method/input_method_engine_base.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/ime_engine_observer.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -24,7 +23,6 @@ namespace ui {
 class CandidateWindow;
 struct CompositionText;
 class IMEEngineHandlerInterface;
-class IMEEngineObserver;
 class KeyEvent;
 
 namespace ime {
@@ -40,6 +38,73 @@ namespace chromeos {
 
 class InputMethodEngine : public ::input_method::InputMethodEngineBase {
  public:
+  enum {
+    MENU_ITEM_MODIFIED_LABEL = 0x0001,
+    MENU_ITEM_MODIFIED_STYLE = 0x0002,
+    MENU_ITEM_MODIFIED_VISIBLE = 0x0004,
+    MENU_ITEM_MODIFIED_ENABLED = 0x0008,
+    MENU_ITEM_MODIFIED_CHECKED = 0x0010,
+    MENU_ITEM_MODIFIED_ICON = 0x0020,
+  };
+
+  enum MenuItemStyle {
+    MENU_ITEM_STYLE_NONE,
+    MENU_ITEM_STYLE_CHECK,
+    MENU_ITEM_STYLE_RADIO,
+    MENU_ITEM_STYLE_SEPARATOR,
+  };
+
+  enum CandidateWindowPosition {
+    WINDOW_POS_CURSOR,
+    WINDOW_POS_COMPOSITTION,
+  };
+
+  struct MenuItem {
+    MenuItem();
+    virtual ~MenuItem();
+
+    std::string id;
+    std::string label;
+    MenuItemStyle style;
+    bool visible;
+    bool enabled;
+    bool checked;
+
+    unsigned int modified;
+    std::vector<MenuItem> children;
+  };
+
+  struct UsageEntry {
+    std::string title;
+    std::string body;
+  };
+
+  struct Candidate {
+    Candidate();
+    virtual ~Candidate();
+
+    std::string value;
+    int id;
+    std::string label;
+    std::string annotation;
+    UsageEntry usage;
+    std::vector<Candidate> candidates;
+  };
+
+  struct CandidateWindowProperty {
+    CandidateWindowProperty();
+    virtual ~CandidateWindowProperty();
+    int page_size;
+    bool is_cursor_visible;
+    bool is_vertical;
+    bool show_window_at_composition;
+
+    // Auxiliary text is typically displayed in the footer of the candidate
+    // window.
+    std::string auxiliary_text;
+    bool is_auxiliary_text_visible;
+  };
+
   InputMethodEngine();
 
   ~InputMethodEngine() override;
@@ -47,23 +112,36 @@ class InputMethodEngine : public ::input_method::InputMethodEngineBase {
   // IMEEngineHandlerInterface overrides.
   bool SendKeyEvents(int context_id,
                      const std::vector<KeyboardEvent>& events) override;
-  const CandidateWindowProperty& GetCandidateWindowProperty() const override;
-  void SetCandidateWindowProperty(
-      const CandidateWindowProperty& property) override;
   bool SetCandidateWindowVisible(bool visible, std::string* error) override;
-  bool SetCandidates(int context_id,
-                     const std::vector<Candidate>& candidates,
-                     std::string* error) override;
   bool SetCursorPosition(int context_id,
                          int candidate_id,
                          std::string* error) override;
-  bool SetMenuItems(const std::vector<MenuItem>& items) override;
-  bool UpdateMenuItems(const std::vector<MenuItem>& items) override;
   bool IsActive() const override;
   void Enable(const std::string& component_id) override;
   void PropertyActivate(const std::string& property_name) override;
   void CandidateClicked(uint32_t index) override;
   void HideInputView() override;
+
+  // This function returns the current property of the candidate window.
+  // The caller can use the returned value as the default property and
+  // modify some of specified items.
+  const CandidateWindowProperty& GetCandidateWindowProperty() const;
+
+  // Change the property of the candidate window and repaint the candidate
+  // window widget.
+  void SetCandidateWindowProperty(const CandidateWindowProperty& property);
+
+  // Set the list of entries displayed in the candidate window.
+  bool SetCandidates(int context_id,
+                     const std::vector<Candidate>& candidates,
+                     std::string* error);
+
+  // Set the list of items that appears in the language menu when this IME is
+  // active.
+  bool SetMenuItems(const std::vector<MenuItem>& items);
+
+  // Update the state of the menu items.
+  bool UpdateMenuItems(const std::vector<MenuItem>& items);
 
  private:
   // Converts MenuItem to InputMethodMenuItem.

@@ -17,17 +17,6 @@ const std::string& MockInputMethodEngine::GetActiveComponentId() const {
   return active_component_id_;
 }
 
-bool MockInputMethodEngine::SetComposition(
-    int context_id,
-    const char* text,
-    int selection_start,
-    int selection_end,
-    int cursor,
-    const std::vector<SegmentInfo>& segments,
-    std::string* error) {
-  return true;
-}
-
 bool MockInputMethodEngine::ClearComposition(int context_id,
                                              std::string* error) {
   return true;
@@ -39,44 +28,14 @@ bool MockInputMethodEngine::CommitText(int context_id,
   return true;
 }
 
-bool MockInputMethodEngine::SendKeyEvents(
-    int context_id,
-    const std::vector<KeyboardEvent>& events) {
-  return true;
-}
-
-const MockInputMethodEngine::CandidateWindowProperty&
-MockInputMethodEngine::GetCandidateWindowProperty() const {
-  return candidate_window_property_;
-}
-
-void MockInputMethodEngine::SetCandidateWindowProperty(
-    const CandidateWindowProperty& property) {}
-
 bool MockInputMethodEngine::SetCandidateWindowVisible(bool visible,
                                                       std::string* error) {
-  return true;
-}
-
-bool MockInputMethodEngine::SetCandidates(
-    int context_id,
-    const std::vector<Candidate>& candidates,
-    std::string* error) {
   return true;
 }
 
 bool MockInputMethodEngine::SetCursorPosition(int context_id,
                                               int candidate_id,
                                               std::string* error) {
-  return true;
-}
-
-bool MockInputMethodEngine::SetMenuItems(const std::vector<MenuItem>& items) {
-  return true;
-}
-
-bool MockInputMethodEngine::UpdateMenuItems(
-    const std::vector<MenuItem>& items) {
   return true;
 }
 

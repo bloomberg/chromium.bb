@@ -11,7 +11,6 @@
 #include "base/time/time.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/ime_engine_observer.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -19,7 +18,6 @@ class Profile;
 namespace ui {
 struct CompositionText;
 class IMEEngineHandlerInterface;
-class IMEEngineObserver;
 class KeyEvent;
 }  // namespace ui
 
@@ -27,11 +25,104 @@ namespace input_method {
 
 class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
  public:
+  struct KeyboardEvent {
+    KeyboardEvent();
+    virtual ~KeyboardEvent();
+
+    std::string type;
+    std::string key;
+    std::string code;
+    int key_code;  // only used by on-screen keyboards.
+    std::string extension_id;
+    bool alt_key;
+    bool ctrl_key;
+    bool shift_key;
+    bool caps_lock;
+  };
+
+  enum SegmentStyle {
+    SEGMENT_STYLE_UNDERLINE,
+    SEGMENT_STYLE_DOUBLE_UNDERLINE,
+    SEGMENT_STYLE_NO_UNDERLINE,
+  };
+
+  struct SegmentInfo {
+    int start;
+    int end;
+    SegmentStyle style;
+  };
+
+#if defined(OS_CHROMEOS)
+  enum MouseButtonEvent {
+    MOUSE_BUTTON_LEFT,
+    MOUSE_BUTTON_RIGHT,
+    MOUSE_BUTTON_MIDDLE,
+  };
+#endif
+
+  class Observer {
+   public:
+    virtual ~Observer() {}
+
+    // Called when the IME becomes the active IME.
+    virtual void OnActivate(const std::string& engine_id) = 0;
+
+    // Called when a text field gains focus, and will be sending key events.
+    virtual void OnFocus(
+        const IMEEngineHandlerInterface::InputContext& context) = 0;
+
+    // Called when a text field loses focus, and will no longer generate events.
+    virtual void OnBlur(int context_id) = 0;
+
+    // Called when the user pressed a key with a text field focused.
+    virtual void OnKeyEvent(
+        const std::string& engine_id,
+        const InputMethodEngineBase::KeyboardEvent& event,
+        ui::IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) = 0;
+
+    // Called when Chrome terminates on-going text input session.
+    virtual void OnReset(const std::string& engine_id) = 0;
+
+    // Called when the IME is no longer active.
+    virtual void OnDeactivated(const std::string& engine_id) = 0;
+
+    // Called when composition bounds are changed.
+    virtual void OnCompositionBoundsChanged(
+        const std::vector<gfx::Rect>& bounds) = 0;
+
+    // Returns whether the observer is interested in key events.
+    virtual bool IsInterestedInKeyEvent() const = 0;
+
+    // Called when a surrounding text is changed.
+    virtual void OnSurroundingTextChanged(const std::string& engine_id,
+                                          const std::string& text,
+                                          int cursor_pos,
+                                          int anchor_pos,
+                                          int offset_pos) = 0;
+
+#if defined(OS_CHROMEOS)
+
+    // Called when an InputContext's properties change while it is focused.
+    virtual void OnInputContextUpdate(
+        const IMEEngineHandlerInterface::InputContext& context) = 0;
+
+    // Called when the user clicks on an item in the candidate list.
+    virtual void OnCandidateClicked(
+        const std::string& component_id,
+        int candidate_id,
+        InputMethodEngineBase::MouseButtonEvent button) = 0;
+
+    // Called when a menu item for this IME is interacted with.
+    virtual void OnMenuItemActivated(const std::string& component_id,
+                                     const std::string& menu_id) = 0;
+#endif  // defined(OS_CHROMEOS)
+  };
+
   InputMethodEngineBase();
 
   ~InputMethodEngineBase() override;
 
-  void Initialize(scoped_ptr<ui::IMEEngineObserver> observer,
+  void Initialize(scoped_ptr<InputMethodEngineBase::Observer> observer,
                   const char* extension_id,
                   Profile* profile);
 
@@ -49,13 +140,6 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                           uint32_t anchor_pos,
                           uint32_t offset_pos) override;
   void SetCompositionBounds(const std::vector<gfx::Rect>& bounds) override;
-  bool SetComposition(int context_id,
-                      const char* text,
-                      int selection_start,
-                      int selection_end,
-                      int cursor,
-                      const std::vector<SegmentInfo>& segments,
-                      std::string* error) override;
   bool ClearComposition(int context_id, std::string* error) override;
   bool CommitText(int context_id,
                   const char* text,
@@ -67,6 +151,19 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
                              std::string* error) override;
   int GetCotextIdForTesting() { return context_id_; }
   bool IsInterestedInKeyEvent() const override;
+
+  // Send the sequence of key events.
+  virtual bool SendKeyEvents(int context_id,
+                             const std::vector<KeyboardEvent>& events) = 0;
+
+  // Set the current composition and associated properties.
+  bool SetComposition(int context_id,
+                      const char* text,
+                      int selection_start,
+                      int selection_end,
+                      int cursor,
+                      const std::vector<SegmentInfo>& segments,
+                      std::string* error);
 
  protected:
   ui::TextInputType current_input_type_;
@@ -84,7 +181,7 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
   std::string extension_id_;
 
   // The observer object recieving events for this IME.
-  scoped_ptr<ui::IMEEngineObserver> observer_;
+  scoped_ptr<InputMethodEngineBase::Observer> observer_;
 
   // The current preedit text, and it's cursor position.
   scoped_ptr<ui::CompositionText> composition_text_;

@@ -76,17 +76,6 @@ void MockIMEEngineHandler::SetCompositionBounds(
     const std::vector<gfx::Rect>& bounds) {
 }
 
-bool MockIMEEngineHandler::SetComposition(
-    int context_id,
-    const char* text,
-    int selection_start,
-    int selection_end,
-    int cursor,
-    const std::vector<SegmentInfo>& segments,
-    std::string* error) {
-  return false;
-}
-
 bool MockIMEEngineHandler::ClearComposition(int context_id,
                                             std::string* error) {
   return false;
@@ -95,12 +84,6 @@ bool MockIMEEngineHandler::ClearComposition(int context_id,
 bool MockIMEEngineHandler::CommitText(int context_id,
                                       const char* text,
                                       std::string* error) {
-  return false;
-}
-
-bool MockIMEEngineHandler::SendKeyEvents(
-    int context_id,
-    const std::vector<KeyboardEvent>& events) {
   return false;
 }
 
@@ -119,34 +102,14 @@ bool MockIMEEngineHandler::DeleteSurroundingText(int context_id,
   return false;
 }
 
-const MockIMEEngineHandler::CandidateWindowProperty&
-MockIMEEngineHandler::GetCandidateWindowProperty() const {
-  return candidate_window_property_;
-}
-
 bool MockIMEEngineHandler::SetCandidateWindowVisible(bool visible,
                                                      std::string* error) {
-  return false;
-}
-
-bool MockIMEEngineHandler::SetCandidates(
-    int context_id,
-    const std::vector<Candidate>& candidates,
-    std::string* error) {
   return false;
 }
 
 bool MockIMEEngineHandler::SetCursorPosition(int context_id,
                                              int candidate_id,
                                              std::string* error) {
-  return false;
-}
-
-bool MockIMEEngineHandler::SetMenuItems(const std::vector<MenuItem>& items) {
-  return false;
-}
-
-bool MockIMEEngineHandler::UpdateMenuItems(const std::vector<MenuItem>& items) {
   return false;
 }
 

@@ -40,6 +40,8 @@
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_util.h"
 
+using input_method::InputMethodEngineBase;
+
 namespace chromeos {
 
 namespace {
@@ -48,7 +50,28 @@ const char kErrorNotActive[] = "IME is not active";
 const char kErrorWrongContext[] = "Context is not active";
 const char kCandidateNotFound[] = "Candidate not found";
 
+// The default entry number of a page in CandidateWindowProperty.
+const int kDefaultPageSize = 9;
+
 }  // namespace
+
+InputMethodEngine::MenuItem::MenuItem() {}
+
+InputMethodEngine::MenuItem::~MenuItem() {}
+
+InputMethodEngine::Candidate::Candidate() {}
+
+InputMethodEngine::Candidate::~Candidate() {}
+
+// When the default values are changed, please modify
+// CandidateWindow::CandidateWindowProperty defined in chromeos/ime/ too.
+InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
+    : page_size(kDefaultPageSize),
+      is_cursor_visible(true),
+      is_vertical(false),
+      show_window_at_composition(false) {}
+
+InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() {}
 
 InputMethodEngine::InputMethodEngine()
     : candidate_window_(new ui::CandidateWindow()), window_visible_(false) {}
@@ -106,7 +129,7 @@ InputMethodEngine::GetCandidateWindowProperty() const {
 
 void InputMethodEngine::SetCandidateWindowProperty(
     const CandidateWindowProperty& property) {
-  // Type conversion from IMEEngineHandlerInterface::CandidateWindowProperty to
+  // Type conversion from InputMethodEngine::CandidateWindowProperty to
   // CandidateWindow::CandidateWindowProperty defined in chromeos/ime/.
   ui::CandidateWindow::CandidateWindowProperty dest_property;
   dest_property.page_size = property.page_size;
@@ -276,7 +299,7 @@ void InputMethodEngine::CandidateClicked(uint32_t index) {
 
   // Only left button click is supported at this moment.
   observer_->OnCandidateClicked(active_component_id_, candidate_ids_.at(index),
-                                ui::IMEEngineObserver::MOUSE_BUTTON_LEFT);
+                                InputMethodEngineBase::MOUSE_BUTTON_LEFT);
 }
 
 // TODO(uekawa): rename this method to a more reasonable name.

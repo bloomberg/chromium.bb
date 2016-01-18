@@ -14,6 +14,7 @@
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "chrome/browser/input_method/input_method_engine_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -22,7 +23,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
-#include "ui/base/ime/ime_engine_observer.h"
 #include "ui/base/ime/text_input_flags.h"
 
 #if defined(OS_CHROMEOS)
@@ -35,21 +35,20 @@ class Profile;
 
 namespace ui {
 class IMEEngineHandlerInterface;
-class IMEEngineObserver;
 
-class ImeObserver : public IMEEngineObserver {
+class ImeObserver : public input_method::InputMethodEngineBase::Observer {
  public:
   ImeObserver(const std::string& extension_id, Profile* profile);
 
   ~ImeObserver() override {}
 
-  // IMEEngineObserver overrides.
+  // input_method::InputMethodEngineBase::Observer overrides.
   void OnActivate(const std::string& component_id) override;
   void OnFocus(const IMEEngineHandlerInterface::InputContext& context) override;
   void OnBlur(int context_id) override;
   void OnKeyEvent(
       const std::string& component_id,
-      const IMEEngineHandlerInterface::KeyboardEvent& event,
+      const input_method::InputMethodEngineBase::KeyboardEvent& event,
       IMEEngineHandlerInterface::KeyEventDoneCallback& key_data) override;
   void OnReset(const std::string& component_id) override;
   void OnDeactivated(const std::string& component_id) override;
