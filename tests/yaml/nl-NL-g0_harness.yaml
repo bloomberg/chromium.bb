@@ -1,8 +1,5 @@
 tables: [unicode.dis, nl-NL-g0.utb]
 tests:
-  - - Some Greek uppercase
-    - Α Β Γ
-    - ⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛
   - - Lowercase letters
     - a b c d e f g h i j k l m n o p q r s t u v w x y z
     - ⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵
@@ -36,6 +33,9 @@ tests:
   - - u accent
     - ü û ù
     - ⠳ ⠱ ⠾
+  - - Some Greek uppercase
+    - Α Β Γ
+    - ⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛
   - [beletselteken ..., ⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲]
   - ['Vul in ei of ij: p..n, r..s.', ⠨⠧⠥⠇ ⠊⠝ ⠑⠊ ⠕⠋ ⠊⠚⠒ ⠏⠲⠲⠝⠂ ⠗⠲⠲⠎⠲]
   - ['''enkele aanhalingstekens''', ⠄⠑⠝⠅⠑⠇⠑ ⠁⠁⠝⠓⠁⠇⠊⠝⠛⠎⠞⠑⠅⠑⠝⠎⠄]
