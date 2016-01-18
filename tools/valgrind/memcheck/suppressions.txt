@@ -935,13 +935,23 @@
    fun:_ZN14GpuProcessHost4InitEv
 }
 {
-   bug_67261
+   bug_67261a
    Memcheck:Leak
    fun:_Znw*
    ...
    fun:_ZN3sql10Connection18GetUniqueStatementEPKc
    fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
    fun:_ZN8appcache16AppCacheDatabase22PrepareCachedStatementERKN3sql11StatementIDEPKcPNS1_9StatementE
+}
+{
+   bug_67261b
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN3sql10Connection18GetUniqueStatementEPKc
+   fun:_ZN3sql10Connection18GetCachedStatementERKNS_11StatementIDEPKc
+   fun:_ZN3sql9MetaTable19PrepareGetStatementEPNS_9StatementEPKc
+   fun:_ZN3sql9MetaTable8GetValueEPKcPi
+   fun:_ZN7storage13QuotaDatabase28IsOriginDatabaseBootstrappedEv
 }
 {
    bug_67553
