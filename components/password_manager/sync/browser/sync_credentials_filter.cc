@@ -64,9 +64,6 @@ ScopedVector<PasswordForm> SyncCredentialsFilter::FilterResults(
       std::partition(results.begin(), results.end(),
                      [this](PasswordForm* form) { return ShouldSave(*form); });
 
-  // TODO(vabr): Improve the description of the histogram to mention that it is
-  // only reported for forms where the sync credentials would have been filled
-  // in.
   UMA_HISTOGRAM_BOOLEAN("PasswordManager.SyncCredentialFiltered",
                         begin_of_removed != results.end());
 

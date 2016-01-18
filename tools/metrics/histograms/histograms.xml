@@ -32763,11 +32763,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="PasswordManager.SyncCredentialFiltered" enum="Boolean">
+<histogram name="PasswordManager.SyncCredentialFiltered"
+    enum="CredentialFilteredType">
   <owner>gcasto@chromium.org</owner>
   <owner>vabr@chromium.org</owner>
   <summary>
-    If the sync credential was removed from autofill consideration.
+    This histogram is reported for those forms on accounts.google.com, on which
+    Chrome is forced by Finch/flags during autofilling to remove sync
+    credentials from password store results. It reports true if sync credentials
+    were indeed removed from the store results, and false if there were no sync
+    credentials in the results to begin with.
   </summary>
 </histogram>
 
@@ -59256,6 +59261,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2147483644" label="STATUS_SINGLE_STEP"/>
   <int value="2147483645" label="STATUS_BREAKPOINT"/>
   <int value="2147483646" label="STATUS_DATATYPE_MISALIGNMENT"/>
+</enum>
+
+<enum name="CredentialFilteredType" type="int">
+  <int value="0" label="No sync credentials present"/>
+  <int value="1" label="Sync credentials were removed"/>
 </enum>
 
 <enum name="CrosBeamformingDeviceState" type="int">
