@@ -15,7 +15,19 @@ test(function() {
   assert_true(result instanceof SimpleLength);
   assert_equals(result.value, 15.1);
   assert_equals(result.type, 'px');
-}, 'Test that adding SimpleLengths produces a new SimpleLength with the correct value.');
+}, 'Test that adding SimpleLengths with the same unit produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'percent');
+
+  var result = simpleLength1.add(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, 10);
+    
+}, 'Test that adding SimpleLengths with different units produces a calc length with the correct values.');
 
 test(function() {
   var simpleLength1 = new SimpleLength(5.1, 'px');
@@ -28,7 +40,19 @@ test(function() {
   assert_true(result instanceof SimpleLength);
   assert_equals(result.value, -4.9);
   assert_equals(result.type, 'px');
-}, 'Test that subtracting SimpleLengths produces a new SimpleLength with the correct value.');
+}, 'Test that subtracting SimpleLengths with the same unit produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'percent');
+
+  var result = simpleLength1.subtract(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, -10);
+    
+}, 'Test that subtracting SimpleLengths with different units produces a calc length with the correct values.');
 
 test(function() {
   var simpleLength = new SimpleLength(5.2, 'px');

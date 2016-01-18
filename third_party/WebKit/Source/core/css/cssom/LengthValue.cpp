@@ -5,6 +5,9 @@
 #include "core/css/cssom/LengthValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/cssom/CalcDictionary.h"
+#include "core/css/cssom/SimpleLength.h"
+#include "core/css/cssom/StyleCalcLength.h"
 #include "wtf/HashMap.h"
 
 namespace blink {
@@ -43,34 +46,38 @@ UnitTable& typeTable()
 
 } // namespace
 
-LengthValue* LengthValue::parse(const String& cssString)
+LengthValue* LengthValue::parse(const String& cssString, ExceptionState& exceptionState)
 {
     // TODO: Implement
     return nullptr;
 }
 
-LengthValue* LengthValue::fromValue(double value, const String& typeStr)
+LengthValue* LengthValue::fromValue(double value, const String& typeStr, ExceptionState&)
 {
-    return nullptr;
-    // return SimpleLength::create(value, lengthUnitFromName(typeStr)).get();
+    return SimpleLength::create(value, lengthUnitFromName(typeStr));
+}
+
+LengthValue* LengthValue::fromDictionary(const CalcDictionary& dictionary, ExceptionState& exceptionState)
+{
+    return StyleCalcLength::create(dictionary, exceptionState);
 }
 
 LengthValue* LengthValue::add(const LengthValue* other, ExceptionState& exceptionState)
 {
-    if (type() == other->type())
+    if (type() == other->type() || type() == CalcLengthType)
         return addInternal(other, exceptionState);
 
-    exceptionState.throwTypeError("Not implemented yet");
-    return nullptr;
+    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    return result->add(other, exceptionState);
 }
 
 LengthValue* LengthValue::subtract(const LengthValue* other, ExceptionState& exceptionState)
 {
-    if (type() == other->type())
+    if (type() == other->type() || type() == CalcLengthType)
         return subtractInternal(other, exceptionState);
 
-    exceptionState.throwTypeError("Not implemented yet");
-    return nullptr;
+    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    return result->subtract(other, exceptionState);
 }
 
 LengthValue* LengthValue::multiply(double x, ExceptionState& exceptionState)

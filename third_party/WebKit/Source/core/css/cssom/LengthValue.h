@@ -9,6 +9,7 @@
 
 namespace blink {
 
+class CalcDictionary;
 class ExceptionState;
 
 class CORE_EXPORT LengthValue : public StyleValue {
@@ -39,10 +40,9 @@ public:
     LengthValue* multiply(double, ExceptionState&);
     LengthValue* divide(double, ExceptionState&);
 
-    static LengthValue* parse(const String& cssString);
-    static LengthValue* fromValue(double value, const String& typeStr);
-    // TODO: Uncomment when Calc is implemented.
-    // static LengthValue* fromDictionary(const CalcDictionary&);
+    static LengthValue* parse(const String& cssString, ExceptionState&);
+    static LengthValue* fromValue(double value, const String& typeStr, ExceptionState&);
+    static LengthValue* fromDictionary(const CalcDictionary&, ExceptionState&);
 
 protected:
     LengthValue() {}

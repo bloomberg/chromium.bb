@@ -1,0 +1,23 @@
+[
+    Constructor(LengthValue length),
+    Constructor(CalcDictionary calcDictionary),
+    ImplementedAs=StyleCalcLength,
+    RaisesException=Constructor,
+    RuntimeEnabled=CSSTypedOM
+] interface CalcLength : LengthValue {
+    attribute double? px;
+    attribute double? percent;
+    attribute double? em;
+    attribute double? ex;
+    attribute double? ch;
+    attribute double? rem;
+    attribute double? vw;
+    attribute double? vh;
+    attribute double? vmin;
+    attribute double? vmax;
+    attribute double? cm;
+    attribute double? mm;
+    attribute double? in;
+    attribute double? pc;
+    attribute double? pt;
+};

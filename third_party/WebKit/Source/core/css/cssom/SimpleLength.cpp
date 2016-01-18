@@ -5,6 +5,7 @@
 #include "core/css/cssom/SimpleLength.h"
 
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/css/cssom/StyleCalcLength.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -30,8 +31,8 @@ LengthValue* SimpleLength::addInternal(const LengthValue* other, ExceptionState&
         return create(m_value + o->value(), m_unit);
 
     // Different units resolve to a calc.
-    exceptionState.throwTypeError("Not implemented yet");
-    return nullptr;
+    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    return result->add(other, exceptionState);
 }
 
 LengthValue* SimpleLength::subtractInternal(const LengthValue* other, ExceptionState& exceptionState)
@@ -41,8 +42,8 @@ LengthValue* SimpleLength::subtractInternal(const LengthValue* other, ExceptionS
         return create(m_value - o->value(), m_unit);
 
     // Different units resolve to a calc.
-    exceptionState.throwTypeError("Not implemented yet");
-    return nullptr;
+    StyleCalcLength* result = StyleCalcLength::create(this, exceptionState);
+    return result->subtract(other, exceptionState);
 }
 
 LengthValue* SimpleLength::multiplyInternal(double x, ExceptionState& exceptionState)

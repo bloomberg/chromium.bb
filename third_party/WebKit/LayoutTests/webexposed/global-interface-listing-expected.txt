@@ -468,6 +468,38 @@ interface CacheStorage
     method keys
     method match
     method open
+interface CalcLength : LengthValue
+    getter ch
+    getter cm
+    getter em
+    getter ex
+    getter in
+    getter mm
+    getter pc
+    getter percent
+    getter pt
+    getter px
+    getter rem
+    getter vh
+    getter vmax
+    getter vmin
+    getter vw
+    method constructor
+    setter ch
+    setter cm
+    setter em
+    setter ex
+    setter in
+    setter mm
+    setter pc
+    setter percent
+    setter pt
+    setter px
+    setter rem
+    setter vh
+    setter vmax
+    setter vmin
+    setter vw
 interface CanvasCaptureMediaStreamTrack : MediaStreamTrack
     getter canvas
     method constructor
@@ -3159,6 +3191,7 @@ interface KeywordValue : StyleValue
     getter keywordValue
     method constructor
 interface LengthValue : StyleValue
+    static method fromDictionary
     static method fromValue
     method add
     method constructor
