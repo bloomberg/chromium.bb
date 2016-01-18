@@ -1742,8 +1742,8 @@ void RenderProcessHostImpl::OnChannelConnected(int32_t peer_pid) {
 #endif
 
   // Inform AudioInputRendererHost about the new render process PID.
-  // AudioInputRendererHost is reference counted, so it's lifetime is
-  // guarantueed during the lifetime of the closure.
+  // AudioInputRendererHost is reference counted, so its lifetime is
+  // guaranteed during the lifetime of the closure.
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&AudioInputRendererHost::set_renderer_pid,
                                      audio_input_renderer_host_, peer_pid));
@@ -1937,11 +1937,14 @@ void RenderProcessHostImpl::EnableAudioDebugRecordings(
   }
 
   // Enable mic input recording. AudioInputRendererHost is reference counted, so
-  // it's lifetime is guarantueed during the lifetime of the closure.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::EnableDebugRecording,
-                 audio_input_renderer_host_, file));
+  // its lifetime is guaranteed during the lifetime of the closure.
+  if (audio_input_renderer_host_) {
+    // Not null if RenderProcessHostImpl::Init has already been called.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&AudioInputRendererHost::EnableDebugRecording,
+                   audio_input_renderer_host_, file));
+  }
 }
 
 void RenderProcessHostImpl::DisableAudioDebugRecordings() {
@@ -1957,10 +1960,13 @@ void RenderProcessHostImpl::DisableAudioDebugRecordings() {
 
   // AudioInputRendererHost is reference counted, so it's lifetime is
   // guaranteed during the lifetime of the closure.
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&AudioInputRendererHost::DisableDebugRecording,
-                 audio_input_renderer_host_));
+  if (audio_input_renderer_host_) {
+    // Not null if RenderProcessHostImpl::Init has already been called.
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&AudioInputRendererHost::DisableDebugRecording,
+                   audio_input_renderer_host_));
+  }
 }
 
 void RenderProcessHostImpl::EnableEventLogRecordings(
