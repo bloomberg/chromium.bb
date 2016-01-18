@@ -975,7 +975,7 @@ xf_mouseEvent(rdpInput *input, UINT16 flags, UINT16 x, UINT16 y)
 		 * The RDP specs says the lower bits of flags contains the "the number of rotation
 		 * units the mouse wheel was rotated".
 		 *
-		 * http://blogs.msdn.com/b/oldnewthing/archive/2013/01/23/10387366.aspx explains the 120 value
+		 * https://blogs.msdn.microsoft.com/oldnewthing/20130123-00/?p=5473 explains the 120 value
 		 */
 		axis = (DEFAULT_AXIS_STEP_DISTANCE * (flags & 0xff)) / 120;
 		if (flags & PTR_FLAGS_WHEEL_NEGATIVE)
