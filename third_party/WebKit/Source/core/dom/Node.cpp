@@ -1056,7 +1056,7 @@ ContainerNode* Node::parentOrShadowHostOrTemplateHostNode() const
 bool Node::isRootEditableElement() const
 {
     return hasEditableStyle() && isElementNode() && (!parentNode() || !parentNode()->hasEditableStyle()
-        || !parentNode()->isElementNode() || isHTMLBodyElement((*this)));
+        || !parentNode()->isElementNode() || this == document().body());
 }
 
 Element* Node::rootEditableElement(EditableType editableType) const
@@ -1075,7 +1075,7 @@ Element* Node::rootEditableElement() const
     for (const Node* n = this; n && n->hasEditableStyle(); n = n->parentNode()) {
         if (n->isElementNode())
             result = n;
-        if (isHTMLBodyElement(*n))
+        if (document().body() == n)
             break;
     }
     return toElement(const_cast<Node*>(result));

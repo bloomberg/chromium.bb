@@ -1063,6 +1063,21 @@ TEST_F(VisibleUnitsTest, startOfParagraph)
     // shadow tree.
     EXPECT_EQ(Position(zero, 0), startOfParagraph(createVisiblePositionInDOMTree(*three, 2)).deepEquivalent());
     EXPECT_EQ(PositionInComposedTree(three, 0), startOfParagraph(createVisiblePositionInComposedTree(*three, 2)).deepEquivalent());
+
+    // crbug.com/563777. startOfParagraph() unexpectedly returned a null
+    // position with nested editable <BODY>s.
+    Element* root = document().documentElement();
+    root->setInnerHTML("<style>* { display:inline-table; }</style><body contenteditable=true><svg><svg><foreignObject>abc<svg></svg></foreignObject></svg></svg></body>", ASSERT_NO_EXCEPTION);
+    RefPtrWillBeRawPtr<Element> oldBody = document().body();
+    root->setInnerHTML("<body contenteditable=true><svg><foreignObject><style>def</style>", ASSERT_NO_EXCEPTION);
+    ASSERT(oldBody != document().body());
+    Node* foreignObject = document().body()->firstChild()->firstChild();
+    foreignObject->insertBefore(oldBody.get(), foreignObject->firstChild());
+    Node* styleText = foreignObject->lastChild()->firstChild();
+    ASSERT(styleText->isTextNode());
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_FALSE(startOfParagraph(createVisiblePosition(Position(styleText, 0))).isNull());
 }
 
 TEST_F(VisibleUnitsTest, startOfSentence)
