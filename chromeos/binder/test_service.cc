@@ -5,6 +5,8 @@
 #include "chromeos/binder/test_service.h"
 
 #include "base/bind.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -34,6 +36,31 @@ class TestService::TestObject : public LocalObject::TransactionHandler {
         scoped_ptr<binder::WritableTransactionData> reply(
             new binder::WritableTransactionData());
         reply->WriteInt32(arg + 1);
+        return std::move(reply);
+      }
+      case GET_FD_TRANSACTION: {
+        // Prepare a file.
+        std::string data = GetFileContents();
+        base::ScopedTempDir temp_dir;
+        base::FilePath path;
+        if (!temp_dir.CreateUniqueTempDir() ||
+            !base::CreateTemporaryFileInDir(temp_dir.path(), &path) ||
+            !base::WriteFile(path, data.data(), data.size())) {
+          LOG(ERROR) << "Failed to create a file";
+          return scoped_ptr<TransactionData>();
+        }
+        // Open the file.
+        base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+        if (!file.IsValid()) {
+          LOG(ERROR) << "Failed to open the file.";
+          return scoped_ptr<TransactionData>();
+        }
+        // Return the FD.
+        // The file will be deleted by |temp_dir|, but the FD remains valid
+        // until the receiving process closes it.
+        scoped_ptr<binder::WritableTransactionData> reply(
+            new binder::WritableTransactionData());
+        reply->WriteFileDescriptor(base::ScopedFD(file.TakePlatformFile()));
         return std::move(reply);
       }
     }
@@ -68,6 +95,11 @@ bool TestService::StartAndWait() {
 
 void TestService::Stop() {
   thread_.Stop();
+}
+
+// static
+std::string TestService::GetFileContents() {
+  return "Test data";
 }
 
 void TestService::Initialize(bool* result) {

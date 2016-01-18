@@ -21,6 +21,7 @@ class TestService {
  public:
   enum {
     INCREMENT_INT_TRANSACTION = kFirstTransactionCode,
+    GET_FD_TRANSACTION,
   };
 
   TestService();
@@ -35,6 +36,9 @@ class TestService {
 
   // Stops this service.
   void Stop();
+
+  // Returns the contents of the file returned by GET_FD_TRANSACTION.
+  static std::string GetFileContents();
 
  private:
   class TestObject;

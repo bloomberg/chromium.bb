@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/files/file_util.h"
 #include "base/message_loop/message_loop.h"
 #include "chromeos/binder/command_broker.h"
 #include "chromeos/binder/driver.h"
@@ -51,6 +52,23 @@ TEST_F(BinderEndToEndTest, IncrementInt) {
   int32_t result = 0;
   EXPECT_TRUE(reader.ReadInt32(&result));
   EXPECT_EQ(kInput + 1, result);
+}
+
+TEST_F(BinderEndToEndTest, GetFD) {
+  WritableTransactionData data;
+  data.SetCode(TestService::GET_FD_TRANSACTION);
+  scoped_ptr<TransactionData> reply;
+  ASSERT_TRUE(remote_object_->Transact(&command_broker_, data, &reply));
+  ASSERT_TRUE(reply);
+
+  TransactionDataReader reader(*reply);
+  int fd = -1;
+  EXPECT_TRUE(reader.ReadFileDescriptor(&fd));
+
+  const std::string kExpected = TestService::GetFileContents();
+  std::vector<char> buf(kExpected.size());
+  EXPECT_TRUE(base::ReadFromFD(fd, buf.data(), buf.size()));
+  EXPECT_EQ(kExpected, std::string(buf.data(), buf.size()));
 }
 
 }  // namespace binder

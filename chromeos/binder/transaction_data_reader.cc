@@ -128,4 +128,13 @@ scoped_refptr<Object> TransactionDataReader::ReadObject(
   return scoped_refptr<Object>();
 }
 
+bool TransactionDataReader::ReadFileDescriptor(int* fd) {
+  flat_binder_object obj = {};
+  if (!ReadData(&obj, sizeof(obj)) || obj.type != BINDER_TYPE_FD) {
+    return false;
+  }
+  *fd = obj.handle;
+  return true;
+}
+
 }  // namespace binder

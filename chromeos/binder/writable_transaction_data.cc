@@ -154,4 +154,15 @@ void WritableTransactionData::WriteObject(scoped_refptr<Object> object) {
   WriteData(&flat, sizeof(flat));
 }
 
+void WritableTransactionData::WriteFileDescriptor(base::ScopedFD fd) {
+  files_.push_back(std::move(fd));
+
+  flat_binder_object flat = {};
+  flat.type = BINDER_TYPE_FD;
+  flat.flags = 0x7f | FLAT_BINDER_FLAG_ACCEPTS_FDS;
+  flat.handle = files_.back().get();
+  object_offsets_.push_back(data_.size());
+  WriteData(&flat, sizeof(flat));
+}
+
 }  // namespace binder
