@@ -34,7 +34,7 @@ BRANDINGS = [
 
 USAGE = """Usage: %prog TARGET_OS TARGET_ARCH [options] -- [configure_args]
 
-Valid combinations are android     [ia32|x64|mipsel|mips64el|arm|arm64]
+Valid combinations are android     [ia32|x64|mipsel|mips64el|arm-neon|arm64]
                        linux       [ia32|x64|mipsel|arm|arm-neon|arm64]
                        linux-noasm [x64]
                        mac         [x64]
@@ -163,8 +163,9 @@ def SetupAndroidToolchain(target_arch):
   sysroot_arch = target_arch
   toolchain_dir_prefix = target_arch
   toolchain_bin_prefix = target_arch
-  if target_arch == 'arm':
+  if target_arch in ('arm', 'arm-neon'):
     toolchain_bin_prefix = toolchain_dir_prefix = 'arm-linux-androideabi'
+    sysroot_arch = 'arm'
   elif target_arch == 'arm64':
     toolchain_level = api64_level
     toolchain_bin_prefix = toolchain_dir_prefix = 'aarch64-linux-android'
@@ -397,10 +398,17 @@ def main(argv):
             # av_get_cpu_flags() is run outside of the sandbox when enabled.
             '--enable-neon',
             '--extra-cflags=-mtune=generic-armv7-a',
-            '--extra-cflags=-mfpu=vfpv3-d16',
             # NOTE: softfp/hardfp selected at gyp time.
             '--extra-cflags=-mfloat-abi=softfp',
         ])
+        if target_arch == 'arm-neon':
+          configure_flags['Common'].extend([
+              '--extra-cflags=-mfpu=neon',
+          ])
+        else:
+          configure_flags['Common'].extend([
+              '--extra-cflags=-mfpu=vfpv3-d16',
+          ])
       else:
         configure_flags['Common'].extend([
             # Location is for CrOS chroot. If you want to use this, enter chroot
@@ -587,7 +595,7 @@ def main(argv):
                     configure_flags['Chrome'] +
                     configure_flags['EnableLTO'] +
                     configure_args)
-  elif target_arch != 'arm-neon':
+  else:
     do_build_ffmpeg('Chromium',
                     configure_flags['Common'] +
                     configure_args)
