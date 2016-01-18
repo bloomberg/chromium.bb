@@ -19,6 +19,8 @@
 #include "content/common/push_messaging_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/permission_manager.h"
+#include "content/public/browser/permission_type.h"
 #include "content/public/browser/push_messaging_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -143,6 +145,9 @@ class PushMessagingMessageFilter::Core {
   ~Core();
 
   // Private Register methods on UI thread -------------------------------------
+
+  void DidRequestPermissionInIncognito(const RegisterData& data,
+                                       PermissionStatus status);
 
   void DidRegister(const RegisterData& data,
                    const std::string& push_registration_id,
@@ -408,9 +413,6 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
                        io_parent_, data,
                        PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
       } else {
-        // Leave the promise hanging forever, to simulate a user ignoring the
-        // infobar. TODO(johnme): Simulate the user dismissing the infobar after
-        // a random time period.
         RenderFrameHost* render_frame_host =
             RenderFrameHost::FromID(render_process_id_, data.render_frame_id);
         WebContents* web_contents =
@@ -418,6 +420,17 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
         if (web_contents) {
           web_contents->GetMainFrame()->AddMessageToConsole(
               CONSOLE_MESSAGE_LEVEL_ERROR, kIncognitoPushUnsupportedMessage);
+          // Request push messaging permission (which will fail, since
+          // notifications aren't supported in incognito), so the website can't
+          // detect whether incognito is active.
+          web_contents->GetBrowserContext()
+              ->GetPermissionManager()
+              ->RequestPermission(
+                  PermissionType::PUSH_MESSAGING, render_frame_host,
+                  data.requesting_origin, false /* user_gesture */,
+                  base::Bind(&PushMessagingMessageFilter::Core::
+                                 DidRequestPermissionInIncognito,
+                             weak_factory_ui_to_ui_.GetWeakPtr(), data));
         }
       }
     }
@@ -437,6 +450,18 @@ void PushMessagingMessageFilter::Core::RegisterOnUI(
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    data));
   }
+}
+
+void PushMessagingMessageFilter::Core::DidRequestPermissionInIncognito(
+    const RegisterData& data,
+    PermissionStatus status) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // Notification permission should always be denied in incognito.
+  DCHECK_EQ(PERMISSION_STATUS_DENIED, status);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PushMessagingMessageFilter::SendSubscriptionError, io_parent_,
+                 data, PUSH_REGISTRATION_STATUS_INCOGNITO_PERMISSION_DENIED));
 }
 
 void PushMessagingMessageFilter::Core::DidRegister(
