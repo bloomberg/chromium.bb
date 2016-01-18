@@ -1,6 +1,6 @@
 Name: Brotli
 URL: https://github.com/google/brotli
-Version: c90ec29f54e9165df815b0f1311cfddb1be4afad
+Version: 66db08156eba94f1fb0f77b6af519e4adedea8bf
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
@@ -11,8 +11,8 @@ byte-compression level in WOFF 2.0 font file format. This library is used
 to decode WOFF 2.0 fonts.
 
 Local Modifications:
-- This only includes the dec/ directory and the README.md file,
-  removing unneeded direcories such as encoder, tests, and tools.
+- This only includes the dec/ directory, the README.md and the LICENSE
+  files, removing unneeded direcories such as encoder, tests, and tools.
 - .gitignore: Added.
 - BUILD.gn: Added.
 - brotli.gyp: Added.
