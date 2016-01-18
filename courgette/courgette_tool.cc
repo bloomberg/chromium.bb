@@ -84,6 +84,13 @@ void Disassemble(const base::FilePath& input_file,
   if (parse_status != courgette::C_OK)
     Problem("Can't parse input.");
 
+  // Trim labels below a certain threshold
+  const courgette::Status trim_status = TrimLabels(program);
+  if (trim_status != courgette::C_OK) {
+    courgette::DeleteAssemblyProgram(program);
+    Problem("Can't trim labels.");
+  }
+
   courgette::EncodedProgram* encoded = NULL;
   const courgette::Status encode_status = Encode(program, &encoded);
 
