@@ -7,14 +7,9 @@
 #include <stddef.h>
 #include <vector>
 
-#include "base/strings/string16.h"
 #include "base/strings/string_split.h"
-#include "base/strings/utf_string_conversions.h"
-#include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/url_pattern_set.h"
-#include "grit/extensions_strings.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/url_constants.h"
 
 using extensions::URLPatternSet;
@@ -37,46 +32,6 @@ bool RcdBetterThan(const std::string& a, const std::string& b) {
 }  // namespace
 
 namespace permission_message_util {
-
-// The number of host messages supported. The first N - 1 of these messages are
-// specific for the number of hosts; the last one is a catch-all for N or more
-// hosts.
-static const int kNumMessages = 4;
-
-// Gets a list of hosts to display in a permission message from the given list
-// of hosts from the manifest.
-std::vector<base::string16> GetHostListFromHosts(
-    const std::set<std::string>& hosts) {
-  int host_msg_id = hosts.size() < kNumMessages
-                        ? IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN
-                        : IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST;
-  std::vector<base::string16> host_list;
-  for (const std::string& host : hosts) {
-    host_list.push_back(
-        host[0] == '*' && host[1] == '.'
-            ? l10n_util::GetStringFUTF16(host_msg_id,
-                                         base::UTF8ToUTF16(host.substr(2)))
-            : base::UTF8ToUTF16(host));
-  }
-  DCHECK(host_list.size());
-  return host_list;
-}
-
-void AddHostPermissions(extensions::PermissionIDSet* permissions,
-                        const std::set<std::string>& hosts,
-                        PermissionMessageProperties properties) {
-  std::vector<base::string16> host_list = GetHostListFromHosts(hosts);
-
-  // Create a separate permission for each host, and add it to the permissions
-  // list.
-  // TODO(sashab): Add coalescing rules for kHostReadOnly and kHostReadWrite
-  // to mimic the current behavior of GetHostListFromHosts() above.
-  extensions::APIPermission::ID permission_id =
-      properties == kReadOnly ? extensions::APIPermission::kHostReadOnly
-                              : extensions::APIPermission::kHostReadWrite;
-  for (const auto& host : host_list)
-    permissions->insert(permission_id, host);
-}
 
 std::set<std::string> GetDistinctHosts(const URLPatternSet& host_patterns,
                                        bool include_rcd,

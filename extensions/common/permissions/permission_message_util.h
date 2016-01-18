@@ -9,18 +9,10 @@
 #include <string>
 
 namespace extensions {
-class PermissionIDSet;
 class URLPatternSet;
 }
 
 namespace permission_message_util {
-
-enum PermissionMessageProperties { kReadOnly, kReadWrite };
-
-// Adds the appropriate permissions from the given |hosts| to |permissions|.
-void AddHostPermissions(extensions::PermissionIDSet* permissions,
-                        const std::set<std::string>& hosts,
-                        PermissionMessageProperties properties);
 
 std::set<std::string> GetDistinctHosts(
     const extensions::URLPatternSet& host_patterns,

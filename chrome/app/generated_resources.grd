@@ -3902,6 +3902,12 @@ Even if you have downloaded files from this website before, the website might ha
         <message name="IDS_EXTENSION_PROMPT_WARNING_HOSTS_LIST_READ_ONLY" desc="Permission string for read-only access to data for an arbitrary list of websites.">
           Read your data on a number of websites
         </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN" desc="Permission string requesting access to data on a website and its sub-domains.">
+          all <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
+        </message>
+        <message name="IDS_EXTENSION_PROMPT_WARNING_HOST_AND_SUBDOMAIN_LIST" desc="Single entry permission string requesting access to data on a website and its sub-domains.">
+          All <ph name="WEBSITE_1">$1<ex>google.com</ex></ph> sites
+        </message>
         <message name="IDS_EXTENSION_PROMPT_WARNING_INPUT" desc="Permission string for access to input.">
           Read and change anything you type
         </message>

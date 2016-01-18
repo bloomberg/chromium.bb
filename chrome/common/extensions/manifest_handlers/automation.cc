@@ -91,12 +91,11 @@ PermissionIDSet AutomationManifestPermission::GetPermissions() const {
         automation_info_->matches, &regular_hosts, &permissions);
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
-    if (!hosts.empty()) {
-      permission_message_util::AddHostPermissions(
-          &permissions, hosts, automation_info_->interact
-                                   ? permission_message_util::kReadWrite
-                                   : permission_message_util::kReadOnly);
-    }
+    APIPermission::ID permission_id = automation_info_->interact
+                                          ? APIPermission::kHostReadWrite
+                                          : APIPermission::kHostReadOnly;
+    for (const auto& host : hosts)
+      permissions.insert(permission_id, base::UTF8ToUTF16(host));
   }
   return permissions;
 }

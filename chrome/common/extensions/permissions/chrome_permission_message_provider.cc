@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/common/extensions/permissions/chrome_permission_message_rules.h"
 #include "chrome/grit/generated_resources.h"
 #include "extensions/common/extensions_client.h"
@@ -167,9 +168,9 @@ void ChromePermissionMessageProvider::AddHostPermissions(
 
     std::set<std::string> hosts =
         permission_message_util::GetDistinctHosts(regular_hosts, true, true);
-    if (!hosts.empty()) {
-      permission_message_util::AddHostPermissions(
-          permission_ids, hosts, permission_message_util::kReadWrite);
+    for (const auto& host : hosts) {
+      permission_ids->insert(APIPermission::kHostReadWrite,
+                             base::UTF8ToUTF16(host));
     }
   }
 }
