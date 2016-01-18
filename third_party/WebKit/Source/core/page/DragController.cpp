@@ -918,6 +918,9 @@ bool DragController::startDrag(LocalFrame* src, const DragState& state, const Pl
 
 void DragController::doSystemDrag(DragImage* image, const IntPoint& dragLocation, const IntPoint& eventPos, DataTransfer* dataTransfer, LocalFrame* frame, bool forLink)
 {
+    // TODO(dcheng): Drag and drop is not yet supported for OOPI.
+    if (m_page->mainFrame()->isRemoteFrame())
+        return;
     m_didInitiateDrag = true;
     m_dragInitiator = frame->document();
     // Protect this frame and view, as a load may occur mid drag and attempt to unload this frame
