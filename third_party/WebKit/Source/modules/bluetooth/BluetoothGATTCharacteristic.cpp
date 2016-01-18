@@ -13,10 +13,21 @@
 #include "modules/bluetooth/BluetoothCharacteristicProperties.h"
 #include "modules/bluetooth/BluetoothError.h"
 #include "modules/bluetooth/BluetoothSupplement.h"
-#include "modules/bluetooth/ConvertWebVectorToArrayBuffer.h"
 #include "public/platform/modules/bluetooth/WebBluetooth.h"
 
 namespace blink {
+
+namespace {
+
+PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer(
+    const WebVector<uint8_t>& webVector)
+{
+    static_assert(sizeof(*webVector.data()) == 1, "uint8_t should be a single byte");
+    RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector.data(), webVector.size());
+    return domBuffer;
+}
+
+} // anonymous namespace
 
 BluetoothGATTCharacteristic::BluetoothGATTCharacteristic(ExecutionContext* context, PassOwnPtr<WebBluetoothGATTCharacteristicInit> webCharacteristic)
     : ActiveDOMObject(context)
@@ -39,13 +50,17 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
     return characteristic;
 }
 
+void BluetoothGATTCharacteristic::setValue(
+    const PassRefPtr<DOMArrayBuffer>& domBuffer)
+{
+    m_value = domBuffer;
+}
+
 void BluetoothGATTCharacteristic::dispatchCharacteristicValueChanged(
     const WebVector<uint8_t>& value)
 {
-    static_assert(sizeof(*value.data()) == 1, "uint8_t should be a single byte");
-
-    m_value = DOMArrayBuffer::create(value.data(), value.size());
-
+    RefPtr<DOMArrayBuffer> domBuffer = ConvertWebVectorToArrayBuffer(value);
+    this->setValue(domBuffer);
     dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }
 
@@ -89,13 +104,41 @@ bool BluetoothGATTCharacteristic::addEventListenerInternal(const AtomicString& e
     return EventTarget::addEventListenerInternal(eventType, listener, options);
 }
 
+class ReadValueCallback : public WebBluetoothReadValueCallbacks {
+public:
+    ReadValueCallback(BluetoothGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+
+    void onSuccess(const WebVector<uint8_t>& value) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+
+        RefPtr<DOMArrayBuffer> domBuffer = ConvertWebVectorToArrayBuffer(value);
+        if (m_webCharacteristic) {
+            m_webCharacteristic->setValue(domBuffer);
+        }
+        m_resolver->resolve(domBuffer);
+    }
+
+    void onError(const WebBluetoothError& e) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject(BluetoothError::take(m_resolver, e));
+    }
+
+private:
+    WeakPersistent<BluetoothGATTCharacteristic> m_webCharacteristic;
+    Persistent<ScriptPromiseResolver> m_resolver;
+};
+
 ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
     ScriptPromise promise = resolver->promise();
-    webbluetooth->readValue(m_webCharacteristic->characteristicInstanceID, new CallbackPromiseAdapter<ConvertWebVectorToArrayBuffer, BluetoothError>(resolver));
+    webbluetooth->readValue(m_webCharacteristic->characteristicInstanceID, new ReadValueCallback(this, resolver));
 
     return promise;
 }

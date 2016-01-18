@@ -86,4 +86,20 @@ promise_test(() => {
       assert_equals(value_str, 'Heart Rate Device');
     });
 }, 'Request for characteristic. Should return right characteristic');
+
+promise_test(() => {
+  testRunner.setBluetoothMockDataSet('HeartRateAdapter');
+  return requestDeviceWithKeyDown({filters: [{services: ['heart_rate']}]})
+    .then(device => device.connectGATT())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      assert_equals(characteristic.value, null);
+      return characteristic.readValue().then(() => {
+        let decoder = new TextDecoder('utf-8');
+        let value_str = decoder.decode(characteristic.value);
+        assert_equals(value_str, 'Heart Rate Device');
+      })
+    });
+}, 'Request for characteristic. Should update characteristic.value');
 </script>

@@ -47,8 +47,11 @@ public:
     using WebType = OwnPtr<WebBluetoothGATTCharacteristicInit>;
     static BluetoothGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
 
+    // Save value.
+    void setValue(const PassRefPtr<DOMArrayBuffer>&);
+
     // WebBluetoothGATTCharacteristic interface:
-    void dispatchCharacteristicValueChanged(const WebVector<uint8_t>& value) override;
+    void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
 
     // ActiveDOMObject interface.
     void stop() override;
