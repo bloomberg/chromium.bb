@@ -1,39 +1,39 @@
 tables: [unicode.dis, nl-NL-g0.utb]
 tests:
-  - # Some Greek uppercase
+  - - Some Greek uppercase
     - Α Β Γ
     - ⠰⠨⠁ ⠰⠨⠃ ⠰⠨⠛
-  - # Lowercase letters
+  - - Lowercase letters
     - a b c d e f g h i j k l m n o p q r s t u v w x y z
     - ⠁ ⠃ ⠉ ⠙ ⠑ ⠋ ⠛ ⠓ ⠊ ⠚ ⠅ ⠇ ⠍ ⠝ ⠕ ⠏ ⠟ ⠗ ⠎ ⠞ ⠥ ⠧ ⠺ ⠭ ⠽ ⠵
-  - # Single digits
+  - - Single digits
     - 1 2 3 4 5 6 7 8 9 0
     - ⠼⠁ ⠼⠃ ⠼⠉ ⠼⠙ ⠼⠑ ⠼⠋ ⠼⠛ ⠼⠓ ⠼⠊ ⠼⠚
-  - # Punctuation
+  - - Punctuation
     - '. , ? ! ; : - …'
     - ⠲ ⠂ ⠢ ⠖ ⠆ ⠒ ⠤ ⠲⠲⠲
-  - # Symbols
+  - - Symbols
     - '@ # % ‰ & * = + _ / \\ < > ~'
     - ⠜ ⠐⠼ ⠿ ⠿⠿ ⠯ ⠔ ⠶ ⠖ ⠸ ⠌ ⠐⠡ ⠐⠪ ⠐⠕ ⠐⠢
-  - # a accent
+  - - a accent
     - ä â à
     - ⠜ ⠡ ⠷
-  - # c accent
+  - - c accent
     - ç
     - ⠯
-  - # e accent
+  - - e accent
     - é ë ê è
     - ⠿ ⠫ ⠣ ⠮
-  - # i accent
+  - - i accent
     - ï î
     - ⠻ ⠩
-  - # n accent
+  - - n accent
     - ñ
     - ⠻
-  - # o accent
+  - - o accent
     - ó ö ô
     - ⠬ ⠪ ⠹
-  - # u accent
+  - - u accent
     - ü û ù
     - ⠳ ⠱ ⠾
   - [beletselteken ..., ⠃⠑⠇⠑⠞⠎⠑⠇⠞⠑⠅⠑⠝ ⠲⠲⠲]
@@ -57,9 +57,10 @@ tests:
   - [050-34.56.78, ⠼⠚⠑⠚⠤⠼⠉⠙⠲⠑⠋⠲⠛⠓]
   - [BE03 4747 0637 8184, ⠘⠃⠑⠼⠚⠉ ⠼⠙⠛⠙⠛ ⠼⠚⠋⠉⠛ ⠼⠓⠁⠓⠙]
   - [+ 32 11 32 43 54, ⠖ ⠼⠉⠃ ⠼⠁⠁ ⠼⠉⠃ ⠼⠙⠉ ⠼⠑⠙]
-  - - 1 297 381 euro
+  - - Number grouping (not implemented)
+    - 1 297 381 euro
     - ⠼⠁⠲⠃⠊⠛⠲⠉⠓⠁ ⠑⠥⠗⠕
-    - {xfail: true} # Fails because number grouping isn't implemented
+    - {xfail: true}
   - ['1e, 1ste', ⠼⠁⠠⠑⠂ ⠼⠁⠎⠞⠑]
   - ['2e, 2de', ⠼⠃⠠⠑⠂ ⠼⠃⠠⠙⠑]
   - ['3e, 3de', ⠼⠉⠠⠑⠂ ⠼⠉⠠⠙⠑]
@@ -89,9 +90,10 @@ tests:
   - [Jozef II-straat, ⠨⠚⠕⠵⠑⠋ ⠘⠊⠊⠤⠠⠎⠞⠗⠁⠁⠞]
   - [WO II, ⠘⠺⠕ ⠘⠊⠊]
   - [E.T.A., ⠘⠑⠲⠞⠲⠁⠲]
-  - - Zie refertes D-NE004W, D-NB007B en D-NB007BDK.
+  - - Complex numbers mixed with letters (not fully implemented)
+    - Zie refertes D-NE004W, D-NB007B en D-NB007BDK.
     - ⠨⠵⠊⠑ ⠗⠑⠋⠑⠗⠞⠑⠎ ⠘⠙⠤⠝⠑⠼⠚⠚⠙⠺⠂ ⠘⠙⠤⠝⠃⠼⠚⠚⠛⠨⠃ ⠑⠝ ⠘⠙⠤⠝⠃⠼⠚⠚⠛⠘⠃⠙⠅⠲
-    - {xfail: true} # Fails because this rule is not implemented
+    - {xfail: true}
   - [EEN woord in hoofdletters, ⠘⠑⠑⠝ ⠺⠕⠕⠗⠙ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [TWEE WOORDEN in hoofdletters, ⠘⠞⠺⠑⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
   - [DRIE WOORDEN IN hoofdletters, ⠘⠙⠗⠊⠑ ⠘⠺⠕⠕⠗⠙⠑⠝ ⠘⠊⠝ ⠓⠕⠕⠋⠙⠇⠑⠞⠞⠑⠗⠎]
