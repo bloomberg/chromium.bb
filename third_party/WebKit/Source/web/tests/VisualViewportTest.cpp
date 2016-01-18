@@ -1474,7 +1474,7 @@ TEST_P(ParameterizedVisualViewportTest, SlowScrollAfterImplScroll)
         IntPoint(0, 0),
         IntSize(5, 5),
         0, PlatformEvent::NoModifiers, PlatformGestureSourceTouchpad);
-    gsu.setScrollGestureData(-50, -60, 1, 1, false, false, -1 /* null plugin id */);
+    gsu.setScrollGestureData(-50, -60, ScrollByPrecisePixel, 1, 1, false, false, -1 /* null plugin id */);
 
     frame()->eventHandler().handleGestureEvent(gsu);
 

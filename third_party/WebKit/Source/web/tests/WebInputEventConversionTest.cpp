@@ -441,7 +441,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     {
         PlatformGestureEvent platformGestureEvent(PlatformEvent::GestureScrollUpdate, IntPoint(10, 12), IntPoint(20, 22), IntSize(25, 27), 0,
             PlatformEvent::NoModifiers, PlatformGestureSourceTouchscreen);
-        platformGestureEvent.setScrollGestureData(30, 32, 40, 42, true, true, -1 /* null plugin id */);
+        platformGestureEvent.setScrollGestureData(30, 32, ScrollByPrecisePixel, 40, 42, true, true, -1 /* null plugin id */);
         // FIXME: GestureEvent does not preserve velocityX, velocityY,
         // or preventPropagation. It also fails to scale
         // coordinates (x, y, deltaX, deltaY) to the page scale. This

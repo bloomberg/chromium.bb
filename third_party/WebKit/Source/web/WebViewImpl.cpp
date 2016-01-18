@@ -1981,7 +1981,7 @@ void WebViewImpl::beginFrame(double lastFrameTimeMonotonic)
             PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
                 m_positionOnFlingStart, m_globalPositionOnFlingStart,
                 IntSize(), 0, PlatformEvent::NoModifiers, lastFlingSourceDevice == WebGestureDeviceTouchpad ? PlatformGestureSourceTouchpad : PlatformGestureSourceTouchscreen);
-            endScrollEvent.setScrollGestureData(0, 0, 0, 0, true, false, -1 /* null plugin id */);
+            endScrollEvent.setScrollGestureData(0, 0, ScrollByPrecisePixel, 0, 0, true, false, -1 /* null plugin id */);
 
             mainFrameImpl()->frame()->eventHandler().handleGestureScrollEnd(endScrollEvent);
         }

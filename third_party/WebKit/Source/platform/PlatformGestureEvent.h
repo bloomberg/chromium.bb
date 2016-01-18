@@ -30,6 +30,7 @@
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntPoint.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/scroll/ScrollTypes.h"
 #include "wtf/Assertions.h"
 #include <string.h>
 
@@ -62,7 +63,7 @@ public:
         memset(&m_data, 0, sizeof(m_data));
     }
 
-    void setScrollGestureData(float deltaX, float deltaY, float velocityX, float velocityY,
+    void setScrollGestureData(float deltaX, float deltaY, ScrollGranularity deltaUnits, float velocityX, float velocityY,
         bool inertial, bool preventPropagation, int resendingPluginId)
     {
         ASSERT(type() == PlatformEvent::GestureScrollBegin
@@ -81,6 +82,7 @@ public:
 
         m_data.m_scroll.m_deltaX = deltaX;
         m_data.m_scroll.m_deltaY = deltaY;
+        m_data.m_scroll.m_deltaUnits = deltaUnits;
         m_data.m_scroll.m_velocityX = velocityX;
         m_data.m_scroll.m_velocityY = velocityY;
         m_data.m_scroll.m_inertial = inertial;
@@ -105,6 +107,12 @@ public:
     {
         ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
         return m_data.m_scroll.m_deltaY;
+    }
+
+    ScrollGranularity deltaUnits() const
+    {
+        ASSERT(m_type == PlatformEvent::GestureScrollUpdate);
+        return m_data.m_scroll.m_deltaUnits;
     }
 
     int tapCount() const
@@ -212,6 +220,7 @@ protected:
             float m_velocityY;
             int m_preventPropagation;
             bool m_inertial;
+            ScrollGranularity m_deltaUnits;
             int m_resendingPluginId;
         } m_scroll;
 

@@ -408,6 +408,30 @@ bool IsSystemKeyEvent(const WebKeyboardEvent& event) {
 #endif
 }
 
+bool GetScrollUnits(gin::Arguments* args, WebGestureEvent::ScrollUnits* units) {
+  std::string units_string;
+  if (!args->PeekNext().IsEmpty()) {
+    if (args->PeekNext()->IsString())
+      args->GetNext(&units_string);
+    if (units_string == "Page") {
+      *units = WebGestureEvent::Page;
+      return true;
+    } else if (units_string == "Pixels") {
+      *units = WebGestureEvent::Pixels;
+      return true;
+    } else if (units_string == "PrecisePixels") {
+      *units = WebGestureEvent::PrecisePixels;
+      return true;
+    } else {
+      args->ThrowError();
+      return false;
+    }
+  } else {
+    *units = WebGestureEvent::PrecisePixels;
+    return true;
+  }
+}
+
 const char* kSourceDeviceStringTouchpad = "touchpad";
 const char* kSourceDeviceStringTouchscreen = "touchscreen";
 
@@ -2142,6 +2166,8 @@ void EventSender::GestureEvent(WebInputEvent::Type type,
           return;
         }
       }
+      if (!GetScrollUnits(args, &event.data.scrollUpdate.deltaUnits))
+        return;
 
       event.data.scrollUpdate.deltaX = static_cast<float>(x);
       event.data.scrollUpdate.deltaY = static_cast<float>(y);

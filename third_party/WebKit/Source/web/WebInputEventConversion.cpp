@@ -204,6 +204,19 @@ PlatformGestureEventBuilder::PlatformGestureEventBuilder(Widget* widget, const W
         m_data.m_scroll.m_velocityY = e.data.scrollUpdate.velocityY;
         m_data.m_scroll.m_preventPropagation = e.data.scrollUpdate.preventPropagation;
         m_data.m_scroll.m_inertial = e.data.scrollUpdate.inertial;
+        switch (e.data.scrollUpdate.deltaUnits) {
+        case WebGestureEvent::ScrollUnits::PrecisePixels:
+            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPrecisePixel;
+            break;
+        case WebGestureEvent::ScrollUnits::Pixels:
+            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPixel;
+            break;
+        case WebGestureEvent::ScrollUnits::Page:
+            m_data.m_scroll.m_deltaUnits = ScrollGranularity::ScrollByPage;
+            break;
+        default:
+            ASSERT_NOT_REACHED();
+        }
         break;
     case WebInputEvent::GestureTap:
         m_type = PlatformEvent::GestureTap;

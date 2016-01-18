@@ -571,7 +571,7 @@ void Element::nativeApplyScroll(ScrollState& scrollState)
     // Handle the scrollingElement separately, as it scrolls the viewport.
     if (this == document().scrollingElement()) {
         FloatSize delta(deltaX, deltaY);
-        if (document().frame()->applyScrollDelta(delta, scrollState.isBeginning()).didScroll()) {
+        if (document().frame()->applyScrollDelta(ScrollByPrecisePixel, delta, scrollState.isBeginning()).didScroll()) {
             scrolled = true;
             scrollState.consumeDeltaNative(scrollState.deltaX(), scrollState.deltaY());
         }

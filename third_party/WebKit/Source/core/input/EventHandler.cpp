@@ -2505,7 +2505,11 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
     if (delta.isZero())
         return WebInputEventResult::NotHandled;
 
+    ScrollGranularity granularity = gestureEvent.deltaUnits();
     Node* node = m_scrollGestureHandlingNode.get();
+
+    // Scroll customization is only available for touch.
+    bool handleScrollCustomization = RuntimeEnabledFeatures::scrollCustomizationEnabled() && gestureEvent.source() == PlatformGestureSourceTouchscreen;
     if (node) {
         LayoutObject* layoutObject = node->layoutObject();
         if (!layoutObject)
@@ -2531,7 +2535,7 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
         }
 
         bool scrolled = false;
-        if (RuntimeEnabledFeatures::scrollCustomizationEnabled()) {
+        if (handleScrollCustomization) {
             RefPtrWillBeRawPtr<ScrollState> scrollState = ScrollState::create(
                 gestureEvent.deltaX(), gestureEvent.deltaY(),
                 0, gestureEvent.velocityX(), gestureEvent.velocityY(),
@@ -2556,7 +2560,6 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
                 stopNode = m_previousGestureScrolledNode.get();
 
             // First try to scroll the closest scrollable LayoutBox ancestor of |node|.
-            ScrollGranularity granularity = ScrollByPrecisePixel;
             ScrollResultOneDimensional result = scroll(ScrollLeftIgnoringWritingMode, granularity, node, &stopNode, delta.width());
             bool horizontalScroll = result.didScroll;
             if (!gestureEvent.preventPropagation())
@@ -2576,11 +2579,11 @@ WebInputEventResult EventHandler::handleGestureScrollUpdate(const PlatformGestur
         }
     }
 
-    if (RuntimeEnabledFeatures::scrollCustomizationEnabled())
+    if (handleScrollCustomization)
         return WebInputEventResult::NotHandled;
 
     // Try to scroll the frame view.
-    ScrollResult scrollResult = m_frame->applyScrollDelta(delta, false);
+    ScrollResult scrollResult = m_frame->applyScrollDelta(granularity, delta, false);
     FloatPoint position = FloatPoint(gestureEvent.position().x(), gestureEvent.position().y());
     FloatSize velocity = FloatSize(gestureEvent.velocityX(), gestureEvent.velocityY());
     handleOverscroll(scrollResult, position, velocity);

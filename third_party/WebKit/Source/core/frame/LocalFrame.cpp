@@ -775,15 +775,15 @@ void LocalFrame::removeSpellingMarkersUnderWords(const Vector<String>& words)
     spellChecker().removeSpellingMarkersUnderWords(words);
 }
 
-static ScrollResult scrollAreaOnBothAxes(const FloatSize& delta, ScrollableArea& view)
+static ScrollResult scrollAreaOnBothAxes(ScrollGranularity granularity, const FloatSize& delta, ScrollableArea& view)
 {
-    ScrollResultOneDimensional scrolledHorizontal = view.userScroll(ScrollLeft, ScrollByPrecisePixel, delta.width());
-    ScrollResultOneDimensional scrolledVertical = view.userScroll(ScrollUp, ScrollByPrecisePixel, delta.height());
+    ScrollResultOneDimensional scrolledHorizontal = view.userScroll(ScrollLeft, granularity, delta.width());
+    ScrollResultOneDimensional scrolledVertical = view.userScroll(ScrollUp, granularity, delta.height());
     return ScrollResult(scrolledHorizontal.didScroll, scrolledVertical.didScroll, scrolledHorizontal.unusedScrollDelta, scrolledVertical.unusedScrollDelta);
 }
 
 // Returns true if a scroll occurred.
-ScrollResult LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollBegin)
+ScrollResult LocalFrame::applyScrollDelta(ScrollGranularity granularity, const FloatSize& delta, bool isScrollBegin)
 {
     if (isScrollBegin)
         host()->topControls().scrollBegin();
@@ -800,7 +800,7 @@ ScrollResult LocalFrame::applyScrollDelta(const FloatSize& delta, bool isScrollB
     if (remainingDelta.isZero())
         return ScrollResult(delta.width(), delta.height(), 0.0f, 0.0f);
 
-    ScrollResult result = scrollAreaOnBothAxes(remainingDelta, *view()->scrollableArea());
+    ScrollResult result = scrollAreaOnBothAxes(granularity, remainingDelta, *view()->scrollableArea());
     result.didScrollX = result.didScrollX || (remainingDelta.width() != delta.width());
     result.didScrollY = result.didScrollY || (remainingDelta.height() != delta.height());
 
