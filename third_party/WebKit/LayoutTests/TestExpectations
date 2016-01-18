@@ -439,15 +439,6 @@ crbug.com/542660 fast/css/absolute-inline-alignment-2.html [ Failure ]
 crbug.com/542660 fast/css/absolute-inline-alignment.html [ Failure ]
 crbug.com/542660 fast/inline/nested-text-descendants.html [ Failure ]
 
-# Ref tests that pass but causes 1px diff on images.
-crbug.com/391260 [ Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ Failure ]
-crbug.com/391260 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ Failure ]
-crbug.com/391260 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ Failure ]
-crbug.com/391260 [ Mac Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ Failure ]
-crbug.com/391260 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ Failure ]
-crbug.com/391260 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ Failure ]
-crbug.com/391260 [ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ Failure ]
-
 # Ref tests that needs investigation.
 crbug.com/404597 [ Mac ] fast/css3-text/css3-text-justify/text-justify-crash.html [ Failure ]
 crbug.com/404597 fast/forms/long-text-in-input.html [ Failure ]

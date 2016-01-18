@@ -216,3 +216,12 @@ virtual/threaded/printing/width-overflow.html [ WontFix ]
 
 # See crbug.com/522326
 imported/web-platform-tests/html/obsolete/requirements-for-implementations/the-marquee-element-0/marquee-events.html [ WontFix ]
+
+# Ref tests that pass but causes 1px diff on images at direction boundaries.
+[ Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-002c.html [ WontFix ]
+[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006a.html [ WontFix ]
+[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006b.html [ WontFix ]
+[ Mac Win ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-006c.html [ WontFix ]
+[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009a.html [ WontFix ]
+[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009b.html [ WontFix ]
+[ Mac ] imported/web-platform-tests/html/dom/elements/requirements-relating-to-bidirectional-algorithm-formatting-characters/dir-isolation-009c.html [ WontFix ]
