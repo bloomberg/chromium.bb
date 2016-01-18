@@ -403,16 +403,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FNonNeg | unitless);
         break;
 
-    case CSSPropertyVerticalAlign:
-        // baseline | sub | super | top | text-top | middle | bottom | text-bottom |
-        // <percentage> | <length> | inherit
-
-        if (id >= CSSValueBaseline && id <= CSSValueWebkitBaselineMiddle)
-            validPrimitive = true;
-        else
-            validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
-        break;
-
     case CSSPropertyBottom:               // <length> | <percentage> | auto | inherit
     case CSSPropertyLeft:                 // <length> | <percentage> | auto | inherit
     case CSSPropertyRight:                // <length> | <percentage> | auto | inherit
@@ -421,12 +411,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = true;
         else
             validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
-        break;
-
-    case CSSPropertyTextUnderlinePosition:
-        // auto | [ under || [ left | right ] ], but we only support auto | under for now
-        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
-        validPrimitive = (id == CSSValueAuto || id == CSSValueUnder);
         break;
 
     case CSSPropertySrc:
@@ -493,17 +477,6 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         ASSERT(RuntimeEnabledFeatures::cssFontSizeAdjustEnabled());
         validPrimitive = (id == CSSValueNone) ? true : validUnit(value, FNumber | FNonNeg);
         break;
-    case CSSPropertyOpacity:
-    case CSSPropertyWebkitBoxFlex:
-        validPrimitive = validUnit(value, FNumber);
-        break;
-    case CSSPropertyWebkitBoxFlexGroup:
-        validPrimitive = validUnit(value, FInteger | FNonNeg);
-        break;
-    case CSSPropertyOrder:
-        validPrimitive = validUnit(value, FInteger);
-        break;
-
     case CSSPropertyJustifyContent:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseContentDistributionOverflowPosition();
@@ -821,6 +794,8 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyFillOpacity:
     case CSSPropertyStopOpacity:
     case CSSPropertyFloodOpacity:
+    case CSSPropertyOpacity:
+    case CSSPropertyWebkitBoxFlex:
     case CSSPropertyBaselineShift:
     case CSSPropertyStrokeMiterlimit:
     case CSSPropertyStrokeWidth:
@@ -849,6 +824,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBorderBottomRightRadius:
     case CSSPropertyBorderRadius:
     case CSSPropertyAliasWebkitBorderRadius:
+    case CSSPropertyWebkitBoxFlexGroup:
+    case CSSPropertyOrder:
+    case CSSPropertyTextUnderlinePosition:
+    case CSSPropertyVerticalAlign:
         validPrimitive = false;
         break;
 

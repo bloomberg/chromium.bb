@@ -295,6 +295,13 @@ template<CSSValueID... names> PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeI
     return cssValuePool().createIdentifierValue(range.consumeIncludingWhitespace().id());
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeIdentRange(CSSParserTokenRange& range, CSSValueID lower, CSSValueID upper)
+{
+    if (range.peek().id() < lower || range.peek().id() > upper)
+        return nullptr;
+    return consumeIdent(range);
+}
+
 static PassRefPtrWillBeRawPtr<CSSCustomIdentValue> consumeCustomIdent(CSSParserTokenRange& range)
 {
     if (range.peek().type() != IdentToken)
@@ -1107,7 +1114,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeFamilyName(CSSParserTokenRange& r
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeGenericFamily(CSSParserTokenRange& range)
 {
-    return consumeIdent<CSSValueSerif, CSSValueSansSerif, CSSValueCursive, CSSValueFantasy, CSSValueMonospace, CSSValueWebkitBody>(range);
+    return consumeIdentRange(range, CSSValueSerif, CSSValueWebkitBody);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValueList> consumeFontFamily(CSSParserTokenRange& range)
@@ -2191,7 +2198,7 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumePositionLonghand(CSSParserTokenRa
         range.consumeIncludingWhitespace();
         return cssValuePool().createValue(percent, CSSPrimitiveValue::UnitType::Percentage);
     }
-    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Forbid);
+    return consumeLengthOrPercent(range, cssParserMode, ValueRangeAll);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumePositionX(CSSParserTokenRange& range, CSSParserMode cssParserMode)
@@ -2316,7 +2323,7 @@ static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeBaselineShift(CSSParserT
     CSSValueID id = range.peek().id();
     if (id == CSSValueBaseline || id == CSSValueSub || id == CSSValueSuper)
         return consumeIdent(range);
-    return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll, UnitlessQuirk::Forbid);
+    return consumeLengthOrPercent(range, SVGAttributeMode, ValueRangeAll);
 }
 
 static PassRefPtrWillBeRawPtr<CSSValue> consumeImageSet(CSSParserTokenRange& range, const CSSParserContext& context)
@@ -2934,6 +2941,14 @@ static PassRefPtrWillBeRawPtr<CSSValue> consumeBorderRadiusCorner(CSSParserToken
     return CSSValuePair::create(parsedValue1.release(), parsedValue2.release(), CSSValuePair::DropIdenticalValues);
 }
 
+static PassRefPtrWillBeRawPtr<CSSPrimitiveValue> consumeVerticalAlign(CSSParserTokenRange& range, CSSParserMode cssParserMode)
+{
+    RefPtrWillBeRawPtr<CSSPrimitiveValue> parsedValue = consumeIdentRange(range, CSSValueBaseline, CSSValueWebkitBaselineMiddle);
+    if (!parsedValue)
+        parsedValue = consumeLengthOrPercent(range, cssParserMode, ValueRangeAll, UnitlessQuirk::Allow);
+    return parsedValue.release();
+}
+
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID property = resolveCSSPropertyID(unresolvedProperty);
@@ -3154,6 +3169,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyFillOpacity:
     case CSSPropertyStopOpacity:
     case CSSPropertyFloodOpacity:
+    case CSSPropertyOpacity:
+    case CSSPropertyWebkitBoxFlex:
         return consumeNumber(m_range, ValueRangeAll);
     case CSSPropertyBaselineShift:
         return consumeBaselineShift(m_range);
@@ -3191,6 +3208,16 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
         return consumeBorderRadiusCorner(m_range, m_context.mode());
+    case CSSPropertyWebkitBoxFlexGroup:
+        return consumeInteger(m_range, 0);
+    case CSSPropertyOrder:
+        return consumeInteger(m_range);
+    case CSSPropertyTextUnderlinePosition:
+        // auto | [ under || [ left | right ] ], but we only support auto | under for now
+        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return consumeIdent<CSSValueAuto, CSSValueUnder>(m_range);
+    case CSSPropertyVerticalAlign:
+        return consumeVerticalAlign(m_range, m_context.mode());
     default:
         return nullptr;
     }
