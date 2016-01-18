@@ -7,6 +7,7 @@
 
 #include <time.h>
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -81,6 +82,13 @@ void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys);
 #endif  // BUILDFLAG(ENABLE_KASKO)
 
 namespace internal {
+
+#if defined(OS_WIN)
+// Returns platform specific annotations. This is broken out on Windows only so
+// that it may be reused by GetCrashKeysForKasko.
+void GetPlatformCrashpadAnnotations(
+    std::map<std::string, std::string>* annotations);
+#endif  // defined(OS_WIN)
 
 // The platform-specific portion of InitializeCrashpad().
 // Returns the database path, if initializing in the browser process.

@@ -246,9 +246,14 @@ void GetUploadedReports(std::vector<UploadedReport>* uploaded_reports) {
 #if BUILDFLAG(ENABLE_KASKO)
 
 void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
-  // Reserve room for an extra key, the guid.
+  // Get the platform annotations.
+  std::map<std::string, std::string> annotations;
+  internal::GetPlatformCrashpadAnnotations(&annotations);
+
+  // Reserve room for the GUID and the platform annotations.
   crash_keys->clear();
-  crash_keys->reserve(g_simple_string_dictionary->GetCount() + 1);
+  crash_keys->reserve(
+      g_simple_string_dictionary->GetCount() + 1 + annotations.size());
 
   // Set the Crashpad client ID in the crash keys.
   bool got_guid = false;
@@ -275,9 +280,23 @@ void GetCrashKeysForKasko(std::vector<kasko::api::CrashKey>* crash_keys) {
     if (got_guid && ::strncmp(entry->key, kGuid, arraysize(kGuid)) == 0)
       continue;
 
+    // Skip any platform annotations as they'll be set below.
+    if (annotations.count(entry->key))
+      continue;
+
     kasko::api::CrashKey kv;
     wcsncpy_s(kv.name, base::UTF8ToWide(entry->key).c_str(), _TRUNCATE);
     wcsncpy_s(kv.value, base::UTF8ToWide(entry->value).c_str(), _TRUNCATE);
+    crash_keys->push_back(kv);
+  }
+
+  // Merge in the platform annotations.
+  for (const auto& entry : annotations) {
+    kasko::api::CrashKey kv;
+    wcsncpy_s(kv.name, base::UTF8ToWide(entry.first).c_str(),
+              _TRUNCATE);
+    wcsncpy_s(kv.value, base::UTF8ToWide(entry.second).c_str(),
+              _TRUNCATE);
     crash_keys->push_back(kv);
   }
 }

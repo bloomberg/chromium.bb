@@ -20,10 +20,20 @@ def LogCrashKeys(report):
 
 
 def ValidateCrashReport(report, expectations=None):
-  # Generate default expectations, and merge in any additional ones.
-  expected_keys = {'guid': 'GetCrashKeysForKasko',
-                   'kasko-generated-by-version': 'Kasko',
-                   'kasko-uploaded-by-version': 'Kasko'}
+  expected_keys = {}
+
+  # The following keys are all expected to be set in all crashes, and should
+  # be set by GetCrashKeysForKasko.
+  get_crash_keys = 'GetCrashKeysForKasko'
+  for k in ['guid', 'prod', 'plat', 'ver', 'ptype', 'channel']:
+    expected_keys[k] = get_crash_keys
+
+  # The following crash keys are expected to be set by the Kasko code itself.
+  kasko = 'Kasko'
+  for k in ['kasko-generated-by-version', 'kasko-uploaded-by-version']:
+    expected_keys[k] = kasko
+
+  # Merge in additional expectations.
   if expectations:
     for key, value in expectations.iteritems():
       expected_keys[key] = value
