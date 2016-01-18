@@ -250,6 +250,10 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // nagigation. This function does that. Must be called from the main thread.
   void ResetForNavigationLocked();
 
+  // Estimates the maximum task length that won't cause a jank based on the
+  // current system state. Must be called from the main thread.
+  base::TimeDelta EstimateLongestJankFreeTaskDuration() const;
+
   SchedulerHelper helper_;
   IdleHelper idle_helper_;
   ThrottlingHelper throttling_helper_;
@@ -283,7 +287,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     base::TimeTicks current_policy_expiration_time;
     base::TimeTicks estimated_next_frame_begin;
     base::TimeDelta compositor_frame_interval;
-    base::TimeDelta expected_idle_duration;
+    base::TimeDelta longest_jank_free_task_duration;
     int timer_queue_suspend_count;  // TIMER_TASK_QUEUE suspended if non-zero.
     int navigation_task_expected_count;
     bool renderer_hidden;

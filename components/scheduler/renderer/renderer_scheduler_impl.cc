@@ -618,10 +618,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
   MainThreadOnly().touchstart_expected_soon = touchstart_expected_soon;
 
-  base::TimeDelta expected_idle_duration =
-      MainThreadOnly().idle_time_estimator.GetExpectedIdleDuration(
-          MainThreadOnly().compositor_frame_interval);
-  MainThreadOnly().expected_idle_duration = expected_idle_duration;
+  base::TimeDelta longest_jank_free_task_duration =
+      EstimateLongestJankFreeTaskDuration();
+  MainThreadOnly().longest_jank_free_task_duration =
+      longest_jank_free_task_duration;
 
   bool loading_tasks_seem_expensive = false;
   bool timer_tasks_seem_expensive = false;
@@ -630,10 +630,10 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   if (!MainThreadOnly().begin_frame_not_expected_soon) {
     loading_tasks_seem_expensive =
         MainThreadOnly().loading_task_cost_estimator.expected_task_duration() >
-        expected_idle_duration;
+        longest_jank_free_task_duration;
     timer_tasks_seem_expensive =
         MainThreadOnly().timer_task_cost_estimator.expected_task_duration() >
-        expected_idle_duration;
+        longest_jank_free_task_duration;
   }
   MainThreadOnly().timer_tasks_seem_expensive = timer_tasks_seem_expensive;
   MainThreadOnly().loading_tasks_seem_expensive = loading_tasks_seem_expensive;
@@ -856,6 +856,26 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
   return UseCase::NONE;
 }
 
+base::TimeDelta RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration()
+    const {
+  switch (MainThreadOnly().current_use_case) {
+    case UseCase::TOUCHSTART:
+    case UseCase::COMPOSITOR_GESTURE:
+    case UseCase::LOADING:
+    case UseCase::NONE:
+      return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
+
+    case UseCase::MAIN_THREAD_GESTURE:
+    case UseCase::SYNCHRONIZED_GESTURE:
+      return MainThreadOnly().idle_time_estimator.GetExpectedIdleDuration(
+          MainThreadOnly().compositor_frame_interval);
+
+    default:
+      NOTREACHED();
+      return base::TimeDelta::FromMilliseconds(kRailsResponseTimeMillis);
+  }
+}
+
 bool RendererSchedulerImpl::CanEnterLongIdlePeriod(
     base::TimeTicks now,
     base::TimeDelta* next_long_idle_period_delay_out) {
@@ -983,8 +1003,9 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
                        .timer_task_cost_estimator.expected_task_duration()
                        .InMillisecondsF());
   // TODO(skyostil): Can we somehow trace how accurate these estimates were?
-  state->SetDouble("expected_idle_duration",
-                   MainThreadOnly().expected_idle_duration.InMillisecondsF());
+  state->SetDouble(
+      "longest_jank_free_task_duration",
+      MainThreadOnly().longest_jank_free_task_duration.InMillisecondsF());
   state->SetDouble(
       "compositor_frame_interval",
       MainThreadOnly().compositor_frame_interval.InMillisecondsF());

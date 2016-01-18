@@ -179,6 +179,7 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
  public:
   using RendererSchedulerImpl::OnIdlePeriodEnded;
   using RendererSchedulerImpl::OnIdlePeriodStarted;
+  using RendererSchedulerImpl::EstimateLongestJankFreeTaskDuration;
 
   RendererSchedulerImplForTest(
       scoped_refptr<SchedulerTqmDelegate> main_task_runner)
@@ -428,6 +429,12 @@ class RendererSchedulerImplTest : public testing::Test {
     scheduler_->DidCommitFrameToCompositor();
   }
 
+  void SimulateMainThreadCompositorTask(
+      base::TimeDelta begin_main_frame_duration) {
+    clock_->Advance(begin_main_frame_duration);
+    scheduler_->DidCommitFrameToCompositor();
+  }
+
   void SimulateTimerTask(base::TimeDelta duration) {
     clock_->Advance(duration);
     simulate_timer_task_ran_ = true;
@@ -535,6 +542,11 @@ class RendererSchedulerImplTest : public testing::Test {
   static base::TimeDelta suspend_timers_when_backgrounded_delay() {
     return base::TimeDelta::FromMilliseconds(
         RendererSchedulerImpl::kSuspendTimersWhenBackgroundedDelayMillis);
+  }
+
+  static base::TimeDelta rails_response_time() {
+    return base::TimeDelta::FromMilliseconds(
+        RendererSchedulerImpl::kRailsResponseTimeMillis);
   }
 
   template <typename E>
@@ -2465,6 +2477,45 @@ TEST_F(RendererSchedulerImplTest, ModeratelyExpensiveTimer_NotBlocked) {
   }
 }
 
+TEST_F(RendererSchedulerImplTest,
+       FourtyMsTimer_NotBlocked_CompositorScrolling) {
+  EnableTaskBlocking();
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  RunUntilIdle();
+  for (int i = 0; i < 20; i++) {
+    simulate_timer_task_ran_ = false;
+
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = false;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidAnimateForInputOnCompositorThread();
+
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(8)));
+    timer_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&RendererSchedulerImplTest::SimulateTimerTask,
+                              base::Unretained(this),
+                              base::TimeDelta::FromMilliseconds(40)));
+
+    RunUntilIdle();
+    EXPECT_TRUE(simulate_timer_task_ran_) << " i = " << i;
+    EXPECT_EQ(RendererScheduler::UseCase::COMPOSITOR_GESTURE, CurrentUseCase())
+        << " i = " << i;
+    EXPECT_FALSE(LoadingTasksSeemExpensive()) << " i = " << i;
+    EXPECT_FALSE(TimerTasksSeemExpensive()) << " i = " << i;
+
+    base::TimeDelta time_till_next_frame =
+        EstimatedNextFrameBegin() - clock_->NowTicks();
+    if (time_till_next_frame > base::TimeDelta())
+      clock_->Advance(time_till_next_frame);
+  }
+}
+
 TEST_F(RendererSchedulerImplTest, ExpensiveTimer_Blocked) {
   EnableTaskBlocking();
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
@@ -2507,6 +2558,76 @@ TEST_F(RendererSchedulerImplTest, ExpensiveTimer_Blocked) {
     if (time_till_next_frame > base::TimeDelta())
       clock_->Advance(time_till_next_frame);
   }
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EstimateLongestJankFreeTaskDuration_UseCase_NONE) {
+  EXPECT_EQ(UseCase::NONE, CurrentUseCase());
+  EXPECT_EQ(rails_response_time(),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EstimateLongestJankFreeTaskDuration_UseCase_COMPOSITOR_GESTURE) {
+  SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
+  EXPECT_EQ(UseCase::COMPOSITOR_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(rails_response_time(),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+// TODO(alexclarke): Reenable once we've reinstaed the Loading UseCase.
+TEST_F(RendererSchedulerImplTest,
+       DISABLED_EstimateLongestJankFreeTaskDuration_UseCase_) {
+  scheduler_->OnNavigationStarted();
+  EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(rails_response_time(),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EstimateLongestJankFreeTaskDuration_UseCase_MAIN_THREAD_GESTURE) {
+  cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args.on_critical_path = false;
+  scheduler_->WillBeginFrame(begin_frame_args);
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(
+          &RendererSchedulerImplTest::SimulateMainThreadGestureCompositorTask,
+          base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
+
+  RunUntilIdle();
+  EXPECT_EQ(UseCase::MAIN_THREAD_GESTURE, CurrentUseCase());
+
+  // 16ms frame - 5ms compositor work = 11ms for other stuff.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+TEST_F(RendererSchedulerImplTest,
+       EstimateLongestJankFreeTaskDuration_UseCase_SYNCHRONIZED_GESTURE) {
+  SimulateCompositorGestureStart(TouchEventPolicy::DONT_SEND_TOUCH_START);
+
+  cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args.on_critical_path = true;
+  scheduler_->WillBeginFrame(begin_frame_args);
+
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                 base::Unretained(this), base::TimeDelta::FromMilliseconds(5)));
+
+  RunUntilIdle();
+  EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase());
+
+  // 16ms frame - 5ms compositor work = 11ms for other stuff.
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
+            scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
 }  // namespace scheduler
