@@ -11,8 +11,6 @@
 #include "base/rand_util.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/child_broker_host.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
 #include "mojo/edk/system/routed_raw_channel.h"
@@ -66,11 +64,6 @@ void BrokerState::TokenToHandle(const uint64_t* tokens,
       token_map_.erase(it);
     }
   }
-}
-#else
-scoped_refptr<PlatformSharedBuffer> BrokerState::CreateSharedBuffer(
-    size_t num_bytes) {
-  return internal::g_platform_support->CreateSharedBuffer(num_bytes);
 }
 #endif
 

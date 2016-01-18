@@ -12,20 +12,11 @@
 #include "base/lazy_instance.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/broker_state.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/platform_handle_dispatcher.h"
-
-#if defined(OS_POSIX)
-#include <fcntl.h>
-#include <sys/uio.h>
-
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -38,33 +29,27 @@ static const int kDefaultReadBufferSize = 256;
 
 ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
                                  ScopedPlatformHandle pipe)
-    : process_id_(base::GetProcId(child_process)),
-      child_channel_(nullptr),
-      num_bytes_read_(0) {
-  // First set up the synchronous pipe.
-  sync_channel_ = std::move(pipe);
-
-  // See comment in ChildBroker::SetChildBrokerHostHandle. Summary is we need
-  // two pipes, so send the second one over the first one.
-  PlatformChannelPair parent_pipe;
-
-  ScopedPlatformHandle parent_async_channel_handle =
-      parent_pipe.PassServerHandle();
-
-  num_bytes_read_ = 0;
-
-// Send over the async pipe.
-#if defined(OS_WIN)
+    : process_id_(base::GetProcId(child_process)), child_channel_(nullptr) {
+  ScopedPlatformHandle parent_async_channel_handle;
+#if defined(OS_POSIX)
+  parent_async_channel_handle = std::move(pipe);
+#else
   DuplicateHandle(GetCurrentProcess(), child_process,
                   GetCurrentProcess(), &child_process,
                   0, FALSE, DUPLICATE_SAME_ACCESS);
   child_process_ = base::Process(child_process);
-
+  sync_channel_ = std::move(pipe);
   memset(&read_context_.overlapped, 0, sizeof(read_context_.overlapped));
   read_context_.handler = this;
   memset(&write_context_.overlapped, 0, sizeof(write_context_.overlapped));
   write_context_.handler = this;
   read_data_.resize(kDefaultReadBufferSize);
+  num_bytes_read_ = 0;
+
+  // See comment in ChildBroker::SetChildBrokerHostHandle. Summary is we need
+  // two pipes on Windows, so send the second one over the first one.
+  PlatformChannelPair parent_pipe;
+  parent_async_channel_handle = parent_pipe.PassServerHandle();
 
   HANDLE duplicated_child_handle =
       DuplicateToChild(parent_pipe.PassClientHandle().release().handle);
@@ -72,13 +57,6 @@ ChildBrokerHost::ChildBrokerHost(base::ProcessHandle child_process,
                       &duplicated_child_handle, sizeof(duplicated_child_handle),
                       NULL, &write_context_.overlapped);
   DCHECK(rv || GetLastError() == ERROR_IO_PENDING);
-#else
-  // Send just one null byte.
-  struct iovec iov = {const_cast<char*>(""), 1};
-  PlatformHandle child_handle = parent_pipe.PassClientHandle().release();
-  ssize_t result = PlatformChannelSendmsgWithHandles(sync_channel_.get(), &iov,
-                                                     1, &child_handle, 1);
-  CHECK_NE(-1, result);
 #endif
 
   internal::g_io_thread_task_runner->PostTask(
@@ -163,11 +141,6 @@ void ChildBrokerHost::InitOnIO(
   base::MessageLoopForIO::current()->RegisterIOHandler(
       sync_channel_.get().handle, this);
   BeginRead();
-#else
-  base::MessageLoopForIO::current()->WatchFileDescriptor(
-      sync_channel_.get().handle, true, base::MessageLoopForIO::WATCH_READ,
-      &fd_controller_, this);
-  TryReadAndWriteHandles();
 #endif
 }
 
@@ -206,8 +179,11 @@ void ChildBrokerHost::OnError(Error error) {
 }
 
 void ChildBrokerHost::ChannelDestructed(RoutedRawChannel* channel) {
-  // We have two pipes to the child process. It's easier to wait
+  // On Windows, we have two pipes to the child process. It's easier to wait
   // until we get the error from the pipe that is used for synchronous I/O.
+#if !defined(OS_WIN)
+  delete this;
+#endif
 }
 
 #if defined(OS_WIN)
@@ -249,7 +225,7 @@ void ChildBrokerHost::OnIOCompleted(base::MessageLoopForIO::IOContext* context,
 
   num_bytes_read_ += bytes_transferred;
   CHECK_GE(num_bytes_read_, sizeof(uint32_t));
-  BrokerMessage* message = reinterpret_cast<BrokerMessage*>(read_data_.data());
+  BrokerMessage* message = reinterpret_cast<BrokerMessage*>(&read_data_[0]);
   if (num_bytes_read_ < message->size) {
     read_data_.resize(message->size);
     BeginRead();
@@ -347,88 +323,6 @@ HANDLE ChildBrokerHost::DuplicateFromChild(HANDLE handle) {
   DCHECK(result);
   return rv;
 }
-#else
-void ChildBrokerHost::TryReadAndWriteHandles() {
-  // Message sizes are constant on POSIX currently. Further, the child process
-  // only writes one message before it gets a response.
-  read_data_.resize(sizeof(BrokerMessage));
-
-  std::deque<PlatformHandle> dummy;
-  ssize_t bytes_read = PlatformChannelRecvmsg(
-      sync_channel_.get(), &read_data_[num_bytes_read_],
-      static_cast<int>(read_data_.size() - num_bytes_read_), &dummy);
-  DCHECK(dummy.empty());
-
-  // We call TryReadAndWriteHandles when we are first initialized so this could
-  // fail with EAGAIN or EWOULDBLOCK.
-  if (bytes_read == 0 ||
-      (bytes_read == -1 && errno != EAGAIN && errno != EWOULDBLOCK)) {
-    delete this;
-    return;
-  }
-
-  if (bytes_read == -1)
-    return;
-
-  num_bytes_read_ += bytes_read;
-
-  // We don't know how big the message is yet.
-  if (num_bytes_read_ < sizeof(uint32_t))
-    return;
-
-  BrokerMessage* message = reinterpret_cast<BrokerMessage*>(read_data_.data());
-  // Message not fully read yet.
-  if (num_bytes_read_ < message->size) {
-    DCHECK_LE(message->size, sizeof(BrokerMessage));
-    return;
-  }
-
-  // Should only get one message.
-  DCHECK_EQ(num_bytes_read_, message->size);
-
-  PlatformHandle handle;
-  if (message->id == CREATE_SHARED_BUFFER) {
-    scoped_refptr<PlatformSharedBuffer> shared_buffer =
-        internal::g_platform_support->CreateSharedBuffer(
-            message->shared_buffer_size);
-    if (shared_buffer)
-      handle = shared_buffer->PassPlatformHandle().release();
-    else
-      LOG(ERROR) << "ChildBrokerHost failed to create shared buffer of size "
-                 << message->shared_buffer_size;
-  } else {
-    NOTREACHED() << "Unknown command. Stopping reading.";
-    delete this;
-    return;
-  }
-
-  num_bytes_read_ = 0;
-  read_data_.clear();
-
-  // Send just one null byte. Also send back a null platform handle if we
-  // couldn't create the shared buffer.
-  struct iovec iov = {const_cast<char*>(""), 1};
-  ssize_t result = PlatformChannelSendmsgWithHandles(sync_channel_.get(), &iov,
-                                                     1, &handle, 1);
-  if (result == -1) {
-    PLOG(ERROR) << "ChildBrokerHost could not write to peer";
-    delete this;
-  }
-}
-
-void ChildBrokerHost::OnFileCanReadWithoutBlocking(int fd) {
-  DCHECK(internal::g_io_thread_task_runner->RunsTasksOnCurrentThread());
-  if (fd != sync_channel_.get().handle) {
-    NOTREACHED() << "ChildBrokerHost shouldn't get notifications about file "
-                    "descriptors other than sync_channel_'s";
-    delete this;
-    return;
-  }
-
-  TryReadAndWriteHandles();
-}
-
-void ChildBrokerHost::OnFileCanWriteWithoutBlocking(int fd) {}
 #endif
 
 }  // namespace edk

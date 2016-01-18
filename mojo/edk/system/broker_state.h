@@ -40,11 +40,7 @@ class MOJO_SYSTEM_IMPL_EXPORT BrokerState : NON_EXPORTED_BASE(public Broker) {
   void TokenToHandle(const uint64_t* tokens,
                      size_t count,
                      PlatformHandle* handles) override;
-#else
-  scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(
-      size_t num_bytes) override;
 #endif
-
   void ConnectMessagePipe(uint64_t pipe_id,
                           MessagePipeDispatcher* message_pipe) override;
   void CloseMessagePipe(uint64_t pipe_id,

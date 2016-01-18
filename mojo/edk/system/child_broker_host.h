@@ -21,15 +21,15 @@ namespace mojo {
 namespace edk {
 
 // Responds to requests from ChildBroker. This is used to handle message pipe
-// multiplexing and sandbox messages. There is one object of this class
+// multiplexing and Windows sandbox messages. There is one object of this class
 // per child process host object.
 // This object will delete itself when it notices that the pipe is broken.
 class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
-    : public RawChannel::Delegate,
+    : public RawChannel::Delegate
 #if defined(OS_WIN)
-      NON_EXPORTED_BASE(public base::MessageLoopForIO::IOHandler) {
+      , NON_EXPORTED_BASE(public base::MessageLoopForIO::IOHandler) {
 #else
-      public base::MessageLoopForIO::Watcher {
+    {
 #endif
  public:
   // |child_process| is a handle to the child process. It will be duplicated by
@@ -79,13 +79,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   // Helper wrappers around DuplicateHandle.
   HANDLE DuplicateToChild(HANDLE handle);
   HANDLE DuplicateFromChild(HANDLE handle);
-#else
-  // Reads all currently available data, and responds to any completed messages.
-  void TryReadAndWriteHandles();
-
-  // base::MessageLoopForIO::Watcher implementation:
-  void OnFileCanReadWithoutBlocking(int fd) override;
-  void OnFileCanWriteWithoutBlocking(int fd) override;
 #endif
 
   base::ProcessId process_id_;
@@ -93,24 +86,22 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBrokerHost
   // Channel used to receive and send multiplexing related messages.
   RoutedRawChannel* child_channel_;
 
+#if defined(OS_WIN)
+  // Handle to the child process, used for duplication of handles.
+  base::Process child_process_;
+
   // Pipe used for synchronous messages from the child. Responses are written to
   // it as well.
   ScopedPlatformHandle sync_channel_;
 
-#if defined(OS_WIN)
-  // Handle to the child process, used for duplication of handles.
-  base::Process child_process_;
-  std::vector<char> write_data_;
   base::MessageLoopForIO::IOContext read_context_;
   base::MessageLoopForIO::IOContext write_context_;
-#else
-  std::deque<PlatformHandle> write_handles_;
-  base::MessageLoopForIO::FileDescriptorWatcher fd_controller_;
-#endif
 
   std::vector<char> read_data_;
   // How many bytes in read_data_ we already read.
   uint32_t num_bytes_read_;
+  std::vector<char> write_data_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(ChildBrokerHost);
 };

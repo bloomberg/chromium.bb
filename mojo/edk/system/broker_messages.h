@@ -19,41 +19,35 @@ namespace edk {
 // This header defines the message format between ChildBroker and
 // ChildBrokerHost.
 
-// Sandbox processes need the parent's help to create shared buffers.
-// They are sent synchronously from child to parent and each have
-// a response. They are sent over a raw pipe.
-enum SandboxMessages : uint32_t {
 #if defined(OS_WIN)
+// Windows only messages needed because sandboxed child processes need the
+// parent's help. They are sent synchronously from child to parent and each have
+// a response. They are sent over a raw pipe.
+enum WindowsSandboxMessages : uint32_t {
   // The reply is two HANDLEs.
   CREATE_PLATFORM_CHANNEL_PAIR = 0,
   // The reply is tokens of the same count of passed in handles.
   HANDLE_TO_TOKEN,
   // The reply is handles of the same count of passed in tokens.
   TOKEN_TO_HANDLE,
-#else
-  // The reply is a PlatformHandle.
-  CREATE_SHARED_BUFFER = 0,
-#endif
 };
 
 // Definitions of the raw bytes sent in messages.
 
 struct BrokerMessage {
   uint32_t size;
-  SandboxMessages id;
-
-#if defined(OS_WIN)
+  WindowsSandboxMessages id;
   // Data, if any, follows.
   union {
     HANDLE handles[1];  // If HANDLE_TO_TOKEN.
     uint64_t tokens[1];  // If TOKEN_TO_HANDLE.
   };
-#else
-  uint32_t shared_buffer_size;  // Size of the shared buffer to create.
-#endif
 };
 
-const int kBrokerMessageHeaderSize = sizeof(uint32_t) + sizeof(SandboxMessages);
+const int kBrokerMessageHeaderSize =
+  sizeof(uint32_t) + sizeof(WindowsSandboxMessages);
+
+#endif
 
 // Route id used for messages between ChildBroker and ChildBrokerHost.
 const uint64_t kBrokerRouteId = 1;

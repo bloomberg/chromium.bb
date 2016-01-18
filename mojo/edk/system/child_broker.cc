@@ -13,16 +13,8 @@
 #include "base/logging.h"
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/embedder/platform_support.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/message_pipe_dispatcher.h"
-
-#if defined(OS_POSIX)
-#include <fcntl.h>
-
-#include "mojo/edk/embedder/platform_channel_utils_posix.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -34,36 +26,24 @@ ChildBroker* ChildBroker::GetInstance() {
 
 void ChildBroker::SetChildBrokerHostHandle(ScopedPlatformHandle handle)  {
   ScopedPlatformHandle parent_async_channel_handle;
+#if defined(OS_POSIX)
+  parent_async_channel_handle = std::move(handle);
+#else
+  // On Windows we have two pipes to the parent. The first is for the token
+  // exchange for creating and passing handles, since the child needs the
+  // parent's help if it is sandboxed. The second is the same as POSIX, which is
+  // used for multiplexing related messages. So on Windows, we send the second
+  // pipe as the first string over the first one.
   parent_sync_channel_ = std::move(handle);
 
-// We have two pipes to the parent. The first is for the token
-// exchange for creating and passing handles on Windows, and creating shared
-// buffers on POSIX, since the child needs the parent's help if it is
-// sandboxed. The second is used for multiplexing related messages. We
-// send the second over the first.
-#if defined(OS_POSIX)
-  // Make the synchronous channel blocking.
-  int flags = fcntl(parent_sync_channel_.get().handle, F_GETFL, 0);
-  PCHECK(flags != -1);
-  PCHECK(fcntl(parent_sync_channel_.get().handle, F_SETFL,
-               flags & ~O_NONBLOCK) != -1);
-
-  std::deque<PlatformHandle> received_handles;
-  char buf[1];
-  ssize_t result = PlatformChannelRecvmsg(parent_sync_channel_.get(), buf, 1,
-                                          &received_handles, true);
-  CHECK_EQ(1, result);
-  CHECK_EQ(1u, received_handles.size());
-  parent_async_channel_handle.reset(received_handles.front());
-#else
   HANDLE parent_handle = INVALID_HANDLE_VALUE;
   DWORD bytes_read = 0;
   BOOL rv = ReadFile(parent_sync_channel_.get().handle, &parent_handle,
                      sizeof(parent_handle), &bytes_read, NULL);
   CHECK(rv);
   parent_async_channel_handle.reset(PlatformHandle(parent_handle));
-#endif
   sync_channel_lock_.Unlock();
+#endif
 
   internal::g_io_thread_task_runner->PostTask(
       FROM_HERE,
@@ -118,29 +98,6 @@ void ChildBroker::TokenToHandle(const uint64_t* tokens,
       handles[i].handle = handles_temp[i];
     sync_channel_lock_.Unlock();
   }
-}
-#else
-scoped_refptr<PlatformSharedBuffer> ChildBroker::CreateSharedBuffer(
-    size_t num_bytes) {
-  sync_channel_lock_.Lock();
-  scoped_refptr<PlatformSharedBuffer> shared_buffer;
-
-  BrokerMessage message;
-  message.size = kBrokerMessageHeaderSize + sizeof(uint32_t);
-  message.id = CREATE_SHARED_BUFFER;
-  message.shared_buffer_size = num_bytes;
-
-  std::deque<PlatformHandle> handles;
-  if (WriteAndReadHandles(&message, &handles)) {
-    DCHECK_EQ(1u, handles.size());
-    PlatformHandle handle = handles.front();
-    if (handle.is_valid())
-      shared_buffer =
-          internal::g_platform_support->CreateSharedBufferFromHandle(
-              num_bytes, ScopedPlatformHandle(handles.front()));
-  }
-  sync_channel_lock_.Unlock();
-  return shared_buffer;
 }
 #endif
 
@@ -215,8 +172,10 @@ ChildBroker::ChildBroker()
       in_process_pipes_channel2_(nullptr) {
   DCHECK(!internal::g_broker);
   internal::g_broker = this;
+#if defined(OS_WIN)
   // Block any threads from calling this until we have a pipe to the parent.
   sync_channel_lock_.Lock();
+#endif
 }
 
 ChildBroker::~ChildBroker() {
@@ -337,21 +296,6 @@ void ChildBroker::AttachMessagePipe(MessagePipeDispatcher* message_pipe,
 
 #if defined(OS_WIN)
 
-void ChildBroker::CreatePlatformChannelPairNoLock(
-    ScopedPlatformHandle* server,
-    ScopedPlatformHandle* client) {
-  BrokerMessage message;
-  message.size = kBrokerMessageHeaderSize;
-  message.id = CREATE_PLATFORM_CHANNEL_PAIR;
-
-  uint32_t response_size = 2 * sizeof(HANDLE);
-  HANDLE handles[2];
-  if (WriteAndReadResponse(&message, handles, response_size)) {
-    server->reset(PlatformHandle(handles[0]));
-    client->reset(PlatformHandle(handles[1]));
-  }
-}
-
 bool ChildBroker::WriteAndReadResponse(BrokerMessage* message,
                                        void* response,
                                        uint32_t response_size) {
@@ -383,35 +327,21 @@ bool ChildBroker::WriteAndReadResponse(BrokerMessage* message,
 
   return result;
 }
-#else
-bool ChildBroker::WriteAndReadHandles(BrokerMessage* message,
-                                      std::deque<PlatformHandle>* handles) {
-  CHECK(parent_sync_channel_.is_valid());
 
-  uint32_t remaining_bytes = message->size;
-  while (remaining_bytes > 0) {
-    ssize_t bytes_written = PlatformChannelWrite(
-        parent_sync_channel_.get(),
-        reinterpret_cast<uint8_t*>(message) + (message->size - remaining_bytes),
-        remaining_bytes);
+void ChildBroker::CreatePlatformChannelPairNoLock(
+    ScopedPlatformHandle* server, ScopedPlatformHandle* client) {
+  BrokerMessage message;
+  message.size = kBrokerMessageHeaderSize;
+  message.id = CREATE_PLATFORM_CHANNEL_PAIR;
 
-    if (bytes_written != -1)
-      remaining_bytes -= bytes_written;
-    else
-      return false;
+  uint32_t response_size = 2 * sizeof(HANDLE);
+  HANDLE handles[2];
+  if (WriteAndReadResponse(&message, handles, response_size)) {
+    server->reset(PlatformHandle(handles[0]));
+    client->reset(PlatformHandle(handles[1]));
   }
-  // Perform a blocking read (we set this fd to be blocking in
-  // SetChildBrokerHostHandle).
-  char buf[1];
-  ssize_t bytes_read = PlatformChannelRecvmsg(
-      parent_sync_channel_.get(), buf, 1, handles, true /* should_block */);
-  // If the other side shutdown, or there was an error, or we didn't get
-  // any handles.
-  if (bytes_read == 0 || bytes_read == -1 || handles->empty())
-    return false;
-
-  return true;
 }
+
 #endif
 
 }  // namespace edk

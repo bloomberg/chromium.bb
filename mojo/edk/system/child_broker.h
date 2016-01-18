@@ -46,11 +46,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   void TokenToHandle(const uint64_t* tokens,
                      size_t count,
                      PlatformHandle* handles) override;
-#else
-  scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(
-      size_t num_bytes) override;
 #endif
-
   void ConnectMessagePipe(uint64_t pipe_id,
                           MessagePipeDispatcher* message_pipe) override;
   void CloseMessagePipe(uint64_t pipe_id,
@@ -91,13 +87,6 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   void CreatePlatformChannelPairNoLock(ScopedPlatformHandle* server,
                                        ScopedPlatformHandle* client);
 
-#else
-  // Will fully write |message|, then read back some number of handles. Returns
-  // false if the write or read failed, or if there were no handles received.
-  bool WriteAndReadHandles(BrokerMessage* message,
-                           std::deque<PlatformHandle>* handles);
-#endif
-
   // Guards access to |parent_sync_channel_|.
   // We use LockImpl instead of Lock because the latter adds thread checking
   // that we don't want (since we lock in the constructor and unlock on another
@@ -108,6 +97,7 @@ class MOJO_SYSTEM_IMPL_EXPORT ChildBroker
   // instead of bindings or RawChannel because we need to send synchronous
   // messages with replies from any thread.
   ScopedPlatformHandle parent_sync_channel_;
+#endif
 
   // RawChannel used for asynchronous communication to and from the parent
   // process. Since these messages are bidirectional, we can't use

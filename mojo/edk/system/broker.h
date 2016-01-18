@@ -14,7 +14,6 @@ namespace mojo {
 namespace edk {
 class MessagePipeDispatcher;
 class RawChannel;
-class PlatformSharedBuffer;
 
 // An interface for communicating to a central "broker" process from each
 // process using the EDK. It serves two purposes:
@@ -44,10 +43,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Broker {
   virtual void TokenToHandle(const uint64_t* tokens,
                              size_t count,
                              PlatformHandle* handles) = 0;
-#else
-  // Creates a shared buffer.
-  virtual scoped_refptr<PlatformSharedBuffer> CreateSharedBuffer(
-      size_t num_bytes) = 0;
 #endif
 
   // Multiplexing related methods. They are called from the IO thread only.
