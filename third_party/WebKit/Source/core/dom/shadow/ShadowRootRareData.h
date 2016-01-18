@@ -32,7 +32,6 @@
 #define ShadowRootRareData_h
 
 #include "core/dom/shadow/InsertionPoint.h"
-#include "core/html/HTMLSlotElement.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
@@ -45,7 +44,6 @@ public:
         : m_descendantShadowElementCount(0)
         , m_descendantContentElementCount(0)
         , m_childShadowRootCount(0)
-        , m_descendantSlotCount(0)
     {
     }
 
@@ -73,22 +71,11 @@ public:
     StyleSheetList* styleSheets() { return m_styleSheetList.get(); }
     void setStyleSheets(PassRefPtrWillBeRawPtr<StyleSheetList> styleSheetList) { m_styleSheetList = styleSheetList; }
 
-    void didAddSlot() { ++m_descendantSlotCount; }
-    void didRemoveSlot() { ASSERT(m_descendantSlotCount >= 1); --m_descendantSlotCount; }
-
-    unsigned descendantSlotCount() const { return m_descendantSlotCount; }
-
-    const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& descendantSlots() const { return m_descendantSlots; }
-
-    void setDescendantSlots(WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& slots) { m_descendantSlots.swap(slots); }
-    void clearDescendantSlots() { m_descendantSlots.clear(); }
-
     DEFINE_INLINE_TRACE()
     {
         visitor->trace(m_shadowInsertionPointOfYoungerShadowRoot);
         visitor->trace(m_descendantInsertionPoints);
         visitor->trace(m_styleSheetList);
-        visitor->trace(m_descendantSlots);
     }
 
 private:
@@ -98,8 +85,6 @@ private:
     unsigned m_childShadowRootCount;
     WillBeHeapVector<RefPtrWillBeMember<InsertionPoint>> m_descendantInsertionPoints;
     RefPtrWillBeMember<StyleSheetList> m_styleSheetList;
-    unsigned m_descendantSlotCount;
-    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> m_descendantSlots;
 };
 
 inline void ShadowRootRareData::didAddInsertionPoint(InsertionPoint* point)

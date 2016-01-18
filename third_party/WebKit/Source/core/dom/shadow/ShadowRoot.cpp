@@ -62,7 +62,6 @@ ShadowRoot::ShadowRoot(Document& document, ShadowRootType type)
     , m_registeredWithParentShadowRoot(false)
     , m_descendantInsertionPointsIsValid(false)
     , m_delegatesFocus(false)
-    , m_descendantSlotsIsValid(false)
 {
 }
 
@@ -321,50 +320,6 @@ StyleSheetList* ShadowRoot::styleSheets()
         m_shadowRootRareData->setStyleSheets(StyleSheetList::create(this));
 
     return m_shadowRootRareData->styleSheets();
-}
-
-void ShadowRoot::didAddSlot()
-{
-    ensureShadowRootRareData()->didAddSlot();
-    invalidateDescendantSlots();
-}
-
-void ShadowRoot::didRemoveSlot()
-{
-    ASSERT(m_shadowRootRareData);
-    m_shadowRootRareData->didRemoveSlot();
-    invalidateDescendantSlots();
-}
-
-void ShadowRoot::invalidateDescendantSlots()
-{
-    m_descendantSlotsIsValid = false;
-    m_shadowRootRareData->clearDescendantSlots();
-}
-
-unsigned ShadowRoot::descendantSlotCount() const
-{
-    return m_shadowRootRareData ? m_shadowRootRareData->descendantSlotCount() : 0;
-}
-
-const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& ShadowRoot::descendantSlots()
-{
-    DEFINE_STATIC_LOCAL(WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>, emptyList, ());
-    if (m_descendantSlotsIsValid) {
-        ASSERT(m_shadowRootRareData);
-        return m_shadowRootRareData->descendantSlots();
-    }
-    if (descendantSlotCount() == 0)
-        return emptyList;
-
-    ASSERT(m_shadowRootRareData);
-    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> slots;
-    slots.reserveCapacity(descendantSlotCount());
-    for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(rootNode()))
-        slots.append(&slot);
-    m_shadowRootRareData->setDescendantSlots(slots);
-    m_descendantSlotsIsValid = true;
-    return m_shadowRootRareData->descendantSlots();
 }
 
 DEFINE_TRACE(ShadowRoot)

@@ -125,8 +125,6 @@ Node::InsertionNotificationRequest HTMLSlotElement::insertedInto(ContainerNode* 
     if (ShadowRoot* root = containingShadowRoot()) {
         if (ElementShadow* rootOwner = root->owner())
             rootOwner->setNeedsDistributionRecalc();
-        if (root == insertionPoint->treeScope().rootNode())
-            root->didAddSlot();
     }
 
     // We could have been distributed into in a detached subtree, make sure to
@@ -148,9 +146,6 @@ void HTMLSlotElement::removedFrom(ContainerNode* insertionPoint)
 
     // Since this insertion point is no longer visible from the shadow subtree, it need to clean itself up.
     clearDistribution();
-
-    if (root == insertionPoint->treeScope().rootNode())
-        root->didRemoveSlot();
 
     HTMLElement::removedFrom(insertionPoint);
 }

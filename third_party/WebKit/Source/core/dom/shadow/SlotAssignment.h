@@ -21,7 +21,7 @@ public:
     }
 
     HTMLSlotElement* assignedSlotFor(const Node&) const;
-    void resolveAssignment(ShadowRoot&);
+    void resolveAssignment(const ShadowRoot&);
 
     DECLARE_TRACE();
 
