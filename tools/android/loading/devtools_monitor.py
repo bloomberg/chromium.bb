@@ -173,3 +173,25 @@ class Track(Listener):
   def GetEvents(self):
     """Returns a list of collected events, finalizing the state if necessary."""
     pass
+
+  def ToJsonDict(self):
+    """Serializes to a dictionary, to be dumped as JSON.
+
+    Returns:
+      A dict that can be dumped by the json module, and loaded by
+      FromJsonDict().
+    """
+    pass
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    """Returns a Track instance constructed from data dumped by
+       Track.ToJsonDict().
+
+    Args:
+      json_data: (dict) Parsed from a JSON file using the json module.
+
+    Returns:
+      a Track instance.
+    """
+    pass

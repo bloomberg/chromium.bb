@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import unittest
 
 from request_track import (Request, RequestTrack, _TimingFromDict)
@@ -241,6 +242,17 @@ class RequestTrackTestCase(unittest.TestCase):
     self.assertEquals(
         RequestTrackTestCase._DATA_RECEIVED_2['params']['encodedDataLength'],
         r.data_chunks[1][1])
+
+  def testCanSerialize(self):
+    self._ValidSequence(self.request_track)
+    json_dict = self.request_track.ToJsonDict()
+    _ = json.dumps(json_dict)  # Should not raise an exception.
+
+  def testCanDeserialize(self):
+    self._ValidSequence(self.request_track)
+    json_dict = self.request_track.ToJsonDict()
+    request_track = RequestTrack.FromJsonDict(json_dict)
+    self.assertEquals(self.request_track, request_track)
 
   @classmethod
   def _ValidSequence(cls, request_track):

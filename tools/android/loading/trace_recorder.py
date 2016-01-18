@@ -28,8 +28,9 @@ class PageTrack(devtools_monitor.Track):
     self._connection = connection
     self._events = []
     self._main_frame_id = None
-    self._connection.RegisterListener('Page.frameStartedLoading', self)
-    self._connection.RegisterListener('Page.frameStoppedLoading', self)
+    if self._connection:
+      self._connection.RegisterListener('Page.frameStartedLoading', self)
+      self._connection.RegisterListener('Page.frameStoppedLoading', self)
 
   def Handle(self, method, msg):
     params = msg['params']
@@ -46,6 +47,17 @@ class PageTrack(devtools_monitor.Track):
 
   def GetEvents(self):
     return self._events
+
+  def ToJsonDict(self):
+    return {'events': [event for event in self._events]}
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    assert 'events' in json_dict
+    result = PageTrack(None)
+    events = [event for event in json_dict['events']]
+    result._events = events
+    return result
 
 
 class AndroidTraceRecorder(object):

@@ -94,15 +94,19 @@ class Request(object):
     request_time = self.timing.request_time
     return (timestamp - request_time) * 1000
 
-  def ToDict(self):
+  def ToJsonDict(self):
     return copy.deepcopy(self.__dict__)
 
   @classmethod
-  def FromDict(cls, data_dict):
+  def FromJsonDict(cls, data_dict):
     result = Request()
     for (k, v) in data_dict.items():
       setattr(result, k, v)
     return result
+
+  # For testing.
+  def __eq__(self, o):
+    return self.__dict__ == o.__dict__
 
 
 class RequestTrack(devtools_monitor.Track):
@@ -134,6 +138,20 @@ class RequestTrack(devtools_monitor.Track):
       logging.warning('Number of requests still in flight: %d.'
                       % len(self._requests_in_flight))
     return self._requests
+
+  def ToJsonDict(self):
+    if self._requests_in_flight:
+      logging.warning('Requests in flight, will be ignored in the dump')
+    return {'events': [request.ToJsonDict() for request in self._requests]}
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    assert 'events' in json_dict
+    result = RequestTrack(None)
+    requests = [Request.FromJsonDict(request)
+                for request in json_dict['events']]
+    result._requests = requests
+    return result
 
   def _RequestWillBeSent(self, request_id, params):
     # Several "requestWillBeSent" events can be dispatched in a row in the case
@@ -238,6 +256,9 @@ class RequestTrack(devtools_monitor.Track):
     del self._requests_in_flight[request_id]
     self._completed_requests_by_id[request_id] = request
     self._requests.append(request)
+
+  def __eq__(self, o):
+    return self._requests == o._requests
 
 
 RequestTrack._METHOD_TO_HANDLER = {
