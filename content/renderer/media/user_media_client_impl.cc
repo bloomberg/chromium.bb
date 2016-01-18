@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <utility>
+#include <vector>
 
 #include "base/hash.h"
 #include "base/location.h"
@@ -39,47 +40,17 @@
 namespace content {
 namespace {
 
-bool GetMandatory(const blink::WebMediaConstraints& constraints,
-                  const std::string& name,
-                  std::string* value) {
-  if (constraints.isNull())
-    return false;
-  blink::WebString temp;
-  bool found =
-      constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name), temp);
-  if (found)
-    *value = temp.utf8();
-  return found;
-}
-
-void GetMandatoryList(const blink::WebMediaConstraints& constraints,
-                      const std::string& name,
-                      std::vector<std::string>* values) {
-  if (constraints.isNull()) {
-    return;
-  }
-  blink::WebString temp;
-  bool found =
-      constraints.getMandatoryConstraintValue(base::UTF8ToUTF16(name), temp);
-  if (found) {
-    values->push_back(temp.utf8());
+void CopyVector(const blink::WebVector<blink::WebString>& source,
+                std::vector<std::string>* destination) {
+  for (const auto& web_string : source) {
+    destination->push_back(web_string.utf8());
   }
 }
 
-void GetOptionalList(const blink::WebMediaConstraints constraints,
-                     const std::string& name,
-                     std::vector<std::string>* values) {
-  if (constraints.isNull()) {
-    return;
-  }
-  blink::WebVector<blink::WebMediaConstraint> constraint_list;
-  constraints.getOptionalConstraints(constraint_list);
-  blink::WebString web_name = base::UTF8ToUTF16(name);
-  for (const auto& pair : constraint_list) {
-    if (pair.m_name == web_name) {
-      values->push_back(pair.m_value.utf8());
-    }
-  }
+void CopyFirstString(const blink::WebVector<blink::WebString>& source,
+                     std::string* destination) {
+  if (!source.isEmpty())
+    *destination = source[0].utf8();
 }
 
 void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
@@ -87,32 +58,28 @@ void CopyBlinkRequestToStreamControls(const blink::WebUserMediaRequest& request,
   if (request.isNull()) {
     return;
   }
-  GetMandatory(request.audioConstraints(), kMediaStreamSource,
-               &controls->audio.stream_source);
-  GetMandatory(request.videoConstraints(), kMediaStreamSource,
-               &controls->video.stream_source);
-  GetMandatoryList(request.audioConstraints(), kMediaStreamSourceInfoId,
-                   &controls->audio.device_ids);
-  GetMandatoryList(request.videoConstraints(), kMediaStreamSourceInfoId,
-                   &controls->video.device_ids);
-  GetOptionalList(request.audioConstraints(), kMediaStreamSourceInfoId,
-                  &controls->audio.alternate_device_ids);
-  GetOptionalList(request.videoConstraints(), kMediaStreamSourceInfoId,
-                  &controls->video.alternate_device_ids);
-  GetMandatoryList(request.audioConstraints(), kMediaStreamSourceId,
-                   &controls->audio.device_ids);
-  GetMandatoryList(request.videoConstraints(), kMediaStreamSourceId,
-                   &controls->video.device_ids);
-  std::string hotword_string;
-  GetMandatory(request.audioConstraints(), kMediaStreamAudioHotword,
-               &hotword_string);
-  if (hotword_string == "true")
-    controls->hotword_enabled = true;
-  // DCHECK for some combinations that seem to be unusual/useless
-  // It should not be possible to have both MediaStreamSourceId
-  // and MediaStreamSourceInfoId on the same request.
-  DCHECK(controls->video.device_ids.size() <= 1);
-  DCHECK(controls->audio.device_ids.size() <= 1);
+  if (!request.audioConstraints().isNull()) {
+    const blink::WebMediaTrackConstraintSet& audio_basic =
+        request.audioConstraints().basic();
+    CopyFirstString(audio_basic.mediaStreamSource.exact(),
+                    &(controls->audio.stream_source));
+    CopyVector(audio_basic.deviceId.exact(), &(controls->audio.device_ids));
+    // Optionals. They may be either in ideal or in advanced.exact.
+    // TODO(hta): Get alternatives only mentioned in advanced array.
+    CopyVector(audio_basic.deviceId.ideal(),
+               &controls->audio.alternate_device_ids);
+    if (!audio_basic.hotwordEnabled.matches(false))
+      controls->hotword_enabled = true;
+  }
+  if (!request.videoConstraints().isNull()) {
+    const blink::WebMediaTrackConstraintSet& video_basic =
+        request.videoConstraints().basic();
+    CopyFirstString(video_basic.mediaStreamSource.exact(),
+                    &(controls->video.stream_source));
+    CopyVector(video_basic.deviceId.exact(), &(controls->video.device_ids));
+    CopyVector(video_basic.deviceId.ideal(),
+               &(controls->video.alternate_device_ids));
+  }
 }
 
 static int g_next_request_id  = 0;
@@ -211,10 +178,9 @@ void UserMediaClientImpl::requestUserMedia(
       controls.audio.requested = true;
       // Check if this input device should be used to select a matching output
       // device for audio rendering.
-      std::string enable;
-      if (GetMandatory(user_media_request.audioConstraints(),
-                       kMediaStreamRenderToAssociatedSink, &enable) &&
-          base::LowerCaseEqualsASCII(enable, "true")) {
+      if (!user_media_request.audioConstraints()
+               .basic()
+               .renderToAssociatedSink.matches(false)) {
         enable_automatic_output_device_selection = true;
       }
     }

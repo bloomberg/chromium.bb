@@ -63,6 +63,7 @@ const char kMinFrameRate[] = "minFrameRate";
 // From content/common/media/media_stream_options.cc
 const char kMediaStreamSource[] = "chromeMediaSource";
 const char kMediaStreamSourceId[] = "chromeMediaSourceId"; // mapped to deviceId
+const char kMediaStreamSourceInfoId[] = "sourceId"; // mapped to deviceId
 const char kMediaStreamRenderToAssociatedSink[] = "chromeRenderToAssociatedSink";
 // RenderToAssociatedSink will be going away in M50-M60 some time.
 const char kMediaStreamAudioHotword[] = "googHotword";
@@ -80,6 +81,47 @@ const char kGoogArrayGeometry[] = "googArrayGeometry";
 const char kGoogHighpassFilter[] = "googHighpassFilter";
 const char kGoogTypingNoiseDetection[] = "googTypingNoiseDetection";
 const char kGoogAudioMirroring[] = "googAudioMirroring";
+
+// From third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.cc
+// Audio constraints.
+// const char kExtendedFilterEchoCancellation[] = "googEchoCancellation2"; // duplicate k-name
+const char kDAEchoCancellation[] = "googDAEchoCancellation";
+// const char kNoiseSuppression[] = "googNoiseSuppression"; // duplicate k-name
+// const char kExperimentalNoiseSuppression[] = "googNoiseSuppression2"; // duplicate k-name
+// const char kHighpassFilter[] = "googHighpassFilter"; // duplicate k-name
+// const char kTypingNoiseDetection[] = "googTypingNoiseDetection"; // duplicate k-name
+// const char kAudioMirroring[] = "googAudioMirroring"; // duplicate k-name
+const char kAecDump[] = "audioDebugRecording";
+
+// Google-specific constraint keys for a local video source (getUserMedia).
+const char kNoiseReduction[] = "googNoiseReduction";
+
+// Constraint keys for CreateOffer / CreateAnswer defined in W3C specification.
+const char kOfferToReceiveAudio[] = "OfferToReceiveAudio";
+const char kOfferToReceiveVideo[] = "OfferToReceiveVideo";
+const char kVoiceActivityDetection[] = "VoiceActivityDetection";
+const char kIceRestart[] = "IceRestart";
+// Google specific constraint for BUNDLE enable/disable.
+const char kUseRtpMux[] = "googUseRtpMUX";
+// Below constraints should be used during PeerConnection construction.
+const char kEnableDtlsSrtp[] = "DtlsSrtpKeyAgreement";
+const char kEnableRtpDataChannels[] = "RtpDataChannels";
+// Google-specific constraint keys.
+const char kEnableDscp[] = "googDscp";
+const char kEnableIPv6[] = "googIPv6";
+const char kEnableVideoSuspendBelowMinBitrate[] = "googSuspendBelowMinBitrate";
+const char kNumUnsignalledRecvStreams[] = "googNumUnsignalledRecvStreams";
+const char kCombinedAudioVideoBwe[] = "googCombinedAudioVideoBwe";
+const char kScreencastMinBitrate[] = "googScreencastMinBitrate";
+const char kCpuOveruseDetection[] = "googCpuOveruseDetection";
+const char kCpuUnderuseThreshold[] = "googCpuUnderuseThreshold";
+const char kCpuOveruseThreshold[] = "googCpuOveruseThreshold";
+const char kCpuUnderuseEncodeRsdThreshold[] = "googCpuUnderuseEncodeRsdThreshold";
+const char kCpuOveruseEncodeRsdThreshold[] = "googCpuOveruseEncodeRsdThreshold";
+const char kCpuOveruseEncodeUsage[] = "googCpuOveruseEncodeUsage";
+const char kHighStartBitrate[] = "googHighStartBitrate";
+const char kPayloadPadding[] = "googPayloadPadding";
+// End of names from libjingle
 
 // Names used for testing.
 const char kTestConstraint1[] = "valid_and_supported_1";
@@ -230,7 +272,8 @@ static void parseOldStyleNames(const WebVector<WebMediaConstraint>& oldNames, We
             // represented as an enum, and cause type errors.
             // https://crbug.com/576582
             result.mediaStreamSource.setExact(constraint.m_value);
-        } else if (constraint.m_name.equals(kMediaStreamSourceId)) {
+        } else if (constraint.m_name.equals(kMediaStreamSourceId)
+            || constraint.m_name.equals(kMediaStreamSourceInfoId)) {
             result.deviceId.setExact(constraint.m_value);
         } else if (constraint.m_name.equals(kMediaStreamRenderToAssociatedSink)) {
             // TODO(hta): This is a boolean represented as string.
@@ -261,6 +304,54 @@ static void parseOldStyleNames(const WebVector<WebMediaConstraint>& oldNames, We
             result.googTypingNoiseDetection.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kGoogAudioMirroring)) {
             result.googAudioMirroring.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kDAEchoCancellation)) {
+            result.googDAEchoCancellation.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kAecDump)) {
+            result.googAecDump.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kNoiseReduction)) {
+            result.googNoiseReduction.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kOfferToReceiveAudio)) {
+            result.offerToReceiveAudio.setExact(constraint.m_value);
+        } else if (constraint.m_name.equals(kOfferToReceiveVideo)) {
+            result.offerToReceiveVideo.setExact(constraint.m_value);
+        } else if (constraint.m_name.equals(kVoiceActivityDetection)) {
+            result.voiceActivityDetection.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kIceRestart)) {
+            result.iceRestart.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kUseRtpMux)) {
+            result.googUseRtpMux.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kEnableDtlsSrtp)) {
+            result.enableDtlsSrtp.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kEnableRtpDataChannels)) {
+            result.enableRtpDataChannels.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kEnableDscp)) {
+            result.enableDscp.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kEnableIPv6)) {
+            result.enableIPv6.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kEnableVideoSuspendBelowMinBitrate)) {
+            result.googEnableVideoSuspendBelowMinBitrate.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kNumUnsignalledRecvStreams)) {
+            result.googNumUnsignalledRecvStreams.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCombinedAudioVideoBwe)) {
+            result.googCombinedAudioVideoBwe.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kScreencastMinBitrate)) {
+            result.googScreencastMinBitrate.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCpuOveruseDetection)) {
+            result.googCpuOveruseDetection.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kCpuUnderuseThreshold)) {
+            result.googCpuUnderuseThreshold.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCpuOveruseThreshold)) {
+            result.googCpuOveruseThreshold.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCpuUnderuseEncodeRsdThreshold)) {
+            result.googCpuUnderuseEncodeRsdThreshold.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCpuOveruseEncodeRsdThreshold)) {
+            result.googCpuOveruseEncodeRsdThreshold.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kCpuOveruseEncodeUsage)) {
+            result.googCpuOveruseEncodeUsage.setExact(toBoolean(constraint.m_value));
+        } else if (constraint.m_name.equals(kHighStartBitrate)) {
+            result.googHighStartBitrate.setExact(atoi(constraint.m_value.utf8().c_str()));
+        } else if (constraint.m_name.equals(kPayloadPadding)) {
+            result.googPayloadPadding.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kTestConstraint1)
             || constraint.m_name.equals(kTestConstraint2)) {
             // These constraints are only for testing parsing. Ignore them.
@@ -278,14 +369,12 @@ static WebMediaConstraints createFromNamedConstraints(WebVector<WebMediaConstrai
     WebMediaTrackConstraintSet basic;
     WebMediaTrackConstraintSet advanced;
     WebMediaConstraints constraints;
-    if (RuntimeEnabledFeatures::mediaConstraintsEnabled()) {
-        parseOldStyleNames(mandatory, basic, errorState);
-        if (errorState.hadException())
-            return constraints;
-        // We ignore errors in optional constraints.
-        MediaErrorState ignoredErrorState;
-        parseOldStyleNames(optional, advanced, ignoredErrorState);
-    }
+    parseOldStyleNames(mandatory, basic, errorState);
+    if (errorState.hadException())
+        return constraints;
+    // We ignore errors in optional constraints.
+    MediaErrorState ignoredErrorState;
+    parseOldStyleNames(optional, advanced, ignoredErrorState);
     WebVector<WebMediaTrackConstraintSet> advancedVector(&advanced, 1);
     // Use the 4-argument initializer until Chrome has been converted.
     constraints.initialize(optional, mandatory, basic, advancedVector);

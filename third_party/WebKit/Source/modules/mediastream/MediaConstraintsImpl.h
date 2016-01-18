@@ -52,5 +52,3 @@ WebMediaConstraints create(const MediaTrackConstraintSet&, MediaErrorState&);
 } // namespace blink
 
 #endif // MediaConstraintsImpl_h
-
-

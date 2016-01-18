@@ -173,6 +173,8 @@ public:
 
     BLINK_PLATFORM_EXPORT bool matches(WebString value) const;
     BLINK_PLATFORM_EXPORT bool isEmpty() const;
+    BLINK_PLATFORM_EXPORT const WebVector<WebString>& exact() const;
+    BLINK_PLATFORM_EXPORT const WebVector<WebString>& ideal() const;
 
 private:
     WebVector<WebString> m_exact;
@@ -242,6 +244,30 @@ public:
     BooleanConstraint googBeamforming;
     StringConstraint googArrayGeometry;
     BooleanConstraint googAudioMirroring;
+    BooleanConstraint googDAEchoCancellation;
+    BooleanConstraint googAecDump;
+    BooleanConstraint googNoiseReduction;
+    StringConstraint offerToReceiveAudio;
+    StringConstraint offerToReceiveVideo;
+    BooleanConstraint voiceActivityDetection;
+    BooleanConstraint iceRestart;
+    BooleanConstraint googUseRtpMux;
+    BooleanConstraint enableDtlsSrtp;
+    BooleanConstraint enableRtpDataChannels;
+    BooleanConstraint enableDscp;
+    BooleanConstraint enableIPv6;
+    BooleanConstraint googEnableVideoSuspendBelowMinBitrate;
+    LongConstraint googNumUnsignalledRecvStreams;
+    BooleanConstraint googCombinedAudioVideoBwe;
+    LongConstraint googScreencastMinBitrate;
+    BooleanConstraint googCpuOveruseDetection;
+    LongConstraint googCpuUnderuseThreshold;
+    LongConstraint googCpuOveruseThreshold;
+    LongConstraint googCpuUnderuseEncodeRsdThreshold;
+    LongConstraint googCpuOveruseEncodeRsdThreshold;
+    BooleanConstraint googCpuOveruseEncodeUsage;
+    LongConstraint googHighStartBitrate;
+    BooleanConstraint googPayloadPadding;
 
     BLINK_PLATFORM_EXPORT bool isEmpty() const;
 };

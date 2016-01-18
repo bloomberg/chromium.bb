@@ -203,6 +203,16 @@ bool StringConstraint::isEmpty() const
     return m_exact.isEmpty() && m_ideal.isEmpty();
 }
 
+const WebVector<WebString>& StringConstraint::exact() const
+{
+    return m_exact;
+}
+
+const WebVector<WebString>& StringConstraint::ideal() const
+{
+    return m_ideal;
+}
+
 bool BooleanConstraint::matches(bool value) const
 {
     if (m_hasExact && static_cast<bool>(m_exact) != value) {
