@@ -95,6 +95,21 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
     return list;
 }
 
+static gfx::Transform transformToRoot(const TransformPaintPropertyNode* currentSpace)
+{
+    TransformationMatrix matrix;
+    while (currentSpace) {
+        TransformationMatrix localMatrix = currentSpace->matrix();
+        localMatrix.applyTransformOrigin(currentSpace->origin());
+        matrix = localMatrix * matrix;
+        currentSpace = currentSpace->parent();
+    }
+
+    gfx::Transform transform;
+    transform.matrix() = TransformationMatrix::toSkMatrix44(matrix);
+    return transform;
+}
+
 void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
 {
     ASSERT(m_rootLayer);
@@ -114,7 +129,7 @@ void PaintArtifactCompositor::update(const PaintArtifact& paintArtifact)
         scoped_refptr<cc::PictureLayer> layer = cc::PictureLayer::Create(cc::LayerSettings(), contentLayerClient.get());
         layer->SetPosition(gfx::PointF());
         layer->SetBounds(combinedBounds.size());
-        // TODO(jbroman): Layer transforms would be nice.
+        layer->SetTransform(transformToRoot(paintChunk.properties.transform.get()));
         layer->SetIsDrawable(true);
         layer->SetNeedsDisplay();
         m_contentLayerClients.append(contentLayerClient.release());
