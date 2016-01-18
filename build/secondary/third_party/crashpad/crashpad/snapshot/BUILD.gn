@@ -18,6 +18,8 @@ source_set("snapshot") {
   }
 
   sources = [
+    "api/module_annotations_win.cc",
+    "api/module_annotations_win.h",
     "cpu_architecture.h",
     "cpu_context.cc",
     "cpu_context.h",
