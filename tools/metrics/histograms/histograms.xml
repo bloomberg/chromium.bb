@@ -45784,6 +45784,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SiteEngagementService.EngagementScoreBucket" units="%">
+  <owner>calamity@chromium.org</owner>
+  <summary>
+    The percentage of sites on a user's profile that have engagement scores that
+    fall in these buckets, recorded at startup per non-incognito profile, and
+    then upon the first engagement-increasing event every hour thereafter.
+  </summary>
+</histogram>
+
 <histogram name="SiteEngagementService.EngagementType"
     enum="SiteEngagementServiceEngagementType">
   <owner>calamity@chromium.org</owner>
@@ -82062,6 +82071,21 @@ To add a new entry, add it with any value and run test to compute valid value.
   <affected-histogram name="Media.EME.ClearKey"/>
   <affected-histogram name="Media.EME.Unknown"/>
   <affected-histogram name="Media.EME.Widevine"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="EngagementScoreBuckets">
+  <owner>calamity@chromium.org</owner>
+  <suffix name="0"/>
+  <suffix name="10"/>
+  <suffix name="20"/>
+  <suffix name="30"/>
+  <suffix name="40"/>
+  <suffix name="50"/>
+  <suffix name="60"/>
+  <suffix name="70"/>
+  <suffix name="80"/>
+  <suffix name="90"/>
+  <affected-histogram name="SiteEngagementService.EngagementScoreBucket"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExitFunnels" separator=".">
