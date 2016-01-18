@@ -24,27 +24,24 @@ static void detachNotAssignedNode(Node& node)
         node.lazyReattachIfAttached();
 }
 
-void SlotAssignment::resolveAssignment(const ShadowRoot& shadowRoot)
+void SlotAssignment::resolveAssignment(ShadowRoot& shadowRoot)
 {
     m_assignment.clear();
 
     using Name2Slot = WillBeHeapHashMap<AtomicString, RefPtrWillBeMember<HTMLSlotElement>>;
     Name2Slot name2slot;
     HTMLSlotElement* defaultSlot = nullptr;
-    WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>> slots;
 
-    // TODO(hayato): Cache slots elements so that we do not have to travese the shadow tree. See ShadowRoot::descendantInsertionPoints()
-    for (HTMLSlotElement& slot : Traversal<HTMLSlotElement>::descendantsOf(shadowRoot)) {
-        slot.clearDistribution();
+    const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& slots = shadowRoot.descendantSlots();
 
-        slots.append(&slot);
-
-        AtomicString name = slot.fastGetAttribute(HTMLNames::nameAttr);
+    for (RefPtrWillBeMember<HTMLSlotElement> slot : slots) {
+        slot->clearDistribution();
+        AtomicString name = slot->fastGetAttribute(HTMLNames::nameAttr);
         if (name.isNull() || name.isEmpty()) {
             if (!defaultSlot)
-                defaultSlot = &slot;
+                defaultSlot = slot.get();
         } else {
-            name2slot.add(name, &slot);
+            name2slot.add(name, slot.get());
         }
     }
 
