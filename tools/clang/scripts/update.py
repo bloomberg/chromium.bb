@@ -26,7 +26,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '255169'
+CLANG_REVISION = '257953'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -65,7 +65,7 @@ LLVM_BUILD_TOOLS_DIR = os.path.abspath(
 STAMP_FILE = os.path.normpath(
     os.path.join(LLVM_DIR, '..', 'llvm-build', 'cr_build_revision'))
 BINUTILS_DIR = os.path.join(THIRD_PARTY_DIR, 'binutils')
-VERSION = '3.8.0'
+VERSION = '3.9.0'
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_tools', 'ndk')
 
@@ -597,6 +597,8 @@ def UpdateClang(args):
   elif sys.platform.startswith('linux'):
     RunCommand(['strip', os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')])
 
+  # TODO(thakis): Check that `clang --version` matches VERSION.
+
   # Do an out-of-tree build of compiler-rt.
   # On Windows, this is used to get the 32-bit ASan run-time.
   # TODO(hans): Remove once the regular build above produces this.
@@ -786,11 +788,6 @@ def main():
     if re.search(r'\b(make_clang_dir)=', os.environ.get('GYP_DEFINES', '')):
       print 'Skipping Clang update (make_clang_dir= was set in GYP_DEFINES).'
       return 0
-
-  if use_head_revision:
-    # TODO(hans): Remove after the next roll.
-    global VERSION
-    VERSION = '3.9.0'
 
   global CLANG_REVISION, PACKAGE_VERSION
   if args.print_revision:
