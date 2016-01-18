@@ -185,33 +185,6 @@ void RecordPermissionAction(PermissionType permission,
                                   std::move(sample));
 }
 
-std::string PermissionTypeToString(PermissionType permission_type) {
-  switch (permission_type) {
-    case PermissionType::MIDI_SYSEX:
-      return "MidiSysex";
-    case PermissionType::PUSH_MESSAGING:
-      return "PushMessaging";
-    case PermissionType::NOTIFICATIONS:
-      return "Notifications";
-    case PermissionType::GEOLOCATION:
-      return "Geolocation";
-    case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return "ProtectedMediaIdentifier";
-    case PermissionType::DURABLE_STORAGE:
-      return "DurableStorage";
-    case PermissionType::MIDI:
-      return "Midi";
-    case PermissionType::AUDIO_CAPTURE:
-      return "AudioRecording";
-    case PermissionType::VIDEO_CAPTURE:
-      return "VideoRecording";
-    case PermissionType::NUM:
-      break;
-  }
-  NOTREACHED();
-  return std::string();
-}
-
 void RecordPermissionRequest(PermissionType permission,
                              const GURL& requesting_origin,
                              const GURL& embedding_origin,
@@ -259,7 +232,7 @@ void RecordPermissionRequest(PermissionType permission,
 
     base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
         "Permissions.Requested.CrossOrigin_" +
-            PermissionTypeToString(permission),
+            PermissionUtil::GetPermissionString(permission),
         1, content::PERMISSION_STATUS_LAST, content::PERMISSION_STATUS_LAST + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
     histogram->Add(embedding_permission_status);
