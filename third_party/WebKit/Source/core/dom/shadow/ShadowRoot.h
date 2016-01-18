@@ -114,6 +114,10 @@ public:
 
     ShadowRootType type() const { return static_cast<ShadowRootType>(m_type); }
 
+    void didAddSlot();
+    void didRemoveSlot();
+    const WillBeHeapVector<RefPtrWillBeMember<HTMLSlotElement>>& descendantSlots();
+
     // Make protected methods from base class public here.
     using TreeScope::setDocument;
     using TreeScope::setParentTreeScope;
@@ -157,14 +161,18 @@ private:
     // FIXME: This shouldn't happen. https://bugs.webkit.org/show_bug.cgi?id=88834
     bool isOrphan() const { return !host(); }
 
+    void invalidateDescendantSlots();
+    unsigned descendantSlotCount() const;
+
     RawPtrWillBeMember<ShadowRoot> m_prev;
     RawPtrWillBeMember<ShadowRoot> m_next;
     OwnPtrWillBeMember<ShadowRootRareData> m_shadowRootRareData;
-    unsigned m_numberOfStyles : 27;
+    unsigned m_numberOfStyles : 26;
     unsigned m_type : 2;
     unsigned m_registeredWithParentShadowRoot : 1;
     unsigned m_descendantInsertionPointsIsValid : 1;
     unsigned m_delegatesFocus : 1;
+    unsigned m_descendantSlotsIsValid : 1;
 };
 
 inline Element* ShadowRoot::activeElement() const
