@@ -21,6 +21,7 @@
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
@@ -56,7 +57,8 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   // follow later.
   blink::WebRemoteFrame* web_frame =
       blink::WebRemoteFrame::create(scope, proxy.get());
-  proxy->Init(web_frame, frame_to_replace->render_view());
+  proxy->Init(web_frame, frame_to_replace->render_view(),
+              frame_to_replace->GetRenderWidget());
   return proxy.release();
 }
 
@@ -78,8 +80,9 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
 
   scoped_ptr<RenderFrameProxy> proxy(
       new RenderFrameProxy(routing_id, MSG_ROUTING_NONE));
-  RenderViewImpl* render_view = NULL;
-  blink::WebRemoteFrame* web_frame = NULL;
+  RenderViewImpl* render_view = nullptr;
+  RenderWidget* render_widget = nullptr;
+  blink::WebRemoteFrame* web_frame = nullptr;
 
   if (!parent) {
     // Create a top level WebRemoteFrame.
@@ -87,6 +90,7 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame =
         blink::WebRemoteFrame::create(replicated_state.scope, proxy.get());
     render_view->webview()->setMainFrame(web_frame);
+    render_widget = render_view;
   } else {
     // Create a frame under an existing parent. The parent is always expected
     // to be a RenderFrameProxy, because navigations initiated by local frames
@@ -97,13 +101,14 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
         blink::WebString::fromUTF8(replicated_state.name),
         replicated_state.sandbox_flags, proxy.get());
     render_view = parent->render_view();
+    render_widget = parent->render_widget();
   }
 
   blink::WebFrame* opener =
       RenderFrameImpl::ResolveOpener(opener_routing_id, nullptr);
   web_frame->setOpener(opener);
 
-  proxy->Init(web_frame, render_view);
+  proxy->Init(web_frame, render_view, render_widget);
 
   // Initialize proxy's WebRemoteFrame with the security origin and other
   // replicated information.
@@ -138,8 +143,9 @@ RenderFrameProxy* RenderFrameProxy::FromWebFrame(blink::WebFrame* web_frame) {
 RenderFrameProxy::RenderFrameProxy(int routing_id, int frame_routing_id)
     : routing_id_(routing_id),
       frame_routing_id_(frame_routing_id),
-      web_frame_(NULL),
-      render_view_(NULL) {
+      web_frame_(nullptr),
+      render_view_(nullptr),
+      render_widget_(nullptr) {
   std::pair<RoutingIDProxyMap::iterator, bool> result =
       g_routing_id_proxy_map.Get().insert(std::make_pair(routing_id_, this));
   CHECK(result.second) << "Inserting a duplicate item.";
@@ -156,7 +162,7 @@ RenderFrameProxy::~RenderFrameProxy() {
   if (render_frame)
     render_frame->set_render_frame_proxy(nullptr);
 
-  render_view()->UnregisterRenderFrameProxy(this);
+  render_widget_->UnregisterRenderFrameProxy(this);
 
   CHECK(!web_frame_);
   RenderThread::Get()->RemoveRoute(routing_id_);
@@ -164,15 +170,17 @@ RenderFrameProxy::~RenderFrameProxy() {
 }
 
 void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
-                            RenderViewImpl* render_view) {
+                            RenderViewImpl* render_view,
+                            RenderWidget* render_widget) {
   CHECK(web_frame);
   CHECK(render_view);
+  CHECK(render_widget);
 
   web_frame_ = web_frame;
   render_view_ = render_view;
+  render_widget_ = render_widget;
 
-  // TODO(nick): Should all RenderFrameProxies remain observers of their views?
-  render_view_->RegisterRenderFrameProxy(this);
+  render_widget_->RegisterRenderFrameProxy(this);
 
   std::pair<FrameMap::iterator, bool> result =
       g_frame_map.Get().insert(std::make_pair(web_frame_, this));
@@ -180,6 +188,8 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
 }
 
 bool RenderFrameProxy::IsMainFrameDetachedFromTree() const {
+  if (SiteIsolationPolicy::IsSwappedOutStateForbidden())
+    return false;
   return web_frame_->top() == web_frame_ &&
       render_view_->webview()->mainFrame()->isWebLocalFrame();
 }
