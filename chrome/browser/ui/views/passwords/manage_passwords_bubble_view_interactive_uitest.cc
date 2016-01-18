@@ -291,60 +291,6 @@ IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, TwoTabsWithBubble) {
   EXPECT_FALSE(IsBubbleShowing());
 }
 
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredential) {
-  GURL origin("https://example.com");
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  test_form()->origin = origin;
-  test_form()->display_name = base::ASCIIToUTF16("Peter");
-  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  test_form()->icon_url = GURL("broken url");
-  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
-  ScopedVector<autofill::PasswordForm> federated_credentials;
-  GURL icon_url("https://google.com/icon.png");
-  test_form()->icon_url = icon_url;
-  test_form()->display_name = base::ASCIIToUTF16("Peter Pen");
-  test_form()->federation_url = GURL("https://google.com/federation");
-  federated_credentials.push_back(new autofill::PasswordForm(*test_form()));
-
-  // Prepare to capture the network request.
-  TestURLFetcherCallback url_callback;
-  net::FakeURLFetcherFactory factory(
-      NULL,
-      base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                 base::Unretained(&url_callback)));
-  factory.SetFakeResponse(icon_url, std::string(), net::HTTP_OK,
-                          net::URLRequestStatus::FAILED);
-  EXPECT_CALL(url_callback, OnRequestDone(icon_url));
-
-  SetupChooseCredentials(std::move(local_credentials),
-                         std::move(federated_credentials), origin);
-  EXPECT_TRUE(IsBubbleShowing());
-  EXPECT_CALL(*this, OnChooseCredential(
-      Field(&password_manager::CredentialInfo::type,
-            password_manager::CredentialType::CREDENTIAL_TYPE_EMPTY)));
-  ManagePasswordsBubbleView::CloseBubble();
-}
-
-IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, ChooseCredentialNoFocus) {
-  GURL origin("https://example.com");
-  ScopedVector<autofill::PasswordForm> local_credentials;
-  test_form()->origin = origin;
-  test_form()->display_name = base::ASCIIToUTF16("Peter");
-  test_form()->username_value = base::ASCIIToUTF16("pet12@gmail.com");
-  local_credentials.push_back(new autofill::PasswordForm(*test_form()));
-  ScopedVector<autofill::PasswordForm> federated_credentials;
-
-  // Open another window with focus.
-  Browser* focused_window = CreateBrowser(browser()->profile());
-  ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(focused_window));
-  content::RunAllPendingInMessageLoop();
-
-  EXPECT_FALSE(browser()->window()->IsActive());
-  SetupChooseCredentials(std::move(local_credentials),
-                         std::move(federated_credentials), origin);
-  EXPECT_TRUE(IsBubbleShowing());
-}
-
 IN_PROC_BROWSER_TEST_F(ManagePasswordsBubbleViewTest, AutoSignin) {
   // The switch enables the new UI.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(

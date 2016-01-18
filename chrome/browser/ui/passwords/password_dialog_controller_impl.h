@@ -12,12 +12,14 @@
 #include "chrome/browser/ui/passwords/password_dialog_controller.h"
 
 class AccountChooserPrompt;
+class PasswordsModelDelegate;
 class Profile;
 
 // A UI controller responsible for the account chooser dialog.
 class PasswordDialogControllerImpl : public PasswordDialogController {
  public:
-  explicit PasswordDialogControllerImpl(Profile* profle);
+  PasswordDialogControllerImpl(Profile* profle,
+                               PasswordsModelDelegate* delegate);
   ~PasswordDialogControllerImpl() override;
 
   // Pop up the account chooser dialog.
@@ -32,12 +34,14 @@ class PasswordDialogControllerImpl : public PasswordDialogController {
   void OnChooseCredentials(
       const autofill::PasswordForm& password_form,
       password_manager::CredentialType credential_type) override;
+  void OnCloseAccountChooser() override;
 
  private:
   // Release |current_dialog_| and close the open dialog.
   void ResetDialog();
 
   Profile* const profile_;
+  PasswordsModelDelegate* const delegate_;
   AccountChooserPrompt* current_dialog_;
   std::vector<scoped_ptr<autofill::PasswordForm>> local_credentials_;
   std::vector<scoped_ptr<autofill::PasswordForm>> federated_credentials_;

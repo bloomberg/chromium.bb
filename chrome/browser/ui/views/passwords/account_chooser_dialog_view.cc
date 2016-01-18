@@ -106,6 +106,11 @@ base::string16 AccountChooserDialogView::GetDialogButtonLabel(
   return l10n_util::GetStringUTF16(IDS_APP_CANCEL);
 }
 
+void AccountChooserDialogView::OnClosed() {
+  if (controller_)
+    controller_->OnCloseAccountChooser();
+}
+
 gfx::Size AccountChooserDialogView::GetPreferredSize() const {
   return gfx::Size(kDesiredWidth, GetHeightForWidth(kDesiredWidth));
 }
@@ -167,4 +172,9 @@ void AccountChooserDialogView::InitWindow() {
   // DialogClientView adds kRelatedControlVerticalSpacing padding once more for
   // the buttons.
   layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+}
+
+AccountChooserPrompt* CreateAccountChooserPromptView(
+    PasswordDialogController* controller, content::WebContents* web_contents) {
+  return new AccountChooserDialogView(controller, web_contents);
 }

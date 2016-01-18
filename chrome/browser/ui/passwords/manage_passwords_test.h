@@ -44,12 +44,6 @@ class ManagePasswordsTest : public InProcessBrowserTest {
   // Put the controller, icon, and bubble into a pending-password state.
   void SetupPendingPassword();
 
-  // Put the controller, icon, and bubble into a choosing credential state.
-  void SetupChooseCredentials(
-      ScopedVector<autofill::PasswordForm> local_credentials,
-      ScopedVector<autofill::PasswordForm> federated_credentials,
-      const GURL& origin);
-
   // Put the controller, icon, and bubble into an auto sign-in state.
   void SetupAutoSignin(
       ScopedVector<autofill::PasswordForm> local_credentials);

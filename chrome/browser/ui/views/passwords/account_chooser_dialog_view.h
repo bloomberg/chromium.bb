@@ -40,6 +40,7 @@ class AccountChooserDialogView : public views::DialogDelegateView,
   // DialogDelegate:
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  void OnClosed() override;
 
   // views::View
   gfx::Size GetPreferredSize() const override;

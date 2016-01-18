@@ -41,6 +41,9 @@ class PasswordDialogController {
   virtual void OnChooseCredentials(
       const autofill::PasswordForm& password_form,
       password_manager::CredentialType credential_type) = 0;
+
+  // Called when the account chooser dialog was closed.
+  virtual void OnCloseAccountChooser() = 0;
  protected:
   virtual ~PasswordDialogController() = default;
 };

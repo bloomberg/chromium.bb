@@ -7,6 +7,7 @@
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
@@ -19,12 +20,17 @@ bool IsSmartLockBrandingEnabled(Profile* profile) {
 }
 }  // namespace
 
-PasswordDialogControllerImpl::PasswordDialogControllerImpl(Profile* profle)
+PasswordDialogControllerImpl::PasswordDialogControllerImpl(
+    Profile* profle,
+    PasswordsModelDelegate* delegate)
     : profile_(profle),
+      delegate_(delegate),
       current_dialog_(nullptr) {
 }
 
-PasswordDialogControllerImpl::~PasswordDialogControllerImpl() = default;
+PasswordDialogControllerImpl::~PasswordDialogControllerImpl() {
+  ResetDialog();
+}
 
 void PasswordDialogControllerImpl::ShowAccountChooser(
     AccountChooserPrompt* dialog,
@@ -58,14 +64,20 @@ PasswordDialogControllerImpl::GetAccoutChooserTitle() const {
 }
 
 void PasswordDialogControllerImpl::OnSmartLockLinkClicked() {
-  // TODO(vasilii): notify the UI controller.
+  delegate_->NavigateToExternalPasswordManager();
 }
 
 void PasswordDialogControllerImpl::OnChooseCredentials(
     const autofill::PasswordForm& password_form,
     password_manager::CredentialType credential_type) {
   ResetDialog();
-  // TODO(vasilii): notify the UI controller.
+  delegate_->ChooseCredential(password_form, credential_type);
+}
+
+void PasswordDialogControllerImpl::OnCloseAccountChooser() {
+  current_dialog_ = nullptr;
+  // The dialog isn't a bubble but ManagePasswordsUIController handles this.
+  delegate_->OnBubbleHidden();
 }
 
 void PasswordDialogControllerImpl::ResetDialog() {

@@ -17,7 +17,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
+#include "chrome/browser/ui/passwords/account_chooser_prompt.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
+#include "chrome/browser/ui/passwords/password_dialog_controller_impl.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -40,6 +42,14 @@ password_manager::PasswordStore* GetPasswordStore(
   return PasswordStoreFactory::GetForProfile(
              Profile::FromBrowserContext(web_contents->GetBrowserContext()),
              ServiceAccessType::EXPLICIT_ACCESS).get();
+}
+
+std::vector<scoped_ptr<autofill::PasswordForm>> CopyFormVector(
+    const ScopedVector<autofill::PasswordForm>& forms) {
+  std::vector<scoped_ptr<autofill::PasswordForm>> result(forms.size());
+  for (size_t i = 0; i < forms.size(); ++i)
+    result[i].reset(new autofill::PasswordForm(*forms[i]));
+  return result;
 }
 
 }  // namespace
@@ -88,9 +98,24 @@ bool ManagePasswordsUIController::OnChooseCredentials(
     const GURL& origin,
     base::Callback<void(const password_manager::CredentialInfo&)> callback) {
   DCHECK(!local_credentials.empty() || !federated_credentials.empty());
+  PasswordDialogController::FormsVector locals =
+      CopyFormVector(local_credentials);
+  PasswordDialogController::FormsVector federations =
+      CopyFormVector(federated_credentials);
   passwords_data_.OnRequestCredentials(
       std::move(local_credentials), std::move(federated_credentials), origin);
+#if defined(OS_MACOSX)
+  // TODO(vasilii): remove once Mac supports the dialog.
+  // http://crbug.com/550922
   base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
+#else
+  dialog_controller_.reset(new PasswordDialogControllerImpl(
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
+      this));
+  dialog_controller_->ShowAccountChooser(
+      CreateAccountChooser(dialog_controller_.get()),
+      std::move(locals), std::move(federations));
+#endif
   UpdateBubbleAndIconVisibility();
   if (!should_pop_up_bubble_) {
     passwords_data_.set_credentials_callback(callback);
@@ -142,12 +167,18 @@ void ManagePasswordsUIController::OnLoginsChanged(
 void ManagePasswordsUIController::UpdateIconAndBubbleState(
     ManagePasswordsIconView* icon) {
   if (should_pop_up_bubble_) {
+    DCHECK(!dialog_controller_);
     // We must display the icon before showing the bubble, as the bubble would
     // be otherwise unanchored.
     icon->SetState(GetState());
     ShowBubbleWithoutUserInteraction();
   } else {
-    icon->SetState(GetState());
+    password_manager::ui::State state = GetState();
+    // The dialog should hide the icon.
+    if (dialog_controller_ &&
+        state == password_manager::ui::CREDENTIAL_REQUEST_STATE)
+      state = password_manager::ui::INACTIVE_STATE;
+    icon->SetState(state);
   }
 }
 
@@ -204,6 +235,7 @@ void ManagePasswordsUIController::OnBubbleShown() {
 }
 
 void ManagePasswordsUIController::OnBubbleHidden() {
+  dialog_controller_.reset();
   if (GetState() == password_manager::ui::CREDENTIAL_REQUEST_STATE ||
       GetState() == password_manager::ui::CONFIRMATION_STATE ||
       GetState() == password_manager::ui::AUTO_SIGNIN_STATE) {
@@ -256,6 +288,11 @@ void ManagePasswordsUIController::ChooseCredential(
     const autofill::PasswordForm& form,
     password_manager::CredentialType credential_type) {
   passwords_data_.ChooseCredential(form, credential_type);
+  if (dialog_controller_) {
+    dialog_controller_.reset();
+    passwords_data_.TransitionToState(password_manager::ui::MANAGE_STATE);
+    UpdateBubbleAndIconVisibility();
+  }
 }
 
 void ManagePasswordsUIController::NavigateToExternalPasswordManager() {
@@ -323,6 +360,19 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   DCHECK(location_bar);
   location_bar->UpdateManagePasswordsIconAndBubble();
 }
+
+#if defined(OS_MACOSX)
+// TODO(vasilii): remove once Mac supports the dialog.
+AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
+    PasswordDialogController* controller) {
+  return nullptr;
+}
+#else
+AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
+    PasswordDialogController* controller) {
+  return CreateAccountChooserPromptView(controller, web_contents());
+}
+#endif
 
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,

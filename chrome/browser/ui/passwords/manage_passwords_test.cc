@@ -78,20 +78,6 @@ void ManagePasswordsTest::SetupAutomaticPassword() {
   GetController()->OnAutomaticPasswordSave(std::move(test_form_manager));
 }
 
-void ManagePasswordsTest::SetupChooseCredentials(
-    ScopedVector<autofill::PasswordForm> local_credentials,
-    ScopedVector<autofill::PasswordForm> federated_credentials,
-    const GURL& origin) {
-  base::string16 kTestUsername = base::ASCIIToUTF16("test_username");
-  autofill::PasswordFormMap map;
-  map.insert(std::make_pair(
-      kTestUsername,
-      make_scoped_ptr(new autofill::PasswordForm(*test_form()))));
-  GetController()->OnChooseCredentials(
-      std::move(local_credentials), std::move(federated_credentials), origin,
-      base::Bind(&ManagePasswordsTest::OnChooseCredential, this));
-}
-
 void ManagePasswordsTest::SetupAutoSignin(
     ScopedVector<autofill::PasswordForm> local_credentials) {
   GetController()->OnAutoSignin(std::move(local_credentials));

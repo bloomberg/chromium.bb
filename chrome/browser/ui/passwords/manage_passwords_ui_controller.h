@@ -25,7 +25,10 @@ struct InteractionsStats;
 class PasswordFormManager;
 }
 
+class AccountChooserPrompt;
 class ManagePasswordsIconView;
+class PasswordDialogController;
+class PasswordDialogControllerImpl;
 
 // Per-tab class to control the Omnibox password icon and bubble.
 class ManagePasswordsUIController
@@ -105,6 +108,10 @@ class ManagePasswordsUIController
   // manage passwords icon and bubble.
   virtual void UpdateBubbleAndIconVisibility();
 
+  // Called to create the account chooser dialog. Mocked in tests.
+  virtual AccountChooserPrompt* CreateAccountChooser(
+      PasswordDialogController* controller);
+
   // Overwrites the client for |passwords_data_|.
   void set_client(password_manager::PasswordManagerClient* client) {
     passwords_data_.set_client(client);
@@ -127,6 +134,9 @@ class ManagePasswordsUIController
 
   // The wrapper around current state and data.
   ManagePasswordsState passwords_data_;
+
+  // The controller for the blocking dialogs.
+  scoped_ptr<PasswordDialogControllerImpl> dialog_controller_;
 
   // Contains true if the bubble is to be popped up in the next call to
   // UpdateBubbleAndIconVisibility().

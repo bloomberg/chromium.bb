@@ -5,6 +5,12 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_CHOOSER_PROMPT_H_
 #define CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_CHOOSER_PROMPT_H_
 
+namespace content {
+class WebContents;
+}
+
+class PasswordDialogController;
+
 // A platform-independent interface for the account chooser dialog.
 class AccountChooserPrompt {
  public:
@@ -18,6 +24,8 @@ class AccountChooserPrompt {
   virtual ~AccountChooserPrompt() = default;
 };
 
-
+// Factory function for AccountChooserPrompt on desktop platforms.
+AccountChooserPrompt* CreateAccountChooserPromptView(
+    PasswordDialogController* controller, content::WebContents* web_contents);
 
 #endif  // CHROME_BROWSER_UI_PASSWORDS_ACCOUNT_CHOOSER_PROMPT_H_
