@@ -59230,6 +59230,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="7011" label="SBOX_FATAL_MITIGATION"/>
   <int value="7012" label="SBOX_FATAL_MEMORY_EXCEEDED"/>
   <int value="7013" label="SBOX_FATAL_WARMUP"/>
+  <int value="36862" label="Crashpad_FailedToCaptureProcess"/>
+  <int value="36863" label="Crashpad_HandlerDidNotRespond"/>
+  <int value="85436397" label="Crashpad_SimulatedCrash"/>
   <int value="529697949" label="CPP_EH_EXCEPTION"/>
   <int value="533692099" label="STATUS_GUARD_PAGE_VIOLATION"/>
   <int value="1073740791" label="STATUS_STACK_BUFFER_OVERRUN"/>
@@ -80711,6 +80714,8 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-1073740777"
       label="0xC0000417 - STATUS_INVALID_CRUNTIME_PARAMETER"/>
   <int value="-805306369" label="0xCFFFFFFF - Hung browser killed."/>
+  <int value="-36863" label="0xFFFF7001 - Crashpad kCrashExitCodeNoDump."/>
+  <int value="-36862" label="0xFFFF7002 - Crashpad kFailedTerminationCode."/>
   <int value="0" label="content::RESULT_CODE_NORMAL_EXIT"/>
   <int value="1" label="content::RESULT_CODE_KILLED"/>
   <int value="2" label="content::RESULT_CODE_HUNG"/>
@@ -80743,6 +80748,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="29" label="chrome::RESULT_CODE_ACTION_DISALLOWED_BY_POLICY"/>
   <int value="30" label="chrome::RESULT_CODE_INVALID_SANDBOX_STATE"/>
   <int value="259" label="0x103 - STILL_ACTIVE."/>
+  <int value="85436397" label="0x517a7ed - Crashpad simulated exception"/>
   <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>
 </enum>
 
