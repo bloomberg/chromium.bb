@@ -19,7 +19,12 @@ if (window.testRunner)
 document.fonts.ready.then(function() {
     document.getElementById('webfont').innerHTML = '<input style="border:' +
         'solid 1px black; font-size:16px; font-family:NotoSansCJK;"' + 
+        'value="&#x3075; ABCgjy">' +
+        '<input style="border: solid 1px black; font-size:16px; ' +
+        'line-height:17px; height:24px; font-family:NotoSansCJK;"' + 
         'value="&#x3075; ABCgjy">';
+    // The first INPUT is for crbug.com/519331.
+    // The second INPUT is for crbug.com/576589.
     if (window.testRunner)
         testRunner.notifyDone();
 });

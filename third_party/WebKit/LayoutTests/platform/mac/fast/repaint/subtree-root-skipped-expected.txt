@@ -13,10 +13,9 @@
         [8, 288, 10, 20]
       ],
       "paintInvalidationClients": [
-        "RootInlineBox",
         "InlineTextBox ''",
-        "LayoutBlockFlow DIV id='inner-editor'",
         "RootInlineBox",
+        "LayoutBlockFlow DIV id='inner-editor'",
         "LayoutText #text",
         "InlineTextBox 'PASS'",
         "LayoutBlockFlow (positioned) DIV id='div'"

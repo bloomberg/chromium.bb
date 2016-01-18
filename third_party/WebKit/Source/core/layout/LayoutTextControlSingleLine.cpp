@@ -46,7 +46,6 @@ using namespace HTMLNames;
 LayoutTextControlSingleLine::LayoutTextControlSingleLine(HTMLInputElement* element)
     : LayoutTextControl(element)
     , m_shouldDrawCapsLockIndicator(false)
-    , m_desiredInnerEditorLogicalHeight(-1)
 {
 }
 
@@ -110,32 +109,14 @@ void LayoutTextControlSingleLine::layout()
     //   the intrinsic height of the inner elements.
     // - Shrink the inner elment heights if the input height is samller than the
     //   intrinsic heights of the inner elements.
+    // The hack was removed for the inner-editor element.  We should remove it
+    // for containerElement() too.
 
-    // We don't honor paddings and borders for textfields without decorations
-    // and type=search if the text height is taller than the contentHeight()
-    // because of compability.
+    // We don't honor paddings and borders for type=search if the text height is
+    // taller than the contentHeight() because of compatibility.
 
     LayoutBox* innerEditorLayoutObject = innerEditorElement()->layoutBox();
     bool innerEditorLayoutObjectHadLayout = innerEditorLayoutObject && innerEditorLayoutObject->needsLayout();
-    LayoutBox* viewPortLayoutObject = editingViewPortElement() ? editingViewPortElement()->layoutBox() : 0;
-
-    // To ensure consistency between layouts, we need to reset any conditionally overriden height.
-    if (innerEditorLayoutObject) {
-        innerEditorLayoutObject->clearOverrideLogicalContentHeight();
-        // TODO(jchaffraix): We could probably skip some of these due to
-        // forcing children relayout below but keeping them for safety for now.
-        layoutScope.setNeedsLayout(innerEditorLayoutObject, LayoutInvalidationReason::TextControlChanged);
-        HTMLElement* placeholderElement = inputElement()->placeholderElement();
-        if (LayoutBox* placeholderBox = placeholderElement ? placeholderElement->layoutBox() : 0)
-            layoutScope.setNeedsLayout(placeholderBox, LayoutInvalidationReason::TextControlChanged);
-    }
-    // TODO(jchaffraix): This logic is not correct and will yield to bugs such
-    // as crbug.com/529252. The fix is similar to what is done with
-    // innerEditorLayoutObject above.
-    if (viewPortLayoutObject && !viewPortLayoutObject->styleRef().logicalHeight().isAuto()) {
-        viewPortLayoutObject->mutableStyleRef().setLogicalHeight(Length(Auto));
-        layoutScope.setNeedsLayout(viewPortLayoutObject, LayoutInvalidationReason::TextControlChanged);
-    }
 
     // This is the measuring phase. Thus we force children to be relayout so
     // that the checks below are executed consistently.
@@ -144,22 +125,7 @@ void LayoutTextControlSingleLine::layout()
     Element* container = containerElement();
     LayoutBox* containerLayoutObject = container ? container->layoutBox() : 0;
 
-    // Set the text block height
-    LayoutUnit desiredLogicalHeight = textBlockLogicalHeight();
     LayoutUnit logicalHeightLimit = computeLogicalHeightLimit();
-    if (innerEditorLayoutObject && innerEditorLayoutObject->logicalHeight() > logicalHeightLimit) {
-        if (desiredLogicalHeight != innerEditorLayoutObject->logicalHeight())
-            layoutScope.setNeedsLayout(this, LayoutInvalidationReason::TextControlChanged);
-
-        m_desiredInnerEditorLogicalHeight = desiredLogicalHeight;
-
-        innerEditorLayoutObject->setOverrideLogicalContentHeight(desiredLogicalHeight);
-        layoutScope.setNeedsLayout(innerEditorLayoutObject, LayoutInvalidationReason::TextControlChanged);
-        if (viewPortLayoutObject) {
-            viewPortLayoutObject->mutableStyleRef().setLogicalHeight(Length(desiredLogicalHeight, Fixed));
-            layoutScope.setNeedsLayout(viewPortLayoutObject, LayoutInvalidationReason::TextControlChanged);
-        }
-    }
     // The container might be taller because of decoration elements.
     if (containerLayoutObject) {
         containerLayoutObject->layoutIfNeeded();
@@ -243,16 +209,10 @@ bool LayoutTextControlSingleLine::nodeAtPoint(HitTestResult& result, const HitTe
 
 void LayoutTextControlSingleLine::styleDidChange(StyleDifference diff, const ComputedStyle* oldStyle)
 {
-    m_desiredInnerEditorLogicalHeight = -1;
     LayoutTextControl::styleDidChange(diff, oldStyle);
 
     // We may have set the width and the height in the old style in layout().
     // Reset them now to avoid getting a spurious layout hint.
-    Element* viewPort = editingViewPortElement();
-    if (LayoutObject* viewPortLayoutObject = viewPort ? viewPort->layoutObject() : 0) {
-        viewPortLayoutObject->mutableStyleRef().setHeight(Length());
-        viewPortLayoutObject->mutableStyleRef().setWidth(Length());
-    }
     Element* container = containerElement();
     if (LayoutObject* containerLayoutObject = container ? container->layoutObject() : 0) {
         containerLayoutObject->mutableStyleRef().setHeight(Length());
@@ -286,15 +246,13 @@ void LayoutTextControlSingleLine::capsLockStateMayHaveChanged()
 
 bool LayoutTextControlSingleLine::hasControlClip() const
 {
-    // Apply control clip for text fields with decorations.
-    return !!containerElement();
+    return true;
 }
 
 LayoutRect LayoutTextControlSingleLine::controlClipRect(const LayoutPoint& additionalOffset) const
 {
-    ASSERT(hasControlClip());
     LayoutRect clipRect = contentBoxRect();
-    if (containerElement()->layoutBox())
+    if (containerElement() && containerElement()->layoutBox())
         clipRect = unionRect(clipRect, containerElement()->layoutBox()->frameRect());
     clipRect.moveBy(additionalOffset);
     return clipRect;
@@ -364,10 +322,8 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(co
     textBlockStyle->setOverflowWrap(NormalOverflowWrap);
     textBlockStyle->setTextOverflow(textShouldBeTruncated() ? TextOverflowEllipsis : TextOverflowClip);
 
-    if (m_desiredInnerEditorLogicalHeight >= 0)
-        textBlockStyle->setLogicalHeight(Length(m_desiredInnerEditorLogicalHeight, Fixed));
     // Do not allow line-height to be smaller than our default.
-    if (textBlockStyle->fontSize() >= lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes))
+    if (textBlockStyle->fontSize() >= lineHeight(true, HorizontalLine, PositionOfInteriorLineBoxes) || !startStyle.logicalHeight().isIntrinsicOrAuto())
         textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
     textBlockStyle->setDisplay(BLOCK);
