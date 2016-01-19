@@ -23,6 +23,7 @@
   'inputs': [
     '<(DEPTH)/build/android/gyp/util/build_utils.py',
     '<(DEPTH)/build/android/gyp/lint.py',
+    '<(android_manifest_path)',
     '<(suppressions_file)',
     '<(lint_jar_path)',
   ],
