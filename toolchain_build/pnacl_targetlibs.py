@@ -29,7 +29,11 @@ def PnaclTool(toolname, arch='le32', msys=True):
     ext = '.bat'
   else:
     ext = ''
-  if IsBCArch(arch):
+  if toolname in ['llvm-mc']:
+    # Some tools, like llvm-mc, don't need or have a special pnacl- prefix
+    # binary.
+    base = toolname
+  elif IsBCArch(arch):
     base = 'pnacl-' + toolname
   else:
     base = '-'.join([TargetArch(arch), 'nacl', toolname])
@@ -625,17 +629,28 @@ def SubzeroRuntimeCommands(arch, out_dir):
   directory, and .o files are created in the out_dir directory.  If arch isn't
   among a whitelist, an empty list of commands is returned.
   """
+  AsmSourceBase = None
   # LlcArchArgs contains arguments extracted from pnacl-translate.py.
   if arch == 'x86-32-linux':
-    LlcArchArgs = [ '-mtriple=i686-linux-gnu', '-mcpu=pentium4m']
+    Triple = 'i686-linux-gnu'
+    LlcArchArgs = [ '-mcpu=pentium4m']
   elif arch == 'x86-32':
-    LlcArchArgs = [ '-mtriple=i686-none-nacl-gnu', '-mcpu=pentium4m']
+    Triple = 'i686-none-nacl-gnu'
+    LlcArchArgs = [ '-mcpu=pentium4m']
+  elif arch == 'x86-32-nonsfi':
+    Triple = 'i686-linux-gnu'
+    LlcArchArgs = [ '-mcpu=pentium4m', '-relocation-model=pic',
+                    '-force-tls-non-pic', '-malign-double']
+    AsmSourceBase = 'szrt_asm_x8632'
   elif arch == 'arm-linux':
-    LlcArchArgs = [ '-mtriple=arm-linux-gnu', '-mcpu=cortex-a9']
+    Triple = 'arm-linux-gnu'
+    LlcArchArgs = [ '-mcpu=cortex-a9']
   elif arch == 'arm':
-    LlcArchArgs = [ '-mtriple=arm-none-nacl-gnu', '-mcpu=cortex-a9']
+    Triple = 'arm-none-nacl-gnu'
+    LlcArchArgs = [ '-mcpu=cortex-a9']
   else:
     return []
+  LlcArchArgs.append('-mtriple=' + Triple)
   return [
     command.Command([
         PnaclTool('clang'), '-O2',
@@ -657,7 +672,14 @@ def SubzeroRuntimeCommands(arch, out_dir):
         '-o', os.path.join(out_dir, 'szrt_ll.o'),
         command.path.join('%(subzero_src)s', 'runtime', 'szrt_ll.ll')] +
         LlcArchArgs),
-    ]
+    ] + ([
+      command.Command([
+        PnaclTool('llvm-mc'),
+        '-filetype=obj',
+        '-triple=' + Triple,
+        '-o', os.path.join(out_dir, AsmSourceBase + '.o'),
+        command.path.join('%(subzero_src)s', 'runtime', AsmSourceBase + '.s')])
+    ] if IsNonSFIArch(arch) else [])
 
 def TranslatorLibs(arch, is_canonical, no_nacl_gcc):
   setjmp_arch = arch

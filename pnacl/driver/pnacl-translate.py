@@ -279,9 +279,16 @@ def SetUpArch():
   # currently offers no optimized path for reading the thread pointer.
   if env.getone('TARGET_OS') != 'nacl' or env.getbool('NONSFI_NACL'):
     env.append('LLC_FLAGS_ARCH', '-mtls-use-call')
-  # For Subzero, determine -target and -sandbox options.
-  env.append('SZ_FLAGS_ARCH', '--sandbox=' +
-             ('1' if env.getone('TARGET_OS') == 'nacl' else '0'))
+  # For Subzero, determine -target, -sandbox, and -nonsfi options.
+  is_sandbox = '0'
+  is_nonsfi = '0'
+  if env.getone('TARGET_OS') == 'nacl':
+    if env.getbool('NONSFI_NACL'):
+      is_nonsfi = '1'
+    else:
+      is_sandbox = '1'
+  env.append('SZ_FLAGS_ARCH', '--sandbox=' + is_sandbox)
+  env.append('SZ_FLAGS_ARCH', '--nonsfi=' + is_nonsfi)
   env.append('SZ_FLAGS_ARCH', '--target=' + base_arch.lower())
   if base_arch != 'X8632':
     env.set('SZ_UNSUPPORTED', '1')
