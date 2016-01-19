@@ -49,7 +49,6 @@ void DirectOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
 
   gpu::SyncToken sync_token;
   gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
-      context_provider_->ContextGL()->InsertSyncPointCHROMIUM();
 
   context_provider_->ContextSupport()->SignalSyncToken(
       sync_token, base::Bind(&OutputSurface::OnSwapBuffersComplete,
