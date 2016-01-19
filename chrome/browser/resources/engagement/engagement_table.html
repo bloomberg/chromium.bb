@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
 
 <dom-module id="engagement-table">
   <link rel="import" type="css" href="engagement_table.css">
@@ -20,7 +21,11 @@
                   sort="[[getTableSortFunction_(sortKey_, sortReverse)]]">
           <tr>
             <td class="origin-cell">{{info.origin}}</td>
-            <td>{{info.score}}</td>
+            <td>
+              <paper-slider step="0.1" min="0" max="100" value="[[info.score]]"
+                            editable on-change="scoreChanged"
+                            noink></paper-slider>
+            </td>
           </tr>
         </template>
       </tbody>

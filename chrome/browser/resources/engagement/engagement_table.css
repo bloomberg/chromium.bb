@@ -34,3 +34,10 @@ table tr:hover {
 :host([sort-reverse]) .sort-column::after {
   content: '▼';
 }
+
+paper-slider {
+  width: 300px;
+  --paper-slider-input: {
+    width: 70px;
+  };
+}

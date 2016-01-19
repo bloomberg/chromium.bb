@@ -50,6 +50,18 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
     callback.Run(std::move(engagement_info));
   }
 
+  void SetSiteEngagementScoreForOrigin(const mojo::String& origin,
+                                       double score) override {
+    GURL origin_gurl(origin);
+    if (!origin_gurl.is_valid() || score < 0 ||
+        score > SiteEngagementScore::kMaxPoints) {
+      return;
+    }
+
+    SiteEngagementService* service = SiteEngagementService::Get(profile_);
+    service->ResetScoreForURL(origin_gurl, score);
+  }
+
  private:
   // The Profile* handed to us in our constructor.
   Profile* profile_;

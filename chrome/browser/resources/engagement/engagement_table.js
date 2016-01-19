@@ -104,4 +104,20 @@ Polymer({
     assertNotReached('Unsupported sort key: ' + sortKey);
     return 0;
   },
+
+  /**
+   * Handles a score input change by firing an event that contains the origin
+   * changed and its new score.
+   * @param {Event} e The change event for the score input.
+   */
+  scoreChanged: function(e) {
+    if (e.target.value == '')
+      return;
+
+    e.model.set('info.score', Number(e.target.value));
+    this.fire('score-edited', {
+      origin: e.model.get('info.origin'),
+      score: Number(e.target.value)
+    });
+  }
 });

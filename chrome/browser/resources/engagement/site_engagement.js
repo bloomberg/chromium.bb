@@ -15,6 +15,16 @@ define('main', [
             siteEngagementMojom.SiteEngagementUIHandler.name),
         siteEngagementMojom.SiteEngagementUIHandler);
 
+    var engagementTable = $('engagement-table');
+    var updateInterval = null;
+
+    engagementTable.addEventListener('score-edited', function(e) {
+      var detail = e.detail;
+      uiHandler.setSiteEngagementScoreForOrigin(detail.origin, detail.score);
+      clearInterval(updateInterval);
+      updateInterval = setInterval(updateEngagementTable, 5000);
+    });
+
     var updateEngagementTable = function() {
       // Populate engagement table.
       uiHandler.getSiteEngagementInfo().then(function(response) {
@@ -22,11 +32,11 @@ define('main', [
         response.info.forEach(function(x) {
           x.score = Number(Math.round(x.score * 100) / 100);
         });
-        $('engagement-table').engagementInfo = response.info;
+        engagementTable.engagementInfo = response.info;
       });
 
-      setTimeout(updateEngagementTable, 2000);
     };
     updateEngagementTable();
+    updateInterval = setInterval(updateEngagementTable, 5000);
   };
 });

@@ -9,4 +9,5 @@ struct SiteEngagementInfo {
 
 interface SiteEngagementUIHandler {
   GetSiteEngagementInfo() => (array<SiteEngagementInfo> info);
+  SetSiteEngagementScoreForOrigin(string origin, double score);
 };

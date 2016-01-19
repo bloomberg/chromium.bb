@@ -228,6 +228,14 @@ void SiteEngagementScore::AddPoints(double points) {
   last_engagement_time_ = now;
 }
 
+void SiteEngagementScore::Reset(double points) {
+  raw_score_ = points;
+  points_added_today_ = 0;
+
+  // This must be set in order to prevent the score from decaying when read.
+  last_engagement_time_ = clock_->Now();
+}
+
 bool SiteEngagementScore::MaxPointsPerDayAdded() {
   if (!last_engagement_time_.is_null() &&
       clock_->Now().LocalMidnight() != last_engagement_time_.LocalMidnight()) {
@@ -377,6 +385,25 @@ void SiteEngagementService::HandleMediaPlaying(const GURL& url,
   AddPoints(url, is_hidden ? SiteEngagementScore::GetHiddenMediaPoints()
                            : SiteEngagementScore::GetVisibleMediaPoints());
   RecordMetrics();
+}
+
+void SiteEngagementService::ResetScoreForURL(const GURL& url, double score) {
+  DCHECK(url.is_valid());
+  DCHECK_GE(score, 0);
+  DCHECK_LE(score, SiteEngagementScore::kMaxPoints);
+
+  HostContentSettingsMap* settings_map =
+    HostContentSettingsMapFactory::GetForProfile(profile_);
+  scoped_ptr<base::DictionaryValue> score_dict =
+      GetScoreDictForOrigin(settings_map, url);
+  SiteEngagementScore engagement_score(clock_.get(), *score_dict);
+
+  engagement_score.Reset(score);
+  if (engagement_score.UpdateScoreDict(score_dict.get())) {
+    settings_map->SetWebsiteSettingDefaultScope(
+        url, GURL(), CONTENT_SETTINGS_TYPE_SITE_ENGAGEMENT, std::string(),
+        score_dict.release());
+  }
 }
 
 void SiteEngagementService::OnURLsDeleted(

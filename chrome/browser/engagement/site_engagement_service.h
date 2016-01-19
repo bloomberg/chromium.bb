@@ -84,6 +84,9 @@ class SiteEngagementScore {
   double Score() const;
   void AddPoints(double points);
 
+  // Resets the score to |points| and reset the daily point limit.
+  void Reset(double points);
+
   // Returns true if the maximum number of points today has been added.
   bool MaxPointsPerDayAdded();
 
@@ -100,6 +103,7 @@ class SiteEngagementScore {
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
   friend class SiteEngagementScoreTest;
 
   // Array holding the values corresponding to each item in Variation array.
@@ -181,18 +185,21 @@ class SiteEngagementService : public KeyedService,
   // Returns a map of all stored origins and their engagement scores.
   std::map<GURL, double> GetScoreMap();
 
-  // Update the karma score of the origin matching |url| for navigation.
+  // Update the engagement score of the origin matching |url| for navigation.
   void HandleNavigation(const GURL& url, ui::PageTransition transition);
 
-  // Update the karma score of the origin matching |url| for time-on-site, based
-  // on user input.
+  // Update the engagement score of the origin matching |url| for time-on-site,
+  // based on user input.
   void HandleUserInput(const GURL& url,
                        SiteEngagementMetrics::EngagementType type);
 
-  // Update the karma score of the origin matching |url| for media playing. The
-  // points awarded are discounted if the media is being played in a non-visible
-  // tab.
+  // Update the engagement score of the origin matching |url| for media playing.
+  // The points awarded are discounted if the media is being played in a non-
+  // visible tab.
   void HandleMediaPlaying(const GURL& url, bool is_hidden);
+
+  // Resets the engagement score |url| to |score|, clearing daily limits.
+  void ResetScoreForURL(const GURL& url, double score);
 
   // Overridden from history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* history_service,

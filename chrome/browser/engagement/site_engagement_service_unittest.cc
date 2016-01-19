@@ -370,6 +370,33 @@ TEST_F(SiteEngagementScoreTest, PopulatedDictionary) {
   TestScoreInitializesAndUpdates(&dict, 1, 2, GetReferenceTime());
 }
 
+// Test that resetting a score has the correct properties.
+TEST_F(SiteEngagementScoreTest, Reset) {
+  base::Time current_day = GetReferenceTime();
+
+  test_clock_.SetNow(current_day);
+  score_.AddPoints(SiteEngagementScore::GetNavigationPoints());
+  EXPECT_EQ(SiteEngagementScore::GetNavigationPoints(), score_.Score());
+
+  current_day += base::TimeDelta::FromDays(7);
+  test_clock_.SetNow(current_day);
+
+  score_.Reset(20.0);
+  EXPECT_DOUBLE_EQ(20.0, score_.Score());
+  EXPECT_DOUBLE_EQ(0, score_.points_added_today_);
+  EXPECT_EQ(current_day, score_.last_engagement_time_);
+
+  // Adding points after the reset should work as normal.
+  score_.AddPoints(5);
+  EXPECT_EQ(25.0, score_.Score());
+
+  // The decay should happen one decay period from
+  test_clock_.SetNow(current_day +
+                     base::TimeDelta::FromDays(
+                         SiteEngagementScore::GetDecayPeriodInDays() + 1));
+  EXPECT_EQ(25.0 - SiteEngagementScore::GetDecayPoints(), score_.Score());
+}
+
 class SiteEngagementServiceTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
