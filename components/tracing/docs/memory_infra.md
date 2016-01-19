@@ -72,8 +72,8 @@ memory used by various subsystems of Chrome.
    See [cc/memory][cc-memory] for the full details.
  * **Discardable**: (TODO: document this).
  * **Font Caches**: (TODO: document this).
- * **GPU**: (TODO: document this).
- * **GPU Memory Buffer**: (TODO: document this).
+ * **GPU** and **GPU Memory Buffer**: GPU memory and RAM used for GPU purposes.
+   See [GPU Memory Tracing][gpu-memory].
  * **LevelDB**: (TODO: document this).
  * **Malloc**: Memory allocated by calls to `malloc`, or `new` for most
      non-Blink objects.
@@ -91,12 +91,14 @@ and it is discounted from malloc and the blue columns.
 
 <!-- TODO(primiano): Improve this. https://crbug.com/??? -->
 
-[oilpan]:    /third_party/WebKit/Source/platform/heap/BlinkGCDesign.md
-[cc-memory]: /cc/memory.md
-[partalloc]: /third_party/WebKit/Source/wtf/PartitionAlloc.md
+[oilpan]:     /third_party/WebKit/Source/platform/heap/BlinkGCDesign.md
+[cc-memory]:  /cc/memory.md
+[gpu-memory]: memory_infra_gpu.md
+[partalloc]:  /third_party/WebKit/Source/wtf/PartitionAlloc.md
 
 ## Related Pages
 
+ * [GPU Memory Tracing](memory_infra_gpu.md)
  * [Heap Profiling with MemoryInfra](heap_profiler.md)
 
 ## Rationale
