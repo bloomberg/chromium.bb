@@ -50,7 +50,9 @@ private:
     FloatPoint blendAnimatedFloatPoint(const FloatPoint& from, const FloatPoint& to);
     bool canBlend(const PathSegmentData& fromSeg, const PathSegmentData& toSeg);
 
+    FloatPoint m_fromSubPathPoint;
     FloatPoint m_fromCurrentPoint;
+    FloatPoint m_toSubPathPoint;
     FloatPoint m_toCurrentPoint;
 
     float m_progress;
@@ -148,10 +150,13 @@ bool SVGPathBlender::BlendState::canBlend(const PathSegmentData& fromSeg, const 
     return toAbsolutePathSegType(fromSeg.command) == toAbsolutePathSegType(toSeg.command);
 }
 
-static void updateCurrentPoint(FloatPoint& currentPoint, const PathSegmentData& segment)
+static void updateCurrentPoint(FloatPoint& subPathPoint, FloatPoint& currentPoint, const PathSegmentData& segment)
 {
     switch (segment.command) {
     case PathSegMoveToRel:
+        currentPoint += segment.targetPoint;
+        subPathPoint = currentPoint;
+        break;
     case PathSegLineToRel:
     case PathSegCurveToCubicRel:
     case PathSegCurveToQuadraticRel:
@@ -163,6 +168,9 @@ static void updateCurrentPoint(FloatPoint& currentPoint, const PathSegmentData& 
         currentPoint += segment.targetPoint;
         break;
     case PathSegMoveToAbs:
+        currentPoint = segment.targetPoint;
+        subPathPoint = currentPoint;
+        break;
     case PathSegLineToAbs:
     case PathSegCurveToCubicAbs:
     case PathSegCurveToQuadraticAbs:
@@ -178,6 +186,7 @@ static void updateCurrentPoint(FloatPoint& currentPoint, const PathSegmentData& 
         currentPoint.setY(segment.targetPoint.y());
         break;
     case PathSegClosePath:
+        currentPoint = subPathPoint;
         break;
     default:
         ASSERT_NOT_REACHED();
@@ -240,8 +249,8 @@ bool SVGPathBlender::BlendState::blendSegments(const PathSegmentData& fromSeg, c
         ASSERT_NOT_REACHED();
     }
 
-    updateCurrentPoint(m_fromCurrentPoint, fromSeg);
-    updateCurrentPoint(m_toCurrentPoint, toSeg);
+    updateCurrentPoint(m_fromSubPathPoint, m_fromCurrentPoint, fromSeg);
+    updateCurrentPoint(m_toSubPathPoint, m_toCurrentPoint, toSeg);
 
     return true;
 }
