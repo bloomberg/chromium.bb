@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/polymer/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://md-settings/downloads_page/downloads_page.html">
 <link rel="import" href="chrome://md-settings/languages_page/languages_page.html">
 <link rel="import" href="chrome://md-settings/passwords_and_forms_page/passwords_and_forms_page.html">
@@ -20,7 +21,7 @@
   <template>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.dateTime)]]" restamp>
-      <settings-section i18n-values="page-title:dateTimePageTitle"
+      <settings-section page-title="[[i18n('dateTimePageTitle')]]"
           current-route="[[currentRoute]]" section="dateTime">
         <settings-date-time-page prefs="{{prefs}}">
         </settings-date-time-page>
@@ -28,7 +29,7 @@
     </template>
 </if>
     <template is="dom-if" if="[[showPage(pageVisibility.privacy)]]" restamp>
-      <settings-section i18n-values="page-title:privacyPageTitle"
+      <settings-section page-title="[[i18n('privacyPageTitle')]]"
           current-route="[[currentRoute]]" section="privacy">
         <settings-privacy-page prefs="{{prefs}}"
           current-route="{{currentRoute}}">
@@ -37,7 +38,7 @@
     </template>
 <if expr="chromeos">
     <template is="dom-if" if="[[showPage(pageVisibility.bluetooth)]]" restamp>
-      <settings-section i18n-values="page-title:bluetoothPageTitle"
+      <settings-section page-title="[[i18n('bluetoothPageTitle')]]"
           current-route="[[currentRoute]]" section="bluetooth">
         <settings-bluetooth-page current-route="{{currentRoute}}">
         </settings-bluetooth-page>
@@ -48,7 +49,7 @@
     <template is="dom-if" if="[[showPage(pageVisibility.passwordsAndForms)]]"
         restamp>
       <settings-section
-          i18n-values="page-title:passwordsAndAutofillPageTitle"
+          page-title="[[i18n('passwordsAndAutofillPageTitle')]]"
           current-route="[[currentRoute]]" section="passwordsAndForms">
         <settings-passwords-and-forms-page prefs="{{prefs}}"
             current-route="{{currentRoute}}">
@@ -56,7 +57,7 @@
       </settings-section>
     </template>
     <template is="dom-if" if="[[showPage(pageVisibility.languages)]]" restamp>
-      <settings-section i18n-values="page-title:languagesPageTitle"
+      <settings-section page-title="[[i18n('languagesPageTitle')]]"
           current-route="[[currentRoute]]" section="languages">
         <settings-languages-page prefs="{{prefs}}"
             current-route="{{currentRoute}}">
@@ -64,14 +65,14 @@
       </settings-section>
     </template>
     <template is="dom-if" if="[[showPage(pageVisibility.downloads)]]" restamp>
-      <settings-section i18n-values="page-title:downloadsPageTitle"
+      <settings-section page-title="[[i18n('downloadsPageTitle')]]"
           current-route="[[currentRoute]]" section="downloads">
         <settings-downloads-page prefs="{{prefs}}">
         </settings-downloads-page>
       </settings-section>
     </template>
     <template is="dom-if" if="[[showPage(pageVisibility.reset)]]" restamp>
-      <settings-section i18n-values="page-title:resetPageTitle"
+      <settings-section page-title="[[i18n('resetPageTitle')]]"
           current-route="[[currentRoute]]" section="reset">
         <settings-reset-page></settings-reset-page>
       </settings-section>
@@ -80,7 +81,7 @@
     <!-- TODO(dbeam): find somewhere to stuff "Add more accessibility features"
          on desktop. -->
     <template is="dom-if" if="[[showPage(pageVisibility.a11y)]]" restamp>
-      <settings-section i18n-values="page-title:a11yPageTitle"
+      <settings-section page-title="[[i18n('a11yPageTitle')]]"
           current-route="[[currentRoute]]" section="a11y">
         <settings-a11y-page prefs="{{prefs}}"></settings-a11y-page>
       </settings-section>

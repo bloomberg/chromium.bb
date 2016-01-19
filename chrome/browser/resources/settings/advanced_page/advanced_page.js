@@ -39,5 +39,5 @@ Polymer({
     },
   },
 
-  behaviors: [SettingsPageVisibility],
+  behaviors: [I18nBehavior, SettingsPageVisibility],
 });
