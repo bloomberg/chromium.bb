@@ -5,7 +5,7 @@
 // https://html.spec.whatwg.org/#images
 
 [
-    // TODO(philipj): Exposed=(Window,Worker)
+    Exposed=(Window,Worker),
     WillBeGarbageCollected,
 ] interface ImageBitmap {
     readonly attribute unsigned long width;

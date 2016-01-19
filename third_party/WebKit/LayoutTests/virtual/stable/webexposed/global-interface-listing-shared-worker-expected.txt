@@ -345,6 +345,10 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     getter newVersion
 [Worker]     getter oldVersion
 [Worker]     method constructor
+[Worker] interface ImageBitmap
+[Worker]     getter height
+[Worker]     getter width
+[Worker]     method constructor
 [Worker] interface ImageData
 [Worker]     getter height
 [Worker]     getter width

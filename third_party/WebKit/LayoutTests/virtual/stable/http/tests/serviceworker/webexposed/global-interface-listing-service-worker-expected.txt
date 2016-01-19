@@ -358,6 +358,10 @@ interface IDBVersionChangeEvent : Event
     getter newVersion
     getter oldVersion
     method constructor
+interface ImageBitmap
+    getter height
+    getter width
+    method constructor
 interface ImageData
     getter height
     getter width
