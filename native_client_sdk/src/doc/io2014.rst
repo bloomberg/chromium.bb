@@ -19,6 +19,13 @@ Work either on-line or off-line!
   <iframe class="video" width="500" height="281"
   src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe>
 
+.. raw:: html
+
+  <div><b><font color="#880000" style="font-size: 120%">
+  NOTE: The NaCl Development Environment has changed since this video was made.
+  The instructions below no longer match the video.
+  </font></b></div>
+  
 .. include:: nacldev/web_tools_note.inc
 
 Installation
@@ -40,24 +47,6 @@ To install the development environment:
   * First run is slow (as it downloads and installs packages). Launch and allow
     initial install to complete before first use.
 
-When initially experimenting with the development environment,
-at this time, we recommend you run it without the debugger activated.
-Once you're ready to apply the debugger, follow these steps:
-
-  * Install a usable version of
-    `Chrome Linux (M36+, Dev or Beta channel) <http://www.chromium.org/getting-involved/dev-channel>`_.
-  * Install the `Native Client Debugger Extension <https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd>`_.
-  * Install `Native Client GDB <https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe>`_.
-
-  * Navigate to: chrome://flags and:
-
-    * Enable **Native Client GDB-based debugging**.
-    * Restart your browser by clicking **Relaunch Now**.
-
-  * NOTE: If you experience unexplained hangs, disable GDB-based debugging
-    temporarily and try again.
-
-
 .. include:: nacldev/editing.inc
 
 .. include:: nacldev/git.inc
@@ -73,7 +62,7 @@ Create a working directory and go into it::
 
 Download a zip file containing our sample::
 
-  $ curl http://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
+  $ curl https://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
   $ ls -l
 
 Unzip the sample::
@@ -90,11 +79,6 @@ Our project combines voronoi.cc with several C++ libraries to produce a NEXE
 
 .. image:: /images/voronoi1.png
 
-The resulting application combines the NEXE with some Javascript to load
-the NaCl module, producing the complete application.
-
-.. image:: /images/voronoi2.png
-
 Let's use git (a revision control program) to track our changes.
 
 First, create a new repository::
@@ -109,92 +93,11 @@ Then commit our starting state::
 
   $ git commit -m "imported voronoi demo"
 
-Now, likes run **make** to compile our program (NOTE: Changed since video,
-we've got Makefiles!)::
+Now, run **make voronoi** to compile and run our program (NOTE: Changed since
+video, we've got Makefiles!)::
 
-  $ make
+  $ make voronoi
 
-Oops, we get this error::
-
-  voronoi.cc: In member function 'void Voronoi::Update()':
-  voronoi.cc:506: error: 'struct PSContext2D_t' has no member named 'hieght'
-
-We'll need to start an editor to fix this.
-You'll want to change *hieght* to *height* on line 506.
-Then rebuild::
-
-  $ make -j10
-
-Lets look at the diff::
-
-  $ git diff
-
-And commit our fix::
-
-  $ git commit -am "fixed build error"
-
-To test our application, we run a local web server, written in python.
-Run the server with this command (NOTE: Running through a Makefile
-now)::
-
-  $ make serve
-
-Then, navigate to http://localhost:5103/ to test the demo.
-
-If you follow along with the demo video, you will discover the sample crashes
-when you change the thread count.
-
-Debugging
-=========
-
-If you haven't installed the debugger at this point, skip to the next section.
-
-At this point, if you have the debugger installed, you should be able to open
-the developer console and view the resulting crash.
-
-You can see a backtrace with::
-
-  bt
-
-You can see active threads with::
-
-  info threads
-
-Currently, symbol information is limited for GLibC executables.
-We have improvements coming that will improve the experience further.
-
-For newlib and PNaCl executables you can retrieve full symbols information
-with::
-
-  remote get irt irt
-  add-symbol-file irt
-  remote get nexe nexe
-  add-symbol-file nexe
-
-Fix it up
-=========
-
-Return to the development environment and stop the test server,
-by pressing Ctrl-C.
-
-Open your editor again, navigate to line 485 and change *valu* to *value*.
-
-Then rebuild::
-
-  $ make -j10
-
-Check the diff and commit our fix::
-
-  $ git diff
-  $ git commit -am "fixed thread ui bug"
-
-Now look at your commit history::
-
-  $ git log
-
-Run the demo again. And everything now works::
-
-  $ make serve
 
 Thanks
 ======

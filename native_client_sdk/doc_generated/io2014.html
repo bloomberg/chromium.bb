@@ -9,7 +9,10 @@ Explore our new in-browser development environment and debugger.</p>
 all in your desktop web browser or on a Chromebook.
 Work either on-line or off-line!</p>
 <iframe class="video" width="500" height="281"
-src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><h3 id="our-web-based-tools">Our Web-based Tools</h3>
+src="//www.youtube.com/embed/OzNuzBDEWzk?rel=0" frameborder="0"></iframe><div><b><font color="#880000" style="font-size: 120%">
+NOTE: The NaCl Development Environment has changed since this video was made.
+The instructions below no longer match the video.
+</font></b></div><h3 id="our-web-based-tools">Our Web-based Tools</h3>
 <p>These development tools are a <a class="reference external" href="nacldev">work in progress</a>.
 At this point, they are a learning tool and demonstration of NaCl&#8217;s
 flexibility, but are not the recommended tools for a production application.
@@ -38,25 +41,6 @@ As the process gets easier, we&#8217;ll update this page.</p>
 </li>
 <li>First run is slow (as it downloads and installs packages). Launch and allow
 initial install to complete before first use.</li>
-</ul>
-</div></blockquote>
-<p>When initially experimenting with the development environment,
-at this time, we recommend you run it without the debugger activated.
-Once you&#8217;re ready to apply the debugger, follow these steps:</p>
-<blockquote>
-<div><ul class="small-gap">
-<li>Install a usable version of
-<a class="reference external" href="http://www.chromium.org/getting-involved/dev-channel">Chrome Linux (M36+, Dev or Beta channel)</a>.</li>
-<li>Install the <a class="reference external" href="https://chrome.google.com/webstore/detail/nacl-debugger/ncpkkhabohglmhjibnloicgdfjmojkfd">Native Client Debugger Extension</a>.</li>
-<li>Install <a class="reference external" href="https://chrome.google.com/webstore/detail/gdb/gkjoooooiaohiceibmdleokniplmbahe">Native Client GDB</a>.</li>
-<li><p class="first">Navigate to: chrome://flags and:</p>
-<ul class="small-gap">
-<li>Enable <strong>Native Client GDB-based debugging</strong>.</li>
-<li>Restart your browser by clicking <strong>Relaunch Now</strong>.</li>
-</ul>
-</li>
-<li>NOTE: If you experience unexplained hangs, disable GDB-based debugging
-temporarily and try again.</li>
 </ul>
 </div></blockquote>
 <h4 id="editing">Editing</h4>
@@ -100,7 +84,7 @@ $ cd work
 </pre>
 <p>Download a zip file containing our sample:</p>
 <pre class="prettyprint">
-$ curl http://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
+$ curl https://nacltools.storage.googleapis.com/io2014/voronoi.zip -O
 $ ls -l
 </pre>
 <p>Unzip the sample:</p>
@@ -115,9 +99,6 @@ $ ls
 <p>Our project combines voronoi.cc with several C++ libraries to produce a NEXE
 (or Native Client Executable).</p>
 <img alt="/native-client/images/voronoi1.png" src="/native-client/images/voronoi1.png" />
-<p>The resulting application combines the NEXE with some Javascript to load
-the NaCl module, producing the complete application.</p>
-<img alt="/native-client/images/voronoi2.png" src="/native-client/images/voronoi2.png" />
 <p>Let&#8217;s use git (a revision control program) to track our changes.</p>
 <p>First, create a new repository:</p>
 <pre class="prettyprint">
@@ -131,81 +112,10 @@ $ git add .
 <pre class="prettyprint">
 $ git commit -m &quot;imported voronoi demo&quot;
 </pre>
-<p>Now, likes run <strong>make</strong> to compile our program (NOTE: Changed since video,
-we&#8217;ve got Makefiles!):</p>
+<p>Now, run <strong>make voronoi</strong> to compile and run our program (NOTE: Changed since
+video, we&#8217;ve got Makefiles!):</p>
 <pre class="prettyprint">
-$ make
-</pre>
-<p>Oops, we get this error:</p>
-<pre class="prettyprint">
-voronoi.cc: In member function 'void Voronoi::Update()':
-voronoi.cc:506: error: 'struct PSContext2D_t' has no member named 'hieght'
-</pre>
-<p>We&#8217;ll need to start an editor to fix this.
-You&#8217;ll want to change <em>hieght</em> to <em>height</em> on line 506.
-Then rebuild:</p>
-<pre class="prettyprint">
-$ make -j10
-</pre>
-<p>Lets look at the diff:</p>
-<pre class="prettyprint">
-$ git diff
-</pre>
-<p>And commit our fix:</p>
-<pre class="prettyprint">
-$ git commit -am &quot;fixed build error&quot;
-</pre>
-<p>To test our application, we run a local web server, written in python.
-Run the server with this command (NOTE: Running through a Makefile
-now):</p>
-<pre class="prettyprint">
-$ make serve
-</pre>
-<p>Then, navigate to <a class="reference external" href="http://localhost:5103/">http://localhost:5103/</a> to test the demo.</p>
-<p>If you follow along with the demo video, you will discover the sample crashes
-when you change the thread count.</p>
-<h3 id="debugging">Debugging</h3>
-<p>If you haven&#8217;t installed the debugger at this point, skip to the next section.</p>
-<p>At this point, if you have the debugger installed, you should be able to open
-the developer console and view the resulting crash.</p>
-<p>You can see a backtrace with:</p>
-<pre class="prettyprint">
-bt
-</pre>
-<p>You can see active threads with:</p>
-<pre class="prettyprint">
-info threads
-</pre>
-<p>Currently, symbol information is limited for GLibC executables.
-We have improvements coming that will improve the experience further.</p>
-<p>For newlib and PNaCl executables you can retrieve full symbols information
-with:</p>
-<pre class="prettyprint">
-remote get irt irt
-add-symbol-file irt
-remote get nexe nexe
-add-symbol-file nexe
-</pre>
-<h3 id="fix-it-up">Fix it up</h3>
-<p>Return to the development environment and stop the test server,
-by pressing Ctrl-C.</p>
-<p>Open your editor again, navigate to line 485 and change <em>valu</em> to <em>value</em>.</p>
-<p>Then rebuild:</p>
-<pre class="prettyprint">
-$ make -j10
-</pre>
-<p>Check the diff and commit our fix:</p>
-<pre class="prettyprint">
-$ git diff
-$ git commit -am &quot;fixed thread ui bug&quot;
-</pre>
-<p>Now look at your commit history:</p>
-<pre class="prettyprint">
-$ git log
-</pre>
-<p>Run the demo again. And everything now works:</p>
-<pre class="prettyprint">
-$ make serve
+$ make voronoi
 </pre>
 <h3 id="thanks">Thanks</h3>
 <p>Thanks for checking out our environment.
