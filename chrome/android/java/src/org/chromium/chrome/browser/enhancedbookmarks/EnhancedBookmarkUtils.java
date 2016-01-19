@@ -60,8 +60,11 @@ public class EnhancedBookmarkUtils {
     public static void addOrEditBookmark(long idToAdd, EnhancedBookmarksModel bookmarkModel,
             Tab tab, SnackbarManager snackbarManager, Activity activity) {
         if (idToAdd != ChromeBrowserProviderClient.INVALID_BOOKMARK_ID) {
+            // See if the Tab's contents should be saved or not.
+            WebContents webContentsToSave = null;
+            if (!shouldSkipSavingTabOffline(tab)) webContentsToSave = tab.getWebContents();
             startEditActivity(activity, new BookmarkId(idToAdd, BookmarkType.NORMAL),
-                    tab.getWebContents());
+                    webContentsToSave);
             return;
         }
 
@@ -348,6 +351,9 @@ public class EnhancedBookmarkUtils {
 
     /**
      * Starts an {@link EnhancedBookmarkEditActivity} for the given {@link BookmarkId}.
+     * If the given {@link WebContents} is null, an option to visit the page is shown
+     * as opposed to showing an option to directly save the page
+     * (only if offline pages are enabled).
      */
     public static void startEditActivity(
             Context context, BookmarkId bookmarkId, WebContents webContents) {
