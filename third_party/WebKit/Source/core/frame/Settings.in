@@ -332,6 +332,7 @@ strictMixedContentChecking initial=false
 strictMixedContentCheckingForPlugin initial=false
 strictPowerfulFeatureRestrictions initial=false
 strictlyBlockBlockableMixedContent initial=false
+allowGeolocationOnInsecureOrigins initial=false
 logDnsPrefetchAndPreconnect initial=false
 logPreload initial=false
 

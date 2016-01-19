@@ -58,6 +58,7 @@ public:
     void setAllowDisplayOfInsecureContent(bool) override;
     void setAllowFileAccessFromFileURLs(bool) override;
     void setAllowCustomScrollbarInMainFrame(bool) override;
+    void setAllowGeolocationOnInsecureOrigins(bool) override;
     void setAllowRunningOfInsecureContent(bool) override;
     void setAllowScriptsToCloseWindows(bool) override;
     void setAllowUniversalAccessFromFileURLs(bool) override;

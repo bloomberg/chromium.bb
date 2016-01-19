@@ -456,8 +456,8 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 const char kEnableStrictMixedContentChecking[] =
     "enable-strict-mixed-content-checking";
 
-// Blocks insecure usage of number of powerful features (geolocation, for
-// example) that we haven't yet deprecated for the web at large.
+// Blocks insecure usage of a number of powerful features (device orientation,
+// for example) that we haven't yet deprecated for the web at large.
 const char kEnableStrictPowerfulFeatureRestrictions[] =
     "enable-strict-powerful-feature-restrictions";
 

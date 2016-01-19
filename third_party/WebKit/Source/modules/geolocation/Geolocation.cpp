@@ -168,8 +168,6 @@ void Geolocation::getCurrentPosition(PositionCallback* successCallback, Position
     if (!frame())
         return;
 
-    recordOriginTypeAccess();
-
     GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
     startRequest(notifier);
 
@@ -180,8 +178,6 @@ int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorC
 {
     if (!frame())
         return 0;
-
-    recordOriginTypeAccess();
 
     GeoNotifier* notifier = GeoNotifier::create(this, successCallback, errorCallback, options);
     startRequest(notifier);
@@ -196,12 +192,11 @@ int Geolocation::watchPosition(PositionCallback* successCallback, PositionErrorC
 
 void Geolocation::startRequest(GeoNotifier *notifier)
 {
-    if (frame()->settings()->strictPowerfulFeatureRestrictions()) {
-        String errorMessage;
-        if (!executionContext()->isSecureContext(errorMessage)) {
-            notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
-            return;
-        }
+    recordOriginTypeAccess();
+    String errorMessage;
+    if (!frame()->settings()->allowGeolocationOnInsecureOrigins() && !executionContext()->isSecureContext(errorMessage)) {
+        notifier->setFatalError(PositionError::create(PositionError::POSITION_UNAVAILABLE, errorMessage));
+        return;
     }
 
     if (RuntimeEnabledFeatures::restrictIFramePermissionsEnabled()) {

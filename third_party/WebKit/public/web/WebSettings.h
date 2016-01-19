@@ -110,6 +110,7 @@ public:
     virtual void setAllowDisplayOfInsecureContent(bool) = 0;
     virtual void setAllowFileAccessFromFileURLs(bool) = 0;
     virtual void setAllowCustomScrollbarInMainFrame(bool) = 0;
+    virtual void setAllowGeolocationOnInsecureOrigins(bool) = 0;
     // If set to true, allows frames with an https origin to run active
     // contents at an insecure URL. This includes WebSockets. Otherwise,
     // disallows it. The FrameLoaderClient set to the frame may override the

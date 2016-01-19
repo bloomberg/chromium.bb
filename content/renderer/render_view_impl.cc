@@ -1004,6 +1004,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   settings->setStrictPowerfulFeatureRestrictions(
       prefs.strict_powerful_feature_restrictions);
+  settings->setAllowGeolocationOnInsecureOrigins(
+      prefs.allow_geolocation_on_insecure_origins);
   settings->setPasswordEchoEnabled(prefs.password_echo_enabled);
   settings->setShouldPrintBackgrounds(prefs.should_print_backgrounds);
   settings->setShouldClearDocumentBackground(

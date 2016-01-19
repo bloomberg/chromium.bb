@@ -123,6 +123,7 @@ WebPreferences::WebPreferences()
       disable_reading_from_canvas(false),
       strict_mixed_content_checking(false),
       strict_powerful_feature_restrictions(false),
+      allow_geolocation_on_insecure_origins(false),
       strictly_block_blockable_mixed_content(false),
       block_mixed_plugin_content(false),
       password_echo_enabled(false),

@@ -458,6 +458,11 @@ void WebSettingsImpl::setAllowFileAccessFromFileURLs(bool allow)
     m_settings->setAllowFileAccessFromFileURLs(allow);
 }
 
+void WebSettingsImpl::setAllowGeolocationOnInsecureOrigins(bool allow)
+{
+    m_settings->setAllowGeolocationOnInsecureOrigins(allow);
+}
+
 void WebSettingsImpl::setThreadedScrollingEnabled(bool enabled)
 {
     m_settings->setThreadedScrollingEnabled(enabled);

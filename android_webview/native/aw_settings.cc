@@ -433,6 +433,10 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
       Java_AwSettings_getFullscreenSupportedLocked(env, obj);
   web_prefs->record_whole_document =
       Java_AwSettings_getRecordFullDocument(env, obj);
+
+  // TODO(jww): This should be removed once sufficient warning has been given of
+  // possible API breakage because of disabling insecure use of geolocation.
+  web_prefs->allow_geolocation_on_insecure_origins = true;
 }
 
 static jlong Init(JNIEnv* env,
