@@ -228,6 +228,8 @@
       'protocol/webrtc_video_capturer_adapter.h',
       'protocol/webrtc_video_stream.cc',
       'protocol/webrtc_video_stream.h',
+      'protocol/webrtc_video_renderer_adapter.cc',
+      'protocol/webrtc_video_renderer_adapter.h',
     ],
 
     'remoting_signaling_sources': [

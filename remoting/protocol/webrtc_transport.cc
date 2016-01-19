@@ -348,12 +348,12 @@ void WebrtcTransport::OnSignalingChange(
 
 void WebrtcTransport::OnAddStream(webrtc::MediaStreamInterface* stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  LOG(ERROR) << "Stream added " << stream->label();
+  event_handler_->OnWebrtcTransportMediaStreamAdded(stream);
 }
 
 void WebrtcTransport::OnRemoveStream(webrtc::MediaStreamInterface* stream) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  LOG(ERROR) << "Stream removed " << stream->label();
+  event_handler_->OnWebrtcTransportMediaStreamRemoved(stream);
 }
 
 void WebrtcTransport::OnDataChannel(

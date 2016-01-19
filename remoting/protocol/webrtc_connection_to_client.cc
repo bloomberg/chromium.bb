@@ -157,6 +157,14 @@ void WebrtcConnectionToClient::OnWebrtcTransportError(ErrorCode error) {
   Disconnect(error);
 }
 
+void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamAdded(
+    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+  LOG(WARNING) << "The client created an unexpected media stream.";
+}
+
+void WebrtcConnectionToClient::OnWebrtcTransportMediaStreamRemoved(
+    scoped_refptr<webrtc::MediaStreamInterface> stream) {}
+
 void WebrtcConnectionToClient::OnChannelInitialized(
     ChannelDispatcherBase* channel_dispatcher) {
   DCHECK(thread_checker_.CalledOnValidThread());

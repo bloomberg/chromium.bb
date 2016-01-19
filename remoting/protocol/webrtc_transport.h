@@ -45,6 +45,12 @@ class WebrtcTransport : public Transport,
 
     // Called when there is an error connecting the session.
     virtual void OnWebrtcTransportError(ErrorCode error) = 0;
+
+    // Called when an incoming media stream is added or removed.
+    virtual void OnWebrtcTransportMediaStreamAdded(
+        scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
+    virtual void OnWebrtcTransportMediaStreamRemoved(
+        scoped_refptr<webrtc::MediaStreamInterface> stream) = 0;
   };
 
   WebrtcTransport(rtc::Thread* worker_thread,
@@ -124,9 +130,6 @@ class WebrtcTransport : public Transport,
   base::OneShotTimer transport_info_timer_;
 
   ScopedVector<webrtc::IceCandidateInterface> pending_incoming_candidates_;
-
-  std::list<rtc::scoped_refptr<webrtc::MediaStreamInterface>>
-      unclaimed_streams_;
 
   WebrtcDataStreamAdapter outgoing_data_stream_adapter_;
   WebrtcDataStreamAdapter incoming_data_stream_adapter_;

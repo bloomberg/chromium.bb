@@ -7,6 +7,10 @@
 
 #include <list>
 
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
+#include "remoting/protocol/frame_consumer.h"
 #include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/video_stub.h"
 
@@ -18,11 +22,45 @@ class FakeVideoStub : public VideoStub {
   FakeVideoStub();
   ~FakeVideoStub() override;
 
+  const std::list<scoped_ptr<VideoPacket>>& received_packets() {
+    return received_packets_;
+  }
+
+  void set_on_frame_callback(base::Closure on_frame_callback);
+
   // VideoStub interface.
   void ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                           const base::Closure& done) override;
  private:
+  base::ThreadChecker thread_checker_;
+
   std::list<scoped_ptr<VideoPacket>> received_packets_;
+  base::Closure on_frame_callback_;
+};
+
+class FakeFrameConsumer : public FrameConsumer {
+ public:
+  FakeFrameConsumer();
+  ~FakeFrameConsumer() override;
+
+  const std::list<scoped_ptr<webrtc::DesktopFrame>>& received_frames() {
+    return received_frames_;
+  }
+
+  void set_on_frame_callback(base::Closure on_frame_callback);
+
+  // FrameConsumer interface.
+  scoped_ptr<webrtc::DesktopFrame> AllocateFrame(
+      const webrtc::DesktopSize& size) override;
+  void DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+                 const base::Closure& done) override;
+  PixelFormat GetPixelFormat() override;
+
+ private:
+  base::ThreadChecker thread_checker_;
+
+  std::list<scoped_ptr<webrtc::DesktopFrame>> received_frames_;
+  base::Closure on_frame_callback_;
 };
 
 class FakeVideoRenderer : public VideoRenderer {
@@ -33,10 +71,13 @@ class FakeVideoRenderer : public VideoRenderer {
   // VideoRenderer interface.
   void OnSessionConfig(const SessionConfig& config) override;
   FakeVideoStub* GetVideoStub() override;
-  FrameConsumer* GetFrameConsumer() override;
+  FakeFrameConsumer* GetFrameConsumer() override;
 
  private:
+  base::ThreadChecker thread_checker_;
+
   FakeVideoStub video_stub_;
+  FakeFrameConsumer frame_consumer_;
 };
 
 }  // namespace protocol

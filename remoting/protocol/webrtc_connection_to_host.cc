@@ -12,7 +12,9 @@
 #include "remoting/protocol/client_stub.h"
 #include "remoting/protocol/clipboard_stub.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/video_renderer.h"
 #include "remoting/protocol/webrtc_transport.h"
+#include "remoting/protocol/webrtc_video_renderer_adapter.h"
 
 namespace remoting {
 namespace protocol {
@@ -64,7 +66,7 @@ void WebrtcConnectionToHost::set_clipboard_stub(ClipboardStub* clipboard_stub) {
 }
 
 void WebrtcConnectionToHost::set_video_renderer(VideoRenderer* video_renderer) {
-  NOTIMPLEMENTED();
+  video_renderer_ = video_renderer;
 }
 
 void WebrtcConnectionToHost::set_audio_stub(AudioStub* audio_stub) {
@@ -88,9 +90,13 @@ void WebrtcConnectionToHost::OnSessionStateChange(Session::State state) {
       break;
 
     case Session::CLOSED:
+      CloseChannels();
+      SetState(CLOSED,  OK);
+      break;
+
     case Session::FAILED:
       CloseChannels();
-      SetState(CLOSED, state == Session::FAILED ? session_->error() : OK);
+      SetState(FAILED, session_->error());
       break;
   }
 }
@@ -110,6 +116,22 @@ void WebrtcConnectionToHost::OnWebrtcTransportConnected() {}
 void WebrtcConnectionToHost::OnWebrtcTransportError(ErrorCode error) {
   CloseChannels();
   SetState(FAILED, error);
+}
+
+void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamAdded(
+    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+  if (video_adapter_) {
+    LOG(WARNING)
+        << "Received multiple media streams. Ignoring all except the last one.";
+  }
+  video_adapter_.reset(new WebrtcVideoRendererAdapter(
+      stream, video_renderer_->GetFrameConsumer()));
+}
+
+void WebrtcConnectionToHost::OnWebrtcTransportMediaStreamRemoved(
+    scoped_refptr<webrtc::MediaStreamInterface> stream) {
+  if (video_adapter_ && video_adapter_->label() == stream->label())
+    video_adapter_.reset();
 }
 
 void WebrtcConnectionToHost::OnChannelInitialized(

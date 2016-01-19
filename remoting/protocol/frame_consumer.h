@@ -5,7 +5,9 @@
 #ifndef REMOTING_PROTOCOL_FRAME_CONSUMER_H_
 #define REMOTING_PROTOCOL_FRAME_CONSUMER_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 
 namespace webrtc {
 class DesktopFrame;

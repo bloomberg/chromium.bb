@@ -9,6 +9,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "remoting/proto/video.pb.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 namespace remoting {
 namespace protocol {
@@ -16,10 +17,48 @@ namespace protocol {
 FakeVideoStub::FakeVideoStub() {}
 FakeVideoStub::~FakeVideoStub() {}
 
+void FakeVideoStub::set_on_frame_callback(base::Closure on_frame_callback) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  on_frame_callback_ = on_frame_callback;
+}
+
 void FakeVideoStub::ProcessVideoPacket(scoped_ptr<VideoPacket> video_packet,
                                        const base::Closure& done) {
+  CHECK(thread_checker_.CalledOnValidThread());
   received_packets_.push_back(std::move(video_packet));
-  done.Run();
+  if (!done.is_null())
+    done.Run();
+  if (!on_frame_callback_.is_null())
+    on_frame_callback_.Run();
+}
+
+FakeFrameConsumer::FakeFrameConsumer() {}
+FakeFrameConsumer::~FakeFrameConsumer() {}
+
+void FakeFrameConsumer::set_on_frame_callback(base::Closure on_frame_callback) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  on_frame_callback_ = on_frame_callback;
+}
+
+scoped_ptr<webrtc::DesktopFrame> FakeFrameConsumer::AllocateFrame(
+    const webrtc::DesktopSize& size) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  return make_scoped_ptr(new webrtc::BasicDesktopFrame(size));
+}
+
+void FakeFrameConsumer::DrawFrame(scoped_ptr<webrtc::DesktopFrame> frame,
+                                  const base::Closure& done) {
+  CHECK(thread_checker_.CalledOnValidThread());
+  received_frames_.push_back(std::move(frame));
+  if (!done.is_null())
+    done.Run();
+  if (!on_frame_callback_.is_null())
+    on_frame_callback_.Run();
+}
+
+FrameConsumer::PixelFormat FakeFrameConsumer::GetPixelFormat() {
+  CHECK(thread_checker_.CalledOnValidThread());
+  return FORMAT_BGRA;
 }
 
 FakeVideoRenderer::FakeVideoRenderer() {}
@@ -28,12 +67,13 @@ FakeVideoRenderer::~FakeVideoRenderer() {}
 void FakeVideoRenderer::OnSessionConfig(const SessionConfig& config) {}
 
 FakeVideoStub* FakeVideoRenderer::GetVideoStub() {
+  CHECK(thread_checker_.CalledOnValidThread());
   return &video_stub_;
 }
 
-FrameConsumer* FakeVideoRenderer::GetFrameConsumer() {
-  NOTIMPLEMENTED();
-  return nullptr;
+FakeFrameConsumer* FakeVideoRenderer::GetFrameConsumer() {
+  CHECK(thread_checker_.CalledOnValidThread());
+  return &frame_consumer_;
 }
 
 }  // namespace protocol

@@ -15,10 +15,13 @@
 #include "remoting/protocol/ice_connection_to_host.h"
 #include "remoting/protocol/protocol_mock_objects.h"
 #include "remoting/protocol/transport_context.h"
+#include "remoting/protocol/video_stream.h"
 #include "remoting/protocol/webrtc_connection_to_client.h"
 #include "remoting/protocol/webrtc_connection_to_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
+#include "third_party/webrtc/modules/desktop_capture/desktop_frame.h"
 
 using ::testing::_;
 using ::testing::InvokeWithoutArgs;
@@ -57,6 +60,29 @@ class MockConnectionToHostEventCallback
                     const TransportRoute& route));
 };
 
+class TestScreenCapturer : public webrtc::DesktopCapturer {
+ public:
+  TestScreenCapturer() {}
+  ~TestScreenCapturer() override {}
+
+  // webrtc::DesktopCapturer interface.
+  void Start(Callback* callback) override {
+    callback_ = callback;
+  }
+  void Capture(const webrtc::DesktopRegion& region) override {
+    // Return black 10x10 frame.
+    scoped_ptr<webrtc::DesktopFrame> frame(
+        new webrtc::BasicDesktopFrame(webrtc::DesktopSize(100, 100)));
+    memset(frame->data(), 0, frame->stride() * frame->size().height());
+    frame->mutable_updated_region()->SetRect(
+        webrtc::DesktopRect::MakeSize(frame->size()));
+    callback_->OnCaptureCompleted(frame.release());
+  }
+
+ private:
+  Callback* callback_ = nullptr;
+};
+
 }  // namespace
 
 class ConnectionTest : public testing::Test,
@@ -65,14 +91,16 @@ class ConnectionTest : public testing::Test,
   ConnectionTest() {}
 
  protected:
+  bool is_using_webrtc() { return GetParam(); }
+
   void SetUp() override {
     // Create fake sessions.
     host_session_ = new FakeSession();
     owned_client_session_.reset(new FakeSession());
     client_session_ = owned_client_session_.get();
 
-    // Create Connection objects
-    if (GetParam()) {
+    // Create Connection objects.
+    if (is_using_webrtc()) {
       host_connection_.reset(new WebrtcConnectionToClient(
           make_scoped_ptr(host_session_),
           TransportContext::ForTests(protocol::TransportRole::SERVER)));
@@ -246,6 +274,42 @@ TEST_P(ConnectionTest, Events) {
   client_connection_->input_stub()->InjectKeyEvent(event);
 
   run_loop.Run();
+}
+
+TEST_P(ConnectionTest, Video) {
+  Connect();
+
+  scoped_ptr<VideoStream> video_stream = host_connection_->StartVideoStream(
+      make_scoped_ptr(new TestScreenCapturer()));
+
+  base::RunLoop run_loop;
+
+  // Expect frames to be passed to FrameConsumer when WebRTC is used, or to
+  // VideoStub otherwise.
+  if (is_using_webrtc()) {
+    client_video_renderer_.GetFrameConsumer()->set_on_frame_callback(
+        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  } else {
+    client_video_renderer_.GetVideoStub()->set_on_frame_callback(
+        base::Bind(&base::RunLoop::Quit, base::Unretained(&run_loop)));
+  }
+
+  run_loop.Run();
+
+  if (is_using_webrtc()) {
+    EXPECT_EQ(
+        client_video_renderer_.GetFrameConsumer()->received_frames().size(),
+        1U);
+    EXPECT_EQ(client_video_renderer_.GetVideoStub()->received_packets().size(),
+              0U);
+  } else {
+    EXPECT_EQ(
+        client_video_renderer_.GetFrameConsumer()->received_frames().size(),
+        0U);
+    EXPECT_EQ(client_video_renderer_.GetVideoStub()->received_packets().size(),
+              1U);
+  }
+
 }
 
 }  // namespace protocol

@@ -60,6 +60,10 @@ class TestTransportEventHandler : public WebrtcTransport::EventHandler {
   void OnWebrtcTransportError(ErrorCode error) override {
     error_callback_.Run(error);
   }
+  void OnWebrtcTransportMediaStreamAdded(
+      scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
+  void OnWebrtcTransportMediaStreamRemoved(
+      scoped_refptr<webrtc::MediaStreamInterface> stream) override {}
 
  private:
   base::Closure connecting_callback_;
