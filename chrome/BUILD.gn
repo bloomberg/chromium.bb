@@ -411,7 +411,15 @@ if (is_mac || is_win) {
           configs += [ "//build/config/win:no_incremental_linking" ]
         }
         if (chrome_pgo_phase > 0) {
-          configs += [ "//build/config/compiler:optimize_max" ]
+          cflags += [
+            "/GL",  # Whole program optimization.
+
+            # Disable Warning 4702 ("Unreachable code") for the WPO/PGO builds.
+            # Probably anything that this would catch that wouldn't be caught in
+            # a normal build isn't going to actually be a bug, so the
+            # incremental value of C4702 for PGO builds is likely very small.
+            "/wd4702",
+          ]
         }
         if (chrome_pgo_phase == 1) {
           ldflags = [
