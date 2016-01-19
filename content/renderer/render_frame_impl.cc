@@ -621,8 +621,11 @@ class MHTMLPartsGenerationDelegate
 
   WebString getContentID(const WebFrame& frame) override {
     int routing_id = GetRoutingIdForFrameOrProxy(const_cast<WebFrame*>(&frame));
+
     auto it = params_.frame_routing_id_to_content_id.find(routing_id);
-    DCHECK(it != params_.frame_routing_id_to_content_id.end());
+    if (it == params_.frame_routing_id_to_content_id.end())
+      return WebString();
+
     const std::string& content_id = it->second;
     return WebString::fromUTF8(content_id);
   }

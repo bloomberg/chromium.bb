@@ -108,6 +108,9 @@ bool MHTMLFrameSerializerDelegate::rewriteLink(
         return false;
 
     WebString contentID = m_webDelegate.getContentID(*WebFrame::fromFrame(frame));
+    if (contentID.isNull())
+        return false;
+
     KURL cidURI = MHTMLParser::convertContentIDToURI(contentID);
     ASSERT(cidURI.isValid());
 
@@ -169,7 +172,6 @@ WebData WebFrameSerializer::generateMHTMLParts(
 
     // Get Content-ID for the frame being serialized.
     String frameContentID = webDelegate->getContentID(*webFrame);
-    ASSERT(!frameContentID.isEmpty());
 
     // Encode serializer's output as MHTML.
     RefPtr<SharedBuffer> output = SharedBuffer::create();
