@@ -85,7 +85,7 @@ const int64_t kMinUpdateIntervalMinutes = 1;
 // On mobile, having the max at 60 minutes results in the topsites database
 // being not updated often enough since the app isn't usually running for long
 // stretches of time.
-const int64_t kMaxUpdateIntervalMinutes = 1;
+const int64_t kMaxUpdateIntervalMinutes = 5;
 #else
 const int64_t kMaxUpdateIntervalMinutes = 60;
 #endif  // defined(OS_IOS) || defined(OS_ANDROID)

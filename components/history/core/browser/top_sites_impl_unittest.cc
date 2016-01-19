@@ -972,8 +972,8 @@ TEST_F(TopSitesImplTest, DeleteNotifications) {
 TEST_F(TopSitesImplTest, GetUpdateDelay) {
 #if defined(OS_IOS) || defined(OS_ANDROID)
   const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
-  const int64_t kExpectedUpdateDelayInMinute0Changed = 1;
-  const int64_t kExpectedUpdateDelayInMinute3Changed = 1;
+  const int64_t kExpectedUpdateDelayInMinute0Changed = 5;
+  const int64_t kExpectedUpdateDelayInMinute3Changed = 5;
   const int64_t kExpectedUpdateDelayInMinute20Changed = 1;
 #else
   const int64_t kExpectedUpdateDelayInSecondEmpty = 30;
