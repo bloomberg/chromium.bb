@@ -32,30 +32,51 @@ ThrottlingHelper::ThrottlingHelper(RendererSchedulerImpl* renderer_scheduler,
 }
 
 ThrottlingHelper::~ThrottlingHelper() {
+  // It's possible for queues to be still throttled, so we need to tidy up
+  // before unregistering the time domain.
+  for (const TaskQueueMap::value_type& map_entry : throttled_queues_) {
+    TaskQueue* task_queue = map_entry.first;
+    task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+    task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+  }
+
   renderer_scheduler_->UnregisterTimeDomain(time_domain_.get());
 }
 
-void ThrottlingHelper::Throttle(TaskQueue* task_queue) {
+void ThrottlingHelper::IncreaseThrottleRefCount(TaskQueue* task_queue) {
   DCHECK_NE(task_queue, task_runner_.get());
-  throttled_queues_.insert(task_queue);
 
-  task_queue->SetTimeDomain(time_domain_.get());
-  task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+  std::pair<TaskQueueMap::iterator, bool> insert_result =
+      throttled_queues_.insert(std::make_pair(task_queue, 1));
 
-  if (!task_queue->IsEmpty()) {
-    if (task_queue->HasPendingImmediateWork()) {
-      OnTimeDomainHasImmediateWork();
-    } else {
-      OnTimeDomainHasDelayedWork();
+  if (insert_result.second) {
+    // The insert was succesful so we need to throttle the queue.
+    task_queue->SetTimeDomain(time_domain_.get());
+    task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
+
+    if (!task_queue->IsEmpty()) {
+      if (task_queue->HasPendingImmediateWork()) {
+        OnTimeDomainHasImmediateWork();
+      } else {
+        OnTimeDomainHasDelayedWork();
+      }
     }
+  } else {
+    // An entry already existed in the map so we need to increment the refcount.
+    insert_result.first->second++;
   }
 }
 
-void ThrottlingHelper::Unthrottle(TaskQueue* task_queue) {
-  throttled_queues_.erase(task_queue);
+void ThrottlingHelper::DecreaseThrottleRefCount(TaskQueue* task_queue) {
+  TaskQueueMap::iterator iter = throttled_queues_.find(task_queue);
 
-  task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
-  task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+  if (iter != throttled_queues_.end() && --iter->second == 0) {
+    // The refcount has become zero, we need to unthrottle the queue.
+    throttled_queues_.erase(iter);
+
+    task_queue->SetTimeDomain(renderer_scheduler_->real_time_domain());
+    task_queue->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
+  }
 }
 
 void ThrottlingHelper::OnTimeDomainHasImmediateWork() {
@@ -88,7 +109,8 @@ void ThrottlingHelper::PumpThrottledTasks() {
 
   base::TimeTicks now = tick_clock_->NowTicks();
   time_domain_->AdvanceTo(now);
-  for (TaskQueue* task_queue : throttled_queues_) {
+  for (const TaskQueueMap::value_type& map_entry : throttled_queues_) {
+    TaskQueue* task_queue = map_entry.first;
     if (task_queue->IsEmpty())
       continue;
 

@@ -416,6 +416,11 @@ class RendererSchedulerImplTest : public testing::Test {
       base::TimeDelta begin_main_frame_duration) {
     clock_->Advance(begin_main_frame_duration);
     scheduler_->DidCommitFrameToCompositor();
+    simulate_compositor_task_ran_ = true;
+  }
+
+  bool SimulatedCompositorTaskPending() const {
+    return !simulate_compositor_task_ran_;
   }
 
   void SimulateTimerTask(base::TimeDelta duration) {
@@ -566,6 +571,7 @@ class RendererSchedulerImplTest : public testing::Test {
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> timer_task_runner_;
   bool simulate_timer_task_ran_;
+  bool simulate_compositor_task_ran_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererSchedulerImplTest);
 };
@@ -2602,6 +2608,123 @@ TEST_F(RendererSchedulerImplTest,
   // 16ms frame - 5ms compositor work = 11ms for other stuff.
   EXPECT_EQ(base::TimeDelta::FromMilliseconds(11),
             scheduler_->EstimateLongestJankFreeTaskDuration());
+}
+
+namespace {
+void SlowCountingTask(size_t* count,
+                      base::SimpleTestTickClock* clock,
+                      int task_duration,
+                      scoped_refptr<base::SingleThreadTaskRunner> timer_queue) {
+  clock->Advance(base::TimeDelta::FromMilliseconds(task_duration));
+  if (++(*count) < 500) {
+    timer_queue->PostTask(FROM_HERE, base::Bind(SlowCountingTask, count, clock,
+                                                task_duration, timer_queue));
+  }
+}
+}
+
+TEST_F(RendererSchedulerImplTest,
+       SYNCHRONIZED_GESTURE_TimerTaskThrottling_task_expensive) {
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+
+  size_t count = 0;
+  // With the compositor task taking 10ms, there is not enough time to run this
+  // 7ms timer task in the 16ms frame.
+  scheduler_->TimerTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 7,
+                            scheduler_->TimerTaskRunner()));
+
+  for (int i = 0; i < 1000; i++) {
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+    simulate_compositor_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(10)));
+
+    mock_task_runner_->RunTasksWhile(
+        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+                   base::Unretained(this)));
+    EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
+    EXPECT_TRUE(scheduler_->TimerTaskRunner()->IsQueueEnabled()) << "i = " << i;
+  }
+
+  // Task is throttled but not completely blocked.
+  EXPECT_EQ(13u, count);
+}
+
+TEST_F(RendererSchedulerImplTest,
+       SYNCHRONIZED_GESTURE_TimerTaskThrottling_task_not_expensive) {
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+
+  size_t count = 0;
+  // With the compositor task taking 10ms, there is enough time to run this 6ms
+  // timer task in the 16ms frame.
+  scheduler_->TimerTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(SlowCountingTask, &count, clock_.get(), 6,
+                            scheduler_->TimerTaskRunner()));
+
+  for (int i = 0; i < 1000; i++) {
+    cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+        BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+        base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+    begin_frame_args.on_critical_path = true;
+    scheduler_->WillBeginFrame(begin_frame_args);
+    scheduler_->DidHandleInputEventOnCompositorThread(
+        FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+        RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+    simulate_compositor_task_ran_ = false;
+    compositor_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&RendererSchedulerImplTest::SimulateMainThreadCompositorTask,
+                   base::Unretained(this),
+                   base::TimeDelta::FromMilliseconds(10)));
+
+    mock_task_runner_->RunTasksWhile(
+        base::Bind(&RendererSchedulerImplTest::SimulatedCompositorTaskPending,
+                   base::Unretained(this)));
+    EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE, CurrentUseCase()) << "i = " << i;
+    EXPECT_TRUE(scheduler_->TimerTaskRunner()->IsQueueEnabled()) << "i = " << i;
+  }
+
+  // Task is not throttled.
+  EXPECT_EQ(500u, count);
+}
+
+TEST_F(RendererSchedulerImplTest,
+       ExpensiveTimerTaskBlocked_SYNCHRONIZED_GESTURE_TouchStartExpected) {
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+  SimulateExpensiveTasks(timer_task_runner_);
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  ForceTouchStartToBeExpectedSoon();
+
+  // Bump us into SYNCHRONIZED_GESTURE.
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+      RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+
+  cc::BeginFrameArgs begin_frame_args = cc::BeginFrameArgs::Create(
+      BEGINFRAME_FROM_HERE, clock_->NowTicks(), base::TimeTicks(),
+      base::TimeDelta::FromMilliseconds(16), cc::BeginFrameArgs::NORMAL);
+  begin_frame_args.on_critical_path = true;
+  scheduler_->WillBeginFrame(begin_frame_args);
+
+  EXPECT_EQ(UseCase::SYNCHRONIZED_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+
+  EXPECT_TRUE(TimerTasksSeemExpensive());
+  EXPECT_TRUE(TouchStartExpectedSoon());
+  EXPECT_FALSE(scheduler_->TimerTaskRunner()->IsQueueEnabled());
 }
 
 }  // namespace scheduler

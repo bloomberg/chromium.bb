@@ -23,6 +23,15 @@ using testing::ElementsAre;
 
 namespace scheduler {
 
+namespace {
+void CountingTask(size_t* count, scoped_refptr<TaskQueue> timer_queue) {
+  if (++(*count) < 10) {
+    timer_queue->PostTask(FROM_HERE,
+                          base::Bind(&CountingTask, count, timer_queue));
+  }
+}
+}
+
 class ThrottlingHelperTest : public testing::Test {
  public:
   ThrottlingHelperTest() {}
@@ -43,6 +52,26 @@ class ThrottlingHelperTest : public testing::Test {
   void TearDown() override {
     scheduler_->Shutdown();
     scheduler_.reset();
+  }
+
+  void ExpectThrottled(scoped_refptr<TaskQueue> timer_queue) {
+    size_t count = 0;
+    timer_queue->PostTask(FROM_HERE,
+                          base::Bind(&CountingTask, &count, timer_queue));
+
+    mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
+    EXPECT_LT(count, 10u);
+    mock_task_runner_->RunUntilIdle();
+  }
+
+  void ExpectUnthrottled(scoped_refptr<TaskQueue> timer_queue) {
+    size_t count = 0;
+    timer_queue->PostTask(FROM_HERE,
+                          base::Bind(&CountingTask, &count, timer_queue));
+
+    mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
+    EXPECT_EQ(count, 10u);
+    mock_task_runner_->RunUntilIdle();
   }
 
  protected:
@@ -123,7 +152,7 @@ TEST_F(ThrottlingHelperTest, TimerAlignment) {
                                 base::Bind(&TestTask, &run_times, clock_.get()),
                                 base::TimeDelta::FromMilliseconds(8300.0));
 
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   mock_task_runner_->RunUntilIdle();
 
@@ -156,8 +185,8 @@ TEST_F(ThrottlingHelperTest, TimerAlignment_Unthrottled) {
                                 base::Bind(&TestTask, &run_times, clock_.get()),
                                 base::TimeDelta::FromMilliseconds(8300.0));
 
-  throttling_helper_->Throttle(timer_queue_.get());
-  throttling_helper_->Unthrottle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
 
   mock_task_runner_->RunUntilIdle();
 
@@ -170,9 +199,32 @@ TEST_F(ThrottlingHelperTest, TimerAlignment_Unthrottled) {
                   start_time + base::TimeDelta::FromMilliseconds(8300.0)));
 }
 
+TEST_F(ThrottlingHelperTest, Refcount) {
+  ExpectUnthrottled(timer_queue_.get());
+
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  ExpectThrottled(timer_queue_);
+
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  ExpectThrottled(timer_queue_);
+
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  ExpectThrottled(timer_queue_);
+
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  ExpectUnthrottled(timer_queue_);
+
+  // Should be a NOP.
+  throttling_helper_->DecreaseThrottleRefCount(timer_queue_.get());
+  ExpectUnthrottled(timer_queue_);
+
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
+  ExpectThrottled(timer_queue_);
+}
+
 TEST_F(ThrottlingHelperTest,
        ThrotlingAnEmptyQueueDoesNotPostPumpThrottledTasksLocked) {
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   EXPECT_TRUE(throttling_helper_->task_runner()->IsEmpty());
 }
@@ -181,7 +233,7 @@ TEST_F(ThrottlingHelperTest, WakeUpForNonDelayedTask) {
   std::vector<base::TimeTicks> run_times;
 
   // Nothing is posted on timer_queue_ so PumpThrottledTasks will not tick.
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   // Posting a task should trigger the pump.
   timer_queue_->PostTask(FROM_HERE,
@@ -197,7 +249,7 @@ TEST_F(ThrottlingHelperTest, WakeUpForDelayedTask) {
   std::vector<base::TimeTicks> run_times;
 
   // Nothing is posted on timer_queue_ so PumpThrottledTasks will not tick.
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   // Posting a task should trigger the pump.
   timer_queue_->PostDelayedTask(FROM_HERE,
@@ -222,7 +274,7 @@ void NopTask() {}
 
 TEST_F(ThrottlingHelperTest,
        SingleThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   base::TimeDelta delay(base::TimeDelta::FromMilliseconds(10));
   timer_queue_->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay);
@@ -236,7 +288,7 @@ TEST_F(ThrottlingHelperTest,
 
 TEST_F(ThrottlingHelperTest,
        SingleFutureThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
 
   base::TimeDelta delay(base::TimeDelta::FromSecondsD(15.5));
   timer_queue_->PostDelayedTask(FROM_HERE, base::Bind(&NopTask), delay);
@@ -250,7 +302,7 @@ TEST_F(ThrottlingHelperTest,
 
 TEST_F(ThrottlingHelperTest,
        TwoFutureThrottledTaskPumpedAndRunWithNoExtraneousMessageLoopTasks) {
-  throttling_helper_->Throttle(timer_queue_.get());
+  throttling_helper_->IncreaseThrottleRefCount(timer_queue_.get());
   std::vector<base::TimeTicks> run_times;
 
   base::TimeDelta delay(base::TimeDelta::FromSecondsD(15.5));

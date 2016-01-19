@@ -26,7 +26,7 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
     loading_task_queue_->UnregisterTaskQueue();
 
   if (timer_task_queue_.get()) {
-    renderer_scheduler_->throttling_helper()->Unthrottle(
+    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
         timer_task_queue_.get());
     timer_task_queue_->UnregisterTaskQueue();
   }
@@ -58,7 +58,7 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_ =
         renderer_scheduler_->NewTimerTaskRunner("frame_timer_tq");
     if (page_in_background_) {
-      renderer_scheduler_->throttling_helper()->Throttle(
+      renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
           timer_task_queue_.get());
     }
     timer_web_task_runner_.reset(new WebTaskRunnerImpl(timer_task_queue_));
@@ -82,9 +82,10 @@ void WebFrameSchedulerImpl::SetPageInBackground(bool page_in_background) {
     return;
 
   if (page_in_background_) {
-    renderer_scheduler_->throttling_helper()->Throttle(timer_task_queue_.get());
+    renderer_scheduler_->throttling_helper()->IncreaseThrottleRefCount(
+        timer_task_queue_.get());
   } else {
-    renderer_scheduler_->throttling_helper()->Unthrottle(
+    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
         timer_task_queue_.get());
   }
 }

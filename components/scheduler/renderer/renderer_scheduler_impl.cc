@@ -42,7 +42,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                    TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                    "RendererSchedulerIdlePeriod",
                    base::TimeDelta()),
-      throttling_helper_(this, "renderer.scheduler"),
       render_widget_scheduler_signals_(this),
       control_task_runner_(helper_.ControlTaskRunner()),
       compositor_task_runner_(
@@ -56,6 +55,7 @@ RendererSchedulerImpl::RendererSchedulerImpl(
                         helper_.scheduler_tqm_delegate().get()),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
+  throttling_helper_.reset(new ThrottlingHelper(this, "renderer.scheduler"));
   update_policy_closure_ = base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                                       weak_factory_.GetWeakPtr());
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
@@ -94,12 +94,6 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
   // terminated by this point.
   DCHECK(MainThreadOnly().was_shutdown);
 }
-
-RendererSchedulerImpl::Policy::Policy()
-    : compositor_queue_priority(TaskQueue::NORMAL_PRIORITY),
-      loading_queue_priority(TaskQueue::NORMAL_PRIORITY),
-      timer_queue_priority(TaskQueue::NORMAL_PRIORITY),
-      default_queue_priority(TaskQueue::NORMAL_PRIORITY) {}
 
 RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
     const scoped_refptr<TaskQueue>& compositor_task_runner,
@@ -147,6 +141,7 @@ RendererSchedulerImpl::CompositorThreadOnly::CompositorThreadOnly()
 RendererSchedulerImpl::CompositorThreadOnly::~CompositorThreadOnly() {}
 
 void RendererSchedulerImpl::Shutdown() {
+  throttling_helper_.reset();
   helper_.Shutdown();
   MainThreadOnly().was_shutdown = true;
 }
@@ -194,7 +189,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
       TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
   loading_task_runners_.insert(loading_task_queue);
   loading_task_queue->SetQueuePriority(
-      MainThreadOnly().current_policy.loading_queue_priority);
+      MainThreadOnly().current_policy.loading_queue_policy.priority);
   loading_task_queue->AddTaskObserver(
       &MainThreadOnly().loading_task_cost_estimator);
   return loading_task_queue;
@@ -207,7 +202,7 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
       TaskQueue::Spec(name).SetShouldMonitorQuiescence(true)));
   timer_task_runners_.insert(timer_task_queue);
   timer_task_queue->SetQueuePriority(
-      MainThreadOnly().current_policy.timer_queue_priority);
+      MainThreadOnly().current_policy.timer_queue_policy.priority);
   timer_task_queue->AddTaskObserver(
       &MainThreadOnly().timer_task_cost_estimator);
   return timer_task_queue;
@@ -657,27 +652,30 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   Policy new_policy;
-  bool block_expensive_loading_tasks = false;
-  bool block_expensive_timer_tasks = false;
+  enum class ExpensiveTaskPolicy { RUN, BLOCK, THROTTLE };
+  ExpensiveTaskPolicy expensive_task_policy = ExpensiveTaskPolicy::RUN;
   switch (use_case) {
     case UseCase::COMPOSITOR_GESTURE:
       if (touchstart_expected_soon) {
-        block_expensive_loading_tasks = true;
-        block_expensive_timer_tasks = true;
-        new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
+        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+        new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       } else {
         // What we really want to do is priorize loading tasks, but that doesn't
         // seem to be safe. Instead we do that by proxy by deprioritizing
         // compositor tasks. This should be safe since we've already gone to the
         // pain of fixing ordering issues with them.
-        new_policy.compositor_queue_priority = TaskQueue::BEST_EFFORT_PRIORITY;
+        new_policy.compositor_queue_policy.priority =
+            TaskQueue::BEST_EFFORT_PRIORITY;
       }
       break;
 
     case UseCase::SYNCHRONIZED_GESTURE:
-      new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
-      block_expensive_loading_tasks = true;
-      block_expensive_timer_tasks = true;
+      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      if (touchstart_expected_soon) {
+        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
+      } else {
+        expensive_task_policy = ExpensiveTaskPolicy::THROTTLE;
+      }
       break;
 
     case UseCase::MAIN_THREAD_GESTURE:
@@ -685,61 +683,68 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
       // things we should be prioritizing, so we don't attempt to block
       // expensive tasks because we don't know whether they were integral to the
       // page's functionality or not.
-      new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       break;
 
     case UseCase::TOUCHSTART:
-      new_policy.compositor_queue_priority = TaskQueue::HIGH_PRIORITY;
-      new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
-      new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
-      // NOTE these are nops due to the above.
-      block_expensive_loading_tasks = true;
-      block_expensive_timer_tasks = true;
+      new_policy.compositor_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.loading_queue_policy.priority = TaskQueue::DISABLED_PRIORITY;
+      new_policy.timer_queue_policy.priority = TaskQueue::DISABLED_PRIORITY;
+      // NOTE this is a nop due to the above.
+      expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       break;
 
     case UseCase::NONE:
-      // It's only safe to block tasks that are (likely to be) compositor
-      // driven.
+      // It's only safe to block tasks that if we are expecting a compositor
+      // driven gesture.
       if (touchstart_expected_soon &&
           AnyThread().last_gesture_was_compositor_driven) {
-        block_expensive_loading_tasks = true;
-        block_expensive_timer_tasks = true;
+        expensive_task_policy = ExpensiveTaskPolicy::BLOCK;
       }
       break;
 
     case UseCase::LOADING:
-      new_policy.loading_queue_priority = TaskQueue::HIGH_PRIORITY;
-      new_policy.default_queue_priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.loading_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      new_policy.default_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
       break;
 
     default:
       NOTREACHED();
   }
 
-  if (!MainThreadOnly().expensive_task_blocking_allowed) {
-    block_expensive_loading_tasks = false;
-    block_expensive_timer_tasks = false;
+  if (expensive_task_policy == ExpensiveTaskPolicy::BLOCK &&
+      (!MainThreadOnly().expensive_task_blocking_allowed ||
+       !MainThreadOnly().have_seen_a_begin_main_frame ||
+       MainThreadOnly().navigation_task_expected_count > 0)) {
+    expensive_task_policy = ExpensiveTaskPolicy::RUN;
   }
 
-  // Don't block expensive tasks unless we have actually seen something.
-  if (!MainThreadOnly().have_seen_a_begin_main_frame) {
-    block_expensive_loading_tasks = false;
-    block_expensive_timer_tasks = false;
+  switch (expensive_task_policy) {
+    case ExpensiveTaskPolicy::RUN:
+      break;
+
+    case ExpensiveTaskPolicy::BLOCK:
+      if (loading_tasks_seem_expensive)
+        new_policy.loading_queue_policy.priority = TaskQueue::DISABLED_PRIORITY;
+      if (timer_tasks_seem_expensive)
+        new_policy.timer_queue_policy.priority = TaskQueue::DISABLED_PRIORITY;
+      break;
+
+    case ExpensiveTaskPolicy::THROTTLE:
+      if (loading_tasks_seem_expensive) {
+        new_policy.loading_queue_policy.time_domain_type =
+            TimeDomainType::THROTTLED;
+      }
+      if (timer_tasks_seem_expensive) {
+        new_policy.timer_queue_policy.time_domain_type =
+            TimeDomainType::THROTTLED;
+      }
+      break;
   }
 
-  // Don't block expensive tasks if we are expecting a navigation.
-  if (MainThreadOnly().navigation_task_expected_count > 0) {
-    block_expensive_loading_tasks = false;
-    block_expensive_timer_tasks = false;
-  }
-
-  if (block_expensive_loading_tasks && loading_tasks_seem_expensive)
-    new_policy.loading_queue_priority = TaskQueue::DISABLED_PRIORITY;
-
-  if ((block_expensive_timer_tasks && timer_tasks_seem_expensive) ||
-      MainThreadOnly().timer_queue_suspend_count != 0 ||
+  if (MainThreadOnly().timer_queue_suspend_count != 0 ||
       MainThreadOnly().timer_queue_suspended_when_backgrounded) {
-    new_policy.timer_queue_priority = TaskQueue::DISABLED_PRIORITY;
+    new_policy.timer_queue_policy.priority = TaskQueue::DISABLED_PRIORITY;
   }
 
   // Tracing is done before the early out check, because it's quite possible we
@@ -756,28 +761,55 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
                  "RendererScheduler.timer_tasks_seem_expensive",
                  MainThreadOnly().timer_tasks_seem_expensive);
 
+  // TODO(alexclarke): Can we get rid of force update now?
   if (update_type == UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED &&
       new_policy == MainThreadOnly().current_policy) {
     return;
   }
 
-  compositor_task_runner_->SetQueuePriority(
-      new_policy.compositor_queue_priority);
+  ApplyTaskQueuePolicy(compositor_task_runner_.get(),
+                       MainThreadOnly().current_policy.compositor_queue_policy,
+                       new_policy.compositor_queue_policy);
+
   for (const scoped_refptr<TaskQueue>& loading_queue : loading_task_runners_) {
-    loading_queue->SetQueuePriority(new_policy.loading_queue_priority);
+    ApplyTaskQueuePolicy(loading_queue.get(),
+                         MainThreadOnly().current_policy.loading_queue_policy,
+                         new_policy.loading_queue_policy);
   }
+
   for (const scoped_refptr<TaskQueue>& timer_queue : timer_task_runners_) {
-    timer_queue->SetQueuePriority(new_policy.timer_queue_priority);
+    ApplyTaskQueuePolicy(timer_queue.get(),
+                         MainThreadOnly().current_policy.timer_queue_policy,
+                         new_policy.timer_queue_policy);
   }
 
   // TODO(alexclarke): We shouldn't have to prioritize the default queue, but it
   // appears to be necessary since the order of loading tasks and IPCs (which
   // are mostly dispatched on the default queue) need to be preserved.
-  helper_.DefaultTaskRunner()->SetQueuePriority(
-      new_policy.default_queue_priority);
+  ApplyTaskQueuePolicy(helper_.DefaultTaskRunner().get(),
+                       MainThreadOnly().current_policy.default_queue_policy,
+                       new_policy.default_queue_policy);
 
   DCHECK(compositor_task_runner_->IsQueueEnabled());
   MainThreadOnly().current_policy = new_policy;
+}
+
+void RendererSchedulerImpl::ApplyTaskQueuePolicy(
+    TaskQueue* task_queue,
+    const TaskQueuePolicy& old_task_queue_policy,
+    const TaskQueuePolicy& new_task_queue_policy) const {
+  if (old_task_queue_policy.priority != new_task_queue_policy.priority)
+    task_queue->SetQueuePriority(new_task_queue_policy.priority);
+
+  if (old_task_queue_policy.time_domain_type !=
+      new_task_queue_policy.time_domain_type) {
+    if (new_task_queue_policy.time_domain_type == TimeDomainType::THROTTLED) {
+      throttling_helper_->IncreaseThrottleRefCount(task_queue);
+    } else if (old_task_queue_policy.time_domain_type ==
+               TimeDomainType::THROTTLED) {
+      throttling_helper_->DecreaseThrottleRefCount(task_queue);
+    }
+  }
 }
 
 bool RendererSchedulerImpl::InputSignalsSuggestGestureInProgress(
