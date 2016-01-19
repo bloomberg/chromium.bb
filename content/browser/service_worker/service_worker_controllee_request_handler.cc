@@ -101,9 +101,10 @@ net::URLRequestJob* ServiceWorkerControlleeRequestHandler::MaybeCreateJob(
 
   // It's for original request (A) or redirect case (B-a or B-b).
   scoped_ptr<ServiceWorkerURLRequestJob> job(new ServiceWorkerURLRequestJob(
-      request, network_delegate, blob_storage_context_, resource_context,
-      request_mode_, credentials_mode_, redirect_mode_, is_main_resource_load_,
-      request_context_type_, frame_type_, body_, this));
+      request, network_delegate, provider_host_->client_uuid(),
+      blob_storage_context_, resource_context, request_mode_, credentials_mode_,
+      redirect_mode_, is_main_resource_load_, request_context_type_,
+      frame_type_, body_, this));
   job_ = job->GetWeakPtr();
 
   resource_context_ = resource_context;

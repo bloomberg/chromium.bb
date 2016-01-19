@@ -7,6 +7,7 @@
 #include "platform/blob/BlobData.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
+#include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
@@ -15,10 +16,12 @@ class WebServiceWorkerRequestPrivate : public RefCounted<WebServiceWorkerRequest
 public:
     WebServiceWorkerRequestPrivate()
         : m_mode(WebURLRequest::FetchRequestModeNoCORS)
+        , m_isMainResourceLoad(false)
         , m_credentialsMode(WebURLRequest::FetchCredentialsModeOmit)
         , m_redirectMode(WebURLRequest::FetchRedirectModeFollow)
         , m_requestContext(WebURLRequest::RequestContextUnspecified)
         , m_frameType(WebURLRequest::FrameTypeNone)
+        , m_clientId(WebString())
         , m_isReload(false)
     {
     }
@@ -28,10 +31,12 @@ public:
     RefPtr<BlobDataHandle> blobDataHandle;
     Referrer m_referrer;
     WebURLRequest::FetchRequestMode m_mode;
+    bool m_isMainResourceLoad;
     WebURLRequest::FetchCredentialsMode m_credentialsMode;
     WebURLRequest::FetchRedirectMode m_redirectMode;
     WebURLRequest::RequestContext m_requestContext;
     WebURLRequest::FrameType m_frameType;
+    WebString m_clientId;
     bool m_isReload;
 };
 
@@ -137,6 +142,16 @@ WebURLRequest::FetchRequestMode WebServiceWorkerRequest::mode() const
     return m_private->m_mode;
 }
 
+void WebServiceWorkerRequest::setIsMainResourceLoad(bool isMainResourceLoad)
+{
+    m_private->m_isMainResourceLoad = isMainResourceLoad;
+}
+
+bool WebServiceWorkerRequest::isMainResourceLoad() const
+{
+    return m_private->m_isMainResourceLoad;
+}
+
 void WebServiceWorkerRequest::setCredentialsMode(WebURLRequest::FetchCredentialsMode credentialsMode)
 {
     m_private->m_credentialsMode = credentialsMode;
@@ -175,6 +190,16 @@ void WebServiceWorkerRequest::setFrameType(WebURLRequest::FrameType frameType)
 WebURLRequest::FrameType WebServiceWorkerRequest::frameType() const
 {
     return m_private->m_frameType;
+}
+
+void WebServiceWorkerRequest::setClientId(const WebString& clientId)
+{
+    m_private->m_clientId = clientId;
+}
+
+WebString WebServiceWorkerRequest::clientId() const
+{
+    return m_private->m_clientId;
 }
 
 void WebServiceWorkerRequest::setIsReload(bool isReload)

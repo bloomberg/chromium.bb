@@ -119,8 +119,8 @@ net::URLRequestJob* ForeignFetchRequestHandler::MaybeCreateJob(
   DCHECK(!job_.get() || job_->ShouldForwardToServiceWorker());
 
   ServiceWorkerURLRequestJob* job = new ServiceWorkerURLRequestJob(
-      request, network_delegate, blob_storage_context_, resource_context,
-      request_mode_, credentials_mode_, redirect_mode_, false,
+      request, network_delegate, std::string(), blob_storage_context_,
+      resource_context, request_mode_, credentials_mode_, redirect_mode_, false,
       request_context_type_, frame_type_, body_, this);
   job_ = job->GetWeakPtr();
 

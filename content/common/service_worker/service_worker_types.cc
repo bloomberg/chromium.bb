@@ -21,6 +21,7 @@ const char kFetchScriptError[] =
 
 ServiceWorkerFetchRequest::ServiceWorkerFetchRequest()
     : mode(FETCH_REQUEST_MODE_NO_CORS),
+      is_main_resource_load(false),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
       frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       blob_size(0),
@@ -35,6 +36,7 @@ ServiceWorkerFetchRequest::ServiceWorkerFetchRequest(
     const Referrer& referrer,
     bool is_reload)
     : mode(FETCH_REQUEST_MODE_NO_CORS),
+      is_main_resource_load(false),
       request_context_type(REQUEST_CONTEXT_TYPE_UNSPECIFIED),
       frame_type(REQUEST_CONTEXT_FRAME_TYPE_NONE),
       url(url),

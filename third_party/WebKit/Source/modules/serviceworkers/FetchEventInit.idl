@@ -5,6 +5,7 @@
 // https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#fetch-event-interface
 
 dictionary FetchEventInit : ExtendableEventInit {
-  Request request;
-  boolean isReload = false;    
+  required Request request;
+  DOMString? clientId = null;
+  boolean isReload = false;
 };

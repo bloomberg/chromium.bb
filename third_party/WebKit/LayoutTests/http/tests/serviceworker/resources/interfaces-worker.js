@@ -72,29 +72,47 @@ promise_test(function(t) {
 
 test(function() {
     assert_equals(
-      new ExtendableEvent('ExtendableEvent').type,
-      'ExtendableEvent', 'Type of ExtendableEvent should be ExtendableEvent');
-    assert_equals(
-      new FetchEvent('FetchEvent').type,
-      'FetchEvent', 'Type of FetchEvent should be FetchEvent');
-    assert_equals(
-      new FetchEvent('FetchEvent').cancelable,
-      false, 'Default FetchEvent.cancelable should be false');
-    assert_equals(
-      new FetchEvent('FetchEvent').bubbles,
-      false, 'Default FetchEvent.bubbles should be false');
-    assert_equals(
-      new FetchEvent('FetchEvent').isReload,
-      false, 'Default FetchEvent.isReload should be false');
-    assert_equals(
-      new FetchEvent('FetchEvent', {cancelable: false}).cancelable,
-      false, 'FetchEvent.cancelable should be false');
-    assert_equals(
-      new FetchEvent('FetchEvent', {isReload : true}).isReload, true,
-      'FetchEvent.isReload with option {isReload : true} should be true');
+        new ExtendableEvent('ExtendableEvent').type,
+        'ExtendableEvent', 'Type of ExtendableEvent should be ExtendableEvent');
     var req = new Request('https://www.example.com/', {method: 'POST'});
     assert_equals(
-      new FetchEvent('FetchEvent', {request: req, isReload: true}).request.url,
-      'https://www.example.com/',
-      'FetchEvent.request.url should return the value it was initialized to');
+        new FetchEvent('FetchEvent', {request: req}).type,
+        'FetchEvent', 'Type of FetchEvent should be FetchEvent');
+    assert_equals(
+        new FetchEvent('FetchEvent', {request: req}).cancelable,
+        false, 'Default FetchEvent.cancelable should be false');
+    assert_equals(
+        new FetchEvent('FetchEvent', {request: req}).bubbles,
+        false, 'Default FetchEvent.bubbles should be false');
+    assert_equals(
+        new FetchEvent('FetchEvent', {request: req}).clientId,
+        null, 'Default FetchEvent.clientId should be null');
+    assert_equals(
+        new FetchEvent('FetchEvent', {request: req}).isReload,
+        false, 'Default FetchEvent.isReload should be false');
+    assert_equals(
+        new FetchEvent(
+            'FetchEvent', {request: req, cancelable: false}).cancelable,
+            false, 'FetchEvent.cancelable should be false');
+    assert_equals(
+        new FetchEvent(
+            'FetchEvent',
+            {request: req,
+             clientId: '006e6aae-cfd4-4331-bea8-fbae364703cf'}).clientId,
+            '006e6aae-cfd4-4331-bea8-fbae364703cf',
+            'FetchEvent.clientId with option {clientId: string} should be ' +
+                'the value of string');
+    assert_equals(
+        new FetchEvent(
+            'FetchEvent',
+            {request: req, isReload: true}).isReload,
+            true,
+            'FetchEvent.isReload with option {isReload: true} should be true');
+    assert_equals(
+        new FetchEvent(
+            'FetchEvent',
+            {request: req, isReload: true}).request.url,
+            'https://www.example.com/',
+            'FetchEvent.request.url should return the value it was ' +
+                'initialized to');
   }, 'Event constructors');
