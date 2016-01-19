@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#define PNG_INTERNAL
 #include "third_party/libpng/png.h"
 
 struct BufState {
@@ -41,6 +42,12 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   png_structp png_ptr = png_create_read_struct
     (PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
   assert(png_ptr);
+
+  png_ptr->flags &= ~PNG_FLAG_CRC_CRITICAL_MASK;
+  png_ptr->flags |= PNG_FLAG_CRC_CRITICAL_IGNORE;
+
+  png_ptr->flags &= ~PNG_FLAG_CRC_ANCILLARY_MASK;
+  png_ptr->flags |= PNG_FLAG_CRC_ANCILLARY_NOWARN;
 
   png_infop info_ptr = png_create_info_struct(png_ptr);
   assert(info_ptr);
