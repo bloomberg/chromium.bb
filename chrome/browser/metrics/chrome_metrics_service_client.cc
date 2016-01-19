@@ -76,6 +76,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "chrome/browser/metrics/google_update_metrics_provider_win.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "components/browser_watcher/watcher_metrics_provider_win.h"
 #endif
 
@@ -280,7 +281,8 @@ base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
 
 base::string16 ChromeMetricsServiceClient::GetRegistryBackupKey() {
 #if defined(OS_WIN)
-  return L"Software\\" PRODUCT_STRING_PATH L"\\StabilityMetrics";
+  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
+  return distribution->GetRegistryPath().append(L"\\StabilityMetrics");
 #else
   return base::string16();
 #endif
