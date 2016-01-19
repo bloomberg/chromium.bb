@@ -244,19 +244,14 @@ void ScrollableArea::scrollPositionChanged(const DoublePoint& position, ScrollTy
     // Tell the derived class to scroll its contents.
     setScrollOffset(truncatedPosition, scrollType);
 
-    Scrollbar* verticalScrollbar = this->verticalScrollbar();
-
     // Tell the scrollbars to update their thumb postions.
-    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar()) {
+    // If the scrollbar does not have its own layer, it must always be
+    // invalidated to reflect the new thumb position, even if the theme did not
+    // invalidate any individual part.
+    if (Scrollbar* horizontalScrollbar = this->horizontalScrollbar())
         horizontalScrollbar->offsetDidChange();
-        if (horizontalScrollbar->isOverlayScrollbar() && !hasLayerForHorizontalScrollbar())
-            setScrollbarNeedsPaintInvalidation(HorizontalScrollbar);
-    }
-    if (verticalScrollbar) {
+    if (Scrollbar* verticalScrollbar = this->verticalScrollbar())
         verticalScrollbar->offsetDidChange();
-        if (verticalScrollbar->isOverlayScrollbar() && !hasLayerForVerticalScrollbar())
-            setScrollbarNeedsPaintInvalidation(VerticalScrollbar);
-    }
 
     if (scrollPositionDouble() != oldPosition) {
         // FIXME: Pass in DoubleSize. crbug.com/414283.

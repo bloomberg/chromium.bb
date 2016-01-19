@@ -104,6 +104,13 @@ static bool supportsExpandedScrollbars()
     return globalSupportsExpandedScrollbars;
 }
 
+ScrollbarPart ScrollbarThemeMacOverlayAPI::invalidateOnThumbPositionChange(
+    const ScrollbarThemeClient& scrollbar, float oldPosition, float newPosition) const
+{
+    // ScrollAnimatorMac will invalidate scrollbar parts if necessary.
+    return NoPart;
+}
+
 void ScrollbarThemeMacOverlayAPI::registerScrollbar(ScrollbarThemeClient& scrollbar)
 {
     ScrollbarThemeMacCommon::registerScrollbar(scrollbar);

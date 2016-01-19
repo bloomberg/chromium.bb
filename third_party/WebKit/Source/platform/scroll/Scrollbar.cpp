@@ -139,12 +139,14 @@ void Scrollbar::offsetDidChange()
     if (position == m_currentPos)
         return;
 
+    float oldPosition = m_currentPos;
     int oldThumbPosition = theme().thumbPosition(*this);
     m_currentPos = position;
-    // TODO(jbroman): The theme should provide the parts to invalidate.
-    // At the moment, the only theme that doesn't invalidate everything is Mac,
-    // which invalidates this as needed in ScrollAnimatorMac.
-    setNeedsPaintInvalidation(NoPart);
+
+    ScrollbarPart invalidParts = theme().invalidateOnThumbPositionChange(
+        *this, oldPosition, position);
+    setNeedsPaintInvalidation(invalidParts);
+
     if (m_pressedPart == ThumbPart)
         setPressedPos(m_pressedPos + theme().thumbPosition(*this) - oldThumbPosition);
 }

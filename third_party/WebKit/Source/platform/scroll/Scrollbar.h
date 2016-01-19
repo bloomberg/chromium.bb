@@ -97,6 +97,7 @@ public:
     int scrollbarThickness() const;
 
     // Called by the ScrollableArea when the scroll offset changes.
+    // Will trigger paint invalidation if required.
     void offsetDidChange();
 
     void disconnectFromScrollableArea();

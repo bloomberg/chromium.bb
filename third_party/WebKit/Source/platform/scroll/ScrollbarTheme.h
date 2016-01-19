@@ -47,10 +47,8 @@ public:
     virtual ~ScrollbarTheme() { }
 
     // If true, then scrollbars with this theme will be painted every time
-    // Scrollbar::setNeedsPaintInvalidation is called. If false, then scrollbar
-    // thumb and track part painting results will be cached and not repainted
-    // unless requested by Scrollbar::setThumbNeedsRepaint or
-    // Scrollbar::setTrackNeedsRepaint.
+    // Scrollbar::setNeedsPaintInvalidation is called. If false, then only parts
+    // which are explicitly invalidated will be repainted.
     virtual bool shouldRepaintAllPartsOnInvalidation() const { return true; }
 
     virtual void updateEnabledState(const ScrollbarThemeClient&) { }
@@ -70,6 +68,14 @@ public:
 
     virtual bool invalidateOnMouseEnterExit() { return false; }
     virtual bool invalidateOnWindowActiveChange() const { return false; }
+
+    // Returns parts of the scrollbar which must be repainted following a change
+    // in the thumb position, given scroll positions before and after.
+    virtual ScrollbarPart invalidateOnThumbPositionChange(
+        const ScrollbarThemeClient&, float oldPosition, float newPosition) const
+    {
+        return AllParts;
+    }
 
     virtual void paintScrollCorner(GraphicsContext&, const DisplayItemClient&, const IntRect& cornerRect);
     virtual void paintTickmarks(GraphicsContext&, const ScrollbarThemeClient&, const IntRect&) { }
