@@ -24,7 +24,6 @@
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
-#include "ui/aura/remote_window_tree_host_win.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/win/shell.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"

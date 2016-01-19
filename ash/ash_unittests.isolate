@@ -26,7 +26,7 @@
         ],
       },
     }],
-    ['OS=="win" or chromeos==1', {
+    ['chromeos==1', {
       'variables': {
         'files': [
           '../testing/test_env.py',
@@ -49,20 +49,6 @@
       'variables': {
         'files': [
           '<(PRODUCT_DIR)/libosmesa.so',
-        ],
-      },
-    }],
-    ['OS=="win"', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/osmesa.dll',
-        ],
-      },
-    }],
-    ['OS=="win" and (fastbuild==0 or fastbuild==1)', {
-      'variables': {
-        'files': [
-          '<(PRODUCT_DIR)/ash_unittests.exe.pdb',
         ],
       },
     }],

@@ -68,8 +68,6 @@ component("aura") {
     "layout_manager.h",
     "mus/mus_util.cc",
     "mus/mus_util.h",
-    "remote_window_tree_host_win.cc",
-    "remote_window_tree_host_win.h",
     "scoped_window_targeter.cc",
     "scoped_window_targeter.h",
     "window.cc",

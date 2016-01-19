@@ -147,8 +147,6 @@
       'gpu_support_stub.h',
       'high_contrast/high_contrast_controller.cc',
       'high_contrast/high_contrast_controller.h',
-      'host/ash_remote_window_tree_host_win.cc',
-      'host/ash_remote_window_tree_host_win.h',
       'host/ash_window_tree_host.cc',
       'host/ash_window_tree_host.h',
       'host/ash_window_tree_host_init_params.cc',

@@ -6,7 +6,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/ash_switches.h"
-#include "ash/host/ash_remote_window_tree_host_win.h"
 #include "ash/host/ash_window_tree_host_init_params.h"
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
@@ -123,11 +122,6 @@ class AshWindowTreeHostWin : public AshWindowTreeHost,
 
 AshWindowTreeHost* AshWindowTreeHost::Create(
     const AshWindowTreeHostInitParams& init_params) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7 &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ash::switches::kForceAshToDesktop))
-    return new AshRemoteWindowTreeHostWin(init_params.remote_hwnd);
-
   return new AshWindowTreeHostWin(init_params.initial_bounds);
 }
 
