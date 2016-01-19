@@ -28,6 +28,9 @@
 #include "core/inspector/v8/V8Debugger.h"
 #include "core/inspector/v8/V8JavaScriptCallFrame.h"
 #include "platform/JSONValues.h"
+#include "platform/SharedBuffer.h"
+#include "platform/weborigin/KURL.h"
+#include "public/platform/Platform.h"
 #include "wtf/Optional.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/WTFString.h"
@@ -119,6 +122,19 @@ static PassRefPtrWillBeRawPtr<ScriptCallStack> toScriptCallStack(v8::Local<v8::C
 {
     RefPtr<JavaScriptCallFrame> jsCallFrame = toJavaScriptCallFrame(context, callFrames);
     return jsCallFrame ? toScriptCallStack(jsCallFrame.get()) : nullptr;
+}
+
+static PassOwnPtr<SourceMap> parseSourceMapFromDataUrl(const String& url)
+{
+    KURL sourceMapURL(KURL(), url);
+    if (sourceMapURL.isEmpty() || !sourceMapURL.isValid())
+        return nullptr;
+    WebString mimetype;
+    WebString charset;
+    RefPtr<SharedBuffer> data = PassRefPtr<SharedBuffer>(Platform::current()->parseDataURL(sourceMapURL, mimetype, charset));
+    if (!data)
+        return nullptr;
+    return SourceMap::parse(String(data->data(), data->size()));
 }
 
 PassOwnPtr<V8DebuggerAgent> V8DebuggerAgent::create(InjectedScriptManager* injectedScriptManager, V8Debugger* debugger, int contextGroupId)
@@ -217,6 +233,7 @@ void V8DebuggerAgentImpl::disable(ErrorString*)
     m_pausedScriptState = nullptr;
     m_currentCallStack.Reset();
     m_scripts.clear();
+    m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     internalSetAsyncCallStackDepth(0);
     m_promiseTracker->setEnabled(false, false);
@@ -519,9 +536,17 @@ bool V8DebuggerAgentImpl::isCallFrameWithUnknownScriptOrBlackboxed(PassRefPtr<Ja
         return true;
     bool isBlackboxed = false;
     String scriptURL = it->value.sourceURL();
-    if (m_cachedSkipStackRegExp && !scriptURL.isEmpty()) {
+    String sourceMappedScriptURL;
+    auto itSourceMap = m_sourceMaps.find(String::number(frame->sourceID()));
+    if (itSourceMap != m_sourceMaps.end()) {
+        const SourceMap::Entry* entry = itSourceMap->value->findEntry(frame->line(), frame->column());
+        if (entry)
+            sourceMappedScriptURL = entry->sourceURL;
+    }
+    if (m_cachedSkipStackRegExp && (!scriptURL.isEmpty() || !sourceMappedScriptURL.isEmpty())) {
         if (!it->value.getBlackboxedState(m_cachedSkipStackGeneration, &isBlackboxed)) {
-            isBlackboxed = m_cachedSkipStackRegExp->match(scriptURL) != -1;
+            isBlackboxed = !scriptURL.isEmpty() && m_cachedSkipStackRegExp->match(scriptURL) != -1;
+            isBlackboxed = isBlackboxed || (!sourceMappedScriptURL.isEmpty() && m_cachedSkipStackRegExp->match(sourceMappedScriptURL) != -1);
             it->value.setBlackboxedState(m_cachedSkipStackGeneration, isBlackboxed);
         }
     }
@@ -1480,6 +1505,9 @@ void V8DebuggerAgentImpl::didParseSource(const V8DebuggerParsedScript& parsedScr
     bool hasSourceURL = script.hasSourceURL();
     String scriptURL = script.sourceURL();
     String sourceMapURL = sourceMapURLForScript(script, parsedScript.success);
+    OwnPtr<SourceMap> sourceMap = parseSourceMapFromDataUrl(sourceMapURL);
+    if (sourceMap)
+        m_sourceMaps.set(parsedScript.scriptId, sourceMap.release());
 
     const String* sourceMapURLParam = sourceMapURL.isNull() ? nullptr : &sourceMapURL;
     const bool* isContentScriptParam = isContentScript ? &isContentScript : nullptr;
@@ -1662,6 +1690,7 @@ void V8DebuggerAgentImpl::reset()
 {
     m_scheduledDebuggerStep = NoStep;
     m_scripts.clear();
+    m_sourceMaps.clear();
     m_breakpointIdToDebuggerBreakpointIds.clear();
     resetAsyncCallTracker();
     m_promiseTracker->clear();

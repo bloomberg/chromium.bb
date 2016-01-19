@@ -12,6 +12,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/inspector/PromiseTracker.h"
 #include "core/inspector/v8/ScriptBreakpoint.h"
+#include "core/inspector/v8/SourceMap.h"
 #include "core/inspector/v8/V8DebuggerAgent.h"
 #include "core/inspector/v8/V8DebuggerImpl.h"
 #include "platform/heap/Handle.h"
@@ -246,6 +247,7 @@ private:
     bool m_pendingTraceAsyncOperationCompleted;
     bool m_startingStepIntoAsync;
     V8GlobalValueMap<String, v8::Script, v8::kNotWeak> m_compiledScripts;
+    HashMap<String, OwnPtr<SourceMap>> m_sourceMaps;
 };
 
 } // namespace blink
