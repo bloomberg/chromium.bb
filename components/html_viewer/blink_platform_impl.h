@@ -77,8 +77,6 @@ class BlinkPlatformImpl : public blink::Platform {
   blink::WebWaitableEvent* waitMultipleEvents(
       const blink::WebVector<blink::WebWaitableEvent*>& events) override;
   blink::WebScrollbarBehavior* scrollbarBehavior() override;
-  const unsigned char* getTraceCategoryEnabledFlag(
-      const char* category_name) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes,
       blink::WebGraphicsContext3D* share_context) override;

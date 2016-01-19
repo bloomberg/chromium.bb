@@ -153,12 +153,6 @@ blink::WebScrollbarBehavior* BlinkPlatformImpl::scrollbarBehavior() {
   return &scrollbar_behavior_;
 }
 
-const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
-    const char* category_name) {
-  static const unsigned char buf[] = "*";
-  return buf;
-}
-
 blink::WebGraphicsContext3D*
 BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     const blink::WebGraphicsContext3D::Attributes& attributes,

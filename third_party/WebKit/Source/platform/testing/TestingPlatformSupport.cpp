@@ -89,12 +89,6 @@ WebDiscardableMemory* TestingPlatformSupport::allocateAndLockDiscardableMemory(s
     return !m_config.hasDiscardableMemorySupport ? 0 : new TestingDiscardableMemory(bytes);
 }
 
-const unsigned char* TestingPlatformSupport::getTraceCategoryEnabledFlag(const char* categoryName)
-{
-    static const unsigned char tracingIsDisabled = 0;
-    return &tracingIsDisabled;
-}
-
 WebString TestingPlatformSupport::defaultLocale()
 {
     return WebString::fromUTF8("en-US");

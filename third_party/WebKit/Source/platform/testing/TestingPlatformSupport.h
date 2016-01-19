@@ -114,7 +114,6 @@ public:
 
     // Platform:
     WebDiscardableMemory* allocateAndLockDiscardableMemory(size_t bytes) override;
-    const unsigned char* getTraceCategoryEnabledFlag(const char* categoryName) override;
     WebString defaultLocale() override;
     WebCompositorSupport* compositorSupport() override;
     WebThread* currentThread() override;

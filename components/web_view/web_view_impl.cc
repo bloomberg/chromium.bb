@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "components/devtools_service/public/cpp/switches.h"
 #include "components/mus/public/cpp/scoped_window_ptr.h"
 #include "components/mus/public/cpp/window.h"
 #include "components/mus/public/cpp/window_tree_connection.h"
@@ -26,14 +25,6 @@
 #include "url/gurl.h"
 
 namespace web_view {
-namespace {
-
-bool EnableRemoteDebugging() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      devtools_service::kRemoteDebuggingPort);
-}
-
-}  // namespace
 
 using web_view::mojom::ButtonState;
 
@@ -50,8 +41,7 @@ WebViewImpl::WebViewImpl(mojo::ApplicationImpl* app,
       content_(nullptr),
       find_controller_(this),
       navigation_controller_(this) {
-  if (EnableRemoteDebugging())
-    devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
+  devtools_agent_.reset(new FrameDevToolsAgent(app_, this));
   OnDidNavigate();
 }
 

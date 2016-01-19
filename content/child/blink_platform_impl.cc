@@ -63,7 +63,6 @@
 #include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
-#include "third_party/WebKit/public/platform/WebConvertableToTraceFormat.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebMemoryDumpProvider.h"
@@ -157,25 +156,6 @@ class MemoryUsageCache {
   base::Time last_updated_time_;
 
   base::Lock lock_;
-};
-
-class ConvertableToTraceFormatWrapper
-    : public base::trace_event::ConvertableToTraceFormat {
- public:
-  // We move a reference pointer from |convertable| to |convertable_|,
-  // rather than copying, for thread safety. https://crbug.com/478149
-  explicit ConvertableToTraceFormatWrapper(
-      blink::WebConvertableToTraceFormat& convertable) {
-    convertable_.moveFrom(convertable);
-  }
-  void AppendAsTraceFormat(std::string* out) const override {
-    *out += convertable_.asTraceFormat().utf8();
-  }
-
- private:
-  ~ConvertableToTraceFormatWrapper() override {}
-
-  blink::WebConvertableToTraceFormat convertable_;
 };
 
 }  // namespace
@@ -632,81 +612,6 @@ void BlinkPlatformImpl::histogramSparse(const char* name, int sample) {
   // For sparse histograms, we can use the macro, as it does not incorporate a
   // static.
   UMA_HISTOGRAM_SPARSE_SLOWLY(name, sample);
-}
-
-const unsigned char* BlinkPlatformImpl::getTraceCategoryEnabledFlag(
-    const char* category_group) {
-  return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
-}
-
-blink::Platform::TraceEventAPIAtomicWord*
-BlinkPlatformImpl::getTraceSamplingState(const unsigned thread_bucket) {
-  switch (thread_bucket) {
-    case 0:
-      return reinterpret_cast<blink::Platform::TraceEventAPIAtomicWord*>(
-          &TRACE_EVENT_API_THREAD_BUCKET(0));
-    case 1:
-      return reinterpret_cast<blink::Platform::TraceEventAPIAtomicWord*>(
-          &TRACE_EVENT_API_THREAD_BUCKET(1));
-    case 2:
-      return reinterpret_cast<blink::Platform::TraceEventAPIAtomicWord*>(
-          &TRACE_EVENT_API_THREAD_BUCKET(2));
-    default:
-      NOTREACHED() << "Unknown thread bucket type.";
-  }
-  return NULL;
-}
-
-static_assert(
-    sizeof(blink::Platform::TraceEventHandle) ==
-        sizeof(base::trace_event::TraceEventHandle),
-    "TraceEventHandle types must be same size");
-
-blink::Platform::TraceEventHandle BlinkPlatformImpl::addTraceEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    unsigned long long bind_id,
-    double timestamp,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    blink::WebConvertableToTraceFormat* convertable_values,
-    unsigned int flags) {
-  scoped_refptr<base::trace_event::ConvertableToTraceFormat>
-      convertable_wrappers[2];
-  if (convertable_values) {
-    size_t size = std::min(static_cast<size_t>(num_args),
-                           arraysize(convertable_wrappers));
-    for (size_t i = 0; i < size; ++i) {
-      if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-        convertable_wrappers[i] =
-            new ConvertableToTraceFormatWrapper(convertable_values[i]);
-      }
-    }
-  }
-  base::TimeTicks timestamp_tt =
-      base::TimeTicks() + base::TimeDelta::FromSecondsD(timestamp);
-  base::trace_event::TraceEventHandle handle =
-      TRACE_EVENT_API_ADD_TRACE_EVENT_WITH_THREAD_ID_AND_TIMESTAMP(
-          phase, category_group_enabled, name, id, bind_id,
-          base::PlatformThread::CurrentId(), timestamp_tt, num_args, arg_names,
-          arg_types, arg_values, convertable_wrappers, flags);
-  blink::Platform::TraceEventHandle result;
-  memcpy(&result, &handle, sizeof(result));
-  return result;
-}
-
-void BlinkPlatformImpl::updateTraceEventDuration(
-    const unsigned char* category_group_enabled,
-    const char* name,
-    TraceEventHandle handle) {
-  base::trace_event::TraceEventHandle traceEventHandle;
-  memcpy(&traceEventHandle, &handle, sizeof(handle));
-  TRACE_EVENT_API_UPDATE_TRACE_EVENT_DURATION(
-      category_group_enabled, name, traceEventHandle);
 }
 
 void BlinkPlatformImpl::registerMemoryDumpProvider(

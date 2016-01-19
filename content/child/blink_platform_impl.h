@@ -119,26 +119,6 @@ class CONTENT_EXPORT BlinkPlatformImpl
                             int sample,
                             int boundary_value) override;
   void histogramSparse(const char* name, int sample) override;
-  const unsigned char* getTraceCategoryEnabledFlag(
-      const char* category_name) override;
-  TraceEventAPIAtomicWord* getTraceSamplingState(
-      const unsigned thread_bucket) override;
-  TraceEventHandle addTraceEvent(
-      char phase,
-      const unsigned char* category_group_enabled,
-      const char* name,
-      unsigned long long id,
-      unsigned long long bind_id,
-      double timestamp,
-      int num_args,
-      const char** arg_names,
-      const unsigned char* arg_types,
-      const unsigned long long* arg_values,
-      blink::WebConvertableToTraceFormat* convertable_values,
-      unsigned int flags) override;
-  void updateTraceEventDuration(const unsigned char* category_group_enabled,
-                                const char* name,
-                                TraceEventHandle) override;
   void registerMemoryDumpProvider(blink::WebMemoryDumpProvider* wmdp,
                                   const char* name) override;
   void unregisterMemoryDumpProvider(

@@ -31,6 +31,7 @@
 #ifndef EventTracer_h
 #define EventTracer_h
 
+#include "base/memory/ref_counted.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/RefCounted.h"
@@ -38,6 +39,12 @@
 #include "wtf/text/WTFString.h"
 
 #include <stdint.h>
+
+namespace base {
+namespace trace_event {
+class ConvertableToTraceFormat;
+}
+}
 
 // This will mark the trace event as disabled by default. The user will need
 // to explicitly enable the event.
@@ -91,6 +98,20 @@ public:
         unsigned flags);
     static void updateTraceEventDuration(const unsigned char* categoryEnabledFlag, const char* name, TraceEvent::TraceEventHandle);
     static double systemTraceTime();
+
+private:
+    static TraceEvent::TraceEventHandle addTraceEvent(char phase,
+        const unsigned char* categoryEnabledFlag,
+        const char* name,
+        unsigned long long id,
+        unsigned long long bindId,
+        double timestamp,
+        int numArgs,
+        const char* argNames[],
+        const unsigned char argTypes[],
+        const unsigned long long argValues[],
+        const scoped_refptr<base::trace_event::ConvertableToTraceFormat>* convertables,
+        unsigned flags);
 };
 
 } // namespace blink

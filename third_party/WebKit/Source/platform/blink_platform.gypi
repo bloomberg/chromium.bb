@@ -272,7 +272,6 @@
       'exported/WebContentDecryptionModuleResult.cpp',
       'exported/WebContentDecryptionModuleSession.cpp',
       'exported/WebContentSettingCallbacks.cpp',
-      'exported/WebConvertableToTraceFormat.cpp',
       'exported/WebCredential.cpp',
       'exported/WebCryptoAlgorithm.cpp',
       'exported/WebCryptoKey.cpp',

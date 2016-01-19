@@ -44,7 +44,6 @@
       "platform/WebContentLayer.h",
       "platform/WebContentLayerClient.h",
       "platform/WebContentSettingCallbacks.h",
-      "platform/WebConvertableToTraceFormat.h",
       "platform/WebCookieJar.h",
       "platform/WebCredential.h",
       "platform/WebCredentialManagerClient.h",
