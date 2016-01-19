@@ -161,9 +161,15 @@ void IntersectionObservation::computeIntersectionObservations(double timestamp)
 
 void IntersectionObservation::disconnect()
 {
+    IntersectionObserver* observer = m_observer;
+    clearRootAndRemoveFromTarget();
+    observer->removeObservation(*this);
+}
+
+void IntersectionObservation::clearRootAndRemoveFromTarget()
+{
     if (m_target)
-        target()->ensureIntersectionObserverData().removeObservation(this->observer());
-    m_observer->removeObservation(*this);
+        target()->ensureIntersectionObserverData().removeObservation(observer());
     m_observer.clear();
 }
 

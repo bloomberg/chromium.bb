@@ -55,8 +55,9 @@ public:
 
 private:
     explicit IntersectionObserver(IntersectionObserverCallback&, Node&, const Vector<Length>& rootMargin, const Vector<float>& thresholds);
-
-    void checkRootAndDetachIfNeeded();
+#if ENABLE(OILPAN)
+    void clearWeakMembers(Visitor*);
+#endif
 
     Member<IntersectionObserverCallback> m_callback;
     WeakPtrWillBeWeakMember<Node> m_root;

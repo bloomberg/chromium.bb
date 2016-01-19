@@ -32,9 +32,9 @@ public:
     unsigned lastThresholdIndex() const { return m_lastThresholdIndex; }
     void setLastThresholdIndex(unsigned index) { m_lastThresholdIndex = index; }
     bool shouldReportRootBounds() const { return m_shouldReportRootBounds; }
-
     void computeIntersectionObservations(double timestamp);
     void disconnect();
+    void clearRootAndRemoveFromTarget();
 
     DECLARE_TRACE();
 
