@@ -524,12 +524,7 @@ TouchEvent::TouchEvent(const base::NativeEvent& native_event)
       rotation_angle_(GetTouchAngle(native_event)),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
-      pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                                      GetTouchRadiusX(native_event),
-                                      GetTouchRadiusY(native_event),
-                                      GetTouchForce(native_event),
-                                      /* tilt_x */ 0.0f,
-                                      /* tilt_y */ 0.0f)) {
+      pointer_details_(GetTouchPointerDetailsFromNative(native_event)) {
   latency()->AddLatencyNumberWithTimestamp(
       INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0,
       base::TimeTicks::FromInternalValue(time_stamp().ToInternalValue()), 1);

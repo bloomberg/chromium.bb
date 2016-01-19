@@ -239,9 +239,11 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("10,10", ui::EventLocationFromNative(scoped_xevent).ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_EQ(GetTouchRadiusX(scoped_xevent), 10);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.15f);
-  EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.1f);
+  PointerDetails pointer_details =
+      GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(pointer_details.radius_x(), 10.0f);
+  EXPECT_FLOAT_EQ(pointer_details.force(), 0.1f);
 
   // Touch update, with new orientation info.
   valuators.clear();
@@ -252,9 +254,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("20,20", ui::EventLocationFromNative(scoped_xevent).ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_EQ(GetTouchRadiusX(scoped_xevent), 10);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
-  EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.1f);
+  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(pointer_details.radius_x(), 10.0f);
+  EXPECT_FLOAT_EQ(pointer_details.force(), 0.1f);
 
   // Another touch with tracking id 6, touch id 1.
   valuators.clear();
@@ -267,9 +270,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
-  EXPECT_EQ(GetTouchRadiusX(scoped_xevent), 50);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
-  EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.5f);
+  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(pointer_details.radius_x(), 50.0f);
+  EXPECT_FLOAT_EQ(pointer_details.force(), 0.5f);
 
   // Touch with tracking id 5 should have old radius/angle value and new pressue
   // value.
@@ -280,9 +284,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("30,30", ui::EventLocationFromNative(scoped_xevent).ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 0);
-  EXPECT_EQ(GetTouchRadiusX(scoped_xevent), 10);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.25f);
-  EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.05f);
+  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(pointer_details.radius_x(), 10.0f);
+  EXPECT_FLOAT_EQ(pointer_details.force(), 0.05f);
 
   // Touch with tracking id 6 should have old angle/pressure value and new
   // radius value.
@@ -293,9 +298,10 @@ TEST_F(EventsXTest, TouchEventBasic) {
   EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(scoped_xevent));
   EXPECT_EQ("200,200", ui::EventLocationFromNative(scoped_xevent).ToString());
   EXPECT_EQ(GetTouchId(scoped_xevent), 1);
-  EXPECT_EQ(GetTouchRadiusX(scoped_xevent), 25);
   EXPECT_FLOAT_EQ(GetTouchAngle(scoped_xevent), 0.45f);
-  EXPECT_FLOAT_EQ(GetTouchForce(scoped_xevent), 0.5f);
+  pointer_details = GetTouchPointerDetailsFromNative(scoped_xevent);
+  EXPECT_FLOAT_EQ(pointer_details.radius_x(), 25.0f);
+  EXPECT_FLOAT_EQ(pointer_details.force(), 0.5f);
 }
 
 int GetTouchIdForTrackingId(uint32_t tracking_id) {

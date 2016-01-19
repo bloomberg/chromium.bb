@@ -322,24 +322,20 @@ int GetTouchId(const base::NativeEvent& xev) {
   return 0;
 }
 
-float GetTouchRadiusX(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 1.0;
-}
-
-float GetTouchRadiusY(const base::NativeEvent& native_event) {
-  NOTIMPLEMENTED();
-  return 1.0;
-}
-
 float GetTouchAngle(const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return 0.0;
 }
 
-float GetTouchForce(const base::NativeEvent& native_event) {
+PointerDetails GetTouchPointerDetailsFromNative(
+    const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
-  return 0.0;
+  return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
+                        /* radius_x */ 1.0,
+                        /* radius_y */ 1.0,
+                        /* force */ 0.f,
+                        /* tilt_x */ 0.f,
+                        /* tilt_y */ 0.f);
 }
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,
