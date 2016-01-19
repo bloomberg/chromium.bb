@@ -130,31 +130,59 @@ CSSSelectorList CSSSelectorParser::consumeCompoundSelectorList(CSSParserTokenRan
     return CSSSelectorList::adoptSelectorVector(selectorList);
 }
 
+namespace {
+
+enum CompoundSelectorFlags {
+    HasPseudoElementForRightmostCompound = 1 << 0,
+    HasContentPseudoElement = 1 << 1
+};
+
+unsigned extractCompoundFlags(const CSSParserSelector& simpleSelector, CSSParserMode parserMode)
+{
+    if (simpleSelector.match() != CSSSelector::PseudoElement)
+        return 0;
+    if (simpleSelector.pseudoType() == CSSSelector::PseudoContent)
+        return HasContentPseudoElement;
+    if (simpleSelector.pseudoType() == CSSSelector::PseudoShadow)
+        return 0;
+    // TODO(rune@opera.com): crbug.com/578131
+    // The UASheetMode check is a work-around to allow this selector in mediaControls(New).css:
+    // input[type="range" i]::-webkit-media-slider-container > div {
+    if (parserMode == UASheetMode && simpleSelector.pseudoType() == CSSSelector::PseudoWebKitCustomElement)
+        return 0;
+    return HasPseudoElementForRightmostCompound;
+}
+
+} // namespace
+
 PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumeComplexSelector(CSSParserTokenRange& range)
 {
     OwnPtr<CSSParserSelector> selector = consumeCompoundSelector(range);
     if (!selector)
         return nullptr;
 
-    bool previousCompoundHasContentPseudo = false;
 
-    for (CSSParserSelector* simple = selector.get(); simple && !previousCompoundHasContentPseudo; simple = simple->tagHistory())
-        previousCompoundHasContentPseudo = simple->pseudoType() == CSSSelector::PseudoContent;
+    unsigned previousCompoundFlags = 0;
+
+    for (CSSParserSelector* simple = selector.get(); simple && !previousCompoundFlags; simple = simple->tagHistory())
+        previousCompoundFlags |= extractCompoundFlags(*simple, m_context.mode());
 
     while (CSSSelector::Relation combinator = consumeCombinator(range)) {
         OwnPtr<CSSParserSelector> nextSelector = consumeCompoundSelector(range);
         if (!nextSelector)
             return combinator == CSSSelector::Descendant ? selector.release() : nullptr;
+        if (previousCompoundFlags & HasPseudoElementForRightmostCompound)
+            return nullptr;
         CSSParserSelector* end = nextSelector.get();
-        bool compoundHasContentPseudo = end->pseudoType() == CSSSelector::PseudoContent;
+        unsigned compoundFlags = extractCompoundFlags(*end, m_context.mode());
         while (end->tagHistory()) {
             end = end->tagHistory();
-            compoundHasContentPseudo |= end->pseudoType() == CSSSelector::PseudoContent;
+            compoundFlags |= extractCompoundFlags(*end, m_context.mode());
         }
         end->setRelation(combinator);
-        if (previousCompoundHasContentPseudo)
+        if (previousCompoundFlags & HasContentPseudoElement)
             end->setRelationIsAffectedByPseudoContent();
-        previousCompoundHasContentPseudo = compoundHasContentPseudo;
+        previousCompoundFlags = compoundFlags;
         end->setTagHistory(selector.release());
 
         selector = nextSelector.release();

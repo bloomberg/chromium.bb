@@ -203,10 +203,52 @@ TEST(CSSSelectorParserTest, InvalidSimpleAfterPseudoElementInCompound)
 TEST(CSSSelectorParserTest, WorkaroundForInvalidCustomPseudoInUAStyle)
 {
     // See crbug.com/578131
-    CSSTokenizer::Scope scope("video::-webkit-media-text-track-region-container.scrolling");
-    CSSParserTokenRange range = scope.tokenRange();
-    CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(UASheetMode, nullptr), nullptr);
-    EXPECT_TRUE(list.isValid());
+    const char* testCases[] = {
+        "video::-webkit-media-text-track-region-container.scrolling",
+        "input[type=\"range\" i]::-webkit-media-slider-container > div"
+    };
+
+    for (auto testCase : testCases) {
+        CSSTokenizer::Scope scope(testCase);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(UASheetMode, nullptr), nullptr);
+        EXPECT_TRUE(list.isValid());
+    }
+}
+
+TEST(CSSSelectorParserTest, ValidPseudoElementInNonRightmostCompound)
+{
+    const char* testCases[] = {
+        "::content *",
+        "::shadow *",
+        "::content div::before",
+        "::shadow ::first-letter"
+    };
+
+    for (auto testCase : testCases) {
+        CSSTokenizer::Scope scope(testCase);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        EXPECT_TRUE(list.isValid());
+    }
+}
+
+TEST(CSSSelectorParserTest, InvalidPseudoElementInNonRightmostCompound)
+{
+    const char* testCases[] = {
+        "::-webkit-volume-slider *",
+        "::before *",
+        "::-webkit-scrollbar *",
+        "::cue *",
+        "::selection *"
+    };
+
+    for (auto testCase : testCases) {
+        CSSTokenizer::Scope scope(testCase);
+        CSSParserTokenRange range = scope.tokenRange();
+        CSSSelectorList list = CSSSelectorParser::parseSelector(range, CSSParserContext(HTMLStandardMode, nullptr), nullptr);
+        EXPECT_FALSE(list.isValid());
+    }
 }
 
 } // namespace
