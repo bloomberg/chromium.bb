@@ -256,8 +256,11 @@ public class AdapterInputConnection extends BaseInputConnection {
         mPendingAccent = 0;
 
         Editable editable = getEditableInternal();
-        int selectionStartAfterReplacement = Selection.getSelectionStart(editable);
-        int selectionEndAfterReplacement = Selection.getSelectionStart(editable) + text.length();
+        int selectionStartAfterReplacement = BaseInputConnection.getComposingSpanStart(editable);
+        if (selectionStartAfterReplacement == INVALID_COMPOSITION) {
+            selectionStartAfterReplacement = Selection.getSelectionStart(editable);
+        }
+        int selectionEndAfterReplacement = selectionStartAfterReplacement + text.length();
 
         super.setComposingText(text, newCursorPosition);
 

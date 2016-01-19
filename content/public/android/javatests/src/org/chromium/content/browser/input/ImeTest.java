@@ -1041,6 +1041,13 @@ public class ImeTest extends ContentShellTestBase {
         assertEquals("a", getTextBeforeCursor(10, 0));
         assertEquals("befcd", getTextAfterCursor(10, 0));
         waitAndVerifyStatesAndCalls(5, "abefcd", 1, 1, -1, -1);
+
+        setComposingText("gh", 1);
+        setComposingText("i", 0);
+        finishComposingText();
+        assertEquals("a", getTextBeforeCursor(10, 0));
+        assertEquals("ibefcd", getTextAfterCursor(10, 0));
+        waitAndVerifyStatesAndCalls(8, "aibefcd", 1, 1, -1, -1);
     }
 
     private CharSequence getTextBeforeCursor(final int length, final int flags)
