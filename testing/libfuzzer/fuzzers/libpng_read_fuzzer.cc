@@ -55,11 +55,6 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   base::ScopedClosureRunner struct_deleter(base::Bind(
         &png_destroy_read_struct, &png_ptr, &info_ptr, nullptr));
 
-  if (setjmp(png_ptr->jmpbuf)) {
-    // error handling for libpng
-    return 0;
-  }
-
   // Setting up reading from buffer.
   std::unique_ptr<BufState> buf_state(new BufState());
   buf_state->data = data + kPngHeaderSize;
@@ -67,11 +62,17 @@ extern "C" int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
   png_set_read_fn(png_ptr, buf_state.get(), user_read_data);
   png_set_sig_bytes(png_ptr, kPngHeaderSize);
 
+  // libpng error handling.
+  if (setjmp(png_ptr->jmpbuf)) { return 0; }
+
   // Reading
   png_read_info(png_ptr, info_ptr);
   png_voidp row = png_malloc(png_ptr, png_get_rowbytes(png_ptr, info_ptr));
   base::ScopedClosureRunner png_deleter(base::Bind(
         &png_free, png_ptr, row));
+
+  // reset error handler to put png_deleter into scope.
+  if (setjmp(png_ptr->jmpbuf)) { return 0; }
 
   png_uint_32 width, height;
   int bit_depth, color_type, interlace_type, compression_type;
