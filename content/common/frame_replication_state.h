@@ -37,16 +37,18 @@ struct CONTENT_EXPORT FrameReplicationState {
   // compromized renderer.
   url::Origin origin;
 
-  // Current sandbox flags of the frame.  |sandbox_flags| are initialized for
-  // new child frames using the value of the <iframe> element's "sandbox"
-  // attribute. They are updated dynamically whenever a parent frame updates an
-  // <iframe>'s sandbox attribute via JavaScript.
+  // Sandbox flags currently in effect for the frame.  |sandbox_flags| are
+  // initialized for new child frames using the value of the <iframe> element's
+  // "sandbox" attribute, combined with any sandbox flags in effect for the
+  // parent frame.
   //
-  // Updates to |sandbox_flags| are sent to proxies, but only after a
-  // subsequent navigation of the (sandboxed) frame, since the flags only take
-  // effect on navigation (see also FrameTreeNode::effective_sandbox_flags_).
-  // The proxies need updated flags so that they can be inherited properly if a
-  // proxy ever becomes a parent of a local frame.
+  // When a parent frame updates an <iframe>'s sandbox attribute via
+  // JavaScript, |sandbox_flags| are updated only after the child frame commits
+  // a navigation that makes the updated flags take effect.  This is also the
+  // point at which updates are sent to proxies (see
+  // CommitPendingSandboxFlags()). The proxies need updated flags so that they
+  // can be inherited properly if a proxy ever becomes a parent of a local
+  // frame.
   blink::WebSandboxFlags sandbox_flags;
 
   // The assigned name of the frame. This name can be empty, unlike the unique

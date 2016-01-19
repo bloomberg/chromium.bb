@@ -709,6 +709,16 @@ bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
   params.parent_routing_id = parent_routing_id;
   params.previous_sibling_routing_id = previous_sibling_routing_id;
   params.replication_state = frame_tree_node()->current_replication_state();
+
+  // Normally, the replication state contains effective sandbox flags,
+  // excluding flags that were updated but have not taken effect.  However, a
+  // new RenderFrame should use the pending sandbox flags, since it is being
+  // created as part of the navigation that will commit these flags. (I.e., the
+  // RenderFrame needs to know the flags to use when initializing the new
+  // document once it commits).
+  params.replication_state.sandbox_flags =
+      frame_tree_node()->pending_sandbox_flags();
+
   params.frame_owner_properties = frame_tree_node()->frame_owner_properties();
 
   if (render_widget_host_) {
@@ -1441,7 +1451,7 @@ void RenderFrameHostImpl::OnDidChangeSandboxFlags(
   if (!child)
     return;
 
-  child->set_sandbox_flags(flags);
+  child->SetPendingSandboxFlags(flags);
 
   // Notify the RenderFrame if it lives in a different process from its
   // parent. The frame's proxies in other processes also need to learn about

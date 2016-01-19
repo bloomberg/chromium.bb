@@ -118,6 +118,15 @@ void SimulateMouseClick(RenderWidgetHost* rwh, int x, int y) {
   rwh->ForwardMouseEvent(mouse_event);
 }
 
+// Retrieve document.origin for the frame |ftn|.
+std::string GetDocumentOrigin(FrameTreeNode* ftn) {
+  std::string origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      ftn->current_frame_host(),
+      "domAutomationController.send(document.origin)", &origin));
+  return origin;
+}
+
 class RenderWidgetHostMouseEventMonitor {
  public:
   explicit RenderWidgetHostMouseEventMonitor(RenderWidgetHost* host)
@@ -2383,11 +2392,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
 
   // Both frames should not be sandboxed to start with.
   EXPECT_EQ(blink::WebSandboxFlags::None,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+            root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->effective_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
-            root->child_at(1)->current_replication_state().sandbox_flags);
+            root->child_at(1)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(1)->effective_sandbox_flags());
 
@@ -2398,7 +2407,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
                             "'allow-scripts');"));
 
   // Check that updated sandbox flags are propagated to browser process.
-  // The new flags should be set in current_replication_state(), while
+  // The new flags should be reflected in pending_sandbox_flags(), while
   // effective_sandbox_flags() should still reflect the old flags, because
   // sandbox flag updates take place only after navigations. "allow-scripts"
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
@@ -2406,8 +2415,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   blink::WebSandboxFlags expected_flags =
       blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
       ~blink::WebSandboxFlags::AutomaticFeatures;
-  EXPECT_EQ(expected_flags,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->effective_sandbox_flags());
 
@@ -2433,8 +2441,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
 
   // Confirm that the browser process has updated the frame's current sandbox
   // flags.
-  EXPECT_EQ(expected_flags,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(expected_flags, root->child_at(0)->effective_sandbox_flags());
 
   // Opening a popup in the now-sandboxed frame should fail.
@@ -2476,6 +2483,10 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
       &success));
   EXPECT_TRUE(success);
   EXPECT_EQ(1u, Shell::windows().size());
+
+  // Child of a sandboxed frame should also be sandboxed on the browser side.
+  EXPECT_EQ(expected_flags,
+            root->child_at(0)->child_at(0)->effective_sandbox_flags());
 }
 
 // Check that dynamic updates to iframe sandbox flags are propagated correctly.
@@ -2510,8 +2521,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   blink::WebSandboxFlags expected_flags =
       blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
       ~blink::WebSandboxFlags::AutomaticFeatures;
-  EXPECT_EQ(expected_flags,
-            root->child_at(1)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(1)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(1)->effective_sandbox_flags());
 
@@ -2528,8 +2538,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   ASSERT_EQ(1U, root->child_at(1)->child_count());
 
   // Confirm that the browser process has updated the current sandbox flags.
-  EXPECT_EQ(expected_flags,
-            root->child_at(1)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(1)->pending_sandbox_flags());
   EXPECT_EQ(expected_flags, root->child_at(1)->effective_sandbox_flags());
 
   // Opening a popup in the sandboxed second frame should fail.
@@ -2575,7 +2584,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The frame should not be sandboxed to start with.
   EXPECT_EQ(blink::WebSandboxFlags::None,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+            root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->effective_sandbox_flags());
 
@@ -2586,7 +2595,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
                             "'allow-scripts');"));
 
   // Check that updated sandbox flags are propagated to browser process.
-  // The new flags should be set in current_replication_state(), while
+  // The new flags should be set in pending_sandbox_flags(), while
   // effective_sandbox_flags() should still reflect the old flags, because
   // sandbox flag updates take place only after navigations. "allow-scripts"
   // resets both SandboxFlags::Scripts and SandboxFlags::AutomaticFeatures bits
@@ -2594,8 +2603,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   blink::WebSandboxFlags expected_flags =
       blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
       ~blink::WebSandboxFlags::AutomaticFeatures;
-  EXPECT_EQ(expected_flags,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(blink::WebSandboxFlags::None,
             root->child_at(0)->effective_sandbox_flags());
 
@@ -2610,8 +2618,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Confirm that the browser process has updated the frame's current sandbox
   // flags.
-  EXPECT_EQ(expected_flags,
-            root->child_at(0)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
   EXPECT_EQ(expected_flags, root->child_at(0)->effective_sandbox_flags());
 
   // Opening a popup in the now-sandboxed frame should fail.
@@ -2705,11 +2712,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
       ~blink::WebSandboxFlags::AutomaticFeatures &
       ~blink::WebSandboxFlags::Origin;
-  EXPECT_EQ(expected_flags,
-            root->child_at(1)->current_replication_state().sandbox_flags);
+  EXPECT_EQ(expected_flags, root->child_at(1)->effective_sandbox_flags());
 
   // The child of the sandboxed frame should've inherited sandbox flags, so it
   // should not be able to create popups.
+  EXPECT_EQ(expected_flags, bottom_child->effective_sandbox_flags());
   bool success = false;
   EXPECT_TRUE(
       ExecuteScriptAndExtractBool(bottom_child->current_frame_host(),
@@ -4742,6 +4749,112 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, VisibilityChanged) {
       root->child_at(0)->current_frame_host()->GetRenderWidgetHost(), true);
   EXPECT_TRUE(ExecuteScript(shell()->web_contents(), show_script));
   EXPECT_TRUE(show_observer.WaitUntilSatisfied());
+}
+
+// Verify that sandbox flags inheritance works across multiple levels of
+// frames.  See https://crbug.com/576845.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Set sandbox flags for child frame.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.querySelector('iframe').sandbox = 'allow-scripts';"));
+
+  // Calculate expected flags.  Note that "allow-scripts" resets both
+  // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
+  // blink::parseSandboxPolicy().
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures;
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            root->child_at(0)->effective_sandbox_flags());
+
+  // Navigate child frame so that the sandbox flags take effect.  Use a page
+  // with three levels of frames and make sure all frames properly inherit
+  // sandbox flags.
+  GURL frame_url(embedded_test_server()->GetURL(
+      "b.com", "/cross_site_iframe_factory.html?b(c(d))"));
+  TestFrameNavigationObserver frame_observer(root->child_at(0));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  frame_observer.Wait();
+  // Wait for subframes to load as well.
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // Check each new frame's sandbox flags on the browser process side.
+  FrameTreeNode* b_child = root->child_at(0);
+  FrameTreeNode* c_child = b_child->child_at(0);
+  FrameTreeNode* d_child = c_child->child_at(0);
+  EXPECT_EQ(expected_flags, b_child->effective_sandbox_flags());
+  EXPECT_EQ(expected_flags, c_child->effective_sandbox_flags());
+  EXPECT_EQ(expected_flags, d_child->effective_sandbox_flags());
+
+  // Check whether each frame is sandboxed on the renderer side, by seeing if
+  // each frame's origin is unique ("null").
+  EXPECT_EQ("null", GetDocumentOrigin(b_child));
+  EXPECT_EQ("null", GetDocumentOrigin(c_child));
+  EXPECT_EQ("null", GetDocumentOrigin(d_child));
+}
+
+// Check that sandbox flags are not inherited before they take effect.  Create
+// a child frame, update its sandbox flags but don't navigate the frame, and
+// ensure that a new cross-site grandchild frame doesn't inherit the new flags
+// (which shouldn't have taken effect).
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       SandboxFlagsNotInheritedBeforeNavigation) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  NavigateToURL(shell(), main_url);
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Set sandbox flags for child frame.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.querySelector('iframe').sandbox = 'allow-scripts';"));
+
+  // These flags should be pending but not take effect, since there's been no
+  // navigation.
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures;
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(expected_flags, child->pending_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None, child->effective_sandbox_flags());
+
+  // Add a new grandchild frame and navigate it cross-site.
+  RenderFrameHostCreatedObserver frame_observer(shell()->web_contents(), 1);
+  EXPECT_TRUE(ExecuteScript(
+      child->current_frame_host(),
+      "document.body.appendChild(document.createElement('iframe'));"));
+  frame_observer.Wait();
+
+  FrameTreeNode* grandchild = child->child_at(0);
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestFrameNavigationObserver navigation_observer(grandchild);
+  NavigateFrameToURL(grandchild, frame_url);
+  navigation_observer.Wait();
+
+  // Since the update flags haven't yet taken effect in its parent, this
+  // grandchild frame should not be sandboxed.
+  EXPECT_EQ(blink::WebSandboxFlags::None, grandchild->pending_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::None,
+            grandchild->effective_sandbox_flags());
+
+  // Check that the grandchild frame isn't sandboxed on the renderer side.  If
+  // sandboxed, its origin would be unique ("null").
+  EXPECT_EQ(frame_url.GetOrigin().spec(), GetDocumentOrigin(grandchild) + "/");
 }
 
 }  // namespace content

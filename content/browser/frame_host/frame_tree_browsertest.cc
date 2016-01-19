@@ -464,30 +464,29 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, SandboxFlagsSetForChildFrames) {
   // which resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy(), and
   // third frame has "allow-scripts allow-same-origin".
-  EXPECT_EQ(root->current_replication_state().sandbox_flags,
-            blink::WebSandboxFlags::None);
-  EXPECT_EQ(root->child_at(0)->current_replication_state().sandbox_flags,
-            blink::WebSandboxFlags::All);
-  EXPECT_EQ(root->child_at(1)->current_replication_state().sandbox_flags,
-            blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
-                ~blink::WebSandboxFlags::AutomaticFeatures);
-  EXPECT_EQ(root->child_at(2)->current_replication_state().sandbox_flags,
-            blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+  EXPECT_EQ(blink::WebSandboxFlags::None, root->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::All,
+            root->child_at(0)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+                ~blink::WebSandboxFlags::AutomaticFeatures,
+            root->child_at(1)->effective_sandbox_flags());
+  EXPECT_EQ(blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
                 ~blink::WebSandboxFlags::AutomaticFeatures &
-                ~blink::WebSandboxFlags::Origin);
+                ~blink::WebSandboxFlags::Origin,
+            root->child_at(2)->effective_sandbox_flags());
 
   // Sandboxed frames should set a unique origin unless they have the
   // "allow-same-origin" directive.
-  EXPECT_EQ(root->child_at(0)->current_origin().Serialize(), "null");
-  EXPECT_EQ(root->child_at(1)->current_origin().Serialize(), "null");
-  EXPECT_EQ(root->child_at(2)->current_origin().Serialize() + "/",
-            main_url.GetOrigin().spec());
+  EXPECT_EQ("null", root->child_at(0)->current_origin().Serialize());
+  EXPECT_EQ("null", root->child_at(1)->current_origin().Serialize());
+  EXPECT_EQ(main_url.GetOrigin().spec(),
+            root->child_at(2)->current_origin().Serialize() + "/");
 
   // Navigating to a different URL should not clear sandbox flags.
   GURL frame_url(embedded_test_server()->GetURL("/title1.html"));
   NavigateFrameToURL(root->child_at(0), frame_url);
-  EXPECT_EQ(root->child_at(0)->current_replication_state().sandbox_flags,
-            blink::WebSandboxFlags::All);
+  EXPECT_EQ(blink::WebSandboxFlags::All,
+            root->child_at(0)->effective_sandbox_flags());
 }
 
 // Ensure that a popup opened from a subframe sets its opener to the subframe's

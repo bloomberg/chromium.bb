@@ -51,6 +51,8 @@ class CONTENT_EXPORT FrameTreeNode {
   // regardless of which FrameTree it is in.
   static FrameTreeNode* GloballyFindByID(int frame_tree_node_id);
 
+  // Callers are are expected to initialize sandbox flags separately after
+  // calling the constructor.
   FrameTreeNode(FrameTree* frame_tree,
                 Navigator* navigator,
                 RenderFrameHostDelegate* render_frame_delegate,
@@ -59,7 +61,6 @@ class CONTENT_EXPORT FrameTreeNode {
                 RenderFrameHostManager::Delegate* manager_delegate,
                 blink::WebTreeScopeType scope,
                 const std::string& name,
-                blink::WebSandboxFlags sandbox_flags,
                 const blink::WebFrameOwnerProperties& frame_owner_properties);
 
   ~FrameTreeNode();
@@ -145,16 +146,33 @@ class CONTENT_EXPORT FrameTreeNode {
   // notifies proxies about the update.
   void SetEnforceStrictMixedContentChecking(bool should_enforce);
 
-  blink::WebSandboxFlags effective_sandbox_flags() {
-    return effective_sandbox_flags_;
+  // Returns the currently active sandbox flags for this frame.  This includes
+  // flags inherited from parent frames and the currently active flags from the
+  // <iframe> element hosting this frame.  This does not include flags that
+  // have been updated in an <iframe> element but have not taken effect yet;
+  // use pending_sandbox_flags() for those.
+  blink::WebSandboxFlags effective_sandbox_flags() const {
+    return replication_state_.sandbox_flags;
   }
 
-  void set_sandbox_flags(blink::WebSandboxFlags sandbox_flags) {
-    replication_state_.sandbox_flags = sandbox_flags;
+  // Returns the latest sandbox flags for this frame.  This includes flags
+  // inherited from parent frames and the latest flags from the <iframe>
+  // element hosting this frame.  The returned flags may not yet have taken
+  // effect, since sandbox flag updates in an <iframe> element take effect on
+  // next navigation.  To retrieve the currently active sandbox flags for this
+  // frame, use effective_sandbox_flags().
+  blink::WebSandboxFlags pending_sandbox_flags() const {
+    return pending_sandbox_flags_;
   }
 
-  // Transfer any pending sandbox flags into |effective_sandbox_flags_|, and
-  // return true if the sandbox flags were changed.
+  // Update this frame's sandbox flags.  This is used when a parent frame
+  // updates sandbox flags in the <iframe> element for this frame.  These flags
+  // won't take effect until next navigation.  If this frame's parent is itself
+  // sandboxed, the parent's sandbox flags are combined with |sandbox_flags|.
+  void SetPendingSandboxFlags(blink::WebSandboxFlags sandbox_flags);
+
+  // Set any pending sandbox flags as active, and return true if the sandbox
+  // flags were changed.
   bool CommitPendingSandboxFlags();
 
   const blink::WebFrameOwnerProperties& frame_owner_properties() {
@@ -295,15 +313,12 @@ class CONTENT_EXPORT FrameTreeNode {
   // proxies for this frame.
   FrameReplicationState replication_state_;
 
-  // Track the effective sandbox flags for this frame.  When a parent frame
-  // dynamically updates sandbox flags for a child frame, the child's updated
-  // sandbox flags are stored in replication_state_.sandbox_flags. However, the
-  // update only takes effect on the next frame navigation, so the effective
-  // sandbox flags are tracked separately here.  When enforcing sandbox flags
-  // directives in the browser process, |effective_sandbox_flags_| should be
-  // used.  |effective_sandbox_flags_| is updated with any pending sandbox
-  // flags when a navigation for this frame commits.
-  blink::WebSandboxFlags effective_sandbox_flags_;
+  // Track the pending sandbox flags for this frame.  When a parent frame
+  // dynamically updates sandbox flags in the <iframe> element for a child
+  // frame, these updated flags are stored here and are transferred into
+  // replication_state_.sandbox_flags when they take effect on the next frame
+  // navigation.
+  blink::WebSandboxFlags pending_sandbox_flags_;
 
   // Tracks the scrolling and margin properties for this frame.  These
   // properties affect the child renderer but are stored on its parent's

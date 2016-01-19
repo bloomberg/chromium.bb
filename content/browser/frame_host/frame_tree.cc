@@ -126,7 +126,6 @@ FrameTree::FrameTree(Navigator* navigator,
                               // document scope.
                               blink::WebTreeScopeType::Document,
                               std::string(),
-                              blink::WebSandboxFlags::None,
                               blink::WebFrameOwnerProperties())),
       focused_frame_tree_node_id_(-1),
       load_progress_(0.0) {}
@@ -218,8 +217,13 @@ bool FrameTree::AddFrame(
       make_scoped_ptr(new FrameTreeNode(
           this, parent->navigator(), render_frame_delegate_,
           render_view_delegate_, render_widget_delegate_, manager_delegate_,
-          scope, frame_name, sandbox_flags, frame_owner_properties)),
+          scope, frame_name, frame_owner_properties)),
       process_id, new_routing_id);
+
+  // Set sandbox flags and make them effective immediately, since initial
+  // sandbox flags should apply to the initial empty document in the frame.
+  added_node->SetPendingSandboxFlags(sandbox_flags);
+  added_node->CommitPendingSandboxFlags();
 
   // Now that the new node is part of the FrameTree and has a RenderFrameHost,
   // we can announce the creation of the initial RenderFrame which already

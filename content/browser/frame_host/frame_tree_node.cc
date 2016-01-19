@@ -19,6 +19,7 @@
 #include "content/common/site_isolation_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 
 namespace content {
 
@@ -77,7 +78,6 @@ FrameTreeNode::FrameTreeNode(
     RenderFrameHostManager::Delegate* manager_delegate,
     blink::WebTreeScopeType scope,
     const std::string& name,
-    blink::WebSandboxFlags sandbox_flags,
     const blink::WebFrameOwnerProperties& frame_owner_properties)
     : frame_tree_(frame_tree),
       navigator_(navigator),
@@ -94,11 +94,9 @@ FrameTreeNode::FrameTreeNode(
       replication_state_(
           scope,
           name,
-          sandbox_flags,
+          blink::WebSandboxFlags::None,
           false /* should enforce strict mixed content checking */),
-      // Effective sandbox flags also need to be set, since initial sandbox
-      // flags should apply to the initial empty document in the frame.
-      effective_sandbox_flags_(sandbox_flags),
+      pending_sandbox_flags_(blink::WebSandboxFlags::None),
       frame_owner_properties_(frame_owner_properties),
       loading_progress_(kLoadingProgressNotStarted) {
   std::pair<FrameTreeNodeIdMap::iterator, bool> result =
@@ -221,6 +219,15 @@ void FrameTreeNode::SetEnforceStrictMixedContentChecking(bool should_enforce) {
       should_enforce;
 }
 
+void FrameTreeNode::SetPendingSandboxFlags(
+    blink::WebSandboxFlags sandbox_flags) {
+  pending_sandbox_flags_ = sandbox_flags;
+
+  // Subframes should always inherit their parent's sandbox flags.
+  if (parent())
+    pending_sandbox_flags_ |= parent()->effective_sandbox_flags();
+}
+
 bool FrameTreeNode::IsDescendantOf(FrameTreeNode* other) const {
   if (!other || !other->child_count())
     return false;
@@ -271,8 +278,8 @@ bool FrameTreeNode::IsLoading() const {
 
 bool FrameTreeNode::CommitPendingSandboxFlags() {
   bool did_change_flags =
-      effective_sandbox_flags_ != replication_state_.sandbox_flags;
-  effective_sandbox_flags_ = replication_state_.sandbox_flags;
+      pending_sandbox_flags_ != replication_state_.sandbox_flags;
+  replication_state_.sandbox_flags = pending_sandbox_flags_;
   return did_change_flags;
 }
 

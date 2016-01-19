@@ -264,7 +264,7 @@ void NavigationRequest::OnResponseStarted(
 
   // Update the service worker params of the request params.
   request_params_.should_create_service_worker =
-      (frame_tree_node_->current_replication_state().sandbox_flags &
+      (frame_tree_node_->pending_sandbox_flags() &
        blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
   if (navigation_handle_->service_worker_handle()) {
     request_params_.service_worker_provider_id =
@@ -334,7 +334,7 @@ void NavigationRequest::InitializeServiceWorkerHandleIfNeeded() {
   // Only initialize the ServiceWorkerNavigationHandle if it can be created for
   // this frame.
   bool can_create_service_worker =
-      (frame_tree_node_->current_replication_state().sandbox_flags &
+      (frame_tree_node_->pending_sandbox_flags() &
        blink::WebSandboxFlags::Origin) != blink::WebSandboxFlags::Origin;
   if (!can_create_service_worker)
     return;
