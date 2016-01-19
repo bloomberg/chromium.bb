@@ -1196,8 +1196,12 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
     GLuint texture_target = kGLTextureExternalOES;
     GLuint texture_id_ref = gl->CreateAndConsumeTextureCHROMIUM(
         texture_target, texture_mailbox_.name);
+    const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
     gl->Flush();
-    gpu::SyncToken texture_mailbox_sync_token(gl->InsertSyncPointCHROMIUM());
+
+    gpu::SyncToken texture_mailbox_sync_token;
+    gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
+                                       texture_mailbox_sync_token.GetData());
 
     scoped_refptr<VideoFrame> new_frame = VideoFrame::WrapNativeTexture(
         media::PIXEL_FORMAT_ARGB,
