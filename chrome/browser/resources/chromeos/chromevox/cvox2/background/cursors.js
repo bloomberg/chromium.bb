@@ -411,14 +411,14 @@ cursors.Range.prototype = {
    */
   move: function(unit, dir) {
     var newStart = this.start_;
-    var newEnd = newStart;
+    var newEnd;
     switch (unit) {
       case Unit.CHARACTER:
         newStart = newStart.move(unit, Movement.BOUND, dir);
         newEnd = newStart.move(unit, Movement.BOUND, Dir.FORWARD);
         // Character crossed a node; collapses to the end of the node.
         if (newStart.node !== newEnd.node)
-          newEnd = newStart;
+          newEnd = new cursors.Cursor(newStart.node, newStart.index + 1);
         break;
       case Unit.WORD:
       case Unit.LINE:
@@ -431,6 +431,8 @@ cursors.Range.prototype = {
         newStart = newStart.move(unit, Movement.DIRECTIONAL, dir);
         newEnd = newStart;
         break;
+      default:
+        throw Error('Invalid unit: ' + unit);
     }
     return new cursors.Range(newStart, newEnd);
   },

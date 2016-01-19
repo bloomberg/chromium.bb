@@ -213,13 +213,13 @@ TEST_F('CursorsTest', 'CharacterRange', function() {
       [CHARACTER, FORWARD,
           {value: 'start ', index: 4}, {value: 'start ', index: 5}],
       [CHARACTER, FORWARD,
-          {value: 'start ', index: 5}, {value: 'start ', index: 5}],
+          {value: 'start ', index: 5}, {value: 'start ', index: 6}],
 
       [CHARACTER, FORWARD,
           {value: 'same line', index: 0}, {value: 'same line', index: 1}],
 
       [CHARACTER, BACKWARD,
-          {value: 'start ', index: 5}, {value: 'start ', index: 5}],
+          {value: 'start ', index: 5}, {value: 'start ', index: 6}],
       [CHARACTER, BACKWARD,
           {value: 'start ', index: 4}, {value: 'start ', index: 5}],
       [CHARACTER, BACKWARD,

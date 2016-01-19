@@ -1258,8 +1258,6 @@ Output.prototype = {
         {stay: true, name: true, value: true});
     var startIndex = range.start.index;
     var endIndex = range.end.index;
-    if (startIndex === endIndex)
-      endIndex++;
     this.append_(
         buff, range.start.getText().substring(startIndex, endIndex));
     this.locations_.push(
