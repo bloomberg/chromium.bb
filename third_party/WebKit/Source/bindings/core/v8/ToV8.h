@@ -9,12 +9,14 @@
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include "bindings/core/v8/DOMDataStore.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
+#include <utility>
 #include <v8.h>
 
 namespace blink {
@@ -239,6 +241,15 @@ inline v8::Local<v8::Value> toV8(const Vector<std::pair<String, T>>& value, v8::
             return v8::Local<v8::Value>();
     }
     return object;
+}
+
+// In all cases allow script state instead of creation context + isolate.
+// Use this function only if the call site does not otherwise need the global,
+// since v8::Context::Global is heavy.
+template<typename T>
+inline v8::Local<v8::Value> toV8(T&& value, ScriptState* scriptState)
+{
+    return toV8(std::forward<T>(value), scriptState->context()->Global(), scriptState->isolate());
 }
 
 // Only declare toV8(void*,...) for checking function overload mismatch.

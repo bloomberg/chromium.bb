@@ -303,6 +303,17 @@ TEST_F(ToV8Test, basicTypeHeapVectors)
     TEST_TOV8("true,true,false", boolVector);
 }
 
+TEST_F(ToV8Test, withScriptState)
+{
+    ScriptValue value(m_scope.scriptState(), v8::Number::New(m_scope.isolate(), 1234.0));
+
+    v8::Local<v8::Value> actual = toV8(value, m_scope.scriptState());
+    EXPECT_FALSE(actual.IsEmpty());
+
+    double actualAsNumber = actual.As<v8::Number>()->Value();
+    EXPECT_EQ(1234.0, actualAsNumber);
+}
+
 } // namespace
 
 } // namespace blink
