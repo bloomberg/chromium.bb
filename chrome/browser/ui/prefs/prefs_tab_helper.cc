@@ -561,6 +561,15 @@ void PrefsTabHelper::RegisterProfilePrefs(
               l10n_util::GetStringUTF8(pref.resource_id)))
         pref.resource_id = IDS_FIXED_FONT_FAMILY_ALT_WIN;
     }
+
+    // The standard font (Meiryo) isn't installed by default as of Win 10.
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+      if (pref.pref_name == prefs::kWebKitStandardFontFamilyJapanese) {
+        pref.resource_id = IDS_STANDARD_FONT_FAMILY_JAPANESE_ALT_WIN;
+      } else if (pref.pref_name == prefs::kWebKitSansSerifFontFamilyJapanese) {
+        pref.resource_id = IDS_SANS_SERIF_FONT_FAMILY_JAPANESE_ALT_WIN;
+      }
+    }
 #endif
 
     UScriptCode pref_script = GetScriptOfFontPref(pref.pref_name);

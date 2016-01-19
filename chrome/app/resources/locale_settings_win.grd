@@ -223,6 +223,12 @@
         Meiryo
       </message>
 
+      <!-- The alternate value for |WebPreference::standard_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_JAPANESE_ALT_WIN" use_name_for_id="true">
+        Yu Gothic UI
+      </message>
+
       <!-- The default value for |WebPreference::fixed_font_family_map| for
            Japanese script. -->
       <message name="IDS_FIXED_FONT_FAMILY_JAPANESE" use_name_for_id="true">
@@ -240,6 +246,13 @@
       <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE" use_name_for_id="true">
         Meiryo
       </message>
+
+      <!-- The alternate value for |WebPreference::sans_serif_font_family_map| for
+           Japanese script. -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_JAPANESE_ALT_WIN" use_name_for_id="true">
+        Yu Gothic UI
+      </message>
+
 
      <!-- The default value for |WebPreference::standard_font_family_map| for
            Korean script. -->
