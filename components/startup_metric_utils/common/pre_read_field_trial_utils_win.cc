@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/startup_metric_utils/browser/pre_read_field_trial_utils_win.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"

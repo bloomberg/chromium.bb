@@ -425,6 +425,7 @@
             '../components/components.gyp:crash_component',
             '../components/components.gyp:crash_core_common',
             '../components/components.gyp:flags_ui_switches',
+            '../components/components.gyp:startup_metric_utils_common',
             '../sandbox/sandbox.gyp:sandbox',
             '../third_party/kasko/kasko.gyp:kasko_features',
             '../ui/gfx/gfx.gyp:gfx',

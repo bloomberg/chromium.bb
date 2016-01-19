@@ -3824,6 +3824,7 @@
             '../chrome_elf/chrome_elf.gyp:dll_hash',
             '../components/components.gyp:browser_watcher',
             '../components/components.gyp:browser_watcher_client',
+            '../components/components.gyp:startup_metric_utils_common',
             '../google_update/google_update.gyp:google_update',
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',

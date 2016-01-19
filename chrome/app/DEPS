@@ -21,6 +21,7 @@ include_rules = [
   "+components/nacl/zygote",
   "+components/policy/core/browser/android",
   "+components/startup_metric_utils/browser",
+  "+components/startup_metric_utils/common",
   "+components/upload_list",
   "+components/version_info",
   "+content/public/app",

@@ -137,6 +137,7 @@ if (!is_android) {
         "//components/crash/content/app",
         "//components/crash/core/common",
         "//components/flags_ui:switches",
+        "//components/startup_metric_utils/common",
         "//content:sandbox_helper_win",
         "//content/public/common:static_switches",
         "//crypto",

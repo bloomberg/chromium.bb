@@ -47,7 +47,7 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "components/crash/content/app/crashpad.h"
-#include "components/startup_metric_utils/browser/pre_read_field_trial_utils_win.h"
+#include "components/startup_metric_utils/common/pre_read_field_trial_utils_win.h"
 #include "content/public/app/sandbox_helper_win.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/win/src/sandbox.h"

@@ -853,6 +853,7 @@ source_set("browser") {
       "//chrome_elf:dll_hash",
       "//components/browser_watcher",
       "//components/browser_watcher:browser_watcher_client",
+      "//components/startup_metric_utils/common",
       "//google_update",
       "//third_party/iaccessible2",
       "//third_party/isimpledom",

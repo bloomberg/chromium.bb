@@ -4,6 +4,8 @@
 
 source_set("common") {
   sources = [
+    "pre_read_field_trial_utils_win.cc",
+    "pre_read_field_trial_utils_win.h",
     "startup_metric_message_generator.cc",
     "startup_metric_message_generator.h",
     "startup_metric_messages.h",
@@ -11,6 +13,7 @@ source_set("common") {
 
   deps = [
     "//base",
+    "//components/variations",
     "//ipc",
   ]
 }
