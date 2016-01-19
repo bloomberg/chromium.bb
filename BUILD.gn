@@ -9,7 +9,8 @@ import("ffmpeg_generated.gni")
 platform_config_root =
     "chromium/config/$ffmpeg_branding/$os_config/$ffmpeg_arch"
 
-if ((current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm") {
+has_yasm_deps = ffmpeg_yasm_sources != [] && (current_cpu == "x86" || current_cpu == "x64") && os_config != "linux-noasm"
+if (has_yasm_deps) {
   import("//third_party/yasm/yasm_assemble.gni")
   yasm_assemble("ffmpeg_yasm") {
     sources = ffmpeg_yasm_sources
@@ -329,8 +330,7 @@ source_set("ffmpeg_internal") {
     }
   }
 
-  if ((current_cpu == "x86" || current_cpu == "x64") &&
-      os_config != "linux-noasm") {
+  if (has_yasm_deps) {
     deps += [ ":ffmpeg_yasm" ]
   }
 }
