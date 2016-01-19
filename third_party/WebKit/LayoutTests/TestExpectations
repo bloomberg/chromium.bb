@@ -128,8 +128,7 @@ crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-wor
 crbug.com/520612 [ Linux ] fullscreen/anonymous-block-merge-crash.html [ Pass Timeout ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520614 http/tests/w3c/webperf/submission/Intel/resource-timing/test_resource_timing_buffer_size_restriction.html [ Failure Pass ]
-# Next line is commented out to allow rebaseline for crbug.com/576728 below
-#crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
+crbug.com/520619 [ Android Mac Linux XP Win7 ] webexposed/global-interface-listing.html [ Pass Timeout ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520199 [ Mac ] plugins/plugin-initiate-popup-window.html [ Failure Pass ]
 crbug.com/518967 [ Win7 ] http/tests/htmlimports/csp-import-block-but-nonce-nested.html [ Failure Pass Timeout ]
@@ -915,17 +914,6 @@ crbug.com/548630 [ XP ] fast/text/justify-vertical.html [ Failure ]
 crbug.com/471824 imported/web-platform-tests/pointerevents/ [ Skip ]
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-illegal.html [ Skip ]
 crbug.com/471824 virtual/pointerevent/imported/web-platform-tests/pointerevents/pointerevent_touch-action-verification.html [ Skip ]
-
-# Proxy and Reflect
-crbug.com/576728 virtual/stable/http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 http/tests/serviceworker/webexposed/global-interface-listing-service-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
-crbug.com/576728 webexposed/global-interface-listing-compositor-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 virtual/stable/webexposed/global-interface-listing.html [ NeedsManualRebaseline ]
-crbug.com/576728 webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 virtual/stable/webexposed/global-interface-listing-shared-worker.html [ NeedsManualRebaseline ]
-crbug.com/576728 virtual/stable/webexposed/global-interface-listing-dedicated-worker.html [ NeedsManualRebaseline ]
 
 # Not implemented yet
 crbug.com/336604 imported/csswg-test/css-flexbox-1/flexbox_visibility-collapse-line-wrapping.html [ Failure ]

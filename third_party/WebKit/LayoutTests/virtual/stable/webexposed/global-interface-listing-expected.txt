@@ -4410,9 +4410,9 @@ interface SVGTransformList
     method removeItem
     method replaceItem
 interface SVGUnitTypes
-    static attribute SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
-    static attribute SVG_UNIT_TYPE_UNKNOWN
-    static attribute SVG_UNIT_TYPE_USERSPACEONUSE
+    attribute SVG_UNIT_TYPE_OBJECTBOUNDINGBOX
+    attribute SVG_UNIT_TYPE_UNKNOWN
+    attribute SVG_UNIT_TYPE_USERSPACEONUSE
     method constructor
 interface SVGUseElement : SVGGraphicsElement
     getter height
@@ -4432,9 +4432,9 @@ interface SVGViewElement : SVGElement
     method constructor
     setter zoomAndPan
 interface SVGViewSpec
-    static attribute SVG_ZOOMANDPAN_DISABLE
-    static attribute SVG_ZOOMANDPAN_MAGNIFY
-    static attribute SVG_ZOOMANDPAN_UNKNOWN
+    attribute SVG_ZOOMANDPAN_DISABLE
+    attribute SVG_ZOOMANDPAN_MAGNIFY
+    attribute SVG_ZOOMANDPAN_UNKNOWN
     getter preserveAspectRatio
     getter preserveAspectRatioString
     getter transform
