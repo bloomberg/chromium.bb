@@ -563,14 +563,15 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   // the requests to cancel first, and then we start cancelling. We assert at
   // the end that there are no more to cancel since the context is about to go
   // away.
-  typedef std::vector<linked_ptr<ResourceLoader>> LoaderList;
+  typedef std::vector<scoped_ptr<ResourceLoader>> LoaderList;
   LoaderList loaders_to_cancel;
 
   for (LoaderMap::iterator i = pending_loaders_.begin();
        i != pending_loaders_.end();) {
-    if (i->second->GetRequestInfo()->GetContext() == context) {
-      loaders_to_cancel.push_back(i->second);
-      IncrementOutstandingRequestsMemory(-1, *i->second->GetRequestInfo());
+    ResourceLoader* loader = i->second.get();
+    if (loader->GetRequestInfo()->GetContext() == context) {
+      loaders_to_cancel.push_back(std::move(i->second));
+      IncrementOutstandingRequestsMemory(-1, *loader->GetRequestInfo());
       pending_loaders_.erase(i++);
     } else {
       ++i;
@@ -579,7 +580,7 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
 
   for (BlockedLoadersMap::iterator i = blocked_loaders_map_.begin();
        i != blocked_loaders_map_.end();) {
-    BlockedLoadersList* loaders = i->second;
+    BlockedLoadersList* loaders = i->second.get();
     if (loaders->empty()) {
       // This can happen if BlockRequestsForRoute() has been called for a route,
       // but we haven't blocked any matching requests yet.
@@ -588,38 +589,35 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
     }
     ResourceRequestInfoImpl* info = loaders->front()->GetRequestInfo();
     if (info->GetContext() == context) {
+      scoped_ptr<BlockedLoadersList> deleter(std::move(i->second));
       blocked_loaders_map_.erase(i++);
-      for (BlockedLoadersList::const_iterator it = loaders->begin();
-           it != loaders->end(); ++it) {
-        linked_ptr<ResourceLoader> loader = *it;
+      for (auto& loader : *loaders) {
         info = loader->GetRequestInfo();
         // We make the assumption that all requests on the list have the same
         // ResourceContext.
         DCHECK_EQ(context, info->GetContext());
         IncrementOutstandingRequestsMemory(-1, *info);
-        loaders_to_cancel.push_back(loader);
+        loaders_to_cancel.push_back(std::move(loader));
       }
-      delete loaders;
     } else {
       ++i;
     }
   }
 
 #ifndef NDEBUG
-  for (LoaderList::iterator i = loaders_to_cancel.begin();
-       i != loaders_to_cancel.end(); ++i) {
+  for (const auto& loader : loaders_to_cancel) {
     // There is no strict requirement that this be the case, but currently
     // downloads, streams, detachable requests, transferred requests, and
     // browser-owned requests are the only requests that aren't cancelled when
     // the associated processes go away. It may be OK for this invariant to
     // change in the future, but if this assertion fires without the invariant
     // changing, then it's indicative of a leak.
-    DCHECK((*i)->GetRequestInfo()->IsDownload() ||
-           (*i)->GetRequestInfo()->is_stream() ||
-           ((*i)->GetRequestInfo()->detachable_handler() &&
-            (*i)->GetRequestInfo()->detachable_handler()->is_detached()) ||
-           (*i)->GetRequestInfo()->GetProcessType() == PROCESS_TYPE_BROWSER ||
-           (*i)->is_transferring());
+    DCHECK(loader->GetRequestInfo()->IsDownload() ||
+           loader->GetRequestInfo()->is_stream() ||
+           (loader->GetRequestInfo()->detachable_handler() &&
+            loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
+           loader->GetRequestInfo()->GetProcessType() == PROCESS_TYPE_BROWSER ||
+           loader->is_transferring());
   }
 #endif
 
@@ -633,15 +631,13 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
   }
 
   // Validate that no more requests for this context were added.
-  for (LoaderMap::const_iterator i = pending_loaders_.begin();
-       i != pending_loaders_.end(); ++i) {
+  for (const auto& loader : pending_loaders_) {
     // http://crbug.com/90971
-    CHECK_NE(i->second->GetRequestInfo()->GetContext(), context);
+    CHECK_NE(loader.second->GetRequestInfo()->GetContext(), context);
   }
 
-  for (BlockedLoadersMap::const_iterator i = blocked_loaders_map_.begin();
-       i != blocked_loaders_map_.end(); ++i) {
-    BlockedLoadersList* loaders = i->second;
+  for (const auto& blocked_loaders : blocked_loaders_map_) {
+    BlockedLoadersList* loaders = blocked_loaders.second.get();
     if (!loaders->empty()) {
       ResourceRequestInfoImpl* info = loaders->front()->GetRequestInfo();
       // http://crbug.com/90971
@@ -1072,16 +1068,14 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   // CancelBlockedRequestsForRoute while iterating over
   // blocked_loaders_map_, as it modifies it.
   std::set<GlobalRoutingID> ids;
-  for (BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.begin();
-       iter != blocked_loaders_map_.end(); ++iter) {
+  for (const auto& blocked_loaders : blocked_loaders_map_) {
     std::pair<std::set<GlobalRoutingID>::iterator, bool> result =
-        ids.insert(iter->first);
+        ids.insert(blocked_loaders.first);
     // We should not have duplicates.
     DCHECK(result.second);
   }
-  for (std::set<GlobalRoutingID>::const_iterator iter = ids.begin();
-       iter != ids.end(); ++iter) {
-    CancelBlockedRequestsForRoute(iter->child_id, iter->route_id);
+  for (const auto& routing_id : ids) {
+    CancelBlockedRequestsForRoute(routing_id.child_id, routing_id.route_id);
   }
 
   scheduler_.reset();
@@ -1175,8 +1169,8 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     int route_id,
     int request_id,
     const ResourceHostMsg_Request& request_data,
-    const linked_ptr<ResourceLoader>& loader) {
-  ResourceRequestInfoImpl* info = loader->GetRequestInfo();
+    LoaderMap::iterator iter) {
+  ResourceRequestInfoImpl* info = iter->second->GetRequestInfo();
   GlobalRoutingID old_routing_id(
       request_data.transferred_request_child_id, info->GetRouteID());
   GlobalRequestID old_request_id(request_data.transferred_request_child_id,
@@ -1192,7 +1186,11 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   bool should_update_count = info->counted_as_in_flight_request();
   if (should_update_count)
     IncrementOutstandingRequestsCount(-1, info);
-  pending_loaders_.erase(old_request_id);
+
+  DCHECK(pending_loaders_.find(old_request_id) == iter);
+  scoped_ptr<ResourceLoader> loader = std::move(iter->second);
+  ResourceLoader* loader_ptr = loader.get();
+  pending_loaders_.erase(iter);
 
   // ResourceHandlers should always get state related to the request from the
   // ResourceRequestInfo rather than caching it locally.  This lets us update
@@ -1203,7 +1201,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
 
   // Update maps that used the old IDs, if necessary.  Some transfers in tests
   // do not actually use a different ID, so not all maps need to be updated.
-  pending_loaders_[new_request_id] = loader;
+  pending_loaders_[new_request_id] = std::move(loader);
   IncrementOutstandingRequestsMemory(1, *info);
   if (should_update_count)
     IncrementOutstandingRequestsCount(1, info);
@@ -1211,7 +1209,7 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
     if (blocked_loaders_map_.find(old_routing_id) !=
             blocked_loaders_map_.end()) {
       blocked_loaders_map_[new_routing_id] =
-          blocked_loaders_map_[old_routing_id];
+          std::move(blocked_loaders_map_[old_routing_id]);
       blocked_loaders_map_.erase(old_routing_id);
     }
   }
@@ -1231,13 +1229,13 @@ void ResourceDispatcherHostImpl::UpdateRequestForTransfer(
   }
 
   AppCacheInterceptor::CompleteCrossSiteTransfer(
-      loader->request(),
+      loader_ptr->request(),
       child_id,
       request_data.appcache_host_id,
       filter_);
 
   ServiceWorkerRequestHandler* handler =
-      ServiceWorkerRequestHandler::GetHandler(loader->request());
+      ServiceWorkerRequestHandler::GetHandler(loader_ptr->request());
   if (handler) {
     handler->CompleteCrossSiteTransfer(
         child_id, request_data.service_worker_provider_id);
@@ -1285,10 +1283,9 @@ void ResourceDispatcherHostImpl::BeginRequest(
     // If the request is transferring to a new process, we can update our
     // state and let it resume with its existing ResourceHandlers.
     if (it->second->is_transferring()) {
-      linked_ptr<ResourceLoader> deferred_loader = it->second;
+      ResourceLoader* deferred_loader = it->second.get();
       UpdateRequestForTransfer(child_id, route_id, request_id,
-                                request_data, deferred_loader);
-
+                               request_data, it);
       deferred_loader->CompleteTransfer();
     } else {
       bad_message::ReceivedBadMessage(
@@ -1883,15 +1880,14 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
   // Find the global ID of all matching elements.
   bool any_requests_transferring = false;
   std::vector<GlobalRequestID> matching_requests;
-  for (LoaderMap::const_iterator i = pending_loaders_.begin();
-       i != pending_loaders_.end(); ++i) {
-    if (i->first.child_id != child_id)
+  for (const auto& loader : pending_loaders_) {
+    if (loader.first.child_id != child_id)
       continue;
 
-    ResourceRequestInfoImpl* info = i->second->GetRequestInfo();
+    ResourceRequestInfoImpl* info = loader.second->GetRequestInfo();
 
-    GlobalRequestID id(child_id, i->first.request_id);
-    DCHECK(id == i->first);
+    GlobalRequestID id(child_id, loader.first.request_id);
+    DCHECK(id == loader.first);
     // Don't cancel navigations that are expected to live beyond this process.
     if (IsTransferredNavigation(id))
       any_requests_transferring = true;
@@ -1940,14 +1936,12 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
     // CancelBlockedRequestsForRoute while iterating over
     // blocked_loaders_map_, as it modifies it.
     std::set<int> route_ids;
-    for (BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.begin();
-         iter != blocked_loaders_map_.end(); ++iter) {
-      if (iter->first.child_id == child_id)
-        route_ids.insert(iter->first.route_id);
+    for (const auto& blocked_loaders : blocked_loaders_map_) {
+      if (blocked_loaders.first.child_id == child_id)
+        route_ids.insert(blocked_loaders.first.route_id);
     }
-    for (std::set<int>::const_iterator iter = route_ids.begin();
-        iter != route_ids.end(); ++iter) {
-      CancelBlockedRequestsForRoute(child_id, *iter);
+    for (int route_id : route_ids) {
+      CancelBlockedRequestsForRoute(child_id, route_id);
     }
   }
 }
@@ -2291,30 +2285,32 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
     return;
   }
 
-  linked_ptr<ResourceLoader> loader(
+  scoped_ptr<ResourceLoader> loader(
       new ResourceLoader(std::move(request), std::move(handler), this));
 
   GlobalRoutingID id(info->GetGlobalRoutingID());
   BlockedLoadersMap::const_iterator iter = blocked_loaders_map_.find(id);
   if (iter != blocked_loaders_map_.end()) {
     // The request should be blocked.
-    iter->second->push_back(loader);
+    iter->second->push_back(std::move(loader));
     return;
   }
 
-  StartLoading(info, loader);
+  StartLoading(info, std::move(loader));
 }
 
 void ResourceDispatcherHostImpl::StartLoading(
     ResourceRequestInfoImpl* info,
-    const linked_ptr<ResourceLoader>& loader) {
+    scoped_ptr<ResourceLoader> loader) {
   // TODO(pkasting): Remove ScopedTracker below once crbug.com/456331 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "456331 ResourceDispatcherHostImpl::StartLoading"));
-  pending_loaders_[info->GetGlobalRequestID()] = loader;
 
-  loader->StartRequest();
+  ResourceLoader* loader_ptr = loader.get();
+  pending_loaders_[info->GetGlobalRequestID()] = std::move(loader);
+
+  loader_ptr->StartRequest();
 }
 
 void ResourceDispatcherHostImpl::OnUserGesture(WebContentsImpl* contents) {
@@ -2422,7 +2418,7 @@ void ResourceDispatcherHostImpl::BlockRequestsForRoute(int child_id,
   GlobalRoutingID key(child_id, route_id);
   DCHECK(blocked_loaders_map_.find(key) == blocked_loaders_map_.end()) <<
       "BlockRequestsForRoute called  multiple time for the same RVH";
-  blocked_loaders_map_[key] = new BlockedLoadersList();
+  blocked_loaders_map_[key] = make_scoped_ptr(new BlockedLoadersList());
 }
 
 void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute(int child_id,
@@ -2447,23 +2443,20 @@ void ResourceDispatcherHostImpl::ProcessBlockedRequestsForRoute(
     return;
   }
 
-  BlockedLoadersList* loaders = iter->second;
+  BlockedLoadersList* loaders = iter->second.get();
+  scoped_ptr<BlockedLoadersList> deleter(std::move(iter->second));
 
   // Removing the vector from the map unblocks any subsequent requests.
   blocked_loaders_map_.erase(iter);
 
-  for (BlockedLoadersList::iterator loaders_iter = loaders->begin();
-       loaders_iter != loaders->end(); ++loaders_iter) {
-    linked_ptr<ResourceLoader> loader = *loaders_iter;
+  for (scoped_ptr<ResourceLoader>& loader : *loaders) {
     ResourceRequestInfoImpl* info = loader->GetRequestInfo();
     if (cancel_requests) {
       IncrementOutstandingRequestsMemory(-1, *info);
     } else {
-      StartLoading(info, loader);
+      StartLoading(info, std::move(loader));
     }
   }
-
-  delete loaders;
 }
 
 ResourceDispatcherHostImpl::HttpAuthRelationType

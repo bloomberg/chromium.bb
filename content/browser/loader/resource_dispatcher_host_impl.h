@@ -21,7 +21,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -342,7 +341,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                             scoped_ptr<ResourceHandler> handler);
 
   void StartLoading(ResourceRequestInfoImpl* info,
-                    const linked_ptr<ResourceLoader>& loader);
+                    scoped_ptr<ResourceLoader> loader);
 
   // We keep track of how much memory each request needs and how many requests
   // are issued by each renderer. These are known as OustandingRequestStats.
@@ -389,7 +388,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // It may be enhanced in the future to provide some kind of prioritization
   // mechanism. We should also consider a hashtable or binary tree if it turns
   // out we have a lot of things here.
-  typedef std::map<GlobalRequestID, linked_ptr<ResourceLoader> > LoaderMap;
+  using LoaderMap = std::map<GlobalRequestID, scoped_ptr<ResourceLoader>>;
 
   // Deletes the pending request identified by the iterator passed in.
   // This function will invalidate the iterator passed in. Callers should
@@ -442,7 +441,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
                                 int route_id,
                                 int request_id,
                                 const ResourceHostMsg_Request& request_data,
-                                const linked_ptr<ResourceLoader>& loader);
+                                LoaderMap::iterator iter);
 
   void BeginRequest(int request_id,
                     const ResourceHostMsg_Request& request_data,
@@ -551,8 +550,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // True if the resource dispatcher host has been shut down.
   bool is_shutdown_;
 
-  typedef std::vector<linked_ptr<ResourceLoader> > BlockedLoadersList;
-  typedef std::map<GlobalRoutingID, BlockedLoadersList*> BlockedLoadersMap;
+  using BlockedLoadersList = std::vector<scoped_ptr<ResourceLoader>>;
+  using BlockedLoadersMap =
+      std::map<GlobalRoutingID, scoped_ptr<BlockedLoadersList>>;
   BlockedLoadersMap blocked_loaders_map_;
 
   // Maps the child_ids to the approximate number of bytes
