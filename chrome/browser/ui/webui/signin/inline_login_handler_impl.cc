@@ -330,9 +330,8 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
     if (access_point == signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS ||
         choose_what_to_sync_) {
       bool show_settings_without_configure =
-          error_controller->HasError() &&
-          sync_service &&
-          sync_service->HasSyncSetupCompleted();
+          error_controller->HasError() && sync_service &&
+          sync_service->IsFirstSetupComplete();
       start_mode = show_settings_without_configure ?
           OneClickSigninSyncStarter::SHOW_SETTINGS_WITHOUT_CONFIGURE :
           OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST;

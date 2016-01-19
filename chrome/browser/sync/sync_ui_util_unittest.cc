@@ -61,8 +61,8 @@ void VerifySyncGlobalErrorResult(ProfileSyncServiceMock* service,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
-  EXPECT_CALL(*service, HasSyncSetupCompleted())
-              .WillRepeatedly(Return(is_signed_in));
+  EXPECT_CALL(*service, IsFirstSetupComplete())
+      .WillRepeatedly(Return(is_signed_in));
 
   GoogleServiceAuthError auth_error(error_state);
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));
@@ -118,8 +118,7 @@ TEST_F(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
               .WillRepeatedly(Return(true));
   EXPECT_CALL(service, IsPassphraseRequiredForDecryption())
               .WillRepeatedly(Return(true));
-  EXPECT_CALL(service, HasSyncSetupCompleted())
-              .WillRepeatedly(Return(true));
+  EXPECT_CALL(service, IsFirstSetupComplete()).WillRepeatedly(Return(true));
 
   GoogleServiceAuthError auth_error(
       GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
@@ -216,7 +215,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
   // immutable so can only be allocated in this method.
   switch (caseNumber) {
     case STATUS_CASE_SETUP_IN_PROGRESS: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsFirstSetupInProgress())
           .WillRepeatedly(Return(true));
@@ -226,7 +225,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_SETUP_ERROR: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsFirstSetupInProgress())
           .WillRepeatedly(Return(false));
@@ -238,7 +237,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_AUTHENTICATING: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequired())
@@ -252,7 +251,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_AUTH_ERROR: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequired())
@@ -268,7 +267,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_PROTOCOL_ERROR: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequired())
@@ -284,7 +283,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_PASSPHRASE_ERROR: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(true));
       browser_sync::SyncBackendHost::Status status;
@@ -299,7 +298,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
       return;
     }
     case STATUS_CASE_SYNCED: {
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(true));
       EXPECT_CALL(*service, IsPassphraseRequired())
@@ -315,7 +314,7 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
     }
     case STATUS_CASE_SYNC_DISABLED_BY_POLICY: {
       EXPECT_CALL(*service, IsManaged()).WillRepeatedly(Return(true));
-      EXPECT_CALL(*service, HasSyncSetupCompleted())
+      EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsSyncActive()).WillRepeatedly(Return(false));
       EXPECT_CALL(*service, IsPassphraseRequired())

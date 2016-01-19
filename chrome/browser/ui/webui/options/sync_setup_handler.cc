@@ -297,7 +297,7 @@ void SyncSetupHandler::ConfigureSyncDone() {
 
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
-  if (!service->HasSyncSetupCompleted()) {
+  if (!service->IsFirstSetupComplete()) {
     // This is the first time configuring sync, so log it.
     base::FilePath profile_file_path = GetProfile()->GetPath();
     ProfileMetrics::LogProfileSyncSignIn(profile_file_path);
@@ -305,7 +305,7 @@ void SyncSetupHandler::ConfigureSyncDone() {
     // We're done configuring, so notify ProfileSyncService that it is OK to
     // start syncing.
     service->SetSetupInProgress(false);
-    service->SetSyncSetupCompleted();
+    service->SetFirstSetupComplete();
   }
 }
 
@@ -698,8 +698,9 @@ void SyncSetupHandler::CloseSyncSetup() {
   if (IsActiveLogin()) {
     // Don't log a cancel event if the sync setup dialog is being
     // automatically closed due to an auth error.
-    if (!sync_service || (!sync_service->HasSyncSetupCompleted() &&
-        sync_service->GetAuthError().state() == GoogleServiceAuthError::NONE)) {
+    if (!sync_service || (!sync_service->IsFirstSetupComplete() &&
+                          sync_service->GetAuthError().state() ==
+                              GoogleServiceAuthError::NONE)) {
       if (configuring_sync_) {
         ProfileSyncService::SyncEvent(
             ProfileSyncService::CANCEL_DURING_CONFIGURE);

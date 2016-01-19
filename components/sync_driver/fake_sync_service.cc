@@ -18,7 +18,7 @@ FakeSyncService::FakeSyncService()
 FakeSyncService::~FakeSyncService() {
 }
 
-bool FakeSyncService::HasSyncSetupCompleted() const {
+bool FakeSyncService::IsFirstSetupComplete() const {
   return false;
 }
 
@@ -72,8 +72,7 @@ void FakeSyncService::OnUserChoseDatatypes(bool sync_everything,
                                            syncer::ModelTypeSet chosen_types) {
 }
 
-void FakeSyncService::SetSyncSetupCompleted() {
-}
+void FakeSyncService::SetFirstSetupComplete() {}
 
 bool FakeSyncService::IsFirstSetupInProgress() const {
   return false;

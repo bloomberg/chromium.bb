@@ -122,7 +122,7 @@ void AppSyncUIState::SetStatus(Status status) {
 }
 
 void AppSyncUIState::CheckAppSync() {
-  if (!sync_service_ || !sync_service_->HasSyncSetupCompleted())
+  if (!sync_service_ || !sync_service_->IsFirstSetupComplete())
     return;
 
   const bool synced = sync_service_->IsSyncActive();

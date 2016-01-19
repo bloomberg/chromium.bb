@@ -75,8 +75,8 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
 
   // Getters and setters for global sync prefs.
 
-  bool HasSyncSetupCompleted() const;
-  void SetSyncSetupCompleted();
+  bool IsFirstSetupComplete() const;
+  void SetFirstSetupComplete();
 
   bool SyncHasAuthError() const;
   void SetSyncAuthError(bool error);

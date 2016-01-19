@@ -313,8 +313,7 @@ TEST_F(PeopleHandlerTest, Basic) {
 #if !defined(OS_CHROMEOS)
 TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Ensure that the user is not signed in before calling |HandleStartSignin()|.
   SigninManager* manager = static_cast<SigninManager*>(mock_signin_);
   manager->SignOut(signin_metrics::SIGNOUT_TEST);
@@ -335,8 +334,7 @@ TEST_F(PeopleHandlerFirstSigninTest, DisplayBasicLogin) {
 
 TEST_F(PeopleHandlerTest, ShowSyncSetupWhenNotSignedIn) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   handler_->HandleShowSetupUI(NULL);
 
   // We expect a call to settings.SyncPrivateApi.showSyncSetupPage.
@@ -368,8 +366,7 @@ TEST_F(PeopleHandlerTest, HandleSetupUIWhenSyncDisabled) {
 // it is displaying the spinner to the user.
 TEST_F(PeopleHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
@@ -392,8 +389,7 @@ TEST_F(PeopleHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
 TEST_F(PeopleHandlerTest,
        DisplayConfigureWithBackendDisabledAndSyncStartupCompleted) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   // Sync backend is stopped initially, and will start up.
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
@@ -441,8 +437,7 @@ TEST_F(PeopleHandlerTest,
 TEST_F(PeopleHandlerTest,
        DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsBackendInitialized())
       .WillOnce(Return(false))
@@ -465,8 +460,7 @@ TEST_F(PeopleHandlerTest,
 TEST_F(PeopleHandlerTest,
        DisplayConfigureWithBackendDisabledAndSigninFailed) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
 
@@ -499,8 +493,7 @@ TEST_F(PeopleHandlerNonCrosTest, HandleGaiaAuthFailure) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasUnrecoverableError())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(nullptr);
 
@@ -510,8 +503,7 @@ TEST_F(PeopleHandlerNonCrosTest, HandleGaiaAuthFailure) {
 // TODO(kochi): We need equivalent tests for ChromeOS.
 TEST_F(PeopleHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(nullptr);
 
@@ -520,8 +512,7 @@ TEST_F(PeopleHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
 
 TEST_F(PeopleHandlerNonCrosTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   // Open the web UI.
   handler_->OpenSyncSetup(nullptr);
 

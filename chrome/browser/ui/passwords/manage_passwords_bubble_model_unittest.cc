@@ -54,7 +54,7 @@ class TestSyncService : public ProfileSyncServiceMock {
   ~TestSyncService() override {}
 
   // FakeSyncService:
-  bool HasSyncSetupCompleted() const override { return true; }
+  bool IsFirstSetupComplete() const override { return true; }
   bool IsSyncAllowed() const override { return true; }
   bool IsSyncActive() const override { return true; }
   syncer::ModelTypeSet GetActiveDataTypes() const override {

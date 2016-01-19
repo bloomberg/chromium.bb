@@ -202,7 +202,7 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   // The user has enabled sync.
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetSyncSetupCompleted();
+  sync_service->SetFirstSetupComplete();
 
   service()->Init();
   ASSERT_TRUE(service()->is_ready());
@@ -243,7 +243,7 @@ TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
   // The user has enabled sync.
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile());
-  sync_service->SetSyncSetupCompleted();
+  sync_service->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 
@@ -301,7 +301,7 @@ TEST_F(ExtensionServiceSyncTest, DontSelfNotify) {
   InitializeInstalledExtensionService(pref_path, source_install_dir);
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())->SetSyncSetupCompleted();
+  ProfileSyncServiceFactory::GetForProfile(profile())->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 
@@ -1417,7 +1417,7 @@ TEST_F(ExtensionServiceSyncTest, DontSyncThemes) {
   InitializeEmptyExtensionService();
 
   // The user has enabled sync.
-  ProfileSyncServiceFactory::GetForProfile(profile())->SetSyncSetupCompleted();
+  ProfileSyncServiceFactory::GetForProfile(profile())->SetFirstSetupComplete();
   // Make sure ExtensionSyncService is created, so it'll be notified of changes.
   extension_sync_service();
 

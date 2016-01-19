@@ -36,7 +36,7 @@ SyncPrefs::~SyncPrefs() { DCHECK(CalledOnValidThread()); }
 // static
 void SyncPrefs::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kSyncHasSetupCompleted, false);
+  registry->RegisterBooleanPref(prefs::kSyncFirstSetupComplete, false);
   registry->RegisterBooleanPref(prefs::kSyncSuppressStart, false);
   registry->RegisterInt64Pref(prefs::kSyncLastSyncedTime, 0);
   registry->RegisterInt64Pref(prefs::kSyncLastPollTime, 0);
@@ -105,7 +105,7 @@ void SyncPrefs::ClearPreferences() {
   DCHECK(CalledOnValidThread());
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncLastPollTime);
-  pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
+  pref_service_->ClearPref(prefs::kSyncFirstSetupComplete);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncKeystoreEncryptionBootstrapToken);
   pref_service_->ClearPref(prefs::kSyncPassphrasePrompted);
@@ -121,14 +121,14 @@ void SyncPrefs::ClearPreferences() {
   // e.g. prefs::kSyncBookmarks.  Is that really what we want?
 }
 
-bool SyncPrefs::HasSyncSetupCompleted() const {
+bool SyncPrefs::IsFirstSetupComplete() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_->GetBoolean(prefs::kSyncHasSetupCompleted);
+  return pref_service_->GetBoolean(prefs::kSyncFirstSetupComplete);
 }
 
-void SyncPrefs::SetSyncSetupCompleted() {
+void SyncPrefs::SetFirstSetupComplete() {
   DCHECK(CalledOnValidThread());
-  pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
+  pref_service_->SetBoolean(prefs::kSyncFirstSetupComplete, true);
   SetSyncRequested(true);
 }
 

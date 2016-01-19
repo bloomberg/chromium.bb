@@ -280,7 +280,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
 
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
-  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
+  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   CreateSyncService();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
@@ -296,7 +296,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
       0,
       profile_->GetPrefs()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncHasSetupCompleted));
+      sync_driver::prefs::kSyncFirstSetupComplete));
   Mock::VerifyAndClearExpectations(data_type_manager);
 
   // Then start things up.
@@ -323,7 +323,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 // TODO(pavely): Reenable test once android is switched to oauth2.
 TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
   // We've never completed startup.
-  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
+  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   CreateSyncService();
 
   // Should not actually start, rather just clean things up and wait
@@ -339,7 +339,7 @@ TEST_F(ProfileSyncServiceStartupTest, DISABLED_StartNoCredentials) {
       0,
       profile_->GetPrefs()->GetInt64(sync_driver::prefs::kSyncLastSyncedTime));
   EXPECT_FALSE(profile_->GetPrefs()->GetBoolean(
-      sync_driver::prefs::kSyncHasSetupCompleted));
+      sync_driver::prefs::kSyncFirstSetupComplete));
 
   // Then start things up.
   sync_->SetSetupInProgress(true);
@@ -403,7 +403,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
   EXPECT_CALL(*GetSyncApiComponentFactoryMock(),
               CreateSyncBackendHost(_, _, _, _))
       .Times(0);
-  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
+  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
 
   sync_->Initialize();
@@ -418,7 +418,7 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
 TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
-  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
+  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   EXPECT_CALL(*data_type_manager, state()).
       WillRepeatedly(Return(DataTypeManager::CONFIGURED));
@@ -437,7 +437,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
-  sync_->SetSyncSetupCompleted();
+  sync_->SetFirstSetupComplete();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
@@ -469,7 +469,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartRecoverDatatypePrefs) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
-  sync_->SetSyncSetupCompleted();
+  sync_->SetFirstSetupComplete();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
@@ -497,7 +497,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDontRecoverDatatypePrefs) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
-  sync_->SetSyncSetupCompleted();
+  sync_->SetFirstSetupComplete();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
@@ -532,7 +532,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
-  sync_->SetSyncSetupCompleted();
+  sync_->SetFirstSetupComplete();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   EXPECT_CALL(*data_type_manager, Configure(_, _));
@@ -549,7 +549,8 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   profile_->GetPrefs()->SetBoolean(sync_driver::prefs::kSyncManaged, true);
 
   // When switching back to unmanaged, the state should change, but the service
-  // should not start up automatically (kSyncSetupCompleted will be false).
+  // should not start up automatically (kSyncFirstSetupComplete will be
+  // false).
   Mock::VerifyAndClearExpectations(data_type_manager);
   EXPECT_CALL(*GetSyncApiComponentFactoryMock(),
               CreateDataTypeManager(_, _, _, _, _))
@@ -562,7 +563,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFailure) {
   CreateSyncService();
   std::string account_id =
       SimulateTestUserSignin(profile_, fake_signin(), sync_);
-  sync_->SetSyncSetupCompleted();
+  sync_->SetFirstSetupComplete();
   SetUpSyncBackendHost();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManager();
   DataTypeManager::ConfigureStatus status = DataTypeManager::ABORTED;
@@ -592,7 +593,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   SyncBackendHostMock* mock_sbh = SetUpSyncBackendHost();
   mock_sbh->set_fail_initial_download(true);
 
-  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncHasSetupCompleted);
+  profile_->GetPrefs()->ClearPref(sync_driver::prefs::kSyncFirstSetupComplete);
 
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   sync_->Initialize();

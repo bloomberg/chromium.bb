@@ -1446,7 +1446,7 @@ BrowserOptionsHandler::GetSyncStateDictionary() {
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", (service != NULL));
   sync_status->SetBoolean("setupCompleted",
-                          service && service->HasSyncSetupCompleted());
+                          service && service->IsFirstSetupComplete());
   sync_status->SetBoolean("setupInProgress",
       service && !service->IsManaged() && service->IsFirstSetupInProgress());
 

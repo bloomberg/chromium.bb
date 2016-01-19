@@ -125,7 +125,7 @@ TEST_F(AppControllerTest, TestSigninMenuItemNoErrors) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   signin->SetAuthenticatedAccountInfo(username, username);
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync->SetSyncSetupCompleted();
+  sync->SetFirstSetupComplete();
   [AppController updateSigninItem:syncMenuItem
                        shouldShow:YES
                    currentProfile:profile_];
@@ -145,7 +145,7 @@ TEST_F(AppControllerTest, TestSigninMenuItemAuthError) {
   SigninManager* signin = SigninManagerFactory::GetForProfile(profile_);
   signin->SetAuthenticatedAccountInfo(username, username);
   ProfileSyncService* sync = ProfileSyncServiceFactory::GetForProfile(profile_);
-  sync->SetSyncSetupCompleted();
+  sync->SetFirstSetupComplete();
   // Force an auth error.
   FakeAuthStatusProvider provider(
       SigninErrorControllerFactory::GetForProfile(profile_));

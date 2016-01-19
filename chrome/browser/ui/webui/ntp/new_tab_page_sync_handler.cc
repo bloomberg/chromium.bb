@@ -101,7 +101,7 @@ void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   }
 
   // Don't show sync status if setup is not complete.
-  if (!sync_service_->HasSyncSetupCompleted()) {
+  if (!sync_service_->IsFirstSetupComplete()) {
     return;
   }
 
@@ -133,7 +133,7 @@ void NewTabPageSyncHandler::HandleSyncLinkClicked(const base::ListValue* args) {
   chrome::ShowBrowserSignin(browser,
                             signin_metrics::AccessPoint::ACCESS_POINT_NTP_LINK);
 
-  if (sync_service_->HasSyncSetupCompleted()) {
+  if (sync_service_->IsFirstSetupComplete()) {
     base::string16 user = base::UTF8ToUTF16(
         SigninManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()))
             ->GetAuthenticatedAccountInfo()

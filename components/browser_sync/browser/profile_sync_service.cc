@@ -309,12 +309,12 @@ void ProfileSyncService::Initialize() {
     // plumbed into PSS until after this function. See http://crbug.com/568771.
     sync_state = NOT_ALLOWED_BY_PLATFORM;
   } else if (!IsSyncRequested()) {
-    if (HasSyncSetupCompleted()) {
+    if (IsFirstSetupComplete()) {
       sync_state = NOT_REQUESTED;
     } else {
       sync_state = NOT_REQUESTED_NOT_SETUP;
     }
-  } else if (!HasSyncSetupCompleted()) {
+  } else if (!IsFirstSetupComplete()) {
     sync_state = NEEDS_CONFIRMATION;
   }
   UMA_HISTOGRAM_ENUMERATION("Sync.InitialState", sync_state,
@@ -329,7 +329,7 @@ void ProfileSyncService::Initialize() {
 
   RegisterAuthNotifications();
 
-  if (!HasSyncSetupCompleted() || !IsSignedIn()) {
+  if (!IsFirstSetupComplete() || !IsSignedIn()) {
     // Clean up in case of previous crash / setup abort / signout.
     StopImpl(CLEAR_DATA);
   }
@@ -379,7 +379,7 @@ void ProfileSyncService::Initialize() {
 
 void ProfileSyncService::TrySyncDatatypePrefRecovery() {
   DCHECK(!IsBackendInitialized());
-  if (!HasSyncSetupCompleted())
+  if (!IsFirstSetupComplete())
     return;
 
   // There was a bug where OnUserChoseDatatypes was not properly called on
@@ -511,7 +511,7 @@ SyncCredentials ProfileSyncService::GetCredentials() {
 bool ProfileSyncService::ShouldDeleteSyncFolder() {
   switch (backend_mode_) {
     case SYNC:
-      return !HasSyncSetupCompleted();
+      return !IsFirstSetupComplete();
     case BACKUP:
       return true;
     case ROLLBACK:
@@ -933,12 +933,12 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
   }
 }
 
-bool ProfileSyncService::HasSyncSetupCompleted() const {
-  return sync_prefs_.HasSyncSetupCompleted();
+bool ProfileSyncService::IsFirstSetupComplete() const {
+  return sync_prefs_.IsFirstSetupComplete();
 }
 
-void ProfileSyncService::SetSyncSetupCompleted() {
-  sync_prefs_.SetSyncSetupCompleted();
+void ProfileSyncService::SetFirstSetupComplete() {
+  sync_prefs_.SetFirstSetupComplete();
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -1020,7 +1020,7 @@ void ProfileSyncService::UpdateBackendInitUMA(bool success) {
   if (backend_mode_ != SYNC)
     return;
 
-  is_first_time_sync_configure_ = !HasSyncSetupCompleted();
+  is_first_time_sync_configure_ = !IsFirstSetupComplete();
 
   if (is_first_time_sync_configure_) {
     UMA_HISTOGRAM_BOOLEAN("Sync.BackendInitializeFirstTimeSuccess", success);
@@ -1071,13 +1071,13 @@ void ProfileSyncService::PostBackendInitialization() {
     // Backend is initialized but we're not in sync setup, so this must be an
     // autostart - mark our sync setup as completed and we'll start syncing
     // below.
-    SetSyncSetupCompleted();
+    SetFirstSetupComplete();
   }
 
-  // Check HasSyncSetupCompleted() before NotifyObservers() to avoid spurious
+  // Check IsFirstSetupComplete() before NotifyObservers() to avoid spurious
   // data type configuration because observer may flag setup as complete and
   // trigger data type configuration.
-  if (HasSyncSetupCompleted()) {
+  if (IsFirstSetupComplete()) {
     ConfigureDataTypeManager();
   } else {
     DCHECK(IsFirstSetupInProgress());
@@ -1591,9 +1591,9 @@ ProfileSyncService::SyncStatusSummary
     return BACKUP_USER_DATA;
   } else if (backend_mode_ == ROLLBACK) {
     return ROLLBACK_USER_DATA;
-  } else if (backend_.get() && !HasSyncSetupCompleted()) {
+  } else if (backend_.get() && !IsFirstSetupComplete()) {
     return SETUP_INCOMPLETE;
-  } else if (backend_ && HasSyncSetupCompleted() && data_type_manager_ &&
+  } else if (backend_ && IsFirstSetupComplete() && data_type_manager_ &&
              data_type_manager_->state() == DataTypeManager::STOPPED) {
     return DATATYPES_NOT_INITIALIZED;
   } else if (IsSyncActive()) {
@@ -1659,7 +1659,7 @@ const AuthError& ProfileSyncService::GetAuthError() const {
 }
 
 bool ProfileSyncService::IsFirstSetupInProgress() const {
-  return !HasSyncSetupCompleted() && startup_controller_->IsSetupInProgress();
+  return !IsFirstSetupComplete() && startup_controller_->IsSetupInProgress();
 }
 
 void ProfileSyncService::SetSetupInProgress(bool setup_in_progress) {
@@ -1746,7 +1746,7 @@ base::string16 ProfileSyncService::GetLastSyncedTimeString() const {
 
 void ProfileSyncService::UpdateSelectedTypesHistogram(
     bool sync_everything, const syncer::ModelTypeSet chosen_types) const {
-  if (!HasSyncSetupCompleted() ||
+  if (!IsFirstSetupComplete() ||
       sync_everything != sync_prefs_.HasKeepEverythingSynced()) {
     UMA_HISTOGRAM_BOOLEAN("Sync.SyncEverything", sync_everything);
   }
@@ -1783,7 +1783,7 @@ void ProfileSyncService::UpdateSelectedTypesHistogram(
          ++i, it.Inc()) {
       const syncer::ModelType type = it.Get();
       if (chosen_types.Has(type) &&
-          (!HasSyncSetupCompleted() || !current_types.Has(type))) {
+          (!IsFirstSetupComplete() || !current_types.Has(type))) {
         // Selected type has changed - log it.
         UMA_HISTOGRAM_ENUMERATION(
             "Sync.CustomSync",
@@ -1945,7 +1945,7 @@ void ProfileSyncService::ConfigureDataTypeManager() {
     reason = syncer::CONFIGURE_REASON_BACKUP_ROLLBACK;
   } else {
     types = GetPreferredDataTypes();
-    if (!HasSyncSetupCompleted()) {
+    if (!IsFirstSetupComplete()) {
       reason = syncer::CONFIGURE_REASON_NEW_CLIENT;
     } else if (restart) {
       // Datatype downloads on restart are generally due to newly supported

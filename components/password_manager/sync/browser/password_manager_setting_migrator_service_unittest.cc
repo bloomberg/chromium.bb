@@ -124,7 +124,7 @@ void StartSyncingPref(syncable_prefs::PrefServiceSyncable* prefs,
 
 class SyncServiceMock : public sync_driver::FakeSyncService {
  public:
-  bool HasSyncSetupCompleted() const override { return true; }
+  bool IsFirstSetupComplete() const override { return true; }
 
   bool CanSyncStart() const override { return can_sync_start_; }
 

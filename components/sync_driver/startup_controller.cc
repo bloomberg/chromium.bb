@@ -157,7 +157,7 @@ bool StartupController::TryStart() {
   // fetch account details like encryption state to populate UI. Otherwise,
   // for performance reasons and maximizing parallelism at chrome startup, we
   // defer the heavy lifting for sync init until things have calmed down.
-  if (sync_prefs_->HasSyncSetupCompleted()) {
+  if (sync_prefs_->IsFirstSetupComplete()) {
     // For first time, defer start if data type hasn't requested sync to avoid
     // stressing browser start. If |first_start_| is false, most likely the
     // first attempt to start is intercepted by backup. When backup finishes,

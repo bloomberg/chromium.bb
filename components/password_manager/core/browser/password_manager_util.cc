@@ -14,7 +14,7 @@ namespace password_manager_util {
 
 password_manager::PasswordSyncState GetPasswordSyncState(
     const sync_driver::SyncService* sync_service) {
-  if (sync_service && sync_service->HasSyncSetupCompleted() &&
+  if (sync_service && sync_service->IsFirstSetupComplete() &&
       sync_service->IsSyncActive() &&
       sync_service->GetActiveDataTypes().Has(syncer::PASSWORDS)) {
     return sync_service->IsUsingSecondaryPassphrase()

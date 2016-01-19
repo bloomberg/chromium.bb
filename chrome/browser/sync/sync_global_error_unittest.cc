@@ -86,8 +86,8 @@ void VerifySyncGlobalErrorResult(ProfileSyncServiceMock* service,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
-  EXPECT_CALL(*service, HasSyncSetupCompleted())
-              .WillRepeatedly(Return(is_signed_in));
+  EXPECT_CALL(*service, IsFirstSetupComplete())
+      .WillRepeatedly(Return(is_signed_in));
 
   GoogleServiceAuthError auth_error(error_state);
   EXPECT_CALL(*service, GetAuthError()).WillRepeatedly(ReturnRef(auth_error));

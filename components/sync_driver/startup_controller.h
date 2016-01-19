@@ -20,7 +20,7 @@ class SyncPrefs;
 namespace browser_sync {
 
 // Defines the type of behavior the sync engine should use. If configured for
-// AUTO_START, the sync engine will automatically call SetSyncSetupCompleted()
+// AUTO_START, the sync engine will automatically call SetFirstSetupComplete()
 // and start downloading data types as soon as sync credentials are available.
 // If configured for MANUAL_START, sync will not start until the user
 // completes sync setup, at which point the UI makes an explicit call to
@@ -69,6 +69,7 @@ class StartupController {
   std::string GetBackendInitializationStateString() const;
 
   void OverrideFallbackTimeoutForTest(const base::TimeDelta& timeout);
+
  private:
   enum StartUpDeferredOption {
     STARTUP_BACKEND_DEFERRED,

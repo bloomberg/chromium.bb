@@ -391,7 +391,7 @@ scoped_ptr<base::DictionaryValue> ConstructAboutInformation(
       GetTimeStr(token_status.next_token_request_time, "not scheduled"));
 
   last_synced.SetValue(service->GetLastSyncedTimeString());
-  is_setup_complete.SetValue(service->HasSyncSetupCompleted());
+  is_setup_complete.SetValue(service->IsFirstSetupComplete());
   backend_initialization.SetValue(
       service->GetBackendInitializationStateString());
   if (is_status_valid) {

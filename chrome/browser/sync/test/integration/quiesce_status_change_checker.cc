@@ -17,7 +17,7 @@ namespace {
 
 // Returns true if this service is disabled.
 bool IsSyncDisabled(ProfileSyncService* service) {
-  return !service->IsSetupInProgress() && !service->HasSyncSetupCompleted();
+  return !service->IsSetupInProgress() && !service->IsFirstSetupComplete();
 }
 
 // Returns true if these services have matching progress markers.

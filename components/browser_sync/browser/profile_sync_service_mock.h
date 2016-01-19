@@ -51,7 +51,7 @@ class ProfileSyncServiceMock : public ProfileSyncService {
   MOCK_METHOD1(AddObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_METHOD1(RemoveObserver, void(sync_driver::SyncServiceObserver*));
   MOCK_METHOD0(GetJsController, base::WeakPtr<syncer::JsController>());
-  MOCK_CONST_METHOD0(HasSyncSetupCompleted, bool());
+  MOCK_CONST_METHOD0(IsFirstSetupComplete, bool());
 
   MOCK_CONST_METHOD0(IsEncryptEverythingAllowed, bool());
   MOCK_CONST_METHOD0(IsEncryptEverythingEnabled, bool());

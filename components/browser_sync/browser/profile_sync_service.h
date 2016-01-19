@@ -159,18 +159,18 @@ class EncryptedData;
 //   types until the user has finished setting up sync. There are two APIs
 //   that control the initial sync download:
 //
-//    * SetSyncSetupCompleted()
+//    * SetFirstSetupComplete()
 //    * SetSetupInProgress()
 //
-//   SetSyncSetupCompleted() should be called once the user has finished setting
+//   SetFirstSetupComplete() should be called once the user has finished setting
 //   up sync at least once on their account. SetSetupInProgress(true) should be
 //   called while the user is actively configuring their account, and then
 //   SetSetupInProgress(false) should be called when configuration is complete.
-//   When SetSyncSetupCompleted() == false, but SetSetupInProgress(true) has
+//   When SetFirstSetupComplete() == false, but SetSetupInProgress(true) has
 //   been called, then the sync engine knows not to download any user data.
 //
 //   When initial sync is complete, the UI code should call
-//   SetSyncSetupCompleted() followed by SetSetupInProgress(false) - this will
+//   SetFirstSetupComplete() followed by SetSetupInProgress(false) - this will
 //   tell the sync engine that setup is completed and it can begin downloading
 //   data from the sync server.
 //
@@ -267,7 +267,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   void Initialize();
 
   // sync_driver::SyncService implementation
-  bool HasSyncSetupCompleted() const override;
+  bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
@@ -280,7 +280,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
-  void SetSyncSetupCompleted() override;
+  void SetFirstSetupComplete() override;
   bool IsFirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
   bool IsSetupInProgress() const override;
@@ -428,7 +428,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   // Returns true if sync is requested to be running by the user.
   // Note that this does not mean that sync WILL be running; e.g. if
   // IsSyncAllowed() is false then sync won't start, and if the user
-  // doesn't confirm their settings (HasSyncSetupCompleted), sync will
+  // doesn't confirm their settings (IsFirstSetupComplete), sync will
   // never become active. Use IsSyncActive to see if sync is running.
   virtual bool IsSyncRequested() const;
 
@@ -858,7 +858,7 @@ class ProfileSyncService : public sync_driver::SyncService,
   base::SequencedWorkerPool* blocking_pool_;
 
   // Indicates if this is the first time sync is being configured.  This value
-  // is equal to !HasSyncSetupCompleted() at the time of OnBackendInitialized().
+  // is equal to !IsFirstSetupComplete() at the time of OnBackendInitialized().
   bool is_first_time_sync_configure_;
 
   // List of available data type controllers.

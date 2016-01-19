@@ -190,7 +190,7 @@ TEST_F(ChromePasswordManagerClientTest, GetPasswordSyncState) {
 
   syncer::ModelTypeSet active_types;
   active_types.Put(syncer::PASSWORDS);
-  EXPECT_CALL(*mock_sync_service, HasSyncSetupCompleted())
+  EXPECT_CALL(*mock_sync_service, IsFirstSetupComplete())
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_sync_service, IsSyncActive()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_sync_service, GetActiveDataTypes())

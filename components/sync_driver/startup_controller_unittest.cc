@@ -106,7 +106,7 @@ class StartupControllerTest : public testing::Test {
 TEST_F(StartupControllerTest, Basic) {
   controller()->TryStart();
   EXPECT_FALSE(started());
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   controller()->TryStart();
   EXPECT_FALSE(started());
   signin()->set_account_id(kTestUser);
@@ -126,7 +126,7 @@ TEST_F(StartupControllerTest, Basic) {
 // Test that sync doesn't start when not requested even if all other
 // conditons are met.
 TEST_F(StartupControllerTest, NotRequested) {
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   sync_prefs()->SetSyncRequested(false);
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
@@ -138,7 +138,7 @@ TEST_F(StartupControllerTest, NotRequested) {
 
 // Test that sync doesn't when managed even if all other conditons are met.
 TEST_F(StartupControllerTest, Managed) {
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   sync_prefs()->SetManagedForTest(true);
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
@@ -151,7 +151,7 @@ TEST_F(StartupControllerTest, Managed) {
 // Test that sync doesn't start until all conditions are met and a
 // data type triggers sync startup.
 TEST_F(StartupControllerTest, DataTypeTriggered) {
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
@@ -173,7 +173,7 @@ TEST_F(StartupControllerTest, DataTypeTriggered) {
 // Test that the fallback timer starts sync in the event all
 // conditions are met and no data type requests sync.
 TEST_F(StartupControllerTest, FallbackTimer) {
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
@@ -193,7 +193,7 @@ TEST_F(StartupControllerTest, NoDeferralWithoutSessionsSync) {
   sync_prefs()->SetKeepEverythingSynced(false);
   sync_prefs()->SetPreferredDataTypes(syncer::UserTypes(), types);
   controller()->Reset(syncer::UserTypes());
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();
@@ -232,7 +232,7 @@ TEST_F(StartupControllerTest, FirstSetupWithManualStart) {
 }
 
 TEST_F(StartupControllerTest, Reset) {
-  sync_prefs()->SetSyncSetupCompleted();
+  sync_prefs()->SetFirstSetupComplete();
   signin()->set_account_id(kTestUser);
   token_service()->UpdateCredentials(kTestUser, kTestToken);
   controller()->TryStart();

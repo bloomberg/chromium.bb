@@ -61,7 +61,7 @@ SyncBackendHostImpl::SyncBackendHostImpl(
       invalidation_handler_registered_(false),
       weak_ptr_factory_(this) {
   core_ = new SyncBackendHostCore(name_, sync_folder,
-                                  sync_prefs_->HasSyncSetupCompleted(),
+                                  sync_prefs_->IsFirstSetupComplete(),
                                   weak_ptr_factory_.GetWeakPtr());
 }
 

@@ -72,7 +72,7 @@ class TestSyncService : public sync_driver::FakeSyncService {
   // FakeSyncService overrides.
   bool IsSyncAllowed() const override { return true; }
 
-  bool HasSyncSetupCompleted() const override { return true; }
+  bool IsFirstSetupComplete() const override { return true; }
 
   bool IsSyncActive() const override { return true; }
 

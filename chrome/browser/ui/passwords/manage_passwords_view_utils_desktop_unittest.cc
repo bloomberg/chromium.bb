@@ -74,7 +74,7 @@ class ManagePasswordsViewUtilDesktopTest : public testing::Test {
     ProfileSyncServiceMock* sync_service = static_cast<ProfileSyncServiceMock*>(
         ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_));
     EXPECT_CALL(*sync_service, IsSyncActive()).WillRepeatedly(Return(true));
-    EXPECT_CALL(*sync_service, HasSyncSetupCompleted())
+    EXPECT_CALL(*sync_service, IsFirstSetupComplete())
         .WillRepeatedly(Return(true));
     EXPECT_CALL(*sync_service, GetActiveDataTypes())
         .WillRepeatedly(Return(syncer::UserSelectableTypes()));

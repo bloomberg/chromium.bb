@@ -163,13 +163,13 @@ bool SyncSetupService::HasFinishedInitialSetup() {
   //   OR
   //   2. User is not signed in or has disabled sync.
   return !sync_service_->CanSyncStart() ||
-         sync_service_->HasSyncSetupCompleted();
+         sync_service_->IsFirstSetupComplete();
 }
 
 void SyncSetupService::PrepareForFirstSyncSetup() {
   // |PrepareForFirstSyncSetup| should always be called while the user is signed
   // out. At that time, sync setup is not completed.
-  DCHECK(!sync_service_->HasSyncSetupCompleted());
+  DCHECK(!sync_service_->IsFirstSetupComplete());
   sync_service_->SetSetupInProgress(true);
 }
 
@@ -178,7 +178,7 @@ void SyncSetupService::CommitChanges() {
     // Turn on the sync setup completed flag only if the user did not turn sync
     // off.
     if (sync_service_->CanSyncStart()) {
-      sync_service_->SetSyncSetupCompleted();
+      sync_service_->SetFirstSetupComplete();
     }
   }
 

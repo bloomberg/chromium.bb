@@ -184,7 +184,7 @@ bool ChildAccountService::SetActive(bool active) {
   // The logic to do this lives in the SupervisedUserSyncDataTypeController.
   ProfileSyncService* sync_service =
       ProfileSyncServiceFactory::GetForProfile(profile_);
-  if (sync_service->HasSyncSetupCompleted())
+  if (sync_service->IsFirstSetupComplete())
     sync_service->ReconfigureDatatypeManager();
 
   return true;

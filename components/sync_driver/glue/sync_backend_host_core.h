@@ -308,7 +308,7 @@ class SyncBackendHostCore
   syncer::CancelationSignal release_request_context_signal_;
   syncer::CancelationSignal stop_syncing_signal_;
 
-  // Matches the value of SyncPref's HasSyncSetupCompleted() flag at init time.
+  // Matches the value of SyncPref's IsFirstSetupComplete() flag at init time.
   // Should not be used for anything except for UMAs and logging.
   const bool has_sync_setup_completed_;
 

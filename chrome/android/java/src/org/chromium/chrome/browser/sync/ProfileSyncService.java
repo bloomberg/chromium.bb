@@ -351,12 +351,18 @@ public class ProfileSyncService {
                 ? ALL_SELECTABLE_TYPES : modelTypeSetToArray(enabledTypes));
     }
 
-    public void setSyncSetupCompleted() {
-        nativeSetSyncSetupCompleted(mNativeProfileSyncServiceAndroid);
+    public void setFirstSetupComplete() {
+        nativeSetFirstSetupComplete(mNativeProfileSyncServiceAndroid);
     }
 
-    public boolean hasSyncSetupCompleted() {
-        return nativeHasSyncSetupCompleted(mNativeProfileSyncServiceAndroid);
+    // TODO(maxbogue): Remove when downstream is updated to use the above.
+    @Deprecated
+    public void setSyncSetupCompleted() {
+        nativeSetFirstSetupComplete(mNativeProfileSyncServiceAndroid);
+    }
+
+    public boolean isFirstSetupComplete() {
+        return nativeIsFirstSetupComplete(mNativeProfileSyncServiceAndroid);
     }
 
     public boolean isSyncRequested() {
@@ -560,8 +566,8 @@ public class ProfileSyncService {
             long nativeProfileSyncServiceAndroid, boolean syncEverything, int[] modelTypeArray);
     private native void nativeSetSetupInProgress(
             long nativeProfileSyncServiceAndroid, boolean inProgress);
-    private native void nativeSetSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeHasSyncSetupCompleted(long nativeProfileSyncServiceAndroid);
+    private native void nativeSetFirstSetupComplete(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsFirstSetupComplete(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncRequested(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsSyncActive(long nativeProfileSyncServiceAndroid);
     private native boolean nativeHasKeepEverythingSynced(long nativeProfileSyncServiceAndroid);

@@ -245,7 +245,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 // Save the new data type state.
                 configureSyncDataTypes();
                 // Inform sync that the user has finished setting up sync at least once.
-                mProfileSyncService.setSyncSetupCompleted();
+                mProfileSyncService.setFirstSetupComplete();
             }
             // Setup is done. This was preventing sync from turning on even if it was enabled.
             mProfileSyncService.setSetupInProgress(false);

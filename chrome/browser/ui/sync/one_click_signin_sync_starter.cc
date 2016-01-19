@@ -419,7 +419,7 @@ void OneClickSigninSyncStarter::OnSyncConfirmationUIClosed(
         base::UserMetricsAction("Signin_Signin_WithDefaultSyncSettings"));
     ProfileSyncService* profile_sync_service = GetProfileSyncService();
     if (profile_sync_service)
-      profile_sync_service->SetSyncSetupCompleted();
+      profile_sync_service->SetFirstSetupComplete();
     FinishProfileSyncServiceSetup();
   }
 
@@ -473,7 +473,7 @@ void OneClickSigninSyncStarter::AccountAddedToCookie(
       // Just kick off the sync machine, no need to configure it first.
       ProfileSyncService* profile_sync_service = GetProfileSyncService();
       if (profile_sync_service)
-        profile_sync_service->SetSyncSetupCompleted();
+        profile_sync_service->SetFirstSetupComplete();
       FinishProfileSyncServiceSetup();
       if (confirmation_required_ == CONFIRM_AFTER_SIGNIN) {
         base::string16 message;

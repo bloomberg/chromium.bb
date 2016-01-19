@@ -15,9 +15,8 @@ SyncErrorController::~SyncErrorController() {
 }
 
 bool SyncErrorController::HasError() {
-  return service_->HasSyncSetupCompleted() &&
-      service_->IsPassphraseRequired() &&
-      service_->IsPassphraseRequiredForDecryption();
+  return service_->IsFirstSetupComplete() && service_->IsPassphraseRequired() &&
+         service_->IsPassphraseRequiredForDecryption();
 }
 
 void SyncErrorController::AddObserver(Observer* observer) {

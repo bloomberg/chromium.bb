@@ -187,18 +187,18 @@ void ProfileSyncServiceAndroid::SetSetupInProgress(
   sync_service_->SetSetupInProgress(in_progress);
 }
 
-jboolean ProfileSyncServiceAndroid::HasSyncSetupCompleted(
+jboolean ProfileSyncServiceAndroid::IsFirstSetupComplete(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->HasSyncSetupCompleted();
+  return sync_service_->IsFirstSetupComplete();
 }
 
-void ProfileSyncServiceAndroid::SetSyncSetupCompleted(
+void ProfileSyncServiceAndroid::SetFirstSetupComplete(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  sync_service_->SetSyncSetupCompleted();
+  sync_service_->SetFirstSetupComplete();
 }
 
 ScopedJavaLocalRef<jintArray> ProfileSyncServiceAndroid::GetActiveDataTypes(

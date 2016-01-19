@@ -121,7 +121,7 @@ public final class FirstRunSignInProcessor {
      */
     private static void openSyncSettings(Activity activity) {
         if (ProfileSyncService.get() == null) return;
-        assert !ProfileSyncService.get().hasSyncSetupCompleted();
+        assert !ProfileSyncService.get().isFirstSetupComplete();
         String accountName = ChromeSigninController.get(activity).getSignedInAccountName();
         if (TextUtils.isEmpty(accountName)) return;
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(

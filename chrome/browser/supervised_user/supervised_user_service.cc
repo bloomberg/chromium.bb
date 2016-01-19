@@ -696,7 +696,7 @@ void SupervisedUserService::FinishSetupSync() {
 
   // Notify ProfileSyncService that we are done with configuration.
   service->SetSetupInProgress(false);
-  service->SetSyncSetupCompleted();
+  service->SetFirstSetupComplete();
 }
 #endif
 

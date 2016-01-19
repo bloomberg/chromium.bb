@@ -304,13 +304,12 @@ std::string ProfileSyncServiceHarness::GenerateFakeOAuth2RefreshTokenString() {
 }
 
 bool ProfileSyncServiceHarness::IsSyncDisabled() const {
-  return !service()->IsSetupInProgress() &&
-         !service()->HasSyncSetupCompleted();
+  return !service()->IsSetupInProgress() && !service()->IsFirstSetupComplete();
 }
 
 void ProfileSyncServiceHarness::FinishSyncSetup() {
   service()->SetSetupInProgress(false);
-  service()->SetSyncSetupCompleted();
+  service()->SetFirstSetupComplete();
 }
 
 SyncSessionSnapshot ProfileSyncServiceHarness::GetLastSessionSnapshot() const {

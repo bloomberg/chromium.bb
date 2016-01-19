@@ -356,7 +356,7 @@ class ProfileSyncServiceTest : public ::testing::Test {
     sync_driver::SyncPrefs sync_prefs(
         service_->GetSyncClient()->GetPrefService());
     sync_prefs.SetFirstSyncTime(base::Time::Now());
-    sync_prefs.SetSyncSetupCompleted();
+    sync_prefs.SetFirstSetupComplete();
     sync_prefs.SetKeepEverythingSynced(true);
     service_->Initialize();
   }
@@ -782,7 +782,7 @@ TEST_F(ProfileSyncServiceTest, ResumeBackupIfAborted) {
 
 TEST_F(ProfileSyncServiceTest, Rollback) {
   CreateService(browser_sync::MANUAL_START);
-  service()->SetSyncSetupCompleted();
+  service()->SetFirstSetupComplete();
   ExpectDataTypeManagerCreation(2, GetDefaultConfigureCalledCallback());
   std::vector<bool> delete_dir_param;
   ExpectSyncBackendHostCreationCollectDeleteDir(2, &delete_dir_param);

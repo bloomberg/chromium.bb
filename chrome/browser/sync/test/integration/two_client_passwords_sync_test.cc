@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientPasswordsSyncTest,
   ASSERT_TRUE(AwaitPassphraseAccepted(GetSyncService(1)));
 
   // For some reason, the tests won't pass unless these flags are set.
-  GetSyncService(1)->SetSyncSetupCompleted();
+  GetSyncService(1)->SetFirstSetupComplete();
   GetSyncService(1)->SetSetupInProgress(false);
 
   // Move around some passwords to make sure it's all working.

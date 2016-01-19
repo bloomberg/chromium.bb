@@ -210,7 +210,7 @@ public class SigninHelper {
         }
 
         if (mProfileSyncService != null && AndroidSyncSettings.isSyncEnabled(mContext)) {
-            if (mProfileSyncService.hasSyncSetupCompleted()) {
+            if (mProfileSyncService.isFirstSetupComplete()) {
                 if (accountsChanged) {
                     // Nudge the syncer to ensure it does a full sync.
                     InvalidationServiceFactory.getForProfile(Profile.getLastUsedProfile())

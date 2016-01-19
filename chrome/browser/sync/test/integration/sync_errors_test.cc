@@ -32,7 +32,7 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
 
   bool IsExitConditionSatisfied() override {
     return !service()->IsSetupInProgress() &&
-           !service()->HasSyncSetupCompleted();
+           !service()->IsFirstSetupComplete();
   }
 
   std::string GetDebugMessage() const override { return "Sync Disabled"; }

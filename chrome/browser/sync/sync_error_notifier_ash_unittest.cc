@@ -152,8 +152,8 @@ class SyncErrorNotifierTest : public AshTestBase  {
   void VerifySyncErrorNotifierResult(GoogleServiceAuthError::State error_state,
                                      bool is_signed_in,
                                      bool is_error) {
-    EXPECT_CALL(*service_, HasSyncSetupCompleted())
-                .WillRepeatedly(Return(is_signed_in));
+    EXPECT_CALL(*service_, IsFirstSetupComplete())
+        .WillRepeatedly(Return(is_signed_in));
 
     GoogleServiceAuthError auth_error(error_state);
     EXPECT_CALL(*service_, GetAuthError()).WillRepeatedly(

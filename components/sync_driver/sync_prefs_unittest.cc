@@ -42,9 +42,9 @@ class SyncPrefsTest : public testing::Test {
 TEST_F(SyncPrefsTest, Basic) {
   SyncPrefs sync_prefs(&pref_service_);
 
-  EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
-  sync_prefs.SetSyncSetupCompleted();
-  EXPECT_TRUE(sync_prefs.HasSyncSetupCompleted());
+  EXPECT_FALSE(sync_prefs.IsFirstSetupComplete());
+  sync_prefs.SetFirstSetupComplete();
+  EXPECT_TRUE(sync_prefs.IsFirstSetupComplete());
 
   EXPECT_TRUE(sync_prefs.IsSyncRequested());
   sync_prefs.SetSyncRequested(false);
@@ -209,21 +209,21 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
 TEST_F(SyncPrefsTest, ClearPreferences) {
   SyncPrefs sync_prefs(&pref_service_);
 
-  EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
+  EXPECT_FALSE(sync_prefs.IsFirstSetupComplete());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
 
-  sync_prefs.SetSyncSetupCompleted();
+  sync_prefs.SetFirstSetupComplete();
   sync_prefs.SetLastSyncedTime(base::Time::Now());
   sync_prefs.SetEncryptionBootstrapToken("token");
 
-  EXPECT_TRUE(sync_prefs.HasSyncSetupCompleted());
+  EXPECT_TRUE(sync_prefs.IsFirstSetupComplete());
   EXPECT_NE(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_EQ("token", sync_prefs.GetEncryptionBootstrapToken());
 
   sync_prefs.ClearPreferences();
 
-  EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
+  EXPECT_FALSE(sync_prefs.IsFirstSetupComplete());
   EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
 }

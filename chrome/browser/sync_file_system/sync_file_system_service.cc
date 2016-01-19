@@ -746,7 +746,7 @@ void SyncFileSystemService::OnFileStatusChanged(
 
 void SyncFileSystemService::UpdateSyncEnabledStatus(
     sync_driver::SyncService* profile_sync_service) {
-  if (!profile_sync_service->HasSyncSetupCompleted())
+  if (!profile_sync_service->IsFirstSetupComplete())
     return;
   bool old_sync_enabled = sync_enabled_;
   sync_enabled_ = profile_sync_service->GetActiveDataTypes().Has(

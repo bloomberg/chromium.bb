@@ -26,7 +26,7 @@ class FakeSyncService : public sync_driver::SyncService {
 
  private:
   // sync_driver::SyncService:
-  bool HasSyncSetupCompleted() const override;
+  bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;
   void TriggerRefresh(const syncer::ModelTypeSet& types) override;
@@ -43,7 +43,7 @@ class FakeSyncService : public sync_driver::SyncService {
   syncer::ModelTypeSet GetPreferredDataTypes() const override;
   void OnUserChoseDatatypes(bool sync_everything,
                             syncer::ModelTypeSet chosen_types) override;
-  void SetSyncSetupCompleted() override;
+  void SetFirstSetupComplete() override;
   bool IsFirstSetupInProgress() const override;
   void SetSetupInProgress(bool setup_in_progress) override;
   bool IsSetupInProgress() const override;

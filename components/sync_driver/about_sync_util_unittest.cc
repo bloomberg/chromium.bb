@@ -21,9 +21,7 @@ namespace {
 
 class SyncServiceMock : public sync_driver::FakeSyncService {
  public:
-  bool HasSyncSetupCompleted() const override {
-    return true;
-  }
+  bool IsFirstSetupComplete() const override { return true; }
 
   bool HasUnrecoverableError() const override {
     return true;

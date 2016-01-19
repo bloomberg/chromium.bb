@@ -153,7 +153,7 @@ TestProfileSyncService::TestProfileSyncService(
   static_cast<browser_sync::ChromeSyncClient*>(GetSyncClient())
       ->SetSyncApiComponentFactoryForTesting(
           make_scoped_ptr(new SyncApiComponentFactoryMock));
-  SetSyncSetupCompleted();
+  SetFirstSetupComplete();
 }
 
 TestProfileSyncService::~TestProfileSyncService() {

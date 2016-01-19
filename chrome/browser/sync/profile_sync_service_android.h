@@ -57,10 +57,10 @@ class ProfileSyncServiceAndroid : public sync_driver::SyncServiceObserver {
   void SetSetupInProgress(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& obj,
                           jboolean in_progress);
-  jboolean HasSyncSetupCompleted(
+  jboolean IsFirstSetupComplete(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
-  void SetSyncSetupCompleted(JNIEnv* env,
+  void SetFirstSetupComplete(JNIEnv* env,
                              const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jintArray> GetActiveDataTypes(
       JNIEnv* env,
