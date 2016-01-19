@@ -501,6 +501,12 @@ void PopupMenuImpl::update()
     if (!m_ownerElement)
         return;
     m_needsUpdate = false;
+
+    if (!ownerElement().document().frame()->view()->visibleContentRect().contains(ownerElement().pixelSnappedBoundingBox())) {
+        hide();
+        return;
+    }
+
     RefPtr<SharedBuffer> data = SharedBuffer::create();
     PagePopupClient::addString("window.updateData = {\n", data.get());
     PagePopupClient::addString("type: \"update\",\n", data.get());
@@ -521,6 +527,8 @@ void PopupMenuImpl::update()
     }
     context.finishGroupIfNecessary();
     PagePopupClient::addString("],\n", data.get());
+    IntRect anchorRectInScreen = m_chromeClient->viewportToScreen(m_ownerElement->elementRectRelativeToViewport());
+    addProperty("anchorRectInScreen", anchorRectInScreen, data.get());
     PagePopupClient::addString("}\n", data.get());
     m_popup->postMessage(String::fromUTF8(data->data(), data->size()));
 }

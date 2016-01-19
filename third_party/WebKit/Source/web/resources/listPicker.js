@@ -83,6 +83,13 @@ ListPicker.prototype._handleWindowMessage = function(event) {
         this._config.baseStyle = window.updateData.baseStyle;
         this._config.children = window.updateData.children;
         this._update();
+        if (this._config.anchorRectInScreen.x !== window.updateData.anchorRectInScreen.x ||
+            this._config.anchorRectInScreen.y !== window.updateData.anchorRectInScreen.y ||
+            this._config.anchorRectInScreen.width !== window.updateData.anchorRectInScreen.width ||
+            this._config.anchorRectInScreen.height !== window.updateData.anchorRectInScreen.height) {
+            this._config.anchorRectInScreen = window.updateData.anchorRectInScreen;
+            this._fixWindowSize();
+        }
     }
     delete window.updateData;
 };
