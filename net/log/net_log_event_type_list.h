@@ -1163,15 +1163,16 @@ EVENT_TYPE(HTTP2_SESSION_SYN_STREAM)
 //   }
 EVENT_TYPE(HTTP2_SESSION_PUSHED_SYN_STREAM)
 
-// This event is sent for sending an HTTP/2 (or SPDY) HEADERS frame.
+// This event is sent for sending an HTTP/2 HEADERS frame.
 // The following parameters are attached:
 //   {
-//     "flags": <The control frame flags>,
 //     "headers": <The list of header:value pairs>,
 //     "fin": <True if this is the final data set by the peer on this stream>,
-//     "unidirectional": <True if this stream is unidirectional>,
-//     "priority": <The priority value of the stream>,
 //     "stream_id": <The stream id>,
+//     "has_priority": <True if the PRIORITY flag is set>,
+//     "parent_stream_id": <Optional; the stream id of the parent stream>,
+//     "priority": <Optional; the priority value of the stream>,
+//     "exclusive": <Optional; true if the exclusive bit is set>.
 //   }
 EVENT_TYPE(HTTP2_SESSION_SEND_HEADERS)
 

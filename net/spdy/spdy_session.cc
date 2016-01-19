@@ -98,6 +98,28 @@ scoped_ptr<base::Value> NetLogSpdySynStreamSentCallback(
   return std::move(dict);
 }
 
+scoped_ptr<base::Value> NetLogSpdyHeadersSentCallback(
+    const SpdyHeaderBlock* headers,
+    bool fin,
+    SpdyStreamId stream_id,
+    bool has_priority,
+    uint32_t priority,
+    SpdyStreamId parent_stream_id,
+    bool exclusive,
+    NetLogCaptureMode capture_mode) {
+  scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  dict->Set("headers", SpdyHeaderBlockToListValue(*headers, capture_mode));
+  dict->SetBoolean("fin", fin);
+  dict->SetInteger("stream_id", stream_id);
+  dict->SetBoolean("has_priority", has_priority);
+  if (has_priority) {
+    dict->SetInteger("parent_stream_id", parent_stream_id);
+    dict->SetInteger("priority", static_cast<int>(priority));
+    dict->SetBoolean("exclusive", exclusive);
+  }
+  return std::move(dict);
+}
+
 scoped_ptr<base::Value> NetLogSpdySynStreamReceivedCallback(
     const SpdyHeaderBlock* headers,
     bool fin,
@@ -1087,6 +1109,14 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     syn_stream.set_unidirectional((flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0);
     syn_stream.set_header_block(block);
     syn_frame.reset(buffered_spdy_framer_->SerializeFrame(syn_stream));
+
+    if (net_log().IsCapturing()) {
+      net_log().AddEvent(NetLog::TYPE_HTTP2_SESSION_SYN_STREAM,
+                         base::Bind(&NetLogSpdySynStreamSentCallback, &block,
+                                    (flags & CONTROL_FLAG_FIN) != 0,
+                                    (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
+                                    spdy_priority, stream_id));
+    }
   } else {
     SpdyHeadersIR headers(stream_id);
     headers.set_priority(spdy_priority);
@@ -1129,21 +1159,18 @@ scoped_ptr<SpdyFrame> SpdySession::CreateSynStream(
     headers.set_fin((flags & CONTROL_FLAG_FIN) != 0);
     headers.set_header_block(block);
     syn_frame.reset(buffered_spdy_framer_->SerializeFrame(headers));
+
+    if (net_log().IsCapturing()) {
+      net_log().AddEvent(
+          NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS,
+          base::Bind(&NetLogSpdyHeadersSentCallback, &block,
+                     (flags & CONTROL_FLAG_FIN) != 0, stream_id,
+                     headers.has_priority(), headers.priority(),
+                     headers.parent_stream_id(), headers.exclusive()));
+    }
   }
 
   streams_initiated_count_++;
-
-  if (net_log().IsCapturing()) {
-    const NetLog::EventType type =
-        (GetProtocolVersion() <= SPDY3)
-            ? NetLog::TYPE_HTTP2_SESSION_SYN_STREAM
-            : NetLog::TYPE_HTTP2_SESSION_SEND_HEADERS;
-    net_log().AddEvent(type,
-                       base::Bind(&NetLogSpdySynStreamSentCallback, &block,
-                                  (flags & CONTROL_FLAG_FIN) != 0,
-                                  (flags & CONTROL_FLAG_UNIDIRECTIONAL) != 0,
-                                  spdy_priority, stream_id));
-  }
 
   return syn_frame;
 }
