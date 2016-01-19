@@ -308,6 +308,9 @@ def main():
   parser.add_argument('--adb-path',
                       help='Absolute path to the adb binary to use.')
   parser.add_argument('--blacklist-file', help='Device blacklist JSON file.')
+  parser.add_argument('--known-devices-file', action='append', default=[],
+                      dest='known_devices_files',
+                      help='Path to known device lists.')
   parser.add_argument('-v', '--verbose', action='count', default=1,
                       help='Log more information.')
 
@@ -331,11 +334,16 @@ def main():
 
   last_devices_path = os.path.join(
       args.out_dir, device_list.LAST_DEVICES_FILENAME)
+  args.known_devices_files.append(last_devices_path)
+
+  expected_devices = set()
   try:
-    expected_devices = set(
-        device_list.GetPersistentDeviceList(last_devices_path))
+    for path in args.known_devices_files:
+      if os.path.exists(path):
+        expected_devices.update(device_list.GetPersistentDeviceList(path))
   except IOError:
-    expected_devices = set()
+    logging.warning('Problem reading %s, skipping.', path)
+
   logging.info('Expected devices:')
   for device in expected_devices:
     logging.info('  %s', device)
@@ -367,10 +375,10 @@ def main():
       logging.info('  IMEI slice: %s', status.get('imei_slice'))
       logging.info('  WiFi IP: %s', status.get('wifi_ip'))
 
-  # Update the last devices file.
-  device_list.WritePersistentDeviceList(
-      last_devices_path,
-      [status['serial'] for status in statuses])
+  # Update the last devices file(s).
+  for path in args.known_devices_files:
+    device_list.WritePersistentDeviceList(
+        path, [status['serial'] for status in statuses])
 
   # Write device info to file for buildbot info display.
   if os.path.exists('/home/chrome-bot'):
