@@ -254,6 +254,9 @@ crbug.com/576589 fast/repaint/change-text-content-and-background-color.html [ Ne
 crbug.com/576589 fast/repaint/multi-layout-one-frame.html [ NeedsRebaseline ]
 crbug.com/576589 fast/repaint/subtree-root-skipped.html [ NeedsRebaseline ]
 crbug.com/576589 fast/text/international/mixed-directionality-selection.html [ NeedsRebaseline ]
+crbug.com/576589 [ Mac10.10 ] tables/mozilla/bugs/bug46368-1.html [ NeedsRebaseline ]
+crbug.com/576589 [ Mac10.10 ] tables/mozilla/bugs/bug46368-2.html [ NeedsRebaseline ]
+crbug.com/576589 [ Mac10.10 ] tables/mozilla/dom/tableDom.html [ NeedsRebaseline ]
 
 crbug.com/498539 http/tests/inspector/elements/styles/selector-line.html [ Pass Timeout ]
 crbug.com/498539 http/tests/inspector/network/network-datareceived.html [ Pass Timeout ]
