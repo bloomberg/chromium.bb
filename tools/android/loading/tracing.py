@@ -28,7 +28,8 @@ class TracingTrack(devtools_monitor.Track):
         a stream is slower than the default reporting as dataCollected events.
     """
     super(TracingTrack, self).__init__(connection)
-    connection.RegisterListener('Tracing.dataCollected', self)
+    if connection:
+      connection.RegisterListener('Tracing.dataCollected', self)
     params = {}
     if categories:
       params['categories'] = (categories if type(categories) is str
@@ -36,7 +37,8 @@ class TracingTrack(devtools_monitor.Track):
     if fetch_stream:
       params['transferMode'] = 'ReturnAsStream'
 
-    connection.SyncRequestNoResponse('Tracing.start', params)
+    if connection:
+      connection.SyncRequestNoResponse('Tracing.start', params)
     self._events = []
 
     self._event_msec_index = None
@@ -75,6 +77,18 @@ class TracingTrack(devtools_monitor.Track):
     if not events or events.end_msec < msec:
       return []
     return events.event_list
+
+
+  def ToJsonDict(self):
+    return {'events': [e.ToJsonDict() for e in self._events]}
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    assert 'events' in json_dict
+    events = [Event(e) for e in json_dict['events']]
+    tracing_track = TracingTrack(None)
+    tracing_track._events = events
+    return tracing_track
 
   def _IndexEvents(self):
     """Computes index for in-flight events.
@@ -275,7 +289,10 @@ class Event(object):
     self._end_msec = None
     self._synthetic = synthetic
     if self.type == 'X':
-      self._end_msec = self.start_msec + tracing_event['dur'] / 1000.0
+      # Some events don't have a duration.
+      duration = (tracing_event['dur']
+                  if 'dur' in tracing_event else tracing_event['tdur'])
+      self._end_msec = self.start_msec + duration / 1000.0
 
   @property
   def start_msec(self):
@@ -356,3 +373,10 @@ class Event(object):
     if 'args' in closing.tracing_event:
       self.tracing_event.setdefault(
           'args', {}).update(closing.tracing_event['args'])
+
+  def ToJsonDict(self):
+    return self._tracing_event
+
+  @classmethod
+  def FromJsonDict(cls, json_dict):
+    return Event(json_dict)

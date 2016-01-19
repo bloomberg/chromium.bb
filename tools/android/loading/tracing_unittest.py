@@ -7,20 +7,25 @@ import unittest
 
 import devtools_monitor
 
-from tracing import TracingTrack
-
-
-class StubConnection(object):
-  def RegisterListener(self, name, obj):
-    pass
-
-  def SyncRequestNoResponse(self, method, params):
-    pass
+from tracing import (Event, TracingTrack)
 
 
 class TracingTrackTestCase(unittest.TestCase):
+  _MIXED_EVENTS = [
+      {'ts': 3, 'ph': 'N', 'id': 1, 'args': {'name': 'A'}},
+      {'ts': 5, 'ph': 'X', 'dur': 1, 'args': {'name': 'B'}},
+      {'ts': 7, 'ph': 'D', 'id': 1},
+      {'ts': 10, 'ph': 'B', 'args': {'name': 'D'}},
+      {'ts': 10, 'ph': 'b', 'cat': 'X', 'id': 1, 'args': {'name': 'C'}},
+      {'ts': 11, 'ph': 'e', 'cat': 'X', 'id': 1},
+      {'ts': 12, 'ph': 'E'},
+      {'ts': 12, 'ph': 'N', 'id': 1, 'args': {'name': 'E'}},
+      {'ts': 13, 'ph': 'b', 'cat': 'X', 'id': 2, 'args': {'name': 'F'}},
+      {'ts': 14, 'ph': 'e', 'cat': 'X', 'id': 2},
+      {'ts': 15, 'ph': 'D', 'id': 1}]
+
   def setUp(self):
-    self.track = TracingTrack(StubConnection())
+    self.track = TracingTrack(None)
 
   def EventToMicroseconds(self, event):
     if 'ts' in event:
@@ -176,18 +181,28 @@ class TracingTrackTestCase(unittest.TestCase):
 
   def testMixed(self):
     # A and E are objects, B complete, D a duration, and C and F async.
-    self.CheckIntervals([
-        {'ts': 3, 'ph': 'N', 'id': 1, 'args': {'name': 'A'}},
-        {'ts': 5, 'ph': 'X', 'dur': 1, 'args': {'name': 'B'}},
-        {'ts': 7, 'ph': 'D', 'id': 1},
-        {'ts': 10, 'ph': 'B', 'args': {'name': 'D'}},
-        {'ts': 10, 'ph': 'b', 'cat': 'X', 'id': 1, 'args': {'name': 'C'}},
-        {'ts': 11, 'ph': 'e', 'cat': 'X', 'id': 1},
-        {'ts': 12, 'ph': 'E'},
-        {'ts': 12, 'ph': 'N', 'id': 1, 'args': {'name': 'E'}},
-        {'ts': 13, 'ph': 'b', 'cat': 'X', 'id': 2, 'args': {'name': 'F'}},
-        {'ts': 14, 'ph': 'e', 'cat': 'X', 'id': 2},
-        {'ts': 15, 'ph': 'D', 'id': 1}])
+    self.CheckIntervals(self._MIXED_EVENTS)
+
+  def testEventSerialization(self):
+    for e in self._MIXED_EVENTS:
+      event = Event(e)
+      json_dict = event.ToJsonDict()
+      deserialized_event = Event.FromJsonDict(json_dict)
+      self.assertEquals(
+          event.tracing_event, deserialized_event.tracing_event)
+
+  def testTracingTrackSerialization(self):
+    events = self._MIXED_EVENTS
+    self.track.Handle('Tracing.dataCollected',
+                      {'params': {'value': [self.EventToMicroseconds(e)
+                                            for e in events]}})
+    json_dict = self.track.ToJsonDict()
+    self.assertTrue('events' in json_dict)
+    deserialized_track = TracingTrack.FromJsonDict(json_dict)
+    self.assertEquals(
+        len(self.track._events), len(deserialized_track._events))
+    for (e1, e2) in zip(self.track._events, deserialized_track._events):
+      self.assertEquals(e1.tracing_event, e2.tracing_event)
 
 
 if __name__ == '__main__':

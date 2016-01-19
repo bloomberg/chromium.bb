@@ -230,7 +230,12 @@ class RequestTrack(devtools_monitor.Track):
                       # network stack.
                       ('requestHeaders', 'request_headers'),
                       ('headers', 'response_headers')))
-    timing_dict = response['timing'] if r.protocol != 'data' else {}
+    # data URLs don't have a timing dict.
+    timing_dict = {}
+    if r.protocol != 'data':
+      timing_dict = response['timing']
+    else:
+      timing_dict = {'requestTime': r.timestamp}
     r.timing = _TimingFromDict(timing_dict)
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
 
@@ -291,7 +296,8 @@ def _TimingFromDict(timing_dict):
 
 def _CopyFromDictToObject(d, o, key_attrs):
   for (key, attr) in key_attrs:
-    setattr(o, attr, d[key])
+    if key in d:
+      setattr(o, attr, d[key])
 
 
 if __name__ == '__main__':
