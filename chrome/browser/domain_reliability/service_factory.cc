@@ -31,21 +31,6 @@ const char kFieldTrialValueEnable[] = "enable";
 // Identifies Chrome as the source of Domain Reliability uploads it sends.
 const char kUploadReporterString[] = "chrome";
 
-bool IsDomainReliabilityMonitoringEnabled() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableDomainReliability))
-    return false;
-  if (command_line->HasSwitch(switches::kEnableDomainReliability))
-    return true;
-
-  if (base::FieldTrialList::TrialExists(kFieldTrialName)) {
-    std::string value = base::FieldTrialList::FindFullName(kFieldTrialName);
-    return value == kFieldTrialValueEnable;
-  }
-
-  return kDefaultEnabled;
-}
-
 }  // namespace
 
 // static
@@ -72,14 +57,25 @@ DomainReliabilityServiceFactory::~DomainReliabilityServiceFactory() {}
 
 KeyedService* DomainReliabilityServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (!IsDomainReliabilityMonitoringEnabled())
-    return NULL;
-  // TODO(ttuttle): Move this check closer to where the data gets sent
-  // crbug.com/533486
-  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+  if (!ShouldCreateService())
     return NULL;
 
   return DomainReliabilityService::Create(kUploadReporterString);
+}
+
+bool DomainReliabilityServiceFactory::ShouldCreateService() const {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableDomainReliability))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableDomainReliability))
+    return true;
+  if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled())
+    return false;
+  if (base::FieldTrialList::TrialExists(kFieldTrialName)) {
+    std::string value = base::FieldTrialList::FindFullName(kFieldTrialName);
+    return (value == kFieldTrialValueEnable);
+  }
+  return kDefaultEnabled;
 }
 
 }  // namespace domain_reliability

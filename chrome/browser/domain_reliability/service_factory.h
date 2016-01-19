@@ -37,6 +37,8 @@ class DomainReliabilityServiceFactory
   KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 
+  bool ShouldCreateService() const;
+
   DISALLOW_COPY_AND_ASSIGN(DomainReliabilityServiceFactory);
 };
 
