@@ -114,6 +114,7 @@ TAGS
 /man/lou_debug.1
 /man/lou_trace.1
 /man/lou_translate.1
+/man/lou_checkyaml.1
 
 # /python/
 /python/build
@@ -130,7 +131,6 @@ TAGS
 /tests/capitalization
 /tests/capitalized_with_sentance
 /tests/capitalized_word
-/tests/check_yaml
 /tests/en_gb_g1_italics
 /tests/getTable
 /tests/hash_collision
@@ -185,6 +185,7 @@ TAGS
 /tools/lou_allround
 /tools/lou_checkhyphens
 /tools/lou_checktable
+/tools/lou_checkyaml
 /tools/lou_debug
 /tools/lou_trace
 /tools/lou_translate

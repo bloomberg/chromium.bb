@@ -1,4 +1,8 @@
-#define TRANSLATION_TABLE "compress.cti,en-us-g2.ctb"
+/* Functionality to check a translation. This is mostly needed for the
+   tests in ../tests but it is also needed for lou_checkyaml. So this
+   functionality is packaged up in what automake calls a convenience
+   library, a lib that is solely built at compile time but never
+   installed. */
 
 int check_inpos(const char *tableList, const char *str, const int *expected_poslist);
 

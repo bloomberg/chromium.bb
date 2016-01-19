@@ -1,36 +1,73 @@
 /* liblouis Braille Translation and Back-Translation Library
 
-Copyright (C) 2015, 2016 Swiss Library for the Blind, Visually Impaired and Print Disabled
+Copyright (C) 2015, 2016 Christian Egli, Swiss Library for the Blind, Visually Impaired and Print Disabled
 
-This library is free software; you can redistribute it and/or
-modify it under the terms of the GNU Lesser General Public
-License as published by the Free Software Foundation; either
-version 2.1 of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-This library is distributed in the hope that it will be useful,
+This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-Lesser General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA */
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
 
 #include <config.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <assert.h>
 #include <error.h>
-#include "liblouis.h"
+#include <getopt.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "louis.h"
+#include "progname.h"
+#include "version-etc.h"
 #include "brl_checks.h"
 
-#define EXIT_SKIPPED 77
+static const struct option longopts[] =
+{
+  { "help", no_argument, NULL, 'h' },
+  { "version", no_argument, NULL, 'v' },
+  { NULL, 0, NULL, 0 }
+};
 
-#ifdef _WIN32
-// FIXME: use gnulib module progname and remove this #ifdef
-char *program_name;
+const char version_etc_copyright[] =
+  "Copyright %s %d Swiss Library for the Blind, Visually Impaired and Print Disabled";
+
+#define AUTHORS "Christian Egli"
+
+static void
+print_help (void)
+{
+  printf ("\
+Usage: %s YAML_TEST_FILE\n", program_name);
+  
+  fputs ("\
+Run the tests defined in the YAML_TEST_FILE. Return 0 if all tests pass\n\
+or 1 if any of the tests fail. The details of failing tests are printed\n\
+to stderr.\n\n", stdout);
+
+  fputs ("\
+  -h, --help          display this help and exit\n\
+  -v, --version       display version information and exit\n", stdout);
+
+  printf ("\n");
+  printf ("Report bugs to %s.\n", PACKAGE_BUGREPORT);
+
+#ifdef PACKAGE_PACKAGER_BUG_REPORTS
+  printf ("Report %s bugs to: %s\n", PACKAGE_PACKAGER, PACKAGE_PACKAGER_BUG_REPORTS);
 #endif
+#ifdef PACKAGE_URL
+  printf ("%s home page: <%s>\n", PACKAGE_NAME, PACKAGE_URL);
+#endif
+}
+
+#define EXIT_SKIPPED 77
 
 #ifdef HAVE_LIBYAML
 #include <yaml.h>
@@ -126,15 +163,15 @@ read_flags (yaml_parser_t *parser, int *direction, int *hyphenation) {
       yaml_event_delete(&event);
       if (!yaml_parser_parse(parser, &event) ||
 	  (event.type != YAML_SCALAR_EVENT))
-        yaml_error(YAML_SCALAR_EVENT, &event);
+	yaml_error(YAML_SCALAR_EVENT, &event);
       if (!strcmp(event.data.scalar.value, "forward")) {
-        *direction = 0;
+	*direction = 0;
       } else if (!strcmp(event.data.scalar.value, "backward")) {
-        *direction = 1;
+	*direction = 1;
       } else if (!strcmp(event.data.scalar.value, "hyphenate")) {
-        *hyphenation = 1;
+	*hyphenation = 1;
       } else {
-        error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
+	error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line,
 		      "Testmode '%s' not supported\n", event.data.scalar.value);
       }
     } else {
@@ -427,7 +464,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   if (cursorPos) {
     if (xfail != check_cursor_pos(tables_list, word, cursorPos)) {
       if (description)
-        fprintf(stderr, "%s\n", description);
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -435,7 +472,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
   } else if (hyphenation) {
     if (xfail != check_hyphenation(tables_list, word, translation)) {
       if (description)
-        fprintf(stderr, "%s\n", description);
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -444,7 +481,7 @@ read_test(yaml_parser_t *parser, char *tables_list, int direction, int hyphenati
     if (xfail != check_with_mode(tables_list, word, typeform,
 				 translation, translation_mode, direction)) {
       if (description)
-        fprintf(stderr, "%s\n", description);
+	fprintf(stderr, "%s\n", description);
       error_at_line(0, 0, file_name, event.start_mark.line,
 		    (xfail ? "Unexpected Pass" :"Failure"));
       errors++;
@@ -493,15 +530,37 @@ read_tests(yaml_parser_t *parser, char *tables_list, int direction, int hyphenat
 
 int
 main(int argc, char *argv[]) {
-#ifdef _WIN32
-  // FIXME: use gnulib module progname:
-  // set_program_name(argv[0]);
-  // ... and remove this #ifdef
-  program_name = argv[0];
-#endif
-  if (argc != 2) {
-    printf("Usage: %s file.yaml\n", argv[0]);
-    return 0;
+  int optc;
+
+  set_program_name (argv[0]);
+
+  while ((optc = getopt_long (argc, argv, "hv", longopts, NULL)) != -1)
+    switch (optc) {
+      /* --help and --version exit immediately, per GNU coding standards.  */
+    case 'v':
+      version_etc (stdout, program_name, PACKAGE_NAME, VERSION, AUTHORS, (char *) NULL);
+      exit (EXIT_SUCCESS);
+      break;
+    case 'h':
+      print_help ();
+      exit (EXIT_SUCCESS);
+      break;
+    default:
+      fprintf (stderr, "Try `%s --help' for more information.\n",
+	       program_name);
+      exit (EXIT_FAILURE);
+      break;
+    }
+
+  if (optind != argc - 1) {
+    /* Print error message and exit.  */
+    if (optind < argc - 1)
+      fprintf (stderr, "%s: extra operand: %s\n", program_name, argv[optind + 1]);
+    else
+      fprintf (stderr, "%s: no YAML test file specified\n", program_name);
+    
+    fprintf (stderr, "Try `%s --help' for more information.\n", program_name);
+    exit (EXIT_FAILURE);
   }
 
 #ifndef HAVE_LIBYAML

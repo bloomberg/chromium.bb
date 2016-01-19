@@ -3,166 +3,52 @@ SUBDIRS = tables tablesWithMetadata doctests harness harnessSources
 AM_CPPFLAGS =					\
 	-I$(top_srcdir)/liblouis		\
 	-I$(top_srcdir)/gnulib			\
-	-I$(top_builddir)/gnulib
+	-I$(top_builddir)/gnulib		\
+	-I$(top_builddir)/tools
 
 LDADD =						\
 	$(top_builddir)/liblouis/liblouis.la	\
 	$(top_builddir)/gnulib/libgnu.la	\
+	$(top_builddir)/tools/libbrlcheck.la	\
 	$(LTLIBINTL)
 
-capitalization_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	capitalization.c
-
-present_progressive_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	present_progressive.c
-
-capitalized_word_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	capitalized_word.c
-
-capitalized_with_sentance_SOURCES =		\
-	brl_checks.c				\
-	brl_checks.h				\
-	capitalized_with_sentance.c
-
-inpos_compbrl_SOURCES =		\
-	brl_checks.c            \
-	brl_checks.h            \
-	inpos_compbrl.c	
-
-lastworditalafter_SOURCES =	\
-	brl_checks.c            \
-	brl_checks.h            \
-	lastworditalafter.c	
-
-en_gb_g1_italics_SOURCES =	\
-	brl_checks.c            \
-	brl_checks.h            \
-	en_gb_g1_italics.c	
-
-pass2_SOURCES =			\
-	brl_checks.c		\
-	brl_checks.h		\
-	pass2.c	
-
-pass2_inpos_SOURCES =		\
-	brl_checks.c		\
-	brl_checks.h		\
-	pass2_inpos.c	
-
-inpos_SOURCES =			\
-	brl_checks.c		\
-	brl_checks.h		\
-	inpos.c	
-
-inpos_match_replace_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	inpos_match_replace.c
-
-letterDefTest_SOURCES = 	\
-	brl_checks.c		\
-	brl_checks.h		\
-	letterDefTest.c
-
-uplow_with_unicode_SOURCES = 	\
-	brl_checks.c		\
-	brl_checks.h		\
-	uplow_with_unicode.c
-
-squash_space_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	squash_space.c
-
-hyphenate_achena_SOURCES  = 		\
-	brl_checks.c			\
-	brl_checks.h			\
-	hyphenate_achena.c
-
-hyphenate_alderen_SOURCES  = 		\
-	brl_checks.c			\
-	brl_checks.h			\
-	hyphenate_alderen.c
-
-hyphenate_straightforward_SOURCES  =		\
-	brl_checks.c				\
-	brl_checks.h				\
-	hyphenate_straightforward.c
-
-hyphenate_xxx_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	hyphenate_xxx.c
-
-backtranslate_with_letsign_SOURCES =		\
-	brl_checks.c				\
-	brl_checks.h				\
-	backtranslate_with_letsign.c
-
-backtranslate_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	backtranslate.c
-
-pass1Only_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	pass1Only.c
-
-outpos_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	outpos.c	
-
+capitalization_SOURCES = capitalization.c
+present_progressive_SOURCES = present_progressive.c
+capitalized_word_SOURCES = capitalized_word.c
+capitalized_with_sentance_SOURCES = capitalized_with_sentance.c
+inpos_compbrl_SOURCES = inpos_compbrl.c
+lastworditalafter_SOURCES = lastworditalafter.c
+en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
+pass2_SOURCES = pass2.c
+pass2_inpos_SOURCES = pass2_inpos.c
+inpos_SOURCES = inpos.c
+inpos_match_replace_SOURCES = inpos_match_replace.c
+letterDefTest_SOURCES = letterDefTest.c
+uplow_with_unicode_SOURCES = uplow_with_unicode.c
+squash_space_SOURCES = squash_space.c
+hyphenate_achena_SOURCES = hyphenate_achena.c
+hyphenate_alderen_SOURCES = hyphenate_alderen.c
+hyphenate_straightforward_SOURCES = hyphenate_straightforward.c
+hyphenate_xxx_SOURCES = hyphenate_xxx.c
+backtranslate_with_letsign_SOURCES = backtranslate_with_letsign.c
+backtranslate_SOURCES = backtranslate.c
+pass1Only_SOURCES = pass1Only.c
+outpos_SOURCES = outpos.c
 getTable_SOURCES = getTable.c
-
-typeform_SOURCES =				\
-	typeform.c
-
-pass0_typebuf_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	pass0_typebuf.c
-
-hash_collision_SOURCES =			\
-	brl_checks.c				\
-	brl_checks.h				\
-	hash_collision.c
-
-resolve_table_SOURCES =				\
-	resolve_table.c
-
-logging_SOURCES =				\
-	logging.c
-
-findTable_SOURCES =				\
-	findTable.c
-
-emphclass_SOURCES =	\
-	brl_checks.c		\
-	brl_checks.h		\
-	emphclass.c
-
-check_yaml_SOURCES = 				\
-	brl_checks.c				\
-	brl_checks.h				\
-	check_yaml.c
+typeform_SOURCES = typeform.c
+pass0_typebuf_SOURCES = pass0_typebuf.c
+hash_collision_SOURCES = hash_collision.c
+resolve_table_SOURCES = resolve_table.c
+logging_SOURCES = logging.c
+findTable_SOURCES = findTable.c
+emphclass_SOURCES = emphclass.c
 
 # Note that this is not currently included in check_programs below
 # otherwise make check would never complete.
-infiniteTranslationLoop_SOURCES =				\
-	brl_checks.c				\
-	brl_checks.h				\
-	infiniteTranslationLoop.c
+infiniteTranslationLoop_SOURCES = infiniteTranslationLoop.c
 
 program_TESTS =					\
-	capitalization                          \
+	capitalization				\
 	pass2					\
 	pass2_inpos				\
 	inpos					\
@@ -180,20 +66,20 @@ program_TESTS =					\
 	hyphenate_alderen			\
 	hyphenate_straightforward		\
 	hyphenate_xxx				\
-	backtranslate_with_letsign 		\
-	backtranslate 				\
+	backtranslate_with_letsign		\
+	backtranslate				\
 	pass1Only				\
 	outpos					\
 	getTable				\
 	typeform				\
 	pass0_typebuf				\
-	hash_collision                          \
-	resolve_table                          	\
-	logging                          	\
-	findTable                          	\
+	hash_collision				\
+	resolve_table				\
+	logging					\
+	findTable				\
 	emphclass
 
-check_PROGRAMS = $(program_TESTS) check_yaml
+check_PROGRAMS = $(program_TESTS)
 
 dist_check_SCRIPTS =		\
 	check_all_tables.pl	\
@@ -287,7 +173,7 @@ dist_yaml_TESTS =					\
 	yaml/ta-ta-g1_harness.txt.bak.yaml
 
 TEST_EXTENSIONS = .yaml
-YAML_LOG_COMPILER = ./check_yaml
+YAML_LOG_COMPILER =  $(top_srcdir)/tools/lou_checkyaml
 
 EXTRA_DIST = $(dist_yaml_TESTS)
 
@@ -298,9 +184,9 @@ TESTS =				\
 	$(dist_check_SCRIPTS)   \
 	$(dist_yaml_TESTS)
 
-TESTS_ENVIRONMENT =																	\
-	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata,	\
-	PYTHONPATH=$(HARNESS_DIR):$(top_builddir)/python:$$PYTHONPATH											\
-	HARNESS_DIR=$(HARNESS_DIR)															\
-	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH										\
+TESTS_ENVIRONMENT =																      \
+	LOUIS_TABLEPATH=$(top_srcdir)/tables,$(top_srcdir)/tests/tables,$(top_srcdir)/tests/tables/moreTables,$(top_srcdir)/tests/tablesWithMetadata, \
+	PYTHONPATH=$(HARNESS_DIR):$(top_builddir)/python:$$PYTHONPATH										      \
+	HARNESS_DIR=$(HARNESS_DIR)														      \
+	LD_LIBRARY_PATH=$(top_builddir)/liblouis/.libs:$$LD_LIBRARY_PATH									      \
 	PATH=$(top_builddir)/tools:$$PATH
