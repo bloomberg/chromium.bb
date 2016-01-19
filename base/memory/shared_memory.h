@@ -82,15 +82,6 @@ class BASE_EXPORT SharedMemory {
   // that |read_only| matches the permissions of the handle.
   SharedMemory(const SharedMemoryHandle& handle, bool read_only);
 
-#if defined(OS_WIN)
-  // Create a new SharedMemory object from an existing, open
-  // shared memory file that was created by a remote process and not shared
-  // to the current process.
-  SharedMemory(const SharedMemoryHandle& handle,
-               bool read_only,
-               ProcessHandle process);
-#endif
-
   // Closes any open files.
   ~SharedMemory();
 

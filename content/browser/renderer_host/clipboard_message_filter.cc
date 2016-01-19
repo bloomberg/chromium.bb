@@ -250,11 +250,7 @@ void ClipboardMessageFilter::OnWriteImage(ui::ClipboardType clipboard_type,
   }
 
   scoped_ptr<base::SharedMemory> bitmap_buffer(
-#if defined(OS_WIN)
-      new base::SharedMemory(handle, true, PeerHandle()));
-#else
       new base::SharedMemory(handle, true));
-#endif
 
   SkBitmap bitmap;
   // Let Skia do some sanity checking for (no negative widths/heights, no

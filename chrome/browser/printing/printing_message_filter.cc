@@ -94,9 +94,6 @@ void PrintingMessageFilter::OverrideThreadForMessage(
 bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingMessageFilter, message)
-#if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(PrintHostMsg_DuplicateSection, OnDuplicateSection)
-#endif
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(PrintHostMsg_AllocateTempFileForPrinting,
                         OnAllocateTempFileForPrinting)
@@ -116,17 +113,6 @@ bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
   return handled;
 }
-
-#if defined(OS_WIN)
-void PrintingMessageFilter::OnDuplicateSection(
-    base::SharedMemoryHandle renderer_handle,
-    base::SharedMemoryHandle* browser_handle) {
-  // Duplicate the handle in this process right now so the memory is kept alive
-  // (even if it is not mapped)
-  base::SharedMemory shared_buf(renderer_handle, true, PeerHandle());
-  shared_buf.GiveToProcess(base::GetCurrentProcessHandle(), browser_handle);
-}
-#endif
 
 #if defined(OS_ANDROID)
 void PrintingMessageFilter::OnAllocateTempFileForPrinting(
