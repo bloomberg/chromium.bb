@@ -138,11 +138,6 @@ const char kPrefManifestPermissions[] = "manifest_permissions";
 const char kPrefExplicitHosts[] = "explicit_host";
 const char kPrefScriptableHosts[] = "scriptable_host";
 
-// The preference names for the old granted permissions scheme.
-const char kPrefOldGrantedFullAccess[] = "granted_permissions.full";
-const char kPrefOldGrantedHosts[] = "granted_permissions.host";
-const char kPrefOldGrantedAPIs[] = "granted_permissions.api";
-
 // A preference that indicates when an extension was installed.
 const char kPrefInstallTime[] = "install_time";
 
@@ -943,57 +938,6 @@ void ExtensionPrefs::SetActiveBit(const std::string& extension_id,
                       new base::FundamentalValue(active));
 }
 
-void ExtensionPrefs::MigratePermissions(const ExtensionIdList& extension_ids) {
-  PermissionsInfo* info = PermissionsInfo::GetInstance();
-  for (ExtensionIdList::const_iterator ext_id =
-       extension_ids.begin(); ext_id != extension_ids.end(); ++ext_id) {
-    // An extension's granted permissions need to be migrated if the
-    // full_access bit is present. This bit was always present in the previous
-    // scheme and is never present now.
-    bool full_access = false;
-    const base::DictionaryValue* ext = GetExtensionPref(*ext_id);
-    if (!ext || !ext->GetBoolean(kPrefOldGrantedFullAccess, &full_access))
-      continue;
-
-    // Remove the full access bit (empty list will get trimmed).
-    UpdateExtensionPref(
-        *ext_id, kPrefOldGrantedFullAccess, new base::ListValue());
-
-    // Add the plugin permission if the full access bit was set.
-    if (full_access) {
-      const base::ListValue* apis = NULL;
-      base::ListValue* new_apis = NULL;
-
-      std::string granted_apis = JoinPrefs(kPrefGrantedPermissions, kPrefAPIs);
-      if (ext->GetList(kPrefOldGrantedAPIs, &apis))
-        new_apis = apis->DeepCopy();
-      else
-        new_apis = new base::ListValue();
-
-      std::string plugin_name = info->GetByID(APIPermission::kPlugin)->name();
-      new_apis->Append(new base::StringValue(plugin_name));
-      UpdateExtensionPref(*ext_id, granted_apis, new_apis);
-    }
-
-    // The granted permissions originally only held the effective hosts,
-    // which are a combination of host and user script host permissions.
-    // We now maintain these lists separately. For migration purposes, it
-    // does not matter how we treat the old effective hosts as long as the
-    // new effective hosts will be the same, so we move them to explicit
-    // host permissions.
-    const base::ListValue* hosts = NULL;
-    std::string explicit_hosts =
-        JoinPrefs(kPrefGrantedPermissions, kPrefExplicitHosts);
-    if (ext->GetList(kPrefOldGrantedHosts, &hosts)) {
-      UpdateExtensionPref(
-          *ext_id, explicit_hosts, hosts->DeepCopy());
-
-      // We can get rid of the old one by setting it to an empty list.
-      UpdateExtensionPref(*ext_id, kPrefOldGrantedHosts, new base::ListValue());
-    }
-  }
-}
-
 scoped_ptr<const PermissionSet> ExtensionPrefs::GetGrantedPermissions(
     const std::string& extension_id) const {
   CHECK(crx_file::id_util::IdIsValid(extension_id));
@@ -1707,7 +1651,6 @@ void ExtensionPrefs::InitPrefStore() {
   }
 
   FixMissingPrefs(extension_ids);
-  MigratePermissions(extension_ids);
 
   InitExtensionControlledPrefs(extension_pref_value_map_);
 
