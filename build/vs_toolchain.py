@@ -71,6 +71,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
   elif sys.platform == 'win32' and not depot_tools_win_toolchain:
     if not 'GYP_MSVS_OVERRIDE_PATH' in os.environ:
       os.environ['GYP_MSVS_OVERRIDE_PATH'] = DetectVisualStudioPath()
+    if not 'GYP_MSVS_VERSION' in os.environ:
+      os.environ['GYP_MSVS_VERSION'] = GetVisualStudioVersion()
 
   return vs_runtime_dll_dirs
 
