@@ -62,7 +62,11 @@ public:
     // If host is empty string and SubdomainSetting is not DisallowSubdomains, the entry will match all domains in the specified protocol.
     // IPv6 addresses must include brackets (e.g. '[2001:db8:85a3::8a2e:370:7334]', not '2001:db8:85a3::8a2e:370:7334').
     OriginAccessEntry(const String& protocol, const String& host, SubdomainSetting);
+
+    // 'matchesOrigin' requires a protocol match (e.g. 'http' != 'https'). 'matchesDomain'
+    // relaxes this constraint.
     MatchResult matchesOrigin(const SecurityOrigin&) const;
+    MatchResult matchesDomain(const SecurityOrigin&) const;
 
     const String& protocol() const { return m_protocol; }
     const String& host() const { return m_host; }

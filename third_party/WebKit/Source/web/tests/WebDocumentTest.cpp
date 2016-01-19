@@ -139,11 +139,13 @@ namespace {
 
 const char* baseURLOriginA = "http://example.test:0/";
 const char* baseURLOriginSubA = "http://subdomain.example.test:0/";
+const char* baseURLOriginSecureA = "https://example.test:0/";
 const char* baseURLOriginB = "http://not-example.test:0/";
 const char* emptyFile = "first_party/empty.html";
 const char* nestedData = "first_party/nested-data.html";
 const char* nestedOriginA = "first_party/nested-originA.html";
 const char* nestedOriginSubA = "first_party/nested-originSubA.html";
+const char* nestedOriginSecureA = "first_party/nested-originSecureA.html";
 const char* nestedOriginAInOriginA = "first_party/nested-originA-in-originA.html";
 const char* nestedOriginAInOriginB = "first_party/nested-originA-in-originB.html";
 const char* nestedOriginB = "first_party/nested-originB.html";
@@ -159,6 +161,11 @@ KURL toOriginA(const char* file)
 KURL toOriginSubA(const char* file)
 {
     return toKURL(std::string(baseURLOriginSubA) + file);
+}
+
+KURL toOriginSecureA(const char* file)
+{
+    return toKURL(std::string(baseURLOriginSecureA) + file);
 }
 
 KURL toOriginB(const char* file)
@@ -184,6 +191,7 @@ void WebDocumentFirstPartyTest::SetUpTestCase()
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedData), WebString::fromUTF8(nestedData));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginA), WebString::fromUTF8(nestedOriginA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginSubA), WebString::fromUTF8(nestedOriginSubA));
+    URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginSecureA), WebString::fromUTF8(nestedOriginSecureA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginA), WebString::fromUTF8(nestedOriginAInOriginA));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginAInOriginB), WebString::fromUTF8(nestedOriginAInOriginB));
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedOriginB), WebString::fromUTF8(nestedOriginB));
@@ -192,6 +200,7 @@ void WebDocumentFirstPartyTest::SetUpTestCase()
     URLTestHelpers::registerMockedURLLoad(toOriginA(nestedSrcDoc), WebString::fromUTF8(nestedSrcDoc));
 
     URLTestHelpers::registerMockedURLLoad(toOriginSubA(emptyFile), WebString::fromUTF8(emptyFile));
+    URLTestHelpers::registerMockedURLLoad(toOriginSecureA(emptyFile), WebString::fromUTF8(emptyFile));
 
     URLTestHelpers::registerMockedURLLoad(toOriginB(emptyFile), WebString::fromUTF8(emptyFile));
     URLTestHelpers::registerMockedURLLoad(toOriginB(nestedOriginA), WebString::fromUTF8(nestedOriginA));
@@ -234,6 +243,14 @@ TEST_F(WebDocumentFirstPartyTest, NestedOriginSubA)
 
     ASSERT_EQ(toOriginA(nestedOriginSubA), topDocument()->firstPartyForCookies());
     ASSERT_EQ(toOriginA(nestedOriginSubA), nestedDocument()->firstPartyForCookies());
+}
+
+TEST_F(WebDocumentFirstPartyTest, NestedOriginSecureA)
+{
+    load(nestedOriginSecureA);
+
+    ASSERT_EQ(toOriginA(nestedOriginSecureA), topDocument()->firstPartyForCookies());
+    ASSERT_EQ(toOriginA(nestedOriginSecureA), nestedDocument()->firstPartyForCookies());
 }
 
 TEST_F(WebDocumentFirstPartyTest, NestedOriginAInOriginA)

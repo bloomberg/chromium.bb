@@ -91,24 +91,26 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest)
         const char* protocol;
         const char* host;
         const char* origin;
-        OriginAccessEntry::MatchResult expected;
+        OriginAccessEntry::MatchResult expectedOrigin;
+        OriginAccessEntry::MatchResult expectedDomain;
     } inputs[] = {
-        { "http", "example.com", "http://example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "example.com", "http://www.example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "example.com", "http://www.www.example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "www.example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
-        { "http", "www.example.com", "http://www.example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "www.example.com", "http://www.www.example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "com", "http://example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
-        { "http", "com", "http://www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
-        { "http", "com", "http://www.www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix },
-        { "https", "example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin },
-        { "https", "example.com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
-        { "https", "example.com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin },
-        { "http", "example.com", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
-        { "http", "", "http://example.com/", OriginAccessEntry::MatchesOrigin },
-        { "http", "", "http://beispiel.de/", OriginAccessEntry::MatchesOrigin },
-        { "https", "", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "example.com", "http://example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://www.example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://www.www.example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "www.example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "www.example.com", "http://www.example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "www.example.com", "http://www.www.example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "com", "http://example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix, OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "http", "com", "http://www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix, OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "http", "com", "http://www.www.example.com/", OriginAccessEntry::MatchesOriginButIsPublicSuffix, OriginAccessEntry::MatchesOriginButIsPublicSuffix },
+        { "https", "example.com", "http://example.com/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::MatchesOrigin },
+        { "https", "example.com", "http://www.example.com/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::MatchesOrigin },
+        { "https", "example.com", "http://www.www.example.com/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "example.com", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "example.com", "https://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::DoesNotMatchOrigin },
+        { "http", "", "http://example.com/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "http", "", "http://beispiel.de/", OriginAccessEntry::MatchesOrigin, OriginAccessEntry::MatchesOrigin },
+        { "https", "", "http://beispiel.de/", OriginAccessEntry::DoesNotMatchOrigin, OriginAccessEntry::MatchesOrigin },
     };
 
     OriginAccessEntryTestPlatform platform;
@@ -118,7 +120,8 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest)
         SCOPED_TRACE(testing::Message() << "Host: " << test.host << ", Origin: " << test.origin);
         RefPtr<SecurityOrigin> originToTest = SecurityOrigin::createFromString(test.origin);
         OriginAccessEntry entry1(test.protocol, test.host, OriginAccessEntry::AllowSubdomains);
-        EXPECT_EQ(test.expected, entry1.matchesOrigin(*originToTest));
+        EXPECT_EQ(test.expectedOrigin, entry1.matchesOrigin(*originToTest));
+        EXPECT_EQ(test.expectedDomain, entry1.matchesDomain(*originToTest));
     }
 }
 

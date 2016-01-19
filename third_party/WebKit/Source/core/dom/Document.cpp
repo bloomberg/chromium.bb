@@ -4160,7 +4160,9 @@ const KURL& Document::firstPartyForCookies() const
             currentDocument = currentDocument->parentDocument();
         ASSERT(currentDocument);
 
-        if (accessEntry.matchesOrigin(*currentDocument->securityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
+        // We use 'matchesDomain' here, as it turns out that some folks embed HTTPS login forms
+        // into HTTP pages; we should allow this kind of upgrade.
+        if (accessEntry.matchesDomain(*currentDocument->securityOrigin()) == OriginAccessEntry::DoesNotMatchOrigin)
             return SecurityOrigin::urlWithUniqueSecurityOrigin();
 
         currentDocument = currentDocument->parentDocument();
