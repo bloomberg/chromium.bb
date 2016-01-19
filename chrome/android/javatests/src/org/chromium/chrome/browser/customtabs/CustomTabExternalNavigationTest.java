@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
@@ -81,11 +80,8 @@ public class CustomTabExternalNavigationTest extends CustomTabActivityTestBase {
     /**
      * When loading a normal http url that chrome is able to handle, an intent picker should never
      * be shown, even if other activities such as {@link DummyActivityForHttp} claim to handle it.
-     *
-     * crbug.com/519613
-     * @SmallTest
      */
-    @FlakyTest
+    @SmallTest
     public void testIntentPickerNotShownForNormalUrl() {
         final String testUrl = "http://customtabtest.com";
         ExternalNavigationParams params = new ExternalNavigationParams.Builder(testUrl, false)
