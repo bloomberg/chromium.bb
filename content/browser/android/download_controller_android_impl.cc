@@ -451,7 +451,9 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
           base::android::GetApplicationContext(), jurl.obj(), jmime_type.obj(),
           jfilename.obj(), jpath.obj(), item->GetReceivedBytes(), true,
           item->GetId(), item->PercentComplete(), time_delta.InMilliseconds(),
-          item->HasUserGesture());
+          item->HasUserGesture(),
+          // Get all requirements that allows a download to be resumable.
+          !item->GetBrowserContext()->IsOffTheRecord());
       break;
     }
     case DownloadItem::COMPLETE:

@@ -134,9 +134,10 @@ public class DownloadController {
      * network stack use custom notification to display the progress of downloads.
      */
     @CalledByNative
-    private void onDownloadUpdated(Context context, String url, String mimeType,
-            String filename, String path, long contentLength, boolean successful, int downloadId,
-            int percentCompleted, long timeRemainingInMs, boolean hasUserGesture) {
+    private void onDownloadUpdated(Context context, String url, String mimeType, String filename,
+            String path, long contentLength, boolean successful, int downloadId,
+            int percentCompleted, long timeRemainingInMs, boolean hasUserGesture,
+            boolean isResumable) {
         if (sDownloadNotificationService != null) {
             DownloadInfo downloadInfo = new DownloadInfo.Builder()
                     .setUrl(url)
@@ -151,6 +152,7 @@ public class DownloadController {
                     .setPercentCompleted(percentCompleted)
                     .setTimeRemainingInMillis(timeRemainingInMs)
                     .setHasUserGesture(hasUserGesture)
+                    .setIsResumable(isResumable)
                     .build();
             sDownloadNotificationService.onDownloadUpdated(downloadInfo);
         }

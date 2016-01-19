@@ -8,6 +8,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,10 +16,16 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Pair;
 
+import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.init.BrowserParts;
+import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
+import org.chromium.chrome.browser.init.EmptyBrowserParts;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.text.NumberFormat;
@@ -30,8 +37,13 @@ import java.util.Locale;
  * Chrome gets killed.
  */
 public class DownloadNotificationService extends Service {
+    static final String EXTRA_DOWNLOAD_ID = "DownloadId";
+    static final String EXTRA_DOWNLOAD_FILE_NAME = "DownloadFileName";
+    static final String ACTION_DOWNLOAD_RESUME =
+            "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
+    static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
     private static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
-    private static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
+    private static final String TAG = "DownloadNotification";
     private final IBinder mBinder = new LocalBinder();
     private NotificationManager mNotificationManager;
     private Context mContext;
@@ -75,6 +87,29 @@ public class DownloadNotificationService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        if (isDownloadResumptionIntent(intent)) {
+            final int downloadId = IntentUtils.safeGetIntExtra(
+                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
+            final String fileName = IntentUtils.safeGetStringExtra(
+                    intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+            BrowserParts parts = new EmptyBrowserParts() {
+                @Override
+                public void finishNativeInitialization() {
+                    DownloadManagerService service =
+                            DownloadManagerService.getDownloadManagerService(
+                                    getApplicationContext());
+                    service.resumeDownload(downloadId, fileName);
+                }
+            };
+            try {
+                ChromeBrowserInitializer.getInstance(mContext).handlePreNativeStartup(parts);
+                ChromeBrowserInitializer.getInstance(mContext).handlePostNativeStartup(true, parts);
+            } catch (ProcessInitException e) {
+                Log.e(TAG, "Unable to load native library.", e);
+                ChromeApplication.reportStartupErrorAndExit(e);
+            }
+        }
+
         // This should restart the service after Chrome gets killed. However, this
         // doesn't work on Android 4.4.2.
         return START_STICKY;
@@ -123,12 +158,25 @@ public class DownloadNotificationService extends Service {
      * Change a download notification to paused state.
      * @param downloadId ID of the download.
      * @param fileName File name of the download.
+     * @param isResumable whether download is resumable.
      */
-    public void notifyDownloadPaused(int downloadId, String fileName) {
+    public void notifyDownloadPaused(int downloadId, String fileName, boolean isResumable) {
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause,
                 fileName,
                 mContext.getResources().getString(R.string.download_notification_paused));
+        if (isResumable) {
+            ComponentName component = new ComponentName(
+                    mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
+            Intent intent = new Intent(ACTION_DOWNLOAD_RESUME);
+            intent.setComponent(component);
+            intent.putExtra(EXTRA_DOWNLOAD_ID, downloadId);
+            intent.putExtra(EXTRA_DOWNLOAD_FILE_NAME, fileName);
+            builder.addAction(android.R.drawable.stat_sys_download_done,
+                    mContext.getResources().getString(R.string.download_notification_resume_button),
+                    PendingIntent.getBroadcast(
+                            mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT));
+        }
         updateNotification(downloadId, builder.build());
     }
 
@@ -171,11 +219,12 @@ public class DownloadNotificationService extends Service {
     void pauseAllDownloads() {
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(mContext);
-        List<Pair<Integer, String>> notifications =
+        List<DownloadManagerService.PendingNotification> notifications =
                 DownloadManagerService.parseDownloadNotificationsFromSharedPrefs(sharedPrefs);
-        for (Pair<Integer, String> notification : notifications) {
-            if (notification.first > 0) {
-                notifyDownloadPaused(notification.first, notification.second);
+        for (DownloadManagerService.PendingNotification notification : notifications) {
+            if (notification.downloadId > 0) {
+                notifyDownloadPaused(
+                        notification.downloadId, notification.fileName, notification.isResumable);
             }
         }
     }
@@ -206,5 +255,24 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     void updateNotification(int id, Notification notification) {
         mNotificationManager.notify(NOTIFICATION_NAMESPACE, id, notification);
+    }
+
+    /**
+     * Checks if an intent is about to resume a download.
+     * @param intent An intent to validate.
+     * @return true if the intent is for download resumption, or false otherwise.
+     */
+    static boolean isDownloadResumptionIntent(Intent intent) {
+        if (!intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_ID)
+                || !intent.hasExtra(DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME)) {
+            return false;
+        }
+        final int downloadId = IntentUtils.safeGetIntExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_ID, -1);
+        if (downloadId == -1) return false;
+        final String fileName = IntentUtils.safeGetStringExtra(
+                intent, DownloadNotificationService.EXTRA_DOWNLOAD_FILE_NAME);
+        if (fileName == null) return false;
+        return true;
     }
 }

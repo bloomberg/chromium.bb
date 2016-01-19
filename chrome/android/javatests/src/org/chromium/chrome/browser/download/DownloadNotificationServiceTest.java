@@ -73,8 +73,10 @@ public class DownloadNotificationServiceTest extends
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
         Set<String> notifications = new HashSet<String>();
-        notifications.add(DownloadManagerService.getNotificationString(1, "test1"));
-        notifications.add(DownloadManagerService.getNotificationString(2, "test2"));
+        notifications.add(new DownloadManagerService.PendingNotification(
+                1, "test1", true).getNotificationString());
+        notifications.add(new DownloadManagerService.PendingNotification(
+                2, "test2", true).getNotificationString());
         SharedPreferences sharedPrefs =
                 PreferenceManager.getDefaultSharedPreferences(mockContext);
         SharedPreferences.Editor editor = sharedPrefs.edit();

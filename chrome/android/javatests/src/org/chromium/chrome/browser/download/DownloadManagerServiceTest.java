@@ -255,6 +255,9 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         protected long addCompletedDownload(DownloadInfo downloadInfo) {
             return 1L;
         }
+
+        @Override
+        protected void init() {}
     }
 
     private static Handler getTestHandler() {
@@ -419,15 +422,11 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
         assertTrue("All downloads should be updated.", matchSet.mMatches.isEmpty());
 
         // Check if notifications are removed when clearPendingNotifications is called.
-        matchSet = new OneTimeMatchSet(download1.getDownloadId(),
-                download2.getDownloadId(), download3.getDownloadId());
-        notifier.expect(MethodID.CANCEL_DOWNLOAD_ID, matchSet)
-                .andThen(MethodID.CANCEL_DOWNLOAD_ID, matchSet)
-                .andThen(MethodID.CANCEL_DOWNLOAD_ID, matchSet);
-
         dService.clearPendingDownloadNotifications();
-        notifier.waitTillExpectedCallsComplete();
-        assertTrue("All downloads should be removed.", matchSet.mMatches.isEmpty());
+        Set<String> downloads = dService.getStoredDownloadInfo(
+                PreferenceManager.getDefaultSharedPreferences(getTestContext()),
+                DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS);
+        assertTrue("All downloads should be removed.", downloads.isEmpty());
     }
 
     /**
@@ -567,4 +566,21 @@ public class DownloadManagerServiceTest extends InstrumentationTestCase {
                         .build()));
     }
 
+    @SmallTest
+    @Feature({"Download"})
+    public void testParseDownloadNotifications() {
+        String notification = "1,0,test.pdf";
+        DownloadManagerService.PendingNotification pendingNotification =
+                DownloadManagerService.PendingNotification.parseFromString(notification);
+        assertEquals(1, pendingNotification.downloadId);
+        assertEquals("test.pdf", pendingNotification.fileName);
+        assertFalse(pendingNotification.isResumable);
+
+        notification = "2,1,test,2.pdf";
+        pendingNotification =
+                DownloadManagerService.PendingNotification.parseFromString(notification);
+        assertEquals(2, pendingNotification.downloadId);
+        assertEquals("test,2.pdf", pendingNotification.fileName);
+        assertTrue(pendingNotification.isResumable);
+    }
 }

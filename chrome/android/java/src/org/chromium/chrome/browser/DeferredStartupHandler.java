@@ -17,7 +17,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.bookmarkswidget.BookmarkThumbnailWidgetProviderBase;
 import org.chromium.chrome.browser.crash.CrashFileManager;
 import org.chromium.chrome.browser.crash.MinidumpUploadService;
-import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
 import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
@@ -106,9 +105,6 @@ public class DeferredStartupHandler {
 
         // Starts syncing with GSA.
         application.createGsaHelper().startSync();
-
-        DownloadManagerService.getDownloadManagerService(application)
-                .clearPendingDownloadNotifications();
 
         application.initializeSharedClasses();
 

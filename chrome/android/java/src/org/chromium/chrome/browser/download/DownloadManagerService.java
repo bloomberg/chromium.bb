@@ -24,6 +24,7 @@ import android.util.Pair;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
@@ -91,6 +92,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
             new LongSparseArray<DownloadInfo>();
     private OMADownloadHandler mOMADownloadHandler;
     private DownloadSnackbarController mDownloadSnackbarController;
+    private long mNativeDownloadManagerService;
 
     /**
      * Enum representing status of a download.
@@ -156,6 +158,50 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
+     * Class representing a pending notification entry.
+     */
+    @VisibleForTesting
+    static class PendingNotification {
+        public final int downloadId;
+        public final String fileName;
+        public final boolean isResumable;
+
+        PendingNotification(int downloadId, String fileName, boolean isResumable) {
+            this.downloadId = downloadId;
+            this.fileName = fileName;
+            this.isResumable = isResumable;
+        }
+
+        /**
+         * Parse the pending notification from a String object in SharedPrefs.
+         *
+         * @param notification String containing the notification ID, file name and whether it is
+         *        resumable.
+         * @return a PendingNotification object.
+         */
+        static PendingNotification parseFromString(String notification) {
+            String[] values = notification.split(",", 3);
+            if (values.length == 3) {
+                try {
+                    int id = Integer.parseInt(values[0]);
+                    boolean isResumable = "1".equals(values[1]);
+                    return new PendingNotification(id, values[2], isResumable);
+                } catch (NumberFormatException nfe) {
+                    Log.w(TAG, "Exception while parsing pending download:" + notification);
+                }
+            }
+            return new PendingNotification(-1, "", false);
+        }
+
+        /**
+         * Generate a string for the PendingNotification instance to be inserted into SharedPrefs.
+         */
+        String getNotificationString() {
+            return downloadId + "," + (isResumable ? "1" : "0") + "," + fileName;
+        }
+    }
+
+    /**
      * Creates DownloadManagerService.
      */
     @SuppressFBWarnings("LI_LAZY_INIT") // Findbugs doesn't see this is only UI thread.
@@ -201,6 +247,16 @@ public class DownloadManagerService extends BroadcastReceiver implements
         mIsUIUpdateScheduled = new AtomicBoolean(false);
         mOMADownloadHandler = new OMADownloadHandler(context);
         mDownloadSnackbarController = new DownloadSnackbarController(context);
+        clearPendingDownloadNotifications();
+        // Note that this technically leaks the native object, however, DownloadManagerService
+        // is a singleton that lives forever and there's no clean shutdown of Chrome on Android.
+        init();
+    }
+
+    @VisibleForTesting
+    protected void init() {
+        mNativeDownloadManagerService = nativeInit();
+        DownloadController.setDownloadNotificationService(this);
     }
 
     @Override
@@ -229,15 +285,9 @@ public class DownloadManagerService extends BroadcastReceiver implements
         if (mSharedPrefs.contains(DOWNLOAD_NOTIFICATION_IDS)) {
             mSharedPrefs.edit().remove(DOWNLOAD_NOTIFICATION_IDS).apply();
         }
-        List<Pair<Integer, String>> notifications =
-                parseDownloadNotificationsFromSharedPrefs(mSharedPrefs);
-        for (Pair<Integer, String> notification : notifications) {
-            if (notification.first > 0) {
-                mDownloadNotifier.cancelNotification(notification.first);
-                Log.w(TAG, "Download failed: Cleared download id:" + notification.first);
-            }
+        if (mSharedPrefs.contains(PENDING_DOWNLOAD_NOTIFICATIONS)) {
+            mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
         }
-        mSharedPrefs.edit().remove(PENDING_DOWNLOAD_NOTIFICATIONS).apply();
         if (mSharedPrefs.contains(PENDING_OMA_DOWNLOADS)) {
             Set<String> omaDownloads = getStoredDownloadInfo(mSharedPrefs, PENDING_OMA_DOWNLOADS);
             for (String omaDownload : omaDownloads) {
@@ -252,14 +302,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * @param sharedPrefs SharedPreferences that contains the download notifications.
      * @return a list of parsed notifications.
      */
-    static List<Pair<Integer, String>> parseDownloadNotificationsFromSharedPrefs(
+    static List<PendingNotification> parseDownloadNotificationsFromSharedPrefs(
             SharedPreferences sharedPrefs) {
-        List<Pair<Integer, String>> result = new ArrayList<Pair<Integer, String>>();
+        List<PendingNotification> result = new ArrayList<PendingNotification>();
         if (sharedPrefs.contains(DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS)) {
             Set<String> pendingDownloads = DownloadManagerService.getStoredDownloadInfo(
                     sharedPrefs, DownloadManagerService.PENDING_DOWNLOAD_NOTIFICATIONS);
             for (String download : pendingDownloads) {
-                result.add(DownloadManagerService.parseNotificationString(download));
+                result.add(PendingNotification.parseFromString(download));
             }
         }
         return result;
@@ -354,36 +404,6 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
-     * Parse the notification ID from a String object in SharedPrefs.
-     *
-     * @param notification String containing the notification ID and file name.
-     * @return a pair of notification ID and file name.
-     */
-    static Pair<Integer, String> parseNotificationString(String notification) {
-        int index = notification.indexOf(",");
-        if (index <= 0) return Pair.create(-1, "");
-        try {
-            int id = Integer.parseInt(notification.substring(0, index));
-            return Pair.create(id, notification.substring(index + 1));
-        } catch (NumberFormatException nfe) {
-            Log.w(TAG, "Exception while parsing pending download:" + notification);
-            return Pair.create(-1, "");
-        }
-    }
-
-    /**
-     * Generate a string for the download Id and file name pair to be
-     * inserted into SharedPrefs.
-     *
-     * @param downloadId ID of the download.
-     * @param fileName Name of the file to be downloaded.
-     * @return notification string containing the notification ID and file name.
-     */
-    static String getNotificationString(int downloadId, String fileName) {
-        return downloadId + "," + fileName;
-    }
-
-    /**
      * Broadcast that a download was successful.
      * @param downloadInfo info about the download.
      */
@@ -408,8 +428,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
         Set<String> pendingDownloads =
                 getStoredDownloadInfo(mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
         for (String download : pendingDownloads) {
-            Pair<Integer, String> notification = parseNotificationString(download);
-            if (notification.first == downloadId) {
+            PendingNotification notification = PendingNotification.parseFromString(download);
+            if (notification.downloadId == downloadId) {
                 pendingDownloads.remove(download);
                 storeDownloadInfo(PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
                 break;
@@ -418,15 +438,14 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
-     * Add a pending download to SharedPrefs, the string consists of both the download ID
-     * and file name.
-     * @param downloadId ID to be stored.
-     * @param fileName Name of the file, used for notifications.
+     * Add a pending download to SharedPrefs, the string consists of the download ID, file name and
+     * whether it is resumable.
+     * @param pendingNotification Pending download entry.
      */
-    private void addPendingDownloadToSharedPrefs(int downloadId, String fileName) {
+    private void addPendingDownloadToSharedPrefs(PendingNotification pendingNotification) {
         Set<String> pendingDownloads =
                 getStoredDownloadInfo(mSharedPrefs, PENDING_DOWNLOAD_NOTIFICATIONS);
-        pendingDownloads.add(getNotificationString(downloadId, fileName));
+        pendingDownloads.add(pendingNotification.getNotificationString());
         storeDownloadInfo(PENDING_DOWNLOAD_NOTIFICATIONS, pendingDownloads);
     }
 
@@ -659,7 +678,8 @@ public class DownloadManagerService extends BroadcastReceiver implements
             if (status == DownloadStatus.IN_PROGRESS) {
                 // A new in-progress download, add an entry to shared prefs to make sure
                 // to clear the notification.
-                addPendingDownloadToSharedPrefs(downloadId, downloadInfo.getFileName());
+                addPendingDownloadToSharedPrefs(new PendingNotification(
+                        downloadId, downloadInfo.getFileName(), downloadInfo.isResumable()));
             }
             mDownloadProgressMap.putIfAbsent(downloadId, progress);
         } else {
@@ -1071,4 +1091,30 @@ public class DownloadManagerService extends BroadcastReceiver implements
             Log.e(TAG, "Cannot find Downloads app", e);
         }
     }
+
+    /**
+     * Called to resume a paused download.
+     * @param downloadId Id of the download.
+     */
+    void resumeDownload(int downloadId, String fileName) {
+        nativeResumeDownload(mNativeDownloadManagerService, downloadId, fileName);
+        mDownloadNotifier.notifyDownloadProgress(
+                new DownloadInfo.Builder()
+                        .setDownloadId(downloadId)
+                        .setFileName(fileName)
+                        .setPercentCompleted(
+                                DownloadNotificationService.INVALID_DOWNLOAD_PERCENTAGE)
+                        .build(),
+                0);
+    }
+
+    @CalledByNative
+    void onResumptionFailed(int downloadId, String fileName) {
+        mDownloadNotifier.notifyDownloadFailed(
+                new DownloadInfo.Builder().setDownloadId(downloadId).setFileName(fileName).build());
+    }
+
+    private native long nativeInit();
+    private native void nativeResumeDownload(
+            long nativeDownloadManagerService, int downloadId, String fileName);
 }
