@@ -13,6 +13,16 @@ var globalObject = {
     }
 };
 var windowAlias = window;
+var array = [];
+for (var i = 0; i < 300; ++i)
+    array[i] = i;
+
+(function()
+{
+    var a = 10;
+    var b = 100;
+    window.func = function() {return a + b;}
+}());
 
 var test = function()
 {
@@ -20,12 +30,16 @@ var test = function()
     watchExpressionsPane.expand();
     watchExpressionsPane.addExpression("globalObject");
     watchExpressionsPane.addExpression("windowAlias");
+    watchExpressionsPane.addExpression("array");
+    watchExpressionsPane.addExpression("func");
     InspectorTest.runAfterPendingDispatches(step2);
 
     function step2()
     {
         InspectorTest.addResult("Watch expressions added.");
-        expandWatchExpression(["globalObject", "foo", "bar"], step3);
+        var expandArray = expandWatchExpression.bind(null, ["array", "[200 \u2026 299]", "299"], step3);
+        var expandFunc = expandWatchExpression.bind(null, ["func", "<function scope>", "Closure", "a"], expandArray);
+        expandWatchExpression(["globalObject", "foo", "bar"], expandFunc);
     }
 
     function step3()
@@ -56,7 +70,10 @@ var test = function()
     function dumpObjectPropertiesTreeElement(treeElement, indent)
     {
         if (treeElement.property)
-            InspectorTest.addResult(indent + treeElement.property.name + ": " + treeElement.property.value._description);
+            addResult(indent + treeElement.property.name + ": " + treeElement.property.value._description);
+        else if (typeof treeElement.title === "string")
+            addResult(indent + treeElement.title);
+
         for (var i = 0; i < treeElement.children().length; i++)
             dumpObjectPropertiesTreeElement(treeElement.children()[i], "  " + indent);
     }
@@ -69,11 +86,12 @@ var test = function()
         function elementAttached(event)
         {
             var treeElement = event.data;
-            if (treeElement.property.name !== path[0])
+            var currentName = treeElement.property ? treeElement.property.name : treeElement.title;
+            if (currentName !== path[0])
                 return;
 
             var childName = path.shift();
-            InspectorTest.addResult("expanded " + childName + " " + treeElement.property.value);
+            addResult("expanded " + childName + " " + (treeElement.property ? treeElement.property.value : ""));
 
             if (path.length) {
                 treeElement.expand();
@@ -96,7 +114,11 @@ var test = function()
                 break;
             }
         }
+    }
 
+    function addResult(string)
+    {
+        InspectorTest.addResult(string.replace("\u2026", ".."));
     }
 }
 
