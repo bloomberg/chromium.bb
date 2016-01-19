@@ -1606,25 +1606,6 @@ void ExtensionPrefs::RemoveObserver(ExtensionPrefsObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
-void ExtensionPrefs::FixMissingPrefs(const ExtensionIdList& extension_ids) {
-  // Fix old entries that did not get an installation time entry when they
-  // were installed or don't have a preferences field.
-  for (ExtensionIdList::const_iterator ext_id = extension_ids.begin();
-       ext_id != extension_ids.end(); ++ext_id) {
-    if (GetInstallTime(*ext_id) == base::Time()) {
-      VLOG(1) << "Could not parse installation time of extension "
-              << *ext_id << ". It was probably installed before setting "
-              << kPrefInstallTime << " was introduced. Updating "
-              << kPrefInstallTime << " to the current time.";
-      const base::Time install_time = time_provider_->GetCurrentTime();
-      UpdateExtensionPref(*ext_id,
-                          kPrefInstallTime,
-                          new base::StringValue(base::Int64ToString(
-                              install_time.ToInternalValue())));
-    }
-  }
-}
-
 void ExtensionPrefs::InitPrefStore() {
   TRACE_EVENT0("browser,startup", "ExtensionPrefs::InitPrefStore")
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.InitPrefStoreTime");
@@ -1649,8 +1630,6 @@ void ExtensionPrefs::InitPrefStore() {
     // This creates an empty dictionary if none is stored.
     update.Get();
   }
-
-  FixMissingPrefs(extension_ids);
 
   InitExtensionControlledPrefs(extension_pref_value_map_);
 

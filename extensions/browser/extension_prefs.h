@@ -622,10 +622,6 @@ class ExtensionPrefs : public ExtensionScopedPrefs, public KeyedService {
                             int reasons,
                             DisableReasonChange change);
 
-  // Fix missing preference entries in the extensions that are were introduced
-  // in a later Chrome version.
-  void FixMissingPrefs(const ExtensionIdList& extension_ids);
-
   // Installs the persistent extension preferences into |prefs_|'s extension
   // pref store. Does nothing if extensions_disabled_ is true.
   void InitPrefStore();
