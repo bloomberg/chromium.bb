@@ -1675,7 +1675,20 @@ bool ResourceProvider::OnMemoryDump(
   for (const auto& resource_entry : resources_) {
     const auto& resource = resource_entry.second;
 
-    if (!resource.allocated) {
+    bool backing_memory_allocated = false;
+    switch (resource.type) {
+      case RESOURCE_TYPE_GPU_MEMORY_BUFFER:
+        backing_memory_allocated = !!resource.gpu_memory_buffer;
+        break;
+      case RESOURCE_TYPE_GL_TEXTURE:
+        backing_memory_allocated = !!resource.gl_id;
+        break;
+      case RESOURCE_TYPE_BITMAP:
+        backing_memory_allocated = resource.has_shared_bitmap_id;
+        break;
+    }
+
+    if (!backing_memory_allocated) {
       // Don't log unallocated resources - they have no backing memory.
       continue;
     }
@@ -1703,6 +1716,7 @@ bool ResourceProvider::OnMemoryDump(
             tracing_process_id, resource.gpu_memory_buffer->GetHandle().id);
         break;
       case RESOURCE_TYPE_GL_TEXTURE:
+        DCHECK(resource.gl_id);
         guid = gfx::GetGLTextureClientGUIDForTracing(
             output_surface_->context_provider()
                 ->ContextSupport()
