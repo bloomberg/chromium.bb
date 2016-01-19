@@ -187,21 +187,11 @@ class Tab : public gfx::AnimationDelegate,
   class TabCloseButton;
   class ThrobberView;
 
-  // Contains a cached image and the values used to generate it.
-  struct ImageCacheEntry {
-    ImageCacheEntry();
-    ~ImageCacheEntry();
+  // All metadata necessary to uniquely identify a cached image.
+  struct ImageCacheEntryMetadata;
 
-    // ID of the resource used.
-    int resource_id;
-
-    // Scale factor we're drawing it.
-    ui::ScaleFactor scale_factor;
-
-    // The image.
-    gfx::ImageSkia image;
-  };
-
+  // A cached image and the metadata used to generate it.
+  struct ImageCacheEntry;
   typedef std::list<ImageCacheEntry> ImageCache;
 
   // gfx::AnimationDelegate:
@@ -333,17 +323,6 @@ class Tab : public gfx::AnimationDelegate,
 
   // Loads the images to be used for the tab background.
   static void LoadTabImages();
-
-  // Returns the cached image for the specified arguments, or an empty image if
-  // there isn't one cached.
-  static gfx::ImageSkia GetCachedImage(int resource_id,
-                                       const gfx::Size& size,
-                                       ui::ScaleFactor scale_factor);
-
-  // Caches the specified image.
-  static void SetCachedImage(int resource_id,
-                             ui::ScaleFactor scale_factor,
-                             const gfx::ImageSkia& image);
 
   // The controller, never NULL.
   TabController* const controller_;

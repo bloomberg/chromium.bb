@@ -422,8 +422,8 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     canvas->DrawPath(stroke, paint);
   } else {
     // Fill.
-    gfx::ImageSkia* mask =
-        GetThemeProvider()->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
+    const ui::ThemeProvider* tp = GetThemeProvider();
+    gfx::ImageSkia* mask = tp->GetImageSkiaNamed(IDR_NEWTAB_BUTTON_MASK);
     // The canvas and mask have to use the same scale factor.
     const float fill_canvas_scale = mask->HasRepresentation(scale) ?
         scale : ui::GetScaleForScaleFactor(ui::SCALE_FACTOR_100P);
@@ -440,8 +440,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     const SkAlpha alpha = GetWidget()->ShouldWindowContentsBeTransparent() ?
         kGlassFrameOverlayAlpha : kOpaqueFrameOverlayAlpha;
     const int overlay_id = pressed ? IDR_NEWTAB_BUTTON_P : IDR_NEWTAB_BUTTON;
-    canvas->DrawImageInt(*GetThemeProvider()->GetImageSkiaNamed(overlay_id), 0,
-                         0, alpha);
+    canvas->DrawImageInt(*tp->GetImageSkiaNamed(overlay_id), 0, 0, alpha);
   }
 }
 
@@ -1382,11 +1381,11 @@ bool TabStrip::IsImmersiveStyle() const {
 }
 
 int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
-  const ui::ThemeProvider* theme_provider = GetThemeProvider();
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
   if (GetWidget()->ShouldWindowContentsBeTransparent()) {
     const int kBackgroundIdGlass = IDR_THEME_TAB_BACKGROUND_V;
-    *custom_image = theme_provider->HasCustomImage(kBackgroundIdGlass);
+    *custom_image = tp->HasCustomImage(kBackgroundIdGlass);
     return kBackgroundIdGlass;
   }
 
@@ -1397,9 +1396,8 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   const bool incognito = controller()->IsIncognito();
   const int id = incognito ?
       IDR_THEME_TAB_BACKGROUND_INCOGNITO : IDR_THEME_TAB_BACKGROUND;
-  *custom_image = theme_provider->HasCustomImage(id) ||
-      theme_provider->HasCustomImage(
-          incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME);
+  const int frame_id = incognito ? IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
+  *custom_image = tp->HasCustomImage(id) || tp->HasCustomImage(frame_id);
   return id;
 }
 
@@ -1526,11 +1524,9 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
           gfx::RectToSkRect(active_tab->GetMirroredBounds()),
           SkRegion::kDifference_Op);
     }
-    BrowserView::Paint1pxHorizontalLine(
-        canvas,
-        GetThemeProvider()->GetColor(
-            ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR),
-        GetLocalBounds(), true);
+    const SkColor color = GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR);
+    BrowserView::Paint1pxHorizontalLine(canvas, color, GetLocalBounds(), true);
   }
 }
 
