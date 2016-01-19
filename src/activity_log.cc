@@ -304,6 +304,24 @@ Json::Value ActivityLog::EncodeGesture(const Gesture& gesture) {
       ret[kKeyGestureType] =
           Json::Value(kValueGestureTypeSwipeLift);
       break;
+    case kGestureTypeFourFingerSwipe:
+      handled = true;
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeFourFingerSwipe);
+      ret[kKeyGestureFourFingerSwipeDX] =
+          Json::Value(gesture.details.four_finger_swipe.dx);
+      ret[kKeyGestureFourFingerSwipeDY] =
+          Json::Value(gesture.details.four_finger_swipe.dy);
+      ret[kKeyGestureFourFingerSwipeOrdinalDX] =
+          Json::Value(gesture.details.four_finger_swipe.ordinal_dx);
+      ret[kKeyGestureFourFingerSwipeOrdinalDY] =
+          Json::Value(gesture.details.four_finger_swipe.ordinal_dy);
+      break;
+    case kGestureTypeFourFingerSwipeLift:
+      handled = true;
+      ret[kKeyGestureType] =
+          Json::Value(kValueGestureTypeFourFingerSwipeLift);
+      break;
     case kGestureTypeMetrics:
       handled = true;
       ret[kKeyGestureType] =
@@ -453,6 +471,9 @@ const char ActivityLog::kValueGestureTypeButtonsChange[] = "buttonsChange";
 const char ActivityLog::kValueGestureTypeFling[] = "fling";
 const char ActivityLog::kValueGestureTypeSwipe[] = "swipe";
 const char ActivityLog::kValueGestureTypeSwipeLift[] = "swipeLift";
+const char ActivityLog::kValueGestureTypeFourFingerSwipe[] = "fourFingerSwipe";
+const char ActivityLog::kValueGestureTypeFourFingerSwipeLift[] =
+    "fourFingerSwipeLift";
 const char ActivityLog::kValueGestureTypeMetrics[] = "metrics";
 const char ActivityLog::kKeyGestureStartTime[] = "startTime";
 const char ActivityLog::kKeyGestureEndTime[] = "endTime";
@@ -477,6 +498,10 @@ const char ActivityLog::kKeyGestureSwipeDX[] = "dx";
 const char ActivityLog::kKeyGestureSwipeDY[] = "dy";
 const char ActivityLog::kKeyGestureSwipeOrdinalDX[] = "ordinalDx";
 const char ActivityLog::kKeyGestureSwipeOrdinalDY[] = "ordinalDy";
+const char ActivityLog::kKeyGestureFourFingerSwipeDX[] = "dx";
+const char ActivityLog::kKeyGestureFourFingerSwipeDY[] = "dy";
+const char ActivityLog::kKeyGestureFourFingerSwipeOrdinalDX[] = "ordinalDx";
+const char ActivityLog::kKeyGestureFourFingerSwipeOrdinalDY[] = "ordinalDy";
 const char ActivityLog::kKeyGestureMetricsType[] = "metricsType";
 const char ActivityLog::kKeyGestureMetricsData1[] = "data1";
 const char ActivityLog::kKeyGestureMetricsData2[] = "data2";

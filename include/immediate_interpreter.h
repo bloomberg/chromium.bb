@@ -493,9 +493,14 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // To reset the state machine call with reset=true
   bool UpdatePinchState(const HardwareState& hwstate, bool reset);
 
-  // Returns the current three-finger gesture, or kGestureTypeNull if no gesture
-  // should be produced.
-  GestureType GetThreeFingerGestureType(const FingerState* const fingers[3]);
+  // Returns a gesture assuming that at least one of the fingers performing
+  // current_gesture_type has left
+  GestureType GetFingerLiftGesture(GestureType current_gesture_type);
+
+  // Returns the current multi-finger gesture, or kGestureTypeNull if no gesture
+  // should be produced. num_fingers can be 3 or 4.
+  GestureType GetMultiFingerGestureType(const FingerState* const fingers[],
+                                        const int num_fingers);
 
   const char* TapToClickStateName(TapToClickState state);
 
@@ -756,9 +761,15 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Maximum distance [mm] between the outermost fingers while performing a
   // three-finger gesture.
   DoubleProperty three_finger_close_distance_thresh_;
+  // Maximum distance [mm] between the outermost fingers while performing a
+  // four-finger gesture.
+  DoubleProperty four_finger_close_distance_thresh_;
   // Minimum distance [mm] one of the three fingers must move to perform a
   // swipe gesture.
   DoubleProperty three_finger_swipe_distance_thresh_;
+  // Minimum distance [mm] one of the four fingers must move to perform a
+  // four finger swipe gesture.
+  DoubleProperty four_finger_swipe_distance_thresh_;
   // If three-finger swipe should be enabled
   BoolProperty three_finger_swipe_enable_;
   // During a scroll one finger determines scroll speed and direction.

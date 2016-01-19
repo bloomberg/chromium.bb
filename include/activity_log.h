@@ -126,6 +126,8 @@ class ActivityLog {
   static const char kValueGestureTypeFling[];
   static const char kValueGestureTypeSwipe[];
   static const char kValueGestureTypeSwipeLift[];
+  static const char kValueGestureTypeFourFingerSwipe[];
+  static const char kValueGestureTypeFourFingerSwipeLift[];
   static const char kValueGestureTypeMetrics[];
   static const char kKeyGestureStartTime[];
   static const char kKeyGestureEndTime[];
@@ -150,6 +152,10 @@ class ActivityLog {
   static const char kKeyGestureSwipeDY[];
   static const char kKeyGestureSwipeOrdinalDX[];
   static const char kKeyGestureSwipeOrdinalDY[];
+  static const char kKeyGestureFourFingerSwipeDX[];
+  static const char kKeyGestureFourFingerSwipeDY[];
+  static const char kKeyGestureFourFingerSwipeOrdinalDX[];
+  static const char kKeyGestureFourFingerSwipeOrdinalDY[];
   static const char kKeyGestureMetricsType[];
   static const char kKeyGestureMetricsData1[];
   static const char kKeyGestureMetricsData2[];

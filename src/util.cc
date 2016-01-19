@@ -24,11 +24,13 @@ int CombineGesturePriority(const Gesture* gesture) {
     case kGestureTypeContactInitiated: priority++;  // fallthrough
 
     // Midrange, equal priority
+    case kGestureTypeFourFingerSwipe:  // fallthrough
     case kGestureTypePinch:  // fallthrough
     case kGestureTypeSwipe:  // fallthrough
     case kGestureTypeMove:  // fallthrough
     case kGestureTypeScroll: priority++;  // fallthrough
 
+    case kGestureTypeFourFingerSwipeLift: priority++;  // fallthrough
     case kGestureTypeFling: priority++;  // fallthrough
     case kGestureTypeSwipeLift: priority++;  // fallthrough
     case kGestureTypeButtonsChange: priority++;  // fallthrough
@@ -57,6 +59,7 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
       case kGestureTypeContactInitiated:  // fallthrough
       case kGestureTypeFling:
       case kGestureTypeSwipeLift:
+      case kGestureTypeFourFingerSwipeLift:
       case kGestureTypeMetrics:
         break;
       case kGestureTypeButtonsChange:
@@ -73,6 +76,13 @@ void CombineGestures(Gesture* gesture, const Gesture* addend) {
         break;
       case kGestureTypeSwipe:
         gesture->details.swipe.dx += addend->details.swipe.dx;
+        gesture->details.swipe.dy += addend->details.swipe.dy;
+        break;
+      case kGestureTypeFourFingerSwipe:
+        gesture->details.four_finger_swipe.dx +=
+            addend->details.four_finger_swipe.dx;
+        gesture->details.four_finger_swipe.dy +=
+            addend->details.four_finger_swipe.dy;
         break;
       case kGestureTypePinch:
         gesture->details.pinch.dz += addend->details.pinch.dz;

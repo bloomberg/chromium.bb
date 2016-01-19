@@ -1485,7 +1485,8 @@ TEST(ImmediateInterpreterTest, GetGesturingFingersTest) {
   ii.ResetSameFingersState(hardware_state[0]);
   ii.UpdatePointingFingers(hardware_state[4]);
   ids = ii.GetGesturingFingers(hardware_state[4]);
-  EXPECT_EQ(3, ids.size());
+  EXPECT_EQ(4, ids.size());
+  EXPECT_TRUE(ids.end() != ids.find(91));
   EXPECT_TRUE(ids.end() != ids.find(92));
   EXPECT_TRUE(ids.end() != ids.find(93));
   EXPECT_TRUE(ids.end() != ids.find(94));

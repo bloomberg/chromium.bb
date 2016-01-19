@@ -1045,9 +1045,15 @@ ImmediateInterpreter::ImmediateInterpreter(PropRegistry* prop_reg,
       three_finger_close_distance_thresh_(prop_reg,
                                           "Three Finger Close Distance Thresh",
                                           50.0),
+      four_finger_close_distance_thresh_(prop_reg,
+                                         "Four Finger Close Distance Thresh",
+                                         60.0),
       three_finger_swipe_distance_thresh_(prop_reg,
                                           "Three Finger Swipe Distance Thresh",
-                                          1.0),
+                                          2.0),
+      four_finger_swipe_distance_thresh_(prop_reg,
+                                         "Four Finger Swipe Distance Thresh",
+                                         2.0),
       three_finger_swipe_enable_(prop_reg, "Three Finger Swipe EnableX", 1),
       scroll_stationary_finger_max_distance_(
           prop_reg, "Scroll Stationary Finger Max Distance", 1.0),
@@ -1417,16 +1423,16 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
 
     case kGestureTypeScroll:
     case kGestureTypeSwipe:
+    case kGestureTypeFourFingerSwipe:
       // If a gesturing finger just left, do fling/lift
       if (AnyGesturingFingerLeft(*state_buffer_.Get(0),
                                  prev_gs_fingers_)) {
-        current_gesture_type_ =
-            current_gesture_type_ == kGestureTypeScroll ?
-            kGestureTypeFling : kGestureTypeSwipeLift;
+        current_gesture_type_ = GetFingerLiftGesture(current_gesture_type_);
         return;
       }
       // fallthrough
     case kGestureTypeSwipeLift:
+    case kGestureTypeFourFingerSwipeLift:
     case kGestureTypeFling:
     case kGestureTypeMove:
     case kGestureTypeNull:
@@ -1509,11 +1515,23 @@ void ImmediateInterpreter::UpdateCurrentGestureType(
                 Err("Unable to find gesturing fingers!");
                 return;
               }
-              current_gesture_type_ = GetThreeFingerGestureType(fingers);
+              current_gesture_type_ = GetMultiFingerGestureType(fingers, 3);
               if (current_gesture_type_ == kGestureTypeSwipe)
                 last_swipe_timestamp_ = hwstate.timestamp;
-            } else {
-              Log("TODO(adlr): support > 3 finger gestures.");
+            } else if (sorted_ids.size() == 4) {
+              const FingerState* fingers[] = {
+                hwstate.GetFingerState(*sorted_ids.begin()),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 1)),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 2)),
+                hwstate.GetFingerState(*(sorted_ids.begin() + 3))
+              };
+              if (!fingers[0] || !fingers[1] || !fingers[2] || !fingers[3]) {
+                Err("Unable to find gesturing fingers!");
+                return;
+              }
+              current_gesture_type_ = GetMultiFingerGestureType(fingers, 4);
+              if (current_gesture_type_ == kGestureTypeFourFingerSwipe)
+                current_gesture_type_ = kGestureTypeFourFingerSwipe;
             }
             if (current_gesture_type_ != kGestureTypeNull) {
               active_gs_fingers->clear();
@@ -1988,54 +2006,83 @@ GestureType ImmediateInterpreter::GetTwoFingerGestureType(
   }
 }
 
-GestureType ImmediateInterpreter::GetThreeFingerGestureType(
-    const FingerState* const fingers[3]) {
-  const FingerState* x_fingers[] = { fingers[0], fingers[1], fingers[2] };
-  const FingerState* y_fingers[] = { fingers[0], fingers[1], fingers[2] };
-  qsort(x_fingers, 3, sizeof(*x_fingers), CompareX<FingerState>);
-  qsort(y_fingers, 3, sizeof(*y_fingers), CompareY<FingerState>);
+GestureType ImmediateInterpreter::GetFingerLiftGesture(
+    GestureType current_gesture_type) {
+  switch(current_gesture_type) {
+    case kGestureTypeScroll: return kGestureTypeFling;
+    case kGestureTypeSwipe: return kGestureTypeSwipeLift;
+    case kGestureTypeFourFingerSwipe: return kGestureTypeFourFingerSwipeLift;
+    default: return kGestureTypeNull;
+  }
+}
 
-  bool horizontal =
-      (x_fingers[2]->position_x - x_fingers[0]->position_x) >=
-      (y_fingers[2]->position_y - y_fingers[0]->position_y);
-  const FingerState* min_finger = horizontal ? x_fingers[0] : y_fingers[0];
-  const FingerState* center_finger = horizontal ? x_fingers[1] : y_fingers[1];
-  const FingerState* max_finger = horizontal ? x_fingers[2] : y_fingers[2];
-
-  if (DistSq(*min_finger, *max_finger) >
-      three_finger_close_distance_thresh_.val_ *
-      three_finger_close_distance_thresh_.val_) {
+GestureType ImmediateInterpreter::GetMultiFingerGestureType(
+    const FingerState* const fingers[], const int num_fingers) {
+  float close_distance_thresh;
+  float swipe_distance_thresh;
+  GestureType gesture_type;
+  if (num_fingers == 4) {
+    close_distance_thresh = four_finger_close_distance_thresh_.val_;
+    swipe_distance_thresh = four_finger_swipe_distance_thresh_.val_;
+    gesture_type = kGestureTypeFourFingerSwipe;
+  } else if (num_fingers == 3) {
+    close_distance_thresh = three_finger_close_distance_thresh_.val_;
+    swipe_distance_thresh = three_finger_swipe_distance_thresh_.val_;
+    gesture_type = kGestureTypeSwipe;
+  } else {
     return kGestureTypeNull;
   }
 
-  float dx[] = {
-    min_finger->position_x - start_positions_[min_finger->tracking_id].x_,
-    center_finger->position_x - start_positions_[center_finger->tracking_id].x_,
-    max_finger->position_x - start_positions_[max_finger->tracking_id].x_
-  };
-  float dy[] = {
-    min_finger->position_y - start_positions_[min_finger->tracking_id].y_,
-    center_finger->position_y - start_positions_[center_finger->tracking_id].y_,
-    max_finger->position_y - start_positions_[max_finger->tracking_id].y_
-  };
+  const FingerState* x_fingers[num_fingers];
+  const FingerState* y_fingers[num_fingers];
+  for (int i = 0; i < num_fingers; i++) {
+    x_fingers[i] = fingers[i];
+    y_fingers[i] = fingers[i];
+  }
+  std::sort(x_fingers, x_fingers + num_fingers,
+            [] (const FingerState* a, const FingerState* b) ->
+                bool { return a->position_x < b->position_x; });
+  std::sort(y_fingers, y_fingers + num_fingers,
+            [] (const FingerState* a, const FingerState* b) ->
+                bool { return a->position_y < b->position_y; });
+  bool horizontal =
+      (x_fingers[num_fingers - 1]->position_x - x_fingers[0]->position_x) >=
+      (y_fingers[num_fingers -1]->position_y - y_fingers[0]->position_y);
+  const FingerState* sorted_fingers[num_fingers];
+  for (int i = 0; i < num_fingers; i++) {
+    sorted_fingers[i] = horizontal ? x_fingers[i] : y_fingers[i];
+  }
+  if (DistSq(*sorted_fingers[0], *sorted_fingers[num_fingers - 1]) >
+      close_distance_thresh * close_distance_thresh) {
+    return kGestureTypeNull;
+  }
+
+  float dx[num_fingers];
+  float dy[num_fingers];
+  for (int i = 0; i < num_fingers; i++) {
+    dx[i] = sorted_fingers[i]->position_x -
+            start_positions_[sorted_fingers[i]->tracking_id].x_;
+    dy[i] = sorted_fingers[i]->position_y -
+            start_positions_[sorted_fingers[i]->tracking_id].y_;
+  }
   // pick horizontal or vertical
   float *deltas = fabsf(dx[0]) > fabsf(dy[0]) ? dx : dy;
   swipe_is_vertical_ = deltas == dy;
 
-  // All three fingers must move in the same direction.
-  if ((deltas[0] > 0 && !(deltas[1] > 0 && deltas[2] > 0)) ||
-      (deltas[0] < 0 && !(deltas[1] < 0 && deltas[2] < 0))) {
-    return kGestureTypeNull;
+  // All fingers must move in the same direction.
+  for (int i = 1; i < num_fingers; i++) {
+    if (deltas[i] * deltas[0] <= 0.0) {
+      return kGestureTypeNull;
+    }
   }
 
   // One finger must have traveled far enough.
-  if (fabsf(deltas[0]) < three_finger_swipe_distance_thresh_.val_ &&
-      fabsf(deltas[1]) < three_finger_swipe_distance_thresh_.val_ &&
-      fabsf(deltas[2]) < three_finger_swipe_distance_thresh_.val_) {
-    return kGestureTypeNull;
+  for (int i = 0; i < num_fingers; i++) {
+    if (fabsf(deltas[i]) >= swipe_distance_thresh) {
+      return gesture_type;
+    }
   }
-
-  return kGestureTypeSwipe;
+  return kGestureTypeNull;
 }
 
 const char* ImmediateInterpreter::TapToClickStateName(TapToClickState state) {
@@ -2740,7 +2787,8 @@ void ImmediateInterpreter::FillResultGesture(
       scroll_manager_.ComputeFling(state_buffer_, scroll_buffer_, &result_);
       break;
     }
-    case kGestureTypeSwipe: {
+    case kGestureTypeSwipe:
+    case kGestureTypeFourFingerSwipe: {
       if (!three_finger_swipe_enable_.val_)
         break;
       float sum_delta[] = { 0.0, 0.0 };
@@ -2773,13 +2821,23 @@ void ImmediateInterpreter::FillResultGesture(
           }
         }
       }
-      result_ = Gesture(
-          kGestureSwipe, state_buffer_.Get(1)->timestamp,
-          hwstate.timestamp,
-          (!swipe_is_vertical_ && finger_cnt[0]) ?
-          sum_delta[0] / finger_cnt[0] : 0.0,
-          (swipe_is_vertical_ && finger_cnt[1]) ?
-          sum_delta[1] / finger_cnt[1] : 0.0);
+      if (current_gesture_type_ == kGestureTypeSwipe) {
+        result_ = Gesture(
+            kGestureSwipe, state_buffer_.Get(1)->timestamp,
+            hwstate.timestamp,
+            (!swipe_is_vertical_ && finger_cnt[0]) ?
+            sum_delta[0] / finger_cnt[0] : 0.0,
+            (swipe_is_vertical_ && finger_cnt[1]) ?
+            sum_delta[1] / finger_cnt[1] : 0.0);
+      } else if (current_gesture_type_ == kGestureTypeFourFingerSwipe) {
+        result_ = Gesture(
+            kGestureFourFingerSwipe, state_buffer_.Get(1)->timestamp,
+            hwstate.timestamp,
+            (!swipe_is_vertical_ && finger_cnt[0]) ?
+            sum_delta[0] / finger_cnt[0] : 0.0,
+            (swipe_is_vertical_ && finger_cnt[1]) ?
+            sum_delta[1] / finger_cnt[1] : 0.0);
+      }
       break;
     }
     case kGestureTypeSwipeLift: {
@@ -2789,6 +2847,12 @@ void ImmediateInterpreter::FillResultGesture(
       break;
     }
 
+    case kGestureTypeFourFingerSwipeLift: {
+      result_ = Gesture(kGestureFourFingerSwipeLift,
+                        state_buffer_.Get(1)->timestamp,
+                        hwstate.timestamp);
+      break;
+    }
     case kGestureTypePinch: {
       float current_dist = sqrtf(TwoFingerDistanceSq(hwstate));
       result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,

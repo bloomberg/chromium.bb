@@ -225,6 +225,17 @@ typedef struct {
 } GestureSwipe;
 
 typedef struct {
+  float dx, dy;
+  float ordinal_dx, ordinal_dy;
+} GestureFourFingerSwipe;
+
+typedef struct {
+  char __dummy;
+  // Remove this when there is a member in this struct. http://crbug.com/341155
+  // Currently no members
+} GestureFourFingerSwipeLift;
+
+typedef struct {
   char __dummy;
   // Remove this when there is a member in this struct. http://crbug.com/341155
   // Currently no members
@@ -266,6 +277,8 @@ enum GestureType {
   kGestureTypePinch,
   kGestureTypeSwipeLift,
   kGestureTypeMetrics,
+  kGestureTypeFourFingerSwipe,
+  kGestureTypeFourFingerSwipeLift,
 };
 
 #ifdef __cplusplus
@@ -275,8 +288,10 @@ extern const GestureScroll kGestureScroll;
 extern const GestureButtonsChange kGestureButtonsChange;
 extern const GestureFling kGestureFling;
 extern const GestureSwipe kGestureSwipe;
+extern const GestureFourFingerSwipe kGestureFourFingerSwipe;
 extern const GesturePinch kGesturePinch;
 extern const GestureSwipeLift kGestureSwipeLift;
+extern const GestureFourFingerSwipeLift kGestureFourFingerSwipeLift;
 extern const GestureMetrics kGestureMetrics;
 #endif  // __cplusplus
 
@@ -324,6 +339,14 @@ struct Gesture {
     details.swipe.ordinal_dx = details.swipe.dx = dx;
     details.swipe.ordinal_dy = details.swipe.dy = dy;
   }
+  Gesture(const GestureFourFingerSwipe&,
+          stime_t start, stime_t end, float dx, float dy)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeFourFingerSwipe) {
+    details.four_finger_swipe.ordinal_dx = details.four_finger_swipe.dx = dx;
+    details.four_finger_swipe.ordinal_dy = details.four_finger_swipe.dy = dy;
+  }
   Gesture(const GesturePinch&,
           stime_t start, stime_t end, float dz, unsigned state)
       : start_time(start),
@@ -336,6 +359,10 @@ struct Gesture {
       : start_time(start),
         end_time(end),
         type(kGestureTypeSwipeLift) {}
+  Gesture(const GestureFourFingerSwipeLift&, stime_t start, stime_t end)
+      : start_time(start),
+        end_time(end),
+        type(kGestureTypeFourFingerSwipeLift) {}
   Gesture(const GestureMetrics&,
           stime_t start, stime_t end, GestureMetricsType m_type,
           float d1, float d2)
@@ -359,6 +386,8 @@ struct Gesture {
     GesturePinch pinch;
     GestureSwipeLift swipe_lift;
     GestureMetrics metrics;
+    GestureFourFingerSwipe four_finger_swipe;
+    GestureFourFingerSwipeLift four_finger_swipe_lift;
   } details;
 };
 

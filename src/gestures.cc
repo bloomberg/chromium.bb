@@ -253,6 +253,17 @@ string Gesture::String() const {
     case kGestureTypeSwipeLift:
       return StringPrintf("(Gesture type: swipeLift start: %f stop: %f)",
                           start_time, end_time);
+    case kGestureTypeFourFingerSwipe:
+      return StringPrintf("(Gesture type: fourFingerSwipe start: %f stop: %f "
+                          "dx: %f dy: %f ordinal_dx: %f ordinal_dy: %f)",
+                          start_time, end_time,
+                          details.four_finger_swipe.dx,
+                          details.four_finger_swipe.dy,
+                          details.four_finger_swipe.ordinal_dx,
+                          details.four_finger_swipe.ordinal_dy);
+    case kGestureTypeFourFingerSwipeLift:
+      return StringPrintf("(Gesture type: fourFingerSwipeLift start: %f "
+                          "stop: %f)", start_time, end_time);
     case kGestureTypeMetrics:
       return StringPrintf("(Gesture type: metrics start: %f stop: %f "
                           "type: %d d1: %f d2: %f)", start_time, end_time,
@@ -298,6 +309,14 @@ bool Gesture::operator==(const Gesture& that) const {
           gestures::DoubleEq(end_time, that.end_time) &&
           gestures::FloatEq(details.swipe.dx, that.details.swipe.dx);
     case kGestureTypeSwipeLift:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time);
+    case kGestureTypeFourFingerSwipe:
+      return gestures::DoubleEq(start_time, that.start_time) &&
+          gestures::DoubleEq(end_time, that.end_time) &&
+          gestures::FloatEq(details.four_finger_swipe.dx,
+              that.details.four_finger_swipe.dx);
+    case kGestureTypeFourFingerSwipeLift:
       return gestures::DoubleEq(start_time, that.start_time) &&
           gestures::DoubleEq(end_time, that.end_time);
     case kGestureTypeMetrics:
@@ -625,5 +644,6 @@ const GestureScroll kGestureScroll = { 0, 0, 0, 0, 0 };
 const GestureButtonsChange kGestureButtonsChange = { 0, 0 };
 const GestureFling kGestureFling = { 0, 0, 0, 0, 0 };
 const GestureSwipe kGestureSwipe = { 0, 0, 0, 0 };
+const GestureFourFingerSwipe kGestureFourFingerSwipe = { 0, 0, 0, 0 };
 const GesturePinch kGesturePinch = { 0, 0, 0 };
 const GestureMetrics kGestureMetrics = { kGestureMetricsTypeUnknown, {0, 0} };

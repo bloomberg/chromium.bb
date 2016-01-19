@@ -182,12 +182,16 @@ void AccelFilterInterpreter::ConsumeGesture(const Gesture& gs) {
   switch (copy.type) {
     case kGestureTypeMove:
     case kGestureTypeSwipe:
+    case kGestureTypeFourFingerSwipe:
       if (copy.type == kGestureTypeMove) {
         scale_out_x = dx = &copy.details.move.dx;
         scale_out_y = dy = &copy.details.move.dy;
-      } else {
+      } else if (copy.type == kGestureTypeSwipe) {
         scale_out_x = dx = &copy.details.swipe.dx;
         scale_out_y = dy = &copy.details.swipe.dy;
+      } else {
+        scale_out_x = dx = &copy.details.four_finger_swipe.dx;
+        scale_out_y = dy = &copy.details.four_finger_swipe.dy;
       }
       if (use_mouse_point_curves_.val_ && use_custom_mouse_curve_.val_) {
         segs = mouse_custom_point_;

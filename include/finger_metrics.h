@@ -12,7 +12,7 @@
 namespace gestures {
 
 static const size_t kMaxFingers = 10;
-static const size_t kMaxGesturingFingers = 3;
+static const size_t kMaxGesturingFingers = 4;
 static const size_t kMaxTapFingers = 10;
 
 // A datastructure describing a 2D vector in the mathematical sense.
