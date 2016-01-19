@@ -8,6 +8,7 @@
 #include "platform/Task.h"
 #include "platform/TraceEvent.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/MainThread.h"
 #include "wtf/PassOwnPtr.h"
 

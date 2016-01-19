@@ -58,6 +58,7 @@ using LinkEventSender = EventSender<HTMLLinkElement>;
 //
 class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
     USING_FAST_MALLOC_WILL_BE_REMOVED(LinkStyle);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkStyle);
 public:
     static PassOwnPtrWillBeRawPtr<LinkStyle> create(HTMLLinkElement* owner);
 
@@ -217,7 +218,7 @@ private:
     void valueWasSet() final;
 
     OwnPtrWillBeMember<LinkResource> m_link;
-    LinkLoader m_linkLoader;
+    OwnPtrWillBeMember<LinkLoader> m_linkLoader;
 
     String m_type;
     String m_as;

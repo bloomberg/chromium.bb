@@ -26,6 +26,7 @@
 #ifndef HTMLScriptRunner_h
 #define HTMLScriptRunner_h
 
+#include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/PendingScript.h"
 #include "core/fetch/ResourceClient.h"
 #include "platform/heap/Handle.h"
@@ -42,6 +43,7 @@ class HTMLScriptRunnerHost;
 
 class HTMLScriptRunner final : public NoBaseWillBeGarbageCollectedFinalized<HTMLScriptRunner>, private ScriptResourceClient {
     WTF_MAKE_NONCOPYABLE(HTMLScriptRunner); USING_FAST_MALLOC_WILL_BE_REMOVED(HTMLScriptRunner);
+    WILL_BE_USING_PRE_FINALIZER(HTMLScriptRunner, detach);
 public:
     static PassOwnPtrWillBeRawPtr<HTMLScriptRunner> create(Document* document, HTMLScriptRunnerHost* host)
     {
@@ -72,24 +74,24 @@ private:
     HTMLScriptRunner(Document*, HTMLScriptRunnerHost*);
 
     void executeParsingBlockingScript();
-    void executePendingScriptAndDispatchEvent(PendingScript&, PendingScript::Type);
+    void executePendingScriptAndDispatchEvent(PendingScript*, ScriptStreamer::Type);
     void executeParsingBlockingScripts();
 
     void requestParsingBlockingScript(Element*);
     void requestDeferredScript(Element*);
-    bool requestPendingScript(PendingScript&, Element*) const;
+    bool requestPendingScript(PendingScript*, Element*) const;
 
     void runScript(Element*, const TextPosition& scriptStartPosition);
 
-    bool isPendingScriptReady(const PendingScript&);
+    bool isPendingScriptReady(const PendingScript*);
 
     void stopWatchingResourceForLoad(Resource*);
 
     RawPtrWillBeMember<Document> m_document;
     RawPtrWillBeMember<HTMLScriptRunnerHost> m_host;
-    PendingScript m_parserBlockingScript;
+    OwnPtrWillBeMember<PendingScript> m_parserBlockingScript;
     // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
-    WillBeHeapDeque<PendingScript> m_scriptsToExecuteAfterParsing;
+    WillBeHeapDeque<OwnPtrWillBeMember<PendingScript>> m_scriptsToExecuteAfterParsing;
     unsigned m_scriptNestingLevel;
 
     // We only want stylesheet loads to trigger script execution if script

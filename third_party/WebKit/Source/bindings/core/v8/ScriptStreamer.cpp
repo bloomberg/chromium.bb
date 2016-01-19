@@ -25,16 +25,16 @@ namespace blink {
 
 namespace {
 
-const char* startedStreamingHistogramName(PendingScript::Type scriptType)
+const char* startedStreamingHistogramName(ScriptStreamer::Type scriptType)
 {
     switch (scriptType) {
-    case PendingScript::ParsingBlocking:
+    case ScriptStreamer::ParsingBlocking:
         return "WebCore.Scripts.ParsingBlocking.StartedStreaming";
         break;
-    case PendingScript::Deferred:
+    case ScriptStreamer::Deferred:
         return "WebCore.Scripts.Deferred.StartedStreaming";
         break;
-    case PendingScript::Async:
+    case ScriptStreamer::Async:
         return "WebCore.Scripts.Async.StartedStreaming";
         break;
     default:
@@ -59,16 +59,16 @@ enum NotStreamingReason {
     NotStreamingReasonEnd
 };
 
-const char* notStreamingReasonHistogramName(PendingScript::Type scriptType)
+const char* notStreamingReasonHistogramName(ScriptStreamer::Type scriptType)
 {
     switch (scriptType) {
-    case PendingScript::ParsingBlocking:
+    case ScriptStreamer::ParsingBlocking:
         return "WebCore.Scripts.ParsingBlocking.NotStreamingReason";
         break;
-    case PendingScript::Deferred:
+    case ScriptStreamer::Deferred:
         return "WebCore.Scripts.Deferred.NotStreamingReason";
         break;
-    case PendingScript::Async:
+    case ScriptStreamer::Async:
         return "WebCore.Scripts.Async.NotStreamingReason";
         break;
     default:
@@ -377,7 +377,7 @@ private:
 
 size_t ScriptStreamer::kSmallScriptThreshold = 30 * 1024;
 
-void ScriptStreamer::startStreaming(PendingScript& script, PendingScript::Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
+void ScriptStreamer::startStreaming(PendingScript* script, Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
 {
     // We don't yet know whether the script will really be streamed. E.g.,
     // suppressing streaming for short scripts is done later. Record only the
@@ -567,7 +567,7 @@ void ScriptStreamer::notifyFinished(Resource* resource)
     notifyFinishedToClient();
 }
 
-ScriptStreamer::ScriptStreamer(ScriptResource* resource, PendingScript::Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
+ScriptStreamer::ScriptStreamer(ScriptResource* resource, Type scriptType, ScriptState* scriptState, v8::ScriptCompiler::CompileOptions compileOptions, WebTaskRunner* loadingTaskRunner)
     : m_resource(resource)
     , m_detached(false)
     , m_stream(0)
@@ -636,11 +636,11 @@ void ScriptStreamer::notifyFinishedToClient()
         m_client->notifyFinished(m_resource);
 }
 
-bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript::Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
+bool ScriptStreamer::startStreamingInternal(PendingScript* script, Type scriptType, Settings* settings, ScriptState* scriptState, WebTaskRunner* loadingTaskRunner)
 {
     ASSERT(isMainThread());
     ASSERT(scriptState->contextIsValid());
-    ScriptResource* resource = script.resource();
+    ScriptResource* resource = script->resource();
     if (resource->isLoaded()) {
         Platform::current()->histogramEnumeration(notStreamingReasonHistogramName(scriptType), AlreadyLoaded, NotStreamingReasonEnd);
         return false;
@@ -669,7 +669,7 @@ bool ScriptStreamer::startStreamingInternal(PendingScript& script, PendingScript
     // The Resource might go out of scope if the script is no longer
     // needed. This makes PendingScript notify the ScriptStreamer when it is
     // destroyed.
-    script.setStreamer(ScriptStreamer::create(resource, scriptType, scriptState, compileOption, loadingTaskRunner));
+    script->setStreamer(ScriptStreamer::create(resource, scriptType, scriptState, compileOption, loadingTaskRunner));
 
     return true;
 }

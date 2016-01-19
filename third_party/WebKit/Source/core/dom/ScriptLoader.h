@@ -39,6 +39,7 @@ class LocalFrame;
 
 class CORE_EXPORT ScriptLoader : public NoBaseWillBeGarbageCollectedFinalized<ScriptLoader>, private ScriptResourceClient {
     USING_FAST_MALLOC_WILL_BE_REMOVED(ScriptLoader);
+    WILL_BE_USING_PRE_FINALIZER(ScriptLoader, detach);
 public:
     static PassOwnPtrWillBeRawPtr<ScriptLoader> create(Element* element, bool createdByParser, bool isEvaluated)
     {
@@ -81,7 +82,7 @@ public:
     void handleSourceAttribute(const String& sourceUrl);
     void handleAsyncAttribute();
 
-    virtual bool isReady() const { return m_pendingScript.isReady(); }
+    virtual bool isReady() const { return m_pendingScript && m_pendingScript->isReady(); }
 
     // Clears the connection to the PendingScript (and Element and Resource).
     void detach();
@@ -108,7 +109,7 @@ private:
     String m_characterEncoding;
     String m_fallbackCharacterEncoding;
 
-    PendingScript m_pendingScript;
+    OwnPtrWillBeMember<PendingScript> m_pendingScript;
 
     bool m_parserInserted : 1;
     bool m_isExternalScript : 1;

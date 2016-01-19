@@ -228,6 +228,7 @@ DEFINE_TRACE(HTMLImportLoader)
     visitor->trace(m_writer);
     visitor->trace(m_microtaskQueue);
     DocumentParserClient::trace(visitor);
+    ResourceOwner<RawResource>::trace(visitor);
 }
 
 } // namespace blink

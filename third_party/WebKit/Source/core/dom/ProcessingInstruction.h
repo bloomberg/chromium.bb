@@ -35,6 +35,7 @@ class EventListener;
 
 class ProcessingInstruction final : public CharacterData, private ResourceOwner<StyleSheetResource> {
     DEFINE_WRAPPERTYPEINFO();
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(ProcessingInstruction);
 public:
     static PassRefPtrWillBeRawPtr<ProcessingInstruction> create(Document&, const String& target, const String& data);
     ~ProcessingInstruction() override;

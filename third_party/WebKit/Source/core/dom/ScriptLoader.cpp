@@ -74,11 +74,16 @@ ScriptLoader::ScriptLoader(Element* element, bool parserInserted, bool alreadySt
     ASSERT(m_element);
     if (parserInserted && element->document().scriptableDocumentParser() && !element->document().isInDocumentWrite())
         m_startLineNumber = element->document().scriptableDocumentParser()->lineNumber();
+#if ENABLE(OILPAN)
+    ThreadState::current()->registerPreFinalizer(this);
+#endif
 }
 
 ScriptLoader::~ScriptLoader()
 {
-    m_pendingScript.stopWatchingForLoad(this);
+#if !ENABLE(OILPAN)
+    detach();
+#endif
 }
 
 DEFINE_TRACE(ScriptLoader)
@@ -114,8 +119,11 @@ void ScriptLoader::handleAsyncAttribute()
 
 void ScriptLoader::detach()
 {
-    m_pendingScript.stopWatchingForLoad(this);
-    m_pendingScript.releaseElementAndClear();
+    if (!m_pendingScript)
+        return;
+    m_pendingScript->stopWatchingForLoad(this);
+    m_pendingScript->releaseElementAndClear();
+    m_pendingScript = nullptr;
 }
 
 // Helper function
@@ -250,21 +258,21 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition, Legacy
         m_readyToBeParserExecuted = true;
     } else if (client->hasSourceAttribute() && !client->asyncAttributeValue() && !m_forceAsync) {
         m_willExecuteInOrder = true;
-        m_pendingScript = PendingScript(m_element, m_resource.get());
+        m_pendingScript = PendingScript::create(m_element, m_resource.get());
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::IN_ORDER_EXECUTION);
         // Note that watchForLoad can immediately call notifyFinished.
-        m_pendingScript.watchForLoad(this);
+        m_pendingScript->watchForLoad(this);
     } else if (client->hasSourceAttribute()) {
-        m_pendingScript = PendingScript(m_element, m_resource.get());
+        m_pendingScript = PendingScript::create(m_element, m_resource.get());
         LocalFrame* frame = m_element->document().frame();
         if (frame) {
             ScriptState* scriptState = ScriptState::forMainWorld(frame);
             if (scriptState)
-                ScriptStreamer::startStreaming(m_pendingScript, PendingScript::Async, frame->settings(), scriptState, frame->frameScheduler()->loadingTaskRunner());
+                ScriptStreamer::startStreaming(m_pendingScript.get(), ScriptStreamer::Async, frame->settings(), scriptState, frame->frameScheduler()->loadingTaskRunner());
         }
         contextDocument->scriptRunner()->queueScriptForExecution(this, ScriptRunner::ASYNC_EXECUTION);
         // Note that watchForLoad can immediately call notifyFinished.
-        m_pendingScript.watchForLoad(this);
+        m_pendingScript->watchForLoad(this);
     } else {
         // Reset line numbering for nested writes.
         TextPosition position = elementDocument.isInDocumentWrite() ? TextPosition() : scriptStartPosition;
@@ -429,10 +437,10 @@ bool ScriptLoader::executeScript(const ScriptSourceCode& sourceCode, double* com
 void ScriptLoader::execute()
 {
     ASSERT(!m_willBeParserExecuted);
-    ASSERT(m_pendingScript.resource());
+    ASSERT(m_pendingScript->resource());
     bool errorOccurred = false;
-    ScriptSourceCode source = m_pendingScript.getSource(KURL(), errorOccurred);
-    RefPtrWillBeRawPtr<Element> element = m_pendingScript.releaseElementAndClear();
+    ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
+    RefPtrWillBeRawPtr<Element> element = m_pendingScript->releaseElementAndClear();
     ALLOW_UNUSED_LOCAL(element);
     if (errorOccurred) {
         dispatchErrorEvent();
@@ -469,7 +477,7 @@ void ScriptLoader::notifyFinished(Resource* resource)
         return;
     }
     contextDocument->scriptRunner()->notifyScriptReady(this, runOrder);
-    m_pendingScript.stopWatchingForLoad(this);
+    m_pendingScript->stopWatchingForLoad(this);
 }
 
 bool ScriptLoader::ignoresLoadRequest() const

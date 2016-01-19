@@ -53,7 +53,7 @@ class ResourceRequest;
 class SecurityOrigin;
 class ThreadableLoaderClient;
 
-class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private ResourceOwner<RawResource>  {
+class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, private RawResourceClient {
     USING_FAST_MALLOC(DocumentThreadableLoader);
     public:
         static void loadResourceSynchronously(Document&, const ResourceRequest&, ThreadableLoaderClient&, const ThreadableLoaderOptions&, const ResourceLoaderOptions&);
@@ -145,6 +145,31 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader, priv
         // if m_forceDoNotAllowStoredCredentials is set. Otherwise, just
         // returns allowCredentials value of m_resourceLoaderOptions.
         StoredCredentials effectiveAllowCredentials() const;
+
+        // TODO(oilpan): DocumentThreadableLoader used to be a ResourceOwner,
+        // but ResourceOwner was moved onto the oilpan heap before
+        // DocumentThreadableLoader was ready. When DocumentThreadableLoader
+        // moves onto the oilpan heap, make it a ResourceOwner again and remove
+        // this re-implementation of ResourceOwner.
+        RawResource* resource() const { return m_resource.get(); }
+        void clearResource() { setResource(nullptr); }
+        void setResource(const ResourcePtr<RawResource>& newResource)
+        {
+            if (newResource == m_resource)
+                return;
+
+            if (ResourcePtr<RawResource> oldResource = m_resource) {
+                m_resource.clear();
+                oldResource->removeClient(this);
+            }
+
+            if (newResource) {
+                m_resource = newResource;
+                m_resource->addClient(this);
+            }
+        }
+        ResourcePtr<RawResource> m_resource;
+        // End of ResourceOwner re-implementation, see above.
 
         SecurityOrigin* securityOrigin() const;
         Document& document() const;

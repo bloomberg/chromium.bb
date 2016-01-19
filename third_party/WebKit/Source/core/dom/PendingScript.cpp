@@ -26,7 +26,6 @@
 #include "core/dom/PendingScript.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/ScriptStreamer.h"
 #include "core/dom/Element.h"
 #include "core/fetch/ScriptResource.h"
 #include "core/frame/SubresourceIntegrity.h"
@@ -34,11 +33,9 @@
 
 namespace blink {
 
-PendingScript::PendingScript()
-    : m_watchingForLoad(false)
-    , m_startingPosition(TextPosition::belowRangePosition())
-    , m_integrityFailure(false)
+PassOwnPtrWillBeRawPtr<PendingScript> PendingScript::create(Element* element, ScriptResource* resource)
 {
+    return adoptPtrWillBeNoop(new PendingScript(element, resource));
 }
 
 PendingScript::PendingScript(Element* element, ScriptResource* resource)
@@ -47,17 +44,6 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
     , m_integrityFailure(false)
 {
     setScriptResource(resource);
-}
-
-PendingScript::PendingScript(const PendingScript& other)
-    : ResourceOwner(other)
-    , m_watchingForLoad(other.m_watchingForLoad)
-    , m_element(other.m_element)
-    , m_startingPosition(other.m_startingPosition)
-    , m_integrityFailure(other.m_integrityFailure)
-    , m_streamer(other.m_streamer)
-{
-    setScriptResource(other.resource());
 }
 
 PendingScript::~PendingScript()
@@ -185,6 +171,7 @@ DEFINE_TRACE(PendingScript)
 {
     visitor->trace(m_element);
     visitor->trace(m_streamer);
+    ResourceOwner<ScriptResource>::trace(visitor);
 }
 
 ScriptSourceCode PendingScript::getSource(const KURL& documentURL, bool& errorOccurred) const

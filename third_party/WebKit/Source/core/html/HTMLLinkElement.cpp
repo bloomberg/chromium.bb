@@ -139,7 +139,7 @@ void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntS
 
 inline HTMLLinkElement::HTMLLinkElement(Document& document, bool createdByParser)
     : HTMLElement(linkTag, document)
-    , m_linkLoader(this)
+    , m_linkLoader(LinkLoader::create(this))
     , m_sizes(DOMSettableTokenList::create(this))
     , m_relList(RelList::create(this))
     , m_createdByParser(createdByParser)
@@ -205,7 +205,7 @@ bool HTMLLinkElement::shouldLoadLink()
 
 bool HTMLLinkElement::loadLink(const String& type, const String& as, const KURL& url)
 {
-    return m_linkLoader.loadLink(m_relAttribute, crossOriginAttributeValue(fastGetAttribute(HTMLNames::crossoriginAttr)), type, as, url, document(), NetworkHintsInterfaceImpl());
+    return m_linkLoader->loadLink(m_relAttribute, crossOriginAttributeValue(fastGetAttribute(HTMLNames::crossoriginAttr)), type, as, url, document(), NetworkHintsInterfaceImpl());
 }
 
 LinkResource* HTMLLinkElement::linkResourceToProcess()
@@ -291,7 +291,7 @@ void HTMLLinkElement::removedFrom(ContainerNode* insertionPoint)
     if (!insertionPoint->inDocument())
         return;
 
-    m_linkLoader.released();
+    m_linkLoader->released();
 
     if (m_isInShadowTree) {
         ASSERT(!linkStyle() || !linkStyle()->hasSheet());
@@ -770,6 +770,7 @@ DEFINE_TRACE(LinkStyle)
 {
     visitor->trace(m_sheet);
     LinkResource::trace(visitor);
+    ResourceOwner<StyleSheetResource>::trace(visitor);
 }
 
 } // namespace blink

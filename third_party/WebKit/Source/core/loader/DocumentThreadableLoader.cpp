@@ -283,6 +283,8 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(const ResourceReques
 
 DocumentThreadableLoader::~DocumentThreadableLoader()
 {
+    // TODO(oilpan): Remove this once DocumentThreadableLoader is once again a ResourceOwner.
+    clearResource();
 }
 
 void DocumentThreadableLoader::overrideTimeout(unsigned long timeoutMilliseconds)

@@ -50,10 +50,13 @@ class NetworkHintsInterface;
 class PrerenderHandle;
 
 // The LinkLoader can load link rel types icon, dns-prefetch, subresource, prefetch and prerender.
-class CORE_EXPORT LinkLoader final : public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
-    DISALLOW_NEW();
+class CORE_EXPORT LinkLoader final : public NoBaseWillBeGarbageCollectedFinalized<LinkLoader>, public ResourceOwner<Resource, ResourceClient>, public PrerenderClient {
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 public:
-    explicit LinkLoader(LinkLoaderClient*);
+    static PassOwnPtrWillBeRawPtr<LinkLoader> create(LinkLoaderClient* client)
+    {
+        return adoptPtrWillBeNoop(new LinkLoader(client));
+    }
     ~LinkLoader() override;
 
     // from ResourceClient
@@ -75,6 +78,8 @@ public:
     DECLARE_TRACE();
 
 private:
+    explicit LinkLoader(LinkLoaderClient*);
+
     void linkLoadTimerFired(Timer<LinkLoader>*);
     void linkLoadingErrorTimerFired(Timer<LinkLoader>*);
 

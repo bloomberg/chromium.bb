@@ -49,8 +49,8 @@ public:
 };
 
 class TextTrackLoader final : public NoBaseWillBeGarbageCollectedFinalized<TextTrackLoader>, public ResourceOwner<RawResource>, private VTTParserClient {
-    WTF_MAKE_NONCOPYABLE(TextTrackLoader);
     USING_FAST_MALLOC_WILL_BE_REMOVED(TextTrackLoader);
+    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(TextTrackLoader);
 public:
     static PassOwnPtrWillBeRawPtr<TextTrackLoader> create(TextTrackLoaderClient& client, Document& document)
     {

@@ -102,9 +102,9 @@ TEST(LinkLoaderTest, Preload)
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->frame().settings()->setScriptEnabled(true);
         MockLinkLoaderClient loaderClient(testCase.shouldLoad);
-        LinkLoader loader(&loaderClient);
+        OwnPtrWillBeRawPtr<LinkLoader> loader = LinkLoader::create(&loaderClient);
         KURL hrefURL = KURL(KURL(), testCase.href);
-        loader.loadLink(LinkRelAttribute("preload"),
+        loader->loadLink(LinkRelAttribute("preload"),
             CrossOriginAttributeNotSet,
             String(),
             testCase.as,
@@ -149,10 +149,10 @@ TEST(LinkLoaderTest, DNSPrefetch)
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         dummyPageHolder->document().settings()->setDNSPrefetchingEnabled(true);
         MockLinkLoaderClient loaderClient(testCase.shouldLoad);
-        LinkLoader loader(&loaderClient);
+        OwnPtrWillBeRawPtr<LinkLoader> loader = LinkLoader::create(&loaderClient);
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);
         NetworkHintsMock networkHints;
-        loader.loadLink(LinkRelAttribute("dns-prefetch"),
+        loader->loadLink(LinkRelAttribute("dns-prefetch"),
             CrossOriginAttributeNotSet,
             String(),
             String(),
@@ -183,10 +183,10 @@ TEST(LinkLoaderTest, Preconnect)
     for (const auto& testCase : cases) {
         OwnPtr<DummyPageHolder> dummyPageHolder = DummyPageHolder::create(IntSize(500, 500));
         MockLinkLoaderClient loaderClient(testCase.shouldLoad);
-        LinkLoader loader(&loaderClient);
+        OwnPtrWillBeRawPtr<LinkLoader> loader = LinkLoader::create(&loaderClient);
         KURL hrefURL = KURL(KURL(ParsedURLStringTag(), String("http://example.com")), testCase.href);
         NetworkHintsMock networkHints;
-        loader.loadLink(LinkRelAttribute("preconnect"),
+        loader->loadLink(LinkRelAttribute("preconnect"),
             testCase.crossOrigin,
             String(),
             String(),

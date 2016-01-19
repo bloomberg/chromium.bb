@@ -310,6 +310,7 @@ DEFINE_TRACE(ProcessingInstruction)
     visitor->trace(m_sheet);
     visitor->trace(m_listenerForXSLT);
     CharacterData::trace(visitor);
+    ResourceOwner<StyleSheetResource>::trace(visitor);
 }
 
 } // namespace

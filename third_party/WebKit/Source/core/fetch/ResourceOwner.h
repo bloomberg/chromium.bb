@@ -37,22 +37,20 @@ namespace blink {
 
 
 template<class R, class C = typename R::ClientType>
-class ResourceOwner : public C {
+class ResourceOwner : public WillBeGarbageCollectedMixin, public C {
 public:
     using ResourceType = R;
 
     virtual ~ResourceOwner();
     ResourceType* resource() const { return m_resource.get(); }
 
+    DEFINE_INLINE_VIRTUAL_TRACE() {}
+
 protected:
     ResourceOwner();
-    ResourceOwner(const ResourceOwner& other) { setResource(other.resource()); }
-    explicit ResourceOwner(const ResourcePtr<ResourceType>&);
 
     void setResource(const ResourcePtr<ResourceType>&);
-    void clearResource();
-
-    ResourceOwner& operator=(const ResourceOwner& other);
+    void clearResource() { setResource(nullptr); }
 
 private:
     ResourcePtr<ResourceType> m_resource;
@@ -67,14 +65,6 @@ template<class R, class C>
 inline ResourceOwner<R, C>::~ResourceOwner()
 {
     clearResource();
-}
-
-template<class R, class C>
-inline ResourceOwner<R, C>::ResourceOwner(const ResourcePtr<R>& resource)
-    : m_resource(resource)
-{
-    if (m_resource)
-        m_resource->addClient(this);
 }
 
 template<class R, class C>
@@ -94,21 +84,6 @@ inline void ResourceOwner<R, C>::setResource(const ResourcePtr<R>& newResource)
         m_resource = newResource;
         m_resource->addClient(this);
     }
-}
-
-template<class R, class C>
-inline void ResourceOwner<R, C>::clearResource()
-{
-    setResource(0);
-}
-
-template<class R, class C>
-inline ResourceOwner<R, C>& ResourceOwner<R, C>::operator=(const ResourceOwner<R, C>& other)
-{
-    if (this == &other)
-        return *this;
-    setResource(other.resource());
-    return *this;
 }
 
 } // namespace blink

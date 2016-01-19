@@ -296,6 +296,7 @@ void LinkLoader::released()
 DEFINE_TRACE(LinkLoader)
 {
     visitor->trace(m_prerender);
+    ResourceOwner<Resource, ResourceClient>::trace(visitor);
 }
 
 }
