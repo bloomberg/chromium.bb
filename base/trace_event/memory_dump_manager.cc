@@ -419,12 +419,15 @@ void MemoryDumpManager::ContinueAsyncProcessDump(
         disabled_reason =
             "Dump failure, possibly related with sandboxing (crbug.com/461788)."
             " Try --no-sandbox.";
-      } else if (post_task_failed) {
-        disabled_reason = "The thread it was meant to dump onto is gone.";
+      } else if (post_task_failed && mdpinfo->task_runner) {
+        // Don't disable unbound dump providers. The utility thread is normally
+        // shutdown when disabling the trace and getting here in this case is
+        // expected.
         mdpinfo->disabled = true;
+        disabled_reason = "The thread it was meant to dump onto is gone.";
       }
     }
-    should_dump = !mdpinfo->disabled;
+    should_dump = !mdpinfo->disabled && !post_task_failed;
   }
 
   if (disabled_reason) {
