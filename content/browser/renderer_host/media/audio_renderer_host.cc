@@ -840,9 +840,9 @@ void AudioRendererHost::TranslateDeviceID(
     const std::string& device_id,
     const GURL& security_origin,
     const OutputDeviceInfoCB& callback,
-    const AudioOutputDeviceEnumeration& device_infos) {
+    const AudioOutputDeviceEnumeration& enumeration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const AudioOutputDeviceInfo& device_info : device_infos) {
+  for (const AudioOutputDeviceInfo& device_info : enumeration.devices) {
     if (device_id.empty()) {
       if (device_info.unique_id == media::AudioManagerBase::kDefaultDeviceId) {
         callback.Run(true, device_info);

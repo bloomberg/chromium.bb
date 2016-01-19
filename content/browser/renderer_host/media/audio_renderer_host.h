@@ -231,7 +231,7 @@ class CONTENT_EXPORT AudioRendererHost : public BrowserMessageFilter {
   void TranslateDeviceID(const std::string& device_id,
                          const GURL& gurl_security_origin,
                          const OutputDeviceInfoCB& callback,
-                         const AudioOutputDeviceEnumeration& device_infos);
+                         const AudioOutputDeviceEnumeration& enumeration);
 
   // Helper method to check if the authorization procedure for stream
   // |stream_id| has started.

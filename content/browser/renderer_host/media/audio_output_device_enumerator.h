@@ -43,7 +43,19 @@ struct AudioOutputDeviceInfo {
   media::AudioParameters output_params;
 };
 
-typedef std::vector<AudioOutputDeviceInfo> AudioOutputDeviceEnumeration;
+// The result of an enumeration. It is used only in the browser side.
+struct AudioOutputDeviceEnumeration {
+ public:
+  AudioOutputDeviceEnumeration(
+      const std::vector<AudioOutputDeviceInfo>& devices,
+      bool has_actual_devices);
+  AudioOutputDeviceEnumeration();
+  ~AudioOutputDeviceEnumeration();
+
+  std::vector<AudioOutputDeviceInfo> devices;
+  bool has_actual_devices;
+};
+
 typedef base::Callback<void(const AudioOutputDeviceEnumeration&)>
     AudioOutputDeviceEnumerationCB;
 
@@ -59,11 +71,15 @@ class CONTENT_EXPORT AudioOutputDeviceEnumerator {
 
   // Does an enumeration and provides the results to the callback.
   // If there are no physical devices, the result contains a single entry with
-  // the default parameters provided by the underlying audio manager.
+  // the default parameters provided by the underlying audio manager and with
+  // the |has_actual_devices| field set to false.
   // The behavior with no physical devices is there to ease the transition
   // from the use of RenderThreadImpl::GetAudioHardwareConfig(), which always
   // provides default parameters, even if there are no devices.
   // See https://crbug.com/549125.
+  // Some audio managers always report a single device, regardless of the
+  // physical devices in the system. In this case the |has_actual_devices| field
+  // is set to true to differentiate from the case of no physical devices.
   void Enumerate(const AudioOutputDeviceEnumerationCB& callback);
 
   // Invalidates the current cache.

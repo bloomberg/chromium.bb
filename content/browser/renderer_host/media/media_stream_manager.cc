@@ -739,10 +739,8 @@ void MediaStreamManager::AudioOutputDevicesEnumerated(
   DVLOG(1) << "AudioOutputDevicesEnumerated()";
   StreamDeviceInfoArray device_infos;
 
-  // If the enumeration contains only one entry, it means there are no devices.
-  // The single entry contains default parameters from the audio manager.
-  if (device_enumeration.size() > 1) {
-    for (const auto& entry : device_enumeration) {
+  if (device_enumeration.has_actual_devices) {
+    for (const auto& entry : device_enumeration.devices) {
       StreamDeviceInfo device_info(MEDIA_DEVICE_AUDIO_OUTPUT, entry.device_name,
                                    entry.unique_id);
       device_infos.push_back(device_info);
