@@ -32,13 +32,12 @@ class Path;
 
 class SVGPathBuilder final : public SVGPathConsumer {
 public:
-    SVGPathBuilder(Path& path) : m_path(path), m_closed(true) { }
+    SVGPathBuilder(Path& path) : m_path(path) { }
 
 private:
     void emitSegment(const PathSegmentData&) override;
 
     Path& m_path;
-    bool m_closed;
 };
 
 } // namespace blink

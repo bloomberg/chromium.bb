@@ -32,17 +32,13 @@ void SVGPathBuilder::emitSegment(const PathSegmentData& segment)
 {
     switch (segment.command) {
     case PathSegMoveToAbs:
-        if (m_closed && !m_path.isEmpty())
-            m_path.closeSubpath();
         m_path.moveTo(segment.targetPoint);
-        m_closed = false;
         break;
     case PathSegLineToAbs:
         m_path.addLineTo(segment.targetPoint);
         break;
     case PathSegClosePath:
         m_path.closeSubpath();
-        m_closed = true;
         break;
     case PathSegCurveToCubicAbs:
         m_path.addBezierCurveTo(segment.point1, segment.point2, segment.targetPoint);
