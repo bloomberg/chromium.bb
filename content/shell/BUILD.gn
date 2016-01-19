@@ -5,6 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
+import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
@@ -412,6 +413,8 @@ if (!is_android && !is_mac) {
       "app/shell_main.cc",
     ]
 
+    defines = []
+
     deps = [
       ":content_shell_lib",
       ":pak",
@@ -422,7 +425,10 @@ if (!is_android && !is_mac) {
 
     if (is_win) {
       deps += [ "//sandbox" ]
-      if (!is_asan) {
+      if (win_console_app) {
+        defines += [ "WIN_CONSOLE_APP" ]
+      } else {
+        # Set /SUBSYSTEM:WINDOWS unless a console build has been requested.
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }

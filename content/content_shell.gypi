@@ -470,11 +470,6 @@
         },
       },
       'conditions': [
-        ['OS=="win" and win_use_allocator_shim==1', {
-          'dependencies': [
-            '../base/allocator/allocator.gyp:allocator',
-          ],
-        }],
         ['OS=="win"', {
           'sources': [
             'shell/app/shell.rc',
@@ -488,19 +483,26 @@
               },
             },
           },
-        }],  # OS=="win"
-        ['OS == "win"', {
           'dependencies': [
             '../sandbox/sandbox.gyp:sandbox',
           ],
+          'conditions': [
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+            ['win_console_app==1', {
+              'defines': ['WIN_CONSOLE_APP'],
+            }, { # else win_console_app==0
+              'msvs_settings': {
+                'VCLinkerTool': {
+                  'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
+                },
+              },
+            }],
+          ],
         }],  # OS=="win"
-        ['OS=="win" and asan==0', {
-          'msvs_settings': {
-            'VCLinkerTool': {
-              'SubSystem': '2',  # Set /SUBSYSTEM:WINDOWS
-            },
-          },
-        }],  # OS=="win" and asan==0
         ['OS=="mac"', {
           'product_name': '<(content_shell_product_name)',
           'dependencies!': [
@@ -927,7 +929,7 @@
               }],
             ],
           },
-          'includes': [ 
+          'includes': [
             '../build/android/v8_external_startup_data_arch_suffix.gypi',
             '../build/java_apk.gypi',
           ],
