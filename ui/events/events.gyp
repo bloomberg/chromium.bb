@@ -153,15 +153,14 @@
         'win/system_event_state_lookup.cc',
         'win/system_event_state_lookup.h',
         'x/events_x.cc',
-        'x/events_x_utils.cc',
-        'x/events_x_utils.h',
       ],
       'conditions': [
         ['use_x11==1', {
           'dependencies': [
-            'devices/events_devices.gyp:events_devices',
-            '../gfx/x/gfx_x11.gyp:gfx_x11',
             '../../build/linux/system.gyp:x11',
+            '../gfx/x/gfx_x11.gyp:gfx_x11',
+            'devices/events_devices.gyp:events_devices',
+            'x/events_x.gyp:events_x',
           ],
         }],
         ['use_aura==0', {

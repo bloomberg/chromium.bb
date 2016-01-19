@@ -598,10 +598,6 @@ int GetChangedMouseButtonFlagsFromXEvent(const XEvent& xev) {
   return 0;
 }
 
-PointerDetails GetMousePointerDetailsFromXEvent(const XEvent& xev) {
-  return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
-}
-
 gfx::Vector2d GetMouseWheelOffsetFromXEvent(const XEvent& xev) {
   float x_offset, y_offset;
   if (GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, NULL, NULL, NULL)) {

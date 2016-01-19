@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/ozone/ozone.gni")
 
 if (is_android) {
   import("//build/config/android/rules.gni")
@@ -69,7 +70,9 @@ component("events_base") {
     "//ui/gfx/geometry",
   ]
 
-  if (use_x11) {
+  # TODO(kylechar): move keycodes/ files into own component and x/ files into
+  # ui/events/x component
+  if (use_x11 || ozone_platform_x11) {
     configs += [ "//build/config/linux:x11" ]
 
     sources += [
@@ -82,7 +85,7 @@ component("events_base") {
     deps += [ "//ui/gfx/x" ]
   }
 
-  if (use_x11 || use_xkbcommon) {
+  if (use_x11 || ozone_platform_x11 || use_xkbcommon) {
     sources += [
       "keycodes/keyboard_code_conversion_xkb.cc",
       "keycodes/keyboard_code_conversion_xkb.h",
@@ -142,11 +145,7 @@ component("events") {
   ]
 
   if (use_x11) {
-    sources += [
-      "x/events_x.cc",
-      "x/events_x_utils.cc",
-      "x/events_x_utils.h",
-    ]
+    sources += [ "x/events_x.cc" ]
     configs += [
       "//build/config/linux:glib",
       "//build/config/linux:x11",
@@ -155,6 +154,10 @@ component("events") {
       "//ui/events/devices",
       "//ui/gfx/x",
     ]
+  }
+
+  if (use_x11 || ozone_platform_x11) {
+    deps += [ "//ui/events/x" ]
   }
 
   if (!is_chromeos && is_linux) {

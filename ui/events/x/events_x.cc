@@ -127,7 +127,7 @@ int GetChangedMouseButtonFlagsFromNative(
 
 PointerDetails GetMousePointerDetailsFromNative(
     const base::NativeEvent& native_event) {
-  return GetMousePointerDetailsFromXEvent(*native_event);
+  return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
 }
 
 gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
