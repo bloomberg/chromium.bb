@@ -2,9 +2,9 @@ Tests that styles are updated when live-editing css resource.
 
 
 Running: testLiveEdit
-display: block
+display: block;
     block - div user agent stylesheet
-font-size: 20px
+font-size: 20px;
     20px - body css-live-edit.css:1 -> css-live-edit.css:1:1
 [expanded] 
 element.style { ()

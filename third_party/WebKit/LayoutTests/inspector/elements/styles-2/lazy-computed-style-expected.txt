@@ -33,23 +33,23 @@ div { (user agent stylesheet)
     display: block;
 
 ==== All styles (computed should be there) ====
-background-attachment: scroll
+background-attachment: scroll;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-background-clip: border-box
+background-clip: border-box;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-background-color: rgb(128, 128, 128)
+background-color: rgb(128, 128, 128);
     gray - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
     OVERLOADED black - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:1
     OVERLOADED green - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:1
-background-image: none
+background-image: none;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-background-origin: padding-box
+background-origin: padding-box;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-background-size: auto
+background-size: auto;
     initial - #inspected lazy-computed-style.html:15 -> lazy-computed-style.html:15:1
-display: block
+display: block;
     block - div user agent stylesheet
-font-family: Courier
+font-family: Courier;
     Courier - #inspected lazy-computed-style.html:10 -> lazy-computed-style.html:10:1
     OVERLOADED Times - #inspected lazy-computed-style.html:5 -> lazy-computed-style.html:5:1
 [expanded] 

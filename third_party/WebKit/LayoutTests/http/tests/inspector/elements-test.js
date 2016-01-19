@@ -23,7 +23,7 @@ InspectorTest.dumpComputedStyle = function()
             continue;
         var dumpText = "";
         dumpText += treeElement.title.querySelector(".property-name").textContent;
-        dumpText += ": ";
+        dumpText += " ";
         dumpText += treeElement.title.querySelector(".property-value").textContent;
         InspectorTest.addResult(dumpText);
         for (var trace of treeElement.children()) {

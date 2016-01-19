@@ -1,9 +1,9 @@
 Tests that non-standard mixed-cased properties are displayed in the Styles pane.
 
-color: rgb(0, 0, 0)
-display: block
+color: rgb(0, 0, 0);
+display: block;
     block - div user agent stylesheet
--webkit-font-smoothing: antialiased
+-webkit-font-smoothing: antialiased;
 [expanded] 
 element.style { ()
 
