@@ -388,11 +388,6 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
         return;
     }
 
-    if (isHTMLLegendElement(element)) {
-        style.setDisplay(BLOCK);
-        return;
-    }
-
     if (isHTMLMarqueeElement(element)) {
         // For now, <marquee> requires an overflow clip to work properly.
         style.setOverflowX(OHIDDEN);
