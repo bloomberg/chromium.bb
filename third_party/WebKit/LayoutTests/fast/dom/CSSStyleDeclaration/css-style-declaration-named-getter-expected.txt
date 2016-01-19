@@ -1,4 +1,3 @@
-CONSOLE WARNING: 'getComputedStyle(e).cssXx' (except .cssFloat) is deprecated and will be removed in M50, around April 2016. Please use 'getComputedStyle(e).xx' instead. See https://www.chromestatus.com/features/5006796888473600 for more details.
 PASS document.body.style['BorderTopWidth'] is undefined.
 PASS document.body.style['borderTopWidth'] is "1px"
 PASS document.body.style['border-topWidth'] is undefined.
@@ -6,8 +5,8 @@ PASS document.body.style['border-TopWidth'] is undefined.
 PASS document.body.style['borderTop-width'] is undefined.
 PASS document.body.style['borderTop-Width'] is undefined.
 PASS document.body.style['border-top-width'] is "1px"
-PASS document.body.style['CssBorderTopWidth'] is "1px"
-PASS document.body.style['cssBorderTopWidth'] is "1px"
+PASS document.body.style['CssBorderTopWidth'] is undefined.
+PASS document.body.style['cssBorderTopWidth'] is undefined.
 PASS document.body.style['cssborderTopWidth'] is undefined.
 PASS document.body.style['cssBorder-top-width'] is undefined.
 PASS document.body.style['css-border-top-width'] is undefined.

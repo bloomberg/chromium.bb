@@ -468,7 +468,6 @@ public:
         NotificationSecureOrigin = 563,
         NotificationInsecureOrigin = 564,
         NotificationShowEvent = 565,
-        CSSXGetComputedStyleQueries = 566,
         SVGTransformListConsolidate = 569,
         SVGAnimatedTransformListBaseVal = 570,
         QuotedAnimationName = 571,

@@ -1,5 +1,5 @@
 description(
-'This test checks that access to the CSS float property via JavaScript properties on DOM elements is case sensitive. The use of .CssFloat is deprecated and will be removed in M50.'
+'This test checks that access to the CSS float property via JavaScript properties on DOM elements is case sensitive.'
 );
 
 var element = document.createElement('a');
@@ -16,6 +16,6 @@ debug('"css" prefix');
 debug('');
 
 shouldBe("element.style.cssFloat", "'left'");
-shouldBe("element.style.CssFloat", "'left'");
+shouldBeUndefined("element.style.CssFloat");
 shouldBeUndefined("element.style.Cssfloat");
 shouldBeUndefined("element.style.cssfloat");

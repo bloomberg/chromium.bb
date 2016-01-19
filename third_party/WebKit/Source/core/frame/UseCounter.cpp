@@ -957,9 +957,6 @@ String UseCounter::deprecationMessage(Feature feature)
     case MediaStreamTrackGetSources:
         return "MediaStreamTrack.getSources is deprecated. See https://www.chromestatus.com/feature/4765305641369600 for more details.";
 
-    case CSSXGetComputedStyleQueries:
-        return replacedWillBeRemoved("'getComputedStyle(e).cssXx' (except .cssFloat)", "'getComputedStyle(e).xx'", 50, "5006796888473600");
-
     case DocumentDefaultCharset:
         return willBeRemoved("'Document.defaultCharset'", 50, "6217124578066432");
 
