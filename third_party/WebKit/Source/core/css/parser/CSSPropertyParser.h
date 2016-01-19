@@ -119,7 +119,9 @@ private:
     bool consumeCSSWideKeyword(CSSPropertyID unresolvedProperty, bool important);
     PassRefPtrWillBeRawPtr<CSSValue> parseSingleValue(CSSPropertyID);
 
-    bool parseValue(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> legacyParseValue(CSSPropertyID);
+    bool legacyParseAndApplyValue(CSSPropertyID, bool important);
+    bool legacyParseShorthand(CSSPropertyID, bool important);
 
     bool inShorthand() const { return m_inParseShorthand; }
     bool inQuirksMode() const { return isQuirksModeBehavior(m_context.mode()); }
@@ -185,8 +187,8 @@ private:
     bool parseGridLineNames(CSSParserValueList&, CSSValueList&, CSSGridLineNamesValue* = nullptr);
     PassRefPtrWillBeRawPtr<CSSValue> parseGridAutoFlow(CSSParserValueList&);
 
-    bool parseLegacyPosition(CSSPropertyID, bool important);
-    bool parseItemPositionOverflowPosition(CSSPropertyID, bool important);
+    PassRefPtrWillBeRawPtr<CSSValue> parseLegacyPosition();
+    PassRefPtrWillBeRawPtr<CSSValue> parseItemPositionOverflowPosition();
     PassRefPtrWillBeRawPtr<CSSValue> parseContentDistributionOverflowPosition();
 
     PassRefPtrWillBeRawPtr<CSSValue> parseShapeProperty(CSSPropertyID propId);

@@ -294,7 +294,16 @@ void CSSPropertyParser::addExpandedPropertyForValue(CSSPropertyID propId, PassRe
         addProperty(longhands[i], value, important);
 }
 
-bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool important)
+bool CSSPropertyParser::legacyParseAndApplyValue(CSSPropertyID propertyID, bool important)
+{
+    RefPtrWillBeRawPtr<CSSValue> result = legacyParseValue(propertyID);
+    if (!result)
+        return false;
+    addProperty(propertyID, result.release(), important);
+    return true;
+}
+
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSPropertyID unresolvedProperty)
 {
     CSSPropertyID propId = resolveCSSPropertyID(unresolvedProperty);
 
@@ -309,11 +318,10 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     // TODO(timloh): Move to parseSingleValue
     if (CSSParserFastPaths::isKeywordPropertyID(propId)) {
         if (!CSSParserFastPaths::isValidKeywordPropertyAndValue(propId, id))
-            return false;
+            return nullptr;
         if (m_valueList->next() && !inShorthand())
-            return false;
-        addProperty(propId, cssValuePool().createIdentifierValue(id), important);
-        return true;
+            return nullptr;
+        return cssValuePool().createIdentifierValue(id);
     }
 
     bool validPrimitive = false;
@@ -345,45 +353,25 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     case CSSPropertyBackgroundOrigin:
     case CSSPropertyMaskSourceType:
     case CSSPropertyWebkitBackgroundOrigin:
-    case CSSPropertyBackgroundPosition:
     case CSSPropertyBackgroundPositionX:
     case CSSPropertyBackgroundPositionY:
     case CSSPropertyBackgroundSize:
-    case CSSPropertyBackgroundRepeat:
     case CSSPropertyWebkitMaskClip:
     case CSSPropertyWebkitMaskComposite:
     case CSSPropertyWebkitMaskImage:
     case CSSPropertyWebkitMaskOrigin:
-    case CSSPropertyWebkitMaskPosition:
     case CSSPropertyWebkitMaskPositionX:
     case CSSPropertyWebkitMaskPositionY:
     case CSSPropertyWebkitMaskSize:
-    case CSSPropertyWebkitMaskRepeat:
     case CSSPropertyWebkitMaskRepeatX:
     case CSSPropertyWebkitMaskRepeatY:
     {
-        RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
-        RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> dummyValue = nullptr;
         CSSPropertyID propId1, propId2;
-        bool result = false;
-        if (parseFillProperty(unresolvedProperty, propId1, propId2, val1, val2)) {
-            if (propId == CSSPropertyBackgroundPosition ||
-                propId == CSSPropertyBackgroundRepeat ||
-                propId == CSSPropertyWebkitMaskPosition ||
-                propId == CSSPropertyWebkitMaskRepeat) {
-                ShorthandScope scope(this, propId);
-                addProperty(propId1, val1.release(), important);
-                if (val2)
-                    addProperty(propId2, val2.release(), important);
-            } else {
-                addProperty(propId1, val1.release(), important);
-                if (val2)
-                    addProperty(propId2, val2.release(), important);
-            }
-            result = true;
-        }
-        m_implicitShorthand = false;
-        return result;
+        if (!parseFillProperty(unresolvedProperty, propId1, propId2, parsedValue, dummyValue))
+            return nullptr;
+        ASSERT(!dummyValue);
+        break;
     }
     case CSSPropertyBorderImageSource: // <uri> | none | inherit
     case CSSPropertyWebkitMaskBoxImageSource:
@@ -413,59 +401,37 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
             validPrimitive = validUnit(value, FLength | FPercent | FUnitlessQuirk);
         break;
 
-    case CSSPropertySrc:
-    case CSSPropertyUnicodeRange:
-        /* @font-face only descriptors */
+    case CSSPropertyWebkitBorderImage:
+        parsedValue = parseBorderImage(propId);
         break;
-
-    /* CSS3 properties */
-
-    case CSSPropertyBorderImage:
-    case CSSPropertyWebkitMaskBoxImage:
-        return parseBorderImageShorthand(propId, important);
-    case CSSPropertyWebkitBorderImage: {
-        if (RefPtrWillBeRawPtr<CSSValue> result = parseBorderImage(propId)) {
-            addProperty(propId, result, important);
-            return true;
-        }
-        return false;
-    }
 
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset: {
         RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
-        if (parseBorderImageOutset(result)) {
-            addProperty(propId, result, important);
-            return true;
-        }
-        break;
+        if (parseBorderImageOutset(result))
+            return result.release();
+        return nullptr;
     }
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat: {
         RefPtrWillBeRawPtr<CSSValue> result = nullptr;
-        if (parseBorderImageRepeat(result)) {
-            addProperty(propId, result, important);
-            return true;
-        }
-        break;
+        if (parseBorderImageRepeat(result))
+            return result.release();
+        return nullptr;
     }
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice: {
         RefPtrWillBeRawPtr<CSSBorderImageSliceValue> result = nullptr;
-        if (parseBorderImageSlice(propId, result)) {
-            addProperty(propId, result, important);
-            return true;
-        }
-        break;
+        if (parseBorderImageSlice(propId, result))
+            return result.release();
+        return nullptr;
     }
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth: {
         RefPtrWillBeRawPtr<CSSQuadValue> result = nullptr;
-        if (parseBorderImageWidth(result)) {
-            addProperty(propId, result, important);
-            return true;
-        }
-        break;
+        if (parseBorderImageWidth(result))
+            return result.release();
+        return nullptr;
     }
     case CSSPropertyWebkitBoxReflect:
         if (id == CSSValueNone)
@@ -483,15 +449,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         break;
     case CSSPropertyJustifySelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseItemPositionOverflowPosition(propId, important);
+        parsedValue = parseItemPositionOverflowPosition();
+        break;
     case CSSPropertyJustifyItems:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
 
-        if (parseLegacyPosition(propId, important))
-            return true;
+        if ((parsedValue = parseLegacyPosition()))
+            break;
 
         m_valueList->setCurrentIndex(0);
-        return parseItemPositionOverflowPosition(propId, important);
+        parsedValue = parseItemPositionOverflowPosition();
+        break;
     case CSSPropertyGridAutoFlow:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridAutoFlow(*m_valueList);
@@ -516,89 +484,19 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
         parsedValue = parseGridPosition();
         break;
 
-    case CSSPropertyGridGap:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridGapShorthand(important);
-
-    case CSSPropertyGridColumn:
-    case CSSPropertyGridRow:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridItemPositionShorthand(propId, important);
-
-    case CSSPropertyGridArea:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridAreaShorthand(important);
-
     case CSSPropertyGridTemplateAreas:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
         parsedValue = parseGridTemplateAreas();
         break;
 
-    case CSSPropertyGridTemplate:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridTemplateShorthand(important);
-
-    case CSSPropertyGrid:
-        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseGridShorthand(important);
-
-        /* shorthand properties */
-    case CSSPropertyBackground: {
-        // Position must come before color in this array because a plain old "0" is a legal color
-        // in quirks mode but it's usually the X coordinate of a position.
-        const CSSPropertyID properties[] = { CSSPropertyBackgroundImage, CSSPropertyBackgroundRepeat,
-                                   CSSPropertyBackgroundAttachment, CSSPropertyBackgroundPosition, CSSPropertyBackgroundOrigin,
-                                   CSSPropertyBackgroundClip, CSSPropertyBackgroundColor, CSSPropertyBackgroundSize };
-        return parseFillShorthand(propId, properties, WTF_ARRAY_LENGTH(properties), important);
-    }
-    case CSSPropertyWebkitMask: {
-        const CSSPropertyID properties[] = { CSSPropertyWebkitMaskImage, CSSPropertyWebkitMaskRepeat,
-            CSSPropertyWebkitMaskPosition, CSSPropertyWebkitMaskOrigin, CSSPropertyWebkitMaskClip, CSSPropertyWebkitMaskSize };
-        return parseFillShorthand(propId, properties, WTF_ARRAY_LENGTH(properties), important);
-    }
-    case CSSPropertyBorder:
-        // [ 'border-width' || 'border-style' || <color> ] | inherit
-    {
-        if (parseShorthand(propId, borderShorthandForParsing(), important)) {
-            // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
-            // though a value of none was specified for the image.
-            addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
-            return true;
-        }
-        return false;
-    }
-    case CSSPropertyBorderTop:
-        // [ 'border-top-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderTopShorthand(), important);
-    case CSSPropertyBorderRight:
-        // [ 'border-right-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderRightShorthand(), important);
-    case CSSPropertyBorderBottom:
-        // [ 'border-bottom-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderBottomShorthand(), important);
-    case CSSPropertyBorderLeft:
-        // [ 'border-left-width' || 'border-style' || <color> ] | inherit
-        return parseShorthand(propId, borderLeftShorthand(), important);
-    case CSSPropertyBorderColor:
-        // <color>{1,4} | inherit
-        return parse4Values(propId, borderColorShorthand().properties(), important);
-    case CSSPropertyBorderWidth:
-        // <border-width>{1,4} | inherit
-        return parse4Values(propId, borderWidthShorthand().properties(), important);
-    case CSSPropertyBorderStyle:
-        // <border-style>{1,4} | inherit
-        return parse4Values(propId, borderStyleShorthand().properties(), important);
-    case CSSPropertyInvalid:
-        return false;
     case CSSPropertyWebkitClipPath:
         if (id == CSSValueNone) {
             validPrimitive = true;
         } else if (value->m_unit == CSSParserValue::Function) {
             parsedValue = parseBasicShape();
         } else if (value->m_unit == CSSParserValue::URI) {
-            parsedValue = CSSURIValue::create(value->string);
-            addProperty(propId, parsedValue.release(), important);
-            return true;
+            // TODO(timloh): This will allow trailing junk
+            return CSSURIValue::create(value->string);
         }
         break;
     case CSSPropertyShapeOutside:
@@ -615,227 +513,17 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
 
     case CSSPropertyAlignSelf:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseItemPositionOverflowPosition(propId, important);
+        parsedValue = parseItemPositionOverflowPosition();
+        break;
 
     case CSSPropertyAlignItems:
         ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-        return parseItemPositionOverflowPosition(propId, important);
-
-    // Properties below are validated inside parseViewportProperty, because we
-    // check for parser state. We need to invalidate if someone adds them outside
-    // a @viewport rule.
-    case CSSPropertyMaxZoom:
-    case CSSPropertyMinZoom:
-    case CSSPropertyOrientation:
-    case CSSPropertyUserZoom:
-        validPrimitive = false;
+        parsedValue = parseItemPositionOverflowPosition();
         break;
 
-    // These were not accepted by the new path above so we should return false.
-    case CSSPropertyWebkitPerspectiveOriginX:
-    case CSSPropertyWebkitTransformOriginX:
-    case CSSPropertyWebkitPerspectiveOriginY:
-    case CSSPropertyWebkitTransformOriginY:
-    case CSSPropertyWebkitTransformOriginZ:
-    case CSSPropertyWebkitMarginCollapse:
-    case CSSPropertyWillChange:
-    case CSSPropertyPage:
-    case CSSPropertyOverflow:
-    case CSSPropertyQuotes:
-    case CSSPropertyWebkitHighlight:
-    case CSSPropertyFontVariantLigatures:
-    case CSSPropertyFontFeatureSettings:
-    case CSSPropertyFontVariant:
-    case CSSPropertyFontFamily:
-    case CSSPropertyFontWeight:
-    case CSSPropertyLetterSpacing:
-    case CSSPropertyWordSpacing:
-    case CSSPropertyTabSize:
-    case CSSPropertyFontSize:
-    case CSSPropertyLineHeight:
-    case CSSPropertyRotate:
-    case CSSPropertyFont:
-    case CSSPropertyWebkitBorderHorizontalSpacing:
-    case CSSPropertyWebkitBorderVerticalSpacing:
-    case CSSPropertyBorderSpacing:
-    case CSSPropertyCounterIncrement:
-    case CSSPropertyCounterReset:
-    case CSSPropertySize:
-    case CSSPropertyTextIndent:
-    case CSSPropertyMaxWidth:
-    case CSSPropertyMaxHeight:
-    case CSSPropertyWebkitMaxLogicalWidth:
-    case CSSPropertyWebkitMaxLogicalHeight:
-    case CSSPropertyMinWidth:
-    case CSSPropertyMinHeight:
-    case CSSPropertyWidth:
-    case CSSPropertyHeight:
-    case CSSPropertyWebkitMinLogicalWidth:
-    case CSSPropertyWebkitMinLogicalHeight:
-    case CSSPropertyWebkitLogicalWidth:
-    case CSSPropertyWebkitLogicalHeight:
-    case CSSPropertyScrollSnapDestination:
-    case CSSPropertyObjectPosition:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyClip:
-    case CSSPropertyTouchAction:
-    case CSSPropertyWebkitLineClamp:
-    case CSSPropertyWebkitFontSizeDelta:
-    case CSSPropertyWebkitHyphenateCharacter:
-    case CSSPropertyWebkitLocale:
-    case CSSPropertyWebkitColumnWidth:
-    case CSSPropertyWebkitColumnCount:
-    case CSSPropertyWebkitColumns:
-    case CSSPropertyWebkitColumnGap:
-    case CSSPropertyWebkitColumnSpan:
-    case CSSPropertyZoom:
-    case CSSPropertyAnimation:
-    case CSSPropertyTransition:
-    case CSSPropertyAnimationDelay:
-    case CSSPropertyTransitionDelay:
-    case CSSPropertyAnimationDirection:
-    case CSSPropertyAnimationDuration:
-    case CSSPropertyTransitionDuration:
-    case CSSPropertyAnimationFillMode:
-    case CSSPropertyAnimationIterationCount:
-    case CSSPropertyAnimationName:
-    case CSSPropertyAnimationPlayState:
-    case CSSPropertyAnimationTimingFunction:
-    case CSSPropertyTransitionTimingFunction:
-    case CSSPropertyTransitionProperty:
-    case CSSPropertyGridColumnGap:
-    case CSSPropertyGridRowGap:
-    case CSSPropertyShapeMargin:
-    case CSSPropertyShapeImageThreshold:
-    case CSSPropertyWebkitBoxOrdinalGroup:
-    case CSSPropertyOrphans:
-    case CSSPropertyWidows:
-    case CSSPropertyWebkitTapHighlightColor:
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyColor:
-    case CSSPropertyZIndex:
-    case CSSPropertyTextShadow:
-    case CSSPropertyBoxShadow:
-    case CSSPropertyWebkitFilter:
-    case CSSPropertyBackdropFilter:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyWebkitTextDecorationsInEffect:
-    case CSSPropertyTextDecorationLine:
-    case CSSPropertyTextDecoration:
-    case CSSPropertyMotionPath:
-    case CSSPropertyMotionOffset:
-    case CSSPropertyMotionRotation:
-    case CSSPropertyMotion:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextEmphasisStyle:
-    case CSSPropertyWebkitTextEmphasis:
-    case CSSPropertyOutline:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyOutlineWidth:
-    case CSSPropertyOutlineOffset:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyWebkitBorderStartWidth:
-    case CSSPropertyWebkitBorderEndWidth:
-    case CSSPropertyWebkitBorderBeforeWidth:
-    case CSSPropertyWebkitBorderAfterWidth:
-    case CSSPropertyWebkitBorderStart:
-    case CSSPropertyWebkitBorderEnd:
-    case CSSPropertyWebkitBorderBefore:
-    case CSSPropertyWebkitBorderAfter:
-    case CSSPropertyWebkitTextStroke:
-    case CSSPropertyWebkitTextStrokeColor:
-    case CSSPropertyWebkitTextStrokeWidth:
-    case CSSPropertyTransform:
-    case CSSPropertyFill:
-    case CSSPropertyStroke:
-    case CSSPropertyStopColor:
-    case CSSPropertyFloodColor:
-    case CSSPropertyLightingColor:
-    case CSSPropertyPaintOrder:
-    case CSSPropertyMarginTop:
-    case CSSPropertyMarginRight:
-    case CSSPropertyMarginBottom:
-    case CSSPropertyMarginLeft:
-    case CSSPropertyMargin:
-    case CSSPropertyWebkitMarginStart:
-    case CSSPropertyWebkitMarginEnd:
-    case CSSPropertyWebkitMarginBefore:
-    case CSSPropertyWebkitMarginAfter:
-    case CSSPropertyPaddingTop:
-    case CSSPropertyPaddingRight:
-    case CSSPropertyPaddingBottom:
-    case CSSPropertyPaddingLeft:
-    case CSSPropertyPadding:
-    case CSSPropertyWebkitPaddingStart:
-    case CSSPropertyWebkitPaddingEnd:
-    case CSSPropertyWebkitPaddingBefore:
-    case CSSPropertyWebkitPaddingAfter:
-    case CSSPropertyMarker:
-    case CSSPropertyMarkerStart:
-    case CSSPropertyMarkerMid:
-    case CSSPropertyMarkerEnd:
-    case CSSPropertyFlex:
-    case CSSPropertyFlexBasis:
-    case CSSPropertyFlexGrow:
-    case CSSPropertyFlexShrink:
-    case CSSPropertyFlexFlow:
-    case CSSPropertyStrokeDasharray:
-    case CSSPropertyD:
-    case CSSPropertyWebkitColumnRule:
-    case CSSPropertyWebkitColumnRuleColor:
-    case CSSPropertyWebkitColumnRuleWidth:
-    case CSSPropertyClipPath:
-    case CSSPropertyFilter:
-    case CSSPropertyMask:
-    case CSSPropertyStrokeOpacity:
-    case CSSPropertyFillOpacity:
-    case CSSPropertyStopOpacity:
-    case CSSPropertyFloodOpacity:
-    case CSSPropertyOpacity:
-    case CSSPropertyWebkitBoxFlex:
-    case CSSPropertyBaselineShift:
-    case CSSPropertyStrokeMiterlimit:
-    case CSSPropertyStrokeWidth:
-    case CSSPropertyStrokeDashoffset:
-    case CSSPropertyCx:
-    case CSSPropertyCy:
-    case CSSPropertyX:
-    case CSSPropertyY:
-    case CSSPropertyR:
-    case CSSPropertyRx:
-    case CSSPropertyRy:
-    case CSSPropertyScale:
-    case CSSPropertyTranslate:
-    case CSSPropertyCursor:
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyContent:
-    case CSSPropertyListStyleImage:
-    case CSSPropertyListStyle:
-    case CSSPropertyPerspective:
-    case CSSPropertyScrollSnapCoordinate:
-    case CSSPropertyScrollSnapPointsX:
-    case CSSPropertyScrollSnapPointsY:
-    case CSSPropertyBorderTopRightRadius:
-    case CSSPropertyBorderTopLeftRadius:
-    case CSSPropertyBorderBottomLeftRadius:
-    case CSSPropertyBorderBottomRightRadius:
-    case CSSPropertyBorderRadius:
-    case CSSPropertyAliasWebkitBorderRadius:
-    case CSSPropertyWebkitBoxFlexGroup:
-    case CSSPropertyOrder:
-    case CSSPropertyTextUnderlinePosition:
-    case CSSPropertyVerticalAlign:
-        validPrimitive = false;
-        break;
-
+    // Everything else is handled in CSSPropertyParser.cpp
     default:
-        // If you crash here, it's because you added a css property and are not handling it
-        // in either this switch statement or the one in CSSPropertyParser::parseSingleValue.
-        ASSERT_WITH_MESSAGE(0, "unimplemented propertyID: %d", propId);
-        return false;
+        return nullptr;
     }
 
     if (validPrimitive) {
@@ -844,12 +532,109 @@ bool CSSPropertyParser::parseValue(CSSPropertyID unresolvedProperty, bool import
     }
     ASSERT(!m_parsedCalculation);
     if (parsedValue) {
-        if (!m_valueList->current() || inShorthand()) {
-            addProperty(propId, parsedValue.release(), important);
+        if (!m_valueList->current() || inShorthand())
+            return parsedValue.release();
+    }
+    return nullptr;
+}
+
+bool CSSPropertyParser::legacyParseShorthand(CSSPropertyID propertyID, bool important)
+{
+    switch (propertyID) {
+    case CSSPropertyBackgroundPosition:
+    case CSSPropertyBackgroundRepeat:
+    case CSSPropertyWebkitMaskPosition:
+    case CSSPropertyWebkitMaskRepeat: {
+        RefPtrWillBeRawPtr<CSSValue> val1 = nullptr;
+        RefPtrWillBeRawPtr<CSSValue> val2 = nullptr;
+        CSSPropertyID propId1, propId2;
+        if (parseFillProperty(propertyID, propId1, propId2, val1, val2)) {
+            ShorthandScope scope(this, propertyID);
+            addProperty(propId1, val1.release(), important);
+            if (val2)
+                addProperty(propId2, val2.release(), important);
+            m_implicitShorthand = false;
             return true;
         }
+        m_implicitShorthand = false;
+        return true;
     }
-    return false;
+
+    case CSSPropertyBorderImage:
+    case CSSPropertyWebkitMaskBoxImage:
+        return parseBorderImageShorthand(propertyID, important);
+
+    case CSSPropertyGridGap:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseGridGapShorthand(important);
+
+    case CSSPropertyGridColumn:
+    case CSSPropertyGridRow:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseGridItemPositionShorthand(propertyID, important);
+
+    case CSSPropertyGridArea:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseGridAreaShorthand(important);
+
+    case CSSPropertyGridTemplate:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseGridTemplateShorthand(important);
+
+    case CSSPropertyGrid:
+        ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
+        return parseGridShorthand(important);
+
+    case CSSPropertyBackground: {
+        // Position must come before color in this array because a plain old "0" is a legal color
+        // in quirks mode but it's usually the X coordinate of a position.
+        const CSSPropertyID properties[] = { CSSPropertyBackgroundImage, CSSPropertyBackgroundRepeat,
+                                   CSSPropertyBackgroundAttachment, CSSPropertyBackgroundPosition, CSSPropertyBackgroundOrigin,
+                                   CSSPropertyBackgroundClip, CSSPropertyBackgroundColor, CSSPropertyBackgroundSize };
+        return parseFillShorthand(propertyID, properties, WTF_ARRAY_LENGTH(properties), important);
+    }
+    case CSSPropertyWebkitMask: {
+        const CSSPropertyID properties[] = { CSSPropertyWebkitMaskImage, CSSPropertyWebkitMaskRepeat,
+            CSSPropertyWebkitMaskPosition, CSSPropertyWebkitMaskOrigin, CSSPropertyWebkitMaskClip, CSSPropertyWebkitMaskSize };
+        return parseFillShorthand(propertyID, properties, WTF_ARRAY_LENGTH(properties), important);
+    }
+    case CSSPropertyBorder:
+        // [ 'border-width' || 'border-style' || <color> ]
+    {
+        if (parseShorthand(propertyID, borderShorthandForParsing(), important)) {
+            // The CSS3 Borders and Backgrounds specification says that border also resets border-image. It's as
+            // though a value of none was specified for the image.
+            addExpandedPropertyForValue(CSSPropertyBorderImage, cssValuePool().createImplicitInitialValue(), important);
+            return true;
+        }
+        return false;
+    }
+    case CSSPropertyBorderTop:
+        // [ 'border-top-width' || 'border-style' || <color> ]
+        return parseShorthand(propertyID, borderTopShorthand(), important);
+    case CSSPropertyBorderRight:
+        // [ 'border-right-width' || 'border-style' || <color> ]
+        return parseShorthand(propertyID, borderRightShorthand(), important);
+    case CSSPropertyBorderBottom:
+        // [ 'border-bottom-width' || 'border-style' || <color> ]
+        return parseShorthand(propertyID, borderBottomShorthand(), important);
+    case CSSPropertyBorderLeft:
+        // [ 'border-left-width' || 'border-style' || <color> ]
+        return parseShorthand(propertyID, borderLeftShorthand(), important);
+    case CSSPropertyBorderColor:
+        // <color>{1,4}
+        return parse4Values(propertyID, borderColorShorthand().properties(), important);
+    case CSSPropertyBorderWidth:
+        // <border-width>{1,4}
+        return parse4Values(propertyID, borderWidthShorthand().properties(), important);
+    case CSSPropertyBorderStyle:
+        // <border-style>{1,4}
+        return parse4Values(propertyID, borderStyleShorthand().properties(), important);
+
+    // The remaining shorthands are handled in CSSPropertyParser.cpp
+    default:
+        return false;
+    }
 }
 
 void CSSPropertyParser::addFillValue(RefPtrWillBeRawPtr<CSSValue>& lval, PassRefPtrWillBeRawPtr<CSSValue> rval)
@@ -1048,10 +833,17 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID propId, const StyleProperty
     while (m_valueList->current()) {
         found = false;
         for (unsigned propIndex = 0; !found && propIndex < shorthand.length(); ++propIndex) {
-            if (!propertyFound[propIndex] && parseValue(shorthand.properties()[propIndex], important)) {
-                propertyFound[propIndex] = found = true;
-                propertiesParsed++;
+            if (propertyFound[propIndex])
+                continue;
+            if (propId == CSSPropertyBorder) {
+                if (!legacyParseShorthand(shorthand.properties()[propIndex], important))
+                    continue;
+            } else {
+                if (!legacyParseAndApplyValue(shorthand.properties()[propIndex], important))
+                    continue;
             }
+            propertyFound[propIndex] = found = true;
+            propertiesParsed++;
         }
 
         // if we didn't find at least one match, this is an
@@ -1098,7 +890,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
     // the order is top, right, bottom, left
     switch (num) {
         case 1: {
-            if (!parseValue(properties[0], important))
+            if (!legacyParseAndApplyValue(properties[0], important))
                 return false;
             CSSValue* value = m_parsedProperties.last().value();
             ImplicitScope implicitScope(this);
@@ -1108,7 +900,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             break;
         }
         case 2: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important))
+            if (!legacyParseAndApplyValue(properties[0], important) || !legacyParseAndApplyValue(properties[1], important))
                 return false;
             CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
             ImplicitScope implicitScope(this);
@@ -1118,7 +910,7 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             break;
         }
         case 3: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important) || !parseValue(properties[2], important))
+            if (!legacyParseAndApplyValue(properties[0], important) || !legacyParseAndApplyValue(properties[1], important) || !legacyParseAndApplyValue(properties[2], important))
                 return false;
             CSSValue* value = m_parsedProperties[m_parsedProperties.size() - 2].value();
             ImplicitScope implicitScope(this);
@@ -1126,8 +918,8 @@ bool CSSPropertyParser::parse4Values(CSSPropertyID propId, const CSSPropertyID *
             break;
         }
         case 4: {
-            if (!parseValue(properties[0], important) || !parseValue(properties[1], important) ||
-                !parseValue(properties[2], important) || !parseValue(properties[3], important))
+            if (!legacyParseAndApplyValue(properties[0], important) || !legacyParseAndApplyValue(properties[1], important) ||
+                !legacyParseAndApplyValue(properties[2], important) || !legacyParseAndApplyValue(properties[3], important))
                 return false;
             break;
         }
@@ -2096,7 +1888,7 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     m_valueList->setCurrentIndex(0);
 
     // 2- <grid-auto-flow> [ <grid-auto-columns> [ / <grid-auto-rows> ]? ]
-    if (!parseValue(CSSPropertyGridAutoFlow, important))
+    if (!legacyParseAndApplyValue(CSSPropertyGridAutoFlow, important))
         return false;
 
     RefPtrWillBeRawPtr<CSSValue> autoColumnsValue = nullptr;
@@ -2645,7 +2437,7 @@ static bool isItemPositionKeyword(CSSValueID id)
         || id == CSSValueFlexEnd || id == CSSValueLeft || id == CSSValueRight;
 }
 
-bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseLegacyPosition()
 {
     // [ legacy && [ left | right | center ]
 
@@ -2655,18 +2447,18 @@ bool CSSPropertyParser::parseLegacyPosition(CSSPropertyID propId, bool important
     if (value->id == CSSValueLegacy) {
         value = m_valueList->next();
         if (!value)
-            return false;
+            return nullptr;
         if (value->id != CSSValueCenter && value->id != CSSValueLeft && value->id != CSSValueRight)
-            return false;
+            return nullptr;
     } else if (value->id == CSSValueCenter || value->id == CSSValueLeft || value->id == CSSValueRight) {
         if (!m_valueList->next() || m_valueList->current()->id != CSSValueLegacy)
-            return false;
+            return nullptr;
     } else {
-        return false;
+        return nullptr;
     }
 
-    addProperty(propId, CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id), CSSValuePair::DropIdenticalValues), important);
-    return !m_valueList->next();
+    m_valueList->next();
+    return CSSValuePair::create(cssValuePool().createIdentifierValue(CSSValueLegacy), cssValuePool().createIdentifierValue(value->id), CSSValuePair::DropIdenticalValues);
 }
 
 PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseContentDistributionOverflowPosition()
@@ -2718,7 +2510,7 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseContentDistributionOver
     return CSSContentDistributionValue::create(distribution, position, overflow);
 }
 
-bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, bool important)
+PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseItemPositionOverflowPosition()
 {
     // auto | stretch | <baseline-position> | [<item-position> && <overflow-position>? ]
     // <baseline-position> = baseline | last-baseline;
@@ -2729,11 +2521,8 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
     ASSERT(value);
 
     if (value->id == CSSValueAuto || value->id == CSSValueStretch || isBaselinePositionKeyword(value->id)) {
-        if (m_valueList->next())
-            return false;
-
-        addProperty(propId, cssValuePool().createIdentifierValue(value->id), important);
-        return true;
+        m_valueList->next();
+        return cssValuePool().createIdentifierValue(value->id);
     }
 
     RefPtrWillBeRawPtr<CSSPrimitiveValue> position = nullptr;
@@ -2745,7 +2534,7 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
             if (isAlignmentOverflowKeyword(value->id))
                 overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
             else
-                return false;
+                return nullptr;
         }
     } else if (isAlignmentOverflowKeyword(value->id)) {
         overflowAlignmentKeyword = cssValuePool().createIdentifierValue(value->id);
@@ -2753,21 +2542,17 @@ bool CSSPropertyParser::parseItemPositionOverflowPosition(CSSPropertyID propId, 
         if (value && isItemPositionKeyword(value->id))
             position = cssValuePool().createIdentifierValue(value->id);
         else
-            return false;
+            return nullptr;
     } else {
-        return false;
+        return nullptr;
     }
 
-    if (m_valueList->next())
-        return false;
+    m_valueList->next();
 
     ASSERT(position);
     if (overflowAlignmentKeyword)
-        addProperty(propId, CSSValuePair::create(position, overflowAlignmentKeyword, CSSValuePair::DropIdenticalValues), important);
-    else
-        addProperty(propId, position.release(), important);
-
-    return true;
+        return CSSValuePair::create(position, overflowAlignmentKeyword, CSSValuePair::DropIdenticalValues);
+    return position.release();
 }
 
 PassRefPtrWillBeRawPtr<CSSPrimitiveValue> CSSPropertyParser::parseShapeRadius(CSSParserValue* value)

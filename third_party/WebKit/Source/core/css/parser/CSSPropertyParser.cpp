@@ -107,21 +107,16 @@ bool CSSPropertyParser::parseValueStart(CSSPropertyID unresolvedProperty, bool i
     CSSParserTokenRange originalRange = m_range;
     CSSPropertyID propertyId = resolveCSSPropertyID(unresolvedProperty);
 
-    if (RefPtrWillBeRawPtr<CSSValue> parsedValue = parseSingleValue(unresolvedProperty)) {
-        if (!m_range.atEnd())
-            return false;
-        addProperty(propertyId, parsedValue.release(), important);
-        return true;
-    }
-
-    if (parseShorthand(unresolvedProperty, important))
-        return true;
-
-    CSSParserValueList valueList(m_range);
-    if (valueList.size()) {
-        m_valueList = &valueList;
-        if (parseValue(unresolvedProperty, important))
+    if (isShorthandProperty(propertyId)) {
+        if (parseShorthand(unresolvedProperty, important))
             return true;
+    } else {
+        if (RefPtrWillBeRawPtr<CSSValue> parsedValue = parseSingleValue(unresolvedProperty)) {
+            if (!m_range.atEnd())
+                return false;
+            addProperty(propertyId, parsedValue.release(), important);
+            return true;
+        }
     }
 
     if (RuntimeEnabledFeatures::cssVariablesEnabled() && CSSVariableParser::containsValidVariableReferences(originalRange)) {
@@ -3115,6 +3110,9 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyWebkitFilter:
     case CSSPropertyBackdropFilter:
         return consumeFilter(m_range, m_context.mode());
+    case CSSPropertyTextDecoration:
+        ASSERT(!RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        // fallthrough
     case CSSPropertyWebkitTextDecorationsInEffect:
     case CSSPropertyTextDecorationLine:
         return consumeTextDecorationLine(m_range);
@@ -3219,6 +3217,15 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyVerticalAlign:
         return consumeVerticalAlign(m_range, m_context.mode());
     default:
+        CSSParserValueList valueList(m_range);
+        if (valueList.size()) {
+            m_valueList = &valueList;
+            if (RefPtrWillBeRawPtr<CSSValue> result = legacyParseValue(unresolvedProperty)) {
+                while (!m_range.atEnd())
+                    m_range.consume();
+                return result.release();
+            }
+        }
         return nullptr;
     }
 }
@@ -3805,19 +3812,9 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
         return consumeAnimationShorthand(animationShorthandForParsing(), unresolvedProperty == CSSPropertyAliasWebkitAnimation, important);
     case CSSPropertyTransition:
         return consumeAnimationShorthand(transitionShorthandForParsing(), false, important);
-    case CSSPropertyTextDecoration: {
-        // Fall through 'text-decoration-line' parsing if CSS 3 Text Decoration
-        // is disabled to match CSS 2.1 rules for parsing 'text-decoration'.
-        if (RuntimeEnabledFeatures::css3TextDecorationsEnabled())
-            return consumeShorthandGreedily(textDecorationShorthand(), important);
-        // TODO(rwlbuis): investigate if this shorthand hack can be removed.
-        m_currentShorthand = oldShorthand;
-        RefPtrWillBeRawPtr<CSSValue> textDecoration = consumeTextDecorationLine(m_range);
-        if (!textDecoration || !m_range.atEnd())
-            return false;
-        addProperty(CSSPropertyTextDecoration, textDecoration.release(), important);
-        return true;
-    }
+    case CSSPropertyTextDecoration:
+        ASSERT(RuntimeEnabledFeatures::css3TextDecorationsEnabled());
+        return consumeShorthandGreedily(textDecorationShorthand(), important);
     case CSSPropertyMargin:
         return consume4Values(marginShorthand(), important);
     case CSSPropertyPadding:
@@ -3869,7 +3866,11 @@ bool CSSPropertyParser::parseShorthand(CSSPropertyID unresolvedProperty, bool im
     }
     default:
         m_currentShorthand = oldShorthand;
-        return false;
+        CSSParserValueList valueList(m_range);
+        if (!valueList.size())
+            return false;
+        m_valueList = &valueList;
+        return legacyParseShorthand(unresolvedProperty, important);
     }
 }
 
