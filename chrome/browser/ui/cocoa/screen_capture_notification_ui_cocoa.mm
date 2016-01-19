@@ -249,8 +249,7 @@ scoped_ptr<ScreenCaptureNotificationUI> ScreenCaptureNotificationUI::Create(
 - (WindowGripView*)init {
   gfx::Image gripImage =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-          IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP,
-          ui::ResourceBundle::RTL_DISABLED);
+          IDR_SCREEN_CAPTURE_NOTIFICATION_GRIP);
   self = [super
       initWithFrame:NSMakeRect(0, 0, gripImage.Width(), gripImage.Height())];
   [self setImage:gripImage.ToNSImage()];

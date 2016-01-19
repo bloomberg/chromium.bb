@@ -120,9 +120,7 @@ std::string ResourceBundle::LoadLocaleResources(
   return app_locale;
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
-  // Flipped image is not used on Android.
-  DCHECK_EQ(rtl, RTL_DISABLED);
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   return GetImageNamed(resource_id);
 }
 

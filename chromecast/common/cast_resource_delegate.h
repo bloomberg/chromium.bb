@@ -40,9 +40,7 @@ class CastResourceDelegate : public ui::ResourceBundle::Delegate {
       const base::FilePath& pack_path,
       const std::string& locale) override;
   gfx::Image GetImageNamed(int resource_id) override;
-  gfx::Image GetNativeImageNamed(
-      int resource_id,
-      ui::ResourceBundle::ImageRTL rtl) override;
+  gfx::Image GetNativeImageNamed(int resource_id) override;
   base::RefCountedStaticMemory* LoadDataResourceBytes(
       int resource_id,
       ui::ScaleFactor scale_factor) override;

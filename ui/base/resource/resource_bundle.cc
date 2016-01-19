@@ -428,10 +428,6 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   return images_[resource_id];
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
-  return GetNativeImageNamed(resource_id, RTL_DISABLED);
-}
-
 base::RefCountedStaticMemory* ResourceBundle::LoadDataResourceBytes(
     int resource_id) const {
   return LoadDataResourceBytesForScale(resource_id, ui::SCALE_FACTOR_NONE);

@@ -60,8 +60,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
         return gfx::Image();
     }
   }
-  gfx::Image GetNativeImageNamed(int resource_id,
-                                 ui::ResourceBundle::ImageRTL rtl) override {
+  gfx::Image GetNativeImageNamed(int resource_id) override {
     return gfx::Image();
   }
   base::RefCountedStaticMemory* LoadDataResourceBytes(

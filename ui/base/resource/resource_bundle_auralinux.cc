@@ -20,9 +20,7 @@ void ResourceBundle::LoadCommonResources() {
   LoadChromeResources();
 }
 
-gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id, ImageRTL rtl) {
-  // Flipped image is not used on ChromeOS.
-  DCHECK_EQ(rtl, RTL_DISABLED);
+gfx::Image& ResourceBundle::GetNativeImageNamed(int resource_id) {
   return GetImageNamed(resource_id);
 }
 

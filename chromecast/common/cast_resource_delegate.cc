@@ -36,7 +36,7 @@ base::FilePath CastResourceDelegate::GetPathForResourcePack(
     const base::FilePath& pack_path,
     ui::ScaleFactor scale_factor) {
   return pack_path;
-};
+}
 
 base::FilePath CastResourceDelegate::GetPathForLocalePack(
     const base::FilePath& pack_path,
@@ -49,29 +49,27 @@ base::FilePath CastResourceDelegate::GetPathForLocalePack(
       Append(FILE_PATH_LITERAL("chromecast_locales")).
       Append(FILE_PATH_LITERAL(locale)).
       AddExtension(FILE_PATH_LITERAL("pak"));
-};
+}
 
 gfx::Image CastResourceDelegate::GetImageNamed(int resource_id) {
   return gfx::Image();
-};
+}
 
-gfx::Image CastResourceDelegate::GetNativeImageNamed(
-    int resource_id,
-    ui::ResourceBundle::ImageRTL rtl) {
+gfx::Image CastResourceDelegate::GetNativeImageNamed(int resource_id) {
   return gfx::Image();
-};
+}
 
 base::RefCountedStaticMemory* CastResourceDelegate::LoadDataResourceBytes(
     int resource_id,
     ui::ScaleFactor scale_factor) {
   return NULL;
-};
+}
 
 bool CastResourceDelegate::GetRawDataResource(int resource_id,
                                               ui::ScaleFactor scale_factor,
                                               base::StringPiece* value) {
   return false;
-};
+}
 
 bool CastResourceDelegate::GetLocalizedString(int message_id,
                                               base::string16* value) {
@@ -82,7 +80,7 @@ bool CastResourceDelegate::GetLocalizedString(int message_id,
     return true;
   }
   return false;
-};
+}
 
 void CastResourceDelegate::AddExtraLocalizedString(
     int resource_id,
@@ -102,6 +100,6 @@ void CastResourceDelegate::ClearAllExtraLocalizedStrings() {
 scoped_ptr<gfx::Font> CastResourceDelegate::GetFont(
     ui::ResourceBundle::FontStyle style) {
   return scoped_ptr<gfx::Font>();
-};
+}
 
 }  // namespace chromecast

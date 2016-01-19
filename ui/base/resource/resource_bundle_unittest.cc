@@ -72,9 +72,7 @@ class MockResourceBundleDelegate : public ui::ResourceBundle::Delegate {
   MOCK_METHOD2(GetPathForLocalePack, base::FilePath(
       const base::FilePath& pack_path, const std::string& locale));
   MOCK_METHOD1(GetImageNamed, gfx::Image(int resource_id));
-  MOCK_METHOD2(GetNativeImageNamed,
-      gfx::Image(int resource_id,
-                 ui::ResourceBundle::ImageRTL rtl));
+  MOCK_METHOD1(GetNativeImageNamed, gfx::Image(int resource_id));
   MOCK_METHOD2(LoadDataResourceBytes,
       base::RefCountedStaticMemory*(int resource_id,
                                     ui::ScaleFactor scale_factor));
@@ -250,7 +248,7 @@ TEST_F(ResourceBundleTest, DelegateGetNativeImageNamed) {
       .Times(Between(0, 1))
       .WillOnce(Return(empty_image));
   EXPECT_CALL(delegate,
-      GetNativeImageNamed(resource_id, ui::ResourceBundle::RTL_DISABLED))
+      GetNativeImageNamed(resource_id))
       .Times(Between(0, 1))
       .WillOnce(Return(empty_image));
 

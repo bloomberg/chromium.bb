@@ -59,13 +59,6 @@ class UI_BASE_EXPORT ResourceBundle {
     LargeBoldFont,
   };
 
-  enum ImageRTL {
-    // Images are flipped in RTL locales.
-    RTL_ENABLED,
-    // Images are never flipped.
-    RTL_DISABLED,
-  };
-
   enum LoadResources {
     LOAD_COMMON_RESOURCES,
     DO_NOT_LOAD_COMMON_RESOURCES
@@ -97,7 +90,7 @@ class UI_BASE_EXPORT ResourceBundle {
 
     // Return an image resource or an empty value to attempt retrieval of the
     // default resource.
-    virtual gfx::Image GetNativeImageNamed(int resource_id, ImageRTL rtl) = 0;
+    virtual gfx::Image GetNativeImageNamed(int resource_id) = 0;
 
     // Return a static memory resource or NULL to attempt retrieval of the
     // default resource.
@@ -219,11 +212,6 @@ class UI_BASE_EXPORT ResourceBundle {
   // Note that if the same resource has already been loaded in GetImageNamed(),
   // gfx::Image will perform a conversion, rather than using the native image
   // loading code of ResourceBundle.
-  //
-  // If |rtl| is RTL_ENABLED then the image is flipped in RTL locales.
-  gfx::Image& GetNativeImageNamed(int resource_id, ImageRTL rtl);
-
-  // Same as GetNativeImageNamed() except that RTL is not enabled.
   gfx::Image& GetNativeImageNamed(int resource_id);
 
   // Loads the raw bytes of a scale independent data resource.
