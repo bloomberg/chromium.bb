@@ -1097,12 +1097,12 @@ void ContainerNode::focusStateChanged()
     if (!layoutObject())
         return;
 
-    if (computedStyle()->affectedByFocus() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
-    else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
+    if (computedStyle()->affectedByFocus()) {
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+        setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
+    }
+    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByFocus())
         toElement(this)->pseudoStateChanged(CSSSelector::PseudoFocus);
-    else if (computedStyle()->affectedByFocus())
-        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Focus));
 
     LayoutTheme::theme().controlStateChanged(*layoutObject(), FocusControlState);
 }
@@ -1150,12 +1150,12 @@ void ContainerNode::setActive(bool down)
 
     // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (layoutObject()) {
-        if (computedStyle()->affectedByActive() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-            setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
-        else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
+        if (computedStyle()->affectedByActive()) {
+            StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+            setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
+        }
+        if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByActive())
             toElement(this)->pseudoStateChanged(CSSSelector::PseudoActive);
-        else if (computedStyle()->affectedByActive())
-            setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Active));
 
         LayoutTheme::theme().controlStateChanged(*layoutObject(), PressedControlState);
     }
@@ -1179,12 +1179,12 @@ void ContainerNode::setHovered(bool over)
         return;
     }
 
-    if (computedStyle()->affectedByHover() && computedStyle()->hasPseudoStyle(FIRST_LETTER))
-        setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
-    else if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
+    if (computedStyle()->affectedByHover()) {
+        StyleChangeType changeType = computedStyle()->hasPseudoStyle(FIRST_LETTER) ? SubtreeStyleChange : LocalStyleChange;
+        setNeedsStyleRecalc(changeType, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
+    }
+    if (isElementNode() && toElement(this)->childrenOrSiblingsAffectedByHover())
         toElement(this)->pseudoStateChanged(CSSSelector::PseudoHover);
-    else if (computedStyle()->affectedByHover())
-        setNeedsStyleRecalc(LocalStyleChange, StyleChangeReasonForTracing::createWithExtraData(StyleChangeReason::PseudoClass, StyleChangeExtraData::Hover));
 
     LayoutTheme::theme().controlStateChanged(*layoutObject(), HoverControlState);
 }
@@ -1317,9 +1317,6 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
     ASSERT(change >= UpdatePseudoElements || childNeedsStyleRecalc());
     ASSERT(!needsStyleRecalc());
 
-    if (change < Force && hasRareData() && childNeedsStyleRecalc())
-        checkForChildrenAdjacentRuleChanges();
-
     // This loop is deliberately backwards because we use insertBefore in the layout tree, and want to avoid
     // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
@@ -1339,33 +1336,6 @@ void ContainerNode::recalcChildStyle(StyleRecalcChange change)
             if (element->layoutObject())
                 lastTextNode = nullptr;
         }
-    }
-}
-
-void ContainerNode::checkForChildrenAdjacentRuleChanges()
-{
-    bool hasDirectAdjacentRules = childrenAffectedByDirectAdjacentRules();
-    bool hasIndirectAdjacentRules = childrenAffectedByIndirectAdjacentRules();
-
-    if (!hasDirectAdjacentRules && !hasIndirectAdjacentRules)
-        return;
-
-    unsigned forceCheckOfNextElementCount = 0;
-    bool forceCheckOfAnyElementSibling = false;
-    Document& document = this->document();
-
-    for (Element* child = ElementTraversal::firstChild(*this); child; child = ElementTraversal::nextSibling(*child)) {
-        bool childRulesChanged = child->needsStyleRecalc() && child->styleChangeType() >= SubtreeStyleChange;
-
-        if (forceCheckOfNextElementCount || forceCheckOfAnyElementSibling)
-            child->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
-
-        if (childRulesChanged && hasDirectAdjacentRules)
-            forceCheckOfNextElementCount = document.styleEngine().maxDirectAdjacentSelectors();
-        else if (forceCheckOfNextElementCount)
-            --forceCheckOfNextElementCount;
-
-        forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
 }
 
@@ -1434,7 +1404,8 @@ void ContainerNode::checkForSiblingStyleChanges(SiblingCheckType changeType, Nod
     // The + selector. We need to invalidate the first element following the change. It is the only possible element
     // that could be affected by this DOM change.
     if (childrenAffectedByDirectAdjacentRules() && nodeAfterChange) {
-        if (Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange))
+        Element* elementAfterChange = nodeAfterChange->isElementNode() ? toElement(nodeAfterChange) : ElementTraversal::nextSibling(*nodeAfterChange);
+        for (unsigned i = document().styleEngine().maxDirectAdjacentSelectors(); i && elementAfterChange; --i, elementAfterChange = ElementTraversal::nextSibling(*elementAfterChange))
             elementAfterChange->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
     }
 }

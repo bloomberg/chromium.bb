@@ -160,7 +160,6 @@ public:
 
     // FIXME: These methods should all be renamed to something better than "check",
     // since it's not clear that they alter the style bits of siblings and children.
-    void checkForChildrenAdjacentRuleChanges();
     enum SiblingCheckType { FinishedParsingChildren, SiblingElementInserted, SiblingElementRemoved };
     void checkForSiblingStyleChanges(SiblingCheckType, Node* nodeBeforeChange, Node* nodeAfterChange);
     void recalcChildStyle(StyleRecalcChange);

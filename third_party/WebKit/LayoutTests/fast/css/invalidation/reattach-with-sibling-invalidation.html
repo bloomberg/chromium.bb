@@ -27,10 +27,9 @@
     // Trigger lazyReattachIfAttached() -> detach().
     document.querySelector("input").type = "button";
 
-    // The expected count will be 2 when ContainerNode::checkForChildrenAdjacentRuleChanges()
-    // is removed. One for attaching the input, and one for the span.b recalc.
+    // One for attaching the input, and one for the span.b recalc.
     if (window.internals)
-        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "6");
+        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "2");
 
     shouldBeEqualToString("getComputedStyle(document.querySelector('.b')).color", "rgb(0, 128, 0)");
 </script>

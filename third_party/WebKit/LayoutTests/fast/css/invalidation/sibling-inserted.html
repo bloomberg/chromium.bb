@@ -52,14 +52,13 @@ test(function() {
     var t2 = document.createElement('div');
     t2.id = 't2';
     i2.parentNode.insertBefore(t2, i2);
-    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 5, "Subtree style recalc");
+    assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 4, "Subtree style recalc");
     assert_equals(getComputedStyle(r2).backgroundColor, "rgb(0, 128, 0)", "Background color is green after class change");
 }, "Insert before siblings");
 
 test(function() {
     var d3 = document.getElementById('d3');
     var r3 = document.getElementById('r3');
-    assert_true(!!window.eventSender, "This test only works with eventSender present");
 
     d3.parentNode.removeChild(d3);
     assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 3, "Subtree style recalc");

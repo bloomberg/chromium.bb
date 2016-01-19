@@ -1636,7 +1636,8 @@ void Element::detach(const AttachContext& context)
         document().userActionElements().didDetach(*this);
     }
 
-    document().styleEngine().styleInvalidator().clearInvalidation(*this);
+    if (context.clearInvalidation)
+        document().styleEngine().styleInvalidator().clearInvalidation(*this);
 
     if (svgFilterNeedsLayerUpdate())
         document().unscheduleSVGFilterLayerUpdateHack(*this);

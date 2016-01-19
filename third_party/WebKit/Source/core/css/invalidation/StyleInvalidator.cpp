@@ -177,12 +177,7 @@ bool StyleInvalidator::SiblingData::matchCurrentInvalidationSets(Element& elemen
 
         if (const DescendantInvalidationSet* descendants = invalidationSet.siblingDescendants()) {
             if (descendants->wholeSubtreeInvalid()) {
-                // Avoid directly setting SubtreeStyleChange on element, or ContainerNode::checkForChildrenAdjacentRuleChanges()
-                // may propagate the SubtreeStyleChange to our own siblings' subtrees.
-
-                for (Element* child = ElementTraversal::firstChild(element); child; child = ElementTraversal::nextSibling(*child)) {
-                    child->setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::SiblingSelector));
-                }
+                element.setNeedsStyleRecalc(SubtreeStyleChange, StyleChangeReasonForTracing::create(StyleChangeReason::StyleInvalidator));
                 return true;
             }
 
@@ -202,6 +197,9 @@ void StyleInvalidator::pushInvalidationSetsForElement(Element& element, Recursio
     for (const auto& invalidationSet : pendingInvalidations->siblings())
         siblingData.pushInvalidationSet(toSiblingInvalidationSet(*invalidationSet));
 
+    if (element.styleChangeType() >= SubtreeStyleChange)
+        return;
+
     if (!pendingInvalidations->descendants().isEmpty()) {
         for (const auto& invalidationSet : pendingInvalidations->descendants())
             recursionData.pushInvalidationSet(toDescendantInvalidationSet(*invalidationSet));
@@ -216,17 +214,21 @@ void StyleInvalidator::pushInvalidationSetsForElement(Element& element, Recursio
 
 ALWAYS_INLINE bool StyleInvalidator::checkInvalidationSetsAgainstElement(Element& element, RecursionData& recursionData, SiblingData& siblingData)
 {
-    if (element.styleChangeType() >= SubtreeStyleChange || recursionData.wholeSubtreeInvalid()) {
-        recursionData.setWholeSubtreeInvalid();
+    if (recursionData.wholeSubtreeInvalid())
         return false;
-    }
 
-    bool thisElementNeedsStyleRecalc = recursionData.matchesCurrentInvalidationSets(element);
-    if (UNLIKELY(!siblingData.isEmpty()))
-        thisElementNeedsStyleRecalc |= siblingData.matchCurrentInvalidationSets(element, recursionData);
+    bool thisElementNeedsStyleRecalc = false;
+    if (element.styleChangeType() >= SubtreeStyleChange) {
+        recursionData.setWholeSubtreeInvalid();
+    } else {
+        thisElementNeedsStyleRecalc = recursionData.matchesCurrentInvalidationSets(element);
+        if (UNLIKELY(!siblingData.isEmpty()))
+            thisElementNeedsStyleRecalc |= siblingData.matchCurrentInvalidationSets(element, recursionData);
+    }
 
     if (UNLIKELY(element.needsStyleInvalidation()))
         pushInvalidationSetsForElement(element, recursionData, siblingData);
+
     return thisElementNeedsStyleRecalc;
 }
 
