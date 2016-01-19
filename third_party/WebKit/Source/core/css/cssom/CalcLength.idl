@@ -5,19 +5,19 @@
     RaisesException=Constructor,
     RuntimeEnabled=CSSTypedOM
 ] interface CalcLength : LengthValue {
-    attribute double? px;
-    attribute double? percent;
-    attribute double? em;
-    attribute double? ex;
-    attribute double? ch;
-    attribute double? rem;
-    attribute double? vw;
-    attribute double? vh;
-    attribute double? vmin;
-    attribute double? vmax;
-    attribute double? cm;
-    attribute double? mm;
-    attribute double? in;
-    attribute double? pc;
-    attribute double? pt;
+    readonly attribute double? px;
+    readonly attribute double? percent;
+    readonly attribute double? em;
+    readonly attribute double? ex;
+    readonly attribute double? ch;
+    readonly attribute double? rem;
+    readonly attribute double? vw;
+    readonly attribute double? vh;
+    readonly attribute double? vmin;
+    readonly attribute double? vmax;
+    readonly attribute double? cm;
+    readonly attribute double? mm;
+    readonly attribute double? in;
+    readonly attribute double? pc;
+    readonly attribute double? pt;
 };

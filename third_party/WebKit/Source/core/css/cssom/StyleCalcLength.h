@@ -23,27 +23,26 @@ public:
         return create(length);
     }
 
-#define GETTER_SETTER_MACRO(name, capsName, index) \
-    double name(bool& isNull) { isNull = !has(index); return get(index); } \
-    void set##capsName(double value) { set(value, index); }
+#define GETTER_MACRO(name, index) \
+    double name(bool& isNull) { isNull = !has(index); return get(index); }
 
-    GETTER_SETTER_MACRO(px, Px, LengthUnit::Px)
-    GETTER_SETTER_MACRO(percent, Percent, LengthUnit::Percent)
-    GETTER_SETTER_MACRO(em, Em, LengthUnit::Em)
-    GETTER_SETTER_MACRO(ex, Ex, LengthUnit::Ex)
-    GETTER_SETTER_MACRO(ch, Ch, LengthUnit::Ch)
-    GETTER_SETTER_MACRO(rem, Rem, LengthUnit::Rem)
-    GETTER_SETTER_MACRO(vw, Vw, LengthUnit::Vw)
-    GETTER_SETTER_MACRO(vh, Vh, LengthUnit::Vh)
-    GETTER_SETTER_MACRO(vmin, Vmin, LengthUnit::Vmin)
-    GETTER_SETTER_MACRO(vmax, Vmax, LengthUnit::Vmax)
-    GETTER_SETTER_MACRO(cm, Cm, LengthUnit::Cm)
-    GETTER_SETTER_MACRO(mm, Mm, LengthUnit::Mm)
-    GETTER_SETTER_MACRO(in, In, LengthUnit::In)
-    GETTER_SETTER_MACRO(pc, Pc, LengthUnit::Pc)
-    GETTER_SETTER_MACRO(pt, Pt, LengthUnit::Pt)
+    GETTER_MACRO(px, LengthUnit::Px)
+    GETTER_MACRO(percent, LengthUnit::Percent)
+    GETTER_MACRO(em, LengthUnit::Em)
+    GETTER_MACRO(ex, LengthUnit::Ex)
+    GETTER_MACRO(ch, LengthUnit::Ch)
+    GETTER_MACRO(rem, LengthUnit::Rem)
+    GETTER_MACRO(vw, LengthUnit::Vw)
+    GETTER_MACRO(vh, LengthUnit::Vh)
+    GETTER_MACRO(vmin, LengthUnit::Vmin)
+    GETTER_MACRO(vmax, LengthUnit::Vmax)
+    GETTER_MACRO(cm, LengthUnit::Cm)
+    GETTER_MACRO(mm, LengthUnit::Mm)
+    GETTER_MACRO(in, LengthUnit::In)
+    GETTER_MACRO(pc, LengthUnit::Pc)
+    GETTER_MACRO(pt, LengthUnit::Pt)
 
-#undef GETTER_SETTER_MACRO
+#undef GETTER_MACRO
 
     String cssString() const override;
     PassRefPtrWillBeRawPtr<CSSValue> toCSSValue() const override;
