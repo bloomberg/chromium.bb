@@ -28,7 +28,6 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/omnibox/browser/in_memory_url_index.h"
-#include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 
 #if defined(USE_SYSTEM_PROTOBUF)
@@ -157,8 +156,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     size_t cursor_position,
     size_t max_matches,
     const std::string& languages,
-    bookmarks::BookmarkModel* bookmark_model,
-    TemplateURLService* template_url_service) {
+    bookmarks::BookmarkModel* bookmark_model) {
   // If cursor position is set and useful (not at either end of the
   // string), allow the search string to be broken at cursor position.
   // We do this by pretending there's a space where the cursor is.
@@ -253,9 +251,8 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
   scored_items =
       std::for_each(
           history_id_set.begin(), history_id_set.end(),
-          AddHistoryMatch(bookmark_model, template_url_service, *this,
-                          languages, lower_raw_string, lower_raw_terms,
-                          base::Time::Now())).ScoredMatches();
+          AddHistoryMatch(bookmark_model, *this, languages, lower_raw_string,
+                          lower_raw_terms, base::Time::Now())).ScoredMatches();
 
   // Select and sort only the top |max_matches| results.
   if (scored_items.size() > max_matches) {
@@ -1277,14 +1274,12 @@ URLIndexPrivateData::SearchTermCacheItem::~SearchTermCacheItem() {
 
 URLIndexPrivateData::AddHistoryMatch::AddHistoryMatch(
     bookmarks::BookmarkModel* bookmark_model,
-    TemplateURLService* template_url_service,
     const URLIndexPrivateData& private_data,
     const std::string& languages,
     const base::string16& lower_string,
     const String16Vector& lower_terms,
     const base::Time now)
     : bookmark_model_(bookmark_model),
-      template_url_service_(template_url_service),
       private_data_(private_data),
       languages_(languages),
       lower_string_(lower_string),
@@ -1326,7 +1321,7 @@ void URLIndexPrivateData::AddHistoryMatch::operator()(
         hist_item, visits, languages_, lower_string_, lower_terms_,
         lower_terms_to_word_starts_offsets_, starts_pos->second,
         bookmark_model_ && bookmark_model_->IsBookmarked(hist_item.url()),
-        template_url_service_, now_);
+        now_);
     if (match.raw_score > 0)
       scored_matches_.push_back(match);
   }

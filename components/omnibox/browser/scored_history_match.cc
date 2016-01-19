@@ -20,7 +20,6 @@
 #include "components/omnibox/browser/history_url_provider.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
-#include "components/search_engines/template_url_service.h"
 
 namespace {
 
@@ -131,7 +130,6 @@ ScoredHistoryMatch::ScoredHistoryMatch()
                          WordStarts(),
                          RowWordStarts(),
                          false,
-                         nullptr,
                          base::Time::Max()) {
 }
 
@@ -144,7 +142,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(
     const WordStarts& terms_to_word_starts_offsets,
     const RowWordStarts& word_starts,
     bool is_url_bookmarked,
-    TemplateURLService* template_url_service,
     base::Time now)
     : HistoryMatch(row, 0, false, false), raw_score(0) {
   // NOTE: Call Init() before doing any validity checking to ensure that the
@@ -155,16 +152,6 @@ ScoredHistoryMatch::ScoredHistoryMatch(
 
   GURL gurl = row.url();
   if (!gurl.is_valid())
-    return;
-
-  // Skip results corresponding to queries from the default search engine.
-  // These are low-quality, difficult-to-understand matches for users.
-  // SearchProvider should surface past queries in a better way.
-  TemplateURL* template_url = template_url_service ?
-      template_url_service->GetDefaultSearchProvider() : nullptr;
-  if (template_url &&
-      template_url->IsSearchURL(gurl,
-                                template_url_service->search_terms_data()))
     return;
 
   // Figure out where each search term appears in the URL and/or page title

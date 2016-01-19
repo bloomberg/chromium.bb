@@ -24,6 +24,8 @@
 #include "chrome/browser/autocomplete/in_memory_url_index_factory.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/search_engines/chrome_template_url_service_client.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
@@ -39,6 +41,8 @@
 #include "components/omnibox/browser/in_memory_url_index.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/search_engines/search_terms_data.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_utils.h"
 #include "sql/transaction.h"
@@ -201,6 +205,17 @@ class HistoryQuickProviderTest : public testing::Test {
     std::set<std::string> matches_;
   };
 
+  static scoped_ptr<KeyedService> CreateTemplateURLService(
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
+    return make_scoped_ptr(new TemplateURLService(
+        profile->GetPrefs(), make_scoped_ptr(new SearchTermsData), NULL,
+        scoped_ptr<TemplateURLServiceClient>(new ChromeTemplateURLServiceClient(
+            HistoryServiceFactory::GetForProfile(
+                profile, ServiceAccessType::EXPLICIT_ACCESS))),
+        NULL, NULL, base::Closure()));
+  }
+
   void SetUp() override;
   void TearDown() override;
 
@@ -269,6 +284,8 @@ void HistoryQuickProviderTest::SetUp() {
       profile_.get(), ServiceAccessType::EXPLICIT_ACCESS);
   EXPECT_TRUE(history_service_);
   provider_ = new HistoryQuickProvider(client_.get());
+  TemplateURLServiceFactory::GetInstance()->SetTestingFactoryAndUse(
+      profile_.get(), &HistoryQuickProviderTest::CreateTemplateURLService);
   FillData();
   InMemoryURLIndex* index =
       InMemoryURLIndexFactory::GetForProfile(profile_.get());
@@ -771,6 +788,32 @@ TEST_F(HistoryQuickProviderTest, PreventInlineAutocomplete) {
   // The above still holds even with an extra trailing slash.
   RunTest(ASCIIToUTF16("popularsitewithroot.com/"), true, expected_urls, true,
           ASCIIToUTF16("popularsitewithroot.com"), base::string16());
+}
+
+TEST_F(HistoryQuickProviderTest, CullSearchResults) {
+  // Set up a default search engine.
+  TemplateURLData data;
+  data.SetShortName(ASCIIToUTF16("TestEngine"));
+  data.SetKeyword(ASCIIToUTF16("TestEngine"));
+  data.SetURL("http://testsearch.com/?q={searchTerms}");
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(profile_.get());
+  TemplateURL* template_url = new TemplateURL(data);
+  template_url_service->Add(template_url);
+  template_url_service->SetUserSelectedDefaultSearchProvider(template_url);
+  template_url_service->Load();
+
+  // A search results page should not be returned when typing a query.
+  std::vector<std::string> expected_urls;
+  RunTest(ASCIIToUTF16("thequery"), false, expected_urls, false,
+          ASCIIToUTF16("anotherengine.com/?q=thequery"), base::string16());
+
+  // A search results page should not be returned when typing the engine URL.
+  expected_urls.clear();
+  expected_urls.push_back("http://testsearch.com/");
+  RunTest(ASCIIToUTF16("testsearch"), false, expected_urls, true,
+          ASCIIToUTF16("testsearch.com"),
+                    ASCIIToUTF16(".com"));
 }
 
 TEST_F(HistoryQuickProviderTest, DoesNotProvideMatchesOnFocus) {

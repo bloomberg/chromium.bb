@@ -16,7 +16,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/web_thread.h"
 
@@ -36,7 +35,6 @@ scoped_ptr<KeyedService> BuildInMemoryURLIndex(web::BrowserState* context) {
       ios::BookmarkModelFactory::GetForBrowserState(browser_state),
       ios::HistoryServiceFactory::GetForBrowserState(
           browser_state, ServiceAccessType::IMPLICIT_ACCESS),
-      ios::TemplateURLServiceFactory::GetForBrowserState(browser_state),
       web::WebThread::GetBlockingPool(), browser_state->GetStatePath(),
       browser_state->GetPrefs()->GetString(prefs::kAcceptLanguages),
       schemes_to_whilelist));
@@ -64,7 +62,6 @@ InMemoryURLIndexFactory::InMemoryURLIndexFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(ios::BookmarkModelFactory::GetInstance());
   DependsOn(ios::HistoryServiceFactory::GetInstance());
-  DependsOn(ios::TemplateURLServiceFactory::GetInstance());
 }
 
 InMemoryURLIndexFactory::~InMemoryURLIndexFactory() {}

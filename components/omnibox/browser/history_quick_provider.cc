@@ -27,6 +27,8 @@
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
+#include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_service.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -169,6 +171,10 @@ void HistoryQuickProvider::DoAutocomplete() {
   // they're visited.)  The strength of this reduction depends on the
   // likely score for the URL-what-you-typed result.
 
+  // |template_url_service| or |template_url| can be NULL in unit tests.
+  TemplateURLService* template_url_service = client()->GetTemplateURLService();
+  TemplateURL* template_url = template_url_service ?
+      template_url_service->GetDefaultSearchProvider() : NULL;
   int max_match_score = matches.begin()->raw_score;
   if (will_have_url_what_you_typed_match_first) {
     max_match_score = std::min(max_match_score,
@@ -177,11 +183,18 @@ void HistoryQuickProvider::DoAutocomplete() {
   for (ScoredHistoryMatches::const_iterator match_iter = matches.begin();
        match_iter != matches.end(); ++match_iter) {
     const ScoredHistoryMatch& history_match(*match_iter);
-    // Set max_match_score to the score we'll assign this result.
-    max_match_score = std::min(max_match_score, history_match.raw_score);
-    matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
-    // Mark this max_match_score as being used.
-    max_match_score--;
+    // Culls results corresponding to queries from the default search engine.
+    // These are low-quality, difficult-to-understand matches for users, and the
+    // SearchProvider should surface past queries in a better way anyway.
+    if (!template_url ||
+        !template_url->IsSearchURL(history_match.url_info.url(),
+                                   template_url_service->search_terms_data())) {
+      // Set max_match_score to the score we'll assign this result:
+      max_match_score = std::min(max_match_score, history_match.raw_score);
+      matches_.push_back(QuickMatchToACMatch(history_match, max_match_score));
+      // Mark this max_match_score as being used:
+      max_match_score--;
+    }
   }
 }
 

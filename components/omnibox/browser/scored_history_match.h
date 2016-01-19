@@ -18,7 +18,6 @@
 #include "components/omnibox/browser/in_memory_url_index_types.h"
 
 class ScoredHistoryMatchTest;
-class TemplateURLService;
 
 // An HistoryMatch that has a score as well as metrics defining where in the
 // history item's URL and/or page title matches have occurred.
@@ -35,14 +34,12 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
   // Initializes the ScoredHistoryMatch with a raw score calculated for the
   // history item given in |row| with recent visits as indicated in |visits|. It
   // first determines if the row qualifies by seeing if all of the terms in
-  // |terms_vector| occur in |row| and checking if the URL does not come from
-  // the default search provider (obtained from |template_url_service|).  If
-  // both those constraints are true, calculates a raw score.  This raw score
-  // is in part determined by whether the matches occur at word boundaries, the
-  // locations of which are stored in |word_starts|.  For some terms, it's
-  // appropriate to look for the word boundary within the term. For instance,
-  // the term ".net" should look for a word boundary at the "n". These offsets
-  // (".net" should have an offset of 1) come from
+  // |terms_vector| occur in |row|.  If so, calculates a raw score.  This raw
+  // score is in part determined by whether the matches occur at word
+  // boundaries, the locations of which are stored in |word_starts|.  For some
+  // terms, it's appropriate to look for the word boundary within the term. For
+  // instance, the term ".net" should look for a word boundary at the "n". These
+  // offsets (".net" should have an offset of 1) come from
   // |terms_to_word_starts_offsets|. |is_url_bookmarked| indicates whether the
   // match's URL is referenced by any bookmarks, which can also affect the raw
   // score.  The raw score allows the matches to be ordered and can be used to
@@ -57,7 +54,6 @@ struct ScoredHistoryMatch : public history::HistoryMatch {
                      const WordStarts& terms_to_word_starts_offsets,
                      const RowWordStarts& word_starts,
                      bool is_url_bookmarked,
-                     TemplateURLService* template_url_service,
                      base::Time now);
 
   ~ScoredHistoryMatch();

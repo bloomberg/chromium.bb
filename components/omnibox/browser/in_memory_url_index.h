@@ -27,7 +27,6 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/omnibox/browser/scored_history_match.h"
-#include "components/search_engines/template_url_service.h"
 
 class HistoryQuickProviderTest;
 
@@ -108,7 +107,6 @@ class InMemoryURLIndex : public KeyedService,
   // characters.
   InMemoryURLIndex(bookmarks::BookmarkModel* bookmark_model,
                    history::HistoryService* history_service,
-                   TemplateURLService* template_url_service,
                    base::SequencedWorkerPool* worker_pool,
                    const base::FilePath& history_dir,
                    const std::string& languages,
@@ -279,10 +277,6 @@ class InMemoryURLIndex : public KeyedService,
 
   // The HistoryService; may be null when testing.
   history::HistoryService* history_service_;
-
-  // The TemplateURLService; may be null when testing.  Used to identify URLs
-  // that are from the default search provider.
-  TemplateURLService* template_url_service_;
 
   // Directory where cache file resides. This is, except when unit testing,
   // the same directory in which the history database is found. It should never

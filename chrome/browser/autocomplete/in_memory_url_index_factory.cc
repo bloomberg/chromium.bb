@@ -10,7 +10,6 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -35,7 +34,6 @@ InMemoryURLIndexFactory::InMemoryURLIndexFactory()
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(BookmarkModelFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
-  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 InMemoryURLIndexFactory::~InMemoryURLIndexFactory() {
@@ -51,7 +49,6 @@ KeyedService* InMemoryURLIndexFactory::BuildServiceInstanceFor(
       BookmarkModelFactory::GetForProfile(profile),
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS),
-      TemplateURLServiceFactory::GetForProfile(profile),
       content::BrowserThread::GetBlockingPool(), profile->GetPath(),
       profile->GetPrefs()->GetString(prefs::kAcceptLanguages),
       chrome_schemes_to_whitelist);
