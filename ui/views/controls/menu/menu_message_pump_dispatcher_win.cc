@@ -28,21 +28,6 @@ uint32_t MenuMessagePumpDispatcher::Dispatch(const MSG& msg) {
       menu_controller_->exit_type() != MenuController::EXIT_DESTROYED) {
     // NOTE: we don't get WM_ACTIVATE or anything else interesting in here.
     switch (msg.message) {
-      case WM_CONTEXTMENU: {
-        MenuItemView* item = menu_controller_->pending_state_.item;
-        if (item && item->GetRootMenuItem() != item) {
-          gfx::Point screen_loc(0, item->height());
-          View::ConvertPointToScreen(item, &screen_loc);
-          ui::MenuSourceType source_type = ui::MENU_SOURCE_MOUSE;
-          if (GET_X_LPARAM(msg.lParam) == -1 && GET_Y_LPARAM(msg.lParam) == -1)
-            source_type = ui::MENU_SOURCE_KEYBOARD;
-          item->GetDelegate()->ShowContextMenu(
-              item, item->GetCommand(), screen_loc, source_type);
-        }
-        should_perform_default = false;
-        break;
-      }
-
       // NOTE: focus wasn't changed when the menu was shown. As such, don't
       // dispatch key events otherwise the focused window will get the events.
       case WM_KEYDOWN: {
