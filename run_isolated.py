@@ -145,10 +145,7 @@ def run_command(command, cwd, tmp_dir, hard_timeout, grace_period):
   if sys.platform == 'darwin':
     env['TMPDIR'] = tmp_dir.encode('ascii')
   elif sys.platform == 'win32':
-    # Temporarily disable this behavior on Windows while investigating
-    # https://crbug.com/533552.
-    # env['TEMP'] = tmp_dir.encode('ascii')
-    pass
+    env['TEMP'] = tmp_dir.encode('ascii')
   else:
     env['TMP'] = tmp_dir.encode('ascii')
   exit_code = None
