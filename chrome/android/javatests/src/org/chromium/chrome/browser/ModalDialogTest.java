@@ -14,7 +14,6 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
@@ -170,9 +169,8 @@ public class ModalDialogTest extends ChromeActivityTestCaseBase<ChromeActivity> 
      * Verifies beforeunload dialogs are shown and they block/allow navigation
      * as appropriate.
      */
-    //@MediumTest
-    //@Feature({"Browser", "Main"})
-    @DisabledTest //crbug/270593
+    @MediumTest
+    @Feature({"Browser", "Main"})
     public void testBeforeUnloadDialog()
             throws InterruptedException, TimeoutException, ExecutionException {
         loadUrl(BEFORE_UNLOAD_URL);
