@@ -5,7 +5,6 @@
 #include "core/page/PrintContext.h"
 
 #include "core/dom/Document.h"
-
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLElement.h"
 #include "core/layout/LayoutTestHelper.h"
@@ -17,9 +16,9 @@
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/testing/SkiaForCoreTesting.h"
 #include "platform/text/TextStream.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
 
