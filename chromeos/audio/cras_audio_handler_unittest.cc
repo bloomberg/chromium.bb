@@ -2609,6 +2609,64 @@ TEST_F(CrasAudioHandlerTest, ActiveNodeLostAfterResume) {
   EXPECT_TRUE(headphone_resumed->active);
 }
 
+// In the mirror mode, when the device resumes after being suspended, the hmdi
+// node will be lost first, then re-appear with a different node id, but with
+// the same stable id. If it is set as the non-active node  by user before
+// suspend/resume, it should remain inactive after the device resumes even
+// if it has a higher priority than the current active node.
+// crbug.com/443014.
+TEST_F(CrasAudioHandlerTest, HDMIRemainInactiveAfterSuspendResume) {
+  AudioNodeList audio_nodes;
+  AudioNode internal_speaker(kInternalSpeaker);
+  audio_nodes.push_back(internal_speaker);
+  AudioNode hdmi_output(kHDMIOutput);
+  audio_nodes.push_back(hdmi_output);
+  SetUpCrasAudioHandler(audio_nodes);
+
+  // Verify the hdmi is selected as the active output since it has a higher
+  // priority.
+  AudioDeviceList audio_devices;
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(audio_nodes.size(), audio_devices.size());
+  EXPECT_EQ(hdmi_output.id, cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Manually set the active output to internal speaker.
+  cras_audio_handler_->SwitchToDevice(AudioDevice(internal_speaker), true);
+  EXPECT_EQ(internal_speaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Simulate the suspend and resume of the device during mirror mode. The HDMI
+  // node will be lost first.
+  audio_nodes.clear();
+  internal_speaker.active = true;
+  audio_nodes.push_back(internal_speaker);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the HDMI node is lost, and internal speaker is still the active
+  // node.
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(1u, audio_devices.size());
+  EXPECT_EQ(internal_speaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+
+  // Simulate the re-appearing of the hdmi node, which comes with a new id,
+  // but the same stable device id.
+  AudioNode hdmi_output_2(hdmi_output);
+  hdmi_output_2.id = 20006;
+  hdmi_output_2.plugged_time = internal_speaker.plugged_time + 100;
+  audio_nodes.push_back(hdmi_output_2);
+  EXPECT_NE(hdmi_output.id, hdmi_output_2.id);
+  EXPECT_EQ(hdmi_output.stable_device_id, hdmi_output_2.stable_device_id);
+  ChangeAudioNodes(audio_nodes);
+
+  // Verify the hdmi node is not set the active, and the current active node
+  // , the internal speaker, remains active.
+  cras_audio_handler_->GetAudioDevices(&audio_devices);
+  EXPECT_EQ(2u, audio_devices.size());
+  EXPECT_EQ(internal_speaker.id,
+            cras_audio_handler_->GetPrimaryActiveOutputNode());
+}
+
 // Test the case in which there are two NodesChanged signal for discovering
 // output devices, and there is race between NodesChange and SetActiveOutput
 // during this process. See crbug.com/478968.
