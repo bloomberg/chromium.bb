@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.media.remote;
 
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
@@ -203,23 +202,6 @@ public interface MediaRouteController extends TransportControl.Listener {
     boolean currentRouteSupportsRemotePlayback();
 
     /**
-     * Checks if we want to reconnect, and if so starts trying to do so. Otherwise clears out the
-     * persistent request to reconnect.
-     */
-    boolean reconnectAnyExistingRoute();
-
-    /**
-     * Sets the video URL when it becomes known.
-     *
-     * This is the original video URL but if there's URL redirection, it will change as resolved by
-     * {@link MediaUrlResolver}.
-     *
-     * @param uri The video URL.
-     * @param userAgent The browser user agent.
-     */
-    void setDataSource(Uri uri, String cookies, String userAgent);
-
-    /**
      * Setup this object to discover new routes and register the necessary players.
      */
     void prepareMediaRoute();
@@ -247,14 +229,6 @@ public interface MediaRouteController extends TransportControl.Listener {
      * @return true if this is currently using the default route, false if not.
      */
     boolean routeIsDefaultRoute();
-
-    /**
-     * Called to prepare the remote playback asyncronously. onPrepared() of the current remote media
-     * player object is called when the player is ready.
-     *
-     * @param startPositionMillis indicates where in the stream to start playing
-     */
-    void prepareAsync(String frameUrl, long startPositionMillis);
 
     /**
      * Sets the remote volume of the current route.
@@ -348,11 +322,14 @@ public interface MediaRouteController extends TransportControl.Listener {
 
     /**
      * Called when a new route has been selected
-     * @param player TODO
+     * @param player The player {@link MediaStateListener} that initiated the connection
      * @param router The MediaRouter.
      * @param route The selected route.
      */
     void onRouteSelected(MediaStateListener player, MediaRouter router, RouteInfo route);
 
-
+    /**
+     * @return The Uri of the currently playing video
+     */
+    @VisibleForTesting String getUriPlaying();
 }

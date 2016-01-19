@@ -131,9 +131,8 @@ public class CastSwitchVideoTest extends CastTestBase {
         startSecondVideo.run();
 
         // Check that we are still casting the default video
-        assertEquals("The first video is not casting",
-                TestHttpServerClient.getUrl(DEFAULT_VIDEO),
-                RemotePlaybackSettings.getUriPlaying(getActivity()));
+        assertEquals("The first video is not casting", TestHttpServerClient.getUrl(DEFAULT_VIDEO),
+                getUriPlaying());
 
         // Check that the second video is still there and paused
         final Tab tab = getActivity().getActivityTab();

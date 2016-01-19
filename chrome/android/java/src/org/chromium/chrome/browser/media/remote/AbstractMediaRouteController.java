@@ -115,11 +115,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         }
 
         @Override
-        public void onRouteAdded(MediaRouter router, RouteInfo route) {
-            onRouteAddedEvent(router, route);
-        }
-
-        @Override
         public void onRouteChanged(MediaRouter router, RouteInfo route) {
             // We only care about changes to the current route.
             if (!route.equals(getCurrentRoute())) return;
@@ -164,7 +159,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
     private RouteInfo mCurrentRoute;
     private boolean mDebug;
     private final DeviceDiscoveryCallback mDeviceDiscoveryCallback;;
-    private String mDeviceId;
     private final DeviceSelectionCallback mDeviceSelectionCallback;
 
     private final Handler mHandler;
@@ -260,7 +254,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         if (getMediaRouter() != null) {
             getMediaRouter().getDefaultRoute().select();
             registerRoute(getMediaRouter().getDefaultRoute());
-            RemotePlaybackSettings.setDeviceId(getContext(), null);
         }
     }
 
@@ -276,10 +269,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
     protected final RouteInfo getCurrentRoute() {
         return mCurrentRoute;
-    }
-
-    protected final String getDeviceId() {
-        return mDeviceId;
     }
 
     protected final Handler getHandler() {
@@ -372,9 +361,11 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         resume();
     }
 
-    protected abstract void onRouteAddedEvent(MediaRouter router, RouteInfo route);
+    protected void onRouteAddedEvent(MediaRouter router, RouteInfo route) {
+    };
 
-    // TODO: Merge with onRouteSelected(). Needs two sided patch for downstream implementations
+    // TODO(aberent): Merge with onRouteSelected(). Needs two sided patch for downstream
+    // implementations
     protected void onRouteSelectedEvent(MediaRouter router, RouteInfo route) {
     }
 
@@ -406,13 +397,7 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         mCurrentRoute = route;
 
         if (route != null) {
-            setDeviceId(route.getId());
-            if (mDebug) Log.d(TAG, "Selected route " + getDeviceId());
-            if (!route.isDefault()) {
-                RemotePlaybackSettings.setDeviceId(getContext(), getDeviceId());
-            }
-        } else {
-            RemotePlaybackSettings.setDeviceId(getContext(), null);
+            if (mDebug) Log.d(TAG, "Selected route " + route.getId());
         }
     }
 
@@ -450,10 +435,6 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         }
 
         if (mMediaStateListener != null) mMediaStateListener.onError();
-    }
-
-    protected void setDeviceId(String mDeviceId) {
-        this.mDeviceId = mDeviceId;
     }
 
     @Override
@@ -568,22 +549,12 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         if (mMediaStateListener != null) mMediaStateListener.onPlaybackStateChanged(mPlaybackState);
 
         if (oldState != mPlaybackState) {
-            // We need to persist our state in case we get killed.
-            RemotePlaybackSettings.setLastVideoState(getContext(), mPlaybackState.name());
 
             switch (mPlaybackState) {
                 case PLAYING:
-                    RemotePlaybackSettings.setRemainingTime(getContext(),
-                            getDuration() - getPosition());
-                    RemotePlaybackSettings.setLastPlayedTime(getContext(),
-                            System.currentTimeMillis());
-                    RemotePlaybackSettings.setShouldReconnectToRemote(getContext(),
-                            !mCurrentRoute.isDefault());
                     onCasting();
                     break;
                 case PAUSED:
-                    RemotePlaybackSettings.setShouldReconnectToRemote(getContext(),
-                            !mCurrentRoute.isDefault());
                     onCasting();
                     break;
                 case FINISHED:
@@ -610,13 +581,20 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
 
     @Override
     public Bitmap getPoster() {
-        if (mMediaStateListener == null) return null;
-        return mMediaStateListener.getPosterBitmap();
+        if (getMediaStateListener() == null) return null;
+        return getMediaStateListener().getPosterBitmap();
     }
 
+    /**
+     * Called to prepare the remote playback asyncronously. onPrepared() of the current remote media
+     * player object is called when the player is ready.
+     *
+     * @param startPositionMillis indicates where in the stream to start playing
+     */
+    protected abstract void prepareAsync(String frameUrl, long startPositionMillis);
+
     // TODO(aberent): Temp to change args while avoiding need for two sided patch for YT.
-    @Override
-    public void setDataSource(Uri uri, String cookies, String userAgent) {
+    void setDataSource(Uri uri, String cookies, String userAgent) {
         setDataSource(uri, cookies);
     };
 
@@ -628,4 +606,14 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
      * @param cookies
      */
     public void setDataSource(Uri uri, String cookies) {};
+
+    protected boolean reconnectAnyExistingRoute() {
+        // Temp version to avoid two sided patch while removing
+        return false;
+    };
+
+    @Override
+    public String getUriPlaying() {
+        return null;
+    }
 }

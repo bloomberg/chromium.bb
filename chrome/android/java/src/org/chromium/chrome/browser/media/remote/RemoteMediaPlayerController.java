@@ -55,8 +55,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     // points to mDefaultRouteSelector, mYouTubeRouteSelector or null
     private MediaRouteController mCurrentRouteController;
 
-    private boolean mFirstConnection = true;
-
     // This is a key for meta-data in the package manifest.
     private static final String REMOTE_MEDIA_PLAYERS_KEY =
             "org.chromium.content.browser.REMOTE_MEDIA_PLAYERS";
@@ -161,11 +159,6 @@ public class RemoteMediaPlayerController implements MediaRouteController.UiListe
     private void onStateReset(MediaRouteController controller) {
 
         if (!controller.initialize()) return;
-
-        if (mFirstConnection) {
-            controller.reconnectAnyExistingRoute();
-            mFirstConnection = false;
-        }
 
         if (mNotificationControl != null) {
             mNotificationControl.setRouteController(controller);

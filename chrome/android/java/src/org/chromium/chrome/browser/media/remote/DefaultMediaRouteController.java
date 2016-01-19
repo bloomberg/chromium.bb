@@ -50,9 +50,6 @@ import javax.annotation.Nullable;
  * remotely meaning that we don't have to start the session but to replace the current video with
  * the new one
  *
- *  - the reconnect: if Clank crashes, we need to try to reconnect to the existing session and
- * continue controlling the currently playing video.
- *
  *  Casting the first video takes three intents sent to the selected media route:
  * ACTION_START_SESSION, ACTION_SYNC_STATUS and ACTION_PLAY. The first one is sent before anything
  * else. We get the session id from the result bundle of the intent but need to wait until the
@@ -60,19 +57,8 @@ import javax.annotation.Nullable;
  * intent to update the media item status and pass the PendingIntent for the media item status
  * events to the Cast MRP. Finally we send the video URL via the ACTION_PLAY intent.
  *
- *  Casting the second video should only take one ACTION_PLAY intent if the session is still active.
- * Otherwise, the scenario is the same as for the first video. However, due to the crbug.com/336188
- * we need to restart the session for each ACTION_PLAY so we go through the same process as above.
- *
- *  In order to reconnect, we need to programmatically select the previously selected media route.
- * To do this we send an ACTION_START_SESSION with the old session ID. This is not clearly
- * documented in the Android documentation, but seems to only succeed if the session still exists.
- * Otherwise we need to start a new session.
- *
- *  Note that, if the Chrome cast notification restarts following a crash, instances of this class
- * may exist before the C++ library has been loaded. As such this class should avoid using anything
- * that might use the C++ library (almost anything else in Chrome) or check that the library is
- * loaded before using them (as it does for recording UMA statistics).
+ *  Casting the second video to the same target device should only take one ACTION_PLAY intent if
+ * the session is still active. Otherwise, the scenario is the same as for the first video.
  */
 public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
@@ -104,9 +90,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private BroadcastReceiver mSessionStatusBroadcastReceiver;
     private PendingIntent mMediaStatusUpdateIntent;
     private BroadcastReceiver mMediaStatusBroadcastReceiver;
-    private boolean mReconnecting = false;
 
-    private Uri mVideoUriToStart;
     private String mPreferredTitle;
     private long mStartPositionMillis;
 
@@ -228,86 +212,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    public boolean reconnectAnyExistingRoute() {
-        String deviceId = RemotePlaybackSettings.getDeviceId(getContext());
-        RouteInfo defaultRoute = getMediaRouter().getDefaultRoute();
-        if (deviceId == null || deviceId.equals(defaultRoute.getId()) || !shouldReconnect()) {
-            RemotePlaybackSettings.setShouldReconnectToRemote(getContext(), false);
-            return false;
-        }
-        mReconnecting = true;
-        selectDevice(deviceId);
-        getHandler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mReconnecting) {
-                    Log.d(TAG, "Reconnection timed out");
-                    // We have been trying to reconnect for too long. Give up and save battery.
-                    mReconnecting = false;
-                    release();
-                }
-            }
-        }, CONNECTION_FAILURE_NOTIFICATION_DELAY_MS);
-        return true;
-    }
-
-    private boolean shouldReconnect() {
-        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_CAST_RECONNECTION)) {
-            if (mDebug) Log.d(TAG, "Cast reconnection disabled");
-            return false;
-        }
-        boolean reconnect = false;
-        if (RemotePlaybackSettings.getShouldReconnectToRemote(getContext())) {
-            String lastState = RemotePlaybackSettings.getLastVideoState(getContext());
-            if (lastState != null) {
-                PlayerState state = PlayerState.valueOf(lastState);
-                if (state == PlayerState.PLAYING || state == PlayerState.LOADING) {
-                    // If we were playing when we got killed, check the time to
-                    // see if it's still
-                    // plausible that the remote video is playing currently
-                    long remainingPlaytime = RemotePlaybackSettings.getRemainingTime(getContext());
-                    long lastPlayedTime = RemotePlaybackSettings.getLastPlayedTime(getContext());
-                    long currentTime = System.currentTimeMillis();
-                    if (currentTime < lastPlayedTime + remainingPlaytime) {
-                        reconnect = true;
-                    }
-                } else if (state == PlayerState.PAUSED) {
-                    reconnect = true;
-                }
-            }
-        }
-        if (mDebug) Log.d(TAG, "shouldReconnect returning: " + reconnect);
-        return reconnect;
-    }
-
-    /**
-     * Tries to select a device with the given device ID. The device ID is cached so that if the
-     * route does not exist yet, we will connect to it as soon as it comes back up again
-     *
-     * @param deviceId the ID of the device to connect to
-     */
-    private void selectDevice(String deviceId) {
-        if (deviceId == null) {
-            release();
-            return;
-        }
-
-        setDeviceId(deviceId);
-
-        if (mDebug) Log.d(TAG, "Trying to select " + getDeviceId());
-
-        // See if we can select the device at this point.
-        if (getMediaRouter() != null) {
-            for (MediaRouter.RouteInfo route : getMediaRouter().getRoutes()) {
-                if (deviceId.equals(route.getId())) {
-                    route.select();
-                    break;
-                }
-            }
-        }
-    }
-
-    @Override
     public void resume() {
         if (mCurrentItemId == null) return;
 
@@ -360,40 +264,27 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     /**
      * Plays the given Uri on the currently selected player. This will replace any currently playing
      * video
-     *
-     * @param videoUri Uri of the video to play
      * @param preferredTitle the preferred title of the current playback session to display
      * @param startPositionMillis from which to start playing.
      */
-    private void playUri(final Uri videoUri,
-            @Nullable final String preferredTitle, final long startPositionMillis) {
-
-        RecordCastAction.castMediaType(MediaUrlResolver.getMediaType(videoUri.toString()));
+    private void playUri(@Nullable final String preferredTitle, final long startPositionMillis) {
+        RecordCastAction.castMediaType(MediaUrlResolver.getMediaType(mLocalVideoUri.toString()));
         installBroadcastReceivers();
-
-        // Check if we are reconnecting or have reconnected and are playing the same video
-        if ((mReconnecting || mCurrentSessionId != null)
-                && videoUri.toString().equals(RemotePlaybackSettings.getUriPlaying(getContext()))) {
-            return;
-        }
 
         // If the session is already started (meaning we are casting a video already), we simply
         // load the new URL with one ACTION_PLAY intent.
         if (mCurrentSessionId != null) {
-            if (mDebug) Log.d(TAG, "Playing a new url: " + videoUri);
-
-            RemotePlaybackSettings.setUriPlaying(getContext(), videoUri.toString());
+            if (mDebug) Log.d(TAG, "Playing a new url: " + mLocalVideoUri);
 
             // We keep the same session so only clear the playing item status.
             clearItemState();
-            startPlayback(videoUri, preferredTitle, startPositionMillis);
+            startPlayback(preferredTitle, startPositionMillis);
             return;
         }
 
-        RemotePlaybackSettings.setPlayerInUse(getContext(), getCastReceiverId());
         if (mDebug) {
             Log.d(TAG, "Sending stream to app: " + getCastReceiverId());
-            Log.d(TAG, "Url: " + videoUri);
+            Log.d(TAG, "Url: " + mLocalVideoUri);
         }
 
         startSession(true, null, new ResultBundleHandler() {
@@ -401,8 +292,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             public void onResult(Bundle data) {
                 configureNewSession(data);
 
-                mVideoUriToStart = videoUri;
-                RemotePlaybackSettings.setUriPlaying(getContext(), videoUri.toString());
                 mPreferredTitle = preferredTitle;
                 mStartPositionMillis = startPositionMillis;
                 // Make sure we get a session status. If the session becomes active
@@ -463,12 +352,12 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         });
     }
 
-    private void startPlayback(final Uri videoUri, @Nullable final String preferredTitle,
-            final long startPositionMillis) {
+    private void startPlayback(
+            @Nullable final String preferredTitle, final long startPositionMillis) {
         setUnprepared();
         Intent intent = new Intent(MediaControlIntent.ACTION_PLAY);
         intent.addCategory(MediaControlIntent.CATEGORY_REMOTE_PLAYBACK);
-        intent.setDataAndType(videoUri, MIME_TYPE);
+        intent.setDataAndType(mLocalVideoUri, MIME_TYPE);
         intent.putExtra(MediaControlIntent.EXTRA_SESSION_ID, mCurrentSessionId);
         intent.putExtra(MediaControlIntent.EXTRA_ITEM_STATUS_UPDATE_RECEIVER,
                 mMediaStatusUpdateIntent);
@@ -552,19 +441,11 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         if (getMediaStateListener() != null) getMediaStateListener().onRouteUnselected();
         setMediaStateListener(null);
 
-        stopAndDisconnect();
-    }
-
-    /**
-     * Stop the current remote playback and release all associated resources. Resources will be
-     * released even if the stop operation fails.
-     */
-    private void stopAndDisconnect() {
         if (mediaRouterInitializationFailed()) return;
         if (mCurrentSessionId == null) {
             // This can happen if we disconnect after a failure (because the
             // media could not be casted).
-            disconnect(true);
+            disconnect();
             return;
         }
 
@@ -605,28 +486,24 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                 }
                 RecordCastAction.castEndedTimeRemaining(mStreamDuration,
                         mStreamDuration - getPosition());
-                disconnect(true);
+                disconnect();
             }
 
             @Override
             public void onError(String message, Bundle data) {
-                disconnect(true);
+                disconnect();
             }
         });
     }
 
+
     /**
      * Disconnect from the remote screen without stopping the media playing. use release() for
      * disconnect + stop.
-     *
-     * @param finishedWithRoute true if finished with route and remote device, false if just
-     *        shutting down Chrome.
      */
-    private void disconnect(boolean finishedWithRoute) {
-        if (finishedWithRoute) {
-            clearStreamState();
-            clearMediaRoute();
-        }
+    private void disconnect() {
+        clearStreamState();
+        clearMediaRoute();
 
         if (mSessionStatusBroadcastReceiver != null) {
             getContext().unregisterReceiver(mSessionStatusBroadcastReceiver);
@@ -640,16 +517,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
         stopWatchingRouteSelection();
         removeAllListeners();
-    }
-
-    @Override
-    protected void onRouteAddedEvent(MediaRouter router, RouteInfo route) {
-        if (mDebug) Log.d(TAG, "Added route " + route);
-        if (getDeviceId() != null && getDeviceId().equals(route.getId())) {
-            // This is the route we are waiting to connect to, select it.
-            if (mDebug) Log.d(TAG, "Selecting Added Device " + route.getName());
-            route.select();
-        }
     }
 
     @Override
@@ -667,33 +534,11 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
             return;
         }
 
-        registerRoute(route);
-        if (shouldReconnect()) {
-            startSession(false, RemotePlaybackSettings.getSessionId(getContext()),
-                    new ResultBundleHandler() {
-                        @Override
-                        public void onResult(Bundle data) {
-                            configureNewSession(data);
-                            setUnprepared();
-                            mReconnecting = false;
-                            // Make sure we get a session status. If the session becomes active
-                            // immediately then the broadcast session status can arrive before we
-                            // have the session id, so this ensures we get it whatever happens.
-                            getSessionStatus(mCurrentSessionId);
-                        }
-
-                        @Override
-                        public void onError(String message, Bundle data) {
-                            // Ignore errors, the connection sometimes is bouncy on reconnection,
-                            // and the reconnection timer is still running so will tidy up if
-                            // we never manage to connect.
-                        }
-                    });
-        } else {
+        if (route != getCurrentRoute()) {
+            registerRoute(route);
             clearStreamState();
-            mReconnecting = false;
-            mLastKnownStreamPosition = 0;
         }
+        mLastKnownStreamPosition = 0;
 
         notifyRouteSelected(route);
     }
@@ -763,24 +608,16 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
      */
     protected void onActivitiesDestroyed() {
         ApplicationStatus.unregisterApplicationStateListener(mApplicationStateListener);
-        // It is important to not clear the stream state here to let Chrome
-        // reconnect to a session upon startup.
-        disconnect(false);
+        disconnect();
     }
 
     /**
      * Clear the session and the currently playing item (if any).
      */
     protected void clearStreamState() {
-        mVideoUriToStart = null;
         mLocalVideoUri = null;
         mCurrentSessionId = null;
         clearItemState();
-
-        if (getContext() != null) {
-            RemotePlaybackSettings.setShouldReconnectToRemote(getContext(), false);
-            RemotePlaybackSettings.setUriPlaying(getContext(), null);
-        }
     }
 
     @Override
@@ -822,9 +659,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                     @Override
                     public void onResult(Bundle data) {
                         processMediaStatusBundle(data);
-                        if (mVideoUriToStart != null) {
-                            startPlayback(mVideoUriToStart, mPreferredTitle, mStartPositionMillis);
-                            mVideoUriToStart = null;
+                        if (mLocalVideoUri != null) {
+                            startPlayback(mPreferredTitle, mStartPositionMillis);
                         }
                     }
 
@@ -1018,7 +854,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    public void setDataSource(Uri uri, String cookies, String userAgent) {
+    protected void setDataSource(Uri uri, String cookies, String userAgent) {
         if (mDebug) Log.d(TAG, "setDataSource called, uri = " + uri);
         mLocalVideoUri = uri;
         mLocalVideoCookies = cookies;
@@ -1026,7 +862,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    public void prepareAsync(String frameUrl, long startPositionMillis) {
+    protected void prepareAsync(String frameUrl, long startPositionMillis) {
         if (mDebug) {
             Log.d(TAG, "prepareAsync called, mLocalVideoUri = " + mLocalVideoUri + ", pos = "
                             + startPositionMillis);
@@ -1049,7 +885,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private void playMedia() {
         String title = null;
         if (getMediaStateListener() != null) title = getMediaStateListener().getTitle();
-        playUri(mLocalVideoUri, title, mStartPositionMillis);
+        playUri(title, mStartPositionMillis);
     }
 
     private void showMessageToast(String message) {
@@ -1060,7 +896,12 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private void configureNewSession(Bundle data) {
         mCurrentSessionId = data.getString(MediaControlIntent.EXTRA_SESSION_ID);
         mSessionState = MediaSessionStatus.SESSION_STATE_INVALIDATED;
-        RemotePlaybackSettings.setSessionId(getContext(), mCurrentSessionId);
         if (mDebug) Log.d(TAG, "Got a session id: " + mCurrentSessionId);
+    }
+
+    @Override
+    public String getUriPlaying() {
+        if (mLocalVideoUri == null) return null;
+        return mLocalVideoUri.toString();
     }
 }

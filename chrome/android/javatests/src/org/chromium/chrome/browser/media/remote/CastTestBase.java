@@ -111,6 +111,8 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     private boolean mPlaying = false;
 
+    private MediaRouteController mMediaRouteController;
+
     private StrictMode.ThreadPolicy mOldPolicy;
 
     public CastTestBase() {
@@ -204,8 +206,6 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     protected Rect prepareDefaultVideofromPage(String pagePath, Tab currentTab)
             throws InterruptedException, TimeoutException {
-        // Ensure that we don't try to reconnect
-        RemotePlaybackSettings.setShouldReconnectToRemote(getActivity(), false);
 
         loadUrl(TestHttpServerClient.getUrl(pagePath));
 
@@ -242,14 +242,11 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
             public void run() {
                 RemoteMediaPlayerController playerController =
                         RemoteMediaPlayerController.instance();
-
-                // Because of the way we fake YouTube this will get the YouTube controller if we are
-                // testing YouTube.
-                MediaRouteController routeController = playerController.getMediaRouteController(
+                mMediaRouteController = playerController.getMediaRouteController(
                         TestHttpServerClient.getUrl(DEFAULT_VIDEO),
                         TestHttpServerClient.getUrl(DEFAULT_VIDEO_PAGE));
-                assertNotNull("Could not get MediaRouteController", routeController);
-                routeController.addUiListener(new TestListener());
+                assertNotNull("Could not get MediaRouteController", mMediaRouteController);
+                mMediaRouteController.addUiListener(new TestListener());
             }
         });
         tapCastButton(tab, videoRect);
@@ -303,8 +300,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         if (notificationTransportControl != null && notificationTransportControl.isShowing()) {
             fail("Failed to close notification");
         }
-        assertEquals("Video still playing?", null,
-                RemotePlaybackSettings.getUriPlaying(getActivity()));
+        assertEquals("Video still playing?", null, getUriPlaying());
         assertTrue("RemoteMediaPlayerController not stopped", !isPlayingRemotely());
     }
 
@@ -349,8 +345,8 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         assertTrue("No notification", notificationTransportControl.isShowing());
         // Check that we are playing the right video
         waitUntilVideoCurrent(testVideo);
-        assertEquals("Wrong video playing", TestHttpServerClient.getUrl(testVideo),
-                RemotePlaybackSettings.getUriPlaying(getActivity()));
+        assertEquals(
+                "Wrong video playing", TestHttpServerClient.getUrl(testVideo), getUriPlaying());
 
         // Check that the RemoteMediaPlayerController and the (YouTube)MediaRouteController have
         // been set up correctly
@@ -411,7 +407,7 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     protected View waitForView(Callable<View> getViewCallable, int timeoutMs) {
         for (int time = 0; time < timeoutMs; time += VIEW_RETRY_MS) {
             try {
-                View result = getViewCallable.call();
+                View result = ThreadUtils.runOnUiThreadBlocking(getViewCallable);
                 if (result != null) return result;
             } catch (Exception e) {
                 fail(e.toString());
@@ -423,7 +419,13 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     protected NotificationTransportControl waitForCastNotification() {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            NotificationTransportControl result = NotificationTransportControl.getIfExists();
+            NotificationTransportControl result = ThreadUtils.runOnUiThreadBlockingNoException(
+                    new Callable<NotificationTransportControl>() {
+                        @Override
+                        public NotificationTransportControl call() {
+                            return NotificationTransportControl.getIfExists();
+                        }
+                    });
             if (result != null) {
                 return result;
             }
@@ -433,28 +435,39 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
     }
 
     protected NotificationTransportControl.ListenerService waitForCastNotificationService(
-            NotificationTransportControl notification) {
+            final NotificationTransportControl notification) {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            NotificationTransportControl.ListenerService service = notification.getService();
+            NotificationTransportControl.ListenerService service =
+                    ThreadUtils.runOnUiThreadBlockingNoException(
+                            new Callable<NotificationTransportControl.ListenerService>() {
+                                @Override
+                                public NotificationTransportControl.ListenerService call() {
+                                    return notification.getService();
+                                }
+                            });
             if (service != null) {
                 return service;
             }
             sleepNoThrow(VIEW_RETRY_MS);
         }
         return null;
-
     }
 
-    protected boolean waitForState(RemoteVideoInfo.PlayerState state) {
+    protected boolean waitForState(final RemoteVideoInfo.PlayerState state) {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            RemoteMediaPlayerController playerController = RemoteMediaPlayerController
-                    .getIfExists();
-            if (playerController != null
-                    && playerController.getCurrentlyPlayingMediaRouteController() != null
-                    && playerController.getCurrentlyPlayingMediaRouteController().getPlayerState()
-                            == state) {
-                return true;
-            }
+            boolean result = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    RemoteMediaPlayerController playerController =
+                            RemoteMediaPlayerController.getIfExists();
+                    return playerController != null
+                            && playerController.getCurrentlyPlayingMediaRouteController() != null
+                            && playerController.getCurrentlyPlayingMediaRouteController()
+                                       .getPlayerState()
+                            == state;
+                }
+            });
+            if (result) return true;
             sleepNoThrow(VIEW_RETRY_MS);
         }
         return false;
@@ -462,26 +475,37 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
 
     protected boolean waitUntilPlaying() {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            if (mPlaying) return true;
+            boolean playing = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+                @Override
+                public Boolean call() {
+                    return mPlaying;
+                }
+            });
+            if (playing) return true;
             sleepNoThrow(VIEW_RETRY_MS);
         }
         return false;
     }
 
     private boolean isDisconnected() {
-        NotificationTransportControl notificationTransportControl =
-                NotificationTransportControl.getIfExists();
-        if (notificationTransportControl != null && notificationTransportControl.isShowing()) {
-            return false;
-        }
-        if (RemotePlaybackSettings.getUriPlaying(getActivity()) != null) return false;
-        return !isPlayingRemotely();
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                NotificationTransportControl notificationTransportControl =
+                        NotificationTransportControl.getIfExists();
+                if (notificationTransportControl != null
+                        && notificationTransportControl.isShowing()) {
+                    return false;
+                }
+                if (getUriPlaying() != null) return false;
+                return !isPlayingRemotely();
+            }
+        });
     }
 
     private boolean waitUntilVideoCurrent(String testVideo) {
         for (int time = 0; time < MAX_VIEW_TIME_MS; time += VIEW_RETRY_MS) {
-            if (TestHttpServerClient.getUrl(testVideo).equals(
-                    RemotePlaybackSettings.getUriPlaying(getActivity()))) {
+            if (TestHttpServerClient.getUrl(testVideo).equals(getUriPlaying())) {
                 return true;
             }
             sleepNoThrow(VIEW_RETRY_MS);
@@ -489,30 +513,62 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         return false;
     }
 
+    protected String getUriPlaying() {
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+            @Override
+            public String call() {
+                if (mMediaRouteController == null) return "";
+                return mMediaRouteController.getUriPlaying();
+            }
+        });
+    }
+
     protected long getRemotePositionMs() {
-        return getMediaRouteController().getPosition();
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return getMediaRouteController().getPosition();
+            }
+        });
     }
 
     protected long getRemoteDurationMs() {
-        return getMediaRouteController().getDuration();
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Long>() {
+            @Override
+            public Long call() {
+                return getMediaRouteController().getDuration();
+            }
+        });
     }
 
     protected boolean isPlayingRemotely() {
-        RemoteMediaPlayerController playerController = RemoteMediaPlayerController.getIfExists();
-        if (playerController == null) return false;
-        MediaRouteController routeController = playerController
-                .getCurrentlyPlayingMediaRouteController();
-        if (routeController == null) return false;
-        return routeController.isPlaying();
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                RemoteMediaPlayerController playerController =
+                        RemoteMediaPlayerController.getIfExists();
+                if (playerController == null) return false;
+                MediaRouteController routeController =
+                        playerController.getCurrentlyPlayingMediaRouteController();
+                if (routeController == null) return false;
+                return routeController.isPlaying();
+            }
+        });
     }
 
     protected MediaRouteController getMediaRouteController() {
-        RemoteMediaPlayerController playerController = RemoteMediaPlayerController.getIfExists();
-        assertNotNull("No RemoteMediaPlayerController", playerController);
-        MediaRouteController routeController = playerController
-                .getCurrentlyPlayingMediaRouteController();
-        assertNotNull("No MediaRouteController", routeController);
-        return routeController;
+        return ThreadUtils.runOnUiThreadBlockingNoException(new Callable<MediaRouteController>() {
+            @Override
+            public MediaRouteController call() {
+                RemoteMediaPlayerController playerController =
+                        RemoteMediaPlayerController.getIfExists();
+                assertNotNull("No RemoteMediaPlayerController", playerController);
+                MediaRouteController routeController =
+                        playerController.getCurrentlyPlayingMediaRouteController();
+                assertNotNull("No MediaRouteController", routeController);
+                return routeController;
+            }
+        });
     }
 
     /*
