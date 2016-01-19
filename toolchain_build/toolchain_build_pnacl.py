@@ -93,6 +93,8 @@ MINGW_VERSION = 'i686-w64-mingw32-4.8.1'
 CHROME_CLANG = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
                             'llvm-build', 'Release+Asserts', 'bin', 'clang')
 CHROME_CLANGXX = CHROME_CLANG + '++'
+CHROME_LIBCXX_STATIC = os.path.join(os.path.dirname(NACL_DIR), 'third_party',
+                                    'libc++-static')
 
 # Required SDK version and target version for Mac builds.
 # See MAC_SDK_FLAGS, below.
@@ -285,6 +287,8 @@ def HostArchToolFlags(host, extra_cflags, opts):
         result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
                                                   host, opts) + ')s/lib']
         deps.append(FlavoredName('libcxx', host, opts))
+      elif TripleIsMac(host):
+        result['LDFLAGS'] += ['-L' + CHROME_LIBCXX_STATIC]
 
     result['CFLAGS'] += extra_cc_flags
     result['CXXFLAGS'] += extra_cc_flags
@@ -330,7 +334,7 @@ def ConfigureHostArchFlags(host, extra_cflags, options, extra_configure=None,
 
   if not options.gcc:
     cc, cxx, ar, ranlib = CompilersForHost(host)
-    hashables += [cc, cxx, ar, ranlib]
+    hashables += [cc, cxx, ar, ranlib, CHROME_LIBCXX_STATIC]
 
     # Introduce afl-fuzz compiler wrappers if needed.
     if use_afl_fuzz:
@@ -403,7 +407,7 @@ def CmakeHostArchFlags(host, options):
     cc, cxx = AflFuzzCompilers(options.afl_fuzz_dir)
   else:
     cc, cxx, _, _ = CompilersForHost(host)
-  hashables = [cc, cxx]
+  hashables = [cc, cxx, CHROME_LIBCXX_STATIC]
 
   cmake_flags.extend(['-DCMAKE_C_COMPILER='+cc, '-DCMAKE_CXX_COMPILER='+cxx])
   if ProgramPath('ccache'):
