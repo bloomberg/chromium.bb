@@ -1896,7 +1896,7 @@ LayoutUnit LayoutGrid::columnAxisOffsetForChild(const LayoutBox& child) const
     case GridAxisCenter: {
         size_t childEndLine = rowsSpan.resolvedFinalPosition();
         LayoutUnit endOfRow = m_rowPositions[childEndLine];
-        // m_rowPositions include gutters so we need to substract them to get the actual end position for a given
+        // m_rowPositions include gutters so we need to subtract them to get the actual end position for a given
         // row (this does not have to be done for the last track as there are no more m_rowPositions after it)
         if (childEndLine < m_rowPositions.size() - 1)
             endOfRow -= guttersSize(ForRows, 2);
@@ -1928,7 +1928,7 @@ LayoutUnit LayoutGrid::rowAxisOffsetForChild(const LayoutBox& child) const
     case GridAxisCenter: {
         size_t childEndLine = columnsSpan.resolvedFinalPosition();
         LayoutUnit endOfColumn = m_columnPositions[childEndLine];
-        // m_columnPositions include gutters so we need to substract them to get the actual end position for a given
+        // m_columnPositions include gutters so we need to subtract them to get the actual end position for a given
         // column (this does not have to be done for the last track as there are no more m_columnPositions after it)
         if (childEndLine < m_columnPositions.size() - 1)
             endOfColumn -= guttersSize(ForRows, 2);

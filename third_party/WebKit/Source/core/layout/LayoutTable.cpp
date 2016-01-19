@@ -297,7 +297,7 @@ void LayoutTable::updateLogicalWidth()
     }
 
     // Ensure we aren't smaller than our min preferred width. This MUST be done after 'max-width' as
-    // we ignore it if it means we wouldn't accomodate our content.
+    // we ignore it if it means we wouldn't accommodate our content.
     setLogicalWidth(std::max<int>(logicalWidth(), minPreferredLogicalWidth()));
 
     // Ensure we aren't smaller than our min-width style.
@@ -313,7 +313,7 @@ void LayoutTable::updateLogicalWidth()
     setMarginStart(marginValues.m_start);
     setMarginEnd(marginValues.m_end);
 
-    // We should NEVER shrink the table below the min-content logical width, or else the table can't accomodate
+    // We should NEVER shrink the table below the min-content logical width, or else the table can't accommodate
     // its own content which doesn't match CSS nor what authors expect.
     // FIXME: When we convert to sub-pixel layout for tables we can remove the int conversion
     // https://code.google.com/p/chromium/issues/detail?id=241198

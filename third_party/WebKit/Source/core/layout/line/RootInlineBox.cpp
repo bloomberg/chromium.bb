@@ -300,7 +300,7 @@ GapRects RootInlineBox::lineSelectionGap(const LayoutBlock* rootBlock, const Lay
     }
 
     // When dealing with bidi text, a non-contiguous selection region is possible.
-    // e.g. The logical text aaaAAAbbb (capitals denote RTL text and non-capitals LTR) is layed out
+    // e.g. The logical text aaaAAAbbb (capitals denote RTL text and non-capitals LTR) is laid out
     // visually as 3 text runs |aaa|bbb|AAA| if we select 4 characters from the start of the text the
     // selection will look like (underline denotes selection):
     // |aaa|bbb|AAA|

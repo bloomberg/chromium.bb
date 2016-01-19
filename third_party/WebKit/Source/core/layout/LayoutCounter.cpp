@@ -184,7 +184,7 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
     // check this layoutObject, because it may affect the positioning in the tree of our counter.
     LayoutObject* searchEndLayoutObject = previousSiblingOrParent(counterOwner);
     // We check layoutObjects in preOrder from the layoutObject that our counter is attached to
-    // towards the begining of the document for counters with the same identifier as the one
+    // towards the beginning of the document for counters with the same identifier as the one
     // we are trying to find a place for. This is the next layoutObject to be checked.
     LayoutObject* currentLayoutObject = previousInPreOrder(counterOwner);
     previousSibling = nullptr;
@@ -283,7 +283,7 @@ static bool findPlaceForCounter(LayoutObject& counterOwner, const AtomicString& 
         }
         // This function is designed so that the same test is not done twice in an iteration, except for this one
         // which may be done twice in some cases. Rearranging the decision points though, to accommodate this
-        // performance improvement would create more code duplication than is worthwhile in my oppinion and may further
+        // performance improvement would create more code duplication than is worthwhile in my opinion and may further
         // impede the readability of this already complex algorithm.
         if (previousSiblingProtector)
             currentLayoutObject = previousSiblingOrParent(*currentLayoutObject);

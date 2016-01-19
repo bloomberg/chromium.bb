@@ -364,7 +364,7 @@ void LayoutObject::addChild(LayoutObject* newChild, LayoutObject* beforeChild)
     // - layerTypeRequired() would return true for the <body>, creating a new Layer
     // - when the document is painted, both layers are painted. The <body> layer doesn't
     //   know that it's inside a "hidden SVG subtree", and thus paints, even if it shouldn't.
-    // To avoid the problem alltogether, detect early if we're inside a hidden SVG subtree
+    // To avoid the problem altogether, detect early if we're inside a hidden SVG subtree
     // and stop creating layers at all for these cases - they're not used anyways.
     if (newChild->hasLayer() && !layerCreationAllowedForSubtree())
         toLayoutBoxModelObject(newChild)->layer()->removeOnlyThisLayer();
