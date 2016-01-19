@@ -3479,6 +3479,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="BrotliFilter.CompressionPercent" units="%">
+  <owner>eustas@chromium.org</owner>
+  <summary>Compressed/Decompressed size ratio.</summary>
+</histogram>
+
+<histogram name="BrotliFilter.Status" enum="BrotliFilterDecodingStatus">
+  <owner>eustas@chromium.org</owner>
+  <summary>The final state of BrotliFilter.</summary>
+</histogram>
+
+<histogram name="BrotliFilter.UsedMemoryKB" units="KiB">
+  <owner>eustas@chromium.org</owner>
+  <summary>Maximal amount of memory allocated by decoder.</summary>
+</histogram>
+
 <histogram name="BrowserRenderProcessHost.ChildCrashes" enum="RendererType">
   <owner>wfh@chromium.org</owner>
   <summary>Count of renderer process crashes grouped by type.</summary>
@@ -57952,6 +57967,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1" label="QUIC_STREAM_FACTORY"/>
   <int value="2" label="HTTP_STREAM_FACTORY_IMPL_JOB_ALT"/>
   <int value="3" label="HTTP_STREAM_FACTORY_IMPL_JOB_MAIN"/>
+</enum>
+
+<enum name="BrotliFilterDecodingStatus" type="int">
+  <int value="0" label="In progress"/>
+  <int value="1" label="Done"/>
+  <int value="2" label="Error"/>
 </enum>
 
 <enum name="BubbleType" type="int">
