@@ -9,9 +9,14 @@
 #include "build/build_config.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window.h"
+#include "ui/events/event.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/event_handler.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/null_event_targeter.h"
 #include "ui/events/test/event_generator.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/menu/menu_controller_delegate.h"
 #include "ui/views/controls/menu/menu_delegate.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -384,6 +389,11 @@ class MenuControllerTest : public ViewsTestBase {
 
   void SetIsCombobox(bool is_combobox) {
     menu_controller_->set_is_combobox(is_combobox);
+  }
+
+  void SetSelectionOnPointerDown(SubmenuView* source,
+                                 const ui::LocatedEvent* event) {
+    menu_controller_->SetSelectionOnPointerDown(source, event);
   }
 
   void RunMenu() {
@@ -823,6 +833,81 @@ TEST_F(MenuControllerTest, DoubleAsynchronousNested) {
   controller->CancelAll();
   EXPECT_EQ(1, delegate->on_menu_closed_called());
   EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+}
+
+// Tests that an asynchronous menu nested within a synchronous menu does not
+// crash when trying to repost events that occur outside of the bounds of the
+// menu. Instead a proper shutdown should occur.
+TEST_F(MenuControllerTest, AsynchronousRepostEvent) {
+  MenuController* controller = menu_controller();
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  scoped_ptr<TestMenuControllerDelegate> nested_delegate(
+      new TestMenuControllerDelegate());
+
+  ASSERT_FALSE(IsAsyncRun());
+
+  controller->AddNestedDelegate(nested_delegate.get());
+  controller->SetAsyncRun(true);
+
+  EXPECT_TRUE(IsAsyncRun());
+  EXPECT_EQ(nested_delegate.get(), GetCurrentDelegate());
+
+  MenuItemView* item = menu_item();
+  int mouse_event_flags = 0;
+  MenuItemView* run_result =
+      controller->Run(owner(), nullptr, item, gfx::Rect(), MENU_ANCHOR_TOPLEFT,
+                      false, false, &mouse_event_flags);
+  EXPECT_EQ(run_result, nullptr);
+
+  // Show a sub menu to targert with a pointer selection. However have the event
+  // occur outside of the bounds of the entire menu.
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), item->bounds(), false);
+  gfx::Point location(sub_menu->bounds().bottom_right());
+  location.Offset(1, 1);
+  ui::MouseEvent event(ui::ET_MOUSE_PRESSED, location, location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON, 0);
+
+  // When attempting to select outside of all menus this should lead to a
+  // shutdown. This should not crash while attempting to repost the event.
+  SetSelectionOnPointerDown(sub_menu, &event);
+
+  EXPECT_FALSE(IsAsyncRun());
+  EXPECT_EQ(delegate, GetCurrentDelegate());
+  EXPECT_EQ(0, delegate->on_menu_closed_called());
+  EXPECT_EQ(1, nested_delegate->on_menu_closed_called());
+  EXPECT_EQ(nullptr, nested_delegate->on_menu_closed_menu());
+  EXPECT_EQ(0, nested_delegate->on_menu_closed_mouse_event_flags());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            nested_delegate->on_menu_closed_notify_type());
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
+}
+
+// Tests that an asynchronous menu reposts touch events that occur outside of
+// the bounds of the menu, and that the menu closes.
+TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
+  MenuController* controller = menu_controller();
+  TestMenuControllerDelegate* delegate = menu_controller_delegate();
+  controller->SetAsyncRun(true);
+
+  // Show a sub menu to targert with a touch event. However have the event occur
+  // outside of the bounds of the entire menu.
+  MenuItemView* item = menu_item();
+  SubmenuView* sub_menu = item->GetSubmenu();
+  sub_menu->ShowAt(owner(), item->bounds(), false);
+  gfx::Point location(sub_menu->bounds().bottom_right());
+  location.Offset(1, 1);
+  ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, 0, 0,
+                       ui::EventTimeForNow(), 0, 0, 0, 0);
+  controller->OnTouchEvent(sub_menu, &event);
+
+  EXPECT_FALSE(IsShowing());
+  EXPECT_EQ(1, delegate->on_menu_closed_called());
+  EXPECT_EQ(nullptr, delegate->on_menu_closed_menu());
+  EXPECT_EQ(0, delegate->on_menu_closed_mouse_event_flags());
+  EXPECT_EQ(internal::MenuControllerDelegate::NOTIFY_DELEGATE,
+            delegate->on_menu_closed_notify_type());
+  EXPECT_EQ(MenuController::EXIT_ALL, controller->exit_type());
 }
 
 // Tests that if you exit all menus when an asynchrnous menu is nested within a

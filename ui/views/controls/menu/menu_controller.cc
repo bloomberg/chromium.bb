@@ -679,7 +679,7 @@ void MenuController::OnTouchEvent(SubmenuView* source, ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     MenuPart part = GetMenuPart(source, event->location());
     if (part.type == MenuPart::NONE) {
-      RepostEvent(source, event);
+      RepostEventAndCancel(source, event);
       event->SetHandled();
     }
   }
@@ -1001,36 +1001,8 @@ void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
     // then use this to figure out if this menu was finished with the same click
     // which is sent to it thereafter.
     closing_event_time_ = event->time_stamp();
-
-    // Mouse wasn't pressed over any menu, or the active menu, cancel.
-
-#if defined(OS_WIN)
-    // We're going to close and we own the mouse capture. We need to repost the
-    // mouse down, otherwise the window the user clicked on won't get the event.
-    RepostEvent(source, event);
-#endif
-
-    // And close.
-    ExitType exit_type = EXIT_ALL;
-    if (!menu_stack_.empty()) {
-      // We're running nested menus. Only exit all if the mouse wasn't over one
-      // of the menus from the last run.
-      gfx::Point screen_loc(event->location());
-      View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-      MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
-          menu_stack_.back().first.item, screen_loc);
-      if (last_part.type != MenuPart::NONE)
-        exit_type = EXIT_OUTERMOST;
-    }
-    Cancel(exit_type);
-
-#if defined(OS_CHROMEOS)
-    // We're going to exit the menu and want to repost the event so that is
-    // is handled normally after the context menu has exited. We call
-    // RepostEvent after Cancel so that mouse capture has been released so
-    // that finding the event target is unaffected by the current capture.
-    RepostEvent(source, event);
-#endif
+    // Event wasn't pressed over any menu, or the active menu, cancel.
+    RepostEventAndCancel(source, event);
     // Do not repost events for Linux Aura because this behavior is more
     // consistent with the behavior of other Linux apps.
     return;
@@ -2188,7 +2160,10 @@ void MenuController::SelectByChar(base::char16 character) {
 }
 
 void MenuController::RepostEvent(SubmenuView* source,
-                                 const ui::LocatedEvent* event) {
+                                 const ui::LocatedEvent* event,
+                                 const gfx::Point& screen_loc,
+                                 gfx::NativeView native_view,
+                                 gfx::NativeWindow window) {
   if (!event->IsMouseEvent() && !event->IsTouchEvent()) {
     // TODO(rbyers): Gesture event repost is tricky to get right
     // crbug.com/170987.
@@ -2208,14 +2183,8 @@ void MenuController::RepostEvent(SubmenuView* source,
   state_.item->GetRootMenuItem()->GetSubmenu()->ReleaseCapture();
 #endif
 
-  gfx::Point screen_loc(event->location());
-  View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
-  gfx::NativeView native_view = source->GetWidget()->GetNativeView();
   if (!native_view)
     return;
-
-  gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
-  gfx::NativeWindow window = screen->GetWindowAtScreenPoint(screen_loc);
 
 #if defined(OS_WIN)
   gfx::Point screen_loc_pixels = gfx::win::DIPToScreenPoint(screen_loc);
@@ -2292,6 +2261,47 @@ void MenuController::RepostEvent(SubmenuView* source,
     return;
 
   MenuMessageLoop::RepostEventToWindow(event, window, screen_loc);
+}
+
+void MenuController::RepostEventAndCancel(SubmenuView* source,
+                                          const ui::LocatedEvent* event) {
+  // Cancel can lead to the deletion |source| so we save the view and window to
+  // be used when reposting the event.
+  gfx::Point screen_loc(event->location());
+  View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+  gfx::NativeView native_view = source->GetWidget()->GetNativeView();
+  gfx::NativeWindow window = nullptr;
+  if (native_view) {
+    gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
+    window = screen->GetWindowAtScreenPoint(screen_loc);
+  }
+
+#if defined(OS_WIN)
+  // We're going to close and we own the event capture. We need to repost the
+  // event, otherwise the window the user clicked on won't get the event.
+  RepostEvent(source, event, screen_loc, native_view, window);
+#endif
+
+  // Determine target to see if a complete or partial close of the menu should
+  // occur.
+  ExitType exit_type = EXIT_ALL;
+  if (!menu_stack_.empty()) {
+    // We're running nested menus. Only exit all if the mouse wasn't over one
+    // of the menus from the last run.
+    MenuPart last_part = GetMenuPartByScreenCoordinateUsingMenu(
+        menu_stack_.back().first.item, screen_loc);
+    if (last_part.type != MenuPart::NONE)
+      exit_type = EXIT_OUTERMOST;
+  }
+  Cancel(exit_type);
+
+#if defined(OS_CHROMEOS)
+  // We're going to exit the menu and want to repost the event so that is
+  // is handled normally after the context menu has exited. We call
+  // RepostEvent after Cancel so that event capture has been released so
+  // that finding the event target is unaffected by the current capture.
+  RepostEvent(source, event, screen_loc, native_view, window);
+#endif
 }
 
 void MenuController::SetDropMenuItem(
