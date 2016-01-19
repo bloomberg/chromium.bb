@@ -517,18 +517,12 @@ public class NotificationTransportControl
     /**
      * Sets the MediaRouteController the notification should be using to get the data from.
      *
-     * @param mrc the MediaRouteController object to use. If null, the previous MediaRouteController
-     *            object will not be overwritten.
+     * @param mrc the MediaRouteController object to use.
      */
     private void setMediaRouteController(@Nullable MediaRouteController mrc) {
-        if (mrc == null || mMediaRouteController == mrc) return;
-
-        if (mMediaRouteController != null) {
-            mMediaRouteController.removeUiListener(this);
-        }
-
+        if (mMediaRouteController != null)  mMediaRouteController.removeUiListener(this);
         mMediaRouteController = mrc;
-        mMediaRouteController.addUiListener(this);
+        if (mrc != null) mrc.addUiListener(this);
     }
 
 }
