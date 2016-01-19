@@ -44,11 +44,12 @@
             # resort to using |AdditionalOptions| instead.
             'msvs_settings': {
               'VCCLCompilerTool': {
+                'AdditionalOptions': [
+                  '-Wno-unused-function',
+                  '-Wno-unused-value',
+                ],
                 'AdditionalOptions!': [
                   '-Wheader-hygiene',
-                ],
-                'AdditionalOptions': [
-                  '-Wno-unused-value',
                 ],
               },
             },
