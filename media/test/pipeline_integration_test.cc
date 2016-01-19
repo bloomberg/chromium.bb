@@ -1858,14 +1858,14 @@ TEST_F(PipelineIntegrationTest, ChunkDemuxerAbortRead_VideoOnly) {
 
 // Verify that Opus audio in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_AudioOnly_Opus_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-end-trimming.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-opus-end-trimming.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 // Verify that VP9 video in WebM containers can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
@@ -1873,14 +1873,14 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VideoOnly_VP9_WebM) {
 // Verify that VP9 video and Opus audio in the same WebM container can be played
 // back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Opus_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-opus.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-opus.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
 
 // Verify that VP8 video with alpha channel can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
@@ -1888,7 +1888,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_WebM) {
 
 // Verify that VP8A video with odd width/height can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a-odd-dimensions.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp8a-odd-dimensions.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
@@ -1896,9 +1896,25 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8A_Odd_WebM) {
 
 // Verify that VP9 video with odd width/height can be played back.
 TEST_F(PipelineIntegrationTest, BasicPlayback_VP9_Odd_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-odd-dimensions.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-odd-dimensions.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
+}
+
+// Verify that VP9 video with alpha channel can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9A_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9a.webm", kClockless));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
+}
+
+// Verify that VP9A video with odd width/height can be played back.
+TEST_F(PipelineIntegrationTest, BasicPlayback_VP9A_Odd_WebM) {
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9a-odd-dimensions.webm", kClockless));
+  Play();
+  ASSERT_TRUE(WaitUntilOnEnded());
+  EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12A);
 }
 
 #if !defined(DISABLE_TEXT_TRACK_TESTS)
@@ -1913,7 +1929,7 @@ TEST_F(PipelineIntegrationTest, BasicPlayback_VP8_WebVTT_WebM) {
 
 // Verify that VP9 video with 4:4:4 subsampling can be played back.
 TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-P444.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-320x240-P444.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV24);
@@ -1922,7 +1938,7 @@ TEST_F(PipelineIntegrationTest, P444_VP9_WebM) {
 // Verify that frames of VP9 video in the BT.709 color space have the YV12HD
 // format.
 TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
-  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-bt709.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("bear-vp9-bt709.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
   EXPECT_VIDEO_FORMAT_EQ(last_video_frame_format_, PIXEL_FORMAT_YV12);
@@ -1931,7 +1947,7 @@ TEST_F(PipelineIntegrationTest, BT709_VP9_WebM) {
 
 // Verify that videos with an odd frame size playback successfully.
 TEST_F(PipelineIntegrationTest, BasicPlayback_OddVideoSize) {
-  ASSERT_EQ(PIPELINE_OK, Start("butterfly-853x480.webm"));
+  ASSERT_EQ(PIPELINE_OK, Start("butterfly-853x480.webm", kClockless));
   Play();
   ASSERT_TRUE(WaitUntilOnEnded());
 }
