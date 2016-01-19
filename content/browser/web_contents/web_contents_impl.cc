@@ -1701,7 +1701,7 @@ void WebContentsImpl::ExitFullscreenMode() {
 #if defined(OS_ANDROID)
   ContentVideoView* video_view = ContentVideoView::GetInstance();
   if (video_view != NULL)
-    video_view->OnExitFullscreen();
+    video_view->ExitFullscreen();
 #endif
 
   if (delegate_)

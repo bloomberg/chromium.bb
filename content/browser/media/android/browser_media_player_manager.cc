@@ -237,7 +237,7 @@ BrowserMediaPlayerManager::~BrowserMediaPlayerManager() {
   players_.weak_clear();
 }
 
-void BrowserMediaPlayerManager::ExitFullscreen(bool release_media_player) {
+void BrowserMediaPlayerManager::DidExitFullscreen(bool release_media_player) {
 #if defined(USE_AURA)
   // TODO(crbug.com/548024)
   NOTIMPLEMENTED();
@@ -304,15 +304,12 @@ void BrowserMediaPlayerManager::OnMediaMetadataChanged(
   Send(new MediaPlayerMsg_MediaMetadataChanged(
       RoutingID(), player_id, duration, width, height, success));
   if (fullscreen_player_id_ == player_id)
-    video_view_->UpdateMediaMetadata();
+    video_view_->OnVideoSizeChanged(width, height);
 }
 
 void BrowserMediaPlayerManager::OnPlaybackComplete(int player_id) {
   Send(new MediaPlayerMsg_MediaPlaybackCompleted(RoutingID(), player_id));
   MediaSession::Get(web_contents())->RemovePlayer(this, player_id);
-
-  if (fullscreen_player_id_ == player_id)
-    video_view_->OnPlaybackComplete();
 }
 
 void BrowserMediaPlayerManager::OnMediaInterrupted(int player_id) {
@@ -533,25 +530,34 @@ void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   if (external_video_surface_container_)
     external_video_surface_container_->ReleaseExternalVideoSurface(player_id);
 #endif  // defined(VIDEO_HOLE)
-  if (video_view_.get()) {
+  if (video_view_) {
     fullscreen_player_id_ = player_id;
     video_view_->OpenVideo();
-    return;
-  } else if (!ContentVideoView::GetInstance()) {
-    // In Android WebView, two ContentViewCores could both try to enter
-    // fullscreen video, we just ignore the second one.
-    video_view_.reset(new ContentVideoView(this));
-    base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
-        video_view_->GetJavaObject(base::android::AttachCurrentThread());
-    if (!j_content_video_view.is_null()) {
-      fullscreen_player_id_ = player_id;
-      return;
+    MediaPlayerAndroid* player = GetPlayer(player_id);
+    if (player && player->IsPlayerReady()) {
+      video_view_->OnVideoSizeChanged(player->GetVideoWidth(),
+                                      player->GetVideoHeight());
     }
+    return;
   }
 
-  // Force the second video to exit fullscreen.
-  Send(new MediaPlayerMsg_DidExitFullscreen(RoutingID(), player_id));
-  video_view_.reset();
+  if (ContentVideoView::GetInstance()) {
+    // In Android WebView, two ContentViewCores could both try to enter
+    // fullscreen video, we just ignore the second one.
+    Send(new MediaPlayerMsg_DidExitFullscreen(RoutingID(), player_id));
+    return;
+  }
+
+  // There's no ContentVideoView instance so create one.
+  video_view_.reset(new ContentVideoView(this, GetContentViewCore()));
+  base::android::ScopedJavaLocalRef<jobject> j_content_video_view =
+      video_view_->GetJavaObject(base::android::AttachCurrentThread());
+  if (!j_content_video_view.is_null()) {
+    fullscreen_player_id_ = player_id;
+  } else {
+    Send(new MediaPlayerMsg_DidExitFullscreen(RoutingID(), player_id));
+    video_view_.reset();
+  }
 #endif  // defined(USE_AURA)
 }
 

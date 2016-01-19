@@ -10,60 +10,69 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "ui/gfx/native_widget_types.h"
+#include "content/public/browser/android/content_view_core.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace content {
 
-class BrowserMediaPlayerManager;
-
 // Native mirror of ContentVideoView.java. This class is responsible for
-// creating the Java video view and pass all the player status change to
-// it. It accepts media control from Java class, and forwards it to
-// MediaPlayerManagerImpl.
+// creating the Java video view and passing changes in player status to it.
+// This class must be used on the UI thread.
 class ContentVideoView {
  public:
-  // Construct a ContentVideoView object. The |manager| will handle all the
-  // playback controls from the Java class.
-  explicit ContentVideoView(BrowserMediaPlayerManager* manager);
+  static bool RegisterContentVideoView(JNIEnv* env);
 
+  // Returns the singleton object or NULL.
+  static ContentVideoView* GetInstance();
+
+  class Client {
+   public:
+    Client() {}
+    // For receiving notififcations when the SurfaceView surface is created and
+    // destroyed. When |surface.IsEmpty()| the surface was destroyed and
+    // the client should not hold any references to it once this returns.
+    virtual void SetVideoSurface(gfx::ScopedJavaSurface surface) = 0;
+
+    // Called after the ContentVideoView has been hidden because we're exiting
+    // fullscreen.
+    virtual void DidExitFullscreen(bool release_media_player) = 0;
+
+   protected:
+    ~Client() {}
+
+    DISALLOW_COPY_AND_ASSIGN(Client);
+  };
+
+  explicit ContentVideoView(Client* client, ContentViewCore* content_view_core);
   ~ContentVideoView();
 
   // To open another video on existing ContentVideoView.
   void OpenVideo();
 
-  static bool RegisterContentVideoView(JNIEnv* env);
-  static void KeepScreenOn(bool screen_on);
+  // Display an error dialog to the user.
+  void OnMediaPlayerError(int error_type);
 
-  // Return the singleton object or NULL.
-  static ContentVideoView* GetInstance();
+  // Update the video size. The video will not be visible until this is called.
+  void OnVideoSizeChanged(int width, int height);
 
-  // Getter method called by the Java class to get the media information.
-  bool IsPlaying(JNIEnv*, const base::android::JavaParamRef<jobject>& obj);
-  void RequestMediaMetadata(JNIEnv*,
-                            const base::android::JavaParamRef<jobject>& obj);
+  // Exit fullscreen and notify |client_| with |DidExitFullscreen|.
+  void ExitFullscreen();
 
-  // Called when the Java fullscreen view is destroyed. If
-  // |release_media_player| is true, |manager_| needs to release the player
-  // as we are quitting the app.
-  void ExitFullscreen(JNIEnv*,
-                      const base::android::JavaParamRef<jobject>&,
-                      jboolean release_media_player);
+  // Returns the corresponding ContentVideoView Java object if any.
+  base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
 
-  // Called by the Java class to pass the surface object to the player.
-  void SetSurface(JNIEnv*,
+  // Called by the Java class when the surface changes.
+  void SetSurface(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& obj,
                   const base::android::JavaParamRef<jobject>& surface);
 
-  // Method called by |manager_| to inform the Java class about player status
-  // change.
-  void UpdateMediaMetadata();
-  void OnMediaPlayerError(int errorType);
-  void OnVideoSizeChanged(int width, int height);
-  void OnPlaybackComplete();
-  void OnExitFullscreen();
+  // Called when the Java fullscreen view is destroyed. If
+  // |release_media_player| is true, |client_| needs to release the player
+  // as we are quitting the app.
+  void DidExitFullscreen(JNIEnv*,
+                         const base::android::JavaParamRef<jobject>&,
+                         jboolean release_media_player);
 
   // Functions called to record fullscreen playback UMA metrics.
   void RecordFullscreenPlayback(JNIEnv*,
@@ -77,18 +86,13 @@ class ContentVideoView {
       long playback_duration_in_milliseconds_before_orientation_change,
       long playback_duration_in_milliseconds_after_orientation_change);
 
-  // Return the corresponing ContentVideoView Java object if any.
-  base::android::ScopedJavaLocalRef<jobject> GetJavaObject(JNIEnv* env);
-
  private:
   // Creates the corresponding ContentVideoView Java object.
-  JavaObjectWeakGlobalRef CreateJavaObject();
+  JavaObjectWeakGlobalRef CreateJavaObject(ContentViewCore* content_view_core);
 
-  // Object that manages the fullscreen media player. It is responsible for
-  // handling all the playback controls.
-  BrowserMediaPlayerManager* manager_;
+  Client* client_;
 
-  // Weak reference of corresponding Java object.
+  // Weak reference to corresponding Java object.
   JavaObjectWeakGlobalRef j_content_video_view_;
 
   // Weak pointer for posting tasks.
