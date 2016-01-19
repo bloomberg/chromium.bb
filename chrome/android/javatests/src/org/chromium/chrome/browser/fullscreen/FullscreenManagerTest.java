@@ -34,6 +34,7 @@ import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.content.browser.test.util.UiUtils;
 
@@ -316,7 +317,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
     @LargeTest
     @Feature({"Fullscreen"})
-    public void testTopControlsShownWhenInputIsFocused() throws InterruptedException {
+    public void testTopControlsShownWhenInputIsFocused()
+            throws InterruptedException, TimeoutException {
         startMainActivityWithURL(LONG_HTML_WITH_AUTO_FOCUS_INPUT_TEST_PAGE);
 
         ChromeFullscreenManager fullscreenManager = getActivity().getFullscreenManager();
@@ -337,6 +339,8 @@ public class FullscreenManagerTest extends ChromeTabbedActivityTestBase {
 
         Tab tab = getActivity().getActivityTab();
         singleClickView(tab.getView());
+        JavaScriptUtils.executeJavaScriptAndWaitForResult(tab.getWebContents(),
+                "document.getElementById('input_text').blur();");
         waitForEditableNodeToLoseFocus(tab);
 
         waitForTopControlsToBeMoveable(getActivity().getActivityTab());
