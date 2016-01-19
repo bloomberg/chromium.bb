@@ -16,13 +16,12 @@
 #include "base/memory/scoped_ptr.h"
 #include "courgette/disassembler.h"
 #include "courgette/image_utils.h"
+#include "courgette/label_manager.h"
 #include "courgette/memory_allocator.h"
 
 namespace courgette {
 
 class EncodedProgram;
-
-typedef std::map<RVA, Label*> RVAToLabel;
 
 // Opcodes of simple assembly language
 enum OP {

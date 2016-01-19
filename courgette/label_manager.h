@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -17,11 +18,18 @@
 namespace courgette {
 
 using LabelVector = std::vector<Label>;
+using RVAToLabel = std::map<RVA, Label*>;
 
 // A container to store and manage Label instances.
 class LabelManager {
  public:
   virtual ~LabelManager();
+
+  // Returns an exclusive upper bound for all existing indexes in |labels|.
+  static int GetIndexBound(const LabelVector& labels);
+
+  // Returns an exclusive upper bound for all existing indexes in |labels_map|.
+  static int GetIndexBound(const RVAToLabel& labels_map);
 
   // Returns the number of Label instances stored.
   virtual size_t Size() const = 0;

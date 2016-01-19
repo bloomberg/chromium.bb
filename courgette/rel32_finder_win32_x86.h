@@ -23,6 +23,7 @@ class Rel32FinderWin32X86 {
                       RVA image_end_rva);
   virtual ~Rel32FinderWin32X86();
 
+  // Subsumes rva != kUnassignedRVA.
   bool IsValidRVA(RVA rva) const { return rva < image_end_rva_; }
 
   // Swaps data in |rel32_locations_| to |dest|.

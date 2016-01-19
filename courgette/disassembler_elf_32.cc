@@ -142,6 +142,8 @@ bool DisassemblerElf32::UpdateLength() {
 }
 
 CheckBool DisassemblerElf32::IsValidRVA(RVA rva) const {
+  if (rva == kUnassignedRVA)
+    return false;
 
   // It's valid if it's contained in any program segment
   for (int i = 0; i < ProgramSegmentHeaderCount(); i++) {
@@ -446,6 +448,8 @@ CheckBool DisassemblerElf32::ParseAbs32Relocs() {
   }
 
   std::sort(abs32_locations_.begin(), abs32_locations_.end());
+  DCHECK(abs32_locations_.empty() ||
+         abs32_locations_.back() != kUnassignedRVA);
   return true;
 }
 
@@ -497,6 +501,8 @@ CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
   std::sort(rel32_locations_.begin(),
             rel32_locations_.end(),
             TypedRVA::IsLessThan);
+  DCHECK(rel32_locations_.empty() ||
+         rel32_locations_.back()->rva() != kUnassignedRVA);
   return true;
 }
 

@@ -78,19 +78,16 @@ LabelVector CreateLabelVectorWithIndexes(const std::string& encoded_index) {
   labels.reserve(n);
   std::set<char> used_ch;
   for (size_t i = 0; i < n; ++i) {
-    Label label(i);
-    label.count_ = 1;
+    int index = Label::kNoIndex;
     char ch = encoded_index[i];
     if (ch != '.') {
       // Sanity check for test case.
       if (ch < 'A' || ch > 'Z' || used_ch.find(ch) != used_ch.end())
         NOTREACHED() << "Malformed test case: " << encoded_index;
       used_ch.insert(ch);
-      label.index_ = ch - 'A';
-    } else {
-      label.index_ = Label::kNoIndex;
+      index = ch - 'A';
     }
-    labels.push_back(label);
+    labels.push_back(Label(i, index, 1));
   }
   return labels;
 }
@@ -113,6 +110,49 @@ std::string EncodeLabelIndexes(const LabelVector& labels) {
 }
 
 }  // namespace
+
+TEST(LabelManagerTest, GetIndexBound_LabelVector) {
+  LabelVector labels0;
+  EXPECT_EQ(0, LabelManager::GetIndexBound(labels0));
+
+  LabelVector labels1_uninit = CreateLabelVectorBasic(1);
+  ASSERT_EQ(1U, labels1_uninit.size());
+  EXPECT_EQ(0, LabelManager::GetIndexBound(labels1_uninit));
+
+  LabelVector labels1_init = CreateLabelVectorBasic(1);
+  ASSERT_EQ(1U, labels1_init.size());
+  labels1_init[0].index_ = 99;
+  EXPECT_EQ(100, LabelManager::GetIndexBound(labels1_init));
+
+  LabelVector labels6_mixed = CreateLabelVectorBasic(6);
+  ASSERT_EQ(6U, labels6_mixed.size());
+  labels6_mixed[1].index_ = 5;
+  labels6_mixed[2].index_ = 2;
+  labels6_mixed[4].index_ = 15;
+  labels6_mixed[5].index_ = 7;
+  EXPECT_EQ(16, LabelManager::GetIndexBound(labels6_mixed));
+}
+
+TEST(LabelManagerTest, GetIndexBound_RVAToLabel) {
+  RVAToLabel labels_map0;
+  EXPECT_EQ(0, LabelManager::GetIndexBound(labels_map0));
+
+  RVAToLabel labels1_map_init;
+  Label label1(static_cast<RVA>(0), 99, 1);
+  labels1_map_init[label1.rva_] = &label1;
+  EXPECT_EQ(100, LabelManager::GetIndexBound(labels1_map_init));
+
+  RVAToLabel labels_map6_mixed;
+  Label labels6[] = {
+    Label(static_cast<RVA>(1), 5, 1),
+    Label(static_cast<RVA>(2), 2, 1),
+    Label(static_cast<RVA>(4), 15, 1),
+    Label(static_cast<RVA>(5), 7, 1)
+  };
+  for (Label& label : labels6)
+    labels_map6_mixed[label.rva_] = &label;
+  EXPECT_EQ(16, LabelManager::GetIndexBound(labels_map6_mixed));
+}
 
 TEST(LabelManagerTest, Basic) {
   static const RVA kTestTargetsRaw[] = {

@@ -20,21 +20,34 @@ LabelManager::LabelManager() {}
 
 LabelManager::~LabelManager() {}
 
+// static
+int LabelManager::GetIndexBound(const LabelVector& labels) {
+  int max_index = -1;
+  for (const Label& label : labels) {
+    if (label.index_ != Label::kNoIndex)
+      max_index = std::max(max_index, label.index_);
+  }
+  return max_index + 1;
+}
+
+// static
+int LabelManager::GetIndexBound(const RVAToLabel& labels_map) {
+  int max_index = -1;
+  for (const auto& rva_and_label : labels_map) {
+    const Label& label = *rva_and_label.second;
+    if (label.index_ != Label::kNoIndex)
+      max_index = std::max(max_index, label.index_);
+  }
+  return max_index + 1;
+}
+
 LabelManagerImpl::RvaVisitor::~RvaVisitor() {}
 
 LabelManagerImpl::SimpleIndexAssigner::SimpleIndexAssigner(LabelVector* labels)
     : labels_(labels) {
-  // Find the maximum assigned index. Not bounded by |labels_| size.
-  int max_index = -1;
-  for (const Label& label : *labels_) {
-    if (label.index_ != Label::kNoIndex)
-      max_index = std::max(max_index, label.index_);
-  }
-
   // Initialize |num_index_| and |available_|.
-  CHECK_GE(max_index + 1, 0);
   num_index_ = std::max(base::checked_cast<int>(labels_->size()),
-                        max_index + 1);
+                        LabelManager::GetIndexBound(*labels_));
   available_.resize(num_index_, true);
   size_t used = 0;
   for (const Label& label : *labels_) {
@@ -129,6 +142,8 @@ void LabelManagerImpl::Read(RvaVisitor* rva_visitor) {
   // Sort |rvas|, then count the number of distinct values.
   using CRV = ConsecutiveRangeVisitor<std::vector<RVA>::iterator>;
   std::sort(rvas.begin(), rvas.end());
+  DCHECK(rvas.empty() || rvas.back() != kUnassignedRVA);
+
   size_t num_distinct_rva = 0;
   for (CRV it(rvas.begin(), rvas.end()); it.has_more(); it.advance())
     ++num_distinct_rva;

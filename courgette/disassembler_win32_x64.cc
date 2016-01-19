@@ -281,6 +281,7 @@ bool DisassemblerWin32X64::ParseRelocs(std::vector<RVA> *relocs) {
   }
 
   std::sort(relocs->begin(), relocs->end());
+  DCHECK(relocs->empty() || relocs->back() != kUnassignedRVA);
 
   return true;
 }
@@ -396,6 +397,8 @@ void DisassemblerWin32X64::ParseRel32RelocsFromSections() {
     file_offset += section->size_of_raw_data;
   }
   std::sort(rel32_locations_.begin(), rel32_locations_.end());
+  DCHECK(rel32_locations_.empty() ||
+         rel32_locations_.back() != kUnassignedRVA);
 
 #if COURGETTE_HISTOGRAM_TARGETS
   VLOG(1) << "abs32_locations_ " << abs32_locations_.size()
