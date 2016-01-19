@@ -17,14 +17,15 @@ namespace net {
 // bit, which directs the name server to pursue query recursively, and sets
 // the QDCOUNT to 1, meaning the question section has a single entry.
 DnsQuery::DnsQuery(uint16_t id, const base::StringPiece& qname, uint16_t qtype)
-    : qname_size_(qname.size()) {
+    : qname_size_(qname.size()),
+      io_buffer_(
+          new IOBufferWithSize(sizeof(dns_protocol::Header) + question_size())),
+      header_(reinterpret_cast<dns_protocol::Header*>(io_buffer_->data())) {
   DCHECK(!DNSDomainToString(qname).empty());
-  io_buffer_ = new IOBufferWithSize(sizeof(dns_protocol::Header) +
-                                    question_size());
-  *header() = {};
-  header()->id = base::HostToNet16(id);
-  header()->flags = base::HostToNet16(dns_protocol::kFlagRD);
-  header()->qdcount = base::HostToNet16(1);
+  *header_ = {};
+  header_->id = base::HostToNet16(id);
+  header_->flags = base::HostToNet16(dns_protocol::kFlagRD);
+  header_->qdcount = base::HostToNet16(1);
 
   // Write question section after the header.
   base::BigEndianWriter writer(
@@ -42,9 +43,7 @@ scoped_ptr<DnsQuery> DnsQuery::CloneWithNewId(uint16_t id) const {
 }
 
 uint16_t DnsQuery::id() const {
-  const dns_protocol::Header* header =
-      reinterpret_cast<const dns_protocol::Header*>(io_buffer_->data());
-  return base::NetToHost16(header->id);
+  return base::NetToHost16(header_->id);
 }
 
 base::StringPiece DnsQuery::qname() const {
@@ -65,7 +64,7 @@ base::StringPiece DnsQuery::question() const {
 }
 
 void DnsQuery::set_flags(uint16_t flags) {
-  header()->flags = flags;
+  header_->flags = flags;
 }
 
 DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
@@ -73,11 +72,8 @@ DnsQuery::DnsQuery(const DnsQuery& orig, uint16_t id) {
   io_buffer_ = new IOBufferWithSize(orig.io_buffer()->size());
   memcpy(io_buffer_.get()->data(), orig.io_buffer()->data(),
          io_buffer_.get()->size());
-  header()->id = base::HostToNet16(id);
-}
-
-dns_protocol::Header* DnsQuery::header() {
-  return reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
+  header_ = reinterpret_cast<dns_protocol::Header*>(io_buffer_->data());
+  header_->id = base::HostToNet16(id);
 }
 
 }  // namespace net

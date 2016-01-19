@@ -51,9 +51,6 @@ class NET_EXPORT_PRIVATE DnsQuery {
  private:
   DnsQuery(const DnsQuery& orig, uint16_t id);
 
-  // Convenience for header access.
-  dns_protocol::Header* header();
-
   // Returns the size of the question section.
   size_t question_size() const {
     // QNAME + QTYPE + QCLASS
@@ -66,6 +63,9 @@ class NET_EXPORT_PRIVATE DnsQuery {
 
   // Contains query bytes to be consumed by higher level Write() call.
   scoped_refptr<IOBufferWithSize> io_buffer_;
+
+  // Pointer to the dns header section.
+  dns_protocol::Header* header_;
 
   DISALLOW_COPY_AND_ASSIGN(DnsQuery);
 };
