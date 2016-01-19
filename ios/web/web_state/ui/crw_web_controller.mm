@@ -1926,9 +1926,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)shouldClosePageOnNativeApplicationLoad {
   // The page should be closed if it was initiated by the DOM and there has been
-  // no user interaction with the page since the web view was created.
-  return self.sessionController.openedByDOM &&
-         !_userInteractedWithWebController;
+  // no user interaction with the page since the web view was created, or if
+  // the page has no navigation items, as occurs when an App Store link is
+  // opened from another application.
+  BOOL rendererInitiatedWithoutInteraction =
+      self.sessionController.openedByDOM && !_userInteractedWithWebController;
+  BOOL noNavigationItems =
+      !_webStateImpl->GetNavigationManagerImpl().GetItemCount();
+  return rendererInitiatedWithoutInteraction || noNavigationItems;
 }
 
 - (BOOL)isBeingDestroyed {
