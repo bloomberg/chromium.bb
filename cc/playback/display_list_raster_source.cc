@@ -6,16 +6,179 @@
 
 #include <stddef.h>
 
+#include "base/containers/adapters.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/playback/discardable_image_map.h"
 #include "cc/playback/display_item_list.h"
+#include "cc/tiles/image_decode_controller.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
+#include "third_party/skia/include/utils/SkNWayCanvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
+
+namespace {
+
+SkIRect RoundOutRect(const SkRect& rect) {
+  SkIRect result;
+  rect.roundOut(&result);
+  return result;
+}
+
+class ImageHijackCanvas : public SkNWayCanvas {
+ public:
+  ImageHijackCanvas(int width,
+                    int height,
+                    ImageDecodeController* image_decode_controller)
+      : SkNWayCanvas(width, height),
+        image_decode_controller_(image_decode_controller) {}
+
+ protected:
+  // Ensure that pictures are unpacked by this canvas, instead of being
+  // forwarded to the raster canvas.
+  void onDrawPicture(const SkPicture* picture,
+                     const SkMatrix* matrix,
+                     const SkPaint* paint) override {
+    SkCanvas::onDrawPicture(picture, matrix, paint);
+  }
+
+  void onDrawImage(const SkImage* image,
+                   SkScalar x,
+                   SkScalar y,
+                   const SkPaint* paint) override {
+    if (!image->isLazyGenerated()) {
+      SkNWayCanvas::onDrawImage(image, x, y, paint);
+      return;
+    }
+
+    SkMatrix ctm = getTotalMatrix();
+
+    SkSize scale;
+    bool is_decomposable = ExtractScale(ctm, &scale);
+    ScopedDecodedImageLock scoped_lock(
+        image_decode_controller_, image,
+        SkRect::MakeIWH(image->width(), image->height()), scale,
+        is_decomposable, ctm.hasPerspective(), paint);
+    const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
+    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
+    DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
+    const SkPaint* decoded_paint = scoped_lock.decoded_paint();
+
+    bool need_scale = !decoded_image.is_scale_adjustment_identity();
+    if (need_scale) {
+      SkNWayCanvas::save();
+      SkNWayCanvas::scale(1.f / (decoded_image.scale_adjustment().width()),
+                          1.f / (decoded_image.scale_adjustment().height()));
+    }
+    SkNWayCanvas::onDrawImage(decoded_image.image(), x, y, decoded_paint);
+    if (need_scale)
+      SkNWayCanvas::restore();
+  }
+
+  void onDrawImageRect(const SkImage* image,
+                       const SkRect* src,
+                       const SkRect& dst,
+                       const SkPaint* paint,
+                       SrcRectConstraint constraint) override {
+    if (!image->isLazyGenerated()) {
+      SkNWayCanvas::onDrawImageRect(image, src, dst, paint, constraint);
+      return;
+    }
+
+    SkRect src_storage;
+    if (!src) {
+      src_storage = SkRect::MakeIWH(image->width(), image->height());
+      src = &src_storage;
+    }
+    SkMatrix matrix;
+    matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
+    matrix.postConcat(getTotalMatrix());
+
+    SkSize scale;
+    bool is_decomposable = ExtractScale(matrix, &scale);
+    ScopedDecodedImageLock scoped_lock(image_decode_controller_, image, *src,
+                                       scale, is_decomposable,
+                                       matrix.hasPerspective(), paint);
+    const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
+    const SkPaint* decoded_paint = scoped_lock.decoded_paint();
+
+    SkRect adjusted_src =
+        src->makeOffset(decoded_image.src_rect_offset().width(),
+                        decoded_image.src_rect_offset().height());
+    if (!decoded_image.is_scale_adjustment_identity()) {
+      float x_scale = decoded_image.scale_adjustment().width();
+      float y_scale = decoded_image.scale_adjustment().height();
+      adjusted_src = SkRect::MakeXYWH(
+          adjusted_src.x() * x_scale, adjusted_src.y() * y_scale,
+          adjusted_src.width() * x_scale, adjusted_src.height() * y_scale);
+    }
+    SkNWayCanvas::onDrawImageRect(decoded_image.image(), &adjusted_src, dst,
+                                  decoded_paint, constraint);
+  }
+
+  void onDrawImageNine(const SkImage* image,
+                       const SkIRect& center,
+                       const SkRect& dst,
+                       const SkPaint* paint) override {
+    // No cc embedder issues image nine calls.
+    NOTREACHED();
+  }
+
+ private:
+  class ScopedDecodedImageLock {
+   public:
+    ScopedDecodedImageLock(ImageDecodeController* image_decode_controller,
+                           const SkImage* image,
+                           const SkRect& src_rect,
+                           const SkSize& scale,
+                           bool is_decomposable,
+                           bool has_perspective,
+                           const SkPaint* paint)
+        : image_decode_controller_(image_decode_controller),
+          paint_(paint),
+          draw_image_(image,
+                      RoundOutRect(src_rect),
+                      scale,
+                      paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
+                      has_perspective,
+                      is_decomposable),
+          decoded_draw_image_(
+              image_decode_controller_->GetDecodedImageForDraw(draw_image_)) {
+      DCHECK(image->isLazyGenerated());
+      if (paint) {
+        decoded_paint_ = *paint;
+        decoded_paint_.setFilterQuality(decoded_draw_image_.filter_quality());
+      }
+    }
+
+    ~ScopedDecodedImageLock() {
+      image_decode_controller_->DrawWithImageFinished(draw_image_,
+                                                      decoded_draw_image_);
+    }
+
+    const DecodedDrawImage& decoded_image() const {
+      return decoded_draw_image_;
+    }
+    const SkPaint* decoded_paint() const {
+      return paint_ ? &decoded_paint_ : nullptr;
+    }
+
+   private:
+    ImageDecodeController* image_decode_controller_;
+    const SkPaint* paint_;
+    DrawImage draw_image_;
+    DecodedDrawImage decoded_draw_image_;
+    SkPaint decoded_paint_;
+  };
+
+  ImageDecodeController* image_decode_controller_;
+};
+
+}  // namespace
 
 scoped_refptr<DisplayListRasterSource>
 DisplayListRasterSource::CreateFromDisplayListRecordingSource(
@@ -40,7 +203,8 @@ DisplayListRasterSource::DisplayListRasterSource(
       clear_canvas_with_debug_color_(other->clear_canvas_with_debug_color_),
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
-      should_attempt_to_use_distance_field_text_(false) {}
+      should_attempt_to_use_distance_field_text_(false),
+      image_decode_controller_(nullptr) {}
 
 DisplayListRasterSource::DisplayListRasterSource(
     const DisplayListRasterSource* other,
@@ -58,16 +222,30 @@ DisplayListRasterSource::DisplayListRasterSource(
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(
-          other->should_attempt_to_use_distance_field_text_) {}
+          other->should_attempt_to_use_distance_field_text_),
+      image_decode_controller_(other->image_decode_controller_) {}
 
 DisplayListRasterSource::~DisplayListRasterSource() {
 }
 
 void DisplayListRasterSource::PlaybackToSharedCanvas(
-    SkCanvas* canvas,
+    SkCanvas* raster_canvas,
     const gfx::Rect& canvas_rect,
     float contents_scale) const {
-  RasterCommon(canvas, NULL, canvas_rect, canvas_rect, contents_scale);
+  // TODO(vmpstr): This can be improved by plumbing whether the tile itself has
+  // discardable images. This way we would only pay for the hijack canvas if the
+  // tile actually needed it.
+  if (display_list_->MayHaveDiscardableImages()) {
+    const SkImageInfo& info = raster_canvas->imageInfo();
+    ImageHijackCanvas canvas(info.width(), info.height(),
+                             image_decode_controller_);
+    canvas.addCanvas(raster_canvas);
+
+    RasterCommon(&canvas, nullptr, canvas_rect, canvas_rect, contents_scale);
+  } else {
+    RasterCommon(raster_canvas, nullptr, canvas_rect, canvas_rect,
+                 contents_scale);
+  }
 }
 
 void DisplayListRasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
@@ -77,13 +255,18 @@ void DisplayListRasterSource::RasterForAnalysis(skia::AnalysisCanvas* canvas,
 }
 
 void DisplayListRasterSource::PlaybackToCanvas(
-    SkCanvas* canvas,
+    SkCanvas* raster_canvas,
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
     float contents_scale) const {
-  PrepareForPlaybackToCanvas(canvas, canvas_bitmap_rect, canvas_playback_rect,
-                             contents_scale);
-  RasterCommon(canvas, NULL, canvas_bitmap_rect, canvas_playback_rect,
+  PrepareForPlaybackToCanvas(raster_canvas, canvas_bitmap_rect,
+                             canvas_playback_rect, contents_scale);
+
+  SkImageInfo info = raster_canvas->imageInfo();
+  ImageHijackCanvas canvas(info.width(), info.height(),
+                           image_decode_controller_);
+  canvas.addCanvas(raster_canvas);
+  RasterCommon(&canvas, NULL, canvas_bitmap_rect, canvas_playback_rect,
                contents_scale);
 }
 
@@ -304,6 +487,16 @@ DisplayListRasterSource::CreateCloneWithoutLCDText() const {
   bool can_use_lcd_text = false;
   return scoped_refptr<DisplayListRasterSource>(
       new DisplayListRasterSource(this, can_use_lcd_text));
+}
+
+void DisplayListRasterSource::SetImageDecodeController(
+    ImageDecodeController* image_decode_controller) {
+  DCHECK(image_decode_controller);
+  // Note that although this function should only be called once, tests tend to
+  // call it several times using the same controller.
+  DCHECK(!image_decode_controller_ ||
+         image_decode_controller_ == image_decode_controller);
+  image_decode_controller_ = image_decode_controller;
 }
 
 }  // namespace cc

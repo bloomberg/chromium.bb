@@ -309,4 +309,8 @@ bool DisplayItemList::HasDiscardableImageInRect(
   return image_map_.HasDiscardableImageInRect(layer_rect);
 }
 
+bool DisplayItemList::MayHaveDiscardableImages() const {
+  return !image_map_.empty();
+}
+
 }  // namespace cc

@@ -120,6 +120,7 @@
       'test/mock_helper_unittest.cc',
       'test/ordered_simple_task_runner_unittest.cc',
       'test/test_web_graphics_context_3d_unittest.cc',
+      'tiles/image_decode_controller_unittest.cc',
       'tiles/picture_layer_tiling_set_unittest.cc',
       'tiles/picture_layer_tiling_unittest.cc',
       'tiles/tile_manager_unittest.cc',

@@ -817,10 +817,13 @@ void RenderThreadImpl::Init() {
   DCHECK(parsed_num_raster_threads) << string_value;
   DCHECK_GT(num_raster_threads, 0);
 
+#if defined(OS_ANDROID)
   // Note: Currently, enabling image decode tasks only provides a benefit if
-  // there's more than one raster thread. This might change in the future but we
-  // avoid it for now to reduce the cost of recording.
-  are_image_decode_tasks_enabled_ = num_raster_threads > 1;
+  // we use high quality interpolation filters, which are disabled on android.
+  are_image_decode_tasks_enabled_ = false;
+#else
+  are_image_decode_tasks_enabled_ = true;
+#endif
 
   base::SimpleThread::Options thread_options;
 #if defined(OS_ANDROID) || defined(OS_LINUX)

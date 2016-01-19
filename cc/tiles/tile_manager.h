@@ -132,6 +132,10 @@ class CC_EXPORT TileManager {
   bool IsReadyToActivate() const;
   bool IsReadyToDraw() const;
 
+  ImageDecodeController* GetImageDecodeController() {
+    return &image_decode_controller_;
+  }
+
   scoped_refptr<base::trace_event::ConvertableToTraceFormat> BasicStateAsValue()
       const;
   void BasicStateAsValueInto(base::trace_event::TracedValue* dict) const;
@@ -332,6 +336,8 @@ class CC_EXPORT TileManager {
 
   uint64_t prepare_tiles_count_;
   uint64_t next_tile_id_;
+
+  base::hash_map<Tile::Id, std::vector<DrawImage>> scheduled_draw_images_;
 
   base::WeakPtrFactory<TileManager> task_set_finished_weak_ptr_factory_;
 

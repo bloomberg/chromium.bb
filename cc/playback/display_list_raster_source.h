@@ -21,6 +21,7 @@
 namespace cc {
 class DisplayItemList;
 class DrawImage;
+class ImageDecodeController;
 
 class CC_EXPORT DisplayListRasterSource
     : public base::RefCountedThreadSafe<DisplayListRasterSource> {
@@ -102,6 +103,10 @@ class CC_EXPORT DisplayListRasterSource
 
   scoped_refptr<DisplayListRasterSource> CreateCloneWithoutLCDText() const;
 
+  // Image decode controller should be set once. Its lifetime has to exceed that
+  // of the raster source, since the raster source will access it during raster.
+  void SetImageDecodeController(ImageDecodeController* image_decode_controller);
+
  protected:
   friend class base::RefCountedThreadSafe<DisplayListRasterSource>;
 
@@ -127,6 +132,10 @@ class CC_EXPORT DisplayListRasterSource
   // TODO(enne/vmiura): this has a read/write race between raster and compositor
   // threads with multi-threaded Ganesh.  Make this const or remove it.
   bool should_attempt_to_use_distance_field_text_;
+
+  // In practice, this is only set once before raster begins, so it's ok with
+  // respect to threading.
+  ImageDecodeController* image_decode_controller_;
 
  private:
   // Called when analyzing a tile. We can use AnalysisCanvas as

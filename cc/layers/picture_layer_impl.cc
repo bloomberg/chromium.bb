@@ -551,6 +551,12 @@ void PictureLayerImpl::UpdateRasterSource(
   bool could_have_tilings = raster_source_.get() && CanHaveTilings();
   raster_source_.swap(raster_source);
 
+  // Only set the image decode controller when we're committing.
+  if (!pending_set) {
+    raster_source_->SetImageDecodeController(
+        layer_tree_impl()->tile_manager()->GetImageDecodeController());
+  }
+
   // The |new_invalidation| must be cleared before updating tilings since they
   // access the invalidation through the PictureLayerTilingClient interface.
   invalidation_.Clear();

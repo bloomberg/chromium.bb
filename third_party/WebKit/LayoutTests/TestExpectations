@@ -1467,3 +1467,11 @@ crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
+
+crbug.com/516751 css3/blending/effect-background-blend-mode-stacking.html [ NeedsRebaseline ]
+crbug.com/516751 fast/backgrounds/mask-box-image.html [ NeedsRebaseline ]
+crbug.com/516751 fast/borders/border-image-rotate-transform.html [ NeedsRebaseline ]
+crbug.com/516751 svg/custom/pointer-events-image-css-transform.svg [ NeedsRebaseline ]
+crbug.com/516751 svg/custom/pointer-events-image.svg [ NeedsRebaseline ]
+crbug.com/516751 svg/hixie/perf/004.xml [ NeedsRebaseline ]
+

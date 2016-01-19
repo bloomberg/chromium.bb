@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <limits>
 
+#include "base/containers/adapters.h"
 #include "cc/base/math_util.h"
 #include "cc/playback/display_item_list.h"
 #include "third_party/skia/include/utils/SkNWayCanvas.h"
@@ -17,22 +18,46 @@
 
 namespace cc {
 
-namespace {
-
 SkRect MapRect(const SkMatrix& matrix, const SkRect& src) {
   SkRect dst;
   matrix.mapRect(&dst, src);
   return dst;
 }
 
-SkSize ExtractScale(const SkMatrix& matrix) {
-  SkSize scale = SkSize::Make(matrix.getScaleX(), matrix.getScaleY());
+bool ExtractScale(const SkMatrix& matrix, SkSize* scale) {
+  *scale = SkSize::Make(matrix.getScaleX(), matrix.getScaleY());
   if (matrix.getType() & SkMatrix::kAffine_Mask) {
-    if (!matrix.decomposeScale(&scale))
-      scale.set(1, 1);
+    if (!matrix.decomposeScale(scale)) {
+      scale->set(1, 1);
+      return false;
+    }
   }
-  return scale;
+  return true;
 }
+
+bool ComputeRectBoundsFromPaint(const SkRect& rect,
+                                const SkPaint* current_paint,
+                                const std::vector<const SkPaint*>& saved_paints,
+                                SkRect* paint_bounds) {
+  *paint_bounds = rect;
+  if (current_paint) {
+    if (!current_paint->canComputeFastBounds())
+      return false;
+    *paint_bounds =
+        current_paint->computeFastBounds(*paint_bounds, paint_bounds);
+  }
+
+  for (const auto* paint : base::Reversed(saved_paints)) {
+    if (!paint)
+      continue;
+    if (!paint->canComputeFastBounds())
+      return false;
+    *paint_bounds = paint->computeFastBounds(*paint_bounds, paint_bounds);
+  }
+  return true;
+}
+
+namespace {
 
 // We're using an NWay canvas with no added canvases, so in effect
 // non-overridden functions are no-ops.
@@ -59,10 +84,11 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
                    SkScalar x,
                    SkScalar y,
                    const SkPaint* paint) override {
-    const SkMatrix& ctm = this->getTotalMatrix();
-    AddImage(image, MapRect(ctm, SkRect::MakeXYWH(x, y, image->width(),
-                                                  image->height())),
-             ctm, paint);
+    const SkMatrix& ctm = getTotalMatrix();
+    AddImage(
+        image, SkRect::MakeIWH(image->width(), image->height()),
+        MapRect(ctm, SkRect::MakeXYWH(x, y, image->width(), image->height())),
+        ctm, paint);
   }
 
   void onDrawImageRect(const SkImage* image,
@@ -70,7 +96,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
                        const SkRect& dst,
                        const SkPaint* paint,
                        SrcRectConstraint) override {
-    const SkMatrix& ctm = this->getTotalMatrix();
+    const SkMatrix& ctm = getTotalMatrix();
     SkRect src_storage;
     if (!src) {
       src_storage = SkRect::MakeIWH(image->width(), image->height());
@@ -79,34 +105,76 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     SkMatrix matrix;
     matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
     matrix.postConcat(ctm);
-    AddImage(image, MapRect(ctm, dst), matrix, paint);
+    AddImage(image, *src, MapRect(ctm, dst), matrix, paint);
   }
 
   void onDrawImageNine(const SkImage* image,
                        const SkIRect& center,
                        const SkRect& dst,
                        const SkPaint* paint) override {
-    AddImage(image, dst, this->getTotalMatrix(), paint);
+    // No cc embedder issues image nine calls.
+    NOTREACHED();
+  }
+
+  SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override {
+    saved_paints_.push_back(rec.fPaint);
+    return SkNWayCanvas::getSaveLayerStrategy(rec);
+  }
+
+  void willSave() override {
+    saved_paints_.push_back(nullptr);
+    return SkNWayCanvas::willSave();
+  }
+
+  void willRestore() override {
+    DCHECK_GT(saved_paints_.size(), 0u);
+    saved_paints_.pop_back();
+    SkNWayCanvas::willRestore();
   }
 
  private:
   void AddImage(const SkImage* image,
+                const SkRect& src_rect,
                 const SkRect& rect,
                 const SkMatrix& matrix,
                 const SkPaint* paint) {
-    if (rect.intersects(canvas_bounds_) && image->isLazyGenerated()) {
-      SkFilterQuality filter_quality = kNone_SkFilterQuality;
-      if (paint) {
-        filter_quality = paint->getFilterQuality();
-      }
-      image_set_->push_back(
-          std::make_pair(DrawImage(image, ExtractScale(matrix), filter_quality),
-                         gfx::ToEnclosingRect(gfx::SkRectToRectF(rect))));
+    if (!image->isLazyGenerated())
+      return;
+
+    SkRect paint_rect;
+    bool computed_paint_bounds = ComputePaintBounds(rect, paint, &paint_rect);
+    if (!computed_paint_bounds) {
+      // TODO(vmpstr): UMA this case.
+      paint_rect = canvas_bounds_;
     }
+
+    if (!paint_rect.intersects(canvas_bounds_))
+      return;
+
+    SkFilterQuality filter_quality = kNone_SkFilterQuality;
+    if (paint) {
+      filter_quality = paint->getFilterQuality();
+    }
+
+    SkIRect src_irect;
+    src_rect.roundOut(&src_irect);
+    SkSize scale;
+    bool is_decomposable = ExtractScale(matrix, &scale);
+    image_set_->push_back(
+        std::make_pair(DrawImage(image, src_irect, scale, filter_quality,
+                                 matrix.hasPerspective(), is_decomposable),
+                       gfx::ToEnclosingRect(gfx::SkRectToRectF(paint_rect))));
+  }
+
+  bool ComputePaintBounds(const SkRect& rect,
+                          const SkPaint* paint,
+                          SkRect* paint_bounds) {
+    return ComputeRectBoundsFromPaint(rect, paint, saved_paints_, paint_bounds);
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
   const SkRect canvas_bounds_;
+  std::vector<const SkPaint*> saved_paints_;
 };
 
 }  // namespace

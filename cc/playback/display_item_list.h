@@ -104,6 +104,7 @@ class CC_EXPORT DisplayItemList
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   float raster_scale,
                                   std::vector<DrawImage>* images);
+  bool MayHaveDiscardableImages() const;
 
   bool HasDiscardableImageInRect(const gfx::Rect& layer_rect) const;
 
