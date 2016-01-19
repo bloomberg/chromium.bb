@@ -999,12 +999,11 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
         prev = curr->prevOnLine();
 
         // Layers will handle hit testing themselves.
-        if (curr->boxModelObject() && curr->boxModelObject().hasSelfPaintingLayer())
-            continue;
-
-        if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
-            lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
-            return true;
+        if (!curr->boxModelObject() || !curr->boxModelObject().hasSelfPaintingLayer()) {
+            if (curr->nodeAtPoint(result, locationInContainer, accumulatedOffset, lineTop, lineBottom)) {
+                lineLayoutItem().updateHitTestResult(result, locationInContainer.point() - toLayoutSize(accumulatedOffset));
+                return true;
+            }
         }
 
         // If the current inline box's layout object and the previous inline box's layout object are same,
@@ -1012,8 +1011,7 @@ bool InlineFlowBox::nodeAtPoint(HitTestResult& result, const HitTestLocation& lo
         if (prev && curr->lineLayoutItem() == prev->lineLayoutItem())
             continue;
 
-        // If a parent of the current inline box is a culled inline,
-        // we hit test it before we move the previous inline box.
+        // Hit test the culled inline if necessary.
         LineLayoutItem currLayoutItem = curr->lineLayoutItem();
         while (true) {
             // If the previous inline box is not a descendant of a current inline's parent,

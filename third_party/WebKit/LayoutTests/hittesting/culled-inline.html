@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="../resources/js-test.js"></script>
+<style>
+#culled:hover {
+  background-color: green;
+}
+.left {
+  display: inline-block;
+  transform: translateY(0px);
+  border: 1px solid black;
+}
+.right {
+  margin-left: 200px;
+  border: 1px solid black;
+}
+</style>
+</head>
+<body>
+<div id="container">
+<span id="culled">
+    <span class="left">Hello</span>
+    <span class="right">World</span>
+</span>
+</div>
+<div id="console"></div>
+</body>
+<script>
+description('To manually test, hover between the two words to see if background color turns green.');
+
+var rect = document.getElementById('culled').getBoundingClientRect();
+element = document.elementFromPoint(rect.left + rect.width/2, rect.top + rect.height/2);
+shouldBeEqualToString('element.id', 'culled');
+</script>
+</html>
