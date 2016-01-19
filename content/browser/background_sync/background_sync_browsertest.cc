@@ -621,7 +621,8 @@ IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest,
   EXPECT_FALSE(GetRegistrationOneShot("delay"));
 }
 
-IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, VerifyRetry) {
+// Disabled due to flakiness. See https://crbug.com/578952.
+IN_PROC_BROWSER_TEST_F(BackgroundSyncBrowserTest, DISABLED_VerifyRetry) {
   EXPECT_TRUE(RegisterServiceWorker());
   EXPECT_TRUE(LoadTestPage(kDefaultTestURL));  // Control the page.
 
