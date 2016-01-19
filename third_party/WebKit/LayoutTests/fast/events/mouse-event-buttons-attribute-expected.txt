@@ -139,8 +139,8 @@
 8. targetDiv received mouseenter buttons: 1
 9. targetDiv received mousemove buttons: 1
 10. dragImg received dragstart buttons: 1
-11. dragImg received drag buttons: 0
-12. targetDiv received dragenter buttons: 0
+11. dragImg received drag buttons: 1
+12. targetDiv received dragenter buttons: 1
 13. dragImg received drag buttons: 1
 14. dragImg received dragenter buttons: 1
 15. targetDiv received dragleave buttons: 1
@@ -165,8 +165,8 @@
 8. targetDiv received mouseenter buttons: 3
 9. targetDiv received mousemove buttons: 3
 10. dragImg received dragstart buttons: 3
-11. dragImg received drag buttons: 0
-12. targetDiv received dragenter buttons: 0
+11. dragImg received drag buttons: 3
+12. targetDiv received dragenter buttons: 3
 13. dragImg received drag buttons: 3
 14. dragImg received dragenter buttons: 3
 15. targetDiv received dragleave buttons: 3
@@ -191,8 +191,8 @@
 8. targetDiv received mouseenter buttons: 7
 9. targetDiv received mousemove buttons: 7
 10. dragImg received dragstart buttons: 7
-11. dragImg received drag buttons: 0
-12. targetDiv received dragenter buttons: 0
+11. dragImg received drag buttons: 7
+12. targetDiv received dragenter buttons: 7
 13. dragImg received drag buttons: 7
 14. dragImg received dragenter buttons: 7
 15. targetDiv received dragleave buttons: 7
