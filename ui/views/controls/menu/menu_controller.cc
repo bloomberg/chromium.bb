@@ -2269,12 +2269,15 @@ void MenuController::RepostEventAndCancel(SubmenuView* source,
   // be used when reposting the event.
   gfx::Point screen_loc(event->location());
   View::ConvertPointToScreen(source->GetScrollViewContainer(), &screen_loc);
+
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   gfx::NativeView native_view = source->GetWidget()->GetNativeView();
   gfx::NativeWindow window = nullptr;
   if (native_view) {
     gfx::Screen* screen = gfx::Screen::GetScreenFor(native_view);
     window = screen->GetWindowAtScreenPoint(screen_loc);
   }
+#endif
 
 #if defined(OS_WIN)
   // We're going to close and we own the event capture. We need to repost the
