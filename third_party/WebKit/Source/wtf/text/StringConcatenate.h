@@ -26,6 +26,7 @@
 #ifndef StringConcatenate_h
 #define StringConcatenate_h
 
+#include "wtf/Allocator.h"
 #include <string.h>
 
 #ifndef WTFString_h
@@ -42,10 +43,12 @@ namespace WTF {
 
 template<typename StringType>
 class StringTypeAdapter {
+    DISALLOW_NEW();
 };
 
 template<>
 class StringTypeAdapter<char> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<char>(char buffer)
         : m_buffer(buffer)
@@ -69,6 +72,7 @@ private:
 
 template<>
 class StringTypeAdapter<LChar> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<LChar>(LChar buffer)
         : m_buffer(buffer)
@@ -92,6 +96,7 @@ private:
 
 template<>
 class StringTypeAdapter<UChar> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<UChar>(UChar buffer)
         : m_buffer(buffer)
@@ -116,6 +121,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<char*> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<char*>(char* buffer)
         : m_buffer(buffer)
@@ -138,6 +144,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<LChar*> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<LChar*>(LChar* buffer);
 
@@ -156,6 +163,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<const UChar*> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter(const UChar* buffer);
 
@@ -177,6 +185,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<const char*> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<const char*>(const char* buffer);
 
@@ -195,6 +204,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<const LChar*> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<const LChar*>(const LChar* buffer);
 
@@ -213,6 +223,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<Vector<char>> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<Vector<char>>(const Vector<char>& buffer)
         : m_buffer(buffer)
@@ -233,6 +244,7 @@ private:
 
 template<>
 class StringTypeAdapter<Vector<LChar>> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<Vector<LChar>>(const Vector<LChar>& buffer)
         : m_buffer(buffer)
@@ -253,6 +265,7 @@ private:
 
 template<>
 class WTF_EXPORT StringTypeAdapter<String> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<String>(const String& string)
         : m_buffer(string)
@@ -273,6 +286,7 @@ private:
 
 template<>
 class StringTypeAdapter<AtomicString> {
+    DISALLOW_NEW();
 public:
     StringTypeAdapter<AtomicString>(const AtomicString& string)
         : m_adapter(string.string())

@@ -31,6 +31,7 @@
 #ifndef WTF_RawPtr_h
 #define WTF_RawPtr_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/TypeTraits.h"
 #include <algorithm>
@@ -48,6 +49,7 @@ namespace WTF {
 
 template<typename T>
 class RawPtr {
+    USING_FAST_MALLOC(RawPtr);
 public:
     RawPtr()
     {

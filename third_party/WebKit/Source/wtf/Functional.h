@@ -26,6 +26,7 @@
 #ifndef WTF_Functional_h
 #define WTF_Functional_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
@@ -49,6 +50,7 @@ class FunctionWrapper;
 // Bound static functions:
 template<typename R, typename... Params>
 class FunctionWrapper<R(*)(Params...)> {
+    DISALLOW_NEW();
 public:
     typedef R ResultType;
 
@@ -70,6 +72,7 @@ private:
 
 template<typename R, typename C, typename... Params>
 class FunctionWrapper<R(C::*)(Params...)> {
+    DISALLOW_NEW();
 public:
     typedef R ResultType;
 
@@ -135,6 +138,7 @@ class Function;
 
 template<typename R, typename... Args>
 class Function<R(Args...)> {
+    USING_FAST_MALLOC(Function);
     WTF_MAKE_NONCOPYABLE(Function);
 public:
     virtual ~Function() { }

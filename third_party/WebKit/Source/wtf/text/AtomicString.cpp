@@ -36,6 +36,7 @@ using namespace Unicode;
 static_assert(sizeof(AtomicString) == sizeof(String), "AtomicString and String must be same size");
 
 class AtomicStringTable {
+    USING_FAST_MALLOC(AtomicStringTable);
     WTF_MAKE_NONCOPYABLE(AtomicStringTable);
 public:
     static AtomicStringTable* create(WTFThreadData& data)

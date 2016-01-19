@@ -26,6 +26,7 @@
 #ifndef BitVector_h
 #define BitVector_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/WTFExport.h"
@@ -56,6 +57,7 @@ class PrintStream;
 // space.
 
 class WTF_EXPORT BitVector {
+    DISALLOW_NEW();
 public:
     BitVector()
         : m_bitsOrPointer(makeInlineBits(0))
@@ -195,6 +197,7 @@ private:
     }
 
     class WTF_EXPORT OutOfLineBits {
+        DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     public:
         size_t numBits() const { return m_numBits; }
         size_t numWords() const { return (m_numBits + bitsInPointer() - 1) / bitsInPointer(); }

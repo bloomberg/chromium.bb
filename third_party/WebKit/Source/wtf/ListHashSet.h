@@ -87,7 +87,8 @@ public:
     friend class ListHashSetReverseIterator<ListHashSet>;
     friend class ListHashSetConstReverseIterator<ListHashSet>;
 
-    template <typename ValueType> struct HashTableAddResult {
+    template <typename ValueType> struct HashTableAddResult final {
+        STACK_ALLOCATED();
         HashTableAddResult(Node* storedValue, bool isNewEntry) : storedValue(storedValue), isNewEntry(isNewEntry) { }
         Node* storedValue;
         bool isNewEntry;
@@ -193,6 +194,7 @@ private:
 // compiler otherwise gets into circular template dependencies when trying to do
 // sizeof on a node.
 template <typename ValueArg> class ListHashSetNodeBase {
+    DISALLOW_NEW();
 protected:
     ListHashSetNodeBase(const ValueArg& value)
         : m_value(value)
@@ -232,6 +234,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
     typedef ListHashSetNodeBase<ValueArg> NodeBase;
 
     class AllocatorProvider {
+        DISALLOW_NEW();
     public:
         AllocatorProvider() : m_allocator(nullptr) {}
         void createAllocatorIfNeeded()
@@ -425,12 +428,14 @@ public:
 };
 
 template <typename HashArg> struct ListHashSetNodeHashFunctions {
+    STATIC_ONLY(ListHashSetNodeHashFunctions);
     template <typename T> static unsigned hash(const T& key) { return HashArg::hash(key->m_value); }
     template <typename T> static bool equal(const T& a, const T& b) { return HashArg::equal(a->m_value, b->m_value); }
     static const bool safeToCompareToEmptyOrDeleted = false;
 };
 
 template <typename Set> class ListHashSetIterator {
+    DISALLOW_NEW();
 private:
     typedef typename Set::const_iterator const_iterator;
     typedef typename Set::Node Node;
@@ -471,6 +476,7 @@ private:
 
 template <typename Set>
 class ListHashSetConstIterator {
+    DISALLOW_NEW();
 private:
     typedef typename Set::const_iterator const_iterator;
     typedef typename Set::Node Node;
@@ -539,6 +545,7 @@ private:
 
 template <typename Set>
 class ListHashSetReverseIterator {
+    DISALLOW_NEW();
 private:
     typedef typename Set::const_reverse_iterator const_reverse_iterator;
     typedef typename Set::Node Node;
@@ -578,6 +585,7 @@ private:
 };
 
 template <typename Set> class ListHashSetConstReverseIterator {
+    DISALLOW_NEW();
 private:
     typedef typename Set::reverse_iterator reverse_iterator;
     typedef typename Set::Node Node;
@@ -646,6 +654,7 @@ private:
 
 template <typename HashFunctions>
 struct ListHashSetTranslator {
+    STATIC_ONLY(ListHashSetTranslator);
     template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a->m_value, b); }
     template <typename T, typename U, typename V> static void translate(T*& location, const U& key, const V& allocator)
@@ -760,6 +769,7 @@ inline typename ListHashSet<T, inlineCapacity, U, V>::const_iterator ListHashSet
 
 template <typename Translator>
 struct ListHashSetTranslatorAdapter {
+    STATIC_ONLY(ListHashSetTranslatorAdapter);
     template <typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a->m_value, b); }
 };

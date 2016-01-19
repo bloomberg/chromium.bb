@@ -29,6 +29,7 @@
 #ifndef StringBuffer_h
 #define StringBuffer_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 #include "wtf/text/Unicode.h"
@@ -37,6 +38,7 @@ namespace WTF {
 
 template <typename CharType>
 class StringBuffer {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(StringBuffer);
 public:
     StringBuffer() { }

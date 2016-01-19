@@ -58,9 +58,7 @@ public:
 
     size_t size();
 
-    // This inner class used to be private but is now public on account of a
-    // possible MSVC bug. It can be made private again if we get rid of
-    // USING_FAST_MALLOC ever.
+private:
     class Node {
         USING_FAST_MALLOC(LinkedStack::Node);
     public:
@@ -69,8 +67,10 @@ public:
         T m_data;
         OwnPtr<Node> m_next;
     };
+#if COMPILER(MSVC)
+    friend struct ::WTF::OwnedPtrDeleter<Node>;
+#endif
 
-private:
     OwnPtr<Node> m_head;
     size_t m_size;
 };

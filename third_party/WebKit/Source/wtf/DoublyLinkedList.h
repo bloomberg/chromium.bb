@@ -26,6 +26,8 @@
 #ifndef DoublyLinkedList_h
 #define DoublyLinkedList_h
 
+#include "wtf/Allocator.h"
+
 namespace WTF {
 
 // This class allows nodes to share code without dictating data member layout.
@@ -67,6 +69,7 @@ template<typename T> inline T* DoublyLinkedListNode<T>::next() const
 }
 
 template<typename T> class DoublyLinkedList {
+    USING_FAST_MALLOC(DoublyLinkedList);
 public:
     DoublyLinkedList();
 

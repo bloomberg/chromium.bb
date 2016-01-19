@@ -31,16 +31,15 @@
 #ifndef StringStatics_h
 #define StringStatics_h
 
+#include "wtf/Allocator.h"
 #include "wtf/WTFExport.h"
 
 namespace WTF {
 
 class StringStatics {
+    STATIC_ONLY(StringStatics);
 public:
     WTF_EXPORT static void init();
-
-private:
-    StringStatics();
 };
 
 }

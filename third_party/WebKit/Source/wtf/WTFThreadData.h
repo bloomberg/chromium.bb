@@ -43,6 +43,7 @@ struct ICUConverterWrapper;
 typedef void (*AtomicStringTableDestructor)(AtomicStringTable*);
 
 class WTF_EXPORT WTFThreadData {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
     WTF_MAKE_NONCOPYABLE(WTFThreadData);
 public:
     WTFThreadData();

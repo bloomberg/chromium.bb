@@ -27,6 +27,7 @@
 #ifndef ArrayBufferContents_h
 #define ArrayBufferContents_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -38,6 +39,7 @@ namespace WTF {
 
 class WTF_EXPORT ArrayBufferContents {
     WTF_MAKE_NONCOPYABLE(ArrayBufferContents);
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     enum InitializationPolicy {
         ZeroInitialize,

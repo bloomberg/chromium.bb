@@ -39,12 +39,14 @@ class ThreadSafeRefCountedBase;
 
 template<typename T>
 struct IsRefCounted {
+    STATIC_ONLY(IsRefCounted);
     static const bool value = IsSubclass<T, RefCountedBase>::value
         || IsSubclass<T, ThreadSafeRefCountedBase>::value;
 };
 
 template <typename T>
 struct OwnedPtrDeleter {
+    STATIC_ONLY(OwnedPtrDeleter);
     static void deletePtr(T* ptr)
     {
         static_assert(!IsRefCounted<T>::value, "use RefPtr for RefCounted objects");
@@ -55,6 +57,7 @@ struct OwnedPtrDeleter {
 
 template <typename T>
 struct OwnedPtrDeleter<T[]> {
+    STATIC_ONLY(OwnedPtrDeleter);
     static void deletePtr(T* ptr)
     {
         static_assert(!IsRefCounted<T>::value, "use RefPtr for RefCounted objects");
@@ -65,6 +68,7 @@ struct OwnedPtrDeleter<T[]> {
 
 template <class T, int n>
 struct OwnedPtrDeleter<T[n]> {
+    STATIC_ONLY(OwnedPtrDeleter);
     static_assert(sizeof(T) < 0, "do not use array with size as type");
 };
 

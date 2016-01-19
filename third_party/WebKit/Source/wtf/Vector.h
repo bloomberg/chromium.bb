@@ -60,11 +60,13 @@ struct VectorDestructor;
 
 template <typename T>
 struct VectorDestructor<false, T> {
+    STATIC_ONLY(VectorDestructor);
     static void destruct(T*, T*) {}
 };
 
 template <typename T>
 struct VectorDestructor<true, T> {
+    STATIC_ONLY(VectorDestructor);
     static void destruct(T* begin, T* end)
     {
         for (T* cur = begin; cur != end; ++cur)
@@ -77,6 +79,7 @@ struct VectorUnusedSlotClearer;
 
 template <typename T>
 struct VectorUnusedSlotClearer<false, T> {
+    STATIC_ONLY(VectorUnusedSlotClearer);
     static void clear(T*, T*) {}
 #if ENABLE(ASSERT)
     static void checkCleared(const T*, const T*) {}
@@ -85,6 +88,7 @@ struct VectorUnusedSlotClearer<false, T> {
 
 template <typename T>
 struct VectorUnusedSlotClearer<true, T> {
+    STATIC_ONLY(VectorUnusedSlotClearer);
     static void clear(T* begin, T* end)
     {
         memset(reinterpret_cast<void*>(begin), 0, sizeof(T) * (end - begin));
@@ -107,6 +111,7 @@ struct VectorInitializer;
 
 template <typename T>
 struct VectorInitializer<false, T> {
+    STATIC_ONLY(VectorInitializer);
     static void initialize(T* begin, T* end)
     {
         for (T* cur = begin; cur != end; ++cur)
@@ -116,6 +121,7 @@ struct VectorInitializer<false, T> {
 
 template <typename T>
 struct VectorInitializer<true, T> {
+    STATIC_ONLY(VectorInitializer);
     static void initialize(T* begin, T* end)
     {
         memset(begin, 0, reinterpret_cast<char*>(end) - reinterpret_cast<char*>(begin));
@@ -127,6 +133,7 @@ struct VectorMover;
 
 template <typename T>
 struct VectorMover<false, T> {
+    STATIC_ONLY(VectorMover);
     static void move(T* src, T* srcEnd, T* dst)
     {
         while (src != srcEnd) {
@@ -158,6 +165,7 @@ struct VectorMover<false, T> {
 
 template <typename T>
 struct VectorMover<true, T> {
+    STATIC_ONLY(VectorMover);
     static void move(const T* src, const T* srcEnd, T* dst)
     {
         if (LIKELY(dst && src))
@@ -179,6 +187,7 @@ struct VectorCopier;
 
 template <typename T>
 struct VectorCopier<false, T> {
+    STATIC_ONLY(VectorCopier);
     template <typename U>
     static void uninitializedCopy(const U* src, const U* srcEnd, T* dst)
     {
@@ -192,6 +201,7 @@ struct VectorCopier<false, T> {
 
 template <typename T>
 struct VectorCopier<true, T> {
+    STATIC_ONLY(VectorCopier);
     static void uninitializedCopy(const T* src, const T* srcEnd, T* dst)
     {
         if (LIKELY(dst && src))
@@ -209,6 +219,7 @@ struct VectorFiller;
 
 template <typename T>
 struct VectorFiller<false, T> {
+    STATIC_ONLY(VectorFiller);
     static void uninitializedFill(T* dst, T* dstEnd, const T& val)
     {
         while (dst != dstEnd) {
@@ -220,6 +231,7 @@ struct VectorFiller<false, T> {
 
 template <typename T>
 struct VectorFiller<true, T> {
+    STATIC_ONLY(VectorFiller);
     static void uninitializedFill(T* dst, T* dstEnd, const T& val)
     {
         static_assert(sizeof(T) == sizeof(char), "size of type should be one");
@@ -237,6 +249,7 @@ struct VectorComparer;
 
 template <typename T>
 struct VectorComparer<false, T> {
+    STATIC_ONLY(VectorComparer);
     static bool compare(const T* a, const T* b, size_t size)
     {
         ASSERT(a);
@@ -247,6 +260,7 @@ struct VectorComparer<false, T> {
 
 template <typename T>
 struct VectorComparer<true, T> {
+    STATIC_ONLY(VectorComparer);
     static bool compare(const T* a, const T* b, size_t size)
     {
         ASSERT(a);
@@ -257,6 +271,7 @@ struct VectorComparer<true, T> {
 
 template <typename T>
 struct VectorTypeOperations {
+    STATIC_ONLY(VectorTypeOperations);
     static void destruct(T* begin, T* end)
     {
         VectorDestructor<VectorTraits<T>::needsDestruction, T>::destruct(begin, end);
@@ -301,6 +316,7 @@ struct VectorTypeOperations {
 template <typename T, bool hasInlineCapacity, typename Allocator>
 class VectorBufferBase {
     WTF_MAKE_NONCOPYABLE(VectorBufferBase);
+    DISALLOW_NEW();
 public:
     void allocateBuffer(size_t newCapacity)
     {
@@ -1349,6 +1365,7 @@ void Vector<T, inlineCapacity, Allocator>::trace(VisitorDispatcher visitor)
 #if !ENABLE(OILPAN)
 template <typename T, size_t N>
 struct NeedsTracing<Vector<T, N>> {
+    STATIC_ONLY(NeedsTracing);
     static const bool value = false;
 };
 #endif

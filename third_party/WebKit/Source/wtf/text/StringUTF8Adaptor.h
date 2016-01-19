@@ -32,6 +32,7 @@
 #define StringUTF8Adaptor_h
 
 #include "base/strings/string_piece.h"
+#include "wtf/Allocator.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/TextEncoding.h"
 #include "wtf/text/WTFString.h"
@@ -41,7 +42,8 @@ namespace WTF {
 // This class lets you get UTF-8 data out of a String without mallocing a
 // separate buffer to hold the data if the String happens to be 8 bit and
 // contain only ASCII characters.
-class StringUTF8Adaptor {
+class StringUTF8Adaptor final {
+    DISALLOW_NEW();
 public:
     explicit StringUTF8Adaptor(const String& string)
         : m_data(0)

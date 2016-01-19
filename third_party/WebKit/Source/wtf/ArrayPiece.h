@@ -5,6 +5,7 @@
 #ifndef ArrayPiece_h
 #define ArrayPiece_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/WTFExport.h"
 
@@ -20,6 +21,7 @@ namespace WTF {
 // IMPORTANT: The data contained by ArrayPiece is NOT OWNED, so caution must be
 //            taken to ensure it is kept alive.
 class WTF_EXPORT ArrayPiece {
+    DISALLOW_NEW();
 public:
     // Constructs a "null" ArrayPiece object.
     ArrayPiece();

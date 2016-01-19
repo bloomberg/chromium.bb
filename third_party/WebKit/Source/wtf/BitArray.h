@@ -26,6 +26,7 @@
 #ifndef BitArray_h
 #define BitArray_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include <string.h>
 
@@ -33,6 +34,7 @@ namespace WTF {
 
 template<unsigned arraySize>
 class BitArray {
+    USING_FAST_MALLOC(BitArray);
 public:
     BitArray(bool value = false)
     {

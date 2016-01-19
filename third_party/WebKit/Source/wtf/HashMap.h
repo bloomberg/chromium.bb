@@ -29,13 +29,16 @@ namespace WTF {
 template <typename KeyTraits, typename MappedTraits> struct HashMapValueTraits;
 
 template <typename T> struct ReferenceTypeMaker {
+    STATIC_ONLY(ReferenceTypeMaker);
     typedef T& ReferenceType;
 };
 template <typename T> struct ReferenceTypeMaker<T&> {
+    STATIC_ONLY(ReferenceTypeMaker);
     typedef T& ReferenceType;
 };
 
 struct KeyValuePairKeyExtractor {
+    STATIC_ONLY(KeyValuePairKeyExtractor);
     template <typename T>
     static const typename T::KeyType& extract(const T& p) { return p.key; }
 };
@@ -171,6 +174,7 @@ private:
 template <typename KeyArg, typename MappedArg, typename HashArg, typename KeyTraitsArg, typename MappedTraitsArg, typename Allocator>
 class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator>::HashMapKeysProxy :
     private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> {
+    DISALLOW_NEW();
 public:
     typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
     typedef typename HashMapType::iterator::Keys iterator;
@@ -209,6 +213,7 @@ private:
 template <typename KeyArg, typename MappedArg, typename HashArg,  typename KeyTraitsArg, typename MappedTraitsArg, typename Allocator>
 class HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator>::HashMapValuesProxy :
     private HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> {
+    DISALLOW_NEW();
 public:
     typedef HashMap<KeyArg, MappedArg, HashArg, KeyTraitsArg, MappedTraitsArg, Allocator> HashMapType;
     typedef typename HashMapType::iterator::Values iterator;
@@ -246,6 +251,7 @@ private:
 
 template <typename KeyTraits, typename MappedTraits>
 struct HashMapValueTraits : KeyValuePairHashTraits<KeyTraits, MappedTraits> {
+    STATIC_ONLY(HashMapValueTraits);
     static const bool hasIsEmptyValueFunction = true;
     static bool isEmptyValue(const typename KeyValuePairHashTraits<KeyTraits, MappedTraits>::TraitType& value)
     {
@@ -255,6 +261,7 @@ struct HashMapValueTraits : KeyValuePairHashTraits<KeyTraits, MappedTraits> {
 
 template <typename ValueTraits, typename HashFunctions>
 struct HashMapTranslator {
+    STATIC_ONLY(HashMapTranslator);
     template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
     template <typename T, typename U, typename V> static void translate(T& location, const U& key, const V& mapped)
@@ -266,6 +273,7 @@ struct HashMapTranslator {
 
 template <typename ValueTraits, typename Translator>
 struct HashMapTranslatorAdapter {
+    STATIC_ONLY(HashMapTranslatorAdapter);
     template <typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a, b); }
     template <typename T, typename U, typename V> static void translate(T& location, const U& key, const V& mapped, unsigned hashCode)
@@ -505,6 +513,7 @@ inline void copyValuesToVector(const HashMap<T, U, V, W, X, Y>& collection, Z& v
 #if !ENABLE(OILPAN)
 template <typename T, typename U, typename V, typename W, typename X>
 struct NeedsTracing<HashMap<T, U, V, W, X>> {
+    STATIC_ONLY(NeedsTracing);
     static const bool value = false;
 };
 #endif

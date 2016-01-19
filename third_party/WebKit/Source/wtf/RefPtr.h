@@ -23,6 +23,7 @@
 #ifndef WTF_RefPtr_h
 #define WTF_RefPtr_h
 
+#include "wtf/Allocator.h"
 #include "wtf/HashTableDeletedValueType.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RawPtr.h"
@@ -35,6 +36,7 @@ template <typename T> class PassRefPtr;
 template <typename T> class RefPtrValuePeeker;
 
 template <typename T> class RefPtr {
+    USING_FAST_MALLOC(RefPtr);
 public:
     ALWAYS_INLINE RefPtr() : m_ptr(nullptr) {}
     ALWAYS_INLINE RefPtr(std::nullptr_t) : m_ptr(nullptr) {}
@@ -161,6 +163,7 @@ template <typename T> inline T* getPtr(const RefPtr<T>& p)
 }
 
 template <typename T> class RefPtrValuePeeker {
+    DISALLOW_NEW();
 public:
     ALWAYS_INLINE RefPtrValuePeeker(T* p): m_ptr(p) {}
     ALWAYS_INLINE RefPtrValuePeeker(std::nullptr_t): m_ptr(nullptr) {}

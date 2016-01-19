@@ -87,7 +87,8 @@ void printInternal(PrintStream& out, const T& value)
 }
 
 #define MAKE_PRINT_ADAPTOR(Name, Type, function) \
-    class Name {                                 \
+    class Name final {                           \
+        STACK_ALLOCATED();                       \
     public:                                      \
         Name(const Type& value)                  \
             : m_value(value)                     \
@@ -102,7 +103,8 @@ void printInternal(PrintStream& out, const T& value)
     }
 
 #define MAKE_PRINT_METHOD_ADAPTOR(Name, Type, method) \
-    class Name {                                 \
+    class Name final {                           \
+        STACK_ALLOCATED();                       \
     public:                                      \
         Name(const Type& value)                  \
             : m_value(value)                     \
@@ -127,7 +129,8 @@ void dumpCharacter(PrintStream&, char);
 MAKE_PRINT_ADAPTOR(CharacterDump, char, dumpCharacter);
 
 template <typename T>
-class PointerDump {
+class PointerDump final {
+    STACK_ALLOCATED();
 public:
     PointerDump(const T* ptr)
         : m_ptr(ptr)

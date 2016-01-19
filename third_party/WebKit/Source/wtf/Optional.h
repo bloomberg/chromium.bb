@@ -6,6 +6,7 @@
 #define Optional_h
 
 #include "wtf/Alignment.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/StdLibExtras.h"
@@ -31,7 +32,8 @@ namespace WTF {
 // optional yields a const reference.
 
 template <typename T>
-class Optional {
+class Optional final {
+    DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(Optional);
 public:
     Optional() : m_ptr(nullptr) { }

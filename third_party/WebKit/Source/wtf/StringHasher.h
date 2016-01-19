@@ -22,6 +22,7 @@
 #ifndef WTF_StringHasher_h
 #define WTF_StringHasher_h
 
+#include "wtf/Allocator.h"
 #include "wtf/text/Unicode.h"
 
 namespace WTF {
@@ -38,6 +39,7 @@ namespace WTF {
 static const unsigned stringHashingStartValue = 0x9E3779B9U;
 
 class StringHasher {
+    DISALLOW_NEW();
 public:
     static const unsigned flagCount = 8; // Save 8 bits for StringImpl to use as flags.
 

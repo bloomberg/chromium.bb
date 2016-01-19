@@ -26,6 +26,7 @@
 #ifndef BloomFilter_h
 #define BloomFilter_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Compiler.h"
 #include "wtf/text/AtomicString.h"
 
@@ -36,6 +37,7 @@ namespace WTF {
 // keys and m is the table size (==2^keyBits).
 template <unsigned keyBits>
 class BloomFilter {
+    USING_FAST_MALLOC(BloomFilter);
 public:
     static_assert(keyBits <= 16, "bloom filter key size check");
 

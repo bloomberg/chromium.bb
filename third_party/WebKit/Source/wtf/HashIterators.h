@@ -26,6 +26,8 @@
 #ifndef WTF_HashIterators_h
 #define WTF_HashIterators_h
 
+#include "wtf/Allocator.h"
+
 namespace WTF {
 
 template <typename HashTableType, typename KeyType, typename MappedType> struct HashTableConstKeysIterator;
@@ -35,6 +37,7 @@ template <typename HashTableType, typename KeyType, typename MappedType> struct 
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableConstIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> {
+    STACK_ALLOCATED();
 private:
     typedef KeyValuePair<KeyType, MappedType> ValueType;
 public:
@@ -59,6 +62,7 @@ public:
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> {
+    STACK_ALLOCATED();
 private:
     typedef KeyValuePair<KeyType, MappedType> ValueType;
 public:
@@ -89,6 +93,7 @@ public:
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableConstKeysIterator {
+    STACK_ALLOCATED();
 private:
     typedef HashTableConstIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> ConstIterator;
 
@@ -107,6 +112,7 @@ public:
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableConstValuesIterator {
+    STACK_ALLOCATED();
 private:
     typedef HashTableConstIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> ConstIterator;
 
@@ -125,6 +131,7 @@ public:
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableKeysIterator {
+    STACK_ALLOCATED();
 private:
     typedef HashTableIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> Iterator;
     typedef HashTableConstIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> ConstIterator;
@@ -150,6 +157,7 @@ public:
 
 template <typename HashTableType, typename KeyType, typename MappedType>
 struct HashTableValuesIterator {
+    STACK_ALLOCATED();
 private:
     typedef HashTableIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> Iterator;
     typedef HashTableConstIteratorAdapter<HashTableType, KeyValuePair<KeyType, MappedType>> ConstIterator;

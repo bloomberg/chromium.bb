@@ -124,12 +124,14 @@ private:
 };
 
 struct IdentityExtractor {
+    STATIC_ONLY(IdentityExtractor);
     template <typename T>
     static const T& extract(const T& t) { return t; }
 };
 
 template <typename Translator>
 struct HashSetTranslatorAdapter {
+    STATIC_ONLY(HashSetTranslatorAdapter);
     template <typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a, b); }
     template <typename T, typename U> static void translate(T& location, const U& key, const U&, unsigned hashCode)

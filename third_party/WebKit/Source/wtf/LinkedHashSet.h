@@ -51,6 +51,7 @@ template<typename Value, typename Allocator> struct LinkedHashSetExtractor;
 template<typename Value, typename ValueTraits, typename Allocator> struct LinkedHashSetTraits;
 
 class LinkedHashSetNodeBase {
+    DISALLOW_NEW();
 public:
     LinkedHashSetNodeBase() : m_prev(this), m_next(this) { }
 
@@ -120,6 +121,7 @@ private:
 
 template<typename ValueArg, typename Allocator>
 class LinkedHashSetNode : public LinkedHashSetNodeBase {
+    DISALLOW_NEW();
 public:
     LinkedHashSetNode(const ValueArg& value, LinkedHashSetNodeBase* prev, LinkedHashSetNodeBase* next)
         : LinkedHashSetNodeBase(prev, next)
@@ -163,7 +165,8 @@ public:
     typedef LinkedHashSetConstReverseIterator<LinkedHashSet> const_reverse_iterator;
     friend class LinkedHashSetConstReverseIterator<LinkedHashSet>;
 
-    struct AddResult {
+    struct AddResult final {
+        STACK_ALLOCATED();
         AddResult(const typename ImplType::AddResult& hashTableAddResult)
             : storedValue(&hashTableAddResult.storedValue->m_value)
             , isNewEntry(hashTableAddResult.isNewEntry)
@@ -273,6 +276,7 @@ private:
 
 template<typename Value, typename HashFunctions, typename Allocator>
 struct LinkedHashSetTranslator {
+    STATIC_ONLY(LinkedHashSetTranslator);
     typedef LinkedHashSetNode<Value, Allocator> Node;
     typedef LinkedHashSetNodeBase NodeBase;
     typedef typename HashTraits<Value>::PeekInType ValuePeekInType;
@@ -295,11 +299,13 @@ struct LinkedHashSetTranslator {
 
 template<typename Value, typename Allocator>
 struct LinkedHashSetExtractor {
+    STATIC_ONLY(LinkedHashSetExtractor);
     static const Value& extract(const LinkedHashSetNode<Value, Allocator>& node) { return node.m_value; }
 };
 
 template<typename Value, typename ValueTraitsArg, typename Allocator>
 struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator>> {
+    STATIC_ONLY(LinkedHashSetTraits);
     typedef LinkedHashSetNode<Value, Allocator> Node;
     typedef ValueTraitsArg ValueTraits;
 
@@ -319,6 +325,7 @@ struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Valu
     // the type inside the node.
     template<typename U = void>
     struct NeedsTracingLazily {
+        STATIC_ONLY(NeedsTracingLazily);
         static const bool value = ValueTraits::template NeedsTracingLazily<>::value;
     };
     static const WeakHandlingFlag weakHandlingFlag = ValueTraits::weakHandlingFlag;
@@ -326,6 +333,7 @@ struct LinkedHashSetTraits : public SimpleClassHashTraits<LinkedHashSetNode<Valu
 
 template<typename LinkedHashSetType>
 class LinkedHashSetIterator {
+    DISALLOW_NEW();
 private:
     typedef typename LinkedHashSetType::Node Node;
     typedef typename LinkedHashSetType::Traits Traits;
@@ -368,6 +376,7 @@ protected:
 
 template<typename LinkedHashSetType>
 class LinkedHashSetConstIterator {
+    DISALLOW_NEW();
 private:
     typedef typename LinkedHashSetType::Node Node;
     typedef typename LinkedHashSetType::Traits Traits;
@@ -571,6 +580,7 @@ inline typename LinkedHashSet<T, U, V, W>::const_iterator LinkedHashSet<T, U, V,
 
 template<typename Translator>
 struct LinkedHashSetTranslatorAdapter {
+    STATIC_ONLY(LinkedHashSetTranslatorAdapter);
     template<typename T> static unsigned hash(const T& key) { return Translator::hash(key); }
     template<typename T, typename U> static bool equal(const T& a, const U& b) { return Translator::equal(a.m_value, b); }
 };
@@ -723,6 +733,7 @@ inline void swap(LinkedHashSetNode<T, Allocator>& a, LinkedHashSetNode<T, Alloca
 #if !ENABLE(OILPAN)
 template<typename T, typename U, typename V>
 struct NeedsTracing<LinkedHashSet<T, U, V>> {
+    STATIC_ONLY(NeedsTracing);
     static const bool value = false;
 };
 #endif

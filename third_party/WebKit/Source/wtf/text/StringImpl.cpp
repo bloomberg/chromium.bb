@@ -900,7 +900,8 @@ inline PassRefPtr<StringImpl> StringImpl::stripMatchedCharacters(UCharPredicate 
     return create(characters16() + start, end + 1 - start);
 }
 
-class UCharPredicate {
+class UCharPredicate final {
+    STACK_ALLOCATED();
 public:
     inline UCharPredicate(CharacterMatchFunctionPtr function): m_function(function) { }
 
@@ -913,7 +914,8 @@ private:
     const CharacterMatchFunctionPtr m_function;
 };
 
-class SpaceOrNewlinePredicate {
+class SpaceOrNewlinePredicate final {
+    STACK_ALLOCATED();
 public:
     inline bool operator()(UChar ch) const
     {

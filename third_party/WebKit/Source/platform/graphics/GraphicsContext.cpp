@@ -75,8 +75,8 @@ GraphicsContext::GraphicsContext(PaintController& paintController, DisabledMode 
     m_paintState = m_paintStateStack.last().get();
 
     if (contextDisabled()) {
-        DEFINE_STATIC_LOCAL(RefPtr<SkCanvas>, nullCanvas, (adoptRef(SkCreateNullCanvas())));
-        m_canvas = nullCanvas.get();
+        DEFINE_STATIC_REF(SkCanvas, nullCanvas, (adoptRef(SkCreateNullCanvas())));
+        m_canvas = nullCanvas;
     }
 }
 

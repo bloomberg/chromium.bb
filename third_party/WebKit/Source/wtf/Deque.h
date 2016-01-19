@@ -131,6 +131,7 @@ private:
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 class DequeIteratorBase {
+    DISALLOW_NEW();
 protected:
     DequeIteratorBase();
     DequeIteratorBase(const Deque<T, inlineCapacity, Allocator>*, size_t);

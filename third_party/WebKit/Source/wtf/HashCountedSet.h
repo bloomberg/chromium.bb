@@ -37,6 +37,7 @@ template <
     typename Allocator = PartitionAllocator>
 class HashCountedSet {
     WTF_USE_ALLOCATOR(HashCountedSet, Allocator);
+    WTF_MAKE_NONCOPYABLE(HashCountedSet);
 private:
     typedef HashMap<Value, unsigned, HashFunctions, Traits, HashTraits<unsigned>, Allocator> ImplType;
 public:

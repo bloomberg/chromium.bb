@@ -31,6 +31,7 @@
 #ifndef ArrayBufferBuilder_h
 #define ArrayBufferBuilder_h
 
+#include "wtf/Allocator.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/RefPtr.h"
@@ -40,10 +41,11 @@ namespace WTF {
 
 // A utility class to build an ArrayBuffer instance. Validity must be checked
 // by isValid() before using an instance.
-class WTF_EXPORT ArrayBufferBuilder {
+class WTF_EXPORT ArrayBufferBuilder final {
     // Disallow copying since it's expensive and we don't want code to do it by
     // accident.
     WTF_MAKE_NONCOPYABLE(ArrayBufferBuilder);
+    USING_FAST_MALLOC(ArrayBufferBuilder);
 
 public:
     // Creates an ArrayBufferBuilder using the default capacity.

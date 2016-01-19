@@ -110,7 +110,8 @@ public:
 
 typedef Locker<MutexBase> MutexLocker;
 
-class MutexTryLocker {
+class MutexTryLocker final {
+    STACK_ALLOCATED();
     WTF_MAKE_NONCOPYABLE(MutexTryLocker);
 public:
     MutexTryLocker(Mutex& mutex) : m_mutex(mutex), m_locked(mutex.tryLock()) { }
@@ -127,7 +128,8 @@ private:
     bool m_locked;
 };
 
-class WTF_EXPORT ThreadCondition {
+class WTF_EXPORT ThreadCondition final {
+    USING_FAST_MALLOC(ThreadCondition); // Only HeapTest.cpp requires.
     WTF_MAKE_NONCOPYABLE(ThreadCondition);
 public:
     ThreadCondition();

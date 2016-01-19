@@ -186,6 +186,7 @@ private:
 // The Windows compiler seems to be very eager to instantiate things it won't
 // need, so unless we have this class we get compile errors.
 class PartitionAllocatorDummyVisitor {
+    DISALLOW_NEW();
 public:
     template<typename T> inline bool isHeapObjectAlive(T obj)
     {

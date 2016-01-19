@@ -21,6 +21,7 @@
 #ifndef WTF_PassRefPtr_h
 #define WTF_PassRefPtr_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/RawPtr.h"
 #include "wtf/TypeTraits.h"
@@ -56,6 +57,7 @@ template <typename T> ALWAYS_INLINE void derefIfNotNull(T* ptr)
 }
 
 template <typename T> class PassRefPtr {
+    DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 public:
     PassRefPtr() : m_ptr(nullptr) {}
     PassRefPtr(std::nullptr_t) : m_ptr(nullptr) {}

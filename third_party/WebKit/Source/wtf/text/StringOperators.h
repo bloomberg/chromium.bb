@@ -22,12 +22,14 @@
 #ifndef StringOperators_h
 #define StringOperators_h
 
-#include "StringConcatenate.h"
+#include "wtf/Allocator.h"
+#include "wtf/text/StringConcatenate.h"
 
 namespace WTF {
 
 template<typename StringType1, typename StringType2>
-class StringAppend {
+class StringAppend final {
+    STACK_ALLOCATED();
 public:
     StringAppend(StringType1 string1, StringType2 string2);
 
@@ -104,6 +106,7 @@ unsigned StringAppend<StringType1, StringType2>::length()
 
 template<typename StringType1, typename StringType2>
 class StringTypeAdapter<StringAppend<StringType1, StringType2>> {
+    STACK_ALLOCATED();
 public:
     StringTypeAdapter<StringAppend<StringType1, StringType2>>(StringAppend<StringType1, StringType2>& buffer)
         : m_buffer(buffer)

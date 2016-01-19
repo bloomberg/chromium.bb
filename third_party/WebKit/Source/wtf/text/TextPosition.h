@@ -25,6 +25,7 @@
 #ifndef TextPosition_h
 #define TextPosition_h
 
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/Vector.h"
 #include "wtf/WTFExport.h"
@@ -35,7 +36,8 @@ namespace WTF {
 // An abstract number of element in a sequence. The sequence has a first element.
 // This type should be used instead of integer because 2 contradicting traditions can
 // call a first element '0' or '1' which makes integer type ambiguous.
-class OrdinalNumber {
+class OrdinalNumber final {
+    DISALLOW_NEW();
 public:
     static OrdinalNumber fromZeroBasedInt(int zeroBasedInt) { return OrdinalNumber(zeroBasedInt); }
     static OrdinalNumber fromOneBasedInt(int oneBasedInt) { return OrdinalNumber(oneBasedInt - 1); }
@@ -58,7 +60,8 @@ private:
 
 // TextPosition structure specifies coordinates within an text resource. It is used mostly
 // for saving script source position.
-class TextPosition {
+class TextPosition final {
+    DISALLOW_NEW();
 public:
     TextPosition(OrdinalNumber line, OrdinalNumber column)
         : m_line(line)

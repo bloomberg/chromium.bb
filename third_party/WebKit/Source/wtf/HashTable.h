@@ -21,6 +21,7 @@
 #define WTF_HashTable_h
 
 #include "wtf/Alignment.h"
+#include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/ConditionalDestructor.h"
 #include "wtf/HashTraits.h"
@@ -72,6 +73,7 @@ namespace WTF {
 #if DUMP_HASHTABLE_STATS
 
 struct HashTableStats {
+    STATIC_ONLY(HashTableStats);
     // The following variables are all atomically incremented when modified.
     static int numAccesses;
     static int numRehashes;
@@ -104,7 +106,8 @@ struct WeakProcessingHashTableHelper;
 typedef enum { HashItemKnownGood } HashItemKnownGoodTag;
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-class HashTableConstIterator {
+class HashTableConstIterator final {
+    DISALLOW_NEW();
 private:
     typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
     typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
@@ -204,7 +207,8 @@ private:
 };
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-class HashTableIterator {
+class HashTableIterator final {
+    DISALLOW_NEW();
 private:
     typedef HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> HashTableType;
     typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
@@ -260,6 +264,7 @@ template <typename T, typename U> inline void hashTableSwap(KeyValuePair<T, U>& 
 template <typename T, typename Allocator, bool useSwap = !IsTriviallyDestructible<T>::value>
 struct Mover;
 template <typename T, typename Allocator> struct Mover<T, Allocator, true> {
+    STATIC_ONLY(Mover);
     static void move(T& from, T& to)
     {
         // The key and value cannot be swapped atomically, and it would be wrong
@@ -273,17 +278,20 @@ template <typename T, typename Allocator> struct Mover<T, Allocator, true> {
 };
 
 template <typename T, typename Allocator> struct Mover<T, Allocator, false> {
+    STATIC_ONLY(Mover);
     static void move(T& from, T& to) { to = from; }
 };
 
 template <typename HashFunctions> class IdentityHashTranslator {
+    STATIC_ONLY(IdentityHashTranslator);
 public:
     template <typename T> static unsigned hash(const T& key) { return HashFunctions::hash(key); }
     template <typename T, typename U> static bool equal(const T& a, const U& b) { return HashFunctions::equal(a, b); }
     template <typename T, typename U, typename V> static void translate(T& location, const U&, const V& value) { location = value; }
 };
 
-template <typename HashTableType, typename ValueType> struct HashTableAddResult {
+template <typename HashTableType, typename ValueType> struct HashTableAddResult final {
+    STACK_ALLOCATED();
     HashTableAddResult(const HashTableType* container, ValueType* storedValue, bool isNewEntry)
         : storedValue(storedValue)
         , isNewEntry(isNewEntry)
@@ -319,6 +327,7 @@ private:
 
 template <typename Value, typename Extractor, typename KeyTraits>
 struct HashTableHelper {
+    STATIC_ONLY(HashTableHelper);
     static bool isEmptyBucket(const Value& value) { return isHashTraitsEmptyValue<KeyTraits>(Extractor::extract(value)); }
     static bool isDeletedBucket(const Value& value) { return KeyTraits::isDeletedValue(Extractor::extract(value)); }
     static bool isEmptyOrDeletedBucket(const Value& value) { return isEmptyBucket(value) || isDeletedBucket(value); }
@@ -326,6 +335,7 @@ struct HashTableHelper {
 
 template <typename HashTranslator, typename KeyTraits, bool safeToCompareToEmptyOrDeleted>
 struct HashTableKeyChecker {
+    STATIC_ONLY(HashTableKeyChecker);
     // There's no simple generic way to make this check if
     // safeToCompareToEmptyOrDeleted is false, so the check always passes.
     template <typename T>
@@ -334,6 +344,7 @@ struct HashTableKeyChecker {
 
 template <typename HashTranslator, typename KeyTraits>
 struct HashTableKeyChecker<HashTranslator, KeyTraits, true> {
+    STATIC_ONLY(HashTableKeyChecker);
     template <typename T>
     static bool checkKey(const T& key)
     {
@@ -346,7 +357,8 @@ struct HashTableKeyChecker<HashTranslator, KeyTraits, true> {
 // undefined behavior.  For pointer keys this means that null pointers are not
 // allowed unless you supply custom key traits.
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
-class HashTable : public ConditionalDestructor<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
+class HashTable final : public ConditionalDestructor<HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>, Allocator::isGarbageCollected> {
+    DISALLOW_NEW();
 public:
     typedef HashTableIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> iterator;
     typedef HashTableConstIterator<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> const_iterator;
@@ -363,6 +375,7 @@ public:
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
     struct Stats {
+        DISALLOW_NEW(Stats);
         Stats()
             : numAccesses(0)
             , numRehashes(0)
@@ -768,6 +781,7 @@ inline typename HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTrait
 template <bool emptyValueIsZero> struct HashTableBucketInitializer;
 
 template <> struct HashTableBucketInitializer<false> {
+    STATIC_ONLY(HashTableBucketInitializer);
     template <typename Traits, typename Value> static void initialize(Value& bucket)
     {
         new (NotNull, &bucket) Value(Traits::emptyValue());
@@ -775,6 +789,7 @@ template <> struct HashTableBucketInitializer<false> {
 };
 
 template <> struct HashTableBucketInitializer<true> {
+    STATIC_ONLY(HashTableBucketInitializer);
     template <typename Traits, typename Value> static void initialize(Value& bucket)
     {
         // This initializes the bucket without copying the empty value.  That
@@ -1265,6 +1280,7 @@ struct WeakProcessingHashTableHelper;
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 struct WeakProcessingHashTableHelper<NoWeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+    STATIC_ONLY(WeakProcessingHashTableHelper);
     static void process(typename Allocator::Visitor* visitor, void* closure) {}
     static void ephemeronIteration(typename Allocator::Visitor* visitor, void* closure) {}
     static void ephemeronIterationDone(typename Allocator::Visitor* visitor, void* closure) {}
@@ -1272,6 +1288,7 @@ struct WeakProcessingHashTableHelper<NoWeakHandlingInCollections, Key, Value, Ex
 
 template <typename Key, typename Value, typename Extractor, typename HashFunctions, typename Traits, typename KeyTraits, typename Allocator>
 struct WeakProcessingHashTableHelper<WeakHandlingInCollections, Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator> {
+    STATIC_ONLY(WeakProcessingHashTableHelper);
     // Used for purely weak and for weak-and-strong tables (ephemerons).
     static void process(typename Allocator::Visitor* visitor, void* closure)
     {
@@ -1393,6 +1410,7 @@ void HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocato
 // iterator adapters
 
 template <typename HashTableType, typename Traits> struct HashTableConstIteratorAdapter {
+    STACK_ALLOCATED();
     HashTableConstIteratorAdapter() {}
     HashTableConstIteratorAdapter(const typename HashTableType::const_iterator& impl) : m_impl(impl) {}
     typedef typename Traits::IteratorConstGetType GetType;
@@ -1409,6 +1427,7 @@ template <typename HashTableType, typename Traits> struct HashTableConstIterator
 };
 
 template <typename HashTableType, typename Traits> struct HashTableIteratorAdapter {
+    STACK_ALLOCATED();
     typedef typename Traits::IteratorGetType GetType;
     typedef typename HashTableType::ValueTraits::IteratorGetType SourceGetType;
 
