@@ -51,10 +51,10 @@ bool DrmThreadMessageProxy::OnMessageReceived(const IPC::Message& message) {
                         OnRemoveGraphicsDevice)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_GetHDCPState, OnGetHDCPState)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetHDCPState, OnSetHDCPState)
-    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaRamp, OnSetGammaRamp);
+    IPC_MESSAGE_HANDLER(OzoneGpuMsg_SetGammaRamp, OnSetGammaRamp)
     IPC_MESSAGE_HANDLER(OzoneGpuMsg_CheckOverlayCapabilities,
                         OnCheckOverlayCapabilities)
-    IPC_MESSAGE_UNHANDLED(handled = false);
+    IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
