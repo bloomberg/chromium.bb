@@ -129,7 +129,7 @@ void TabManager::WebContentsData::set_test_tick_clock(
   test_tick_clock_ = test_tick_clock;
 }
 
-TimeTicks TabManager::WebContentsData::NowTicks() {
+TimeTicks TabManager::WebContentsData::NowTicks() const {
   if (!test_tick_clock_)
     return TimeTicks::Now();
 

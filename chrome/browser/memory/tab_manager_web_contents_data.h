@@ -100,7 +100,7 @@ class TabManager::WebContentsData
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
   // for more details.
-  base::TimeTicks NowTicks();
+  base::TimeTicks NowTicks() const;
 
   // Contains all the needed data for the tab.
   Data tab_data_;
