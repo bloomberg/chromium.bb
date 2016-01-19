@@ -20,8 +20,8 @@ chromium.perf waterfall green.
 
 Everyone can view the chromium.perf waterfall at
 https://build.chromium.org/p/chromium.perf/, but for Googlers it is recommended
-that you use the url
-**https://uberchromegw.corp.google.com/i/chromium.perf/** instead. The reason
+that you use the url [**https://uberchromegw.corp.google.com/i/chromium.perf/**]
+(https://uberchromegw.corp.google.com/i/chromium.perf/) instead. The reason
 for this is that in order to make the performance tests as realistic as
 possible, the chromium.perf waterfall runs release official builds of Chrome.
 But the logs from release official builds may leak info from our partners that
