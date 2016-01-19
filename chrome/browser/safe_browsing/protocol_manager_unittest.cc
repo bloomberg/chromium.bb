@@ -122,7 +122,127 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     EXPECT_EQ("", url_fetcher->upload_data());
     EXPECT_EQ(GURL(expected_url), url_fetcher->GetOriginalURL());
   }
+
+  std::string GetStockV4HashResponse() {
+    FindFullHashesResponse res;
+    res.mutable_negative_cache_duration()->set_seconds(600);
+    ThreatMatch* m = res.add_matches();
+    m->set_threat_type(API_ABUSE);
+    m->set_platform_type(CHROME_PLATFORM);
+    m->set_threat_entry_type(URL_EXPRESSION);
+    m->mutable_cache_duration()->set_seconds(300);
+    m->mutable_threat()->set_hash(SBFullHashToString(
+        SBFullHashForString("Everything's shiny, Cap'n.")));
+    ThreatEntryMetadata::MetadataEntry* e =
+        m->mutable_threat_entry_metadata()->add_entries();
+    e->set_key("permission");
+    e->set_value("NOTIFICATIONS");
+
+    // Serialize.
+    std::string res_data;
+    res.SerializeToString(&res_data);
+
+    return res_data;
+  }
 };
+
+void ValidateGetV4HashResults(
+    const std::vector<SBFullHashResult>& expected_full_hashes,
+    const base::TimeDelta& expected_cache_duration,
+    const std::vector<SBFullHashResult>& full_hashes,
+    const base::TimeDelta& cache_duration) {
+  EXPECT_EQ(expected_cache_duration, cache_duration);
+  ASSERT_EQ(expected_full_hashes.size(), full_hashes.size());
+
+  for (unsigned int i = 0; i < expected_full_hashes.size(); ++i) {
+    const SBFullHashResult& expected = expected_full_hashes[i];
+    const SBFullHashResult& actual = full_hashes[i];
+    EXPECT_TRUE(SBFullHashEqual(expected.hash, actual.hash));
+    EXPECT_EQ(expected.metadata, actual.metadata);
+    EXPECT_EQ(expected.cache_duration, actual.cache_duration);
+  }
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashErrorHandlingNetwork) {
+  net::TestURLFetcherFactory factory;
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  std::vector<SBPrefix> prefixes;
+  std::vector<SBFullHashResult> expected_full_hashes;
+  base::TimeDelta expected_cache_duration;
+
+  pm->GetFullHashesWithApis(prefixes,
+      base::Bind(&ValidateGetV4HashResults,
+                 expected_full_hashes, expected_cache_duration));
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(fetcher);
+  // Failed request status should result in error.
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
+                                            net::ERR_CONNECTION_RESET));
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(GetStockV4HashResponse());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // Should have recorded one error, but back off multiplier is unchanged.
+  EXPECT_EQ(1ul, pm->gethash_v4_error_count_);
+  EXPECT_EQ(1ul, pm->gethash_v4_back_off_mult_);
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest,
+    TestGetV4HashErrorHandlingResponseCode) {
+  net::TestURLFetcherFactory factory;
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  std::vector<SBPrefix> prefixes;
+  std::vector<SBFullHashResult> expected_full_hashes;
+  base::TimeDelta expected_cache_duration;
+
+  pm->GetFullHashesWithApis(prefixes,
+      base::Bind(&ValidateGetV4HashResults,
+                 expected_full_hashes, expected_cache_duration));
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(fetcher);
+  fetcher->set_status(net::URLRequestStatus());
+  // Response code of anything other than 200 should result in error.
+  fetcher->set_response_code(204);
+  fetcher->SetResponseString(GetStockV4HashResponse());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // Should have recorded one error, but back off multiplier is unchanged.
+  EXPECT_EQ(1ul, pm->gethash_v4_error_count_);
+  EXPECT_EQ(1ul, pm->gethash_v4_back_off_mult_);
+}
+
+TEST_F(SafeBrowsingProtocolManagerTest, TestGetV4HashErrorHandlingOK) {
+  net::TestURLFetcherFactory factory;
+  scoped_ptr<SafeBrowsingProtocolManager> pm(CreateProtocolManager(NULL));
+
+  std::vector<SBPrefix> prefixes;
+  std::vector<SBFullHashResult> expected_full_hashes;
+  SBFullHashResult hash_result;
+  hash_result.hash = SBFullHashForString("Everything's shiny, Cap'n.");
+  hash_result.metadata = "NOTIFICATIONS,";
+  hash_result.cache_duration = base::TimeDelta::FromSeconds(300);
+  expected_full_hashes.push_back(hash_result);
+  base::TimeDelta expected_cache_duration = base::TimeDelta::FromSeconds(600);
+
+  pm->GetFullHashesWithApis(prefixes,
+      base::Bind(&ValidateGetV4HashResults,
+                 expected_full_hashes, expected_cache_duration));
+
+  net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
+  DCHECK(fetcher);
+  fetcher->set_status(net::URLRequestStatus());
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(GetStockV4HashResponse());
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  // No error, back off multiplier is unchanged.
+  EXPECT_EQ(0ul, pm->gethash_v4_error_count_);
+  EXPECT_EQ(1ul, pm->gethash_v4_back_off_mult_);
+}
 
 // Ensure that we respect section 5 of the SafeBrowsing protocol specification.
 TEST_F(SafeBrowsingProtocolManagerTest, TestBackOffTimes) {

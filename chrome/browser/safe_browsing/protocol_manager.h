@@ -224,6 +224,12 @@ class SafeBrowsingProtocolManager : public net::URLFetcherDelegate,
                            TestGetHashBackOffTimes);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
                            TestGetV4HashBackOffTimes);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetV4HashErrorHandlingOK);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetV4HashErrorHandlingNetwork);
+  FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest,
+                           TestGetV4HashErrorHandlingResponseCode);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestNextChunkUrl);
   FRIEND_TEST_ALL_PREFIXES(SafeBrowsingProtocolManagerTest, TestUpdateUrl);
   friend class SafeBrowsingServerTest;

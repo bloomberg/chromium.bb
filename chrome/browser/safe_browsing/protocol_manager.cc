@@ -444,6 +444,8 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
 
   if (it != hash_requests_.end()) {
     // GetHash response.
+    // Reset the scoped pointer so the fetcher gets destroyed properly.
+    fetcher.reset(it->first);
     RecordHttpResponseOrErrorCode(kGetHashUmaResponseMetricName, status,
                                   response_code);
     const FullHashDetails& details = it->second;
@@ -492,6 +494,9 @@ void SafeBrowsingProtocolManager::OnURLFetchComplete(
     // V4 FindFullHashes response.
     // TODO(kcarattini): Consider pulling all the V4 handling out into a
     // separate V4ProtocolManager class.
+
+    // Reset the scoped pointer so the fetcher gets destroyed properly.
+    fetcher.reset(v4_it->first);
     RecordHttpResponseOrErrorCode(kUmaV4ResponseMetricName, status,
                                   response_code);
     const FullHashDetails& details = v4_it->second;
