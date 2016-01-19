@@ -75,8 +75,10 @@ void HTMLContentElement::parseSelect()
 void HTMLContentElement::parseAttribute(const QualifiedName& name, const AtomicString& oldValue, const AtomicString& value)
 {
     if (name == selectAttr) {
-        if (ShadowRoot* root = containingShadowRoot())
-            root->owner()->willAffectSelector();
+        if (ShadowRoot* root = containingShadowRoot()) {
+            if (root->owner())
+                root->owner()->willAffectSelector();
+        }
         m_shouldParseSelect = true;
         m_select = value;
     } else {
