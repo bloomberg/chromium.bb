@@ -318,6 +318,7 @@ bool DrawingBuffer::prepareMailbox(WebExternalTextureMailbox* outMailbox, WebExt
     m_context->flush();
     frontColorBufferMailbox->mailbox.validSyncToken = m_context->genSyncTokenCHROMIUM(fenceSync, frontColorBufferMailbox->mailbox.syncToken);
     frontColorBufferMailbox->mailbox.allowOverlay = frontColorBufferMailbox->textureInfo.imageId != 0;
+    frontColorBufferMailbox->mailbox.textureTarget = m_target;
     setBufferClearNeeded(true);
 
     // set m_parentDrawingBuffer to make sure 'this' stays alive as long as it has live mailboxes

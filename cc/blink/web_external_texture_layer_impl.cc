@@ -87,9 +87,13 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     if (client_mailbox.validSyncToken)
       memcpy(&sync_token, client_mailbox.syncToken, sizeof(sync_token));
 
-    // TODO(achaulk): pass a valid size here if allowOverlay is set.
-    *mailbox = cc::TextureMailbox(name, sync_token, GL_TEXTURE_2D, gfx::Size(),
-                                  client_mailbox.allowOverlay);
+    gfx::Size size;
+    if (client_mailbox.allowOverlay)
+      size = gfx::Size(layer_->bounds().width, layer_->bounds().height);
+
+    *mailbox =
+        cc::TextureMailbox(name, sync_token, client_mailbox.textureTarget, size,
+                           client_mailbox.allowOverlay);
   }
   mailbox->set_nearest_neighbor(client_mailbox.nearestNeighbor);
 

@@ -635,6 +635,7 @@ bool Canvas2DLayerBridge::prepareMailbox(WebExternalTextureMailbox* outMailbox, 
     // the state cached in skia so that the deferred copy on write
     // in SkSurface_Gpu does not make any false assumptions.
     mailboxInfo.m_image->getTexture()->textureParamsModified();
+    mailboxInfo.m_mailbox.textureTarget = GL_TEXTURE_2D;
 
     webContext->bindTexture(GL_TEXTURE_2D, mailboxInfo.m_image->getTexture()->getTextureHandle());
     webContext->texParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);

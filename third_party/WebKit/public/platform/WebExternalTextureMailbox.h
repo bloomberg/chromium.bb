@@ -39,11 +39,13 @@ struct WebExternalTextureMailbox {
     bool validSyncToken;
     bool allowOverlay;
     bool nearestNeighbor;
+    unsigned textureTarget;
 
     WebExternalTextureMailbox()
         : validSyncToken(false)
         , allowOverlay(false)
         , nearestNeighbor(false)
+        , textureTarget(0)
     {
         memset(name, 0, sizeof(name));
         memset(syncToken, 0, sizeof(syncToken));
