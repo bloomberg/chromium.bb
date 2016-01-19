@@ -9,6 +9,11 @@
 <link rel=preload href="../resources/square.png" as=image>
 <link rel=preload href="../resources/square.png?background" as=image>
 <link rel=preload href="../resources/Ahem.ttf" as=font crossorigin>
+<link rel=preload href="../resources/test.mp4" as=video>
+<link rel=preload href="../resources/test.oga" as=audio>
+<link rel=preload href="../resources/security/captions.vtt" as=track>
+<link rel=preload href="../resources/dummy.xml" as=foobarxmlthing>
+<link rel=preload href="../resources/dummy.xml">
 <script src="../resources/slow-script.pl?delay=200"></script>
 <style>
     #background {
@@ -26,9 +31,17 @@
 <script src="../resources/dummy.js"></script>
 <div id="background"></div>
 <img src="../resources/square.png">
+<video src="../resources/test.mp4">
+    <track kind=subtitles src="../resources/security/captions.vtt" srclang=en>
+</video>
+<audio src="../resources/test/oga"></audio>
 <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "../resources/dummy.xml");
+    xhr.send();
+
     window.addEventListener("load", t.step_func(function() {
-        assert_equals(performance.getEntriesByType("resource").length, 8);
+        assert_equals(performance.getEntriesByType("resource").length, 12);
         t.done();
     }));
 </script>
