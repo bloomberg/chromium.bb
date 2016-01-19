@@ -1702,7 +1702,7 @@ bool CSSPropertyParser::parseGridTemplateShorthand(bool important)
 bool CSSPropertyParser::parseGridShorthand(bool important)
 {
     ShorthandScope scope(this, CSSPropertyGrid);
-    ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 6);
+    ASSERT(shorthandForProperty(CSSPropertyGrid).length() == 8);
 
     // 1- <grid-template>
     if (parseGridTemplateShorthand(important)) {
@@ -1711,6 +1711,8 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
         addProperty(CSSPropertyGridAutoFlow, cssValuePool().createImplicitInitialValue(), important);
         addProperty(CSSPropertyGridAutoColumns, cssValuePool().createImplicitInitialValue(), important);
         addProperty(CSSPropertyGridAutoRows, cssValuePool().createImplicitInitialValue(), important);
+        addProperty(CSSPropertyGridColumnGap, cssValuePool().createImplicitInitialValue(), important);
+        addProperty(CSSPropertyGridRowGap, cssValuePool().createImplicitInitialValue(), important);
         return true;
     }
 
@@ -1755,6 +1757,8 @@ bool CSSPropertyParser::parseGridShorthand(bool important)
     addProperty(CSSPropertyGridTemplateColumns, cssValuePool().createImplicitInitialValue(), important);
     addProperty(CSSPropertyGridTemplateRows, cssValuePool().createImplicitInitialValue(), important);
     addProperty(CSSPropertyGridTemplateAreas, cssValuePool().createImplicitInitialValue(), important);
+    addProperty(CSSPropertyGridColumnGap, cssValuePool().createImplicitInitialValue(), important);
+    addProperty(CSSPropertyGridRowGap, cssValuePool().createImplicitInitialValue(), important);
 
     return true;
 }
