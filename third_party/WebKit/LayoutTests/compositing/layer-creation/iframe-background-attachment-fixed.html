@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<pre id="mainThreadScrollingReasons"></pre>
+<iframe src="resources/background-attachment-fixed.html"></iframe>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText(true);
+window.addEventListener('load', function() {
+    document.getElementById("mainThreadScrollingReasons").innerText = window.internals.mainThreadScrollingReasons(document);
+});
+</script>

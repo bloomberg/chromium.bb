@@ -752,17 +752,9 @@ void ScrollingCoordinator::willBeDestroyed()
 bool ScrollingCoordinator::coordinatesScrollingForFrameView(FrameView* frameView) const
 {
     ASSERT(isMainThread());
-    ASSERT(m_page);
-
-    // We currently only handle the main frame.
-    if (&frameView->frame() != m_page->mainFrame())
-        return false;
-
-    if (!m_page->mainFrame()->isLocalFrame())
-        return false;
 
     // We currently only support composited mode.
-    LayoutView* layoutView = m_page->deprecatedLocalMainFrame()->contentLayoutObject();
+    LayoutView* layoutView = frameView->frame().contentLayoutObject();
     if (!layoutView)
         return false;
     return layoutView->usesCompositing();
@@ -1030,23 +1022,32 @@ MainThreadScrollingReasons ScrollingCoordinator::mainThreadScrollingReasons() co
 
     if (!m_page->mainFrame()->isLocalFrame())
         return reasons;
-    FrameView* frameView = m_page->deprecatedLocalMainFrame()->view();
-    if (!frameView)
-        return reasons;
 
-    if (frameView->hasBackgroundAttachmentFixedObjects())
-        reasons |= WebMainThreadScrollingReason::HasBackgroundAttachmentFixedObjects;
-    FrameView::ScrollingReasons scrollingReasons = frameView->scrollingReasons();
-    const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
-    const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==
-        FrameView::NotScrollableExplicitlyDisabled);
+    // TODO(flackr) Currently we combine reasons for main thread scrolling from
+    // all frames but we should only look at the targetted frame (and its ancestors
+    // if the scroll bubbles up). http://crbug.com/568901
+    for (Frame* frame = m_page->mainFrame(); frame; frame = frame->tree().traverseNext()) {
+        if (!frame->isLocalFrame())
+            continue;
 
-    // TODO(awoloszyn) Currently crbug.com/304810 will let certain
-    // overflow:hidden elements scroll on the compositor thread, so we should
-    // not let this move there path as an optimization, when we have slow-repaint
-    // elements.
-    if (mayBeScrolledByScript && hasVisibleSlowRepaintViewportConstrainedObjects(frameView)) {
-        reasons |= WebMainThreadScrollingReason::HasNonLayerViewportConstrainedObjects;
+        FrameView* frameView = toLocalFrame(frame)->view();
+        if (!frameView)
+            continue;
+
+        if (frameView->hasBackgroundAttachmentFixedObjects())
+            reasons |= WebMainThreadScrollingReason::HasBackgroundAttachmentFixedObjects;
+        FrameView::ScrollingReasons scrollingReasons = frameView->scrollingReasons();
+        const bool mayBeScrolledByInput = (scrollingReasons == FrameView::Scrollable);
+        const bool mayBeScrolledByScript = mayBeScrolledByInput || (scrollingReasons ==
+            FrameView::NotScrollableExplicitlyDisabled);
+
+        // TODO(awoloszyn) Currently crbug.com/304810 will let certain
+        // overflow:hidden elements scroll on the compositor thread, so we should
+        // not let this move there path as an optimization, when we have slow-repaint
+        // elements.
+        if (mayBeScrolledByScript && hasVisibleSlowRepaintViewportConstrainedObjects(frameView)) {
+            reasons |= WebMainThreadScrollingReason::HasNonLayerViewportConstrainedObjects;
+        }
     }
 
     return reasons;
