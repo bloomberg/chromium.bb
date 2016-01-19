@@ -980,6 +980,27 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
         UMA_HISTOGRAM_LONG_TIMES(
             "Net.RequestTime2.ErrAborted", request_loading_time);
 
+        if (loader->request()->url().SchemeIsHTTPOrHTTPS()) {
+          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.HttpScheme",
+                                   request_loading_time);
+        } else {
+          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.NonHttpScheme",
+                                   request_loading_time);
+        }
+
+        if (loader->request()->GetTotalReceivedBytes() > 0) {
+          UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2.ErrAborted.NetworkContent",
+                                   request_loading_time);
+        } else if (loader->request()->received_response_content_length() > 0) {
+          UMA_HISTOGRAM_LONG_TIMES(
+              "Net.RequestTime2.ErrAborted.NoNetworkContent.CachedContent",
+              request_loading_time);
+        } else {
+          UMA_HISTOGRAM_LONG_TIMES(
+              "Net.RequestTime2.ErrAborted.NoBytesRead",
+              request_loading_time);
+        }
+
         BrowserThread::PostTask(
             BrowserThread::UI, FROM_HERE,
             base::Bind(&RecordAbortRapporOnUI, loader->request()->url(),

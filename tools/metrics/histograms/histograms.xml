@@ -26357,6 +26357,49 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.RequestTime2.ErrAborted.HttpScheme" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    ERR_ABORTED when the request's scheme is http/s.
+  </summary>
+</histogram>
+
+<histogram name="Net.RequestTime2.ErrAborted.NetworkContent" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    ERR_ABORTED when the requests TotalReceivedBytes() &gt; 0.
+  </summary>
+</histogram>
+
+<histogram name="Net.RequestTime2.ErrAborted.NoBytesRead" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    ERR_ABORTED when the requests TotalReceivedBytes() = 0 and
+    received_response_content_length() = 0.
+  </summary>
+</histogram>
+
+<histogram name="Net.RequestTime2.ErrAborted.NoNetworkContent.CachedContent"
+    units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    ERR_ABORTED when the requests TotalReceivedBytes() = 0 and
+    received_response_content_length() &gt; 0.
+  </summary>
+</histogram>
+
+<histogram name="Net.RequestTime2.ErrAborted.NonHttpScheme" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The amount of time between request initiation and request completion for
+    ERR_ABORTED when the request's scheme is not http/s.
+  </summary>
+</histogram>
+
 <histogram name="Net.ResourceLoader.ReadDeferral" units="ms">
   <owner>clamy@chromium.org</owner>
   <summary>
