@@ -1591,6 +1591,8 @@
       'sources': [
         'browser/password_manager/password_manager_test_base.cc',
         'browser/password_manager/password_manager_test_base.h',
+        'browser/signin/token_revoker_test_utils.cc',
+        'browser/signin/token_revoker_test_utils.h',
         'browser/ui/webui/signin/login_ui_test_utils.cc',
         'browser/ui/webui/signin/login_ui_test_utils.h',
         'test/base/in_process_browser_test.cc',

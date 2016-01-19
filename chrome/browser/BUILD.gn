@@ -1311,6 +1311,8 @@ source_set("test_support_ui") {
   sources = [
     "password_manager/password_manager_test_base.cc",
     "password_manager/password_manager_test_base.h",
+    "signin/token_revoker_test_utils.cc",
+    "signin/token_revoker_test_utils.h",
     "ui/webui/signin/login_ui_test_utils.cc",
     "ui/webui/signin/login_ui_test_utils.h",
   ]

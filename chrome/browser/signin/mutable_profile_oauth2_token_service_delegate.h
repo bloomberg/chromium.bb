@@ -62,6 +62,9 @@ class MutableProfileOAuth2TokenServiceDelegate
   // Overridden from OAuth2TokenServiceDelegate.
   const net::BackoffEntry* BackoffEntry() const override;
 
+  // Returns the account's refresh token used for testing purposes.
+  std::string GetRefreshTokenForTest(const std::string& account_id) const;
+
  private:
   friend class MutableProfileOAuth2TokenServiceDelegateTest;
 

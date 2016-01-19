@@ -225,6 +225,11 @@ std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
   return std::string();
 }
 
+std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshTokenForTest(
+    const std::string& account_id) const {
+  return GetRefreshToken(account_id);
+}
+
 std::vector<std::string>
 MutableProfileOAuth2TokenServiceDelegate::GetAccounts() {
   std::vector<std::string> account_ids;
