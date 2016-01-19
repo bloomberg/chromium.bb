@@ -17,8 +17,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/grit/chromium_strings.h"
-#include "chrome/grit/google_chrome_strings.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/error_page_switches.h"
 #include "components/error_page/common/net_error_info.h"
@@ -625,8 +623,6 @@ void LocalizedError::GetStrings(int error_code,
 
   summary->SetString("failedUrl", failed_url_string);
   summary->SetString("hostName", host_name);
-  summary->SetString("productName",
-                     l10n_util::GetStringUTF16(IDS_PRODUCT_NAME));
 
   error_strings->SetString(
       "details", l10n_util::GetStringUTF16(IDS_ERRORPAGE_NET_BUTTON_DETAILS));
