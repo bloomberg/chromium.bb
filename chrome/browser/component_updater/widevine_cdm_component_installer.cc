@@ -53,9 +53,6 @@ const uint8_t kSha2Hash[] = {0xe8, 0xce, 0xcf, 0x42, 0x06, 0xd0, 0x93, 0x49,
                              0x8f, 0xbd, 0x86, 0x12, 0xb9, 0x58, 0x9b, 0xfb,
                              0x4f, 0xbb, 0x1b, 0xa9, 0xd3, 0x85, 0x37, 0xef};
 
-// File name of the Widevine CDM component manifest on different platforms.
-const char kWidevineCdmManifestName[] = "WidevineCdm";
-
 // File name of the Widevine CDM adapter version file. The CDM adapter shares
 // the same version number with Chromium version.
 const char kCdmAdapterVersionName[] = "CdmAdapterVersion";
@@ -319,7 +316,7 @@ void WidevineCdmComponentInstallerTraits::GetHash(
 }
 
 std::string WidevineCdmComponentInstallerTraits::GetName() const {
-  return kWidevineCdmManifestName;
+  return kWidevineCdmDisplayName;
 }
 
 void WidevineCdmComponentInstallerTraits::UpdateCdmAdapter(
