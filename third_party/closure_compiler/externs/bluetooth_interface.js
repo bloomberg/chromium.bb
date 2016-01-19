@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,34 +58,34 @@ Bluetooth.prototype = {
    * @see https://developer.chrome.com/extensions/bluetooth#method-stopDiscovery
    */
   stopDiscovery: assertNotReached,
-
-  /**
-   * Fired when the state of the Bluetooth adapter changes.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/bluetooth#event-onAdapterStateChanged
-   */
-  onAdapterStateChanged: new ChromeEvent(),
-
-  /**
-   * Fired when information about a new Bluetooth device is available.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceAdded
-   */
-  onDeviceAdded: new ChromeEvent(),
-
-  /**
-   * Fired when information about a known Bluetooth device has changed.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceChanged
-   */
-  onDeviceChanged: new ChromeEvent(),
-
-  /**
-   * Fired when a Bluetooth device that was previously discovered has been out
-   * of range for long enough to be considered unavailable again, and when a
-   * paired device is removed.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceRemoved
-   */
-  onDeviceRemoved: new ChromeEvent(),
 };
+
+/**
+ * Fired when the state of the Bluetooth adapter changes.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetooth#event-onAdapterStateChanged
+ */
+Bluetooth.prototype.onAdapterStateChanged;
+
+/**
+ * Fired when information about a new Bluetooth device is available.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceAdded
+ */
+Bluetooth.prototype.onDeviceAdded;
+
+/**
+ * Fired when information about a known Bluetooth device has changed.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceChanged
+ */
+Bluetooth.prototype.onDeviceChanged;
+
+/**
+ * Fired when a Bluetooth device that was previously discovered has been out of
+ * range for long enough to be considered unavailable again, and when a paired
+ * device is removed.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetooth#event-onDeviceRemoved
+ */
+Bluetooth.prototype.onDeviceRemoved;

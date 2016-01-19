@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -53,12 +53,12 @@ SettingsPrivate.prototype = {
    * @see https://developer.chrome.com/extensions/settingsPrivate#method-setDefaultZoomPercent
    */
   setDefaultZoomPercent: assertNotReached,
-
-  /**
-   * <p>Fired when a set of prefs has changed.</p><p>|prefs| The prefs that
-   * changed.</p>
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/settingsPrivate#event-onPrefsChanged
-   */
-  onPrefsChanged: new ChromeEvent(),
 };
+
+/**
+ * <p>Fired when a set of prefs has changed.</p><p>|prefs| The prefs that
+ * changed.</p>
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/settingsPrivate#event-onPrefsChanged
+ */
+SettingsPrivate.prototype.onPrefsChanged;

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,11 +70,11 @@ BluetoothPrivate.prototype = {
    * @see https://developer.chrome.com/extensions/bluetoothPrivate#method-pair
    */
   pair: assertNotReached,
-
-  /**
-   * Fired when a pairing event occurs.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/bluetoothPrivate#event-onPairing
-   */
-  onPairing: new ChromeEvent(),
 };
+
+/**
+ * Fired when a pairing event occurs.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/bluetoothPrivate#event-onPairing
+ */
+BluetoothPrivate.prototype.onPairing;

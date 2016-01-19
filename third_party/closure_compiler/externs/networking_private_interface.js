@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,36 +275,36 @@ NetworkingPrivate.prototype = {
    * @see https://developer.chrome.com/extensions/networkingPrivate#method-setCellularSimState
    */
   setCellularSimState: assertNotReached,
-
-  /**
-   * Fired when the properties change on any of the networks.  Sends a list of
-   * GUIDs for networks whose properties have changed.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/networkingPrivate#event-onNetworksChanged
-   */
-  onNetworksChanged: new ChromeEvent(),
-
-  /**
-   * Fired when the list of networks has changed.  Sends a complete list of
-   * GUIDs for all the current networks.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/networkingPrivate#event-onNetworkListChanged
-   */
-  onNetworkListChanged: new ChromeEvent(),
-
-  /**
-   * Fired when the list of devices has changed or any device state properties
-   * have changed.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/networkingPrivate#event-onDeviceStateListChanged
-   */
-  onDeviceStateListChanged: new ChromeEvent(),
-
-  /**
-   * Fired when a portal detection for a network completes. Sends the guid of
-   * the network and the corresponding captive portal status.
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/networkingPrivate#event-onPortalDetectionCompleted
-   */
-  onPortalDetectionCompleted: new ChromeEvent(),
 };
+
+/**
+ * Fired when the properties change on any of the networks.  Sends a list of
+ * GUIDs for networks whose properties have changed.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#event-onNetworksChanged
+ */
+NetworkingPrivate.prototype.onNetworksChanged;
+
+/**
+ * Fired when the list of networks has changed.  Sends a complete list of GUIDs
+ * for all the current networks.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#event-onNetworkListChanged
+ */
+NetworkingPrivate.prototype.onNetworkListChanged;
+
+/**
+ * Fired when the list of devices has changed or any device state properties
+ * have changed.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#event-onDeviceStateListChanged
+ */
+NetworkingPrivate.prototype.onDeviceStateListChanged;
+
+/**
+ * Fired when a portal detection for a network completes. Sends the guid of the
+ * network and the corresponding captive portal status.
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/networkingPrivate#event-onPortalDetectionCompleted
+ */
+NetworkingPrivate.prototype.onPortalDetectionCompleted;
