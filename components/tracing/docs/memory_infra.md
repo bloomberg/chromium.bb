@@ -95,6 +95,10 @@ and it is discounted from malloc and the blue columns.
 [cc-memory]: /cc/memory.md
 [partalloc]: /third_party/WebKit/Source/wtf/PartitionAlloc.md
 
+## Related Pages
+
+ * [Heap Profiling with MemoryInfra](heap_profiler.md)
+
 ## Rationale
 
 Another memory profiler? What is wrong with tool X?
