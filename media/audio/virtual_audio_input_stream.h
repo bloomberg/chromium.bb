@@ -88,7 +88,6 @@ class MEDIA_EXPORT VirtualAudioInputStream : public AudioInputStream {
   AudioInputCallback* callback_;
 
   // Non-const for testing.
-  scoped_ptr<uint8_t[]> buffer_;
   AudioParameters params_;
 
   // Guards concurrent access to the converter network: converters_, mixer_, and

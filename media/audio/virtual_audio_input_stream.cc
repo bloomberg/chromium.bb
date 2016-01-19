@@ -21,7 +21,6 @@ VirtualAudioInputStream::VirtualAudioInputStream(
     : worker_task_runner_(worker_task_runner),
       after_close_cb_(after_close_cb),
       callback_(NULL),
-      buffer_(new uint8_t[params.GetBytesPerBuffer()]),
       params_(params),
       mixer_(params_, params_, false),
       num_attached_output_streams_(0),
@@ -50,7 +49,6 @@ VirtualAudioInputStream::~VirtualAudioInputStream() {
 
 bool VirtualAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  memset(buffer_.get(), 0, params_.GetBytesPerBuffer());
   return true;
 }
 
