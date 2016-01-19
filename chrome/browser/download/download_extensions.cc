@@ -153,6 +153,7 @@ const struct FileType {
     {"uu", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
     {"uue", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
     {"vhd", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
+    {"vhdx", NOT_DANGEROUS, ALLOW_AUTO_OPEN},  // Opens in IE, drops MOTW
     {"vmdk", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
     {"wim", NOT_DANGEROUS, ALLOW_AUTO_OPEN},
     {"wrc", NOT_DANGEROUS, ALLOW_AUTO_OPEN},

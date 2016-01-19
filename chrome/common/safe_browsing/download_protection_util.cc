@@ -266,6 +266,7 @@ enum SBClientDownloadExtensions {
   EXTENSION_MSG,
   EXTENSION_EML,
   EXTENSION_RTF,
+  EXTENSION_VHDX,
 
   // New values go above this one.
   EXTENSION_MAX
@@ -497,6 +498,7 @@ const SafeBrowsingFiletype kSafeBrowsingFileTypes[] = {
     {FILE_PATH_LITERAL(".vbs"), EXTENSION_VBS, true, false},
     {FILE_PATH_LITERAL(".vbscript"), EXTENSION_VBSCRIPT, false, false},  // UMA.
     {FILE_PATH_LITERAL(".vhd"), EXTENSION_VHD, true, true},
+    {FILE_PATH_LITERAL(".vhdx"), EXTENSION_VHDX, true, true},
     {FILE_PATH_LITERAL(".vmdk"), EXTENSION_VMDK, true, true},
     {FILE_PATH_LITERAL(".vsd"), EXTENSION_VSD, true, false},
     {FILE_PATH_LITERAL(".vsmacros"), EXTENSION_VSMACROS, true, false},
