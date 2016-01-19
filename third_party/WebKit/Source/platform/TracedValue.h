@@ -42,6 +42,7 @@ public:
     void beginDictionary();
 
     String asTraceFormat() const override;
+    void estimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead*) override;
 
 private:
     TracedValue();

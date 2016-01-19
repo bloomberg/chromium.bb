@@ -102,4 +102,9 @@ String TracedValue::asTraceFormat() const
     return String::fromUTF8(out.c_str());
 }
 
+void TracedValue::estimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead* overhead)
+{
+    m_tracedValue->EstimateTraceMemoryOverhead(overhead);
+}
+
 }

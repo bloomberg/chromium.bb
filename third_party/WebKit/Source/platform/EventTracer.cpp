@@ -60,7 +60,10 @@ public:
         StringUTF8Adaptor utf8(traceFormat);
         out->append(utf8.data(), utf8.length());
     }
-    // TODO(bashi): Override EstimateTraceMemoryOverhead()
+    void EstimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead* overhead)
+    {
+        m_convertable->estimateTraceMemoryOverhead(overhead);
+    }
 
 private:
     ~ConvertableToTraceFormatWrapper() override {}

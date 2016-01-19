@@ -43,6 +43,7 @@
 namespace base {
 namespace trace_event {
 class ConvertableToTraceFormat;
+class TraceEventMemoryOverhead;
 }
 }
 
@@ -60,6 +61,7 @@ class PLATFORM_EXPORT ConvertableToTraceFormat : public RefCounted<ConvertableTo
 public:
     virtual String asTraceFormat() const = 0;
     virtual ~ConvertableToTraceFormat() { }
+    virtual void estimateTraceMemoryOverhead(base::trace_event::TraceEventMemoryOverhead*) { }
 };
 
 }
