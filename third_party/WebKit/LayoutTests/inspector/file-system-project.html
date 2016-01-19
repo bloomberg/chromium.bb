@@ -184,6 +184,28 @@ function test()
                 fs.reportRemoved();
                 next();
             }
+        },
+
+        function testFileAddedExternally(next)
+        {
+            var fs = new InspectorTest.TestFileSystem("file:///var/www4");
+            var dir = fs.root.mkdir("html");
+            dir.addFile("foo.js", "");
+            fs.reportCreated(dumpFileSystem);
+
+            function dumpFileSystem()
+            {
+                InspectorTest.addResult("-- Original tree --");
+                dumpWorkspaceUISourceCodes();
+
+                dir.addFile("bar.js", "");
+                InspectorFrontendHost.events.dispatchEventToListeners(InspectorFrontendHostAPI.Events.FileSystemFilesChanged, ["/var/www4/html/bar.js"]);
+
+                InspectorTest.addResult("-- File added externally --");
+                dumpWorkspaceUISourceCodes();
+                fs.reportRemoved();
+                next();
+            }
         }
     ]);
 };
