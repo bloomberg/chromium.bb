@@ -10,22 +10,20 @@
 <translation id="1066332784716773939">오류 진단...</translation>
 <translation id="106701514854093668">데스크톱 북마크</translation>
 <translation id="1080116354587839789">너비에 맞춤</translation>
-<translation id="108346963417674655">서버에 안전하게 연결할 수 없습니다. 이 웹사이트는 이전에는 작동했을지 모르지만 현재는 서버에 문제가 있습니다. 이러한 사이트에 연결하면 모든 사용자의 보안을 약화시키기 때문에 사용 중지되었습니다.</translation>
 <translation id="1090046120949329821">여러 콘텐츠 배치 헤더를 수신했으나 HTTP 응답 분할 공격으로부터
     보호하기 위해 차단되었습니다.</translation>
 <translation id="1091911885099639251">카드 확인 중</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> 항상 번역</translation>
-<translation id="1105117579475534983">웹페이지 차단됨</translation>
 <translation id="1107591249535594099">선택하면 Chrome에서 양식을 더 빠르게 입력할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
 <translation id="1113869188872983271">재정렬 실행 취소(&amp;U)</translation>
 <translation id="111844081046043029">이 페이지에서 벗어나시겠습니까?</translation>
 <translation id="112840717907525620">정책 캐시 확인</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 내용:</translation>
 <translation id="1132774398110320017">Chrome 자동완성 설정...</translation>
-<translation id="1146498888431277930">SSL 연결 오류입니다.</translation>
 <translation id="1146673768181266552">오류 ID <ph name="CRASH_ID" />(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 컴퓨터의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1152921474424827756"><ph name="URL" />의 <ph name="BEGIN_LINK" />캐시된 사본<ph name="END_LINK" />에 액세스</translation>
+<translation id="1175364870820465910">인쇄(&amp;P)</translation>
 <translation id="1181037720776840403">삭제</translation>
 <translation id="1195447618553298278">알 수 없는 오류</translation>
 <translation id="1201402288615127009">다음</translation>
@@ -46,10 +44,6 @@
 <translation id="1426410128494586442">예</translation>
 <translation id="1430915738399379752">인쇄</translation>
 <translation id="1442912890475371290"><ph name="BEGIN_LINK" /><ph name="DOMAIN" /> 페이지를 방문<ph name="END_LINK" />하려는 시도가 차단되었습니다.</translation>
-<translation id="1452265419286795001">컴퓨터가 절전 또는 최대 절전 모드이기 때문에 웹페이지를 로드할 수
-      없습니다. 이 경우, 네트워크 연결이 종료되며
-      새 네트워크 요청을 전송할 수 없습니다. 페이지를 새로고침하면
-      이 문제가 해결됩니다.</translation>
 <translation id="1455235771979731432">카드를 인증하는 중에 문제가 발생했습니다. 인터넷 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
 <translation id="1506687042165942984">오래된 것으로 알려진 이 페이지의 저장된 사본을 표시합니다.</translation>
@@ -60,12 +54,7 @@
 
       &lt;p&gt;&lt;strong&gt;설정&lt;/strong&gt; 앱의 &lt;strong&gt;일반&lt;/strong&gt; 섹션에서 날짜와 시간을 맞추세요.&lt;/p&gt;</translation>
 <translation id="1592005682883173041">로컬 데이터 액세스</translation>
-<translation id="1619362374865863391"><ph name="PRODUCT_NAME" />
-    에서 웹사이트에 연결할 수 없습니다. 이는 보통 네트워크 문제로 인해 발생하지만
-    방화벽이나 프록시 서버 설정이 잘못되었기 때문일 수도 있습니다.</translation>
 <translation id="1629803312968146339">Chrome에서 이 카드를 저장하도록 하시겠습니까?</translation>
-<translation id="1639782983204136776"><ph name="URL" /> 로드 중 잘못된 응답을 받았습니다.
-    서버가 유지보수로 인해 다운되었거나 설정이 잘못되었을 수 있습니다.</translation>
 <translation id="1640180200866533862">사용자 정책</translation>
 <translation id="1644184664548287040">네트워크 구성이 잘못되어 가져올 수 없습니다.</translation>
 <translation id="1644574205037202324">방문 기록</translation>
@@ -76,12 +65,15 @@
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">버그 신고</translation>
+<translation id="17513872634828108">열린 탭</translation>
 <translation id="1753706481035618306">페이지 번호</translation>
 <translation id="1763864636252898013">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 기기의 운영체제에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="1775135663370355363">이 기기의 방문 기록을 표시합니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">동기화 암호를 업데이트하세요.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">잘못된 요청 또는 요청 매개변수</translation>
 <translation id="1871208020102129563">프록시가 .pac 스크립트 URL이 아닌 고정 프록시 서버를 사용하도록 설정됩니다.</translation>
+<translation id="1871625979288021266">안전하지 않은 포트 차단됨</translation>
 <translation id="1883255238294161206">접기 목록</translation>
 <translation id="1898423065542865115">필터링</translation>
 <translation id="194030505837763158"><ph name="LINK" />(으)로 이동</translation>
@@ -113,22 +105,13 @@
 <translation id="2212735316055980242">정책을 찾을 수 없음</translation>
 <translation id="2213606439339815911">항목을 가져오는 중...</translation>
 <translation id="2214283295778284209"><ph name="SITE" />을(를) 사용할 수 없음</translation>
-<translation id="2221403025589790908"><ph name="HOST_NAME" />
-    이(가) 응답하는 데 시간이 너무 오래 걸려
-    <ph name="PRODUCT_NAME" />에서
-    페이지를 로드할 수 없습니다. 웹사이트가 다운되었거나
-    인터넷 연결에 문제가 발생했을 수 있습니다.</translation>
-<translation id="2223896507118749476"><ph name="URL" />을(를) 가져오는 중 웹사이트에서 오류가 발생했습니다.
-    웹사이트가 유지보수 중이거나 설정이 잘못되어 웹사이트가 다운되었을 수 있습니다.</translation>
 <translation id="225207911366869382">이 값은 이 정책에 사용되지 않습니다.</translation>
 <translation id="2262243747453050782">HTTP 오류</translation>
-<translation id="2271281383664374369">확장 프로그램이 해당 URL로 요청한 서버 전송 허용을 일시적으로 중지했습니다.</translation>
 <translation id="2279770628980885996">서버가 요청을 수행하는 동안 예상치 못한 상황이 발생했습니다.</translation>
 <translation id="2282872951544483773">사용할 수 없는 실험</translation>
 <translation id="229702904922032456">루트 또는 중개 인증서가 만료되었습니다.</translation>
 <translation id="230155334948463882">새 카드인가요?</translation>
 <translation id="2328300916057834155"><ph name="ENTRY_INDEX" /> 색인의 잘못된 북마크 무시됨</translation>
-<translation id="2345460471437425338">호스트에 대한 인증서가 잘못되었습니다.</translation>
 <translation id="2354001756790975382">기타 북마크</translation>
 <translation id="2359808026110333948">계속</translation>
 <translation id="2367567093518048410">수준</translation>
@@ -149,9 +132,7 @@
 <translation id="2516305470678292029">대체 UI</translation>
 <translation id="2552545117464357659">이전</translation>
 <translation id="2556876185419854533">수정 실행 취소(&amp;U)</translation>
-<translation id="2581221116934462656">다음에 <ph name="PRODUCT_NAME" />에서 이 사이트의 <ph name="LANGUAGE_NAME" /> 페이지를 번역하시겠습니까?</translation>
 <translation id="2587841377698384444">Directory API ID:</translation>
-<translation id="2589937147782335782">Google에서 이 카드를 저장하도록 하시겠습니까?</translation>
 <translation id="2597378329261239068">문서가 비밀번호로 보호되고 있습니다. 비밀번호를 입력하세요.</translation>
 <translation id="2609632851001447353">유사 버전</translation>
 <translation id="2625385379895617796">시간이 너무 먼 미래로 설정되어 있습니다.</translation>
@@ -160,20 +141,16 @@
 <translation id="2653659639078652383">제출</translation>
 <translation id="2674170444375937751">방문 기록에서 이 페이지를 삭제하시겠습니까?</translation>
 <translation id="2704283930420550640">값이 형식과 일치하지 않습니다.</translation>
+<translation id="2709516037105925701">자동완성</translation>
 <translation id="2721148159707890343">요청 성공</translation>
 <translation id="2728127805433021124">서버의 인증서가 안전성이 낮은 서명 알고리즘을 사용하여 서명되어 있습니다.</translation>
 <translation id="2742870351467570537">선택한 항목 삭제</translation>
 <translation id="277499241957683684">기기 기록 없음</translation>
 <translation id="2784949926578158345">연결이 재설정되었습니다.</translation>
+<translation id="2824775600643448204">주소창 및 검색창</translation>
 <translation id="2835170189407361413">서식 지우기</translation>
 <translation id="2855922900409897335"><ph name="CREDIT_CARD" /> 인증</translation>
-<translation id="2887624244875325968">이 오류는 보안(HTTPS) 서버에 연결할 때 발생할 수 있습니다.
-    이것은 서버가 보안 연결하려고 하지만
-    잘못된 설정 때문에 보안 연결이 되지 않음을 의미합니다.
-    <ph name="LINE_BREAK" /> 이 경우
-    서버를 수정해야 합니다.
-    <ph name="PRODUCT_NAME" />
-    은(는) 개인정보 보호를 위해 보안되지 않은 연결을 사용하지 않습니다.</translation>
+<translation id="2897655920961181107">요청한 포트는 안전하지 않아 차단되었습니다.</translation>
 <translation id="2909946352844186028">네트워크 변경이 감지되었습니다.</translation>
 <translation id="2915500479781995473">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서가 만료되었습니다. 서버를 잘못 설정했거나 해커가 연결을 가로채고 있기 때문일 수 있습니다. 컴퓨터의 시계가 현재 <ph name="CURRENT_TIME" />(으)로 설정되어 있습니다. 시간이 정확하지 않으면 시스템 시계를 수정한 다음 이 페이지를 새로고침하세요.</translation>
 <translation id="2922350208395188000">서버 인증서를 확인할 수 없습니다.</translation>
@@ -209,13 +186,9 @@
 <translation id="3202578601642193415">최근</translation>
 <translation id="3207960819495026254">북마크됨</translation>
 <translation id="3219579145727097045">신용카드의 유효기간과 카드 앞면의 4자리 CVC를 입력하세요.</translation>
-<translation id="3225579507836276307">타사 확장 프로그램이 이 웹페이지에 대한 액세스를 차단했습니다.</translation>
 <translation id="3225919329040284222">서버가 내장된 기대치와 일치하지 않는 인증서를 전달했습니다. 이러한 기대치는 사용자를 보호하기 위해 보안이 엄격한 특정 웹사이트에 포함됩니다.</translation>
 <translation id="3226128629678568754">페이지 로드에 필요한 데이터를 다시 제출하려면 새로고침 버튼을 누릅니다.</translation>
 <translation id="3228969707346345236">페이지가 <ph name="LANGUAGE" />(으)로 되어 있으므로 번역하지 못했습니다.</translation>
-<translation id="3230256772510102500">프록시 서버는 컴퓨터와 다른 서버 사이의 중개자 역할을 하는 서버입니다. 현재 시스템이 프록시를 사용하도록 설정되어 있지만
-      <ph name="PRODUCT_NAME" />
-      에서 프록시에 연결할 수 없습니다.</translation>
 <translation id="3270847123878663523">재정렬 실행 취소(&amp;U)</translation>
 <translation id="3286538390144397061">지금 다시 시작</translation>
 <translation id="333371639341676808">이 페이지가 추가적인 대화를 생성하지 않도록 차단합니다.</translation>
@@ -227,7 +200,6 @@
 <translation id="3377188786107721145">정책 파싱 오류</translation>
 <translation id="3380365263193509176">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="3380864720620200369">클라이언트 ID:</translation>
-<translation id="3393716657345709557">요청한 항목이 캐시에 없습니다.</translation>
 <translation id="340013220407300675">공격자가 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />에서 사용자의 정보를 도용하려고 시도할 수 있습니다(예: 비밀번호, 메시지, 신용카드 정보).</translation>
 <translation id="3427342743765426898">수정 다시 실행(&amp;R)</translation>
 <translation id="3435896845095436175">사용</translation>
@@ -239,6 +211,7 @@
 <translation id="3528171143076753409">서버의 인증서를 신뢰할 수 없습니다.</translation>
 <translation id="3539171420378717834">카드 사본을 이 기기에 저장</translation>
 <translation id="3542684924769048008">비밀번호 사용 항목:</translation>
+<translation id="3549644494707163724">나만의 동기화 암호로 모든 동기화 데이터 암호화</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" />개 더보기</translation>
 <translation id="3566021033012934673">연결이 비공개로 설정되어 있지 않습니다.</translation>
 <translation id="3583757800736429874">이동 다시 실행(&amp;R)</translation>
@@ -259,6 +232,8 @@
 <translation id="375403751935624634">서버 오류가 발생하여 번역하지 못했습니다.</translation>
 <translation id="3759461132968374835">최근에 보고된 충돌이 없습니다. 충돌 보고를 사용 중지했을 때 발생한 충돌은 여기에 표시되지 않습니다.</translation>
 <translation id="382518646247711829">프록시 서버를 사용하는 경우</translation>
+<translation id="3828924085048779000">암호를 빈 칸으로 두어서는 안 됩니다.</translation>
+<translation id="385051799172605136">뒤로</translation>
 <translation id="3851596405215565524">이미 네트워크 액세스가 허용된 프로그램으로 되어 있는 경우
     목록에서 삭제한 뒤 다시 추가합니다.</translation>
 <translation id="3858027520442213535">시간과 날짜 업데이트</translation>
@@ -266,18 +241,14 @@
 <translation id="3885155851504623709">교구</translation>
 <translation id="3901925938762663762">만료된 카드입니다.</translation>
 <translation id="3903912596042358459">서버에서 요청 수행을 거절했습니다.</translation>
-<translation id="3920015046759567857"><ph name="HOST_NAME" />
-    에 대한 연결이
-    중단되었습니다.</translation>
+<translation id="3930850196944737149">사용자의 기기가 오프라인 상태입니다.</translation>
 <translation id="3934680773876859118">PDF 문서를 로드하지 못했습니다.</translation>
-<translation id="3940082421246752453">서버가 요청에 사용된 HTTP 버전을 지원하지 않습니다.</translation>
 <translation id="3950924596163729246">네트워크에 액세스할 수 없습니다.</translation>
 <translation id="3963721102035795474">리더 모드</translation>
 <translation id="4030383055268325496">추가 실행 취소(&amp;U)</translation>
 <translation id="4032534284272647190"><ph name="URL" />에 대한 엑세스가 거부되었습니다.</translation>
 <translation id="404928562651467259">경고</translation>
 <translation id="4058922952496707368">'<ph name="SUBKEY" />' 키: <ph name="ERROR" /></translation>
-<translation id="4060383410180771901">웹사이트에서 <ph name="URL" />에 대한 요청을 처리할 수 없습니다.</translation>
 <translation id="4079302484614802869">프록시 설정이 고정 프록시 서버가 아닌 .pac 스크립트 URL을 사용하도록 설정됩니다.</translation>
 <translation id="409504436206021213">새로고침 안 함</translation>
 <translation id="4103249731201008433">기기 일련번호가 잘못됨</translation>
@@ -296,10 +267,8 @@
 <translation id="4268298190799576220">현재 Chromium에서 카드를 확인할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="4269787794583293679">(사용자 이름 없음)</translation>
 <translation id="4278390842282768270">허용됨</translation>
-<translation id="4287689875748136217">서버가 데이터를 전송하지 않아 웹페이지를 로드할 수 없습니다.</translation>
 <translation id="4300246636397505754">상위 추천</translation>
 <translation id="4325863107915753736">도움말을 찾지 못했습니다.</translation>
-<translation id="4350711002179453268">서버에 안전하게 연결할 수 없습니다. 서버에 문제가 있거나 사용자가 보유하지 않은 클라이언트 인증서가 필요하기 때문일 수 있습니다.</translation>
 <translation id="4372948949327679948">예상 <ph name="VALUE_TYPE" /> 값입니다.</translation>
 <translation id="4377125064752653719"><ph name="DOMAIN" />에 접속하려 했으나 발행기관에서 서버가 전달한 인증서를 폐기했습니다. 이는 서버가 제시한 보안 자격증명 정보를 신뢰할 수 없음을 의미합니다. 사용자는 현재 공격자와 통신 중일 수도 있습니다.</translation>
 <translation id="4394049700291259645">사용 중지</translation>
@@ -317,7 +286,6 @@
 <translation id="4594403342090139922">삭제 실행 취소(&amp;U)</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 서버의 보안 인증서에 오류가 있습니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
-<translation id="4681260323810445443"><ph name="URL" />의 웹페이지에 액세스할 수 있는 권한이 없습니다. 로그인해야 할 수 있습니다.</translation>
 <translation id="4697214168136963651"><ph name="URL" />이(가) 차단됨</translation>
 <translation id="4726672564094551039">정책 새로고침</translation>
 <translation id="4728558894243024398">플랫폼</translation>
@@ -325,38 +293,18 @@
 <translation id="4764776831041365478"><ph name="URL" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="4771973620359291008">알 수 없는 오류가 발생했습니다.</translation>
 <translation id="477518548916168453">요청을 수행하는 데 필요한 기능을 서버가 지원하지 않습니다.</translation>
-<translation id="4779052991835840224">이 사이트에서 지원되지 않는 프로토콜이나 암호화 제품군을 사용하므로 안전하게 연결할 수 없습니다. 더 이상 안전하지 않다고 간주되는 RC4를 서버에서 필요로 하기 때문인 경우가 많습니다.</translation>
-<translation id="4786993863723020412">캐시 읽기 오류</translation>
 <translation id="4800132727771399293">유효기간과 CVC를 확인한 후 다시 시도해 주세요.</translation>
 <translation id="4807049035289105102">현재 <ph name="SITE" />에서 Chrome이 처리할 수 없는 암호화된 자격증명 정보를 전송했기 때문에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 정상화될 것입니다.</translation>
 <translation id="4813512666221746211">네트워크 오류</translation>
 <translation id="4816492930507672669">페이지 맞춤</translation>
-<translation id="4841859178893814774">웹페이지의 속도를 높이기 위해
-    <ph name="PRODUCT_NAME" />
-    에서 다운로드한 파일을 디스크에 임시로 저장합니다.
-    <ph name="PRODUCT_NAME" />
-    이(가) 올바르게 종료되지 않으면 이 파일들이 손상되어 오류가
-    발생할 수 있습니다. 페이지를 새로고침하면 문제가 해결되며
-    올바르게 종료하면 향후 이 문제가 발생하지 않을 것입니다.
-    <ph name="LINE_BREAK" />
-    문제가 지속되는 경우 캐시를 삭제하세요. 이 문제는 하드웨어
-    고장을 알리는 증상일 수도 있습니다.</translation>
+<translation id="4841640898320458950">안전하지 않은 포트가 차단되었습니다.</translation>
 <translation id="4850886885716139402">보기</translation>
-<translation id="4874648484377130814">이 사이트에서
-    <ph name="BEGIN_LINK" />새로운 기본 최상위 도메인<ph name="END_LINK" />
-    (gTLD)을 사용 중입니다. 이전에 내부 사이트에 액세스하기 위해
-    <ph name="HOST_NAME" />
-    을(를) 사용한 적이 있는 경우 네트워크 관리자에게
-    문의하세요.</translation>
 <translation id="4880827082731008257">기록 검색</translation>
-<translation id="49215695600353191">서버의 응답에 중복 헤더가 포함되어 있습니다. 이 문제는
-    일반적으로 잘못 설정된 웹사이트나 프록시로 인해 발생합니다. 웹사이트나
-    프록시 관리자만 이 문제를 해결할 수 있습니다.</translation>
+<translation id="488726935215981469">동기화 암호로 데이터가 암호화되어 있습니다. 아래에 암호를 입력하세요.</translation>
 <translation id="4923417429809017348">페이지가 알 수 없는 언어에서 <ph name="LANGUAGE_LANGUAGE" />(으)로 번역되었습니다.</translation>
 <translation id="4926049483395192435">지정해야 합니다.</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4958444002117714549">펼치기 목록</translation>
-<translation id="4980112683975062744">서버에서 중복 헤더를 수신했습니다.</translation>
 <translation id="498957508165411911"><ph name="ORIGINAL_LANGUAGE" />에서 <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
 <translation id="5002932099480077015">선택하면 Chrome에서 양식을 더 빠르게 작성할 수 있도록 이 기기에 카드 사본을 저장합니다.</translation>
 <translation id="5019198164206649151">보조 기억 장치 상태가 잘못됨</translation>
@@ -368,29 +316,19 @@
 <translation id="5089810972385038852">주</translation>
 <translation id="5094747076828555589">이 서버가 <ph name="DOMAIN" />임을 입증할 수 없으며 Chromium에서 신뢰하는 보안 인증서가 아닙니다. 서버를 잘못 설정했거나 불법 사용자가 연결을 가로채고 있기 때문일 수 있습니다.</translation>
 <translation id="5095208057601539847">주/도</translation>
-<translation id="5109770625702925626"><ph name="HOST_NAME" />
-    을(를) 검색할 수 없습니다.
-    문제를 진단하는 중입니다...</translation>
 <translation id="5115563688576182185">(64비트)</translation>
 <translation id="5122371513570456792">'<ph name="SEARCH_STRING" />'에 대해 <ph name="NUMBER_OF_RESULTS" />개의 <ph name="SEARCH_RESULTS" />을(를) 찾았습니다.</translation>
+<translation id="5141240743006678641">동기화 비밀번호를 Google 자격증명으로 암호화</translation>
 <translation id="5145883236150621069">정책 응답에 오류 코드가 포함되어 있음</translation>
-<translation id="5153978682603373396">프록시 서버는 기기와 다른 서버 사이의 중개자 역할을 하는 서버입니다. 현재 시스템이 프록시를 사용하도록 설정되어 있지만
-      <ph name="PRODUCT_NAME" />
-      에서 프록시에 연결할 수 없습니다.</translation>
 <translation id="5172758083709347301">컴퓨터</translation>
 <translation id="5179510805599951267"><ph name="ORIGINAL_LANGUAGE" />가 아닙니까? 오류 신고</translation>
 <translation id="5190835502935405962">북마크바</translation>
 <translation id="5199729219167945352">실험실 기능</translation>
 <translation id="5228309736894624122">SSL 프로토콜 오류입니다.</translation>
 <translation id="5251803541071282808">클라우드</translation>
-<translation id="527200068854444456">사용자의 기기가 절전 모드 또는 최대 절전 모드이기 때문에 웹페이지를
-      로드할 수 없습니다. 이 경우 네트워크 연결이 종료되며
-      새 네트워크 요청을 전송할 수 없습니다. 페이지를 새로고침하면
-      이 문제가 해결됩니다.</translation>
 <translation id="5295309862264981122">탐색 확인</translation>
 <translation id="5299298092464848405">정책을 파싱하는 중 오류 발생</translation>
 <translation id="5300589172476337783">표시</translation>
-<translation id="5303618139271450299">해당 웹페이지를 찾을 수 없습니다.</translation>
 <translation id="5308689395849655368">충돌 보고가 사용 중지되었습니다.</translation>
 <translation id="5317780077021120954">저장</translation>
 <translation id="536296301121032821">정책 설정 저장 실패</translation>
@@ -418,7 +356,6 @@
 <translation id="5720705177508910913">현재 사용자</translation>
 <translation id="5813119285467412249">추가 다시 실행(&amp;R)</translation>
 <translation id="5872918882028971132">상위 추천</translation>
-<translation id="5880867612172997051">네트워크 액세스 일시 중지</translation>
 <translation id="5900623698597156974">TLS 1.0 대체에서 서버와 연결할 수 있었지만 Google에서는 더 이상 TLS 1.0 대체를 허용하지 않습니다. 서버가 제대로 버전 협상을 구현하고 TLS 1.2를 지원하도록 업데이트되어야 합니다.</translation>
 <translation id="59107663811261420">이 판매자의 Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
 <translation id="59174027418879706">사용 설정됨</translation>
@@ -433,21 +370,8 @@
 <translation id="604124094241169006">자동</translation>
 <translation id="6042308850641462728">더보기</translation>
 <translation id="6060685159320643512">이러한 실험실 기능은 문제를 일으킬 수 있습니다.</translation>
-<translation id="6066742401428748382">웹페이지 액세스가 거부되었습니다.</translation>
 <translation id="6093795393556121384">카드가 인증되었습니다.</translation>
 <translation id="6099520380851856040">발생 시간: <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420"><ph name="URL" /> 웹페이지에서
-      리디렉션이 너무 많이 발생했습니다. 이 사이트에서 쿠키를 삭제하거나 타사 쿠키를 허용하면 문제가 해결될 수 있습니다. 그래도
-      문제가 해결되지 않는다면 컴퓨터에 문제가 있는 것이 아니라
-      서버 설정과 관련된 문제일 수 있습니다.</translation>
-<translation id="6130627560064345577">웹페이지를 호스팅하는 서버에 과부하 또는 오류가 발생한 것 같습니다.
-    확장 프로그램이 너무 많은 트래픽을 발생시켜 상황이 악화되는 것을 방지하기 위해
-    <ph name="PRODUCT_NAME" />에서 
-    확장 프로그램이 이 URL로 보내는 요청을 일시적으로 중지했습니다.
-    <ph name="LINE_BREAK" />
-    이 작업을 원하지 않는 경우(예: 웹사이트 디버깅 작업을 수행 중인 경우), 
-    <ph name="URL_FOR_MORE_INFO" />을(를) 방문하여 
-    기능을 사용 중지하는 방법을 포함한 자세한 정보를 확인하시기 바랍니다.</translation>
 <translation id="6146055958333702838">케이블을 확인하고 사용 중인 라우터, 모뎀 또는 기타 네트워크 기기를
     재부팅하시기 바랍니다.</translation>
 <translation id="6151417162996330722">서버 인증서의 유효 기간이 너무 깁니다.</translation>
@@ -462,7 +386,6 @@
     차단되었습니다.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 북마크</translation>
 <translation id="6264485186158353794">안전 페이지로 돌아가기</translation>
-<translation id="6268647269805730940">이 기기는 첫 실행 단계가 완료되지 않았습니다.</translation>
 <translation id="6282194474023008486">우편번호</translation>
 <translation id="6321917430147971392">DNS 설정 확인</translation>
 <translation id="6328639280570009161">네트워크 예측을 사용 중지해 보세요.</translation>
@@ -479,16 +402,15 @@
 <translation id="6489534406876378309">오류 업로드 시작하기</translation>
 <translation id="6500116422101723010">서버에서 현재 요청을 처리할 수 없습니다. 이 코드는 이 문제가 임시로 발생했으며 잠시 뒤에 복구된다는 것을 나타냅니다.</translation>
 <translation id="6512448926095770873">이 페이지 나오기</translation>
-<translation id="6516193643535292276">인터넷에 연결할 수 없습니다.</translation>
 <translation id="6518133107902771759">확인</translation>
 <translation id="6529602333819889595">삭제 다시 실행(&amp;R)</translation>
 <translation id="6533019874004191247">지원되지 않는 URL입니다.</translation>
 <translation id="6550675742724504774">옵션</translation>
+<translation id="6596325263575161958">암호화 옵션</translation>
 <translation id="6626108645084335023">DNS 조사 대기 중입니다.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 검색</translation>
 <translation id="6634865548447745291"><ph name="BEGIN_LINK" />이 인증서가 취소되었기 때문에<ph name="END_LINK" /> 현재 <ph name="SITE" />에 방문할 수 없습니다. 네트워크 오류와 공격은 대부분 일시적이므로 잠시 후 페이지가 작동될 것입니다.</translation>
 <translation id="6637478299472506933">다운로드 실패</translation>
-<translation id="6640442327198413730">캐시에 없음</translation>
 <translation id="6644283850729428850">이 정책은 사용되지 않습니다.</translation>
 <translation id="6646897916597483132">카드 앞면의 4자리 CVC를 입력하세요.</translation>
 <translation id="6671697161687535275">Chromium에서 자동완성 항목 추천을 삭제하시겠습니까?</translation>
@@ -497,7 +419,6 @@
 <translation id="6746710319270251222">여러 다른 콘텐츠 길이 헤더를 수신했습니다. 이는 HTTP 응답
     분할 공격으로부터 보호하기 위해 금지되었습니다.</translation>
 <translation id="6753269504797312559">정책 값</translation>
-<translation id="6771079623344431310">프록시 서버에 연결할 수 없습니다</translation>
 <translation id="6781404225664080496">이 URL에 대한 요청이 일시적으로 중지되었습니다.</translation>
 <translation id="6800914069727136216">콘텐츠 팩</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -513,7 +434,6 @@
 <translation id="6891596781022320156">정책 수준이 지원되지 않습니다.</translation>
 <translation id="6897140037006041989">사용자 에이전트</translation>
 <translation id="6915804003454593391">사용자:</translation>
-<translation id="6948142510520900350">&lt;strong&gt;시스템 관리자&lt;/strong&gt;가 이 웹페이지에 대한 액세스를 차단했습니다.</translation>
 <translation id="6957887021205513506">서버의 인증서가 위조된 것 같습니다.</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="6965978654500191972">기기</translation>
@@ -521,19 +441,14 @@
 <translation id="6973656660372572881">고정 프록시 서버와 .pac 스크립트 URL이 모두 지정되어 있습니다.</translation>
 <translation id="6989763994942163495">고급 설정 표시</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7029809446516969842">비밀번호</translation>
 <translation id="7050187094878475250"><ph name="DOMAIN" />에 접속하려고 했지만 서버가 제시한 인증서의 유효 기간이 너무 길어서 신뢰할 수 없습니다.</translation>
 <translation id="7052500709156631672">게이트웨이 또는 프록시 서버가 업스트림 서버에서 잘못된 응답을 받았습니다.</translation>
 <translation id="7087282848513945231">카운티</translation>
 <translation id="7088615885725309056">다음</translation>
 <translation id="7108649287766967076"><ph name="TARGET_LANGUAGE" />로 번역하지 못했습니다.</translation>
 <translation id="7117303293717852287">웹페이지 새로고침</translation>
-<translation id="7117941875056403396"><ph name="PRODUCT_NAME" />(이)가
-    <ph name="HOST_NAME" />에
-    연결을 시도했으나
-    거부되었습니다. 웹사이트가 다운되었거나 네트워크가 제대로 설정되지 않았기
-    때문일 수 있습니다.</translation>
 <translation id="7139724024395191329">에미리트</translation>
-<translation id="7148804936871729015"><ph name="URL" />의 서버가 응답하는 데 시간이 너무 오래 걸립니다. 오버로드되었을 수 있습니다.</translation>
 <translation id="7179921470347911571">지금 다시 시작</translation>
 <translation id="7180611975245234373">새로고침</translation>
 <translation id="7182878459783632708">설정된 정책 없음</translation>
@@ -548,14 +463,6 @@
 <translation id="7275334191706090484">관리 북마크</translation>
 <translation id="7298195798382681320">권장</translation>
 <translation id="7334320624316649418">재정렬 다시 실행(&amp;R)</translation>
-<translation id="7335675476272530342">캐시에 웹페이지가 없습니다. 일부 리소스는
-    캐시에서만 안전하게 로드될 수 있습니다(예: 제출한 데이터에서
-    생성된 페이지).
-    <ph name="LINE_BREAK" />
-    이 오류는 비정상적인 종료로 인해 캐시가 손상된 경우에도
-    발생할 수 있습니다.
-    <ph name="LINE_BREAK" />
-    문제가 계속되면 캐시를 삭제하세요.</translation>
 <translation id="7353601530677266744">명령줄</translation>
 <translation id="7372973238305370288">검색결과</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -569,6 +476,7 @@
 <translation id="7424977062513257142">이 웹페이지에 삽입된 페이지 내용:</translation>
 <translation id="7441627299479586546">잘못된 정책 주체</translation>
 <translation id="7450732239874446337">네트워크 IO가 일시 중지되었습니다.</translation>
+<translation id="7481312909269577407">앞으로</translation>
 <translation id="7485870689360869515">데이터 없음</translation>
 <translation id="7514365320538308">다운로드</translation>
 <translation id="7518003948725431193">다음 웹 주소(<ph name="URL" />)에 대해 발견된 웹페이지가 없습니다.</translation>
@@ -580,23 +488,16 @@
 <translation id="7569952961197462199">Chrome에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7578104083680115302">Google에 저장한 카드를 사용하여 어떤 기기에서든지 사이트 및 앱에서 빠르게 지불할 수 있습니다.</translation>
 <translation id="7592362899630581445">서버의 인증서가 이름 제약 조건을 위반합니다.</translation>
-<translation id="759809665464235306">이 서버의 인증을 받으려면 인증서가 필요합니다만 서버가 브라우저에서 보낸 인증서를 수락하지
-    않았습니다. 인증서가 만료되었거나 서버가 발행기관을 신뢰하지 않기 때문일 수 있습니다.
-    다른 인증서를 사용하여 다시 시도하세요. 그렇지 않으면 다른 곳에서 유효한
-    인증서를 받아와야 할 수 있습니다.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> 번역 안함</translation>
 <translation id="7606563002701561706">고급 북마크</translation>
 <translation id="7610193165460212391">값(<ph name="VALUE" />)이 범위를 벗어났습니다.</translation>
-<translation id="7614030880636783720">Wi-Fi 및 모바일 데이터를 사용할 수 없습니다. 기기가 네트워크에 연결되면 페이지를 로드할 수 있습니다.</translation>
+<translation id="7615602087246926389">다른 Google 계정 비밀번호 버전을 사용하여 암호화된 데이터가 이미 있습니다. 아래에 암호를 입력하시기 바랍니다.</translation>
 <translation id="7637571805876720304">Chromium에서 신용카드를 삭제하시겠습니까?</translation>
 <translation id="7643817847124207232">인터넷 연결이 끊어졌습니다.</translation>
 <translation id="765676359832457558">고급 설정 숨기기</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7668654391829183341">알 수 없는 기기</translation>
 <translation id="7674629440242451245">Chrome의 멋진 새 기능에 관심이 있으십니까? chrome.com/dev 페이지에서 개발자 채널에 방문해 보세요.</translation>
-<translation id="7689727675296818638">네트워크 연결이 변경되어
-    <ph name="HOST_NAME" />에 대한
-    연결이 중단되었습니다.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" /><ph name="SITE" />(안전하지 않음)<ph name="END_LINK" />(으)로 이동</translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">관리되지 않음</translation>
@@ -607,10 +508,11 @@
 <translation id="777702478322588152">도</translation>
 <translation id="778579833039460630">수신된 데이터 없음</translation>
 <translation id="7791543448312431591">추가</translation>
+<translation id="7793809570500803535"><ph name="SITE" />의 웹페이지가 일시적으로 다운되었거나 새 웹 주소로 완전히 이동했을 수 있습니다.</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
 <translation id="7805768142964895445">상태</translation>
 <translation id="7813600968533626083">Chrome에서 추천검색어를 삭제하시겠습니까?</translation>
-<translation id="7839809549045544450">서버에 쉽게 삭제되는 Diffie-Hellman 공개 키가 있습니다.</translation>
+<translation id="7825436071901023927">안전하지 않은 포트 <ph name="SITE" /></translation>
 <translation id="7887683347370398519">CVC를 확인한 후 다시 시도하세요.</translation>
 <translation id="790025292736025802"><ph name="URL" />을(를) 찾을 수 없습니다.</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -622,16 +524,15 @@
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" />를 항상 <ph name="TARGET_LANGUAGE" />로 번역</translation>
 <translation id="7988324688042446538">데스크톱 북마크</translation>
 <translation id="7995512525968007366">지정되지 않음</translation>
-<translation id="8016174103774548813">SSL 서버가 사용되지 않는 것 같습니다.</translation>
 <translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE" />로 되어 있습니다. <ph name="TARGET_LANGUAGE" />로 번역하시겠습니까?</translation>
 <translation id="8034955203865359138">기록 항목이 없습니다.</translation>
+<translation id="8075539548641175231"><ph name="TIME" />에 동기화 암호로 데이터가 암호화되었습니다. 아래에 암호를 입력하세요.</translation>
 <translation id="8088680233425245692">글을 조회하지 못했습니다.</translation>
 <translation id="8091372947890762290">활성화 요청이 서버에서 대기 중</translation>
 <translation id="8150722005171944719"><ph name="URL" />의 파일을 읽을 수 없습니다. 삭제 또는 이동되었거나 파일 사용 권한이 액세스를 차단할 수도 있습니다.</translation>
 <translation id="8194797478851900357">이동 실행 취소(&amp;U)</translation>
 <translation id="8201077131113104583">ID가 '<ph name="EXTENSION_ID" />'인 확장 프로그램에 대한 잘못된 업데이트 URL</translation>
 <translation id="8204086856545141093">서버에 대한 요청이 정책에 의해 차단되었습니다.</translation>
-<translation id="820791781874064845">이 웹페이지는 확장 프로그램에 의해 차단되었습니다.</translation>
 <translation id="8218327578424803826">지정된 위치:</translation>
 <translation id="8240446052814166959">프록시 설정을 확인하거나 네트워크 관리자에게 문의하여
       프록시 서버가 작동하는지 확인하세요.
@@ -647,34 +548,30 @@
       <ph name="BEGIN_BOLD" />확인<ph name="END_BOLD" />을 클릭하세요.</translation>
 <translation id="8289355894181816810">잘 모르는 경우 네트워크 관리자에게 문의하시기 바랍니다.</translation>
 <translation id="8294431847097064396">출처</translation>
-<translation id="8295070100601117548">서버 오류</translation>
 <translation id="8308427013383895095">네트워크 연결 문제로 인해 번역에 실패했습니다.</translation>
 <translation id="8311778656528046050">이 페이지를 새로고침 하시겠습니까?</translation>
 <translation id="8349305172487531364">북마크바</translation>
 <translation id="8364627913115013041">설정 안됨</translation>
 <translation id="8412145213513410671">충돌(<ph name="CRASH_COUNT" />개)</translation>
+<translation id="8412392972487953978">동일한 암호를 두 번 입력해야 합니다.</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8437238597147034694">이동 실행 취소(&amp;U)</translation>
 <translation id="8488350697529856933">적용 대상</translation>
 <translation id="8494979374722910010">서버 연결 시도가 실패했습니다.</translation>
 <translation id="8508677083825928015">빠른 페이지 로드를 위해 리소스 프리패치</translation>
-<translation id="8515737884867295000">인증서 기반 인증에 실패했습니다.</translation>
 <translation id="8530504477309582336">Google Payments에서 지원하지 않는 카드 유형입니다. 다른 카드를 선택해 주세요.</translation>
+<translation id="8550022383519221471">도메인에 대해 동기화 서비스를 사용할 수 없습니다.</translation>
 <translation id="8553075262323480129">페이지의 언어를 결정할 수 없으므로 번역하지 못했습니다.</translation>
 <translation id="8559762987265718583">기기의 날짜와 시간(<ph name="DATE_AND_TIME" />)이 잘못되어 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />에 대한 비공개 연결을 설정할 수 없습니다.</translation>
 <translation id="8571890674111243710">페이지를 <ph name="LANGUAGE" />(으)로 번역 중...</translation>
 <translation id="8629916158020966496">엔터프라이즈 등록 인증 확인이 완료될 때까지 인터넷 탐색이 사용 중지됩니다.
     연결 문제를 해결하기 위한 진단 도구는 계속 사용할 수 있습니다.</translation>
 <translation id="8647750283161643317">기본값으로 재설정</translation>
+<translation id="8680787084697685621">계정 로그인 세부정보의 유효기간이 만료되었습니다.</translation>
 <translation id="8713130696108419660">잘못된 초기 서명</translation>
 <translation id="8725066075913043281">다시 시도하세요</translation>
-<translation id="8729518820755801792">Chrome에서 이 URL을 열 수 없습니다.</translation>
 <translation id="8730621377337864115">완료</translation>
 <translation id="8738058698779197622">보안 연결을 설정하려면 시계가 올바로 설정되어 있어야 합니다. 웹사이트가 자신을 식별하는 데 사용하는 인증서가 특정 기간에만 유효하기 때문입니다. 기기의 시계가 잘못 설정되어 Chromium에서 이 인증서를 확인할 수 없습니다.</translation>
-<translation id="8776174617851537652"><ph name="URL" /> 웹페이지에서 리디렉션이 너무 많이
-      발생했습니다. 이 사이트에 대한 쿠키를 삭제하거나 타사 쿠키를 허용하면 문제가 해결될 수 있습니다.  그래도
-      문제가 해결되지 않으면 휴대기기의 문제가 아닌
-      서버 설정과 관련된 문제일 수 있습니다.</translation>
 <translation id="8790007591277257123">삭제 다시 실행(&amp;R)</translation>
 <translation id="8798099450830957504">기본값</translation>
 <translation id="8804164990146287819">개인정보취급방침</translation>
@@ -700,42 +597,20 @@
 <translation id="9013589315497579992">잘못된 SSL 클라이언트 인증서입니다.</translation>
 <translation id="901974403500617787">시스템 전체에 적용되는 플래그는 소유자(<ph name="OWNER_EMAIL" />)만 설정할 수 있습니다.</translation>
 <translation id="9020142588544155172">서버에서 연결을 거부했습니다.</translation>
-<translation id="9020278534503090146">해당 웹페이지를 사용할 수 없음</translation>
 <translation id="9020542370529661692">이 페이지는 <ph name="TARGET_LANGUAGE" />로 번역되었습니다.</translation>
-<translation id="9032090437019334135">DNS 조회에 실패하여
-    <ph name="HOST_NAME" />
-    에서 서버를 찾을 수 없습니다. DNS는 웹사이트의 이름을
-    해당 인터넷 주소로 바꾸는 네트워크 서비스입니다. 이 오류는
-    대개 인터넷에 연결되지 않았거나 네트워크 설정이
-    잘못된 경우에 발생합니다. 또한 DNS 서버가 응답하지 않거나
-    방화벽으로 인해
-    <ph name="PRODUCT_NAME" />
-    이(가) 네트워크에 액세스하지 못하는 경우에도 발생할 수 있습니다.</translation>
-<translation id="904949795138183864"><ph name="URL" />의 웹페이지가 더 이상 존재하지 않습니다.</translation>
 <translation id="9049981332609050619"><ph name="DOMAIN" />에 접속하려 했지만 서버가 잘못된 인증서를 전달했습니다.</translation>
-<translation id="9086455579313502267">네트워크에 액세스할 수 없습니다.</translation>
+<translation id="9050666287014529139">암호</translation>
 <translation id="9103872766612412690"><ph name="SITE" />에서는 사용자 정보를 보호하기 위해 일반적으로 암호화를 사용합니다. 이번에 Chromium에서 <ph name="SITE" />에 연결을 시도했을 때 웹사이트에서 비정상적이고 잘못된 사용자 인증 정보를 반환했습니다. 이는 공격자가 <ph name="SITE" />인 것처럼 가장하려고 하거나 Wi-Fi 로그인 화면이 연결을 방해했기 때문일 수 있습니다. 데이터 교환이 발생하기 전에 Chromium에서 연결을 중단했으므로 사용자 정보는 안전합니다.</translation>
 <translation id="9125941078353557812">카드 뒷면의 3자리 CVC를 입력하세요.</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9148507642005240123">수정 실행 취소(&amp;U)</translation>
 <translation id="9154176715500758432">이 페이지에 머무르기</translation>
-<translation id="9168302918952546302"><ph name="PRODUCT_NAME" />에서
-      네트워크에 액세스하는 데 문제가 있습니다.
-      <ph name="LINE_BREAK" />
-      방화벽이나 바이러스 백신 소프트웨어에서
-      <ph name="PRODUCT_NAME" />이(가)
-      사용자의 기기에 침입하여 인터넷 연결을 차단하고 있다고 잘못 인식했기 때문일 수 있습니다.</translation>
+<translation id="9157595877708044936">설정 중...</translation>
 <translation id="9170848237812810038">실행 취소(&amp;U)</translation>
 <translation id="917450738466192189">서버의 인증서가 유효하지 않습니다.</translation>
 <translation id="9207861905230894330">글을 추가하지 못했습니다.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">양식 지우기</translation>
-<translation id="946368465353148168"><ph name="PRODUCT_NAME" />
-      에서 네트워크에 액세스하는 데 문제가 있습니다.
-      <ph name="LINE_BREAK" />
-      방화벽이나 바이러스 백신 소프트웨어에서
-      <ph name="PRODUCT_NAME" />
-      이(가) 사용자의 컴퓨터에 침입하여 인터넷 연결을 차단하고 있다고 잘못 인식했기 때문일 수 있습니다.</translation>
 <translation id="969892804517981540">공식 빌드</translation>
 <translation id="988159990683914416">개발자 빌드</translation>
 </translationbundle>

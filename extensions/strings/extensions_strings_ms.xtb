@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Tidak dapat memuatkan halaman perihal '<ph name="ABOUT_PAGE" />'.</translation>
 <translation id="4434145631756268951">{0,select, single{Pilih peranti USB}multiple{Pilih peranti USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Tidak dapat memasang pakej kerana proses utiliti telah ranap. Cuba mulakan semula Chrome dan cuba lagi.</translation>
-<translation id="4883436287898674711">Semua tapak <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Paparan Web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Sambungan ini merangkumi fail utama ' <ph name="KEY_PATH" /> '. Anda mungkin tidak mahu melakukannya.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID sambungan "<ph name="EXTENSION_ID" />") disekat oleh pentadbir.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Sambungan ini gagal menamakan muat turun "<ph name="ATTEMPTED_FILENAME" />" kerana sambungan lain (<ph name="EXTENSION_NAME" />) menetapkan nama fail lain "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">semua tapak <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Sambungan ini gagal memberikan bukti kelayakan kepada permintaan rangkaian kerana sambungan lain (<ph name="EXTENSION_NAME" />) memberikan bukti kelayakan yang berbeza.</translation>
 <translation id="8602184400052594090">Fail ketara hilang atau tidak dibaca.</translation>

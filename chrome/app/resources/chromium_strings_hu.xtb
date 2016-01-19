@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1065672644894730302">A beállításait nem sikerült olvasni. Egyes funkciókat esetleg nem ér el, és a beállításaiban végrehajtott módosításokat nem menti a rendszer.</translation>
-<translation id="108122890477367602">Chromium új&amp;raindítása Windows 8 módban</translation>
 <translation id="1115445892567829615">A Chromium nem tudta szinkronizálni az adatokat. Kérjük, frissítse a szinkronizálás jelszavát.</translation>
 <translation id="1174473354587728743">Közösen használ valakivel egy számítógépet? Mostantól úgy állíthatja be a Chromiumot, ahogy Ön szeretné.</translation>
 <translation id="1185134272377778587">A Chromium névjegye</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">A Chromium nem válaszol. Újraindítja most?</translation>
 <translation id="1967743265616885482">Egy ugyanilyen nevű modul ismereteink szerint ütközik a Chromiummal.</translation>
 <translation id="2077129598763517140">Hardveres gyorsítás alkalmazása lehetőség szerint</translation>
-<translation id="2097986737970966220">A Chromium megnyitása az asztalon</translation>
 <translation id="2117181891440368863">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott tanúsítványátláthatósági adatokat, de azok érvénytelenek.</translation>
 <translation id="2119636228670142020">A &amp;Chromium OS névjegye</translation>
 <translation id="2158734852934720349">Chromium OS nyílt forráskódú licencek</translation>
-<translation id="2233513990531887259">Újraindítás a Chromium kiterjesztett módjában</translation>
 <translation id="2241627712206172106">Ha megoszt egy számítógépet, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
 <translation id="225614027745146050">Üdvözöljük</translation>
 <translation id="2316129865977710310">Köszönöm, nem</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">A Chromium OS használatának megkezdése</translation>
 <translation id="3582788516608077514">A Chromium frissítése...</translation>
 <translation id="358997566136285270">Chromium embléma</translation>
-<translation id="3595526210123705352">A Windows 8 módban való újraindítással bezárja és újraindítja a Chromium-alkalmazásokat.</translation>
 <translation id="3738139272394829648">Érintéssel keresés</translation>
 <translation id="3748537968684000502">Ön egy biztonságos Chromium-oldalt tekint meg.</translation>
 <translation id="378917192836375108">A Chromium egyetlen kattintással lehetővé teszi a weboldalakon található telefonszámok felhívását Skype-on!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Kattintson a nevére a Chromium megnyitásához és a böngészés megkezdéséhez.</translation>
 <translation id="390894725198123737">Mac típusú számítógépen a rendszer a Keychain alkalmazásba mentheti a jelszavakat, amelyek hozzáférhetők vagy szinkronizálhatók lesznek azon Chromium-felhasználók számára, akik ugyanezzel az OS X-fiókkal rendelkeznek.</translation>
 <translation id="4050175100176540509">A legújabb verzióban fontos biztonsági fejlesztések és új funkciók érhetők el.</translation>
-<translation id="4075965373589665797">Az asztali módban való újraindítással bezárja és újraindítja a Chromium-alkalmazásokat.</translation>
 <translation id="4077262827416206768">Kérjük, zárjon be minden ablakot, majd indítsa újra a Chromiumot a módosítás életbe léptetéséhez.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Figyelmeztetés:<ph name="END_BOLD" /> A Chromium nem tudja megakadályozni, hogy a bővítmények rögzítsék a böngészési előzményeit. A bővítmény inkognitómódban való használatának letiltásához törölje e lehetőség bejelölését.</translation>
 <translation id="421369550622382712">Fedezzen fel nagyszerű alkalmazásokat, játékokat, bővítményeket és témákat a Chromiumhoz.</translation>
@@ -162,7 +157,6 @@
 <translation id="6838494703713445896">A Chromium megerősítette, hogy a(z) <ph name="ISSUER" /> állította ki ennek a webhelynek a tanúsítványát. A szerver megadott érvényes tanúsítványátláthatósági adatokat.</translation>
 <translation id="6883876366448858277">a szót és annak szövegkörnyezetét elküldi a Google Keresésnek, amely meghatározásokat, képeket és egyéb keresési eredményeket küld vissza.</translation>
 <translation id="6893813176749746474">A Chromium frissítése megtörtént, de nem használta a böngészőt legalább 30 napja.</translation>
-<translation id="6900895776413482243">A Chromium kiterjesztett módban való újraindítása bezárja, majd újraindítja a Chromium-alkalmazásokat.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">A Chromiumba betöltött modulok</translation>
 <translation id="6970811910055250180">Az eszköz frissítése folyamatban van...</translation>
@@ -211,7 +205,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="8551886023433311834">Majdnem naprakész! Indítsa újra a készüléket a frissítés befejezéséhez.</translation>
 <translation id="85843667276690461">Segítséget kaphat a Chromium használatával kapcsolatban</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> – A Chromium szerzői. Minden jog fenntartva.</translation>
-<translation id="8605166112420372522">Chromium új&amp;raindítása az asztalon</translation>
 <translation id="8621669128220841554">A telepítés egy meg nem határozott hiba miatt nem sikerült. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="8628626585870903697">A Chromium nem tartalmazza a PDF Viewer alkalmazást, amely a Nyomtatási előnézet működéséhez szükséges.</translation>
 <translation id="8684913864886094367">A Chromium nem záródott be megfelelően.</translation>

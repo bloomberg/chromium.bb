@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Hindi ma-load ang page na tungkol dito na '<ph name="ABOUT_PAGE" />'.</translation>
 <translation id="4434145631756268951">{0,select, single{Pumili ng USB device}multiple{Pumili ng mga USB device}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Hindi na-install ang package dahil nag-crash ang isang proseso ng utility. Subukang i-restart ang Chrome at subukang muli.</translation>
-<translation id="4883436287898674711">Lahat ng site ng <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Kasama sa extension na ito ang key file na '<ph name="KEY_PATH" />'. Malamang na hindi mo iyon gustong gawin.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Ang <ph name="EXTENSION_NAME" /> (ID ng extension "<ph name="EXTENSION_ID" />") ay na-block ng administrator.</translation>
 <translation id="7972881773422714442">Mga Opsyon: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Nabigong pangalanan ng extension na ito ang download na "<ph name="ATTEMPTED_FILENAME" />" dahil nakatukoy ang isa pang extension (<ph name="EXTENSION_NAME" />) ng ibang filename na "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">lahat ng site ng <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Nabigo ang extension na ito na magbigay ng mga kredensyal sa isang kahilingan sa network dahil may isa pang extension (<ph name="EXTENSION_NAME" />) na nagbigay ng ibang mga kredensyal.</translation>
 <translation id="8602184400052594090">Nawawala o hindi mabasa ang manifest file.</translation>

@@ -10,22 +10,20 @@
 <translation id="1066332784716773939">Diagnozuoti klaidas...</translation>
 <translation id="106701514854093668">Žymės staliniame kompiuteryje</translation>
 <translation id="1080116354587839789">Pritaikyti pagal plotį</translation>
-<translation id="108346963417674655">Nepavyko saugiai prisijungti prie serverio. Galbūt anksčiau ši svetainė veikė, bet dabar kyla serverio problemų. Prisijungiant prie tokių svetainių padidėja pavojus visų naudotojų saugai, todėl ji buvo išjungta.</translation>
 <translation id="1090046120949329821">Gautos kelios skirtingos turinio išdėstymo antraštės. Tai neleidžiama siekiant
     apsisaugoti nuo HTTP atsako skaidymo išpuolių.</translation>
 <translation id="1091911885099639251">Patvirtinama kortelė</translation>
 <translation id="1103523840287552314">Visada versti <ph name="LANGUAGE" /></translation>
-<translation id="1105117579475534983">Tinklalapis užblokuotas</translation>
 <translation id="1107591249535594099">Jei pažymėta, „Chrome“ išsaugos kortelės kopiją įrenginyje, kad galėtumėte greičiau užpildyti formas.</translation>
 <translation id="1113869188872983271">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="111844081046043029">Ar tikrai norite išeiti iš šio puslapio?</translation>
 <translation id="112840717907525620">Gera politikos talpykla</translation>
 <translation id="113188000913989374"><ph name="SITE" /> sakoma:</translation>
 <translation id="1132774398110320017">„Chrome“ automatinio pildymo nustatymai...</translation>
-<translation id="1146498888431277930">SSL ryšio klaida</translation>
 <translation id="1146673768181266552">Strigties ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas kompiuterio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1152921474424827756">Pasiekite <ph name="BEGIN_LINK" />talpykloje saugomą <ph name="URL" /> kopiją<ph name="END_LINK" /></translation>
+<translation id="1175364870820465910">&amp;Spausdinti...</translation>
 <translation id="1181037720776840403">Pašalinti</translation>
 <translation id="1195447618553298278">Nežinoma klaida.</translation>
 <translation id="1201402288615127009">Toliau</translation>
@@ -46,10 +44,6 @@
 <translation id="1426410128494586442">Taip</translation>
 <translation id="1430915738399379752">Spausdinti</translation>
 <translation id="1442912890475371290">Užblokuotas bandymas <ph name="BEGIN_LINK" />apsilankyti puslapyje, esančiame <ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
-<translation id="1452265419286795001">Nepavyko įkelti tinklalapio, nes kompiuteris veikia miego arba
-          užmigdymo režimu. Kai taip nutinka, tinklo ryšiai išjungiami
-          ir pateikiant naujas tinklo užklausas įvyksta klaidų. Įkėlus puslapį iš naujo
-          problema turėtų būti išspręsta.</translation>
 <translation id="1455235771979731432">Patvirtinant kortelę kilo problema. Patikrinkite interneto ryšį ir bandykite dar kartą.</translation>
 <translation id="1491151370853475546">Iš naujo įkelti šį puslapį</translation>
 <translation id="1506687042165942984">Rodyti išsaugotą šio puslapio kopiją (kuri yra pasenusi).</translation>
@@ -60,12 +54,7 @@
 
       &lt;p&gt;Koreguokite datą ir laiką programos &lt;strong&gt;Settings&lt;/strong&gt; skiltyje &lt;strong&gt;General&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1592005682883173041">Prieiga prie vietinių duomenų</translation>
-<translation id="1619362374865863391">„<ph name="PRODUCT_NAME" />“
-    negali pasiekti svetainės. Paprastai taip yra dėl tinklo problemų, tačiau
-    gali būti ir dėl netinkamai sukonfigūruotos užkardos ar tarpinio serverio.</translation>
 <translation id="1629803312968146339">Ar norite, kad „Chrome“ išsaugotų šią kortelę?</translation>
-<translation id="1639782983204136776">Bandant įkelti <ph name="URL" /> gautas neteisingas atsakas.
-    Gali būti, kad serveris neveikia dėl techninės priežiūros arba netinkamai sukonfigūruotas.</translation>
 <translation id="1640180200866533862">Naudotojo politika</translation>
 <translation id="1644184664548287040">Tinklo konfigūracija netinkama ir jos neįmanoma importuoti.</translation>
 <translation id="1644574205037202324">Istorija</translation>
@@ -76,12 +65,15 @@
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Failo riktas</translation>
+<translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1753706481035618306">Puslapio numeris</translation>
 <translation id="1763864636252898013">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas įrenginio operacinei sistemai. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="1775135663370355363">Rodoma šio įrenginio istorija. <ph name="BEGIN_LINK" />Sužinokite daugiau<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Netinkama užklausa arba jos parametrai</translation>
 <translation id="1871208020102129563">Įgaliotasis serveris nustatytas naudoti fiksuotų įgaliotųjų serverių, o ne .pac scenarijaus URL.</translation>
+<translation id="1871625979288021266">Nesaug. priev. užbl.</translation>
 <translation id="1883255238294161206">Sutraukti sąrašą</translation>
 <translation id="1898423065542865115">Filtravimas</translation>
 <translation id="194030505837763158">Apsilankykite <ph name="LINK" /></translation>
@@ -113,22 +105,13 @@
 <translation id="2212735316055980242">Politika nerasta</translation>
 <translation id="2213606439339815911">Gaunami įrašai...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> neprieinamas</translation>
-<translation id="2221403025589790908"><ph name="PRODUCT_NAME" />
-    nepavyko įkelti tinklalapio, nes
-    <ph name="HOST_NAME" />
-    per ilgai neatsakė.  Gali neveikti svetainė
-    arba yra interneto ryšio problemų.</translation>
-<translation id="2223896507118749476">Nuskaitant <ph name="URL" /> svetainėje įvyko klaida.
-    Gali būti, kad jis neveikia dėl techninės priežiūros arba netinkamai sukonfigūruotas.</translation>
 <translation id="225207911366869382">Pagal šią politiką ši vertė nepatvirtinta.</translation>
 <translation id="2262243747453050782">HTTP klaida</translation>
-<translation id="2271281383664374369">Plėtinių užklausų pateikimas šiuo URL laikinai sustabdytas.</translation>
 <translation id="2279770628980885996">Serveriui bandant įvykdyti užklausą susidurta su nenumatyta būsena.</translation>
 <translation id="2282872951544483773">Nepasiekiami eksperimentai</translation>
 <translation id="229702904922032456">Baigėsi šakninio ar tarpinio sertifikato galiojimas.</translation>
 <translation id="230155334948463882">Nauja kortelė?</translation>
 <translation id="2328300916057834155">Nepaisoma netinkama žymė indekse <ph name="ENTRY_INDEX" /></translation>
-<translation id="2345460471437425338">Netinkamas prieglobos sertifikatas.</translation>
 <translation id="2354001756790975382">Kitos žymės</translation>
 <translation id="2359808026110333948">Tęsti</translation>
 <translation id="2367567093518048410">Lygis</translation>
@@ -149,9 +132,7 @@
 <translation id="2516305470678292029">NS alternatyvos</translation>
 <translation id="2552545117464357659">Naujesnis</translation>
 <translation id="2556876185419854533">&amp;Anuliuoti redagavimą</translation>
-<translation id="2581221116934462656">Ar norite, kad „<ph name="PRODUCT_NAME" />“ kitą kartą siūlytų versti šios svetainės puslapius <ph name="LANGUAGE_NAME" />?</translation>
 <translation id="2587841377698384444">Katalogo API ID:</translation>
-<translation id="2589937147782335782">Ar norite, kad „Google“ išsaugotų šią kortelę?</translation>
 <translation id="2597378329261239068">Šis dokumentas apsaugotas slaptažodžiu. Įveskite slaptažodį.</translation>
 <translation id="2609632851001447353">Variantai</translation>
 <translation id="2625385379895617796">Jūsų laikrodis skuba</translation>
@@ -160,20 +141,16 @@
 <translation id="2653659639078652383">Pateikti</translation>
 <translation id="2674170444375937751">Ar tikrai norite pašalinti šiuos puslapius iš savo istorijos?</translation>
 <translation id="2704283930420550640">Vertė neatitinka formato.</translation>
+<translation id="2709516037105925701">Automatinis pildymas</translation>
 <translation id="2721148159707890343">Užklausa sėkminga</translation>
 <translation id="2728127805433021124">Serverio sertifikatas pasirašytas naudojant nepatikimą parašo algoritmą.</translation>
 <translation id="2742870351467570537">Pašalinti pasirinktus elementus</translation>
 <translation id="277499241957683684">Trūksta įrenginio įrašo</translation>
 <translation id="2784949926578158345">Ryšys atkurtas.</translation>
+<translation id="2824775600643448204">Adreso ir paieškos juosta</translation>
 <translation id="2835170189407361413">Valyti formą</translation>
 <translation id="2855922900409897335">Patvirtinkite „<ph name="CREDIT_CARD" />“</translation>
-<translation id="2887624244875325968">Ši klaida gali įvykti prisijungiant prie saugaus (HTTPS) serverio. Tai
-    reiškia, kad serveris bando nustatyti saugų ryšį, tačiau dėl
-    nesėkmingos konfigūracijos ryšys visiškai nesaugus!
-    <ph name="LINE_BREAK" /> Tokiu atveju reikia
-    sutvarkyti serverį.
-    „<ph name="PRODUCT_NAME" />“
-    nenaudos nesaugaus ryšio, kad apsaugotų jūsų privatumą.</translation>
+<translation id="2897655920961181107">Prašomas priev. nesaug. ir buvo užblok.</translation>
 <translation id="2909946352844186028">Aptiktas tinklo pasikeitimas.</translation>
 <translation id="2915500479781995473">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nebegalioja. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo. Šiuo metu jūsų kompiuterio laikrodis nustatytas į <ph name="CURRENT_TIME" />. Ar tai tinkamas laikas? Jei netinkamas, turėtumėte pakeisti sistemos laikrodžio laiką ir atnaujinti šį puslapį.</translation>
 <translation id="2922350208395188000">Neįmanoma patikrinti serverio sertifikato.</translation>
@@ -210,13 +187,9 @@
 <translation id="3202578601642193415">Naujausia</translation>
 <translation id="3207960819495026254">Pažymėta</translation>
 <translation id="3219579145727097045">Įveskite galiojimo pabaigos datą ir 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>
-<translation id="3225579507836276307">Trečiosios šalies plėtinys užblokavo prieigą prie šio tinklalapio.</translation>
 <translation id="3225919329040284222">Serveris pateikė sertifikatą, kuris neatitinka numatytų reikalavimų. Šie reikalavimai taikomi tam tikrose itin saugiose svetainėse, kad jūs būtumėte saugūs.</translation>
 <translation id="3226128629678568754">Spustelėkite įkėlimo iš naujo mygtuką, kad iš naujo pateiktumėte duomenis, reikalingus puslapiui įkelti.</translation>
 <translation id="3228969707346345236">Išversti nepavyko, nes puslapis jau yra <ph name="LANGUAGE" />.</translation>
-<translation id="3230256772510102500">Tarpinis serveris – tai serveris, veikiantis kaip tarpininkas tarp kompiuterio ir kitų serverių. Šiuo metu sistema sukonfigūruota naudoti tarpinį serverį, bet
-          „<ph name="PRODUCT_NAME" />“
-          negali prie jo prisijungti.</translation>
 <translation id="3270847123878663523">&amp;Anuliuoti pertvarkymą</translation>
 <translation id="3286538390144397061">Paleisti iš naujo dabar</translation>
 <translation id="333371639341676808">Neleiskite šiam puslapiui kurti papildomų dialogo langų.</translation>
@@ -228,7 +201,6 @@
 <translation id="3377188786107721145">Politikos analizės klaida</translation>
 <translation id="3380365263193509176">Nežinoma klaida</translation>
 <translation id="3380864720620200369">Kliento ID:</translation>
-<translation id="3393716657345709557">Pageidaujamas įrašas talpykloje nerastas.</translation>
 <translation id="340013220407300675">Atakas vykdančios programos gali bandyti pavogti informaciją iš <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (pavyzdžiui, slaptažodžius, pranešimus arba kredito kortelių informaciją).</translation>
 <translation id="3427342743765426898">&amp;Redaguoti dar kartą</translation>
 <translation id="3435896845095436175">Įgalinti</translation>
@@ -240,6 +212,7 @@
 <translation id="3528171143076753409">Serverio sertifikatas nepatikimas.</translation>
 <translation id="3539171420378717834">Išsaugoti kortelės kopiją įrenginyje</translation>
 <translation id="3542684924769048008">Slaptažodį naudoti:</translation>
+<translation id="3549644494707163724">Šifruoti visus sinchronizuotus duomenis naudojant sinchronizavimo slaptafrazę</translation>
 <translation id="3549761410225185768">Dar <ph name="NUM_TABS_MORE" />...</translation>
 <translation id="3566021033012934673">Jūsų ryšys nėra privatus</translation>
 <translation id="3583757800736429874">&amp;Perkelti dar kartą</translation>
@@ -260,6 +233,8 @@
 <translation id="375403751935624634">Vertimas nepavyko dėl serverio klaidos.</translation>
 <translation id="3759461132968374835">Nėra strigčių, apie kurias buvo neseniai pranešta. Strigtys, įvykusios tuo metu, kai strigčių ataskaitų teikimas buvo išjungtas, čia rodomos nebus.</translation>
 <translation id="382518646247711829">Jei naudojate tarpinį serverį…</translation>
+<translation id="3828924085048779000">Neleidžiama naudoti tuščios slaptafrazės.</translation>
+<translation id="385051799172605136">Grįžti</translation>
 <translation id="3851596405215565524">Jei ji jau nurodyta kaip programa, kuriai leidžiama pasiekti tinklą, pabandykite
         ją pašalinti iš sąrašo ir vėl pridėti.</translation>
 <translation id="3858027520442213535">Atnaujinti datą ir laiką</translation>
@@ -267,18 +242,14 @@
 <translation id="3885155851504623709">Apylinkė</translation>
 <translation id="3901925938762663762">Kortelė nebegalioja</translation>
 <translation id="3903912596042358459">Serveris atsisakė įvykdyti užklausą.</translation>
-<translation id="3920015046759567857">Ryšys su
-    <ph name="HOST_NAME" />
-    nutrauktas.</translation>
+<translation id="3930850196944737149">Įrenginys neprijungtas.</translation>
 <translation id="3934680773876859118">Nepavyko įkelti PDF dokumento</translation>
-<translation id="3940082421246752453">Serveris nepalaiko HTTP versijos, nurodytos užklausoje.</translation>
 <translation id="3950924596163729246">Nepavyko pasiekti tinklo.</translation>
 <translation id="3963721102035795474">Skaitytojo režimas</translation>
 <translation id="4030383055268325496">&amp;Anuliuoti pridėjimą</translation>
 <translation id="4032534284272647190">Prieiga prie <ph name="URL" /> atmesta.</translation>
 <translation id="404928562651467259">ĮSPĖJIMAS</translation>
 <translation id="4058922952496707368">Raktas „<ph name="SUBKEY" />“: <ph name="ERROR" /></translation>
-<translation id="4060383410180771901">Svetainėje nepavyksta apdoroti <ph name="URL" /> skirtos užklausos.</translation>
 <translation id="4079302484614802869">Įgaliotojo serverio konfigūracijoje nustatyta naudoti .pac scenarijaus URL, o ne fiksuotus įgaliotuosius serverius.</translation>
 <translation id="409504436206021213">Neįkelti iš naujo</translation>
 <translation id="4103249731201008433">Netinkamas įrenginio serijos numeris</translation>
@@ -297,10 +268,8 @@
 <translation id="4268298190799576220">Šiuo metu „Chromium“ negali patvirtinti jūsų kortelės. Bandykite dar kartą vėliau.</translation>
 <translation id="4269787794583293679">(Nėra naudotojo vardo)</translation>
 <translation id="4278390842282768270">Leidžiama</translation>
-<translation id="4287689875748136217">Neįmanoma įkelti tinklalapio, nes serveris neatsiuntė duomenų.</translation>
 <translation id="4300246636397505754">Pasiūlymai tėvams</translation>
 <translation id="4325863107915753736">Nepavyko rasti straipsnio</translation>
-<translation id="4350711002179453268">Neįmanoma užmegzti saugaus ryšio su serveriu.Tai gali būti serverio problema arba gali būti, kad serveris reikalauja kliento tapatybės nustatymo sertifikato, kurio jūs neturite.</translation>
 <translation id="4372948949327679948">Numatyta „<ph name="VALUE_TYPE" />“ vertė.</translation>
 <translation id="4377125064752653719">Bandėte pasiekti svetainę „<ph name="DOMAIN" />“, bet sertifikatą, kurį pateikė serveris, anuliavo jo išdavėjas. Tai reiškia, kad saugos kredencialais, kuriuos pateikė serveris, visiškai negalima pasitikėti. Galbūt bendraujate su užpuoliku.</translation>
 <translation id="4394049700291259645">Neleisti</translation>
@@ -318,7 +287,6 @@
 <translation id="4594403342090139922">&amp;Anuliuoti ištrynimą</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikate yra klaidų. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
-<translation id="4681260323810445443">Jums neleidžiama pasiekti tinklalapio šiuo adresu: <ph name="URL" />. Gali reikėti prisijungti.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> užblokuotas</translation>
 <translation id="4726672564094551039">Iš naujo įkelti politiką</translation>
 <translation id="4728558894243024398">Platforma</translation>
@@ -326,38 +294,18 @@
 <translation id="4764776831041365478">Tinklalapis šiuo adresu <ph name="URL" /> gali laikinai neveikti arba visam laikui būti perkeltas kitu žiniatinklio adresu.</translation>
 <translation id="4771973620359291008">Įvyko nežinoma klaida.</translation>
 <translation id="477518548916168453">Serveris nepalaiko funkcijos, kuri reikalinga norint įvykdyti užklausą.</translation>
-<translation id="4779052991835840224">Negalima užmegzti saugaus ryšio, nes šioje svetainėje naudojamas nepalaikomas protokolas arba šifruotasis programų komplektas. Taip gali nutikti, kai serveriui reikia RC4, kuris nebėra saugus.</translation>
-<translation id="4786993863723020412">Talpyklos nuskaitymo klaida</translation>
 <translation id="4800132727771399293">Patikrinkite kortelės galiojimo pabaigos datą bei saugos kodą (CVC) ir bandykite dar kart</translation>
 <translation id="4807049035289105102">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes ji atsiuntė užšifruotus prisijungimo duomenis, kurių „Google Chrome“ negali apdoroti. Tinklo klaidos ir užpuolimai dažniausiai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="4813512666221746211">Tinklo klaida</translation>
 <translation id="4816492930507672669">Pritaikyti pagal puslapį</translation>
-<translation id="4841859178893814774">Siekdama pagreitinti tinklalapių veikimą,
-    „<ph name="PRODUCT_NAME" />“
-    laikinai išsaugo atsisiųstus failus diske. Kai
-    „<ph name="PRODUCT_NAME" />“
-    tinkamai neuždaroma, šie failai gali būti sugadinti ir dėl to pateikiama
-    ši klaida.  Iš naujo įkėlus puslapį, problema turėtų būti išspręsta ir,
-    tinkamai sustabdžius programą, klaida neturėtų įvykti ateityje.
-    <ph name="LINE_BREAK" />
-    Jei problema išlieka, pabandykite išvalyti talpyklą. Kartais
-    tai taip pat gali būti aparatinės įrangos gedimo požymis.</translation>
+<translation id="4841640898320458950">Nesaug. priev. užbl.</translation>
 <translation id="4850886885716139402">Žiūrėti</translation>
-<translation id="4874648484377130814">Šioje svetainėje naudojamas 
-        <ph name="BEGIN_LINK" />naujas bendras aukščiausiojo lygio domenas<ph name="END_LINK" />
-        („gTLD“). Jei anksčiau naudojote 
-        <ph name="HOST_NAME" />
-        vidinei svetainei pasiekti, susisiekite su tinklo
-        administratoriumi.</translation>
 <translation id="4880827082731008257">Ieškoti istorijoje</translation>
-<translation id="49215695600353191">Gavus atsaką iš serverio pateikta pasikartojančių antraščių. Ši problema
-    dažniausiai atsiranda dėl netinkamai sukonfigūruotos svetainės ar tarpinio serverio.
-    Tik svetainės ar tarpinio serverio administratorius gali išspręsti šią problemą.</translation>
+<translation id="488726935215981469">Duomenys užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją toliau.</translation>
 <translation id="4923417429809017348">Šis puslapis išverstas iš nežinomos kalbos į <ph name="LANGUAGE_LANGUAGE" /> k.</translation>
 <translation id="4926049483395192435">Turi būti nurodyta.</translation>
 <translation id="495170559598752135">Veiksmai</translation>
 <translation id="4958444002117714549">Išskleisti sąrašą</translation>
-<translation id="4980112683975062744">Iš serverio gauta pasikartojančių antraščių</translation>
 <translation id="498957508165411911">Versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Jei šis nustatymas įgalintas, „Chrome“ saugos kortelės kopiją šiame įrenginyje, kad būtų galima greičiau užpildyti formas.</translation>
 <translation id="5019198164206649151">Bloga atsarginio atminties įrenginio būsena</translation>
@@ -369,29 +317,19 @@
 <translation id="5089810972385038852">Valstija</translation>
 <translation id="5094747076828555589">Šiam serveriui nepavyko patvirtinti, kad tai yra <ph name="DOMAIN" />; jo saugos sertifikatas nėra patikimas „Chromium“. Taip gali nutikti dėl netinkamos konfigūracijos ar dėl ryšį pertraukusio užgrobėjo.</translation>
 <translation id="5095208057601539847">Provincija</translation>
-<translation id="5109770625702925626">Nepavyksta rasti
-        <ph name="HOST_NAME" />.
-        Bandoma diagnozuoti problemą...</translation>
 <translation id="5115563688576182185">(64 bitų)</translation>
 <translation id="5122371513570456792">Pagal terminą „<ph name="SEARCH_STRING" />“ surasta tiek <ph name="SEARCH_RESULTS" />: <ph name="NUMBER_OF_RESULTS" /></translation>
+<translation id="5141240743006678641">Šifruoti sinchronizuotus slaptažodžius naudojant „Google“ kredencialus</translation>
 <translation id="5145883236150621069">Politikos atsakyme yra klaidos kodas</translation>
-<translation id="5153978682603373396">Tarpinis serveris – tai serveris, veikiantis kaip tarpininkas tarp įrenginio ir kitų serverių. Šiuo metu sistema sukonfigūruota naudoti tarpinį serverį, bet
-          „<ph name="PRODUCT_NAME" />“
-          negali prie jo prisijungti.</translation>
 <translation id="5172758083709347301">Įrenginys</translation>
 <translation id="5179510805599951267">Ne <ph name="ORIGINAL_LANGUAGE" /> k.? Pranešti apie šią klaidą</translation>
 <translation id="5190835502935405962">Žymių juosta</translation>
 <translation id="5199729219167945352">Bandymai</translation>
 <translation id="5228309736894624122">SSL protokolo klaida.</translation>
 <translation id="5251803541071282808">Debesis</translation>
-<translation id="527200068854444456">Nepavyko įkelti tinklalapio, nes įrenginys veikia miego arba
-          užmigdymo režimu. Kai tai nutinka, tinklo ryšiai sustabdomi
-          ir nepavyksta pateikti naujų tinklo užklausų. Įkėlus puslapį iš naujo
-          problema turėtų būti išspręsta.</translation>
 <translation id="5295309862264981122">Patvirtinti naršymą</translation>
 <translation id="5299298092464848405">Analizuojant politiką įvyko klaida</translation>
 <translation id="5300589172476337783">Rodyti</translation>
-<translation id="5303618139271450299">Šis tinklalapis nerastas</translation>
 <translation id="5308689395849655368">Strigčių ataskaitų teikimas neleidžiamas.</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
 <translation id="536296301121032821">Išsaugant politikos nustatymus įvyko klaida</translation>
@@ -419,7 +357,6 @@
 <translation id="5720705177508910913">Dabartinis naudotojas</translation>
 <translation id="5813119285467412249">&amp;Pridėti dar kartą</translation>
 <translation id="5872918882028971132">Pasiūlymai tėvams</translation>
-<translation id="5880867612172997051">Tinklo prieiga sustabdyta</translation>
 <translation id="5900623698597156974">1.0 versijos TLS surogatui pavyko užmegzti ryšį su serveriu, bet mes nebepriimame 1.0 versijos TLS surogatų. Reikia atnaujinti serverį, kad būtų tinkamai pritaikytas versijos derinimas ir, pageidautina, 1.2 versijos TLS palaikymas.</translation>
 <translation id="59107663811261420">„Google Payments“ nepalaiko šio tipo kortelės naudojantis šio prekybininko paslaugomis. Pasirinkite kitą kortelę.</translation>
 <translation id="59174027418879706">Įgalinta</translation>
@@ -434,21 +371,8 @@
 <translation id="604124094241169006">Automatinis</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6060685159320643512">Atsargiai, šie bandymai gali būti pavojingi</translation>
-<translation id="6066742401428748382">Prieiga prie tinklalapio atmesta</translation>
 <translation id="6093795393556121384">Kortelė patvirtinta</translation>
 <translation id="6099520380851856040">Įvyko <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">Iš tinklalapio, esančio <ph name="URL" />, per daug kartų
-      peradresuota. Pabandykite išspręsti problemą išvalę šios svetainės slapukus arba leidę trečiųjų šalių slapukus.  Jei
-      tai nepadeda, gali būti, kad kilo problemų dėl serverio konfigūracijos, o ne dėl
-      kompiuterio.</translation>
-<translation id="6130627560064345577">Tikriausiai tinklalapį priglobiantis serveris per daug apkrautas arba įvyko klaida.
-        Kad neleistų plėtiniams sukelti per didelio srauto ir pabloginti situacijos,
-        „<ph name="PRODUCT_NAME" />“
-        laikinai sustabdė plėtinių užklausų pateikimą šiuo URL.
-        <ph name="LINE_BREAK" />
-        Jei nepageidaujate tokios elgsenos, pvz., derinate savo svetainę,
-        apsilankykite adresu <ph name="URL_FOR_MORE_INFO" />,
-        kur rasite daugiau informacijos, įskaitant nurodymus, kaip neleisti šios funkcijos.</translation>
 <translation id="6146055958333702838">Patikrinkite laidus ir iš naujo paleiskite maršruto parinktuvus, modemus ar kitus
         naudojamus tinklo įrenginius.</translation>
 <translation id="6151417162996330722">Serverio sertifikato galiojimo laikotarpis per ilgas.</translation>
@@ -463,7 +387,6 @@
     HTTP atsako skaidymo išpuolių.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> žymės</translation>
 <translation id="6264485186158353794">Grįžti prie saugumo</translation>
-<translation id="6268647269805730940">Įrenginys neužbaigė pirmųjų vykdymo veiksmų.</translation>
 <translation id="6282194474023008486">Pašto kodas</translation>
 <translation id="6321917430147971392">Patikrinkite DNS nustatymus</translation>
 <translation id="6328639280570009161">Bandykite neleisti tinklo numatymo</translation>
@@ -480,16 +403,15 @@
 <translation id="6489534406876378309">Pradėti įkelti strigtis</translation>
 <translation id="6500116422101723010">Šiuo metu serveris negali apdoroti užklausos. Šis kodas nurodo, kad tai laikina būsena ir vėliau serveris vėl veiks.</translation>
 <translation id="6512448926095770873">Išeiti iš šio puslapio</translation>
-<translation id="6516193643535292276">Nepavyksta prisijungti prie interneto</translation>
 <translation id="6518133107902771759">Patvirtinti</translation>
 <translation id="6529602333819889595">&amp;Ištrinti dar kartą</translation>
 <translation id="6533019874004191247">Nepalaikomas URL.</translation>
 <translation id="6550675742724504774">Parinktys</translation>
+<translation id="6596325263575161958">Šifravimo parinktys</translation>
 <translation id="6626108645084335023">Laukiama DNS tyrimo.</translation>
 <translation id="6628463337424475685">„<ph name="ENGINE" />“ paieška</translation>
 <translation id="6634865548447745291">Negalite dabar apsilankyti svetainėje <ph name="SITE" />, nes <ph name="BEGIN_LINK" />šis sertifikatas buvo anuliuotas<ph name="END_LINK" />. Paprastai tinklo klaidos ir užpuolimai yra laikini, todėl šis puslapis vėliau tikriausiai veiks.</translation>
 <translation id="6637478299472506933">Atsisiun. įv. klaida</translation>
-<translation id="6640442327198413730">Nėra talpykloje</translation>
 <translation id="6644283850729428850">Ši politika nepatvirtinta.</translation>
 <translation id="6646897916597483132">Įveskite 4 skaitmenų kortelės saugos kodą (CVC), nurodytą kortelės priekyje</translation>
 <translation id="6671697161687535275">Pašalinti formos pasiūlymą iš „Chromium“?</translation>
@@ -498,7 +420,6 @@
 <translation id="6746710319270251222">Gautos kelios skirtingos turinio ilgio antraštės. Tai neleidžiama siekiant apsisaugoti
     nuo HTTP atsako skaidymo išpuolių.</translation>
 <translation id="6753269504797312559">Politikos vertė</translation>
-<translation id="6771079623344431310">Nepavyksta prisijungti prie įgaliotojo serverio</translation>
 <translation id="6781404225664080496">Užklausos šiuo URL laikinai nevykdomos.</translation>
 <translation id="6800914069727136216">Turinio pakete</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -514,7 +435,6 @@
 <translation id="6891596781022320156">Politikos lygis nepalaikomas.</translation>
 <translation id="6897140037006041989">Naudotojo atstovas</translation>
 <translation id="6915804003454593391">Naudotojas:</translation>
-<translation id="6948142510520900350">Jūsų &lt;strong&gt;sistemos administratorius&lt;/strong&gt; užblokavo prieigą prie šio tinklalapio.</translation>
 <translation id="6957887021205513506">Panašu, kad serverio sertifikatas yra suklastotas.</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="6965978654500191972">Įrenginys</translation>
@@ -522,19 +442,14 @@
 <translation id="6973656660372572881">Nurodyti fiksuoti įgaliotieji serveriai ir .pac scenarijaus URL.</translation>
 <translation id="6989763994942163495">Rodyti išplėstinius nustatymus...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7029809446516969842">Slaptažodžiai</translation>
 <translation id="7050187094878475250">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė sertifikatą, kurio galiojimo laikotarpis per ilgas, kad būtų patikimas.</translation>
 <translation id="7052500709156631672">Tinklų sietuvas arba įgaliotasis serveris sulaukė neteisingo atsako iš išsiuntimo srauto serverio.</translation>
 <translation id="7087282848513945231">Apygarda</translation>
 <translation id="7088615885725309056">Ankstesnė</translation>
 <translation id="7108649287766967076">Verčiant į <ph name="TARGET_LANGUAGE" /> įvyko klaida.</translation>
 <translation id="7117303293717852287">Iš naujo įkelti šį tinklalapį</translation>
-<translation id="7117941875056403396">„<ph name="PRODUCT_NAME" />“
-    bandymas prisijungti prie
-    <ph name="HOST_NAME" />
-    buvo atmestas.  Gali neveikti svetainė arba jūsų tinklas yra
-    netinkamai sukonfigūruotas.</translation>
 <translation id="7139724024395191329">Emyratas</translation>
-<translation id="7148804936871729015">Per ilgai laukta <ph name="URL" /> serverio atsako. Serveris gali būti per daug apkrautas.</translation>
 <translation id="7179921470347911571">Paleisti iš naujo dabar</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
 <translation id="7182878459783632708">Nenustatyta jokia politika</translation>
@@ -549,14 +464,6 @@
 <translation id="7275334191706090484">Tvarkomos žymės</translation>
 <translation id="7298195798382681320">Rekomenduojama</translation>
 <translation id="7334320624316649418">&amp;Pertvarkyti dar kartą</translation>
-<translation id="7335675476272530342">Šis tinklalapis talpykloje nerastas. Tam tikri ištekliai
-    saugiai gali būti įkelti tik iš talpyklos, pvz., puslapiai, sugeneruoti iš
-    pateiktų duomenų.
-    <ph name="LINE_BREAK" />
-    Ši klaida taip pat galėjo įvykti dėl talpyklos gedimo,
-    įvykusio netinkamai išjungus.
-    <ph name="LINE_BREAK" />
-    Jei problema išlieka, pabandykite išvalyti talpyklą.</translation>
 <translation id="7353601530677266744">Komandos eilutė</translation>
 <translation id="7372973238305370288">paieškos rezultatas</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -570,6 +477,7 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7424977062513257142">Šiame tinklalapyje įterptame puslapyje sakoma:</translation>
 <translation id="7441627299479586546">Netinkamas politikos objektas</translation>
 <translation id="7450732239874446337">Tinklo IO sustabdytas.</translation>
+<translation id="7481312909269577407">Persiųsti</translation>
 <translation id="7485870689360869515">Nerasta jokių duomenų.</translation>
 <translation id="7514365320538308">Atsisiųsti</translation>
 <translation id="7518003948725431193">Nerasta nė vieno tinklalapio šiuo žiniatinklio adresu: <ph name="URL" /></translation>
@@ -581,23 +489,16 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7569952961197462199">Pašalinti kredito kortelės informaciją iš „Chrome“?</translation>
 <translation id="7578104083680115302">Greitai mokėkite svetainėse ir programose įvairiuose įrenginiuose naudodami korteles, kurias išsaugojote „Google“.</translation>
 <translation id="7592362899630581445">Serverio sertifikatas pažeidžia pavadinimų apribojimus.</translation>
-<translation id="759809665464235306">Šiam serveriui reikalingas sertifikatas tapatybei nustatyti ir nebuvo priimtas naršyklės
-    siųstas sertifikatas. Gali būti pasibaigęs sertifikato galiojimo laikas arba serveris gali
-    nepasitikėti jo išdavėju. Galite bandyti dar kartą su kitu sertifikatu, jei tokį turite, arba
-    galite gauti galiojantį sertifikatą iš kitur.</translation>
 <translation id="7600965453749440009">Niekada neversti <ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">Patobulintos žymės</translation>
 <translation id="7610193165460212391">Vertė nepatenka į diapazoną <ph name="VALUE" />.</translation>
-<translation id="7614030880636783720">„Wi-Fi“ ir mobiliojo ryšio duomenys nepasiekiami. Puslapį bus galima įkelti, kai įrenginys bus prijungtas prie tinklo.</translation>
+<translation id="7615602087246926389">Jau turite duomenų, kurie šifruojami naudojant kitos versijos „Google“ paskyros slaptažodį. Įveskite juos toliau.</translation>
 <translation id="7637571805876720304">Pašalinti kredito kortelės informaciją iš „Chromium“?</translation>
 <translation id="7643817847124207232">Dingo interneto ryšys.</translation>
 <translation id="765676359832457558">Slėpti išplėstinius nustatymus...</translation>
 <translation id="7658239707568436148">Atšaukti</translation>
 <translation id="7668654391829183341">Nežinomas įrenginys</translation>
 <translation id="7674629440242451245">Domina naujos „Chrome“ funkcijos? Išbandykite mūsų kuriamą kanalą adresu chrome.com/dev.</translation>
-<translation id="7689727675296818638">Ryšys su
-        <ph name="HOST_NAME" />
-        buvo nutrauktas dėl tinklo ryšio pasikeitimo.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Eiti į svetainę <ph name="SITE" /> (nesaugu)<ph name="END_LINK" /></translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Netvarkoma</translation>
@@ -608,10 +509,11 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="777702478322588152">Prefektūra</translation>
 <translation id="778579833039460630">Negauta jokių duomenų</translation>
 <translation id="7791543448312431591">Pridėti</translation>
+<translation id="7793809570500803535"><ph name="SITE" /> tinklalapis gali laikinai neveikti arba visam laikui būti perkeltas nauju žiniatinklio adresu.</translation>
 <translation id="780301667611848630">Ačiū, ne</translation>
 <translation id="7805768142964895445">Būsena</translation>
 <translation id="7813600968533626083">Pašalinti formos pasiūlymą iš „Chrome“?</translation>
-<translation id="7839809549045544450">Nesaugus serverio trumpalaikis „Diffie-Hellman“ viešasis raktas</translation>
+<translation id="7825436071901023927">Nesaugus prievadas <ph name="SITE" /></translation>
 <translation id="7887683347370398519">Patikrinkite kortelės saugos kodą (CVC) ir bandykite dar kartą</translation>
 <translation id="790025292736025802"><ph name="URL" /> nerastas</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -623,16 +525,15 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="7983301409776629893">Visada versti iš <ph name="ORIGINAL_LANGUAGE" /> į <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Žymės staliniame kompiuteryje</translation>
 <translation id="7995512525968007366">Nenurodytas</translation>
-<translation id="8016174103774548813">SSL serveris tikriausiai pasenęs.</translation>
 <translation id="8034522405403831421">Šis puslapis yra <ph name="SOURCE_LANGUAGE" /> k. Išversti į <ph name="TARGET_LANGUAGE" /> k.?</translation>
 <translation id="8034955203865359138">Nerasta jokių istorijos įrašų.</translation>
+<translation id="8075539548641175231"><ph name="TIME" /> jūsų duomenys užšifruoti naudojant sinchronizavimo slaptafrazę. Įveskite ją toliau.</translation>
 <translation id="8088680233425245692">Nepavyko peržiūrėti straipsnio.</translation>
 <translation id="8091372947890762290">Laukiama aktyvinimo serveryje</translation>
 <translation id="8150722005171944719"><ph name="URL" /> nurodyto failo negalima skaityti. Gali būti, kad jis pašalintas, perkeltas arba neleidžiama prieiga prie jo dėl failo leidimų.</translation>
 <translation id="8194797478851900357">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8201077131113104583">Netinkamas plėtinio, kurio ID „<ph name="EXTENSION_ID" />“, atnaujinimo URL.</translation>
 <translation id="8204086856545141093">Serveriui pateiktos užklausos užblokuotos pagal politiką.</translation>
-<translation id="820791781874064845">Šį tinklalapį užblokavo plėtinys</translation>
 <translation id="8218327578424803826">Priskirta vieta:</translation>
 <translation id="8240446052814166959">Patikrinkite tarpinio serverio nustatymus arba susisiekite su tinklo
           administratoriumi, kad įsitikintumėte, jog tarpinis
@@ -650,34 +551,30 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
           <ph name="BEGIN_BOLD" />Gerai<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">Jei nesate tikri, ką tai reiškia, susisiekite su tinklo administratoriumi.</translation>
 <translation id="8294431847097064396">Šaltinis</translation>
-<translation id="8295070100601117548">Serverio klaida</translation>
 <translation id="8308427013383895095">Vertimas nepavyko dėl tinklo ryšio problemos.</translation>
 <translation id="8311778656528046050">Ar tikrai norite iš naujo įkelti šį puslapį?</translation>
 <translation id="8349305172487531364">Žymių juosta</translation>
 <translation id="8364627913115013041">Nenustatyta.</translation>
 <translation id="8412145213513410671">Strigtys (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8412392972487953978">Reikia du kartus įvesti tą pačią slaptafrazę.</translation>
 <translation id="8428213095426709021">Nustatymai</translation>
 <translation id="8437238597147034694">&amp;Anuliuoti perkėlimą</translation>
 <translation id="8488350697529856933">Taikoma</translation>
 <translation id="8494979374722910010">Nepavyko prisijungti prie serverio.</translation>
 <translation id="8508677083825928015">Iš anksto iškviesti išteklius, kad puslapiai būtų greičiau įkeliami</translation>
-<translation id="8515737884867295000">Nepavyko nustatyti tapatumo pagal sertifikatą</translation>
 <translation id="8530504477309582336">„Google Payments“ nepalaiko šio tipo kortelės. Pasirinkite kitą kortelę.</translation>
+<translation id="8550022383519221471">Sinchronizavimo paslauga negalima jūsų domenui.</translation>
 <translation id="8553075262323480129">Išversti negalima, nes nepavyko nustatyti puslapio kalbos.</translation>
 <translation id="8559762987265718583">Nepavyksta užmegzti privataus ryšio su <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, nes įrenginio data ir laikas (<ph name="DATE_AND_TIME" />) yra netinkami.</translation>
 <translation id="8571890674111243710">Puslapis verčiamas į <ph name="LANGUAGE" />...</translation>
 <translation id="8629916158020966496">Naršymas internete išjungtas, kol nebus baigtas įmonės registracijos patvirtinimo patikrinimas.
         Vis tiek galite naudoti čia pateiktą diagnostikos įrankį, skirtą ryšio triktims šalinti.</translation>
 <translation id="8647750283161643317">Viską nustatyti į numatytuosius nustatymus</translation>
+<translation id="8680787084697685621">Išsami prisijungimo prie paskyros informacija pasenusi.</translation>
 <translation id="8713130696108419660">Netinkamas pradinis parašas</translation>
 <translation id="8725066075913043281">Bandyti dar kartą</translation>
-<translation id="8729518820755801792">„Chrome“ neg. atid. URL.</translation>
 <translation id="8730621377337864115">Atlikta</translation>
 <translation id="8738058698779197622">Jei norite užmegzti saugų ryšį, turėsite tinkamai nustatyti laikrodį. To reikalaujama todėl, kad svetainių tapatybei įrodyti naudojami sertifikatai galioja tik tam tikrą laikotarpį. Kadangi įrenginio laikrodis nustatytas netinkamai, „Chromium“ negali tinkamai patvirtinti sertifikatų.</translation>
-<translation id="8776174617851537652">Iš tinklalapio, esančio <ph name="URL" />, per daug
-          kartų peradresuota. Pabandykite išspręsti problemą išvalę šios svetainės slapukus arba leidę trečiųjų šalių slapukus. Jei
-          tai nepadeda, gali būti, kad kilo problemų dėl serverio konfigūracijos, o ne dėl
-          įrenginio.</translation>
 <translation id="8790007591277257123">&amp;Ištrinti dar kartą</translation>
 <translation id="8798099450830957504">Numatytasis</translation>
 <translation id="8804164990146287819">Privatumo politika</translation>
@@ -703,42 +600,20 @@ Ei! Kitą kartą gali būti naudinga naudoti inkognito režimą (<ph name="SHORT
 <translation id="9013589315497579992">Blogas SSL kliento tapatybės nustatymo sertifikatas.</translation>
 <translation id="901974403500617787">Visoje sistemoje taikomas žymas gali nustatyti tik savininkas: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Serveris atmetė ryšį.</translation>
-<translation id="9020278534503090146">Šis tinklalapis negalimas</translation>
 <translation id="9020542370529661692">Šis puslapis išverstas į <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9032090437019334135">Nepavyksta rasti
-    <ph name="HOST_NAME" />
-    esančio serverio, nes nepavyko atlikti DNS peržiūros.  DNS yra tinklo paslauga,
-    kurią naudojant svetainės pavadinimas verčiamas į jos internetinį adresą. Ši
-    klaida dažniausiai įvyksta, kai nėra interneto ryšio arba kai tinklas netinkamai
-    sukonfigūruotas.  Be to, ji gali įvykti dėl neatsakančio DNS
-    serverio ar užkardos, trukdančios
-    „<ph name="PRODUCT_NAME" />“
-    pasiekti tinklą.</translation>
-<translation id="904949795138183864">Tinklalapio šiuo adresu: <ph name="URL" /> nebėra.</translation>
 <translation id="9049981332609050619">Bandėte pasiekti <ph name="DOMAIN" />, bet serveris pateikė neteisingą sertifikatą.</translation>
-<translation id="9086455579313502267">Nepavyko pasiekti tinklo</translation>
+<translation id="9050666287014529139">Slaptafrazė</translation>
 <translation id="9103872766612412690">Svetainėje <ph name="SITE" /> įprastai naudojama šifruotė informacijai apsaugoti. Šį kartą „Chromium“ bandant prisijungti prie <ph name="SITE" />, ji pateikė neįprastus ir netinkamus prisijungimo duomenis. Gali būti, kad užpuolėjas bando apsimesti svetaine <ph name="SITE" /> arba „Wi-Fi“ prisijungimo ekrane nutrūko ryšys. Jūsų informacija vis tiek liko apsaugota, nes „Chromium“ sustabdė prisijungimą prieš apsikeitimą bet kokiais duomenimis.</translation>
 <translation id="9125941078353557812">Įveskite 3 skaitmenų kortelės saugos kodą (CVC), nurodytą kitoje kortelės pusėje</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9148507642005240123">&amp;Anuliuoti redagavimą</translation>
 <translation id="9154176715500758432">Likti šiame puslapyje</translation>
-<translation id="9168302918952546302">„<ph name="PRODUCT_NAME" />“
-          negali pasiekti tinklo.
-          <ph name="LINE_BREAK" />
-          Taip galėjo nutikti, nes užkarda arba antivirusinė programinė įranga palaikė
-          „<ph name="PRODUCT_NAME" />“
-          įsibrovėle į įrenginį ir neleidžia jai prisijungti prie interneto.</translation>
+<translation id="9157595877708044936">Nustatoma...</translation>
 <translation id="9170848237812810038">&amp;Atšaukti</translation>
 <translation id="917450738466192189">Serverio sertifikatas negalioja.</translation>
 <translation id="9207861905230894330">Nepavyko pridėti straipsnio.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">CLEAR FORM</translation>
-<translation id="946368465353148168">„<ph name="PRODUCT_NAME" />“
-      iškilo problemų pasiekiant tinklą.
-      <ph name="LINE_BREAK" />
-      Taip galėjo nutikti, nes užkarda arba antivirusinė programinė įranga palaikė
-      „<ph name="PRODUCT_NAME" />“
-      įsibrovėle į kompiuterį ir neleidžia jai prisijungti prie interneto.</translation>
 <translation id="969892804517981540">Oficialiai pagaminta</translation>
 <translation id="988159990683914416">Vykdymo programa sukurta</translation>
 </translationbundle>

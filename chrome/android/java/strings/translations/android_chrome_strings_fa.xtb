@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">هم‌اکنون</translation>
 <translation id="2770465223704140727">حذف از لیست</translation>
 <translation id="278029852808208386">دستگاه بلوتوثی پیدا نشد. <ph name="BEGIN_LINK" />دوباره جستجو کنید<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">اتصال آهسته شناسایی شد.</translation>
 <translation id="2842985007712546952">پوشه اصلی</translation>
 <translation id="2870560284913253234">سایت</translation>
 <translation id="2888126860611144412">‏درباره Chrome</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">برگه ناشناس جدید</translation>
 <translation id="3518985090088779359">پذیرش و ادامه</translation>
 <translation id="3527085408025491307">پوشه</translation>
-<translation id="3559647143395293616">روشن کردن وب فیزیکی</translation>
 <translation id="360480449234699036">‏بدون ترک صفحه با موضوعات موجود در وب‌سایت‌ها آشنا شوید. لمس کردن برای جستجو، کلمه و نوشتار اطراف آن را به جستجوی Google ارسال می‌کند و معانی، تصاویر، نتایج جستجو و سایر جزئیات را برمی‌گرداند.
 
 برای تنظیم عبارت جستجویتان، به مدت طولانی فشار دهید تا انتخاب شود. برای تصحیح جستجویتان، پانل را به‌طور کامل به بالا بلغزانید و کادر جستجو را لمس کنید.</translation>
@@ -274,7 +272,6 @@
 <translation id="5039804452771397117">اجازه دادن</translation>
 <translation id="5040262127954254034">حریم خصوصی</translation>
 <translation id="5063480226653192405">کاربر </translation>
-<translation id="509605886816275399">رونوشت آفلاین این صفحه ذخیره شود؟</translation>
 <translation id="5100237604440890931">کوچک شده - برای بزرگ کردن کلیک کنید.</translation>
 <translation id="5107381076085091558">بارگیری موقتاً متوقف شد.</translation>
 <translation id="5118713593561876160">علایق</translation>
@@ -288,6 +285,7 @@
 <translation id="5168917394043976756">بازکردن کشوی پیمایش</translation>
 <translation id="5171045022955879922">‏جستجو یا تایپ URL</translation>
 <translation id="5184329579814168207">‏باز کردن در Chrome</translation>
+<translation id="5199929503336119739">نمایه کاری</translation>
 <translation id="5210365745912300556">بستن برگه</translation>
 <translation id="5210714456814679336">‏برگه‌هایی که در دستگاه‌های دیگر در Chrome باز کرده‌اید، در اینجا نمایان می‌شوند.</translation>
 <translation id="5228579091201413441">فعال کردن همگام‌سازی</translation>
@@ -381,7 +379,6 @@
 <translation id="6232535412751077445">فعال کردن «ردیابی نشود» به این معنی است که درخواستی به ترافیک مرور شما اضافه می‌شود. هر گونه اثری به این بستگی دارد که وب‌سایت به درخواست‌ پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
 
 مثلاً ممکن است برخی از وب‌سایت‌ها در پاسخ به این درخواست، آگهی‌هایی نشان دهند که بر اساس سایر وب‌سایت‌هایی که دیدن کرده‌اید نیستند. بسیاری از وب‌سایت‌ها همچنان داده‌های محصول مرور شما را جمع‌آوری و استفاده می‌کنند — مثلاً برای بهبود امنیت، ارائه محتوا، آگهی‌ها و توصیه‌ها و برای ایجاد آمارهای گزارش‌دهی.</translation>
-<translation id="624558823898732418">زبان ترجمه: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">در چاپ صفحه مشکلی پیش آمد. لطفاً دوباره امتحان کنید.</translation>
 <translation id="6295158916970320988">همه سایت‌ها</translation>
 <translation id="6317634962183824346">‏همگام‌سازی سیستم Android غیرفعال شد. لطفاً آن را دوباره فعال کرده، مجدداً امتحان کنید.</translation>
@@ -532,6 +529,7 @@
 <translation id="8146397137182589628">به‌صورت آفلاین ذخیره نشده است</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> حساب</translation>
 <translation id="8168435359814927499">محتوا</translation>
+<translation id="8200772114523450471">ازسرگیری</translation>
 <translation id="8209050860603202033">باز کردن تصویر</translation>
 <translation id="8218346974737627104">تأیید ورود به سیستم</translation>
 <translation id="8218934717680664417">اکنون می‌توانید با یک لمس جستجو کنید</translation>
@@ -551,7 +549,6 @@
 <translation id="8514577642972634246">ورود به حالت ناشناس</translation>
 <translation id="8515416241041728525">افزودن حساب برای <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">‏این سایت از یک پیکربندی امنیتی ضعیف (امضاهای SHA-1) استفاده می‌کند، بنابراین ممکن است اتصال شما خصوصی نباشد.</translation>
-<translation id="8528538445849828817">زبان صفحه: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">باز کردن این صفحه</translation>
 <translation id="8562452229998620586">گذرواژه‌های ذخیره شده در اینجا ظاهر می‌شود.</translation>
 <translation id="856481929701340285">درخواست نمای رایانه</translation>

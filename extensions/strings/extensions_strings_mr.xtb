@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' पृष्ठाविषयी लोड करू शकलो नाही.</translation>
 <translation id="4434145631756268951">{0,select, single{एक USB डिव्हाइस निवडा}multiple{USB डिव्हाइस निवडा}other{UNUSED}}</translation>
 <translation id="4811956658694082538">उपयुक्तता प्रक्रिया क्रॅश झाल्यामुळे पॅकेज स्थापित करू शकलो नाही. Chrome रीस्टार्ट करून पहा आणि पुन्हा प्रयत्न करून पहा.</translation>
-<translation id="4883436287898674711">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">अॅपदृश्य: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">हा विस्तार मुख्य फाइल '<ph name="KEY_PATH" />' समाविष्ट करतो. आपण कदाचित ते करू इच्छित नसू शकता.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (विस्तार ID "<ph name="EXTENSION_ID" />") प्रशासकाद्वारे अवरोधित करण्यात आला आहे.</translation>
 <translation id="7972881773422714442">पर्याय: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">दुसर्‍या विस्ताराने (<ph name="EXTENSION_NAME" />) एक वेगळे फाईलनाव "<ph name="ACTUAL_FILENAME" />" निर्धारित केल्यामुळे डाउनलोड "<ph name="ATTEMPTED_FILENAME" />" ला नाव देण्यात हा विस्तार अयशस्वी झाला.</translation>
-<translation id="8284279544186306258">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> कडील <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">हा विस्तार एका नेटवर्क विनंतीवर क्रेडेन्शियल प्रदान करण्यात अयशस्वी झाला कारण दुसर्‍या (<ph name="EXTENSION_NAME" />) विस्ताराने वेगळी क्रेडेन्शियल प्रदान केली.</translation>
 <translation id="8602184400052594090">मॅनिफेस्ट फाइल गहाळ किंवा अवाचनीय आहे.</translation>

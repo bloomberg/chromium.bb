@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">無法載入簡介網頁「<ph name="ABOUT_PAGE" />」。</translation>
 <translation id="4434145631756268951">{0,select, single{選取一個 USB 裝置}multiple{選取多個 USB 裝置}other{UNUSED}}</translation>
 <translation id="4811956658694082538">公用程式處理程序當機，因此無法安裝套件。請重新啟動 Chrome，然後再試一次。</translation>
-<translation id="4883436287898674711">所有 <ph name="WEBSITE_1" /> 網站</translation>
 <translation id="5026754133087629784">Webview：<ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview：<ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">這個擴充功能含有金鑰檔「<ph name="KEY_PATH" />」。您不妨重新考慮是否仍要進行。</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">管理員已封鎖 <ph name="EXTENSION_NAME" /> (擴充功能 ID「<ph name="EXTENSION_ID" />」)。</translation>
 <translation id="7972881773422714442">選項：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">擴充功能無法將下載的檔案命名為「<ph name="ATTEMPTED_FILENAME" />」，因為其他擴充功能 (<ph name="EXTENSION_NAME" />) 已為將此檔案命名為「<ph name="ACTUAL_FILENAME" />」。</translation>
-<translation id="8284279544186306258">所有 <ph name="WEBSITE_1" /> 網站</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> (供應商：<ph name="VENDOR_NAME" />)</translation>
 <translation id="8341840687457896278">這個擴充功能無法向網路要求提供憑證，因為其他擴充功能 (<ph name="EXTENSION_NAME" />) 已提供不同的憑證。</translation>
 <translation id="8602184400052594090">資訊清單檔案遺失或無法讀取。</translation>

@@ -125,7 +125,6 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2762000892062317888">ką tik</translation>
 <translation id="2770465223704140727">Pašalinti iš sąrašo</translation>
 <translation id="278029852808208386">Nerasta „Bluetooth“ įrenginių. <ph name="BEGIN_LINK" />Ieškokite dar kartą<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Aptiktas lėtas ryšys.</translation>
 <translation id="2842985007712546952">Viršaplankis</translation>
 <translation id="2870560284913253234">Svetainė</translation>
 <translation id="2888126860611144412">Apie „Chrome“</translation>
@@ -173,7 +172,6 @@ Prisijungiate naudodami valdomą paskyrą ir leidžiate administratoriui valdyti
 <translation id="3492207499832628349">Naujas inkognito skirtukas</translation>
 <translation id="3518985090088779359">Sutikti ir tęsti</translation>
 <translation id="3527085408025491307">Aplankas</translation>
-<translation id="3559647143395293616">Įjunkite Fizinį žiniatinklį</translation>
 <translation id="360480449234699036">Sužinokite apie temas svetainėse, neišėję iš puslapio. Naudojant funkciją „Paieška palietus“ siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų, paieškos rezultatų ir kitos išsamios informacijos.
 
 Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasirinktumėte. Kad patikslintumėte paiešką, slinkite skydeliu į viršų ir palieskite paieškos laukelį.</translation>
@@ -274,7 +272,6 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5039804452771397117">Leisti</translation>
 <translation id="5040262127954254034">Privatumas</translation>
 <translation id="5063480226653192405">Naudojimas</translation>
-<translation id="509605886816275399">Išsaugoti šį puslapį, kad būtų pasiekiamas neprisijungus?</translation>
 <translation id="5100237604440890931">Sutraukta – spustelėkite, kad išskleistumėte</translation>
 <translation id="5107381076085091558">Atsisiuntimas pristabdytas.</translation>
 <translation id="5118713593561876160">Pomėgiai</translation>
@@ -288,6 +285,7 @@ Tiesiog atidarykite „Chrome“ kompiuteryje, eikite į meniu ir pasirinkite �
 <translation id="5168917394043976756">Atidaryti naršymo skydelį</translation>
 <translation id="5171045022955879922">Ieškokite ar įveskite URL</translation>
 <translation id="5184329579814168207">Atidaryti naudojant „Chrome“</translation>
+<translation id="5199929503336119739">Darbo profilis</translation>
 <translation id="5210365745912300556">Uždaryti skirtuką</translation>
 <translation id="5210714456814679336">Čia bus rodomi kituose įrenginiuose atidarytų „Chrome“ skirtukų lapai.</translation>
 <translation id="5228579091201413441">Įgalinti sinchronizavimą</translation>
@@ -383,7 +381,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="6232535412751077445">Įgalinus funkciją „Nestebėti“, užklausa bus įtraukta į naršymo srautą. Poveikis priklauso nuo to, ar svetainė atsako į užklausą ir kaip užklausa interpretuojama.
 
 Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos jums skelbimus, nepagrįstus kitomis svetainėmis, kuriose lankėtės. Daugelis svetainių vis tiek rinks ir naudos jūsų naršymo duomenis, kad, pvz., patobulintų saugą, teiktų turinį, skelbimus bei rekomendacijas ir sugeneruotų ataskaitų teikimo statistiką.</translation>
-<translation id="624558823898732418">Vertimo kalba: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Spausdinant puslapį kilo problema. Bandykite dar kartą.</translation>
 <translation id="6295158916970320988">Visos svetainės</translation>
 <translation id="6317634962183824346">Išjungtas „Android“ sistemos sinchronizavimas. Vėl įgalinkite ir bandykite dar kartą.</translation>
@@ -534,6 +531,7 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="8146397137182589628">Neišsaugota naudoti neprisijungus</translation>
 <translation id="8157532349231307196">Paskyrų: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Turinys</translation>
+<translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="8209050860603202033">Atidaryti vaizdą</translation>
 <translation id="8218346974737627104">Patvirtinti prisijungimą</translation>
 <translation id="8218934717680664417">Nuo šiol galite ieškoti vienu palietimu</translation>
@@ -553,7 +551,6 @@ Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, int
 <translation id="8514577642972634246">Įjungti inkognito režimą</translation>
 <translation id="8515416241041728525">Pridėti <ph name="ADD_ACCOUNT_USER_NAME" /> paskyrą</translation>
 <translation id="8518901949365209398">Šioje svetainėje naudojama nesudėtinga saugos konfigūracija („SHA-1“ parašai), todėl ryšys gali nebūti privatus.</translation>
-<translation id="8528538445849828817">Puslapio kalba: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Atidaryti šį puslapį</translation>
 <translation id="8562452229998620586">Čia bus rodomi išsaugoti slaptažodžiai.</translation>
 <translation id="856481929701340285">Užkl. svet. kompiuteriui</translation>

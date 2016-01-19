@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ÉÉ</translation>
 <translation id="6075880972317537864">A(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> támadói megpróbálhatják becsapni Önt, hogy ellopják adatait (például jelszavait, üzeneteit vagy hitelkártya-adatait).</translation>
 <translation id="6149061208933997199">Jelszó használata</translation>
+<translation id="6196207969502475924">Hangalapú keresés</translation>
 <translation id="6221345481584921695">A Google – Biztonságos böngészés nemrég <ph name="BEGIN_LINK" />rosszindulatú programokat<ph name="END_LINK" /> észlelt a következő webhelyen: <ph name="SITE" />. A rendes esetben biztonságos webhelyek néha rosszindulatú programokkal fertőződnek. A rosszindulatú tartalom az ilyen programok következő ismert terjesztőjétől származik: <ph name="SUBRESOURCE_HOST" />.</translation>
 <translation id="6264485186158353794">Vissza a biztonsághoz</translation>
 <translation id="6314335155547195432">Jelszó létrehozása</translation>
+<translation id="6344783595350022745">Szöveg törlése</translation>
 <translation id="6456425917241817154">A Chrome által generált jelszó</translation>
 <translation id="6535543971741225613">Az elérni próbált webhely szokatlanul viselkedik, és a Chrome nem tudja ellenőrizni, hogy annak URL-je helyes-e. Az Ön biztonsága érdekében kérjük, ne folytassa, vagy próbálja újra holnap, illetve egy másik helyről.</translation>
 <translation id="6740369132746915122">Ha megértette a biztonsági kockázatokat, <ph name="BEGIN_LINK" />megnyithatja ezt a nem biztonságos webhelyet<ph name="END_LINK" />.</translation>

@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Страницата с информация <ph name="ABOUT_PAGE" /> не можа да се зареди.</translation>
 <translation id="4434145631756268951">{0,select, single{Избор на USB устройство}multiple{Избор на USB устройства}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Пакетът не можа да се инсталира поради срив на помощен процес. Рестартирайте Chrome и опитайте отново.</translation>
-<translation id="4883436287898674711">Всички <ph name="WEBSITE_1" /> сайта</translation>
 <translation id="5026754133087629784">Изглед в мрежата: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Изглед за приложението: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Разширението включва файла с ключ „<ph name="KEY_PATH" />“. Вероятно не искате да направите това.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Разширението <ph name="EXTENSION_NAME" /> (идентификационен номер „<ph name="EXTENSION_ID" />“) е блокирано от администратора.</translation>
 <translation id="7972881773422714442">Опции: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME" />“, защото друго разширение (<ph name="EXTENSION_NAME" />) определи различно файлово име – „<ph name="ACTUAL_FILENAME" />“.</translation>
-<translation id="8284279544186306258">всички <ph name="WEBSITE_1" /> сайта</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Това разширение не успя да предостави идентификационни данни за заявка от мрежата, защото друго разширение (<ph name="EXTENSION_NAME" />) посочи различни данни.</translation>
 <translation id="8602184400052594090">Файлът на манифеста липсва или не може да бъде прочетен.</translation>

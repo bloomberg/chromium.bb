@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' పరిచయ పేజీని లోడ్ చేయడం సాధ్యపడలేదు.</translation>
 <translation id="4434145631756268951">{0,select, single{USB పరికరాన్ని ఎంచుకోండి}multiple{USB పరికరాలను ఎంచుకోండి}other{UNUSED}}</translation>
 <translation id="4811956658694082538">వినియోగ ప్రాసెస్ క్రాష్ అయినందున ప్యాకేజీని ఇన్‌స్టాల్ చేయలేకపోయింది. Chromeను పునఃప్రారంభించి, మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="4883436287898674711">అన్ని <ph name="WEBSITE_1" /> వెబ్‌సైట్‌లు</translation>
 <translation id="5026754133087629784">వెబ్ వీక్షణ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">అనువర్తన వీక్షణ: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">ఈ పొడిగింపు '<ph name="KEY_PATH" />' కీ ఫైల్‌ను కలిగి ఉంది. బహుశా మీరు దాన్ని చేయకూడదు.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />")ని నిర్వాహకుడు బ్లాక్ చేసారు.</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును "<ph name="ATTEMPTED_FILENAME" />"గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME" />) "<ph name="ACTUAL_FILENAME" />" అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>
-<translation id="8284279544186306258">అన్ని <ph name="WEBSITE_1" /> వెబ్‌సైట్‌లు</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />) వేరే ఆధారాలను అందించినందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థనకు ఆధారాలను అందించడంలో విఫలమైంది.</translation>
 <translation id="8602184400052594090">మానిఫెస్ట్ ఫైల్ తప్పిపోయింది లేదా చదవలేనిది.</translation>

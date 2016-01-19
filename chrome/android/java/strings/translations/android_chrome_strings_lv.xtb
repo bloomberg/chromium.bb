@@ -125,7 +125,6 @@ Lai izmantotu fizisko tīmekli, ir jābūt ieslēgtam Bluetooth savienojumam un 
 <translation id="2762000892062317888">tikko</translation>
 <translation id="2770465223704140727">Noņemt no saraksta</translation>
 <translation id="278029852808208386">Netika atrasta neviena Bluetooth ierīce. <ph name="BEGIN_LINK" />Meklējiet vēlreiz<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Tika konstatēts, ka savienojums ir lēns.</translation>
 <translation id="2842985007712546952">Vecākmape</translation>
 <translation id="2870560284913253234">Vietne</translation>
 <translation id="2888126860611144412">Par Chrome</translation>
@@ -173,7 +172,6 @@ Jūs pierakstāties, izmantojot pārvaldītu kontu, un ļaujat šī konta admini
 <translation id="3492207499832628349">Jauna inkognito cilne</translation>
 <translation id="3518985090088779359">Piekrist un turpināt</translation>
 <translation id="3527085408025491307">Mape</translation>
-<translation id="3559647143395293616">Ieslēgt fizisko tīmekli</translation>
 <translation id="360480449234699036">Uzziniet par vietņu tēmām, neizejot no lapas. Pieskaroties vienumam “Meklēt”, vārds un tā konteksts tiek nosūtīts pakalpojumam Google meklēšana, un tiek iegūtas definīcijas, attēli, meklēšanas rezultāti un cita informācija.
 
 Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīzāku meklēšanu, velciet paneli augšup līdz galam un pieskarieties meklēšanas lodziņam.</translation>
@@ -274,7 +272,6 @@ Vienkārši atveriet pārlūku Chrome savā datorā, atveriet izvēlni un atlasi
 <translation id="5039804452771397117">Atļaut</translation>
 <translation id="5040262127954254034">Privātums</translation>
 <translation id="5063480226653192405">Lietojums</translation>
-<translation id="509605886816275399">Vai saglabāt šo lapu bezsaistē?</translation>
 <translation id="5100237604440890931">Sakļauts — noklikšķiniet, lai izvērstu.</translation>
 <translation id="5107381076085091558">Lejupielāde apturēta.</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -288,6 +285,7 @@ Vienkārši atveriet pārlūku Chrome savā datorā, atveriet izvēlni un atlasi
 <translation id="5168917394043976756">Atvērt navigācijas atvilktni</translation>
 <translation id="5171045022955879922">Meklējiet vai ievadiet URL.</translation>
 <translation id="5184329579814168207">Atvērt pārlūkā Chrome</translation>
+<translation id="5199929503336119739">Darba profils</translation>
 <translation id="5210365745912300556">Aizvērt cilni</translation>
 <translation id="5210714456814679336">Šeit būs redzamas cilnes, kuras esat atvēris pārlūkā Chrome citās ierīcēs.</translation>
 <translation id="5228579091201413441">Iespējot sinhronizāciju</translation>
@@ -382,7 +380,6 @@ Lietojuma statistikas datos tiek ietverta tāda informācija kā preferences, kl
 <translation id="6232535412751077445">Iespējojot funkciju “Nesekot”, jūsu pārlūkošanas datplūsmā tiks iekļauts pieprasījums. Rezultāts būs atkarīgs no tā, vai vietne nodrošinās atbildi uz pieprasījumu un kā pieprasījums tiks interpretēts.
 
 Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums reklāmas, kuru pamatā nav citas jūsu apmeklētās vietnes. Tomēr daudzas vietnes apkopos un izmantos jūsu pārlūkošanas datus, piemēram, lai uzlabotu drošību, nodrošinātu saturu, reklāmas un ieteikumus un ģenerētu pārskatu statistiku.</translation>
-<translation id="624558823898732418">Tulkojuma valoda: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="6317634962183824346">Android sistēmas sinhronizēšana ir atspējota. Iespējojiet to atkārtoti un mēģiniet vēlreiz.</translation>
@@ -533,6 +530,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8146397137182589628">Nav saglabāta bezsaistē</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> konti</translation>
 <translation id="8168435359814927499">Saturs</translation>
+<translation id="8200772114523450471">Kopsavilkums</translation>
 <translation id="8209050860603202033">Atvērt attēlu</translation>
 <translation id="8218346974737627104">Pierakstīšanās apstiprinājums</translation>
 <translation id="8218934717680664417">Tagad varat veikt meklēšanu ar vienu pieskārienu</translation>
@@ -552,7 +550,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="8514577642972634246">Atvērt inkognito režīmā</translation>
 <translation id="8515416241041728525">Pievienot kontu: <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Šajā vietnē tiek izmantota nedroša aizsardzības konfigurācija (SHA-1 paraksti), tādējādi jūsu savienojums var nebūt privāts.</translation>
-<translation id="8528538445849828817">Lapas valoda: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Atvērt šo lapu</translation>
 <translation id="8562452229998620586">Šeit tiks parādītas saglabātās paroles.</translation>
 <translation id="856481929701340285">Pieprasīt datora vietni</translation>

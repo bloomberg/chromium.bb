@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075880972317537864">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> prøver kanskje å lure deg for å stjele informasjonen din (for eksempel passord, e-post eller kredittkortinformasjon).</translation>
 <translation id="6149061208933997199">Bruk passord</translation>
+<translation id="6196207969502475924">Google Talesøk</translation>
 <translation id="6221345481584921695">Google Safe Browsing oppdaget nylig <ph name="BEGIN_LINK" />skadelig programvare<ph name="END_LINK" /> på <ph name="SITE" />. Nettsteder som vanligvis er trygge, kan noen ganger være infisert med skadelig programvare. Det skadelige innholdet kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kjent distributør av skadelig programvare.</translation>
 <translation id="6264485186158353794">Tilbake til sikkerhet</translation>
 <translation id="6314335155547195432">Generer passord</translation>
+<translation id="6344783595350022745">Klar tekst</translation>
 <translation id="6456425917241817154">Passord generert av Chrome</translation>
 <translation id="6535543971741225613">Nettstedet du prøver å gå til oppfører seg rart, og Chrome kan derfor ikke bekrefte at nettadressen er korrekt. Av sikkerhetsmessige grunner bør du ikke fortsette, og heller prøve igjen i morgen eller gå et annet sted.</translation>
 <translation id="6740369132746915122">Hvis du forstår sikkerhetsrisikoen, kan du <ph name="BEGIN_LINK" />gå til dette usikre nettstedet<ph name="END_LINK" />.</translation>

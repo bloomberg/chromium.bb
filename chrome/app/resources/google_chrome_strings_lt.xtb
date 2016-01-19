@@ -152,7 +152,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="568643307450491754">Žymes rasite „Chrome“ meniu arba žymių juostoje.</translation>
 <translation id="573759479754913123">Apie „Chrome“ OS</translation>
 <translation id="5749068826913805084">„Chrome“ reikia prieigos prie saugyklos failams atsisiųsti.</translation>
-<translation id="5785746630574083988">Iš naujo paleidus „Windows 8“ „Chrome“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="5855036575689098185">Jūsų kompiuteryje veikianti programinė įranga nesuderinama su „Google Chrome“.</translation>
 <translation id="5877064549588274448">Kanalas pakeistas. Kad pritaikytumėte pakeitimus, iš naujo paleiskite įrenginį.</translation>
 <translation id="5931853610562009806">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chrome“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
@@ -213,11 +212,9 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="7747138024166251722">Diegimo programai nepavyko sukurti laikino katalogo. Patikrinkite, ar yra laisvos vietos diske ir, ar leidžiama įdiegti programinę įrangą.</translation>
 <translation id="7761834446675418963">Spustelėkite savo vardą, kad atidarytumėte „Chrome“ ir pradėtumėte naršyti.</translation>
 <translation id="7781002470561365167">Galima nauja „Google Chrome“ versija.</translation>
-<translation id="7784335114585804598">&amp;Iš naujo paleisti „Chrome“ „Windows 8“ režimu</translation>
 <translation id="7787950393032327779">Atrodo, kad profilį naudoja kitas „Google Chrome“ procesas (<ph name="PROCESS_ID" />) kitame kompiuteryje (<ph name="HOST_NAME" />). „Chrome“ užrakino profilį, kad jis nebūtų sugadintas. Jei esate tikri, kad jokie kiti procesai nenaudoja šio profilio, galite atrakinti profilį ir iš naujo paleisti „Chrome“.</translation>
 <translation id="7788788617745289808">„Chrome“ reikia galimybės pasiekti fotoaparatą, kad jį būtų galima bendrinti su šia svetaine.</translation>
 <translation id="7808348361785373670">Pašalinti iš „Chrome“...</translation>
-<translation id="781069973841903133">Iš naujo paleidžiant „Chrome“ įtraukiančiuoju režimu bus uždarytos ir iš naujo paleistos „Chrome“ programos.</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="7890208801193284374">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chrome“ pagal savo poreikius.</translation>
 <translation id="8000275528373650868">„Google Chrome“ reikalinga „Windows Vista“ arba „Windows XP“ operacinė sistema su SP2 arba naujesniu pakeitimų paketu.</translation>
@@ -230,11 +227,9 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8205111949707227942">Pasirenkama: padėkite tobulinti „Chrome“ OS automatiškai siųsdami „Google“ naudojimo statistiką ir strigčių ataskaitas.</translation>
 <translation id="8227755444512189073">„Google Chrome“ turi paleisti išorinę taikomąją programą <ph name="SCHEME" /> nuorodoms valdyti. Prašyta nuoroda: <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">„Google Chrome“ naudoja jūsų fotoaparatą ir mikrofoną.</translation>
-<translation id="8274359292107649245">Atidaryti „Chrome“ darbalaukio režimu</translation>
 <translation id="8286862437124483331">„Google Chrome“ bando rodyti slaptažodžius. Įveskite „Windows“ slaptažodį, kad tai leistumėte.</translation>
 <translation id="8290100596633877290">Oi! „Google Chrome“ užstrigo. Paleisti iš naujo dabar?</translation>
 <translation id="8406086379114794905">Padėkite tobulinti „Chrome“</translation>
-<translation id="8437332772351535342">Iš naujo paleidus darbalaukio režimu „Chrome“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="8460191995881063249">„Chrome“ pranešimų centras</translation>
 <translation id="853189717709780425">Prisijungiate su tvarkoma paskyra ir leidžiate jos administratoriui valdyti jūsų „Google Chrome“ profilį. „Chrome“ duomenys, pvz., programos, žymės, istorija, slaptažodžiai ir kiti nustatymai, bus visam laikui susieti su <ph name="USER_NAME" />. Galėsite ištrinti šiuos duomenis naudodami „Google“ paskyrų informacijos suvestinę, bet negalėsite susieti šių duomenų su kita paskyra.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -246,12 +241,10 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8669527147644353129">„Google Chrome“ pagalbos priemonė</translation>
 <translation id="8679801911857917785">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chrome“.</translation>
 <translation id="870251953148363156">Atnaujinti „&amp;Google Chrome“</translation>
-<translation id="8811903091068364646">&amp;Iš naujo paleisti „Chrome“ darbalaukyje</translation>
 <translation id="8823341990149967727">„Chrome“ versija yra pasenusi</translation>
 <translation id="884296878221830158">Ji taip pat kontroliuoja, koks puslapis rodomas, kai paleidžiate „Chrome“ ar spustelėjate pagrindinio puslapio mygtuką.</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
-<translation id="8889942196804715220">Iš naujo paleisti „Chrome“ įtraukiančiuoju režimu</translation>
 <translation id="9026991721384951619">„Chrome“ OS negali sinchronizuoti duomenų, nes paskyros išsami prisijungimo informacija yra pasenusi.</translation>
 <translation id="9102715433345326100">Šis failas yra kenkėjiškas, todėl „Chrome“ jį užblokavo.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Įspėjimas:<ph name="END_BOLD" /> „Google Chrome“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>

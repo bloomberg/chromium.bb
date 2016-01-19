@@ -125,7 +125,6 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="2762000892062317888">ahora mismo</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="278029852808208386">No se han encontrado dispositivos Bluetooth. <ph name="BEGIN_LINK" />Repite la búsqueda<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Conexión lenta detectada.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
@@ -173,7 +172,6 @@ Vas a iniciar sesión con una cuenta administrada, lo que significa que proporci
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3559647143395293616">Activa la Web física</translation>
 <translation id="360480449234699036">Obtén información sobre los temas que aparecen en los sitios web sin salir de la página. La función Tocar para buscar permite enviar una palabra y su contexto a la Búsqueda de Google para ver definiciones, imágenes, resultados de búsqueda y otra información.
 
 Para ajustar el término de búsqueda, mantén pulsado el texto para seleccionarlo. Para restringir la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
@@ -274,7 +272,6 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="509605886816275399">¿Quieres guardar esta página sin conexión?</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
 <translation id="5107381076085091558">Se ha pausado la descarga.</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -288,6 +285,7 @@ Solo tienes que abrir Chrome en tu ordenador, ir al menú y seleccionar "Iniciar
 <translation id="5168917394043976756">Abrir panel de navegación</translation>
 <translation id="5171045022955879922">Busca o escribe una URL</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
+<translation id="5199929503336119739">Perfil de trabajo</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5210714456814679336">Aquí aparecerán las pestañas que hayas abierto en Chrome en otros dispositivos.</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
@@ -382,7 +380,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="6232535412751077445">Al habilitar la opción No realizar seguimiento, se incluirá una solicitud con el tráfico de navegación. El efecto dependerá de si algún sitio web responde a la solicitud y de cómo se interpreta.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anuncios no basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación (por ejemplo, para mejorar la seguridad, para proporcionar contenido, anuncios y recomendaciones o para generar estadísticas de informes).</translation>
-<translation id="624558823898732418">Idioma de traducción: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Se ha producido un problema al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6317634962183824346">Sincronización del sistema Android inhabilitada. Vuelve a habilitarla e inténtalo de nuevo.</translation>
@@ -533,6 +530,7 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="8146397137182589628">No se ha guardado una copia sin conexión</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> cuentas</translation>
 <translation id="8168435359814927499">Contenido</translation>
+<translation id="8200772114523450471">Reanudar</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8218346974737627104">Confirmar inicio de sesión</translation>
 <translation id="8218934717680664417">Ahora puedes realizar búsquedas con un toque</translation>
@@ -552,7 +550,6 @@ No obstante, tus acciones no serán totalmente invisibles. El uso del modo incó
 <translation id="8514577642972634246">Navegar en modo incógnito</translation>
 <translation id="8515416241041728525">Añadir cuenta para <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">En este sitio se utiliza una configuración de seguridad vulnerable (firmas SHA-1), de modo que es posible que tu conexión no sea privada.</translation>
-<translation id="8528538445849828817">Idioma de la página: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="856481929701340285">Ver como ordenador</translation>

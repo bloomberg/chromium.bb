@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">情報ページ「<ph name="ABOUT_PAGE" />」を読み込めませんでした。</translation>
 <translation id="4434145631756268951">{0,select, single{USB デバイスの選択}multiple{USB デバイスの選択}other{UNUSED}}</translation>
 <translation id="4811956658694082538">ユーティリティ プロセスで問題が発生したため、パッケージをインストールできませんでした。Chrome を再起動してもう一度お試しください。</translation>
-<translation id="4883436287898674711"><ph name="WEBSITE_1" /> の全サイト</translation>
 <translation id="5026754133087629784">WebView: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">アプリビュー: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">この拡張機能には、鍵ファイル「<ph name="KEY_PATH" />」が含まれていますが、おそらくその必要性はありません。</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は管理者によってブロックされています。</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">この拡張機能は、ダウンロード ファイル「<ph name="ATTEMPTED_FILENAME" />」に名前を付けることができませんでした。別の拡張機能（<ph name="EXTENSION_NAME" />）が異なるファイル名「<ph name="ACTUAL_FILENAME" />」を指定しました。</translation>
-<translation id="8284279544186306258"><ph name="WEBSITE_1" /> の全サイト</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" />、提供元: <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">別の拡張機能（<ph name="EXTENSION_NAME" />）がネットワーク リクエストに別の認証情報を提供したため、この拡張機能は認証情報を提供できませんでした。</translation>
 <translation id="8602184400052594090">マニフェスト ファイルが見つからないか読み取れません。</translation>

@@ -125,7 +125,6 @@ Bạn phải bật Bluetooth và Vị trí để sử dụng Web trong cuộc s�
 <translation id="2762000892062317888">vừa xong</translation>
 <translation id="2770465223704140727">Xóa khỏi danh sách</translation>
 <translation id="278029852808208386">Không tìm thấy thiết bị bluetooth. <ph name="BEGIN_LINK" />Tìm kiếm lại<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Đã phát hiện kết nối chậm.</translation>
 <translation id="2842985007712546952">Thư mục gốc</translation>
 <translation id="2870560284913253234">Trang web</translation>
 <translation id="2888126860611144412">Giới thiệu Chrome</translation>
@@ -173,7 +172,6 @@ Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp
 <translation id="3492207499832628349">Tab ẩn danh mới</translation>
 <translation id="3518985090088779359">Chấp nhận và tiếp tục</translation>
 <translation id="3527085408025491307">Thư mục</translation>
-<translation id="3559647143395293616">Bật Web trong cuộc sống</translation>
 <translation id="360480449234699036">Tìm hiểu về các chủ đề trên trang web mà không rời khỏi trang. Chạm để Tìm kiếm gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
 
 Để điều chỉnh cụm từ tìm kiếm của bạn, nhấn và giữ để chọn. Để tinh chỉnh tìm kiếm của bạn, trượt bảng điều khiển theo mọi hướng lên trên rồi chạm vào hộp tìm kiếm.</translation>
@@ -274,7 +272,6 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5039804452771397117">Cho phép</translation>
 <translation id="5040262127954254034">Bảo mật</translation>
 <translation id="5063480226653192405">Sử dụng</translation>
-<translation id="509605886816275399">Bạn có lưu trang này ngoại tuyến không?</translation>
 <translation id="5100237604440890931">Đã thu gọn - nhấp để mở rộng.</translation>
 <translation id="5107381076085091558">Đã tạm dừng tải xuống.</translation>
 <translation id="5118713593561876160">Sở thích</translation>
@@ -288,6 +285,7 @@ Bạn chỉ cần mở Chrome trên máy tính của mình, chuyển tới menu 
 <translation id="5168917394043976756">Mở ngăn điều hướng</translation>
 <translation id="5171045022955879922">Tìm kiếm hoặc nhập URL</translation>
 <translation id="5184329579814168207">Mở trong Chrome</translation>
+<translation id="5199929503336119739">Hồ sơ công việc</translation>
 <translation id="5210365745912300556">Đóng tab</translation>
 <translation id="5210714456814679336">Tab mà bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="5228579091201413441">Bật đồng bộ hóa</translation>
@@ -382,7 +380,6 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
 
 Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cách hiển thị cho bạn các quảng cáo không dựa trên các trang web khác mà bạn đã truy cập. Nhiều trang web sẽ vẫn thu thập và sử dụng dữ liệu duyệt web của bạn — ví dụ: để tăng cường bảo mật, cung cấp nội dung, quảng cáo và đề xuất, đồng thời tạo số liệu thống kê báo cáo.</translation>
-<translation id="624558823898732418">Ngôn ngữ bản dịch: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Đã xảy ra sự cố khi in trang này. Vui lòng thử lại.</translation>
 <translation id="6295158916970320988">Tất cả các trang web</translation>
 <translation id="6317634962183824346">Đồng bộ hóa hệ thống Android đã bị tắt. Vui lòng bật lại và thử lại.</translation>
@@ -533,6 +530,7 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8146397137182589628">Chưa lưu được bản sao ngoại tuyến</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> tài khoản</translation>
 <translation id="8168435359814927499">Nội dung</translation>
+<translation id="8200772114523450471">Tiếp tục</translation>
 <translation id="8209050860603202033">Mở ảnh</translation>
 <translation id="8218346974737627104">Xác nhận đăng nhập</translation>
 <translation id="8218934717680664417">Bạn hiện có thể tìm kiếm bằng một lần chạm</translation>
@@ -552,7 +550,6 @@ Tuy nhiên, bạn không ẩn. Việc chuyển sang chế độ ẩn danh sẽ 
 <translation id="8514577642972634246">Vào chế độ ẩn danh</translation>
 <translation id="8515416241041728525">Thêm tài khoản cho <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Trang web này sử dụng cấu hình bảo mật yếu (chữ ký SHA-1), vì vậy kết nối của bạn có thể không được đảm bảo là riêng tư.</translation>
-<translation id="8528538445849828817">Ngôn ngữ trang: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Mở trang này</translation>
 <translation id="8562452229998620586">Mật khẩu đã lưu của bạn sẽ xuất hiện tại đây.</translation>
 <translation id="856481929701340285">Yêu cầu trang web cho máy tính</translation>

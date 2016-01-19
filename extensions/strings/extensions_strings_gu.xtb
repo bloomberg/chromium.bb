@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' વિશે પૃષ્ઠ લોડ કરી શકાયું નથી.</translation>
 <translation id="4434145631756268951">{0,select, single{USB ઉપકરણ પસંદ કરો}multiple{USB ઉપકરણો પસંદ કરો}other{UNUSED}}</translation>
 <translation id="4811956658694082538">એક ઉપયોગિતા પ્રક્રિયા ક્રેશ થઈ હોવાને કારણે પૅકેજ ઇન્સ્ટોલ કરી શકાયું નથી. Chrome પુનઃપ્રારંભ કરી અને ફરીથી પ્રયાસ કરવાનો પ્રયાસ કરો.</translation>
-<translation id="4883436287898674711">તમામ <ph name="WEBSITE_1" /> સાઇટ્સ</translation>
 <translation id="5026754133087629784">વેબવ્યુ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">આ એક્સટેન્શનમાં '<ph name="KEY_PATH" />' કી ફાઇલ શામેલ છે. તમે કદાચ એ કરવા માંગતા નથી.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">વ્યવસ્થાપક દ્વારા <ph name="EXTENSION_NAME" /> (એક્સટેન્શન ID "<ph name="EXTENSION_ID" />") અવરોધિત કરેલ છે.</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">આ એક્સટેન્શન "<ph name="ATTEMPTED_FILENAME" />" ને ડાઉનલોડ નામ આપવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ એક જુદું ફાઇલનામ "<ph name="ACTUAL_FILENAME" />" નક્કી કર્યું છે.</translation>
-<translation id="8284279544186306258">તમામ <ph name="WEBSITE_1" /> સાઇટ્સ</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> તરફથી <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને ઓળખપત્ર પ્રદાન કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ વિવિધ ઓળખપત્ર પ્રદાન કર્યાં છે.</translation>
 <translation id="8602184400052594090">મેનિફેસ્ટ ફાઇલ ખૂટે છે અથવા વાંચવાયોગ્ય નથી.</translation>

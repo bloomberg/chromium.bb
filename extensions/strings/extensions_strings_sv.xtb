@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Det gick inte att ladda informationssidan <ph name="ABOUT_PAGE" />.</translation>
 <translation id="4434145631756268951">{0,select, single{Välj USB-enhet}multiple{Välj USB-enheter}other{ANVÄNDS INTE}}</translation>
 <translation id="4811956658694082538">Det gick inte att installera paketet eftersom en hjälpprocess kraschade. Testa att starta om Chrome och försöka igen.</translation>
-<translation id="4883436287898674711">Alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="5026754133087629784">Webbvy: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appvy: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Detta tillägg omfattar nyckelfilen <ph name="KEY_PATH" />. Du vill antagligen inte göra detta.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (tilläggs-ID <ph name="EXTENSION_ID" />) har blockerats av administratören.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) valde ett annat filnamn <ph name="ACTUAL_FILENAME" />.</translation>
-<translation id="8284279544186306258">alla <ph name="WEBSITE_1" />-webbplatser</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> från <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Det här tillägget kunde inte uppge några användaruppgifter till en nätverksbegäran eftersom ett annat tillägg  (<ph name="EXTENSION_NAME" />) uppgav andra användaruppgifter.</translation>
 <translation id="8602184400052594090">Manifestfilen saknas eller är oläslig.</translation>

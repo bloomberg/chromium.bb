@@ -144,7 +144,6 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="568643307450491754">Encontre seus favoritos no menu do Google Chrome ou na barra de favoritos.</translation>
 <translation id="573759479754913123">Sobre o Chrome OS</translation>
 <translation id="5749068826913805084">O Chrome precisa de acesso de armazenamento para fazer o download de arquivos.</translation>
-<translation id="5785746630574083988">A reinicialização no modo Windows 8 fecha e reinicia todos os aplicativos do Google Chrome.</translation>
 <translation id="5855036575689098185">O software que está sendo executado em seu computador não é compatível com o Google Chrome.</translation>
 <translation id="5877064549588274448">Canal alterado. Reinicie o dispositivo para aplicar as alterações.</translation>
 <translation id="5931853610562009806">No Mac, as senhas podem ser salvas no seu Keychain e acessadas ou sincronizadas por outros usuários do Google Chrome que compartilhem essa conta OS X.</translation>
@@ -205,11 +204,9 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="7747138024166251722">O instalador não conseguiu criar um diretório temporário. Verifique se há espaço livre em disco e se há permissão para a instalação de software.</translation>
 <translation id="7761834446675418963">Clique no seu nome para abrir o Chrome e começar a navegar.</translation>
 <translation id="7781002470561365167">Uma nova versão do Google Chrome está disponível.</translation>
-<translation id="7784335114585804598">&amp;Reiniciar o Google Chrome em modo Windows 8</translation>
 <translation id="7787950393032327779">O perfil parece estar em uso por outro processo do Google Chrome (<ph name="PROCESS_ID" />) em outro computador (<ph name="HOST_NAME" />). O Chrome bloqueou o perfil para que ele não seja corrompido. Se você tiver certeza de que nenhum outro processo está usando este perfil, pode desbloquear o perfil e reiniciar o Chrome.</translation>
 <translation id="7788788617745289808">O Chrome precisa ter acesso à câmera para compartilhá-la com este site.</translation>
 <translation id="7808348361785373670">Remover do Chrome</translation>
-<translation id="781069973841903133">A reinicialização no modo imersivo do Google Chrome fecha e reinicia seus aplicativos do Google Chrome.</translation>
 <translation id="7825851276765848807">Houve uma falha na instalação devido a um erro não-especificado. Faça o download do Google Chrome novamente.</translation>
 <translation id="7890208801193284374">Se você usa um computador compartilhado, seus amigos e familiares podem navegar separadamente e configurar o Google Chrome da maneira que desejarem.</translation>
 <translation id="8000275528373650868">O Google Chrome requer o Windows Vista ou o Windows XP com SP2 ou superior.</translation>
@@ -222,11 +219,9 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="8205111949707227942">Opcional: ajude a melhorar este sistema operacional enviando-nos estatísticas de uso e relatórios de erros.</translation>
 <translation id="8227755444512189073">O Google Chrome precisa iniciar um aplicativo externo para lidar com  os links <ph name="SCHEME" />. O link solicitado é <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">O Google Chrome está usando sua câmera e seu microfone.</translation>
-<translation id="8274359292107649245">Abrir o Google Chrome na área de trabalho</translation>
 <translation id="8286862437124483331">O Google Chrome está tentando mostrar senhas. Digite sua senha do Windows para permitir isso.</translation>
 <translation id="8290100596633877290">Nossa! Houve uma falha no Google Chrome. Reiniciar agora?</translation>
 <translation id="8406086379114794905">Ajudar a melhorar o Google Chrome</translation>
-<translation id="8437332772351535342">A reinicialização no modo de área de trabalho fecha e reinicia seus aplicativos do Google Chrome.</translation>
 <translation id="8460191995881063249">Central de notificações do Google Chrome</translation>
 <translation id="853189717709780425">Você está fazendo login com uma conta gerenciada e concedendo ao administrador da conta o controle sobre seu perfil do Google Chrome. Seus dados do Google Chrome, como aplicativos, favoritos, histórico, senhas e outras configurações serão permanentemente vinculados a <ph name="USER_NAME" />. Você pode excluir esses dados pelo painel das Contas do Google, mas não pode associar esses dados a outra conta.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -238,12 +233,10 @@ Se você decidir fazer login assim mesmo, as informações do Google Chrome, com
 <translation id="8669527147644353129">Auxiliar do Google Chrome</translation>
 <translation id="8679801911857917785">Controla também qual página deve ser exibida quando você inicia o Chrome.</translation>
 <translation id="870251953148363156">Atualizar o Google Chrome</translation>
-<translation id="8811903091068364646">&amp;Reiniciar o Google Chrome na área de trabalho</translation>
 <translation id="8823341990149967727">O Google Chrome está desatualizado</translation>
 <translation id="884296878221830158">Controla também qual página deve ser exibida quando você inicia o Chrome ou clica no botão "Página inicial".</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
-<translation id="8889942196804715220">Reiniciar no modo imersivo do Google Chrome</translation>
 <translation id="9026991721384951619">O Chrome OS não pôde sincronizar seus dados porque os detalhes de login da sua conta estão desatualizados.</translation>
 <translation id="9102715433345326100">Este arquivo é malicioso e foi bloqueado pelo Google Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Aviso:<ph name="END_BOLD" /> O Google Chrome não impede que as extensões gravem seu histórico de navegação. Para desativar esta extensão no modo anônimo, desmarque esta opção.</translation>

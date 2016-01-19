@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">'<ph name="ABOUT_PAGE" />' ಪುಟದ ಕುರಿತು ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ.</translation>
 <translation id="4434145631756268951">{0,select, single{USB ಸಾಧನವನ್ನು ಆಯ್ಕೆಮಾಡಿ}multiple{USB ಸಾಧನಗಳನ್ನು ಆಯ್ಕೆಮಾಡಿ}other{UNUSED}}</translation>
 <translation id="4811956658694082538">ಉಪಯುಕ್ತತೆಯ ಪ್ರಕ್ರಿಯೆಯು ಹಾಳಾಗಿರುವ ಕಾರಣ ಪ್ಯಾಕೇಜ್ ಅನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. Chrome ಮರುಪ್ರಾರಂಭಿಸಲು ಪ್ರಯತ್ನಿಸಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="4883436287898674711">ಎಲ್ಲಾ <ph name="WEBSITE_1" /> ಸೈಟ್‌ಗಳು</translation>
 <translation id="5026754133087629784">ವೆಬ್‌ವೀಕ್ಷಣೆ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">ಅಪ್ಲಿಕೇಶನ್ ವೀಕ್ಷಣೆ: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">ಈ ವಿಸ್ತರಣೆಯು ಕೀ ಫೈಲ್ '<ph name="KEY_PATH" />' ಅನ್ನು ಒಳಗೊಂಡಿದೆ. ನೀವು ಸಾಮಾನ್ಯವಾಗಿ ಹಾಗೆ ಮಾಡಲು ಬಯಸುವುದಿಲ್ಲ.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">ನಿರ್ವಾಹಕನಿಂದ <ph name="EXTENSION_NAME" /> (ವಿಸ್ತರಣೆ ID "<ph name="EXTENSION_ID" />") ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">ಈ ವಿಸ್ತರಣೆಯು "<ph name="ATTEMPTED_FILENAME" />" ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಹೆಸರಿಸಲು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯು ವಿಭಿನ್ನ ಫೈಲ್‌ ಹೆಸರು "<ph name="ACTUAL_FILENAME" />" ಗೆ ನಿರ್ಧರಿಸಿದೆ.</translation>
-<translation id="8284279544186306258">ಎಲ್ಲಾ <ph name="WEBSITE_1" /> ಸೈಟ್‌ಗಳು</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> ರಿಂದ <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ವಿಭಿನ್ನ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಗೆ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>
 <translation id="8602184400052594090">ಮ್ಯಾನಿಫೆಸ್ಟ್ ಫೈಲ್ ಕಾಣದಾಗಿದೆ ಅಥವಾ ಓದಲಾಗುವುದಿಲ್ಲ.</translation>

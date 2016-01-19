@@ -125,7 +125,6 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="278029852808208386">Não foram encontrados dispositivos Bluetooth. <ph name="BEGIN_LINK" />Procure novamente<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Ligação lenta detetada.</translation>
 <translation id="2842985007712546952">Pasta superior</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Acerca do Chrome</translation>
@@ -173,7 +172,6 @@ Está a iniciar sessão com uma conta gerida e a atribuir ao respetivo administr
 <translation id="3492207499832628349">Novo sep. navegação anónima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3527085408025491307">Pasta</translation>
-<translation id="3559647143395293616">Ativar a Web física</translation>
 <translation id="360480449234699036">Saiba mais acerca dos tópicos nos Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o respetivo contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
 
 Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refinar a sua pesquisa, deslize lentamente o painel totalmente para cima e toque na caixa de pesquisa.</translation>
@@ -274,7 +272,6 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5063480226653192405">Utilização</translation>
-<translation id="509605886816275399">Guardar esta página offline?</translation>
 <translation id="5100237604440890931">Reduzido. Clique para expandir.</translation>
 <translation id="5107381076085091558">Transferência interrompida.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -288,6 +285,7 @@ Basta abrir o Chrome no computador, aceder ao menu e selecionar "Iniciar sessão
 <translation id="5168917394043976756">Abrir a gaveta de navegação</translation>
 <translation id="5171045022955879922">Pesquisar ou escrever URL</translation>
 <translation id="5184329579814168207">Abrir no Chrome</translation>
+<translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="5210714456814679336">Os separadores que abriu no Chrome noutros dispositivos aparecem aqui.</translation>
 <translation id="5228579091201413441">Ativar a sincronização</translation>
@@ -382,7 +380,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="6232535412751077445">A ativação da funcionalidade "Não Monitorizar" significa que é incluído um pedido no seu tráfego de navegação. Qualquer efeito depende de um Website responder ou não ao pedido e do modo como o pedido é interpretado.
 
 Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúncios que não são baseados noutros Websites que tenha visitado. Ainda assim, muitos Websites continuam a recolher e a utilizar os seus dados de navegação para, por exemplo, melhorar a segurança, fornecer conteúdo, anúncios e recomendações, e gerar estatísticas de relatórios.</translation>
-<translation id="624558823898732418">Idioma de tradução: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6317634962183824346">Sincronização do sistema Android desativada. Reative e tente novamente.</translation>
@@ -533,6 +530,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="8146397137182589628">Não guardada offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> contas</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
+<translation id="8200772114523450471">Continuar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8218346974737627104">Confirmar início de sessão</translation>
 <translation id="8218934717680664417">Agora pode pesquisar com um toque</translation>
@@ -552,7 +550,6 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="8514577642972634246">Entrar no modo de navegação anónima</translation>
 <translation id="8515416241041728525">Adicionar conta a <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Este site utiliza uma configuração de segurança fraca (assinaturas SHA-1), pelo que a sua ligação pode não ser privada.</translation>
-<translation id="8528538445849828817">Idioma da página: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
 <translation id="856481929701340285">Pedir site p/ computador</translation>

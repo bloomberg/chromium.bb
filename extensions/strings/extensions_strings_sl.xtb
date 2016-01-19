@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Ni bilo mogoče naložiti Vizitke »<ph name="ABOUT_PAGE" />«.</translation>
 <translation id="4434145631756268951">{0,select, single{Izbira naprave USB}multiple{Izbira naprav USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Paketa ni bilo mogoče namestiti, ker se je pomožni proces zrušil. Znova zaženite Chrome in poskusite znova.</translation>
-<translation id="4883436287898674711">Vsa spletna mesta <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Spletni pogled: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Komponenta appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Ta razširitev vključuje datoteko s ključem »<ph name="KEY_PATH" />«. Verjetno ne želite narediti tega.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID razširitve »<ph name="EXTENSION_ID" />«) je blokiral skrbnik.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Ta razširitev ni mogla prenosa poimenovati »<ph name="ATTEMPTED_FILENAME" />«, ker je druga razširitev (<ph name="EXTENSION_NAME" />) določila drugo ime datoteke: »<ph name="ACTUAL_FILENAME" />«.</translation>
-<translation id="8284279544186306258">vsa spletna mesta <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> proizvajalca <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Razširitev je neuspešno podala poverilnice omrežni zahtevi, ker je druga razširitev (<ph name="EXTENSION_NAME" />) podala druge poverilnice.</translation>
 <translation id="8602184400052594090">Datoteka manifesta manjka ali pa je ni mogoče prebrati.</translation>

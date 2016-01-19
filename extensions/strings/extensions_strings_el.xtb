@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Δεν ήταν δυνατή η φόρτωση της σελίδας πληροφοριών "<ph name="ABOUT_PAGE" />".</translation>
 <translation id="4434145631756268951">{0,select, single{Επιλέξτε μια συσκευή USB}multiple{Επιλέξτε συσκευές USB}other{ΔΕΝ ΧΡΗΣΙΜΟΠΟΙΕΙΤΑΙ}}</translation>
 <translation id="4811956658694082538">Δεν ήταν δυνατή η εγκατάσταση του πακέτου, επειδή μια διεργασία βοηθητικού προγράμματος παρουσίασε σφάλμα. Επανεκκινήστε το Chrome και προσπαθήστε ξανά.</translation>
-<translation id="4883436287898674711">Όλοι οι ιστότοποι <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Αυτή η επέκταση περιλαμβάνει το αρχείο κλειδιού "<ph name="KEY_PATH" />". Πιθανότατα δεν θέλετε να προβείτε σε αυτήν την ενέργεια.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Το αναγνωριστικό <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") έχει αποκλειστεί από τον διαχειριστή.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη "<ph name="ATTEMPTED_FILENAME" />" επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME" />) καθόρισε ένα διαφορετικό όνομα "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">όλους τους ιστότοπους <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> της <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>
 <translation id="8602184400052594090">Το αρχείο δήλωσης λείπει ή δεν είναι δυνατή η ανάγνωσή του.</translation>

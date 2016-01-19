@@ -10,21 +10,19 @@
 <translation id="1066332784716773939">אבחן שגיאות...</translation>
 <translation id="106701514854093668">סימניות שולחן עבודה</translation>
 <translation id="1080116354587839789">התאם לרוחב</translation>
-<translation id="108346963417674655">לא ניתן להתחבר בצורה מאובטחת אל השרת. ייתכן שהאתר הזה פעל בעבר, אך יש בעיה בשרת. התחברות אל אתרים כאלה פוגעת ברמת האבטחה של כל המשתמשים ולכן היא הושבתה.</translation>
 <translation id="1090046120949329821">‏התקבלו מספר כותרות נפרדות של עריכת תוכן: הדבר אסור, כהגנה מפני מתקפות פיצול של תגובת HTTP.</translation>
 <translation id="1091911885099639251">מאמת את הכרטיס</translation>
 <translation id="1103523840287552314">תרגם <ph name="LANGUAGE" /> תמיד</translation>
-<translation id="1105117579475534983">דף האינטרנט חסום</translation>
 <translation id="1107591249535594099">‏אם האפשרות הזו מסומנת, Chrome ישמור עותק של הכרטיס במכשיר הזה כדי למלא טפסים במהירות רבה יותר.</translation>
 <translation id="1113869188872983271">&amp;ביטול של שינוי סדר</translation>
 <translation id="111844081046043029">האם אתה בטוח שברצונך לצאת מדף זה?</translation>
 <translation id="112840717907525620">הקובץ השמור של המדיניות תקין</translation>
 <translation id="113188000913989374"><ph name="SITE" /> אומר:</translation>
 <translation id="1132774398110320017">‏הגדרות מילוי אוטומטי של Chrome...</translation>
-<translation id="1146498888431277930">‏שגיאת חיבור של SSL</translation>
 <translation id="1146673768181266552">מזהה קריסה <ph name="CRASH_ID" /> ‏(<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המחשב. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1152921474424827756">גש אל <ph name="BEGIN_LINK" />עותק בקובץ שמור<ph name="END_LINK" /> של <ph name="URL" /></translation>
+<translation id="1175364870820465910">הדפס...</translation>
 <translation id="1181037720776840403">הסר</translation>
 <translation id="1195447618553298278">שגיאה לא ידועה.</translation>
 <translation id="1201402288615127009">הבא</translation>
@@ -45,9 +43,6 @@
 <translation id="1426410128494586442">כן</translation>
 <translation id="1430915738399379752">הדפס</translation>
 <translation id="1442912890475371290">נחסם ניסיון <ph name="BEGIN_LINK" /> לביקור בדף ב-<ph name="DOMAIN" /><ph name="END_LINK" />.</translation>
-<translation id="1452265419286795001">לא ניתן לטעון את דף האינטרנט משום שהמחשב עבר למצב שינה או שינה עמוקה.
-      במקרה כזה, החיבורים לרשת מתנתקים ובקשות חדשות ברשת נכשלות.
-      טעינה מחדש של הדף אמורה לפתור את הבעיה.</translation>
 <translation id="1455235771979731432">הייתה בעיה באימות הכרטיס. בדוק את החיבור לאינטרנט ונסה שוב.</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="1506687042165942984">הצג עותק שמור (כלומר, ידוע שהוא עדכני) של הדף הזה.</translation>
@@ -58,12 +53,7 @@
 
       &lt;p&gt;שנה את התאריך והשעה בקטע &lt;strong&gt;כללי&lt;/strong&gt; באפליקציה &lt;strong&gt;הגדרות&lt;/strong&gt;‏.&lt;/p&gt;</translation>
 <translation id="1592005682883173041">גישה לנתונים מקומיים</translation>
-<translation id="1619362374865863391">‏<ph name="PRODUCT_NAME" />
-  לא יכול להתחבר לאתר. מצב זה נגרם בדרך כלל בשל בעיות ברשת,
-  אך עלול להיות גם תוצאה של חומת אש או שרת proxy שלא הוגדרו כראוי.</translation>
 <translation id="1629803312968146339">‏האם תרצה ש-Chrome ישמור את הכרטיס הזה?</translation>
-<translation id="1639782983204136776">התקבלה תגובה לא חוקית בניסיון לטעון את <ph name="URL" />.
-  ייתכן שהשרת הושבת לצורך תחזוקה או הוגדר באופן שגוי.</translation>
 <translation id="1640180200866533862">מדיניות משתמשים</translation>
 <translation id="1644184664548287040">תצורת הרשת אינה חוקית ולא ניתן לייבא אותה.</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
@@ -74,12 +64,15 @@
 <translation id="1710259589646384581">מערכת הפעלה</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">דווח על באג</translation>
+<translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1753706481035618306">מספר דף</translation>
 <translation id="1763864636252898013">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי מערכת ההפעלה של המכשיר. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="1775135663370355363">מציג היסטוריה מהמכשיר הזה. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">עדכן את משפט-הסיסמה של הסינכרון.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">הבקשה או הפרמטרים של הבקשה אינם חוקיים</translation>
 <translation id="1871208020102129563">‏שרת ה-Proxy מוגדר להשתמש בשרתי Proxy קבועים, לא בכתובת אתר של סקריפט ‎.Pac</translation>
+<translation id="1871625979288021266">יציאה לא בטוחה נחסמה</translation>
 <translation id="1883255238294161206">כווץ רשימה</translation>
 <translation id="1898423065542865115">סינון</translation>
 <translation id="194030505837763158">עבור ל-<ph name="LINK" /></translation>
@@ -111,22 +104,13 @@
 <translation id="2212735316055980242">לא נמצאה מדיניות</translation>
 <translation id="2213606439339815911">מאחזר רשומות...</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> אינו זמין</translation>
-<translation id="2221403025589790908"><ph name="PRODUCT_NAME" />
-  לא הצליח לטעון את דף האינטרנט משום שנדרש ל-
-        <ph name="HOST_NAME" />
-        זמן רב מדי להגיב. ייתכן שהאתר לא פעיל, או
-        שיש בעיות בחיבור שלך לאינטרנט.</translation>
-<translation id="2223896507118749476">האתר נתקל בשגיאה במהלך אחזור של הדף <ph name="URL" />.
-  ייתכן שהוא הושבת לצורך תחזוקה או שהוגדר באופן שגוי.</translation>
 <translation id="225207911366869382">ערך זה הוצא משימוש עבור מדיניות זו.</translation>
 <translation id="2262243747453050782">‏שגיאת HTTP</translation>
-<translation id="2271281383664374369">בקשות של תוספים לכתובת אתר זו נחסמו באופן זמני.</translation>
 <translation id="2279770628980885996">המערכת נתקלה במצב לא צפוי בזמן שהשרת ניסה למלא את הבקשה.</translation>
 <translation id="2282872951544483773">ניסויים לא זמינים</translation>
 <translation id="229702904922032456">פג תוקפו של אישור שורש או אישור ביניים.</translation>
 <translation id="230155334948463882">כרטיס חדש?</translation>
 <translation id="2328300916057834155">המערכת התעלמה מסימניה לא חוקית באינדקס <ph name="ENTRY_INDEX" /></translation>
-<translation id="2345460471437425338">אישור שגוי עבור מארח.</translation>
 <translation id="2354001756790975382">סימניות אחרות</translation>
 <translation id="2359808026110333948">המשך</translation>
 <translation id="2367567093518048410">רמה</translation>
@@ -147,9 +131,7 @@
 <translation id="2516305470678292029">חלופות לממשק משתמש</translation>
 <translation id="2552545117464357659">חדש יותר</translation>
 <translation id="2556876185419854533">&amp;ביטול עריכה</translation>
-<translation id="2581221116934462656">האם תרצה ש-<ph name="PRODUCT_NAME" /> יציע לתרגם דפים ב<ph name="LANGUAGE_NAME" /> מהאתר הזה בפעם הבאה?</translation>
 <translation id="2587841377698384444">‏מזהה ממשק API של ספרייה:</translation>
-<translation id="2589937147782335782">‏האם תרצה ש-Google תשמור את הכרטיס הזה?</translation>
 <translation id="2597378329261239068">מסמך זה מוגן באמצעות סיסמה. הזן סיסמה.</translation>
 <translation id="2609632851001447353">וריאציות</translation>
 <translation id="2625385379895617796">השעון שלך מקדים</translation>
@@ -158,19 +140,16 @@
 <translation id="2653659639078652383">שלח</translation>
 <translation id="2674170444375937751">האם אתה בטוח שברצונך להסיר דפים אלו מההיסטוריה שלך?</translation>
 <translation id="2704283930420550640">הערך לא תואם לפורמט.</translation>
+<translation id="2709516037105925701">מילוי אוטומטי</translation>
 <translation id="2721148159707890343">הבקשה בוצעה בהצלחה</translation>
 <translation id="2728127805433021124">האישור של השרת נחתם באמצעות אלגוריתם של חתימה חלשה.</translation>
 <translation id="2742870351467570537">הסר פריטים שנבחרו</translation>
 <translation id="277499241957683684">חסרה רשומת מכשיר</translation>
 <translation id="2784949926578158345">החיבור עבר איפוס.</translation>
+<translation id="2824775600643448204">סרגל חיפוש וכתובות</translation>
 <translation id="2835170189407361413">נקה טופס</translation>
 <translation id="2855922900409897335">אמת את ה-<ph name="CREDIT_CARD" /></translation>
-<translation id="2887624244875325968">‏שגיאה זו עלולה להתרחש בעת חיבור לשרת מאובטח (HTTPS).
-  המשמעות היא שהשרת מנסה להגדיר חיבור מאובטח אך בשל
-  שגיאה חמורה בקביעת התצורה, החיבור לא יהיה מאובטח כלל!
-  <ph name="LINE_BREAK" /> במקרה זה, יש לתקן את השרת.
-  <ph name="PRODUCT_NAME" />
-  לא ישתמש בחיבורים לא מאובטחים כדי להגן על פרטיותך.</translation>
+<translation id="2897655920961181107">היציאה המבוקשת אינה בטוחה והיא נחסמה.</translation>
 <translation id="2909946352844186028">אותר שינוי ברשת.</translation>
 <translation id="2915500479781995473">לשרת זה לא הייתה אפשרות להוכיח שהוא <ph name="DOMAIN" />; פג תוקפו של אישור האבטחה שלו. ייתכן שמצב זה נגרם בשל תצורה שגויה או שתוקף מיירט את החיבור שלך. שעון המחשב שלך מוגדר כעת ל-<ph name="CURRENT_TIME" />. האם השעה נכונה? אם לא, עליך לכוון את שעון המערכת ולאחר מכן לרענן דף זה.</translation>
 <translation id="2922350208395188000">לא ניתן לבדוק את אישור השרת.</translation>
@@ -206,13 +185,9 @@
 <translation id="3202578601642193415">החדש ביותר</translation>
 <translation id="3207960819495026254">מסומן בסימניה</translation>
 <translation id="3219579145727097045">‏הזן את תאריך סיום התוקף ו-CVC בן ארבע ספרות המופיע בחזית הכרטיס</translation>
-<translation id="3225579507836276307">תוסף של צד שלישי חסם גישה לדף אינטרנט זה.</translation>
 <translation id="3225919329040284222">השרת הציג אישור שאינו תואם את הציפיות המובנות. ציפיות אלה נכללות עבור אתרי אינטרנט מסוימים בעלי אבטחה גבוהה כדי להגן עליך.</translation>
 <translation id="3226128629678568754">לחץ על לחצן הטעינה מחדש כדי לשלוח מחדש את הנתונים הדרושים לטעינת הדף.</translation>
 <translation id="3228969707346345236">התרגום נכשל כיוון שהדף כבר ב<ph name="LANGUAGE" />.</translation>
-<translation id="3230256772510102500">‏שרת proxy הוא שרת שמתפקד כמתווך בין המחשב שלך לשרתים אחרים. בשלב זה, המערכת מוגדרת להשתמש בשרת proxy, אך
-          <ph name="PRODUCT_NAME" />
-          לא יכול להתחבר אליו.</translation>
 <translation id="3270847123878663523">&amp;ביטול של שינוי סדר</translation>
 <translation id="3286538390144397061">הפעל מחדש כעת</translation>
 <translation id="333371639341676808">מנע מדף זה ליצור דיאלוגים נוספים.</translation>
@@ -224,7 +199,6 @@
 <translation id="3377188786107721145">שגיאה בניתוח המדיניות</translation>
 <translation id="3380365263193509176">שגיאה לא ידועה</translation>
 <translation id="3380864720620200369">מזהה לקוח:</translation>
-<translation id="3393716657345709557">הערך המבוקש לא נמצא בקובץ השמור.</translation>
 <translation id="340013220407300675">ייתכן שתוקפים מנסים לגנוב את המידע שלך מ-<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (לדוגמה: סיסמאות, הודעות או כרטיסי אשראי).</translation>
 <translation id="3427342743765426898">&amp;ביצוע מחדש של עריכה</translation>
 <translation id="3435896845095436175">הפעל</translation>
@@ -236,6 +210,7 @@
 <translation id="3528171143076753409">אישור השרת אינו מהימן.</translation>
 <translation id="3539171420378717834">שמור עותק של הכרטיס הזה במכשיר הזה</translation>
 <translation id="3542684924769048008">השתמש בסיסמה עבור:</translation>
+<translation id="3549644494707163724">הצפן את כל הנתונים המסונכרנים באמצעות משפט הסיסמה שלך לסנכרון</translation>
 <translation id="3549761410225185768">עוד <ph name="NUM_TABS_MORE" />...</translation>
 <translation id="3566021033012934673">החיבור שלך אינו פרטי</translation>
 <translation id="3583757800736429874">&amp;ביצוע מחדש של העברה</translation>
@@ -259,6 +234,8 @@
 <translation id="375403751935624634">התרגום נכשל עקב שגיאת שרת.</translation>
 <translation id="3759461132968374835">לא התקבלו דיווחים על קריסות לאחרונה. קריסות שהתרחשו בזמן שאפשרות הדיווח על קריסות היתה מושבתת לא יופיעו כאן.</translation>
 <translation id="382518646247711829">‏אם אתה משתמש בשרת Proxy...</translation>
+<translation id="3828924085048779000">אין אפשרות להשתמש במשפט-סיסמה ריק.</translation>
+<translation id="385051799172605136">חזור</translation>
 <translation id="3851596405215565524">אם התוכנית כבר רשומה כתוכנית המורשית לגשת לרשת, נסה
  להסיר אותה מהרשימה ולהוסיף אותה שוב.</translation>
 <translation id="3858027520442213535">עדכן את התאריך והשעה</translation>
@@ -266,18 +243,14 @@
 <translation id="3885155851504623709">קהילה</translation>
 <translation id="3901925938762663762">תוקף הכרטיס פג</translation>
 <translation id="3903912596042358459">השרת סירב למלא את הבקשה.</translation>
-<translation id="3920015046759567857">החיבור אל
-    <ph name="HOST_NAME" />
-    הופסק.</translation>
+<translation id="3930850196944737149">המכשיר שלך לא מקוון.</translation>
 <translation id="3934680773876859118">‏הטעינה של מסמך PDF נכשלה</translation>
-<translation id="3940082421246752453">‏השרת אינו תומך בגרסת ה-HTTP שבה נעשה שימוש בבקשה.</translation>
 <translation id="3950924596163729246">אין אפשרות לגשת לרשת.</translation>
 <translation id="3963721102035795474">מצב קורא</translation>
 <translation id="4030383055268325496">&amp;ביטול הוספה</translation>
 <translation id="4032534284272647190">הגישה אל <ph name="URL" /> נדחתה.</translation>
 <translation id="404928562651467259">אזהרה</translation>
 <translation id="4058922952496707368">מפתח "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
-<translation id="4060383410180771901">אתר האינטרנט לא יכול לטפל בבקשה עבור <ph name="URL" />.</translation>
 <translation id="4079302484614802869">‏תצורת ה-Proxy מוגדרת להשתמש בכתובת אתר של סקריפט מסוג ‎.Pac ולא בשרתי Proxy קבועים.</translation>
 <translation id="409504436206021213">אל תטען מחדש</translation>
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
@@ -296,10 +269,8 @@
 <translation id="4268298190799576220">‏ל-Chromium אין כרגע אפשרות לאמת את הכרטיס. נסה שוב מאוחר יותר.</translation>
 <translation id="4269787794583293679">(אין שם משתמש)</translation>
 <translation id="4278390842282768270">מותר</translation>
-<translation id="4287689875748136217">לא ניתן להעלות את דף האינטרנט מכיוון שהשרת לא שלח נתונים.</translation>
 <translation id="4300246636397505754">הצעות להורים</translation>
 <translation id="4325863107915753736">לא ניתן היה למצוא את הפריט</translation>
-<translation id="4350711002179453268">אין אפשרות ליצור חיבור מאובטח לשרת. ייתכן שיש בעיה בשרת או שנדרש אישור אימות לקוח שאין לך.</translation>
 <translation id="4372948949327679948">צפוי ערך מסוג <ph name="VALUE_TYPE" />.</translation>
 <translation id="4377125064752653719">ניסית להשיג את <ph name="DOMAIN" />, אך האישור שהשרת הציג בוטל על ידי המנפיק שלו. פירוש הדבר שאין כל אפשרות לתת אמון באישורי האבטחה שהשרת הציג. ייתכן שאתה מתקשר עם תוקף.</translation>
 <translation id="4394049700291259645">השבת</translation>
@@ -317,7 +288,6 @@
 <translation id="4594403342090139922">&amp;ביטול מחיקה</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו מכיל שגיאות. ייתכן שהסיבה לכך היא הגדרה שגויה או תוקף המיירט את החיבור שלך.</translation>
-<translation id="4681260323810445443">אינך מורשה לגשת לדף האינטרנט בכתובת <ph name="URL" />. ייתכן שעליך להתחבר.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> היתה חסומה</translation>
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
@@ -329,38 +299,18 @@
 1240185477879256427אתר
 Del</translation>
 <translation id="477518548916168453">השרת אינו תומך בפונקציונליות הדרושה למילוי הבקשה.</translation>
-<translation id="4779052991835840224">‏לא ניתן ליצור חיבור מאובטח מאחר שאתר זה משתמש בפרוטוקול לא נתמך או בחבילת צופן שאינה נתמכת. סביר להניח שהסיבה לכך היא שהשרת זקוק ל-RC4, שכבר אינו נחשב למאובטח.</translation>
-<translation id="4786993863723020412">שגיאת קריאה בקובץ השמור</translation>
 <translation id="4800132727771399293">‏בדוק את תאריך התפוגה ואת ה-CVC ונסה שוב</translation>
 <translation id="4807049035289105102">‏לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון שהאתר שלח אישורים משובשים ש-Google Chrome אינו יכול לעבד. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שהדף הזה יפעל מאוחר יותר.</translation>
 <translation id="4813512666221746211">שגיאת רשת</translation>
 <translation id="4816492930507672669">התאמה לדף</translation>
-<translation id="4841859178893814774">כדי להאיץ דפי אינטרנט,
-  <ph name="PRODUCT_NAME" />
-  שומר בדיסק באופן זמני קבצים שהורדו.
-  בכיבוי לא תקין של
-  <ph name="PRODUCT_NAME" />,
-  קבצים אלה עלולים להיפגם ולגרום לשגיאה זו. טעינת הדף מחדש תפתור בעיה זו,
-  וכיבוי תקין ימנע את הישנות הבעיה.
- <ph name="LINE_BREAK" />
-   אם הבעיה נמשכת, נסה לנקות את הקובץ השמור. במקרים מסוימים,
-  הבעיה עשויה להצביע על כשל שמתחיל להיווצר בחומרה.</translation>
+<translation id="4841640898320458950">יציאה לא בטוחה נחסמה.</translation>
 <translation id="4850886885716139402">הצג</translation>
-<translation id="4874648484377130814">‏אתר זה משתמש
-  ב<ph name="BEGIN_LINK" />דומיין כללי חדש ברמה העליונה<ph name="END_LINK" />
-  (gTLD). אם השתמשת בעבר
-  ב-<ph name="HOST_NAME" />
-  כדי לגשת לאתר פנימי, צור קשר
-  עם מנהל הרשת.</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
-<translation id="49215695600353191">‏התגובה מהשרת הכילה כותרות כפולות. בעיה זו
- נובעת בדרך כלל מהגדרה לא נכונה של אתר אינטרנט או שרת proxy.
- רק מנהל המערכת של האתר או של שרת ה-proxy יכול לפתור את הבעיה.</translation>
+<translation id="488726935215981469">הנתונים שלך מוצפנים באמצעות משפט הסיסמה שלך לסנכרון. הזן אותו למטה.</translation>
 <translation id="4923417429809017348">דף זה תורגם משפה לא ידועה ל<ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">יש לציין ערך זה.</translation>
 <translation id="495170559598752135">פעולות</translation>
 <translation id="4958444002117714549">הרחב רשימה</translation>
-<translation id="4980112683975062744">כותרות כפולות התקבלו מהשרת</translation>
 <translation id="498957508165411911">האם לתרגם מ<ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">‏אם האפשרות הזו תופעל, Chrome יאחסן עותק של הכרטיס שלך במכשיר הזה למילוי מהיר יותר של טפסים.</translation>
 <translation id="5019198164206649151">האחסון המשמש כגיבוי אינו תקין</translation>
@@ -372,29 +322,19 @@ Del</translation>
 <translation id="5089810972385038852">מדינה</translation>
 <translation id="5094747076828555589">‏השרת הזה לא הצליח להוכיח שהוא <ph name="DOMAIN" />. אישור האבטחה שלו לא נחשב כמהימן על ידי Chromium. ייתכן שהסיבה לכך היא תצורה שגויה או תוקף המיירט את החיבור שלך.</translation>
 <translation id="5095208057601539847">פרובינציה</translation>
-<translation id="5109770625702925626">לא ניתן לחפש את
-        <ph name="HOST_NAME" />.
-        מנסה לאבחן את הבעיה...</translation>
 <translation id="5115563688576182185">(64 סיביות)</translation>
 <translation id="5122371513570456792">נמצאו <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> לגבי '<ph name="SEARCH_STRING" />'.</translation>
+<translation id="5141240743006678641">‏הצפן סיסמאות מסונכרנות באמצעות פרטי הכניסה שלך ל-Google</translation>
 <translation id="5145883236150621069">קיים קוד שגיאה בתגובת המדיניות</translation>
-<translation id="5153978682603373396">‏שרת proxy הוא שרת שמתפקד כמתווך בין המכשיר שלך לשרתים אחרים. בשלב זה, המערכת מוגדרת להשתמש בשרת proxy, אך
-          <ph name="PRODUCT_NAME" />
-          לא יכול להתחבר אליו.</translation>
 <translation id="5172758083709347301">מכונה</translation>
 <translation id="5179510805599951267">לא ב<ph name="ORIGINAL_LANGUAGE" />? דווח על שגיאה זו</translation>
 <translation id="5190835502935405962">סרגל הסימניות</translation>
 <translation id="5199729219167945352">ניסויים</translation>
 <translation id="5228309736894624122">‏שגיאת פרוטוקול SSL.</translation>
 <translation id="5251803541071282808">ענן</translation>
-<translation id="527200068854444456">לא ניתן לטעון את דף האינטרנט משום שהמכשיר שלך עבר למצב שינה 
-    או למצב שינה עמוקה.  במקרה כזה, חיבורים לרשת מתנתקים
-    ובקשות רשת חדשות נכשלות.  טעינה מחדש של הדף אמורה
-    לפתור את הבעיה.</translation>
 <translation id="5295309862264981122">אשר ניווט</translation>
 <translation id="5299298092464848405">שגיאה בניתוח המדיניות</translation>
 <translation id="5300589172476337783">הצג</translation>
-<translation id="5303618139271450299">דף אינטרנט זה לא נמצא</translation>
 <translation id="5308689395849655368">דיווח קריסות מושבת.</translation>
 <translation id="5317780077021120954">שמור</translation>
 <translation id="536296301121032821">אחסון הגדרות המדיניות נכשל</translation>
@@ -422,7 +362,6 @@ Del</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
 <translation id="5813119285467412249">&amp;ביצוע מחדש של הוספה</translation>
 <translation id="5872918882028971132">הצעות להורים</translation>
-<translation id="5880867612172997051">הגישה לרשת הושעתה</translation>
 <translation id="5900623698597156974">‏גיבוי מסוג TLS 1.0 הצליח לבצע לחיצת יד עם השרת, אך אנו כבר לא מקבלים גיבויי TLS 1.0. יש לעדכן את השרת כך שיטפל כראוי בסתירות בין גרסאות, עם עדיפות לתמיכה ב-TLS 1.2.</translation>
 <translation id="59107663811261420">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments אצל הסוחר הזה. בחר כרטיס אחר.</translation>
 <translation id="59174027418879706">מופעל</translation>
@@ -437,19 +376,8 @@ Del</translation>
 <translation id="604124094241169006">אוטומטי</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6060685159320643512">זהירות, ניסויים אלה עלולים לנשוך</translation>
-<translation id="6066742401428748382">הגישה לדף האינטרנט נדחתה</translation>
 <translation id="6093795393556121384">הכרטיס אומת</translation>
 <translation id="6099520380851856040">התרחש ב: <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">‏דף האינטרנט ב-<ph name="URL" /> גרם
-  למספר רב מדי של הפניות מחדש. ייתכן שניקוי קובצי ה-Cookie לאתר זה או הפעלת קובצי Cookies של צד שלישי יפתרו את הבעיה.
-  אם הבעיה נמשכת, ייתכן שמקורה בתצורת השרת ולא במחשב שלך.</translation>
-<translation id="6130627560064345577">ככל הנראה, השרת המארח את דף האינטרנט מצוי בעומס יתר או שנתקל בשגיאה.
-	כדי להימנע ממצב שבו תוספים גורמים לתנועה רבה מדי ומביאים להחרפת הבעיה,
-        <ph name="PRODUCT_NAME" />
-	הפסיק באופן זמני לאפשר בקשות מתוספים לכתובת אתר זו.
-        <ph name="LINE_BREAK" />
-        אם אתה סבור שהתנהגות זו אינה רצויה, לדוגמה, אם אתה מנפה באגים באתר שלך, היכנס אל <ph name="URL_FOR_MORE_INFO" />,
-        כדי למצוא מידע נוסף והסברים כיצד להשבית את התכונה.</translation>
 <translation id="6146055958333702838">בדוק את הכבלים והפעל מחדש את הנתבים, המודמים ושאר התקני הרשת
   שאתה משתמש בהם.</translation>
 <translation id="6151417162996330722">תקופת התוקף של אישור השרת ארוכה מדי.</translation>
@@ -464,7 +392,6 @@ Del</translation>
   כהגנה מפני מתקפות פיצול של תגובת HTTP.</translation>
 <translation id="6263376278284652872">סימניות <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">חזרה לחוף מבטחים</translation>
-<translation id="6268647269805730940">המכשיר הזה עדיין לא השלים את שלבי ההפעלה הראשונה.</translation>
 <translation id="6282194474023008486">מיקוד</translation>
 <translation id="6321917430147971392">‏בדוק את הגדרות ה-DNS</translation>
 <translation id="6328639280570009161">נסה להשבית את חיזוי הרשת</translation>
@@ -481,16 +408,15 @@ Del</translation>
 <translation id="6489534406876378309">התחל להעלות קריסות</translation>
 <translation id="6500116422101723010">השרת אינו יכול לטפל בבקשה כעת. קוד זה מצביע על כך שזה מצב זמני והשרת יעלה לאחר עיכוב.</translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
-<translation id="6516193643535292276">לא ניתן להתחבר לאינטרנט</translation>
 <translation id="6518133107902771759">אימות</translation>
 <translation id="6529602333819889595">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="6533019874004191247">כתובת האתר אינה נתמכת.</translation>
 <translation id="6550675742724504774">אפשרויות</translation>
+<translation id="6596325263575161958">אפשרויות הצפנה</translation>
 <translation id="6626108645084335023">‏ממתין לגישוש DNS.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> חיפוש</translation>
 <translation id="6634865548447745291">לא ניתן לבקר כעת באתר <ph name="SITE" /> מכיוון ש<ph name="BEGIN_LINK" />פג התוקף של אישור זה<ph name="END_LINK" />. שגיאות רשת ותקיפות מתרחשות בדרך כלל לזמן מוגבל, כך שסביר להניח שדף זה יפעל מאוחר יותר.</translation>
 <translation id="6637478299472506933">ההורדה נכשלה</translation>
-<translation id="6640442327198413730">חסר בקובץ השמור</translation>
 <translation id="6644283850729428850">מדיניות זו אינה בתוקף.</translation>
 <translation id="6646897916597483132">‏הזן את ה-CVC בן ארבע הספרות המופיע בחזית הכרטיס</translation>
 <translation id="6671697161687535275">‏האם להסיר מ-Chromium הצעות לטפסים?</translation>
@@ -499,7 +425,6 @@ Del</translation>
 <translation id="6746710319270251222">‏התקבלו מספר כותרות נפרדות של אורך תוכן: הדבר אסור, כהגנה מפני
   מתקפות פיצול של תגובת HTTP.</translation>
 <translation id="6753269504797312559">ערך מדיניות</translation>
-<translation id="6771079623344431310">‏לא ניתן להתחבר לשרת proxy</translation>
 <translation id="6781404225664080496">שליחת בקשות אל כתובת האתר הזו הופסקה באופן זמני.</translation>
 <translation id="6800914069727136216">בחבילת תוכן</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -515,7 +440,6 @@ Del</translation>
 <translation id="6891596781022320156">רמת המדיניות אינה נתמכת.</translation>
 <translation id="6897140037006041989">User agent</translation>
 <translation id="6915804003454593391">משתמש:</translation>
-<translation id="6948142510520900350">‏&lt;strong&gt;מנהל המערכת&lt;/strong&gt; חסם את הגישה לדף האינטרנט הזה.</translation>
 <translation id="6957887021205513506">נראה שהאישור של השרת מזויף.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="6965978654500191972">התקן</translation>
@@ -523,19 +447,14 @@ Del</translation>
 <translation id="6973656660372572881">‏צוינו שרתי Proxy קבועים וכתובת אתר של הסקריפט מסוג ‎.Pac</translation>
 <translation id="6989763994942163495">הצג הגדרות מתקדמות...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7029809446516969842">סיסמאות</translation>
 <translation id="7050187094878475250">ניסית להגיע אל <ph name="DOMAIN" />, אך השרת הציג אישור שתקופת התוקף שלו ארוכה מדי ולכן אינו מהימן.</translation>
 <translation id="7052500709156631672">‏השער או שרת ה-Proxy קיבלו תגובה לא חוקית משרת גבוהה יותר בהיררכיה. </translation>
 <translation id="7087282848513945231">מחוז (בבריטניה ובאירלנד)</translation>
 <translation id="7088615885725309056">ישן יותר</translation>
 <translation id="7108649287766967076">התרגום ל<ph name="TARGET_LANGUAGE" /> נכשל.</translation>
 <translation id="7117303293717852287">טען מחדש את דף האינטרנט הזה</translation>
-<translation id="7117941875056403396">הניסיון של <ph name="PRODUCT_NAME" />
- להתחבר אל
- <ph name="HOST_NAME" />
- נדחה. ייתכן שהאתר מושבת או שהרשת אינה
- מוגדרת כראוי.</translation>
 <translation id="7139724024395191329">אמירות</translation>
-<translation id="7148804936871729015">לשרת עבור <ph name="URL" /> לקח זמן רב מדי להגיב. ייתכן שהוא בעומס יתר.</translation>
 <translation id="7179921470347911571">הפעל מחדש עכשיו</translation>
 <translation id="7180611975245234373">רענן</translation>
 <translation id="7182878459783632708">לא הוגדרה מדיניות</translation>
@@ -550,13 +469,6 @@ Del</translation>
 <translation id="7275334191706090484">סימניות מנוהלות</translation>
 <translation id="7298195798382681320">מומלצים</translation>
 <translation id="7334320624316649418">&amp;ביצוע מחדש של שינוי סדר</translation>
-<translation id="7335675476272530342">דף האינטרנט לא נמצא בקובץ השמור. ניתן לטעון
- משאבים מסוימים באופן בטוח רק מהקובץ השמור,
- כגון דפים שנוצרו מנתונים שנשלחו.
- <ph name="LINE_BREAK" />
- שגיאה זו יכולה להיגרם גם בשל קובץ שמור שנפגם כתוצאה מכיבוי לא תקין.
- <ph name="LINE_BREAK" />
- אם הבעיה נמשכת, נסה לנקות את הקובץ השמור.</translation>
 <translation id="7353601530677266744">שורת פקודה </translation>
 <translation id="7372973238305370288">תוצאת חיפוש</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -570,6 +482,7 @@ Del</translation>
 <translation id="7424977062513257142">דף המוטמע בדף אינטרנט זה אומר:</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
 <translation id="7450732239874446337">הקלט והפלט של הרשת הושעו.</translation>
+<translation id="7481312909269577407">קדימה</translation>
 <translation id="7485870689360869515">לא נמצאו נתונים.</translation>
 <translation id="7514365320538308">הורד</translation>
 <translation id="7518003948725431193">לא נמצא דף אינטרנט עבור כתובת האינטרנט: <ph name="URL" /></translation>
@@ -581,23 +494,16 @@ Del</translation>
 <translation id="7569952961197462199">‏האם להסיר את כרטיס האשראי מ-Chrome?</translation>
 <translation id="7578104083680115302">‏שלם במהירות באתרים ובאפליקציות בכל המכשירים באמצעות כרטיסים ששמרת ב-Google.</translation>
 <translation id="7592362899630581445">אישור השרת מפר את אילוצי השמות.</translation>
-<translation id="759809665464235306">שרת זה מחייב אישור לצורך אימות, ולא קיבל את האישור שנשלח על ידי
-        הדפדפן. ייתכן שתוקף האישור שלך פג, או שהשרת לא בוטח במנפיק האישור.
-        אם יש ברשותך אישור נוסף, תוכל לנסות שוב באמצעותו, או שיהיה עליך
-        להשיג אישור חוקי ותקף ממקור אחר.</translation>
 <translation id="7600965453749440009">אל תתרגם לעולם <ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">סימניות משופרות</translation>
 <translation id="7610193165460212391">הערך מחוץ לטווח <ph name="VALUE" />.</translation>
-<translation id="7614030880636783720">‏Wi-Fi ונתונים לנייד אינם זמינים. ניתן יהיה לטעון את הדף לאחר שהמכשיר יתחבר לרשת.</translation>
+<translation id="7615602087246926389">‏יש לך כבר נתונים שהוצפנו באמצעות גירסה אחרת של סיסמת חשבון Google שלך. הזן אותה למטה.</translation>
 <translation id="7637571805876720304">‏האם להסיר מ-Chromium את כרטיס האשראי?</translation>
 <translation id="7643817847124207232">חיבור האינטרנט אבד.</translation>
 <translation id="765676359832457558">הסתר הגדרות מתקדמות...</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="7668654391829183341">מכשיר לא ידוע</translation>
 <translation id="7674629440242451245">‏מעוניין בתכונות חדשות ומגניבות של Chrome? נסה את הערוץ שלנו למפתחים בכתובת chrome.com/dev.</translation>
-<translation id="7689727675296818638">החיבור אל
-        <ph name="HOST_NAME" />
-        הופסק כתוצאה משינוי בחיבור הרשת.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />המשך אל <ph name="SITE" /> (לא בטוח)<ph name="END_LINK" /></translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">ללא ניהול</translation>
@@ -608,10 +514,11 @@ Del</translation>
 <translation id="777702478322588152">משטרת מחוז</translation>
 <translation id="778579833039460630">לא התקבלו נתונים</translation>
 <translation id="7791543448312431591">הוסף</translation>
+<translation id="7793809570500803535">ייתכן שדף האינטרנט בכתובת <ph name="SITE" /> אינו פעיל זמנית, או שהועבר לכתובת אינטרנט חדשה לצמיתות.</translation>
 <translation id="780301667611848630">לא תודה</translation>
 <translation id="7805768142964895445">סטטוס</translation>
 <translation id="7813600968533626083">‏האם להסיר מ-Chrome הצעות בשביל טפסים?</translation>
-<translation id="7839809549045544450">‏לשרת יש מפתח ציבורי ארעי וחלש מסוג Diffie-Hellman</translation>
+<translation id="7825436071901023927">יציאה לא בטוחה <ph name="SITE" /></translation>
 <translation id="7887683347370398519">‏בדוק את ה-CVC ונסה שוב</translation>
 <translation id="790025292736025802"><ph name="URL" /> לא נמצא</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -623,16 +530,15 @@ Del</translation>
 <translation id="7983301409776629893">תרגם תמיד <ph name="ORIGINAL_LANGUAGE" /> ל<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">סימניות שולחן עבודה</translation>
 <translation id="7995512525968007366">לא צוין</translation>
-<translation id="8016174103774548813">‏שרת ה-SSL כנראה מיושן.</translation>
 <translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE" />. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">לא נמצאו רשומות היסטוריה.</translation>
+<translation id="8075539548641175231">הנתונים שלך הוצפנו באמצעות משפט הסיסמה שלך לסנכרון בתאריך <ph name="TIME" />. הזן אותו למטה.</translation>
 <translation id="8088680233425245692">הצגת הפריט נכשלה.</translation>
 <translation id="8091372947890762290">ההפעלה ממתינה בשרת</translation>
 <translation id="8150722005171944719">הקובץ הנמצא ב-<ph name="URL" /> לא ניתן לקריאה. ייתכן שהקובץ הוסר או הועבר, או שהרשאות הקובץ מונעות גישה אליו.</translation>
 <translation id="8194797478851900357">&amp;ביטול העברה</translation>
 <translation id="8201077131113104583">כתובת אתר לא חוקית לעדכון עבור תוסף עם המזהה "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8204086856545141093">בקשות שנשלחו לשרת נחסמו על ידי מדיניות.</translation>
-<translation id="820791781874064845">דף אינטרנט זה נחסם על ידי תוסף</translation>
 <translation id="8218327578424803826">מיקום מוקצה:</translation>
 <translation id="8240446052814166959">‏בדוק את הגדרות שרת ה-proxy שלך, או צור קשר עם
           מנהל הרשת כדי לוודא ששרת ה-proxy פועל.
@@ -649,33 +555,30 @@ Del</translation>
           <ph name="BEGIN_BOLD" />אישור<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">פנה אל מנהל הרשת אם אינך יודע מה זה אומר.</translation>
 <translation id="8294431847097064396">מקור</translation>
-<translation id="8295070100601117548">שגיאת שרת</translation>
 <translation id="8308427013383895095">התרגום נכשל עקב בעיה בחיבור הרשת.</translation>
 <translation id="8311778656528046050">האם אתה בטוח שברצונך לטעון מחדש דף זה?</translation>
 <translation id="8349305172487531364">סרגל סימניות</translation>
 <translation id="8364627913115013041">לא מוגדר.</translation>
 <translation id="8412145213513410671">קריסות (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8412392972487953978">עליך להזין את אותו משפט-סיסמה פעמיים.</translation>
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8437238597147034694">&amp;ביטול העברה</translation>
 <translation id="8488350697529856933">חל על</translation>
 <translation id="8494979374722910010">ניסיון ההתחברות לשרת נכשל.</translation>
 <translation id="8508677083825928015">בצע אחזור מוקדם של משאבים כדי לטעון דפים מהר יותר</translation>
-<translation id="8515737884867295000">אימות המבוסס על אישור נכשל</translation>
 <translation id="8530504477309582336">‏סוג הכרטיס הזה אינו נתמך על ידי Google Payments. בחר כרטיס אחר.</translation>
+<translation id="8550022383519221471">שירות הסינכרון אינו זמין לדומיין שלך.</translation>
 <translation id="8553075262323480129">התרגום נכשל כיוון שלא הייתה אפשרות לקבוע את שפת הדף.</translation>
 <translation id="8559762987265718583">לא ניתן ליצור חיבור פרטי אל <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> מפני שהתאריך והשעה (<ph name="DATE_AND_TIME" />) במכשיר שלך שגויים.</translation>
 <translation id="8571890674111243710">מתרגם דף ל<ph name="LANGUAGE" />...</translation>
 <translation id="8629916158020966496">הגלישה באינטרנט מושבתת עד שבדיקת האימות של ההרשמה בארגון תסתיים.
         תוכל להשתמש בכלי האבחון המוצג כאן לפתרון בעיות בקישוריות.</translation>
 <translation id="8647750283161643317">אפס הכל לברירת המחדל</translation>
+<translation id="8680787084697685621">פרטי הכניסה לחשבון אינם מעודכנים.</translation>
 <translation id="8713130696108419660">חתימה ראשונית פגומה</translation>
 <translation id="8725066075913043281">נסה שוב</translation>
-<translation id="8729518820755801792">‏‫Chrome אינו יכול לפתוח כתובת אתר זו.</translation>
 <translation id="8730621377337864115">בוצע</translation>
 <translation id="8738058698779197622">‏כדי ליצור חיבור מאובטח, השעון צריך להיות מוגדר כהלכה. הסיבה לכך היא שהאישורים שבהם אתרים משתמשים כדי לזהות את עצמם תקפים רק למשך פרקי זמן מסוימים. מאחר שהשעון במכשיר שלך שגוי, Chromium לא יכול לאמת את האישורים האלו.</translation>
-<translation id="8776174617851537652">‏דף האינטרנט ב-<ph name="URL" /> גרם למספר רב מדי
-  של הפניות מחדש. ייתכן שניקוי קובצי ה-Cookie לאתר הזה או הפעלת קובצי Cookie של צד שלישי יפתרו את הבעיה.
-  אם הבעיה נמשכת, ייתכן שמקורה בתצורת השרת ולא במכשיר שלך.</translation>
 <translation id="8790007591277257123">&amp;ביצוע מחדש של מחיקה</translation>
 <translation id="8798099450830957504">ברירת מחדל</translation>
 <translation id="8804164990146287819">מדיניות פרטיות</translation>
@@ -701,41 +604,20 @@ Del</translation>
 <translation id="9013589315497579992">‏אישור אימות לקוח SSL פגום.</translation>
 <translation id="901974403500617787">רק הבעלים יכול להגדיר סימונים החלים על כל המערכת: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">השרת דחה את החיבור.</translation>
-<translation id="9020278534503090146">דף אינטרנט זה אינו זמין</translation>
 <translation id="9020542370529661692">הדף הזה תורגם ל<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9032090437019334135">‏לא ניתן למצוא את השרת
- ב-<ph name="HOST_NAME" />,
- משום שחיפוש ה-DNS נכשל. DNS הוא שירות הרשת
- שמתרגם את שם האתר לכתובת האינטרנט שלו.
- שגיאה זו נגרמת בדרך כלל כשאין חיבור לאינטרנט או
- בשל תצורת רשת שגויה. היא יכולה להיגרם גם עקב שרת DNS
- שאינו מגיב או כאשר חומת אש מונעת מ-<ph name="PRODUCT_NAME" />
- גישה לרשת.</translation>
-<translation id="904949795138183864">דף האינטרנט שב-<ph name="URL" /> אינו קיים יותר.</translation>
 <translation id="9049981332609050619">ניסית להגיע ל-<ph name="DOMAIN" />, אך השרת הציג אישור לא חוקי.</translation>
-<translation id="9086455579313502267">אין אפשרות לגשת לרשת</translation>
+<translation id="9050666287014529139">משפט-סיסמה</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9125941078353557812">‏הזן את ה-CVC בן שלוש הספרות המופיע בגב הכרטיס</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9148507642005240123">&amp;ביטול עריכה</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
-<translation id="9168302918952546302"><ph name="PRODUCT_NAME" />
-          נתקל בבעיות בגישה לרשת.
-          <ph name="LINE_BREAK" />
-          הסיבה לכך יכולה להיות שחומת האש או תוכנת האנטי-וירוס שלך קובעות בטעות ש-
-          <ph name="PRODUCT_NAME" />
-          פורץ למכשיר שלך וחוסמות את ההתחברות לאינטרנט.</translation>
+<translation id="9157595877708044936">מגדיר...</translation>
 <translation id="9170848237812810038">&amp;ביטול</translation>
 <translation id="917450738466192189">אישור השרת לא חוקי.</translation>
 <translation id="9207861905230894330">הוספת הפריט נכשלה.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">נקה את הטופס</translation>
-<translation id="946368465353148168"><ph name="PRODUCT_NAME" />
-          נתקל בקשיי גישה לרשת.
-          <ph name="LINE_BREAK" />
-          הסיבה עשויה להיות שתוכנת חומת האש או האנטי וירוס שלך קובעת בטעות ש-
-          <ph name="PRODUCT_NAME" />
-          פורץ למחשב שלך ולכן חוסמת את ההתחברות שלו לאינטרנט.</translation>
 <translation id="969892804517981540">גירסה רשמית</translation>
 <translation id="988159990683914416">גירסת מפתחים</translation>
 </translationbundle>

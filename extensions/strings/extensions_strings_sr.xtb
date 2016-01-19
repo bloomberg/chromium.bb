@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Није могуће учитати страницу са основним подацима „<ph name="ABOUT_PAGE" />“.</translation>
 <translation id="4434145631756268951">{0,select, single{Изаберите USB уређ}multiple{Изаберите USB уређаје}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Инсталирање пакета није успело зато што је услужни процес отказао. Пробајте да поново покренете Chrome и покушајте поново.</translation>
-<translation id="4883436287898674711">Сви <ph name="WEBSITE_1" /> сајтови</translation>
 <translation id="5026754133087629784">Веб-приказ: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Приказ апликације: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Овај додатак садржи датотеку кључа „<ph name="KEY_PATH" />“. Вероватно то не желите.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Администратор је блокирао <ph name="EXTENSION_NAME" /> (ИД додатка „<ph name="EXTENSION_ID" />“).</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME" />“ зато што је један други додатак (<ph name="EXTENSION_NAME" />) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME" />“.</translation>
-<translation id="8284279544186306258">сви <ph name="WEBSITE_1" /> сајтови</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Овај додатак није успео да достави акредитиве захтеву мреже јер је други додатак (<ph name="EXTENSION_NAME" />) доставио друге акредитиве.</translation>
 <translation id="8602184400052594090">Датотека манифеста недостаје или је нечитљива.</translation>

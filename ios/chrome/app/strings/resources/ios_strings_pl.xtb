@@ -31,9 +31,11 @@
 <translation id="605721222689873409">RR</translation>
 <translation id="6075880972317537864">Osoby atakujące stronę <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogą Cię oszukać i wykraść Twoje dane (na przykład hasła, wiadomości czy numery kart kredytowych).</translation>
 <translation id="6149061208933997199">Użyj hasła</translation>
+<translation id="6196207969502475924">Wyszukiwanie głosowe</translation>
 <translation id="6221345481584921695">Bezpieczne przeglądanie Google <ph name="BEGIN_LINK" />wykryło ostatnio złośliwe oprogramowanie<ph name="END_LINK" /> na <ph name="SITE" />. Strony, które zazwyczaj są bezpieczne, zostają czasem zainfekowane destrukcyjnym oprogramowaniem. Źródłem złośliwej zawartości jest <ph name="SUBRESOURCE_HOST" /> – znany dystrybutor złośliwego oprogramowania.</translation>
 <translation id="6264485186158353794">Powrót do bezpieczeństwa</translation>
 <translation id="6314335155547195432">Wygeneruj hasło</translation>
+<translation id="6344783595350022745">Wyczyść tekst</translation>
 <translation id="6456425917241817154">Hasło wygenerowane przez Chrome</translation>
 <translation id="6535543971741225613">Strona, którą chcesz otworzyć, zachowuje się dziwnie, a Chrome nie może sprawdzić, czy jej URL jest prawidłowy. Dla własnego bezpieczeństwa nie wchodź na tę stronę – spróbuj ponownie jutro albo otwórz inną stronę.</translation>
 <translation id="6740369132746915122">Jeśli rozumiesz zagrożenie, możesz <ph name="BEGIN_LINK" />wejść na tę niebezpieczną stronę<ph name="END_LINK" />.</translation>

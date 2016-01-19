@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Hakkında sayfası ("<ph name="ABOUT_PAGE" />") yüklenemedi.</translation>
 <translation id="4434145631756268951">{0,select, single{Bir USB cihaz seçin}multiple{USB cihazlar seçin}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Bir yardımcı program kilitlendiği için paket yüklenemedi. Chrome'u yeniden başlatın ve tekrar deneyin.</translation>
-<translation id="4883436287898674711">Tüm <ph name="WEBSITE_1" /> siteleri</translation>
 <translation id="5026754133087629784">Web görünümü: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Bu uzantıda '<ph name="KEY_PATH" />' anahtar dosyası var. Muhtemelen istediğiniz bu değil.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (uzantı kimliği "<ph name="EXTENSION_ID" />") yönetici tarafından engellenmiş.</translation>
 <translation id="7972881773422714442">Seçenekler: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Başka bir uzantı (<ph name="EXTENSION_NAME" />) farklı bir dosya adı ("<ph name="ACTUAL_FILENAME" />") belirlediğinden, uzantı indirilen dosyayı "<ph name="ATTEMPTED_FILENAME" />" olarak adlandıramadı.</translation>
-<translation id="8284279544186306258">tüm <ph name="WEBSITE_1" /> siteleri</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> adlı firmadan <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">Başka bir uzantı (<ph name="EXTENSION_NAME" />) farklı kimlik bilgileri sağladığından, bu uzantı bir ağ isteğine kimlik bilgileri sağlayamadı.</translation>
 <translation id="8602184400052594090">Bildiri dosyası eksik veya okunamıyor.</translation>

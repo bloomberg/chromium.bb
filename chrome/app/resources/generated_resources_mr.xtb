@@ -49,6 +49,7 @@
 <translation id="1064835277883315402">खाजगी नेटवर्कवर रुजू व्हा</translation>
 <translation id="1064912851688322329">आपले Google खाते डिसकनेक्‍ट करा</translation>
 <translation id="1065449928621190041">कॅनेडियन फ्रेंच कीबोर्ड</translation>
+<translation id="1067274860119234953">स्वयंचलित टॅब टाकून देणे</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">आपल्‍या संगणकावरील दुसर्‍या प्रोग्रामने एक विस्तार जोडला जो Chrome ची कार्य करण्‍याची पद्धत कदाचित बदलू शकतो.
 
@@ -289,6 +290,7 @@
 <translation id="1429740407920618615">सिग्नल सामर्थ्य:</translation>
 <translation id="143027896309062157">आपल्या संगणकावर आणि आपण भेट देत असलेल्या वेबसाइट वरील सर्व आपला डेटा वाचा आणि बदला</translation>
 <translation id="1430915738399379752">मुद्रण</translation>
+<translation id="1434696352799406980">हे आपले प्रारंभ पृष्ठ, नवीन टॅब पृष्ठ, शोध इंजिन आणि पिन केलेले टॅब रीसेट करेल. हे सर्व विस्तार अक्षम करेल आणि कुकीज सारखा तात्पुरता डेटा साफ करेल. आपले बुकमार्क, इतिहास आणि जतन केलेले संकेतशब्द साफ केले जाणार नाहीत.</translation>
 <translation id="1434886155212424586">मुख्यपृष्ठ हे नवीन टॅब पृष्ठ आहे</translation>
 <translation id="1435550882135542937">विस्तार टूलबार पुन्हा डिझाइन करणे</translation>
 <translation id="1436784010935106834">काढली</translation>
@@ -314,6 +316,7 @@
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1467999917853307373"><ph name="URL" /> आपल्या डिव्हाइसवर डेटा कायमचा संचयित करू इच्छित आहे.</translation>
 <translation id="1468038450257740950">WebGL समर्थित नाही.</translation>
+<translation id="1469042717030597817">सक्षम केलेले असल्‍यास, सिस्टीम मेमरी कमी असते तेव्‍हा मेमरी मधून टॅब स्वयंचलितपणे काढून टाकले जातात. काढून टाकलेले टॅब अद्याप टॅब स्ट्रिप वर दृश्‍यमान असतात आणि क्लिक केल्यावर रीलोड केले जातात. काढून टाकलेल्या टॅबबद्दल माहिती chrome://discards वर आढळू शकते.</translation>
 <translation id="1470719357688513792">नवीन कुकी सेटिंग्ज हे पृष्ठ रीलोड केल्यानंतर प्रभावी होतील.</translation>
 <translation id="1470811252759861213">आपल्या सर्व संगणकांवर आपले विस्तार प्राप्त करण्यासाठी, <ph name="SIGN_IN_LINK" />.</translation>
 <translation id="14720830734893704">व्हर्च्युअल कीबोर्ड समर्थन सक्षम करा.</translation>
@@ -501,6 +504,7 @@
 <translation id="1702534956030472451">पाश्चात्य</translation>
 <translation id="1702987929180449188">सक्षम केले असताना, किमान स्क्रीन dp &gt;= 800 असलेल्या डिव्‍हाइसेसवर स्क्रोल करण्‍यामुळे टूलबार कधीही लपविला जात नाही. पृष्‍ठ सामग्री पूर्ण स्क्रीनवर असली तरीही तो लपलेला असेल.</translation>
 <translation id="1707463636381878959">अन्य वापरकर्त्यांसह हा नेटवर्क सामायिक करा</translation>
+<translation id="1708199901407471282">नवीन टॅब पृष्‍ठामधून सूचविलेले वेबपृष्ठ उघडताना, सूचनेसाठी टॅब आधीपासून उघडा असल्‍यास, नवीन टॅबमध्‍ये सूचना लोड करण्‍याऐवजी त्यावर स्विच करा.</translation>
 <translation id="1708338024780164500">(निष्क्रिय)</translation>
 <translation id="1711973684025117106">झिप करणे अयशस्वी, अनपेक्षित त्रुटी: $1</translation>
 <translation id="1715941336038158809">अवैध वापरकर्ता नाव किंवा संकेतशब्द.</translation>
@@ -526,7 +530,6 @@
 <translation id="1747687775439512873">WiMAX अक्षम करा</translation>
 <translation id="174773101815569257">माऊस लॉक</translation>
 <translation id="1749854530031883739">विंडोमागील TouchView (मोठा केलेला मोड) मध्‍ये वापरलेल्या मोठ्या केले जाऊ शकत नाही अशा राखाडी विंडो पार्श्वभूमी दर्शवा.</translation>
-<translation id="17513872634828108">खुले टॅब</translation>
 <translation id="175196451752279553">पु&amp;न्हा बंद टॅब उघडा</translation>
 <translation id="1753682364559456262">प्रतिमा अवरोधित करणे व्यवस्थापित करा...</translation>
 <translation id="1753905327828125965">सर्वाधिक भेट दिलेले</translation>
@@ -619,6 +622,7 @@
 <translation id="1901769927849168791">SD कार्ड आढळले</translation>
 <translation id="1902576642799138955">वैधता कालावधी</translation>
 <translation id="1903219944620007795">मजकूर इनपुट करण्यासाठी, उपलब्ध इनपुट पद्धत पाहण्यासाठी एक भाषा निवडा.</translation>
+<translation id="1908104546835846726">शेल्फ वर इनपुट पद्धत मेनू दर्शवा.</translation>
 <translation id="1908748899139377733">फ्रेम &amp;माहिती पाहा</translation>
 <translation id="1909880997794698664">आपल्याला खात्री आहे की आपण कियोस्क मोडमध्ये हे डिव्हाइस कायमचे ठेवू इच्छिता?</translation>
 <translation id="1910572251697014317">या फोनवर Google ने एक सूचना पाठविली आहे. लक्षात ठेवा की Bluetooth सह, आपला फोन 100 फूट दुरून आपले <ph name="DEVICE_TYPE" /> अनलॉक केलेले ठेवू शकतो. याला समस्या येत असल्यास, आपण &lt;a&gt;हे वैशिष्ट्य तात्पुरते अक्षम करू शकता&lt;/a&gt;.</translation>
@@ -641,7 +645,6 @@
 <translation id="1937256809970138538">आपली स्क्रीन चालू आणि अनलॉक असते तेव्हा "Ok Google" म्हणा</translation>
 <translation id="1944921356641260203">अद्यतन आढळले</translation>
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
-<translation id="1949433054743893124">गुप्त झाल्यामुळे आपल्या नियोक्त्यापासून, आपल्या इंटरनेट सेवा प्रदात्यापासून किंवा आपण भेट देता त्या वेबसाइटपासून आपले ब्राउझिंग लपवत नाही.</translation>
 <translation id="1950295184970569138">* Google प्रोफाइल फोटो (लोड करत आहे)</translation>
 <translation id="1951615167417147110">एक पृष्ठ वर स्क्रोल करा</translation>
 <translation id="1956050014111002555">फाइलमध्ये एकाधिक प्रमाणपत्रे आहेत ज्यापैकी एकही आयात झालेले नाही: </translation>
@@ -688,6 +691,7 @@
 <translation id="2028997212275086731">RAR संग्रहण</translation>
 <translation id="203168018648013061">समक्रमण त्रुटी: कृपया Google डॅशबोर्ड मार्गे समक्रमण रीसेट करा.</translation>
 <translation id="2031695690821674406">पृष्‍ठ लोडवर क्रेडेन्‍शियल स्‍वयं-भरण करण्‍यापेक्षा वापरकर्त्याद्वारे खाते स्पष्‍टपणे निवडले जाते तेव्‍हा संकेतशब्द भरणे.</translation>
+<translation id="2031925387125903299">आपल्याला हा संदेश दिसत आहे कारण नवीन साइटच्या आपल्या प्रथम भेटीवर आपल्या पालकांनी मंजूरी देणे आवश्यक आहे.</translation>
 <translation id="2040460856718599782">अरेरे! आपल्याला प्रमाणीकृत करण्याचा प्रयत्न करताना काहीतरी चूक झाली. कृपया आपली साइन इन क्रेडेन्शियल दोनदा तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045969484888636535">कुकी अवरोधित करणे सुरू ठेवा</translation>
@@ -931,7 +935,6 @@
 <translation id="2379281330731083556">सिस्टम संवाद वापरून मुद्रित करा… <ph name="SHORTCUT_KEY" /></translation>
 <translation id="2381823505763074471"><ph name="PROFILE_USERNAME" /> वापरकर्ता साइन-आउट करा.</translation>
 <translation id="2382995423509322422">URL द्वारे जुळण‍ी</translation>
-<translation id="2383034317918297467">यामुळे विविधोपयोगी क्षेत्र ड्रॉपडाउन काहीवेळा URL पेक्षा सूचना शीर्षके अधिक ठळकपणे प्रदर्शित करते.</translation>
 <translation id="2384596874640104496">सिंहला कीबोर्ड</translation>
 <translation id="2385700042425247848">सेवेचे नाव:</translation>
 <translation id="2386631145847373156">केवळ साइन इन केलेले असतानाच साइन आउट करणे शक्य आहे.</translation>
@@ -1004,6 +1007,7 @@
 <translation id="2482081114970574549">वेबदृश्य-आधारित प्रवाहाऐवजी iframe-आधारित साइन इन प्रवाह वापरते.</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2485056306054380289">सर्व्हर CA प्रमाणपत्र:</translation>
+<translation id="2487915095798731898">सामील व्हा</translation>
 <translation id="2489316678672211764">एक (<ph name="PLUGIN_NAME" />) प्लगिन प्रतिसाद देत नाहीये.</translation>
 <translation id="2489428929217601177">काल</translation>
 <translation id="2489435327075806094">पॉइन्टर गति:</translation>
@@ -1126,7 +1130,6 @@
 <translation id="2653266418988778031">आपण एक प्रमाणन अधिकृतता (CA) प्रमाणपत्र हटविल्यास, आपला ब्राउझर त्या CA द्वारे जारी केलेल्या कोणत्याही प्रमाणपत्रावर यापुढे विश्वास ठेवणार नाही.</translation>
 <translation id="265390580714150011">फील्ड मूल्य</translation>
 <translation id="2655386581175833247">वापरकर्ता प्रमाणपत्र:</translation>
-<translation id="2660100127550079934">चाचणीसाठी बाजार URL सेट करा</translation>
 <translation id="2660779039299703961">इव्‍हेंट</translation>
 <translation id="2661146741306740526">16x9</translation>
 <translation id="2662876636500006917">Chrome वेब बाजार</translation>
@@ -1156,7 +1159,6 @@
 <translation id="2706892089432507937">USB डिव्हाइसेस</translation>
 <translation id="2707024448553392710">घटक डाउनलोड करत आहे</translation>
 <translation id="270921614578699633">यावर सरासरी</translation>
-<translation id="2709516037105925701">ऑटोफिल</translation>
 <translation id="271033894570825754">नवीन</translation>
 <translation id="271083069174183365">जपानी इनपुट सेटिंग्ज</translation>
 <translation id="2711605922826295419">अॅप्स फाईल संबद्धता</translation>
@@ -1201,6 +1203,7 @@
 <translation id="2772936498786524345">Sneaky</translation>
 <translation id="2773948261276885771">पृष्‍ठे सेट करा</translation>
 <translation id="2776441542064982094">नेटवर्कवर नोंदणी करण्यासाठी कोणतीही डिव्हाइसेस उपलब्ध नसल्यासारखे दिसते. आपले डिव्हाइस चालू असल्यास आणि इंटरनेटशी कनेक्ट केलेले असल्यास, त्यातील सूचना मॅन्युअलमधील सूचना वापरून त्याची नोंदणी करण्याचा प्रयत्न करा.</translation>
+<translation id="2778107779445548489">आपल्या पालकांनी ही साइट अवरोधित केल्याने आपला हा संदेश दिसत आहे.</translation>
 <translation id="2778459533137481732">परवानग्या काळीसूची</translation>
 <translation id="2779552785085366231">हे पृष्ठ अॅप लाँचरवर जोडले जाऊ शकते</translation>
 <translation id="2781645665747935084">बेल्जियन</translation>
@@ -1264,7 +1267,6 @@
 <translation id="2819994928625218237">शब्दलेखन सूचना &amp;नाहीत</translation>
 <translation id="2822854841007275488">अरबी</translation>
 <translation id="2824036200576902014">अस्थायी व्हर्च्युअल कीबोर्ड.</translation>
-<translation id="2824775600643448204">पत्ता आणि शोध बार</translation>
 <translation id="2825758591930162672">विषयाची सार्वजनिक की</translation>
 <translation id="2826760142808435982">कनेक्शन <ph name="CIPHER" /> वापरून आणि की विनिमय तंत्र म्हणून <ph name="KX" /> वापर कूटबद्ध आणि प्रमाणीकृत केले आहे.</translation>
 <translation id="2828650939514476812">Wi-Fi नेटवर्कवर कनेक्ट करा</translation>
@@ -1287,7 +1289,6 @@
 <translation id="2850124913210091882">बॅकअप घ्या</translation>
 <translation id="2850541429955027218">थीम जोडा</translation>
 <translation id="2853916256216444076">$1 व्हिडिओ</translation>
-<translation id="2854481923983207972">अद्यतन मेनू बॅज दर्शविण्यासाठी सक्ती करा</translation>
 <translation id="2856903399071202337">कॅमेरा अपवाद</translation>
 <translation id="2857421400871862029">एखादी साइट माउस कर्सर अक्षम करण्याचा प्रयत्न करते तेव्हा विचारा (शिफारस केलेले)</translation>
 <translation id="2859369953631715804">मोबाइल नेटवर्क निवडा</translation>
@@ -1471,7 +1472,6 @@
 <translation id="3116361045094675131">यूके कीबोर्ड</translation>
 <translation id="3117812041123364382">अस्थायी व्हर्च्युअल कीबोर्ड सक्षम/अक्षम करा.</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME" /> मदत</translation>
-<translation id="3119818279131136241">डीफॉल्ट सारांश</translation>
 <translation id="3121793941267913344">हा <ph name="IDS_SHORT_PRODUCT_NAME" /> डिव्हाइस रीसेट करा</translation>
 <translation id="3122162841865761901">विकासक साधने प्रयोग</translation>
 <translation id="3122464029669770682">CPU</translation>
@@ -1573,6 +1573,7 @@
 <translation id="3258281577757096226">3 सेट (अंतिम)</translation>
 <translation id="3258924582848461629">जपानीसाठी हस्ताक्षर इनपुट पद्धत</translation>
 <translation id="3264544094376351444">Sans-serif font</translation>
+<translation id="3264547943200567728">आपल्या Chromebox चे नेटवर्क सेट करण्यात अयशस्वी</translation>
 <translation id="3265459715026181080">विंडो बंद करा</translation>
 <translation id="3267271790328635957">केवळ PDF</translation>
 <translation id="3267726687589094446">एकाधिक फायलींच्या स्वयंचलित डाउनलोडिंगला अनुमती देणे सुरू ठेवा</translation>
@@ -1730,7 +1731,6 @@
 <translation id="3470502288861289375">कॉपी करत आहे...</translation>
 <translation id="3473479545200714844">स्क्रीन भिंग</translation>
 <translation id="3475447146579922140">Google स्प्रेडशीट</translation>
-<translation id="3476562422322503095">सक्षम केले असताना, अद्यतन मेनू बॅजची चाचणी करण्‍यासाठी वापरण्‍याकरिता बाजार URL सेट करते.</translation>
 <translation id="347719495489420368"><ph name="PLUGIN_NAME" /> प्ले करण्यासाठी उजवीकडे-क्लिक करा.</translation>
 <translation id="347785443197175480">आपल्या कॅमेरा आणि मायक्रोफोनवर प्रवेश करण्यासाठी <ph name="HOST" /> ला अनुमती देणे सुरू ठेवा</translation>
 <translation id="3478315065074101056">Chrome सह मेघ मुद्रणशी कनेक्ट केलेल्या क्लासिक प्रिंटरसाठी XPS  प्रगत पर्याय सक्षम करते. हे ध्वजांकन बदलल्यानतर प्रिंटर पुन्हा कनेक्ट करणे आवश्यक आहे.</translation>
@@ -1787,7 +1787,6 @@
 <translation id="3541661933757219855">लपवण्यासाठी Ctrl+Alt+/ किंवा Escape टाइप करा</translation>
 <translation id="3543393733900874979">अद्यतन अयशस्वी (त्रुटी: <ph name="ERROR_NUMBER" />)</translation>
 <translation id="3544347428588533940">Smart Lock जवळजवळ सज्ज आहे</translation>
-<translation id="3549644494707163724">आपल्या स्वतःच्या वाक्यांशासह सर्व समक्रमित केलेला डेटा कूटबद्ध करा</translation>
 <translation id="3549797760399244642">drive.google.com वर जा...</translation>
 <translation id="3550915441744863158">Chrome स्वयंचलितपणे अद्यतनित होते जेणेकरून आपल्याकडे नेहमी नवीन आवृत्ती असते</translation>
 <translation id="3551117997325569860">प्रॉक्सी सेटिंग्ज बदलण्यासाठी, "<ph name="USE_SHARED_PROXIES" />" सेटिंग सक्षम करा.</translation>
@@ -1944,7 +1943,6 @@
 <translation id="3736520371357197498">आपल्याला आपल्या सुरक्षिततेच्या जोखमी समजत असल्यास, धोकादायक प्रोग्राम काढण्यापूर्वी आपण <ph name="BEGIN_LINK" />या असुरक्षित साइटला भेट देऊ शकता<ph name="END_LINK" />.</translation>
 <translation id="3738924763801731196"><ph name="OID" />:</translation>
 <translation id="3739798227959604811">पुनरावृत्तीपूर्वी विलंब:</translation>
-<translation id="3740590586138776566">सानुकूल सारांश</translation>
 <translation id="3741158646617793859">आता <ph name="DEVICE_NAME" /> Admin Console मध्‍ये दिसेल</translation>
 <translation id="3741243925913727067">Google ड्राइव्हवर आपल्या मीडिया डिव्हाइसच्या फोटो आणि व्हिडिओंचा बॅकअप घ्या.</translation>
 <translation id="3743492083222969745">व्हर्च्युअल कीबोर्ड साठी सेटिंग्ज पृष्‍ठामधील जेश्चर टायपिंग पर्याय सक्षम/अक्षम करा.</translation>
@@ -2015,7 +2013,6 @@
 <translation id="3827774300009121996">&amp;पूर्ण स्क्रीन</translation>
 <translation id="3828029223314399057">बुकमार्क शोधणे</translation>
 <translation id="3828440302402348524"><ph name="USER_NAME" /> म्हणून साइन इन केले...</translation>
-<translation id="3828924085048779000">रिक्त सांकेतिक वाक्यांशाची परवानगी नाही.</translation>
 <translation id="3829932584934971895">प्रदाता प्रकार:</translation>
 <translation id="3831486154586836914">विंडो विहंगावलोकन मोड प्रविष्ट केला</translation>
 <translation id="383161972796689579">या डिव्हाइसच्या मालकाने नवीन वापरकर्त्यांना जोडले जाण्यापासून अक्षम केले आहे</translation>
@@ -2059,7 +2056,6 @@
 <translation id="3899879303189199559">एक वर्षापेक्षा जास्त ऑफलाइन</translation>
 <translation id="3899968422636198696"><ph name="ORGNAME" /> <ph name="HOSTNAME" /></translation>
 <translation id="3901991538546252627"><ph name="NAME" /> वर कनेक्ट करीत आहे</translation>
-<translation id="3904769015302397640">वाचक मोड बटण वेब पृष्ठाच्या वाचक मोड आवृत्तीवर नेव्हिगेट करण्याऐवजी त्यावरील स्लाइडवर क्लिक करते</translation>
 <translation id="3905761538810670789">अ‍ॅप दुरुस्त करा</translation>
 <translation id="3908501907586732282">विस्तार सक्षम करा</translation>
 <translation id="3909791450649380159">क&amp;ट करा</translation>
@@ -2121,7 +2117,6 @@
 <translation id="3981990000224130884">{COUNT,plural, =1{1 पत्ता}one{# पत्ता}other{# पत्ते}}</translation>
 <translation id="3983586614702900908">अज्ञात विक्रेत्याकडील डिव्हाइसेस</translation>
 <translation id="3984413272403535372">विस्तारात साइन करताना त्रुटी.</translation>
-<translation id="3986886131294295222">सक्षम केले असताना, अॅप मेनू मध्ये "Chrome अद्यतनित करा" आयटम दर्शविला जाईल.</translation>
 <translation id="3987970780975473420">वास्तविक वेब सक्षम करा.</translation>
 <translation id="3990375969515589745">विकासक साधने प्रयोग सक्षम करते. वैयक्तिक प्रयोग टॉगल करण्यासाठी विकासक साधनांमधील सेटिंग्ज पॅनेल वापरा.</translation>
 <translation id="399179161741278232">आयातीत</translation>
@@ -2160,6 +2155,7 @@
 <translation id="4062251648694601778">आपल्या <ph name="SHORT_PRODUCT_NAME" /> डिव्हाइसचा आनंद घ्या. नवीन प्रश्न आहेत? आपण स्थिती ट्रे मध्ये "?" क्लिक करून नेहमी मदत मिळवू शकता.</translation>
 <translation id="4065876735068446555">आपण वापरत असलेल्या (<ph name="NETWORK_ID" />) नेटवर्कला त्याच्या लॉग इन पृष्ठास भेट देण्याची आवश्यकता असू शकते.</translation>
 <translation id="4068506536726151626">या पृष्ठावर आपले स्थान ट्रॅक करणार्‍या खालील साइटवरील घटक समाविष्ट आहेत:</translation>
+<translation id="4070370845051020638">कॅन्टोनिज इनपुट पद्धत</translation>
 <translation id="4071770069230198275"><ph name="PROFILE_NAME" />: साइन इन त्रुटी</translation>
 <translation id="4072248638558688893">तामिळ (Phonetic)</translation>
 <translation id="4074900173531346617">ईमेल स्वाक्षरीकर्ता प्रमाणपत्र</translation>
@@ -2393,7 +2389,9 @@
 <translation id="4449996769074858870">हा टॅब ऑडिओ प्ले करत आहे.</translation>
 <translation id="4450974146388585462">निदान करा</translation>
 <translation id="4454939697743986778">हे प्रमाणपत्र आपल्या सिस्टीम प्रशासकाद्वारे स्थापित केले गेले आहे.</translation>
+<translation id="4458874409874303848">SafeSites</translation>
 <translation id="445923051607553918">Wi-Fi  नेटवर्कमध्ये सामील व्हा</translation>
+<translation id="4461847750548395463">आपल्याला हा संदेश दिसत आहे कारण Google SafeSites सक्षम केलेली आहे.</translation>
 <translation id="4462159676511157176">सानुकूल नाव सर्व्हर</translation>
 <translation id="4465830120256509958">ब्राझिलियन कीबोर्ड</translation>
 <translation id="4467100756425880649">Chrome वेब स्टोअर गॅलरी</translation>
@@ -2407,6 +2405,7 @@
 <translation id="4479812471636796472">यूएस दवोराक कीबोर्ड</translation>
 <translation id="4481249487722541506">अनपॅक केलेला विस्तार लोड करा...</translation>
 <translation id="4487088045714738411">बेल्जिअन कीबोर्ड</translation>
+<translation id="4491452711366281322">मंजूरी न दिलेले</translation>
 <translation id="4492190037599258964">'<ph name="SEARCH_STRING" />' साठी शोध परिणाम</translation>
 <translation id="4495021739234344583">नोंदणी रद्द करा आणि रीस्टार्ट करा</translation>
 <translation id="4495419450179050807">या पृष्ठावर दर्शवू नका</translation>
@@ -2660,11 +2659,11 @@
 <translation id="4881695831933465202">उघडा</translation>
 <translation id="4882473678324857464">बुकमार्कवर लक्ष द्या</translation>
 <translation id="4883178195103750615">HTML फायलीमध्‍ये बुकमार्क निर्यात करा...</translation>
+<translation id="4883436287898674711">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="48838266408104654">&amp;कार्य व्यवस्थापक</translation>
 <translation id="4883993111890464517">हा विस्तार दूषित झालेला असू शकतो. पुन्हा स्थापित करून पहा.</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4886021172213954916">तामिळ कीबोर्ड (Typewriter)</translation>
-<translation id="488726935215981469">आपल्या समक्रमित वाक्यांशासह आपला डेटा कूटबद्ध करण्यात आला आहे. कृपया तो खाली प्रविष्ट करा.</translation>
 <translation id="4887424188275796356">सिस्टम दर्शकासह उघडा</translation>
 <translation id="488785315393301722">तपशील दर्शवा</translation>
 <translation id="4888510611625056742">टॅब 2</translation>
@@ -2695,6 +2694,7 @@
 <translation id="4927301649992043040">पॅक विस्तार</translation>
 <translation id="4927753642311223124">येथे पाहण्यासाठी काही नाही, पुढे चला.</translation>
 <translation id="4929925845384605079">शेल्‍फ बॅनरमध्‍ये जोडाचे प्रदर्शन सक्षम करा, जे वापरकर्त्यास त्यांच्या शेल्‍फमध्‍ये किंवा इतर प्लॅटफॉर्म विशिष्‍ट सममूल्यामध्‍ये एक वेब अनु जोडण्‍याची सूचना देते.</translation>
+<translation id="4930497775425430760">आपल्याला हा संदेश दिसत आहे कारण नवीन साइटच्या आपल्या प्रथम भेटीवर आपल्या पालकाने मंजूरी देणे आवश्यक आहे.</translation>
 <translation id="4933484234309072027"><ph name="URL" /> वर एम्बेड केलेले</translation>
 <translation id="493571969993549666">पर्यवेक्षी वापरकर्ता जोडा</translation>
 <translation id="4938972461544498524">टचपॅड सेटिंग्ज</translation>
@@ -2793,7 +2793,6 @@
 <translation id="5109044022078737958">Mia</translation>
 <translation id="5111692334209731439">&amp;बुकमार्क व्यवस्थापक</translation>
 <translation id="5112577000029535889">&amp;विकसक साधने</translation>
-<translation id="511300111697536864">सक्षम केले असताना, अॅप मेनू बटणावर अद्यतन बॅज दर्शविला जाईल.</translation>
 <translation id="5113739826273394829">आपण हे चिन्ह क्लिक केल्‍यास, आपण हे <ph name="DEVICE_TYPE" /> व्यक्तीचलितरित्या लॉक कराल. पुढील वेळी, प्रविष्‍ट करण्‍यासाठी आपल्‍याला आपला संकेतशब्द टाइप करण्‍याची आवश्यकता असेल.</translation>
 <translation id="5116300307302421503">फाइल विश्लेषित करण्यात अक्षम. </translation>
 <translation id="5116628073786783676">म्हणून ऑडिओ ज&amp;तन करा...</translation>
@@ -2803,7 +2802,6 @@
 <translation id="5120068803556741301">तृतीय पक्ष इनपुट पद्धत</translation>
 <translation id="5120421890733714118">वेबसाइट ओळखण्‍यासाठी या प्रमाणपत्र विश्‍वास ठेवा.</translation>
 <translation id="5121130586824819730">आपली हार्ड डिस्क पूर्ण भरली आहे. कृपया दुसर्‍या स्‍थानावर जतन करा किंवा हार्ड डिस्कवर अधिक जागा तयार करा.</translation>
-<translation id="5125005330726790595">अद्यतन मेनू आयटम दर्शविण्यासाठी सक्ती करा</translation>
 <translation id="5125751979347152379">अवैध URL.</translation>
 <translation id="5127881134400491887">नेटवर्क कनेक्शन व्यवस्थापित करा</translation>
 <translation id="5128590998814119508">प्रदर्शन सूची 2D कॅनव्हास</translation>
@@ -2816,7 +2814,6 @@
 <translation id="5137501176474113045">हा आयटम हटवा</translation>
 <translation id="5137929532584371582">16</translation>
 <translation id="5139955368427980650">&amp;उघडा</translation>
-<translation id="5141240743006678641">आपल्या Google क्रेडेन्शियलसह समक्रमित केलेले संकेतशब्द कूटबद्ध करा</translation>
 <translation id="5143374789336132547">आपण होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे "<ph name="EXTENSION_NAME" />" विस्ताराने बदलले आहे.</translation>
 <translation id="5143712164865402236">पूर्ण स्क्रीनमध्ये जा</translation>
 <translation id="5144820558584035333">हँगल 3 संच (390)</translation>
@@ -3172,8 +3169,8 @@
 <translation id="5620568081365989559">DevTools <ph name="FOLDER_PATH" /> मध्‍ये पूर्ण प्रवेशाची विनंती करते. आपण कोणतीही संवेदनशील माहिती उघड करीत नाही हे सुनिश्चित करा.</translation>
 <translation id="5620612546311710611">वापर आकडेवारी</translation>
 <translation id="5622017037336776003">Reader मध्ये PDF उघडा</translation>
+<translation id="5623842676595125836">लॉग</translation>
 <translation id="5624120631404540903">संकेतशब्द व्यवस्थापित करा</translation>
-<translation id="5624407043686221179">विविधोपयोगी क्षेत्र ड्रॉपडाउन मधील शीर्षकांना महत्त्व द्या</translation>
 <translation id="5626134646977739690">नाव:</translation>
 <translation id="5627086634964711283">आपण होम बटण क्लिक करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="5627259319513858869">अद्याप सुधारणेत असणार्‍या प्रायोगिक कॅन्व्हास वैशिष्ट्यांचा वापर सक्षम करते.</translation>
@@ -3199,6 +3196,7 @@
 <translation id="5669267381087807207">सक्रिय करीत आहे </translation>
 <translation id="5669462439438204699">क्रेडिट कार्ड जतन करा</translation>
 <translation id="5671961047338275645">साइट व्यवस्थापित करा</translation>
+<translation id="5675224880872496917">पृष्ठ सामग्री स्क्रोल करत असताना सहजपणे अ‍ॅनिमेट करा.</translation>
 <translation id="5676267133227121599"><ph name="MANAGEMENT_LINK" /> वर कोणत्याही डिव्हाइसेसवरून आपल्या संकेतशब्दांवर प्रवेश करा.</translation>
 <translation id="5677503058916217575">पृष्ठ भाषा:</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
@@ -3336,6 +3334,7 @@
 <translation id="5854409662653665676">आपल्याला वारंवार समस्या येत असल्यास, आपण या मॉड्यूलसह समस्यांचे निराकरण करण्यासाठी खालील गोष्टी करू शकता:</translation>
 <translation id="5854912040170951372">तुकडा</translation>
 <translation id="5855119960719984315">विंडो स्विच करा</translation>
+<translation id="5855235287355719921">आपल्याला हा संदेश दिसत आहे कारण आपल्या व्यवस्थापकाने ही साइट अवरोधित केली आहे.</translation>
 <translation id="5856721540245522153">डीबगिंग वैशिष्ट्ये सक्षम करा</translation>
 <translation id="5857090052475505287">नवीन फोल्डर</translation>
 <translation id="5859272821192576954">Hangouts वर सुरु ठेवण्यासाठी आपण पूर्ण सज्ज आहात</translation>
@@ -3389,7 +3388,6 @@
 <translation id="5946591249682680882">अहवाल ID <ph name="WEBRTC_LOG_REPORT_ID" /></translation>
 <translation id="5948544841277865110">खाजगी नेटवर्क जोडा</translation>
 <translation id="5951823343679007761">बॅटरी नाही</translation>
-<translation id="5953603475187800576">Google Payments वरील पत्ते आणि क्रेडिट कार्ड दर्शवा</translation>
 <translation id="5956585768868398362">आपण अपेक्षा करत होता हे तेच शोध पृष्ठ आहे?</translation>
 <translation id="5957613098218939406">अधिक पर्याय</translation>
 <translation id="5958529069007801266">पर्यवेक्षी वापरकर्ता</translation>
@@ -3515,6 +3513,7 @@
 <translation id="6144890426075165477"><ph name="PRODUCT_NAME" /> सध्या आपला डीफॉल्ट ब्राउझर नाही.</translation>
 <translation id="6147020289383635445">मुद्रण पूर्वावलोकन अयशस्वी.</translation>
 <translation id="614998064310228828">डिव्हाइस मॉडेल:</translation>
+<translation id="6150607114729249911">अरेरे! या पृष्‍ठास भेट देणे ठीक आहे का ते आपल्‍या पालकांना विचारण्‍याची आपल्‍याला आवश्‍यकता आहे.</translation>
 <translation id="6150853954427645995">ऑफलाइन वापराकरिता ही फाईल जतन करण्‍यासाठी, परत ऑनलाइन व्‍हा, फाईलवर उजवे-क्लिक करा आणि <ph name="OFFLINE_CHECKBOX_NAME" /> पर्याय निवडा.</translation>
 <translation id="6151323131516309312"><ph name="SITE_NAME" /> शोधण्यासाठी <ph name="SEARCH_KEY" /> दाबा</translation>
 <translation id="6154697846084421647">सध्या साइन इन </translation>
@@ -3536,7 +3535,6 @@
 <translation id="6187344976531853059">दुसर्‍या डेस्कटॉपवर विंडो हलविण्याने अनपेक्षित वर्तन घडू शकते.</translation>
 <translation id="6188939051578398125">नावे किंवा पत्ते प्रविष्ट करा.</translation>
 <translation id="6190552617269794435">जवळपासच्या डिव्हाइसेसशी कनेक्ट करण्याचे प्रयत्न रद्द केले जातील. सर्व स्थानिक सहउपस्थिती डेटा साफ केला जाईल आणि सहउपस्थिती वापरणारे अॅप्स कार्य करणे थांबवू शकतात. आपल्याला खात्री आहे?</translation>
-<translation id="6196207969502475924">व्हॉइस शोध</translation>
 <translation id="6196854373336333322">"<ph name="EXTENSION_NAME" />" विस्ताराने आपल्या प्रॉक्सी सेटिंग्जचे नियंत्रण घेतले आहे, याचा अर्थ हे आपण ऑनलाइन करता ती कोणतीही गोष्ट बदलू शकते, खंडित करू शकते किंवा चोरून ऐकू शकते. हा बदल का झाला, याबद्दल आपण सुनिश्चित नसल्यास, आपल्याला कदाचित तो नको आहे.</translation>
 <translation id="6197069657937512958">Experimental Credential Manager API</translation>
 <translation id="6198102561359457428">साइन आउट करा नंतर पुन्हा साइन इन करा...</translation>
@@ -3629,13 +3627,11 @@
 <translation id="6341850831632289108">आपले प्रत्यक्ष स्थान तपासा</translation>
 <translation id="634208815998129842">कार्य व्यवस्थापक</translation>
 <translation id="6344170822609224263">नेटवर्क कनेक्शनच्या सूचीवर प्रवेश करा</translation>
-<translation id="6344783595350022745">मजकूर साफ करा</translation>
 <translation id="6345221851280129312">अज्ञात आकार</translation>
 <translation id="6347003977836730270">इन्फोबार ऐवजी नवीन भाषांतर फुगा UX सक्षम करा ऑफर केले आहे.</translation>
 <translation id="6347887127637865679">कूटबद्ध केलेले मीडिया विस्तार</translation>
 <translation id="6348657800373377022">काँबो बॉक्स</translation>
 <translation id="6349839454356033837">मीडिया प्ले करताना Android ला समस्या येत आहे.</translation>
-<translation id="635270224102759104">अद्यतन मेनू आयटम सारांश</translation>
 <translation id="6353618411602605519">क्रोएशियन कीबोर्ड</translation>
 <translation id="6356936121715252359">Adobe Flash Player संचय सेटिंग्ज...</translation>
 <translation id="6357619544108132570"><ph name="SHORT_PRODUCT_NAME" /> कुटुंबात आपले स्वागत आहे. हा नेहमीचा संगणक नाहीये.</translation>
@@ -3802,7 +3798,6 @@
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> पेक्षा कमी</translation>
 <translation id="6593868448848741421">सर्वोत्तम</translation>
 <translation id="6596092346130528198">आपण अपेक्षा करत होता ते हे नवीन पृष्ठ आहे?</translation>
-<translation id="6596325263575161958">कूटबद्धता पर्याय</translation>
 <translation id="6596745167571172521">Caps Lock अक्षम करा</translation>
 <translation id="6596816719288285829">IP पत्ता</translation>
 <translation id="6597017209724497268">नमुने</translation>
@@ -3922,6 +3917,7 @@
 <translation id="6809448577646370871">Chrome अॅप्स साठी सानुकूल विंडो सायकलिंग.</translation>
 <translation id="6812349420832218321"><ph name="PRODUCT_NAME" /> मूळ म्हणून चालवणे शक्य नाही.</translation>
 <translation id="6812841287760418429">बदल ठेवा</translation>
+<translation id="6814124696888326520">इनपुट पद्धतींमध्ये सहज स्विच करण्‍यासाठी आणि अधिक इनपुट वैशिष्ट्यांमध्ये प्रवेश करण्यासाठी: व्हॉइस इनपुट, हस्तलेखन आणि इमोजी.</translation>
 <translation id="6815206662964743929">वापरकर्ता स्‍विच करा</translation>
 <translation id="6815353853907306610"><ph name="IDS_SHORT_PRODUCT_NAME" /> ला आढळले आहे की कदाचित आपल्या ब्राउझर सेटिंग्ज आपल्या माहितीशिवाय बदलण्यात आल्या आहेत. आपण त्या डीफॉल्टवर रीसेट करू इच्छिता?</translation>
 <translation id="6815551780062710681">संपादित करा</translation>
@@ -3969,6 +3965,7 @@
 <translation id="6878261347041253038">देवनागरी कीबोर्ड (Phonetic)</translation>
 <translation id="6880587130513028875">या पृष्ठावरील प्रतिमा अवरोधित केलेल्या होत्या.</translation>
 <translation id="6883209331334683549"><ph name="PRODUCT_NAME" /> मदत</translation>
+<translation id="6885771755599377173">सिस्टीम माहिती पूर्वावलोकन</translation>
 <translation id="6886871292305414135">नवीन &amp;टॅबमध्ये दुवा उघडा</translation>
 <translation id="6892667837507098565">GPU रास्टराइझेशन</translation>
 <translation id="6892812721183419409"><ph name="USER" /> म्हणून दुवा उघडा</translation>
@@ -4092,7 +4089,6 @@
 <translation id="7059858479264779982">स्वयं-लाँच करा वर सेट करा</translation>
 <translation id="7061692898138851896">संकेतशब्द स्वयंचलितपणे जतन करा</translation>
 <translation id="7063129466199351735">प्रक्रिया करण्‍याचे शॉर्टकट...</translation>
-<translation id="7065166803933032475">हे ध्वजांकन आणि अद्यतन मेनू आयटम दर्शविण्‍यासाठी सक्ती करा हे ध्वजांकन सक्षम केले असते तेव्‍हा, अद्यतन मेनू आयटम खाली सारांश प्रदर्शित केला जाईल.</translation>
 <translation id="7065223852455347715">हे डिव्‍हाइस संस्‍था नोंदणीस प्रतिबंध करणार्‍या मोडमध्‍ये लॉक केले आहे. आपण हिव्‍हाइसची नोंदणी करू इच्छित असल्यास आपल्‍याला प्रथम डिव्‍हाइस पुनर्संचयामधून जाणे आवश्‍यक आहे.</translation>
 <translation id="7065534935986314333">सिस्टम बद्दल</translation>
 <translation id="7066944511817949584">"<ph name="DEVICE_NAME" />" शी कनेक्ट करण्‍यात अयशस्वी.</translation>
@@ -4198,10 +4194,12 @@
 <translation id="7224023051066864079">सबनेट मास्क:</translation>
 <translation id="7225179976675429563">नेटवर्क प्रकार गहाळ</translation>
 <translation id="7231224339346098802">किती कॉपी मुद्रित करायच्या हे सूचित करण्यासाठी संख्या वापरा (1 किंवा अधिक).</translation>
+<translation id="7231308970288859235">अरेरे! या पृष्‍ठास भेट देणे ठीक आहे का ते आपल्‍या पालकांना विचारण्‍याची आपल्‍याला आवश्‍यकता आहे.</translation>
 <translation id="7238585580608191973">SHA-256 बोटाचा ठसा</translation>
 <translation id="7240120331469437312">प्रमाणपत्र विषय वैकल्पिक नाव</translation>
 <translation id="7241389281993241388">कृपया क्लायंट प्रमाणपत्र आयात करण्यासाठी <ph name="TOKEN_NAME" /> मध्ये साइन इन करा.</translation>
 <translation id="7243055093079293866">नवीन टॅब आणि google.com मध्‍ये "Ok Google" म्‍हणा</translation>
+<translation id="7246609911581847514">आपल्याला हा संदेश दिसत आहे कारण नवीन साइटच्या आपल्या प्रथम भेटीवर आपल्या व्यवस्थापकाने मंजूरी देणे आवश्यक आहे.</translation>
 <translation id="724691107663265825">साइटमध्ये पुढे मालवेअर आहे</translation>
 <translation id="725109152065019550">क्षमस्व, आपल्या प्रशासकाने आपल्या खात्यावरील बाह्य संचयन अक्षम केले आहे.</translation>
 <translation id="7252661675567922360">लोड करू नका</translation>
@@ -4252,7 +4250,6 @@
 <translation id="7329154610228416156">सुरक्षित-नसलेली URL (<ph name="BLOCKED_URL" />) वापरण्यासाठी साइन-इन कॉन्फिगर केल्यामुळे ते अयशस्वी झाले. कृपया आपल्या प्रशासकाशी संपर्क साधा.</translation>
 <translation id="7331786426925973633">वेग, साधेपणा आणि सुरक्षिततेसाठी निर्मित एक वेब ब्राउझर</translation>
 <translation id="733186066867378544">Geolocation अपवाद</translation>
-<translation id="7331991248529612614">वाचक मोड बटण अॅनिमेशन सक्षम करा</translation>
 <translation id="7334190995941642545">Smart Lock सध्या अनुपलब्ध आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
 <translation id="7339763383339757376">PKCS #7, एकल प्रमाणपत्र</translation>
 <translation id="7339785458027436441">टाइप करताना शब्दलेखन तपासा</translation>
@@ -4442,7 +4439,6 @@
 <translation id="7607002721634913082">विराम द्या</translation>
 <translation id="7607274158153386860">टॅब्लेट साइटची विनंती करा</translation>
 <translation id="7609816802059518759">साइन-इन आणि प्रारंभ करताना तसेच मधूनमधून मुलांच्या खात्यांची ओळख सक्षम करा.</translation>
-<translation id="7615602087246926389">आपल्याकडे आधीपासूनच डेटा आहे जो आपल्या Google खाते संकेतशब्दाची विभिन्न आवृत्ती वापरुन कूटबद्ध करण्‍यात आला आहे. कृपया तो खाली प्रविष्‍ट करा.</translation>
 <translation id="7615851733760445951">&lt;कोणत्याही कुकीज निवडलेल्या नाहीत&gt;</translation>
 <translation id="7615910377284548269">सॅन्डबॉक्स न केलेले प्लगिन अवरोधित करणे व्यवस्थापित करा...</translation>
 <translation id="761779991806306006">कोणतेही संकेतशब्द जतन केलेले नाहीत.</translation>
@@ -4524,7 +4520,6 @@
 <translation id="7756363132985736290">प्रमाणपत्र आधीपासूनच विद्यमान आहे.</translation>
 <translation id="7757425985031934767">स्पर्शाने आरंभ केलेले ओढा आणि सोडा</translation>
 <translation id="7760004034676677601">आपण अपेक्षा करत होता हे तेच प्रारंभ पृष्ठ आहे?</translation>
-<translation id="7762019648579793644">सारांश नाही</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_DOMAIN" /> वरून <ph name="DOWNLOAD_RECEIVED" /></translation>
 <translation id="7765158879357617694">हलवा</translation>
 <translation id="7766807826975222231">एक फेरफटका मारा</translation>
@@ -4621,6 +4616,7 @@
 <translation id="7892500982332576204">मुलाच्या खात्याची ओळख</translation>
 <translation id="7893008570150657497">आपल्या संगणकावरील फोटो, संगीत आणि इतर माध्यमांमध्ये प्रवेश करा</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (डीफॉल्ट)</translation>
+<translation id="7894616681410591072">अरेरे, या पृष्ठावर प्रवेश करण्यासाठी <ph name="NAME" /> द्वारे आपल्याला परवानगी आवश्यक आहे.</translation>
 <translation id="78957024357676568">डावे</translation>
 <translation id="7896906914454843592">यूएस विस्तृत कीबोर्ड</translation>
 <translation id="7897900149154324287">भविष्यात, आपण फायली अॅप मधील आपला काढण्यायोग्य डिव्हाइस अनप्लग करण्यापूर्वी तो निष्कासित करण्याचे सुनिश्चित करा. अन्यथा, आपण डेटा गमावू शकता.</translation>
@@ -4754,7 +4750,6 @@
 <translation id="8069615408251337349">Google मेघ मुद्रण</translation>
 <translation id="8071942001314758122">तीन वेळा फक्त "Ok Google" म्हणा</translation>
 <translation id="8072988827236813198">पिन टॅब</translation>
-<translation id="8075539548641175231">आपल्या समक्रमित वाक्यांशासह <ph name="TIME" /> वाजता आपला डेटा कूटबद्ध करण्यात आला. कृपया तो खाली प्रविष्ट करा.</translation>
 <translation id="8079530767338315840">पुनरावृत्ती करा</translation>
 <translation id="8083739373364455075">Google ड्राइव्हसह 100 GB विनामूल्य मिळवा</translation>
 <translation id="8088137642766812908">सावधगिरी बाळगा, हे वैशिष्ट्य हानी करू शकते</translation>
@@ -4907,6 +4902,7 @@
 <translation id="828197138798145013">बाहेर पडण्‍यासाठी <ph name="ACCELERATOR" /> दाबा.</translation>
 <translation id="8282947398454257691">आपला अनन्य डिव्हाइस अभिज्ञापक जाणून घ्या</translation>
 <translation id="8283475148136688298">"<ph name="DEVICE_NAME" />" शी कनेक्ट करताना प्रमाणीकरण कोड नाकारण्यात आला.</translation>
+<translation id="8284279544186306258">सर्व <ph name="WEBSITE_1" /> साइट</translation>
 <translation id="8286227656784970313">सिस्टम शब्दकोश वापरा</translation>
 <translation id="8286817579635702504">आपण दररोज भेट देता ते एक किंवा अधिक पृष्ठ(ष्ठे) खंडित करण्याची शक्यता असलेली कित्येक सुरक्षितता वैशिष्ट्ये सक्षम करते. उदाहरणार्थ, काटेकोर मिश्रित सामग्री तपासणी. आणि संदर्भ सुरक्षित करण्यासाठी सामर्थ्यवान वैशिष्ट्ये लॉक करणे. हे ध्वजांकन कदाचित आपल्याला त्रास देईल.</translation>
 <translation id="8293206222192510085">बुकमार्क जोडा</translation>
@@ -4979,7 +4975,6 @@
 <translation id="8408402540408758445">अचूक शोध परिणाम</translation>
 <translation id="8410073653152358832">हा फोन वापरा</translation>
 <translation id="8410619858754994443">संकेतशब्द कन्फर्म करा:</translation>
-<translation id="8412392972487953978">आपण समान सांकेतिक वाक्यांश दोनदा प्रविष्ट करणे आवश्यक आहे.</translation>
 <translation id="8412586565681117057">द्रुत इनपुट पद्धत</translation>
 <translation id="8418113698656761985">रोमानियन कीबोर्ड</translation>
 <translation id="8418240940464873056">हन्जा मोड</translation>
@@ -5066,7 +5061,6 @@
 <translation id="8546306075665861288">प्रतिमा कॅशे</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="8548973727659841685">वर्ण</translation>
-<translation id="8550022383519221471">समक्रमित सेवा आपल्या डोमेनसाठी उपलब्ध नाही.</translation>
 <translation id="855081842937141170">टॅब पिन करा</translation>
 <translation id="8551388862522347954">परवाने</translation>
 <translation id="8551406349318936106">अरेरे! आपल्या क्रेडेन्शियलसह समस्या असल्यासारखे दिसते आहे. कृपया आपण योग्यरितीने साइन इन केले असल्याची खात्री करा आणि पुन्हा प्रयत्न करा.</translation>
@@ -5096,6 +5090,7 @@
 <translation id="8584280235376696778">नवीन टॅबमध्ये व्हिडिओ &amp;उघडा</translation>
 <translation id="8589311641140863898">प्रायोगिक विस्तार API</translation>
 <translation id="8590375307970699841">स्वयंचलित अद्यतने सेट करा</translation>
+<translation id="8591846766485502580">आपल्याला हा संदेश दिसत आहे कारण आपल्या आपल्या पालकांपैकी एकाने ही साइट अवरोधित केली आहे.</translation>
 <translation id="8592071947729879125">iframe परवानग्या प्रतिबंधित करा.</translation>
 <translation id="859285277496340001">प्रमाणपत्र निरस्त झाले आहे किंवा नाही हे तपासण्यासाठी प्रणाली निर्दिष्ट करत नाही.</translation>
 <translation id="8594787581355215556"><ph name="USER_EMAIL_ADDRESS" /> म्‍हणून साइन इन करा. <ph name="BEGIN_LINK" />Google डॅशबोर्ड<ph name="END_LINK" /> वर आपला समक्रमित डेटा व्यवस्‍थापित करा.</translation>
@@ -5163,7 +5158,6 @@
 <translation id="8678648549315280022">डाउनलोड सेटिंग्ज व्यवस्थापित करा...</translation>
 <translation id="8680251145628383637">आपल्या सर्व डिव्हाइसेसवर आपले बुकमार्क, इतिहास, संकेतशब्द आणि इतर सेटिंग्ज मिळविण्‍यासाठी साइन इन करा. आपण स्वयंचलितपणे आपल्‍या Google सेवांवर देखील साइन इन कराल.</translation>
 <translation id="8680536109547170164"><ph name="QUERY" />, उत्तर, <ph name="ANSWER" /></translation>
-<translation id="8680787084697685621">खाते साइन-इन तपशील कालबाह्य झाला.</translation>
 <translation id="8684255857039823328"><ph name="MANAGEMENT_LINK" /> वर कोणत्याही डिव्हाइसेसवरून आपल्या संकेतशब्दांवर प्रवेश करा.</translation>
 <translation id="8686213429977032554">ही ड्राइव्ह फाईल अद्याप सामायिक केलेली नाही</translation>
 <translation id="8687485617085920635">पुढील विंडो</translation>
@@ -5416,7 +5410,6 @@
 <translation id="9041603713188951722">विंडोमध्ये सेटिंग्ज दर्शवा</translation>
 <translation id="904451693890288097">कृपया यासाठी पासकी प्रविष्‍ट करा "<ph name="DEVICE_NAME" />":</translation>
 <translation id="9049835026521739061">हंगुल मोड</translation>
-<translation id="9050666287014529139">सांकेतिक वाक्यांश</translation>
 <translation id="9052208328806230490">आपण आपले मुद्रक <ph name="EMAIL" /> खाते वापरून <ph name="CLOUD_PRINT_NAME" /> सह नोंदणीकृत केले आहेत</translation>
 <translation id="9053965862400494292">समक्रमण सेट अप करण्याचा प्रयत्न करीत असताना एक त्रुटी आली.</translation>
 <translation id="9056034633062863292">Chromebox अद्यतनित करीत आहे</translation>
@@ -5486,7 +5479,6 @@
 <translation id="9154194610265714752">अद्यतनित केलेले</translation>
 <translation id="9154418932169119429">ही प्रतिमा ऑफलाइन उपलब्ध नाही.</translation>
 <translation id="91568222606626347">शॉर्टकट तयार करा...</translation>
-<translation id="9157595877708044936">सेट अप करीत आहे...</translation>
 <translation id="9158715103698450907">अरेरे! प्रमाणीकरणादरम्यान एक नेटवर्क संप्रेषण समस्या आली. कृपया आपले नेटवर्क कनेक्शन तपासा आणि पुन्हा प्रयत्न करा.</translation>
 <translation id="9159562891634783594">मुद्रण पूर्वावलोकनावरून नोंदणी न केलेल्‍या मेघ प्रिंटरची नोंदणी करणे सक्षम करा.</translation>
 <translation id="9166510596677678112">या व्यक्तीस ईमेल करा</translation>

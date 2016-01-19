@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Pagina informativă „<ph name="ABOUT_PAGE" />” nu s-a putut încărca.</translation>
 <translation id="4434145631756268951">{0,select, single{Selectează un dispozitiv USB}multiple{Selectează dispozitive USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Pachetul nu a fost instalat, deoarece un proces al unui program utilitar s-a blocat. Încearcă să repornești Chrome și încearcă din nou.</translation>
-<translation id="4883436287898674711">Toate site-urile <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Afișare web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Eticheta appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Această extensie include fișierul cheie „<ph name="KEY_PATH" />”. Probabil că nu doriți să faceți asta.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (cu codul de extensie „<ph name="EXTENSION_ID" />”) este blocată de administrator.</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME" />”, deoarece altă extensie (<ph name="EXTENSION_NAME" />) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME" />”.</translation>
-<translation id="8284279544186306258">toate site-urile <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de la <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Această extensie nu a putut furniza datele de conectare pentru o solicitare din rețea, deoarece o altă extensie (<ph name="EXTENSION_NAME" />) a furnizat alte date de conectare.</translation>
 <translation id="8602184400052594090">Fișierul manifest lipsește sau nu poate fi citit.</translation>

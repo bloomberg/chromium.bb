@@ -31,9 +31,11 @@
 <translation id="605721222689873409">AA</translation>
 <translation id="6075880972317537864">Les individus malveillants à l'œuvre sur le site <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pourraient tenter de récupérer vos informations (par exemple des mots de passe, des messages ou des numéros de carte de paiement) sans votre autorisation.</translation>
 <translation id="6149061208933997199">Utiliser mot de passe</translation>
+<translation id="6196207969502475924">Recherche vocale</translation>
 <translation id="6221345481584921695">La fonctionnalité de navigation sécurisée Google a récemment permis de <ph name="BEGIN_LINK" />détecter des logiciels malveillants<ph name="END_LINK" /> sur le site <ph name="SITE" />. Un site Web qui est normalement sans danger peut parfois être infecté par des logiciels malveillants. Le contenu en cause provient de l'hôte "<ph name="SUBRESOURCE_HOST" />", une source de logiciels malveillants connue.</translation>
 <translation id="6264485186158353794">Retour à la sécurité</translation>
 <translation id="6314335155547195432">Générer mot de passe</translation>
+<translation id="6344783595350022745">Effacer le texte</translation>
 <translation id="6456425917241817154">Mot passe généré par Chrome</translation>
 <translation id="6535543971741225613">Le site auquel vous tentez d'accéder présente un problème, et il est impossible de vérifier dans Google Chrome que l'URL est correcte. Pour des raisons de sécurité, nous vous recommandons de ne pas continuer. Veuillez réessayer dans 24 heures ou accéder à un autre site.</translation>
 <translation id="6740369132746915122">Si vous avez compris les risques auxquels vous vous exposez, vous pouvez <ph name="BEGIN_LINK" />consulter ce site dangereux<ph name="END_LINK" />.</translation>

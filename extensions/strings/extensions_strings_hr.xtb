@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Nije uspjelo učitavanje stranice s informacijama "<ph name="ABOUT_PAGE" />".</translation>
 <translation id="4434145631756268951">{0,select, single{Odabir USB uređaja}multiple{Odabir USB uređaja}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nije bilo moguće instalirati paket jer se uslužni proces srušio. Ponovo pokrenite Chrome i pokušajte opet.</translation>
-<translation id="4883436287898674711">Sve web-lokacije <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Prikaz web-lokacije: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">To proširenje uključuje ključnu datoteku "<ph name="KEY_PATH" />". Vjerojatno ne želite to učiniti.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID proširenja "<ph name="EXTENSION_ID" />") blokirao je administrator.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">To proširenje nije uspjelo dodijeliti naziv preuzimanju "<ph name="ATTEMPTED_FILENAME" />" jer je drugo proširenje (<ph name="EXTENSION_NAME" />) odredilo drugačiji naziv datoteke "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">sve web-lokacije <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od dobavljača <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Ovo proširenje nije uspješno dodijelilo vjerodajnice za mrežni zahtjev jer je drugo proširenje (<ph name="EXTENSION_NAME" />) dodijelilo druge vjerodajnice.</translation>
 <translation id="8602184400052594090">Datoteka manifesta nedostaje ili nije čitljiva.</translation>

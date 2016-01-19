@@ -125,7 +125,6 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="2762000892062317888">az önce</translation>
 <translation id="2770465223704140727">Listeden kaldır</translation>
 <translation id="278029852808208386">Bluetooth cihaz bulunamadı. <ph name="BEGIN_LINK" />Tekrar arayın<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Yavaş bağlantı algılandı.</translation>
 <translation id="2842985007712546952">Ana klasör</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Chrome hakkında</translation>
@@ -173,7 +172,6 @@ Yönetilen bir hesapla oturum açıyor ve hesabın yöneticisine Chrome profilin
 <translation id="3492207499832628349">Yeni gizli sekme</translation>
 <translation id="3518985090088779359">Kabul et ve devam et</translation>
 <translation id="3527085408025491307">Klasör</translation>
-<translation id="3559647143395293616">Fiziksel Web'i açın</translation>
 <translation id="360480449234699036">Sayfadan ayrılmadan web siteleriyle ilgili konuları öğrenin. Ara'ya dokunduğunuzda bir kelime ve içinde bulunduğu bağlamı oluşturan metin Google Arama'ya gönderilerek ilgili tanımlar, resimler, arama sonuçları ve diğer ayrıntılar sonuç olarak döndürülür.
 
 Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrıntılı hale getirmek için paneli tümüyle yukarı kaydırın ve arama kutusuna dokunun.</translation>
@@ -274,7 +272,6 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5039804452771397117">İzin ver</translation>
 <translation id="5040262127954254034">Gizlilik</translation>
 <translation id="5063480226653192405">Kullanım</translation>
-<translation id="509605886816275399">Bu sayfa çevrimdışı olarak kaydedilsin mi?</translation>
 <translation id="5100237604440890931">Daraltıldı - Genişletmek için tıklayın.</translation>
 <translation id="5107381076085091558">İndirme işlemi duraklatıldı.</translation>
 <translation id="5118713593561876160">İlgi alanları</translation>
@@ -288,6 +285,7 @@ Bunun için bilgisayarınızda Chrome'u açmanız ve menüye gidip "Chrome'da ot
 <translation id="5168917394043976756">Gezinme çekmecesini aç</translation>
 <translation id="5171045022955879922">Arayın veya URL'yi yazın</translation>
 <translation id="5184329579814168207">Chrome'da aç</translation>
+<translation id="5199929503336119739">İş profili</translation>
 <translation id="5210365745912300556">Sekmeyi kapat</translation>
 <translation id="5210714456814679336">Diğer cihazlardaki Chrome'da açtığınız sekmeler burada görünür.</translation>
 <translation id="5228579091201413441">Senkronizasyonu etkinleştir</translation>
@@ -382,7 +380,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="6232535412751077445">"Do Not Track" seçeneği etkinleştirildiğinde, göz atma trafiğinize bir istek eklenir. Her türlü etki, bir web sitesinin isteğe cevap verip vermemesine ve isteğin nasıl yorumlandığına bağlıdır.
 
 Örneğin bazı web siteleri bu isteği size daha önce gezdiğiniz web sitelerine dayalı olmayan reklamları göstererek yanıtlayabilir. Birçok web sitesi (örneğin güvenliği iyileştirmek; içerik, reklam, öneri sağlamak ve raporlama istatistikleri oluşturmak gibi amaçlarla) göz atma verilerinizi toplayıp kullanmayı sürdürecektir.</translation>
-<translation id="624558823898732418">Çeviri Dili: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Sayfa yazdırılırken bir sorun oluştu. Lütfen tekrar deneyin.</translation>
 <translation id="6295158916970320988">Tüm siteler</translation>
 <translation id="6317634962183824346">Android sistem senkronizasyonu devre dışı. Lütfen yeniden etkinleştirin ve tekrar deneyin.</translation>
@@ -533,6 +530,7 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="8146397137182589628">Çevrimdışına kaydedilmedi</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> hesap</translation>
 <translation id="8168435359814927499">İçerik</translation>
+<translation id="8200772114523450471">Sürdür</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="8218346974737627104">Oturum açmayı onaylayın</translation>
 <translation id="8218934717680664417">Artık tek bir dokunuşla arama yapabilirsiniz</translation>
@@ -552,7 +550,6 @@ Yine de, görünmez değilsiniz. Gizli moda geçmeniz web'de yaptıklarınızı 
 <translation id="8514577642972634246">Gizli moda geç</translation>
 <translation id="8515416241041728525"><ph name="ADD_ACCOUNT_USER_NAME" /> için hesap ekle</translation>
 <translation id="8518901949365209398">Bu site düşük bir güvenlik yapılandırması (SHA-1 imzaları) kullandığından bağlantınız gizli olmayabilir.</translation>
-<translation id="8528538445849828817">Sayfanın Dili: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Şu sayfayı aç:</translation>
 <translation id="8562452229998620586">Kayıtlı şifreleriniz burada görünür.</translation>
 <translation id="856481929701340285">Masaüstü sitesi iste</translation>

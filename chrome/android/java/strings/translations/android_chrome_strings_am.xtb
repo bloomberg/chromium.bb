@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">አሁን</translation>
 <translation id="2770465223704140727">ከዝርዝር  አስወግድ</translation>
 <translation id="278029852808208386">ምንም የብሉቱዝ መሳሪያዎች አልተገኙም። <ph name="BEGIN_LINK" />እንደገና ይፈልጉ<ph name="END_LINK" />።</translation>
-<translation id="2816165854387457183">ቀርፋፋ ግንኙነት ተገኝቷል።</translation>
 <translation id="2842985007712546952">ወላጅ አቃፊ</translation>
 <translation id="2870560284913253234">ጣቢያ</translation>
 <translation id="2888126860611144412">ስለChrome</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">አዲስ ማንነት የማያሳውቅ ትር</translation>
 <translation id="3518985090088779359">ተቀበል እና ቀጥል</translation>
 <translation id="3527085408025491307">አቃፊ</translation>
-<translation id="3559647143395293616">አካላዊ ድሩን ያብሩት</translation>
 <translation id="360480449234699036">ገጹን ትተው ሳይሄዱ በድር ጣቢያዎች ላይ ስላሉ ርዕሶች ይወቁ። ለመፈለግ ይንኩ አንድ ቃል እና በዙሪያው ያለውን አውድ ወደ Google ፍለጋ ይልክና ትርጓሜዎችን፣ ስዕሎችን የፍለጋ ውጤቶችን እና ሌሎች ዝርዝሮችን ይመልሳል።
 
 የፍለጋ ቃልዎን ለማስተካከል ለመምረጥ በረዥሙ ይጫኑ። ፍለጋዎን ይበልጥ ለማጥራት መቃኑን እስከ ላይ ድረስ ያንሸራትቱት እና የፍለጋ ሳጥኑን ይንኩ።</translation>
@@ -274,7 +272,6 @@
 <translation id="5039804452771397117">ፍቀድ</translation>
 <translation id="5040262127954254034">ግላዊነት</translation>
 <translation id="5063480226653192405">አጠቃቀም</translation>
-<translation id="509605886816275399">ይህ ገፅ ከመስመር ውጭ ይቀመጥ?</translation>
 <translation id="5100237604440890931">ተሰብስቧል - ለመዘርጋት ጠቅ ያድርጉ</translation>
 <translation id="5107381076085091558">ማውረድ ለአፍታ ቆሟል።</translation>
 <translation id="5118713593561876160">ዝንባሌዎች</translation>
@@ -288,6 +285,7 @@
 <translation id="5168917394043976756">የአሰሳ መሳቢያ ክፈት</translation>
 <translation id="5171045022955879922">ይፈልጉ ወይም ዩአርኤል ይጻፉ</translation>
 <translation id="5184329579814168207">በChrome ውስጥ ክፈት</translation>
+<translation id="5199929503336119739">የሥራ መገለጫ</translation>
 <translation id="5210365745912300556">ትር ዝጋ</translation>
 <translation id="5210714456814679336">በሌሎች መሣሪያዎችዎ ላይ ባለ Chrome ላይ የከፈቷቸው ትሮች እዚህ ይመጣሉ።</translation>
 <translation id="5228579091201413441">ማመሳሰልን አንቃ</translation>
@@ -382,7 +380,6 @@
 <translation id="6232535412751077445">«አትከታተል»ን ማንቃት ማለት አንድ ጥያቄ በአሰሳ ትራፊክዎ ላይ ይካተታል ማለት ነው። ማንኛውም ውጤት አንድ ድር ጣቢያ ለጥያቄው ምላሽ ከሰጠና ጥያቄውን በሚተረጎምበት መንገድ ላይ የሚወሰን ነው።
 
 ለምሳሌ፣ አንዳንድ ድር ጣቢያዎች ሌሎች በጎበኟቸው ድር ጣቢያዎች ላይ ያልተመሠረቱ ማስታወቂያዎችን በማሳየት ለዚህ ጥያቄ ምላሽ ሊሰጡ ይችላሉ። ብዙ ድር ጣቢያዎች አሁንም የአሰሳ ውሂብዎን ይሰበስቡና ይጠቀሙበታል — ለምሳሌ ደህንነትን ለማሻሻል፤ ይዘት፣ ማስታወቂያዎችና ምክሮች በድር ጣቢያዎች ላይ ለማቅረብ፤ እና የሪፖርት አደራረግ ስታቲስቲክስን ለማመንጨት።</translation>
-<translation id="624558823898732418">የትርጉም ቋንቋ፦ <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">ገጹን ማተም ላይ ችግር ነበር። እባክዎ እንደገና ይሞክሩ።</translation>
 <translation id="6295158916970320988">ሁሉም ጣቢያዎች</translation>
 <translation id="6317634962183824346">የAndroid ስርዓት ማመሳሰል ተሰናክሏል። እባክዎ ዳግም ያንቁትና እንደገና ይሞክሩ።</translation>
@@ -531,6 +528,7 @@
 <translation id="8146397137182589628">ከመስመር ውጭ አልተቀመጠም</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> መለያዎች</translation>
 <translation id="8168435359814927499">ይዘት</translation>
+<translation id="8200772114523450471">ከቆመበት ቀጥል</translation>
 <translation id="8209050860603202033">ምስል ክፈት</translation>
 <translation id="8218346974737627104">በመለያ መግባትን ያረጋግጡ</translation>
 <translation id="8218934717680664417">አሁን በአንድ ንክኪ መፈለግ ይችላሉ</translation>
@@ -550,7 +548,6 @@
 <translation id="8514577642972634246">ማንነት ወደ ማያሳውቅ ሁነታ ይግቡ</translation>
 <translation id="8515416241041728525">ለ<ph name="ADD_ACCOUNT_USER_NAME" /> መለያ አክል</translation>
 <translation id="8518901949365209398">ይህ ጣቢያ ደካማ የደህንነት ውቅረት (SHA-1 ፊርማዎች) እየተጠቀም ነው፣ ስለዚህ የእርስዎ ግንኙነት የግል ላይሆን ይችላል።</translation>
-<translation id="8528538445849828817">የገጽ ቋንቋ፦ <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">ይህን ገጽ ክፈት</translation>
 <translation id="8562452229998620586">የተቀመጡ ይለፍ ቃላት እዚህ ይመጣሉ።</translation>
 <translation id="856481929701340285">የዴስክቶፕ ጣቢያን ይጠይቁ</translation>

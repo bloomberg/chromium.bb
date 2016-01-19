@@ -16,7 +16,7 @@
 <translation id="119944043368869598">全部清除</translation>
 <translation id="1201402288615127009">下一步</translation>
 <translation id="1206892813135768548">复制链接文字</translation>
-<translation id="1240668123557180468">发现附近对象发送的网页。Chrome 会收集与您附近对象相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
+<translation id="1240668123557180468">发现附近物体发送的网页。Chrome 会收集与您附近物体相关联的网页，并将这些网页以匿名方式发送给 Google 服务，以找到并显示对您而言最实用的网页。
 
 您必须开启蓝牙和位置信息功能才能使用实物网。</translation>
 <translation id="1258753120186372309">Google 涂鸦：<ph name="DOODLE_DESCRIPTION" /></translation>
@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">刚刚</translation>
 <translation id="2770465223704140727">从列表中移除</translation>
 <translation id="278029852808208386">未发现任何蓝牙设备。<ph name="BEGIN_LINK" />重新搜索<ph name="END_LINK" />。</translation>
-<translation id="2816165854387457183">检测到网速很慢。</translation>
 <translation id="2842985007712546952">父文件夹</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">新的隐身标签页</translation>
 <translation id="3518985090088779359">接受并继续</translation>
 <translation id="3527085408025491307">文件夹</translation>
-<translation id="3559647143395293616">启用实物网</translation>
 <translation id="360480449234699036">无需离开所在页面，即可了解网站上的主题。“触摸搜索”功能会将被触摸的字词及上下文一起发送至 Google 搜索，后者将返回相应的定义、图片、搜索结果及其他详细信息。
 
 要调整搜索字词，请长按将其选中。要缩小搜索范围，请将面板向上滑动到顶部，然后触摸搜索框。</translation>
@@ -210,9 +208,9 @@
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="4195643157523330669">在新标签页中打开</translation>
 <translation id="423410644998903704">Chrome 需要具有这些功能的使用权限，才能批准此网站的分享请求。</translation>
-<translation id="424696723690217687">发现附近对象传送的网页。
+<translation id="424696723690217687">发现附近物体传送的网页。
 
-当您的设备处于解锁状态时，Chrome 会对附近对象传送的网页进行扫描。然后，相关的 Google 服务会对这些网页进行处理，以提升网页搜索结果的质量。</translation>
+当您的设备处于解锁状态时，Chrome 会检测附近的网页。然后，相关 Google 服务处理这些网页，以提高网页搜索结果的质量。</translation>
 <translation id="4256782883801055595">开放源代码许可</translation>
 <translation id="4259722352634471385">已屏蔽 <ph name="URL" /></translation>
 <translation id="4269820728363426813">复制链接地址</translation>
@@ -274,7 +272,6 @@
 <translation id="5039804452771397117">允许</translation>
 <translation id="5040262127954254034">隐私设置</translation>
 <translation id="5063480226653192405">使用情况</translation>
-<translation id="509605886816275399">要离线保存此网页吗？</translation>
 <translation id="5100237604440890931">已收起 - 点击此处即可展开。</translation>
 <translation id="5107381076085091558">已暂停下载。</translation>
 <translation id="5118713593561876160">兴趣</translation>
@@ -288,6 +285,7 @@
 <translation id="5168917394043976756">打开抽屉式导航栏</translation>
 <translation id="5171045022955879922">搜索或输入网址</translation>
 <translation id="5184329579814168207">在 Chrome 中打开</translation>
+<translation id="5199929503336119739">工作资料</translation>
 <translation id="5210365745912300556">关闭标签页</translation>
 <translation id="5210714456814679336">您在其他设备上的 Chrome 中打开的标签页将列在此次。</translation>
 <translation id="5228579091201413441">启用同步功能</translation>
@@ -382,7 +380,6 @@
 <translation id="6232535412751077445">如果您启用了“不跟踪”，您的浏览流量中将会包含一项请求。具体影响取决于网站是否会回应该请求以及如何解读该请求。
 
 例如：某些网站在收到该请求后，可能会向您展示相应的广告（这些广告并不是根据您访问过的其他网站而展示的）。许多网站仍会出于一些目的收集并使用您的浏览数据，例如，为了提高安全性，为了提供相关内容、广告和推荐内容，以及为了生成报告统计信息。</translation>
-<translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">打印该页面时出现问题，请重试。</translation>
 <translation id="6295158916970320988">所有网站</translation>
 <translation id="6317634962183824346">Android 系统同步功能已停用。请重新启用该功能，然后重试。</translation>
@@ -533,6 +530,7 @@
 <translation id="8146397137182589628">未离线保存</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> 个帐户</translation>
 <translation id="8168435359814927499">内容</translation>
+<translation id="8200772114523450471">继续</translation>
 <translation id="8209050860603202033">打开图片</translation>
 <translation id="8218346974737627104">确认登录</translation>
 <translation id="8218934717680664417">现在，您只需触摸一下即可启动搜索</translation>
@@ -552,7 +550,6 @@
 <translation id="8514577642972634246">进入隐身模式</translation>
 <translation id="8515416241041728525">为<ph name="ADD_ACCOUNT_USER_NAME" />添加帐户</translation>
 <translation id="8518901949365209398">此网站使用了安全系数较低的安全配置（SHA-1 签名），因此您的连接可能不具有私密性。</translation>
-<translation id="8528538445849828817">网页语言：<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">打开此网页</translation>
 <translation id="8562452229998620586">已保存的密码将显示在这里。</translation>
 <translation id="856481929701340285">请求切换到桌面版网站</translation>

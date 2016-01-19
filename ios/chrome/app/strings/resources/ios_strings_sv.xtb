@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075880972317537864">Det kan hända att angripare på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> försöker lura dig för att stjäla dina uppgifter (t.ex. lösenord, meddelanden eller kreditkort).</translation>
 <translation id="6149061208933997199">Använd lösenordet</translation>
+<translation id="6196207969502475924">Röstsökning</translation>
 <translation id="6221345481584921695">Google Säker webbsökning upptäckte nyligen <ph name="BEGIN_LINK" />skadlig programvara<ph name="END_LINK" /> på <ph name="SITE" />. Webbplatser som vanligtvis är säkra utsätts ibland för skadlig programvara. Det skadliga innehållet kommer från <ph name="SUBRESOURCE_HOST" />, som är en känd distributör av skadlig programvara.</translation>
 <translation id="6264485186158353794">Tillbaka till säker webbplats</translation>
 <translation id="6314335155547195432">Generera lösenord</translation>
+<translation id="6344783595350022745">Rensa text</translation>
 <translation id="6456425917241817154">Lösenord från Chrome</translation>
 <translation id="6535543971741225613">Webbplatsen som du försöker nå beter sig inte som väntat och Chrome kan inte verifiera att webbadressen är korrekt. Av säkerhetsskäl bör du inte fortsätta. Försök hellre igen imorgon eller fortsätt till en annan sida.</translation>
 <translation id="6740369132746915122">Om du förstår säkerhetsriskerna kan du <ph name="BEGIN_LINK" />besöka den här osäkra webbplatsen<ph name="END_LINK" />.</translation>

@@ -31,9 +31,11 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />上的攻击程序可能会试图骗取您的信息（例如：密码、通讯内容或信用卡信息）。</translation>
 <translation id="6149061208933997199">使用密码</translation>
+<translation id="6196207969502475924">语音搜索</translation>
 <translation id="6221345481584921695">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。检测到的恶意内容来自于<ph name="SUBRESOURCE_HOST" />，这是个出了名的恶意软件散布方。</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
 <translation id="6314335155547195432">生成密码</translation>
+<translation id="6344783595350022745">明文</translation>
 <translation id="6456425917241817154">Chrome 生成的密码</translation>
 <translation id="6535543971741225613">您尝试访问的网站存在异常行为。Chrome 浏览器无法确认其网址是否正确。出于安全考虑，请不要继续访问，建议您改日重试或访问其他网站。</translation>
 <translation id="6740369132746915122">如果您了解自己将面临的安全风险，则可以<ph name="BEGIN_LINK" />访问这个不安全的网站<ph name="END_LINK" />。</translation>

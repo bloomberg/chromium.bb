@@ -31,9 +31,11 @@
 <translation id="605721222689873409">JJ</translation>
 <translation id="6075880972317537864">Angreifer auf <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> versuchen unter Umständen, Ihnen auf betrügerische Weise Informationen zu entlocken, zum Beispiel Passwörter, Nachrichten oder Kreditkartendaten.</translation>
 <translation id="6149061208933997199">Passwort verwenden</translation>
+<translation id="6196207969502475924">Sprachsuche</translation>
 <translation id="6221345481584921695">Google Safe Browsing hat kürzlich <ph name="BEGIN_LINK" />Malware<ph name="END_LINK" /> auf <ph name="SITE" /> gefunden. Websites, die in der Regel sicher sind, können gelegentlich mit Malware infiziert sein. Der schädliche Inhalt stammt von <ph name="SUBRESOURCE_HOST" />, einem bekannten Verteiler von Malware.</translation>
 <translation id="6264485186158353794">Zurück zu sicherer Website</translation>
 <translation id="6314335155547195432">Passwort erstellen</translation>
+<translation id="6344783595350022745">Text entfernen</translation>
 <translation id="6456425917241817154">Passwort von Chrome erstellt</translation>
 <translation id="6535543971741225613">Die Website, auf die Sie zugreifen möchten, verhält sich seltsam und Chrome kann die Richtigkeit dieser URL nicht bestätigen. Aus Sicherheitsgründen sollten Sie nicht fortfahren. Versuchen Sie es morgen erneut oder besuchen Sie eine andere Website.</translation>
 <translation id="6740369132746915122">Wenn Sie die Sicherheitsrisiken kennen, können Sie <ph name="BEGIN_LINK" />diese unsichere Website aufrufen<ph name="END_LINK" />.</translation>

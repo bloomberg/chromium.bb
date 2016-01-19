@@ -125,7 +125,6 @@ Chcete-li fyzický web používat, je třeba aktivovat Bluetooth a určování 
 <translation id="2762000892062317888">právě teď</translation>
 <translation id="2770465223704140727">Odstranit ze seznamu</translation>
 <translation id="278029852808208386">Nebyla nalezena žádná zařízení Bluetooth. <ph name="BEGIN_LINK" />Hledat znovu<ph name="END_LINK" /></translation>
-<translation id="2816165854387457183">Bylo zjištěno pomalé připojení.</translation>
 <translation id="2842985007712546952">Nadřazená složka</translation>
 <translation id="2870560284913253234">Stránky</translation>
 <translation id="2888126860611144412">O aplikaci Chrome</translation>
@@ -173,7 +172,6 @@ Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontr
 <translation id="3492207499832628349">Nová anonymní karta</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
 <translation id="3527085408025491307">Složka</translation>
-<translation id="3559647143395293616">Zapněte fyzický web</translation>
 <translation id="360480449234699036">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit. Klepnutím na Vyhledat odešlete slovo a okolní kontext do Vyhledávání Google, které vrátí definice, obrázky, výsledky vyhledávání a další podrobnosti.
 
 Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. Chcete-li upřesnit vyhledávací dotaz, přejeďte po panelu až nahoru a klepněte na vyhledávací pole.</translation>
@@ -274,7 +272,6 @@ Stačí otevřít Chrome v počítači, přejít do nabídky a zvolit možnost P
 <translation id="5039804452771397117">Povolit</translation>
 <translation id="5040262127954254034">Ochrana soukromí</translation>
 <translation id="5063480226653192405">Použití</translation>
-<translation id="509605886816275399">Chcete tuto stránku uložit k prohlížení offline?</translation>
 <translation id="5100237604440890931">Sbaleno – kliknutím rozbalíte</translation>
 <translation id="5107381076085091558">Stahování bylo pozastaveno.</translation>
 <translation id="5118713593561876160">Zájmy</translation>
@@ -288,6 +285,7 @@ Stačí otevřít Chrome v počítači, přejít do nabídky a zvolit možnost P
 <translation id="5168917394043976756">Otevřít vysouvací panel navigace</translation>
 <translation id="5171045022955879922">Vyhledávejte či zadejte URL</translation>
 <translation id="5184329579814168207">Otevřít v Chromu</translation>
+<translation id="5199929503336119739">Pracovní profil</translation>
 <translation id="5210365745912300556">Zavřít kartu</translation>
 <translation id="5210714456814679336">Zde se objeví karty, které máte otevřené v Chromu v ostatních zařízeních.</translation>
 <translation id="5228579091201413441">Aktivace synchronizace</translation>
@@ -382,7 +380,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="6232535412751077445">Pokud povolíte požadavek Do Not Track, bude připojován k datům provozu prohlížení. Účinek tohoto požadavku závisí na tom, zda na něj budou webové stránky reagovat a jak jej budou interpretovat.
 
 Některé weby mohou například na tento požadavek reagovat tak, že vám zobrazí reklamy, které nejsou založeny na ostatních navštívených webových stránkách. Řada webů bude i nadále shromažďovat vaše údaje o prohlížení a používat je například ke zlepšení zabezpečení, poskytování obsahu, reklam a doporučení a ke generování statistik pro přehledy.</translation>
-<translation id="624558823898732418">Překlad do jazyka: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Při tištění stránky došlo k problému. Zkuste to prosím znovu.</translation>
 <translation id="6295158916970320988">Všechny weby</translation>
 <translation id="6317634962183824346">Synchronizace systému Android vypnuta. Zapněte ji prosím a zkuste to znovu.</translation>
@@ -533,6 +530,7 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="8146397137182589628">Není uloženo offline</translation>
 <translation id="8157532349231307196">Účty: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Obsah</translation>
+<translation id="8200772114523450471">Pokračovat</translation>
 <translation id="8209050860603202033">Otevřít obrázek</translation>
 <translation id="8218346974737627104">Potvrzení přihlášení</translation>
 <translation id="8218934717680664417">Nyní můžete vyhledávat jedním klepnutím</translation>
@@ -552,7 +550,6 @@ Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměs
 <translation id="8514577642972634246">Přejít do anonymního režimu</translation>
 <translation id="8515416241041728525">Přidat účet pro: <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Tento web používá slabou konfiguraci zabezpečení (podpisy SHA-1). Připojení proto nemusí být soukromé.</translation>
-<translation id="8528538445849828817">Jazyk stránek: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Otevřít tuto stránku</translation>
 <translation id="8562452229998620586">Zde se zobrazí uložená hesla.</translation>
 <translation id="856481929701340285">Verze webu pro PC</translation>

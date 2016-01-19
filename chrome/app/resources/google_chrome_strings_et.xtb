@@ -147,7 +147,6 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="568643307450491754">Otsige oma järjehoidjaid Chrome'i menüüst või järjehoidjaribalt.</translation>
 <translation id="573759479754913123">Teave Chrome OS-i kohta</translation>
 <translation id="5749068826913805084">Chrome vajab failide allalaadimiseks juurdepääsu salvestusruumile.</translation>
-<translation id="5785746630574083988">Kui taaskäivitate Windows 8 režiimis, suletakse ja taaskäivitatakse teie Chrome'i rakendused.</translation>
 <translation id="5855036575689098185">Teie arvutis töötav tarkvara ei ühildu Google Chrome'iga.</translation>
 <translation id="5877064549588274448">Kanal on muutunud. Muudatuste rakendamiseks taaskäivitage oma seade.</translation>
 <translation id="5931853610562009806">Macis võidakse paroolid salvestada rakendusse Keychain ja teised Chrome'i kasutajad, kes kasutavad sama OS X-i kontot, saavad neid paroole kasutada ning sünkroonida.</translation>
@@ -208,11 +207,9 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="7747138024166251722">Installija ei suutnud luua ajutist kataloogi. Palun kontrollige vaba kettaruumi ja tarkvara installimise loa olemasolu.</translation>
 <translation id="7761834446675418963">Chrome'i avamiseks ja sirvimise alustamiseks klõpsake oma nimel.</translation>
 <translation id="7781002470561365167">Saadaval on uus Google Chrome'i versioon.</translation>
-<translation id="7784335114585804598">&amp;Käivitage Chrome uuesti Windows 8 režiimis</translation>
 <translation id="7787950393032327779">Tundub, et mõni muu Google Chrome'i protsess (<ph name="PROCESS_ID" />) mõnes teises arvutis (<ph name="HOST_NAME" />) kasutab profiili.  Chrome on profiili lukustanud, et seda ei saaks rikkuda.  Kui olete kindel, et ükski teine protsess seda profiili ei kasuta, võite selle avada ja Chrome'i taaskäivitada.</translation>
 <translation id="7788788617745289808">Chrome vajab selle saidiga jagamiseks juurdepääsu kaamerale.</translation>
 <translation id="7808348361785373670">Chrome'ist eemaldamine ...</translation>
-<translation id="781069973841903133">Chrome'i immersiivses režiimis uuesti käivitamisel suletakse teie Chrome'i rakendused ja käivitatakse need uuesti.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
 <translation id="7890208801193284374">Kui jagate oma arvutit, siis saavad sõbrad ja pereliikmed eraldi sirvida ning seadistada Chrome'i just nii, nagu neile meeldib.</translation>
 <translation id="8000275528373650868">Google Chrome vajab operatsioonisüsteemi Windows Vista või Windows XP hoolduspaketiga SP2 või uuem.</translation>
@@ -225,11 +222,9 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8205111949707227942">Valikuline: aidake muuta Chrome OS paremaks, saates Google'ile automaatselt kasutusstatistikat ja kokkujooksuaruandeid.</translation>
 <translation id="8227755444512189073">Google Chrome peab käivitama välise rakenduse <ph name="SCHEME" /> linkide haldamiseks. Küsitud link on <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome kasutab kaamerat ja mikrofoni.</translation>
-<translation id="8274359292107649245">Ava Chrome töölaual</translation>
 <translation id="8286862437124483331">Google Chrome proovib kuvada paroole. Selle lubamiseks sisestage Windowsi parool.</translation>
 <translation id="8290100596633877290">Tohoh! Google Chrome jooksis kokku. Kas soovite kohe taaskäivitada?</translation>
 <translation id="8406086379114794905">Aidake Chrome'i täiustada</translation>
-<translation id="8437332772351535342">Töölauarežiimis taaskäivitamine suleb ja taaskäivitab teie Chrome'i rakendused.</translation>
 <translation id="8460191995881063249">Chrome'i märguandekeskus</translation>
 <translation id="853189717709780425">Logite sisse hallatud kontoga ja annate selle administraatorile üle oma Google Chrome'i profiili juhtimise. Teie Chrome'i andmed, nagu rakendused, järjehoidjad, ajalugu, paroolid ja muud seaded, jäävad püsivalt seotuks kasutajaga <ph name="USER_NAME" />. Saate need andmed kustutada Google'i kontode juhtpaneeli kaudu, kuid te ei saa neid andmeid seostada teise kontoga.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -241,12 +236,10 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Lisaks juhib see Chrome'i käivitamisel kuvatavat lehte.</translation>
 <translation id="870251953148363156">Värskenda &amp;Google Chrome'i</translation>
-<translation id="8811903091068364646">&amp;Käivitage Chrome uuesti töölaual</translation>
 <translation id="8823341990149967727">Chrome on aegunud</translation>
 <translation id="884296878221830158">Lisaks juhib see Chrome'i käivitamise lehte või avalehe nupu  klõpsamist.</translation>
 <translation id="8851136666856101339">pea</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
-<translation id="8889942196804715220">Käivita uuesti Chrome'i immersiivses režiimis</translation>
 <translation id="9026991721384951619">Chrome OS ei saanud andmeid sünkroonida, sest teie konto sisselogimisandmed on aegunud.</translation>
 <translation id="9102715433345326100">See fail on pahatahtlik ja Chrome on selle blokeerinud.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Hoiatus:<ph name="END_BOLD" /> Google Chrome ei saa takistada rakendusi teie sirvimisajalugu talletamast. Kui soovite laienduse inkognitorežiimis keelata, siis tühistage see valik.</translation>

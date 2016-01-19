@@ -125,7 +125,6 @@ Ak chcete používať Fyzický web, musíte mať zapnuté rozhranie Bluetooth a�
 <translation id="2762000892062317888">práve teraz</translation>
 <translation id="2770465223704140727">Odstrániť zo zoznamu</translation>
 <translation id="278029852808208386">Nenašli sa žiadne zariadenia Bluetooth. <ph name="BEGIN_LINK" />Vyhľadať znova<ph name="END_LINK" /></translation>
-<translation id="2816165854387457183">Bolo zistené pomalé pripojenie</translation>
 <translation id="2842985007712546952">Nadradený priečinok</translation>
 <translation id="2870560284913253234">Webové stránky</translation>
 <translation id="2888126860611144412">Informácie o Google Chrome</translation>
@@ -173,7 +172,6 @@ Prihlasujete sa pomocou spravovaného účtu a jeho správcovi tak umožňujete 
 <translation id="3492207499832628349">Nová karta inkognito</translation>
 <translation id="3518985090088779359">Prijať a pokračovať</translation>
 <translation id="3527085408025491307">Priečinok</translation>
-<translation id="3559647143395293616">Zapnite Fyzický web</translation>
 <translation id="360480449234699036">Získajte informácie o témach na weboch bez toho, aby ste danú stránku museli opustiť. Funkcia Vyhľadávanie klepnutím odošle slovo a súvisiaci kontext do Vyhľadávania Google a vráti definície, obrázky, výsledky vyhľadávania a ďalšie podrobnosti.
 
 Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vyhľadávanie spresniť, posuňte panel úplne hore a klepnite na vyhľadávacie pole.</translation>
@@ -274,7 +272,6 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5039804452771397117">Povoliť</translation>
 <translation id="5040262127954254034">Ochrana súkromia</translation>
 <translation id="5063480226653192405">Použitie</translation>
-<translation id="509605886816275399">Chcete túto stránku uložiť offline?</translation>
 <translation id="5100237604440890931">Zbalená (rozbalíte ju kliknutím)</translation>
 <translation id="5107381076085091558">Sťahovanie bolo pozastavené.</translation>
 <translation id="5118713593561876160">Záujmy</translation>
@@ -288,6 +285,7 @@ Stačí otvoriť Chrome na počítači, prejsť do ponuky a vybrať možnosť Pr
 <translation id="5168917394043976756">Otvoriť navigačný vysúvací panel</translation>
 <translation id="5171045022955879922">Vyhľadajte alebo zadajte webovú adresu</translation>
 <translation id="5184329579814168207">Otvoriť v prehliadači Chrome</translation>
+<translation id="5199929503336119739">Pracovný profil</translation>
 <translation id="5210365745912300556">Zatvoriť kartu</translation>
 <translation id="5210714456814679336">Tu sa zobrazia karty, ktoré ste otvorili v prehliadači Chrome na iných zariadeniach.</translation>
 <translation id="5228579091201413441">Povoliť synchronizáciu</translation>
@@ -382,7 +380,6 @@ Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše p
 <translation id="6232535412751077445">Ak povolíte možnosť Nesledovať, k odosielaným dátam prehliadania sa pridá žiadosť. Akýkoľvek účinok závisí od toho, či bude web na žiadosť reagovať, a tiež od interpretácie žiadosti.
 
 Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobrazia reklamy, ktoré nie sú založené na ostatných weboch, ktoré ste navštívili. Mnoho webov bude stále zhromažďovať a používať vaše dáta prehliadania, napríklad na zlepšenie zabezpečenia, poskytovanie obsahu, reklám a odporúčaní a na generovanie štatistík prehľadov.</translation>
-<translation id="624558823898732418">Jazyk prekladu: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Pri tlačení stránky sa vyskytol problém. Skúste to znova.</translation>
 <translation id="6295158916970320988">Všetky stránky</translation>
 <translation id="6317634962183824346">Synchronizácia systému Android je zakázaná. Opäť ju povoľte a skúste to znova.</translation>
@@ -533,6 +530,7 @@ Nezískavate však úplnú neviditeľnosť. Prejdením do režimu inkognito nesk
 <translation id="8146397137182589628">Neuložené offline</translation>
 <translation id="8157532349231307196">Počet účtov: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Obsah</translation>
+<translation id="8200772114523450471">Pokračovať</translation>
 <translation id="8209050860603202033">Otvoriť obrázok</translation>
 <translation id="8218346974737627104">Potvrdenie prihlásenia</translation>
 <translation id="8218934717680664417">Teraz môžete vyhľadávať jediným klepnutím</translation>
@@ -552,7 +550,6 @@ Nezískavate však úplnú neviditeľnosť. Prejdením do režimu inkognito nesk
 <translation id="8514577642972634246">Spustiť režim inkognito</translation>
 <translation id="8515416241041728525">Pridať účet pre: <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Tento web používa slabú konfiguráciu zabezpečenia (podpisy SHA-1). Pripojenie preto nemusí byť súkromné.</translation>
-<translation id="8528538445849828817">Jazyk stránky: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Otvoriť túto stránku</translation>
 <translation id="8562452229998620586">Tu sa zobrazia uložené heslá.</translation>
 <translation id="856481929701340285">Verzia webu pre počítače</translation>

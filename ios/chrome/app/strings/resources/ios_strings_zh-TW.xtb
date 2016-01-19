@@ -31,9 +31,11 @@
 <translation id="605721222689873409">年</translation>
 <translation id="6075880972317537864">攻擊者可能會試圖透過 <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 騙取您的資訊 (例如密碼、郵件或信用卡資料)。</translation>
 <translation id="6149061208933997199">使用密碼</translation>
+<translation id="6196207969502475924">語音搜尋</translation>
 <translation id="6221345481584921695">Google 安全瀏覽功能最近在 <ph name="SITE" /> 上<ph name="BEGIN_LINK" />偵測到惡意軟體<ph name="END_LINK" />。即使是平常可以安全使用的網站，有時也會遭到惡意軟體感染。這些惡意內容來自已知的惡意軟體散佈網站 <ph name="SUBRESOURCE_HOST" />。</translation>
 <translation id="6264485186158353794">返回安全性瀏覽</translation>
 <translation id="6314335155547195432">產生密碼</translation>
+<translation id="6344783595350022745">清除文字</translation>
 <translation id="6456425917241817154">Chrome 產生的密碼</translation>
 <translation id="6535543971741225613">您嘗試存取的網站行為異常，且 Chrome 無法驗證該網站的網址是否正確。為了安全起見，建議您不要繼續瀏覽，請等到明天再試一次，或是造訪別的網站。</translation>
 <translation id="6740369132746915122">在您瞭解安全性風險後，您可以<ph name="BEGIN_LINK" />造訪這個不安全的網站<ph name="END_LINK" />。</translation>

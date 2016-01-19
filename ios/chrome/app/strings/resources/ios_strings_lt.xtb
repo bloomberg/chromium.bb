@@ -31,9 +31,11 @@
 <translation id="605721222689873409">MM</translation>
 <translation id="6075880972317537864">Svetainės <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> užpuolėjai gali bandyti apgaule pavogti jūsų informaciją (pvz., slaptažodžius, pranešimus ar kredito kortelių numerius).</translation>
 <translation id="6149061208933997199">Naudoti slaptažodį</translation>
+<translation id="6196207969502475924">Paieška balsu</translation>
 <translation id="6221345481584921695">„Google“ saugaus naršymo sistema neseniai <ph name="BEGIN_LINK" />aptiko kenkėjišką programą<ph name="END_LINK" /> svetainėje <ph name="SITE" />. Svetainės, kurios paprastai yra saugios, kartais užkrečiamos kenkėjiškomis programomis. Kenkėjiškas turinys gautas iš <ph name="SUBRESOURCE_HOST" />, žinomo kenkėjiškų programų platintojo.</translation>
 <translation id="6264485186158353794">Grįžti prie saugumo</translation>
 <translation id="6314335155547195432">Generuoti slaptažodį</translation>
+<translation id="6344783595350022745">Išvalyti tekstą</translation>
 <translation id="6456425917241817154">„Chrome“ sugeneruotas slaptažodis</translation>
 <translation id="6535543971741225613">Bandomos pasiekti svetainės elgsena keista. „Chrome“ negali patikrinti, ar šios svetainės URL tinkamas. Saugumo sumetimais neturėtumėte tęsti. Verčiau pabandykite dar kartą rytoj arba apsilankykite kitu adresu.</translation>
 <translation id="6740369132746915122">Jei suprantate saugos riziką, galite <ph name="BEGIN_LINK" />apsilankyti nesaugioje svetainėje<ph name="END_LINK" />.</translation>

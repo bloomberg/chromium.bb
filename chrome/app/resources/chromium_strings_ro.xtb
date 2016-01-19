@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1065672644894730302">Preferințele dvs. nu pot fi citite. Este posibil ca unele funcții să nu fie disponibile, iar modificările aduse preferințelor nu vor fi salvate.</translation>
-<translation id="108122890477367602">&amp;Repornește Chromium în modul Windows 8</translation>
 <translation id="1115445892567829615">Chromium nu a putut sincroniza datele. Actualizați expresia de acces pentru sincronizare.</translation>
 <translation id="1174473354587728743">Folosești un computer în comun? Acum poți să configurezi Chromium exact cum îți place.</translation>
 <translation id="1185134272377778587">Despre Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium nu mai răspunde. Îl reporniți acum?</translation>
 <translation id="1967743265616885482">Despre un modul cu același nume se cunoaște că intră în conflict cu Chromium.</translation>
 <translation id="2077129598763517140">Utilizează accelerarea hardware când este disponibilă</translation>
-<translation id="2097986737970966220">Deschide Chromium pe desktop</translation>
 <translation id="2117181891440368863">Chromium s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații privind Certificate Transparency, însă acestea nu au fost valide.</translation>
 <translation id="2119636228670142020">Despre sistemul de operare &amp;Chromium</translation>
 <translation id="2158734852934720349">Licențe open source pentru sistemul de operare Chromium</translation>
-<translation id="2233513990531887259">Relansează în modul extins Chromium</translation>
 <translation id="2241627712206172106">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chromium cum doresc.</translation>
 <translation id="225614027745146050">Bun venit</translation>
 <translation id="2316129865977710310">Nu, mulțumesc</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Noțiuni introductive despre sistemul de operare Chromium</translation>
 <translation id="3582788516608077514">Se actualizează Chromium...</translation>
 <translation id="358997566136285270">Sigla Chromium</translation>
-<translation id="3595526210123705352">Repornirea în modul Windows 8 va închide și va relansa aplicațiile Chromium.</translation>
 <translation id="3738139272394829648">Atinge pentru a căuta</translation>
 <translation id="3748537968684000502">Acum afișați o pagină Chromium securizată.</translation>
 <translation id="378917192836375108">Chromium vă permite să faceți clic pe un număr de telefon de pe web pentru a-l apela cu Skype!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Dați clic pe numele dvs. pentru a deschide Chromium și a începe să navigați.</translation>
 <translation id="390894725198123737">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chromium care folosesc același cont de OS X.</translation>
 <translation id="4050175100176540509">În cea mai recentă versiune sunt disponibile îmbunătățiri de securitate și funcții noi importante.</translation>
-<translation id="4075965373589665797">Repornirea în modul Desktop va închide și va relansa aplicațiile Chromium.</translation>
 <translation id="4077262827416206768">Închideți toate ferestrele Chromium și reporniți sistemul de operare pentru ca această modificare să aibă efect.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Avertisment:<ph name="END_BOLD" /> Chromium nu poate împiedica extensiile să înregistreze istoricul navigării. Pentru a dezactiva această extensie în modul incognito, debifați această opțiune.</translation>
 <translation id="421369550622382712">Descoperă aplicații, jocuri, extensii și teme extraordinare pentru Chromium.</translation>
@@ -164,7 +159,6 @@ Este posibil ca unele funcții să nu fie disponibile. Specificați un director 
 <translation id="6838494703713445896">Chromium s-a asigurat că certificatul acestui site a fost emis de <ph name="ISSUER" />. Serverul a oferit informații valide privind Certificate Transparency.</translation>
 <translation id="6883876366448858277">trimite un cuvânt și contextul aferent către Căutarea Google, afișând definiții, imagini, rezultate ale căutării.</translation>
 <translation id="6893813176749746474">Chromium a fost actualizat, dar nu l-ați utilizat de cel puțin 30 de zile.</translation>
-<translation id="6900895776413482243">Repornirea în modul extins Chromium va închide și va relansa aplicațiile Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Module încărcate în Chromium</translation>
 <translation id="6970811910055250180">Se actualizează dispozitivul...</translation>
@@ -213,7 +207,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="8551886023433311834">Actualizare aproape efectuată! Reporniți dispozitivul pentru a finaliza actualizarea.</translation>
 <translation id="85843667276690461">Obțineți ajutor în legătură cu utilizarea Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. Toate drepturile rezervate.</translation>
-<translation id="8605166112420372522">&amp;Repornește Chromium pe desktop</translation>
 <translation id="8621669128220841554">Instalarea nu a reușit din cauza unei erori neprecizate. Descărcați Chromium din nou.</translation>
 <translation id="8628626585870903697">Chromium nu include vizualizatorul PDF care este necesar pentru funcționarea Previzualizării înainte de printare.</translation>
 <translation id="8684913864886094367">Chromium nu s-a închis corect.</translation>

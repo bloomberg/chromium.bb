@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1065672644894730302">Nie można odczytać ustawień. Niektóre funkcje mogą być niedostępne, a zmiany w ustawieniach nie zostaną zapisane.</translation>
-<translation id="108122890477367602">U&amp;ruchom Chromium ponownie w trybie Windows 8</translation>
 <translation id="1115445892567829615">Chromium nie może zsynchronizować Twoich danych. Zaktualizuj hasło synchronizacji.</translation>
 <translation id="1174473354587728743">Używasz komputera, z którego korzystają inne osoby? Teraz możesz skonfigurować Chromium tak, jak chcesz.</translation>
 <translation id="1185134272377778587">Chromium – informacje</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium nie odpowiada. Uruchomić go teraz ponownie?</translation>
 <translation id="1967743265616885482">Znane są przypadki konfliktu modułu o takiej nazwie z Chromium.</translation>
 <translation id="2077129598763517140">Użyj akceleracji sprzętowej, gdy jest dostępna</translation>
-<translation id="2097986737970966220">Otwórz Chromium na pulpicie</translation>
 <translation id="2117181891440368863">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył informacje o certyfikacie, korzystając z protokołu Certificate Transparency, ale były one nieprawidłowe.</translation>
 <translation id="2119636228670142020">System operacyjny &amp;Chromium – informacje</translation>
 <translation id="2158734852934720349">Licencje oprogramowania typu open source w Chromium OS</translation>
-<translation id="2233513990531887259">Uruchom ponownie w trybie pojemnym Chromium</translation>
 <translation id="2241627712206172106">Jeśli dzielisz się komputerem ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i po swojemu skonfigurować Chromium.</translation>
 <translation id="225614027745146050">Witamy</translation>
 <translation id="2316129865977710310">Nie, dziękuję</translation>
@@ -82,7 +79,6 @@
 <translation id="3549345495227188780">Pierwsze kroki z systemem operacyjnym Chromium</translation>
 <translation id="3582788516608077514">Aktualizowanie Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3595526210123705352">Ponowne uruchomienie w trybie Windows 8 spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
 <translation id="3738139272394829648">Dotknij, by wyszukać</translation>
 <translation id="3748537968684000502">Przeglądasz bezpieczną stronę Chromium.</translation>
 <translation id="378917192836375108">W Chromium możesz kliknąć numer telefonu zamieszczony w sieci i zadzwonić pod niego przez Skype.</translation>
@@ -92,7 +88,6 @@
 <translation id="3889543394854987837">Otwórz Chromium, klikając swoją nazwę i rozpocznij przeglądanie.</translation>
 <translation id="390894725198123737">Na Macach hasła można zapisywać w pęku kluczy. Inni użytkownicy Chromium dzielący to konto OS X mogą z nich korzystać i je synchronizować.</translation>
 <translation id="4050175100176540509">W najnowszej wersji zostały wprowadzone ważne poprawki bezpieczeństwa i nowe funkcje.</translation>
-<translation id="4075965373589665797">Ponowne uruchomienie w trybie pulpitu spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
 <translation id="4077262827416206768">Zamknij wszystkie okna Chromium i uruchom go ponownie, by zmiany zostały wprowadzone.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Uwaga:<ph name="END_BOLD" /> Chromium nie może uniemożliwić rozszerzeniom zapisywania historii przeglądania. Aby wyłączyć to rozszerzenie w trybie incognito, usuń zaznaczenie tej opcji.</translation>
 <translation id="421369550622382712">Odkryj znakomite aplikacje, gry, rozszerzenia i motywy do Chromium.</translation>
@@ -162,7 +157,6 @@ Niektóre funkcje mogą być niedostępne. Podaj inny katalog z profilem lub uż
 <translation id="6838494703713445896">Chromium sprawdził, że wydawcą certyfikatu tej witryny jest <ph name="ISSUER" />. Serwer dostarczył poprawne informacje o certyfikacie, korzystając z protokołu Certificate Transparency.</translation>
 <translation id="6883876366448858277">przesyła słowo i jego kontekst do wyszukiwarki Google, by wyświetlić definicje, zdjęcia i inne wyniki wyszukiwania.</translation>
 <translation id="6893813176749746474">Przeglądarka Chromium została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
-<translation id="6900895776413482243">Ponowne uruchomienie Chromium w trybie pojemnym spowoduje zamknięcie i ponowne otwarcie aplikacji Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduły załadowane do Chromium</translation>
 <translation id="6970811910055250180">Aktualizowanie urządzenia...</translation>
@@ -211,7 +205,6 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="8551886023433311834">Aktualizacja jest już prawie ukończona. Wystarczy tylko uruchomić ponownie urządzenie.</translation>
 <translation id="85843667276690461">Pomoc do Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autorzy Chromium. Wszelkie prawa zastrzeżone.</translation>
-<translation id="8605166112420372522">U&amp;ruchom Chromium ponownie na pulpicie</translation>
 <translation id="8621669128220841554">Instalacja nie powiodła się z powodu nieokreślonego błędu. Pobierz Chromium ponownie.</translation>
 <translation id="8628626585870903697">Chromium nie zawiera przeglądarki PDF wymaganej przez podgląd wydruku.</translation>
 <translation id="8684913864886094367">Chromium nie został poprawnie zamknięty.</translation>

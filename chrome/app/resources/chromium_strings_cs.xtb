@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Nelze číst vaše nastavení.
 
 Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</translation>
-<translation id="108122890477367602">&amp;Spustit Chromium znovu v režimu Windows 8</translation>
 <translation id="1115445892567829615">Prohlížeč Chromium vaše data nemohl synchronizovat. Aktualizujte prosím heslovou frázi pro synchronizaci.</translation>
 <translation id="1174473354587728743">Sdílíte počítač s dalšími uživateli? Nyní si Chromium můžete nastavit podle svých představ.</translation>
 <translation id="1185134272377778587">O prohlížeči Chromium</translation>
@@ -34,11 +33,9 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="1929939181775079593">Prohlížeč Chromium neodpovídá. Chcete jej znovu načíst?</translation>
 <translation id="1967743265616885482">O modulu se stejným názvem je známo, že u něj dochází ke konfliktu s prohlížečem Chromium.</translation>
 <translation id="2077129598763517140">V případě dostupnosti použít hardwarovou akceleraci</translation>
-<translation id="2097986737970966220">Spustit Chromium na ploše</translation>
 <translation id="2117181891440368863">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl údaje Certificate Transparency, byly však neplatné.</translation>
 <translation id="2119636228670142020">O systému &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS – licence open source</translation>
-<translation id="2233513990531887259">Znovu spustit v moderním režimu prohlížeče Chromium</translation>
 <translation id="2241627712206172106">Pokud počítač sdílíte s kamarády a členy rodiny, každý může web procházet samostatně a nastavit si Chromium podle svých požadavků.</translation>
 <translation id="225614027745146050">Vítejte</translation>
 <translation id="2316129865977710310">Ne, děkuji</translation>
@@ -86,7 +83,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3549345495227188780">Začínáme se systémem Chromium OS</translation>
 <translation id="3582788516608077514">Aktualizace prohlížeče Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3595526210123705352">Spuštěním v režimu Windows 8 zavřete a znovu spustíte všechny aplikace prohlížeče Chromium.</translation>
 <translation id="3738139272394829648">Vyhledání klepnutím</translation>
 <translation id="3748537968684000502">Zobrazujete zabezpečenou stránku Chromium.</translation>
 <translation id="378917192836375108">Chromium umožňuje kliknout na telefonní číslo na webu a volat na něj prostřednictvím aplikace Skype.</translation>
@@ -96,7 +92,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="3889543394854987837">Chcete-li otevřít Chromium a začít procházet Internet, klikněte na svoje jméno.</translation>
 <translation id="390894725198123737">V počítačích Mac se hesla mohou ukládat do úložiště Keychain a mohou k nim přistupovat nebo je synchronizovat i další uživatelé aplikace Chromium, kteří sdílejí tento účet systému OS X.</translation>
 <translation id="4050175100176540509">V nejnovější verzi jsou k dispozici důležitá vylepšení zabezpečení a nové funkce.</translation>
-<translation id="4075965373589665797">Spuštěním v režimu plochy zavřete a znovu spustíte všechny aplikace prohlížeče Chromium.</translation>
 <translation id="4077262827416206768">Aby se změny projevily, zavřete prosím všechna okna prohlížeče Chromium a spusťte jej znovu.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Upozornění:<ph name="END_BOLD" /> Chromium nemůže rozšířením zabránit v zaznamenávání vaší historie prohlížení. Chcete-li toto rozšíření v anonymním režimu deaktivovat, zrušte výběr této možnosti.</translation>
 <translation id="421369550622382712">Objevte skvělé aplikace, hry, rozšíření a motivy prohlížeče Chromium.</translation>
@@ -166,7 +161,6 @@ Některé funkce mohou být nedostupné. Zadejte prosím jiný adresář profilu
 <translation id="6838494703713445896">Prohlížeč Chromium ověřil, že certifikát tohoto webu byl vydán vydavatelem <ph name="ISSUER" />. Server poskytl platné údaje Certificate Transparency.</translation>
 <translation id="6883876366448858277">odesílá slovo a jeho okolní kontext do Vyhledávání Google a vrací definice, obrázky a další výsledky vyhledávání.</translation>
 <translation id="6893813176749746474">Prohlížeč Chromium byl aktualizován, ale minimálně po 30 dnů jste jej nepoužili.</translation>
-<translation id="6900895776413482243">Spuštěním v moderním režimu zavřete a znovu spustíte všechny aplikace prohlížeče Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduly načtené do prohlížeče Chromium</translation>
 <translation id="6970811910055250180">Aktualizace zařízení...</translation>
@@ -215,7 +209,6 @@ Chromium nemůže vaše nastavení obnovit.</translation>
 <translation id="8551886023433311834">Aktualizace je téměř hotova! Dokončíte ji restartováním zařízení.</translation>
 <translation id="85843667276690461">Pomoc s používáním prohlížeče Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Autoři prohlížeče Chromium. Všechna práva vyhrazena.</translation>
-<translation id="8605166112420372522">&amp;Spustit Chromium znovu na klasické ploše</translation>
 <translation id="8621669128220841554">Instalace se z neznámého důvodu nezdařila. Stáhněte prosím Chromium znovu.</translation>
 <translation id="8628626585870903697">Chromium neobsahuje prohlížeč PDF, který je požadován ke správnému fungování Náhledu tisku.</translation>
 <translation id="8684913864886094367">Aplikace Chromium nebyla řádně ukončena.</translation>

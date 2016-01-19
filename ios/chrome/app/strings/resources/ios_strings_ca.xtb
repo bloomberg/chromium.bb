@@ -31,9 +31,11 @@
 <translation id="605721222689873409">AA</translation>
 <translation id="6075880972317537864">Els atacants que són a <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poden mirar de robar-vos la informació (per exemple, les contrasenyes, els missatges o les targetes de crèdit).</translation>
 <translation id="6149061208933997199">Fes servir la contrasenya</translation>
+<translation id="6196207969502475924">Cerca per veu</translation>
 <translation id="6221345481584921695">Navegació segura de Google ha <ph name="BEGIN_LINK" />detectat programari maliciós<ph name="END_LINK" /> recentment a <ph name="SITE" />. De vegades, els llocs web que acostumen a ser segurs s'infecten amb programari maliciós. El contingut maliciós prové de l'amfitrió <ph name="SUBRESOURCE_HOST" />, un distribuïdor conegut de programari maliciós.</translation>
 <translation id="6264485186158353794">Torna a l'àrea de seguretat</translation>
 <translation id="6314335155547195432">Genera una contrasenya</translation>
+<translation id="6344783595350022745">Esborra el text</translation>
 <translation id="6456425917241817154">Contrasenya generada per Chrome</translation>
 <translation id="6535543971741225613">El lloc al qual proveu d'accedir té un comportament inusual, i Chrome no pot verificar que l'URL sigui correcte. Per motius de seguretat, no hauríeu de continuar i tornar-ho a provar demà o dirigir-vos a un altre lloc.</translation>
 <translation id="6740369132746915122">Si enteneu els riscos que suposa per a la vostra seguretat, podeu <ph name="BEGIN_LINK" />visitar aquest lloc no segur<ph name="END_LINK" />.</translation>

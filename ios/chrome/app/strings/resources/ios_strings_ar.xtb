@@ -31,9 +31,11 @@
 <translation id="605721222689873409">العام</translation>
 <translation id="6075880972317537864">قد يحاول المستهدفون الموجودون على <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> الاحتيال عليك لسرقة معلوماتك (على سبيل المثال، كلمات المرور أو الرسائل أو بطاقات الائتمان).</translation>
 <translation id="6149061208933997199">استخدام كلمة المرور</translation>
+<translation id="6196207969502475924">البحث الصوتي</translation>
 <translation id="6221345481584921695">‏اكتشف التصفح الآمن من Google‬ مؤخرًا <ph name="BEGIN_LINK" />برامج ضارة<ph name="END_LINK" /> على <ph name="SITE" />. أحيانًا تصاب مواقع الويب الآمنة في الوضع العادي ببرامج ضارة. مصدر محتوى البرامج الضارة <ph name="SUBRESOURCE_HOST" />، وهو ناشر معروف للبرامج الضارة.</translation>
 <translation id="6264485186158353794">الرجوع إلى وضع الأمان</translation>
 <translation id="6314335155547195432">إنشاء كلمة المرور</translation>
+<translation id="6344783595350022745">محو النص</translation>
 <translation id="6456425917241817154">‏تم إنشاء كلمة المرور من قبل Chrome</translation>
 <translation id="6535543971741225613">‏يتصرف موقع الويب الذي تحاول الدخول إليه بغرابة، ويتعذر على متصفح Chrome التحقق من صحة عنوان URL لموقع الويب هذا. لأسباب تتعلق بالأمان، لا يجب عليك المتابعة، ربما عليك المحاولة مجددًا غدًا أو الانتقال إلى موقع ويب آخر.</translation>
 <translation id="6740369132746915122">إذا كنت تدرك المخاطر المتعلقة بالأمان، يمكنك <ph name="BEGIN_LINK" />زيارة هذا الموقع غير الآمن<ph name="END_LINK" />.</translation>

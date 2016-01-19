@@ -3,7 +3,6 @@
 <translationbundle lang="mr">
 <translation id="1065672644894730302">आपली प्राधान्ये वाचता आली नाहीत.
 काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात आणि प्राधान्यांमधील बदल जतन केले जाणार नाहीत.</translation>
-<translation id="108122890477367602">Windows 8 मोडमध्‍ये Chromium &amp;पुन्हा लाँच करा</translation>
 <translation id="1115445892567829615">Chromium आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन वाक्यांश अद्यतनित करा.</translation>
 <translation id="1174473354587728743">एक संगणक सामायिक करायचा? आपल्याला आवडते त्या प्रकारे आपण आता Chromium सेट करू शकता.</translation>
 <translation id="1185134272377778587">Chromium बद्दल</translation>
@@ -33,11 +32,9 @@
 <translation id="1929939181775079593">Chromium असंवादी आहे. आता पुन्‍हा लाँच करायचे?</translation>
 <translation id="1967743265616885482">यासारख्या नावाचे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
 <translation id="2077129598763517140">उपलब्ध असेल तेव्हा हार्डवेअर ऍक्सीलरेशन वापरा</translation>
-<translation id="2097986737970966220">Chromium डेस्कटॉपवर उघडा</translation>
 <translation id="2117181891440368863">Chromium ने सत्यापित केले की <ph name="ISSUER" /> ने या वेबसाइटचे प्रमाणपत्र जारी केले. सर्व्हरने प्रमाणपत्र पारदर्शकता माहिती पुरविली परंतु ती अवैध होती.</translation>
 <translation id="2119636228670142020">&amp;Chromium OS बद्दल</translation>
 <translation id="2158734852934720349">Chromium OS खुला स्त्रोत परवाने</translation>
-<translation id="2233513990531887259">Chromium व्यस्त मोड मध्‍ये पुन्हा लाँच करा</translation>
 <translation id="2241627712206172106">आपण संगणक सामायिक केल्यास, मित्र आणि कुटुंब स्वतंत्रपणे ब्राउझ करू शकतात आणि त्यांना पाहिजे तसे Chromium सेट अप करू शकतात.</translation>
 <translation id="225614027745146050">सुस्वागतम</translation>
 <translation id="2316129865977710310">नाही, धन्यवाद</translation>
@@ -85,7 +82,6 @@
 <translation id="3549345495227188780">Chromium OS सह प्रारंभ करा</translation>
 <translation id="3582788516608077514">Chromium अद्यतनित करीत आहे...</translation>
 <translation id="358997566136285270">Chromium लोगो</translation>
-<translation id="3595526210123705352">Windows 8 मोडमध्ये पुन्हा लाँच करण्याने आपले Chromium अॅप्स बंद होतील आणि पुन्हा लाँच होतील.</translation>
 <translation id="3738139272394829648">शोधण्यासाठी स्विच करा</translation>
 <translation id="3748537968684000502">आपण सुरक्षित Chromium पृष्ठ पहात आहात.</translation>
 <translation id="378917192836375108">Chromium आपल्याला वेबवरील फोन नंबर क्लिक करू देते आणि Skype सह त्याला कॉल करते!</translation>
@@ -95,7 +91,6 @@
 <translation id="3889543394854987837">Chromium उघडण्यासाठी आपले नाव क्लिक करा आणि ब्राउझिंग प्रारंभ करा.</translation>
 <translation id="390894725198123737">Mac वर, संकेतशब्द हे आपल्या किचेनमध्ये जतन केले जातात आणि हे OS X खाते सामायिक करून इतर Chromium वापरकर्त्यांकडून त्यामध्‍ये प्रवेश केला जाऊ शकतो किंवा संकालित केले जाऊ शकतात.</translation>
 <translation id="4050175100176540509">नवीनतम आवृत्तीमध्‍ये महत्त्वाच्या सुरक्षितता सुधारणा आणि नवीन वैशिष्ट्ये उपलब्‍ध आहेत.</translation>
-<translation id="4075965373589665797">डेस्कटॉप मोडमध्ये पुन्हा लाँच करण्याने आपले Chrome अ‍ॅप्स बंद होतील आणि पुन्हा लाँच होतील.</translation>
 <translation id="4077262827416206768">कृपया हा बदल प्रभावी होण्‍यासाठी सर्व Chromium विंडो बंद करा आणि Chromium पुन्‍हा लाँच करा.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />चेतावणी:<ph name="END_BOLD" /> आपला ब्राउझिंग इतिहास रेकॉर्ड करण्यापासून विस्तारांना Chromium प्रतिबंधित करू शकत नाही. गुप्त विंडोमध्ये हा विस्तार अक्षम करण्यासाठी, या पर्यायाची निवड रद्द करा.</translation>
 <translation id="421369550622382712">Chromium साठी उत्कृष्ट अॅप्स, गेम, विस्तार आणि थीम शोधा</translation>
@@ -165,7 +160,6 @@
 <translation id="6838494703713445896">Chromium ने सत्यापित केले की <ph name="ISSUER" /> ने या वेबसाइटचे प्रमाणपत्र जारी केले. सर्व्हरने वैध प्रमाणपत्र पारदर्शकता माहिती पुरविली.</translation>
 <translation id="6883876366448858277">Google शोध वर, परत करणार्‍या परिभाषा, चित्रे, शोध परिणाम आणि इतर शोध परिणामांना शब्द आणि त्याच्या आसपासचा संदर्भ पाठविते.</translation>
 <translation id="6893813176749746474">Chromium अद्यतनित केले गेले, परंतु आपण ते किमान 30 दिवसांपासून वापरलेले नाही.</translation>
-<translation id="6900895776413482243">Chromium व्यस्त मोडमध्ये पुन्हा लाँच करण्याने आपले Chromium अ‍ॅप्स बंद होतील आणि पुन्हा लाँच होतील.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Chromium मध्ये लोड केलेली मॉड्यूल</translation>
 <translation id="6970811910055250180">आपले डिव्हाइस अद्यतनित करीत आहे...</translation>
@@ -214,7 +208,6 @@ Chromium आपली सेटिंग्ज पुनर्प्राप्
 <translation id="8551886023433311834">जवळपास अद्ययावत! अद्यतन करणे पूर्ण करण्यासाठी आपल्या डिव्हाइसचा पुनरारंभ करा.</translation>
 <translation id="85843667276690461">Chromium वापरून मदत मिळवा</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium लेखक. सर्व हक्क राखीव.</translation>
-<translation id="8605166112420372522">डेस्कटॉपवर Chromium &amp;पुन्हा लाँच करा</translation>
 <translation id="8621669128220841554">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. कृपया Chromium पुन्‍हा डाउनलोड करा.</translation>
 <translation id="8628626585870903697">Chromium कार्य करण्यासाठी मुद्रण पूर्वावलोकनास आवश्यक असलेले PDF viewer समाविष्ट करीत नाही.</translation>
 <translation id="8684913864886094367">Chromium योग्यरित्या बंद केले नव्‍हते.</translation>

@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">የስለ ገጹ «<ph name="ABOUT_PAGE" />» መጫን አልተቻለም።</translation>
 <translation id="4434145631756268951">{0,select, single{ዩኤስቢ መሣሪያን ይምረጡ}multiple{ዩኤስቢ መሣሪያዎችን ምረጡ}other{በጥቅም ላይ ያልዋለ}}</translation>
 <translation id="4811956658694082538">የመገልገያ ሂደት ስለተጨናገፈ ጥቅሉን መጫን አልተቻለም። Chromeን እንደገና አስጀምረው እንደገና ይሞክሩት።</translation>
-<translation id="4883436287898674711">ሁሉም የ<ph name="WEBSITE_1" /> ጣቢያዎች</translation>
 <translation id="5026754133087629784">የድር እይታ፦ <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">የመተግበሪያ እይታ፦ <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">ይህ ቅጥያ የቁልፍ ፋይል «<ph name="KEY_PATH" />»ን ያካትታል። ይህንን ማድረግ ላይፈልጉ ይችላሉ።</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID" />») በአስተዳዳሪው ታግዷል።</translation>
 <translation id="7972881773422714442">አማራጮች፦ <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">ይህ ቅጥያ የወረደውን «<ph name="ATTEMPTED_FILENAME" />» ብሎ መሰየም አልተሳካለትም፣ ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ሌላ የፋይል ስም «<ph name="ACTUAL_FILENAME" />» ስለወሰነ ነው።</translation>
-<translation id="8284279544186306258">ሁሉም የ<ph name="WEBSITE_1" /> ጣቢያዎች</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> ከ<ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">ይህ ቅጥያ ለአንድ የአውታረ መረብ ጥያቄ ምስክርነቶችን ማቅረብ አልቻለም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) የተለዩ ምስክርነቶችን ስላቀረበ።</translation>
 <translation id="8602184400052594090">ገላጭ ፋይሉ ጠፍቷል ወይም ተነባቢ አይደለም።</translation>

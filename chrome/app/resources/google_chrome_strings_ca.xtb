@@ -143,7 +143,6 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="568643307450491754">Trobareu les adreces d'interès al menú de Chrome o a la barra d'adreces d'interès.</translation>
 <translation id="573759479754913123">Quant a Chrome OS</translation>
 <translation id="5749068826913805084">Chrome necessita tenir accés a l'emmagatzematge per poder baixar fitxers.</translation>
-<translation id="5785746630574083988">En tornar a iniciar en el mode de Windows 8, les aplicacions de Chrome es tancaran i es tornaran a iniciar.</translation>
 <translation id="5855036575689098185">El programari que s'executa al vostre ordinador no és compatible amb Google Chrome.</translation>
 <translation id="5877064549588274448">El canal ha canviat. Reinicieu el dispositiu perquè s'apliquin els canvis.</translation>
 <translation id="5931853610562009806">En un Mac, és possible que les contrasenyes es desin a Keychain i que altres usuaris de Chrome que comparteixin aquest compte d'OS X puguin accedir-hi i sincronitzar-les.</translation>
@@ -204,11 +203,9 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="7747138024166251722">L'instal·lador no ha pogut crear un directori temporal. Comprova que hi ha espai lliure al disc i que tens permís per instal·lar el programari.</translation>
 <translation id="7761834446675418963">Feu clic al vostre nom per obrir Chrome i començar a navegar.</translation>
 <translation id="7781002470561365167">Hi ha disponible una versió nova de Google Chrome.</translation>
-<translation id="7784335114585804598">&amp;Reinicia Chrome en mode Windows 8</translation>
 <translation id="7787950393032327779">Sembla que un altre procés de Google Chrome (<ph name="PROCESS_ID" />) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME" />). Chrome ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chrome.</translation>
 <translation id="7788788617745289808">Chrome necessita accés a la càmera per compartir-la amb aquest lloc web.</translation>
 <translation id="7808348361785373670">Suprimeix de Chrome...</translation>
-<translation id="781069973841903133">Si reinicieu Chrome en mode envoltant, les aplicacions de Chrome es tancaran i es tornaran a iniciar.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
 <translation id="7890208801193284374">Si compartiu un ordinador, els amics i els familiars poden navegar de manera independent i configurar Chrome com vulguin.</translation>
 <translation id="8000275528373650868">Google Chrome requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
@@ -221,11 +218,9 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8205111949707227942">Opcional: ajudeu-nos a millorar Chrome OS enviant estadístiques d'ús i informes d'error a Google automàticament.</translation>
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME" />. L'enllaç sol·licitat és <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome està utilitzant la càmera i el micròfon.</translation>
-<translation id="8274359292107649245">Obre Chrome a l'escriptori</translation>
 <translation id="8286862437124483331">Google Chrome està provant de mostrar contrasenyes. Escriviu la vostra contrasenya de Windows per permetre-ho.</translation>
 <translation id="8290100596633877290">Google Chrome s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
 <translation id="8406086379114794905">Ajudeu a millorar Chrome</translation>
-<translation id="8437332772351535342">En tornar a iniciar en mode d'escriptori, es tancaran i es tornaran a iniciar les aplicacions de Chrome.</translation>
 <translation id="8460191995881063249">Centre de notificacions de Chrome</translation>
 <translation id="853189717709780425">Esteu iniciant la sessió amb un compte gestionat i atorgant el control del vostre perfil de Google Chrome a l'administrador corresponent. Les dades de Chrome, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME" />. Aquestes dades es podran suprimir a través del tauler de control de comptes de Google, però no es podran associar amb un altre compte.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -237,12 +232,10 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 <translation id="8669527147644353129">Aplicació auxiliar de Google Chrome</translation>
 <translation id="8679801911857917785">També controla la pàgina que es mostra quan inicieu Chrome.</translation>
 <translation id="870251953148363156">Actualitza &amp;Google Chrome</translation>
-<translation id="8811903091068364646">&amp;Reinicia Chrome a l'escriptori</translation>
 <translation id="8823341990149967727">Chrome no està actualitzat</translation>
 <translation id="884296878221830158">També controla la pàgina que es mostra quan inicieu Chrome o quan feu clic al botó Inici.</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
-<translation id="8889942196804715220">Torna a iniciar en mode envoltant de Chrome</translation>
 <translation id="9026991721384951619">Chrome OS no ha pogut sincronitzar les vostres dades perquè les dades d'inici de sessió del compte no estan actualitzades.</translation>
 <translation id="9102715433345326100">Aquest fitxer és maliciós i Chrome l'ha bloquejat.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Advertiment:<ph name="END_BOLD" /> Google Chrome no pot evitar que les extensions registrin l'historial de navegació. Per desactivar l'extensió en mode d'incògnit, anul·leu la selecció de l'opció corresponent.</translation>

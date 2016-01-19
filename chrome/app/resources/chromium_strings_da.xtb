@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1065672644894730302">Dine præferencer kan ikke læses. Visse funktioner er muligvis ikke tilgængelige, og ændringer af præferencer gemmes ikke.</translation>
-<translation id="108122890477367602">Gensta&amp;rt Chromium i Windows 8-tilstand</translation>
 <translation id="1115445892567829615">Chromium kunne ikke synkronisere dine data. Opdater din adgangssætning til synkronisering.</translation>
 <translation id="1174473354587728743">Deler du computer med andre? Nu kan du konfigurere Chromium, præcist som du vil.</translation>
 <translation id="1185134272377778587">Om Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium svarer ikke. Vil du genstarte nu?</translation>
 <translation id="1967743265616885482">Et modul med samme navn er i strid med Chromium.</translation>
 <translation id="2077129598763517140">Brug hardwareacceleration, når det er muligt</translation>
-<translation id="2097986737970966220">Åbn Chromium på skrivebordet</translation>
 <translation id="2117181891440368863">Chromium bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede Certificate Transparency-oplysninger, men de var ugyldige.</translation>
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Chromium OS open source-licenser</translation>
-<translation id="2233513990531887259">Genstart Chromium i maksimaltilstand</translation>
 <translation id="2241627712206172106">Hvis du deler en computer, kan venner og familie browse individuelt og konfigurere Chromium, som de ønsker hver især.</translation>
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="2316129865977710310">Nej tak</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Kom godt i gang med Chromium OS</translation>
 <translation id="3582788516608077514">Opdaterer Chromium...</translation>
 <translation id="358997566136285270">Chromium-logo</translation>
-<translation id="3595526210123705352">En genstart i Windows 8-tilstand vil lukke og genstarte dine Chromium-apps.</translation>
 <translation id="3738139272394829648">Tryk for at søge</translation>
 <translation id="3748537968684000502">Du får vist en sikker Chromium-side.</translation>
 <translation id="378917192836375108">Med Chromium kan du klikke på et telefonnummer på nettet og ringe op til det via Skype!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Klik på dit navn for at åbne Chromium og gå i gang med at browse.</translation>
 <translation id="390894725198123737">På Mac kan adgangskoder blive gemt i din Keychain, og andre Chromium-brugere, der deler denne OS X-konto, kan få adgang til eller synkronisere adgangskoderne.</translation>
 <translation id="4050175100176540509">Vigtige sikkerhedsforbedringer og nye funktioner er tilgængelige i den seneste version.</translation>
-<translation id="4075965373589665797">En genstart i skrivebordstilstand vil lukke og genstarte dine Chromium-apps.</translation>
 <translation id="4077262827416206768">Luk alle Chromium-vinduer, og genstart Chromium, før denne ændring kan træde i kraft.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advarsel!<ph name="END_BOLD" /> Chromium kan ikke forhindre udvidelser i at registrere din browserhistorik. Fjern markeringen for at deaktivere denne udvidelse i inkognitotilstand.</translation>
 <translation id="421369550622382712">Find fantastiske apps, spil, udvidelser og temaer til Chromium.</translation>
@@ -164,7 +159,6 @@ Visse funktioner kan være utilgængelige. Angiv en anden profilmappe, eller bru
 <translation id="6838494703713445896">Chromium bekræftede, at <ph name="ISSUER" /> har udstedt certifikatet for dette website. Serveren leverede gyldige Certificate Transparency-oplysninger.</translation>
 <translation id="6883876366448858277">sender et ord og ordets kontekst til Google Søgning, der leverer definitioner, billeder, søgeresultater og andre oplysninger.</translation>
 <translation id="6893813176749746474">Chromium er blevet opdateret, men du har ikke brugt den i 30 dage.</translation>
-<translation id="6900895776413482243">En genstart af Windows i maksimaltilstand vil lukke og genstarte dine Chromium-apps.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduler indlæst i Chromium</translation>
 <translation id="6970811910055250180">Opdaterer din enhed...</translation>
@@ -213,7 +207,6 @@ Chromium kan ikke gendanne dine præferencer.</translation>
 <translation id="8551886023433311834">Den er næsten opdateret. Genstart din enhed for at fuldføre opdateringen.</translation>
 <translation id="85843667276690461">Få hjælp til at bruge Chromium</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Forfatterne bag Chromium. Alle rettigheder forbeholdes.</translation>
-<translation id="8605166112420372522">Gensta&amp;rt Chromium på skrivebordet</translation>
 <translation id="8621669128220841554">Installationen mislykkedes på grund af en uspecificeret fejl. Download Chromium igen.</translation>
 <translation id="8628626585870903697">Chromium inkluderer ikke PDF-fremviseren, som er påkrævet, for at Vis udskrift kan fungere.</translation>
 <translation id="8684913864886094367">Chromium blev ikke afsluttet korrekt.</translation>

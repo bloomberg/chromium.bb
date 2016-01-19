@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">pravkar</translation>
 <translation id="2770465223704140727">Odstrani s seznama</translation>
 <translation id="278029852808208386">Najdena ni bila nobena naprava Bluetooth. <ph name="BEGIN_LINK" />Iščite znova<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Zaznana je počasna povezava.</translation>
 <translation id="2842985007712546952">Nadrejena mapa</translation>
 <translation id="2870560284913253234">Spletno mesto</translation>
 <translation id="2888126860611144412">O brskalniku Chrome</translation>
@@ -173,7 +172,6 @@ Prijavljate se z upravljanim računom in s tem njegovemu skrbniku omogočate nad
 <translation id="3492207499832628349">Nov zavihek brez beleženja zgodovine</translation>
 <translation id="3518985090088779359">Sprejmi in nadaljuj</translation>
 <translation id="3527085408025491307">Mapa</translation>
-<translation id="3559647143395293616">Vklopite Fizični splet</translation>
 <translation id="360480449234699036">Več informacij o temah na spletnih mestih, ne da bi zapustili stran. Možnost »Dotaknite se za iskanje« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
 
 Če želite prilagoditi iskalno poizvedbo, jo izberite z daljšim dotikom. Če želite podrobneje nastaviti iskanje, potisnite podokno povsem navzgor in se dotaknite iskalnega polja.</translation>
@@ -274,7 +272,6 @@ V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</t
 <translation id="5039804452771397117">Dovoli</translation>
 <translation id="5040262127954254034">Zasebnost</translation>
 <translation id="5063480226653192405">Uporaba</translation>
-<translation id="509605886816275399">Želite shraniti to stran za ogled brez povezave?</translation>
 <translation id="5100237604440890931">Strnjeno – kliknite, če želite razširiti.</translation>
 <translation id="5107381076085091558">Prenos je zaustavljen.</translation>
 <translation id="5118713593561876160">Zanimanja</translation>
@@ -288,6 +285,7 @@ V računalniku odprite Chrome, nato meni in izberite »Prijava v Chrome …«</t
 <translation id="5168917394043976756">Odpri predal za krmarjenje</translation>
 <translation id="5171045022955879922">Poiščite ali vnesite URL</translation>
 <translation id="5184329579814168207">Odpri v Chromu</translation>
+<translation id="5199929503336119739">Delovni profil</translation>
 <translation id="5210365745912300556">Zapri zavihek</translation>
 <translation id="5210714456814679336">Zavihki, ki ste jih odprli v Chromu v drugih napravah, bodo prikazani tukaj.</translation>
 <translation id="5228579091201413441">Omogoči sinhronizacijo</translation>
@@ -382,7 +380,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne s
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
-<translation id="624558823898732418">Jezik prevoda: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
 <translation id="6317634962183824346">Sinhronizacija sistema Android je onemogočena. Omogočite jo in poskusite znova.</translation>
@@ -533,6 +530,7 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="8146397137182589628">Ni shranjena za način brez povezave</translation>
 <translation id="8157532349231307196">Število računov: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Vsebina</translation>
+<translation id="8200772114523450471">Nadaljuj</translation>
 <translation id="8209050860603202033">Odpri sliko</translation>
 <translation id="8218346974737627104">Potrditev prijave</translation>
 <translation id="8218934717680664417">Zdaj lahko iščete z enim dotikom</translation>
@@ -552,7 +550,6 @@ Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, brsk
 <translation id="8514577642972634246">Vklop načina brez beleženja zgodovine</translation>
 <translation id="8515416241041728525">Dodaj račun za <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">To spletno mesto uporablja šibko varnostno konfiguracijo (podpise SHA-1), zato vaša povezava morda ni zasebna.</translation>
-<translation id="8528538445849828817">Jezik strani: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Odpri to stran</translation>
 <translation id="8562452229998620586">Shranjena gesla bodo prikazana tukaj.</translation>
 <translation id="856481929701340285">Zah. za namiz. sp. mesto</translation>

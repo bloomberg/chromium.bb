@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ዓዓ</translation>
 <translation id="6075880972317537864">በ<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> ላይ ያሉ አጥቂዎች መረጃዎን ለመስረቅ (ለምሳሌ፦ የይለፍ ቃላት፣ መልዕክቶች ወይም ክሬዲት ካርዶች) እርስዎን ለማታለል ሊሞክሩ ይችላሉ።</translation>
 <translation id="6149061208933997199">የይለፍ ቃል ይጠቀሙ</translation>
+<translation id="6196207969502475924">የድምጽ ፍለጋ</translation>
 <translation id="6221345481584921695">Google የጥንቃቄ አሰሳ በቅርብ ጊዜ <ph name="SITE" /> ላይ <ph name="BEGIN_LINK" />ተንኮል-አዘል ዌር<ph name="END_LINK" /> አግኝቷል። በመደበኛ ጊዜ ደህንነታቸው የተጠበቁ ድር ጣቢያዎች አንዳንድ ጊዜ በተንኮል-አዘል ዌር ሊጠቁ ይችላሉ። ተንኮል-አዘል ይዘቱ የሚታወቅ የተንኮል-አዘል ዌር አሰራጭ ከሆነው <ph name="SUBRESOURCE_HOST" /> ነው የመጣው።</translation>
 <translation id="6264485186158353794">ወደ አስተማማኝ ተመለስ</translation>
 <translation id="6314335155547195432">የይለፍ ቃል አፍልቅ</translation>
+<translation id="6344783595350022745">ጽሑፍ አጽዳ</translation>
 <translation id="6456425917241817154">በChrome የፈለቀ የይለፍ ቃል</translation>
 <translation id="6535543971741225613">ሊደርሱበት የሚሞክሩት ጣቢያ ባልተለመደ መልኩ ነው እየሰራ ያለው፣ እና Chrome ዩ አር ኤሉ ትክክለኛ መሆኑን ሊያረጋግጥ አልቻለም። ለደህንነት ሲባል መቀጠል የለብዎትም፣ እናም ምናልባት እንደገና ነገ ይሞክሩ ወይም ሌላ ቦታ ይሂዱ።</translation>
 <translation id="6740369132746915122">ደህንነትዎ ላይ ሊያስከትል የሚችላቸውን ስጋቶች ከተረዱ <ph name="BEGIN_LINK" />ይህን ደህንነቱ ያልተጠበቀ ጣቢያ መጎብኘት<ph name="END_LINK" /> ይችላሉ።</translation>

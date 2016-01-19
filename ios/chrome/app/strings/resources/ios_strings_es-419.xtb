@@ -31,9 +31,11 @@
 <translation id="605721222689873409">AA</translation>
 <translation id="6075880972317537864">Los atacantes de <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían intentar engañarte para robar información (por ejemplo, contraseñas, mensajes o tarjetas de crédito).</translation>
 <translation id="6149061208933997199">Usar contraseña</translation>
+<translation id="6196207969502475924">Búsqueda por voz</translation>
 <translation id="6221345481584921695">La Navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> en <ph name="SITE" /> recientemente. A veces, los sitios web que suelen ser seguros contienen software malicioso. El contenido malicioso proviene de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de software malicioso.</translation>
 <translation id="6264485186158353794">Volver a seguridad</translation>
 <translation id="6314335155547195432">Generar contraseña</translation>
+<translation id="6344783595350022745">Borrar texto</translation>
 <translation id="6456425917241817154">Generada por Chrome</translation>
 <translation id="6535543971741225613">Este sitio está actuando de manera extraña y Chrome no puede verificar si su URL es correcta. Por razones de seguridad, no deberías continuar. Puedes volver a intentarlo mañana o dirigirte a otro sitio.</translation>
 <translation id="6740369132746915122">Si comprendes los riesgos para tu seguridad, puedes <ph name="BEGIN_LINK" />visitar este sitio no seguro<ph name="END_LINK" />.</translation>

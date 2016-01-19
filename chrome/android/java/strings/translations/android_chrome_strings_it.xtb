@@ -125,7 +125,6 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la localizzaz
 <translation id="2762000892062317888">in questo istante</translation>
 <translation id="2770465223704140727">Rimuovi dall'elenco</translation>
 <translation id="278029852808208386">Nessun dispositivo Bluetooth trovato. <ph name="BEGIN_LINK" />Esegui di nuovo la ricerca<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">È stata rilevata una connessione lenta.</translation>
 <translation id="2842985007712546952">Cartella principale</translation>
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
@@ -173,7 +172,6 @@ Stai per eseguire l'accesso con un account gestito e consentire al relativo ammi
 <translation id="3492207499832628349">Nuova scheda in incognito</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
 <translation id="3527085408025491307">Cartella</translation>
-<translation id="3559647143395293616">Attiva il Physical Web</translation>
 <translation id="360480449234699036">Scopri gli argomenti dei siti web senza lasciare la pagina. La funzione Tocca per cercare consente di inviare una parola e il relativo contesto alla Ricerca Google; vengono restituiti risultati di ricerca, immagini, definizioni e altri dettagli.
 
 Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfezionare la ricerca, fai scorrere completamente il riquadro verso l'alto e tocca la casella di ricerca.</translation>
@@ -274,7 +272,6 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5039804452771397117">Consenti</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Utilizzo</translation>
-<translation id="509605886816275399">Salvare la pagina offline?</translation>
 <translation id="5100237604440890931">Compresso. Fai clic per espandere.</translation>
 <translation id="5107381076085091558">Download sospeso.</translation>
 <translation id="5118713593561876160">Interessi</translation>
@@ -288,6 +285,7 @@ Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…"</transla
 <translation id="5168917394043976756">Apri riquadro di navigazione a scomparsa</translation>
 <translation id="5171045022955879922">Cerca o digita un URL</translation>
 <translation id="5184329579814168207">Apri in Chrome</translation>
+<translation id="5199929503336119739">Profilo di lavoro</translation>
 <translation id="5210365745912300556">Chiudi scheda</translation>
 <translation id="5210714456814679336">Le schede aperte in Chrome sugli altri dispositivi verranno visualizzate qui.</translation>
 <translation id="5228579091201413441">Abilita sincronizzazione</translation>
@@ -382,7 +380,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="6232535412751077445">Se attivi l'opzione "Non tenere traccia", verrà inclusa una richiesta nel tuo traffico di navigazione. Gli effetti dipendono dall'eventuale risposta dei siti web alla richiesta e dall'interpretazione di quest'ultima.
 
 Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annunci non basati su altri siti web visitati. Molti siti web continueranno tuttavia a raccogliere e a utilizzare i dati di navigazione, ad esempio per aumentare la sicurezza, fornire contenuti, annunci e consigli, nonché per generare statistiche sui rapporti.</translation>
-<translation id="624558823898732418">Lingua della traduzione: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Si è verificato un problema durante la stampa della pagina. Riprova.</translation>
 <translation id="6295158916970320988">Tutti i siti</translation>
 <translation id="6317634962183824346">Sincronizzazione del sistema Android non attiva. Riattivala e riprova.</translation>
@@ -533,6 +530,7 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="8146397137182589628">Non salvata offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> account</translation>
 <translation id="8168435359814927499">Contenuti</translation>
+<translation id="8200772114523450471">Riprendi</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
 <translation id="8218346974737627104">Conferma accesso</translation>
 <translation id="8218934717680664417">Ora è sufficiente un solo tocco per cercare</translation>
@@ -552,7 +550,6 @@ Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di
 <translation id="8514577642972634246">Accedi alla modalità di navigazione in incognito</translation>
 <translation id="8515416241041728525">Aggiungi account per <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Questo sito utilizza una configurazione di sicurezza poco efficace (firme basate sull'algoritmo SHA-1), pertanto la tua connessione potrebbe non risultare privata.</translation>
-<translation id="8528538445849828817">Lingua della pagina: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Apri questa pagina</translation>
 <translation id="8562452229998620586">Le password salvate verranno visualizzate qui.</translation>
 <translation id="856481929701340285">Richiedi sito desktop</translation>

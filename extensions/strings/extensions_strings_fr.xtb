@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Impossible de charger la page "À propos" <ph name="ABOUT_PAGE" />.</translation>
 <translation id="4434145631756268951">{0,select, single{Sélectionner un appareil USB}multiple{Sélectionner des appareils USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Impossible d'installer le package en raison du plantage d'un processus associé à un utilitaire. Veuillez redémarrer Chrome, puis réessayer.</translation>
-<translation id="4883436287898674711">Tous les sites <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Affichage du site Web : <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview : <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Cette extension comprend le fichier clé <ph name="KEY_PATH" />. Vous ne voulez probablement pas poursuivre.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">L'administrateur a bloqué l'extension <ph name="EXTENSION_NAME" /> (ID : <ph name="EXTENSION_ID" />).</translation>
 <translation id="7972881773422714442">Options : <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Échec de l'attribution du nom "<ph name="ATTEMPTED_FILENAME" />" au fichier téléchargé via l'extension, car un nom de fichier différent, "<ph name="ACTUAL_FILENAME" />", a été attribué via une autre extension (<ph name="EXTENSION_NAME" />).</translation>
-<translation id="8284279544186306258">tous les sites <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Des certificats n'ont pas pu être fournis à la requête réseau par cette extension, car des certificats différents ont été fournis par une autre extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8602184400052594090">Fichier manifeste absent ou illisible</translation>

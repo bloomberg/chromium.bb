@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Teabelehte „<ph name="ABOUT_PAGE" />” ei õnnestunud laadida.</translation>
 <translation id="4434145631756268951">{0,select, single{Valige USB-seade}multiple{Valige USB-seadmed}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Paketti ei õnnestunud installida, sest utiliidiprotsess jooksis kokku. Taaskäivitage Chrome ja proovige uuesti.</translation>
-<translation id="4883436287898674711">Kõik domeeni <ph name="WEBSITE_1" /> saidid</translation>
 <translation id="5026754133087629784">Veebivaade: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Rakendusvaade: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Laiendus hõlmab võtmefaili „<ph name="KEY_PATH" />”. See toiming ei ole soovitatav.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Administraator blokeeris laienduse <ph name="EXTENSION_NAME" /> (laienduse ID „<ph name="EXTENSION_ID" />”).</translation>
 <translation id="7972881773422714442">Valikud: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Laiendus ei saanud määrata allalaaditavale failile nimeks „<ph name="ATTEMPTED_FILENAME" />”, sest teine laiendus (<ph name="EXTENSION_NAME" />) määras teise failinime „<ph name="ACTUAL_FILENAME" />”.</translation>
-<translation id="8284279544186306258">kõik domeeni <ph name="WEBSITE_1" /> saidid</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> teenusepakkujalt <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Laiendusel ei õnnestunud võrgutaotlusele mandaati esitada, kuna teine laiendus (<ph name="EXTENSION_NAME" />) esitas teistsuguse mandaadi.</translation>
 <translation id="8602184400052594090">Manifestifail on kadunud või ei ole seda võimalik lugeda.</translation>

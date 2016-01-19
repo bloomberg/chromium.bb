@@ -31,9 +31,11 @@
 <translation id="605721222689873409">aa</translation>
 <translation id="6075880972317537864">Ründajad saidil <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> võivad proovida teid petta, et varastada teie teavet (nt paroole, sõnumeid või krediitkaardiandmeid).</translation>
 <translation id="6149061208933997199">Kasuta parooli</translation>
+<translation id="6196207969502475924">Häälotsing</translation>
 <translation id="6221345481584921695">Google'i ohutu sirvimise teenus <ph name="BEGIN_LINK" />tuvastas hiljuti pahavara<ph name="END_LINK" /> saidil <ph name="SITE" />. Tavaliselt turvalisi veebisaite võidakse mõnikord nakatada pahavaraga. Pahatahtlik sisu pärineb hostilt <ph name="SUBRESOURCE_HOST" />, mis on tuntud pahavara levitaja.</translation>
 <translation id="6264485186158353794">Tagasi turvalisusse</translation>
 <translation id="6314335155547195432">Parooli loomine</translation>
+<translation id="6344783595350022745">Lihttekst</translation>
 <translation id="6456425917241817154">Chrome'i loodud parool</translation>
 <translation id="6535543971741225613">Sait, mida üritate avada, käitub kummaliselt ja Chrome ei suuda kinnitada, et selle URL on õige. Turvakaalutlustel ei soovitata teil jätkata. Proovige homme uuesti või külastage muud saiti.</translation>
 <translation id="6740369132746915122">Kui mõistate ohtusid oma turvalisusele, võite <ph name="BEGIN_LINK" />seda ebaturvalist saiti külastada<ph name="END_LINK" />.</translation>

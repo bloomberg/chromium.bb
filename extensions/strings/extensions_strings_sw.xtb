@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Haikuweza kupakia ukurasa wa kuhusu '<ph name="ABOUT_PAGE" />'.</translation>
 <translation id="4434145631756268951">{0,select, single{Chagua kifaa cha USB}multiple{Chagua vifaa vya USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Haikuweza kusakinisha kifurushi kwa sababu mchakato wa utekelezaji umeacha kufanya kazi. Jaribu kuzima na kuwasha Chrome na ujaribu tena.</translation>
-<translation id="4883436287898674711">Tovuti zote <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Mwonekano wa wavuti: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Mwonekano wa programu: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Kiendelezi hiki kinajumuisha faili muhimu '<ph name="KEY_PATH" />'. Huenda hutaki kufanya hivyo.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (Kitambulisho ya kiendelezi "<ph name="EXTENSION_ID" />") kimezuiwa na msimamizi.</translation>
 <translation id="7972881773422714442">Chaguzi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Kiendelezi hiki kimeshindwa kukipa kipakuliwa jina "<ph name="ATTEMPTED_FILENAME" />" kwa sababu kipakuliwa kingine (<ph name="EXTENSION_NAME" />) kimechagua jina tofauti la faili "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">tovuti zote <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> kutoka <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Kiendelezi hiki kimeshindwa kutoa vitambulisho kwenye ombi la mtandao kwa sababu kiendelezi kingine (<ph name="EXTENSION_NAME" />) kimetoa vitambulisho tofauti.</translation>
 <translation id="8602184400052594090">Faili ya ratiba haipatikani au haisomeki.</translation>

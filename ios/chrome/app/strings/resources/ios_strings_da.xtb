@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6075880972317537864">Hackere på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> vil muligvis forsøge at narre dig for at stjæle dine oplysninger (f.eks. adgangskoder, beskeder eller kreditkortoplysninger).</translation>
 <translation id="6149061208933997199">Brug adgangskoden</translation>
+<translation id="6196207969502475924">Talesøgning</translation>
 <translation id="6221345481584921695">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede malware<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Websites, der normalt er sikre, inficeres undertiden med malware. Det skadelige indhold kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kendt malwaredistributør.</translation>
 <translation id="6264485186158353794">Tilbage i sikkerhed</translation>
 <translation id="6314335155547195432">Generér adgangskode</translation>
+<translation id="6344783595350022745">Ryd tekst</translation>
 <translation id="6456425917241817154">Adgangskode genereret af Chrome</translation>
 <translation id="6535543971741225613">Det website, du forsøger at få adgang til, opfører sig mærkeligt, og Chrome kan ikke bekræfte, at dets webadresse er korrekt. Af sikkerhedsmæssige årsager, bør du ikke fortsætte. Du kan evt. prøve igen i morgen eller besøge et andet website.</translation>
 <translation id="6740369132746915122">Hvis du forstår, hvilke risici det indebærer for din sikkerhed, kan du <ph name="BEGIN_LINK" />gå til dette usikre website<ph name="END_LINK" />.</translation>

@@ -10,22 +10,20 @@
 <translation id="1066332784716773939">Diagnostiser feil</translation>
 <translation id="106701514854093668">Bokmerker på datamaskinen</translation>
 <translation id="1080116354587839789">Tilpass til vindusbredden</translation>
-<translation id="108346963417674655">Det var ikke mulig å koble til tjeneren på en sikker måte. Dette nettstedet kan ha fungert tidligere, men det er et problem med tjeneren. Tilkobling til slike nettsteder svekker sikkerheten for alle og er derfor blokkert.</translation>
 <translation id="1090046120949329821">Mottok flere distinkte Content-Disposition-overskrifter. Dette er forbudt, for
     å hindre angrep som splitter HTTP-svar.</translation>
 <translation id="1091911885099639251">Bekrefter kortet ...</translation>
 <translation id="1103523840287552314">Oversett alltid <ph name="LANGUAGE" /></translation>
-<translation id="1105117579475534983">Nettsiden er blokkert</translation>
 <translation id="1107591249535594099">Hvis det er merket av for dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det går raskere å fylle ut skjemaer.</translation>
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
 <translation id="111844081046043029">Er du sikker på at du vil forlate denne siden?</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> sier:</translation>
 <translation id="1132774398110320017">Innstillinger for autofyll i Chrome</translation>
-<translation id="1146498888431277930">SSL-tilkoblingsfeil</translation>
 <translation id="1146673768181266552">Krasj-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1152921474424827756">Åpne en <ph name="BEGIN_LINK" />bufret kopi<ph name="END_LINK" /> av <ph name="URL" /></translation>
+<translation id="1175364870820465910">&amp;Skriv ut...</translation>
 <translation id="1181037720776840403">Fjern</translation>
 <translation id="1195447618553298278">Ukjent feil.</translation>
 <translation id="1201402288615127009">Neste</translation>
@@ -46,10 +44,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Skriv ut</translation>
 <translation id="1442912890475371290">Blokkerte forsøket <ph name="BEGIN_LINK" /> på å besøke en side på <ph name="DOMAIN" /><ph name="END_LINK" /></translation>
-<translation id="1452265419286795001">Kan ikke laste inn nettsiden fordi datamaskinen er i hvile- eller
-      dvalemodus. Når dette skjer, blir alle nettverkstilkoblinger brutt,
-      og nye nettverksforespørsler mislykkes. Du skal kunne løse
-      dette ved å laste inn siden på nytt.</translation>
 <translation id="1455235771979731432">Det oppsto et problem under forsøket på å bekrefte kortet ditt. Kontrollér Internett-tilkoblingen din, og prøv igjen.</translation>
 <translation id="1491151370853475546">Last inn denne siden på nytt</translation>
 <translation id="1506687042165942984">Vis en lagret kopi av denne siden (dvs. en kopi du vet at er utdatert).</translation>
@@ -60,12 +54,7 @@
 
       &lt;p&gt;Juster datoen og klokkeslettet under &lt;strong&gt;Generelt&lt;/strong&gt; i &lt;strong&gt;Innstillinger&lt;/strong&gt;-appen.&lt;/p&gt;</translation>
 <translation id="1592005682883173041">Tilgang til lokale data</translation>
-<translation id="1619362374865863391"><ph name="PRODUCT_NAME" />
-    får ikke kontakt med nettstedet. Dette skyldes vanligvis nettverksproblemer,
-    men kan også komme av en feilkonfigurert brannmur eller proxy-tjener.</translation>
 <translation id="1629803312968146339">Vil du at Chrome skal lagre dette kortet?</translation>
-<translation id="1639782983204136776">Mottok et ugyldig svar under forsøket på å laste inn <ph name="URL" />.
-    Det kan hende tjeneren er stengt for vedlikehold eller feilkonfigurert.</translation>
 <translation id="1640180200866533862">Brukerretningslinjer</translation>
 <translation id="1644184664548287040">Nettverkskonfigurasjonen er ugyldig og kan ikke importeres.</translation>
 <translation id="1644574205037202324">Logg</translation>
@@ -76,12 +65,15 @@
 <translation id="1710259589646384581">OS</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Rapporter feil</translation>
+<translation id="17513872634828108">Åpne faner</translation>
 <translation id="1753706481035618306">Sidenummer</translation>
 <translation id="1763864636252898013">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av enhetens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="1775135663370355363">Viser loggen fra denne enheten. <ph name="BEGIN_LINK" />Les mer<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">Oppdater passordfrasen for synkronisering.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ugyldig forespørsel eller forespørselsparametere</translation>
 <translation id="1871208020102129563">Mellomtjeneren er angitt til å bruke statiske proxytjenere, ikke en nettadresse med .pac-skript.</translation>
+<translation id="1871625979288021266">En utrygg port er blokkert</translation>
 <translation id="1883255238294161206">Skjul liste</translation>
 <translation id="1898423065542865115">Filtrering</translation>
 <translation id="194030505837763158">Gå til <ph name="LINK" /></translation>
@@ -113,21 +105,13 @@
 <translation id="2212735316055980242">Innstillingene ble ikke funnet</translation>
 <translation id="2213606439339815911">Henter oppføringer …</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> er ikke tilgjengelig</translation>
-<translation id="2221403025589790908"><ph name="PRODUCT_NAME" />
-    kunne ikke laste inn nettsiden fordi
-    <ph name="HOST_NAME" /> brukte for lang tid på å svare. Det kan hende nettstedet er nede, eller
-    at du har problemer med Internett-tilkoblingen.</translation>
-<translation id="2223896507118749476">Nettstedet støtte på en feil ved henting av <ph name="URL" />.
-    Det kan hende siden er stengt for vedlikehold eller feilkonfigurert.</translation>
 <translation id="225207911366869382">Denne verdien er foreldet for denne innstillingen.</translation>
 <translation id="2262243747453050782">HTTP-feil</translation>
-<translation id="2271281383664374369">Forespørsler til tjeneren fra utvidelser har blitt stanset midlertidig.</translation>
 <translation id="2279770628980885996">En uventet tilstand oppstod mens tjeneren forsøkte å utføre forespørselen.</translation>
 <translation id="2282872951544483773">Utilgjengelige eksperimenter</translation>
 <translation id="229702904922032456">Et rotsertifikat eller mellomliggende sertifikat er utløpt.</translation>
 <translation id="230155334948463882">Nytt kort?</translation>
 <translation id="2328300916057834155">Ignorerte ugyldig bokmerke ved indeks <ph name="ENTRY_INDEX" /></translation>
-<translation id="2345460471437425338">Feil sertifikat for vert.</translation>
 <translation id="2354001756790975382">Andre bokmerker</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2367567093518048410">Nivå</translation>
@@ -148,9 +132,7 @@
 <translation id="2516305470678292029">Alternativer for brukergrensesnitt</translation>
 <translation id="2552545117464357659">Nyere</translation>
 <translation id="2556876185419854533">&amp;Angre endringen</translation>
-<translation id="2581221116934462656">Vil du at <ph name="PRODUCT_NAME" /> skal tilby å oversette sider på <ph name="LANGUAGE_NAME" /> fra dette nettstedet neste gang?</translation>
 <translation id="2587841377698384444">ID for katalog-API:</translation>
-<translation id="2589937147782335782">Vil du at Google skal lagre dette kortet?</translation>
 <translation id="2597378329261239068">Dette dokumentet er passordbeskyttet. Skriv inn et passord.</translation>
 <translation id="2609632851001447353">Varianter</translation>
 <translation id="2625385379895617796">Klokken går for fort</translation>
@@ -159,19 +141,16 @@
 <translation id="2653659639078652383">Send</translation>
 <translation id="2674170444375937751">Er du sikker på at du vil slette disse sidene fra loggen?</translation>
 <translation id="2704283930420550640">Verdien samsvarer ikke med formatet.</translation>
+<translation id="2709516037105925701">Autofyll</translation>
 <translation id="2721148159707890343">Forespørselen var vellykket</translation>
 <translation id="2728127805433021124">Tjenerens sertifikat er signert med en usikker signaturalgoritme.</translation>
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
 <translation id="2784949926578158345">Tilkoblingen ble tilbakestilt.</translation>
+<translation id="2824775600643448204">Adresse- og søkefelt</translation>
 <translation id="2835170189407361413">Slett skjemaet</translation>
 <translation id="2855922900409897335">Bekreft følgende kort: <ph name="CREDIT_CARD" /></translation>
-<translation id="2887624244875325968">Denne feilen kan oppstå når du kobler til sikre tjenere (HTTPS) og betyr at
-    den aktuelle tjeneren prøver å opprette en sikker tilkobling, men at tilkoblingen
-    ikke ville vært sikker på grunn av en alvorlig feilkonfigurasjon.
-    <ph name="LINE_BREAK" /> I slike tilfeller må tjeneren repareres.
-    <ph name="PRODUCT_NAME" />
-    bruker ikke usikre tilkoblinger av personvernhensyn.</translation>
+<translation id="2897655920961181107">Den forespurte porten er utrygg, og har blitt blokkert.</translation>
 <translation id="2909946352844186028">En nettverksendring ble oppdaget.</translation>
 <translation id="2915500479781995473">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Tjenerens sikkerhetssertifikat er utløpt. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din. Datamaskinens klokke er for øyeblikket satt til <ph name="CURRENT_TIME" />. Ser det riktig ut? Hvis det ikke gjør det, bør du korrigere systemets klokke og deretter laste inn denne siden på nytt.</translation>
 <translation id="2922350208395188000">Tjenerens sertifikat kan ikke kontrolleres.</translation>
@@ -207,13 +186,9 @@
 <translation id="3202578601642193415">Nyeste</translation>
 <translation id="3207960819495026254">Bokmerket</translation>
 <translation id="3219579145727097045">Skriv inn utløpsdatoen og den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
-<translation id="3225579507836276307">En tredjeparts utvidelse har blokkert tilgang til denne nettsiden.</translation>
 <translation id="3225919329040284222">Tjeneren oppga et sertifikat som ikke samsvarte med innebygde forventninger. Disse forventningene benyttes for visse nettsteder med høy sikkerhet, og brukes for å beskytte deg.</translation>
 <translation id="3226128629678568754">Trykk på knappen for å laste inn på nytt, for å sende inn dataene som trengs for å laste inn siden på nytt.</translation>
 <translation id="3228969707346345236">Oversettelsen mislyktes fordi siden allerede er på <ph name="LANGUAGE" />.</translation>
-<translation id="3230256772510102500">Proxy-tjenere er tjenere som fungerer som bindeledd mellom datamaskiner og andre tjenere. For øyeblikket er systemet ditt konfigurert for å bruke en proxy-tjener, men
-      <ph name="PRODUCT_NAME" />
-      kan ikke koble til den.</translation>
 <translation id="3270847123878663523">&amp;Angre omorganiseringen</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
 <translation id="333371639341676808">Hindre denne siden i å opprette flere dialogbokser.</translation>
@@ -225,7 +200,6 @@
 <translation id="3377188786107721145">Feil under analysen av enhetsinnstillinger</translation>
 <translation id="3380365263193509176">Ukjent feil</translation>
 <translation id="3380864720620200369">Klient-ID:</translation>
-<translation id="3393716657345709557">Forespurt oppføring ble ikke funnet i bufferen.</translation>
 <translation id="340013220407300675">Angripere prøver kanskje å stjele informasjonen din fra <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for eksempel passord, e-post eller kredittkort).</translation>
 <translation id="3427342743765426898">&amp;Endre likevel</translation>
 <translation id="3435896845095436175">Slå på</translation>
@@ -237,6 +211,7 @@
 <translation id="3528171143076753409">Tjenerens sertifikat er ikke pålitelig.</translation>
 <translation id="3539171420378717834">Lagre en kopi av dette kortet på denne enheten</translation>
 <translation id="3542684924769048008">Bruk passord for:</translation>
+<translation id="3549644494707163724">Kryptér alle synkroniserte data med din egen passordfrase for synkronisering</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> flere</translation>
 <translation id="3566021033012934673">Tilkoblingen din er ikke privat</translation>
 <translation id="3583757800736429874">&amp;Flytt likevel</translation>
@@ -257,6 +232,8 @@
 <translation id="375403751935624634">Oversettelsen mislyktes på grunn av en tjenerfeil.</translation>
 <translation id="3759461132968374835">Du har ingen nylig rapportert programstopp. Programstopp som inntraff når rapportering om programstopp var deaktivert, blir ikke vist her.</translation>
 <translation id="382518646247711829">Hvis du bruker en mellomtjener...</translation>
+<translation id="3828924085048779000">Tom passordfrase er ikke tillatt.</translation>
+<translation id="385051799172605136">Tilbake</translation>
 <translation id="3851596405215565524">Hvis programmet allerede har fått tillatelse til å bruke nettverket, kan du prøve
     å fjerne det fra listen og så legge det til på nytt.</translation>
 <translation id="3858027520442213535">Oppdater dato og klokkeslett</translation>
@@ -264,18 +241,14 @@
 <translation id="3885155851504623709">Kommune</translation>
 <translation id="3901925938762663762">Kortet er utløpt</translation>
 <translation id="3903912596042358459">Tjeneren nektet å utføre forespørselen.</translation>
-<translation id="3920015046759567857">Tilkoblingen til
-    <ph name="HOST_NAME" />
-    ble brutt.</translation>
+<translation id="3930850196944737149">Enheten er frakoblet.</translation>
 <translation id="3934680773876859118">Kan ikke laste inn PDF-dokument</translation>
-<translation id="3940082421246752453">Tjeneren støtter ikke HTTP-versjonen som ble brukt i forespørselen.</translation>
 <translation id="3950924596163729246">Får ikke tilgang til nettverket.</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
 <translation id="4030383055268325496">&amp;Angre tilleggingen</translation>
 <translation id="4032534284272647190">Tilgang til <ph name="URL" /> ble avvist.</translation>
 <translation id="404928562651467259">ADVARSEL</translation>
 <translation id="4058922952496707368">Nøkkel – «<ph name="SUBKEY" />»: <ph name="ERROR" /></translation>
-<translation id="4060383410180771901">Nettstedet kan ikke behandle forespørselen for <ph name="URL" />.</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
 <translation id="409504436206021213">Ikke last inn på nytt</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
@@ -294,10 +267,8 @@
 <translation id="4268298190799576220">Chromium kunne ikke bekrefte kortet ditt akkurat nå. Prøv igjen senere.</translation>
 <translation id="4269787794583293679">(Uten brukernavn)</translation>
 <translation id="4278390842282768270">Tillatt</translation>
-<translation id="4287689875748136217">Kunne ikke laste inn nettsiden fordi tjeneren ikke sendte data.</translation>
 <translation id="4300246636397505754">Overordnede forslag</translation>
 <translation id="4325863107915753736">Artikkelen ble ikke funnet</translation>
-<translation id="4350711002179453268">Kan ikke opprette en sikker tilkobling til tjeneren. Det kan være at tjeneren har problemer, eller at det kreves et klientautentiseringssertifikat som du mangler.</translation>
 <translation id="4372948949327679948">Forventet <ph name="VALUE_TYPE" />-verdi.</translation>
 <translation id="4377125064752653719">Du forsøkte å gå til <ph name="DOMAIN" />, men sertifikatet tjeneren presenterte har blitt trukket tilbake av utstederen. Dette innebærer at sikkerhetsinformasjonen tjeneren presenterte ikke er klarert. Det kan hende at du kommuniserer med en angriper.</translation>
 <translation id="4394049700291259645">Slå av</translation>
@@ -315,7 +286,6 @@
 <translation id="4594403342090139922">&amp;Angre slettingen</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren inneholder feil. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
-<translation id="4681260323810445443">Du er ikke autorisert til å ha tilgang til nettsiden på <ph name="URL" />. Det kan hende at du må logge deg på.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> ble blokkert</translation>
 <translation id="4726672564094551039">Last inn retningslinjer på nytt</translation>
 <translation id="4728558894243024398">Plattform</translation>
@@ -323,38 +293,18 @@
 <translation id="4764776831041365478">Det kan hende at nettsiden på <ph name="URL" /> er midlertidig nede eller flyttet permanent til en ny nettadresse.</translation>
 <translation id="4771973620359291008">Det har oppstått en ukjent feil.</translation>
 <translation id="477518548916168453">Tjeneren støtter ikke funksjonaliteten som kreves for å imøtekomme forespørselen.</translation>
-<translation id="4779052991835840224">Det er ikke mulig å opprette noen sikker tilkobling fordi dette nettstedet bruker en protokoll eller chifferserie som ikke støttes. Dette skyldes sannsynligvis at tjeneren trenger RC4, noe som ikke lenger anses som sikkert.</translation>
-<translation id="4786993863723020412">Feil ved lesing av hurtigbuffer</translation>
 <translation id="4800132727771399293">Kontrollér utløpsdatoen og CVC-koden, og prøv igjen.</translation>
 <translation id="4807049035289105102">Du kan ikke gå til <ph name="SITE" /> akkurat nå, fordi nettstedet sendte kryptert legitimasjon som Google Chrome ikke kan behandle. Nettverksfeil og -angrep er vanligvis forbigående, så siden kommer sikkert til å virke senere.</translation>
 <translation id="4813512666221746211">Nettverksfeil</translation>
 <translation id="4816492930507672669">Tilpass til siden</translation>
-<translation id="4841859178893814774">For å øke hastigheten for nettsider lagrer
-    <ph name="PRODUCT_NAME" />
-    nedlastede filer midlertidig på harddisken. Hvis ikke
-    <ph name="PRODUCT_NAME" />
-    avsluttes på riktig måte, kan det hende disse filene skades, noe som
-    fører til denne feilen. Du skal kunne løse problemet ved å laste inn siden på
-    nytt, og du kan unngå at den oppstår igjen ved å slå av på riktig måte.
-    <ph name="LINE_BREAK" />
-    Hvis problemet fortsetter, kan du prøve å tømme bufferen. I enkelte tilfeller
-    kan dette være et symptom på at maskinvaren er i ferd med å svikte.</translation>
+<translation id="4841640898320458950">En utrygg port er blokkert.</translation>
 <translation id="4850886885716139402">Visning</translation>
-<translation id="4874648484377130814">Dette nettstedet bruker et
-    <ph name="BEGIN_LINK" />nytt generisk toppdomene<ph name="END_LINK" />
-    (gTLD). Hvis du har brukt
-    <ph name="HOST_NAME" />
-    til å åpne interne nettsteder tidligere, bør du kontakte
-    nettverksadministratoren.</translation>
 <translation id="4880827082731008257">Søk i loggen</translation>
-<translation id="49215695600353191">Responsen fra tjeneren inneholdt dupliserte overskrifter. Dette problemet skyldes
-    vanligvis feilkonfigurerte nettsteder eller proxy-tjenere og kan bare
-    løses av administratoren for nettstedene eller proxy-tjenerne.</translation>
+<translation id="488726935215981469">Dataene dine er kryptert med passordfrasen din. Skriv den inn nedenfor.</translation>
 <translation id="4923417429809017348">Denne siden er oversatt til <ph name="LANGUAGE_LANGUAGE" /> fra et ukjent språk</translation>
 <translation id="4926049483395192435">Må angis.</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4958444002117714549">Utvid liste</translation>
-<translation id="4980112683975062744">Dupliserte overskrifter mottatt fra tjener</translation>
 <translation id="498957508165411911">Vil du oversette fra <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Hvis du slår på dette alternativet, lagrer Chrome en kopi av kortet ditt på denne enheten, slik at det blir raskere å fylle ut skjemaer i fremtiden.</translation>
 <translation id="5019198164206649151">Ugyldig funksjonalitet for sikkerhetskopiering</translation>
@@ -366,29 +316,19 @@
 <translation id="5089810972385038852">Fylke / delstat</translation>
 <translation id="5094747076828555589">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chromium. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="5095208057601539847">Provins</translation>
-<translation id="5109770625702925626">Kan ikke slå opp
-    <ph name="HOST_NAME" />.
-    Prøver å diagnostisere problemet …</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5122371513570456792">Funnet <ph name="NUMBER_OF_RESULTS" /><ph name="SEARCH_RESULTS" /> for «<ph name="SEARCH_STRING" />».</translation>
+<translation id="5141240743006678641">Kryptér synkroniserte passord med Google-legitimasjonen din</translation>
 <translation id="5145883236150621069">Feilkode i responsen for enhetsinnstillinger</translation>
-<translation id="5153978682603373396">Proxy-tjenere er tjenere som fungerer som mellomledd mellom enheten din og andre tjenere. For øyeblikket er systemet konfigurert for å bruke en proxy-tjener, men
-      <ph name="PRODUCT_NAME" />
-      kan ikke koble til den.</translation>
 <translation id="5172758083709347301">Datamaskin</translation>
 <translation id="5179510805599951267">Er ikke dette <ph name="ORIGINAL_LANGUAGE" />? Rapportér denne feilen</translation>
 <translation id="5190835502935405962">Bokmerkerad</translation>
 <translation id="5199729219167945352">Eksperimenter</translation>
 <translation id="5228309736894624122">SSL-protokollfeil.</translation>
 <translation id="5251803541071282808">Nettsky</translation>
-<translation id="527200068854444456">Kan ikke laste inn nettsiden fordi enheten er i hvile- eller
-      dvalemodus. Når dette skjer, blir alle nettverkstilkoblinger brutt,
-      og nye nettverksforespørsler mislykkes. Du skal kunne løse
-      dette ved å laste inn siden på nytt.</translation>
 <translation id="5295309862264981122">Bekreft navigering</translation>
 <translation id="5299298092464848405">Feil under analysen av enhetsinnstillingene</translation>
 <translation id="5300589172476337783">Vis</translation>
-<translation id="5303618139271450299">Finner ikke denne nettsiden</translation>
 <translation id="5308689395849655368">Rapportering av programstopp er deaktivert.</translation>
 <translation id="5317780077021120954">Lagre</translation>
 <translation id="536296301121032821">Kunne ikke lagre angivelsen for enhetsinnstillinger</translation>
@@ -416,7 +356,6 @@
 <translation id="5720705177508910913">Gjeldende bruker</translation>
 <translation id="5813119285467412249">&amp;Legg til likevel</translation>
 <translation id="5872918882028971132">Overordnede forslag</translation>
-<translation id="5880867612172997051">Nettverkstilgang er sperret</translation>
 <translation id="5900623698597156974">En TLS 1.0-reserve greide å utveksle håndtrykk med tjeneren, men vi godtar ikke TLS 1.0-reserver lenger. Tjeneren må oppdateres slik at den implementerer versjonsbehandling riktig, og den bør støtte TLS 1.2.</translation>
 <translation id="59107663811261420">Denne korttypen støttes ikke av Google Payments for denne selgeren. Velg et annet kort.</translation>
 <translation id="59174027418879706">Aktivert</translation>
@@ -431,23 +370,8 @@
 <translation id="604124094241169006">Automatisk</translation>
 <translation id="6042308850641462728">Mer</translation>
 <translation id="6060685159320643512">Vær forsiktig. Disse eksperimentene kan bite</translation>
-<translation id="6066742401428748382">Tilgang til nettstedet ble avvist</translation>
 <translation id="6093795393556121384">Kortet er bekreftet</translation>
 <translation id="6099520380851856040">Oppstod <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">Nettsiden på <ph name="URL" /> har forårsaket
-      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette
-      informasjonskapslene for dette nettstedet eller tillate informasjonskapsler fra
-      tredjeparter. Hvis ikke kan det hende problemet skyldes 
-      tjenerkonfigurasjonen og ikke datamaskinen din.</translation>
-<translation id="6130627560064345577">Tjeneren som er vert for nettsiden, er sannsynligvis overbelastet, eller det har oppstått en feil.
-    For å forhindre at utvidelser skaper for mye trafikk og gjør situasjonen verre,
-    har <ph name="PRODUCT_NAME" />
-    midlertidig sluttet å tillate forespørsler fra utvidelser til denne nettadressen.
-    <ph name="LINE_BREAK" />
-    Hvis du ikke ønsker dette, f.eks. hvis du feilsøker ditt eget nettsted, kan du
-    gå til <ph name="URL_FOR_MORE_INFO" />.
-    Der finner du mer informasjon, blant annet om hvordan du slår av denne
-    funksjonen.</translation>
 <translation id="6146055958333702838">Sjekk alle kabler, og start rutere, modemer eller andre nettverksenheter
      du bruker, på nytt.</translation>
 <translation id="6151417162996330722">Tjenersertifikatet har en gyldighetsperiode som er for lang.</translation>
@@ -462,7 +386,6 @@
     mot angrep som splitter HTTP-svar.</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" />-bokmerker</translation>
 <translation id="6264485186158353794">Tilbake til sikkerhet</translation>
-<translation id="6268647269805730940">Denne enheten har ikke fullført trinnene for første oppstart.</translation>
 <translation id="6282194474023008486">Postnummer</translation>
 <translation id="6321917430147971392">Kontrollér DNS-innstillingene dine</translation>
 <translation id="6328639280570009161">Prøv å slå av nettverksforslag.</translation>
@@ -479,16 +402,15 @@
 <translation id="6489534406876378309">Start opplastingen av krasj</translation>
 <translation id="6500116422101723010">Tjeneren kan ikke behandle forespørselen for øyeblikket. Denne koden antyder at dette er en midlertidig tilstand, og at tjeneren vil fungere igjen etter en forsinkelse.</translation>
 <translation id="6512448926095770873">Forlat siden</translation>
-<translation id="6516193643535292276">Kan ikke koble til Internett</translation>
 <translation id="6518133107902771759">Bekreft</translation>
 <translation id="6529602333819889595">&amp;Slett likevel</translation>
 <translation id="6533019874004191247">Adressen støttes ikke.</translation>
 <translation id="6550675742724504774">Alternativer</translation>
+<translation id="6596325263575161958">Krypteringsalternativer</translation>
 <translation id="6626108645084335023">Venter på DNS-sonde.</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> Søk</translation>
 <translation id="6634865548447745291">Du kan ikke gå til <ph name="SITE" /> akkurat nå fordi <ph name="BEGIN_LINK" />dette sertifikatet er tilbakekalt<ph name="END_LINK" />. Nettverksfeil og -angrep er som regel kortvarige, så denne siden fungerer nok igjen senere.</translation>
 <translation id="6637478299472506933">Nedlastingen mislyktes</translation>
-<translation id="6640442327198413730">Bufferfeil</translation>
 <translation id="6644283850729428850">Denne retningslinjen er foreldet.</translation>
 <translation id="6646897916597483132">Skriv inn den firesifrede CVC-koden du finner på forsiden av kortet ditt.</translation>
 <translation id="6671697161687535275">Vil du fjerne forslaget fra Chromium?</translation>
@@ -497,7 +419,6 @@
 <translation id="6746710319270251222">Mottok flere distinkte Content-Length-overskrifter. Dette er forbudt, for
     å beskytte mot angrep som splitter HTTP-svar.</translation>
 <translation id="6753269504797312559">Retningslinjeverdi</translation>
-<translation id="6771079623344431310">Kan ikke koble til mellomtjeneren</translation>
 <translation id="6781404225664080496">Forespørsler til denne nettadressen blir midlertidig stanset.</translation>
 <translation id="6800914069727136216">I innholdspakke</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -513,7 +434,6 @@
 <translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
 <translation id="6897140037006041989">Brukeragent</translation>
 <translation id="6915804003454593391">Bruker:</translation>
-<translation id="6948142510520900350">&lt;strong&gt;Systemadministratoren&lt;/strong&gt; din har blokkert tilgangen til denne nettsiden.</translation>
 <translation id="6957887021205513506">Tjenersertifikatet ser ut til å være forfalsket.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Enhet</translation>
@@ -521,19 +441,14 @@
 <translation id="6973656660372572881">Både statiske proxytjenere og en .pac-skriptnettadresse er angitt.</translation>
 <translation id="6989763994942163495">Vis avanserte innstillinger</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7029809446516969842">Passord</translation>
 <translation id="7050187094878475250">Du prøvde å nå <ph name="DOMAIN" />. Tjeneren presenterte et sertifikat som har en gyldighetsperiode som er for lang til å være pålitelig.</translation>
 <translation id="7052500709156631672">Portner- eller mellomtjeneren mottok et ugyldig svar fra en annen tjener.</translation>
 <translation id="7087282848513945231">Fylke</translation>
 <translation id="7088615885725309056">Eldre</translation>
 <translation id="7108649287766967076">Oversettelsen til <ph name="TARGET_LANGUAGE" /> mislyktes.</translation>
 <translation id="7117303293717852287">Last inn denne nettsiden på nytt</translation>
-<translation id="7117941875056403396"><ph name="PRODUCT_NAME" />
-    prøvde å koble til
-    <ph name="HOST_NAME" />,
-    men ble avvist. Det kan hende nettstedet er nede, eller at nettverket ditt
-    ikke er riktig konfigurert.</translation>
 <translation id="7139724024395191329">Emirat</translation>
-<translation id="7148804936871729015">Tjeneren for <ph name="URL" /> brukte for lang tid på å svare. Den kan være overbelastet.</translation>
 <translation id="7179921470347911571">Start på nytt nå</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
 <translation id="7182878459783632708">Ingen retningslinjer er angitt</translation>
@@ -548,14 +463,6 @@
 <translation id="7275334191706090484">Administrerte bokmerker</translation>
 <translation id="7298195798382681320">Anbefalt</translation>
 <translation id="7334320624316649418">&amp;Omorganiser likevel</translation>
-<translation id="7335675476272530342">Fant ikke nettsiden i bufferen. Enkelte ressurser
-    kan bare lastes trygt fra bufferen, for eksempel sider som genereres
-    fra innsendte data.
-    <ph name="LINE_BREAK" />
-    Det kan også hende denne feilen skyldes at bufferen er skadet som følge av
-    at den har blitt lukket på feil måte.
-    <ph name="LINE_BREAK" />
-    Hvis problemet fortsetter, kan du prøve å tømme bufferen.</translation>
 <translation id="7353601530677266744">Kommandolinje </translation>
 <translation id="7372973238305370288">søkeresultat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> – <ph name="FULL_DATE" /></translation>
@@ -569,6 +476,7 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7424977062513257142">En innebygd side på denne nettsiden sier:</translation>
 <translation id="7441627299479586546">Feil emne for innstillinger</translation>
 <translation id="7450732239874446337">Nettverks-IO er sperret.</translation>
+<translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7514365320538308">Last ned</translation>
 <translation id="7518003948725431193">Finner ingen nettside for denne nettadressen: <ph name="URL" /></translation>
@@ -580,24 +488,16 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7569952961197462199">Vil du fjerne kredittkortet fra Chrome?</translation>
 <translation id="7578104083680115302">Når du lagrer kort med Google, kan du bruke dem til å betale raskt på nettsteder og i apper – uansett hvilken enhet du bruker.</translation>
 <translation id="7592362899630581445">Tjenerens sertifikat bryter navnereglene.</translation>
-<translation id="759809665464235306">Denne tjeneren krever et sertifikat for autentisering og godkjente ikke det som ble
-    sendt av nettleseren. Det kan hende sertifikatet ditt er utløpt, eller at tjeneren
-    ikke stoler på utstederen. Hvis du har et annet sertifikat, kan du prøve 
-    å bruke det. Ellers kan det hende du må skaffe deg et gyldig sertifikat fra
-    et annet sted.</translation>
 <translation id="7600965453749440009">Oversett aldri <ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">Forbedrede bokmerker</translation>
 <translation id="7610193165460212391">Verdien er utenfor rekkevidden <ph name="VALUE" />.</translation>
-<translation id="7614030880636783720">Wi-Fi og mobildata er utilgjengelig. Siden kan lastes inn når enheten har koblet seg til et nettverk.</translation>
+<translation id="7615602087246926389">Du har allerede data som er kryptert med en annen versjon av Google-kontopassordet ditt. Skriv det inn nedenfor.</translation>
 <translation id="7637571805876720304">Vil du fjerne kredittkortet fra Chromium?</translation>
 <translation id="7643817847124207232">Internett-tilkoblingen er blitt borte.</translation>
 <translation id="765676359832457558">Skjul avanserte innstillinger</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7668654391829183341">Ukjent enhet</translation>
 <translation id="7674629440242451245">Interessert i nye kule Chrome-funksjoner? Prøv utviklerkanalen vår på chrome.com/dev</translation>
-<translation id="7689727675296818638">Tilkoblingen til
-    <ph name="HOST_NAME" />
-    ble brutt på grunn av en endring i nettverkstilkoblingen.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Fortsett til <ph name="SITE" /> (usikker side)<ph name="END_LINK" /></translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Administreres ikke</translation>
@@ -608,10 +508,11 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="777702478322588152">Prefektur</translation>
 <translation id="778579833039460630">Ingen data mottatt</translation>
 <translation id="7791543448312431591">Legg til</translation>
+<translation id="7793809570500803535">Det kan hende at nettsiden på <ph name="SITE" /> er midlertidig nede eller flyttet permanent til en ny nettadresse.</translation>
 <translation id="780301667611848630">Nei, takk</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Vil du fjerne skjemaforslaget fra Chrome?</translation>
-<translation id="7839809549045544450">Tjeneren har en feil midlertidig Diffie-Hellman-nøkkel</translation>
+<translation id="7825436071901023927">Utrygg port <ph name="SITE" /></translation>
 <translation id="7887683347370398519">Kontrollér CVC-koden din, og prøv igjen.</translation>
 <translation id="790025292736025802">Finner ikke <ph name="URL" /></translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -623,16 +524,15 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="7983301409776629893">Oversett alltid <ph name="ORIGINAL_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Bokmerker på datamaskinen</translation>
 <translation id="7995512525968007366">Ikke spesifisert</translation>
-<translation id="8016174103774548813">SSL-serveren er trolig foreldet.</translation>
 <translation id="8034522405403831421">Denne siden er på <ph name="SOURCE_LANGUAGE" />. Vil du oversette den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Fant ingen loggoppføringer.</translation>
+<translation id="8075539548641175231">Dataene dine ble kryptert med passordfrasen din <ph name="TIME" />. Skriv den inn nedenfor.</translation>
 <translation id="8088680233425245692">Kunne ikke åpne artikkelen.</translation>
 <translation id="8091372947890762290">Aktivering venter på tjeneren</translation>
 <translation id="8150722005171944719">Kunne ikke lese filen på <ph name="URL" /> Den kan ha blitt fjernet eller flyttet. Det kan også være filtillatelser som forhindrer tilgang.</translation>
 <translation id="8194797478851900357">&amp;Angre flyttingen</translation>
 <translation id="8201077131113104583">Ugyldig oppdaterings-URL for utvidelse med ID «<ph name="EXTENSION_ID" />».</translation>
 <translation id="8204086856545141093">Forespørsler til tjeneren har blitt blokkert av en innstilling.</translation>
-<translation id="820791781874064845">Denne nettsiden ble blokkert av en utvidelse</translation>
 <translation id="8218327578424803826">Tilordnet posisjon:</translation>
 <translation id="8240446052814166959">Sjekk innstillingene for proxy-tjeneren, eller kontakt nettverksadministratoren for
       å forsikre deg om at den fungerer.
@@ -649,19 +549,19 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
       <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">Kontakt nettverksadministratoren hvis du ikke er sikker på hva dette betyr.</translation>
 <translation id="8294431847097064396">Kilde</translation>
-<translation id="8295070100601117548">Tjenerfeil</translation>
 <translation id="8308427013383895095">Oversettelsen mislyktes på grunn av et problem med nettverksforbindelsen.</translation>
 <translation id="8311778656528046050">Er du sikker på at du vil laste inn denne siden på nytt?</translation>
 <translation id="8349305172487531364">Bokmerkerad</translation>
 <translation id="8364627913115013041">Ikke angitt.</translation>
 <translation id="8412145213513410671">Programstopp (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8412392972487953978">Du må angi den samme passordfrasen to ganger.</translation>
 <translation id="8428213095426709021">Innstillinger</translation>
 <translation id="8437238597147034694">&amp;Angre flyttingen</translation>
 <translation id="8488350697529856933">Gjelder for</translation>
 <translation id="8494979374722910010">Forsøket på å koble til tjeneren mislyktes.</translation>
 <translation id="8508677083825928015">Hent ressurser på forhånd for å laste sider raskere</translation>
-<translation id="8515737884867295000">Den sertifikatbaserte autentiseringen mislyktes</translation>
 <translation id="8530504477309582336">Denne korttypen støttes ikke av Google Payments. Velg et annet kort.</translation>
+<translation id="8550022383519221471">Synkroniseringstjeneste er ikke tilgjengelig for ditt domene.</translation>
 <translation id="8553075262323480129">Oversettelsen mislyktes fordi sidens språk ikke kunne fastslås.</translation>
 <translation id="8559762987265718583">En privat tilkobling til <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> kunne ikke etableres fordi datoen og klokkeslettet (<ph name="DATE_AND_TIME" />) er feil på enheten.</translation>
 <translation id="8571890674111243710">Oversett siden til <ph name="LANGUAGE" /></translation>
@@ -670,16 +570,11 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
     Du kan fortsatt feilsøke eventuelle tilkoblingsproblemer med
     diagnostikkverktøyet du finner her.</translation>
 <translation id="8647750283161643317">Tilbakestill alle til standard</translation>
+<translation id="8680787084697685621">Kontoens påloggingsdetaljer er utdaterte.</translation>
 <translation id="8713130696108419660">Feil innledende signatur</translation>
 <translation id="8725066075913043281">Prøv igjen</translation>
-<translation id="8729518820755801792">Chrome kan ikke åpne adressen.</translation>
 <translation id="8730621377337864115">Ferdig</translation>
 <translation id="8738058698779197622">Klokken din må være riktig stilt for at du skal kunne opprette en sikker forbindelse. Sertifikatene som nettsteder bruker til å identifisere seg med, er nemlig bare gyldige i en viss tid. Siden enhetens klokke er feil, kan ikke Chromium kontrollere disse sertifikatene.</translation>
-<translation id="8776174617851537652">Nettsiden på <ph name="URL" /> har forårsaket
-      for mange viderekoblinger. Du kan kanskje løse problemet ved å slette
-      informasjonskapslene for dette nettstedet eller tillate informasjonskapsler
-      fra tredjeparter. Hvis ikke kan det hende problemet skyldes
-      tjenerkonfigurasjonen og ikke datamaskinen din.</translation>
 <translation id="8790007591277257123">&amp;Slett likevel</translation>
 <translation id="8798099450830957504">Standard</translation>
 <translation id="8804164990146287819">Personvernregler</translation>
@@ -705,43 +600,20 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="9013589315497579992">Ugyldig autentiseringssertifikat for SSL-klient.</translation>
 <translation id="901974403500617787">Rapporteringer som gjelder for hele systemet kan bare angis av eieren: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">Tjeneren tillot ikke tilkoblingen.</translation>
-<translation id="9020278534503090146">Denne nettsiden er ikke tilgjengelig</translation>
 <translation id="9020542370529661692">Denne siden har blitt oversatt til <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9032090437019334135">Finner ikke tjeneren på
-    <ph name="HOST_NAME" />
-    fordi DNS-oppslaget mislyktes. DNS er nettjenester som oversetter nettsteders
-    navn til tilhørende Internett-adresser. Denne feilen skyldes vanligvis at du
-    ikke er koblet til Internett, eller at nettverket er feilkonfigurert. Den kan
-    også skyldes DNS-tjenere som ikke svarer, eller brannmurer som blokkerer
-    nettverkstilgangen til
-    <ph name="PRODUCT_NAME" />.</translation>
-<translation id="904949795138183864">Nettsiden på <ph name="URL" /> finnes ikke lenger.</translation>
 <translation id="9049981332609050619">Du forsøkte å nå <ph name="DOMAIN" />, men tjeneren oppga et ugyldig sertifikat.</translation>
-<translation id="9086455579313502267">Fikk ikke tilgang til nettverket</translation>
+<translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9125941078353557812">Skriv inn den tresifrede CVC-koden du finner på baksiden av kortet ditt.</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9148507642005240123">&amp;Angre endringen</translation>
 <translation id="9154176715500758432">Bli værende på denne siden</translation>
-<translation id="9168302918952546302"><ph name="PRODUCT_NAME" />
-      har problemer med å få tilgang til nettverket.
-      <ph name="LINE_BREAK" />
-      Dette kan skyldes at du har et brannmur- eller antivirusprogram som feilaktig tror at
-      <ph name="PRODUCT_NAME" />
-      er en inntrenger på enheten din, og derfor hindrer den i å koble seg til
-      Internett.</translation>
+<translation id="9157595877708044936">Konfigurerer ...</translation>
 <translation id="9170848237812810038">&amp;Angre</translation>
 <translation id="917450738466192189">Tjenerens sertifikat er ugyldig.</translation>
 <translation id="9207861905230894330">Kunne ikke legge til artikkelen.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">SLETT INNHOLDET I SKJEMAET</translation>
-<translation id="946368465353148168"><ph name="PRODUCT_NAME" />
-      har problemer med å få tilgang til nettverket.
-      <ph name="LINE_BREAK" />
-      Dette kan skyldes at du har et brannmur- eller antivirusprogram som feilaktig tror at
-      <ph name="PRODUCT_NAME" />
-      er en inntrenger på datamaskinen, og derfor hindrer den i å koble seg til
-      Internett.</translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>
 <translation id="988159990683914416">Utviklerversjon</translation>
 </translationbundle>

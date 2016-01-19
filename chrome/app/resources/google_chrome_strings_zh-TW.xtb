@@ -145,7 +145,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="568643307450491754">您的書籤會顯示在 Chrome 選單中或書籤列上。</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5749068826913805084">Chrome 必須取得儲存空間的存取權才能下載檔案。</translation>
-<translation id="5785746630574083988">如果在 Windows 8 模式中重新啟動，Chrome 應用程式將會關閉並重新啟動。</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5931853610562009806">在 Mac 上，密碼會儲存在您的 Keychain 中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
@@ -206,11 +205,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>
 <translation id="7761834446675418963">按一下您的名稱即可開啟 Chrome 並開始瀏覽。</translation>
 <translation id="7781002470561365167">Google Chrome 已推出新版。</translation>
-<translation id="7784335114585804598">以 Windows 8 模式重新啟動 Chrome(&amp;R)</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME" />) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID" />) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
 <translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7808348361785373670">從 Chrome 中移除...</translation>
-<translation id="781069973841903133">如果選擇在 Chrome 沈浸模式中重新啟動，您的 Chrome 應用程式將會關閉並重新啟動。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
 <translation id="8000275528373650868">Google Chrome 支援的作業系統為 Windows Vista 或 Windows XP SP2 以上版本。</translation>
@@ -223,11 +220,9 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8205111949707227942">選擇性：把使用統計資料及當機報告自動傳送給 Google，將有助於 Chrome OS 更臻完美。</translation>
 <translation id="8227755444512189073">Google Chrome 需要啟動外部應用程式以處理 <ph name="SCHEME" /> 連結。所要求的連結為 <ph name="PROTOLINK" />。 </translation>
 <translation id="8255190535488645436">Google Chrome 正在使用您的攝影機和麥克風。</translation>
-<translation id="8274359292107649245">以電腦模式開啟 Chrome</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果您同意的話，請輸入您的 Windows 密碼。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
-<translation id="8437332772351535342">如果在桌面模式中重新啟動，Chrome 應用程式將會關閉並重新啟動。</translation>
 <translation id="8460191995881063249">Chrome 通知中心</translation>
 <translation id="853189717709780425">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chrome 設定檔。您的 Chrome 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -239,12 +234,10 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="8669527147644353129">Google Chrome 小幫手</translation>
 <translation id="8679801911857917785">這個擴充功能也會控管 Chrome 啟動時所顯示的網頁。</translation>
 <translation id="870251953148363156">更新 Google Chrome(&amp;G)</translation>
-<translation id="8811903091068364646">以桌面模式重新啟動 Chrome(&amp;R)</translation>
 <translation id="8823341990149967727">Chrome 版本過舊</translation>
 <translation id="884296878221830158">這個擴充功能也會控管 Chrome 啟動時或您點選 [首頁] 按鈕時所顯示的網頁。</translation>
 <translation id="8851136666856101339">主要元素</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
-<translation id="8889942196804715220">在 Chrome 沈浸模式中重新啟動</translation>
 <translation id="9026991721384951619">您的帳戶登入詳細資料尚未更新，因此 Chrome 作業系統無法同步處理您的資料。</translation>
 <translation id="9102715433345326100">這個檔案是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />警告：<ph name="END_BOLD" />Google Chrome 無法阻止擴充功能記錄您的瀏覽紀錄，如要在無痕模式中停用這個擴充功能，請取消選取這個選項。 </translation>

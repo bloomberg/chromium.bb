@@ -125,7 +125,6 @@ Lazima uwashe Bluetooth na kipengele cha Mahali ili uweze kutumia Wavuti Kila Ma
 <translation id="2762000892062317888">sasa hivi tu</translation>
 <translation id="2770465223704140727">Ondoa kwenye orodha</translation>
 <translation id="278029852808208386">Hakuna vifaa vya bluetooth vilivyopatikana. <ph name="BEGIN_LINK" />Tafuta tena<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Kasi ya chini ya muunganisho imegunduliwa.</translation>
 <translation id="2842985007712546952">Folda kuu</translation>
 <translation id="2870560284913253234">Tovuti</translation>
 <translation id="2888126860611144412">Kuhusu Chrome</translation>
@@ -173,7 +172,6 @@ Unaingia katika akaunti ambayo inasimamiwa na kumpa msimamizi wa akaunti udhibit
 <translation id="3492207499832628349">Kichupo fiche kipya</translation>
 <translation id="3518985090088779359">Kubali na uendelee</translation>
 <translation id="3527085408025491307">Folda</translation>
-<translation id="3559647143395293616">Washa Wavuti Kila Mahali</translation>
 <translation id="360480449234699036">Pata maelezo kuhusu mada kwenye tovuti bila kuondoka kwenye ukurasa. Gusa ili Kutafuta inatuma neno na muktadha wake uliopo kwenye Tafuta na Google, kurejesha ufafanuzi, picha, matokeo ya utafutaji, na maelezo mengine.
 
 Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili kuchuja utafutaji wako, telezesha paneli hadi juu na uguse kisanduku cha utafutaji.</translation>
@@ -274,7 +272,6 @@ Fungua Chrome kwenye kompyuta yako, nenda kwenye menyu, na uchague “Ingia kati
 <translation id="5039804452771397117">Ruhusu</translation>
 <translation id="5040262127954254034">Faragha</translation>
 <translation id="5063480226653192405">Matumizi</translation>
-<translation id="509605886816275399">Ungependa kuhifadhi ukurasa huu nje ya mtandao?</translation>
 <translation id="5100237604440890931">Imekunjwa - bofya ili upanue.</translation>
 <translation id="5107381076085091558">Upakuaji umesitishwa.</translation>
 <translation id="5118713593561876160">Mambo yanayokuvutia</translation>
@@ -288,6 +285,7 @@ Fungua Chrome kwenye kompyuta yako, nenda kwenye menyu, na uchague “Ingia kati
 <translation id="5168917394043976756">Fungua droo ya kusogeza</translation>
 <translation id="5171045022955879922">Tafuta au charaza URL</translation>
 <translation id="5184329579814168207">Fungulia katika Chrome</translation>
+<translation id="5199929503336119739">Wasifu wa kazini</translation>
 <translation id="5210365745912300556">Funga kichupo</translation>
 <translation id="5210714456814679336">Vichupo ambavyo umevifungua katika Chrome kwenye vifaa vyako vingine vitaonekana hapa.</translation>
 <translation id="5228579091201413441">Washa usawazishaji</translation>
@@ -382,7 +380,6 @@ Hata hivyo, huonekani. Kuvinjari katika hali fiche hakufichi kuvinjari kwako kus
 <translation id="6232535412751077445">Kuwasha ‘Usifuatilie’ kunamaanisha kuwa ombi litajumuishwa pamoja na maelezo yako mengine ya kuvinjari. Athari yoyote itategemea ikiwa tovuti inajibu ombi, na namna ombi litakavyofasiriwa.
 
 Kwa mfano, baadhi ya tovuti zinaweza kujibu ombi hili kwa kukuonyesha matangazo ambayo hayalingani na tovuti nyingine ulizotembelea. Tovuti nyingi bado zitakusanya na kutumia data yako ya kuvinjari — kwa mfano ili kuboresha usalama, kutoa maudhui, matangazo na mapendekezo, na kuzalisha takwimu za kuripoti.</translation>
-<translation id="624558823898732418">Lugha ya Kutafsiria: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Kulikuwa na tatizo katika kuchapisha ukurasa. Tafadhali jaribu tena.</translation>
 <translation id="6295158916970320988">Tovuti zote</translation>
 <translation id="6317634962183824346">Usawazishaji wa mfumo wa Android umezimwa. Tafadhali washa na ujaribu tena.</translation>
@@ -533,6 +530,7 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 <translation id="8146397137182589628">Haujahifadhiwa nje ya mtandao</translation>
 <translation id="8157532349231307196">Akaunti <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">Maudhui</translation>
+<translation id="8200772114523450471">Endelea</translation>
 <translation id="8209050860603202033">Fungua picha</translation>
 <translation id="8218346974737627104">Thibitisha kuingia katika akaunti</translation>
 <translation id="8218934717680664417">Sasa unaweza kutafuta kwa mguso mmoja</translation>
@@ -552,7 +550,6 @@ Hata hivyo, unaonekana. Kuvinjari katika hali fiche hakufichi kuvinjari kwako ku
 <translation id="8514577642972634246">Ingia kwenye hali fiche</translation>
 <translation id="8515416241041728525">Ongeza akaunti ya <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Tovuti hii hutumia usanidi dhaifu wa usalama (sahihi za SHA-1), kwa hivyo huenda muunganisho wako usiwe wa faragha.</translation>
-<translation id="8528538445849828817">Lugha ya Ukurasa: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Fungua ukurasa huu</translation>
 <translation id="8562452229998620586">Manenosiri yaliyohifadhiwa yataonekana hapa.</translation>
 <translation id="856481929701340285">Omba tovuti ya eneo-kazi</translation>

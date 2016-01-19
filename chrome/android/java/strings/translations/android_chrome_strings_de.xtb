@@ -125,7 +125,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2762000892062317888">gerade eben</translation>
 <translation id="2770465223704140727">Aus Liste entfernen</translation>
 <translation id="278029852808208386">Keine Bluetooth-Geräte gefunden. <ph name="BEGIN_LINK" />Wiederholen Sie die Suche.<ph name="END_LINK" /></translation>
-<translation id="2816165854387457183">Langsame Verbindung gefunden</translation>
 <translation id="2842985007712546952">Übergeordneter Ordner</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2888126860611144412">Info zu Chrome</translation>
@@ -173,7 +172,6 @@ Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrato
 <translation id="3492207499832628349">Neuer Inkognito-Tab</translation>
 <translation id="3518985090088779359">Akzeptieren &amp; weiter</translation>
 <translation id="3527085408025491307">Ordner</translation>
-<translation id="3559647143395293616">Physical Web aktivieren</translation>
 <translation id="360480449234699036">Erfahren Sie mehr über Themen auf einer Website, ohne die Seite verlassen zu müssen. Mit der Option "Zum Suchen tippen" werden ein Wort sowie dessen Kontext an die Google-Suche gesendet. Daraufhin erhalten Sie Definitionen, Bilder, Suchergebnisse und andere Details.
 
 Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entsprechenden Begriff. Sie können Ihre Suche auch verfeinern, indem Sie das Feld ganz nach oben schieben und auf das Suchfeld tippen.</translation>
@@ -274,7 +272,6 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="5039804452771397117">Zulassen</translation>
 <translation id="5040262127954254034">Datenschutz</translation>
 <translation id="5063480226653192405">Verwendung</translation>
-<translation id="509605886816275399">Diese Seite offline speichern?</translation>
 <translation id="5100237604440890931">Minimiert – zum Maximieren klicken</translation>
 <translation id="5107381076085091558">Download angehalten.</translation>
 <translation id="5118713593561876160">Interessen</translation>
@@ -288,6 +285,7 @@ Chrome sucht nach Seiten in Ihrer Nähe, wenn Ihr Gerät entsperrt ist. Diese Se
 <translation id="5168917394043976756">Navigationsleiste öffnen</translation>
 <translation id="5171045022955879922">Suchen oder URL eingeben</translation>
 <translation id="5184329579814168207">In Chrome öffnen</translation>
+<translation id="5199929503336119739">Arbeitsprofil</translation>
 <translation id="5210365745912300556">Tab schließen</translation>
 <translation id="5210714456814679336">Hier werden Tabs angezeigt, die Sie auf Ihren anderen Geräten in Chrome geöffnet haben.</translation>
 <translation id="5228579091201413441">Synchronisierung aktivieren</translation>
@@ -382,7 +380,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="6232535412751077445">Wenn Sie das Kästchen "Do Not Track" anklicken, wird mit Ihren Browserzugriffen eine Anforderung gesendet. Wie sich diese Anforderung auswirkt, hängt davon ab, ob eine Website darauf reagiert und wie die Anforderung interpretiert wird.
 
 Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht darauf basiert, welche Websites Sie zuvor besucht haben. Viele Websites erfassen weiterhin Ihre Browserdaten und verwenden sie, um beispielsweise die Sicherheit zu verbessern oder Inhalte, Werbeanzeigen und Empfehlungen bereitzustellen und Statistiken für Berichte zu erstellen.</translation>
-<translation id="624558823898732418">Zielsprache: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Beim Drucken der Seite ist ein Problem aufgetreten. Bitte versuchen Sie es erneut.</translation>
 <translation id="6295158916970320988">Alle Websites</translation>
 <translation id="6317634962183824346">Android-Systemsynchronisierung deaktiviert. Bitte aktivieren und wiederholen.</translation>
@@ -446,7 +443,7 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="6999892069268112724">Google-Konto bestätigen</translation>
 <translation id="7019652137705190998">Im Inkognitomodus privat surfen oder vorübergehend anmelden</translation>
 <translation id="7021515813996758557"><ph name="FILE_NAME" /> heruntergeladen</translation>
-<translation id="7026897394897382018">Datenkomprimierung aktivieren</translation>
+<translation id="7026897394897382018">Optimierung aktivieren</translation>
 <translation id="7029809446516969842">Passwörter</translation>
 <translation id="7053983685419859001">Blockieren</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
@@ -533,6 +530,7 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="8146397137182589628">Nicht offline gespeichert</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> Konten</translation>
 <translation id="8168435359814927499">Inhalte</translation>
+<translation id="8200772114523450471">Fortsetzen</translation>
 <translation id="8209050860603202033">Bild öffnen</translation>
 <translation id="8218346974737627104">Anmeldung bestätigen</translation>
 <translation id="8218934717680664417">Jetzt durch einfaches Tippen suchen</translation>
@@ -552,7 +550,6 @@ Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Info
 <translation id="8514577642972634246">Inkognitomodus aktivieren</translation>
 <translation id="8515416241041728525">Konto für <ph name="ADD_ACCOUNT_USER_NAME" /> hinzuf.</translation>
 <translation id="8518901949365209398">Diese Website verwendet eine schwache Sicherheitskonfiguration (SHA-1-Signaturen). Daher ist Ihre Verbindung möglicherweise nicht geschützt.</translation>
-<translation id="8528538445849828817">Sprache der Seite: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Diese Seite öffnen</translation>
 <translation id="8562452229998620586">Gespeicherte Passwörter erscheinen hier.</translation>
 <translation id="856481929701340285">Desktop-Version anfordern</translation>

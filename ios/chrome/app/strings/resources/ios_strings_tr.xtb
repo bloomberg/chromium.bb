@@ -31,9 +31,11 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> sitesindeki saldırganlar, bilgilerinizi (örneğin şifreler, mesajlar veya kredi kartları) çalmak için sizi kandırmayı deneyebilir.</translation>
 <translation id="6149061208933997199">Şifre Kullan</translation>
+<translation id="6196207969502475924">Sesli Arama</translation>
 <translation id="6221345481584921695">Google Güvenli Tarama yakın bir zamanda <ph name="SITE" /> sitesinde <ph name="BEGIN_LINK" />kötü amaçlı yazılım tespit etti<ph name="END_LINK" />. Normalde güvenli olan web sitelerine bazen kötü amaçlı yazılımlar bulaşır. Kötü amaçlı içerik, kötü amaçlı yazılım dağıtımcısı olduğu bilinen <ph name="SUBRESOURCE_HOST" /> kaynağından gelmektedir.</translation>
 <translation id="6264485186158353794">Güvenliğe geri dön</translation>
 <translation id="6314335155547195432">Şifre Oluştur</translation>
+<translation id="6344783595350022745">Metni Temizle</translation>
 <translation id="6456425917241817154">Chrome'un Oluşturduğu Şifre</translation>
 <translation id="6535543971741225613">Erişmeye çalıştığınız site garip davranıyor ve Chrome bu URL'nin doğruluğunu onaylayamıyor. Güvenlik nedenleriyle devam etmemelisiniz; belki de yarın deneyebilir veya başka bir yere gidebilirsiniz.</translation>
 <translation id="6740369132746915122">Güvenliğiniz açısından riskleri anlıyorsanız <ph name="BEGIN_LINK" />güvenli olmayan bu siteyi ziyaret edebilirsiniz<ph name="END_LINK" />.</translation>

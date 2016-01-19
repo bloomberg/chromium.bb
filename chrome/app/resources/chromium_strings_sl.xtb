@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Nastavitev ni mogoče prebrati.
 
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
-<translation id="108122890477367602">&amp;Vnovični zagon Chromiuma v načinu sistema Windows 8</translation>
 <translation id="1115445892567829615">Chromium ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
 <translation id="1174473354587728743">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chromium po svojih željah.</translation>
 <translation id="1185134272377778587">O Chromiumu</translation>
@@ -34,11 +33,9 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="1929939181775079593">Chromium se ne odziva. Ga želite znova zagnati?</translation>
 <translation id="1967743265616885482">Modul z istim imenom je že bil v sporu s Chromiumom.</translation>
 <translation id="2077129598763517140">Uporabi strojno pospeševanje, če je na voljo</translation>
-<translation id="2097986737970966220">Odpri Chromium na namizju</translation>
 <translation id="2117181891440368863">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal podatke o preglednosti potrdila, vendar so bili neveljavni.</translation>
 <translation id="2119636228670142020">O sistemu &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Odprtokodne licence za Chromium OS</translation>
-<translation id="2233513990531887259">Znova zaženi v prostornem načinu Chromiuma</translation>
 <translation id="2241627712206172106">Če računalnik souporabljate z drugimi, lahko prijatelji in sorodniki ločeno brskajo ter nastavijo Chromium tako, kot ga želijo.</translation>
 <translation id="225614027745146050">Pozdravljeni</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
@@ -86,7 +83,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3549345495227188780">Začnite uporabljati Chromium OS</translation>
 <translation id="3582788516608077514">Posodabljanje Chromiuma ...</translation>
 <translation id="358997566136285270">Logotip Chromiuma</translation>
-<translation id="3595526210123705352">Če znova zaženete v načinu sistema Windows 8, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
 <translation id="3738139272394829648">Dotaknite se za iskanje</translation>
 <translation id="3748537968684000502">Ogledujete si varno stran Chromiuma.</translation>
 <translation id="378917192836375108">Chromium omogoča, da v spletu kliknete telefonsko številko in jo pokličete prek Skypa.</translation>
@@ -96,7 +92,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="3889543394854987837">Kliknite ime, da odprete Chromium in začnete brskati.</translation>
 <translation id="390894725198123737">V računalnikih Mac so gesla morda shranjena v orodju Keychain, pri čemer lahko do njih dostopajo ali jih sinhronizirajo drugi uporabniki Chromiuma, s katerimi si delite ta račun v sistemu OS X.</translation>
 <translation id="4050175100176540509">V najnovejši različici so na voljo pomembne varnostne izboljšave in nove funkcije.</translation>
-<translation id="4075965373589665797">Če znova zaženete v namiznem načinu, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
 <translation id="4077262827416206768">Zaprite vsa okna Chromiuma in ga zaženite znova, da bo ta sprememba začela veljati.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Opozorilo:<ph name="END_BOLD" /> Chromium razširitvam ne more preprečiti beleženja zgodovine brskanja. Če želite onemogočiti to razširitev v načinu brez beleženja zgodovine, počistite to možnost.</translation>
 <translation id="421369550622382712">Odkrijte zanimive aplikacije, igre, razširitve in teme za Chromium.</translation>
@@ -166,7 +161,6 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="6838494703713445896">Chromium je preveril, da je potrdilo tega spletnega mesta izdal izdajatelj <ph name="ISSUER" />. Strežnik je poslal veljavne podatke o preglednosti potrdila.</translation>
 <translation id="6883876366448858277">pošlje besedo in njeno sobesedilo Iskanju Google ter vrne definicije, slike in druge rezultate iskanja.</translation>
 <translation id="6893813176749746474">Chromium je posodobljen, vendar ga niste uporabljali najmanj 30 dni.</translation>
-<translation id="6900895776413482243">Če znova zaženete v prostornem načinu Chromiuma, se bodo aplikacije za Chromium zaprle in znova zagnale.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduli, naloženi v Chromium</translation>
 <translation id="6970811910055250180">Posodabljanje naprave ...</translation>
@@ -215,7 +209,6 @@ Chromium ne more obnoviti vaših nastavitev.</translation>
 <translation id="8551886023433311834">Posodobitev je skoraj končana. Znova zaženite napravo.</translation>
 <translation id="85843667276690461">Pomoč pri uporabi Chromiuma</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> Ustvarjalci Chromiuma. Vse pravice pridržane.</translation>
-<translation id="8605166112420372522">&amp;Vnovični zagon Chromiuma na namizju</translation>
 <translation id="8621669128220841554">Namestitev ni uspela zaradi nenavedene napake. Znova prenesite Chromium.</translation>
 <translation id="8628626585870903697">Chromium nima pregledovalnika datotek PDF, ki je potreben za predogled tiskanja.</translation>
 <translation id="8684913864886094367">Chromium se ni pravilno zaustavil.</translation>

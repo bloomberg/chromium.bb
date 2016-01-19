@@ -125,7 +125,6 @@ You must have Bluetooth and Location turned on in order to use the Physical Web.
 <translation id="2762000892062317888">just now</translation>
 <translation id="2770465223704140727">Remove from list</translation>
 <translation id="278029852808208386">No Bluetooth devices found. <ph name="BEGIN_LINK" />Search again<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Slow connection detected.</translation>
 <translation id="2842985007712546952">Parent folder</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">About Chrome</translation>
@@ -173,7 +172,6 @@ You are signing in with a managed account and giving its administrator control o
 <translation id="3492207499832628349">New incognito tab</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3559647143395293616">Turn on the Physical Web</translation>
 <translation id="360480449234699036">Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
 
 To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.</translation>
@@ -274,7 +272,6 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5039804452771397117">Allow</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Usage</translation>
-<translation id="509605886816275399">Save this page offline?</translation>
 <translation id="5100237604440890931">Collapsed – click to expand.</translation>
 <translation id="5107381076085091558">Download paused.</translation>
 <translation id="5118713593561876160">Interests</translation>
@@ -288,6 +285,7 @@ Just open Chrome on your computer, go to the menu and select “Sign in to Chrom
 <translation id="5168917394043976756">Open navigation drawer</translation>
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5184329579814168207">Open in Chrome</translation>
+<translation id="5199929503336119739">Work profile</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="5210714456814679336">Tabs that you've opened in Chrome on your other devices will appear here.</translation>
 <translation id="5228579091201413441">Enable sync</translation>
@@ -382,7 +380,6 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="6232535412751077445">Enabling “Do Not Track” means that a request will be included with your browsing traffic. Any effect depends on whether a website responds to the request and how the request is interpreted.
 
 For example, some websites may respond to this request by showing you ads that aren’t based on other websites that you’ve visited. Many websites will still collect and use your browsing data – for example to improve security, to provide content, ads and recommendations and to generate reporting statistics.</translation>
-<translation id="624558823898732418">Translation Language: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="6317634962183824346">Android system sync disabled. Please re-enable and try again.</translation>
@@ -533,6 +530,7 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8146397137182589628">Not saved offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> accounts</translation>
 <translation id="8168435359814927499">Content</translation>
+<translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Open image</translation>
 <translation id="8218346974737627104">Confirm sign-in</translation>
 <translation id="8218934717680664417">Now you can search with one touch</translation>
@@ -552,7 +550,6 @@ However, you aren’t invisible. Going incognito doesn’t hide your browsing fr
 <translation id="8514577642972634246">Enter incognito mode</translation>
 <translation id="8515416241041728525">Add account for <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">This site uses a weak security configuration (SHA-1 signatures), so your connection may not be private.</translation>
-<translation id="8528538445849828817">Page Language: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Open this page:</translation>
 <translation id="8562452229998620586">Your saved passwords will appear here.</translation>
 <translation id="856481929701340285">Request desktop site</translation>

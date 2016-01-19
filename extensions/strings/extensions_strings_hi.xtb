@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">संक्षिप्त विवरण पृष्ठ '<ph name="ABOUT_PAGE" />' लोड नहीं हो सका.</translation>
 <translation id="4434145631756268951">{0,select, single{USB डिवाइस चुनें}multiple{USB डिवाइस चुनें}other{UNUSED}}</translation>
 <translation id="4811956658694082538">उपयोगिता प्रक्रिया क्रैश होने के कारण पैकेज इंस्‍टॉल नहीं किया जा सका. Chrome को पुन: प्रारंभ करके और पुन: प्रयास करके देखें.</translation>
-<translation id="4883436287898674711">सभी <ph name="WEBSITE_1" /> साइटें</translation>
 <translation id="5026754133087629784">वेबदृश्य: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">ऐप्‍स दृश्‍य: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">एक्सटेंशन में कुंजी फ़ाइल '<ph name="KEY_PATH" />' शामिल है. संभवतः आप ऐसा नहीं करना चाहते हैं.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक द्वारा प्रतिबंधित किया गया है.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>
-<translation id="8284279544186306258">सभी <ph name="WEBSITE_1" /> साइटें</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">यह एक्सटेंशन किसी नेटवर्क अनुरोध को प्रमाणिकता प्रदान करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने भिन्न प्रमाणिकता प्रदान कर दिए थे.</translation>
 <translation id="8602184400052594090">मालसूची फ़ाइल गुम है या पढ़ने योग्य नहीं है.</translation>

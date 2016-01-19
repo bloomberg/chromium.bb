@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">agora mesmo</translation>
 <translation id="2770465223704140727">Remover da lista</translation>
 <translation id="278029852808208386">Nenhum dispositivo Bluetooth foi encontrado. <ph name="BEGIN_LINK" />Pesquisar novamente<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Conexão lenta detectada.</translation>
 <translation id="2842985007712546952">Pasta mãe</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Sobre o Google Chrome</translation>
@@ -173,7 +172,6 @@ Você está fazendo login com uma conta gerenciada e fornecendo ao administrador
 <translation id="3492207499832628349">Nova guia anônima</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
 <translation id="3527085408025491307">Pasta</translation>
-<translation id="3559647143395293616">Ative a Web física</translation>
 <translation id="360480449234699036">Saiba mais sobre tópicos em websites sem sair da página. A opção "Tocar para pesquisar" envia uma palavra e seu respectivo contexto para a Pesquisa Google, que retorna definições, imagens, resultados de pesquisa e outros detalhes.
 
 Para ajustar seu termo de pesquisa, mantenha-o pressionado para selecionar. Para refinar sua pesquisa, deslize o painel totalmente para cima e toque na caixa de pesquisa.</translation>
@@ -274,7 +272,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidade</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="509605886816275399">Salvar esta página off-line?</translation>
 <translation id="5100237604440890931">Visualização recolhida. Clique para expandir</translation>
 <translation id="5107381076085091558">Download pausado.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -288,6 +285,7 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="5168917394043976756">Abrir gaveta de navegação</translation>
 <translation id="5171045022955879922">Pesquisar ou digitar URL</translation>
 <translation id="5184329579814168207">Abrir no Google Chrome</translation>
+<translation id="5199929503336119739">Perfil de trabalho</translation>
 <translation id="5210365745912300556">Fechar guia</translation>
 <translation id="5210714456814679336">As guias que você abriu no Google Chrome nos seus outros dispositivos aparecerão aqui.</translation>
 <translation id="5228579091201413441">Ativar sincronização</translation>
@@ -381,7 +379,6 @@ Basta abrir o Chrome no computador, ir até o menu e selecionar “Fazer login n
 <translation id="6232535412751077445">A ativação de "Não rastrear" significa que uma solicitação será incluída no tráfego de navegação. Todo efeito depende de um website responder à solicitação e de como a solicitação é interpretada.
 
 Por exemplo, alguns websites podem responder a esta solicitação mostrando anúncios que não tenham como base outros websites que você visitou. Muitos websites continuarão coletando seus dados de navegação, por exemplo, para melhorar a segurança, fornecer conteúdo, anúncios e recomendações e para gerar relatórios estatísticos.</translation>
-<translation id="624558823898732418">Idioma da tradução: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="6317634962183824346">A sincronização do sistema Android está desativada. Ative-a e tente novamente.</translation>
@@ -532,6 +529,7 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8146397137182589628">Não salva off-line</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> contas</translation>
 <translation id="8168435359814927499">Conteúdo</translation>
+<translation id="8200772114523450471">Retomar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8218346974737627104">Confirmar login</translation>
 <translation id="8218934717680664417">Agora é possível pesquisar com um toque</translation>
@@ -551,7 +549,6 @@ No entanto, você não fica invisível. O modo anônimo não oculta sua navegaç
 <translation id="8514577642972634246">Entrar no modo de navegação anônima</translation>
 <translation id="8515416241041728525">Adicionar conta para <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Este site usa uma configuração de segurança fraca (assinaturas SHA-1). Portanto sua conexão pode não ser particular.</translation>
-<translation id="8528538445849828817">Idioma da página: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">As senhas salvas aparecerão aqui.</translation>
 <translation id="856481929701340285">Versão para desktop</translation>

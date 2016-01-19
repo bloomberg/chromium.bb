@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1065672644894730302">Preferensi Anda tidak dapat dibaca. Beberapa fitur mungkin tidak tersedia dan perubahan pada preferensi tidak akan disimpan.</translation>
-<translation id="108122890477367602">&amp;Luncurkan ulang Chromium dalam mode Windows 8</translation>
 <translation id="1115445892567829615">Chromium tidak dapat menyinkronkan data Anda. Perbarui frasa sandi Sinkronisasi Anda.</translation>
 <translation id="1174473354587728743">Berbagi komputer? Kini Anda dapat menyiapkan Chromium seperti yang Anda inginkan.</translation>
 <translation id="1185134272377778587">Tentang Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium tidak merespons. Luncurkan ulang sekarang?</translation>
 <translation id="1967743265616885482">Modul dengan nama yang sama biasanya konflik dengan Chromium.</translation>
 <translation id="2077129598763517140">Gunakan percepatan perangkat keras saat tersedia</translation>
-<translation id="2097986737970966220">Buka Chromium di desktop</translation>
 <translation id="2117181891440368863">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat, namun informasi tersebut tidak valid.</translation>
 <translation id="2119636228670142020">Tentang &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Lisensi sumber terbuka Chromium OS</translation>
-<translation id="2233513990531887259">Luncurkan ulang dalam mode Chromium yang lebih mendalam</translation>
 <translation id="2241627712206172106">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chromium sesuai keinginannya.</translation>
 <translation id="225614027745146050">Selamat Datang</translation>
 <translation id="2316129865977710310">Lain kali</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Memulai dengan Chromium OS</translation>
 <translation id="3582788516608077514">Memperbarui Chromium...</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3595526210123705352">Dengan meluncurkan kembali dalam mode Windows 8, Anda akan menutup dan meluncurkan kembali aplikasi Chromium.</translation>
 <translation id="3738139272394829648">Sentuh untuk Menelusuri</translation>
 <translation id="3748537968684000502">Anda sedang melihat laman Chromium yang aman.</translation>
 <translation id="378917192836375108">Chromium memungkinkan Anda mengeklik nomor telepon pada web dan menghubunginya melalui Skype!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Klik nama Anda untuk membuka Chromium dan mulai menjelajah.</translation>
 <translation id="390894725198123737">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chromium lain yang membagikan akun OS X ini.</translation>
 <translation id="4050175100176540509">Peningkatan keamanan dan fitur baru yang penting tersedia di versi terbaru.</translation>
-<translation id="4075965373589665797">Meluncurkan kembali dalam mode Desktop akan ditutup dan meluncurkan kembali aplikasi Chromium Anda.</translation>
 <translation id="4077262827416206768">Tutup semua jendela Chromium dan luncurkan ulang Chromium agar perubahan ini diterapkan.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Peringatan:<ph name="END_BOLD" /> Chromium tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, jangan pilih opsi ini.</translation>
 <translation id="421369550622382712">Temukan aplikasi, game, ekstensi, dan tema yang hebat untuk Chromium.</translation>
@@ -164,7 +159,6 @@ Sebagian fitur mungkin tidak tersedia. Tentukan direktori profil yang berbeda at
 <translation id="6838494703713445896">Chromium memverifikasi bahwa <ph name="ISSUER" /> menerbitkan sertifikat situs web ini. Server memberikan informasi Transparansi Sertifikat yang valid.</translation>
 <translation id="6883876366448858277">mengirim kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, dan hasil penelusuran lain.</translation>
 <translation id="6893813176749746474">Chromium telah diperbarui, tetapi Anda belum menggunakannya selama setidaknya 30 hari.</translation>
-<translation id="6900895776413482243">Dengan meluncurkan kembali dalam mode Chromium yang lebih mendalam, Anda akan menutup dan meluncurkan kembali aplikasi Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Modul dimuat ke dalam Chromium</translation>
 <translation id="6970811910055250180">Memperbarui perangkat Anda...</translation>
@@ -213,7 +207,6 @@ Chromium tidak dapat memulihkan setelan Anda.</translation>
 <translation id="8551886023433311834">Hampir selesai diperbarui! Nyalakan ulang perangkat untuk menyelesaikan pembaruan.</translation>
 <translation id="85843667276690461">Dapatkan bantuan tentang penggunaan Chromium</translation>
 <translation id="8586442755830160949">Hak Cipta <ph name="YEAR" /> Pengarang Chromium. Semua hak dilindungi undang-undang.</translation>
-<translation id="8605166112420372522">&amp;Luncurkan ulang Chromium di desktop</translation>
 <translation id="8621669128220841554">Pemasangan gagal karena kesalahan yang tidak ditentukan. Unduh Chromium lagi.</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan penampil PDF yang dibutuhkan agar Pratinjau Cetak berfungsi.</translation>
 <translation id="8684913864886094367">Chromium tidak menutup dengan benar.</translation>

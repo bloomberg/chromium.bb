@@ -3,8 +3,6 @@
 <translationbundle lang="vi">
 <translation id="130631256467250065">Thay đổi của bạn sẽ có hiệu lực vào lần tiếp theo bạn khởi động lại thiết bị của mình.</translation>
 <translation id="275588974610408078">Báo cáo sự cố hiện không khả dụng trong Chromium.</translation>
-<translation id="2872411181023734689">Chromium không thể hiển thị trang web vì máy tính của bạn chưa 
-          kết nối Internet.</translation>
 <translation id="4365115785552740256">Chromium trở nên khả thi là nhờ dự án nguồn mở <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> và các <ph name="BEGIN_LINK_OSS" />phần mềm nguồn mở<ph name="END_LINK_OSS" /> khác.</translation>
 <translation id="4404275227760602850">Chuyển đến menu Chromium &gt; Cài đặt &gt; Bảo mật (Nâng cao)
           và tắt "Tìm nạp trước tài nguyên trang".

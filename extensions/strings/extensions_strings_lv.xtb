@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Nevarēja ielādēt lapu “Par” (<ph name="ABOUT_PAGE" />).</translation>
 <translation id="4434145631756268951">{0,select, single{USB ierīces atlasīšana}multiple{USB ierīču atlasīšana}other{NETIEK LIETOTS}}</translation>
 <translation id="4811956658694082538">Nevarēja instalēt pakotni, jo radās avārija utilītprogrammas darbībā. Restartējiet pārlūku Chrome un mēģiniet vēlreiz.</translation>
-<translation id="4883436287898674711">Visās <ph name="WEBSITE_1" /> vietnēs</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Lietotnes skats: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Šis paplašinājums ietver atslēgas failu <ph name="KEY_PATH" />. Iespējams, jūs to nevēlaties izmantot.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME" /> (paplašinājuma ID “<ph name="EXTENSION_ID" />”).</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Šim paplašinājumam neizdevās piešķirt nosaukumu lejupielādei “<ph name="ATTEMPTED_FILENAME" />”, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) noteica citu faila nosaukumu “<ph name="ACTUAL_FILENAME" />”.</translation>
-<translation id="8284279544186306258">visās <ph name="WEBSITE_1" /> vietnēs</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> no <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Šis paplašinājums nevarēja sniegt tīkla pieprasījuma akreditācijas datus, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) sniedza atšķirīgus akreditācijas datus.</translation>
 <translation id="8602184400052594090">Manifesta fails nav atrodams vai nolasāms.</translation>

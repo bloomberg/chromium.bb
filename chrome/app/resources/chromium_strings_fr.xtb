@@ -3,7 +3,6 @@
 <translationbundle lang="fr">
 <translation id="1065672644894730302">Impossible de lire vos préférences.
 Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifications apportées à vos préférences ne seront pas enregistrées.</translation>
-<translation id="108122890477367602">&amp;Relancer Chromium en mode Windows 8</translation>
 <translation id="1115445892567829615">Impossible de synchroniser vos données dans Chromium. Veuillez mettre à jour votre phrase secrète de synchronisation.</translation>
 <translation id="1174473354587728743">Vous partagez un ordinateur ? Vous pouvez désormais configurer Chromium selon vos besoins.</translation>
 <translation id="1185134272377778587">À propos de Chromium</translation>
@@ -33,11 +32,9 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1929939181775079593">Chromium ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="1967743265616885482">Nous avons constaté qu'un module du même nom n'est pas compatible avec Chromium.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
-<translation id="2097986737970966220">Ouvrir Chromium sur le bureau</translation>
 <translation id="2117181891440368863">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Des informations relatives à la transparence du certificat ont été fournies via le serveur, mais celles-ci ne sont pas valides.</translation>
 <translation id="2119636228670142020">À propos de &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Licences Chromium OS Open Source</translation>
-<translation id="2233513990531887259">Redémarrer en mode immersif dans Chromium</translation>
 <translation id="2241627712206172106">Si vous partagez un ordinateur avec vos proches, ceux-ci peuvent configurer Chromium comme bon leur semble et naviguer sur le Web à leur manière.</translation>
 <translation id="225614027745146050">Bienvenue</translation>
 <translation id="2316129865977710310">Non merci</translation>
@@ -85,7 +82,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3549345495227188780">Premiers pas avec Chromium OS</translation>
 <translation id="3582788516608077514">Mise à jour de Chromium en cours…</translation>
 <translation id="358997566136285270">Logo Chromium</translation>
-<translation id="3595526210123705352">Le redémarrage en mode Windows 8 entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
 <translation id="3738139272394829648">Appuyer pour rechercher</translation>
 <translation id="3748537968684000502">Cette page Chromium est sécurisée.</translation>
 <translation id="378917192836375108">Avec Chromium, cliquez sur un numéro de téléphone sur le Web et appelez-le dans Skype !</translation>
@@ -95,7 +91,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="3889543394854987837">Cliquez sur votre nom pour ouvrir Chromium et commencer à naviguer.</translation>
 <translation id="390894725198123737">Sur Mac, les mots de passe peuvent être enregistrés dans votre trousseau. D'autres utilisateurs de Chromium partageant ce compte OS X peuvent les consulter ou les synchroniser.</translation>
 <translation id="4050175100176540509">La dernière version propose d'importantes améliorations de la sécurité ainsi que de nouvelles fonctionnalités.</translation>
-<translation id="4075965373589665797">Le redémarrage en mode Bureau entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
 <translation id="4077262827416206768">Pour que cette modification soit prise en compte, veuillez fermer toutes les fenêtres de Chromium, puis relancer le logiciel.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Avertissement<ph name="END_BOLD" /> : Chromium ne peut pas empêcher les extensions d'enregistrer votre historique de navigation. Pour désactiver cette extension en mode navigation privée, désélectionnez-la.</translation>
 <translation id="421369550622382712">Découvrez des applications, des jeux, des extensions et des thèmes exceptionnels pour Chromium.</translation>
@@ -165,7 +160,6 @@ Certaines fonctionnalités seront peut-être indisponibles. Veuillez spécifier 
 <translation id="6838494703713445896">Il a été confirmé dans Chromium que le certificat de ce site a bien été fourni par <ph name="ISSUER" />. Les informations relatives à la transparence du certificat fournies via le serveur sont valides.</translation>
 <translation id="6883876366448858277">envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des photos et d'autres résultats de recherche.</translation>
 <translation id="6893813176749746474">Chromium a été mis à jour, mais vous ne l'avez pas utilisé pendant au moins 30 jours.</translation>
-<translation id="6900895776413482243">Le redémarrage en mode immersif dans Chromium entraîne la fermeture, puis la réouverture des applications Chromium.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Modules chargés dans Chromium</translation>
 <translation id="6970811910055250180">Mise à jour de votre appareil en cours…</translation>
@@ -214,7 +208,6 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="8551886023433311834">Mise à jour presque terminée. Pour la finaliser, veuillez redémarrer votre appareil.</translation>
 <translation id="85843667276690461">Obtenir de l'aide sur l'utilisation de Chromium</translation>
 <translation id="8586442755830160949">Copyright Auteurs de Chromium <ph name="YEAR" />. Tous droits réservés.</translation>
-<translation id="8605166112420372522">&amp;Relancer Chromium sur le bureau</translation>
 <translation id="8621669128220841554">Échec de l'installation en raison d'une erreur non spécifiée. Veuillez télécharger Chromium à nouveau.</translation>
 <translation id="8628626585870903697">Chromium ne comprend pas le lecteur de PDF qui est nécessaire au fonctionnement de l'aperçu avant impression.</translation>
 <translation id="8684913864886094367">Chrome n'a pas été arrêté correctement.</translation>

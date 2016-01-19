@@ -3,8 +3,6 @@
 <translationbundle lang="fr">
 <translation id="130631256467250065">Vos modifications seront prises en compte au prochain démarrage de l'appareil.</translation>
 <translation id="275588974610408078">Les rapports sur les plantages ne sont pas disponibles dans Chromium.</translation>
-<translation id="2872411181023734689">Cette page Web ne peut pas s'afficher dans Chromium, car votre ordinateur n'est
-          pas connecté à Internet.</translation>
 <translation id="4365115785552740256">Chromium fonctionne grâce au projet Open Source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> et à <ph name="BEGIN_LINK_OSS" />d'autres logiciels libres<ph name="END_LINK_OSS" />.</translation>
 <translation id="4404275227760602850">Accédez au menu Chromium &gt; Paramètres &gt; (Avancés) Confidendialité,
           puis désactivez "Prélire les ressources de pages".

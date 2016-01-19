@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">الآن</translation>
 <translation id="2770465223704140727">إزالة من القائمة</translation>
 <translation id="278029852808208386">لم يتم العثور على أجهزة بلوتوث. <ph name="BEGIN_LINK" />ابحث مرة أخرى<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">تم اكتشاف اتصال بطيء بالإنترنت.</translation>
 <translation id="2842985007712546952">المجلد الرئيسي</translation>
 <translation id="2870560284913253234">الموقع</translation>
 <translation id="2888126860611144412">‏حول Chrome</translation>
@@ -171,7 +170,6 @@
 <translation id="3492207499832628349">تابة جديدة للتصفح المتخفي</translation>
 <translation id="3518985090088779359">القبول والمتابعة</translation>
 <translation id="3527085408025491307">المجلد</translation>
-<translation id="3559647143395293616">تشغيل الشبكة المادية</translation>
 <translation id="360480449234699036">‏اعرف موضوعات معنية بمواقع الويب بدون مغادرة الصفحة. تُرسل ميزة "المس للبحث" الكلمة والسياق المحيط بها إلى بحث Google، والتعريفات العائدة، والصور، ونتائج البحث، وتفاصيل أخرى.
 
 لضبط عبارة البحث، اضغط مع الاستمرار للتحديد. لتحسين البحث، مرّر اللوحة للأعلى والمس مربع البحث.</translation>
@@ -272,7 +270,6 @@
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
 <translation id="5063480226653192405">الاستخدام</translation>
-<translation id="509605886816275399">حفظ هذه الصفحة بلا اتصال؟</translation>
 <translation id="5100237604440890931">تم التصغير - انقر للتوسيع.</translation>
 <translation id="5107381076085091558">تم توقف التنزيل مؤقتًا.</translation>
 <translation id="5118713593561876160">الاهتمامات</translation>
@@ -286,6 +283,7 @@
 <translation id="5168917394043976756">فتح لائحة التنقل</translation>
 <translation id="5171045022955879922">‏البحث أو إدخال عنوان URL</translation>
 <translation id="5184329579814168207">‏فتح في Chrome</translation>
+<translation id="5199929503336119739">الملف الشخصي للعمل</translation>
 <translation id="5210365745912300556">إغلاق علامة التبويب</translation>
 <translation id="5210714456814679336">‏ستظهر هنا علامات التبويب التي فتحتها في Chrome من أجهزتك الأخرى.</translation>
 <translation id="5228579091201413441">تمكين المزامنة</translation>
@@ -380,7 +378,6 @@
 <translation id="6232535412751077445">يعني تمكين ميزة "عدم التعقب" تضمين الطلب مع عدد زيارات التصفح. ويعتمد أي تأثير على استجابة موقع الويب للطلب من عدمه، بالإضافة إلى كيفية تفسير الطلب.
 
 فعلى سبيل المثال، قد تستجيب بعض مواقع الويب لهذا الطلب بعرض إعلانات غير موجودة في مواقع الويب الأخرى التي زرتها. وستستمر العديد من مواقع الويب في جمع بيانات التصفح واستخدامها - على سبيل المثال لتحسين الأمان، وتقديم المحتوى والإعلانات والمقترحات، وإنشاء إحصاءات التقارير.</translation>
-<translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">حدثت مشكلة أثناء طباعة الصفحة. الرجاء إعادة المحاولة.</translation>
 <translation id="6295158916970320988">جميع المواقع</translation>
 <translation id="6317634962183824346">‏تم تعطيل مزامنة نظام Android. الرجاء إعادة التمكين والمحاولة مرة أخرى.</translation>
@@ -531,6 +528,7 @@
 <translation id="8146397137182589628">لم يتم حفظها بلا اتصال</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> من الحسابات</translation>
 <translation id="8168435359814927499">المحتوى</translation>
+<translation id="8200772114523450471">استئناف</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8218346974737627104">تأكيد تسجيل الدخول</translation>
 <translation id="8218934717680664417">يمكنك الآن البحث بلمسة واحدة</translation>
@@ -550,7 +548,6 @@
 <translation id="8514577642972634246">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="8515416241041728525">إضافة حساب لـ <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">‏يستخدم هذا الموقع تهيئة أمان ضعيفة (توقيعات SHA-1)، لذا قد لا يتم اتصالك بشكل خاص.</translation>
-<translation id="8528538445849828817">لغة الصفحة: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">فتح هذه الصفحة</translation>
 <translation id="8562452229998620586">ستظهر هنا كلمات المرور المحفوظة.</translation>
 <translation id="856481929701340285">طلب موقع الكمبيوتر</translation>

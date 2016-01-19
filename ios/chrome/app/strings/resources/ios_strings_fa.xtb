@@ -31,9 +31,11 @@
 <translation id="605721222689873409">سال</translation>
 <translation id="6075880972317537864">ممکن است مهاجمین در <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> سعی کنند برای سرقت اطلاعات شما (مانند گذرواژه‌ها، پیام‌ها یا کارت‌های اعتباری) شما را فریب دهند.</translation>
 <translation id="6149061208933997199">استفاده از گذرواژه</translation>
+<translation id="6196207969502475924">جستجوی صوتی</translation>
 <translation id="6221345481584921695">‏Google Safe Browsing به تازگی در <ph name="SITE" />، ‏<ph name="BEGIN_LINK" />بدافزار شناسایی کرده است<ph name="END_LINK" />. گاهی اوقات وب‌سایت‌هایی که معمولاً امن هستند، با بدافزار آلوده می‌شوند. منبع محتوای مخرب <ph name="SUBRESOURCE_HOST" /> است که یک توزیع‌کننده بدافزار شناخته شده، می‌باشد.</translation>
 <translation id="6264485186158353794">بازگشت به ایمنی</translation>
 <translation id="6314335155547195432">تولید گذرواژه</translation>
+<translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
 <translation id="6456425917241817154">‏گذرواژه ایجادشده توسط Chrome</translation>
 <translation id="6535543971741225613">‏سایتی که در صدد دسترسی به آن هستید رفتار عادی ندارد، Chrome نمی‌تواند صحت نشانی وب را تأیید کند. به دلایل امنیتی، نباید ادامه دهید و شاید بهتر باشد فردا یا در جایی دیگر امتحان کنید.</translation>
 <translation id="6740369132746915122">اگر از خطراتی که امنیت شما را تهدید می‌کند مطلع هستید، می‌توانید <ph name="BEGIN_LINK" />از این سایت ناامن دیدن کنید<ph name="END_LINK" />.</translation>

@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">たった今</translation>
 <translation id="2770465223704140727">リストから削除</translation>
 <translation id="278029852808208386">Bluetooth デバイスが見つかりませんでした。<ph name="BEGIN_LINK" />もう一度検索してください<ph name="END_LINK" />。</translation>
-<translation id="2816165854387457183">低速な接続が見つかりました。</translation>
 <translation id="2842985007712546952">親フォルダ</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2888126860611144412">Chrome について</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">新しいシークレット タブ</translation>
 <translation id="3518985090088779359">同意して続行</translation>
 <translation id="3527085408025491307">フォルダ</translation>
-<translation id="3559647143395293616">フィジカル ウェブを有効にしてください</translation>
 <translation id="360480449234699036">ウェブサイト上のトピックについてページを移動せずに調べられます。[タップして検索] を使用すると、単語とその周囲のコンテキストが Google 検索に送信され、定義、画像、検索結果などの情報が返されます。
 
 検索用語を押し続けるとその用語が選択され、選択範囲を調整できます。検索結果を絞り込むには、パネルを上にスライドして検索ボックスをタップします。</translation>
@@ -274,7 +272,6 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="5039804452771397117">許可</translation>
 <translation id="5040262127954254034">プライバシー</translation>
 <translation id="5063480226653192405">使用状況</translation>
-<translation id="509605886816275399">このページをオフライン用に保存しますか？</translation>
 <translation id="5100237604440890931">折りたたまれています - クリックすると展開します。</translation>
 <translation id="5107381076085091558">ダウンロードを一時停止しました。</translation>
 <translation id="5118713593561876160">興味 / 関心</translation>
@@ -288,6 +285,7 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="5168917394043976756">操作パネルを開く</translation>
 <translation id="5171045022955879922">検索または URL を入力</translation>
 <translation id="5184329579814168207">Chromeで開く</translation>
+<translation id="5199929503336119739">仕事用プロファイル</translation>
 <translation id="5210365745912300556">タブを閉じる</translation>
 <translation id="5210714456814679336">他のデバイスの Chrome で開いているタブがここに表示されます。</translation>
 <translation id="5228579091201413441">同期を有効にする</translation>
@@ -382,7 +380,6 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="6232535412751077445">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに含まれるようになります。ウェブサイトがリクエストに応答するかどうか、またリクエストがどのように解釈されるかによって、この影響は異なります。
 
 たとえば一部のウェブサイトでは、このリクエストに対して、ユーザーが過去にアクセスしたウェブサイトとは関係のない広告が表示されます。トラッキングを拒否しても、実際のところ多くのウェブサイトではユーザーの閲覧データが収集され利用されています。その用途としては、セキュリティの強化、コンテンツ、サービス、広告、おすすめの表示、レポート統計情報の作成などが挙げられます。</translation>
-<translation id="624558823898732418">翻訳言語: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">ページの印刷中に問題が発生しました。もう一度お試しください。</translation>
 <translation id="6295158916970320988">すべてのサイト</translation>
 <translation id="6317634962183824346">Android システムの同期が無効です。再有効化してもう一度お試しください。</translation>
@@ -533,6 +530,7 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="8146397137182589628">オフライン保存されていません</translation>
 <translation id="8157532349231307196">アカウント数: <ph name="NUMBER_OF_ACCOUNTS" /></translation>
 <translation id="8168435359814927499">コンテンツ</translation>
+<translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8218346974737627104">ログインの確認</translation>
 <translation id="8218934717680664417">ワンタップで検索が可能に</translation>
@@ -552,7 +550,6 @@ Chrome では端末のロックが解除されている場合に、近くで送�
 <translation id="8514577642972634246">シークレット モードを開始</translation>
 <translation id="8515416241041728525"><ph name="ADD_ACCOUNT_USER_NAME" /> のアカウントを追加</translation>
 <translation id="8518901949365209398">このサイトのセキュリティは弱いため（SHA-1 署名）、接続時にプライバシーが保護されない可能性があります。</translation>
-<translation id="8528538445849828817">ページの言語: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">このページを開く</translation>
 <translation id="8562452229998620586">保存したパスワードはこちらに表示されます。</translation>
 <translation id="856481929701340285">PC版サイトを見る</translation>

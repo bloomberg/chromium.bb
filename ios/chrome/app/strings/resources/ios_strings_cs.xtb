@@ -31,9 +31,11 @@
 <translation id="605721222689873409">RR</translation>
 <translation id="6075880972317537864">Útočníci na webu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> se mohou pokusit podvodem získat vaše informace (například hesla, zprávy nebo platební karty).</translation>
 <translation id="6149061208933997199">Použít heslo</translation>
+<translation id="6196207969502475924">Hlasové vyhledávání</translation>
 <translation id="6221345481584921695">Služba Bezpečné prohlížení Google na webu <ph name="SITE" /> nedávno <ph name="BEGIN_LINK" />zjistila malware<ph name="END_LINK" />. Někdy mohou být malwarem nakaženy i weby, které jsou obvykle bezpečné. Tento škodlivý obsah pochází z webu <ph name="SUBRESOURCE_HOST" />, který je distribucí malwaru známý.</translation>
 <translation id="6264485186158353794">Zpět na bezpečnější stránku</translation>
 <translation id="6314335155547195432">Vygenerovat heslo</translation>
+<translation id="6344783595350022745">Smazat text</translation>
 <translation id="6456425917241817154">Heslo vygenerované Chromem</translation>
 <translation id="6535543971741225613">Web, na který se pokoušíte připojit, se chová neobvykle a Chrome nemohl ověřit správnost jeho adresy URL. Z důvodu bezpečnosti byste neměli pokračovat a raději se zkusit připojit zítra nebo přejít někam jinam.</translation>
 <translation id="6740369132746915122">Pokud bezpečnostní rizika chápete, můžete <ph name="BEGIN_LINK" />tento nespolehlivý web navštívit<ph name="END_LINK" />.</translation>

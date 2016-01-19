@@ -31,9 +31,11 @@
 <translation id="605721222689873409">GG</translation>
 <translation id="6075880972317537864">Napadači na <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mogu pokušati na prijevaru ukrasti vaše podatke (na primjer, zaporke, poruke ili brojeve kreditnih kartica).</translation>
 <translation id="6149061208933997199">Upotrijebi zaporku</translation>
+<translation id="6196207969502475924">Glasovno pretraživanje</translation>
 <translation id="6221345481584921695">Google sigurno pregledavanje nedavno je <ph name="BEGIN_LINK" />otkrilo zlonamjerni sadržaj<ph name="END_LINK" /> na <ph name="SITE" />. Web-lokacije koje su inače sigurne ponekad mogu biti zaražene zlonamjernim softverom. Zlonamjerni sadržaj potječe s hosta <ph name="SUBRESOURCE_HOST" /> koji je poznat po distribuciji zlonamjernog softvera.</translation>
 <translation id="6264485186158353794">Natrag u sigurnost</translation>
 <translation id="6314335155547195432">Generiranje zaporke</translation>
+<translation id="6344783595350022745">Izbriši tekst</translation>
 <translation id="6456425917241817154">Zaporka koju je generirao Chrome</translation>
 <translation id="6535543971741225613">Web-lokacija koju pokušavate otvoriti ponaša se čudno, a Chrome ne može potvrditi da je URL ove stranice točan. Iz sigurnosnih razloga ne biste trebali nastaviti, a preporučujemo da pokušate sutra ili na nekoj drugoj lokaciji.</translation>
 <translation id="6740369132746915122">Ako razumijete na koje je načine ugrožena vaša sigurnost, možete <ph name="BEGIN_LINK" />posjetiti nesigurnu web-lokaciju<ph name="END_LINK" />.</translation>

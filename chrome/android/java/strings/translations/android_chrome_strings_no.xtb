@@ -32,7 +32,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1389974829397082527">Det er ingen bokmerker her</translation>
 <translation id="1404122904123200417">Innbygd i <ph name="WEBSITE_URL" /></translation>
-<translation id="1406000523432664303">«Deaktivering av sporing»</translation>
+<translation id="1406000523432664303">«Ingen sporing»</translation>
 <translation id="1409879593029778104">Nedlastingen av <ph name="FILE_NAME" /> ble avbrutt fordi filen finnes allerede.</translation>
 <translation id="1416550906796893042">Programversjon</translation>
 <translation id="1423209968422390786">Posisjonstilgang er <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
@@ -125,7 +125,6 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="2762000892062317888">akkurat nå</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Ingen Bluetooth-enheter ble funnet. <ph name="BEGIN_LINK" />Søk igjen<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">En treg tilkobling ble oppdaget.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
@@ -173,7 +172,6 @@ Du logger på med en administrert konto, og gir administratoren kontroll over Ch
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
 <translation id="3527085408025491307">Mappe</translation>
-<translation id="3559647143395293616">Slå på det fysiske nettet</translation>
 <translation id="360480449234699036">Finn ut mer om emner på nettsteder uten å forlate siden. «Trykk for å søke» sender et ord og den omkringliggende konteksten til Google Søk, slik at definisjoner, bilder, søkeresultater og annen informasjon blir sendt tilbake.
 
 Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. Hvis du vil finstemme søket, kan du dra panelet helt opp til toppen og trykke på søkefeltet.</translation>
@@ -274,7 +272,6 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5039804452771397117">Tillat</translation>
 <translation id="5040262127954254034">Personvern</translation>
 <translation id="5063480226653192405">Bruk</translation>
-<translation id="509605886816275399">Vil du lagre denne siden utenfor nettet?</translation>
 <translation id="5100237604440890931">Minimert – klikk for å utvide</translation>
 <translation id="5107381076085091558">Nedlastingen er satt på pause.</translation>
 <translation id="5118713593561876160">Interesser</translation>
@@ -288,6 +285,7 @@ Bare åpne Chrome på datamaskinen, gå til menyen, og velg «Logg på Chrome».
 <translation id="5168917394043976756">Åpne uttrekksmenyen</translation>
 <translation id="5171045022955879922">Søk, eller skriv inn en nettadresse</translation>
 <translation id="5184329579814168207">Åpne i Chrome</translation>
+<translation id="5199929503336119739">Jobbprofil</translation>
 <translation id="5210365745912300556">Lukk fanen</translation>
 <translation id="5210714456814679336">Faner du har åpnet i Chrome på de andre enhetene dine, vises her.</translation>
 <translation id="5228579091201413441">Slå på synkronisering</translation>
@@ -382,7 +380,6 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="6232535412751077445">Hvis du slår på «Deaktivering av sporing», blir det sendt en forespørsel sammen med nettrafikken din. Hvilke virkninger dette eventuelt får, avhenger av om det aktuelle nettstedet svarer på forespørselen eller ikke, samt hvordan forespørselen tolkes.
 
 Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg annonser som ikke er basert på andre nettsteder du har besøkt. Mange nettsteder samler likevel inn og bruker nettlesingsdataene dine – for eksempel for å forbedre sikkerheten, for å levere innhold, annonser og anbefalinger og for å generere rapporteringsstatistikk.</translation>
-<translation id="624558823898732418">Målspråk: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Det oppsto et problem med å skrive ut siden. Prøv på nytt.</translation>
 <translation id="6295158916970320988">Alle nettsteder</translation>
 <translation id="6317634962183824346">Systemsynkronisering for Android er slått av. Slå det på igjen, og prøv på nytt.</translation>
@@ -533,6 +530,7 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8146397137182589628">Ikke lagret lokalt</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> kontoer</translation>
 <translation id="8168435359814927499">Innhold</translation>
+<translation id="8200772114523450471">Fortsett</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="8218346974737627104">Bekreft påloggingen</translation>
 <translation id="8218934717680664417">Nå kan du søke med ett trykk</translation>
@@ -552,7 +550,6 @@ Du er imidlertid ikke usynlig. Inkognitomodus skjuler ikke surfingen din for arb
 <translation id="8514577642972634246">Slå på inkognitomodus</translation>
 <translation id="8515416241041728525">Legg til konto for <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Dette nettstedet bruker en svak sikkerhetskonfigurasjon (SHA-1-signaturer). Det kan derfor hende at tilkoblingen mellom deg og nettstedet ikke er privat.</translation>
-<translation id="8528538445849828817">Sidespråk: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Åpne denne siden</translation>
 <translation id="8562452229998620586">Lagrede passord listes opp her.</translation>
 <translation id="856481929701340285">Bruk skrivebordsversjon</translation>

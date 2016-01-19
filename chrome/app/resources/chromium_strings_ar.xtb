@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
-<translation id="108122890477367602">‏إع&amp;ادة تشغيل Chromium في وضع Windows 8</translation>
 <translation id="1115445892567829615">‏تعذر على Chromium مزامنة البيانات. الرجاء تحديث عبارة مرور المزامنة.</translation>
 <translation id="1174473354587728743">‏هل تشارك جهاز كمبيوتر؟ يمكنك الآن إعداد Chromium بالطريقة التي تعجبك تمامًا.</translation>
 <translation id="1185134272377778587">‏حول Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
 <translation id="1967743265616885482">‏هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Chromium.</translation>
 <translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
-<translation id="2097986737970966220">‏فتح Chromium على سطح المكتب</translation>
 <translation id="2117181891440368863">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة، ولكنها غير صالحة.</translation>
 <translation id="2119636228670142020">‏حول ن&amp;ظام التشغيل Chromium</translation>
 <translation id="2158734852934720349">‏تراخيص مفتوحة المصدر لنظام التشغيل Chromium</translation>
-<translation id="2233513990531887259">‏إعادة التشغيل في وضع Chromium المجسم</translation>
 <translation id="2241627712206172106">‏إذا كنت تشارك الكمبيوتر مع أصدقائك وعائلتك، فبإمكانهم التصفح على حدة وإعداد Chromium على النحو الذي يريدونه.</translation>
 <translation id="225614027745146050">مرحبًا</translation>
 <translation id="2316129865977710310">لا، شكرًا</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">‏البدء في استخدام نظام التشغيل Chromium</translation>
 <translation id="3582788516608077514">‏جارٍ تحديث Chromium...</translation>
 <translation id="358997566136285270">‏شعار Chromium</translation>
-<translation id="3595526210123705352">‏ستؤدي إعادة التشغيل في وضع Windows 8 إلى إغلاق تطبيقات Chromium وإعادة تشغيلها.</translation>
 <translation id="3738139272394829648">المس للبحث</translation>
 <translation id="3748537968684000502">‏أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="378917192836375108">‏يتيح لك Chromium النقر على رقم هاتف على الويب والاتصال به باستخدام Skype!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">‏انقر على اسمك لفتح Chromium وبدء التصفح.</translation>
 <translation id="390894725198123737">‏في نظام التشغيل Mac، قد يتم حفظ كلمات المرور في تطبيق Keychain والدخول إليها أو مزامنتها من قبل مستخدمي Chromium الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
 <translation id="4050175100176540509">تحسينات الأمان المهمة والميزات الجديدة متاحة في أحدث إصدار.</translation>
-<translation id="4075965373589665797">‏ستؤدي إعادة التشغيل في وضع سطح المكتب إلى إغلاق تطبيقات Chromium وإعادة تشغيلها.</translation>
 <translation id="4077262827416206768">‏الرجاء إغلاق جميع نوافذ Chromium وإعادة تشغيل Chromium حتى يسري هذا التغيير.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />تحذير:<ph name="END_BOLD" /> لا يستطيع منع الإضافات من تسجيل سجل التصفح. لتعطيل هذه الإضافة في وضع التصفح المخفي، ألغ تحديد هذا الخيار.</translation>
 <translation id="421369550622382712">‏اكتشف تطبيقات، وألعاب، وإضافات، ومظاهر رائعة لمتصفح Chromium.</translation>
@@ -164,7 +159,6 @@
 <translation id="6838494703713445896">‏تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذا. وقدم الخادم معلومات شفافية الشهادة الصالحة.</translation>
 <translation id="6883876366448858277">‏إرسال الكلمة والسياق المحيط بها إلى بحث Google وعرض التعريفات والصور ونتائج البحث الأخرى.</translation>
 <translation id="6893813176749746474">‏تم تحديث متصفح Chromium، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
-<translation id="6900895776413482243">‏ستؤدي إعادة التشغيل في وضع Chromium المجسم إلى إغلاق تطبيقات Chromium وإعادة تشغيلها.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">‏الوحدات المحملة في Chromium</translation>
 <translation id="6970811910055250180">جارٍ تحديث الجهاز...</translation>
@@ -213,7 +207,6 @@
 <translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>
 <translation id="8586442755830160949">‏حقوق الطبع والنشر لعام <ph name="YEAR" /> لصالح The Chromium Authors. جميع الحقوق محفوظة.</translation>
-<translation id="8605166112420372522">‏إع&amp;ادة تشغيل Chromium على سطح المكتب</translation>
 <translation id="8621669128220841554">‏أخفق التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8628626585870903697">‏لا يتضمن Chromium عارض PDF المطلوب لإجراء معاينة الطباعة.</translation>
 <translation id="8684913864886094367">‏لم يغلق Chromium بشكل صحيح.</translation>

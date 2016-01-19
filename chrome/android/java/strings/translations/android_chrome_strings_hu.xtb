@@ -125,7 +125,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="2762000892062317888">éppen most</translation>
 <translation id="2770465223704140727">Eltávolítás a listából</translation>
 <translation id="278029852808208386">Nem találhatók Bluetooth-eszközök. <ph name="BEGIN_LINK" />Újbóli keresés<ph name="END_LINK" /></translation>
-<translation id="2816165854387457183">Lassú kapcsolat észlelve.</translation>
 <translation id="2842985007712546952">Szülőmappa</translation>
 <translation id="2870560284913253234">Webhely</translation>
 <translation id="2888126860611144412">A Chrome névjegye</translation>
@@ -173,7 +172,6 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="3492207499832628349">Új inkognitólap</translation>
 <translation id="3518985090088779359">Elfogadás és tovább</translation>
 <translation id="3527085408025491307">Mappa</translation>
-<translation id="3559647143395293616">Kapcsolja be a fizikai webet</translation>
 <translation id="360480449234699036">Megtudhatja a webhelyek témáit anélkül, hogy elhagyná az oldalt. A Keresés érintéssel funkció elküld egy szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési eredményeket és egyéb részleteket ad vissza.
 
 A keresési kifejezés módosításához hosszú nyomva tartással hajthat végre kiválasztást. A keresés finomításához csúsztassa a panelt teljesen fel, majd érintse meg a keresőmezőt.</translation>
@@ -274,7 +272,6 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5039804452771397117">Engedélyezés</translation>
 <translation id="5040262127954254034">Adatvédelem</translation>
 <translation id="5063480226653192405">Használat</translation>
-<translation id="509605886816275399">Menti ezt az oldalt offline használatra?</translation>
 <translation id="5100237604440890931">Összecsukva – kattintson a kibontáshoz.</translation>
 <translation id="5107381076085091558">A letöltés szünetel.</translation>
 <translation id="5118713593561876160">Érdeklődési körök</translation>
@@ -288,6 +285,7 @@ Ehhez elég elindítani a Chrome-ot számítógépén, megnyitni a menüt, majd 
 <translation id="5168917394043976756">Navigációs fiók megnyitása</translation>
 <translation id="5171045022955879922">Keressen vagy írjon be egy URL-t</translation>
 <translation id="5184329579814168207">Megnyitás Chrome-ban</translation>
+<translation id="5199929503336119739">Munkaprofil</translation>
 <translation id="5210365745912300556">Lap bezárása</translation>
 <translation id="5210714456814679336">A más eszközökön futó Chrome böngészőben megnyitott lapok itt jelennek meg.</translation>
 <translation id="5228579091201413441">Szinkronizálás bekapcsolása</translation>
@@ -382,7 +380,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="6232535412751077445">A „Nincs nyomon követés” engedélyezése azt jelenti, hogy a böngészési forgalommal együtt kérelmet is küld a rendszer. Ennek hatása attól függ, hogy a webhely reagál-e a kérelemre, és hogyan értelmezi azt.
 
 Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jelenítenek meg, amelyek nem a már felkeresett egyéb webhelyeken alapulnak. Számos webhely ilyenkor is gyűjti és felhasználja a böngészési adatokat (például a biztonság növelése, továbbá tartalom, hirdetések és ajánlatok biztosítása, valamint jelentésekhez használt statisztika előállítása céljából).</translation>
-<translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="6317634962183824346">Android rendszer szinkronizálása letiltva. Engedélyezze, majd próbálja újra.</translation>
@@ -533,6 +530,7 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="8146397137182589628">Nincs mentve offline állapotban megtekinthető példány</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> fiók</translation>
 <translation id="8168435359814927499">Tartalom</translation>
+<translation id="8200772114523450471">Folytatás</translation>
 <translation id="8209050860603202033">Kép megnyitása</translation>
 <translation id="8218346974737627104">Bejelentkezés megerősítése</translation>
 <translation id="8218934717680664417">Mostantól egyetlen érintéssel kereshet</translation>
@@ -552,7 +550,6 @@ Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem 
 <translation id="8514577642972634246">Belépés inkognitómódba</translation>
 <translation id="8515416241041728525">Fiók hozzáadása – <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Ez a webhely gyenge biztonsági beállításokat (SHA-1 aláírásokat) használ , ezért előfordulhat, hogy a kapcsolat nem titkos.</translation>
-<translation id="8528538445849828817">Az oldal nyelve: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Az oldal megnyitása</translation>
 <translation id="8562452229998620586">A mentett jelszavak itt jelennek meg.</translation>
 <translation id="856481929701340285">Asztali webhely kérése</translation>

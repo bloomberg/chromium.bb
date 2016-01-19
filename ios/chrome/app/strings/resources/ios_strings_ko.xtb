@@ -31,9 +31,11 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> 공격자는 정보(예: 비밀번호, 메시지, 신용카드)를 도용하기 위해 사용자를 속일 수 있습니다.</translation>
 <translation id="6149061208933997199">비밀번호 사용</translation>
+<translation id="6196207969502475924">음성 검색</translation>
 <translation id="6221345481584921695">Google 세이프 브라우징이 최근 <ph name="SITE" />에서 <ph name="BEGIN_LINK" />멀웨어를 감지<ph name="END_LINK" />했습니다. 평소에 안전한 웹사이트도 멀웨어에 감염될 수가 있습니다. 악성 콘텐츠의 출처는 알려진 멀웨어 배포자인 <ph name="SUBRESOURCE_HOST" />입니다.</translation>
 <translation id="6264485186158353794">안전 페이지로 돌아가기</translation>
 <translation id="6314335155547195432">비밀번호 생성</translation>
+<translation id="6344783595350022745">텍스트 삭제</translation>
 <translation id="6456425917241817154">Chrome에서 생성한 비밀번호</translation>
 <translation id="6535543971741225613">액세스하려는 사이트가 이상하게 작동하고 있으며 Chrome은 이 사이트의 URL이 올바른지 확인할 수 없습니다. 보안을 위해 더 이상 진행하지 마시고 내일 다시 시도하거나 다른 사이트를 방문하세요.</translation>
 <translation id="6740369132746915122">보안 관련 위험에 대해 알고 있으면 <ph name="BEGIN_LINK" />안전하지 않은 사이트를 방문<ph name="END_LINK" />해도 됩니다.</translation>

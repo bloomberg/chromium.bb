@@ -125,7 +125,6 @@ Dapat na na-on mo ang Bluetooth at Lokasyon upang magamit ang Pisikal na Web.</t
 <translation id="2762000892062317888">ngayon lang</translation>
 <translation id="2770465223704140727">Alisin sa listahan</translation>
 <translation id="278029852808208386">Walang nakitang mga bluetooth device. <ph name="BEGIN_LINK" />Muling maghanap<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Na-detect ang mabagal na koneksyon.</translation>
 <translation id="2842985007712546952">Pangunahing folder</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Tungkol sa Chrome</translation>
@@ -173,7 +172,6 @@ Nagsa-sign in ka sa isang pinamamahalaang account at nagbibigay sa administrator
 <translation id="3492207499832628349">Bagong tab na incognito</translation>
 <translation id="3518985090088779359">Tanggapin, magpatuloy</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3559647143395293616">Buksan ang Pisikal na Web</translation>
 <translation id="360480449234699036">Matuto tungkol sa mga paksa sa mga website nang hindi umaalis sa page. Ipapadala ng Touch to Search ang isang salita at ang konteksto nito sa Google Search, at magbibigay ito ng mga pagpapakahulugan, larawan, resulta ng paghahanap at iba pang mga detalye.
 
 Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal upang mapili ito. Upang pinuhin ang iyong paghahanap, i-slide ang panel hanggang sa pinakaitaas at pindutin ang box para sa paghahanap.</translation>
@@ -274,7 +272,6 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5039804452771397117">Payagan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Paggamit</translation>
-<translation id="509605886816275399">I-save ang page na ito offline?</translation>
 <translation id="5100237604440890931">Naka-collapse - i-click upang palawakin</translation>
 <translation id="5107381076085091558">Na-pause ang pag-download.</translation>
 <translation id="5118713593561876160">Mga Interes</translation>
@@ -288,6 +285,7 @@ Buksan lang ang Chrome sa iyong computer, pumunta sa menu, at piliin ang "Mag-si
 <translation id="5168917394043976756">Buksan ang navigation drawer</translation>
 <translation id="5171045022955879922">Hanapin o i-type ang URL</translation>
 <translation id="5184329579814168207">Buksan sa Chrome</translation>
+<translation id="5199929503336119739">Profile sa trabaho</translation>
 <translation id="5210365745912300556">Isara ang tab</translation>
 <translation id="5210714456814679336">Lalabas dito ang mga binuksan mong tab sa Chrome sa iba mo pang mga device.</translation>
 <translation id="5228579091201413441">I-enable ang pag-sync</translation>
@@ -382,7 +380,6 @@ Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong p
 <translation id="6232535412751077445">Kapag na-enable mo ang “Huwag Subaybayan,” magsasama ng isang kahilingan sa trapiko ng iyong pagba-browse. Ang anumang magiging epekto ay dedepende sa pagtugon at pagbibigay-kahulugan ng website sa nabanggit na kahilingan.
 
 Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan ng pagpapakita sa iyo ng mga ad na hindi ibinatay sa iba pang mga nabisita mo nang website. Kokolektahin at gagamitin pa rin ng maraming website ang iyong data mula sa pagba-browse - halimbawa, upang mapahusay ang seguridad, makapagpakita ng content, mga ad at rekomendasyon, at makabuo ng mga istatistika sa pag-uulat.</translation>
-<translation id="624558823898732418">Wika ng Pagsasalin: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Nagkaproblema sa pag-print sa pahina. Pakisubukang muli.</translation>
 <translation id="6295158916970320988">Lahat ng site</translation>
 <translation id="6317634962183824346">Naka-disable ang pag-sync ng Android system. Mangyaring i-enable muli at subukang muli.</translation>
@@ -533,6 +530,7 @@ Gayunpaman, hindi ka invisible. Kahit na gumamit ka ng tab na incognito, hindi p
 <translation id="8146397137182589628">Hindi na-save offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> (na) account</translation>
 <translation id="8168435359814927499">Content</translation>
+<translation id="8200772114523450471">Resume</translation>
 <translation id="8209050860603202033">Buksan ang larawan</translation>
 <translation id="8218346974737627104">Kumpirmahin ang pag-sign in</translation>
 <translation id="8218934717680664417">Makakapaghanap ka na ngayon sa isang pagpindot lang</translation>
@@ -552,7 +550,6 @@ Gayunpaman, hindi ka invisible. Kahit na gumamit ka ng tab na incognito, hindi p
 <translation id="8514577642972634246">Pumasok sa mode na incognito</translation>
 <translation id="8515416241041728525">Idagdag account kay <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Gumagamit ng mahinang configuration sa seguridad (mga SHA-1 signature) ang site na ito, kaya maaaring hindi pribado ang iyong koneksyon.</translation>
-<translation id="8528538445849828817">Wika ng Page: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Buksan ang page na ito</translation>
 <translation id="8562452229998620586">Lalabas dito ang mga naka-save na password.</translation>
 <translation id="856481929701340285">Hilingin ang desktop site</translation>

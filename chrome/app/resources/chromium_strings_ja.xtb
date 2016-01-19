@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
-<translation id="108122890477367602">Chromium を Windows 8 モードで再起動(&amp;R)</translation>
 <translation id="1115445892567829615">Chromium はデータを同期できませんでした。同期パスフレーズを更新してください。</translation>
 <translation id="1174473354587728743">共有パソコンにするなど、Chromium をお好みの方法で設定できるようになりました。</translation>
 <translation id="1185134272377778587">Chromium について</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
-<translation id="2097986737970966220">デスクトップで Chromium を開く</translation>
 <translation id="2117181891440368863">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する情報がサーバーから提供されましたが無効でした。</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
-<translation id="2233513990531887259">Chromium 没入モードで再起動</translation>
 <translation id="2241627712206172106">パソコンを共有している場合、友だちや家族はそれぞれ Chromium を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
 <translation id="225614027745146050">ようこそ</translation>
 <translation id="2316129865977710310">いいえ</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Chromium OS のスタート ガイド</translation>
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="358997566136285270">Chromium ロゴ</translation>
-<translation id="3595526210123705352">Windows 8 モードで再起動すると、Chromium アプリが終了して再起動します。</translation>
 <translation id="3738139272394829648">タップして検索</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Chromium を開いてブラウジングを始めるには、名前をクリックしてください。</translation>
 <translation id="390894725198123737">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーからアクセスされたり同期されたりする可能性があります。</translation>
 <translation id="4050175100176540509">最新バージョンに更新すると、重要なセキュリティ更新と新機能が適用されます。</translation>
-<translation id="4075965373589665797">デスクトップ モードで再起動すると、Chromium アプリが終了して再起動します。</translation>
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />警告:<ph name="END_BOLD" /> 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
 <translation id="421369550622382712">Chromium の優れたアプリ、ゲーム、拡張機能、テーマをぜひご利用ください。</translation>
@@ -164,7 +159,6 @@
 <translation id="6838494703713445896">Chromium で <ph name="ISSUER" /> がこのウェブサイトの証明書を発行したことを確認しました。証明書の透明性に関する有効な情報がサーバーから提供されました。</translation>
 <translation id="6883876366448858277">機能は、単語とその周辺のコンテキストを Google 検索に送信し、定義、画像などの検索結果を返します。</translation>
 <translation id="6893813176749746474">Chromium が更新されましたが、30 日以上使用されていません。</translation>
-<translation id="6900895776413482243">Chromium 没入モードモードで再起動すると、Chromium アプリが終了して再起動します。</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="6970811910055250180">お使いの端末を更新しています...</translation>
@@ -213,7 +207,6 @@
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
 <translation id="85843667276690461">Chromium の使用に関するアドバイス</translation>
 <translation id="8586442755830160949">Copyright <ph name="YEAR" /> The Chromium Authors. All rights reserved.</translation>
-<translation id="8605166112420372522">Chromium をデスクトップで再起動(&amp;R)</translation>
 <translation id="8621669128220841554">原因不明のエラーによりインストールに失敗しました。Chromium をもう一度ダウンロードしてください。</translation>
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
 <translation id="8684913864886094367">Chromium は正しく終了しませんでした。</translation>

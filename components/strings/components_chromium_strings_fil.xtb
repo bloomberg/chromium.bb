@@ -3,8 +3,6 @@
 <translationbundle lang="fil">
 <translation id="130631256467250065">Magkakabisa ang iyong mga pagbabago sa susunod na i-restart ang iyong device.</translation>
 <translation id="275588974610408078">Hindi available ang pag-uulat ng crash sa Chromium.</translation>
-<translation id="2872411181023734689">Hindi maipakita ng Chromium ang webpage dahil hindi nakakonekta ang iyong 
-          computer sa Internet.</translation>
 <translation id="4365115785552740256">Nagiging posible ang Chromium sa pamamagitan ng proyekto sa open source ng <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> at iba pang <ph name="BEGIN_LINK_OSS" />open source na software<ph name="END_LINK_OSS" />.</translation>
 <translation id="4404275227760602850">Pumunta sa menu ng Chromium &gt; Mga Setting &gt; (Advanced) Privacy
           at i-disable ang "I-prefetch ang mga mapagkukunan ng page."

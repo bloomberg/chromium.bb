@@ -31,9 +31,11 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075880972317537864">Những kẻ tấn công trên <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng đánh lừa bạn để ăn cắp thông tin của bạn (ví dụ: mật khẩu, thư hoặc thẻ tín dụng).</translation>
 <translation id="6149061208933997199">Sử dụng mật khẩu</translation>
+<translation id="6196207969502475924">Tìm kiếm bằng giọng nói</translation>
 <translation id="6221345481584921695">Duyệt web an toàn của Google gần đây <ph name="BEGIN_LINK" />đã phát hiện phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web thường được coi là an toàn đôi khi vẫn bị nhiễm phần mềm độc hại. Nội dung độc hại xuất phát từ <ph name="SUBRESOURCE_HOST" />, một nguồn phát tán phần mềm độc hại đã xác định.</translation>
 <translation id="6264485186158353794">Quay lại an toàn</translation>
 <translation id="6314335155547195432">Tạo mật khẩu</translation>
+<translation id="6344783595350022745">Xóa văn bản</translation>
 <translation id="6456425917241817154">Chrome đã tạo mật khẩu</translation>
 <translation id="6535543971741225613">Trang web bạn đang cố gắng truy cập có hoạt động lạ và Chrome không thể xác minh URL của trang web là chính xác. Vì lý do bảo mật, bạn không nên tiếp tục và có lẽ nên thử lại vào ngày mai hoặc truy cập vào một trang web khác.</translation>
 <translation id="6740369132746915122">Nếu bạn hiểu rủi ro với bảo mật của mình, bạn có thể <ph name="BEGIN_LINK" />truy cập trang web không an toàn này<ph name="END_LINK" />.</translation>

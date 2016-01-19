@@ -31,9 +31,11 @@
 <translation id="605721222689873409">YY</translation>
 <translation id="6075880972317537864"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーが、パスワード、メッセージ、クレジット カード番号などの情報を盗み取ろうとしている可能性があります。</translation>
 <translation id="6149061208933997199">パスワードを使用</translation>
+<translation id="6196207969502475924">音声検索</translation>
 <translation id="6221345481584921695"><ph name="BEGIN_LINK" /> では最近、Google セーフ ブラウジングにより、<ph name="END_LINK" />不正なソフトウェアが検出されました<ph name="SITE" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。今回の悪意のあるコンテンツは、不正なソフトウェアの既知の配布元である「<ph name="SUBRESOURCE_HOST" />」からもたらされました。</translation>
 <translation id="6264485186158353794">セキュリティで保護されたページに戻る</translation>
 <translation id="6314335155547195432">パスワードを生成</translation>
+<translation id="6344783595350022745">テキストを消去</translation>
 <translation id="6456425917241817154">自動生成パスワード</translation>
 <translation id="6535543971741225613">アクセスしようとしているサイトに不審な動作が見られます。ChromeではこのURLが正しいことを確認できません。セキュリティ上の理由により、今すぐこのサイトへのアクセスを中止し、明日もう一度お試しいただくか、別のサイトをご利用ください。</translation>
 <translation id="6740369132746915122"><ph name="BEGIN_LINK" />この安全でないサイトにアクセス<ph name="END_LINK" />する場合は、セキュリティ上のリスクについてご承知おきください。</translation>

@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Nepavyko įkelti informacijos puslapio „<ph name="ABOUT_PAGE" />“.</translation>
 <translation id="4434145631756268951">{0,select, single{Pasirinkite USB įrenginį}multiple{Pasirinkite USB įrenginius}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nepavyko įdiegti paketo, nes užstrigo priemonės procesas. Bandykite iš naujo paleisti „Chrome“ ir bandykite dar kartą.</translation>
-<translation id="4883436287898674711">Visos <ph name="WEBSITE_1" /> svetainės</translation>
 <translation id="5026754133087629784">Žiniatinklio rodinys: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Programų rodinys: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Šiame plėtinyje yra rakto failas „<ph name="KEY_PATH" />“. Neturėtumėte to daryti.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">Administratorius užblokavo „<ph name="EXTENSION_NAME" />“ (plėtinio ID „<ph name="EXTENSION_ID" />“).</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME" />“</translation>
 <translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME" />“, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME" />“.</translation>
-<translation id="8284279544186306258">visos <ph name="WEBSITE_1" /> svetainės</translation>
 <translation id="8284835137979141223">„<ph name="PRODUCT_NAME" />“ iš „<ph name="VENDOR_NAME" />“</translation>
 <translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) pateikė kitokį įgaliojimą.</translation>
 <translation id="8602184400052594090">Trūksta deklaracijos arba ji nenuskaitoma.</translation>

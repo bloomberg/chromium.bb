@@ -125,7 +125,6 @@ Du skal aktivere Bluetooth og Placering for at kunne bruge Fysisk web.</translat
 <translation id="2762000892062317888">lige nu</translation>
 <translation id="2770465223704140727">Fjern fra listen</translation>
 <translation id="278029852808208386">Der blev ikke fundet nogen enheder. <ph name="BEGIN_LINK" />Søg igen<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Der er registreret en langsom forbindelse.</translation>
 <translation id="2842985007712546952">Overordnet mappe</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2888126860611144412">Om Chrome</translation>
@@ -173,7 +172,6 @@ Du logger ind med en administreret konto, og du giver administratoren kontrol ov
 <translation id="3492207499832628349">Ny inkognitofane</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
 <translation id="3527085408025491307">Mappe</translation>
-<translation id="3559647143395293616">Aktivér Fysisk web</translation>
 <translation id="360480449234699036">Få oplysninger om emner på websites uden at forlade siden. "Tryk for at søge" sender et ord og ordets kontekst til Google Søgning og giver dig definitioner, billeder, søgeresultater og andre oplysninger.
 
 Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgrænse din søgning ved at skyde panelet hele vejen op og trykke på søgefeltet.</translation>
@@ -212,7 +210,7 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="423410644998903704">Chrome skal have adgangstilladelse for at kunne dele dem med dette website.</translation>
 <translation id="424696723690217687">Find websider, der udsendes af genstande i nærheden.
 
-Chrome scanner efter siderr i nærheden, når din enhed er låst op. Disse sider går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.</translation>
+Chrome scanner efter sider i nærheden, når din enhed er låst op. Disse sider går gennem en Google-tjeneste for at forbedre kvaliteten af sideresultaterne.</translation>
 <translation id="4256782883801055595">Open source-licenser</translation>
 <translation id="4259722352634471385">Navigationen er blokeret: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Kopiér linkadresse</translation>
@@ -274,7 +272,6 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5040262127954254034">Beskyttelse af personlige oplysninger</translation>
 <translation id="5063480226653192405">Forbrug</translation>
-<translation id="509605886816275399">Vil du gemme denne side offline?</translation>
 <translation id="5100237604440890931">Skjult – klik for at udvide.</translation>
 <translation id="5107381076085091558">Downloaden er sat på pause.</translation>
 <translation id="5118713593561876160">Interesser</translation>
@@ -288,6 +285,7 @@ Du skal bare åbne Chrome på din computer, gå til menuen og vælge "Log ind i 
 <translation id="5168917394043976756">Åbn sidemenuen</translation>
 <translation id="5171045022955879922">Søg, eller indtast webadresse</translation>
 <translation id="5184329579814168207">Åbn i Chrome</translation>
+<translation id="5199929503336119739">Arbejdsprofil</translation>
 <translation id="5210365745912300556">Luk fanen</translation>
 <translation id="5210714456814679336">Her vises faner, som du har åbnet i Chrome på dine andre enheder.</translation>
 <translation id="5228579091201413441">Aktivér synkronisering</translation>
@@ -382,7 +380,6 @@ Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din
 <translation id="6232535412751077445">Aktivering af "Do Not Track" betyder, at en anmodning medtages i din browsertrafik. Effekten afhænger af, om et website reagerer på anmodningen, og hvordan anmodningen fortolkes.
 
 Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, som ikke er baseret på andre websites, du har besøgt. Mange websites vil fortsat indsamle og bruge browserdata til f.eks. at forbedre sikkerheden, til at levere indhold, annoncer og anbefalinger og til at generere rapporteringsstatistik.</translation>
-<translation id="624558823898732418">Sprog, der skal oversættes til: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Der opstod et problem med udskrivning af siden. Prøv igen.</translation>
 <translation id="6295158916970320988">Alle websites</translation>
 <translation id="6317634962183824346">Synkronisering af systemet er deaktiveret for Android. Genaktiver, og prøv igen.</translation>
@@ -533,6 +530,7 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8146397137182589628">Ikke gemt offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> konti</translation>
 <translation id="8168435359814927499">Indhold</translation>
+<translation id="8200772114523450471">Genoptag</translation>
 <translation id="8209050860603202033">Åbn billede</translation>
 <translation id="8218346974737627104">Bekræft login</translation>
 <translation id="8218934717680664417">Nu kan du søge med et enkelt tryk</translation>
@@ -552,7 +550,6 @@ Husk, at du ikke er usynlig. Inkognitotilstanden skjuler ikke dine søgninger fo
 <translation id="8514577642972634246">Slå inkognitotilstand til</translation>
 <translation id="8515416241041728525">Tilføj konto for <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Dette website benytter en svag sikkerhedskonfiguration (SHA-1-signaturer), så din forbindelse er muligvis ikke privat.</translation>
-<translation id="8528538445849828817">Siden er på <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Åbn denne side</translation>
 <translation id="8562452229998620586">Dine gemte adgangskoder vises her.</translation>
 <translation id="856481929701340285">Vis computerversion</translation>

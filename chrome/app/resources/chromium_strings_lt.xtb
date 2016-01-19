@@ -4,7 +4,6 @@
 <translation id="1065672644894730302">Jūsų nuostatų negalima nuskaityti.
 
 Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išsaugoti.</translation>
-<translation id="108122890477367602">&amp;Iš naujo paleisti „Chromium“ „Windows 8“ režimu</translation>
 <translation id="1115445892567829615">„Chromium“ negali sinchronizuoti jūsų duomenų. Atnaujinkite sinchronizavimo slaptafrazę.</translation>
 <translation id="1174473354587728743">Bendrinate kompiuterį? Dabar galite nustatyti „Chromium“ kaip tik norite.</translation>
 <translation id="1185134272377778587">Apie „Chromium“</translation>
@@ -34,11 +33,9 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="1929939181775079593">„Chromium“ neatsako. Paleisti iš naujo dabar?</translation>
 <translation id="1967743265616885482">Modulis tokiu pačiu pavadinimu žinomas kaip prieštaraujantis „Chromium“.</translation>
 <translation id="2077129598763517140">Kai galima, naudoti aparatinės įrangos paspartinimą</translation>
-<translation id="2097986737970966220">Atidaryti „Chromium“ staliniame kompiuteryje</translation>
 <translation id="2117181891440368863">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė sertifikato skaidrumo informaciją, bet ji negalioja.</translation>
 <translation id="2119636228670142020">Apie &amp;„Chromium“ OS</translation>
 <translation id="2158734852934720349">„Chromium“ OS atvirojo šaltinio licencijos</translation>
-<translation id="2233513990531887259">Iš naujo paleisti „Chromium“ įtraukiančiuoju režimu</translation>
 <translation id="2241627712206172106">Jei bendrinate kompiuterį, šeimos nariai ir draugai gali naršyti atskirai ir nustatyti „Chromium“ pagal savo poreikius.</translation>
 <translation id="225614027745146050">Sveiki</translation>
 <translation id="2316129865977710310">Ačiū, ne</translation>
@@ -86,7 +83,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3549345495227188780">Darbo su „Chromium“ OS pradžia</translation>
 <translation id="3582788516608077514">Atnaujinama „Chromium“...</translation>
 <translation id="358997566136285270">„Chromium“ logotipas</translation>
-<translation id="3595526210123705352">Iš naujo paleidus „Windows 8“ režimu „Chromium“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="3738139272394829648">Paieška palietus</translation>
 <translation id="3748537968684000502">Žiūrite saugų „Chromium“ puslapį.</translation>
 <translation id="378917192836375108">Naudodami „Chromium“ galite spustelėti telefono numerį žiniatinklyje ir skambinti juo naudodami „Skype“!</translation>
@@ -96,7 +92,6 @@ Kai kurios funkcijos gali būti nepasiekiamos ir nuostatų pakeitimai nebus išs
 <translation id="3889543394854987837">Spustelėkite savo vardą, kad atidarytumėte „Chromium“ ir pradėtumėte naršyti.</translation>
 <translation id="390894725198123737">„Mac“ kompiuteriuose slaptažodžiai gali būti išsaugoti naudojant „Keychain“, o juos gali pasiekti arba sinchronizuoti kiti „Chromium“ naudotojai, bendrai naudojantys šią „OS X“ paskyrą.</translation>
 <translation id="4050175100176540509">Naujausios versijos programoje įdiegti svarbūs saugos patobulinimai ir pasiekiamos naujos funkcijos.</translation>
-<translation id="4075965373589665797">Iš naujo paleidus stalinio kompiuterio režimu „Chromium“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="4077262827416206768">Uždarykite visus „Chromium“ langus ir iš naujo paleiskite „Chromium“, kad šis pakeitimas pradėtų galioti.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Įspėjimas:<ph name="END_BOLD" /> Chromium“ negali neleisti plėtiniams įrašyti jūsų naršymo istorijos. Jei norite neleisti šio plėtinio inkognito režimu, panaikinkite šios parinkties pasirinkimą.</translation>
 <translation id="421369550622382712">Atraskite puikių „Chromium“ programų, žaidimų, plėtinių ir temų.</translation>
@@ -166,7 +161,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="6838494703713445896">„Chromium“ patvirtino, kad „<ph name="ISSUER" />“ išdavė šį svetainės sertifikatą. Serveris pateikė galiojančią sertifikato skaidrumo informaciją.</translation>
 <translation id="6883876366448858277">siunčiamas žodis ir jo kontekstas „Google“ paieškai, kuri pateikia apibrėžimų, nuotraukų ir kitų paieškos rezultatų.</translation>
 <translation id="6893813176749746474">„Chromium“ atnaujinta, bet jos nenaudojote mažiausiai 30 dienų.</translation>
-<translation id="6900895776413482243">Iš naujo paleidus „Chromium“ įtraukiančiuoju režimu „Chromium“ programos bus uždarytos ir iš naujo paleistos.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Į „Chromium“ įkelti moduliai</translation>
 <translation id="6970811910055250180">Įrenginys atnaujinamas...</translation>
@@ -215,7 +209,6 @@ Kai kurios funkcijos gali būti nepasiekiamos. Nurodykite kitą profilio katalog
 <translation id="8551886023433311834">Beveik įdiegta naujausia versija! Paleiskite įrenginį iš naujo, kad būtų užbaigtas naujinimas.</translation>
 <translation id="85843667276690461">Gauti su „Chromium“ naudojimu susijusios pagalbos</translation>
 <translation id="8586442755830160949">Autorių teisės priklauso „Chromium“ autoriams, <ph name="YEAR" /> m. Visos teisės saugomos.</translation>
-<translation id="8605166112420372522">&amp;Iš naujo paleisti „Chromium“ darbalaukyje</translation>
 <translation id="8621669128220841554">Nepavyko įdiegti dėl nenurodytos klaidos. Atsisiųskite „Chromium“ dar kartą.</translation>
 <translation id="8628626585870903697">„Chromium“ neįtraukta PDF žiūryklė, reikalinga, kad veiktų „Spaudinio peržiūra“.</translation>
 <translation id="8684913864886094367">„Chromium“ netinkamai išsijungė.</translation>

@@ -8,21 +8,19 @@
 <translation id="1066332784716773939">Een diagnose van fouten stellen...</translation>
 <translation id="106701514854093668">Desktopbladwijzers</translation>
 <translation id="1080116354587839789">Aanpassen aan breedte</translation>
-<translation id="108346963417674655">Kan geen veilige verbinding met de server maken. De website werkte voorheen mogelijk wel, maar er is een probleem met de server. Verbinding maken met dit soort sites vormt een veiligheidsrisico voor alle gebruikers en is daarom uitgeschakeld.</translation>
 <translation id="1090046120949329821">Er zijn meerdere, verschillende Content-Disposition-headers ontvangen. Dit is niet toegestaan als bescherming tegen aanvallen die HTTP-reacties splitsen.</translation>
 <translation id="1091911885099639251">Kaart verifiëren</translation>
 <translation id="1103523840287552314"><ph name="LANGUAGE" /> altijd vertalen</translation>
-<translation id="1105117579475534983">Webpagina geblokkeerd</translation>
 <translation id="1107591249535594099">Als deze optie is aangevinkt, bewaart Chrome een exemplaar van je kaart op dit apparaat om formulieren sneller te kunnen invullen.</translation>
 <translation id="1113869188872983271">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="111844081046043029">Pagina verlaten?</translation>
 <translation id="112840717907525620">Cachegeheugen van beleid is OK</translation>
 <translation id="113188000913989374"><ph name="SITE" /> meldt het volgende:</translation>
 <translation id="1132774398110320017">Instellingen voor automatisch aanvullen in Chrome...</translation>
-<translation id="1146498888431277930">Fout met SSL-verbinding</translation>
 <translation id="1146673768181266552">Crash-ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je computer. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1152921474424827756">Een <ph name="BEGIN_LINK" />gecacht exemplaar<ph name="END_LINK" /> van <ph name="URL" /> openen</translation>
+<translation id="1175364870820465910">&amp;Afdrukken...</translation>
 <translation id="1181037720776840403">Verwijderen</translation>
 <translation id="1195447618553298278">Onbekende fout</translation>
 <translation id="1201402288615127009">Volgende</translation>
@@ -43,7 +41,6 @@
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1430915738399379752">Afdrukken</translation>
 <translation id="1442912890475371290">Geblokkeerde poging <ph name="BEGIN_LINK" /> om een pagina op <ph name="DOMAIN" /><ph name="END_LINK" /> te bezoeken.</translation>
-<translation id="1452265419286795001">Kan de webpagina niet laden omdat je computer is overgeschakeld op de slaapstand. Wanneer dit gebeurt, worden de netwerkverbindingen verbroken en mislukken nieuwe netwerkverzoeken. Als je de pagina opnieuw laadt, is het probleem wellicht opgelost.</translation>
 <translation id="1455235771979731432">Er is een probleem opgetreden bij het verifiëren van je kaart. Controleer je internetverbinding en probeer het opnieuw.</translation>
 <translation id="1491151370853475546">Deze pagina opnieuw laden</translation>
 <translation id="1506687042165942984">Een opgeslagen (verouderde) kopie van deze pagina weergeven.</translation>
@@ -54,9 +51,7 @@
 
           &lt;p&gt;Pas in het gedeelte &lt;strong&gt;Algemeen&lt;/strong&gt; van de app &lt;strong&gt;Instellingen&lt;/strong&gt; de datum en tijd aan.&lt;/p&gt;</translation>
 <translation id="1592005682883173041">Lokale gegevenstoegang</translation>
-<translation id="1619362374865863391"><ph name="PRODUCT_NAME" /> kan de website niet bereiken. Dit wordt vaak veroorzaakt door netwerkproblemen, maar kan ook worden veroorzaakt door een onjuist geconfigureerde firewall of proxyserver.</translation>
 <translation id="1629803312968146339">Wil je dat Chrome deze kaart opslaat?</translation>
-<translation id="1639782983204136776">Er is ongeldige reactie ontvangen tijdens het laden van <ph name="URL" />. De server kan offline zijn wegens onderhoud of kan onjuist zijn geconfigureerd.</translation>
 <translation id="1640180200866533862">Gebruikersbeleid</translation>
 <translation id="1644184664548287040">De netwerkconfiguratie is ongeldig en kan niet worden geïmporteerd.</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
@@ -67,12 +62,15 @@
 <translation id="1710259589646384581">Besturingssysteem</translation>
 <translation id="1734864079702812349">Amex</translation>
 <translation id="1737968601308870607">Bug indienen</translation>
+<translation id="17513872634828108">Geopende tabbladen</translation>
 <translation id="1753706481035618306">Paginanummer</translation>
 <translation id="1763864636252898013">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door het besturingssysteem van je apparaat. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="1775135663370355363">Geschiedenis van dit apparaat wordt weergegeven. <ph name="BEGIN_LINK" />Meer informatie<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">Update je wachtwoordzin voor synchronisatie.</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">Ongeldige aanvraag of aanvraagparameters</translation>
 <translation id="1871208020102129563">Proxy is ingesteld op het gebruik van vaste proxyservers, niet op een script-URL van het PAC-type.</translation>
+<translation id="1871625979288021266">Onveilige poort geblokkeerd</translation>
 <translation id="1883255238294161206">Lijst samenvouwen</translation>
 <translation id="1898423065542865115">Filteren</translation>
 <translation id="194030505837763158">Ga naar <ph name="LINK" /></translation>
@@ -101,17 +99,13 @@
 <translation id="2212735316055980242">Beleid niet gevonden</translation>
 <translation id="2213606439339815911">Items ophalen…</translation>
 <translation id="2214283295778284209"><ph name="SITE" /> is niet beschikbaar</translation>
-<translation id="2221403025589790908"><ph name="PRODUCT_NAME" /> kan de webpagina niet laden, omdat het te lang duurt voordat <ph name="HOST_NAME" /> reageert. De website is mogelijk offline of misschien heb je problemen met je internetverbinding.</translation>
-<translation id="2223896507118749476">Er is een fout opgetreden toen de website <ph name="URL" /> probeerde op te halen. De server kan offline zijn wegens onderhoud of kan onjuist zijn geconfigureerd.</translation>
 <translation id="225207911366869382">Deze waarde is verouderd voor dit beleid.</translation>
 <translation id="2262243747453050782">HTTP-fout</translation>
-<translation id="2271281383664374369">Extensieverzoeken naar deze URL zijn tijdelijk stopgezet.</translation>
 <translation id="2279770628980885996">Er is een onverwachte voorwaarde gevonden toen de server het verzoek wilde uitvoeren.</translation>
 <translation id="2282872951544483773">Onbeschikbare experimenten</translation>
 <translation id="229702904922032456">Een root- of tussenliggend certificaat is verlopen.</translation>
 <translation id="230155334948463882">Nieuwe kaart?</translation>
 <translation id="2328300916057834155">Ongeldige bladwijzer genegeerd bij index <ph name="ENTRY_INDEX" /></translation>
-<translation id="2345460471437425338">Onjuist certificaat voor host.</translation>
 <translation id="2354001756790975382">Andere bladwijzers</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2367567093518048410">Niveau</translation>
@@ -132,9 +126,7 @@
 <translation id="2516305470678292029">UI-alternatieven</translation>
 <translation id="2552545117464357659">Nieuwer</translation>
 <translation id="2556876185419854533">&amp;Bewerken ongedaan maken</translation>
-<translation id="2581221116934462656">Wil je dat <ph name="PRODUCT_NAME" /> de pagina's op deze site die in het <ph name="LANGUAGE_NAME" /> zijn geschreven, voortaan vertaalt?</translation>
 <translation id="2587841377698384444">Directory API-ID:</translation>
-<translation id="2589937147782335782">Wil je dat Google deze kaart opslaat?</translation>
 <translation id="2597378329261239068">Dit document is beveiligd met een wachtwoord. Geef een wachtwoord op.</translation>
 <translation id="2609632851001447353">Varianten</translation>
 <translation id="2625385379895617796">Je klok loopt voor</translation>
@@ -143,14 +135,16 @@
 <translation id="2653659639078652383">Verzenden</translation>
 <translation id="2674170444375937751">Weet je zeker dat u deze pagina's uit je geschiedenis wilt verwijderen?</translation>
 <translation id="2704283930420550640">Waarde komt niet overeen met notatie.</translation>
+<translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2721148159707890343">Verzoek geslaagd</translation>
 <translation id="2728127805433021124">Het certificaat van de server is ondertekend met een zwak ondertekeningsalgoritme.</translation>
 <translation id="2742870351467570537">Geselecteerde items verwijderen</translation>
 <translation id="277499241957683684">Apparaatrecord ontbreekt</translation>
 <translation id="2784949926578158345">De verbinding is opnieuw ingesteld.</translation>
+<translation id="2824775600643448204">Adres- en zoekbalk</translation>
 <translation id="2835170189407361413">Formulier leegmaken</translation>
 <translation id="2855922900409897335">Je <ph name="CREDIT_CARD" /> verifiëren</translation>
-<translation id="2887624244875325968">Deze fout kan optreden wanneer je verbinding maakt met een beveiligde server (HTTPS). Deze houdt in dat de server een beveiligde verbinding probeert in te stellen, maar dat de verbinding wegens een ernstige onjuiste configuratie helemaal niet beveiligd is. <ph name="LINE_BREAK" /> De server moet eerst worden hersteld. Om je privacy te beschermen, maakt <ph name="PRODUCT_NAME" /> geen gebruik van niet-beveiligde verbindingen.</translation>
+<translation id="2897655920961181107">De gevraagde poort is onveilig en is geblokkeerd.</translation>
 <translation id="2909946352844186028">Er is een netwerkwijziging gedetecteerd.</translation>
 <translation id="2915500479781995473">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server is verlopen. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept. De klok van je computer is momenteel ingesteld op <ph name="CURRENT_TIME" />. Klopt dat? Zo niet, dan moet je de klok van het systeem corrigeren en deze pagina vernieuwen.</translation>
 <translation id="2922350208395188000">Het servercertificaat kan niet worden gecontroleerd.</translation>
@@ -179,11 +173,9 @@
 <translation id="3202578601642193415">Nieuwste</translation>
 <translation id="3207960819495026254">Toegevoegd aan 'Bladwijzers'</translation>
 <translation id="3219579145727097045">Geef de vervaldatum en viercijferige CVC-code op die op de voorkant van je kaart staan</translation>
-<translation id="3225579507836276307">Een extensie van derden heeft de toegang tot deze webpagina geblokkeerd.</translation>
 <translation id="3225919329040284222">De server heeft een certificaat gepresenteerd dat niet overeenkomt met de ingebouwde verwachtingen. Deze verwachtingen zijn opgenomen voor bepaalde websites om je te beschermen.</translation>
 <translation id="3226128629678568754">Klik op de knop 'Opnieuw laden' om de gegevens opnieuw te verzenden die nodig zijn om de pagina te laden.</translation>
 <translation id="3228969707346345236">De vertaling is mislukt omdat de pagina al in het <ph name="LANGUAGE" /> is.</translation>
-<translation id="3230256772510102500">Een proxyserver is een server die fungeert als schakel tussen je computer en andere servers. Je systeem is momenteel geconfigureerd om een proxy te gebruiken, maar <ph name="PRODUCT_NAME" /> kan geen verbinding maken met de proxy.</translation>
 <translation id="3270847123878663523">&amp;Volgorde wijzigen ongedaan maken</translation>
 <translation id="3286538390144397061">Nu herstarten</translation>
 <translation id="333371639341676808">Voorkom dat deze pagina extra dialoogvensters weergeeft.</translation>
@@ -195,7 +187,6 @@
 <translation id="3377188786107721145">Fout bij het parseren van beleid</translation>
 <translation id="3380365263193509176">Onbekende fout</translation>
 <translation id="3380864720620200369">Klant-ID:</translation>
-<translation id="3393716657345709557">Het opgevraagde item is niet gevonden in het cachegeheugen.</translation>
 <translation id="340013220407300675">Aanvallers proberen mogelijk je gegevens van <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> te stelen (bijvoorbeeld wachtwoorden, berichten of creditcarddetails).</translation>
 <translation id="3427342743765426898">&amp;Opnieuw bewerken</translation>
 <translation id="3435896845095436175">Inschakelen</translation>
@@ -207,6 +198,7 @@
 <translation id="3528171143076753409">Het servercertificaat is niet betrouwbaar.</translation>
 <translation id="3539171420378717834">Een exemplaar van deze kaart op dit apparaat bewaren</translation>
 <translation id="3542684924769048008">Wachtwoord gebruiken voor:</translation>
+<translation id="3549644494707163724">Alle gesynchroniseerde gegevens versleutelen met je eigen wachtwoordzin voor synchronisatie</translation>
 <translation id="3549761410225185768"><ph name="NUM_TABS_MORE" /> meer...</translation>
 <translation id="3566021033012934673">Je verbinding is niet privé</translation>
 <translation id="3583757800736429874">&amp;Opnieuw verplaatsen</translation>
@@ -227,22 +219,22 @@
 <translation id="375403751935624634">Het vertalen is mislukt wegens een serverfout.</translation>
 <translation id="3759461132968374835">Je hebt geen onlangs gemelde crashes. Crashes die zich voordeden toen de crashrapportage was uitgeschakeld, worden hier niet weergegeven.</translation>
 <translation id="382518646247711829">Als je een proxyserver gebruikt...</translation>
+<translation id="3828924085048779000">Een lege wachtwoordzin is niet toegestaan.</translation>
+<translation id="385051799172605136">Vorige</translation>
 <translation id="3851596405215565524">Als dit programma al wordt vermeld als een programma dat toegang heeft tot het netwerk, kun je proberen het uit de lijst te verwijderen en het opnieuw toe te voegen.</translation>
 <translation id="3858027520442213535">Datum en tijd updaten</translation>
 <translation id="3884278016824448484">Conflicterende apparaat-ID's</translation>
 <translation id="3885155851504623709">Gemeente</translation>
 <translation id="3901925938762663762">De kaart is verlopen</translation>
 <translation id="3903912596042358459">De server heeft het verzoek afgewezen.</translation>
-<translation id="3920015046759567857">De verbinding met <ph name="HOST_NAME" /> is verbroken.</translation>
+<translation id="3930850196944737149">Je apparaat is offline.</translation>
 <translation id="3934680773876859118">PDF-document kan niet worden geladen</translation>
-<translation id="3940082421246752453">De server ondersteunt de HTTP-versie niet die in dit verzoek wordt gebruikt.</translation>
 <translation id="3950924596163729246">Geen toegang tot het netwerk.</translation>
 <translation id="3963721102035795474">Lezermodus</translation>
 <translation id="4030383055268325496">&amp;Toevoegen ongedaan maken</translation>
 <translation id="4032534284272647190">Toegang tot <ph name="URL" /> geweigerd.</translation>
 <translation id="404928562651467259">WAARSCHUWING</translation>
 <translation id="4058922952496707368">Sleutel '<ph name="SUBKEY" />': <ph name="ERROR" /></translation>
-<translation id="4060383410180771901">De website kan het verzoek voor <ph name="URL" /> niet uitvoeren.</translation>
 <translation id="4079302484614802869">Proxyconfiguratie is ingesteld op het gebruik van een pac-script-URL, niet op het gebruik van vaste proxyservers.</translation>
 <translation id="409504436206021213">Niet opnieuw laden</translation>
 <translation id="4103249731201008433">Serienummer van apparaat is ongeldig</translation>
@@ -261,10 +253,8 @@
 <translation id="4268298190799576220">Chromium kan je kaart momenteel niet verifiëren. Probeer het later opnieuw.</translation>
 <translation id="4269787794583293679">(Geen gebruikersnaam)</translation>
 <translation id="4278390842282768270">Toegestaan</translation>
-<translation id="4287689875748136217">Kan de webpagina niet laden omdat de server geen gegevens heeft verzonden.</translation>
 <translation id="4300246636397505754">Bovenliggende suggesties</translation>
 <translation id="4325863107915753736">Kan artikel niet vinden</translation>
-<translation id="4350711002179453268">Kan geen veilige verbinding maken met de server. Dit kan worden veroorzaakt door een probleem met de server, of er wordt een certificaat voor clientverificatie vereist waarover je niet beschikt.</translation>
 <translation id="4372948949327679948">Verwachte <ph name="VALUE_TYPE" /> waarde.</translation>
 <translation id="4377125064752653719">Je probeert <ph name="DOMAIN" /> te bereiken, maar het certificaat dat de server heeft geretourneerd, is ingetrokken door de uitgever. Dat betekent dat de veiligheidsgaranties die de server heeft geretourneerd, absoluut niet kunnen worden vertrouwd. Het kan zijn dat je met een hacker aan het communiceren bent.</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
@@ -282,7 +272,6 @@
 <translation id="4594403342090139922">&amp;Verwijderen ongedaan maken</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server bevat fouten. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
-<translation id="4681260323810445443">Je hebt geen toegang tot de webpagina op <ph name="URL" />. Je moet wellicht eerst inloggen.</translation>
 <translation id="4697214168136963651"><ph name="URL" /> wordt geblokkeerd</translation>
 <translation id="4726672564094551039">Beleid opnieuw laden</translation>
 <translation id="4728558894243024398">Platform</translation>
@@ -290,22 +279,18 @@
 <translation id="4764776831041365478">De webpagina op <ph name="URL" /> is mogelijk tijdelijk uitgeschakeld of permanent verplaatst naar een nieuw webadres.</translation>
 <translation id="4771973620359291008">Er is een onbekende fout opgetreden.</translation>
 <translation id="477518548916168453">De server biedt geen ondersteuning voor de functionaliteit die nodig is om het verzoek te voltooien.</translation>
-<translation id="4779052991835840224">Er kan geen beveiligde verbinding tot stand worden gebracht, omdat deze site gebruikmaakt van een protocol of coderingspakket dat niet wordt ondersteund. Dit treedt mogelijk op wanneer de server RC4 nodig heeft, wat niet langer als veilig wordt beschouwd.</translation>
-<translation id="4786993863723020412">Fout bij het lezen van cache</translation>
 <translation id="4800132727771399293">Controleer je vervaldatum en CVC-code en probeer het opnieuw</translation>
 <translation id="4807049035289105102">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat de website gecodeerde inloggegevens heeft verzonden die niet door Google Chrome kunnen worden verwerkt. Netwerkfouten en aanvallen zijn meestal tijdelijk, dus deze pagina werkt later waarschijnlijk weer correct.</translation>
 <translation id="4813512666221746211">Netwerkfout</translation>
 <translation id="4816492930507672669">Aanpassen aan pagina</translation>
-<translation id="4841859178893814774"><ph name="PRODUCT_NAME" /> slaat gedownloade bestanden tijdelijk op om webpagina's sneller te maken. Wanneer <ph name="PRODUCT_NAME" /> niet correct is gesloten, kunnen deze bestanden corrupt raken, waardoor deze fout optreedt. Als je de pagina opnieuw laadt, is het probleem wellicht verholpen, en als je correct afsluit, zou dit niet meer moeten gebeuren. <ph name="LINE_BREAK" /> Als het probleem zich blijft voordoen, kun je het cachegeheugen wissen. In sommige gevallen kan dit een symptoom zijn van hardware die begint uit te vallen.</translation>
+<translation id="4841640898320458950">Onveilige poort geblokkeerd.</translation>
 <translation id="4850886885716139402">Weergave</translation>
-<translation id="4874648484377130814">Deze site gebruikt een <ph name="BEGIN_LINK" />nieuw algemeen hoofddomein<ph name="END_LINK" /> (gTLD). Als je in het verleden <ph name="HOST_NAME" /> hebt gebruikt om toegang te krijgen tot een interne site, neem dan contact op met je netwerkbeheerder.</translation>
 <translation id="4880827082731008257">Geschiedenis doorzoeken</translation>
-<translation id="49215695600353191">De reactie van de server bevatte dubbele headers. Dit probleem wordt meestal veroorzaakt door een onjuist geconfigureerde website of proxy. Alleen de beheerder van de website of proxy kan dit probleem oplossen.</translation>
+<translation id="488726935215981469">Je gegevens zijn versleuteld met je wachtwoordzin voor synchronisatie. Geef deze hieronder op.</translation>
 <translation id="4923417429809017348">Deze pagina is vertaald uit een onbekende taal naar het <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4926049483395192435">Moet worden opgegeven.</translation>
 <translation id="495170559598752135">Acties</translation>
 <translation id="4958444002117714549">Lijst uitvouwen</translation>
-<translation id="4980112683975062744">Dubbele headers ontvangen van server</translation>
 <translation id="498957508165411911">Vertalen uit het <ph name="ORIGINAL_LANGUAGE" /> naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="5002932099480077015">Indien ingeschakeld, slaat Chrome een kopie van je kaart op dit apparaat op zodat formulieren sneller kunnen worden ingevuld.</translation>
 <translation id="5019198164206649151">Backend-opslag in slechte staat</translation>
@@ -317,22 +302,19 @@
 <translation id="5089810972385038852">Staat</translation>
 <translation id="5094747076828555589">De server kan niet bewijzen dat dit <ph name="DOMAIN" /> is. Het beveiligingscertificaat van de server wordt niet vertrouwd door Chromium. Dit kan worden veroorzaakt door een verkeerde configuratie of een aanvaller die je verbinding onderschept.</translation>
 <translation id="5095208057601539847">Provincie</translation>
-<translation id="5109770625702925626">Kan <ph name="HOST_NAME" /> niet opzoeken. Een diagnose van het probleem stellen...</translation>
 <translation id="5115563688576182185">(64-bits)</translation>
 <translation id="5122371513570456792"><ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> gevonden voor '<ph name="SEARCH_STRING" />'.</translation>
+<translation id="5141240743006678641">Gesynchroniseerde wachtwoorden versleutelen met je Google-aanmeldingsgegevens</translation>
 <translation id="5145883236150621069">Foutcode aanwezig in de beleidsreactie</translation>
-<translation id="5153978682603373396">Een proxyserver is een server die fungeert als schakel tussen je apparaat en andere servers. Je systeem is momenteel geconfigureerd om een proxy te gebruiken, maar <ph name="PRODUCT_NAME" /> kan geen verbinding maken met de proxy.</translation>
 <translation id="5172758083709347301">Computer</translation>
 <translation id="5179510805599951267">Niet in het <ph name="ORIGINAL_LANGUAGE" />? Deze fout melden</translation>
 <translation id="5190835502935405962">Bladwijzerbalk</translation>
 <translation id="5199729219167945352">Experimenten</translation>
 <translation id="5228309736894624122">Fout met SSL-protocol.</translation>
 <translation id="5251803541071282808">Cloud</translation>
-<translation id="527200068854444456">De webpagina kan niet worden geladen omdat je apparaat is overgeschakeld op de slaapstand. Wanneer dit gebeurt, wordt de netwerkverbinding uitgeschakeld en mislukken nieuwe netwerkaanvragen. Dit kan worden opgelost door de pagina opnieuw te laden.</translation>
 <translation id="5295309862264981122">Navigatie bevestigen</translation>
 <translation id="5299298092464848405">Fout bij het parseren van het beleid</translation>
 <translation id="5300589172476337783">Weergeven</translation>
-<translation id="5303618139271450299">Deze webpagina is niet gevonden</translation>
 <translation id="5308689395849655368">Crashrapportage is uitgeschakeld.</translation>
 <translation id="5317780077021120954">Opslaan</translation>
 <translation id="536296301121032821">Opslaan van beleidsinstellingen is mislukt</translation>
@@ -360,7 +342,6 @@
 <translation id="5720705177508910913">Huidige gebruiker</translation>
 <translation id="5813119285467412249">&amp;Opnieuw toevoegen</translation>
 <translation id="5872918882028971132">Bovenliggende suggesties</translation>
-<translation id="5880867612172997051">Netwerktoegang opgeschort</translation>
 <translation id="5900623698597156974">Een TLS 1.0 fallback kan communiceren met de server, maar we accepteren geen TLS 1.0 fallbacks meer. De server moet worden geüpdatet zodat de versieonderhandeling correct wordt geïmplementeerd en bij voorkeur TLS 1.2 wordt ondersteund.</translation>
 <translation id="59107663811261420">Dit type kaart wordt voor deze verkoper niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>
 <translation id="59174027418879706">Ingeschakeld</translation>
@@ -375,11 +356,8 @@
 <translation id="604124094241169006">Automatisch</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6060685159320643512">Pas op, dit zijn geen experimenten om zonder handschoenen aan te pakken</translation>
-<translation id="6066742401428748382">Toegang tot de webpagina is geweigerd</translation>
 <translation id="6093795393556121384">Je kaart is geverifieerd</translation>
 <translation id="6099520380851856040">Opgetreden op <ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">De webpagina op <ph name="URL" /> heeft geleid tot te veel omleidingen. Dit probleem wordt mogelijk opgelost als je je cookies voor deze site wist of cookies van derden toestaat. Zo niet, dan is het mogelijk een probleem met de serverconfiguratie en niet een probleem met de computer.</translation>
-<translation id="6130627560064345577">De server die de webpagina host, is waarschijnlijk overbelast geraakt of heeft een fout aangetroffen. <ph name="PRODUCT_NAME" /> heeft verzoeken van extensies naar deze URL tijdelijk stopgezet om te voorkomen dat extensies te veel verkeer genereren en het probleem erger wordt. <ph name="LINE_BREAK" /> Als je van mening bent dat dit gedrag ongewenst is, bijvoorbeeld als je foutopsporing voor je eigen website uitvoert, ga je naar <ph name="URL_FOR_MORE_INFO" />, waar je meer informatie kunt vinden, inclusief hoe je de functie kunt uitschakelen.</translation>
 <translation id="6146055958333702838">Controleer alle kabels en start alle routers, modems of andere netwerkapparaten die je gebruikt, opnieuw op.</translation>
 <translation id="6151417162996330722">Het servercertificaat heeft een te lange geldigheidsperiode.</translation>
 <translation id="6154808779448689242">Geretourneerde beleidstoken komt niet overeen met huidige token</translation>
@@ -392,7 +370,6 @@
 <translation id="6262796033958342538">Er zijn meerdere, verschillende Location-headers ontvangen. Dit is niet toegestaan als bescherming tegen aanvallen die HTTP-reacties splitsen.</translation>
 <translation id="6263376278284652872">Bladwijzers voor <ph name="DOMAIN" /></translation>
 <translation id="6264485186158353794">Terug naar veilige website</translation>
-<translation id="6268647269805730940">De stappen voor de eerste uitvoering van dit apparaat zijn niet voltooid.</translation>
 <translation id="6282194474023008486">Postcode</translation>
 <translation id="6321917430147971392">Controleer je DNS-instellingen</translation>
 <translation id="6328639280570009161">Probeer netwerkvoorspelling uit te schakelen</translation>
@@ -409,16 +386,15 @@
 <translation id="6489534406876378309">Uploaden van crashes starten</translation>
 <translation id="6500116422101723010">De server kan het verzoek momenteel niet uitvoeren. Met deze code wordt aangegeven dat dit tijdelijk het geval is. De server is na het oponthoud weer beschikbaar.</translation>
 <translation id="6512448926095770873">Deze pagina verlaten</translation>
-<translation id="6516193643535292276">Kan geen verbinding maken met internet</translation>
 <translation id="6518133107902771759">Controleren</translation>
 <translation id="6529602333819889595">&amp;Opnieuw verwijderen</translation>
 <translation id="6533019874004191247">Niet-ondersteunde URL.</translation>
 <translation id="6550675742724504774">Opties</translation>
+<translation id="6596325263575161958">Opties voor encryptie</translation>
 <translation id="6626108645084335023">Wachten op DNS-controle.</translation>
 <translation id="6628463337424475685">Zoeken via <ph name="ENGINE" /></translation>
 <translation id="6634865548447745291">Je kunt <ph name="SITE" /> op dit moment niet bezoeken, omdat <ph name="BEGIN_LINK" />dit certificaat is ingetrokken<ph name="END_LINK" />. Netwerkfouten en aanvallen zijn doorgaans tijdelijk, dus deze pagina werkt later waarschijnlijk correct.</translation>
 <translation id="6637478299472506933">Download is mislukt</translation>
-<translation id="6640442327198413730">Ontbreekt in cache</translation>
 <translation id="6644283850729428850">Dit beleid is verouderd.</translation>
 <translation id="6646897916597483132">Geef de viercijferige CVC-code op die op de voorkant van je kaart staat</translation>
 <translation id="6671697161687535275">Formuliersuggestie verwijderen uit Chromium?</translation>
@@ -426,7 +402,6 @@
 <translation id="674375294223700098">Onbekende fout met servercertificaat.</translation>
 <translation id="6746710319270251222">Er zijn meerdere, verschillende Content Length-headers ontvangen. Dit is niet toegestaan als bescherming tegen aanvallen die HTTP-reacties splitsen.</translation>
 <translation id="6753269504797312559">Beleidswaarde</translation>
-<translation id="6771079623344431310">Kan geen verbinding maken met de proxyserver</translation>
 <translation id="6781404225664080496">Verzoeken naar deze URL zijn tijdelijk afgebroken.</translation>
 <translation id="6800914069727136216">In inhoudspakket</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -438,7 +413,6 @@
 <translation id="6891596781022320156">Beleidsniveau wordt niet ondersteund.</translation>
 <translation id="6897140037006041989">User-agent</translation>
 <translation id="6915804003454593391">Gebruiker:</translation>
-<translation id="6948142510520900350">Je &lt;strong&gt;systeembeheerder&lt;/strong&gt; heeft de toegang tot deze webpagina geblokkeerd.</translation>
 <translation id="6957887021205513506">Het certificaat van de server lijkt vals te zijn.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6965978654500191972">Apparaat</translation>
@@ -446,15 +420,14 @@
 <translation id="6973656660372572881">Zowel vaste proxyservers als een pac-script-URL worden gespecificeerd.</translation>
 <translation id="6989763994942163495">Geavanceerde instellingen weergeven...</translation>
 <translation id="7012363358306927923">China UnionPay</translation>
+<translation id="7029809446516969842">Wachtwoorden</translation>
 <translation id="7050187094878475250">Je hebt geprobeerd <ph name="DOMAIN" /> te bereiken, maar de server heeft een certificaat gepresenteerd waarvan de geldigheidsperiode te lang is om betrouwbaar te zijn.</translation>
 <translation id="7052500709156631672">De gateway- of proxyserver heeft een ongeldige reactie ontvangen van een upstreamserver.</translation>
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Ouder</translation>
 <translation id="7108649287766967076">De vertaling naar het <ph name="TARGET_LANGUAGE" /> is mislukt.</translation>
 <translation id="7117303293717852287">Deze webpagina opnieuw laden</translation>
-<translation id="7117941875056403396">De poging van <ph name="PRODUCT_NAME" /> om verbinding te maken met <ph name="HOST_NAME" /> is geweigerd. De website is mogelijk offline, of misschien is je netwerk niet correct geconfigureerd.</translation>
 <translation id="7139724024395191329">Emiraat</translation>
-<translation id="7148804936871729015">Het duurt te lang voordat de server van <ph name="URL" /> reageert. De server is wellicht overbelast.</translation>
 <translation id="7179921470347911571">Nu opnieuw starten</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
 <translation id="7182878459783632708">Geen beleid ingesteld</translation>
@@ -469,7 +442,6 @@
 <translation id="7275334191706090484">Beheerde bladwijzers</translation>
 <translation id="7298195798382681320">Aanbevolen</translation>
 <translation id="7334320624316649418">&amp;Opnieuw volgorde wijzigen</translation>
-<translation id="7335675476272530342">De webpagina is niet gevonden in het cachegeheugen. Bepaalde bronnen kunnen alleen veilig worden geladen vanuit het cachegeheugen, zoals pagina's die zijn gegenereerd op basis van verzonden gegevens. <ph name="LINE_BREAK" /> Deze fout kan ook optreden als het cachegeheugen corrupt is geraakt vanwege incorrect afsluiten. <ph name="LINE_BREAK" /> Als het probleem zich blijft voordoen, kun je proberen het cachegeheugen te wissen.</translation>
 <translation id="7353601530677266744">Opdrachtregel</translation>
 <translation id="7372973238305370288">zoekresultaat</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -483,6 +455,7 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7424977062513257142">Een ingesloten pagina op deze webpagina meldt het volgende:</translation>
 <translation id="7441627299479586546">Onjuist beleidsonderwerp</translation>
 <translation id="7450732239874446337">Netwerk-I/O opgeschort.</translation>
+<translation id="7481312909269577407">Vooruit</translation>
 <translation id="7485870689360869515">Geen gegevens gevonden.</translation>
 <translation id="7514365320538308">Downloaden</translation>
 <translation id="7518003948725431193">Er is geen webpagina gevonden voor het webadres: <ph name="URL" /></translation>
@@ -494,18 +467,16 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7569952961197462199">Creditcard verwijderen uit Chrome?</translation>
 <translation id="7578104083680115302">Betaal op verschillende apparaten snel op sites en in apps met kaarten die je hebt opgeslagen via Google.</translation>
 <translation id="7592362899630581445">Het certificaat van de server is in strijd met naambeperkingen.</translation>
-<translation id="759809665464235306">Voor deze server is een certificaat voor verificatie nodig. Het certificaat dat door de browser is verzonden is niet geaccepteerd. Je certificaat is verlopen, of de server vertrouwt de uitgever niet. Je kunt het nogmaals proberen met een ander certificaat (als je hierover beschikt), of je haalt ergens anders een geldig certificaat op.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
 <translation id="7606563002701561706">Geavanceerde bladwijzers</translation>
 <translation id="7610193165460212391">Waarde <ph name="VALUE" /> is buiten bereik.</translation>
-<translation id="7614030880636783720">Wifi en mobiele gegevens zijn niet beschikbaar. De pagina kan worden geladen wanneer het apparaat verbinding maakt met een netwerk.</translation>
+<translation id="7615602087246926389">Je hebt al gegevens die zijn gecodeerd met een andere versie van het wachtwoord voor je Google-account. Geef dit wachtwoord hieronder op.</translation>
 <translation id="7637571805876720304">Creditcard verwijderen uit Chromium?</translation>
 <translation id="7643817847124207232">De internetverbinding is verbroken.</translation>
 <translation id="765676359832457558">Geavanceerde instellingen verbergen...</translation>
 <translation id="7658239707568436148">Annuleren</translation>
 <translation id="7668654391829183341">Onbekend apparaat</translation>
 <translation id="7674629440242451245">Ben je geïnteresseerd in nieuwe, coole Chrome-functies? Probeer ons ontwikkelaarskanaal op chrome.com/dev.</translation>
-<translation id="7689727675296818638">De verbinding met <ph name="HOST_NAME" /> is onderbroken door een wijziging in de netwerkverbinding.</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />Doorgaan naar <ph name="SITE" /> (onveilig)<ph name="END_LINK" /></translation>
 <translation id="7733391738235763478">(<ph name="NUMBER_VISITS" />)</translation>
 <translation id="7752995774971033316">Niet-beheerd</translation>
@@ -514,10 +485,11 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="777702478322588152">Prefectuur</translation>
 <translation id="778579833039460630">Geen gegevens ontvangen</translation>
 <translation id="7791543448312431591">Toevoegen</translation>
+<translation id="7793809570500803535">De webpagina op <ph name="SITE" /> is mogelijk tijdelijk uitgeschakeld of permanent verplaatst naar een nieuw webadres.</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
 <translation id="7805768142964895445">Status</translation>
 <translation id="7813600968533626083">Formuliersuggestie verwijderen uit Chrome?</translation>
-<translation id="7839809549045544450">Server bevat een slechte, kort geldige openbare Diffie-Hellman-sleutel</translation>
+<translation id="7825436071901023927">Onveilige poort <ph name="SITE" /></translation>
 <translation id="7887683347370398519">Controleer je CVC-code en probeer het opnieuw</translation>
 <translation id="790025292736025802">Kan <ph name="URL" /> niet vinden</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -529,16 +501,15 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="7983301409776629893"><ph name="ORIGINAL_LANGUAGE" /> altijd vertalen in het <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">Desktopbladwijzers</translation>
 <translation id="7995512525968007366">Niet opgegeven</translation>
-<translation id="8016174103774548813">SSL-server is waarschijnlijk verouderd.</translation>
 <translation id="8034522405403831421">Deze pagina is in het <ph name="SOURCE_LANGUAGE" />. Vertalen naar het <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8034955203865359138">Geen items gevonden.</translation>
+<translation id="8075539548641175231">Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor synchronisatie. Geef deze hieronder op.</translation>
 <translation id="8088680233425245692">Kan artikel niet bekijken.</translation>
 <translation id="8091372947890762290">Activering is in behandeling op de server</translation>
 <translation id="8150722005171944719">Het bestand op <ph name="URL" /> is onleesbaar. Het bestand is mogelijk verwijderd of verplaatst of de bestandsrechten zorgen ervoor dat het bestand niet kan worden geopend.</translation>
 <translation id="8194797478851900357">&amp;Verplaatsen ongedaan maken</translation>
 <translation id="8201077131113104583">Ongeldige update-URL voor de extensie met de ID '<ph name="EXTENSION_ID" />'.</translation>
 <translation id="8204086856545141093">Verzoeken aan de server zijn geblokkeerd door een beleid.</translation>
-<translation id="820791781874064845">Deze webpagina werd door een extensie geblokkeerd</translation>
 <translation id="8218327578424803826">Toegewezen locatie:</translation>
 <translation id="8240446052814166959">Controleer je proxyinstellingen of neem contact op met je netwerkbeheerder om te controleren of de proxyserver werkt. <ph name="PLATFORM_TEXT" /></translation>
 <translation id="8241707690549784388">De pagina die je zoekt, heeft informatie gebruikt die je hebt opgegeven Als je terugkeert naar deze pagina, worden acties die je hebt uitgevoerd, mogelijk herhaald. Wil je doorgaan?</translation>
@@ -546,30 +517,29 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="8266098793847448402">Klik op <ph name="BEGIN_BOLD" />Start<ph name="END_BOLD" /> en op <ph name="BEGIN_BOLD" />Uitvoeren<ph name="END_BOLD" />, typ <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" /> en klik op <ph name="BEGIN_BOLD" />OK<ph name="END_BOLD" />.</translation>
 <translation id="8289355894181816810">Neem contact op met je netwerkbeheerder als je niet zeker weet wat dit betekent.</translation>
 <translation id="8294431847097064396">Bron</translation>
-<translation id="8295070100601117548">Serverfout</translation>
 <translation id="8308427013383895095">De vertaling is mislukt omdat er een probleem is opgetreden met de netwerkverbinding.</translation>
 <translation id="8311778656528046050">Weet je zeker dat je deze pagina opnieuw wilt laden?</translation>
 <translation id="8349305172487531364">Bladwijzerbalk</translation>
 <translation id="8364627913115013041">Niet ingesteld.</translation>
 <translation id="8412145213513410671">Crashes (<ph name="CRASH_COUNT" />)</translation>
+<translation id="8412392972487953978">Je moet twee keer dezelfde wachtwoordzin opgeven.</translation>
 <translation id="8428213095426709021">Instellingen</translation>
 <translation id="8437238597147034694">&amp;Verplaatsen ongedaan maken</translation>
 <translation id="8488350697529856933">Van toepassing op</translation>
 <translation id="8494979374722910010">De poging verbinding te maken met de server is mislukt.</translation>
 <translation id="8508677083825928015">Bronnen prefetchen om pagina's sneller te laden</translation>
-<translation id="8515737884867295000">Verificatie via certificaat is mislukt</translation>
 <translation id="8530504477309582336">Dit type kaart wordt niet ondersteund door Google Payments. Selecteer een andere kaart.</translation>
+<translation id="8550022383519221471">De synchronisatieservice is niet beschikbaar voor je domein.</translation>
 <translation id="8553075262323480129">De vertaling is mislukt omdat de taal van de pagina niet kan worden bepaald.</translation>
 <translation id="8559762987265718583">Er kan geen privéverbinding met <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> tot stand worden gebracht, omdat de datum en tijd van je apparaat (<ph name="DATE_AND_TIME" />) onjuist zijn.</translation>
 <translation id="8571890674111243710">Pagina wordt vertaald in het <ph name="LANGUAGE" />...</translation>
 <translation id="8629916158020966496">Browsen op internet is niet mogelijk totdat de verificatiecontrole voor zakelijke aanmelding is voltooid. Je kunt de diagnostische tool die hier wordt vermeld, nog steeds gebruiken om problemen met je verbinding op te lossen.</translation>
 <translation id="8647750283161643317">Alle standaardinstellingen herstellen</translation>
+<translation id="8680787084697685621">De inloggegevens voor het account zijn verouderd.</translation>
 <translation id="8713130696108419660">Onjuiste eerste handtekening</translation>
 <translation id="8725066075913043281">Opnieuw proberen</translation>
-<translation id="8729518820755801792">Chrome kan deze URL niet openen.</translation>
 <translation id="8730621377337864115">Gereed</translation>
 <translation id="8738058698779197622">Als je een veilige verbinding tot stand wilt brengen, moet je klok goed zijn ingesteld. Dit moet omdat de certificaten die deze websites gebruiken om zichzelf te identificeren, slechts gedurende bepaalde perioden geldig zijn. Aangezien de klok van je apparaat niet goed is ingesteld, kan Chromium deze certificaten niet verifiëren.</translation>
-<translation id="8776174617851537652">De webpagina op <ph name="URL" /> heeft geleid tot te veel omleidingen. Dit probleem wordt mogelijk opgelost als je je cookies voor deze site wist of cookies van derden toestaat. Zo niet, dan is het mogelijk een probleem met de serverconfiguratie en niet een probleem met je apparaat.</translation>
 <translation id="8790007591277257123">&amp;Opnieuw verwijderen</translation>
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8804164990146287819">Privacybeleid</translation>
@@ -595,24 +565,20 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="9013589315497579992">Ongeldig SSL-certificaat voor clientverificatie.</translation>
 <translation id="901974403500617787">Markeringen die op het hele systeem van toepassing zijn, kunnen alleen worden ingesteld door de eigenaar: <ph name="OWNER_EMAIL" />.</translation>
 <translation id="9020142588544155172">De server heeft de verbinding geweigerd.</translation>
-<translation id="9020278534503090146">Deze webpagina is niet beschikbaar</translation>
 <translation id="9020542370529661692">Deze pagina is vertaald naar het <ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9032090437019334135">De server op <ph name="HOST_NAME" /> kan niet worden gevonden, omdat de DNS-lookup is mislukt. DNS is de netwerkservice die de naam van een website vertaalt in het internetadres. Deze fout wordt meestal veroorzaakt door een verbroken internetverbinding of een verkeerd geconfigureerd netwerk. Deze kan ook worden veroorzaakt door een niet reagerende DNS-server of een firewall die de toegang van <ph name="PRODUCT_NAME" /> tot het netwerk blokkeert.</translation>
-<translation id="904949795138183864">De webpagina op <ph name="URL" /> bestaat niet meer.</translation>
 <translation id="9049981332609050619">Je probeert <ph name="DOMAIN" /> te bereiken, maar de server heeft een ongeldig certificaat geretourneerd.</translation>
-<translation id="9086455579313502267">Geen toegang tot het netwerk</translation>
+<translation id="9050666287014529139">Wachtwoordzin</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9125941078353557812">Geef de driecijferige CVC-code op die op de achterkant van je kaart staat</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9148507642005240123">&amp;Bewerken ongedaan maken</translation>
 <translation id="9154176715500758432">Op deze pagina blijven</translation>
-<translation id="9168302918952546302"><ph name="PRODUCT_NAME" /> ondervindt problemen bij het krijgen van toegang tot het netwerk. <ph name="LINE_BREAK" /> Dit kan zijn omdat je firewall of antivirussoftware ten onrechte denkt dat <ph name="PRODUCT_NAME" /> niet op je apparaat thuishoort en daarom de internetverbinding blokkeert.</translation>
+<translation id="9157595877708044936">Bezig met instellen...</translation>
 <translation id="9170848237812810038">&amp;Ongedaan maken</translation>
 <translation id="917450738466192189">Het servercertificaat is ongeldig.</translation>
 <translation id="9207861905230894330">Kan artikel niet toevoegen.</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">FORMULIER LEEGMAKEN</translation>
-<translation id="946368465353148168"><ph name="PRODUCT_NAME" /> ondervindt problemen bij het toegang krijgen tot het netwerk. <ph name="LINE_BREAK" /> Dit kan zijn omdat je firewall of antivirussoftware ten onrechte denkt dat <ph name="PRODUCT_NAME" /> niet op je computer thuishoort en daarom de internetverbinding blokkeert.</translation>
 <translation id="969892804517981540">Officiële build</translation>
 <translation id="988159990683914416">Ontwikkelaarsbuild</translation>
 </translationbundle>

@@ -125,7 +125,6 @@ Heu de tenir activats el Bluetooth i la ubicació per poder utilitzar el Web fí
 <translation id="2762000892062317888">ara mateix</translation>
 <translation id="2770465223704140727">Suprimeix de la llista</translation>
 <translation id="278029852808208386">No s'ha trobat cap dispositiu Bluetooth. <ph name="BEGIN_LINK" />Torneu a fer la cerca<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">S'ha detectat una connexió lenta.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Lloc</translation>
 <translation id="2888126860611144412">Quant a Chrome </translation>
@@ -173,7 +172,6 @@ Inicieu la sessió amb un compte gestionat, de manera que concediu al seu admini
 <translation id="3492207499832628349">Pestanya d'incògnit nova</translation>
 <translation id="3518985090088779359">Accepta i continua</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3559647143395293616">Activeu el Web físic</translation>
 <translation id="360480449234699036">Consulteu més informació sobre els temes en altres llocs web sense sortir de la pàgina. La funció Toca per cercar envia una paraula i el seu context a la Cerca de Google i ofereix com a resultat definicions, imatges, resultats de la cerca i altres detalls.
 
 Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per definir millor la cerca, feu lliscar el tauler cap amunt tot el que pugueu i toqueu el quadre de cerca.</translation>
@@ -274,7 +272,6 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5039804452771397117">Permet</translation>
 <translation id="5040262127954254034">Privadesa</translation>
 <translation id="5063480226653192405">Ús</translation>
-<translation id="509605886816275399">Voleu desar aquesta pàgina perquè estigui disponible sense connexió?</translation>
 <translation id="5100237604440890931">Vista replegada (feu clic per desplegar-la)</translation>
 <translation id="5107381076085091558">S'ha aturat la baixada.</translation>
 <translation id="5118713593561876160">Interessos</translation>
@@ -288,6 +285,7 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 <translation id="5168917394043976756">Obre el tauler de navegació</translation>
 <translation id="5171045022955879922">Cerqueu o escriviu l'URL</translation>
 <translation id="5184329579814168207">Obre a Chrome</translation>
+<translation id="5199929503336119739">Perfil professional</translation>
 <translation id="5210365745912300556">Tanca la pestanya</translation>
 <translation id="5210714456814679336">Les pestanyes que teniu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
 <translation id="5228579091201413441">Activa la sincronització</translation>
@@ -335,7 +333,7 @@ Per fer-ho, obriu Chrome a l'ordinador, aneu al menú i seleccioneu Inicia la se
 
 Les estadístiques d'ús inclouen dades com ara les preferències, els clics en botons i l'ús de la memòria. No inclouen els URL de les pàgines web ni cap informació personal. Els informes d'error contenen informació del sistema en el moment de l'error i poden incloure els URL de pàgines web o informació personal, en funció de l'activitat registrada en el moment de l'error.</translation>
 <translation id="5715468759630044318">Tria un compte</translation>
-<translation id="5719837394786370183">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanqueu totes les pestanyes d'incògnit. Tots els fitxers que baixeu o les adreces d'interès que creeu es conservaran.
+<translation id="5719837394786370183">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca un cop tanqueu totes les pestanyes d'incògnit. Tots els fitxers que baixeu o les adreces d'interès que creeu es conservaran.
 
 Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="572328651809341494">Pestanyes recents</translation>
@@ -382,7 +380,6 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="6232535412751077445">Si activeu l'opció No segueixis, s'inclourà una sol·licitud al trànsit de navegació. Que s'apliqui o no dependrà de si algun lloc web respon a la sol·licitud i de com s'interpreta.
 
 Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud mostrant-vos anuncis que no estiguin basats en altres llocs web que hàgiu visitat. Molts llocs web continuaran recopilant i utilitzant les vostres dades de navegació (per exemple, per millorar la seguretat, per proporcionar contingut, anuncis i recomanacions i per generar estadístiques).</translation>
-<translation id="624558823898732418">Idioma de traducció: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">S'ha produït un problema en imprimir la pàgina. Torneu-ho a provar.</translation>
 <translation id="6295158916970320988">Tots els llocs</translation>
 <translation id="6317634962183824346">La sincronització del sistema Android està desactivada. Torneu-la a activar i proveu-ho de nou.</translation>
@@ -494,7 +491,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7648422057306047504">Encripta les contrasenyes amb credencials de Google</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7665369617277396874">Afegeix un compte</translation>
-<translation id="7735023902678907596">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerques un cop tanqueu totes les pestanyes d'incògnit. Els fitxers baixats i les pàgines desades es conservaran.
+<translation id="7735023902678907596">Les pàgines que visualitzeu a les pestanyes d'incògnit no quedaran registrades a l'historial del navegador, al magatzem de galetes ni a l'historial de cerca un cop tanqueu totes les pestanyes d'incògnit. Els fitxers baixats i les pàgines desades es conservaran.
 
 Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis d'Internet i els llocs web que visiteu poden veure la vostra navegació d'incògnit.</translation>
 <translation id="7761240775244195612">Voleu suprimir les <ph name="PAGES_NUMBER" /> còpies sense connexió que no s'han utilitzat en un mes? Aquesta acció alliberarà <ph name="TOTAL_PAGE_SIZE" /> d'espai.</translation>
@@ -533,6 +530,7 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="8146397137182589628">No s'ha desat sense connexió</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> comptes</translation>
 <translation id="8168435359814927499">Contingut</translation>
+<translation id="8200772114523450471">Reempren</translation>
 <translation id="8209050860603202033">Obre la imatge</translation>
 <translation id="8218346974737627104">Confirmació de l'inici de sessió</translation>
 <translation id="8218934717680664417">Ara podeu fer cerques amb un sol toc</translation>
@@ -552,7 +550,6 @@ Tanmateix, no sou invisible. La vostra empresa, el vostre proveïdor de serveis 
 <translation id="8514577642972634246">Entra al mode d'incògnit</translation>
 <translation id="8515416241041728525">Afeg. compte per a <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Aquest lloc fa servir una configuració de seguretat dèbil (signatures SHA-1), de manera que és possible que la vostra connexió no sigui privada.</translation>
-<translation id="8528538445849828817">Idioma de la pàgina: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Obre aquesta pàgina</translation>
 <translation id="8562452229998620586">Les contrasenyes desades apareixeran aquí.</translation>
 <translation id="856481929701340285">Sol·licita lloc escript.</translation>

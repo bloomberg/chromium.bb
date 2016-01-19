@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">De informatiepagina '<ph name="ABOUT_PAGE" />' kan niet worden geladen.</translation>
 <translation id="4434145631756268951">{0,select, single{Een USB-apparaat selecteren}multiple{USB-apparaten selecteren}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Kan pakket niet installeren, omdat het proces van een hulpprogramma is gecrasht. Start Chrome opnieuw en probeer het nogmaals.</translation>
-<translation id="4883436287898674711">Alle sites op <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Webweergave: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Deze extensie bevat het sleutelbestand '<ph name="KEY_PATH" />'. Dit is waarschijnlijk niet je bedoeling.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (extensie-ID '<ph name="EXTENSION_ID" />') wordt geblokkeerd door de beheerder.</translation>
 <translation id="7972881773422714442">Opties: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Deze extensie kan de download niet de naam '<ph name="ATTEMPTED_FILENAME" />' geven, omdat een andere extensie (<ph name="EXTENSION_NAME" />) een andere bestandsnaam '<ph name="ACTUAL_FILENAME" />' heeft bepaald.</translation>
-<translation id="8284279544186306258">alle sites op <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> van <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Deze extensie heeft geen identificatie kunnen leveren voor een netwerkverzoek, omdat een andere extensie (<ph name="EXTENSION_NAME" />) een andere identificatie heeft geleverd.</translation>
 <translation id="8602184400052594090">Manifestbestand ontbreekt of is onleesbaar.</translation>

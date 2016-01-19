@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Не вдалося завантажити сторінку з інформацією про "<ph name="ABOUT_PAGE" />".</translation>
 <translation id="4434145631756268951">{0,select, single{Вибрати пристрій USB}multiple{Вибрати пристрої USB}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Не вдалося встановити пакет, оскільки відбувся збій процесу службової програми. Перезапустіть Chrome і повторіть спробу.</translation>
-<translation id="4883436287898674711">Усі сайти <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Веб-перегляд: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Тег Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Це розширення включає файл ключа "<ph name="KEY_PATH" />". Можливо, ви не хочете цього робити.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ідентифікатор розширення "<ph name="EXTENSION_ID" />") заблоковано адміністратором.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження "<ph name="ATTEMPTED_FILENAME" />", оскільки інше розширення (<ph name="EXTENSION_NAME" />) визначило іншу назву файлу "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">усі сайти <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME" />) надало інші облікові дані.</translation>
 <translation id="8602184400052594090">Файл маніфесту відсутній або його не можна розпізнати.</translation>

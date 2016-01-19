@@ -31,9 +31,11 @@
 <translation id="605721222689873409">VV</translation>
 <translation id="6075880972317537864">Sivustoon <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> hyökännyt taho voi yrittää varastaa tietojasi (esimerkiksi salasanoja, viestejä tai luottokorttien tietoja) huijaamalla sinua.</translation>
 <translation id="6149061208933997199">Käytä salasanaa</translation>
+<translation id="6196207969502475924">Puhehaku</translation>
 <translation id="6221345481584921695">Google-selaussuoja havaitsi sivustossa <ph name="SITE" /> äskettäin <ph name="BEGIN_LINK" />haittaohjelmia<ph name="END_LINK" />. Tavallisesti turvalliset sivustot voivat joskus saada haittaohjelmatartunnan. Haitallinen sisältö on peräisin tunnetusta haittaohjelmien jakelusivustosta nimeltä <ph name="SUBRESOURCE_HOST" />.</translation>
 <translation id="6264485186158353794">Takaisin suojaukseen</translation>
 <translation id="6314335155547195432">Luo salasana</translation>
+<translation id="6344783595350022745">Tyhjennä teksti</translation>
 <translation id="6456425917241817154">Salasanan loi Chrome</translation>
 <translation id="6535543971741225613">Käyttämäsi sivusto toimii epäilyttävästi, eikä Chrome voi varmistaa, onko sen URL-osoite oikea. Emme suosittele jatkamaan sivustoon. Voit yrittää käyttää sivustoa uudelleen huomenna tai siirtyä toiseen sivustoon.</translation>
 <translation id="6740369132746915122">Jos ymmärrät tietoturvariskit, voit <ph name="BEGIN_LINK" />vierailla tällä vaarallisella sivustolla<ph name="END_LINK" />.</translation>

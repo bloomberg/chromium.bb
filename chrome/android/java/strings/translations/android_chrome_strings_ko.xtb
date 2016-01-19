@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">방금 전</translation>
 <translation id="2770465223704140727">목록에서 삭제</translation>
 <translation id="278029852808208386">블루투스 기기를 찾을 수 없습니다. <ph name="BEGIN_LINK" />다시 검색하세요<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">느린 연결이 감지되었습니다.</translation>
 <translation id="2842985007712546952">상위 폴더</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2888126860611144412">크롬 정보</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">새 시크릿 탭</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
 <translation id="3527085408025491307">폴더</translation>
-<translation id="3559647143395293616">피지컬 웹 사용하기</translation>
 <translation id="360480449234699036">페이지에 남아 웹사이트의 주제에 대해 알아보세요. 터치하여 검색 기능은 Google 검색에 단어와 관련 컨텍스트를 전송하여 정의, 사진, 검색결과, 기타 자세한 사항을 반환합니다.
 
 검색어를 조정하려면 길게 눌러 선택하세요. 검색을 세분화하려면 패널을 위로 끝까지 슬라이드하여 검색창을 터치합니다.</translation>
@@ -212,7 +210,7 @@
 <translation id="423410644998903704">이 사이트에 공유하려면 Chrome에 액세스 권한이 있어야 합니다.</translation>
 <translation id="424696723690217687">가까운 물체에서 전송된 웹페이지 확인
 
-Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔합니다. 이러한 페이지는 페이지 결과의 품질을 높이기 위한 Google 서비스를 거칩니다.</translation>
+Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔합니다. 이 페이지는 페이지 결과의 품질을 높이기 위해 Google 서비스를 거칩니다.</translation>
 <translation id="4256782883801055595">오픈소스 라이선스</translation>
 <translation id="4259722352634471385">탐색이 차단됨: <ph name="URL" /></translation>
 <translation id="4269820728363426813">링크 주소 복사</translation>
@@ -274,7 +272,6 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="5039804452771397117">허용</translation>
 <translation id="5040262127954254034">개인정보</translation>
 <translation id="5063480226653192405">사용</translation>
-<translation id="509605886816275399">이 페이지를 오프라인에 저장할까요?</translation>
 <translation id="5100237604440890931">접힘 - 펼치려면 클릭</translation>
 <translation id="5107381076085091558">다운로드가 일시중지되었습니다.</translation>
 <translation id="5118713593561876160">관심분야</translation>
@@ -288,6 +285,7 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="5168917394043976756">탐색 창 열기</translation>
 <translation id="5171045022955879922">검색 또는 URL 입력</translation>
 <translation id="5184329579814168207">Chrome에서 열기</translation>
+<translation id="5199929503336119739">작업 프로필</translation>
 <translation id="5210365745912300556">탭 닫기</translation>
 <translation id="5210714456814679336">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="5228579091201413441">동기화 사용</translation>
@@ -382,7 +380,6 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="6232535412751077445">‘추적 안함’을 사용하도록 설정하면 요청이 사용자의 인터넷 사용 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 해석되는 방법에 따라 결과가 결정됩니다.
 
 예를 들어 어떤 웹사이트는 사용자가 방문한 다른 웹사이트를 기반으로 하지 않는 광고를 표시하여 이 요청에 응답할 수 있습니다. 그러나 대부분의 웹사이트에서는 보안을 개선하거나 웹사이트에 콘텐츠, 광고, 권장사항 등을 제공하거나 보고서 통계를 생성하기 위해 사용자의 인터넷 사용 기록을 계속 수집하고 사용합니다.</translation>
-<translation id="624558823898732418">번역 언어: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">페이지를 인쇄하는 중에 문제가 발생했습니다. 다시 시도해 주세요.</translation>
 <translation id="6295158916970320988">모든 사이트</translation>
 <translation id="6317634962183824346">Android 시스템 동기화가 사용 중지되었습니다. 사용하도록 설정하고 다시 시도해 주세요.</translation>
@@ -533,6 +530,7 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="8146397137182589628">오프라인으로 저장되지 않음</translation>
 <translation id="8157532349231307196">계정 <ph name="NUMBER_OF_ACCOUNTS" />개</translation>
 <translation id="8168435359814927499">콘텐츠</translation>
+<translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8218346974737627104">로그인 확인</translation>
 <translation id="8218934717680664417">이제 터치 한 번으로 검색할 수 있습니다.</translation>
@@ -552,7 +550,6 @@ Chrome에서는 기기가 잠금 해제 상태일 때 주변 페이지를 스캔
 <translation id="8514577642972634246">시크릿 모드로 들어가기</translation>
 <translation id="8515416241041728525"><ph name="ADD_ACCOUNT_USER_NAME" /> 계정 추가</translation>
 <translation id="8518901949365209398">이 사이트는 취약한 보안 설정(SHA-1 서명)을 사용하기 때문에 연결이 비공개로 설정되지 않을 수 있습니다.</translation>
-<translation id="8528538445849828817">페이지 언어: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">페이지 열기</translation>
 <translation id="8562452229998620586">저장한 비밀번호가 여기에 표시됩니다.</translation>
 <translation id="856481929701340285">데스크톱 버전으로 보기</translation>

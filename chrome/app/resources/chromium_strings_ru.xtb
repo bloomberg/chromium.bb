@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
-<translation id="108122890477367602">П&amp;ерезапустить Chromium в режиме Windows 8</translation>
 <translation id="1115445892567829615">Chromium не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="1174473354587728743">Пользуетесь компьютером вместе с коллегой или другом? Теперь каждый из вас сможет настроить Chromium по своему вкусу.</translation>
 <translation id="1185134272377778587">О Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium не отвечает. Перезапустить сейчас?</translation>
 <translation id="1967743265616885482">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
-<translation id="2097986737970966220">Открыть Chromium в режиме рабочего стола</translation>
 <translation id="2117181891440368863">Данные Chromium подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил временные метки сертификата, однако они являются недействительными.</translation>
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Лицензии Chromium OS на ПО с открытым исходным кодом</translation>
-<translation id="2233513990531887259">Запустить режим комфортного просмотра Chromium</translation>
 <translation id="2241627712206172106">Если, кроме вас, компьютером пользуется кто-то ещё, например родные или друзья, они тоже смогут настроить Chromium на свой вкус.</translation>
 <translation id="225614027745146050">Добро пожаловать!</translation>
 <translation id="2316129865977710310">Спасибо, не надо</translation>
@@ -82,7 +79,6 @@
 <translation id="3549345495227188780">Начало работы с Chromium OS</translation>
 <translation id="3582788516608077514">Выполняется обновление Chromium...</translation>
 <translation id="358997566136285270">Логотип Chromium</translation>
-<translation id="3595526210123705352">Если вы перезапустите Chromium в режиме Windows 8, все приложения будут закрыты, а затем снова откроются.</translation>
 <translation id="3738139272394829648">Нажмите для поиска</translation>
 <translation id="3748537968684000502">Вы находитесь на защищенной странице Chromium.</translation>
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
@@ -92,7 +88,6 @@
 <translation id="3889543394854987837">Нажмите на свое имя, чтобы войти в Chromium.</translation>
 <translation id="390894725198123737">Если пароли на Mac сохраняются с помощью функции "Связка ключей", их могут просматривать и синхронизировать все пользователи Chromium, у которых есть доступ к этому аккаунту OS X.</translation>
 <translation id="4050175100176540509">В последней версии улучшена защита и добавлены новые функции.</translation>
-<translation id="4075965373589665797">Если вы перезапустите Chromium в режиме рабочего стола, все приложения браузера будут закрыты, а затем снова откроются.</translation>
 <translation id="4077262827416206768">Закройте все окна Chromium и перезапустите программу, чтобы изменения вступили в силу.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Внимание!<ph name="END_BOLD" /> Chromium не может запретить расширениям записывать историю браузера. Чтобы отключить это расширение в режиме инкогнито, снимите этот флажок.</translation>
 <translation id="421369550622382712">Широкий выбор приложений, игр, расширений и тем для Chromium.</translation>
@@ -162,7 +157,6 @@
 <translation id="6838494703713445896">Данные Chromium подтверждают, что издатель сертификата сайта – <ph name="ISSUER" />. Сервер предоставил действительные временные метки сертификата.</translation>
 <translation id="6883876366448858277">отправляет слово и окружающий его контекст в Google Поиск; возвращает определения, фотографии, картинки и другие результаты.</translation>
 <translation id="6893813176749746474">Chromium был обновлен, однако вы не использовали его в течение последних 30 дней.</translation>
-<translation id="6900895776413482243">Если вы перезапустите Chromium в режиме комфортного просмотра, все приложения будут закрыты, а затем снова откроются.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Модули, загруженные в Chromium</translation>
 <translation id="6970811910055250180">Обновление операционной системы…</translation>
@@ -209,7 +203,6 @@
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
 <translation id="85843667276690461">Помощь по использованию Chromium</translation>
 <translation id="8586442755830160949">© The Chromium Authors, <ph name="YEAR" /> . Все права защищены.</translation>
-<translation id="8605166112420372522">П&amp;ерезапустить Chromium в режиме рабочего стола</translation>
 <translation id="8621669128220841554">В процессе установки произошла неизвестная ошибка. Скачайте Chromium ещё раз.</translation>
 <translation id="8628626585870903697">В Chromium нет функции просмотра PDF-файлов, которая нужна для предварительного просмотра при печати.</translation>
 <translation id="8684913864886094367">Работа Chromium была завершена некорректно.</translation>

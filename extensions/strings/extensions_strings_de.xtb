@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">Infoseite "<ph name="ABOUT_PAGE" />" konnte nicht geladen werden.</translation>
 <translation id="4434145631756268951">{0,select, single{USB-Gerät auswählen}multiple{USB-Geräte auswählen}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Das Paket konnte nicht installiert werden, da der Prozess eines Dienstprogramms abgestürzt ist. Starten Sie Chrome neu und versuchen Sie es erneut.</translation>
-<translation id="4883436287898674711">Alle <ph name="WEBSITE_1" />-Websites</translation>
 <translation id="5026754133087629784">Web-Ansicht: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Die Erweiterung enthält die Schlüsseldatei "<ph name="KEY_PATH" />". Möchten Sie den Vorgang wirklich fortsetzen?</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") wurde vom Administrator blockiert.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht "<ph name="ATTEMPTED_FILENAME" />" nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME" />) einen anderen Dateinamen "<ph name="ACTUAL_FILENAME" />" festgelegt hat.</translation>
-<translation id="8284279544186306258">alle <ph name="WEBSITE_1" />-Websites</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> von <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Die Erweiterung konnte die Anmeldeinformationen für eine Netzwerkanfrage nicht bereitstellen, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) andere Anmeldeinformationen übermittelt hat.</translation>
 <translation id="8602184400052594090">Manifest-Datei fehlt oder ist nicht lesbar.</translation>

@@ -143,7 +143,6 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="568643307450491754">Găsiți marcajele în meniul Chrome sau în bara de marcaje.</translation>
 <translation id="573759479754913123">Despre sistemul de operare Chrome</translation>
 <translation id="5749068826913805084">Pentru a descărca fișiere, Chrome necesită acces la stocare.</translation>
-<translation id="5785746630574083988">Repornirea în modul Windows 8 va închide și relansa aplicațiile Chrome.</translation>
 <translation id="5855036575689098185">Software-ul care rulează pe computer este incompatibil cu Google Chrome.</translation>
 <translation id="5877064549588274448">Canalul a fost schimbat. Reporniți dispozitivul pentru a aplica modificările.</translation>
 <translation id="5931853610562009806">Pe Mac, parolele pot fi salvate în aplicația Keychain și pot fi accesate sau sincronizate de alți utilizatori Chrome care folosesc același cont de OS X.</translation>
@@ -204,11 +203,9 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="7747138024166251722">Programul de instalare nu a putut crea un director temporar. Verifică dacă există suficient spațiu liber și dacă ai drepturile necesare pentru a instala software-ul.</translation>
 <translation id="7761834446675418963">Dați clic pe numele dvs. pentru a deschide Chrome și a începe să navigați.</translation>
 <translation id="7781002470561365167">Este disponibilă o nouă versiune a browserului Google Chrome.</translation>
-<translation id="7784335114585804598">&amp;Repornește Chrome în modul Windows 8</translation>
 <translation id="7787950393032327779">Profilul pare să fie utilizat de alt proces Google Chrome (<ph name="PROCESS_ID" />), pe alt computer (<ph name="HOST_NAME" />). Chrome a blocat profilul pentru a nu se deteriora. Dacă aveți certitudinea că profilul nu este utilizat de alte procese, puteți să îl deblocați și să relansați Chrome.</translation>
 <translation id="7788788617745289808">Chrome are nevoie de acces la camera foto pentru a-l acorda acestui site.</translation>
 <translation id="7808348361785373670">Elimină din Chrome...</translation>
-<translation id="781069973841903133">Relansarea în modul extins Chrome va închide și va relansa aplicațiile Chrome.</translation>
 <translation id="7825851276765848807">Instalarea nu a reușit din cauza unei erori neprecizate. Descarci Google Chrome din nou.</translation>
 <translation id="7890208801193284374">Dacă permiteți accesul la un computer, familia și prietenii pot să navigheze separat și să configureze Chrome cum doresc.</translation>
 <translation id="8000275528373650868">Google Chrome necesită Windows Vista sau Windows XP cu SP2 sau o versiune ulterioară.</translation>
@@ -221,11 +218,9 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8205111949707227942">Opțional: ajută-ne să îmbunătățim sistemul de operare Chrome prin trimiterea automată de statistici de utilizare și rapoarte de blocare către Google.</translation>
 <translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicații externe pentru a gestiona linkuri <ph name="SCHEME" />. Linkul solicitat este <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome utilizează camera foto și microfonul.</translation>
-<translation id="8274359292107649245">Deschideți Chrome pe desktop</translation>
 <translation id="8286862437124483331">Google Chrome încearcă să afișeze parolele. Pentru a permite acest lucru, introduceți parola pentru Windows.</translation>
 <translation id="8290100596633877290">Hopa! Google Chrome s-a blocat. Repornești acum?</translation>
 <translation id="8406086379114794905">Contribuie la îmbunătățirea Chrome</translation>
-<translation id="8437332772351535342">Repornirea în modul Desktop va închide și relansa aplicațiile Chrome.</translation>
 <translation id="8460191995881063249">Centrul de notificări Chrome</translation>
 <translation id="853189717709780425">Vă conectați cu un cont gestionat și îi permiteți administratorului acestuia controlul asupra profilului dvs. Google Chrome. Datele dvs. Chrome, cum ar fi aplicațiile, marcajele, istoricul, parolele și alte setări vor fi asociate definitiv cu <ph name="USER_NAME" />. Veți putea să ștergeți aceste date prin intermediul Tabloului de bord pentru Conturi Google, însă nu veți putea să asociați aceste date cu un alt cont.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -237,12 +232,10 @@ Dacă totuși vă conectați, informațiile Chrome cum ar fi marcajele, istoricu
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="8679801911857917785">Stabilește și ce pagină se afișează când porniți Chrome.</translation>
 <translation id="870251953148363156">Actualizați &amp;Google Chrome</translation>
-<translation id="8811903091068364646">&amp;Repornește Chrome pe desktop</translation>
 <translation id="8823341990149967727">Chrome nu este actualizat</translation>
 <translation id="884296878221830158">Stabilește și ce pagină se afișează când porniți Chrome sau când dați clic pe butonul Pagină de pornire.</translation>
 <translation id="8851136666856101339">principal</translation>
 <translation id="8862326446509486874">Nu ai drepturile adecvate pentru instalarea la nivel de sistem. Încearcă să rulezi din nou programul de instalare ca Administrator.</translation>
-<translation id="8889942196804715220">Relansează în modul extins Chrome</translation>
 <translation id="9026991721384951619">Sistemul de operare Chrome nu a putut sincroniza datele, deoarece detaliile de conectare pentru contul dvs. nu sunt actualizate.</translation>
 <translation id="9102715433345326100">Acest fișier este rău-intenționat și a fost blocat de Chrome.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Avertisment:<ph name="END_BOLD" /> Google Chrome nu poate împiedica extensiile să înregistreze istoricul navigării. Pentru a dezactiva această extensie în modul incognito, debifează această opțiune.</translation>

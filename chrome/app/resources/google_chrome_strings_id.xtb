@@ -143,7 +143,6 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="568643307450491754">Cari bookmark Anda dalam menu Chrome atau di bilah bookmark.</translation>
 <translation id="573759479754913123">Tentang Chrome OS</translation>
 <translation id="5749068826913805084">Chrome memerlukan akses penyimpanan untuk mengunduh file.</translation>
-<translation id="5785746630574083988">Dengan meluncurkan kembali dalam mode Windows 8, Anda akan menutup dan meluncurkan kembali aplikasi Chrome.</translation>
 <translation id="5855036575689098185">Perangkat lunak yang berjalan di komputer Anda tidak kompatibel dengan Google Chrome.</translation>
 <translation id="5877064549588274448">Saluran diubah. Mulai ulang perangkat Anda untuk menerapkan perubahan.</translation>
 <translation id="5931853610562009806">Di Mac, sandi disimpan pada Keychain Anda dan diakses atau disinkronkan oleh pengguna Chrome lain yang membagikan akun OS X ini.</translation>
@@ -204,11 +203,9 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="7747138024166251722">Pemasang tidak dapat membuat direktori sementara. Periksa kapasitas kosong pada disk dan izin untuk memasang perangkat lunak.</translation>
 <translation id="7761834446675418963">Klik nama Anda untuk membuka Chrome dan mulai menjelajah.</translation>
 <translation id="7781002470561365167">Tersedia Google Chrome versi baru.</translation>
-<translation id="7784335114585804598">&amp;Luncurkan ulang Chrome dalam mode Windows 8</translation>
 <translation id="7787950393032327779">Profil tersebut mungkin digunakan untuk proses Google Chrome lainnya (<ph name="PROCESS_ID" />) di komputer lain (<ph name="HOST_NAME" />). Chrome telah mengunci profil tersebut agar tidak rusak. Jika yakin tidak ada proses lain yang menggunakan profil ini, Anda dapat membuka profil dan meluncurkan Chrome kembali.</translation>
 <translation id="7788788617745289808">Chrome memerlukan akses kamera untuk berbagi dengan situs ini.</translation>
 <translation id="7808348361785373670">Hapus dari Chrome...</translation>
-<translation id="781069973841903133">Meluncurkan ulang dalam mode Chrome yang lebih mendalam akan menutup dan meluncurkan ulang aplikasi Chrome Anda.</translation>
 <translation id="7825851276765848807">Pemasangan gagal karena kesalahan yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
 <translation id="7890208801193284374">Jika Anda berbagi komputer, teman dan keluarga bisa menjelajah secara terpisah dan menyiapkan Chrome sesuai keinginannya.</translation>
 <translation id="8000275528373650868">Google Chrome memerlukan Windows Vista atau Windows XP dengan SP2 atau yang lebih baru.</translation>
@@ -221,11 +218,9 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="8205111949707227942">Opsional: Bantu kami membuat Chrome OS lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan ke Google secara otomatis.</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME" />. Link yang diminta adalah <ph name="PROTOLINK" />.</translation>
 <translation id="8255190535488645436">Google Chrome menggunakan kamera dan mikrofon Anda.</translation>
-<translation id="8274359292107649245">Buka Chrome di desktop</translation>
 <translation id="8286862437124483331">Google Chrome mencoba menampilkan sandi. Ketik sandi Windows Anda untuk mengizinkannya.</translation>
 <translation id="8290100596633877290">Aduh! Google Chrome ngadat. Luncurkan ulang sekarang?</translation>
 <translation id="8406086379114794905">Bantu kami membuat Chrome jadi lebih baik</translation>
-<translation id="8437332772351535342">Meluncurkan kembali dalam mode Desktop akan ditutup dan meluncurkan kembali aplikasi Chrome Anda.</translation>
 <translation id="8460191995881063249">Pusat Notifikasi Chrome</translation>
 <translation id="853189717709780425">Anda masuk dengan akun yang dikelola dan memberikan administratornya kendali atas profil Chrome Anda. Data Chrome Anda, seperti aplikasi, bookmark, riwayat, sandi, dan setelan lain selamanya akan dikaitkan ke <ph name="USER_NAME" />. Anda dapat menghapus data ini melalui Dasbor Akun Google, namun Anda tidak akan dapat mengaitkan data ini dengan akun yang lain.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
@@ -237,12 +232,10 @@ Tetap masuk akan menggabungkan informasi Chrome seperti bookmark, riwayat, dan s
 <translation id="8669527147644353129">Pembantu Google Chrome</translation>
 <translation id="8679801911857917785">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome.</translation>
 <translation id="870251953148363156">Pembaruan &amp;Google Chrome</translation>
-<translation id="8811903091068364646">&amp;Luncurkan ulang Chrome di desktop</translation>
 <translation id="8823341990149967727">Chrome Terlalu Lawas</translation>
 <translation id="884296878221830158">Juga mengontrol laman apa yang ditampilkan saat Anda memulai Chrome atau mengeklik tombol Beranda.</translation>
 <translation id="8851136666856101339">main</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk pemasangan tingkat sistem. Coba jalankan lagi pemasang saat masuk sebagai Administrator.</translation>
-<translation id="8889942196804715220">Luncurkan ulang dalam mode Chrome yang lebih mendalam</translation>
 <translation id="9026991721384951619">Chrome OS tidak dapat menyinkronkan data karena detail ID masuk akun Anda belum diperbarui.</translation>
 <translation id="9102715433345326100">File ini berbahaya dan Chrome memblokirnya.</translation>
 <translation id="9107728822479888688"><ph name="BEGIN_BOLD" />Peringatan:<ph name="END_BOLD" /> Google Chrome tidak dapat mencegah ekstensi merekam riwayat penjelajahan Anda. Untuk menonaktifkan ekstensi ini dalam mode penyamaran, batalkan pilihan opsi ini.</translation>

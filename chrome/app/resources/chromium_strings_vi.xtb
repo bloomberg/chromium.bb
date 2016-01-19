@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1065672644894730302">Không thể đọc tùy chọn của bạn. Một số tính năng có thể không khả dụng và các thay đổi đối với tùy chọn sẽ không được lưu.</translation>
-<translation id="108122890477367602">&amp;Khởi chạy lại Chromium ở chế độ Windows 8</translation>
 <translation id="1115445892567829615">Chromium không thể đồng bộ hóa dữ liệu của bạn. Vui lòng cập nhật cụm mật khẩu Đồng bộ hóa của bạn.</translation>
 <translation id="1174473354587728743">Bạn muốn chia sẻ máy tính? Giờ đây, bạn có thể thiết lập Chromium theo cách mình muốn.</translation>
 <translation id="1185134272377778587">Giới thiệu về Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium không phản hồi. Chạy lại ngay bây giờ?</translation>
 <translation id="1967743265616885482">Một mô-đun có cùng tên đã được xác định là xung đột với Chromium.</translation>
 <translation id="2077129598763517140">Sử dụng chế độ tăng tốc phần cứng khi khả dụng</translation>
-<translation id="2097986737970966220">Mở Chromium trên máy tính để bàn</translation>
 <translation id="2117181891440368863">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin về Tính minh mạch của chứng chỉ nhưng thông tin này không hợp lệ.</translation>
 <translation id="2119636228670142020">Giới thiệu về &amp;Chromium OS</translation>
 <translation id="2158734852934720349">Giấy phép nguồn mở Chromium OS</translation>
-<translation id="2233513990531887259">Khởi chạy lại chế độ chìm của Chromium</translation>
 <translation id="2241627712206172106">Nếu bạn chia sẻ máy tính, bạn bè và gia đình có thể duyệt web một cách riêng biệt và thiết lập Chromium theo ý của họ.</translation>
 <translation id="225614027745146050">Chào mừng</translation>
 <translation id="2316129865977710310">Không, cảm ơn</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Bắt đầu với Chromium OS</translation>
 <translation id="3582788516608077514">Đang cập nhật Chromium...</translation>
 <translation id="358997566136285270">Biểu trưng Chromium</translation>
-<translation id="3595526210123705352">Khởi chạy lại ở chế độ Windows 8 sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
 <translation id="3738139272394829648">Chạm để tìm kiếm</translation>
 <translation id="3748537968684000502">Bạn đang xem trang Chromium an toàn.</translation>
 <translation id="378917192836375108">Chromium cho phép bạn nhấp vào số điện thoại trên web và gọi tới số đó bằng Skype!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Nhấp vào tên của bạn để mở Chromium và bắt đầu duyệt web.</translation>
 <translation id="390894725198123737">Trên máy Mac, mật khẩu có thể được lưu vào Keychain và được truy cập hoặc đồng bộ hóa bởi những người dùng Chromium khác dùng chung tài khoản OS X này.</translation>
 <translation id="4050175100176540509">Cải thiện bảo mật quan trọng và tính năng mới có trong phiên bản mới nhất.</translation>
-<translation id="4075965373589665797">Khởi chạy lại ở chế độ Máy tính để bàn sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
 <translation id="4077262827416206768">Hãy đóng tất cả cửa sổ Chromium và chạy lại Chromium để thay đổi này có hiệu lực.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Cảnh báo:<ph name="END_BOLD" /> Chromium không thể ngăn các tiện ích ghi lại lịch sử duyệt web của bạn. Để tắt tiện ích này trong chế độ ẩn danh, hãy bỏ chọn tùy chọn này.</translation>
 <translation id="421369550622382712">Khám phá các ứng dụng, trò chơi, tiện ích và chủ đề tuyệt vời cho Chromium.</translation>
@@ -164,7 +159,6 @@ Một số tính năng có thể không khả dụng. Hãy chỉ định thư m�
 <translation id="6838494703713445896">Chromium đã xác minh rằng <ph name="ISSUER" /> cấp chứng chỉ của trang web này. Máy chủ cung cấp thông tin hợp lệ về Tính minh mạch của chứng chỉ.</translation>
 <translation id="6883876366448858277">gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, trả về định nghĩa, hình ảnh và các kết quả tìm kiếm khác.</translation>
 <translation id="6893813176749746474">Chromium đã được cập nhật nhưng bạn đã không sử dụng trình duyệt này trong ít nhất 30 ngày.</translation>
-<translation id="6900895776413482243">Khởi chạy lại ở chế độ chìm của Chromium sẽ đóng và khởi chạy lại các ứng dụng Chromium của bạn.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Mô-đun được tải vào Chromium</translation>
 <translation id="6970811910055250180">Đang cập nhật thiết bị của bạn...</translation>
@@ -213,7 +207,6 @@ Chromium không thể khôi phục cài đặt của bạn.</translation>
 <translation id="8551886023433311834">Gần như cập nhật! Khởi động lại thiết bị của bạn để hoàn tất cập nhật.</translation>
 <translation id="85843667276690461">Nhận trợ giúp về cách sử dụng Chromium</translation>
 <translation id="8586442755830160949">Bản quyền <ph name="YEAR" /> Tác giả Chromium. Mọi quyền được bảo lưu.</translation>
-<translation id="8605166112420372522">&amp;Khởi chạy lại Chromium trên máy tính để bàn</translation>
 <translation id="8621669128220841554">Không thể cài đặt do xảy ra lỗi không xác định. Hãy tải xuống Chromium lại lần nữa.</translation>
 <translation id="8628626585870903697">Chromium không bao gồm trình xem PDF được yêu cầu để tính năng xem trước bản in hoạt động.</translation>
 <translation id="8684913864886094367">Chromium không tắt đúng cách.</translation>

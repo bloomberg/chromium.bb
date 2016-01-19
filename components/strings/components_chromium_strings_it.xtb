@@ -3,7 +3,6 @@
 <translationbundle lang="it">
 <translation id="130631256467250065">Le modifiche verranno applicate al successivo riavvio del dispositivo.</translation>
 <translation id="275588974610408078">I rapporti sugli arresti anomali non sono disponibili in Chromium.</translation>
-<translation id="2872411181023734689">Impossibile visualizzare la pagina web in Chromium perché il computer non è connesso a Internet.</translation>
 <translation id="4365115785552740256">La realizzazione di Chromium è stata possibile grazie al progetto open source <ph name="BEGIN_LINK_CHROMIUM" />Chromium<ph name="END_LINK_CHROMIUM" /> e ad altri <ph name="BEGIN_LINK_OSS" />software open source<ph name="END_LINK_OSS" />.</translation>
 <translation id="4404275227760602850">Seleziona il menu Chromium &gt; Impostazioni &gt; (Avanzate) Privacy e disattiva l'opzione "Precarica risorse delle pagine".
 Se il problema non si risolve, dovresti riattivare questa opzione per ottenere prestazioni migliori.</translation>

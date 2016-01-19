@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">A(z) „<ph name="ABOUT_PAGE" />” névjegyoldal betöltése sikertelen volt.</translation>
 <translation id="4434145631756268951">{0,select, single{USB-eszköz kiválasztása}multiple{USB-eszközök kiválasztása}other{UNUSED}}</translation>
 <translation id="4811956658694082538">Nem lehetett telepíteni a csomagot, mert egy segédprogram-folyamat összeomlott. Indítsa újra a Chrome-ot, majd próbálja újra.</translation>
-<translation id="4883436287898674711">Minden <ph name="WEBSITE_1" /> webhelyen</translation>
 <translation id="5026754133087629784">Webview: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Alkalmazásnézet: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Ez a bővítmény a(z) "<ph name="KEY_PATH" />" kulcsfájlt tartalmazza. Ezt Ön valószínűleg nem szeretné.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">A(z) <ph name="EXTENSION_NAME" /> bővítményt (bővítményazonosító: „<ph name="EXTENSION_ID" />”) blokkolta a rendszergazda.</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME" />” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME" />”.</translation>
-<translation id="8284279544186306258">minden <ph name="WEBSITE_1" /> webhelyen</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> (<ph name="VENDOR_NAME" />)</translation>
 <translation id="8341840687457896278">A bővítmény nem tudott hitelesítési adatokat biztosítani egy hálózati kérésnek, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő hitelesítési adatokat adott meg.</translation>
 <translation id="8602184400052594090">A jegyzékfájl hiányzik vagy nem olvasható.</translation>

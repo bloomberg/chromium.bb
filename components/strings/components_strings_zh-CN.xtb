@@ -9,21 +9,19 @@
 <translation id="1066332784716773939">诊断错误…</translation>
 <translation id="106701514854093668">桌面书签</translation>
 <translation id="1080116354587839789">适合窗口宽度</translation>
-<translation id="108346963417674655">无法安全地连接到服务器。此网站之前可能是正常的，但现在服务器出现问题。对于所有用户而言，连接到此类网站都会导致安全性下降，因此系统已禁止连接到此类网站。</translation>
 <translation id="1090046120949329821">系统收到了多个不同的 Content-Disposition 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="1091911885099639251">正在验证信用卡</translation>
 <translation id="1103523840287552314">总是翻译<ph name="LANGUAGE" /></translation>
-<translation id="1105117579475534983">网页已被阻止</translation>
 <translation id="1107591249535594099">选中后，Chrome 会将您的信用卡副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
 <translation id="111844081046043029">确定要离开此页吗？</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="113188000913989374"><ph name="SITE" /> 显示：</translation>
 <translation id="1132774398110320017">Chrome自动填充设置…</translation>
-<translation id="1146498888431277930">SSL 连接出错</translation>
 <translation id="1146673768181266552">崩溃ID <ph name="CRASH_ID" /> (<ph name="CRASH_LOCAL_ID" />)</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1152921474424827756">访问<ph name="URL" />的<ph name="BEGIN_LINK" />缓存副本<ph name="END_LINK" /></translation>
+<translation id="1175364870820465910">打印(&amp;P)...</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1195447618553298278">未知错误。</translation>
 <translation id="1201402288615127009">下一步</translation>
@@ -44,7 +42,6 @@
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
 <translation id="1442912890475371290">尝试<ph name="BEGIN_LINK" />访问 <ph name="DOMAIN" /> 中的网页<ph name="END_LINK" />的行为已遭阻止。</translation>
-<translation id="1452265419286795001">您的计算机进入了睡眠或休眠模式，无法加载该网页。当您的计算机进入了睡眠或休眠模式时，网络连接会中断，并且系统无法处理新的网络请求。重新加载该网页应该能够解决此问题。</translation>
 <translation id="1455235771979731432">验证您的信用卡时出现问题。请检查您的互联网连接，然后重试。</translation>
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="1506687042165942984">显示为此页面保存的已知过时副本。</translation>
@@ -55,10 +52,7 @@
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
-<translation id="1619362374865863391"><ph name="PRODUCT_NAME" /> 无法访问该网站。这通常是由于网络问题导致的，但也可能是因为防火墙或代理服务器配置不正确。</translation>
 <translation id="1629803312968146339">您希望 Chrome 保存此信用卡吗？</translation>
-<translation id="1639782983204136776">尝试加载 <ph name="URL" /> 时收到无效响应。
-    服务器可能已关停以进行维护或配置不正确。</translation>
 <translation id="1640180200866533862">用户政策</translation>
 <translation id="1644184664548287040">网络配置无效，无法导入。</translation>
 <translation id="1644574205037202324">历史记录</translation>
@@ -69,12 +63,15 @@
 <translation id="1710259589646384581">操作系统</translation>
 <translation id="1734864079702812349">美国运通卡</translation>
 <translation id="1737968601308870607">提交错误</translation>
+<translation id="17513872634828108">目前打开的标签页</translation>
 <translation id="1753706481035618306">页码</translation>
 <translation id="1763864636252898013">此服务器无法证明它是<ph name="DOMAIN" />；您设备的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="1775135663370355363">目前显示的是通过此设备浏览的内容记录。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
+<translation id="1783075131180517613">请更新您的同步密码。</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1821930232296380041">请求或请求参数无效</translation>
 <translation id="1871208020102129563">代理已设置为使用固定的代理服务器，而不是 .pac 脚本网址。</translation>
+<translation id="1871625979288021266">该端口不安全，已被屏蔽</translation>
 <translation id="1883255238294161206">折叠列表</translation>
 <translation id="1898423065542865115">过滤</translation>
 <translation id="194030505837763158">请访问<ph name="LINK" /></translation>
@@ -104,18 +101,13 @@
 <translation id="2212735316055980242">找不到策略</translation>
 <translation id="2213606439339815911">正在获取条目…</translation>
 <translation id="2214283295778284209">无法访问 <ph name="SITE" /></translation>
-<translation id="2221403025589790908"><ph name="HOST_NAME" /> 响应时间过长，<ph name="PRODUCT_NAME" /> 无法加载该网页。该网站或互联网连接可能出现了问题。</translation>
-<translation id="2223896507118749476">该网站在检索 <ph name="URL" /> 时遇到错误。
-    服务器可能已关停以进行维护或配置不正确。</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
-<translation id="2271281383664374369">已暂时限制扩展程序对此网址发送请求。</translation>
 <translation id="2279770628980885996">服务器尝试执行请求时遇到了意外情况。</translation>
 <translation id="2282872951544483773">无法使用的实验功能</translation>
 <translation id="229702904922032456">根证书或中间证书已过期。</translation>
 <translation id="230155334948463882">要使用新信用卡吗？</translation>
 <translation id="2328300916057834155">已忽略索引<ph name="ENTRY_INDEX" />中的无效书签</translation>
-<translation id="2345460471437425338">主机的证书不正确。</translation>
 <translation id="2354001756790975382">其他书签</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2367567093518048410">级别</translation>
@@ -136,9 +128,7 @@
 <translation id="2516305470678292029">界面备选项</translation>
 <translation id="2552545117464357659">往后</translation>
 <translation id="2556876185419854533">撤消修改(&amp;U)</translation>
-<translation id="2581221116934462656">您希望 <ph name="PRODUCT_NAME" /> 下次翻译此网站的<ph name="LANGUAGE_NAME" />网页吗？</translation>
 <translation id="2587841377698384444">Directory API ID：</translation>
-<translation id="2589937147782335782">您希望 Google 保存此银行卡吗？</translation>
 <translation id="2597378329261239068">本文档设置了密码保护，请输入密码。</translation>
 <translation id="2609632851001447353">其他变体</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
@@ -147,16 +137,16 @@
 <translation id="2653659639078652383">提交</translation>
 <translation id="2674170444375937751">确定要从历史记录中删除这些页吗？</translation>
 <translation id="2704283930420550640">值不符合格式要求。</translation>
+<translation id="2709516037105925701">自动填充</translation>
 <translation id="2721148159707890343">请求成功</translation>
 <translation id="2728127805433021124">服务器的证书是使用弱签名算法进行签名的。</translation>
 <translation id="2742870351467570537">移除所选项</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
 <translation id="2784949926578158345">连接已重置。</translation>
+<translation id="2824775600643448204">地址和搜索栏</translation>
 <translation id="2835170189407361413">清除表单</translation>
 <translation id="2855922900409897335">验证您的 <ph name="CREDIT_CARD" /></translation>
-<translation id="2887624244875325968">在连接到安全的 (HTTPS) 服务器时，可能会出现此错误。这意味着服务器在尝试建立安全的连接，但由于严重的配置错误，连接根本谈不上安全！
-    <ph name="LINE_BREAK" />在这种情况下，服务器需要修复。
-    为了保护您的隐私，<ph name="PRODUCT_NAME" /> 不会使用不安全的连接。</translation>
+<translation id="2897655920961181107">请求的端口不安全，已被屏蔽。</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
 <translation id="2915500479781995473">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书已过期。出现此问题的原因可能是配置有误或您的连接被拦截了。计算机的时钟目前已设为<ph name="CURRENT_TIME" />，该设置是否正确？如果不正确，请更正系统的时钟，然后刷新此页面。</translation>
 <translation id="2922350208395188000">无法核实服务器证书。</translation>
@@ -186,11 +176,9 @@
 <translation id="3202578601642193415">最后</translation>
 <translation id="3207960819495026254">已加书签</translation>
 <translation id="3219579145727097045">输入信用卡正面显示的到期日期和 4 位数银行卡验证码 (CVC)</translation>
-<translation id="3225579507836276307">某个第三方扩展程序已阻止对此网页的访问。</translation>
 <translation id="3225919329040284222">服务器提供的证书与内置预期证书不匹配。这些预期证书是针对某些高安全性网站提供的，以便为您提供保护。</translation>
 <translation id="3226128629678568754">按“重新加载”按钮，重新提交加载该网页所需的数据。</translation>
 <translation id="3228969707346345236">此网页已经是<ph name="LANGUAGE" />网页，因此无法翻译。</translation>
-<translation id="3230256772510102500">代理服务器是您的计算机和其他服务器之间的中介。您的系统目前已配置为使用代理服务器，但 <ph name="PRODUCT_NAME" /> 无法连接到指定的代理服务器。</translation>
 <translation id="3270847123878663523">撤消顺序调整(&amp;U)</translation>
 <translation id="3286538390144397061">立即重新启动</translation>
 <translation id="333371639341676808">禁止此页再显示对话框。</translation>
@@ -202,7 +190,6 @@
 <translation id="3377188786107721145">策略解析错误</translation>
 <translation id="3380365263193509176">未知错误</translation>
 <translation id="3380864720620200369">客户端 ID：</translation>
-<translation id="3393716657345709557">缓存中未找到请求的条目。</translation>
 <translation id="340013220407300675">攻击者可能会试图从<ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />窃取您的信息（例如：密码、通讯内容或信用卡信息）。</translation>
 <translation id="3427342743765426898">恢复修改(&amp;R)</translation>
 <translation id="3435896845095436175">启用</translation>
@@ -214,6 +201,7 @@
 <translation id="3528171143076753409">服务器的证书不受信任。</translation>
 <translation id="3539171420378717834">在此设备上保存此信用卡的副本</translation>
 <translation id="3542684924769048008">使用以下项的密码：</translation>
+<translation id="3549644494707163724">使用您自己的同步密码加密所有已同步数据</translation>
 <translation id="3549761410225185768">还有 <ph name="NUM_TABS_MORE" /> 个…</translation>
 <translation id="3566021033012934673">您的连接不是私密连接</translation>
 <translation id="3583757800736429874">恢复移动(&amp;R)</translation>
@@ -234,22 +222,22 @@
 <translation id="375403751935624634">由于服务器出错，翻译失败。</translation>
 <translation id="3759461132968374835">您最近未收到崩溃报告。崩溃报告停用时发生的崩溃不会在此处显示。</translation>
 <translation id="382518646247711829">如果您使用代理服务器…</translation>
+<translation id="3828924085048779000">请勿使用空密码。</translation>
+<translation id="385051799172605136">后退</translation>
 <translation id="3851596405215565524">如果它已在可访问网络的程序列表中，请尝试将其从该列表中移除，然后重新添加到其中。</translation>
 <translation id="3858027520442213535">更新日期和时间</translation>
 <translation id="3884278016824448484">设备标识符存在冲突</translation>
 <translation id="3885155851504623709">区</translation>
 <translation id="3901925938762663762">此信用卡已过期</translation>
 <translation id="3903912596042358459">服务器拒绝执行该请求。</translation>
-<translation id="3920015046759567857">与 <ph name="HOST_NAME" /> 的连接已中断。</translation>
+<translation id="3930850196944737149">您的设备处于离线状态。</translation>
 <translation id="3934680773876859118">无法加载 PDF 文档</translation>
-<translation id="3940082421246752453">服务器不支持请求中所用的 HTTP 版本。</translation>
 <translation id="3950924596163729246">无法访问网络。</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="4030383055268325496">撤消添加(&amp;U)</translation>
 <translation id="4032534284272647190"><ph name="URL" /> 拒绝访问。</translation>
 <translation id="404928562651467259">警告</translation>
 <translation id="4058922952496707368">“<ph name="SUBKEY" />”键：<ph name="ERROR" /></translation>
-<translation id="4060383410180771901">该网站无法处理 <ph name="URL" /> 的请求。</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
 <translation id="409504436206021213">不重新加载</translation>
 <translation id="4103249731201008433">设备序列号无效</translation>
@@ -268,10 +256,8 @@
 <translation id="4268298190799576220">Chromium 目前无法验证您的信用卡，请稍后重试。</translation>
 <translation id="4269787794583293679">（无用户名）</translation>
 <translation id="4278390842282768270">允许的 Cookie</translation>
-<translation id="4287689875748136217">服务器未发送任何数据，因此无法加载该网页。</translation>
 <translation id="4300246636397505754">家长建议</translation>
 <translation id="4325863107915753736">找不到文章</translation>
-<translation id="4350711002179453268">无法与服务器建立安全连接。可能是服务器出现了问题，也可能是您没有服务器要求的客户端身份验证证书。</translation>
 <translation id="4372948949327679948">应使用<ph name="VALUE_TYPE" />值。</translation>
 <translation id="4377125064752653719">您尝试访问的是 <ph name="DOMAIN" />，但服务器出示的证书已被其颁发者吊销。这表明绝对不应该信任此服务器出示的安全凭据。您可能正在与攻击者进行通信。</translation>
 <translation id="4394049700291259645">停用</translation>
@@ -289,7 +275,6 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书有误。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
-<translation id="4681260323810445443">您无权访问网址为 <ph name="URL" /> 的网页。您可能需要登录。</translation>
 <translation id="4697214168136963651">已阻止 <ph name="URL" /></translation>
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
@@ -297,24 +282,18 @@
 <translation id="4764776831041365478">网址为 <ph name="URL" /> 的网页可能暂时无法连接，或者它已永久性地移动到了新网址。</translation>
 <translation id="4771973620359291008">发生未知错误。</translation>
 <translation id="477518548916168453">服务器不支持执行该请求所需的功能。</translation>
-<translation id="4779052991835840224">无法建立安全连接，因为此网站使用了不受支持的协议或加密套件。导致此问题的原因通常是服务器要求使用 RC4，而这种加密方式根据当前标准已不够安全。</translation>
-<translation id="4786993863723020412">缓存读取错误</translation>
 <translation id="4800132727771399293">请检查您的到期日期和银行卡验证码 (CVC)，然后重试</translation>
 <translation id="4807049035289105102">您目前无法访问 <ph name="SITE" />，因为此网站发送了 Google Chrome 无法处理的杂乱凭据。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="4813512666221746211">网络错误</translation>
 <translation id="4816492930507672669">适合页面大小</translation>
-<translation id="4841859178893814774">为了加快网页加载速度，<ph name="PRODUCT_NAME" /> 会将下载的文件暂时保存到磁盘。如果 <ph name="PRODUCT_NAME" /> 未正常关闭，这些文件可能会损坏，从而导致此错误。重新加载网页应该能够解决此问题，正常关闭应该能够避免日后再出现此问题。
-    <ph name="LINE_BREAK" />
-    如果此问题仍然存在，请尝试清空缓存。在某些情况下，这也可能是因为硬件出现问题。</translation>
+<translation id="4841640898320458950">该端口不安全，已被屏蔽。</translation>
 <translation id="4850886885716139402">视图</translation>
-<translation id="4874648484377130814">该网站使用的是<ph name="BEGIN_LINK" />新的通用顶级域名<ph name="END_LINK" /> (gTLD)。如果您曾使用 <ph name="HOST_NAME" /> 访问内部网站，请与网络管理员联系。</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
-<translation id="49215695600353191">来自服务器的响应包含重复标头。此问题通常是由于网站或代理服务器配置不正确导致的。只有网站管理员或代理服务器管理员可以解决此问题。</translation>
+<translation id="488726935215981469">您的数据已使用同步密码加密，请在下方输入您的同步密码。</translation>
 <translation id="4923417429809017348">翻译服务器已将此网页从某种未知语言翻译成了<ph name="LANGUAGE_LANGUAGE" />。</translation>
 <translation id="4926049483395192435">必须指定。</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4958444002117714549">展开列表</translation>
-<translation id="4980112683975062744">收到了来自服务器的重复标头</translation>
 <translation id="498957508165411911">是否将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" />？</translation>
 <translation id="5002932099480077015">如果您选中此项，Chrome 会将您的卡的副本存储在此设备上，以加快表单填写速度。</translation>
 <translation id="5019198164206649151">后备存储状态不佳</translation>
@@ -326,23 +305,19 @@
 <translation id="5089810972385038852">州</translation>
 <translation id="5094747076828555589">此服务器无法证明它是<ph name="DOMAIN" />；Chromium不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5095208057601539847">省</translation>
-<translation id="5109770625702925626">无法查询 <ph name="HOST_NAME" />。
-    正在尝试诊断此问题…</translation>
 <translation id="5115563688576182185">（64 位）</translation>
 <translation id="5122371513570456792">找到了 <ph name="NUMBER_OF_RESULTS" /> 个与“<ph name="SEARCH_STRING" />”相符的<ph name="SEARCH_RESULTS" />。</translation>
+<translation id="5141240743006678641">使用您的 Google 凭据加密已同步的密码</translation>
 <translation id="5145883236150621069">策略响应中存在错误代码</translation>
-<translation id="5153978682603373396">代理服务器是您的设备和其他服务器之间的中介。您的系统目前已配置为使用代理服务器，但 <ph name="PRODUCT_NAME" /> 无法连接到指定的代理服务器。</translation>
 <translation id="5172758083709347301">本机</translation>
 <translation id="5179510805599951267">不是<ph name="ORIGINAL_LANGUAGE" />？报告此错误</translation>
 <translation id="5190835502935405962">书签栏</translation>
 <translation id="5199729219167945352">实验</translation>
 <translation id="5228309736894624122">SSL 协议出错。</translation>
 <translation id="5251803541071282808">云端</translation>
-<translation id="527200068854444456">您的设备进入了睡眠或休眠模式，无法加载该网页。当您的设备进入了睡眠或休眠模式时，网络连接会中断，并且系统无法处理新的网络请求。重新加载该网页应该能够解决此问题。</translation>
 <translation id="5295309862264981122">确认导航</translation>
 <translation id="5299298092464848405">解析策略时出错</translation>
 <translation id="5300589172476337783">显示</translation>
-<translation id="5303618139271450299">未找到此网页</translation>
 <translation id="5308689395849655368">已停用崩溃报告。</translation>
 <translation id="5317780077021120954">保存</translation>
 <translation id="536296301121032821">无法存储策略设置</translation>
@@ -370,7 +345,6 @@
 <translation id="5720705177508910913">当前用户</translation>
 <translation id="5813119285467412249">恢复添加(&amp;R)</translation>
 <translation id="5872918882028971132">家长建议</translation>
-<translation id="5880867612172997051">网络访问已暂停</translation>
 <translation id="5900623698597156974">TLS 1.0 回退能够与服务器握手，但我们已不再接受 TLS 1.0 回退。服务器需要更新，以便正确实现版本协商（最好能支持 TLS 1.2）。</translation>
 <translation id="59107663811261420">Google Payments 不支持使用这种类型的信用卡向此商家付款，请选择其他卡。</translation>
 <translation id="59174027418879706">已启用</translation>
@@ -385,14 +359,8 @@
 <translation id="604124094241169006">自动</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6060685159320643512">请小心，这些实验性功能可能有风险</translation>
-<translation id="6066742401428748382">该网页拒绝访问</translation>
 <translation id="6093795393556121384">您的信用卡已成功验证</translation>
 <translation id="6099520380851856040">发生时间：<ph name="CRASH_TIME" /></translation>
-<translation id="6101917839110691420">网址为 <ph name="URL" /> 的网页导致了过多的重定向。清除该网站的 Cookie 或允许第三方 Cookie 可能会解决此问题。如果不能解决，可能是服务器配置有问题，而不是您的计算机有问题。</translation>
-<translation id="6130627560064345577">托管该网页的服务器可能已超负荷或遇到错误。
-    为了避免扩展程序导致过多流量，进而防止情况变得更糟，<ph name="PRODUCT_NAME" /> 已暂时禁止扩展程序向该网址发送请求。
-    <ph name="LINE_BREAK" />
-    如果您不希望这样（例如，您正在调试自己的网站），请访问 <ph name="URL_FOR_MORE_INFO" />，了解更多信息（包括如何停用该功能）。</translation>
 <translation id="6146055958333702838">请检查所有网线是否都已连好，然后重新启动您可能正在使用的任何路由器、调制解调器或其他网络设备。</translation>
 <translation id="6151417162996330722">该服务器证书的有效期过长。</translation>
 <translation id="6154808779448689242">返回的策略令牌与当前令牌不匹配</translation>
@@ -405,7 +373,6 @@
 <translation id="6262796033958342538">系统收到了多个不同的 Location 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> 书签</translation>
 <translation id="6264485186158353794">返回安全连接</translation>
-<translation id="6268647269805730940">此设备尚未完成首次运行该浏览器时需要执行的步骤。</translation>
 <translation id="6282194474023008486">邮编</translation>
 <translation id="6321917430147971392">请检查您的DNS设置是否正确</translation>
 <translation id="6328639280570009161">请尝试停用网络联想查询功能</translation>
@@ -422,16 +389,15 @@
 <translation id="6489534406876378309">开始上传崩溃数据</translation>
 <translation id="6500116422101723010">服务器目前无法处理该请求。该代码表明这是临时状态，服务器会在延迟后重新启动。</translation>
 <translation id="6512448926095770873">离开此页</translation>
-<translation id="6516193643535292276">无法连接到互联网</translation>
 <translation id="6518133107902771759">验证</translation>
 <translation id="6529602333819889595">恢复删除(&amp;R)</translation>
 <translation id="6533019874004191247">网址不受支持。</translation>
 <translation id="6550675742724504774">选项</translation>
+<translation id="6596325263575161958">加密选项</translation>
 <translation id="6626108645084335023">正在等待 DNS 探测。</translation>
 <translation id="6628463337424475685"><ph name="ENGINE" /> 搜索</translation>
 <translation id="6634865548447745291">您目前无法访问<ph name="SITE" />，因为<ph name="BEGIN_LINK" />此证书已被撤消<ph name="END_LINK" />。网络错误和攻击通常是暂时的，因此，此网页稍后可能会恢复正常。</translation>
 <translation id="6637478299472506933">下载失败</translation>
-<translation id="6640442327198413730">缓存中没有所需资源</translation>
 <translation id="6644283850729428850">此政策已弃用。</translation>
 <translation id="6646897916597483132">输入信用卡正面显示的 4 位数银行卡验证码 (CVC)</translation>
 <translation id="6671697161687535275">要从 Chromium 中移除表单填写建议吗？</translation>
@@ -439,7 +405,6 @@
 <translation id="674375294223700098">未知的服务器证书错误。</translation>
 <translation id="6746710319270251222">系统收到了多个不同的 Content-Length 标头。为了避免遭到 HTTP 响应拆分攻击，这种情况是不允许的。</translation>
 <translation id="6753269504797312559">政策值</translation>
-<translation id="6771079623344431310">无法连接到代理服务器</translation>
 <translation id="6781404225664080496">已暂时禁止向此网址发送请求。</translation>
 <translation id="6800914069727136216">在内容包中</translation>
 <translation id="6820686453637990663">CVC</translation>
@@ -451,7 +416,6 @@
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6897140037006041989">用户代理</translation>
 <translation id="6915804003454593391">用户：</translation>
-<translation id="6948142510520900350">您的&lt;strong&gt;系统管理员&lt;/strong&gt;已禁止访问该网页。</translation>
 <translation id="6957887021205513506">该服务器的证书似乎是伪造的。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6965978654500191972">设备</translation>
@@ -459,15 +423,14 @@
 <translation id="6973656660372572881">固定代理服务器和 .pac 脚本网址均已指定。</translation>
 <translation id="6989763994942163495">显示高级设置...</translation>
 <translation id="7012363358306927923">中国银联</translation>
+<translation id="7029809446516969842">密码</translation>
 <translation id="7050187094878475250">您尝试访问 <ph name="DOMAIN" />，但服务器提供的证书不可信（有效期过长）。</translation>
 <translation id="7052500709156631672">网关或代理服务器从上游服务器收到的响应无效。</translation>
 <translation id="7087282848513945231">县/郡</translation>
 <translation id="7088615885725309056">往前</translation>
 <translation id="7108649287766967076">无法翻译成<ph name="TARGET_LANGUAGE" />。</translation>
 <translation id="7117303293717852287">请重新加载此网页</translation>
-<translation id="7117941875056403396"><ph name="PRODUCT_NAME" /> 尝试连接到 <ph name="HOST_NAME" /> 时遭到拒绝。原因可能是该网站出现了问题，也可能是您的网络配置不正确。</translation>
 <translation id="7139724024395191329">酋长国</translation>
-<translation id="7148804936871729015">网址为 <ph name="URL" /> 的服务器的响应等待时间过长。该服务器可能已超载。</translation>
 <translation id="7179921470347911571">立即重新启动</translation>
 <translation id="7180611975245234373">刷新</translation>
 <translation id="7182878459783632708">未设置任何政策</translation>
@@ -482,11 +445,6 @@
 <translation id="7275334191706090484">受管理的书签</translation>
 <translation id="7298195798382681320">推荐</translation>
 <translation id="7334320624316649418">恢复顺序调整(&amp;R)</translation>
-<translation id="7335675476272530342">在缓存中未找到该网页。某些资源只能从缓存安全加载，例如根据提交的数据生成的网页。
-    <ph name="LINE_BREAK" />
-    因关闭方式不当导致的缓存损坏也可能会引发此错误。
-    <ph name="LINE_BREAK" />
-    如果此问题仍然存在，请尝试清空缓存。</translation>
 <translation id="7353601530677266744">命令行</translation>
 <translation id="7372973238305370288">搜索结果</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE" /> - <ph name="FULL_DATE" /></translation>
@@ -500,6 +458,7 @@
 <translation id="7424977062513257142">此网页上的嵌入式页面显示：</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
 <translation id="7450732239874446337">网络 IO 已暂停。</translation>
+<translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7514365320538308">下载</translation>
 <translation id="7518003948725431193">找不到与以下网址对应的网页：<ph name="URL" /></translation>
@@ -511,19 +470,16 @@
 <translation id="7569952961197462199">从 Chrome 中移除信用卡信息？</translation>
 <translation id="7578104083680115302">通过各种设备在网站和应用中购物时，您都可以使用 Google 为您保存的银行卡信息快速付款。</translation>
 <translation id="7592362899630581445">服务器的证书违反了域名限制。</translation>
-<translation id="759809665464235306">此服务器要求提供用于身份验证的证书，并且没有接受浏览器发送的证书。您的证书可能已过期，或者服务器可能不信任该证书的签发者。
-    如果您有其他证书，可以使用该证书重试。如果没有，则可能需要从其他来源获取有效证书。</translation>
 <translation id="7600965453749440009">一律不翻译<ph name="LANGUAGE" /></translation>
 <translation id="7606563002701561706">增强型书签</translation>
 <translation id="7610193165460212391">值超出了范围 (<ph name="VALUE" />)。</translation>
-<translation id="7614030880636783720">无法连接到 Wi-Fi 网络和移动数据网络。当设备连接到网络后，系统便可加载该页面。</translation>
+<translation id="7615602087246926389">您已经使用不同版本的 Google 帐户密码加密了数据。请在下方输入。</translation>
 <translation id="7637571805876720304">要从 Chromium 中移除信用卡吗？</translation>
 <translation id="7643817847124207232">互联网连接已中断。</translation>
 <translation id="765676359832457558">隐藏高级设置...</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7668654391829183341">未知设备</translation>
 <translation id="7674629440242451245">想试试超酷的 Chrome 新功能？欢迎访问 chrome.com/dev，试用我们的测试版！</translation>
-<translation id="7689727675296818638">网络连接发生变化，与 <ph name="HOST_NAME" /> 的连接已中断。</translation>
 <translation id="7704050614460855821"><ph name="BEGIN_LINK" />继续前往<ph name="SITE" />（不安全）<ph name="END_LINK" /></translation>
 <translation id="7733391738235763478">（<ph name="NUMBER_VISITS" /> 次）</translation>
 <translation id="7752995774971033316">非托管</translation>
@@ -534,10 +490,11 @@
 <translation id="777702478322588152">县</translation>
 <translation id="778579833039460630">未收到数据</translation>
 <translation id="7791543448312431591">添加</translation>
+<translation id="7793809570500803535">网址为 <ph name="SITE" /> 的网页可能暂时无法连接或已永久性地移动到了新网址。</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
 <translation id="7805768142964895445">状态</translation>
 <translation id="7813600968533626083">从 Chrome 中移除表单建议？</translation>
-<translation id="7839809549045544450">服务器的瞬时 Diffie-Hellman 公共密钥过弱</translation>
+<translation id="7825436071901023927"><ph name="SITE" />端口不安全</translation>
 <translation id="7887683347370398519">请检查您的银行卡验证码 (CVC)，然后重试</translation>
 <translation id="790025292736025802">未找到 <ph name="URL" /></translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
@@ -549,16 +506,15 @@
 <translation id="7983301409776629893">一律将<ph name="ORIGINAL_LANGUAGE" />翻译成<ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7988324688042446538">桌面书签</translation>
 <translation id="7995512525968007366">未指定</translation>
-<translation id="8016174103774548813">SSL 服务器可能需要更新。</translation>
 <translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE" />，要将其翻译成<ph name="TARGET_LANGUAGE" />吗？</translation>
 <translation id="8034955203865359138">未找到任何历史记录条目。</translation>
+<translation id="8075539548641175231">您的数据已于 <ph name="TIME" />使用您的同步密码加密，请在下方输入该密码。</translation>
 <translation id="8088680233425245692">无法查看文章。</translation>
 <translation id="8091372947890762290">正等待在服务器上激活</translation>
 <translation id="8150722005171944719">无法读取 <ph name="URL" /> 上的文件。该文件可能已遭到删除、移动，或者文件权限不允许进行访问。</translation>
 <translation id="8194797478851900357">撤消移动(&amp;U)</translation>
 <translation id="8201077131113104583">ID 为“<ph name="EXTENSION_ID" />”的扩展程序的更新网址无效。</translation>
 <translation id="8204086856545141093">向服务器发送的请求已被某政策拦截。</translation>
-<translation id="820791781874064845">此网页已遭到某个扩展程序的阻止</translation>
 <translation id="8218327578424803826">分配的位置：</translation>
 <translation id="8240446052814166959">请检查您的代理服务器设置或与网络管理员联系，以确保代理服务器正常运行。
       <ph name="PLATFORM_TEXT" /></translation>
@@ -567,31 +523,30 @@
 <translation id="8266098793847448402">依次点击<ph name="BEGIN_BOLD" />开始<ph name="END_BOLD" />和<ph name="BEGIN_BOLD" />运行<ph name="END_BOLD" />，输入 <ph name="BEGIN_BOLD" />%windir%\network diagnostic\xpnetdiag.exe<ph name="END_BOLD" />，然后点击<ph name="BEGIN_BOLD" />确定<ph name="END_BOLD" />。</translation>
 <translation id="8289355894181816810">如果您不确定这是什么意思，请与您的网络管理员联系。</translation>
 <translation id="8294431847097064396">来源</translation>
-<translation id="8295070100601117548">服务器错误</translation>
 <translation id="8308427013383895095">由于网络连接问题，翻译失败。</translation>
 <translation id="8311778656528046050">确定要重新加载此网页吗？</translation>
 <translation id="8349305172487531364">书签栏</translation>
 <translation id="8364627913115013041">未设置。</translation>
 <translation id="8412145213513410671">崩溃次数（<ph name="CRASH_COUNT" /> 次）</translation>
+<translation id="8412392972487953978">您两次输入的密码必须相同。</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8437238597147034694">撤消移动(&amp;U)</translation>
 <translation id="8488350697529856933">适用对象</translation>
 <translation id="8494979374722910010">无法连接到服务器。</translation>
 <translation id="8508677083825928015">预提取资源，以便更快速地加载网页</translation>
-<translation id="8515737884867295000">基于证书的身份验证失败</translation>
 <translation id="8530504477309582336">Google Payments 不支持这种类型的信用卡，请选择其他卡。</translation>
+<translation id="8550022383519221471">您的域不支持同步服务。</translation>
 <translation id="8553075262323480129">系统无法确定该网页的语言，因此无法进行翻译。</translation>
 <translation id="8559762987265718583">您设备的日期和时间（<ph name="DATE_AND_TIME" />）不正确，因此无法与 <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> 建立私密连接。</translation>
 <translation id="8571890674111243710">正在将网页翻译成<ph name="LANGUAGE" />...</translation>
 <translation id="8629916158020966496">在企业注册验证检查完成之前，禁止浏览互联网。
     您仍可以使用此处提供的诊断工具排查连接问题。</translation>
 <translation id="8647750283161643317">全部重置为默认值</translation>
+<translation id="8680787084697685621">帐户登录详细信息已过期。</translation>
 <translation id="8713130696108419660">初始签名错误</translation>
 <translation id="8725066075913043281">重试</translation>
-<translation id="8729518820755801792">Chrome 浏览器无法打开此网址。</translation>
 <translation id="8730621377337864115">完成</translation>
 <translation id="8738058698779197622">要建立安全连接，您的时钟设置必须正确。这是因为，网站用于证明身份的证书仅在特定时间段有效。由于您设备的时钟不正确，因此 Chromium 无法验证这些证书。</translation>
-<translation id="8776174617851537652">网址为 <ph name="URL" /> 的网页导致了过多的重定向。清除该网站的 Cookie 或允许第三方 Cookie 可能会解决此问题。如果不能解决，可能是服务器配置有问题，而不是您的设备有问题。</translation>
 <translation id="8790007591277257123">恢复删除(&amp;R)</translation>
 <translation id="8798099450830957504">默认</translation>
 <translation id="8804164990146287819">隐私权政策</translation>
@@ -617,28 +572,20 @@
 <translation id="9013589315497579992">SSL 客户端身份验证证书出错。</translation>
 <translation id="901974403500617787">应用于整个系统的设置只能由以下所有者设定：<ph name="OWNER_EMAIL" />。</translation>
 <translation id="9020142588544155172">服务器拒绝了连接。</translation>
-<translation id="9020278534503090146">无法显示此网页</translation>
 <translation id="9020542370529661692">已将此网页内容翻译成<ph name="TARGET_LANGUAGE" /></translation>
-<translation id="9032090437019334135">DNS 查询失败，找不到位于 <ph name="HOST_NAME" /> 的服务器。DNS 是将网站名称解析为互联网地址的网络服务。导致此错误的最常见原因是未连接到互联网或网络配置不正确，也可能是因为 DNS 服务器没有响应或防火墙阻止 <ph name="PRODUCT_NAME" /> 访问网络。</translation>
-<translation id="904949795138183864">网址为 <ph name="URL" /> 的网页已不存在。</translation>
 <translation id="9049981332609050619">您试图访问 <ph name="DOMAIN" />，但服务器提供的证书无效。</translation>
-<translation id="9086455579313502267">无法访问网络</translation>
+<translation id="9050666287014529139">密码</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击程序在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9125941078353557812">输入信用卡背面显示的 3 位数银行卡验证码 (CVC)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9148507642005240123">撤消修改(&amp;U)</translation>
 <translation id="9154176715500758432">留在此页</translation>
-<translation id="9168302918952546302"><ph name="PRODUCT_NAME" /> 无法访问网络。
-      <ph name="LINE_BREAK" />
-      这可能是因为防火墙或防病毒软件误将 <ph name="PRODUCT_NAME" /> 当作了设备入侵程序，因此阻止它连接到互联网。</translation>
+<translation id="9157595877708044936">正在设置...</translation>
 <translation id="9170848237812810038">撤消(&amp;U)</translation>
 <translation id="917450738466192189">服务器证书无效。</translation>
 <translation id="9207861905230894330">无法添加文章。</translation>
 <translation id="933712198907837967">Diners Club</translation>
 <translation id="935608979562296692">清除表单内容</translation>
-<translation id="946368465353148168"><ph name="PRODUCT_NAME" /> 无法访问网络。
-      <ph name="LINE_BREAK" />
-      这可能是因为防火墙或防病毒软件误将 <ph name="PRODUCT_NAME" /> 当作了计算机入侵程序，因此阻止它连接到互联网。</translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="988159990683914416">开发者内部版本</translation>
 </translationbundle>

@@ -125,7 +125,6 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2762000892062317888">äsken</translation>
 <translation id="2770465223704140727">Poista luettelosta</translation>
 <translation id="278029852808208386">Bluetooth-laitteita ei löytynyt. <ph name="BEGIN_LINK" />Hae uudelleen<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Hidas yhteys havaittu.</translation>
 <translation id="2842985007712546952">Ylätason kansio</translation>
 <translation id="2870560284913253234">Sivusto</translation>
 <translation id="2888126860611144412">Tietoja Chromesta</translation>
@@ -173,7 +172,6 @@ Olet kirjautumassa hallinnoituun tiliin, jonka hallinnoijalla on oikeus muokata 
 <translation id="3492207499832628349">Uusi incognito-välilehti</translation>
 <translation id="3518985090088779359">Hyväksy ja jatka</translation>
 <translation id="3527085408025491307">Kansio</translation>
-<translation id="3559647143395293616">Ota Fyysinen web käyttöön</translation>
 <translation id="360480449234699036">Lue lisätietoja verkkosivujen aiheista poistumatta sivulta. Koskettamalla hakeminen lähettää sanan ja sen asiayhteyden Google-hakuun ja palauttaa määritelmiä, kuvia, hakutuloksia ja muita tietoja.
 
 Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua liu'uttamalla paneeli yläasentoon ja koskettamalla hakukenttää.</translation>
@@ -274,7 +272,6 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5039804452771397117">Salli</translation>
 <translation id="5040262127954254034">Tietosuoja</translation>
 <translation id="5063480226653192405">Käyttö</translation>
-<translation id="509605886816275399">Tallennetaanko tämä sivu offline-käyttöä varten?</translation>
 <translation id="5100237604440890931">Tiivistetty – laajenna klikkaamalla.</translation>
 <translation id="5107381076085091558">Lataus keskeytetty</translation>
 <translation id="5118713593561876160">Kiinnostuksen kohteet</translation>
@@ -288,6 +285,7 @@ Avaa Chrome tietokoneella, siirry valikkoon ja valitse Kirjaudu Chromeen…</tra
 <translation id="5168917394043976756">Avaa navigoinnin vetopaneeli</translation>
 <translation id="5171045022955879922">Kirjoita hakusanoja tai URL-osoite</translation>
 <translation id="5184329579814168207">Avaa Chromessa</translation>
+<translation id="5199929503336119739">Työprofiili</translation>
 <translation id="5210365745912300556">Sulje välilehti</translation>
 <translation id="5210714456814679336">Muilla laitteilla Chromessa avaamasi välilehdet näytetään täällä.</translation>
 <translation id="5228579091201413441">Ota synkronointi käyttöön</translation>
@@ -382,7 +380,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="6232535412751077445">Do Not Track -toiminnon käyttöönotto tarkoittaa sitä, että selausliikenteeseesi sisällytetään pyyntö. Sen vaikutus riippuu siitä, vastaako verkkosivusto pyyntöön ja miten pyyntöä tulkitaan.
 
 Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämällä sinulle mainoksia, jotka eivät perustu muihin vierailemiisi verkkosivustoihin. Monet sivustot keräävät ja käyttävät silti edelleen selaustietojasi – esimerkiksi turvallisuuden parantamiseen, sisällön, mainosten ja suositusten tarjoamiseen sekä raportointitilastojen luomiseen.</translation>
-<translation id="624558823898732418">Käännöksen kieli: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Sivua tulostettaessa tapahtui virhe. Yritä uudelleen.</translation>
 <translation id="6295158916970320988">Kaikki sivustot</translation>
 <translation id="6317634962183824346">Android-järj. synkr. pois käytöstä. Ota uudelleen käyttöön ja yritä uudelleen.</translation>
@@ -533,6 +530,7 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="8146397137182589628">Ei tallennettua offline-versiota</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> tiliä</translation>
 <translation id="8168435359814927499">Sisältö</translation>
+<translation id="8200772114523450471">Jatka</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
 <translation id="8218346974737627104">Kirjautumisen vahvistaminen</translation>
 <translation id="8218934717680664417">Nyt voit tehdä hakuja yhdellä kosketuksella</translation>
@@ -552,7 +550,6 @@ Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työna
 <translation id="8514577642972634246">Siirry incognito-tilaan</translation>
 <translation id="8515416241041728525">Lisää tili hlölle <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Sivusto käyttää heikkoa suojausta (SHA-1-allekirjoitukset), joten yhteytesi ei välttämättä ole täysin turvallinen.</translation>
-<translation id="8528538445849828817">Sivun kieli: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Avaa tämä sivu</translation>
 <translation id="8562452229998620586">Tässä näytetään tallennetut salasanasi.</translation>
 <translation id="856481929701340285">Käytä tietokoneversiota</translation>

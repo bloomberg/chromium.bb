@@ -125,7 +125,6 @@
 <translation id="2762000892062317888">剛剛</translation>
 <translation id="2770465223704140727">從清單中移除</translation>
 <translation id="278029852808208386">找不到藍牙裝置，請<ph name="BEGIN_LINK" />重新搜尋<ph name="END_LINK" />。</translation>
-<translation id="2816165854387457183">偵測到連線速度緩慢。</translation>
 <translation id="2842985007712546952">上層資料夾</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
@@ -173,7 +172,6 @@
 <translation id="3492207499832628349">新無痕式分頁</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
 <translation id="3527085408025491307">資料夾</translation>
-<translation id="3559647143395293616">開啟實體化網路</translation>
 <translation id="360480449234699036">不需離開網頁即可瞭解網站上的主題。「輕觸搜尋」可將特定字詞及其上下文內容傳送至 Google 搜尋，並傳回字詞定義、相關圖片、搜尋結果和其他詳細資料。
 
 如要調整搜尋字詞，直接長按即可選取。如要修正搜尋，請將面板滑動到最上方，再輕觸搜尋框。</translation>
@@ -274,7 +272,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5039804452771397117">允許</translation>
 <translation id="5040262127954254034">隱私權</translation>
 <translation id="5063480226653192405">用量</translation>
-<translation id="509605886816275399">要離線儲存這個網頁嗎？</translation>
 <translation id="5100237604440890931">已收合 - 按一下即可展開。</translation>
 <translation id="5107381076085091558">已暫停下載。</translation>
 <translation id="5118713593561876160">興趣喜好</translation>
@@ -288,6 +285,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="5168917394043976756">開啟導覽匣</translation>
 <translation id="5171045022955879922">搜尋或輸入網址</translation>
 <translation id="5184329579814168207">在 Chrome 中開啟</translation>
+<translation id="5199929503336119739">Work 設定檔</translation>
 <translation id="5210365745912300556">關閉分頁</translation>
 <translation id="5210714456814679336">這裡會顯示您在其他裝置上的 Chrome 中開啟的分頁。</translation>
 <translation id="5228579091201413441">啟用同步功能</translation>
@@ -382,7 +380,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="6232535412751077445">啟用「不追蹤」功能即表示要求將會包含在您的瀏覽流量中，其效用取決於網站是否回應要求以及如何解讀要求。
 
 舉例來說，部分網站可能會以顯示廣告的方式回應這類要求，而這些廣告並非根據您所造訪的其他網站紀錄而產生。許多網站仍會收集您的瀏覽資料，並將這些資料用於下列目的：提高網站安全性、在網站上提供更相關的內容、廣告和推薦項目，以及產生報告統計資料。</translation>
-<translation id="624558823898732418">翻譯語言：<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">列印網頁時發生問題，請再試一次。</translation>
 <translation id="6295158916970320988">所有網站</translation>
 <translation id="6317634962183824346">Android 系統同步處理功能已停用，請重新啟用後再試一次。</translation>
@@ -533,6 +530,7 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8146397137182589628">未離線儲存</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> 個帳戶</translation>
 <translation id="8168435359814927499">內容</translation>
+<translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8218346974737627104">確認登入</translation>
 <translation id="8218934717680664417">從現在起，只要輕觸即可搜尋</translation>
@@ -552,7 +550,6 @@ Chrome 會在您的裝置解鎖時掃描附近的網頁。這些網頁經由 Goo
 <translation id="8514577642972634246">進入無痕模式</translation>
 <translation id="8515416241041728525">為<ph name="ADD_ACCOUNT_USER_NAME" />新增帳戶</translation>
 <translation id="8518901949365209398">這個網站使用的安全性設定強度不足 (SHA-1 簽名)，因此您的連線可能不是私人連線。</translation>
-<translation id="8528538445849828817">網頁語言：<ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">開啟此頁</translation>
 <translation id="8562452229998620586">已儲存的密碼會顯示在這裡。</translation>
 <translation id="856481929701340285">切換為電腦版網站</translation>

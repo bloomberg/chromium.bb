@@ -31,9 +31,11 @@
 <translation id="605721222689873409">ปป</translation>
 <translation id="6075880972317537864">ผู้บุกรุกที่อยู่ใน <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> อาจพยายามหลอกล่อคุณเพื่อขโมยข้อมูล (ตัวอย่างเช่น รหัสผ่าน ข้อความ หรือบัตรเครดิต)</translation>
 <translation id="6149061208933997199">ใช้รหัสผ่าน</translation>
+<translation id="6196207969502475924">การค้นหาด้วยเสียง</translation>
 <translation id="6221345481584921695">เมื่อเร็วๆ นี้ Google Safe Browsing <ph name="BEGIN_LINK" />ตรวจพบมัลแวร์<ph name="END_LINK" />ใน <ph name="SITE" /> เว็บไซต์ที่โดยปกติจะปลอดภัยบางครั้งอาจติดมัลแวร์ เนื้อหาที่เป็นอันตรายมาจาก <ph name="SUBRESOURCE_HOST" /> ซึ่งเป็นผู้เผยแพร่มัลแวร์ที่เป็นที่รู้จัก</translation>
 <translation id="6264485186158353794">กลับสู่ความปลอดภัย</translation>
 <translation id="6314335155547195432">สร้างรหัสผ่าน</translation>
+<translation id="6344783595350022745">ข้อความที่ชัดเจน</translation>
 <translation id="6456425917241817154">รหัสผ่านสร้างโดย Chrome</translation>
 <translation id="6535543971741225613">ไซต์ที่คุณกำลังพยายามเข้าถึงทำงานผิดปกติ และ Chrome ไม่สามารถยืนยันได้ว่า URL ของไซต์นี้ถูกต้อง เพื่อความปลอดภัย คุณไม่ควรดำเนินการต่อ หรืออาจลองอีกครั้งในวันพรุ่งนี้หรือไปที่ไซต์อื่น</translation>
 <translation id="6740369132746915122">หากคุณเข้าใจความเสี่ยงต่อความปลอดภัยของคุณ คุณสามารถ<ph name="BEGIN_LINK" />ไปที่เว็บไซต์ที่ไม่ปลอดภัย<ph name="END_LINK" /></translation>

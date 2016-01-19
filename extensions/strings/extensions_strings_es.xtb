@@ -23,7 +23,6 @@
 <translation id="4233778200880751280">No se ha podido cargar la página de información (<ph name="ABOUT_PAGE" />).</translation>
 <translation id="4434145631756268951">{0,select, single{Selecciona un dispositivo USB}multiple{Selecciona dispositivos USB}other{SIN UTILIZAR}}</translation>
 <translation id="4811956658694082538">No se ha podido instalar el paquete porque se ha producido un fallo en el proceso de ejecución de una utilidad. Reinicia Chrome y vuelve a intentarlo.</translation>
-<translation id="4883436287898674711">Todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="5026754133087629784">Vista web: <ph name="WEBVIEW_TAG_NAME" /></translation>
 <translation id="5356315618422219272">Appview: <ph name="APPVIEW_TAG_NAME" /></translation>
 <translation id="5456409301717116725">Esta extensión incluye el archivo de clave "<ph name="KEY_PATH" />". Probablemente no quieras incluir este archivo.</translation>
@@ -46,7 +45,6 @@
 <translation id="7809034755304591547">El administrador de la extensión <ph name="EXTENSION_NAME" /> (con ID "<ph name="EXTENSION_ID" />") ha bloqueado la extensión.</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
 <translation id="8047248493720652249">Esta extensión no ha podido asignar un nombre a la descarga "<ph name="ATTEMPTED_FILENAME" />" porque otra extensión (<ph name="EXTENSION_NAME" />) ha determinado un nombre de archivo diferente "<ph name="ACTUAL_FILENAME" />".</translation>
-<translation id="8284279544186306258">todos los sitios de <ph name="WEBSITE_1" /></translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Esta extensión no ha podido proporcionar credenciales a una solicitud de red porque otra extensión (<ph name="EXTENSION_NAME" />) ha proporcionado otras credenciales.</translation>
 <translation id="8602184400052594090">Falta el archivo de manifiesto o no se puede leer.</translation>

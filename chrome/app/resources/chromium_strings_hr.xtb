@@ -2,7 +2,6 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1065672644894730302">Vaše postavke nije moguće čitati. Neke značajke možda nisu dostupne i promjene postavki neće biti spremljene.</translation>
-<translation id="108122890477367602">&amp;Ponovo pokreni Chromium u načinu Windows 8</translation>
 <translation id="1115445892567829615">Chromium nije mogao sinkronizirati vaše podatke. Ažurirajte svoju zaporku za sinkronizaciju.</translation>
 <translation id="1174473354587728743">Dijelite računalo? Sada možete prilagoditi Chromium baš kako želite.</translation>
 <translation id="1185134272377778587">O pregledniku Chromium</translation>
@@ -32,11 +31,9 @@
 <translation id="1929939181775079593">Chromium ne reagira. Ponovo pokrenuti sada?</translation>
 <translation id="1967743265616885482">Modul s tim nazivom već je bio u konfliktu s preglednikom Chromium.</translation>
 <translation id="2077129598763517140">Upotrijebi hardversko ubrzanje kada je dostupno</translation>
-<translation id="2097986737970966220">Otvori Chromium na radnoj površini</translation>
 <translation id="2117181891440368863">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj, no nisu bile važeće.</translation>
 <translation id="2119636228670142020">O OS-u &amp;Chromium</translation>
 <translation id="2158734852934720349">Licence otvorenog izvornog koda OS-a Chromium</translation>
-<translation id="2233513990531887259">Ponovo pokreni u interaktivnom načinu Chromiuma</translation>
 <translation id="2241627712206172106">Ako dijelite računalo, prijatelji i članovi obitelji mogu zasebno pregledavati i postaviti Chromium prema svojim željama.</translation>
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="2316129865977710310">Ne, hvala</translation>
@@ -84,7 +81,6 @@
 <translation id="3549345495227188780">Počnite s upotrebom OS-a Chromium</translation>
 <translation id="3582788516608077514">Ažuriranje Chromiuma...</translation>
 <translation id="358997566136285270">Logotip Chromiuma</translation>
-<translation id="3595526210123705352">Ponovnim pokretanjem u načinu Windows 8 zatvorit će se i ponovo pokrenuti Chromiumove aplikacije.</translation>
 <translation id="3738139272394829648">Dodirnite za pretraživanje</translation>
 <translation id="3748537968684000502">Gledate sigurnu stranicu preglednika Chromium.</translation>
 <translation id="378917192836375108">Chromium omogućuje da kliknete telefonski broj na webu i nazovete ga koristeći se Skypeom!</translation>
@@ -94,7 +90,6 @@
 <translation id="3889543394854987837">Kliknite svoje ime da biste otvorili Chromium i počeli s pregledavanjem.</translation>
 <translation id="390894725198123737">Na Mac računalima zaporke se mogu spremati u vaš Keychain, a drugi korisnici Chromiuma koji dijele ovaj OS X račun mogu im pristupiti ili ih sinkronizirati.</translation>
 <translation id="4050175100176540509">Najnovija verzija sadrži važna sigurnosna poboljšanja i nove značajke.</translation>
-<translation id="4075965373589665797">Ponovnim pokretanjem u načinu radne površine zatvorit će se i ponovo pokrenuti Chromiumove aplikacije.</translation>
 <translation id="4077262827416206768">Zatvorite sve prozore preglednika Chromium i ponovo pokrenite Chromium da bi ta promjena postala aktivna.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Upozorenje:<ph name="END_BOLD" /> Chromium ne može spriječiti proširenja da evidentiraju vašu povijest pregledavanja. Da biste onemogućili proširenje u anonimnom načinu, isključite tu opciju.</translation>
 <translation id="421369550622382712">Otkrijte sjajne aplikacije, igre, proširenja i teme za Chromium.</translation>
@@ -164,7 +159,6 @@ Neke su značajke možda nedostupne. Navedite neki drugi direktorij profila ili 
 <translation id="6838494703713445896">Chromium je potvrdio da je <ph name="ISSUER" /> izdavač certifikata web-lokacije. Informacije o transparentnosti certifikata pružio je poslužitelj.</translation>
 <translation id="6883876366448858277">Šalje riječ i njezin okolni kontekst na Google pretraživanje te vraća definicije, slike i ostale rezultate pretraživanja.</translation>
 <translation id="6893813176749746474">Chromium je ažuriran, ali vi ga niste upotrebljavali najmanje 30 dana.</translation>
-<translation id="6900895776413482243">Ponovnim pokretanjem Chromiuma u interaktivnom načinu zatvorit će se i ponovo pokrenuti Chromiumove aplikacije.</translation>
 <translation id="6930860321615955692">https://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="6944967875980567883">Moduli učitani u Chromium</translation>
 <translation id="6970811910055250180">Ažuriranje uređaja...</translation>
@@ -213,7 +207,6 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="8551886023433311834">Gotovo ažurno! Ponovo pokrenite uređaj da biste dovršili ažuriranje.</translation>
 <translation id="85843667276690461">Pomoć za upotrebu Chromiuma</translation>
 <translation id="8586442755830160949">Autorska prava <ph name="YEAR" />. Autori Chromiuma. Sva prava pridržana.</translation>
-<translation id="8605166112420372522">&amp;Ponovo pokreni Chromium na radnoj površini</translation>
 <translation id="8621669128220841554">Instalacija nije uspjela zbog nepoznate pogreške. Ponovo preuzmite Chromium.</translation>
 <translation id="8628626585870903697">Chromium ne uključuje pregledač PDF-a koji je potreban da bi pregled ispisa funkcionirao.</translation>
 <translation id="8684913864886094367">Chromium se nije ispravno zatvorio.</translation>

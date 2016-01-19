@@ -125,7 +125,6 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2762000892062317888">à l'instant</translation>
 <translation id="2770465223704140727">Retirer de la liste</translation>
 <translation id="278029852808208386">Aucun appareil Bluetooth trouvé. <ph name="BEGIN_LINK" />Relancez la recherche<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Connexion lente détectée</translation>
 <translation id="2842985007712546952">Dossier parent</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">À propos de Chrome</translation>
@@ -173,7 +172,6 @@ Vous vous connectez avec un compte géré, et vous donnez à l'administrateur le
 <translation id="3492207499832628349">Nouvel onglet nav. privée</translation>
 <translation id="3518985090088779359">Accepter et continuer</translation>
 <translation id="3527085408025491307">Dossier</translation>
-<translation id="3559647143395293616">Activer le Web physique</translation>
 <translation id="360480449234699036">Découvrez les thèmes abordés sur les sites Web sans quitter la page. La fonctionnalité Appuyer pour rechercher envoie un mot et son contexte à la recherche Google, qui renvoie à son tour des définitions, des images, des résultats de recherche et d'autres informations.
 
 Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée afin de le sélectionner. Pour affiner la recherche, faites glisser le panneau jusqu'en haut et appuyez sur le champ de recherche.</translation>
@@ -274,7 +272,6 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5039804452771397117">Autoriser</translation>
 <translation id="5040262127954254034">Confidentialité</translation>
 <translation id="5063480226653192405">Utilisation</translation>
-<translation id="509605886816275399">Enregistrer cette page hors connexion ?</translation>
 <translation id="5100237604440890931">Réduit – Cliquer pour développer</translation>
 <translation id="5107381076085091558">Téléchargement suspendu.</translation>
 <translation id="5118713593561876160">Centres d'intérêt</translation>
@@ -288,6 +285,7 @@ Il vous suffit d'ouvrir Chrome sur votre ordinateur, d'accéder au menu, puis de
 <translation id="5168917394043976756">Ouvrir le panneau de navigation</translation>
 <translation id="5171045022955879922">Rechercher ou saisir une URL</translation>
 <translation id="5184329579814168207">Ouvrir dans Chrome</translation>
+<translation id="5199929503336119739">Profil professionnel</translation>
 <translation id="5210365745912300556">Fermer l'onglet</translation>
 <translation id="5210714456814679336">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils apparaîtront ici.</translation>
 <translation id="5228579091201413441">Activer la synchronisation</translation>
@@ -383,7 +381,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="6232535412751077445">Si vous interdisez le suivi, une demande sera incluse dans le trafic lié à votre navigation. Les résultats obtenus dépendent de la réponse du site (s'il répond ou non) et de la manière dont il interprète la demande.
 
 Par exemple, certains sites Web peuvent répondre à cette demande en diffusant des annonces qui ne sont pas déterminées en fonction des autres sites Web que vous avez consultés. Toutefois, nombre d'entre eux recueillent et utilisent vos données de navigation afin, par exemple, d'améliorer la sécurité ou d'afficher du contenu, des services, des annonces et des recommandations, ou encore pour générer des rapports statistiques.</translation>
-<translation id="624558823898732418">Langue cible : <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Un problème est survenu lors de l'impression de la page. Veuillez réessayer.</translation>
 <translation id="6295158916970320988">Tous les sites</translation>
 <translation id="6317634962183824346">Système de synchronisation Android désactivé. Veuillez le réactiver, puis réessayer.</translation>
@@ -534,6 +531,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8146397137182589628">Page non enregistrée pour accès hors connexion</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> comptes</translation>
 <translation id="8168435359814927499">Contenu</translation>
+<translation id="8200772114523450471">Reprendre</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8218346974737627104">Confirmer la connexion</translation>
 <translation id="8218934717680664417">Vous pouvez maintenant effectuer des recherches d'une seule pression.</translation>
@@ -553,7 +551,6 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="8514577642972634246">Activer le mode navigation privée</translation>
 <translation id="8515416241041728525">Ajouter compte pour <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Ce site utilise une configuration de sécurité faible (signatures SHA-1). Il est donc possible que votre connexion ne soit pas privée.</translation>
-<translation id="8528538445849828817">Langue de la page : <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Ouvrir cette page</translation>
 <translation id="8562452229998620586">Les mots de passe enregistrés s'affichent ici.</translation>
 <translation id="856481929701340285">Voir version ordinateur</translation>

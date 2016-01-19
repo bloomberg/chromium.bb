@@ -125,7 +125,6 @@ Debes activar Bluetooth y la Ubicación para poder utilizar la Web física.</tra
 <translation id="2762000892062317888">recién</translation>
 <translation id="2770465223704140727">Eliminar de la lista</translation>
 <translation id="278029852808208386">No se encontraron dispositivos Bluetooth. <ph name="BEGIN_LINK" />Vuelve a buscar<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Se detectó una conexión lenta.</translation>
 <translation id="2842985007712546952">Carpeta principal</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
@@ -173,7 +172,6 @@ Vas a acceder con una cuenta administrada, lo que significa que proporcionarás 
 <translation id="3492207499832628349">Nueva pestaña de incógnito</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
 <translation id="3527085408025491307">Carpeta</translation>
-<translation id="3559647143395293616">Activa la Web física</translation>
 <translation id="360480449234699036">Obtén información acerca de temas en sitios web sin salir de la página. Tocar para buscar envía una palabra y el contexto en el que se encuentra a la Búsqueda de Google, y muestra definiciones, fotos, resultados de la búsqueda y otros detalles.
 
 Para ajustar el término de búsqueda, mantén presionado el texto y selecciónalo. Para perfeccionar la búsqueda, desliza el panel hacia arriba y toca el cuadro de búsqueda.</translation>
@@ -274,7 +272,6 @@ Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5040262127954254034">Privacidad</translation>
 <translation id="5063480226653192405">Uso</translation>
-<translation id="509605886816275399">¿Quieres guardar la página sin conexión?</translation>
 <translation id="5100237604440890931">Contraído; haz clic para expandir.</translation>
 <translation id="5107381076085091558">Descarga en pausa</translation>
 <translation id="5118713593561876160">Intereses</translation>
@@ -288,6 +285,7 @@ Abre Chrome en la computadora, accede al menú y selecciona "Acceder a Chrome…
 <translation id="5168917394043976756">Abrir panel lateral de navegación</translation>
 <translation id="5171045022955879922">Buscar o escribir URL</translation>
 <translation id="5184329579814168207">Abrir en Chrome</translation>
+<translation id="5199929503336119739">Perfil de trabajo</translation>
 <translation id="5210365745912300556">Cerrar pestaña</translation>
 <translation id="5210714456814679336">Aparecerán aquí las pestañas que abriste en Chrome desde otros dispositivos.</translation>
 <translation id="5228579091201413441">Habilitar sincronización</translation>
@@ -383,7 +381,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="6232535412751077445">Si se habilita la opción de "No realizar seguimiento", se incluirá una solicitud con tu tráfico de navegación. Los efectos dependerán de si hay algún sitio web que responda a la solicitud y de cómo se interprete.
 
 Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncios que no están basados en otros sitios web que hayas visitado. Muchos sitios web seguirán recopilando y utilizando tus datos de navegación, por ejemplo, para mejorar la seguridad, proporcionar contenido, anuncios y recomendaciones, y generar estadísticas de informes.</translation>
-<translation id="624558823898732418">Idioma de traducción: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Se produjo un error al imprimir la página. Vuelve a intentarlo.</translation>
 <translation id="6295158916970320988">Todos los sitios</translation>
 <translation id="6317634962183824346">Sincronización de Android inhabilitada. Habilítala y vuelve a intentarlo.</translation>
@@ -534,6 +531,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="8146397137182589628">No se guardó sin conexión</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> cuentas</translation>
 <translation id="8168435359814927499">Contenido</translation>
+<translation id="8200772114523450471">Reanudar</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8218346974737627104">Confirmar acceso</translation>
 <translation id="8218934717680664417">Ahora puedes buscar con un toque</translation>
@@ -553,7 +551,6 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="8514577642972634246">Acceder al modo de navegación de incógnito</translation>
 <translation id="8515416241041728525">Agregar cuenta para <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Este sitio usa una configuración de seguridad vulnerable (firmas SHA-1). Por lo tanto, es posible que la conexión no sea privada.</translation>
-<translation id="8528538445849828817">Idioma de la página: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Abrir esta página</translation>
 <translation id="8562452229998620586">Las contraseñas guardadas aparecerán aquí.</translation>
 <translation id="856481929701340285">Solicitar versión de escritorio</translation>

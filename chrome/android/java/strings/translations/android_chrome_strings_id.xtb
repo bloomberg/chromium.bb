@@ -125,7 +125,6 @@ Anda harus mengaktifkan Bluetooth dan Lokasi agar dapat menggunakan Web Fisik.</
 <translation id="2762000892062317888">baru saja</translation>
 <translation id="2770465223704140727">Hapus dari daftar</translation>
 <translation id="278029852808208386">Tidak ditemukan perangkat bluetooth. <ph name="BEGIN_LINK" />Telusuri lagi<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Sambungan lambat.</translation>
 <translation id="2842985007712546952">Folder induk</translation>
 <translation id="2870560284913253234">Situs</translation>
 <translation id="2888126860611144412">Tentang Chrome</translation>
@@ -173,7 +172,6 @@ Anda masuk dengan akun yang dikelola dan memberikan administratornya kontrol ata
 <translation id="3492207499832628349">Tab penyamaran baru</translation>
 <translation id="3518985090088779359">Terima &amp; lanjutkan</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3559647143395293616">Aktifkan Web Fisik</translation>
 <translation id="360480449234699036">Pelajari tentang topik di situs web tanpa meninggalkan laman. Sentuh untuk Menelusuri mengirimkan kata dan konteks di sekitarnya ke Google Penelusuran, mengembalikan definisi, gambar, hasil penelusuran, serta detail lainnya.
 
 Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyaring penelusuran, geser panel ke atas kemudian sentuh kotak telusur.</translation>
@@ -212,7 +210,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="423410644998903704">Chrome memerlukan akses izin untuk berbagi dengan situs ini.</translation>
 <translation id="424696723690217687">Temukan laman web yang dikirim oleh obyek di sekitar.
 
-Chrome akan memindai laman di sekitar saat perangkat Anda dibuka kuncinya. Laman ini akan melalui layanan Google guna meningkatkan kualitas hasil laman.</translation>
+Chrome akan memindai laman di sekitar saat perangkat Anda dibuka kuncinya. Laman ini akan melalui layanan Google untuk meningkatkan kualitas hasil laman.</translation>
 <translation id="4256782883801055595">Lisensi sumber terbuka</translation>
 <translation id="4259722352634471385">Navigasi diblokir: <ph name="URL" /></translation>
 <translation id="4269820728363426813">Salin alamat tautan</translation>
@@ -274,7 +272,6 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5039804452771397117">Izinkan</translation>
 <translation id="5040262127954254034">Privasi</translation>
 <translation id="5063480226653192405">Penggunaan</translation>
-<translation id="509605886816275399">Simpan offline laman ini?</translation>
 <translation id="5100237604440890931">Diciutkan - klik untuk memperluas.</translation>
 <translation id="5107381076085091558">Unduhan dijeda.</translation>
 <translation id="5118713593561876160">Minat</translation>
@@ -288,6 +285,7 @@ Cukup buka Chrome di komputer, buka menu, lalu pilih "Masuk ke Chrome…”</tra
 <translation id="5168917394043976756">Buka panel samping navigasi</translation>
 <translation id="5171045022955879922">Telusuri atau ketik URL</translation>
 <translation id="5184329579814168207">Buka di Chrome</translation>
+<translation id="5199929503336119739">Profil kerja</translation>
 <translation id="5210365745912300556">Tutup tab</translation>
 <translation id="5210714456814679336">Tab yang telah Anda buka di Chrome pada perangkat Anda yang lain akan muncul di sini.</translation>
 <translation id="5228579091201413441">Aktifkan sinkronisasi</translation>
@@ -382,7 +380,6 @@ Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode 
 <translation id="6232535412751077445">Jika ‘Jangan Lacak’ diaktifkan, permintaan akan disertakan dengan lalu lintas penjelajahan Anda. Dampak apa pun yang muncul bergantung pada apakah situs web menanggapi permintaan, dan bagaimana permintaan diinterpretasikan.
 
 Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangkan iklan yang tidak berdasarkan pada situs web lainnya yang Anda kunjungi. Banyak situs web yang masih akan mengumpulkan dan menggunakan data penjelajahan Anda — misalnya, untuk meningkatkan keamanan, menyediakan konten, iklan, dan saran, serta untuk membuat statistik pelaporan.</translation>
-<translation id="624558823898732418">Bahasa Terjemahan: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Terjadi masalah saat mencetak laman. Coba lagi.</translation>
 <translation id="6295158916970320988">Semua situs</translation>
 <translation id="6317634962183824346">Sinkronisasi sistem Android dinonaktifkan. Aktifkan ulang dan coba lagi.</translation>
@@ -533,6 +530,7 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8146397137182589628">Tidak dapat disimpan untuk offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> akun</translation>
 <translation id="8168435359814927499">Konten</translation>
+<translation id="8200772114523450471">Lanjutkan</translation>
 <translation id="8209050860603202033">Buka gambar</translation>
 <translation id="8218346974737627104">Konfirmasi proses masuk</translation>
 <translation id="8218934717680664417">KIni Anda dapat menelusuri dengan satu sentuhan</translation>
@@ -552,7 +550,6 @@ Namun demikian, bukan berarti Anda tidak terlihat sama sekali. Menggunakan mode 
 <translation id="8514577642972634246">Masuki mode penyamaran</translation>
 <translation id="8515416241041728525">Tambah akun untuk <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Situs ini menggunakan konfigurasi keamanan yang lemah (tanda tangan SHA-1), sehingga sambungan Anda mungkin bukan sambungan pribadi.</translation>
-<translation id="8528538445849828817">Bahasa Laman: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Buka laman ini</translation>
 <translation id="8562452229998620586">Sandi yang disimpan akan muncul di sini.</translation>
 <translation id="856481929701340285">Minta situs desktop</translation>

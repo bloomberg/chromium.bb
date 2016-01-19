@@ -125,7 +125,6 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2762000892062317888">przed chwilą</translation>
 <translation id="2770465223704140727">Usuń z listy</translation>
 <translation id="278029852808208386">Nie znaleziono urządzeń Bluetooth. <ph name="BEGIN_LINK" />Wyszukaj ponownie<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Wykryto wolne połączenie.</translation>
 <translation id="2842985007712546952">Folder nadrzędny</translation>
 <translation id="2870560284913253234">Witryna</translation>
 <translation id="2888126860611144412">Chrome – informacje</translation>
@@ -173,7 +172,6 @@ Logujesz się na zarządzane konto i dajesz jego administratorowi kontrolę nad 
 <translation id="3492207499832628349">Nowa karta incognito</translation>
 <translation id="3518985090088779359">Akceptuj i kontynuuj</translation>
 <translation id="3527085408025491307">Folder</translation>
-<translation id="3559647143395293616">Włącz internet rzeczy</translation>
 <translation id="360480449234699036">Poznaj tematy w witrynach bez opuszczania strony. Funkcja Dotknij, by wyszukać kopiuje słowo wraz z kontekstem i wkleja je w wyszukiwarce Google, dzięki czemu otrzymujesz definicje, grafiki, wyniki wyszukiwania i inne informacje.
 
 Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć. Aby doprecyzować wyszukiwanie, przesuń panel do samej góry i kliknij pole wyszukiwania.</translation>
@@ -274,7 +272,6 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5039804452771397117">Zezwalaj</translation>
 <translation id="5040262127954254034">Prywatność</translation>
 <translation id="5063480226653192405">Wykorzystanie</translation>
-<translation id="509605886816275399">Zapisać tę stronę offline?</translation>
 <translation id="5100237604440890931">Zwinięty – kliknij, by rozwinąć.</translation>
 <translation id="5107381076085091558">Pobieranie zostało wstrzymane.</translation>
 <translation id="5118713593561876160">Zainteresowania</translation>
@@ -288,6 +285,7 @@ Wystarczy uruchomić Chrome na komputerze i w menu wybrać „Zaloguj się w Chr
 <translation id="5168917394043976756">Otwórz panel nawigacji</translation>
 <translation id="5171045022955879922">Wyszukaj lub wpisz URL</translation>
 <translation id="5184329579814168207">Otwórz w Chrome</translation>
+<translation id="5199929503336119739">Profil do pracy</translation>
 <translation id="5210365745912300556">Zamknij kartę</translation>
 <translation id="5210714456814679336">Tutaj wyświetlą się karty otwarte w Chrome na innych urządzeniach.</translation>
 <translation id="5228579091201413441">Włącz synchronizację</translation>
@@ -382,7 +380,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="6232535412751077445">Włączenie opcji „Bez śledzenia” oznacza, że podczas przeglądania będzie wysyłane żądanie. Jego wynik zależy od tego, czy strona na nie odpowie oraz jak zostanie ono zinterpretowane.
 
 Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy bez związku ze stronami odwiedzonymi przez Ciebie wcześniej. Wiele stron będzie nadal gromadzić dane przeglądarki i używać ich na przykład do poprawy bezpieczeństwa, pokazywania treści, reklam i rekomendacji oraz do generowania statystyk.</translation>
-<translation id="624558823898732418">Język tłumaczenia: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="6317634962183824346">Synchronizacja systemu Android jest wyłączona. Włącz ją i spróbuj ponownie.</translation>
@@ -533,6 +530,7 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8146397137182589628">Nie zapisano offline</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> kont(a)</translation>
 <translation id="8168435359814927499">Treści</translation>
+<translation id="8200772114523450471">Wznów</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="8218346974737627104">Potwierdź, że chcesz się zalogować</translation>
 <translation id="8218934717680664417">Teraz możesz wyszukiwać jednym kliknięciem</translation>
@@ -552,7 +550,6 @@ To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incogni
 <translation id="8514577642972634246">Włącz tryb incognito</translation>
 <translation id="8515416241041728525">Dodaj konto – <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Ta witryna używa słabej konfiguracji zabezpieczeń (podpisy SHA-1), więc połączenie może nie być poufne.</translation>
-<translation id="8528538445849828817">Język strony: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Otwórz tę stronę</translation>
 <translation id="8562452229998620586">Tutaj pojawią się zapisane hasła.</translation>
 <translation id="856481929701340285">Wersja na komputer</translation>

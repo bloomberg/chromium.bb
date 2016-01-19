@@ -125,7 +125,6 @@ Je moet Bluetooth en Locatie hebben ingeschakeld om het Fysieke web te gebruiken
 <translation id="2762000892062317888">zojuist</translation>
 <translation id="2770465223704140727">Verwijderen uit lijst</translation>
 <translation id="278029852808208386">Geen Bluetooth-apparaten gevonden. <ph name="BEGIN_LINK" />Zoek nogmaals<ph name="END_LINK" />.</translation>
-<translation id="2816165854387457183">Langzame verbinding gedetecteerd.</translation>
 <translation id="2842985007712546952">Bovenliggende map</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2888126860611144412">Over Chrome</translation>
@@ -173,7 +172,6 @@ Je logt in met een beheerd account en geeft de beheerder controle over je Chrome
 <translation id="3492207499832628349">Nieuw incognitotabblad</translation>
 <translation id="3518985090088779359">Accept. en doorgaan</translation>
 <translation id="3527085408025491307">Map</translation>
-<translation id="3559647143395293616">Het Fysieke web inschakelen</translation>
 <translation id="360480449234699036">Meer informatie over onderwerpen op websites zonder dat je de pagina hoeft te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden geretourneerd.
 
 Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecteren. Als je je zoekopdracht wilt verfijnen, veeg je het deelvenster helemaal naar boven en tik je op het zoekvak.</translation>
@@ -274,7 +272,6 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="5039804452771397117">Toestaan</translation>
 <translation id="5040262127954254034">Privacy</translation>
 <translation id="5063480226653192405">Gebruik</translation>
-<translation id="509605886816275399">Deze pagina offline opslaan?</translation>
 <translation id="5100237604440890931">Samengevouwen; klik om uit te vouwen.</translation>
 <translation id="5107381076085091558">Download onderbroken.</translation>
 <translation id="5118713593561876160">Interesses</translation>
@@ -288,6 +285,7 @@ Open Chrome op je computer, ga naar het menu en selecteer 'Inloggen bij Chrome'.
 <translation id="5168917394043976756">Zijmenu openen</translation>
 <translation id="5171045022955879922">Zoek of typ een URL</translation>
 <translation id="5184329579814168207">Openen in Chrome</translation>
+<translation id="5199929503336119739">Werkprofiel</translation>
 <translation id="5210365745912300556">Tabblad sluiten</translation>
 <translation id="5210714456814679336">Tabbladen die je op andere apparaten in Chrome hebt geopend, worden hier weergegeven.</translation>
 <translation id="5228579091201413441">Synchronisatie inschakelen</translation>
@@ -382,7 +380,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
-<translation id="624558823898732418">Doeltaal: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
 <translation id="6317634962183824346">Android-systeemsynchronisatie uit. Schakel dit weer in en probeer het opnieuw.</translation>
@@ -533,6 +530,7 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="8146397137182589628">Niet offline opgeslagen</translation>
 <translation id="8157532349231307196"><ph name="NUMBER_OF_ACCOUNTS" /> accounts</translation>
 <translation id="8168435359814927499">Inhoud</translation>
+<translation id="8200772114523450471">Hervatten</translation>
 <translation id="8209050860603202033">Afbeelding openen</translation>
 <translation id="8218346974737627104">Inloggen bevestigen</translation>
 <translation id="8218934717680664417">Je kunt nu zoeken met één tik</translation>
@@ -552,7 +550,6 @@ Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiede
 <translation id="8514577642972634246">Incognitomodus starten</translation>
 <translation id="8515416241041728525">Account toev. voor <ph name="ADD_ACCOUNT_USER_NAME" /></translation>
 <translation id="8518901949365209398">Deze site gebruikt een zwakke beveiligingsconfiguratie (SHA-1-handtekeningen), dus je verbinding is mogelijk niet privé.</translation>
-<translation id="8528538445849828817">Brontaal: <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="854522910157234410">Deze pagina openen</translation>
 <translation id="8562452229998620586">Opgeslagen wachtwoorden worden hier weergegeven.</translation>
 <translation id="856481929701340285">Desktopversie opvragen</translation>
