@@ -1,0 +1,11 @@
+AXWebArea
+++AXGroup
+++++AXStaticText AXValue='Before frame'
+++AXGroup
+++++AXGroup
+++++++AXWebArea
+++++++++AXGroup
+++++++++++AXStaticText AXValue='Text in iframe'
+++AXGroup
+++++AXStaticText AXValue='After frame'
+<-- End-of-file -->

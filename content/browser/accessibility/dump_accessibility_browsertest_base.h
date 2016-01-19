@@ -31,6 +31,9 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   void RunTest(const base::FilePath file_path, const char* file_dir);
 
  protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpOnMainThread() override;
+
   //
   // For subclasses to override:
   //
@@ -79,11 +82,12 @@ class DumpAccessibilityTestBase : public ContentBrowserTest {
   // until the given string (e.g., "text") appears in the resulting dump.
   // A test can make some changes to the document, then append a magic string
   // indicating that the test is done, and this framework will wait for that
-  // string to appear before comparing the results.
+  // string to appear before comparing the results. There can be multiple
+  // @WAIT-FOR: directives.
   void ParseHtmlForExtraDirectives(
       const std::string& test_html,
       std::vector<AccessibilityTreeFormatter::Filter>* filters,
-      std::string* wait_for);
+      std::vector<std::string>* wait_for);
 
   // Create the right AccessibilityTreeFormatter subclass.
   AccessibilityTreeFormatter* CreateAccessibilityTreeFormatter();

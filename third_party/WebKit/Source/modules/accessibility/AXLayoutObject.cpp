@@ -234,11 +234,8 @@ bool AXLayoutObject::shouldNotifyActiveDescendant() const
 
 ScrollableArea* AXLayoutObject::getScrollableAreaIfScrollable() const
 {
-    // FIXME(dmazzoni): the plan is to get rid of AXScrollView, but until
-    // this is done, a WebArea delegates its scrolling to its parent scroll view.
-    // http://crbug.com/484878
-    if (parentObject() && parentObject()->isAXScrollView())
-        return parentObject()->getScrollableAreaIfScrollable();
+    if (isWebArea())
+        return documentFrameView();
 
     if (!m_layoutObject || !m_layoutObject->isBox())
         return 0;

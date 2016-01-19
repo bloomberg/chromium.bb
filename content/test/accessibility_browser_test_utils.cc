@@ -83,7 +83,11 @@ void AccessibilityNotificationWaiter::WaitForNotification() {
 }
 
 const ui::AXTree& AccessibilityNotificationWaiter::GetAXTree() const {
-  return *frame_host_->GetAXTreeForTesting();
+  CR_DEFINE_STATIC_LOCAL(ui::AXTree, empty_tree, ());
+  const ui::AXTree* tree = frame_host_->GetAXTreeForTesting();
+  if (tree)
+    return *tree;
+  return empty_tree;
 }
 
 void AccessibilityNotificationWaiter::OnAccessibilityEvent(

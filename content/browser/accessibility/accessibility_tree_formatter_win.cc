@@ -237,7 +237,7 @@ void AccessibilityTreeFormatterWin::AddProperties(
     dict->SetString("help", base::string16(temp_bstr, temp_bstr.Length()));
   temp_bstr.Reset();
 
-  BrowserAccessibility* root = node.manager()->GetRoot();
+  BrowserAccessibility* root = node.manager()->GetRootManager()->GetRoot();
   LONG left, top, width, height;
   LONG root_left, root_top, root_width, root_height;
   if (SUCCEEDED(ax_object->accLocation(

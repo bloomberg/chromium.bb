@@ -287,8 +287,11 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   }
 
   // If this BrowserAccessibilityManager is a child frame or guest frame,
-  // return the BrowserAccessibilityDelegate from the highest ancestor frame
+  // return the BrowserAccessibilityManager from the highest ancestor frame
   // in the frame tree.
+  BrowserAccessibilityManager* GetRootManager();
+
+  // Returns the BrowserAccessibilityDelegate from |GetRootManager|, above.
   BrowserAccessibilityDelegate* GetDelegateFromRootManager();
 
   // Get a snapshot of the current tree as an AXTreeUpdate.

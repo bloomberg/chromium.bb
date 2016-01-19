@@ -85,11 +85,18 @@ document before it runs the test. In that case you can use a special
 that should be present in the dump when the document is ready. The system
 will keep blocking until that text appears.
 
+You can add as many @WAIT-FOR: directives as you want, the test won't finish
+until all strings appear.
+
 To skip dumping a particular element, make its accessible name equal to
 @NO_DUMP, for example <div aria-label="@NO_DUMP"></div>.
 
 To skip dumping all children of a particular element, make its accessible
 name equal to @NO_CHILDREN_DUMP.
+
+To load an iframe from a different site, forcing it into a different process,
+use /cross-site/HOSTNAME/ in the url, for example:
+  <iframe src="cross-site/1.com/accessibility/html/frame.html"></iframe>
 
 Generating expectations and rebaselining:
 

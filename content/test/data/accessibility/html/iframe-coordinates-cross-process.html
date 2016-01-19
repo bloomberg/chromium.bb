@@ -18,14 +18,6 @@
 @BLINK-ALLOW:size=(300, 100)
 @BLINK-ALLOW:size=(250, 50)
 @BLINK-ALLOW:size=(150, 50)
-
-These can be removed when bug 532249 is fixed because
-then the test framework will just wait until all frames
-have finished loading. Until then we need these because
-the test doesn't wait for same-process iframes to finish
-loading.
-@WAIT-FOR:Ordinary Button
-@WAIT-FOR:Scrolled Button
 -->
 <!DOCTYPE html>
 <html>
@@ -61,13 +53,15 @@ div {
 </div>
 
 <div>
-  <iframe id="frame1" style="width: 300px; height: 100px;"
-          scrolling="no" src="frame/button.html"></iframe>
+  <iframe id="frame1" style="width: 300px; height: 100px;" scrolling="no"
+          src="/cross-site/1.com/accessibility/html/frame/button.html">
+  </iframe>
 </div>
 
 <div>
-  <iframe id="frame2" style="width: 150px; height: 50px;"
-          scrolling="no" src="frame/button_scrolled.html"></iframe>
+  <iframe id="frame2" style="width: 150px; height: 50px;" scrolling="no"
+          src="/cross-site/2.com/accessibility/html/frame/button_scrolled.html">
+  </iframe>
 </div>
 
 </body>

@@ -614,16 +614,23 @@ void BrowserAccessibilityManager::OnAtomicUpdateFinished(
   }
 }
 
-BrowserAccessibilityDelegate*
-    BrowserAccessibilityManager::GetDelegateFromRootManager() {
+BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager() {
   if (!GetRoot())
     return nullptr;
   int parent_tree_id = GetTreeData().parent_tree_id;
   BrowserAccessibilityManager* parent_manager =
       BrowserAccessibilityManager::FromID(parent_tree_id);
   if (parent_manager)
-    return parent_manager->GetDelegateFromRootManager();
-  return delegate();
+    return parent_manager->GetRootManager();
+  return this;
+}
+
+BrowserAccessibilityDelegate*
+    BrowserAccessibilityManager::GetDelegateFromRootManager() {
+  BrowserAccessibilityManager* root_manager = GetRootManager();
+  if (root_manager)
+    return root_manager->delegate();
+  return nullptr;
 }
 
 ui::AXTreeUpdate

@@ -44,9 +44,6 @@ public:
     DECLARE_VIRTUAL_TRACE();
     void detach() override;
 
-protected:
-    ScrollableArea* getScrollableAreaIfScrollable() const override;
-
 private:
     AXScrollView(FrameView*, AXObjectCacheImpl&);
 

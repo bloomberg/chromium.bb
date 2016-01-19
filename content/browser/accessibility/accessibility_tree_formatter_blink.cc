@@ -19,13 +19,19 @@ AccessibilityTreeFormatterBlink::~AccessibilityTreeFormatterBlink() {
 
 uint32_t AccessibilityTreeFormatterBlink::ChildCount(
     const BrowserAccessibility& node) const {
-  return node.InternalChildCount();
+  if (node.HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+    return node.PlatformChildCount();
+  else
+    return node.InternalChildCount();
 }
 
 BrowserAccessibility* AccessibilityTreeFormatterBlink::GetChild(
     const BrowserAccessibility& node,
     uint32_t i) const {
-  return node.InternalGetChild(i);
+  if (node.HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID))
+    return node.PlatformGetChild(i);
+  else
+    return node.InternalGetChild(i);
 }
 
 void AccessibilityTreeFormatterBlink::AddProperties(

@@ -1,0 +1,14 @@
+rootWebArea
+++paragraph
+++++staticText name='Before frame'
+++++++inlineTextBox name='Before frame'
+++div
+++++iframe
+++++++rootWebArea
+++++++++group
+++++++++++staticText name='Text in iframe'
+++++++++++++inlineTextBox name='Text in iframe'
+++paragraph
+++++staticText name='After frame'
+++++++inlineTextBox name='After frame'
+<-- End-of-file -->

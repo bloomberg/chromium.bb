@@ -41,7 +41,7 @@ scoped_ptr<base::DictionaryValue> PopulatePosition(
   // based on the lower-left corner of the object. To make this easier and less
   // confusing, convert it to local window coordinates using the top-left
   // corner when dumping the position.
-  BrowserAccessibility* root = node.manager()->GetRoot();
+  BrowserAccessibility* root = node.manager()->GetRootManager()->GetRoot();
   BrowserAccessibilityCocoa* cocoa_root = root->ToBrowserAccessibilityCocoa();
   NSPoint root_position = [[cocoa_root position] pointValue];
   NSSize root_size = [[cocoa_root size] sizeValue];

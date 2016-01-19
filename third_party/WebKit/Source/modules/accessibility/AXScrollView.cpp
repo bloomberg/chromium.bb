@@ -249,11 +249,6 @@ AXObject* AXScrollView::computeParentIfExists() const
     return axObjectCache().get(m_scrollView->frame().pagePopupOwner());
 }
 
-ScrollableArea* AXScrollView::getScrollableAreaIfScrollable() const
-{
-    return m_scrollView;
-}
-
 DEFINE_TRACE(AXScrollView)
 {
     visitor->trace(m_scrollView);
