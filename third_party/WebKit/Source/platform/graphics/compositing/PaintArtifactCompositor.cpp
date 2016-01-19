@@ -88,8 +88,8 @@ static scoped_refptr<cc::DisplayItemList> recordPaintChunk(const PaintArtifact& 
     scoped_refptr<cc::DisplayItemList> list = cc::DisplayItemList::Create(gfx::Rect(), settings);
 
     const DisplayItemList& displayItems = artifact.displayItemList();
-    for (size_t i = chunk.beginIndex; i < chunk.endIndex; i++)
-        appendDisplayItemToCcDisplayItemList(displayItems[i], list.get(), combinedBounds);
+    for (const auto& displayItem : displayItems.itemsInPaintChunk(chunk))
+        appendDisplayItemToCcDisplayItemList(displayItem, list.get(), combinedBounds);
 
     list->Finalize();
     return list;

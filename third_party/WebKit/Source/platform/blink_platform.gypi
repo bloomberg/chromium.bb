@@ -695,6 +695,7 @@
       'graphics/paint/DisplayItemCacheSkipper.h',
       'graphics/paint/DisplayItemClient.cpp',
       'graphics/paint/DisplayItemClient.h',
+      'graphics/paint/DisplayItemList.cpp',
       'graphics/paint/DisplayItemList.h',
       'graphics/paint/DrawingDisplayItem.cpp',
       'graphics/paint/DrawingDisplayItem.h',

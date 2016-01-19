@@ -131,10 +131,8 @@ void paintArtifactToSkCanvas(const PaintArtifact& artifact, SkCanvas* canvas)
         previousEffect = chunkEffect;
 
         // Draw the display items in the paint chunk.
-        DisplayItemList::const_iterator begin = displayItems.begin() + chunk.beginIndex;
-        DisplayItemList::const_iterator end = displayItems.begin() + chunk.endIndex;
-        for (DisplayItemList::const_iterator it = begin; it != end; ++it)
-            paintDisplayItemToSkCanvas(*it, canvas);
+        for (const auto& displayItem : displayItems.itemsInPaintChunk(chunk))
+            paintDisplayItemToSkCanvas(displayItem, canvas);
     }
 }
 
