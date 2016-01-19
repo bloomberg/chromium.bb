@@ -51,9 +51,9 @@ const SkColor kDefaultColorToolbarIncognito[] = {
     SkColorSetRGB(223, 223, 223), SkColorSetRGB(0x50, 0x50, 0x50)};
 #endif  // OS_MACOSX
 const SkColor kDefaultDetachedBookmarkBarBackground[] = {
-    SK_ColorWHITE, SkColorSetRGB(0xF1, 0xF1, 0xF1)};
+    SkColorSetRGB(0xF1, 0xF1, 0xF1), SK_ColorWHITE};
 const SkColor kDefaultDetachedBookmarkBarBackgroundIncognito[] = {
-    SK_ColorWHITE, SkColorSetRGB(0x32, 0x32, 0x32)};
+    SkColorSetRGB(0xF1, 0xF1, 0xF1), SkColorSetRGB(0x32, 0x32, 0x32)};
 
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 
