@@ -66,44 +66,6 @@ HRESULT GetUrlFromShellItem(IShellItem* shell_item, base::string16* url) {
   return S_OK;
 }
 
-bool LaunchChromeBrowserProcess() {
-  base::FilePath delegate_exe_path;
-  if (!PathService::Get(base::FILE_EXE, &delegate_exe_path))
-    return false;
-
-  // First try and go up a level to find chrome.exe.
-  base::FilePath chrome_exe_path =
-      delegate_exe_path.DirName()
-                       .DirName()
-                       .Append(chrome::kBrowserProcessExecutableName);
-  if (!base::PathExists(chrome_exe_path)) {
-    // Try looking in the current directory if we couldn't find it one up in
-    // order to support developer installs.
-    chrome_exe_path =
-        delegate_exe_path.DirName()
-                         .Append(chrome::kBrowserProcessExecutableName);
-  }
-
-  if (!base::PathExists(chrome_exe_path)) {
-    AtlTrace("Could not locate chrome.exe at: %ls\n",
-             chrome_exe_path.value().c_str());
-    return false;
-  }
-
-  base::CommandLine cl(chrome_exe_path);
-
-  // Prevent a Chrome window from showing up on the desktop.
-  cl.AppendSwitch(switches::kSilentLaunch);
-
-  // Tell Chrome to connect to the Metro viewer process.
-  cl.AppendSwitch(switches::kViewerConnect);
-
-  base::LaunchOptions launch_options;
-  launch_options.start_hidden = true;
-
-  return base::LaunchProcess(cl, launch_options).IsValid();
-}
-
 }  // namespace
 
 bool CommandExecuteImpl::path_provider_initialized_ = false;
