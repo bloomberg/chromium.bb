@@ -16,11 +16,13 @@
 #include "content/public/browser/browser_thread.h"
 #include "url/gurl.h"
 
-const int kSitelistFormatVersion = 2;
+const int kLegacyWhitelistFormatVersion = 2;
+const int kWhitelistFormatVersion = 1;
 
 const char kEntryPointUrlKey[] = "entry_point_url";
 const char kHostnameHashesKey[] = "hostname_hashes";
-const char kSitelistFormatVersionKey[] = "version";
+const char kLegacyWhitelistFormatVersionKey[] = "version";
+const char kWhitelistFormatVersionKey[] = "whitelist_version";
 const char kWhitelistKey[] = "whitelist";
 
 namespace {
@@ -145,18 +147,27 @@ void SupervisedUserSiteList::OnJsonLoaded(
 
   base::DictionaryValue* dict = nullptr;
   if (!value->GetAsDictionary(&dict)) {
-    LOG(ERROR) << "Site list " << path.value() << " is invalid";
+    LOG(ERROR) << "Whitelist " << path.value() << " is invalid";
     return;
   }
 
   int version = 0;
-  if (!dict->GetInteger(kSitelistFormatVersionKey, &version)) {
-    LOG(ERROR) << "Site list " << path.value() << " has invalid version";
-    return;
-  }
-  if (version != kSitelistFormatVersion) {
-    LOG(ERROR) << "Site list " << path.value() << " has wrong version "
-               << version << ", expected " << kSitelistFormatVersion;
+  if (!dict->GetInteger(kWhitelistFormatVersionKey, &version)) {
+    // TODO(bauerb): Remove this code once all whitelists have been updated to
+    // the new version.
+    if (!dict->GetInteger(kLegacyWhitelistFormatVersionKey, &version)) {
+      LOG(ERROR) << "Whitelist " << path.value() << " has invalid or missing "
+                 << "version";
+      return;
+    }
+    if (version != kLegacyWhitelistFormatVersion) {
+      LOG(ERROR) << "Whitelist " << path.value() << " has wrong legacy version "
+                 << version << ", expected " << kLegacyWhitelistFormatVersion;
+      return;
+    }
+  } else if (version != kWhitelistFormatVersion) {
+    LOG(ERROR) << "Whitelist " << path.value() << " has wrong version "
+               << version << ", expected " << kWhitelistFormatVersion;
     return;
   }
 
