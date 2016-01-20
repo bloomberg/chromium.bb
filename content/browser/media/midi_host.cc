@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/bad_message.h"
@@ -234,6 +235,7 @@ void MidiHost::Detach() {
 // static
 bool MidiHost::IsValidWebMIDIData(const std::vector<uint8_t>& data) {
   bool in_sysex = false;
+  size_t sysex_start_offset = 0;
   size_t waiting_data_length = 0;
   for (size_t i = 0; i < data.size(); ++i) {
     const uint8_t current = data[i];
@@ -246,14 +248,18 @@ bool MidiHost::IsValidWebMIDIData(const std::vector<uint8_t>& data) {
       continue;  // Found data byte as expected.
     }
     if (in_sysex) {
-      if (data[i] == kEndOfSysExByte)
+      if (data[i] == kEndOfSysExByte) {
         in_sysex = false;
-      else if (!IsDataByte(current))
+        UMA_HISTOGRAM_COUNTS("Media.Midi.SysExMessageSizeUpTo1MB",
+                             sysex_start_offset - i + 1);
+      } else if (!IsDataByte(current)) {
         return false;  // Error: |current| should have been data byte.
+      }
       continue;  // Found data byte as expected.
     }
     if (current == kSysExByte) {
       in_sysex = true;
+      sysex_start_offset = i;
       continue;  // Found SysEX
     }
     waiting_data_length = media::midi::GetMidiMessageLength(current);
