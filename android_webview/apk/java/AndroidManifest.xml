@@ -6,6 +6,7 @@
 -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="{{package|default('com.android.webview')}}">
     <uses-sdk android:minSdkVersion="{{minsdk|default(21)}}"
               android:targetSdkVersion="{{targetsdk|default(23)}}">
@@ -37,7 +38,8 @@
         <service android:name="org.chromium.content.app.SandboxedProcessService0"
                  android:process=":sandboxed_process0"
                  android:isolatedProcess="true"
-                 android:exported="false"
+                 android:exported="true"
+                 tools:ignore="ExportedService"
                  {{sandboxed_service_extra_flags|default('')}} />
         <meta-data android:name="org.chromium.content.browser.NUM_PRIVILEGED_SERVICES"
                    android:value="0"/>
