@@ -59,8 +59,6 @@ import org.chromium.chrome.browser.profiles.MostVisitedSites.ThumbnailCallback;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
-import org.chromium.chrome.browser.snackbar.Snackbar;
-import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -110,7 +108,6 @@ public class NewTabPage
 
     private TabObserver mTabObserver;
     private MostVisitedSites mMostVisitedSites;
-    private SnackbarController mMostVisitedItemRemovedController;
     private FaviconHelper mFaviconHelper;
     private LargeIconBridge mLargeIconBridge;
     private LogoBridge mLogoBridge;
@@ -382,8 +379,7 @@ public class NewTabPage
                             mTab, true);
                     return true;
                 case ID_REMOVE:
-                    mMostVisitedSites.addBlacklistedUrl(item.getUrl());
-                    showMostVisitedItemRemovedSnackbar(item.getUrl());
+                    mMostVisitedSites.blacklistUrl(item.getUrl());
                     return true;
                 default:
                     return false;
@@ -591,31 +587,6 @@ public class NewTabPage
         }
     }
 
-    private void showMostVisitedItemRemovedSnackbar(String url) {
-        if (mMostVisitedItemRemovedController == null) {
-            mMostVisitedItemRemovedController = new SnackbarController() {
-                @Override
-                public void onDismissNoAction(Object actionData) {}
-
-                @Override
-                public void onDismissForEachType(boolean isTimeout) {}
-
-                /** Undoes the most visited item removal. */
-                @Override
-                public void onAction(Object actionData) {
-                    if (mIsDestroyed) return;
-                    String url = (String) actionData;
-                    mMostVisitedSites.removeBlacklistedUrl(url);
-                }
-            };
-        }
-        Context context = mNewTabPageView.getContext();
-        Snackbar snackbar = Snackbar.make(context.getString(R.string.most_visited_item_removed),
-                mMostVisitedItemRemovedController)
-                .setAction(context.getString(R.string.undo_bar_button_text), url);
-        mTab.getSnackbarManager().showSnackbar(snackbar);
-    }
-
     /** @return The view container for the new tab page. */
     @VisibleForTesting
     NewTabPageView getNewTabPageView() {
@@ -759,9 +730,6 @@ public class NewTabPage
         if (mLogoBridge != null) {
             mLogoBridge.destroy();
             mLogoBridge = null;
-        }
-        if (mMostVisitedItemRemovedController != null) {
-            mTab.getSnackbarManager().dismissSnackbars(mMostVisitedItemRemovedController);
         }
         TemplateUrlService.getInstance().removeObserver(this);
         mTab.removeObserver(mTabObserver);

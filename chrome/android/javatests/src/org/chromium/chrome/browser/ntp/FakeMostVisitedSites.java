@@ -55,13 +55,8 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     }
 
     @Override
-    public void addBlacklistedUrl(String url) {
+    public void blacklistUrl(String url) {
         mBlacklistedUrls.add(url);
-    }
-
-    @Override
-    public void removeBlacklistedUrl(String url) {
-        mBlacklistedUrls.remove(url);
     }
 
     /**

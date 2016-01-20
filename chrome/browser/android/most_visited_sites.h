@@ -50,11 +50,9 @@ class MostVisitedSites : public sync_driver::SyncServiceObserver,
                        const base::android::JavaParamRef<jstring>& url,
                        const base::android::JavaParamRef<jobject>& j_callback);
 
-  void AddOrRemoveBlacklistedUrl(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      const base::android::JavaParamRef<jstring>& j_url,
-      jboolean add_url);
+  void BlacklistUrl(JNIEnv* env,
+                    const base::android::JavaParamRef<jobject>& obj,
+                    const base::android::JavaParamRef<jstring>& j_url);
   void RecordTileTypeMetrics(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

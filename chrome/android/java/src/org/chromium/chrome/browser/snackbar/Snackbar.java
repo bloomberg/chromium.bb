@@ -15,7 +15,8 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
  *
  *   SnackbarManager.showSnackbar(
  *           Snackbar.make("Closed example.com", controller)
- *           .setAction("undo", actionData));
+ *           .setAction("undo", actionData)
+ *           .setDuration(3000));
  */
 public class Snackbar {
 
