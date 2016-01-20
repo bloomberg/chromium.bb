@@ -1250,7 +1250,7 @@ void HTMLSelectElement::resetImpl()
         }
         option->setDirty(false);
 
-        if (!firstOption)
+        if (!firstOption && !option->isDisabledFormControl())
             firstOption = option;
     }
 
