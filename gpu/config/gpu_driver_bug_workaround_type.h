@@ -150,6 +150,8 @@
          unbind_egl_context_to_flush_driver_caches)          \
   GPU_OP(SET_ZERO_LEVEL_BEFORE_GENERATING_MIPMAP,            \
          set_zero_level_before_generating_mipmap)            \
+  GPU_OP(DISABLE_DIRECT_COMPOSITION,                         \
+         disable_direct_composition)                         \
 
 namespace gpu {
 
