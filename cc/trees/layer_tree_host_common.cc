@@ -1345,8 +1345,7 @@ static bool SortChildrenForRecursion(std::vector<LayerImpl*>* out,
 
 static bool CdpPerfTracingEnabled() {
   bool tracing_enabled;
-  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
-      TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"), &tracing_enabled);
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("cdp.perf", &tracing_enabled);
   return tracing_enabled;
 }
 
@@ -2813,10 +2812,16 @@ void LayerTreeHostCommon::CalculateDrawProperties(
             active_tree_root->layer_tree_impl()->LastScrolledLayerId());
         jitter = CalculateFrameJitter(last_scrolled_layer);
       }
-      TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"), "jitter",
-                     jitter);
+      TRACE_EVENT_ASYNC_BEGIN1(
+          "cdp.perf", "jitter",
+          inputs->root_layer->layer_tree_impl()->source_frame_number(), "value",
+          jitter);
       inputs->root_layer->layer_tree_impl()->set_is_first_frame_after_commit(
           false);
+      TRACE_EVENT_ASYNC_END1(
+          "cdp.perf", "jitter",
+          inputs->root_layer->layer_tree_impl()->source_frame_number(), "value",
+          jitter);
     }
   }
 }
