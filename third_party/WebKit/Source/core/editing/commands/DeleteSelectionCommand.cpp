@@ -180,8 +180,8 @@ void DeleteSelectionCommand::initializePositionData()
     m_upstreamEnd = mostBackwardCaretPosition(end);
     m_downstreamEnd = mostForwardCaretPosition(end);
 
-    m_startRoot = editableRootForPosition(start);
-    m_endRoot = editableRootForPosition(end);
+    m_startRoot = editableRootElementForPosition(start);
+    m_endRoot = editableRootElementForPosition(end);
 
     m_startTableRow = toHTMLTableRowElement(enclosingNodeOfType(start, &isHTMLTableRowElement));
     m_endTableRow = toHTMLTableRowElement(enclosingNodeOfType(end, &isHTMLTableRowElement));

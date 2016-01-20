@@ -943,7 +943,7 @@ PassRefPtrWillBeRawPtr<HTMLElement> CompositeEditCommand::moveParagraphContentsT
     if (isEnclosingBlock(upstreamStart.anchorNode())) {
         // If the block is the root editable element, always move content to a new block,
         // since it is illegal to modify attributes on the root editable element for editing.
-        if (upstreamStart.anchorNode() == editableRootForPosition(upstreamStart)) {
+        if (upstreamStart.anchorNode() == editableRootElementForPosition(upstreamStart)) {
             // If the block is the root editable element and it contains no visible content, create a new
             // block but don't try and move content into it, since there's nothing for moveParagraphs to move.
             if (!hasRenderedNonAnonymousDescendantsWithHeight(upstreamStart.anchorNode()->layoutObject()))
@@ -1471,7 +1471,7 @@ Position CompositeEditCommand::positionAvoidingSpecialElementBoundary(const Posi
         }
     }
 
-    if (result.isNull() || !editableRootForPosition(result))
+    if (result.isNull() || !editableRootElementForPosition(result))
         result = original;
 
     return result;

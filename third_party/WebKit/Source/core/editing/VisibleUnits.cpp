@@ -126,7 +126,7 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     if (node && node->document().documentElement() == node && !node->hasEditableStyle() && node->document().body() && node->document().body()->hasEditableStyle())
         return next.isNotNull() ? next : prev;
 
-    Element* editingRoot = editableRootForPosition(position);
+    Element* editingRoot = editableRootElementForPosition(position);
 
     // If the html element is editable, descending into its body will look like
     // a descent from non-editable to editable content since
@@ -134,8 +134,8 @@ static PositionType canonicalPosition(const PositionType& passedPosition)
     if ((editingRoot && editingRoot->document().documentElement() == editingRoot) || position.anchorNode()->isDocumentNode())
         return next.isNotNull() ? next : prev;
 
-    bool prevIsInSameEditableElement = prevNode && editableRootForPosition(prev) == editingRoot;
-    bool nextIsInSameEditableElement = nextNode && editableRootForPosition(next) == editingRoot;
+    bool prevIsInSameEditableElement = prevNode && editableRootElementForPosition(prev) == editingRoot;
+    bool nextIsInSameEditableElement = nextNode && editableRootElementForPosition(next) == editingRoot;
     if (prevIsInSameEditableElement && !nextIsInSameEditableElement)
         return prev;
 

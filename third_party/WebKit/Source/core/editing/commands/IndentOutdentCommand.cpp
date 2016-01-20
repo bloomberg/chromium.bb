@@ -111,7 +111,7 @@ void IndentOutdentCommand::indentIntoBlockquote(const Position& start, const Pos
     else if (enclosingList(start.computeContainerNode()))
         elementToSplitTo = enclosingBlock(start.computeContainerNode());
     else
-        elementToSplitTo = editableRootForPosition(start);
+        elementToSplitTo = editableRootElementForPosition(start);
 
     if (!elementToSplitTo)
         return;

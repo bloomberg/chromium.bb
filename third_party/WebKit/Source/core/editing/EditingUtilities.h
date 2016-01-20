@@ -281,8 +281,8 @@ Node* enclosingListChild(Node*);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&);
 PassRefPtrWillBeRawPtr<HTMLSpanElement> createTabSpanElement(Document&, const String& tabText);
 
-Element* editableRootForPosition(const Position&, EditableType = ContentIsEditable);
-Element* editableRootForPosition(const PositionInComposedTree&, EditableType = ContentIsEditable);
+Element* editableRootElementForPosition(const Position&, EditableType = ContentIsEditable);
+Element* editableRootElementForPosition(const PositionInComposedTree&, EditableType = ContentIsEditable);
 Element* rootEditableElementOf(const VisiblePosition&);
 Element* unsplittableElementForPosition(const Position&);
 

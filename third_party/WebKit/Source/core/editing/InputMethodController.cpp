@@ -349,11 +349,11 @@ void InputMethodController::setCompositionFromExistingText(const Vector<Composit
         return;
 
     const Position start = range.startPosition();
-    if (editableRootForPosition(start) != editable)
+    if (editableRootElementForPosition(start) != editable)
         return;
 
     const Position end = range.endPosition();
-    if (editableRootForPosition(end) != editable)
+    if (editableRootElementForPosition(end) != editable)
         return;
 
     clear();
