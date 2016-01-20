@@ -147,6 +147,24 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testCommitEnterKeyWhileComposingText() throws Throwable {
+        focusElementAndWaitForStateUpdate("textarea");
+
+        setComposingText("hello", 1);
+        waitAndVerifyStatesAndCalls(0, "hello", 5, 5, 0, 5);
+
+        // Cancel the current composition and replace it with enter.
+        commitText("\n", 1);
+        // The second new line is not a user visible/editable one, it is a side-effect of Blink
+        // using <br> internally. This only happens when \n is at the end.
+        waitAndVerifyStatesAndCalls(1, "\n\n", 1, 1, -1, -1);
+
+        commitText("world", 1);
+        waitAndVerifyStatesAndCalls(2, "\nworld", 6, 6, -1, -1);
+    }
+
+    @SmallTest
     @Feature({"TextInput"})
     public void testImeCopy() throws Exception {
         commitText("hello", 1);

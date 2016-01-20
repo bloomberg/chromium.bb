@@ -452,8 +452,15 @@ public class ImeAdapter {
 
     boolean sendCompositionToNative(CharSequence text, int newCursorPosition, boolean isCommit) {
         if (mNativeImeAdapterAndroid == 0) return false;
-        mViewEmbedder.onImeEvent();
 
+        // One WebView app detects Enter in JS by looking at KeyDown (http://crbug/577967).
+        if (text.equals("\n")) {
+            sendSyntheticKeyPress(KeyEvent.KEYCODE_ENTER,
+                    KeyEvent.FLAG_SOFT_KEYBOARD | KeyEvent.FLAG_KEEP_TOUCH_MODE);
+            return true;
+        }
+
+        mViewEmbedder.onImeEvent();
         long timestampMs = SystemClock.uptimeMillis();
         nativeSendSyntheticKeyEvent(mNativeImeAdapterAndroid, WebInputEventType.RawKeyDown,
                 timestampMs, COMPOSITION_KEY_CODE, 0, 0);
