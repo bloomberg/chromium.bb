@@ -71,7 +71,7 @@ public class MediaUrlResolverTest {
         }
 
         @Override
-        public void setUri(Uri uri, boolean playable) {
+        public void deliverResult(Uri uri, boolean playable) {
             // TODO(aberent): Auto-generated method stub
             mReturnedUri = uri;
             mReturnedPlayable = playable;

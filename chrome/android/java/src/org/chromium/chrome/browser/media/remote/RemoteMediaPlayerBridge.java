@@ -37,16 +37,23 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
     private MediaPlayer.OnErrorListener mOnErrorListener;
     private MediaPlayer.OnPreparedListener mOnPreparedListener;
 
+    /**
+     * The route controller for the video, null if no appropriate route controller.
+     */
     private final MediaRouteController mRouteController;
-    private final String mFrameUrl;
+    private final String mOriginalSourceUrl;
+    private final String mOriginalFrameUrl;
     private final boolean mDebug;
-    private final String mSourceUrl;
+    private String mFrameUrl;
+    private String mSourceUrl;
     private final String mUserAgent;
     private Bitmap mPosterBitmap;
     private String mCookies;
     private boolean mPauseRequested;
     private boolean mSeekRequested;
     private long mSeekLocation;
+    private boolean mIsPlayable;
+    private boolean mRouteIsAvailable;
 
     // mActive is true when the Chrome is playing, or preparing to play, this player's video
     // remotely.
@@ -58,8 +65,8 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
             new MediaRouteController.MediaStateListener() {
         @Override
         public void onRouteAvailabilityChanged(boolean available) {
-            if (mNativeRemoteMediaPlayerBridge == 0) return;
-            nativeOnRouteAvailabilityChanged(mNativeRemoteMediaPlayerBridge, available);
+            mRouteIsAvailable = available;
+            onRouteAvailabilityChange();
         }
 
         @Override
@@ -144,11 +151,6 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
         }
 
         @Override
-        public String getUserAgent() {
-            return mUserAgent;
-        }
-
-        @Override
         public String getFrameUrl() {
             return mFrameUrl;
         }
@@ -180,8 +182,8 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
 
         if (mDebug) Log.i(TAG, "Creating RemoteMediaPlayerBridge");
         mNativeRemoteMediaPlayerBridge = nativeRemoteMediaPlayerBridge;
-        mSourceUrl = sourceUrl;
-        mFrameUrl = frameUrl;
+        mOriginalSourceUrl = sourceUrl;
+        mOriginalFrameUrl = frameUrl;
         mUserAgent = userAgent;
         // This will get null if there isn't a mediaRouteController that can play this media.
         mRouteController = RemoteMediaPlayerController.instance()
@@ -355,6 +357,12 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
         }
     }
 
+    private void onRouteAvailabilityChange() {
+        if (mNativeRemoteMediaPlayerBridge == 0) return;
+        boolean usable = mRouteIsAvailable && mIsPlayable;
+        nativeOnRouteAvailabilityChanged(mNativeRemoteMediaPlayerBridge, usable);
+    }
+
     @Override
     @CalledByNative
     protected void destroy() {
@@ -367,7 +375,20 @@ public class RemoteMediaPlayerBridge extends MediaPlayerBridge {
 
     @CalledByNative
     private void setCookies(String cookies) {
+        if (mRouteController == null) return;
         mCookies = cookies;
+        mRouteController.checkIfPlayableRemotely(mOriginalSourceUrl, mOriginalFrameUrl, cookies,
+                mUserAgent, new MediaRouteController.MediaValidationCallback() {
+
+                    @Override
+                    public void onResult(
+                            boolean isPlayable, String revisedSourceUrl, String revisedFrameUrl) {
+                        mIsPlayable = isPlayable;
+                        mSourceUrl = revisedSourceUrl;
+                        mFrameUrl = revisedFrameUrl;
+                        onRouteAvailabilityChange();
+                    }
+                });
     }
 
     private native String nativeGetFrameUrl(long nativeRemoteMediaPlayerBridge);

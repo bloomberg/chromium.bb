@@ -26,7 +26,6 @@ import com.google.android.gms.cast.CastMediaControlIntent;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.media.remote.RemoteVideoInfo.PlayerState;
 import org.chromium.ui.widget.Toast;
@@ -41,7 +40,7 @@ import javax.annotation.Nullable;
  * responsible for connecting to the MRs as well as sending commands and receiving status updates
  * from the remote player.
  *
- *  We have three main scenarios for Cast:
+ *  We have two main scenarios for Cast:
  *
  *  - the first cast: user plays the first video on the Chromecast so we start a new session with
  * the player and fling the video
@@ -96,18 +95,14 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
     private Uri mLocalVideoUri;
 
-    private String mLocalVideoCookies;
-
-    private MediaUrlResolver mMediaUrlResolver;
-
     private int mSessionState = MediaSessionStatus.SESSION_STATE_INVALIDATED;
 
-    private final ApplicationStatus.ApplicationStateListener
-            mApplicationStateListener = new ApplicationStatus.ApplicationStateListener() {
+    private final ApplicationStatus.ApplicationStateListener mApplicationStateListener =
+            new ApplicationStatus.ApplicationStateListener() {
                 @Override
                 public void onApplicationStateChange(int newState) {
                     switch (newState) {
-                    // HAS_DESTROYED_ACTIVITIES means all Chrome activities have been destroyed.
+                        // HAS_DESTROYED_ACTIVITIES means all Chrome activities have been destroyed.
                         case ApplicationState.HAS_DESTROYED_ACTIVITIES:
                             onActivitiesDestroyed();
                             break;
@@ -116,34 +111,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
                     }
                 }
             };
-
-    private final MediaUrlResolver.Delegate
-            mMediaUrlResolverDelegate = new MediaUrlResolver.Delegate() {
-                @Override
-                public Uri getUri() {
-                    return mLocalVideoUri;
-                }
-
-                @Override
-                public String getCookies() {
-                    return mLocalVideoCookies;
-                }
-
-                @Override
-                public void setUri(Uri uri, boolean playable) {
-                    if (playable) {
-                        mLocalVideoUri = uri;
-                        playMedia();
-                        return;
-                    }
-                    mLocalVideoUri = null;
-                    showMessageToast(
-                            getContext().getString(R.string.cast_permission_error_playing_video));
-                    release();
-                }
-            };
-
-    private String mUserAgent;
 
     /**
      * Default and only constructor.
@@ -264,6 +231,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     /**
      * Plays the given Uri on the currently selected player. This will replace any currently playing
      * video
+     *
      * @param preferredTitle the preferred title of the current playback session to display
      * @param startPositionMillis from which to start playing.
      */
@@ -496,7 +464,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         });
     }
 
-
     /**
      * Disconnect from the remote screen without stopping the media playing. use release() for
      * disconnect + stop.
@@ -524,6 +491,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         if (mDebug) Log.d(TAG, "Selected route " + route);
         if (!route.isSelected()) return;
 
+        RecordCastAction.castPlayRequested();
+
         RecordCastAction.remotePlaybackDeviceSelected(
                 RecordCastAction.DEVICE_TYPE_CAST_GENERIC);
         installBroadcastReceivers();
@@ -544,9 +513,9 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     /*
-     * Although our custom implementation of the disconnect button doesn't need this, it is
-     * needed when the route is released due to, for example, another application stealing the
-     * route, or when we switch to a YouTube video on the same device.
+     * Although our custom implementation of the disconnect button doesn't need this, it is needed
+     * when the route is released due to, for example, another application stealing the route, or
+     * when we switch to a YouTube video on the same device.
      */
     @Override
     protected void onRouteUnselectedEvent(MediaRouter router, RouteInfo route) {
@@ -648,7 +617,7 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
         // If no change do nothing
         if (sessionState == mSessionState) return;
-        mSessionState  = sessionState;
+        mSessionState = sessionState;
 
         switch (sessionState) {
             case MediaSessionStatus.SESSION_STATE_ACTIVE:
@@ -782,9 +751,8 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     private void sendControlIntent(final Intent intent, final ResultBundleHandler bundleHandler) {
 
         if (mDebug) {
-            Log.d(TAG,
-                    "Sending intent to " + getCurrentRoute().getName() + " "
-                    + getCurrentRoute().getId());
+            Log.d(TAG, "Sending intent to " + getCurrentRoute().getName() + " "
+                            + getCurrentRoute().getId());
             dumpIntentToLog("sendControlIntent ", intent);
         }
         if (getCurrentRoute().isDefault()) {
@@ -854,38 +822,20 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
     }
 
     @Override
-    protected void setDataSource(Uri uri, String cookies, String userAgent) {
-        if (mDebug) Log.d(TAG, "setDataSource called, uri = " + uri);
-        mLocalVideoUri = uri;
-        mLocalVideoCookies = cookies;
-        mUserAgent = userAgent;
-    }
+    protected void startCastingVideo() {
+        MediaStateListener listener = getMediaStateListener();
+        if (listener == null) return;
 
-    @Override
-    protected void prepareAsync(String frameUrl, long startPositionMillis) {
-        if (mDebug) {
-            Log.d(TAG, "prepareAsync called, mLocalVideoUri = " + mLocalVideoUri + ", pos = "
-                            + startPositionMillis);
-        }
-        if (mLocalVideoUri == null) return;
+        String url = listener.getSourceUrl();
 
-        RecordCastAction.castPlayRequested();
+        if (mDebug) Log.d(TAG, "startCastingVideo called, url = " + url);
 
-        // Cancel the previous task for URL resolving so that we don't get an old URI set.
-        if (mMediaUrlResolver != null) mMediaUrlResolver.cancel(true);
+        // checkIfPlayableRemotely will have rejected null URLs.
+        assert url != null;
 
-        // Create a new MediaUrlResolver since the previous one may still be running despite the
-        // cancel() call.
-        mMediaUrlResolver = new MediaUrlResolver(mMediaUrlResolverDelegate, mUserAgent);
-
-        mStartPositionMillis = startPositionMillis;
-        mMediaUrlResolver.execute();
-    }
-
-    private void playMedia() {
-        String title = null;
-        if (getMediaStateListener() != null) title = getMediaStateListener().getTitle();
-        playUri(title, mStartPositionMillis);
+        mLocalVideoUri = Uri.parse(url);
+        mStartPositionMillis = listener.getStartPositionMillis();
+        playUri(listener.getTitle(), mStartPositionMillis);
     }
 
     private void showMessageToast(String message) {
@@ -897,6 +847,28 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         mCurrentSessionId = data.getString(MediaControlIntent.EXTRA_SESSION_ID);
         mSessionState = MediaSessionStatus.SESSION_STATE_INVALIDATED;
         if (mDebug) Log.d(TAG, "Got a session id: " + mCurrentSessionId);
+    }
+
+    @Override
+    public void checkIfPlayableRemotely(final String sourceUrl, final String frameUrl,
+            final String cookies, String userAgent, final MediaValidationCallback callback) {
+        new MediaUrlResolver(new MediaUrlResolver.Delegate() {
+
+            @Override
+            public Uri getUri() {
+                return Uri.parse(sourceUrl);
+            }
+
+            @Override
+            public String getCookies() {
+                return cookies;
+            }
+
+            @Override
+            public void deliverResult(Uri uri, boolean playable) {
+                callback.onResult(playable, uri.toString(), frameUrl);
+            }
+        }, userAgent).execute();
     }
 
     @Override

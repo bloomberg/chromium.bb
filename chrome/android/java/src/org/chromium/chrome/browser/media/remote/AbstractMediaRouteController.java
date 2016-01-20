@@ -330,18 +330,19 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         for (UiListener listener : mUiListeners) {
             listener.onRouteSelected(route.getName(), this);
         }
-        if (mMediaStateListener == null) return;
         if (!canCastMedia()) return;
-        startCastingVideo(route);
-    }
-
-    private void startCastingVideo(RouteInfo route) {
         if (mMediaStateListener == null) return;
         mMediaStateListener.pauseLocal();
         mMediaStateListener.onCastStarting(route.getName());
+        startCastingVideo();
+    }
+
+    // This exists for compatibility with old downstream code
+    // TODO(aberent) convert to abstract
+    protected void startCastingVideo() {
         String url = mMediaStateListener.getSourceUrl();
         Uri uri = url == null ? null : Uri.parse(url);
-        setDataSource(uri, mMediaStateListener.getCookies(), mMediaStateListener.getUserAgent());
+        setDataSource(uri, mMediaStateListener.getCookies());
         prepareAsync(
                 mMediaStateListener.getFrameUrl(), mMediaStateListener.getStartPositionMillis());
     }
@@ -585,32 +586,24 @@ public abstract class AbstractMediaRouteController implements MediaRouteControll
         return getMediaStateListener().getPosterBitmap();
     }
 
-    /**
-     * Called to prepare the remote playback asyncronously. onPrepared() of the current remote media
-     * player object is called when the player is ready.
-     *
-     * @param startPositionMillis indicates where in the stream to start playing
-     */
-    protected abstract void prepareAsync(String frameUrl, long startPositionMillis);
+    // This exists for compatibility with old downstream code
+    // TODO(aberent) remove
+    protected void prepareAsync(String frameUrl, long startPositionMillis){};
 
-    // TODO(aberent): Temp to change args while avoiding need for two sided patch for YT.
-    void setDataSource(Uri uri, String cookies, String userAgent) {
-        setDataSource(uri, cookies);
-    };
-
-    /**
-     * Temp default version to allow override in YouTubeMediaRouteController, while not
-     * requiring it in DefaultMediaRouteController.
-     * TODO(aberent): Fix YT and remove.
-     * @param uri
-     * @param cookies
-     */
-    public void setDataSource(Uri uri, String cookies) {};
+    // This exists for compatibility with old downstream code
+    // TODO(aberent) remove
+    protected void setDataSource(Uri uri, String cookies){};
 
     protected boolean reconnectAnyExistingRoute() {
         // Temp version to avoid two sided patch while removing
         return false;
     };
+
+    @Override
+    public void checkIfPlayableRemotely(String sourceUrl, String frameUrl, String cookies,
+            String userAgent, MediaValidationCallback callback) {
+        callback.onResult(true, sourceUrl, frameUrl);
+    }
 
     @Override
     public String getUriPlaying() {

@@ -81,11 +81,6 @@ public interface MediaRouteController extends TransportControl.Listener {
         String getCookies();
 
         /**
-         * @return the User Agent string
-         */
-        String getUserAgent();
-
-        /**
          * @return the frame URL
          */
         String getFrameUrl();
@@ -169,6 +164,19 @@ public interface MediaRouteController extends TransportControl.Listener {
         void onTitleChanged(String title);
     }
 
+    /**
+     * Interface for returning the result of checking whether the media element is playable
+     * remotely.
+     */
+    static interface MediaValidationCallback {
+        /**
+         * Function to deliver the result
+         * @param isPlayable true if the media element is playable, false if not
+         * @param revisedSourceUrl The source url to send to the remote device
+         * @param revisedFrameUrl The frame url to send to the remote device
+         */
+        void onResult(boolean isPlayable, String revisedSourceUrl, String revisedFrameUrl);
+    }
     /**
      * Scan routes, and set up the MediaRouter object. This is called at every time we need to reset
      * the state. Because of that, this function is idempotent. If that changes in the future, where
@@ -327,6 +335,18 @@ public interface MediaRouteController extends TransportControl.Listener {
      * @param route The selected route.
      */
     void onRouteSelected(MediaStateListener player, MediaRouter router, RouteInfo route);
+
+    /**
+     * Potentially asynchronous check of whether the media element is playable on remote players.
+     * @param sourceUrl the URL of the media element
+     * @param frameUrl the URL of the frame
+     * @param cookies the cookies for the media element
+     * @param userAgent the user agent
+     * @param callback the callback through which the result will be returned. The callback will be
+     *                 called either from within the call, or later on the UI thread.
+     */
+    void checkIfPlayableRemotely(String sourceUrl, String frameUrl, String cookies,
+            String userAgent, MediaValidationCallback callback);
 
     /**
      * @return The Uri of the currently playing video

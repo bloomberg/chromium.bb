@@ -60,7 +60,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
          *
          * @param uri the resolved URL.
          */
-        void setUri(Uri uri, boolean palyable);
+        void deliverResult(Uri uri, boolean palyable);
     }
 
 
@@ -174,7 +174,7 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
     protected void onPostExecute(MediaUrlResolver.Result result) {
         String url = result.getUri();
         Uri uri = "".equals(url) ? Uri.EMPTY : Uri.parse(url);
-        mDelegate.setUri(uri, result.isPlayable());
+        mDelegate.deliverResult(uri, result.isPlayable());
     }
 
     private String sanitizeUrl(String unsafeUrl) {
