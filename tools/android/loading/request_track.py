@@ -102,6 +102,8 @@ class Request(object):
     result = Request()
     for (k, v) in data_dict.items():
       setattr(result, k, v)
+    if result.timing:
+      result.timing = Timing(*result.timing)
     return result
 
   def GetContentType(self):
