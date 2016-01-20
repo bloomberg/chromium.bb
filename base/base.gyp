@@ -551,6 +551,7 @@
         'metrics/histogram_snapshot_manager_unittest.cc',
         'metrics/histogram_unittest.cc',
         'metrics/metrics_hashes_unittest.cc',
+        'metrics/persistent_memory_allocator_unittest.cc',
         'metrics/sample_map_unittest.cc',
         'metrics/sample_vector_unittest.cc',
         'metrics/sparse_histogram_unittest.cc',
