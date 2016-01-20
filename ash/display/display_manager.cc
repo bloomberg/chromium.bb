@@ -1020,19 +1020,13 @@ void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {
 
 void DisplayManager::ReconfigureDisplays() {
   DisplayInfoList display_info_list;
-  for (DisplayList::const_iterator iter = active_display_list_.begin();
-       (display_info_list.size() < 2 && iter != active_display_list_.end());
-       ++iter) {
-    if (iter->id() == kUnifiedDisplayId)
+  for (const gfx::Display& display : active_display_list_) {
+    if (display.id() == kUnifiedDisplayId)
       continue;
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
+    display_info_list.push_back(GetDisplayInfo(display.id()));
   }
-  for (auto iter = software_mirroring_display_list_.begin();
-       (display_info_list.size() < 2 &&
-        iter != software_mirroring_display_list_.end());
-       ++iter) {
-    display_info_list.push_back(GetDisplayInfo(iter->id()));
-  }
+  for (const gfx::Display& display : software_mirroring_display_list_)
+    display_info_list.push_back(GetDisplayInfo(display.id()));
   mirroring_display_id_ = gfx::Display::kInvalidDisplayID;
   software_mirroring_display_list_.clear();
   UpdateDisplays(display_info_list);

@@ -282,6 +282,7 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
 
   // Test with three displays.
   UpdateDisplay("0+0-640x480,640+0-320x200,960+0-400x300");
+
   EXPECT_EQ(3U, display_manager()->GetNumDisplays());
   EXPECT_EQ("0,0 640x480",
             display_manager()->GetDisplayAt(0).bounds().ToString());
@@ -302,6 +303,17 @@ TEST_F(DisplayManagerTest, UpdateThreeDisplaysTest) {
   EXPECT_EQ("960,0 400x300", added()[1].bounds().ToString());
   EXPECT_EQ("960,0 400x300",
             GetDisplayInfo(added()[1]).bounds_in_native().ToString());
+
+  // Verify calling ReconfigureDisplays doesn't change anything.
+  display_manager()->ReconfigureDisplays();
+  EXPECT_EQ(3U, display_manager()->GetNumDisplays());
+  EXPECT_EQ("0,0 640x480",
+            display_manager()->GetDisplayAt(0).bounds().ToString());
+  EXPECT_EQ("640,0 320x200",
+            display_manager()->GetDisplayAt(1).bounds().ToString());
+  EXPECT_EQ("960,0 400x300",
+            display_manager()->GetDisplayAt(2).bounds().ToString());
+
   reset();
 }
 
