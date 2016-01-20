@@ -15,9 +15,6 @@ namespace blink {
 
 void FieldsetPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutFieldset))
-        return;
-
     LayoutRect paintRect(paintOffset, m_layoutFieldset.size());
     LayoutBox* legend = m_layoutFieldset.findInFlowLegend();
     if (!legend)

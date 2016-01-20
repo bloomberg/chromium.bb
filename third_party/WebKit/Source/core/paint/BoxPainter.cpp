@@ -38,18 +38,14 @@ namespace blink {
 void BoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
     LayoutPoint adjustedPaintOffset = paintOffset + m_layoutBox.location();
-    // default implementation. Just pass paint through to the children
+    // Default implementation. Just pass paint through to the children.
     PaintInfo childInfo(paintInfo);
-    childInfo.updatePaintingRootForChildren(&m_layoutBox);
     for (LayoutObject* child = m_layoutBox.slowFirstChild(); child; child = child->nextSibling())
         child->paint(childInfo, adjustedPaintOffset);
 }
 
 void BoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox))
-        return;
-
     LayoutRect paintRect = m_layoutBox.borderBoxRect();
     paintRect.moveBy(paintOffset);
     paintBoxDecorationBackgroundWithRect(paintInfo, paintOffset, paintRect);
@@ -490,7 +486,7 @@ void BoxPainter::paintFillLayer(const LayoutBoxModelObject& obj, const PaintInfo
 
 void BoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox) || m_layoutBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_layoutBox.style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
     if (LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfo.context, m_layoutBox, paintInfo.phase, paintOffset))
@@ -540,7 +536,7 @@ void BoxPainter::paintClippingMask(const PaintInfo& paintInfo, const LayoutPoint
 {
     ASSERT(paintInfo.phase == PaintPhaseClippingMask);
 
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutBox) || m_layoutBox.style()->visibility() != VISIBLE)
+    if (m_layoutBox.style()->visibility() != VISIBLE)
         return;
 
     if (!m_layoutBox.layer() || m_layoutBox.layer()->compositingState() != PaintsIntoOwnBacking)

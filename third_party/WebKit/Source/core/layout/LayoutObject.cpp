@@ -1060,7 +1060,7 @@ void LayoutObject::addAbsoluteRectForLayer(IntRect& result)
         current->addAbsoluteRectForLayer(result);
 }
 
-IntRect LayoutObject::paintingRootRect(IntRect& topLevelRect)
+IntRect LayoutObject::absoluteBoundingBoxRectIncludingDescendants() const
 {
     IntRect result = absoluteBoundingBoxRect();
     for (LayoutObject* current = slowFirstChild(); current; current = current->nextSibling())

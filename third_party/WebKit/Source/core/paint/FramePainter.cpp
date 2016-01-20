@@ -74,8 +74,6 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
         fillWithRed = false; // Transparent, don't fill with red.
     else if (globalPaintFlags & GlobalPaintSelectionOnly)
         fillWithRed = false; // Selections are transparent, don't fill with red.
-    else if (frameView().nodeToDraw())
-        fillWithRed = false; // Element images are transparent, don't fill with red.
     else
         fillWithRed = true;
 
@@ -110,8 +108,6 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     ASSERT(!frameView().isPainting());
     frameView().setIsPainting(true);
 
-    // frameView().nodeToDraw() is used to draw only one element (and its descendants)
-    LayoutObject* layoutObject = frameView().nodeToDraw() ? frameView().nodeToDraw()->layoutObject() : 0;
     PaintLayer* rootLayer = layoutView->layer();
 
 #if ENABLE(ASSERT)
@@ -124,10 +120,10 @@ void FramePainter::paintContents(GraphicsContext& context, const GlobalPaintFlag
     float deviceScaleFactor = blink::deviceScaleFactor(rootLayer->layoutObject()->frame());
     context.setDeviceScaleFactor(deviceScaleFactor);
 
-    layerPainter.paint(context, LayoutRect(rect), localPaintFlags, layoutObject);
+    layerPainter.paint(context, LayoutRect(rect), localPaintFlags);
 
     if (rootLayer->containsDirtyOverlayScrollbars())
-        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags, layoutObject);
+        layerPainter.paintOverlayScrollbars(context, LayoutRect(rect), localPaintFlags);
 
     frameView().setIsPainting(false);
 

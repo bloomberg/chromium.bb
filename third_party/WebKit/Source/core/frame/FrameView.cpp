@@ -189,7 +189,6 @@ DEFINE_TRACE(FrameView)
 {
 #if ENABLE(OILPAN)
     visitor->trace(m_frame);
-    visitor->trace(m_nodeToDraw);
     visitor->trace(m_scrollAnchor);
     visitor->trace(m_scrollableAreas);
     visitor->trace(m_animatingScrollableAreas);
@@ -2338,11 +2337,6 @@ FrameView* FrameView::parentFrameView() const
 bool FrameView::isPainting() const
 {
     return m_isPainting;
-}
-
-void FrameView::setNodeToDraw(Node* node)
-{
-    m_nodeToDraw = node;
 }
 
 void FrameView::updateWidgetGeometriesIfNeeded()

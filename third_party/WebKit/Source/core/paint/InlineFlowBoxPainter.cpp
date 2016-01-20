@@ -45,12 +45,6 @@ void InlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& 
 
     // Paint our children.
     PaintInfo childInfo(paintInfo);
-    LayoutObject* inlineFlowBoxLayoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem());
-    if (childInfo.paintingRoot && childInfo.paintingRoot->isDescendantOf(inlineFlowBoxLayoutObject))
-        childInfo.paintingRoot = 0;
-    else
-        childInfo.updatePaintingRootForChildren(inlineFlowBoxLayoutObject);
-
     for (InlineBox* curr = m_inlineFlowBox.firstChild(); curr; curr = curr->nextOnLine()) {
         if (curr->lineLayoutItem().isText() || !curr->boxModelObject().hasSelfPaintingLayer())
             curr->paint(childInfo, paintOffset, lineTop, lineBottom);
@@ -183,12 +177,12 @@ InlineFlowBoxPainter::BorderPaintingType InlineFlowBoxPainter::getBorderPaintTyp
 void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutRect& cullRect)
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground);
-    LayoutObject* inlineFlowBoxLayoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem());
-    if (!paintInfo.shouldPaintWithinRoot(inlineFlowBoxLayoutObject) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE)
+    if (m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE)
         return;
 
     // You can use p::first-line to specify a background. If so, the root line boxes for
     // a line may actually have to paint a background.
+    LayoutObject* inlineFlowBoxLayoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem());
     const ComputedStyle* styleToUse = m_inlineFlowBox.lineLayoutItem().style(m_inlineFlowBox.isFirstLineStyle());
     bool shouldPaintBoxDecorationBackground;
     if (m_inlineFlowBox.parent())
@@ -243,7 +237,7 @@ void InlineFlowBoxPainter::paintBoxDecorationBackground(const PaintInfo& paintIn
 
 void InlineFlowBoxPainter::paintMask(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_inlineFlowBox.lineLayoutItem())) || m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
+    if (m_inlineFlowBox.lineLayoutItem().style()->visibility() != VISIBLE || paintInfo.phase != PaintPhaseMask)
         return;
 
     LayoutRect frameRect = frameRectClampedToLineTopAndBottomIfNeeded();

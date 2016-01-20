@@ -34,9 +34,6 @@ void ViewPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffs
 
 void ViewPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutView))
-        return;
-
     if (paintInfo.skipRootBackground())
         return;
 
