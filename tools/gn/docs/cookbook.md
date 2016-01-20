@@ -228,7 +228,6 @@ places are noted in the table below.
 | `enable_task_manager` (0/1)             | `enable_task_manager` (true/false)             | `//build/config/features.gni` |
 | `enable_themes` (0/1)                   | `enable_themes` (true/false)                   | `//build/config/features.gni` |
 | `enable_webrtc` (0/1)                   | `enable_webrtc` (true/false)                   | `//build/config/features.gni` |
-| `enable_wifi_bootstrapping` (0/1)       | `enable_wifi_bootstrapping` (true/false)       | `//build/config/features.gni` |
 | `image_loader_extension` (0/1)          | `enable_image_loader_extension` (true/false)   | `//build/config/features.gni` |
 | `input_speech` (0/1)                    | `enable_speech_input` (true/false)             | `//build/config/features.gni` |
 | `notifications` (0/1)                   | `enable_notifications` (true/false)            | `//build/config/features.gni` |
