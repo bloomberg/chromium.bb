@@ -57,7 +57,7 @@ class OzonePlatformCaca : public OzonePlatform {
         delegate, window_manager_.get(), event_source_.get(), bounds));
     if (!caca_window->Initialize())
       return nullptr;
-    return caca_window;
+    return std::move(caca_window);
   }
   scoped_ptr<NativeDisplayDelegate> CreateNativeDisplayDelegate() override {
     return make_scoped_ptr(new NativeDisplayDelegateOzone());
