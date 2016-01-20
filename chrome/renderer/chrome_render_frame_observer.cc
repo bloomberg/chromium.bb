@@ -231,7 +231,7 @@ void ChromeRenderFrameObserver::OnPrintNodeUnderContextMenu() {
 
 void ChromeRenderFrameObserver::OnSetClientSidePhishingDetection(
     bool enable_phishing_detection) {
-#if defined(FULL_SAFE_BROWSING) && !defined(OS_CHROMEOS)
+#if defined(SAFE_BROWSING_CSD)
   phishing_classifier_ =
       enable_phishing_detection
           ? safe_browsing::PhishingClassifierDelegate::Create(render_frame(),
@@ -382,7 +382,7 @@ void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
 
   TRACE_EVENT0("renderer", "ChromeRenderFrameObserver::CapturePageText");
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(SAFE_BROWSING_CSD)
   // Will swap out the string.
   if (phishing_classifier_)
     phishing_classifier_->PageCaptured(&contents,
