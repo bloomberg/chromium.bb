@@ -38,6 +38,14 @@ void DrmOverlayCandidatesHost::CheckOverlaySupport(
     OverlaySurfaceCandidateList* candidates) {
   std::vector<OverlayCheck_Params> overlay_params;
   for (auto& candidate : *candidates) {
+    // Reject candidates that don't fall on a pixel boundary.
+    if (!gfx::IsNearestRectWithinDistance(candidate.display_rect, 0.01f)) {
+      DCHECK(candidate.plane_z_order != 0);
+      overlay_params.push_back(OverlayCheck_Params());
+      overlay_params.back().is_overlay_candidate = false;
+      continue;
+    }
+
     // Compositor doesn't have information about the total size of primary
     // candidate. We get this information from display rect.
     if (candidate.plane_z_order == 0)
@@ -54,19 +62,15 @@ void DrmOverlayCandidatesHost::CheckOverlaySupport(
   size_t size = candidates->size();
 
   if (iter == cache_.end()) {
-    // We can skip GPU side validation in case all candidates are invalid
-    // or we are checking only for Primary.
+    // We can skip GPU side validation in case all candidates are invalid.
     bool needs_gpu_validation = false;
     for (size_t i = 0; i < size; i++) {
-      const OverlaySurfaceCandidate& candidate = candidates->at(i);
-
-      if (candidate.plane_z_order == 0) {
-        // We expect primary to be always valid.
-        overlay_params.at(i).is_overlay_candidate = true;
+      if (!overlay_params.at(i).is_overlay_candidate)
         continue;
-      }
 
+      const OverlaySurfaceCandidate& candidate = candidates->at(i);
       if (!CanHandleCandidate(candidate)) {
+        DCHECK(candidate.plane_z_order != 0);
         overlay_params.at(i).is_overlay_candidate = false;
         continue;
       }
@@ -136,11 +140,6 @@ void DrmOverlayCandidatesHost::OnOverlayResult(
 bool DrmOverlayCandidatesHost::CanHandleCandidate(
     const OverlaySurfaceCandidate& candidate) const {
   if (candidate.buffer_size.IsEmpty())
-    return false;
-
-  // 0.01 constant chosen to match DCHECKs in gfx::ToNearestRect and avoid
-  // that code asserting on quads that we accept.
-  if (!gfx::IsNearestRectWithinDistance(candidate.display_rect, 0.01f))
     return false;
 
   if (candidate.transform == gfx::OVERLAY_TRANSFORM_INVALID)
