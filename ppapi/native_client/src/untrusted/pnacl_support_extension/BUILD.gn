@@ -4,7 +4,7 @@
 
 import("//build/config/features.gni")
 
-if (enable_nacl && enable_nacl_untrusted && enable_pnacl) {
+if (enable_nacl) {
   # This target copies files from the prebuilt/DEPS'ed in pnacl_translator
   # toolchain and copies the latest PNaCl IRT shim library.
   # We could use 'copies', but we want to rename the files in a white-listed

@@ -31,18 +31,9 @@ declare_args() {
 
   # Enables Native Client support.
   # TODO(GYP): Get NaCl linking on other platforms.
-  # Also, see if we can always get rid of enable_nacl_untrusted and
-  # enable_pnacl and always build them if enable_nacl is true.
   # Eventually we want this to be just the first line.
   enable_nacl = !is_ios && !is_android && !is_chromecast &&
                 current_cpu != "mipsel" && !(is_win && current_cpu != "x64")
-
-  # These default to the non-Boolean "" so that code below can default
-  # them to the explicitly-set value of enable_nacl, whereas initializing
-  # them here uses the default value of enable_nacl above and ignores any
-  # args.gn setting.
-  enable_nacl_untrusted = ""
-  enable_pnacl = ""
 
   # If debug_devtools is set to true, JavaScript files for DevTools are stored
   # as is and loaded from disk. Otherwise, a concatenated file is stored in
@@ -118,15 +109,6 @@ declare_args() {
 
   # Enables Wi-Fi Display functionality
   enable_wifi_display = false
-}
-
-# Default these based on the explicit value of enable_nacl, not just
-# the default value seen inside the declare_args() context.
-if (enable_nacl_untrusted == "") {
-  enable_nacl_untrusted = enable_nacl
-}
-if (enable_pnacl == "") {
-  enable_pnacl = enable_nacl
 }
 
 # Additional dependent variables -----------------------------------------------

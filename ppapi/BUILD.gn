@@ -369,12 +369,8 @@ if (enable_nacl) {
       ":copy_test_files",
       ":ppapi_nacl_tests_copy(//build/toolchain/nacl:clang_newlib_${target_cpu})",
       ":ppapi_nacl_tests(//build/toolchain/nacl:glibc_${target_cpu})",
+      ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
+      ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
     ]
-    if (enable_pnacl) {
-      data_deps += [
-        ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl)",
-        ":ppapi_nacl_tests(//build/toolchain/nacl:newlib_pnacl_nonsfi)",
-      ]
-    }
   }
 }

@@ -70,7 +70,7 @@ group("remoting_all") {
     }
   }
 
-  if (enable_pnacl) {
+  if (enable_nacl) {
     deps += [ "//remoting/tools/javascript_key_tester" ]
   }
 }

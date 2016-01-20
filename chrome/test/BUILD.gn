@@ -942,35 +942,27 @@ if (!is_android) {
       sources += [
         "../browser/extensions/extension_nacl_browsertest.cc",
         "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc",
+        "nacl/nacl_browsertest.cc",
+        "nacl/nacl_browsertest_uma.cc",
+        "nacl/nacl_browsertest_util.cc",
+        "nacl/nacl_browsertest_util.h",
+        "nacl/pnacl_header_test.cc",
+        "nacl/pnacl_header_test.h",
       ]
       deps += [ "//components/nacl/renderer/plugin:nacl_trusted_plugin" ]
 
-      data += [
-        #        "$root_out_dir/nacl_helper",
+      data_deps += [
+        "//chrome/test/data/nacl",
+        "//ppapi/native_client:irt",
+        "//ppapi:ppapi_nacl_tests_all",
+        "//ppapi/tests/extensions",
       ]
-
-      if (enable_nacl_untrusted) {
-        sources += [
-          "nacl/nacl_browsertest.cc",
-          "nacl/nacl_browsertest_uma.cc",
-          "nacl/nacl_browsertest_util.cc",
-          "nacl/nacl_browsertest_util.h",
-          "nacl/pnacl_header_test.cc",
-          "nacl/pnacl_header_test.h",
-        ]
-
-        data_deps += [
-          "//chrome/test/data/nacl",
-          "//ppapi/native_client:irt",
-          "//ppapi:ppapi_nacl_tests_all",
-          "//ppapi/tests/extensions",
-        ]
-        if (is_chromeos) {
-          sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
-          deps += [ "//chrome/browser/chromeos" ]
-          data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
-        }
+      if (is_chromeos) {
+        sources += [ "//third_party/liblouis/nacl_wrapper/liblouis_wrapper_browsertest.cc" ]
+        deps += [ "//chrome/browser/chromeos" ]
+        data_deps += [ "//third_party/liblouis:liblouis_test_data" ]
       }
+
       if (is_win || is_linux) {
         sources += [ "../browser/nacl_host/test/nacl_gdb_browsertest.cc" ]
         data_deps += [ "//chrome/browser/nacl_host/test:mock_nacl_gdb" ]
@@ -979,9 +971,6 @@ if (!is_android) {
         # TODO(halyavin) NaCl on Windows can't open debug stub socket in
         # browser process as needed by this test. See http://crbug.com/157312.
         sources -= [ "../browser/nacl_host/test/gdb_debug_stub_browsertest.cc" ]
-        deps += [
-          #'chrome.gyp:chrome_nacl_win64',  TODO(GYP) bug 512869
-        ]
         configs -= [ "//build/config/win:default_incremental_linking" ]
         configs +=
             [ "//build/config/win:default_large_module_incremental_linking" ]

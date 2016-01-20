@@ -42,7 +42,7 @@ executable("remoting_client_plugin_newlib") {
   include_dirs = [ "//ppapi/lib/gl/include" ]
 }
 
-if (enable_pnacl && is_debug) {
+if (enable_nacl && is_debug) {
   copy("remoting_client_plugin_newlib_debug") {
     public_deps = [
       ":remoting_client_plugin_newlib",

@@ -65,15 +65,10 @@ source_set("loader") {
     "//third_party/mojo/src/mojo/edk/system",
   ]
 
-  if (enable_nacl_untrusted) {
-    data_deps = [
-      "//ppapi/native_client:irt",
-    ]
-  }
-  if (enable_pnacl) {
-    data_deps +=
-        [ "//ppapi/native_client/src/untrusted/pnacl_support_extension" ]
-  }
+  data_deps = [
+    "//ppapi/native_client:irt",
+    "//ppapi/native_client/src/untrusted/pnacl_support_extension",
+  ]
 }
 
 # TODO(GYP): Delete this after we've converted everything to GN.
