@@ -39,8 +39,10 @@ def _CheckWprShaFiles(input_api, output_api):
   """Check whether the wpr sha files have matching URLs."""
   old_sys_path = sys.path
   try:
-    # TODO: The cloud_storage module is in telemetry.
-    sys.path = [os.path.join('..', 'telemetry')] + sys.path
+    perf_dir = input_api.PresubmitLocalPath()
+    catapult_path = os.path.abspath(os.path.join(
+        perf_dir, '..', '..', 'third_party', 'catapult', 'catapult_base'))
+    sys.path.insert(1, catapult_path)
     from catapult_base import cloud_storage
   finally:
     sys.path = old_sys_path

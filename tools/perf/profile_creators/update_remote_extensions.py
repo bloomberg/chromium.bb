@@ -13,11 +13,17 @@ import tempfile
 import urllib2
 import zipfile
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..',
-    'telemetry'))
+sys.path.insert(1, os.path.abspath(os.path.join(
+        __file__, '..', '..')))
+from core import path_util
 
+
+path_util.AddCatapultBaseToPath()
 from catapult_base import cloud_storage
+
+path_util.AddTelemetryToPath()
 from telemetry.core import exceptions
+
 
 # Remote target upload directory in cloud storage for extensions.
 REMOTE_DIR = 'extension_set'

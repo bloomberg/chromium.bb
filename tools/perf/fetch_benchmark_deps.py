@@ -8,20 +8,15 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'telemetry'))
+from core import path_util
 
+path_util.AddCatapultBaseToPath()
 from catapult_base import cloud_storage
+
+path_util.AddTelemetryToPath()
 from telemetry import benchmark_runner
 
-
-def _GetPerfDir(*subdirs):
-  perf_dir = os.path.realpath(os.path.dirname(__file__))
-  return os.path.join(perf_dir, *subdirs)
-
-
-def GetChromiumDir():
-  return _GetPerfDir(os.path.pardir, os.path.pardir, os.path.pardir)
-
+from chrome_telemetry_build import chromium_config
 
 def _FetchDependenciesIfNeeded(story_set):
   """ Download files needed by a user story set. """
@@ -57,7 +52,7 @@ def _EnumerateDependencies(story_set):
           deps.add(path_name)
 
   # Return relative paths.
-  prefix_len = len(os.path.realpath(GetChromiumDir())) + 1
+  prefix_len = len(os.path.realpath(path_util.GetChromiumSrcDir())) + 1
   return [dep[prefix_len:] for dep in deps if dep]
 
 
@@ -67,9 +62,9 @@ def _show_usage():
 
 
 def main(output=sys.stdout):
-  config = benchmark_runner.ProjectConfig(
-      top_level_dir=_GetPerfDir(),
-      benchmark_dirs=[_GetPerfDir('benchmarks')])
+  config = chromium_config.ChromiumConfig(
+      top_level_dir=path_util.GetPerfDir(),
+      benchmark_dirs=[os.path.join(path_util.GetPerfDir(), 'benchmarks')])
 
   name = sys.argv[1]
   benchmark = benchmark_runner.GetBenchmarkByName(name, config)

@@ -15,7 +15,7 @@ import sys
 from chrome_telemetry_build import chromium_config
 from core import path_util
 
-sys.path.append(path_util.GetTelemetryDir())
+path_util.AddTelemetryToPath()
 from telemetry.testing import unittest_runner
 
 def main():
