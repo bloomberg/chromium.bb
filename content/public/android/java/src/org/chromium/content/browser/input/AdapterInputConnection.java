@@ -254,31 +254,9 @@ public class AdapterInputConnection extends BaseInputConnection {
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
         Log.d(TAG, "setComposingText [%s] [%d]", text, newCursorPosition);
         mPendingAccent = 0;
-
-        Editable editable = getEditableInternal();
-        int selectionStartAfterReplacement = BaseInputConnection.getComposingSpanStart(editable);
-        if (selectionStartAfterReplacement == INVALID_COMPOSITION) {
-            selectionStartAfterReplacement = Selection.getSelectionStart(editable);
-        }
-        int selectionEndAfterReplacement = selectionStartAfterReplacement + text.length();
-
         super.setComposingText(text, newCursorPosition);
-
-        // Due to an error in BaseInputConnection (b/21476564), the new cursor position
-        // may not be correct when newCursorPosition != 1. We fix it here:
-        if (newCursorPosition > 1) {
-            int newPos = selectionEndAfterReplacement - 1 + newCursorPosition;
-            int len = editable.length();
-            if (newPos > len) newPos = len;
-            Selection.setSelection(editable, newPos);
-        } else if (newCursorPosition <= 0) {
-            int newPos = selectionStartAfterReplacement + newCursorPosition;
-            if (newPos < 0) newPos = 0;
-            Selection.setSelection(editable, newPos);
-        }
-
         updateSelectionIfRequired();
-        return mImeAdapter.setComposingText(text, newCursorPosition);
+        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, false);
     }
 
     /**
@@ -288,18 +266,9 @@ public class AdapterInputConnection extends BaseInputConnection {
     public boolean commitText(CharSequence text, int newCursorPosition) {
         Log.d(TAG, "commitText [%s] [%d]", text, newCursorPosition);
         mPendingAccent = 0;
-        if (newCursorPosition == 1) {
-            super.commitText(text, newCursorPosition);
-            updateSelectionIfRequired();
-            return mImeAdapter.commitText(text);
-        }
-
-        // This takes slightly longer, but commitText with newCursorPosition != 1 isn't
-        // implemented in the native side.
-        beginBatchEdit();
-        boolean result = setComposingText(text, newCursorPosition) && finishComposingText();
-        endBatchEdit();
-        return result;
+        super.commitText(text, newCursorPosition);
+        updateSelectionIfRequired();
+        return mImeAdapter.sendCompositionToNative(text, newCursorPosition, text.length() > 0);
     }
 
     /**
