@@ -205,7 +205,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['win'], bug=483282)
     self.Fail('conformance2/reading/read-pixels-from-fbo-test.html',
         ['win'], bug=483282)
-    self.Fail('conformance2/reading/read-pixels-pack-parameters.html',
+    self.Skip('conformance2/reading/read-pixels-pack-parameters.html',
         ['win'], bug=483282)
     self.Fail('conformance2/textures/misc/gl-get-tex-parameter.html',
         ['win'], bug=483282)
