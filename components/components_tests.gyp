@@ -40,6 +40,7 @@
       'autofill/core/browser/autofill_type_unittest.cc',
       'autofill/core/browser/autofill_xml_parser_unittest.cc',
       'autofill/core/browser/contact_info_unittest.cc',
+      'autofill/core/browser/country_names_unittest.cc',
       'autofill/core/browser/credit_card_field_unittest.cc',
       'autofill/core/browser/credit_card_unittest.cc',
       'autofill/core/browser/form_field_unittest.cc',

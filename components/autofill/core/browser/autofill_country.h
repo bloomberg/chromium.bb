@@ -10,33 +10,9 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
+#include "components/autofill/core/browser/country_data.h"
 
 namespace autofill {
-
-// The minimal required fields for an address to be complete for a given
-// country.
-enum AddressRequiredFields {
-  ADDRESS_REQUIRES_CITY  = 1 << 0,
-  ADDRESS_REQUIRES_STATE = 1 << 1,
-  ADDRESS_REQUIRES_ZIP   = 1 << 2,
-
-  // Composite versions (for data).
-  ADDRESS_REQUIRES_CITY_STATE =
-    ADDRESS_REQUIRES_CITY | ADDRESS_REQUIRES_STATE,
-  ADDRESS_REQUIRES_STATE_ZIP =
-    ADDRESS_REQUIRES_STATE | ADDRESS_REQUIRES_ZIP,
-  ADDRESS_REQUIRES_CITY_ZIP =
-    ADDRESS_REQUIRES_CITY |ADDRESS_REQUIRES_ZIP,
-  ADDRESS_REQUIRES_CITY_STATE_ZIP =
-    ADDRESS_REQUIRES_CITY | ADDRESS_REQUIRES_STATE | ADDRESS_REQUIRES_ZIP,
-
-  // Policy for countries that don't have city, state or zip requirements.
-  ADDRESS_REQUIRES_ADDRESS_LINE_1_ONLY = 0,
-
-  // Policy for countries for which we do not have information about valid
-  // address format.
-  ADDRESS_REQUIREMENTS_UNKNOWN = ADDRESS_REQUIRES_CITY_STATE_ZIP,
-};
 
 // Stores data associated with a country. Strings are localized to the app
 // locale.
@@ -47,19 +23,9 @@ class AutofillCountry {
   AutofillCountry(const std::string& country_code, const std::string& locale);
   ~AutofillCountry();
 
-  // Fills |country_codes| with a list of the available countries' codes.
-  static void GetAvailableCountries(
-      std::vector<std::string>* country_codes);
-
   // Returns the likely country code for |locale|, or "US" as a fallback if no
   // mapping from the locale is available.
   static const std::string CountryCodeForLocale(const std::string& locale);
-
-  // Returns the country code corresponding to |country|, which should be a
-  // country code or country name localized to |locale|.  This function can
-  // be expensive so use judiciously.
-  static const std::string GetCountryCode(const base::string16& country,
-                                          const std::string& locale);
 
   const std::string& country_code() const { return country_code_; }
   const base::string16& name() const { return name_; }

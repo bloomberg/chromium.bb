@@ -51,6 +51,7 @@
 #include "components/autofill/core/browser/autofill_data_model.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/detail_input.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -160,7 +161,7 @@ base::string16 GetInfoFromInputs(const FieldValueMap& inputs,
     info = it->second;
 
   if (!info.empty() && type.html_type() == HTML_TYPE_COUNTRY_CODE) {
-    info = base::ASCIIToUTF16(AutofillCountry::GetCountryCode(
+    info = base::ASCIIToUTF16(CountryNames::GetInstance()->GetCountryCode(
         info, g_browser_process->GetApplicationLocale()));
   }
 
@@ -240,9 +241,8 @@ ServerFieldType CountryTypeForSection(DialogSection section) {
 
 ValidityMessage GetPhoneValidityMessage(const base::string16& country_name,
                                         const base::string16& number) {
-  std::string region = AutofillCountry::GetCountryCode(
-      country_name,
-      g_browser_process->GetApplicationLocale());
+  std::string region = CountryNames::GetInstance()->GetCountryCode(
+      country_name, g_browser_process->GetApplicationLocale());
   i18n::PhoneObject phone_object(number, region);
   ValidityMessage phone_message(base::string16(), true);
 
@@ -627,7 +627,7 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
     } else if (!it->initial_value.empty() &&
                (it->type == ADDRESS_BILLING_COUNTRY ||
                 it->type == ADDRESS_HOME_COUNTRY)) {
-      GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
+      GetValidator()->LoadRules(CountryNames::GetInstance()->GetCountryCode(
           it->initial_value, g_browser_process->GetApplicationLocale()));
     }
   }
@@ -1918,7 +1918,7 @@ std::string AutofillDialogControllerImpl::CountryCodeForSection(
     country = outputs[CountryTypeForSection(section)];
   }
 
-  return AutofillCountry::GetCountryCode(
+  return CountryNames::GetInstance()->GetCountryCode(
       country, g_browser_process->GetApplicationLocale());
 }
 
@@ -1930,7 +1930,7 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
   if (!model)
     return false;
 
-  std::string country_code = AutofillCountry::GetCountryCode(
+  std::string country_code = CountryNames::GetInstance()->GetCountryCode(
       country_name, g_browser_process->GetApplicationLocale());
   DCHECK(CanAcceptCountry(section, country_code));
 
@@ -1949,7 +1949,7 @@ bool AutofillDialogControllerImpl::RebuildInputsForCountry(
                         MutableAddressLanguageCodeForSection(section));
 
   if (!country_code.empty()) {
-    GetValidator()->LoadRules(AutofillCountry::GetCountryCode(
+    GetValidator()->LoadRules(CountryNames::GetInstance()->GetCountryCode(
         country_name, g_browser_process->GetApplicationLocale()));
   }
 

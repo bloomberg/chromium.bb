@@ -6,6 +6,9 @@
 
 #include <stddef.h>
 #include <algorithm>
+#include <list>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/i18n/case_conversion.h"
@@ -22,6 +25,7 @@
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
+#include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/phone_number.h"
@@ -1327,8 +1331,8 @@ std::string PersonalDataManager::MostCommonCountryCodeFromProfiles() const {
   // TODO(estade): can we make this GetProfiles() instead? It seems to cause
   // errors in tests on mac trybots. See http://crbug.com/57221
   const std::vector<AutofillProfile*>& profiles = web_profiles();
-  std::vector<std::string> country_codes;
-  AutofillCountry::GetAvailableCountries(&country_codes);
+  const std::vector<std::string>& country_codes =
+      CountryDataMap::GetInstance()->country_codes();
   for (size_t i = 0; i < profiles.size(); ++i) {
     std::string country_code = base::ToUpperASCII(base::UTF16ToASCII(
         profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY)));

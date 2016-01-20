@@ -14,6 +14,7 @@
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 
 namespace autofill {
 
@@ -169,7 +170,8 @@ bool Address::SetInfo(const AutofillType& type,
 
   ServerFieldType storable_type = type.GetStorableType();
   if (storable_type == ADDRESS_HOME_COUNTRY && !value.empty()) {
-    country_code_ = AutofillCountry::GetCountryCode(value, app_locale);
+    country_code_ =
+        CountryNames::GetInstance()->GetCountryCode(value, app_locale);
     return !country_code_.empty();
   }
 
@@ -194,7 +196,8 @@ void Address::GetMatchingTypes(const base::string16& text,
   FormGroup::GetMatchingTypes(text, app_locale, matching_types);
 
   // Check to see if the |text| canonicalized as a country name is a match.
-  std::string country_code = AutofillCountry::GetCountryCode(text, app_locale);
+  std::string country_code =
+      CountryNames::GetInstance()->GetCountryCode(text, app_locale);
   if (!country_code.empty() && country_code_ == country_code)
     matching_types->insert(ADDRESS_HOME_COUNTRY);
 }

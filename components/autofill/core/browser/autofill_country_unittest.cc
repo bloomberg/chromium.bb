@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stddef.h>
-
 #include <string>
 
-#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/country_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
@@ -49,61 +47,14 @@ TEST(AutofillCountryTest, CountryCodeForLocale) {
   EXPECT_EQ("US", AutofillCountry::CountryCodeForLocale("es-419"));
 }
 
-// Test mapping of localized country names to country codes.
-TEST(AutofillCountryTest, GetCountryCode) {
-  // Basic mapping
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("United States"),
-                                                  "en_US"));
-  EXPECT_EQ("CA", AutofillCountry::GetCountryCode(ASCIIToUTF16("Canada"),
-                                                  "en_US"));
-
-  // Case-insensitive mapping
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("united states"),
-                                                  "en_US"));
-
-  // Country codes should map to themselves, independent of locale.
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("US"), "en_US"));
-  EXPECT_EQ("HU", AutofillCountry::GetCountryCode(ASCIIToUTF16("hu"), "en_US"));
-  EXPECT_EQ("CA", AutofillCountry::GetCountryCode(ASCIIToUTF16("CA"), "fr_CA"));
-  EXPECT_EQ("MX", AutofillCountry::GetCountryCode(ASCIIToUTF16("mx"), "fr_CA"));
-
-  // Basic synonyms
-  EXPECT_EQ("US",
-            AutofillCountry::GetCountryCode(
-                ASCIIToUTF16("United States of America"), "en_US"));
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("USA"),
-                                                  "en_US"));
-
-  // Other locales
-  EXPECT_EQ("US",
-            AutofillCountry::GetCountryCode(ASCIIToUTF16("Estados Unidos"),
-                                            "es"));
-  EXPECT_EQ("IT", AutofillCountry::GetCountryCode(ASCIIToUTF16("Italia"),
-                                                  "it"));
-  EXPECT_EQ("DE", AutofillCountry::GetCountryCode(ASCIIToUTF16("duitsland"),
-                                                  "nl"));
-
-  // Should fall back to "en_US" locale if all else fails.
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("United States"),
-                                                  "es"));
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("united states"),
-                                                  "es"));
-  EXPECT_EQ("US", AutofillCountry::GetCountryCode(ASCIIToUTF16("USA"), "es"));
-}
-
-// Test mapping of empty country name to country code.
-TEST(AutofillCountryTest, EmptyCountryNameHasEmptyCountryCode) {
-  EXPECT_TRUE(AutofillCountry::GetCountryCode(base::string16(), "en").empty());
-}
-
 // Test mapping all country codes to country names.
 TEST(AutofillCountryTest, AllCountryCodesHaveCountryName) {
-  std::vector<std::string> country_codes;
-  AutofillCountry::GetAvailableCountries(&country_codes);
-  for (size_t i = 0; i < country_codes.size(); ++i) {
-    SCOPED_TRACE("Country code '" + country_codes[i] + "' should have a name.");
-    EXPECT_NE(ASCIIToUTF16(country_codes[i]),
-              AutofillCountry(country_codes[i], "en").name());
+  const std::vector<std::string>& country_codes =
+      CountryDataMap::GetInstance()->country_codes();
+  for (const std::string& country_code : country_codes) {
+    SCOPED_TRACE("Country code '" + country_code + "' should have a name.");
+    EXPECT_NE(ASCIIToUTF16(country_code),
+              AutofillCountry(country_code, "en").name());
   }
 }
 

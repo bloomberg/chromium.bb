@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_profile.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/form_group.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -366,8 +367,8 @@ bool AutofillProfileSyncableService::OverwriteProfileWithServerData(
   // version of Chrome).
   base::string16 country_name_or_code =
       ASCIIToUTF16(specifics.address_home_country());
-  std::string country_code =
-      AutofillCountry::GetCountryCode(country_name_or_code, app_locale);
+  std::string country_code = CountryNames::GetInstance()->GetCountryCode(
+      country_name_or_code, app_locale);
   diff = UpdateField(ADDRESS_HOME_COUNTRY, country_code, profile) || diff;
 
   // Update the street address.  In newer versions of Chrome (M34+), this data

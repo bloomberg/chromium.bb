@@ -21,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
@@ -356,7 +357,7 @@ static ScopedJavaLocalRef<jstring> ToCountryCode(
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jcountry_name) {
   return ConvertUTF8ToJavaString(
-      env, AutofillCountry::GetCountryCode(
+      env, CountryNames::GetInstance()->GetCountryCode(
                base::android::ConvertJavaStringToUTF16(env, jcountry_name),
                g_browser_process->GetApplicationLocale()));
 }

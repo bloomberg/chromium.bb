@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "components/autofill/core/browser/autofill_country.h"
+#include "components/autofill/core/browser/country_data.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/base/models/combobox_model_observer.h"
@@ -47,9 +48,9 @@ void CountryComboboxModel::SetCountries(
 #endif
   }
 
-  // The sorted list of countries.
-  std::vector<std::string> available_countries;
-  AutofillCountry::GetAvailableCountries(&available_countries);
+  // The sorted list of country codes.
+  const std::vector<std::string>* available_countries =
+      &CountryDataMap::GetInstance()->country_codes();
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
   // Filter out the countries that do not have rules for address input and
@@ -57,20 +58,18 @@ void CountryComboboxModel::SetCountries(
   const std::vector<std::string>& addressinput_countries =
       ::i18n::addressinput::GetRegionCodes();
   std::vector<std::string> filtered_countries;
-  filtered_countries.reserve(available_countries.size());
-  std::set_intersection(available_countries.begin(),
-                        available_countries.end(),
-                        addressinput_countries.begin(),
-                        addressinput_countries.end(),
-                        std::back_inserter(filtered_countries));
-  available_countries.swap(filtered_countries);
+  filtered_countries.reserve(available_countries->size());
+  std::set_intersection(
+      available_countries->begin(), available_countries->end(),
+      addressinput_countries.begin(), addressinput_countries.end(),
+      std::back_inserter(filtered_countries));
+  available_countries = &filtered_countries;
 #endif
 
   std::vector<AutofillCountry*> sorted_countries;
-  for (std::vector<std::string>::const_iterator it =
-           available_countries.begin(); it != available_countries.end(); ++it) {
-    if (filter.is_null() || filter.Run(*it))
-      sorted_countries.push_back(new AutofillCountry(*it, app_locale));
+  for (const auto& country_code : *available_countries) {
+    if (filter.is_null() || filter.Run(country_code))
+      sorted_countries.push_back(new AutofillCountry(country_code, app_locale));
   }
 
   l10n_util::SortStringsUsingMethod(app_locale,

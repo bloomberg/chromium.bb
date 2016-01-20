@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_names.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/phone_number.h"
 #include "components/autofill/core/browser/state_names.h"
@@ -175,7 +176,8 @@ bool FillStateSelectControl(const base::string16& value,
 bool FillCountrySelectControl(const base::string16& value,
                               const std::string& app_locale,
                               FormFieldData* field_data) {
-  std::string country_code = AutofillCountry::GetCountryCode(value, app_locale);
+  std::string country_code =
+      CountryNames::GetInstance()->GetCountryCode(value, app_locale);
   if (country_code.empty())
     return false;
 
@@ -186,8 +188,10 @@ bool FillCountrySelectControl(const base::string16& value,
     // target country code.
     base::string16 value = field_data->option_values[i];
     base::string16 contents = field_data->option_contents[i];
-    if (country_code == AutofillCountry::GetCountryCode(value, app_locale) ||
-        country_code == AutofillCountry::GetCountryCode(contents, app_locale)) {
+    if (country_code ==
+            CountryNames::GetInstance()->GetCountryCode(value, app_locale) ||
+        country_code ==
+            CountryNames::GetInstance()->GetCountryCode(contents, app_locale)) {
       field_data->value = value;
       return true;
     }
