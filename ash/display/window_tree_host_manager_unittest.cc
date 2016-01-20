@@ -1002,7 +1002,7 @@ TEST_F(WindowTreeHostManagerTest, OverscanInsets) {
       &point);
   EXPECT_EQ("15,10", point.ToString());
 
-  window_tree_host_manager->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplayForTest();
   point.SetPoint(0, 0);
   Shell::GetAllRootWindows()[1]->GetHost()->GetRootTransform().TransformPoint(
       &point);
@@ -1278,7 +1278,7 @@ TEST_F(WindowTreeHostManagerTest, ReplaceSwappedPrimary) {
   display_info_list.push_back(second_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
 
-  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplay();
+  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplayForTest();
 
   EXPECT_EQ(11, Shell::GetScreen()->GetPrimaryDisplay().id());
 
@@ -1461,7 +1461,7 @@ TEST_F(WindowTreeHostManagerTest,
   EXPECT_EQ(1.0f, test_api.GetCurrentCursor().device_scale_factor());
   EXPECT_EQ(gfx::Display::ROTATE_0, test_api.GetCurrentCursorRotation());
 
-  window_tree_host_manager->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplayForTest();
 
   EXPECT_EQ("20,50", env->last_mouse_location().ToString());
   EXPECT_EQ(2.0f, test_api.GetCurrentCursor().device_scale_factor());
@@ -1484,7 +1484,7 @@ TEST_F(WindowTreeHostManagerTest,
   UpdateDisplay("300x300*2/r,200x200");
   // Swap the primary display to make it possible to remove the primary display
   // via UpdateDisplay().
-  window_tree_host_manager->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplayForTest();
   int primary_display_id = window_tree_host_manager->GetPrimaryDisplayId();
 
   window_tree_host_manager->GetPrimaryRootWindow()->MoveCursorTo(

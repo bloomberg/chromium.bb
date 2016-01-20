@@ -113,8 +113,6 @@ component("ash") {
       "accelerators/magnifier_key_scroller.h",
       "accelerators/spoken_feedback_toggler.cc",
       "accelerators/spoken_feedback_toggler.h",
-      "display/display_animator.cc",
-      "display/display_animator.h",
       "display/resolution_notification_controller.cc",
       "display/resolution_notification_controller.h",
       "system/tray/media_security/media_capture_observer.h",

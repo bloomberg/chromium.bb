@@ -264,7 +264,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentDisplayLayout(layout);
+  display_manager->SetLayoutForCurrentDisplays(layout);
   StoreDisplayLayoutPrefForTest(
       id1, dummy_id, ash::DisplayLayout(ash::DisplayLayout::LEFT, 20));
   // Can't switch to a display that does not exist.
@@ -385,7 +385,7 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
   EXPECT_TRUE(layout_value->GetString(kPrimaryIdKey, &primary_id_str));
   EXPECT_EQ(base::Int64ToString(id2), primary_id_str);
 
-  SetCurrentDisplayLayout(
+  display_manager->SetLayoutForCurrentDisplays(
       ash::DisplayLayout(ash::DisplayLayout::BOTTOM, 20));
 
   UpdateDisplay("1+0-200x200*2,1+0-200x200");
@@ -525,12 +525,13 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
 
   ash::WindowTreeHostManager* window_tree_host_manager =
       ash::Shell::GetInstance()->window_tree_host_manager();
-  window_tree_host_manager->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplayForTest();
   ASSERT_EQ(id1, ash::ScreenUtil::GetSecondaryDisplay().id());
 
   LoggedInAsUser();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentDisplayLayout(layout);
+  ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
+      layout);
   layout = layout.Invert();
 
   const base::DictionaryValue* displays =
@@ -545,7 +546,7 @@ TEST_F(DisplayPreferencesTest, StoreForSwappedDisplay) {
   EXPECT_EQ(layout.offset, stored_layout.offset);
   EXPECT_EQ(id2, stored_layout.primary_id);
 
-  window_tree_host_manager->SwapPrimaryDisplay();
+  window_tree_host_manager->SwapPrimaryDisplayForTest();
   EXPECT_TRUE(displays->GetDictionary(key, &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));
   EXPECT_EQ(layout.position, stored_layout.position);
@@ -592,10 +593,10 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
   int64_t id1 = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
   ash::test::ScopedSetInternalDisplayId set_internal(id1);
   int64_t id2 = ash::ScreenUtil::GetSecondaryDisplay().id();
-  ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
-  SetCurrentDisplayLayout(layout);
   ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
+  ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
+  display_manager->SetLayoutForCurrentDisplays(layout);
   ash::SetDisplayUIScale(id1, 1.25f);
   window_tree_host_manager->SetPrimaryDisplayId(id2);
   int64_t new_primary = ash::Shell::GetScreen()->GetPrimaryDisplay().id();
@@ -933,7 +934,6 @@ TEST_F(DisplayPreferencesTest, SaveUnifiedMode) {
   // Exit unified mode.
   display_manager->SetDefaultMultiDisplayModeForCurrentDisplays(
       ash::DisplayManager::EXTENDED);
-  display_manager->ReconfigureDisplays();
   ASSERT_TRUE(
       secondary_displays->GetDictionary(ToPairString(pair), &new_value));
   EXPECT_TRUE(ash::DisplayLayout::ConvertFromValue(*new_value, &stored_layout));

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_animator.h"
+#include "ash/display/display_animator_chromeos.h"
 
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
@@ -91,13 +91,16 @@ class CallbackRunningObserver {
 
 }  // namespace
 
-DisplayAnimator::DisplayAnimator() : weak_ptr_factory_(this) {}
+DisplayAnimatorChromeOS::DisplayAnimatorChromeOS() : weak_ptr_factory_(this) {
+  Shell::GetInstance()->display_configurator()->AddObserver(this);
+}
 
-DisplayAnimator::~DisplayAnimator() {
+DisplayAnimatorChromeOS::~DisplayAnimatorChromeOS() {
+  Shell::GetInstance()->display_configurator()->RemoveObserver(this);
   ClearHidingLayers();
 }
 
-void DisplayAnimator::StartFadeOutAnimation(base::Closure callback) {
+void DisplayAnimatorChromeOS::StartFadeOutAnimation(base::Closure callback) {
   CallbackRunningObserver* observer = new CallbackRunningObserver(callback);
   ClearHidingLayers();
 
@@ -131,16 +134,17 @@ void DisplayAnimator::StartFadeOutAnimation(base::Closure callback) {
   timer_.reset(new base::OneShotTimer());
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kFadingTimeoutDurationInSeconds),
-                this, &DisplayAnimator::ClearHidingLayers);
+                this, &DisplayAnimatorChromeOS::ClearHidingLayers);
 }
 
-void DisplayAnimator::StartFadeInAnimation() {
+void DisplayAnimatorChromeOS::StartFadeInAnimation() {
   // We want to make sure clearing all of hiding layers after the animation
   // finished.  Note that this callback can be canceled, but the cancel only
   // happens when the next animation is scheduled.  Thus the hiding layers
   // should be deleted eventually.
-  CallbackRunningObserver* observer = new CallbackRunningObserver(base::Bind(
-      &DisplayAnimator::ClearHidingLayers, weak_ptr_factory_.GetWeakPtr()));
+  CallbackRunningObserver* observer = new CallbackRunningObserver(
+      base::Bind(&DisplayAnimatorChromeOS::ClearHidingLayers,
+                 weak_ptr_factory_.GetWeakPtr()));
 
   // Ensure that layers are not animating.
   for (std::map<aura::Window*, ui::Layer*>::value_type& e : hiding_layers_) {
@@ -183,20 +187,20 @@ void DisplayAnimator::StartFadeInAnimation() {
   }
 }
 
-void DisplayAnimator::OnDisplayModeChanged(
+void DisplayAnimatorChromeOS::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void DisplayAnimator::OnDisplayModeChangeFailed(
+void DisplayAnimatorChromeOS::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   if (!hiding_layers_.empty())
     StartFadeInAnimation();
 }
 
-void DisplayAnimator::ClearHidingLayers() {
+void DisplayAnimatorChromeOS::ClearHidingLayers() {
   if (timer_) {
     timer_->Stop();
     timer_.reset();

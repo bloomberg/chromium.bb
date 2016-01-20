@@ -34,9 +34,6 @@ void StoreDisplayPrefs();
 // current rotation of the internal display. Otherwise no data is stored.
 void StoreDisplayRotationPrefs(bool rotation_lock);
 
-// Sets the display layout for the current displays.
-void SetCurrentDisplayLayout(const ash::DisplayLayout& layout);
-
 // Load display preferences from Local Store. |first_run_after_boot| is used
 // determine if a certain preference should be applied at boot time or
 // restart.

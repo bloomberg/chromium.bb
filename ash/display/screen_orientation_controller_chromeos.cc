@@ -5,9 +5,9 @@
 #include "ash/display/screen_orientation_controller_chromeos.h"
 
 #include "ash/ash_switches.h"
+#include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_info.h"
 #include "ash/display/display_manager.h"
-#include "ash/rotator/screen_rotation_animator.h"
 #include "ash/shell.h"
 #include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "base/auto_reset.h"
@@ -144,14 +144,9 @@ void ScreenOrientationController::SetDisplayRotation(
   base::AutoReset<bool> auto_ignore_display_configuration_updates(
       &ignore_display_configuration_updates_, true);
 
-  ash::ScreenRotationAnimator screen_rotation_animator(
-      gfx::Display::InternalDisplayId());
-  if (screen_rotation_animator.CanAnimate()) {
-    screen_rotation_animator.Rotate(rotation, source);
-  } else {
-    Shell::GetInstance()->display_manager()->SetDisplayRotation(
-        gfx::Display::InternalDisplayId(), rotation, source);
-  }
+  Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
+      gfx::Display::InternalDisplayId(), rotation, source,
+      true /* user_action */);
 }
 
 void ScreenOrientationController::OnWindowActivated(

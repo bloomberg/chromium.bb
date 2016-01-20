@@ -373,10 +373,6 @@ void StoreDisplayRotationPrefs(bool rotation_lock) {
   pref_data->SetInteger("orientation", static_cast<int>(rotation));
 }
 
-void SetCurrentDisplayLayout(const ash::DisplayLayout& layout) {
-  GetDisplayManager()->SetLayoutForCurrentDisplays(layout);
-}
-
 void LoadDisplayPreferences(bool first_run_after_boot) {
   LoadDisplayLayouts();
   LoadDisplayProperties();

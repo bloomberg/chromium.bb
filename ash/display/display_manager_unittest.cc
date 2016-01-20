@@ -1444,7 +1444,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
   if (!SupportsMultipleDisplays())
     return;
   UpdateDisplay("500x500,500x500");
-  ash::Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplay();
+  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplayForTest();
   reset();
   UpdateDisplay("500x500");
   EXPECT_FALSE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);
@@ -1454,7 +1454,7 @@ TEST_F(DisplayManagerTest, NotifyPrimaryChange) {
               gfx::DisplayObserver::DISPLAY_METRIC_PRIMARY);
 
   UpdateDisplay("500x500,500x500");
-  ash::Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplay();
+  Shell::GetInstance()->window_tree_host_manager()->SwapPrimaryDisplayForTest();
   reset();
   UpdateDisplay("500x400");
   EXPECT_TRUE(changed_metrics() & gfx::DisplayObserver::DISPLAY_METRIC_BOUNDS);

@@ -375,8 +375,8 @@ cr.define('options', function() {
       } else {
         offset = secondary.div.offsetLeft - primary.div.offsetLeft;
       }
-      chrome.send('setDisplayLayout',
-                  [this.layout_, offset / this.visualScale_]);
+      offset = Math.floor(offset / this.visualScale_);
+      chrome.send('setDisplayLayout', [secondary.id, this.layout_, offset]);
     },
 
     /**

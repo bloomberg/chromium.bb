@@ -9704,6 +9704,11 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Options_DisplaySetColorProfile">
+  <owner>stevenjb@chromium.org</owner>
+  <description>Settings: Device: Display settings: Color Profile</description>
+</action>
+
 <action name="Options_DisplaySetOrientation">
   <owner>stevenjb@chromium.org</owner>
   <description>Settings: Device: Display settings: Orientation</description>

@@ -6,16 +6,14 @@
 
 #include <stdint.h>
 
+#include "ash/display/display_configuration_controller.h"
 #include "ash/display/display_manager.h"
-#include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "base/strings/string_number_conversions.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-
-using ash::DisplayManager;
 
 namespace extensions {
 
@@ -166,8 +164,10 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
                          int target_display_id) {
   ash::DisplayLayout layout =
       GetLayoutForRectangles(primary_display_bounds, target_display_bounds);
-  ash::Shell::GetInstance()->display_manager()->SetLayoutForCurrentDisplays(
-      layout);
+  layout.primary_id = primary_display_id;
+  ash::Shell::GetInstance()
+      ->display_configuration_controller()
+      ->SetDisplayLayout(target_display_id, layout, false /* user_action */);
 }
 
 // Validates that parameters passed to the SetInfo function are valid for the
@@ -176,7 +176,7 @@ void UpdateDisplayLayout(const gfx::Rect& primary_display_bounds,
 // error message.
 bool ValidateParamsForDisplay(const DisplayProperties& info,
                               const gfx::Display& display,
-                              DisplayManager* display_manager,
+                              ash::DisplayManager* display_manager,
                               int64_t primary_display_id,
                               std::string* error) {
   bool is_primary = display.id() == primary_display_id ||
@@ -269,7 +269,7 @@ bool ValidateParamsForDisplay(const DisplayProperties& info,
 
 // Gets the display with the provided string id.
 gfx::Display GetTargetDisplay(const std::string& display_id_str,
-                              DisplayManager* manager) {
+                              ash::DisplayManager* manager) {
   int64_t display_id;
   if (!base::StringToInt64(display_id_str, &display_id)) {
     // This should return invalid display.
@@ -289,12 +289,10 @@ DisplayInfoProviderChromeOS::~DisplayInfoProviderChromeOS() {
 bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
                                           const DisplayProperties& info,
                                           std::string* error) {
-  DisplayManager* display_manager =
+  ash::DisplayManager* display_manager =
       ash::Shell::GetInstance()->display_manager();
-  DCHECK(display_manager);
-  ash::WindowTreeHostManager* window_tree_host_manager =
-      ash::Shell::GetInstance()->window_tree_host_manager();
-  DCHECK(window_tree_host_manager);
+  ash::DisplayConfigurationController* display_configuration_controller =
+      ash::Shell::GetInstance()->display_configuration_controller();
 
   const gfx::Display target = GetTargetDisplay(display_id_str, display_manager);
 
@@ -314,13 +312,16 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
   }
 
   // Process 'isPrimary' parameter.
-  if (info.is_primary && *info.is_primary && target.id() != primary.id())
-    window_tree_host_manager->SetPrimaryDisplayId(display_id);
+  if (info.is_primary && *info.is_primary && target.id() != primary.id()) {
+    display_configuration_controller->SetPrimaryDisplayId(
+        display_id, false /* user_action */);
+  }
 
   // Process 'mirroringSourceId' parameter.
-  if (info.mirroring_source_id &&
-      info.mirroring_source_id->empty() == display_manager->IsInMirrorMode()) {
-    window_tree_host_manager->ToggleMirrorMode();
+  if (info.mirroring_source_id) {
+    bool mirror = !info.mirroring_source_id->empty();
+    display_configuration_controller->SetMirrorMode(mirror,
+                                                    false /* user_action */);
   }
 
   // Process 'overscan' parameter.
@@ -334,9 +335,9 @@ bool DisplayInfoProviderChromeOS::SetInfo(const std::string& display_id_str,
 
   // Process 'rotation' parameter.
   if (info.rotation) {
-    display_manager->SetDisplayRotation(display_id,
-                                        DegreesToRotation(*info.rotation),
-                                        gfx::Display::ROTATION_SOURCE_ACTIVE);
+    display_configuration_controller->SetDisplayRotation(
+        display_id, DegreesToRotation(*info.rotation),
+        gfx::Display::ROTATION_SOURCE_ACTIVE, false /* user_action */);
   }
 
   // Process new display origin parameters.

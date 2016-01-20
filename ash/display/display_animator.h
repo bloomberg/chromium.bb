@@ -9,57 +9,24 @@
 
 #include "ash/ash_export.h"
 #include "base/callback.h"
-#include "base/macros.h"
-#include "base/memory/weak_ptr.h"
-#include "base/timer/timer.h"
-#include "ui/display/chromeos/display_configurator.h"
-
-namespace aura {
-class RootWindow;
-class Window;
-}  // namespace aura
-
-namespace ui {
-class Layer;
-}  // namespace ui
 
 namespace ash {
 
-// DisplayAnimator provides the visual effects for
-// ui::DisplayConfigurator, such like fade-out/in during changing
-// the display mode.
-class ASH_EXPORT DisplayAnimator : public ui::DisplayConfigurator::Observer {
+// Interface class for animating display changes.
+class ASH_EXPORT DisplayAnimator {
  public:
-  DisplayAnimator();
-  ~DisplayAnimator() override;
+  virtual ~DisplayAnimator() {}
 
-  // Starts the fade-out animation for the all root windows.  It will
+  // Starts the fade-out animation for the all root windows. It will
   // call |callback| once all of the animations have finished.
-  void StartFadeOutAnimation(base::Closure callback);
+  virtual void StartFadeOutAnimation(base::Closure callback) = 0;
 
   // Starts the animation to clear the fade-out animation effect
   // for the all root windows.
-  void StartFadeInAnimation();
-
- protected:
-  // ui::DisplayConfigurator::Observer overrides:
-  void OnDisplayModeChanged(
-      const ui::DisplayConfigurator::DisplayStateList& outputs) override;
-  void OnDisplayModeChangeFailed(
-      const ui::DisplayConfigurator::DisplayStateList& displays,
-      ui::MultipleDisplayState failed_new_state) override;
+  virtual void StartFadeInAnimation() = 0;
 
  private:
-  // Clears all hiding layers.  Note that in case that this method is called
-  // during an animation, the method call will cancel all of the animations
-  // and *not* call the registered callback.
-  void ClearHidingLayers();
-
-  std::map<aura::Window*, ui::Layer*> hiding_layers_;
-  scoped_ptr<base::OneShotTimer> timer_;
-  base::WeakPtrFactory<DisplayAnimator> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(DisplayAnimator);
+  DISALLOW_ASSIGN(DisplayAnimator);
 };
 
 }  // namespace ash

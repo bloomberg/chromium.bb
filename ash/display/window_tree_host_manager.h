@@ -122,11 +122,9 @@ class ASH_EXPORT WindowTreeHostManager
   // if the WTH does not exist.
   AshWindowTreeHost* GetAshWindowTreeHostForDisplayId(int64_t id);
 
-  // Toggle mirror mode.
-  void ToggleMirrorMode();
-
-  // Swap primary and secondary display.
-  void SwapPrimaryDisplay();
+  // Swap primary and secondary display. Only used in tests; use
+  // DisplayConfigurationController::SetPrimaryDisplayId() instead.
+  void SwapPrimaryDisplayForTest();
 
   // Sets the ID of the primary display.  If the display is not connected, it
   // will switch the primary display when connected.
@@ -198,33 +196,9 @@ class ASH_EXPORT WindowTreeHostManager
       const gfx::Display& display,
       const AshWindowTreeHostInitParams& params);
 
-  void OnFadeOutForSwapDisplayFinished();
-
-  void SetMirrorModeAfterAnimation(bool mirror);
-
   // Delete the AsWindowTreeHost. This does not remove the entry from
   // |window_tree_hosts_|. Caller has to explicitly remove it.
   void DeleteHost(AshWindowTreeHost* host_to_delete);
-
-  class DisplayChangeLimiter {
-   public:
-    DisplayChangeLimiter();
-
-    // Sets how long the throttling should last.
-    void SetThrottleTimeout(int64_t throttle_ms);
-
-    bool IsThrottled() const;
-
-   private:
-    // The time when the throttling ends.
-    base::Time throttle_timeout_;
-
-    DISALLOW_COPY_AND_ASSIGN(DisplayChangeLimiter);
-  };
-
-  // The limiter to throttle how fast a user can
-  // change the display configuration.
-  scoped_ptr<DisplayChangeLimiter> limiter_;
 
   typedef std::map<int64_t, AshWindowTreeHost*> WindowTreeHostMap;
   // The mapping from display ID to its window tree host.

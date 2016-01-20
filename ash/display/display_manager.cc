@@ -43,7 +43,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/display/display_animator.h"
 #include "base/sys_info.h"
 #endif
 
@@ -934,10 +933,10 @@ int64_t DisplayManager::GetDisplayIdForUIScaling() const {
 }
 
 void DisplayManager::SetMirrorMode(bool mirror) {
-#if defined(OS_CHROMEOS)
   if (num_connected_displays() <= 1)
     return;
 
+#if defined(OS_CHROMEOS)
   if (base::SysInfo::IsRunningOnChromeOS()) {
     ui::MultipleDisplayState new_state =
         mirror ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
@@ -945,14 +944,10 @@ void DisplayManager::SetMirrorMode(bool mirror) {
     Shell::GetInstance()->display_configurator()->SetDisplayMode(new_state);
     return;
   }
+#endif
   multi_display_mode_ =
       mirror ? MIRRORING : current_default_multi_display_mode_;
   ReconfigureDisplays();
-  if (Shell::GetInstance()->display_animator()) {
-    Shell::GetInstance()->display_animator()->StartFadeInAnimation();
-  }
-  RunPendingTasksForTest();
-#endif
 }
 
 void DisplayManager::AddRemoveDisplay() {
@@ -1010,6 +1005,7 @@ void DisplayManager::SetDefaultMultiDisplayModeForCurrentDisplays(
   DisplayIdPair pair = GetCurrentDisplayIdPair();
   layout_store_->UpdateMultiDisplayState(pair, IsInMirrorMode(),
                                          mode == UNIFIED);
+  ReconfigureDisplays();
 }
 
 void DisplayManager::SetMultiDisplayMode(MultiDisplayMode mode) {

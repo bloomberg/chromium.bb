@@ -302,7 +302,7 @@ TEST_F(DisplayInfoProviderChromeosTest, GetDPI) {
   EXPECT_EQ(96 / 2, result[1]->dpi_x);
   EXPECT_EQ(96 / 2, result[1]->dpi_y);
 
-  GetWindowTreeHostManager()->SwapPrimaryDisplay();
+  GetWindowTreeHostManager()->SwapPrimaryDisplayForTest();
 
   result = DisplayInfoProvider::Get()->GetAllDisplaysInfo();
 

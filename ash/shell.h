@@ -85,9 +85,9 @@ class AutoclickController;
 class BluetoothNotificationController;
 class CaptureController;
 class DesktopBackgroundController;
-class DisplayAnimator;
 class DisplayChangeObserver;
 class DisplayColorManager;
+class DisplayConfigurationController;
 class WindowTreeHostManager;
 class DisplayErrorObserver;
 class DisplayManager;
@@ -349,6 +349,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
 
   DisplayManager* display_manager() { return display_manager_.get(); }
+  DisplayConfigurationController* display_configuration_controller() {
+    return display_configuration_controller_.get();
+  }
   ::wm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }
@@ -523,7 +526,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   ui::DisplayConfigurator* display_configurator() {
     return display_configurator_.get();
   }
-  DisplayAnimator* display_animator() { return display_animator_.get(); }
   DisplayErrorObserver* display_error_observer() {
     return display_error_observer_.get();
   }
@@ -705,6 +707,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   scoped_ptr< ::wm::AcceleratorFilter> accelerator_filter_;
 
   scoped_ptr<DisplayManager> display_manager_;
+  scoped_ptr<DisplayConfigurationController> display_configuration_controller_;
 
   scoped_ptr<LocaleNotificationController> locale_notification_controller_;
 
@@ -724,7 +727,6 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // Controls video output device state.
   scoped_ptr<ui::DisplayConfigurator> display_configurator_;
   scoped_ptr<DisplayColorManager> display_color_manager_;
-  scoped_ptr<DisplayAnimator> display_animator_;
   scoped_ptr<DisplayErrorObserver> display_error_observer_;
   scoped_ptr<ProjectingObserver> projecting_observer_;
 
