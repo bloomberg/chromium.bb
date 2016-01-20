@@ -127,8 +127,6 @@ protected:
         return ts.release();
     }
 
-    void testBasicLinkTarget();
-
 private:
     OwnPtr<DummyPageHolder> m_pageHolder;
     OwnPtrWillBePersistent<MockPrintContext> m_printContext;
@@ -145,7 +143,7 @@ public:
     EXPECT_EQ(expectedWidth, actualRect.width()); \
     EXPECT_EQ(expectedHeight, actualRect.height());
 
-void PrintContextTest::testBasicLinkTarget()
+TEST_F(PrintContextTest, LinkTarget)
 {
     MockCanvas canvas;
     setBodyInnerHTML(absoluteBlockHtmlForLink(50, 60, 70, 80, "http://www.google.com")
@@ -158,45 +156,62 @@ void PrintContextTest::testBasicLinkTarget()
     EXPECT_SKRECT_EQ(50, 60, 70, 80, operations[0].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
     EXPECT_SKRECT_EQ(150, 160, 170, 180, operations[1].rect);
-    // We should also check if the annotation is correct but Skia doesn't export
-    // SkAnnotation API.
 }
 
-TEST_F(PrintContextTest, LinkTarget)
-{
-    testBasicLinkTarget();
-}
-
-TEST_F(PrintContextTest, LinkTargetComplex)
+TEST_F(PrintContextTest, LinkTargetUnderAnonymousBlockBeforeBlock)
 {
     MockCanvas canvas;
-    setBodyInnerHTML("<div>"
-        // Link in anonymous block before a block.
+    setBodyInnerHTML("<div style='padding-top: 50px'>"
         + inlineHtmlForLink("http://www.google.com", "<img style='width: 111; height: 10'>")
         + "<div> " + inlineHtmlForLink("http://www.google1.com", "<img style='width: 122; height: 20'>") + "</div>"
-        // Link in anonymous block after a block, containing another block
-        + inlineHtmlForLink("http://www.google2.com", "<div style='width:133; height: 30'>BLOCK</div>")
-        // Link embedded in inlines
-        + "<span><b><i><img style='width: 40px; height: 40px'><br>"
-        + inlineHtmlForLink("http://www.google3.com", "<img style='width: 144px; height: 40px'>")
-        + "</i></b></span>"
-        // Link embedded in relatively positioned inline
-        + "<span style='position: relative; top: 50px; left: 50px'><b><i><img style='width: 1px; height: 40px'><br>"
-        + inlineHtmlForLink("http://www.google3.com", "<img style='width: 155px; height: 50px'>")
-        + "</i></b></span>"
         + "</div>");
     printSinglePage(canvas);
-
     const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
-    ASSERT_EQ(4u, operations.size());
+    ASSERT_EQ(2u, operations.size());
     EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
-    EXPECT_SKRECT_EQ(0, 0, 111, 10, operations[0].rect);
+    EXPECT_SKRECT_EQ(0, 50, 111, 10, operations[0].rect);
     EXPECT_EQ(MockCanvas::DrawRect, operations[1].type);
-    EXPECT_SKRECT_EQ(0, 10, 122, 20, operations[1].rect);
-    EXPECT_EQ(MockCanvas::DrawRect, operations[2].type);
-    EXPECT_SKRECT_EQ(0, 100, 144, 40, operations[2].rect);
-    EXPECT_EQ(MockCanvas::DrawRect, operations[3].type);
-    EXPECT_SKRECT_EQ(50, 190, 155, 50, operations[3].rect);
+    EXPECT_SKRECT_EQ(0, 60, 122, 20, operations[1].rect);
+}
+
+TEST_F(PrintContextTest, LinkTargetContainingABlock)
+{
+    MockCanvas canvas;
+    setBodyInnerHTML("<div style='padding-top: 50px'>"
+        + inlineHtmlForLink("http://www.google2.com", "<div style='width:133; height: 30'>BLOCK</div>")
+        + "</div>");
+    printSinglePage(canvas);
+    const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+    ASSERT_EQ(1u, operations.size());
+    EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+    EXPECT_SKRECT_EQ(0, 50, 133, 30, operations[0].rect);
+}
+
+TEST_F(PrintContextTest, LinkTargetUnderInInlines)
+{
+    MockCanvas canvas;
+    setBodyInnerHTML("<span><b><i><img style='width: 40px; height: 40px'><br>"
+        + inlineHtmlForLink("http://www.google3.com", "<img style='width: 144px; height: 40px'>")
+        + "</i></b></span>");
+    printSinglePage(canvas);
+    const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+    ASSERT_EQ(1u, operations.size());
+    EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+    EXPECT_SKRECT_EQ(0, 40, 144, 40, operations[0].rect);
+}
+
+TEST_F(PrintContextTest, LinkTargetUnderRelativelyPositionedInline)
+{
+    MockCanvas canvas;
+    setBodyInnerHTML(
+        + "<span style='position: relative; top: 50px; left: 50px'><b><i><img style='width: 1px; height: 40px'><br>"
+        + inlineHtmlForLink("http://www.google3.com", "<img style='width: 155px; height: 50px'>")
+        + "</i></b></span>");
+    printSinglePage(canvas);
+    const Vector<MockCanvas::Operation>& operations = canvas.recordedOperations();
+    ASSERT_EQ(1u, operations.size());
+    EXPECT_EQ(MockCanvas::DrawRect, operations[0].type);
+    EXPECT_SKRECT_EQ(50, 90, 155, 50, operations[0].rect);
 }
 
 TEST_F(PrintContextTest, LinkTargetSvg)

@@ -160,8 +160,6 @@ void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
         return;
     }
 
-    // FIXME: When Skia supports annotation rect covering (https://code.google.com/p/skia/issues/detail?id=3872),
-    // this rect may be covered by foreground and descendant drawings. Then we may need a dedicated paint phase.
     if (paintPhase == PaintPhaseForeground && paintInfo.isPrinting())
         ObjectPainter(m_layoutBlock).addPDFURLRectIfNeeded(paintInfo, paintOffset);
 
@@ -216,7 +214,19 @@ void BlockPainter::paintCarets(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 bool BlockPainter::intersectsPaintRect(const PaintInfo& paintInfo, const LayoutPoint& paintOffset) const
 {
-    LayoutRect overflowRect = m_layoutBlock.visualOverflowRect();
+    LayoutRect overflowRect;
+    if (paintInfo.isPrinting() && m_layoutBlock.isAnonymousBlock() && m_layoutBlock.childrenInline()) {
+        // For case <a href="..."><div>...</div></a>, when m_layoutBlock is the anonymous container
+        // of <a>, the anonymous container's visual overflow is empty, but we need to continue
+        // painting to output <a>'s PDF URL rect which covers the continuations, as if we included
+        // <a>'s PDF URL rect into m_layoutBlock's visual overflow.
+        Vector<LayoutRect> rects;
+        m_layoutBlock.addElementVisualOverflowRects(rects, LayoutPoint());
+        overflowRect = unionRect(rects);
+    } else {
+        overflowRect = m_layoutBlock.visualOverflowRect();
+    }
+
     if (m_layoutBlock.hasOverflowModel() && m_layoutBlock.usesCompositedScrolling()) {
         overflowRect.unite(m_layoutBlock.layoutOverflowRect());
         overflowRect.move(-m_layoutBlock.scrolledContentOffset());
