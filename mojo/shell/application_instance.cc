@@ -101,7 +101,7 @@ void ApplicationInstance::ConnectToApplication(
     scoped_ptr<ConnectToApplicationParams> params(
         new ConnectToApplicationParams);
     params->SetSource(this);
-    GURL app_url(app_request->url);
+    GURL app_url(app_request->url.get());
     params->SetTargetURLRequest(
         std::move(app_request),
         Identity(app_url, std::string(), capability_filter));

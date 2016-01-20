@@ -16,6 +16,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/key_systems.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModule.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerEncryptedMediaClient.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -171,7 +172,8 @@ EncryptedMediaPlayerSupport::GenerateKeyRequestInternal(
         BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyError),
         BIND_TO_RENDER_LOOP(&EncryptedMediaPlayerSupport::OnKeyMessage)));
 
-    GURL security_origin(frame->document().securityOrigin().toString());
+    GURL security_origin(
+        blink::WebStringToGURL(frame->document().securityOrigin().toString()));
     proxy_decryptor_->CreateCdm(cdm_factory_, key_system, security_origin,
                                 cdm_context_ready_cb_);
     current_key_system_ = key_system;

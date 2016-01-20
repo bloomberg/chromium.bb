@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "url/gurl.h"
 
@@ -30,7 +31,7 @@ WebStorageNamespaceImpl::~WebStorageNamespaceImpl() {
 
 WebStorageArea* WebStorageNamespaceImpl::createStorageArea(
     const WebString& origin) {
-  return new WebStorageAreaImpl(namespace_id_, GURL(origin));
+  return new WebStorageAreaImpl(namespace_id_, blink::WebStringToGURL(origin));
 }
 
 WebStorageNamespace* WebStorageNamespaceImpl::copy() {

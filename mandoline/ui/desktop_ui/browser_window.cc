@@ -303,7 +303,7 @@ void BrowserWindow::TopLevelNavigateRequest(mojo::URLRequestPtr request) {
 }
 
 void BrowserWindow::TopLevelNavigationStarted(const mojo::String& url) {
-  GURL gurl(url);
+  GURL gurl(url.get());
   bool changed = current_url_ != gurl;
   current_url_ = gurl;
   if (changed)

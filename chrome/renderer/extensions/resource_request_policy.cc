@@ -16,6 +16,7 @@
 #include "extensions/common/manifest_handlers/webview_info.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/renderer_extension_registry.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -74,7 +75,8 @@ bool ResourceRequestPolicy::CanRequestResource(
     // The page_origin may be GURL("null") for unique origins like data URLs,
     // but this is ok for the checks below.  We only care if it matches the
     // current extension or has a devtools scheme.
-    GURL page_origin = GURL(frame->top()->securityOrigin().toString());
+    GURL page_origin =
+        blink::WebStringToGURL(frame->top()->securityOrigin().toString());
 
     // Exceptions are:
     // - empty origin (needed for some edge cases when we have empty origins)

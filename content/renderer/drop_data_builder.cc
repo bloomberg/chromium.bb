@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "content/public/common/drop_data.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -34,7 +35,7 @@ DropData DropDataBuilder::Build(const WebDragData& drag_data) {
           break;
         }
         if (base::EqualsASCII(str_type, ui::Clipboard::kMimeTypeURIList)) {
-          result.url = GURL(item.stringData);
+          result.url = blink::WebStringToGURL(item.stringData);
           result.url_title = item.title;
           break;
         }

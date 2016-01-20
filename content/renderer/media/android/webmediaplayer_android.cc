@@ -51,6 +51,7 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/Platform.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaTypes.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3DProvider.h"
@@ -312,8 +313,9 @@ void WebMediaPlayerAndroid::DoLoad(LoadType load_type,
                                    CORSMode cors_mode) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
-  media::ReportMetrics(load_type, GURL(url),
-                       GURL(frame_->document().securityOrigin().toString()));
+  media::ReportMetrics(
+      load_type, GURL(url),
+      blink::WebStringToGURL(frame_->document().securityOrigin().toString()));
 
   switch (load_type) {
     case LoadTypeURL:
@@ -1530,7 +1532,8 @@ WebMediaPlayerAndroid::GenerateKeyRequestInternal(
         base::Bind(&WebMediaPlayerAndroid::OnKeyMessage,
                    weak_factory_.GetWeakPtr())));
 
-    GURL security_origin(frame_->document().securityOrigin().toString());
+    GURL security_origin(
+        blink::WebStringToGURL(frame_->document().securityOrigin().toString()));
     proxy_decryptor_->CreateCdm(
         cdm_factory_, key_system, security_origin,
         base::Bind(&WebMediaPlayerAndroid::OnCdmContextReady,
@@ -1858,7 +1861,7 @@ void WebMediaPlayerAndroid::ReportHLSMetrics() const {
   UMA_HISTOGRAM_BOOLEAN("Media.Android.IsHttpLiveStreamingMedia", is_hls);
   if (is_hls) {
     media::RecordOriginOfHLSPlayback(
-        GURL(frame_->document().securityOrigin().toString()));
+        blink::WebStringToGURL(frame_->document().securityOrigin().toString()));
   }
 
   // Assuming that |is_hls| is the ground truth, test predictions.

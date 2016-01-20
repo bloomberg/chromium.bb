@@ -42,6 +42,7 @@
 #include "content/renderer/service_worker/service_worker_type_util.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCrossOriginServiceWorkerClient.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
 #include "third_party/WebKit/public/platform/WebPassOwnPtr.h"
@@ -448,10 +449,8 @@ void ServiceWorkerContextClient::reportException(
     int column_number,
     const blink::WebString& source_url) {
   Send(new EmbeddedWorkerHostMsg_ReportException(
-      embedded_worker_id_,
-      error_message,
-      line_number,
-      column_number, GURL(source_url)));
+      embedded_worker_id_, error_message, line_number, column_number,
+      blink::WebStringToGURL(source_url)));
 }
 
 void ServiceWorkerContextClient::reportConsoleMessage(
@@ -465,7 +464,7 @@ void ServiceWorkerContextClient::reportConsoleMessage(
   params.message_level = level;
   params.message = message;
   params.line_number = line_number;
-  params.source_url = GURL(source_url);
+  params.source_url = blink::WebStringToGURL(source_url);
 
   Send(new EmbeddedWorkerHostMsg_ReportConsoleMessage(
       embedded_worker_id_, params));

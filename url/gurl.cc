@@ -78,16 +78,16 @@ GURL::GURL(const GURL& other)
   DCHECK(!is_valid_ || !SchemeIsFileSystem() || inner_url_);
 }
 
-GURL::GURL(const std::string& url_string) {
+GURL::GURL(base::StringPiece url_string) {
   InitCanonical(url_string, true);
 }
 
-GURL::GURL(const base::string16& url_string) {
+GURL::GURL(base::StringPiece16 url_string) {
   InitCanonical(url_string, true);
 }
 
 GURL::GURL(const std::string& url_string, RetainWhiteSpaceSelector) {
-  InitCanonical(url_string, false);
+  InitCanonical(base::StringPiece(url_string), false);
 }
 
 GURL::GURL(const char* canonical_spec,
@@ -108,7 +108,8 @@ GURL::GURL(std::string canonical_spec, const url::Parsed& parsed, bool is_valid)
 }
 
 template<typename STR>
-void GURL::InitCanonical(const STR& input_spec, bool trim_path_end) {
+void GURL::InitCanonical(base::BasicStringPiece<STR> input_spec,
+                         bool trim_path_end) {
   // Reserve enough room in the output for the input, plus some extra so that
   // we have room if we have to escape a few things without reallocating.
   spec_.reserve(input_spec.size() + 32);

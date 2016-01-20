@@ -34,6 +34,7 @@
 #include "net/base/ip_address_number.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebWaitableEvent.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/events/gestures/blink/web_gesture_curve_impl.h"
@@ -168,8 +169,8 @@ BlinkPlatformImpl::createOffscreenGraphicsContext3D(
     blink::WebGraphicsContext3D::WebGraphicsInfo* gl_info) {
   // TODO(penghuang): Use the app from the right HTMLDocument.
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
-      global_state_, app_, GURL(attributes.topDocumentURL), attributes,
-      share_context, gl_info);
+      global_state_, app_, blink::WebStringToGURL(attributes.topDocumentURL),
+      attributes, share_context, gl_info);
 }
 
 blink::WebGraphicsContext3D*

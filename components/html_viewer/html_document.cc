@@ -186,7 +186,7 @@ void HTMLDocument::Load() {
     }
   }
 
-  const GURL url(extra_data->synthetic_response->url);
+  const GURL url(extra_data->synthetic_response->url.get());
 
   blink::WebURLRequest web_request;
   web_request.initialize();

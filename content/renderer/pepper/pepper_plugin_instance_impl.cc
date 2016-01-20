@@ -95,6 +95,7 @@
 #include "printing/metafile_skia_wrapper.h"
 #include "printing/pdf_metafile_skia.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
@@ -2865,8 +2866,8 @@ PP_Var PepperPluginInstanceImpl::GetPluginReferrerURL(
   WebString referer = request.httpHeaderField("Referer");
   if (referer.isEmpty())
     return PP_MakeUndefined();
-  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(GURL(referer),
-                                                      components);
+  return ppapi::PPB_URLUtil_Shared::GenerateURLReturn(
+      blink::WebStringToGURL(referer), components);
 }
 
 PP_ExternalPluginResult PepperPluginInstanceImpl::ResetAsProxied(

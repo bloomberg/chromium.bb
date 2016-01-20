@@ -72,7 +72,7 @@ void PackageManagerImpl::SetApplicationManager(ApplicationManager* manager) {
 void PackageManagerImpl::FetchRequest(
     URLRequestPtr request,
     const Fetcher::FetchCallback& loader_callback) {
-  GURL url(request->url);
+  GURL url(request->url.get());
   if (url.SchemeIs(AboutFetcher::kAboutScheme)) {
     AboutFetcher::Start(url, loader_callback);
     return;

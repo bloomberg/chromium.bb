@@ -8,6 +8,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/test/weburl_loader_mock_factory.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
@@ -66,7 +67,8 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 blink::WebURLRequest WebURLLoaderMock::ServeRedirect(
     const blink::WebURLRequest& request,
     const blink::WebURLResponse& redirectResponse) {
-  GURL redirectURL(redirectResponse.httpHeaderField("Location"));
+  GURL redirectURL(
+      blink::WebStringToGURL(redirectResponse.httpHeaderField("Location")));
 
   net::RedirectInfo redirectInfo;
   redirectInfo.new_method = request.httpMethod().utf8();

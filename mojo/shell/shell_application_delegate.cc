@@ -39,7 +39,7 @@ void ShellApplicationDelegate::CreateInstanceForHandle(
     const String& url,
     CapabilityFilterPtr filter,
     InterfaceRequest<mojom::PIDReceiver> pid_receiver) {
-  manager_->CreateInstanceForHandle(std::move(channel), GURL(url),
+  manager_->CreateInstanceForHandle(std::move(channel), GURL(url.get()),
                                     std::move(filter), std::move(pid_receiver));
 }
 

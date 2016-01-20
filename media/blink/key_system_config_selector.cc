@@ -16,6 +16,7 @@
 #include "media/base/media_permission.h"
 #include "media/base/mime_util.h"
 #include "media/blink/webmediaplayer_util.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -765,7 +766,8 @@ void KeySystemConfigSelector::SelectConfigInternal(
         {
           // Note: the GURL must not be constructed inline because
           // base::Passed(&request) sets |request| to null.
-          GURL security_origin(request->security_origin.toString());
+          GURL security_origin(
+              blink::WebStringToGURL(request->security_origin.toString()));
           media_permission_->RequestPermission(
               MediaPermission::PROTECTED_MEDIA_IDENTIFIER, security_origin,
               base::Bind(&KeySystemConfigSelector::OnPermissionResult,

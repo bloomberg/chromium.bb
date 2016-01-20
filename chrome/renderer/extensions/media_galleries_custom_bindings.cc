@@ -8,6 +8,7 @@
 
 #include "extensions/renderer/script_context.h"
 #include "storage/common/fileapi/file_system_util.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/web/WebDOMFileSystem.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -36,7 +37,8 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
 
   blink::WebLocalFrame* webframe =
       blink::WebLocalFrame::frameForCurrentContext();
-  const GURL origin = GURL(webframe->document().securityOrigin().toString());
+  const GURL origin =
+      blink::WebStringToGURL(webframe->document().securityOrigin().toString());
   std::string fs_name =
       storage::GetFileSystemName(origin, storage::kFileSystemTypeExternal);
   fs_name.append("_");

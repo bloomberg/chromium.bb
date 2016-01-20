@@ -146,7 +146,7 @@ class TestPackageManagerImpl : public PackageManagerImpl {
   void FetchRequest(
       URLRequestPtr request,
       const Fetcher::FetchCallback& loader_callback) override {
-    new TestFetcher(loader_callback, GURL(request->url), mime_type_);
+    new TestFetcher(loader_callback, GURL(request->url.get()), mime_type_);
   }
 
  private:

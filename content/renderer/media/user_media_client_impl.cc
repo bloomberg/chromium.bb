@@ -30,6 +30,7 @@
 #include "content/renderer/media/webrtc_logging.h"
 #include "content/renderer/media/webrtc_uma_histograms.h"
 #include "content/renderer/render_thread_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
@@ -189,7 +190,8 @@ void UserMediaClientImpl::requestUserMedia(
     }
     CopyBlinkRequestToStreamControls(user_media_request, &controls);
 
-    security_origin = GURL(user_media_request.securityOrigin().toString());
+    security_origin =
+        blink::WebStringToGURL(user_media_request.securityOrigin().toString());
     DCHECK(render_frame()->GetWebFrame() ==
                static_cast<blink::WebFrame*>(
                    user_media_request.ownerDocument().frame()));
@@ -268,8 +270,10 @@ void UserMediaClientImpl::requestMediaDevices(
   // underlying pointer is null). In order to use this function in a test we
   // need to check if it isNull.
   GURL security_origin;
-  if (!media_devices_request.isNull())
-    security_origin = GURL(media_devices_request.securityOrigin().toString());
+  if (!media_devices_request.isNull()) {
+    security_origin = blink::WebStringToGURL(
+        media_devices_request.securityOrigin().toString());
+  }
 
   DVLOG(1) << "UserMediaClientImpl::requestMediaDevices("
            << audio_input_request_id

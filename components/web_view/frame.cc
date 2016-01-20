@@ -362,7 +362,7 @@ void Frame::StartNavigate(mojo::URLRequestPtr request) {
 
   DVLOG(2) << "Frame::StartNavigate id=" << id_ << " url=" << request->url;
 
-  const GURL requested_url(request->url);
+  const GURL requested_url(request->url.get());
   base::TimeTicks navigation_start_time =
       base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   tree_->delegate_->CanNavigateFrame(

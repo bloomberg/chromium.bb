@@ -151,14 +151,14 @@ void OmniboxUIHandler::OnResultChanged(bool default_match_changed) {
   if (bookmark_model) {
     for (size_t i =  0; i < result->combined_results.size(); ++i) {
       result->combined_results[i]->starred = bookmark_model->IsBookmarked(
-          GURL(result->combined_results[i]->destination_url));
+          GURL(result->combined_results[i]->destination_url.get()));
     }
     for (size_t i = 0; i < result->results_by_provider.size(); ++i) {
       const AutocompleteResultsForProviderMojo& result_by_provider =
           *result->results_by_provider[i];
       for (size_t j = 0; j < result_by_provider.results.size(); ++j) {
         result_by_provider.results[j]->starred = bookmark_model->IsBookmarked(
-            GURL(result_by_provider.results[j]->destination_url));
+            GURL(result_by_provider.results[j]->destination_url.get()));
       }
     }
   }

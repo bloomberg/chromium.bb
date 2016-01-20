@@ -141,7 +141,7 @@ void AndroidHandler::RunApplication(
   if (!response->url.is_null()) {
     base::FilePath internal_app_path;
     base::FilePath path_to_mojo;
-    if (IsCachedApp(env, GURL(response->url), &internal_app_path,
+    if (IsCachedApp(env, GURL(response->url.get()), &internal_app_path,
                     &path_to_mojo)) {
       ScopedJavaLocalRef<jstring> j_internal_app_path(
           ConvertUTF8ToJavaString(env, internal_app_path.value()));

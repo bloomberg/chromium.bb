@@ -109,6 +109,7 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCString.h"
 #include "third_party/WebKit/public/platform/WebConnectionType.h"
 #include "third_party/WebKit/public/platform/WebDragData.h"
@@ -316,8 +317,10 @@ static RenderViewImpl* (*g_create_render_view_impl)(
 Referrer RenderViewImpl::GetReferrerFromRequest(
     WebFrame* frame,
     const WebURLRequest& request) {
-  return Referrer(GURL(request.httpHeaderField(WebString::fromUTF8("Referer"))),
-                  request.referrerPolicy());
+  return Referrer(
+      blink::WebStringToGURL(request.httpHeaderField(
+          WebString::fromUTF8("Referer"))),
+      request.referrerPolicy());
 }
 
 // static
@@ -1607,10 +1610,11 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
     params.opener_top_level_frame_url = creator->top()->document().url();
   } else {
     params.opener_top_level_frame_url =
-        GURL(creator->top()->securityOrigin().toString());
+        blink::WebStringToGURL(creator->top()->securityOrigin().toString());
   }
 
-  GURL security_url(creator->document().securityOrigin().toString());
+  GURL security_url(blink::WebStringToGURL(
+      creator->document().securityOrigin().toString()));
   if (!security_url.is_valid())
     security_url = GURL();
   params.opener_security_origin = security_url;

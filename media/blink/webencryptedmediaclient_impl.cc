@@ -15,6 +15,7 @@
 #include "media/base/media_permission.h"
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/blink/webcontentdecryptionmoduleaccess_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebContentDecryptionModuleResult.h"
 #include "third_party/WebKit/public/platform/WebEncryptedMediaRequest.h"
 #include "third_party/WebKit/public/platform/WebMediaKeySystemConfiguration.h"
@@ -100,7 +101,8 @@ void WebEncryptedMediaClientImpl::requestMediaKeySystemAccess(
   GetReporter(request.keySystem())->ReportRequested();
 
   if (GetMediaClient()) {
-    GURL security_origin(request.securityOrigin().toString());
+    GURL security_origin(
+        blink::WebStringToGURL(request.securityOrigin().toString()));
 
     GetMediaClient()->RecordRapporURL("Media.OriginUrl.EME", security_origin);
 

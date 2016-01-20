@@ -42,8 +42,10 @@
     'dependencies': [
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
+      '<(DEPTH)/base/base.gyp:base',
       # FIXME: Can we remove the dependency on Skia?
       '<(DEPTH)/skia/skia.gyp:skia',
+      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'all_dependent_settings': {
       'include_dirs': [
@@ -61,9 +63,10 @@
       '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
     'sources': [
+      'exported/URLConversion.cpp',
       'exported/WebCString.cpp',
-      'exported/WebString.cpp',
       'exported/WebCommon.cpp',
+      'exported/WebString.cpp',
     ],
   },
   {

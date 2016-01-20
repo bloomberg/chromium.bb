@@ -20,7 +20,7 @@ PendingWebViewLoad::~PendingWebViewLoad() {}
 
 void PendingWebViewLoad::Init(mojo::URLRequestPtr request) {
   DCHECK(!frame_connection_);
-  pending_url_ = GURL(request->url);
+  pending_url_ = GURL(request->url.get());
   navigation_start_time_ =
       base::TimeTicks::FromInternalValue(request->originating_time_ticks);
   frame_connection_.reset(new FrameConnection);

@@ -177,7 +177,7 @@ void URLLoaderImpl::Start(URLRequestPtr request,
   }
 
   url_request_ = context_->url_request_context()->CreateRequest(
-      GURL(request->url), net::DEFAULT_PRIORITY, this);
+      GURL(request->url.get()), net::DEFAULT_PRIORITY, this);
   url_request_->set_method(request->method);
   // TODO(jam): need to specify this policy.
   url_request_->set_referrer_policy(

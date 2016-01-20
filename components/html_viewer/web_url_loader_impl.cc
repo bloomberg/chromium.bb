@@ -49,7 +49,7 @@ blink::WebURLResponse::HTTPVersion StatusLineToHTTPVersion(
 blink::WebURLResponse ToWebURLResponse(const URLResponsePtr& url_response) {
   blink::WebURLResponse result;
   result.initialize();
-  result.setURL(GURL(url_response->url));
+  result.setURL(GURL(url_response->url.get()));
   result.setMIMEType(blink::WebString::fromUTF8(url_response->mime_type));
   result.setTextEncodingName(blink::WebString::fromUTF8(url_response->charset));
   result.setHTTPVersion(StatusLineToHTTPVersion(url_response->status_line));
@@ -106,7 +106,7 @@ void WebURLLoaderImpl::loadSynchronously(
   if (url_response->error) {
     error.domain = WebString::fromUTF8(net::kErrorDomain);
     error.reason = url_response->error->code;
-    error.unreachableURL = GURL(url_response->url);
+    error.unreachableURL = GURL(url_response->url.get());
     return;
   }
 
@@ -177,7 +177,7 @@ void WebURLLoaderImpl::setDefersLoading(bool defers_loading) {
 
 void WebURLLoaderImpl::OnReceivedResponse(const blink::WebURLRequest& request,
                                           URLResponsePtr url_response) {
-  url_ = GURL(url_response->url);
+  url_ = GURL(url_response->url.get());
 
   if (url_response->error) {
     OnReceivedError(std::move(url_response));
@@ -201,7 +201,7 @@ void WebURLLoaderImpl::OnReceivedError(URLResponsePtr url_response) {
   blink::WebURLError web_error;
   web_error.domain = blink::WebString::fromUTF8(net::kErrorDomain);
   web_error.reason = url_response->error->code;
-  web_error.unreachableURL = GURL(url_response->url);
+  web_error.unreachableURL = GURL(url_response->url.get());
   web_error.staleCopyInCache = false;
   web_error.isCancellation =
       url_response->error->code == net::ERR_ABORTED ? true : false;
@@ -214,7 +214,7 @@ void WebURLLoaderImpl::OnReceivedRedirect(const blink::WebURLRequest& request,
   // TODO(erg): setFirstPartyForCookies() and setHTTPReferrer() are unset here.
   blink::WebURLRequest new_request;
   new_request.initialize();
-  new_request.setURL(GURL(url_response->redirect_url));
+  new_request.setURL(GURL(url_response->redirect_url.get()));
   new_request.setDownloadToFile(request.downloadToFile());
   new_request.setRequestContext(request.requestContext());
   new_request.setFrameType(request.frameType());

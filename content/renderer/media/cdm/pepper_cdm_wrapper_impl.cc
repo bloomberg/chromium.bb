@@ -9,6 +9,7 @@
 
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_webplugin_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -36,7 +37,8 @@ scoped_ptr<PepperCdmWrapper> PepperCdmWrapperImpl::Create(
   // Note: The code will continue after navigation to the "same" origin, even
   // though the CDM is no longer necessary.
   // TODO: Consider avoiding this possibility entirely. http://crbug.com/575236
-  GURL frame_security_origin(frame->securityOrigin().toString());
+  GURL frame_security_origin(
+      blink::WebStringToGURL(frame->securityOrigin().toString()));
   if (frame_security_origin != security_origin) {
     LOG(ERROR) << "Frame has a different origin than the EME call.";
     return scoped_ptr<PepperCdmWrapper>();

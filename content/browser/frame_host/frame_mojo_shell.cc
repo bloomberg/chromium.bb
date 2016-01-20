@@ -62,9 +62,9 @@ void FrameMojoShell::ConnectToApplication(
   if (!filter.is_null())
     capability_filter = filter->filter.To<mojo::shell::CapabilityFilter>();
   MojoShellContext::ConnectToApplication(
-      GURL(application_url->url), frame_host_->GetSiteInstance()->GetSiteURL(),
-      std::move(services), std::move(frame_services), capability_filter,
-      callback);
+      GURL(application_url->url.get()),
+      frame_host_->GetSiteInstance()->GetSiteURL(), std::move(services),
+      std::move(frame_services), capability_filter, callback);
 }
 
 void FrameMojoShell::QuitApplication() {

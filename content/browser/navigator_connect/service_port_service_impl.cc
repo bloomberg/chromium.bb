@@ -91,7 +91,7 @@ void ServicePortServiceImpl::Connect(const mojo::String& target_url,
                                      const mojo::String& origin,
                                      const ConnectCallback& callback) {
   navigator_connect_context_->Connect(
-      GURL(target_url), GURL(origin), this,
+      GURL(target_url.get()), GURL(origin.get()), this,
       base::Bind(&ServicePortServiceImpl::OnConnectResult,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }

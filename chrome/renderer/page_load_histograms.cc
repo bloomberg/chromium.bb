@@ -31,6 +31,7 @@
 #include "extensions/common/url_pattern.h"
 #include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -910,14 +911,14 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     DCHECK(handled || !data_reduction_proxy_was_used);
   }
 
-  bool came_from_websearch =
-      IsFromGoogleSearchResult(frame->document().url(),
-                               GURL(frame->document().referrer()));
+  bool came_from_websearch = IsFromGoogleSearchResult(
+      frame->document().url(),
+      blink::WebStringToGURL(frame->document().referrer()));
   int websearch_chrome_joint_experiment_id = kNoExperiment;
   bool is_preview = false;
   if (came_from_websearch) {
-    websearch_chrome_joint_experiment_id =
-        GetQueryStringBasedExperiment(GURL(frame->document().referrer()));
+    websearch_chrome_joint_experiment_id = GetQueryStringBasedExperiment(
+        blink::WebStringToGURL(frame->document().referrer()));
     is_preview = ViaHeaderContains(frame, "1.1 Google Instant Proxy Preview");
   }
 

@@ -83,6 +83,7 @@
 #include "media/filters/stream_parser_factory.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_types.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebBatteryStatusListener.h"
 #include "third_party/WebKit/public/platform/WebBlobRegistry.h"
 #include "third_party/WebKit/public/platform/WebDeviceLightListener.h"
@@ -1046,7 +1047,7 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3D(
           gpu_channel_host.get(),
           attributes,
           lose_context_when_out_of_memory,
-          GURL(attributes.topDocumentURL),
+          blink::WebStringToGURL(attributes.topDocumentURL),
           limits,
           static_cast<WebGraphicsContext3DCommandBufferImpl*>(share_context)));
 

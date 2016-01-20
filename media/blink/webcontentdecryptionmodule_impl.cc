@@ -17,6 +17,7 @@
 #include "media/blink/cdm_result_promise.h"
 #include "media/blink/cdm_session_adapter.h"
 #include "media/blink/webcontentdecryptionmodulesession_impl.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
@@ -62,7 +63,8 @@ void WebContentDecryptionModuleImpl::Create(
     return;
   }
 
-  GURL security_origin_as_gurl(security_origin.toString());
+  GURL security_origin_as_gurl(
+      blink::WebStringToGURL(security_origin.toString()));
 
   // CdmSessionAdapter::CreateCdm() will keep a reference to |adapter|. Then
   // if WebContentDecryptionModuleImpl is successfully created (returned in

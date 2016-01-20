@@ -31,7 +31,7 @@ void UpdaterImpl::GetPathForApp(
   // integration with components/update_client.
   base::FilePath shell_dir;
   PathService::Get(base::DIR_MODULE, &shell_dir);
-  const GURL as_url(url);
+  const GURL as_url(url.get());
   const base::FilePath path = shell_dir.Append(base::FilePath::FromUTF8Unsafe(
       as_url.path().substr(2, as_url.path().size() - 3) + ".mojo"));
   callback.Run(path.AsUTF8Unsafe());

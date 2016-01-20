@@ -18,6 +18,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/notification_constants.h"
 #include "content/public/common/platform_notification_data.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationDelegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -182,7 +183,7 @@ void NotificationManager::closePersistent(
       // TODO(mkwst): This is potentially doing the wrong thing with unique
       // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
       // https://crbug.com/490074 for detail.
-      GURL(origin.toString()), persistent_notification_id));
+      blink::WebStringToGURL(origin.toString()), persistent_notification_id));
 }
 
 void NotificationManager::notifyDelegateDestroyed(
@@ -207,7 +208,7 @@ WebNotificationPermission NotificationManager::checkPermission(
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
   // https://crbug.com/490074 for detail.
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_CheckPermission(
-      GURL(origin.toString()), &permission));
+      blink::WebStringToGURL(origin.toString()), &permission));
 
   return permission;
 }
@@ -312,7 +313,7 @@ void NotificationManager::DisplayPageNotification(
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
   // https://crbug.com/490074 for detail.
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_Show(
-      notification_id, GURL(origin.toString()), icon,
+      notification_id, blink::WebStringToGURL(origin.toString()), icon,
       ToPlatformNotificationData(notification_data)));
 }
 
@@ -334,7 +335,8 @@ void NotificationManager::DisplayPersistentNotification(
   // origins. Perhaps also 'file:', 'blob:' and 'filesystem:'. See
   // https://crbug.com/490074 for detail.
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_ShowPersistent(
-      request_id, service_worker_registration_id, GURL(origin.toString()), icon,
+      request_id, service_worker_registration_id,
+      blink::WebStringToGURL(origin.toString()), icon,
       ToPlatformNotificationData(notification_data)));
 }
 

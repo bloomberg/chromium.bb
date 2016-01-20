@@ -22,6 +22,7 @@ component("mozilla") {
   defines = [ "MOZILLA_IMPLEMENTATION" ]
 
   deps = [
+    "//base",
     "//url",
   ]
 

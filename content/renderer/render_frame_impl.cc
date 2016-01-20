@@ -145,6 +145,7 @@
 #include "net/base/net_errors.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_util.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -2356,7 +2357,8 @@ blink::WebPlugin* RenderFrameImpl::createPlugin(
   std::string mime_type;
   bool found = false;
   WebString top_origin = frame->top()->securityOrigin().toString();
-  Send(new FrameHostMsg_GetPluginInfo(routing_id_, params.url, GURL(top_origin),
+  Send(new FrameHostMsg_GetPluginInfo(routing_id_, params.url,
+                                      blink::WebStringToGURL(top_origin),
                                       params.mimeType.utf8(), &found, &info,
                                       &mime_type));
   if (!found)
@@ -2884,8 +2886,8 @@ void RenderFrameImpl::didCreateDataSource(blink::WebLocalFrame* frame,
   if (webview) {
     if (WebFrame* old_frame = webview->mainFrame()) {
       const WebURLRequest& original_request = datasource->originalRequest();
-      const GURL referrer(
-          original_request.httpHeaderField(WebString::fromUTF8("Referer")));
+      const GURL referrer(blink::WebStringToGURL(
+          original_request.httpHeaderField(WebString::fromUTF8("Referer"))));
       if (!referrer.is_empty() && old_frame->isWebLocalFrame() &&
           DocumentState::FromDataSource(old_frame->dataSource())
               ->was_prefetcher()) {
@@ -3758,7 +3760,7 @@ void RenderFrameImpl::willSendRequest(
   extra_data->set_render_frame_id(routing_id_);
   extra_data->set_is_main_frame(!parent);
   extra_data->set_frame_origin(
-      GURL(frame->document().securityOrigin().toString()));
+      blink::WebStringToGURL(frame->document().securityOrigin().toString()));
   extra_data->set_parent_is_main_frame(parent && !parent->parent());
   extra_data->set_parent_render_frame_id(parent_routing_id);
   extra_data->set_allow_download(
@@ -4001,7 +4003,7 @@ void RenderFrameImpl::requestStorageQuota(
   }
   ChildThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
       render_view_->GetRoutingID(),
-      GURL(origin.toString()),
+      blink::WebStringToGURL(origin.toString()),
       static_cast<storage::StorageType>(type),
       requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
@@ -4155,7 +4157,7 @@ bool RenderFrameImpl::allowWebGL(blink::WebLocalFrame* frame,
   bool blocked = true;
   Send(new FrameHostMsg_Are3DAPIsBlocked(
       routing_id_,
-      GURL(frame->top()->securityOrigin().toString()),
+      blink::WebStringToGURL(frame->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       &blocked));
   return !blocked;
@@ -4165,7 +4167,7 @@ void RenderFrameImpl::didLoseWebGLContext(blink::WebLocalFrame* frame,
                                           int arb_robustness_status_code) {
   DCHECK(!frame_ || frame_ == frame);
   Send(new FrameHostMsg_DidLose3DContext(
-      GURL(frame->top()->securityOrigin().toString()),
+      blink::WebStringToGURL(frame->top()->securityOrigin().toString()),
       THREE_D_API_TYPE_WEBGL,
       arb_robustness_status_code));
 }

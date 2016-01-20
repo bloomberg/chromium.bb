@@ -31,6 +31,7 @@
         ],
       },
       'dependencies': [
+        '../../base/base.gyp:base',
         '../../url/url.gyp:url_lib',
       ],
       'conditions': [

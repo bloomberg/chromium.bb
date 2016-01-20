@@ -111,7 +111,7 @@ void MojoCdmService::Initialize(const mojo::String& key_system,
 
   auto weak_this = weak_factory_.GetWeakPtr();
   cdm_factory_->Create(
-      key_system, GURL(security_origin), cdm_config.To<CdmConfig>(),
+      key_system, GURL(security_origin.get()), cdm_config.To<CdmConfig>(),
       base::Bind(&MojoCdmService::OnSessionMessage, weak_this),
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnLegacySessionError, weak_this),

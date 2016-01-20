@@ -24,6 +24,7 @@
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
@@ -94,7 +95,7 @@ class TestPhishingDOMFeatureExtractor : public PhishingDOMFeatureExtractor {
     GURL full_url;
     if (parsed_url.has_scheme()) {
       // This is already a complete URL.
-      full_url = GURL(partial_url);
+      full_url = GURL(blink::WebStringToGURL(partial_url));
     } else if (!base_domain_.empty()) {
       // This is a partial URL and only one frame in testing html.
       full_url = GURL("http://" + base_domain_).Resolve(partial_url);

@@ -71,7 +71,7 @@ class TestPackageManager : public PackageManagerImpl {
   void FetchRequest(
       URLRequestPtr request,
       const Fetcher::FetchCallback& loader_callback) override {
-    new TestFetcher(GURL(request->url), loader_callback);
+    new TestFetcher(GURL(request->url.get()), loader_callback);
   }
 
   DISALLOW_COPY_AND_ASSIGN(TestPackageManager);

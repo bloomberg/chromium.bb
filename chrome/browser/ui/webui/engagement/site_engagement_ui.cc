@@ -52,7 +52,7 @@ class SiteEngagementUIHandlerImpl : public SiteEngagementUIHandler {
 
   void SetSiteEngagementScoreForOrigin(const mojo::String& origin,
                                        double score) override {
-    GURL origin_gurl(origin);
+    GURL origin_gurl(origin.get());
     if (!origin_gurl.is_valid() || score < 0 ||
         score > SiteEngagementScore::kMaxPoints) {
       return;

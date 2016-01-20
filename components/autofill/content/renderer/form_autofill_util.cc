@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -1419,7 +1420,7 @@ bool WebFormElementToFormData(
   // If the completed URL is not valid, just use the action we get from
   // WebKit.
   if (!form->action.is_valid())
-    form->action = GURL(form_element.action());
+    form->action = GURL(blink::WebStringToGURL(form_element.action()));
 
   WebVector<WebFormControlElement> control_elements;
   form_element.getFormControlElements(control_elements);

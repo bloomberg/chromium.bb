@@ -89,6 +89,7 @@
 #include "net/base/net_errors.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -557,8 +558,8 @@ bool ChromeContentRendererClient::OverrideCreatePlugin(
   ChromeViewHostMsg_GetPluginInfo_Output output;
   WebString top_origin = frame->top()->securityOrigin().toString();
   render_frame->Send(new ChromeViewHostMsg_GetPluginInfo(
-      render_frame->GetRoutingID(), url, GURL(top_origin), orig_mime_type,
-      &output));
+      render_frame->GetRoutingID(), url, blink::WebStringToGURL(top_origin),
+      orig_mime_type, &output));
   *plugin = CreatePlugin(render_frame, frame, params, output);
 #else  // !defined(ENABLE_PLUGINS)
 

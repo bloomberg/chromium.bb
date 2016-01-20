@@ -122,7 +122,7 @@ void PermissionServiceImpl::RequestPermission(
   DCHECK(browser_context);
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
-    callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
+    callback.Run(GetPermissionStatusFromName(permission, GURL(origin.get())));
     return;
   }
 
@@ -131,7 +131,7 @@ void PermissionServiceImpl::RequestPermission(
   int id = browser_context->GetPermissionManager()->RequestPermission(
       PermissionNameToPermissionType(permission),
       context_->render_frame_host(),
-      GURL(origin),
+      GURL(origin.get()),
       user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionResponse,
                  weak_factory_.GetWeakPtr(),
@@ -175,8 +175,10 @@ void PermissionServiceImpl::RequestPermissions(
   if (!context_->render_frame_host() ||
       !browser_context->GetPermissionManager()) {
     mojo::Array<PermissionStatus> result(permissions.size());
-    for (size_t i = 0; i < permissions.size(); ++i)
-      result[i] = GetPermissionStatusFromName(permissions[i], GURL(origin));
+    for (size_t i = 0; i < permissions.size(); ++i) {
+      result[i] =
+          GetPermissionStatusFromName(permissions[i], GURL(origin.get()));
+    }
     callback.Run(std::move(result));
     return;
   }
@@ -190,7 +192,7 @@ void PermissionServiceImpl::RequestPermissions(
   int id = browser_context->GetPermissionManager()->RequestPermissions(
       types,
       context_->render_frame_host(),
-      GURL(origin),
+      GURL(origin.get()),
       user_gesture, // TODO(mlamouri): should be removed (crbug.com/423770)
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
                  weak_factory_.GetWeakPtr(),
@@ -247,14 +249,14 @@ void PermissionServiceImpl::HasPermission(
     PermissionName permission,
     const mojo::String& origin,
     const PermissionStatusCallback& callback) {
-  callback.Run(GetPermissionStatusFromName(permission, GURL(origin)));
+  callback.Run(GetPermissionStatusFromName(permission, GURL(origin.get())));
 }
 
 void PermissionServiceImpl::RevokePermission(
     PermissionName permission,
     const mojo::String& origin,
     const PermissionStatusCallback& callback) {
-  GURL origin_url(origin);
+  GURL origin_url(origin.get());
   PermissionType permission_type = PermissionNameToPermissionType(permission);
   PermissionStatus status = GetPermissionStatusFromType(permission_type,
                                                         origin_url);
@@ -276,7 +278,7 @@ void PermissionServiceImpl::GetNextPermissionChange(
     const mojo::String& mojo_origin,
     PermissionStatus last_known_status,
     const PermissionStatusCallback& callback) {
-  GURL origin(mojo_origin);
+  GURL origin(mojo_origin.get());
   PermissionStatus current_status =
       GetPermissionStatusFromName(permission, origin);
   if (current_status != last_known_status) {

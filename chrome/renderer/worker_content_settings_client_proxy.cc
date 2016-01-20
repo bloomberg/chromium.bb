@@ -9,6 +9,7 @@
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
@@ -22,8 +23,10 @@ WorkerContentSettingsClientProxy::WorkerContentSettingsClientProxy(
       frame->top()->securityOrigin().isUnique())
     is_unique_origin_ = true;
   sync_message_filter_ = content::RenderThread::Get()->GetSyncMessageFilter();
-  document_origin_url_ = GURL(frame->document().securityOrigin().toString());
-  top_frame_origin_url_ = GURL(frame->top()->securityOrigin().toString());
+  document_origin_url_ =
+      blink::WebStringToGURL(frame->document().securityOrigin().toString());
+  top_frame_origin_url_ =
+      blink::WebStringToGURL(frame->top()->securityOrigin().toString());
 }
 
 WorkerContentSettingsClientProxy::~WorkerContentSettingsClientProxy() {}

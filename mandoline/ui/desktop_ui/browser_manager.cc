@@ -46,7 +46,7 @@ void BrowserManager::LaunchURL(const mojo::String& url) {
   DCHECK(!browsers_.empty());
   // TODO(fsamuel): Create a new Browser once we support multiple browser
   // windows.
-  (*browsers_.begin())->LoadURL(GURL(url));
+  (*browsers_.begin())->LoadURL(GURL(url.get()));
 }
 
 void BrowserManager::Initialize(mojo::ApplicationImpl* app) {

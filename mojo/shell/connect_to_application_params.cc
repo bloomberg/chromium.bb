@@ -37,8 +37,8 @@ void ConnectToApplicationParams::SetTargetURL(const GURL& target_url) {
 }
 
 void ConnectToApplicationParams::SetTargetURLRequest(URLRequestPtr request) {
-  Identity target = request ? Identity(GURL(request->url), target_.qualifier(),
-                                       target_.filter())
+  Identity target = request ? Identity(GURL(request->url.get()),
+                                       target_.qualifier(), target_.filter())
                             : Identity();
   SetTargetURLRequest(std::move(request), target);
 }

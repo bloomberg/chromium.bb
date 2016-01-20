@@ -58,7 +58,7 @@ GURL NetworkFetcher::GetRedirectURL() const {
   if (response_->redirect_url.is_null())
     return GURL::EmptyGURL();
 
-  return GURL(response_->redirect_url);
+  return GURL(response_->redirect_url.get());
 }
 
 GURL NetworkFetcher::GetRedirectReferer() const {
@@ -68,7 +68,7 @@ GURL NetworkFetcher::GetRedirectReferer() const {
   if (response_->redirect_referrer.is_null())
     return GURL::EmptyGURL();
 
-  return GURL(response_->redirect_referrer);
+  return GURL(response_->redirect_referrer.get());
 }
 URLResponsePtr NetworkFetcher::AsURLResponse(base::TaskRunner* task_runner,
                                              uint32_t skip) {

@@ -13,6 +13,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebPrerenderingSupport.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
@@ -143,8 +144,9 @@ void PrerenderDispatcher::add(const WebPrerender& prerender) {
   content::RenderThread::Get()->Send(new PrerenderHostMsg_AddLinkRelPrerender(
       extra_data.prerender_id(), attributes,
       content::Referrer::SanitizeForRequest(
-          GURL(prerender.url()), content::Referrer(GURL(prerender.referrer()),
-                                                   prerender.referrerPolicy())),
+          GURL(prerender.url()),
+          content::Referrer(blink::WebStringToGURL(prerender.referrer()),
+                            prerender.referrerPolicy())),
       extra_data.size(), extra_data.render_view_route_id()));
 }
 
