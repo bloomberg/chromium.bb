@@ -4,11 +4,6 @@
 
 #include "core/animation/SampledEffect.h"
 
-#include "core/animation/InterpolationEnvironment.h"
-#include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/SVGInterpolation.h"
-#include "core/svg/SVGElement.h"
-
 namespace blink {
 
 SampledEffect::SampledEffect(KeyframeEffect* effect)

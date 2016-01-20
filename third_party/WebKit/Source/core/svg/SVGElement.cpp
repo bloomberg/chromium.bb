@@ -33,7 +33,6 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InvalidatableInterpolation.h"
-#include "core/animation/SVGInterpolation.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Document.h"
@@ -260,14 +259,8 @@ void SVGElement::applyActiveWebAnimations()
         &elementAnimations()->animationStack(), nullptr, nullptr, KeyframeEffect::DefaultPriority, isSVGAttributeHandle);
     for (auto& entry : activeInterpolationsMap) {
         const QualifiedName& attribute = entry.key.svgAttribute();
-        const Interpolation& interpolation = *entry.value.first();
-        if (interpolation.isInvalidatableInterpolation()) {
-            InterpolationEnvironment environment(*this, propertyFromAttribute(attribute)->baseValueBase());
-            InvalidatableInterpolation::applyStack(entry.value, environment);
-        } else {
-            // TODO(alancutter): Remove this old code path once animations have completely migrated to InterpolationTypes.
-            toSVGInterpolation(interpolation).apply(*this);
-        }
+        InterpolationEnvironment environment(*this, propertyFromAttribute(attribute)->baseValueBase());
+        InvalidatableInterpolation::applyStack(entry.value, environment);
     }
     svgRareData()->setWebAnimatedAttributesDirty(false);
 }

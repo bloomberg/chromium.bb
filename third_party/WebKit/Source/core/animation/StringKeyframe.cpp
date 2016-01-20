@@ -20,7 +20,6 @@
 #include "core/animation/CSSVisibilityInterpolationType.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/ConstantStyleInterpolation.h"
-#include "core/animation/DefaultSVGInterpolation.h"
 #include "core/animation/DeferredLegacyStyleInterpolation.h"
 #include "core/animation/DoubleStyleInterpolation.h"
 #include "core/animation/FilterStyleInterpolation.h"
@@ -625,58 +624,11 @@ PassOwnPtr<Keyframe::PropertySpecificKeyframe> SVGPropertySpecificKeyframe::neut
     return adoptPtr(new SVGPropertySpecificKeyframe(offset, easing, String(), EffectModel::CompositeAdd));
 }
 
-namespace {
-
-PassRefPtr<Interpolation> createSVGInterpolation(SVGPropertyBase* fromValue, SVGPropertyBase* toValue, SVGAnimatedPropertyBase* attribute)
-{
-    RefPtr<Interpolation> interpolation = nullptr;
-    ASSERT(fromValue->type() == toValue->type());
-    switch (fromValue->type()) {
-    // Handled by SVGInterpolationTypes.
-    case AnimatedAngle:
-    case AnimatedInteger:
-    case AnimatedIntegerOptionalInteger:
-    case AnimatedLength:
-    case AnimatedLengthList:
-    case AnimatedNumber:
-    case AnimatedNumberList:
-    case AnimatedNumberOptionalNumber:
-    case AnimatedPath:
-    case AnimatedPoints:
-    case AnimatedRect:
-    case AnimatedTransformList:
-        ASSERT_NOT_REACHED();
-        // Fallthrough.
-
-    // TODO(ericwilligers): Support more animation types.
-    default:
-        break;
-    }
-    if (interpolation)
-        return interpolation.release();
-
-    return DefaultSVGInterpolation::create(fromValue, toValue, attribute);
-}
-
-} // namespace
-
-PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element* element, const ComputedStyle* baseStyle) const
+PassRefPtr<Interpolation> SVGPropertySpecificKeyframe::maybeCreateInterpolation(PropertyHandle propertyHandle, Keyframe::PropertySpecificKeyframe& end, Element*, const ComputedStyle*) const
 {
     const InterpolationTypes* applicableTypes = applicableTypesForProperty(propertyHandle);
-    if (applicableTypes)
-        return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, *this, end);
-
-    ASSERT(element);
-    SVGAnimatedPropertyBase* attribute = toSVGElement(element)->propertyFromAttribute(propertyHandle.svgAttribute());
-    ASSERT(attribute);
-
-    RefPtrWillBeRawPtr<SVGPropertyBase> fromValue = attribute->currentValueBase()->cloneForAnimation(m_value);
-    RefPtrWillBeRawPtr<SVGPropertyBase> toValue = attribute->currentValueBase()->cloneForAnimation(toSVGPropertySpecificKeyframe(end).value());
-
-    if (!fromValue || !toValue)
-        return nullptr;
-
-    return createSVGInterpolation(fromValue.get(), toValue.get(), attribute);
+    ASSERT(applicableTypes);
+    return InvalidatableInterpolation::create(propertyHandle, *applicableTypes, *this, end);
 }
 
 } // namespace blink
