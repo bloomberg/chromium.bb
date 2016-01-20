@@ -23,6 +23,13 @@ chrome.accessibilityPrivate.setNativeAccessibilityEnabled = function(on) {
 };
 
 /**
+ * @param {boolean} enabled
+ * @param {boolean} capture
+ */
+chrome.accessibilityPrivate.setKeyboardListener = function(enabled, capture) {
+};
+
+/**
  * @param {number} tabId
  * @param {function(Array<!Object>)} callback
  */

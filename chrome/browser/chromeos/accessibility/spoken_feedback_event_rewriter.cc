@@ -30,7 +30,8 @@ bool SpokenFeedbackEventRewriterDelegate::IsSpokenFeedbackEnabled() const {
 }
 
 bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
-    const ui::KeyEvent& key_event) {
+    const ui::KeyEvent& key_event,
+    bool capture) {
   if (!chromeos::AccessibilityManager::Get())
     return false;
 
@@ -52,8 +53,12 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
 
   content::RenderViewHost* rvh = host->render_view_host();
 
-  // Listen for any unhandled keyboard events from ChromeVox's background page.
-  host->host_contents()->SetDelegate(this);
+  // Listen for any unhandled keyboard events from ChromeVox's background page
+  // when capturing keys to reinject.
+  if (capture)
+    host->host_contents()->SetDelegate(this);
+  else
+    host->host_contents()->SetDelegate(nullptr);
 
   // Forward all key events to ChromeVox's background page.
   const content::NativeWebKeyboardEvent web_event(key_event);
@@ -63,7 +68,7 @@ bool SpokenFeedbackEventRewriterDelegate::DispatchKeyEventToChromeVox(
       (key_event.key_code() <= ui::VKEY_F12))
     return false;
 
-  return true;
+  return capture;
 }
 
 void SpokenFeedbackEventRewriterDelegate::HandleKeyboardEvent(
@@ -121,8 +126,15 @@ ui::EventRewriteStatus SpokenFeedbackEventRewriter::RewriteEvent(
        event.type() != ui::ET_KEY_RELEASED))
     return ui::EVENT_REWRITE_CONTINUE;
 
+  std::string extension_id =
+      chromeos::AccessibilityManager::Get()->keyboard_listener_extension_id();
+  if (extension_id.empty())
+    return ui::EVENT_REWRITE_CONTINUE;
+
+  bool capture =
+      chromeos::AccessibilityManager::Get()->keyboard_listener_capture();
   const ui::KeyEvent key_event = static_cast<const ui::KeyEvent&>(event);
-  if (delegate_->DispatchKeyEventToChromeVox(key_event))
+  if (delegate_->DispatchKeyEventToChromeVox(key_event, capture))
     return ui::EVENT_REWRITE_DISCARD;
   return ui::EVENT_REWRITE_CONTINUE;
 }

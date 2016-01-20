@@ -32,4 +32,13 @@ class AccessibilityPrivateSetFocusRingFunction
                              ACCESSIBILITY_PRIVATE_SETFOCUSRING)
 };
 
+// API function that sets keyboard capture mode.
+class AccessibilityPrivateSetKeyboardListenerFunction
+    : public UIThreadExtensionFunction {
+  ~AccessibilityPrivateSetKeyboardListenerFunction() override {}
+  ResponseAction Run() override;
+  DECLARE_EXTENSION_FUNCTION("accessibilityPrivate.setKeyboardListener",
+                             ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER)
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EXTENSION_API_H_
