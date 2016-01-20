@@ -258,6 +258,8 @@ bool isEditablePosition(const Position& p, EditableType editableType, EUpdateSty
     if (isRenderedHTMLTableElement(node))
         node = node->parentNode();
 
+    if (node->isDocumentNode())
+        return false;
     return node->hasEditableStyle(editableType);
 }
 

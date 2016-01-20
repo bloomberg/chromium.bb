@@ -212,7 +212,7 @@ enum EUpdateStyle { UpdateStyle, DoNotUpdateStyle };
 // style to give proper results. They shouldn't update style by default, but
 // should make it clear that that is the contract.
 // FIXME: isRichlyEditablePosition should also take EUpdateStyle.
-bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
+CORE_EXPORT bool isEditablePosition(const Position&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isEditablePosition(const PositionInComposedTree&, EditableType = ContentIsEditable, EUpdateStyle = UpdateStyle);
 bool isRichlyEditablePosition(const Position&, EditableType = ContentIsEditable);
 bool lineBreakExistsAtPosition(const Position&);

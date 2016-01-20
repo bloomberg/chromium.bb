@@ -78,6 +78,24 @@ TEST_F(EditingUtilitiesTest, enclosingNodeOfType)
     EXPECT_EQ(three, enclosingNodeOfType(PositionInComposedTree(one, 0), isEnclosingBlock));
 }
 
+TEST_F(EditingUtilitiesTest, isEditablePositionWithTable)
+{
+    // We would like to have below DOM tree without HTML, HEAD and BODY element.
+    //   <table id=table><caption>foo</caption></table>
+    // However, |setBodyContent()| automatically creates HTML, HEAD and BODY
+    // element. So, we build DOM tree manually.
+    // Note: This is unusual HTML taken from http://crbug.com/574230
+    RefPtrWillBeRawPtr<Element> table = document().createElement("table", ASSERT_NO_EXCEPTION);
+    table->setInnerHTML("<caption>foo</caption>", ASSERT_NO_EXCEPTION);
+    while (document().firstChild())
+        document().firstChild()->remove();
+    document().appendChild(table);
+    document().setDesignMode("on");
+    updateLayoutAndStyleForPainting();
+
+    EXPECT_FALSE(isEditablePosition(Position(table.get(), 0)));
+}
+
 TEST_F(EditingUtilitiesTest, isFirstPositionAfterTable)
 {
     const char* bodyContent = "<div contenteditable id=host><table id=table><tr><td>1</td></tr></table><b id=two>22</b></div>";
