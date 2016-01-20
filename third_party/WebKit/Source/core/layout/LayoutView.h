@@ -183,8 +183,8 @@ public:
 
     bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect& localRect) const override;
 
-    double layoutViewportWidth() const;
-    double layoutViewportHeight() const;
+    // Returns the viewport size in (CSS pixels) that vh and vw units are calculated from.
+    FloatSize viewportSizeForViewportUnits() const;
 
     void pushLayoutState(LayoutState& layoutState) { m_layoutState = &layoutState; }
     void popLayoutState() { ASSERT(m_layoutState); m_layoutState = m_layoutState->next(); }

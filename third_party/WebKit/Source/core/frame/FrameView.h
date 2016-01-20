@@ -581,6 +581,9 @@ public:
     // TODO(ojan): Merge this with IntersectionObserver once it lands.
     IntRect computeVisibleArea();
 
+    // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
+    FloatSize viewportSizeForViewportUnits() const;
+
 protected:
     // Scroll the content via the compositor.
     bool scrollContentsFastPath(const IntSize& scrollDelta);

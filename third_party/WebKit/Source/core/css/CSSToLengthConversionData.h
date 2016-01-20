@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "platform/geometry/DoubleSize.h"
 #include "wtf/Allocator.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
@@ -68,15 +69,14 @@ public:
     class ViewportSize {
         DISALLOW_NEW();
     public:
-        ViewportSize() : m_width(0), m_height(0) { }
-        ViewportSize(double width, double height) : m_width(width), m_height(height) { }
+        ViewportSize() { }
+        ViewportSize(double width, double height) : m_size(width, height) { }
         explicit ViewportSize(const LayoutView*);
 
-        double width() const { return m_width; }
-        double height() const { return m_height; }
+        double width() const { return m_size.width(); }
+        double height() const { return m_size.height(); }
     private:
-        double m_width;
-        double m_height;
+        DoubleSize m_size;
     };
 
     CSSToLengthConversionData() { }
