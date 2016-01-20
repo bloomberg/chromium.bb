@@ -16,20 +16,22 @@ declare_args() {
   enable_debugallocation = is_debug
 }
 
-# Only executables and not libraries should depend on the allocator target;
-# only the application (the final executable) knows what allocator makes sense.
 # This "allocator" meta-target will forward to the default allocator according
 # to the build settings.
 group("allocator") {
-  public_deps = []
-  if (use_allocator == "tcmalloc") {
-    public_deps += [ ":tcmalloc" ]
-  }
+  if (!is_nacl) {
+    deps = []
 
-  # This condition expresses the win_use_allocator_shim in the GYP build.
-  if (is_win && !is_component_build && visual_studio_version != "2015") {
-    public_deps += [ ":allocator_shim" ]
-  }
+    if (use_allocator == "tcmalloc") {
+      deps += [ ":tcmalloc" ]
+    }
+
+    # This condition expresses the win_use_allocator_shim in the GYP build.
+    if (is_win && !is_component_build && visual_studio_version != "2015") {
+      deps += [ ":allocator_shim" ]
+      all_dependent_configs = [ ":nocmt" ]
+    }
+  }  # !is_nacl
 }
 
 # This config defines ALLOCATOR_SHIM in the same conditions that the allocator
@@ -107,10 +109,8 @@ if (is_win) {
       configs -= [ "//build/config/compiler:chromium_code" ]
       configs += [ "//build/config/compiler:no_chromium_code" ]
 
-      public_configs = [ ":nocmt" ]
       deps = [
         ":prep_libc",
-        "//base",
       ]
     }
   }

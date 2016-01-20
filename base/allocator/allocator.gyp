@@ -27,10 +27,17 @@
     # knows what allocator makes sense.
     {
       'target_name': 'allocator',
-      # TODO(primiano): This should be type: none for the noop cases (an empty
-      # static lib can confuse some gyp generators). Fix it once the refactoring
-      # (crbug.com/564618) bring this file to a saner state (fewer conditions).
-      'type': 'static_library',
+      'variables': {
+        'conditions': [
+          ['use_allocator!="none" or win_use_allocator_shim==1', {
+            'allocator_target_type%': 'static_library',
+          }, {
+            'allocator_target_type%': 'none',
+          }],
+        ],
+      },
+      'type': '<(allocator_target_type)',
+      'toolsets': ['host', 'target'],
       'conditions': [
         ['OS=="win" and win_use_allocator_shim==1', {
           'msvs_settings': {
@@ -51,25 +58,21 @@
           'sources': [
             'allocator_shim_win.cc',
           ],
+          'link_settings': {
+            'msvs_settings': {
+              'VCLinkerTool': {
+                'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
+                'AdditionalDependencies': [
+                  '<(SHARED_INTERMEDIATE_DIR)/allocator/libcmt.lib'
+                ],
+              },
+            },
+          },
           'configurations': {
             'Debug_Base': {
               'msvs_settings': {
                 'VCCLCompilerTool': {
                   'RuntimeLibrary': '0',
-                },
-              },
-            },
-          },
-          'direct_dependent_settings': {
-            'configurations': {
-              'Common_Base': {
-                'msvs_settings': {
-                  'VCLinkerTool': {
-                    'IgnoreDefaultLibraryNames': ['libcmtd.lib', 'libcmt.lib'],
-                    'AdditionalDependencies': [
-                      '<(SHARED_INTERMEDIATE_DIR)/allocator/libcmt.lib'
-                    ],
-                  },
                 },
               },
             },
@@ -372,7 +375,7 @@
     },  # 'allocator' target.
   ],  # targets.
   'conditions': [
-    ['OS=="win" and component!="shared_library"', {
+    ['OS=="win" and win_use_allocator_shim==1', {
       'targets': [
         {
           'target_name': 'libcmt',
