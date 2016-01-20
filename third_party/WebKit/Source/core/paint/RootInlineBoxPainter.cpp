@@ -6,13 +6,14 @@
 
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 
 namespace blink {
 
 void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
-    if (m_rootInlineBox.hasEllipsisBox() && paintInfo.shouldPaintWithinRoot(&m_rootInlineBox.layoutObject()) && m_rootInlineBox.lineLayoutItem().style()->visibility() == VISIBLE
+    if (m_rootInlineBox.hasEllipsisBox() && paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_rootInlineBox.lineLayoutItem())) && m_rootInlineBox.lineLayoutItem().style()->visibility() == VISIBLE
         && paintInfo.phase == PaintPhaseForeground)
         m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
