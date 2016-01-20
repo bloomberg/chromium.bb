@@ -44,7 +44,6 @@ FrameCaptionButton::FrameCaptionButton(views::ButtonListener* listener,
       paint_as_active_(false),
       use_light_images_(false),
       alpha_(255),
-      icon_image_id_(gfx::VectorIconId::VECTOR_ICON_NONE),
       swap_images_animation_(new gfx::SlideAnimation(this)) {
   swap_images_animation_->Reset(1);
 
@@ -59,11 +58,15 @@ FrameCaptionButton::~FrameCaptionButton() {
 void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
                                   Animate animate,
                                   gfx::VectorIconId icon_image_id) {
+  gfx::ImageSkia new_icon_image = gfx::CreateVectorIcon(
+      icon_image_id, 12,
+      use_light_images_ ? SK_ColorWHITE : gfx::kChromeIconGrey);
+
   // The early return is dependent on |animate| because callers use SetImage()
   // with ANIMATE_NO to progress the crossfade animation to the end.
   if (icon == icon_ &&
       (animate == ANIMATE_YES || !swap_images_animation_->is_animating()) &&
-      icon_image_id == icon_image_id_) {
+      new_icon_image.BackedBySameObjectAs(icon_image_)) {
     return;
   }
 
@@ -72,9 +75,7 @@ void FrameCaptionButton::SetImage(CaptionButtonIcon icon,
 
   icon_ = icon;
   icon_image_id_ = icon_image_id;
-  icon_image_ = gfx::CreateVectorIcon(
-      icon_image_id, 12,
-      use_light_images_ ? SK_ColorWHITE : gfx::kChromeIconGrey);
+  icon_image_ = new_icon_image;
 
   if (animate == ANIMATE_YES) {
     swap_images_animation_->Reset(0);

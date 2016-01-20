@@ -92,7 +92,8 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   // Current alpha to use for painting.
   int alpha_;
 
-  // The image id and image used to paint the button's icon.
+  // The image id (kept for the purposes of testing) and image used to paint the
+  // button's icon.
   gfx::VectorIconId icon_image_id_;
   gfx::ImageSkia icon_image_;
 
