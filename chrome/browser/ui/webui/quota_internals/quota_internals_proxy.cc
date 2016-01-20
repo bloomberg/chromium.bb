@@ -11,7 +11,7 @@
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_handler.h"
 #include "chrome/browser/ui/webui/quota_internals/quota_internals_types.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 using content::BrowserThread;
 

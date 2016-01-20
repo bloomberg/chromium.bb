@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address_number.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 namespace net {
 

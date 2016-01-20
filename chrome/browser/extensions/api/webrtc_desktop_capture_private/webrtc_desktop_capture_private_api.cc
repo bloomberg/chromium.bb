@@ -16,7 +16,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/origin_util.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 namespace extensions {
 

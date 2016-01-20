@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/stl_util.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/quota/storage_monitor.h"
 #include "storage/browser/quota/storage_observer.h"
 

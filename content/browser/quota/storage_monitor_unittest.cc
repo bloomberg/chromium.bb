@@ -11,7 +11,7 @@
 #include "base/thread_task_runner_handle.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/mock_storage_client.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/storage_monitor.h"

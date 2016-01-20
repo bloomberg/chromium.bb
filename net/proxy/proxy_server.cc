@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string_util.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/http/http_util.h"
 
 namespace net {

@@ -27,8 +27,8 @@
 #include "base/synchronization/lock.h"
 #include "base/time/time.h"
 #include "crypto/secure_hash.h"
-#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "net/cert/pem_tokenizer.h"
 #include "url/url_canon.h"
 

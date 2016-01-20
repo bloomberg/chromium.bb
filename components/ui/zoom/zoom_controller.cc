@@ -14,7 +14,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/page_type.h"
 #include "content/public/common/page_zoom.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ui_zoom::ZoomController);
 

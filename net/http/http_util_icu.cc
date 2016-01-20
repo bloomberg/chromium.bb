@@ -8,7 +8,7 @@
 #include "net/http/http_util.h"
 
 #include "base/logging.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 namespace net {
 

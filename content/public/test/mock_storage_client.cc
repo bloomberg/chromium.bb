@@ -11,7 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 
 using storage::kQuotaErrorInvalidModification;

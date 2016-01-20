@@ -32,7 +32,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "media/audio/audio_manager_base.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capture_types.h"
 #include "ui/base/l10n/l10n_util.h"
 

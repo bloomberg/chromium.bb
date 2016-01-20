@@ -165,7 +165,193 @@ TEST(UrlUtilTest, ParseQueryInvalidURL) {
   EXPECT_TRUE(it.IsAtEnd());
 }
 
-TEST(NetUtilTest, GetIdentityFromURL) {
+TEST(UrlUtilTest, ParseHostAndPort) {
+  const struct {
+    const char* const input;
+    bool success;
+    const char* const expected_host;
+    int expected_port;
+  } tests[] = {
+    // Valid inputs:
+    {"foo:10", true, "foo", 10},
+    {"foo", true, "foo", -1},
+    {
+      "[1080:0:0:0:8:800:200C:4171]:11",
+      true,
+      "1080:0:0:0:8:800:200C:4171",
+      11
+    },
+    {
+      "[1080:0:0:0:8:800:200C:4171]",
+      true,
+      "1080:0:0:0:8:800:200C:4171",
+      -1
+    },
+
+    // Because no validation is done on the host, the following are accepted,
+    // even though they are invalid names.
+    {"]", true, "]", -1},
+    {"::1", true, ":", 1},
+    // Invalid inputs:
+    {"foo:bar", false, "", -1},
+    {"foo:", false, "", -1},
+    {":", false, "", -1},
+    {":80", false, "", -1},
+    {"", false, "", -1},
+    {"porttoolong:300000", false, "", -1},
+    {"usrname@host", false, "", -1},
+    {"usrname:password@host", false, "", -1},
+    {":password@host", false, "", -1},
+    {":password@host:80", false, "", -1},
+    {":password@host", false, "", -1},
+    {"@host", false, "", -1},
+    {"[", false, "", -1},
+    {"[]", false, "", -1},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string host;
+    int port;
+    bool ok = ParseHostAndPort(tests[i].input, &host, &port);
+
+    EXPECT_EQ(tests[i].success, ok);
+
+    if (tests[i].success) {
+      EXPECT_EQ(tests[i].expected_host, host);
+      EXPECT_EQ(tests[i].expected_port, port);
+    }
+  }
+}
+TEST(UrlUtilTest, GetHostAndPort) {
+  const struct {
+    GURL url;
+    const char* const expected_host_and_port;
+  } tests[] = {
+    { GURL("http://www.foo.com/x"), "www.foo.com:80"},
+    { GURL("http://www.foo.com:21/x"), "www.foo.com:21"},
+
+    // For IPv6 literals should always include the brackets.
+    { GURL("http://[1::2]/x"), "[1::2]:80"},
+    { GURL("http://[::a]:33/x"), "[::a]:33"},
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string host_and_port = GetHostAndPort(tests[i].url);
+    EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
+  }
+}
+
+TEST(UrlUtilTest, GetHostAndOptionalPort) {
+  const struct {
+    GURL url;
+    const char* const expected_host_and_port;
+  } tests[] = {
+    { GURL("http://www.foo.com/x"), "www.foo.com"},
+    { GURL("http://www.foo.com:21/x"), "www.foo.com:21"},
+
+    // For IPv6 literals should always include the brackets.
+    { GURL("http://[1::2]/x"), "[1::2]"},
+    { GURL("http://[::a]:33/x"), "[::a]:33"},
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    std::string host_and_port = GetHostAndOptionalPort(tests[i].url);
+    EXPECT_EQ(std::string(tests[i].expected_host_and_port), host_and_port);
+  }
+}
+
+TEST(UrlUtilTest, GetHostOrSpecFromURL) {
+  EXPECT_EQ("example.com",
+            GetHostOrSpecFromURL(GURL("http://example.com/test")));
+  EXPECT_EQ("example.com",
+            GetHostOrSpecFromURL(GURL("http://example.com./test")));
+  EXPECT_EQ("file:///tmp/test.html",
+            GetHostOrSpecFromURL(GURL("file:///tmp/test.html")));
+}
+
+TEST(UrlUtilTest, CompliantHost) {
+  struct {
+    const char* const host;
+    bool expected_output;
+  } compliant_host_cases[] = {
+      {"", false},
+      {"a", true},
+      {"-", false},
+      {"_", false},
+      {".", false},
+      {"9", true},
+      {"9a", true},
+      {"9_", true},
+      {"a.", true},
+      {"a.a", true},
+      {"9.a", true},
+      {"a.9", true},
+      {"_9a", false},
+      {"-9a", false},
+      {"a.a9", true},
+      {"_.9a", true},
+      {"a.-a9", false},
+      {"a+9a", false},
+      {"-a.a9", true},
+      {"a_.a9", true},
+      {"1-.a-b", true},
+      {"1_.a-b", true},
+      {"1-2.a_b", true},
+      {"a.b.c.d.e", true},
+      {"1.2.3.4.5", true},
+      {"1.2.3.4.5.", true},
+  };
+
+  for (size_t i = 0; i < arraysize(compliant_host_cases); ++i) {
+    EXPECT_EQ(compliant_host_cases[i].expected_output,
+              IsCanonicalizedHostCompliant(compliant_host_cases[i].host));
+  }
+}
+
+TEST(UrlUtilTest, SimplifyUrlForRequest) {
+  struct {
+    const char* const input_url;
+    const char* const expected_simplified_url;
+  } tests[] = {
+    {
+      // Reference section should be stripped.
+      "http://www.google.com:78/foobar?query=1#hash",
+      "http://www.google.com:78/foobar?query=1",
+    },
+    {
+      // Reference section can itself contain #.
+      "http://192.168.0.1?query=1#hash#10#11#13#14",
+      "http://192.168.0.1?query=1",
+    },
+    { // Strip username/password.
+      "http://user:pass@google.com",
+      "http://google.com/",
+    },
+    { // Strip both the reference and the username/password.
+      "http://user:pass@google.com:80/sup?yo#X#X",
+      "http://google.com/sup?yo",
+    },
+    { // Try an HTTPS URL -- strip both the reference and the username/password.
+      "https://user:pass@google.com:80/sup?yo#X#X",
+      "https://google.com:80/sup?yo",
+    },
+    { // Try an FTP URL -- strip both the reference and the username/password.
+      "ftp://user:pass@google.com:80/sup?yo#X#X",
+      "ftp://google.com:80/sup?yo",
+    },
+    { // Try a nonstandard URL
+      "foobar://user:pass@google.com:80/sup?yo#X#X",
+      "foobar://user:pass@google.com:80/sup?yo",
+    },
+  };
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Test[%" PRIuS "]: %s", i,
+                                    tests[i].input_url));
+    GURL input_url(GURL(tests[i].input_url));
+    GURL expected_url(GURL(tests[i].expected_simplified_url));
+    EXPECT_EQ(expected_url, SimplifyUrlForRequest(input_url));
+  }
+}
+
+TEST(UrlUtilTest, GetIdentityFromURL) {
   struct {
     const char* const input_url;
     const char* const expected_username;
@@ -234,6 +420,41 @@ TEST(UrlUtilTest, GetIdentityFromURL_UTF8) {
   // Verify that it was decoded as UTF8.
   EXPECT_EQ(ASCIIToUTF16("foo"), username);
   EXPECT_EQ(WideToUTF16(L"\x4f60\x597d"), password);
+}
+
+TEST(UrlUtilTest, GoogleHost) {
+  struct {
+    GURL url;
+    bool expected_output;
+  } google_host_cases[] = {
+      {GURL("http://.google.com"), true},
+      {GURL("http://.youtube.com"), true},
+      {GURL("http://.gmail.com"), true},
+      {GURL("http://.doubleclick.net"), true},
+      {GURL("http://.gstatic.com"), true},
+      {GURL("http://.googlevideo.com"), true},
+      {GURL("http://.googleusercontent.com"), true},
+      {GURL("http://.googlesyndication.com"), true},
+      {GURL("http://.google-analytics.com"), true},
+      {GURL("http://.googleadservices.com"), true},
+      {GURL("http://.googleapis.com"), true},
+      {GURL("http://a.google.com"), true},
+      {GURL("http://b.youtube.com"), true},
+      {GURL("http://c.gmail.com"), true},
+      {GURL("http://google.com"), false},
+      {GURL("http://youtube.com"), false},
+      {GURL("http://gmail.com"), false},
+      {GURL("http://google.coma"), false},
+      {GURL("http://agoogle.com"), false},
+      {GURL("http://oogle.com"), false},
+      {GURL("http://google.co"), false},
+      {GURL("http://oggole.com"), false},
+  };
+
+  for (size_t i = 0; i < arraysize(google_host_cases); ++i) {
+    EXPECT_EQ(google_host_cases[i].expected_output,
+              HasGoogleHost(google_host_cases[i].url));
+  }
 }
 
 }  // namespace

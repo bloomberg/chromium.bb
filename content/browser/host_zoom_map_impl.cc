@@ -24,7 +24,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 namespace content {
 

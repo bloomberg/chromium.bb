@@ -12,7 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "content/common/quota_messages.h"
 #include "content/public/browser/quota_permission_context.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/gurl.h"
 

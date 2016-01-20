@@ -17,7 +17,7 @@
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/service_urls.h"
 #include "remoting/host/chromoting_host_context.h"

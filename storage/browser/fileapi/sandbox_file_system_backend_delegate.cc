@@ -15,7 +15,7 @@
 #include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "base/task_runner_util.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"

@@ -13,8 +13,8 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/net_util.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "net/base/url_util.h"
 #include "url/url_canon_ip.h"
 #include "url/url_util.h"
 

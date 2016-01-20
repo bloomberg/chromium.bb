@@ -5,7 +5,7 @@
 #include "net/quic/crypto/crypto_utils.h"
 
 #include "crypto/hkdf.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/quic/crypto/crypto_handshake.h"
 #include "net/quic/crypto/crypto_protocol.h"
 #include "net/quic/crypto/quic_decrypter.h"

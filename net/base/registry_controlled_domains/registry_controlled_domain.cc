@@ -50,7 +50,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "net/base/lookup_string_in_fixed_set.h"
 #include "net/base/net_module.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "url/gurl.h"
 #include "url/third_party/mozilla/url_parse.h"
 

@@ -22,7 +22,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/origin_util.h"
 #include "ipc/ipc_message.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "storage/browser/blob/blob_storage_context.h"

@@ -23,7 +23,7 @@
 #include "content/browser/cache_storage/cache_storage_quota_client.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/public/browser/browser_thread.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/common/database/database_identifier.h"
 #include "storage/common/quota/quota_status_code.h"

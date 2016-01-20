@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/task_runner_util.h"
 #include "base/thread_task_runner_handle.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 #include "storage/browser/fileapi/async_file_util_adapter.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_stream_writer.h"

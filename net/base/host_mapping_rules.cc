@@ -10,7 +10,7 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "net/base/host_port_pair.h"
-#include "net/base/net_util.h"
+#include "net/base/url_util.h"
 
 namespace net {
 
