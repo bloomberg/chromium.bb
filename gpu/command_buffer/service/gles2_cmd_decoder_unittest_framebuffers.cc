@@ -848,10 +848,20 @@ TEST_P(GLES2DecoderManualInitTest, ReadPixels2RowLengthWorkaround) {
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
   for (GLint ii = 0; ii < kHeight; ++ii) {
+    if (ii + 1 == kHeight) {
+      EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, kWidth))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
     void* offset = reinterpret_cast<void*>(ii * kRowLength * kBytesPerPixel);
     EXPECT_CALL(*gl_, ReadPixels(0, ii, kWidth, 1, kFormat, kType, offset))
         .Times(1)
         .RetiresOnSaturation();
+    if (ii + 1 == kHeight) {
+      EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, kRowLength))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
   }
 
   ReadPixels cmd;
@@ -961,12 +971,18 @@ TEST_P(GLES2DecoderManualInitTest,
   EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, 1))
       .Times(1)
       .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, kWidth))
+      .Times(1)
+      .RetiresOnSaturation();
   void* offset = reinterpret_cast<void*>((kHeight - 1) * padded_row_size);
   EXPECT_CALL(*gl_,
               ReadPixels(0, kHeight - 1, kWidth, 1, kFormat, kType, offset))
       .Times(1)
       .RetiresOnSaturation();
   EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ALIGNMENT, kAlignment))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, PixelStorei(GL_PACK_ROW_LENGTH, kRowLength))
       .Times(1)
       .RetiresOnSaturation();
 
