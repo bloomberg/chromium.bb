@@ -30,11 +30,6 @@ KeywordTable& keywordTable()
 
 } // namespace
 
-String KeywordValue::cssString() const
-{
-    return m_keywordValue;
-}
-
 const String& KeywordValue::keywordValue() const
 {
     return m_keywordValue;
