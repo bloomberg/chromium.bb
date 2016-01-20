@@ -15,7 +15,7 @@ namespace base {
 
 // Read an integer (signed or unsigned) from |buf| in Big Endian order.
 // Note: this loop is unrolled with -O1 and above.
-// NOTE(szym): glibc dns-canon.c and SpdyFrameBuilder use
+// NOTE(szym): glibc dns-canon.c and SpdyFrameReader use
 // ntohs(*(uint16_t*)ptr) which is potentially unaligned.
 // This would cause SIGBUS on ARMv5 or earlier and ARMv6-M.
 template<typename T>
