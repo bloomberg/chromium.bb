@@ -98,6 +98,9 @@ class TabController {
   // in the same window will redraw on top of the the favicon area of any tab.
   virtual bool CanPaintThrobberToLayer() const = 0;
 
+  // Returns true if the tabs are in an incognito window.
+  virtual bool IsIncognito() const = 0;
+
   // Returns true if tabs should be painted in the rectangular light-bar style.
   virtual bool IsImmersiveStyle() const = 0;
 

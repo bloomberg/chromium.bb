@@ -442,7 +442,8 @@ void Tab::ThrobberView::OnPaint(gfx::Canvas* canvas) {
 // Tab::ImageCacheEntryMetadata
 
 struct Tab::ImageCacheEntryMetadata {
-  ImageCacheEntryMetadata(int resource_id,
+  ImageCacheEntryMetadata(bool incognito,
+                          int resource_id,
                           ui::ScaleFactor scale_factor,
                           const gfx::Size& size);
   ~ImageCacheEntryMetadata();
@@ -450,16 +451,23 @@ struct Tab::ImageCacheEntryMetadata {
   // Making this a non-member would require a friend declaration in Tab.  Bleh.
   bool operator==(const ImageCacheEntryMetadata& rhs) const;
 
+  // Whether the resource is drawn in an incognito window.  This is only set to
+  // true when Material Design is enabled, since before MD tabs in normal and
+  // incognito windows look the same.
+  bool incognito;
+
   int resource_id;
   ui::ScaleFactor scale_factor;
   gfx::Size size;
 };
 
 Tab::ImageCacheEntryMetadata::ImageCacheEntryMetadata(
+    bool incognito,
     int resource_id,
     ui::ScaleFactor scale_factor,
     const gfx::Size& size)
-    : resource_id(resource_id),
+    : incognito(incognito),
+      resource_id(resource_id),
       scale_factor(scale_factor),
       size(size) {
   DCHECK_NE(ui::SCALE_FACTOR_NONE, scale_factor);
@@ -469,8 +477,8 @@ Tab::ImageCacheEntryMetadata::~ImageCacheEntryMetadata() {}
 
 bool Tab::ImageCacheEntryMetadata::operator==(
     const ImageCacheEntryMetadata& rhs) const {
-  return resource_id == rhs.resource_id && scale_factor == rhs.scale_factor &&
-      size == rhs.size;
+  return incognito == rhs.incognito && resource_id == rhs.resource_id &&
+      scale_factor == rhs.scale_factor && size == rhs.size;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -496,7 +504,6 @@ Tab::ImageCacheEntry::~ImageCacheEntry() {}
 
 // static
 const char Tab::kViewClassName[] = "Tab";
-const SkColor Tab::kInactiveTabColor = SkColorSetRGB(0xD0, 0xD0, 0xD0);
 Tab::TabImages Tab::active_images_ = {0};
 Tab::TabImages Tab::inactive_images_ = {0};
 Tab::TabImages Tab::mask_images_ = {0};
@@ -1356,7 +1363,9 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas) {
     return;
   }
 
-  ImageCacheEntryMetadata metadata(
+  const ImageCacheEntryMetadata metadata(
+      ui::MaterialDesignController::IsModeMaterial() &&
+          controller_->IsIncognito(),
       fill_id, ui::GetSupportedScaleFactor(canvas->image_scale()), size());
   auto it = std::find_if(
       image_cache_->begin(), image_cache_->end(),
@@ -1378,7 +1387,8 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
                                         int fill_id,
                                         bool has_custom_image,
                                         int y_offset) {
-  gfx::ImageSkia* fill_image = GetThemeProvider()->GetImageSkiaNamed(fill_id);
+  const ui::ThemeProvider* tp = GetThemeProvider();
+  gfx::ImageSkia* fill_image = tp->GetImageSkiaNamed(fill_id);
   // The tab image needs to be lined up with the background image
   // so that it feels partially transparent.  These offsets represent the tab
   // position within the frame background image.
@@ -1409,8 +1419,9 @@ void Tab::PaintTabBackgroundUsingFillId(gfx::Canvas* canvas,
         canvas->TileImageInt(*fill_image, x_offset, y_offset, 0, 0, width(),
                              height());
       } else {
-        paint.setColor(
-            is_active ? SkColorSetRGB(0xF2, 0xF2, 0xF2) : kInactiveTabColor);
+        paint.setColor(tp->GetColor(is_active ?
+            static_cast<int>(ThemeProperties::COLOR_TOOLBAR) :
+            ThemeProperties::COLOR_BACKGROUND_TAB));
         canvas->DrawRect(gfx::ScaleToEnclosingRect(GetLocalBounds(), scale),
                          paint);
       }

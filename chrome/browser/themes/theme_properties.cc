@@ -56,12 +56,15 @@ const SkColor kDefaultDetachedBookmarkBarBackgroundIncognito[] = {
     SkColorSetRGB(0xF1, 0xF1, 0xF1), SkColorSetRGB(0x32, 0x32, 0x32)};
 
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
+const SkColor kDefaultColorTabTextIncognito[] = {SK_ColorBLACK, SK_ColorWHITE};
 
 #if defined(OS_MACOSX)
 const SkColor kDefaultColorBackgroundTabText = SK_ColorBLACK;
 #else
 const SkColor kDefaultColorBackgroundTabText[] = {
     SkColorSetRGB(64, 64, 64), SK_ColorBLACK };
+const SkColor kDefaultColorBackgroundTabTextIncognito[] = {
+    SkColorSetRGB(64, 64, 64), SK_ColorWHITE };
 #endif  // OS_MACOSX
 
 const SkColor kDefaultColorBookmarkText = SK_ColorBLACK;
@@ -95,7 +98,8 @@ const color_utils::HSL kDefaultTintFrame = { -1, -1, -1 };
 const color_utils::HSL kDefaultTintFrameInactive = { -1, -1, 0.75 };
 const color_utils::HSL kDefaultTintFrameIncognito = { -1, 0.2, 0.35 };
 const color_utils::HSL kDefaultTintFrameIncognitoInactive = { -1, 0.3, 0.6 };
-const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.75 };
+const color_utils::HSL kDefaultTintBackgroundTab = { -1, -1, 0.4296875 };
+const color_utils::HSL kDefaultTintBackgroundTabIncognito = { -1, -1, 0.34375 };
 
 // ----------------------------------------------------------------------------
 // Defaults for properties which are not stored in the browser theme pack.
@@ -243,7 +247,8 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool otr) {
     case TINT_BUTTONS:
       return otr_tint ? kDefaultTintButtonsIncognito : kDefaultTintButtons;
     case TINT_BACKGROUND_TAB:
-      return kDefaultTintBackgroundTab;
+      return otr_tint ? kDefaultTintBackgroundTabIncognito
+                      : kDefaultTintBackgroundTab;
     case TINT_FRAME_INCOGNITO:
     case TINT_FRAME_INCOGNITO_INACTIVE:
       NOTREACHED() << "These values should be queried via their respective "
@@ -284,12 +289,14 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool otr) {
                  : kDefaultColorToolbar[mode];
 #endif  // OS_MACOSX
     case COLOR_TAB_TEXT:
-      return kDefaultColorTabText;
+      return otr ? kDefaultColorTabTextIncognito[mode]
+                 : kDefaultColorTabText;
     case COLOR_BACKGROUND_TAB_TEXT:
 #if defined(OS_MACOSX)
       return kDefaultColorBackgroundTabText;
 #else
-      return kDefaultColorBackgroundTabText[mode];
+      return otr ? kDefaultColorBackgroundTabTextIncognito[mode]
+                 : kDefaultColorBackgroundTabText[mode];
 #endif  // OS_MACOSX
     case COLOR_BOOKMARK_TEXT:
       return otr ? kDefaultColorBookmarkTextIncognito[mode]

@@ -232,6 +232,7 @@ class TabStrip : public views::View,
                          const ui::MouseEvent& event) override;
   bool ShouldPaintTab(const Tab* tab, gfx::Rect* clip) override;
   bool CanPaintThrobberToLayer() const override;
+  bool IsIncognito() const override;
   bool IsImmersiveStyle() const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
   void UpdateTabAccessibilityState(const Tab* tab,

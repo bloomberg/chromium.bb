@@ -98,6 +98,9 @@ class ThemeProperties {
     // edge of the tabstrip.
     COLOR_TOOLBAR_TOP_SEPARATOR,
 
+    // The color of a background tab, as well as the new tab button.
+    COLOR_BACKGROUND_TAB,
+
     // Colors used for the detached (NTP) bookmark bar.
     COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND,
     COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR,

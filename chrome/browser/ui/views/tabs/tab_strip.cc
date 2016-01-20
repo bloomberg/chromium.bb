@@ -527,6 +527,7 @@ void NewTabButton::PaintFill(bool pressed,
                              gfx::Canvas* canvas) const {
   bool custom_image;
   const int bg_id = tab_strip_->GetBackgroundResourceId(&custom_image);
+  const ui::ThemeProvider* tp = GetThemeProvider();
 
   gfx::ScopedCanvas scoped_canvas(canvas);
 
@@ -547,7 +548,7 @@ void NewTabButton::PaintFill(bool pressed,
       paint.setAntiAlias(true);
       skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(0x26);
       paint.setLooper(looper.get());
-      paint.setColor(Tab::kInactiveTabColor);
+      paint.setColor(tp->GetColor(ThemeProperties::COLOR_BACKGROUND_TAB));
       canvas->DrawPath(fill, paint);
     }
 
@@ -561,11 +562,10 @@ void NewTabButton::PaintFill(bool pressed,
   // Draw the fill background image.
   const gfx::Size size(GetLayoutSize(NEW_TAB_BUTTON));
   if (custom_image || !md) {
-    const ui::ThemeProvider* theme_provider = GetThemeProvider();
-    gfx::ImageSkia* background = theme_provider->GetImageSkiaNamed(bg_id);
+    gfx::ImageSkia* background = tp->GetImageSkiaNamed(bg_id);
     // For custom tab backgrounds the background starts at the top of the tab
     // strip. Otherwise the background starts at the top of the frame.
-    const int offset_y = theme_provider->HasCustomImage(bg_id) ?
+    const int offset_y = tp->HasCustomImage(bg_id) ?
         -GetLayoutConstant(TAB_TOP_EXCLUSION_HEIGHT) : background_offset_.y();
 
     // The new tab background is mirrored in RTL mode, but the theme background
@@ -1374,6 +1374,10 @@ bool TabStrip::CanPaintThrobberToLayer() const {
   // progress, or if stacked tabs are enabled.
   const bool dragging = drag_controller_ && drag_controller_->started_drag();
   return !touch_layout_ && !dragging && !IsAnimating();
+}
+
+bool TabStrip::IsIncognito() const {
+  return controller()->IsIncognito();
 }
 
 bool TabStrip::IsImmersiveStyle() const {

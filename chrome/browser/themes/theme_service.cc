@@ -482,6 +482,10 @@ SkColor ThemeService::GetColor(int id, bool otr) const {
       // The active color is overridden in Gtk2UI.
       return SkColorSetA(
           GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON, otr), 0x33);
+    case ThemeProperties::COLOR_BACKGROUND_TAB:
+      return color_utils::HSLShift(
+          GetColor(ThemeProperties::COLOR_TOOLBAR, otr),
+          GetTint(ThemeProperties::TINT_BACKGROUND_TAB, otr));
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       if (UsingDefaultTheme())
         break;

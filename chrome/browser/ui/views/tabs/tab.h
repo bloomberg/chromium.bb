@@ -52,9 +52,6 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
-  // The color of an inactive tab.
-  static const SkColor kInactiveTabColor;
-
   explicit Tab(TabController* controller);
   ~Tab() override;
 
