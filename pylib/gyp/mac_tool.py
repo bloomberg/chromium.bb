@@ -62,9 +62,12 @@ class MacTool(object):
     elif extension == '.storyboard':
       return self._CopyXIBFile(source, dest)
     elif extension == '.strings':
-      self._CopyStringsFile(source, dest, convert_to_binary)
+      self._CopyStringsFile(source, dest)
     else:
       shutil.copy(source, dest)
+
+    if extension in ('.plist', '.strings') and convert_to_binary == 'True':
+      self._ConvertToBinary(dest)
 
   def _CopyXIBFile(self, source, dest):
     """Compiles a XIB file with ibtool into a binary plist in the bundle."""
@@ -96,7 +99,7 @@ class MacTool(object):
     subprocess.check_call([
         'xcrun', 'plutil', '-convert', 'binary1', '-o', dest, dest])
 
-  def _CopyStringsFile(self, source, dest, convert_to_binary):
+  def _CopyStringsFile(self, source, dest):
     """Copies a .strings file using iconv to reconvert the input into UTF-16."""
     input_code = self._DetectInputEncoding(source) or "UTF-8"
 
@@ -115,9 +118,6 @@ class MacTool(object):
     fp = open(dest, 'wb')
     fp.write(s.decode(input_code).encode('UTF-16'))
     fp.close()
-
-    if convert_to_binary == 'True':
-      self._ConvertToBinary(dest)
 
   def _DetectInputEncoding(self, file_name):
     """Reads the first few bytes from file_name and tries to guess the text
