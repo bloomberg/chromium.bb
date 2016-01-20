@@ -34,17 +34,14 @@
 #include "google_breakpad/processor/dump_context.h"
 
 #include <assert.h>
-#include <stdio.h>
 
 #ifdef _WIN32
 #include <io.h>
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
 #else  // _WIN32
 #include <unistd.h>
 #endif  // _WIN32
 
+#include "common/stdio.h"
 #include "processor/logging.h"
 
 namespace google_breakpad {

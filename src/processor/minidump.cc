@@ -38,15 +38,11 @@
 #include <assert.h>
 #include <fcntl.h>
 #include <stddef.h>
-#include <stdio.h>
 #include <string.h>
 #include <time.h>
 
 #ifdef _WIN32
 #include <io.h>
-#if defined(_MSC_VER) && _MSC_VER < 1900
-#define snprintf _snprintf
-#endif
 #else  // _WIN32
 #include <unistd.h>
 #endif  // _WIN32
@@ -60,6 +56,7 @@
 #include "processor/range_map-inl.h"
 
 #include "common/scoped_ptr.h"
+#include "common/stdio.h"
 #include "google_breakpad/processor/dump_context.h"
 #include "processor/basic_code_module.h"
 #include "processor/basic_code_modules.h"

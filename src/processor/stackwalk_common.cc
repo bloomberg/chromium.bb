@@ -35,13 +35,13 @@
 #include "processor/stackwalk_common.h"
 
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <string>
 #include <vector>
 
+#include "common/stdio.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/call_stack.h"
 #include "google_breakpad/processor/code_module.h"
