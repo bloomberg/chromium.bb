@@ -103,7 +103,8 @@ void SyncSetupService::SetSyncingAllDataTypes(bool sync_all) {
   sync_service_->SetSetupInProgress(true);
   if (sync_all && !IsSyncEnabled())
     SetSyncEnabled(true);
-  sync_service_->OnUserChoseDatatypes(sync_all, GetDataTypes());
+  sync_service_->OnUserChoseDatatypes(
+      sync_all, Intersection(GetDataTypes(), syncer::UserSelectableTypes()));
 }
 
 bool SyncSetupService::IsSyncEnabled() const {
