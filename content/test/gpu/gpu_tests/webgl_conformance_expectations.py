@@ -36,16 +36,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=478572)
     self.Fail('conformance/extensions/ext-sRGB.html',
         bug=540900)
-    # Once we fix the CopyTexSubImage out-of-bounds behavior, this test will
-    # still fail on Win7/Intel and Android/Qualcomm/Adreno420.
-    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
-        bug=577357)
-    # self.Fail('conformance/textures/misc/' +
-    #     'copy-tex-image-and-sub-image-2d.html',
-    #     ['win7', 'intel'])
-    # self.Fail('conformance/textures/misc/' +
-    #     'copy-tex-image-and-sub-image-2d.html',
-    #     ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
 
     # Win failures
     # Note that the following two tests pass with OpenGL.
@@ -59,6 +49,10 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               'glsl-construct-vec-mat-index.html',
               ['win'], bug=525188)
 
+    # Win7 / Intel failures
+    self.Fail('conformance/textures/misc/' +
+              'copy-tex-image-and-sub-image-2d.html',
+              ['win7', 'intel'])
 
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
@@ -258,6 +252,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
               ['android', 'android-webview-shell',
                ('qualcomm', 'Adreno (TM) 420')], bug=499874)
     self.Fail('conformance/rendering/gl-scissor-test.html',
+              ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
+    self.Fail('conformance/textures/misc/' +
+              'copy-tex-image-and-sub-image-2d.html',
               ['android', ('qualcomm', 'Adreno (TM) 420')], bug=499555)
     self.Fail('conformance/textures/misc/' +
               'tex-image-and-sub-image-2d-with-array-buffer-view.html',
