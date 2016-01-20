@@ -141,14 +141,19 @@ cursors.Cursor.prototype = {
     switch (unit) {
       case Unit.CHARACTER:
         // BOUND and DIRECTIONAL are the same for characters.
-        newIndex = dir == Dir.FORWARD ? newIndex + 1 : newIndex - 1;
-        if (newIndex < 0 || newIndex >= this.getText().length) {
+        var text = this.getText();
+        newIndex = dir == Dir.FORWARD ?
+            StringUtil.nextCodePointOffset(text, newIndex) :
+            StringUtil.previousCodePointOffset(text, newIndex);
+        if (newIndex < 0 || newIndex >= text.length) {
           newNode = AutomationUtil.findNextNode(
               newNode, dir, AutomationPredicate.leafWithText);
           if (newNode) {
+            var newText = this.getText(newNode);
             newIndex =
-                dir == Dir.FORWARD ? 0 : this.getText(newNode).length - 1;
-            newIndex = newIndex == -1 ? 0 : newIndex;
+                dir == Dir.FORWARD ? 0 :
+                StringUtil.previousCodePointOffset(newText, newText.length);
+            newIndex = Math.max(newIndex, 0);
           } else {
             newIndex = this.index_;
           }
@@ -243,7 +248,7 @@ cursors.Cursor.prototype = {
           }
       break;
       default:
-        throw 'Unrecognized unit: ' + unit;
+        throw Error('Unrecognized unit: ' + unit);
     }
     newNode = newNode || this.node_;
     newIndex = goog.isDef(newIndex) ? newIndex : this.index_;
