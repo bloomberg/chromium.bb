@@ -556,6 +556,7 @@
       'browser/renderer_host/input/web_input_event_builders_mac_unittest.mm',
       'browser/renderer_host/input/web_input_event_unittest.cc',
       'browser/renderer_host/input/web_input_event_util_unittest.cc',
+      'browser/renderer_host/media/audio_input_debug_writer_unittest.cc',
       'browser/renderer_host/media/audio_input_device_manager_unittest.cc',
       'browser/renderer_host/media/audio_input_sync_writer_unittest.cc',
       'browser/renderer_host/media/audio_output_device_enumerator_unittest.cc',

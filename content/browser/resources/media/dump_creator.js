@@ -49,10 +49,10 @@ var DumpCreator = (function() {
         '<div>&lt;base filename&gt;.&lt;render process ID&gt;' +
         '.source_input.&lt;stream ID&gt;.pcm</div></p>' +
         '<p class=audio-recordings-info>If recordings are disabled and then' +
-        ' enabled using the same base filename, the files will be appended' +
-        ' to and may become invalid. It is recommended to choose a new base' +
-        ' filename each time or move the produced files before enabling' +
-        ' again.</p>' +
+        ' enabled using the same base filename, the microphone recording file' +
+        ' will be overwritten, and the AEC dump file will be appended to and' +
+        ' may become invalid. It is recommended to choose a new base filename' +
+        ' each time or move the produced files before enabling again.</p>' +
         '<p><label><input type=checkbox>' +
         'Enable diagnostic packet and event recording</label></p>' +
         '<p class=audio-recordings-info>A diagnostic packet and event' +

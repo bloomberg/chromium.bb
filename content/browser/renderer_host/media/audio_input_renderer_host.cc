@@ -52,7 +52,7 @@ void LogMessage(int stream_id, const std::string& msg, bool add_prefix) {
 base::File CreateDebugRecordingFile(base::FilePath file_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   base::File recording_file(
-      file_path, base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+      file_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   PLOG_IF(ERROR, !recording_file.IsValid())
       << "Could not open debug recording file, error="
       << recording_file.error_details();
@@ -90,7 +90,7 @@ struct AudioInputRendererHost::AudioEntry {
 
   // The synchronous writer to be used by the controller. We have the
   // ownership of the writer.
-  scoped_ptr<media::AudioInputController::SyncWriter> writer;
+  scoped_ptr<AudioInputSyncWriter> writer;
 
   // Must be deleted on the file thread. Must be posted for deletion and nulled
   // before the AudioEntry is deleted.
@@ -101,6 +101,11 @@ struct AudioInputRendererHost::AudioEntry {
 
   // If this entry's layout has a keyboard mic channel.
   bool has_keyboard_mic;
+
+#ifdef ENABLE_WEBRTC
+  // Stream audio parameters, used to build wave header for debug recording.
+  media::AudioParameters audio_params;
+#endif  // ENABLE_WEBRTC
 };
 
 AudioInputRendererHost::AudioEntry::AudioEntry()
@@ -252,8 +257,7 @@ void AudioInputRendererHost::DoCompleteCreation(
     return;
   }
 
-  AudioInputSyncWriter* writer =
-      static_cast<AudioInputSyncWriter*>(entry->writer.get());
+  AudioInputSyncWriter* writer = entry->writer.get();
 
   base::SyncSocket::TransitDescriptor socket_transit_descriptor;
 
@@ -483,6 +487,10 @@ void AudioInputRendererHost::DoCreateStream(
   }
 #endif
 
+#if defined(ENABLE_WEBRTC)
+  entry->audio_params = audio_params;
+#endif  // ENABLE_WEBRTC
+
   MediaStreamManager::SendMessageToNativeLog(oss.str());
   DVLOG(1) << oss.str();
 
@@ -705,7 +713,8 @@ void AudioInputRendererHost::DoEnableDebugRecording(
                             base::Bind(&CloseFile, Passed(std::move(file))));
     return;
   }
-  entry->input_debug_writer.reset(new AudioInputDebugWriter(std::move(file)));
+  entry->input_debug_writer.reset(
+      new AudioInputDebugWriter(std::move(file), entry->audio_params));
   entry->controller->EnableDebugRecording(entry->input_debug_writer.get());
 }
 
