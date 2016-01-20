@@ -167,28 +167,33 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
               TimeDomain* time_domain);
     ~AnyThread();
 
-    // TaskQueueManager is maintained in two copies: inside AnyThread and inside
-    // MainThreadOnly. It can be changed only from main thread, so it should be
-    // locked before accessing from other threads.
+    // TaskQueueManager, PumpPolicy and TimeDomain are maintained in two copies:
+    // inside AnyThread and inside MainThreadOnly. They can be changed only from
+    // main thread, so it should be locked before accessing from other threads.
     TaskQueueManager* task_queue_manager;
-
-    std::queue<Task> immediate_incoming_queue;
-    std::priority_queue<Task> delayed_incoming_queue;
     PumpPolicy pump_policy;
     TimeDomain* time_domain;
+
+    std::queue<Task> immediate_incoming_queue;
   };
 
   struct MainThreadOnly {
     MainThreadOnly(TaskQueueManager* task_queue_manager,
-                   TaskQueueImpl* task_queue);
+                   PumpPolicy pump_policy,
+                   TaskQueueImpl* task_queue,
+                   TimeDomain* time_domain);
     ~MainThreadOnly();
 
-    // Another copy of TaskQueueManager for lock-free access from the main
-    // thread. See description inside struct AnyThread for details.
+    // Another copy of TaskQueueManager, PumpPolicy and TimeDomain for lock-free
+    // access from the main thread. See description inside struct AnyThread for
+    // details.
     TaskQueueManager* task_queue_manager;
+    PumpPolicy pump_policy;
+    TimeDomain* time_domain;
 
     scoped_ptr<WorkQueue> delayed_work_queue;
     scoped_ptr<WorkQueue> immediate_work_queue;
+    std::priority_queue<Task> delayed_incoming_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
     bool is_enabled;
@@ -196,38 +201,54 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
 
   ~TaskQueueImpl() override;
 
+  bool PostImmediateTaskImpl(const tracked_objects::Location& from_here,
+                             const base::Closure& task,
+                             TaskType task_type);
   bool PostDelayedTaskImpl(const tracked_objects::Location& from_here,
                            const base::Closure& task,
                            base::TimeDelta delay,
                            TaskType task_type);
-  bool PostDelayedTaskLocked(LazyNow* lazy_now,
-                             const tracked_objects::Location& from_here,
-                             const base::Closure& task,
-                             base::TimeTicks desired_run_time,
-                             TaskType task_type);
-  void ScheduleDelayedWorkTask(TimeDomain* time_domain,
-                               base::TimeTicks desired_run_time);
+
+  // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
+  // only fast path.
+  void PushOntoDelayedIncomingQueueFromMainThread(Task&& pending_task,
+                                                  base::TimeTicks now);
+
+  // Push the task onto the |delayed_incoming_queue|.  Slow path from other
+  // threads.
+  void PushOntoDelayedIncomingQueueLocked(Task&& pending_task);
+
+  void ScheduleDelayedWorkTask(const Task pending_task);
 
   // Enqueues any delayed tasks which should be run now on the
-  // |delayed_work_queue|. Must be called with |any_thread_lock_| locked.
-  void MoveReadyDelayedTasksToDelayedWorkQueueLocked(LazyNow* lazy_now);
+  // |delayed_work_queue|.  Must be called from the main thread.
+  void MoveReadyDelayedTasksToDelayedWorkQueue(LazyNow* lazy_now);
 
   void MoveReadyImmediateTasksToImmediateWorkQueueLocked();
 
   // Note this does nothing if its not called from the main thread.
   void PumpQueueLocked(bool may_post_dowork);
-  bool TaskIsOlderThanQueuedTasks(const Task* task);
-  bool ShouldAutoPumpQueueLocked(bool should_trigger_wakeup,
-                                 const Task* previous_task);
 
-  // Push the task onto the |delayed_incoming_queue|
-  void PushOntoDelayedIncomingQueueLocked(const Task&& pending_task,
-                                          LazyNow* lazy_now);
+  // Returns true if |task| is older than the oldest incoming immediate task.
+  // NOTE |any_thread_lock_| must be locked.
+  bool TaskIsOlderThanQueuedImmediateTasksLocked(const Task* task);
+
+  // Returns true if |task| is older than the oldest delayed task.  Must be
+  // called from the main thread.
+  bool TaskIsOlderThanQueuedDelayedTasks(const Task* task);
+
+  // NOTE |any_thread_lock_| must be locked.
+  bool ShouldAutoPumpImmediateQueueLocked(bool should_trigger_wakeup,
+                                          const Task* previous_task);
+
+  //  Must be called from the main thread.
+  bool ShouldAutoPumpDelayedQueue(bool should_trigger_wakeup,
+                                  const Task* previous_task);
 
   // Push the task onto the |immediate_incoming_queue| and for auto pumped
   // queues it calls MaybePostDoWorkOnMainRunner if the Incoming queue was
   // empty.
-  void PushOntoImmediateIncomingQueueLocked(const Task&& pending_task);
+  void PushOntoImmediateIncomingQueueLocked(Task&& pending_task);
 
   void TraceQueueSize(bool is_locked) const;
   static void QueueAsValueInto(const std::queue<Task>& queue,

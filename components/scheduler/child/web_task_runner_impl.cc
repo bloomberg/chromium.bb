@@ -31,6 +31,7 @@ void WebTaskRunnerImpl::postDelayedTask(
     const blink::WebTraceLocation& web_location,
     blink::WebTaskRunner::Task* task,
     double delayMs) {
+  DCHECK_GE(delayMs, 0.0);
   tracked_objects::Location location(web_location.functionName(),
                                      web_location.fileName(), -1, nullptr);
   task_runner_->PostDelayedTask(

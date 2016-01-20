@@ -23,12 +23,17 @@ void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
   DCHECK(task_queue_manager_);
 }
 
-LazyNow VirtualTimeDomain::CreateLazyNow() {
+LazyNow VirtualTimeDomain::CreateLazyNow() const {
   base::AutoLock lock(lock_);
   return LazyNow(now_);
 }
 
-void VirtualTimeDomain::RequestWakeup(LazyNow* lazy_now,
+base::TimeTicks VirtualTimeDomain::Now() const {
+  base::AutoLock lock(lock_);
+  return now_;
+}
+
+void VirtualTimeDomain::RequestWakeup(base::TimeTicks now,
                                       base::TimeDelta delay) {
   // We don't need to do anything here because the caller of AdvanceTo is
   // responsible for calling TaskQueueManager::MaybeScheduleImmediateWork if

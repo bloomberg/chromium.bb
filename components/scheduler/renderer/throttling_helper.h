@@ -49,6 +49,10 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   using TaskQueueMap = std::map<TaskQueue*, size_t>;
 
   void PumpThrottledTasks();
+
+  // Note |unthrottled_runtime| might be in the past. When this happens we
+  // compute the delay to the next runtime based on now rather than
+  // unthrottled_runtime.
   void MaybeSchedulePumpThrottledTasksLocked(
       const tracked_objects::Location& from_here,
       base::TimeTicks now,

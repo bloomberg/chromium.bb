@@ -73,7 +73,7 @@ class SCHEDULER_EXPORT TaskQueueManager
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
   void MaybeScheduleDelayedWork(const tracked_objects::Location& from_here,
-                                LazyNow* lazy_now,
+                                base::TimeTicks now,
                                 base::TimeDelta delay);
 
   // Set the number of tasks executed in a single invocation of the task queue

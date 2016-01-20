@@ -53,14 +53,14 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
   DCHECK(destination_time_domain);
   registered_task_queues_.erase(queue);
 
-  LazyNow destination_lazy_now = destination_time_domain->CreateLazyNow();
+  base::TimeTicks destination_now = destination_time_domain->Now();
   // We need to remove |task_queue| from delayed_wakeup_multimap_ which is a
   // little awkward since it's keyed by time. O(n) running time.
   for (DelayedWakeupMultimap::iterator iter = delayed_wakeup_multimap_.begin();
        iter != delayed_wakeup_multimap_.end();) {
     if (iter->second == queue) {
       destination_time_domain->ScheduleDelayedWork(queue, iter->first,
-                                                   &destination_lazy_now);
+                                                   destination_now);
       DelayedWakeupMultimap::iterator temp = iter;
       iter++;
       // O(1) amortized.
@@ -80,14 +80,13 @@ void TimeDomain::MigrateQueue(internal::TaskQueueImpl* queue,
 
 void TimeDomain::ScheduleDelayedWork(internal::TaskQueueImpl* queue,
                                      base::TimeTicks delayed_run_time,
-                                     LazyNow* lazy_now) {
+                                     base::TimeTicks now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 
   if (delayed_wakeup_multimap_.empty() ||
       delayed_run_time < delayed_wakeup_multimap_.begin()->first) {
-    base::TimeDelta delay =
-        std::max(base::TimeDelta(), delayed_run_time - lazy_now->Now());
-    RequestWakeup(lazy_now, delay);
+    base::TimeDelta delay = std::max(base::TimeDelta(), delayed_run_time - now);
+    RequestWakeup(now, delay);
   }
 
   delayed_wakeup_multimap_.insert(std::make_pair(delayed_run_time, queue));

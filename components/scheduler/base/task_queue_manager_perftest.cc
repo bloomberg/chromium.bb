@@ -145,6 +145,17 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
                        base::Unretained(this), 10000));
 }
 
+TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
+  if (!base::ThreadTicks::IsSupported())
+    return;
+  Initialize(32u);
+
+  max_tasks_in_flight_ = 200;
+  Benchmark("run 10000 delayed tasks with eight queues",
+            base::Bind(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
+                       base::Unretained(this), 10000));
+}
+
 // TODO(alexclarke): Add additional tests with different mixes of non-delayed vs
 // delayed tasks.
 

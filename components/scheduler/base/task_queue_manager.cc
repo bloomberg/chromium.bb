@@ -138,11 +138,11 @@ void TaskQueueManager::MaybeScheduleImmediateWork(
 
 void TaskQueueManager::MaybeScheduleDelayedWork(
     const tracked_objects::Location& from_here,
-    LazyNow* lazy_now,
+    base::TimeTicks now,
     base::TimeDelta delay) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_GE(delay, base::TimeDelta());
-  base::TimeTicks run_time = lazy_now->Now() + delay;
+  base::TimeTicks run_time = now + delay;
   // De-duplicate DoWork posts.
   if (!main_thread_pending_wakeups_.insert(run_time).second)
     return;
