@@ -1146,8 +1146,8 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertLoadedNoUrl();  // No load after long-press until opening panel.
         clickNode("question-mark");
         waitForGestureProcessing();
+        waitForPanelToCloseAndSelectionDissolved();
         assertNull(getSelectedText());
-        assertPanelClosedOrUndefined();
         assertLoadedNoUrl();
     }
 
