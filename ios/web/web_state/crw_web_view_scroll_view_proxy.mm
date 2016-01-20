@@ -18,6 +18,8 @@
   // update and reset the contentOffset to force a fast update.  These updates
   // should be a no-op for the contentOffset, so the callbacks can be ignored.
   BOOL _ignoreScroll;
+  // The number of calls through the proxy API in the current stack.
+  NSUInteger _proxyCallCount;
 }
 
 // Returns the key paths that need to be observed for UIScrollView.
@@ -84,6 +86,7 @@
 }
 
 - (void)setScrollEnabled:(BOOL)scrollEnabled {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setScrollEnabled:scrollEnabled];
 }
 
@@ -92,6 +95,7 @@
 }
 
 - (void)setBounces:(BOOL)bounces {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setBounces:bounces];
 }
 
@@ -104,6 +108,7 @@
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setContentOffset:contentOffset];
 }
 
@@ -112,6 +117,7 @@
 }
 
 - (void)setContentInsetFast:(UIEdgeInsets)contentInset {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   if (!_scrollView)
     return;
 
@@ -139,7 +145,7 @@
   // contentOffset will cause the -scrollViewDidScroll callback to fire.
   // Because we are eventually setting the contentOffset back to it's original
   // position, we can ignore these calls.
-  base::AutoReset<BOOL> autoReset(&_ignoreScroll, YES);
+  base::AutoReset<BOOL> ignoreScrollAutoReset(&_ignoreScroll, YES);
   CGPoint contentOffset = [_scrollView contentOffset];
   _scrollView.get().contentOffset =
       CGPointMake(contentOffset.x, contentOffset.y + 1);
@@ -147,6 +153,7 @@
 }
 
 - (void)setContentInset:(UIEdgeInsets)contentInset {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setContentInset:contentInset];
 }
 
@@ -155,6 +162,7 @@
 }
 
 - (void)setScrollIndicatorInsets:(UIEdgeInsets)scrollIndicatorInsets {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setScrollIndicatorInsets:scrollIndicatorInsets];
 }
 
@@ -163,6 +171,7 @@
 }
 
 - (void)setContentSize:(CGSize)contentSize {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setContentSize:contentSize];
 }
 
@@ -171,6 +180,7 @@
 }
 
 - (void)setContentOffset:(CGPoint)contentOffset animated:(BOOL)animated {
+  base::AutoReset<NSUInteger> autoReset(&_proxyCallCount, _proxyCallCount + 1);
   [_scrollView setContentOffset:contentOffset animated:animated];
 }
 
@@ -180,6 +190,10 @@
 
 - (NSArray*)gestureRecognizers {
   return [_scrollView gestureRecognizers];
+}
+
+- (BOOL)isUpdatingThroughProxy {
+  return _proxyCallCount > 0;
 }
 
 #pragma mark -
