@@ -54437,6 +54437,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebFont.InterventionResult" enum="WebFontInterventionResult">
+  <owner>toyoshim@chromium.org</owner>
+  <owner>kenjibaheux@chromium.org</owner>
+  <summary>
+    For each WebFont load attempt, records whether User Agent Intervention was
+    triggered, and whether the request (would have) timed out or not. The
+    intervention takes adaptive behaviors to handle loading timeouts to improve
+    user experiences on slow networks.
+  </summary>
+</histogram>
+
 <histogram name="WebFont.LayoutLatency" units="ms">
   <obsolete>
     Renamed to WebFont.StyleRecalcToDownloadLatency for clarity.
@@ -80551,6 +80562,13 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="0" label="Not in the cache"/>
   <int value="1" label="In the cache"/>
   <int value="2" label="Previously in the cache"/>
+</enum>
+
+<enum name="WebFontInterventionResult" type="int">
+  <int value="0" label="Wasn't triggered, and does not time out"/>
+  <int value="1" label="Wasn't triggered, but time out"/>
+  <int value="2" label="Was triggered, but would not time out"/>
+  <int value="3" label="Was triggered, and would time out"/>
 </enum>
 
 <enum name="WebFontPackageFormat" type="int">

@@ -22,7 +22,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
     , m_fontLoader(fontLoader)
     , m_display(display)
     , m_period(display == FontDisplaySwap ? SwapPeriod : BlockPeriod)
-    , m_isInterventionEnabled(false)
+    , m_isInterventionTriggered(false)
 {
 #if ENABLE(OILPAN)
     ThreadState::current()->registerPreFinalizer(this);
@@ -33,7 +33,7 @@ RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font, PassRefPtrWillBeR
         // TODO(crbug.com/515343): Consider to use better signals.
         if (networkStateNotifier().connectionType() == WebConnectionTypeCellular2G && display == FontDisplayAuto) {
 
-            m_isInterventionEnabled = true;
+            m_isInterventionTriggered = true;
             m_period = SwapPeriod;
         }
     }
@@ -91,6 +91,7 @@ void RemoteFontFaceSource::didStartFontLoad(FontResource*)
 void RemoteFontFaceSource::fontLoaded(FontResource*)
 {
     m_histograms.recordRemoteFont(m_font.get());
+    m_histograms.fontLoaded(m_isInterventionTriggered);
 
     m_font->ensureCustomFontData();
     if (m_font->status() == Resource::DecodeError)
@@ -101,6 +102,8 @@ void RemoteFontFaceSource::fontLoaded(FontResource*)
         m_fontLoader->fontFaceInvalidated();
         m_face->fontLoaded(this);
     }
+    // Should not do anything after this line since the m_face->fontLoaded()
+    // above may trigger deleting this object.
 }
 
 void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*)
@@ -113,10 +116,12 @@ void RemoteFontFaceSource::fontLoadShortLimitExceeded(FontResource*)
 
 void RemoteFontFaceSource::fontLoadLongLimitExceeded(FontResource*)
 {
-    if (m_display == FontDisplayBlock || (!m_isInterventionEnabled && m_display == FontDisplayAuto))
+    if (m_display == FontDisplayBlock || (!m_isInterventionTriggered && m_display == FontDisplayAuto))
         switchToSwapPeriod();
     else if (m_display == FontDisplayFallback)
         switchToFailurePeriod();
+
+    m_histograms.longLimitExceeded(m_isInterventionTriggered);
 }
 
 void RemoteFontFaceSource::switchToSwapPeriod()
@@ -197,6 +202,18 @@ void RemoteFontFaceSource::FontLoadHistograms::fallbackFontPainted()
         m_fallbackPaintTime = currentTimeMS();
 }
 
+void RemoteFontFaceSource::FontLoadHistograms::fontLoaded(bool isInterventionTriggered)
+{
+    if (!m_isLongLimitExceeded)
+        recordInterventionResult(isInterventionTriggered);
+}
+
+void RemoteFontFaceSource::FontLoadHistograms::longLimitExceeded(bool isInterventionTriggered)
+{
+    m_isLongLimitExceeded = true;
+    recordInterventionResult(isInterventionTriggered);
+}
+
 void RemoteFontFaceSource::FontLoadHistograms::recordFallbackTime(const FontResource* font)
 {
     if (m_fallbackPaintTime <= 0)
@@ -240,6 +257,20 @@ const char* RemoteFontFaceSource::FontLoadHistograms::histogramName(const FontRe
     if (size < 1024 * 1024)
         return "WebFont.DownloadTime.3.100KBTo1MB";
     return "WebFont.DownloadTime.4.Over1MB";
+}
+
+void RemoteFontFaceSource::FontLoadHistograms::recordInterventionResult(bool triggered)
+{
+    if (!RuntimeEnabledFeatures::webFontsInterventionEnabled())
+        return;
+    // interventionResult takes 0-3 values.
+    int interventionResult = 0;
+    if (m_isLongLimitExceeded)
+        interventionResult |= 1 << 0;
+    if (triggered)
+        interventionResult |= 1 << 1;
+    const int boundary = 1 << 2;
+    Platform::current()->histogramEnumeration("WebFont.InterventionResult", interventionResult, boundary);
 }
 
 } // namespace blink

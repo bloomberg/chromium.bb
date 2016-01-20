@@ -60,16 +60,20 @@ private:
     class FontLoadHistograms {
         DISALLOW_NEW();
     public:
-        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0) { }
+        FontLoadHistograms() : m_loadStartTime(0), m_fallbackPaintTime(0), m_isLongLimitExceeded(false) { }
         void loadStarted();
         void fallbackFontPainted();
-        void recordRemoteFont(const FontResource*);
+        void fontLoaded(bool isInterventionTriggered);
+        void longLimitExceeded(bool isInterventionTriggered);
         void recordFallbackTime(const FontResource*);
+        void recordRemoteFont(const FontResource*);
         bool hadBlankText() { return m_fallbackPaintTime; }
     private:
         const char* histogramName(const FontResource*);
+        void recordInterventionResult(bool triggered);
         double m_loadStartTime;
         double m_fallbackPaintTime;
+        bool m_isLongLimitExceeded;
     };
 
     void switchToSwapPeriod();
@@ -80,7 +84,7 @@ private:
     const FontDisplay m_display;
     DisplayPeriod m_period;
     FontLoadHistograms m_histograms;
-    bool m_isInterventionEnabled;
+    bool m_isInterventionTriggered;
 };
 
 } // namespace blink
