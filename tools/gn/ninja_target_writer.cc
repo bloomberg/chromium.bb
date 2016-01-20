@@ -67,11 +67,7 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   } else if (target->output_type() == Target::GROUP) {
     NinjaGroupTargetWriter writer(target, file);
     writer.Run();
-  } else if (target->output_type() == Target::EXECUTABLE ||
-             target->output_type() == Target::LOADABLE_MODULE ||
-             target->output_type() == Target::STATIC_LIBRARY ||
-             target->output_type() == Target::SHARED_LIBRARY ||
-             target->output_type() == Target::SOURCE_SET) {
+  } else if (target->IsBinary()) {
     NinjaBinaryTargetWriter writer(target, file);
     writer.Run();
   } else {

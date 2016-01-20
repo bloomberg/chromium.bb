@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -13,7 +15,10 @@
 #include "tools/gn/deps_iterator.h"
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/scheduler.h"
+#include "tools/gn/source_file_type.h"
 #include "tools/gn/substitution_writer.h"
+#include "tools/gn/tool.h"
+#include "tools/gn/toolchain.h"
 #include "tools/gn/trace.h"
 
 namespace {
@@ -69,9 +74,15 @@ Err MakeStaticLibDepsError(const Target* from, const Target* to) {
 //
 // Pass a pointer to an empty set for the first invocation. This will be used
 // to avoid duplicate checking.
+//
+// Checking of object files is optional because it is much slower. This allows
+// us to check targets for normal outputs, and then as a second pass check
+// object files (since we know it will be an error otherwise). This allows
+// us to avoid computing all object file names in the common case.
 bool EnsureFileIsGeneratedByDependency(const Target* target,
                                        const OutputFile& file,
                                        bool check_private_deps,
+                                       bool consider_object_files,
                                        std::set<const Target*>* seen_targets) {
   if (seen_targets->find(target) != seen_targets->end())
     return false;  // Already checked this one and it's not found.
@@ -85,11 +96,24 @@ bool EnsureFileIsGeneratedByDependency(const Target* target,
       return true;
   }
 
+  // Check binary target intermediate files if requested.
+  if (consider_object_files && target->IsBinary()) {
+    std::vector<OutputFile> source_outputs;
+    for (const SourceFile& source : target->sources()) {
+      Toolchain::ToolType tool_type;
+      if (!target->GetOutputFilesForSource(source, &tool_type, &source_outputs))
+        continue;
+      if (std::find(source_outputs.begin(), source_outputs.end(), file) !=
+          source_outputs.end())
+        return true;
+    }
+  }
+
   // Check all public dependencies (don't do data ones since those are
   // runtime-only).
   for (const auto& pair : target->public_deps()) {
     if (EnsureFileIsGeneratedByDependency(pair.ptr, file, false,
-                                          seen_targets))
+                                          consider_object_files, seen_targets))
       return true;  // Found a path.
   }
 
@@ -97,6 +121,7 @@ bool EnsureFileIsGeneratedByDependency(const Target* target,
   if (check_private_deps) {
     for (const auto& pair : target->private_deps()) {
       if (EnsureFileIsGeneratedByDependency(pair.ptr, file, false,
+                                            consider_object_files,
                                             seen_targets))
         return true;  // Found a path.
     }
@@ -215,6 +240,14 @@ bool Target::OnResolved(Err* err) {
   return true;
 }
 
+bool Target::IsBinary() const {
+  return output_type_ == EXECUTABLE ||
+         output_type_ == SHARED_LIBRARY ||
+         output_type_ == LOADABLE_MODULE ||
+         output_type_ == STATIC_LIBRARY ||
+         output_type_ == SOURCE_SET;
+}
+
 bool Target::IsLinkable() const {
   return output_type_ == STATIC_LIBRARY || output_type_ == SHARED_LIBRARY;
 }
@@ -285,6 +318,34 @@ bool Target::SetToolchain(const Toolchain* toolchain, Err* err) {
                 toolchain->GetToolTypeForTargetFinalOutput(this)).c_str()));
   }
   return false;
+}
+
+bool Target::GetOutputFilesForSource(const SourceFile& source,
+                                     Toolchain::ToolType* computed_tool_type,
+                                     std::vector<OutputFile>* outputs) const {
+  outputs->clear();
+  *computed_tool_type = Toolchain::TYPE_NONE;
+
+  SourceFileType file_type = GetSourceFileType(source);
+  if (file_type == SOURCE_UNKNOWN)
+    return false;
+  if (file_type == SOURCE_O) {
+    // Object files just get passed to the output and not compiled.
+    outputs->push_back(OutputFile(settings()->build_settings(), source));
+    return true;
+  }
+
+  *computed_tool_type = toolchain_->GetToolTypeForSourceType(file_type);
+  if (*computed_tool_type == Toolchain::TYPE_NONE)
+    return false;  // No tool for this file (it's a header file or something).
+  const Tool* tool = toolchain_->GetTool(*computed_tool_type);
+  if (!tool)
+    return false;  // Tool does not apply for this toolchain.file.
+
+  // Figure out what output(s) this compiler produces.
+  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
+      this, source, tool->outputs(), outputs);
+  return !outputs->empty();
 }
 
 void Target::PullDependentTargetConfigsFrom(const Target* dep) {
@@ -568,6 +629,13 @@ void Target::CheckSourceGenerated(const SourceFile& source) const {
   // can be filtered out of this list.
   OutputFile out_file(settings()->build_settings(), source);
   std::set<const Target*> seen_targets;
-  if (!EnsureFileIsGeneratedByDependency(this, out_file, true, &seen_targets))
-    g_scheduler->AddUnknownGeneratedInput(this, source);
+  if (!EnsureFileIsGeneratedByDependency(this, out_file, true, false,
+                                         &seen_targets)) {
+    // Check object files (much slower and very rare) only if the "normal"
+    // output check failed.
+    seen_targets.clear();
+    if (!EnsureFileIsGeneratedByDependency(this, out_file, true, true,
+                                           &seen_targets))
+      g_scheduler->AddUnknownGeneratedInput(this, source);
+  }
 }

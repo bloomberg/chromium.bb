@@ -92,49 +92,6 @@ struct IncludeWriter {
   PathOutput& path_output_;
 };
 
-// Computes the set of output files resulting from compiling the given source
-// file. If the file can be compiled and the tool exists, fills the outputs in
-// and writes the tool type to computed_tool_type. If the file is not
-// compilable, returns false.
-//
-// The target that the source belongs to is passed as an argument. In the case
-// of linking to source sets, this can be different than the target this class
-// is currently writing.
-//
-// The function can succeed with a "NONE" tool type for object files which are
-// just passed to the output. The output will always be overwritten, not
-// appended to.
-bool GetOutputFilesForSource(const Target* target,
-                             const SourceFile& source,
-                             Toolchain::ToolType* computed_tool_type,
-                             std::vector<OutputFile>* outputs) {
-  outputs->clear();
-  *computed_tool_type = Toolchain::TYPE_NONE;
-
-  SourceFileType file_type = GetSourceFileType(source);
-  if (file_type == SOURCE_UNKNOWN)
-    return false;
-  if (file_type == SOURCE_O) {
-    // Object files just get passed to the output and not compiled.
-    outputs->push_back(
-        OutputFile(target->settings()->build_settings(), source));
-    return true;
-  }
-
-  *computed_tool_type =
-      target->toolchain()->GetToolTypeForSourceType(file_type);
-  if (*computed_tool_type == Toolchain::TYPE_NONE)
-    return false;  // No tool for this file (it's a header file or something).
-  const Tool* tool = target->toolchain()->GetTool(*computed_tool_type);
-  if (!tool)
-    return false;  // Tool does not apply for this toolchain.file.
-
-  // Figure out what output(s) this compiler produces.
-  SubstitutionWriter::ApplyListToCompilerAsOutputFile(
-      target, source, tool->outputs(), outputs);
-  return !outputs->empty();
-}
-
 // Returns the language-specific suffix for precompiled header files.
 const char* GetPCHLangSuffixForToolType(Toolchain::ToolType type) {
   switch (type) {
@@ -256,7 +213,7 @@ void AddSourceSetObjectFiles(const Target* source_set,
   // the tool if there are more than one.
   for (const auto& source : source_set->sources()) {
     Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-    if (GetOutputFilesForSource(source_set, source, &tool_type, &tool_outputs))
+    if (source_set->GetOutputFilesForSource(source, &tool_type, &tool_outputs))
       obj_files->push_back(tool_outputs[0]);
 
     used_types.Set(GetSourceFileType(source));
@@ -662,7 +619,7 @@ void NinjaBinaryTargetWriter::WriteSources(
     // Clear the vector but maintain the max capacity to prevent reallocations.
     deps.resize(0);
     Toolchain::ToolType tool_type = Toolchain::TYPE_NONE;
-    if (!GetOutputFilesForSource(target_, source, &tool_type, &tool_outputs)) {
+    if (!target_->GetOutputFilesForSource(source, &tool_type, &tool_outputs)) {
       if (GetSourceFileType(source) == SOURCE_DEF)
         other_files->push_back(source);
       continue;  // No output for this source.
