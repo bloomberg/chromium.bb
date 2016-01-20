@@ -51,6 +51,14 @@ void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
   result->append("]");
 }
 
+bool AppendRoutingId(std::string* result, FrameTreeNode* node) {
+  if (!result->empty())
+    result->append(" ");
+  result->append(
+      base::Int64ToString(node->current_frame_host()->GetRoutingID()));
+  return true;
+}
+
 // Logs calls to WebContentsObserver along with the state of the frame tree,
 // for later use in EXPECT_EQ().
 class TreeWalkingWebContentsLogger : public WebContentsObserver {
@@ -118,6 +126,13 @@ class FrameTreeTest : public RenderViewHostImplTestHarness {
   std::string GetTreeState(FrameTree* frame_tree) {
     std::string result;
     AppendTreeNodeState(frame_tree->root(), &result);
+    return result;
+  }
+
+  std::string GetTraversalOrder(FrameTree* frame_tree,
+                                FrameTreeNode* node_to_skip) {
+    std::string result;
+    frame_tree->ForEach(base::Bind(&AppendRoutingId, &result), node_to_skip);
     return result;
   }
 };
@@ -222,7 +237,31 @@ TEST_F(FrameTreeTest, Shape) {
       "[365: [455: [555: [655: []]]]], 268: []]]",
       GetTreeState(frame_tree));
 
+  // Verify that traversal order is breadth first, even if we skip a subtree.
+  FrameTreeNode* child_14 = root->child_at(0);
+  FrameTreeNode* child_15 = root->child_at(1);
+  FrameTreeNode* child_244 = child_14->child_at(0);
+  FrameTreeNode* child_245 = child_14->child_at(1);
   FrameTreeNode* child_555 = child_267->child_at(0)->child_at(0)->child_at(0);
+  FrameTreeNode* child_655 = child_555->child_at(0);
+  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555 655",
+            GetTraversalOrder(frame_tree, nullptr));
+  EXPECT_EQ("", GetTraversalOrder(frame_tree, root));
+  EXPECT_EQ("2 15 16 255 264 265 266 267 268 365 455 555 655",
+            GetTraversalOrder(frame_tree, child_14));
+  EXPECT_EQ("2 14 15 16 245 255 264 265 266 267 268 365 455 555 655",
+            GetTraversalOrder(frame_tree, child_244));
+  EXPECT_EQ("2 14 15 16 244 255 264 265 266 267 268 365 455 555 655",
+            GetTraversalOrder(frame_tree, child_245));
+  EXPECT_EQ("2 14 16 244 245 264 265 266 267 268 365 455 555 655",
+            GetTraversalOrder(frame_tree, child_15));
+  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 268",
+            GetTraversalOrder(frame_tree, child_267));
+  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455",
+            GetTraversalOrder(frame_tree, child_555));
+  EXPECT_EQ("2 14 15 16 244 245 255 264 265 266 267 268 365 455 555",
+            GetTraversalOrder(frame_tree, child_655));
+
   frame_tree->RemoveFrame(child_555);
   EXPECT_EQ(
       "2: [14: [244: [], 245: []], "

@@ -167,6 +167,7 @@ class CONTENT_EXPORT FrameTree {
   void SetPageFocus(SiteInstance* instance, bool is_focused);
 
  private:
+  friend class FrameTreeTest;
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest, RemoveFocusedFrame);
   typedef base::hash_map<int, RenderViewHostImpl*> RenderViewHostMap;
   typedef std::multimap<int, RenderViewHostImpl*> RenderViewHostMultiMap;
