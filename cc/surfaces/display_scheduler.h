@@ -19,7 +19,6 @@ namespace cc {
 class OutputSurface;
 class BeginFrameSource;
 
-// TODO(brianderson): Reconcile with SurfacesScheduler crbug.com/476676
 class CC_SURFACES_EXPORT DisplaySchedulerClient {
  public:
   virtual ~DisplaySchedulerClient() {}

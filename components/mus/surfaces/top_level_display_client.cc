@@ -4,14 +4,20 @@
 
 #include "components/mus/surfaces/top_level_display_client.h"
 
+#include "base/thread_task_runner_handle.h"
 #include "cc/output/compositor_frame.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display.h"
+#include "cc/surfaces/display_scheduler.h"
 #include "cc/surfaces/surface.h"
 #include "components/mus/gles2/gpu_state.h"
 #include "components/mus/surfaces/direct_output_surface.h"
 #include "components/mus/surfaces/surfaces_context_provider.h"
-#include "components/mus/surfaces/surfaces_scheduler.h"
 #include "components/mus/surfaces/surfaces_state.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace mus {
 namespace {
@@ -24,23 +30,31 @@ TopLevelDisplayClient::TopLevelDisplayClient(
     gfx::AcceleratedWidget widget,
     const scoped_refptr<GpuState>& gpu_state,
     const scoped_refptr<SurfacesState>& surfaces_state)
-    : surfaces_state_(surfaces_state),
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      surfaces_state_(surfaces_state),
       factory_(surfaces_state->manager(), this),
       cc_id_(static_cast<uint64_t>(surfaces_state->next_id_namespace()) << 32) {
   factory_.Create(cc_id_);
 
   display_.reset(new cc::Display(this, surfaces_state_->manager(), nullptr,
                                  nullptr, cc::RendererSettings()));
-  surfaces_state_->scheduler()->AddDisplay(display_.get());
 
-  // TODO(brianderson): Reconcile with SurfacesScheduler crbug.com/476676
-  cc::DisplayScheduler* null_display_scheduler = nullptr;
+  scoped_ptr<cc::OutputSurface> output_surface =
+      make_scoped_ptr(new DirectOutputSurface(
+          new SurfacesContextProvider(this, widget, gpu_state)));
+
+  int max_frames_pending = output_surface->capabilities().max_frames_pending;
+  DCHECK_GT(max_frames_pending, 0);
+
+  synthetic_frame_source_ = cc::SyntheticBeginFrameSource::Create(
+      task_runner_.get(), cc::BeginFrameArgs::DefaultInterval());
+
+  scheduler_.reset(
+      new cc::DisplayScheduler(display_.get(), synthetic_frame_source_.get(),
+                               task_runner_.get(), max_frames_pending));
 
   if (gpu_state->HardwareRenderingAvailable()) {
-    display_->Initialize(
-        make_scoped_ptr(new DirectOutputSurface(
-            new SurfacesContextProvider(this, widget, gpu_state))),
-        null_display_scheduler);
+    display_->Initialize(std::move(output_surface), scheduler_.get());
   } else {
     // TODO(rjkroege): Implement software compositing.
   }
@@ -52,10 +66,6 @@ TopLevelDisplayClient::TopLevelDisplayClient(
 
 TopLevelDisplayClient::~TopLevelDisplayClient() {
   factory_.Destroy(cc_id_);
-  surfaces_state_->scheduler()->RemoveDisplay(display_.get());
-  // By deleting the object after display_ is reset, OutputSurfaceLost can
-  // know not to do anything (which would result in double delete).
-  delete display_.release();
 }
 
 void TopLevelDisplayClient::SubmitCompositorFrame(
@@ -69,7 +79,6 @@ void TopLevelDisplayClient::SubmitCompositorFrame(
   display_->Resize(last_submitted_frame_size_);
   factory_.SubmitCompositorFrame(cc_id_, std::move(pending_frame_),
                                  base::Bind(&CallCallback, callback));
-  surfaces_state_->scheduler()->SetNeedsDraw();
 }
 
 void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
@@ -78,14 +87,6 @@ void TopLevelDisplayClient::CommitVSyncParameters(base::TimeTicks timebase,
 void TopLevelDisplayClient::OutputSurfaceLost() {
   if (!display_)  // Shutdown case
     return;
-
-  // If our OutputSurface is lost we can't draw until we get a new one. For now,
-  // destroy the display and create a new one when our ContextProvider provides
-  // a new one.
-  // TODO: This is more violent than necessary - we could simply remove this
-  // display from the scheduler's set and pass a new context in to the
-  // OutputSurface. It should be able to reinitialize properly.
-  surfaces_state_->scheduler()->RemoveDisplay(display_.get());
   display_.reset();
 }
 
@@ -94,9 +95,16 @@ void TopLevelDisplayClient::SetMemoryPolicy(
 
 void TopLevelDisplayClient::OnVSyncParametersUpdated(int64_t timebase,
                                                      int64_t interval) {
-  surfaces_state_->scheduler()->OnVSyncParametersUpdated(
-      base::TimeTicks::FromInternalValue(timebase),
-      base::TimeDelta::FromInternalValue(interval));
+  auto timebase_time_ticks = base::TimeTicks::FromInternalValue(timebase);
+  auto interval_time_delta = base::TimeDelta::FromInternalValue(interval);
+
+  if (interval_time_delta.is_zero()) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    interval_time_delta = cc::BeginFrameArgs::DefaultInterval();
+  }
+
+  synthetic_frame_source_->OnUpdateVSyncParameters(timebase_time_ticks,
+                                                   interval_time_delta);
 }
 
 void TopLevelDisplayClient::ReturnResources(

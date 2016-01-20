@@ -12,7 +12,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/mus/surfaces/surfaces_scheduler.h"
 
 namespace cc {
 class SurfaceHittest;
@@ -22,8 +21,8 @@ class SurfaceManager;
 namespace mus {
 
 // The SurfacesState object is an object global to the Window Manager app that
-// holds the SurfaceManager, SurfacesScheduler and allocates new Surfaces
-// namespaces. This object lives on the main thread of the Window Manager.
+// holds the SurfaceManager and allocates new Surfaces namespaces.
+// This object lives on the main thread of the Window Manager.
 // TODO(rjkroege, fsamuel): This object will need to change to support multiple
 // displays.
 class SurfacesState : public base::RefCounted<SurfacesState> {
@@ -36,8 +35,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
 
   cc::SurfaceHittest* hit_tester() { return &hit_tester_; }
 
-  SurfacesScheduler* scheduler() { return &scheduler_; }
-
  private:
   friend class base::RefCounted<SurfacesState>;
   ~SurfacesState();
@@ -48,7 +45,6 @@ class SurfacesState : public base::RefCounted<SurfacesState> {
   uint32_t next_id_namespace_;
   cc::SurfaceManager manager_;
   cc::SurfaceHittest hit_tester_;
-  SurfacesScheduler scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesState);
 };

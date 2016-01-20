@@ -73,7 +73,6 @@ void ServerWindowSurface::SubmitCompositorFrame(
   surface_factory_.SubmitCompositorFrame(surface_id_,
                                          ConvertCompositorFrame(frame),
                                          base::Bind(&CallCallback, callback));
-  window()->delegate()->GetSurfacesState()->scheduler()->SetNeedsDraw();
   window()->delegate()->OnScheduleWindowPaint(window());
   last_submitted_frame_size_ = frame_size;
 }

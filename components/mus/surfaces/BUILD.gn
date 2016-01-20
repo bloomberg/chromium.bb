@@ -9,8 +9,6 @@ source_set("surfaces") {
     "surfaces_context_provider.cc",
     "surfaces_context_provider.h",
     "surfaces_context_provider_delegate.h",
-    "surfaces_scheduler.cc",
-    "surfaces_scheduler.h",
     "surfaces_state.cc",
     "surfaces_state.h",
     "top_level_display_client.cc",

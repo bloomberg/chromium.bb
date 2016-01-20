@@ -21,13 +21,14 @@
 
 namespace cc {
 class Display;
+class DisplayScheduler;
 class SurfaceFactory;
+class SyntheticBeginFrameSource;
 }
 
 namespace mus {
 
 class DisplayDelegate;
-class SurfacesScheduler;
 class SurfacesState;
 
 // A TopLevelDisplayClient manages the top level surface that is rendered into a
@@ -62,6 +63,7 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   void SetBeginFrameSource(cc::SurfaceId surface_id,
                            cc::BeginFrameSource* begin_frame_source) override;
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SurfacesState> surfaces_state_;
   cc::SurfaceFactory factory_;
   cc::SurfaceId cc_id_;
@@ -69,6 +71,8 @@ class TopLevelDisplayClient : public cc::DisplayClient,
   gfx::Size last_submitted_frame_size_;
   scoped_ptr<cc::CompositorFrame> pending_frame_;
 
+  scoped_ptr<cc::SyntheticBeginFrameSource> synthetic_frame_source_;
+  scoped_ptr<cc::DisplayScheduler> scheduler_;
   scoped_ptr<cc::Display> display_;
 
   DISALLOW_COPY_AND_ASSIGN(TopLevelDisplayClient);

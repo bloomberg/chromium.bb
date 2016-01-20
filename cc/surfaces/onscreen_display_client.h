@@ -11,11 +11,12 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "cc/surfaces/display.h"
 #include "cc/surfaces/surfaces_export.h"
 
-class VSyncParameterObserver;
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace cc {
 class BeginFrameSource;
