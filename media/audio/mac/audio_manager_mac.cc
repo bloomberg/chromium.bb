@@ -262,6 +262,30 @@ static AudioDeviceID GetAudioDeviceIdByUId(bool is_input,
   return audio_device_id;
 }
 
+static bool GetDefaultDevice(AudioDeviceID* device, bool input) {
+  CHECK(device);
+
+  // Obtain the AudioDeviceID of the default input or output AudioDevice.
+  AudioObjectPropertyAddress pa;
+  pa.mSelector = input ? kAudioHardwarePropertyDefaultInputDevice
+                       : kAudioHardwarePropertyDefaultOutputDevice;
+  pa.mScope = kAudioObjectPropertyScopeGlobal;
+  pa.mElement = kAudioObjectPropertyElementMaster;
+
+  UInt32 size = sizeof(*device);
+  OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &pa, 0,
+                                               0, &size, device);
+  if ((result != kAudioHardwareNoError) || (*device == kAudioDeviceUnknown)) {
+    DLOG(ERROR) << "Error getting default AudioDevice.";
+    return false;
+  }
+  return true;
+}
+
+static bool GetDefaultOutputDevice(AudioDeviceID* device) {
+  return GetDefaultDevice(device, false);
+}
+
 template <class T>
 void StopStreams(std::list<T*>* streams) {
   for (typename std::list<T*>::iterator it = streams->begin();
@@ -354,47 +378,6 @@ bool AudioManagerMac::HasAudioOutputDevices() {
 
 bool AudioManagerMac::HasAudioInputDevices() {
   return HasAudioHardware(kAudioHardwarePropertyDefaultInputDevice);
-}
-
-// TODO(xians): There are several places on the OSX specific code which
-// could benefit from these helper functions.
-bool AudioManagerMac::GetDefaultInputDevice(AudioDeviceID* device) {
-  return GetDefaultDevice(device, true);
-}
-
-bool AudioManagerMac::GetDefaultOutputDevice(AudioDeviceID* device) {
-  return GetDefaultDevice(device, false);
-}
-
-bool AudioManagerMac::GetDefaultDevice(AudioDeviceID* device, bool input) {
-  CHECK(device);
-
-  // Obtain the AudioDeviceID of the default input or output AudioDevice.
-  AudioObjectPropertyAddress pa;
-  pa.mSelector = input ? kAudioHardwarePropertyDefaultInputDevice :
-      kAudioHardwarePropertyDefaultOutputDevice;
-  pa.mScope = kAudioObjectPropertyScopeGlobal;
-  pa.mElement = kAudioObjectPropertyElementMaster;
-
-  UInt32 size = sizeof(*device);
-  OSStatus result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
-                                               &pa,
-                                               0,
-                                               0,
-                                               &size,
-                                               device);
-  if ((result != kAudioHardwareNoError) || (*device == kAudioDeviceUnknown)) {
-    DLOG(ERROR) << "Error getting default AudioDevice.";
-    return false;
-  }
-  return true;
-}
-
-bool AudioManagerMac::GetDefaultOutputChannels(int* channels) {
-  AudioDeviceID device;
-  if (!GetDefaultOutputDevice(&device))
-    return false;
-  return GetDeviceChannels(device, kAudioDevicePropertyScopeOutput, channels);
 }
 
 bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,

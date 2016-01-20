@@ -56,12 +56,6 @@ class MEDIA_EXPORT AudioManagerMac : public AudioManagerBase {
   void ReleaseOutputStream(AudioOutputStream* stream) override;
   void ReleaseInputStream(AudioInputStream* stream) override;
 
-  static bool GetDefaultInputDevice(AudioDeviceID* device);
-  static bool GetDefaultOutputDevice(AudioDeviceID* device);
-  static bool GetDefaultDevice(AudioDeviceID* device, bool input);
-
-  static bool GetDefaultOutputChannels(int* channels);
-
   static bool GetDeviceChannels(AudioDeviceID device,
                                 AudioObjectPropertyScope scope,
                                 int* channels);
