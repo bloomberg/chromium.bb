@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/debug/alias.h"
 #include "base/debug/asan_invalid_access.h"
+#include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/i18n/char_iterator.h"
@@ -1531,6 +1532,7 @@ void RenderFrameImpl::OnSwapOut(
 
   RenderViewImpl* render_view = render_view_.get();
   bool is_main_frame = is_main_frame_;
+  int routing_id = GetRoutingID();
 
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy, if one is created.
@@ -1546,8 +1548,15 @@ void RenderFrameImpl::OnSwapOut(
 
     // For main frames, the swap should have cleared the RenderView's pointer to
     // this frame.
-    if (is_main_frame)
+    if (is_main_frame) {
+      base::debug::SetCrashKeyValue("swapout_frame_id",
+                                    base::IntToString(routing_id));
+      base::debug::SetCrashKeyValue("swapout_proxy_id",
+                                    base::IntToString(proxy->routing_id()));
+      base::debug::SetCrashKeyValue(
+          "swapout_view_id", base::IntToString(render_view->GetRoutingID()));
       CHECK(!render_view->main_render_frame_);
+    }
 
     if (is_loading)
       proxy->OnDidStartLoading();
@@ -3098,6 +3107,7 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     if (!proxy)
       return;
 
+    int proxy_routing_id = proxy_routing_id_;
     proxy->web_frame()->swap(frame_);
     proxy_routing_id_ = MSG_ROUTING_NONE;
     in_frame_tree_ = true;
@@ -3106,6 +3116,19 @@ void RenderFrameImpl::didCommitProvisionalLoad(
     // it needs to set RenderViewImpl's pointer for the main frame to itself
     // and ensure RenderWidget is no longer in swapped out mode.
     if (is_main_frame_) {
+      // Debug cases of https://crbug.com/575245.
+      base::debug::SetCrashKeyValue("commit_frame_id",
+                                    base::IntToString(GetRoutingID()));
+      base::debug::SetCrashKeyValue("commit_proxy_id",
+                                    base::IntToString(proxy_routing_id));
+      base::debug::SetCrashKeyValue(
+          "commit_view_id", base::IntToString(render_view_->GetRoutingID()));
+      if (render_view_->main_render_frame_) {
+        base::debug::SetCrashKeyValue(
+            "commit_main_render_frame_id",
+            base::IntToString(
+                render_view_->main_render_frame_->GetRoutingID()));
+      }
       CHECK(!render_view_->main_render_frame_);
       render_view_->main_render_frame_ = this;
       if (render_view_->is_swapped_out())
