@@ -122,6 +122,10 @@ class TabTest : public views::ViewsTestBase,
     return tab.favicon_bounds_;
   }
 
+  static int GetTitleWidth(const Tab& tab) {
+    return tab.title_->bounds().width();
+  }
+
   static void LayoutTab(Tab* tab) { tab->Layout(); }
 
   static void CheckForExpectedLayoutAndVisibilityOfElements(const Tab& tab) {
@@ -499,6 +503,21 @@ TEST_P(TabTest, LayeredThrobber) {
   EXPECT_FALSE(throbber->layer());
   tab.UpdateLoadingAnimation(TabRendererData::NETWORK_STATE_NONE);
   EXPECT_FALSE(throbber->visible());
+}
+
+TEST_P(TabTest, TitleHiddenWhenSmall) {
+  // TODO(sky): figure out if needed.
+  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
+    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
+    return;
+  }
+
+  FakeTabController tab_controller;
+  Tab tab(&tab_controller);
+  tab.SetBounds(0, 0, 100, 50);
+  EXPECT_GT(GetTitleWidth(tab), 0);
+  tab.SetBounds(0, 0, 0, 50);
+  EXPECT_EQ(0, GetTitleWidth(tab));
 }
 
 // Test in both a LTR and a RTL locale.  Note: The fact that the UI code is

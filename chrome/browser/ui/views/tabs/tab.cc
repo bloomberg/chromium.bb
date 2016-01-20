@@ -948,10 +948,7 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 }
 
 void Tab::Layout() {
-  gfx::Rect lb = GetContentsBounds();
-  if (lb.IsEmpty())
-    return;
-
+  const gfx::Rect lb = GetContentsBounds();
   showing_icon_ = ShouldShowIcon();
   // See comments in IconCapacity().
   const int extra_padding =
