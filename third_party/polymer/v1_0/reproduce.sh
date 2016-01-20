@@ -23,9 +23,6 @@ rm components/*/.travis.yml
 mv components/web-animations-js ../../web-animations-js/sources
 cp ../../web-animations-js/sources/COPYING ../../web-animations-js/LICENSE
 
-# Remove unused gzipped binary which causes git-cl problems.
-rm ../../web-animations-js/sources/web-animations.min.js.gz
-
 # Remove source mapping directives since we don't compile the maps.
 sed -i 's/^\s*\/\/#\s*sourceMappingURL.*//' \
   ../../web-animations-js/sources/*.min.js

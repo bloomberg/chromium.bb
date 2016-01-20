@@ -7,9 +7,10 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../paper-material/paper-material.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../paper-material/paper-material.html">
+<link rel="import" href="../paper-styles/default-theme.html">
 
 <!--
 Material design: [Cards](https://www.google.com/design/spec/components/cards.html)
@@ -41,6 +42,7 @@ The following custom properties and mixins are available for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
+`--paper-card-background-color` | The background color of the card | `--primary-background-color`
 `--paper-card-header-color` | The color of the header text | `#000`
 `--paper-card-header` | Mixin applied to the card header section | `{}`
 `--paper-card-header-text` | Mixin applied to the title in the card header section | `{}`
@@ -62,9 +64,9 @@ Custom property | Description | Default
         display: inline-block;
         position: relative;
         box-sizing: border-box;
-
-        background: #fff;
+        background-color: var(--paper-card-background-color, --primary-background-color);
         border-radius: 2px;
+
         @apply(--paper-card);
       }
 
@@ -78,6 +80,7 @@ Custom property | Description | Default
         border-top-left-radius: inherit;
         border-top-right-radius: inherit;
         overflow: hidden;
+
         @apply(--paper-card-header);
       }
 
@@ -85,6 +88,7 @@ Custom property | Description | Default
         width: 100%;
         --iron-image-width: 100%;
         pointer-events: none;
+
         @apply(--paper-card-header-image);
       }
 
@@ -93,18 +97,21 @@ Custom property | Description | Default
         font-size: 24px;
         font-weight: 400;
         color: var(--paper-card-header-color, #000);
+
         @apply(--paper-card-header-text);
       }
 
       .header .title-text.over-image {
         position: absolute;
         bottom: 0px;
+
         @apply(--paper-card-header-image-text);
       }
 
       :host ::content .card-content {
         padding: 16px;
         position:relative;
+
         @apply(--paper-card-content);
       }
 
@@ -112,6 +119,7 @@ Custom property | Description | Default
         border-top: 1px solid #e8e8e8;
         padding: 5px 16px;
         position:relative;
+
         @apply(--paper-card-actions);
       }
     </style>
@@ -124,6 +132,5 @@ Custom property | Description | Default
     <content></content>
   </template>
 
-</dom-module>
-
+  </dom-module>
 <script src="paper-card-extracted.js"></script></body></html>

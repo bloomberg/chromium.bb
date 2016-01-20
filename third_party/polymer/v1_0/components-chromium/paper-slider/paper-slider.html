@@ -7,15 +7,14 @@ The complete set of contributors may be found at http://polymer.github.io/CONTRI
 Code distributed by Google as part of the polymer project is also
 subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
 --><html><head><link rel="import" href="../polymer/polymer.html">
-<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
-<link rel="import" href="../paper-styles/color.html">
-<link rel="import" href="../paper-progress/paper-progress.html">
-<link rel="import" href="../paper-input/paper-input.html">
-<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
-<link rel="import" href="../paper-ripple/paper-ripple.html">
 <link rel="import" href="../iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
-<link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-form-element-behavior/iron-form-element-behavior.html">
+<link rel="import" href="../iron-range-behavior/iron-range-behavior.html">
+<link rel="import" href="../paper-behaviors/paper-inky-focus-behavior.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-progress/paper-progress.html">
+<link rel="import" href="../paper-styles/color.html">
 
 <!--
 Material design: [Sliders](https://www.google.com/design/spec/components/sliders.html)
@@ -45,15 +44,16 @@ Custom property | Description | Default
 `--paper-slider-active-color` | The progress bar color | `--google-blue-700`
 `--paper-slider-secondary-color` | The secondary progress bar color | `--google-blue-300`
 `--paper-slider-knob-color` | The knob color | `--google-blue-700`
-`--paper-slider-disabled-knob-color` | The disabled knob color | `--google-grey-500`
+`--paper-slider-disabled-knob-color` | The disabled knob color | `--paper-grey-400`
 `--paper-slider-pin-color` | The pin color | `--google-blue-700`
 `--paper-slider-font-color` | The pin's text color | `#fff`
-`--paper-slider-disabled-active-color` | The disabled progress bar color | `--google-grey-500`
-`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--google-grey-300`
+`--paper-slider-disabled-active-color` | The disabled progress bar color | `--paper-grey-400`
+`--paper-slider-disabled-secondary-color` | The disabled secondary progress bar color | `--paper-grey-400`
 `--paper-slider-knob-start-color` | The fill color of the knob at the far left | `transparent`
-`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `#c8c8c8`
-`--paper-slider-pin-start-color` | The color of the pin at the far left | `#c8c8c8`
+`--paper-slider-knob-start-border-color` | The border color of the knob at the far left | `--paper-grey-400`
+`--paper-slider-pin-start-color` | The color of the pin at the far left | `--paper-grey-400`
 `--paper-slider-height` | Height of the progress bar | `2px`
+`--paper-slider-input` | Mixin applied to the input in editable mode | `{}`
 
 @group Paper Elements
 @element paper-slider
@@ -77,8 +77,8 @@ Custom property | Description | Default
         -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
         --paper-progress-active-color: var(--paper-slider-active-color, --google-blue-700);
         --paper-progress-secondary-color: var(--paper-slider-secondary-color, --google-blue-300);
-        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --google-grey-500);
-        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --google-grey-300);
+        --paper-progress-disabled-active-color: var(--paper-slider-disabled-active-color, --paper-grey-400);
+        --paper-progress-disabled-secondary-color: var(--paper-slider-disabled-secondary-color, --paper-grey-400);
       }
 
       /* focus shows the ripple */
@@ -114,7 +114,7 @@ Custom property | Description | Default
 
       .ring > .bar-container {
         left: calc(5px + var(--paper-slider-height, 2px)/2);
-        transition: left 0.18s ease, width 0.18s ease;
+        transition: left 0.18s ease;
       }
 
       .ring.expand.dragging > .bar-container {
@@ -122,23 +122,15 @@ Custom property | Description | Default
       }
 
       .ring.expand:not(.pin) > .bar-container {
-        left: calc(15px + var(--paper-slider-height, 2px)/2);
+        left: calc(8px + var(--paper-slider-height, 2px)/2);
       }
 
       #sliderBar {
         padding: 15px 0;
         width: 100%;
         background-color: var(--paper-slider-bar-color, transparent);
+        --paper-progress-container-color: var(--paper-grey-400);
         --paper-progress-height: var(--paper-slider-height, 2px);
-      }
-
-      .ring #sliderBar {
-        margin-left: calc(-5px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 5px + var(--paper-slider-height, 2px)/2);
-      }
-      .ring.expand:not(.pin) #sliderBar {
-        margin-left: calc(-15px - var(--paper-slider-height, 2px)/2);
-        width: calc(100% + 15px + var(--paper-slider-height, 2px)/2);
       }
 
       .slider-markers {
@@ -196,29 +188,27 @@ Custom property | Description | Default
         margin: 10px;
         width: calc(100% - 20px);
         height: calc(100% - 20px);
-        border-radius: 50%;
         background-color: var(--paper-slider-knob-color, --google-blue-700);
+        border: 2px solid var(--paper-slider-knob-color, --google-blue-700);
+        border-radius: 50%;
 
         -moz-box-sizing: border-box;
         box-sizing: border-box;
 
-        transition-property: margin, height, width, background-color, border;
-        transition-duration: 0.1s;
+        transition-property: -webkit-transform, background-color, border;
+        transition-property: transform, background-color, border;
+        transition-duration: 0.18s;
         transition-timing-function: ease;
       }
 
       .expand:not(.pin) > #sliderKnob > #sliderKnobInner {
-        margin: 0;
-        width: 100%;
-        height: 100%;
-
-        -webkit-transform: translateZ(0);
-        transform: translateZ(0);
+        -webkit-transform: scale(1.5);
+        transform: scale(1.5);
       }
 
       .ring > #sliderKnob > #sliderKnobInner {
         background-color: var(--paper-slider-knob-start-color, transparent);
-        border: 2px solid var(--paper-slider-knob-start-border-color, #c8c8c8);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       #sliderKnobInner::before {
@@ -241,12 +231,12 @@ Custom property | Description | Default
 
       #sliderKnobInner::before,
       #sliderKnobInner::after {
-        transition: -webkit-transform .2s ease, background-color .18s ease;
-        transition: transform .2s ease, background-color .18s ease;
+        transition: -webkit-transform .18s ease, background-color .18s ease;
+        transition: transform .18s ease, background-color .18s ease;
       }
 
       .pin.ring > #sliderKnob > #sliderKnobInner::before {
-        background-color: var(--paper-slider-pin-start-color, #c8c8c8);
+        background-color: var(--paper-slider-pin-start-color, --paper-grey-400);
       }
 
       .pin.expand > #sliderKnob > #sliderKnobInner::before {
@@ -282,6 +272,7 @@ Custom property | Description | Default
         --paper-input-container-input: {
           text-align: center;
         };
+        @apply(--paper-slider-input);
       }
 
       /* disabled state */
@@ -289,26 +280,23 @@ Custom property | Description | Default
         pointer-events: none;
       }
 
-      .disabled > #sliderKnob {
-        top: 2px;
-        margin-left: calc(-13px - var(--paper-slider-height, 2px)/2);
-        width: calc(26px + var(--paper-slider-height, 2px));
-        height: calc(26px + var(--paper-slider-height, 2px));
-      }
-
       .disabled > #sliderKnob > #sliderKnobInner {
-        background-color: var(--paper-slider-disabled-knob-color, --google-grey-500);
+        background-color: var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        border: 2px solid var(--paper-slider-disabled-knob-color, --paper-grey-400);
+        -webkit-transform: scale3d(0.75, 0.75, 1);
+        transform: scale3d(0.75, 0.75, 1);
       }
 
       .disabled.ring > #sliderKnob > #sliderKnobInner {
-        background-color: transparent;
+        background-color: var(--paper-slider-knob-start-color, transparent);
+        border: 2px solid var(--paper-slider-knob-start-border-color, --paper-grey-400);
       }
 
       paper-ripple {
         color: var(--paper-slider-knob-color, --google-blue-700);
       }
-
     </style>
+
     <div id="sliderContainer" class$="[[_getClassNames(disabled, pin, snaps, immediateValue, min, expand, dragging, transiting, editable)]]">
 
       <div class="bar-container">
@@ -328,11 +316,12 @@ Custom property | Description | Default
           <div id="sliderKnobInner" value$="[[immediateValue]]"></div>
       </div>
     </div>
+
     <template is="dom-if" if="[[editable]]">
       <paper-input id="input" type="number" step="[[step]]" min="[[min]]" max="[[max]]" class="slider-input" disabled$="[[disabled]]" value="[[immediateValue]]" on-change="_changeValue" on-keydown="_inputKeyDown" no-label-float="">
       </paper-input>
     </template>
   </template>
-</dom-module>
 
+  </dom-module>
 <script src="paper-slider-extracted.js"></script></body></html>

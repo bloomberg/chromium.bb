@@ -17,7 +17,9 @@
        */
 
       /**
-       * The label for this input. Bind this to `<label>`'s content and `hidden` property, e.g.
+       * The label for this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * `<label>`'s content and `hidden` property, e.g.
        * `<label hidden$="[[!label]]">[[label]]</label>` in your `template`
        */
       label: {
@@ -25,7 +27,9 @@
       },
 
       /**
-       * The value for this input. Bind this to the `<input is="iron-input">`'s `bindValue`
+       * The value for this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `bindValue`
        * property, or the value property of your input that is `notify:true`.
        */
       value: {
@@ -34,8 +38,9 @@
       },
 
       /**
-       * Set to true to disable this input. Bind this to both the `<paper-input-container>`'s
-       * and the input's `disabled` property.
+       * Set to true to disable this input. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * both the `<paper-input-container>`'s and the input's `disabled` property.
        */
       disabled: {
         type: Boolean,
@@ -43,8 +48,12 @@
       },
 
       /**
-       * Returns true if the value is invalid. Bind this to both the `<paper-input-container>`'s
-       * and the input's `invalid` property.
+       * Returns true if the value is invalid. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to both the
+       * `<paper-input-container>`'s and the input's `invalid` property.
+       *
+       * If `autoValidate` is true, the `invalid` attribute is managed automatically,
+       * which can clobber attempts to manage it manually.
        */
       invalid: {
         type: Boolean,
@@ -53,48 +62,55 @@
       },
 
       /**
-       * Set to true to prevent the user from entering invalid input. Bind this to the
-       * `<input is="iron-input">`'s `preventInvalidInput` property.
+       * Set to true to prevent the user from entering invalid input. If you're
+       * using PaperInputBehavior to  implement your own paper-input-like element,
+       * bind this to `<input is="iron-input">`'s `preventInvalidInput` property.
        */
       preventInvalidInput: {
         type: Boolean
       },
 
       /**
-       * Set this to specify the pattern allowed by `preventInvalidInput`. Bind this to the
-       * `<input is="iron-input">`'s `allowedPattern` property.
+       * Set this to specify the pattern allowed by `preventInvalidInput`. If
+       * you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `allowedPattern`
+       * property.
        */
       allowedPattern: {
         type: String
       },
 
       /**
-       * The type of the input. The supported types are `text`, `number` and `password`. Bind this
-       * to the `<input is="iron-input">`'s `type` property.
+       * The type of the input. The supported types are `text`, `number` and `password`.
+       * If you're using PaperInputBehavior to implement your own paper-input-like element,
+       * bind this to the `<input is="iron-input">`'s `type` property.
        */
       type: {
         type: String
       },
 
       /**
-       * The datalist of the input (if any). This should match the id of an existing `<datalist>`. Bind this
-       * to the `<input is="iron-input">`'s `list` property.
+       * The datalist of the input (if any). This should match the id of an existing `<datalist>`.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `list` property.
        */
       list: {
         type: String
       },
 
       /**
-       * A pattern to validate the `input` with. Bind this to the `<input is="iron-input">`'s
-       * `pattern` property.
+       * A pattern to validate the `input` with. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `pattern` property.
        */
       pattern: {
         type: String
       },
 
       /**
-       * Set to true to mark the input as required. Bind this to the `<input is="iron-input">`'s
-       * `required` property.
+       * Set to true to mark the input as required. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `required` property.
        */
       required: {
         type: Boolean,
@@ -102,8 +118,9 @@
       },
 
       /**
-       * The error message to display when the input is invalid. Bind this to the
-       * `<paper-input-error>`'s content, if using.
+       * The error message to display when the input is invalid. If you're using
+       * PaperInputBehavior to implement your own paper-input-like element,
+       * bind this to the `<paper-input-error>`'s content, if using.
        */
       errorMessage: {
         type: String
@@ -118,8 +135,9 @@
       },
 
       /**
-       * Set to true to disable the floating label. Bind this to the `<paper-input-container>`'s
-       * `noLabelFloat` property.
+       * Set to true to disable the floating label. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `noLabelFloat` property.
        */
       noLabelFloat: {
         type: Boolean,
@@ -127,8 +145,9 @@
       },
 
       /**
-       * Set to true to always float the label. Bind this to the `<paper-input-container>`'s
-       * `alwaysFloatLabel` property.
+       * Set to true to always float the label. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `alwaysFloatLabel` property.
        */
       alwaysFloatLabel: {
         type: Boolean,
@@ -136,8 +155,9 @@
       },
 
       /**
-       * Set to true to auto-validate the input value. Bind this to the `<paper-input-container>`'s
-       * `autoValidate` property.
+       * Set to true to auto-validate the input value. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<paper-input-container>`'s `autoValidate` property.
        */
       autoValidate: {
         type: Boolean,
@@ -145,8 +165,9 @@
       },
 
       /**
-       * Name of the validator to use. Bind this to the `<input is="iron-input">`'s `validator`
-       * property.
+       * Name of the validator to use. If you're using PaperInputBehavior to
+       * implement your own paper-input-like element, bind this to
+       * the `<input is="iron-input">`'s `validator` property.
        */
       validator: {
         type: String
@@ -155,7 +176,8 @@
       // HTMLInputElement attributes for binding if needed
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocomplete` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocomplete` property.
        */
       autocomplete: {
         type: String,
@@ -163,29 +185,34 @@
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autofocus` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autofocus` property.
        */
       autofocus: {
         type: Boolean
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `inputmode` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `inputmode` property.
        */
       inputmode: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `minlength` property.
+       * The minimum length of the input value.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `minlength` property.
        */
       minlength: {
         type: Number
       },
 
       /**
-       * The maximum length of the input value. Bind this to the `<input is="iron-input">`'s
-       * `maxlength` property.
+       * The maximum length of the input value.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `maxlength` property.
        */
       maxlength: {
         type: Number
@@ -193,7 +220,8 @@
 
       /**
        * The minimum (numeric or date-time) input value.
-       * Bind this to the `<input is="iron-input">`'s `min` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `min` property.
        */
       min: {
         type: String
@@ -202,7 +230,8 @@
       /**
        * The maximum (numeric or date-time) input value.
        * Can be a String (e.g. `"2000-1-1"`) or a Number (e.g. `2`).
-       * Bind this to the `<input is="iron-input">`'s `max` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `max` property.
        */
       max: {
         type: String
@@ -210,14 +239,16 @@
 
       /**
        * Limits the numeric or date-time increments.
-       * Bind this to the `<input is="iron-input">`'s `step` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `step` property.
        */
       step: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `name` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `name` property.
        */
       name: {
         type: String
@@ -233,7 +264,8 @@
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `readonly` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `readonly` property.
        */
       readonly: {
         type: Boolean,
@@ -241,7 +273,8 @@
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `size` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `size` property.
        */
       size: {
         type: Number
@@ -250,7 +283,8 @@
       // Nonstandard attributes for binding if needed
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocapitalize` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocapitalize` property.
        */
       autocapitalize: {
         type: String,
@@ -258,7 +292,8 @@
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autocorrect` property.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autocorrect` property.
        */
       autocorrect: {
         type: String,
@@ -266,28 +301,36 @@
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `autosave` property, used with type=search.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `autosave` property,
+       * used with type=search.
        */
       autosave: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `results` property, used with type=search.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `results` property,
+       * used with type=search.
        */
       results: {
         type: Number
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `accept` property, used with type=file.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the `<input is="iron-input">`'s `accept` property,
+       * used with type=file.
        */
       accept: {
         type: String
       },
 
       /**
-       * Bind this to the `<input is="iron-input">`'s `multiple` property, used with type=file.
+       * If you're using PaperInputBehavior to implement your own paper-input-like
+       * element, bind this to the`<input is="iron-input">`'s `multiple` property,
+       * used with type=file.
        */
       multiple: {
         type: Boolean
@@ -336,8 +379,20 @@
       return this.inputElement;
     },
 
+    registered: function() {
+      // These types have some default placeholder text; overlapping
+      // the label on top of it looks terrible. Auto-float the label in this case.
+      this._typesThatHaveText = ["date", "datetime", "datetime-local", "month",
+          "time", "week", "file"];
+    },
+
     attached: function() {
       this._updateAriaLabelledBy();
+
+      if (this.inputElement &&
+          this._typesThatHaveText.indexOf(this.inputElement.type) !== -1) {
+        this.alwaysFloatLabel = true;
+      }
     },
 
     _appendStringWithSpace: function(str, more) {

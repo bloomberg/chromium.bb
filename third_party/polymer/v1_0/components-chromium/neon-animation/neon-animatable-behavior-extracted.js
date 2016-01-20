@@ -127,7 +127,7 @@
      * or a map of animation type to array of configuration objects.
      */
     getAnimationConfig: function(type) {
-      var map = [];
+      var map = {};
       var allConfigs = [];
       this._getAnimationConfigRecursive(type, map, allConfigs);
       // append the configurations saved in the map to the array

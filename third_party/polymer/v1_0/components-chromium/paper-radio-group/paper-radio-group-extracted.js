@@ -70,7 +70,8 @@ Polymer({
           if (this.allowEmptySelection) {
             value = '';
           } else {
-            oldItem.checked = true;
+            if (oldItem)
+              oldItem.checked = true;
             return;
           }
         }
