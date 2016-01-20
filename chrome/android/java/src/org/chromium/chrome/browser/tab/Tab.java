@@ -75,8 +75,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
-import org.chromium.content.browser.ActivityContentVideoViewClient;
-import org.chromium.content.browser.ContentVideoViewClient;
+import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
@@ -429,8 +429,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
         }
 
         @Override
-        public ContentVideoViewClient getContentVideoViewClient() {
-            return new ActivityContentVideoViewClient(mActivity) {
+        public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+            return new ActivityContentVideoViewEmbedder(mActivity) {
                 @Override
                 public void enterFullscreenVideo(View view) {
                     super.enterFullscreenVideo(view);

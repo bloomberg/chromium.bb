@@ -12,13 +12,13 @@ import android.webkit.URLUtil;
 import android.webkit.WebChromeClient;
 import android.widget.FrameLayout;
 
-import org.chromium.content.browser.ContentVideoViewClient;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
 
 /**
  * ContentViewClient implementation for WebView
  */
-public class AwContentViewClient extends ContentViewClient implements ContentVideoViewClient {
+public class AwContentViewClient extends ContentViewClient implements ContentVideoViewEmbedder {
     private final AwContentsClient mAwContentsClient;
     private final AwSettings mAwSettings;
     private final AwContents mAwContents;
@@ -63,7 +63,7 @@ public class AwContentViewClient extends ContentViewClient implements ContentVid
     }
 
     @Override
-    public final ContentVideoViewClient getContentVideoViewClient() {
+    public final ContentVideoViewEmbedder getContentVideoViewEmbedder() {
         return this;
     }
 

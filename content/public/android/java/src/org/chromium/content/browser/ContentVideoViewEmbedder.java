@@ -18,7 +18,7 @@ import android.view.View;
  *  The implementer is responsible for displaying the Android view when
  *  {@link #enterFullscreenVideo(View)} is called.
  */
-public interface ContentVideoViewClient {
+public interface ContentVideoViewEmbedder {
     /**
      * Called when the {@link ContentVideoView}, which contains the fullscreen video,
      * is ready to be shown. Must be implemented.

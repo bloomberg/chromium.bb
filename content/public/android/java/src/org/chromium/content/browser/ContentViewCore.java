@@ -3143,8 +3143,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return mWheelScrollFactorInPixels;
     }
 
-    ContentVideoViewClient getContentVideoViewClient() {
-        return getContentViewClient().getContentVideoViewClient();
+    ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        return getContentViewClient().getContentVideoViewEmbedder();
     }
 
     @CalledByNative

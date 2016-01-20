@@ -16,11 +16,11 @@ import android.widget.FrameLayout;
 /**
  * Uses an existing Activity to handle displaying video in full screen.
  */
-public class ActivityContentVideoViewClient implements ContentVideoViewClient {
+public class ActivityContentVideoViewEmbedder implements ContentVideoViewEmbedder {
     private final Activity mActivity;
     private View mView;
 
-    public ActivityContentVideoViewClient(Activity activity)  {
+    public ActivityContentVideoViewEmbedder(Activity activity)  {
         this.mActivity = activity;
     }
 

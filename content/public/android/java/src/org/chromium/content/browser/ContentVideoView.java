@@ -69,7 +69,7 @@ public class ContentVideoView extends FrameLayout
     // Progress view when the video is loading.
     private View mProgressView;
 
-    private final ContentVideoViewClient mClient;
+    private final ContentVideoViewEmbedder mEmbedder;
 
     private boolean mInitialOrientation;
     private boolean mPossibleAccidentalChange;
@@ -146,10 +146,10 @@ public class ContentVideoView extends FrameLayout
     };
 
     private ContentVideoView(Context context, long nativeContentVideoView,
-            ContentVideoViewClient client) {
+            ContentVideoViewEmbedder embedder) {
         super(context);
         mNativeContentVideoView = nativeContentVideoView;
-        mClient = client;
+        mEmbedder = embedder;
         mUmaRecorded = false;
         mPossibleAccidentalChange = false;
         initResources(context);
@@ -158,8 +158,8 @@ public class ContentVideoView extends FrameLayout
         setVisibility(View.VISIBLE);
     }
 
-    private ContentVideoViewClient getContentVideoViewClient() {
-        return mClient;
+    private ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+        return mEmbedder;
     }
 
     private void initResources(Context context) {
@@ -183,7 +183,7 @@ public class ContentVideoView extends FrameLayout
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 Gravity.CENTER));
 
-        mProgressView = mClient.getVideoLoadingProgressView();
+        mProgressView = mEmbedder.getVideoLoadingProgressView();
         if (mProgressView == null) {
             mProgressView = new ProgressView(getContext(), mVideoLoadingText);
         }
@@ -305,9 +305,10 @@ public class ContentVideoView extends FrameLayout
             ContentViewCore contentViewCore, long nativeContentVideoView) {
         ThreadUtils.assertOnUiThread();
         Context context = contentViewCore.getContext();
-        ContentVideoViewClient client = contentViewCore.getContentVideoViewClient();
-        ContentVideoView videoView = new ContentVideoView(context, nativeContentVideoView, client);
-        client.enterFullscreenVideo(videoView);
+        ContentVideoViewEmbedder embedder = contentViewCore.getContentVideoViewEmbedder();
+        ContentVideoView videoView =
+                new ContentVideoView(context, nativeContentVideoView, embedder);
+        embedder.enterFullscreenVideo(videoView);
         return videoView;
     }
 
@@ -342,7 +343,7 @@ public class ContentVideoView extends FrameLayout
      * Called when the fullscreen window gets focused.
      */
     public void onFullscreenWindowFocused() {
-        mClient.setSystemUiVisibility(true);
+        mEmbedder.setSystemUiVisibility(true);
     }
 
     /**
@@ -356,7 +357,7 @@ public class ContentVideoView extends FrameLayout
             setVisibility(View.GONE);
 
             // To prevent re-entrance, call this after removeSurfaceView.
-            mClient.exitFullscreenVideo();
+            mEmbedder.exitFullscreenVideo();
         }
         if (nativeViewDestroyed) {
             mNativeContentVideoView = 0;

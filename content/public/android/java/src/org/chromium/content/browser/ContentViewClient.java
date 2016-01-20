@@ -153,7 +153,7 @@ public class ContentViewClient {
         }
     }
 
-    public ContentVideoViewClient getContentVideoViewClient() {
+    public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
         return null;
     }
 

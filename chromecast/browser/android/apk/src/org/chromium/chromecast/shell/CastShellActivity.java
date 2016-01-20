@@ -21,8 +21,8 @@ import android.widget.Toast;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
-import org.chromium.content.browser.ActivityContentVideoViewClient;
-import org.chromium.content.browser.ContentVideoViewClient;
+import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
+import org.chromium.content.browser.ContentVideoViewEmbedder;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.common.ContentSwitches;
@@ -123,8 +123,8 @@ public class CastShellActivity extends Activity {
 
         getActiveContentViewCore().setContentViewClient(new ContentViewClient() {
             @Override
-            public ContentVideoViewClient getContentVideoViewClient() {
-                return new ActivityContentVideoViewClient(CastShellActivity.this);
+            public ContentVideoViewEmbedder getContentVideoViewEmbedder() {
+                return new ActivityContentVideoViewEmbedder(CastShellActivity.this);
             }
         });
     }
