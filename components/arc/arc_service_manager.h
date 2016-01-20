@@ -17,6 +17,7 @@ class ArcBridgeService;
 class ArcClipboardBridge;
 class ArcImeBridge;
 class ArcInputBridge;
+class ArcIntentHelperBridge;
 class ArcNotificationManager;
 class ArcPowerBridge;
 class ArcSettingsBridge;
@@ -27,6 +28,7 @@ class ArcVideoBridge;
 class ArcServiceManager {
  public:
   ArcServiceManager(scoped_ptr<ArcAuthService> auth_service,
+                    scoped_ptr<ArcIntentHelperBridge> intent_helper_bridge,
                     scoped_ptr<ArcSettingsBridge> settings_bridge,
                     scoped_ptr<ArcVideoBridge> video_bridge);
   virtual ~ArcServiceManager();
@@ -51,6 +53,7 @@ class ArcServiceManager {
   scoped_ptr<ArcClipboardBridge> arc_clipboard_bridge_;
   scoped_ptr<ArcImeBridge> arc_ime_bridge_;
   scoped_ptr<ArcInputBridge> arc_input_bridge_;
+  scoped_ptr<ArcIntentHelperBridge> arc_intent_helper_bridge_;
   scoped_ptr<ArcNotificationManager> arc_notification_manager_;
   scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
   scoped_ptr<ArcPowerBridge> arc_power_bridge_;
