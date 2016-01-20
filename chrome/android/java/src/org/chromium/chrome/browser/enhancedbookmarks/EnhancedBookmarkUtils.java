@@ -129,6 +129,7 @@ public class EnhancedBookmarkUtils {
         } else {
             SnackbarController snackbarController = null;
             int messageId;
+            String suffix = null;
             int buttonId = R.string.enhanced_bookmark_item_edit;
 
             if (saveResult == AddBookmarkCallback.SKIPPED) {
@@ -142,15 +143,23 @@ public class EnhancedBookmarkUtils {
                 snackbarController = createSnackbarControllerForFreeUpSpaceButton(
                         bookmarkModel, snackbarManager, activity);
             } else {
-                messageId = saveResult == AddBookmarkCallback.SAVED
-                        ? R.string.offline_pages_page_saved
-                        : R.string.offline_pages_page_failed_to_save;
+                if (saveResult == AddBookmarkCallback.SAVED) {
+                    if (getLastUsedParent(activity) == null) {
+                        messageId = R.string.offline_pages_page_saved;
+                    } else {
+                        messageId = R.string.offline_pages_page_saved_folder;
+                        suffix = bookmarkModel.getBookmarkTitle(
+                                bookmarkModel.getBookmarkById(bookmarkId).getParentId());
+                    }
+                } else {
+                    messageId = R.string.offline_pages_page_failed_to_save;
+                }
             }
             if (snackbarController == null) {
                 snackbarController = createSnackbarControllerForEditButton(
                         bookmarkModel, activity, bookmarkId);
             }
-            snackbar = Snackbar.make(activity.getString(messageId), snackbarController)
+            snackbar = Snackbar.make(activity.getString(messageId, suffix), snackbarController)
                     .setAction(activity.getString(buttonId), null).setSingleLine(false);
         }
 
