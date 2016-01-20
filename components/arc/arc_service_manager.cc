@@ -14,7 +14,6 @@
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/arc/input/arc_input_bridge.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
 #include "components/arc/settings/arc_settings_bridge.h"
 #include "components/arc/video/arc_video_bridge.h"
@@ -31,7 +30,6 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 
 ArcServiceManager::ArcServiceManager(
     scoped_ptr<ArcAuthService> auth_service,
-    scoped_ptr<ArcIntentHelperBridge> intent_helper_bridge,
     scoped_ptr<ArcSettingsBridge> settings_bridge,
     scoped_ptr<ArcVideoBridge> video_bridge)
     : arc_bridge_service_(
@@ -40,7 +38,6 @@ ArcServiceManager::ArcServiceManager(
       arc_clipboard_bridge_(new ArcClipboardBridge(arc_bridge_service_.get())),
       arc_ime_bridge_(new ArcImeBridge(arc_bridge_service_.get())),
       arc_input_bridge_(ArcInputBridge::Create(arc_bridge_service_.get())),
-      arc_intent_helper_bridge_(std::move(intent_helper_bridge)),
       arc_settings_bridge_(std::move(settings_bridge)),
       arc_power_bridge_(new ArcPowerBridge(arc_bridge_service_.get())),
       arc_video_bridge_(std::move(video_bridge)) {
@@ -49,7 +46,6 @@ ArcServiceManager::ArcServiceManager(
 
   arc_settings_bridge_->StartObservingBridgeServiceChanges();
   arc_auth_service_->StartObservingBridgeServiceChanges();
-  arc_intent_helper_bridge_->StartObservingBridgeServiceChanges();
   arc_video_bridge_->StartObservingBridgeServiceChanges();
 }
 

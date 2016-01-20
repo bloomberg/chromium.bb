@@ -34,7 +34,6 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
 #include "chrome/browser/chromeos/arc/arc_auth_service_impl.h"
-#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge_impl.h"
 #include "chrome/browser/chromeos/arc/arc_settings_bridge_impl.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
@@ -401,7 +400,6 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   arc_service_manager_.reset(new arc::ArcServiceManager(
       make_scoped_ptr(new arc::ArcAuthServiceImpl()),
-      make_scoped_ptr(new arc::ArcIntentHelperBridgeImpl()),
       make_scoped_ptr(new arc::ArcSettingsBridgeImpl()),
       make_scoped_ptr(
           new arc::ArcVideoBridge(content::CreateArcVideoHostDelegate()))));

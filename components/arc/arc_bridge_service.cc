@@ -177,32 +177,6 @@ void ArcBridgeService::CloseInputChannel() {
   FOR_EACH_OBSERVER(Observer, observer_list(), OnInputInstanceClosed());
 }
 
-void ArcBridgeService::OnIntentHelperInstanceReady(
-    IntentHelperInstancePtr intent_helper_ptr) {
-  DCHECK(CalledOnValidThread());
-  temporary_intent_helper_ptr_ = std::move(intent_helper_ptr);
-  temporary_intent_helper_ptr_.QueryVersion(
-      base::Bind(&ArcBridgeService::OnIntentHelperVersionReady,
-                 weak_factory_.GetWeakPtr()));
-}
-
-void ArcBridgeService::OnIntentHelperVersionReady(int32_t version) {
-  DCHECK(CalledOnValidThread());
-  intent_helper_ptr_ = std::move(temporary_intent_helper_ptr_);
-  intent_helper_ptr_.set_connection_error_handler(base::Bind(
-      &ArcBridgeService::CloseIntentHelperChannel, weak_factory_.GetWeakPtr()));
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnIntentHelperInstanceReady());
-}
-
-void ArcBridgeService::CloseIntentHelperChannel() {
-  DCHECK(CalledOnValidThread());
-  if (!intent_helper_ptr_)
-    return;
-
-  intent_helper_ptr_.reset();
-  FOR_EACH_OBSERVER(Observer, observer_list(), OnIntentHelperInstanceClosed());
-}
-
 void ArcBridgeService::OnNotificationsInstanceReady(
     NotificationsInstancePtr notifications_ptr) {
   DCHECK(CalledOnValidThread());
@@ -354,7 +328,6 @@ void ArcBridgeService::CloseAllChannels() {
   CloseClipboardChannel();
   CloseImeChannel();
   CloseInputChannel();
-  CloseIntentHelperChannel();
   CloseNotificationsChannel();
   ClosePowerChannel();
   CloseProcessChannel();
