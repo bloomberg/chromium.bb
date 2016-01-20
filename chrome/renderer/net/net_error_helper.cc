@@ -15,10 +15,10 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/localized_error.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/grit/renderer_resources.h"
 #include "components/error_page/common/error_page_params.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/error_page/common/net_error_info.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
@@ -51,6 +51,7 @@ using content::kUnreachableWebDataURL;
 using error_page::DnsProbeStatus;
 using error_page::DnsProbeStatusToString;
 using error_page::ErrorPageParams;
+using error_page::LocalizedError;
 using error_page::NetErrorHelperCore;
 using error_page::OfflinePageStatus;
 

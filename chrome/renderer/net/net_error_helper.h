@@ -38,6 +38,8 @@ struct ErrorPageParams;
 // Listens for NetErrorInfo messages from the NetErrorTabHelper on the
 // browser side and updates the error page with more details (currently, just
 // DNS probe results) if/when available.
+// TODO(crbug.com/578770): Should this class be moved into the error_page
+// component?
 class NetErrorHelper
     : public content::RenderFrameObserver,
       public content::RenderFrameObserverTracker<NetErrorHelper>,

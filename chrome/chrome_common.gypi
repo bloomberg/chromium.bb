@@ -44,8 +44,6 @@
       'common/ini_parser.h',
       'common/instant_types.cc',
       'common/instant_types.h',
-      'common/localized_error.cc',
-      'common/localized_error.h',
       'common/logging_chrome.cc',
       'common/logging_chrome.h',
       'common/mac/app_shim_launch.h',

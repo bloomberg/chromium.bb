@@ -10,7 +10,12 @@
       'type': 'static_library',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_i18n',
+        '../net/net.gyp:net',
         '../url/url.gyp:url_lib',
+        '../ui/base/ui_base.gyp:ui_base',
+        'components_strings.gyp:components_strings',
+        'offline_pages',
         'url_formatter/url_formatter.gyp:url_formatter',
       ],
       'include_dirs': [
@@ -21,6 +26,8 @@
         'error_page/common/error_page_params.h',
         'error_page/common/error_page_switches.cc',
         'error_page/common/error_page_switches.h',
+        'error_page/common/localized_error.cc',
+        'error_page/common/localized_error.h',
         'error_page/common/net_error_info.cc',
         'error_page/common/net_error_info.h',
         'error_page/common/offline_page_types.h',

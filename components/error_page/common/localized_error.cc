@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/localized_error.h"
+#include "components/error_page/common/localized_error.h"
 
 #include <stddef.h>
 
@@ -37,12 +37,12 @@
 #include "components/offline_pages/offline_page_feature.h"
 #endif
 
-using error_page::OfflinePageStatus;
+namespace error_page {
+
+namespace {
 
 // Some error pages have no details.
 const unsigned int kErrorPagesNoDetails = 0;
-
-namespace {
 
 static const char kRedirectLoopLearnMoreUrl[] =
     "https://support.google.com/chrome/answer/95626";
@@ -657,7 +657,7 @@ void LocalizedError::GetStrings(int error_code,
 
   // Platform specific information for diagnosing network issues on OSX and
   // Windows.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#if (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
   if (error_domain == net::kErrorDomain &&
       error_code == net::ERR_INTERNET_DISCONNECTED) {
     int platform_string_id =
@@ -681,7 +681,7 @@ void LocalizedError::GetStrings(int error_code,
             IDS_ERRORPAGES_SUMMARY_INTERNET_DISCONNECTED_INSTRUCTIONS_TEMPLATE,
             l10n_util::GetStringUTF16(platform_string_id)));
   }
-#endif  // defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // (defined(OS_MACOSX) && !defined(OS_IOS)) || defined(OS_WIN)
 
   // If no parameters were provided, use the defaults.
   if (!params) {
@@ -954,3 +954,5 @@ bool LocalizedError::HasStrings(const std::string& error_domain,
   // not.
   return LookupErrorMap(error_domain, error_code, /*is_post=*/false) != NULL;
 }
+
+}  // namespace error_page

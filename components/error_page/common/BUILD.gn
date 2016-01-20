@@ -8,6 +8,8 @@ static_library("common") {
     "error_page_params.h",
     "error_page_switches.cc",
     "error_page_switches.h",
+    "localized_error.cc",
+    "localized_error.h",
     "net_error_info.cc",
     "net_error_info.h",
     "offline_page_types.h",
@@ -15,6 +17,12 @@ static_library("common") {
 
   deps = [
     "//base",
+    "//base:i18n",
+    "//components/offline_pages:switches",
+    "//components/strings",
+    "//components/url_formatter",
+    "//net",
+    "//ui/base",
     "//url",
   ]
 }

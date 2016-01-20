@@ -23,7 +23,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
-#include "chrome/common/localized_error.h"
 #include "chrome/common/pepper_permission_util.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/secure_origin_whitelist.h"
@@ -66,6 +65,7 @@
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
 #include "components/dom_distiller/content/renderer/distiller_js_render_frame_observer.h"
 #include "components/dom_distiller/core/url_constants.h"
+#include "components/error_page/common/localized_error.h"
 #include "components/nacl/renderer/ppb_nacl_private.h"
 #include "components/nacl/renderer/ppb_nacl_private_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -1012,12 +1012,12 @@ bool ChromeContentRendererClient::IsNaClAllowed(
 bool ChromeContentRendererClient::HasErrorPage(int http_status_code,
                                                std::string* error_domain) {
   // Use an internal error page, if we have one for the status code.
-  if (!LocalizedError::HasStrings(LocalizedError::kHttpErrorDomain,
-                                  http_status_code)) {
+  if (!error_page::LocalizedError::HasStrings(
+          error_page::LocalizedError::kHttpErrorDomain, http_status_code)) {
     return false;
   }
 
-  *error_domain = LocalizedError::kHttpErrorDomain;
+  *error_domain = error_page::LocalizedError::kHttpErrorDomain;
   return true;
 }
 
@@ -1052,9 +1052,10 @@ void ChromeContentRendererClient::GetNavigationErrorStrings(
         ->GetErrorHTML(error, is_post, is_ignoring_cache, error_html);
   }
 
-  if (error_description)
-    *error_description = LocalizedError::GetErrorDetails(error.domain.utf8(),
-                                                         error.reason, is_post);
+  if (error_description) {
+    *error_description = error_page::LocalizedError::GetErrorDetails(
+        error.domain.utf8(), error.reason, is_post);
+  }
 }
 
 bool ChromeContentRendererClient::RunIdleHandlerWhenWidgetsHidden() {

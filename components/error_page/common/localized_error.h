@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_LOCALIZED_ERROR_H_
-#define CHROME_COMMON_LOCALIZED_ERROR_H_
+#ifndef COMPONENTS_ERROR_PAGE_COMMON_LOCALIZED_ERROR_H_
+#define COMPONENTS_ERROR_PAGE_COMMON_LOCALIZED_ERROR_H_
 
 #include <string>
 
@@ -18,8 +18,8 @@ class DictionaryValue;
 }
 
 namespace error_page {
+
 struct ErrorPageParams;
-}
 
 class LocalizedError {
  public:
@@ -52,4 +52,6 @@ class LocalizedError {
   DISALLOW_IMPLICIT_CONSTRUCTORS(LocalizedError);
 };
 
-#endif  // CHROME_COMMON_LOCALIZED_ERROR_H_
+}  // namespace error_page
+
+#endif  // COMPONENTS_ERROR_PAGE_COMMON_LOCALIZED_ERROR_H_
