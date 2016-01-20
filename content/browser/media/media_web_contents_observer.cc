@@ -4,8 +4,11 @@
 
 #include "content/browser/media/media_web_contents_observer.h"
 
+#include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "content/browser/media/audible_metrics.h"
+#include "content/browser/media/audio_stream_monitor.h"
 #include "content/browser/power_save_blocker_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
@@ -15,23 +18,43 @@
 
 namespace content {
 
+namespace {
+
+static base::LazyInstance<AudibleMetrics>::Leaky g_audible_metrics =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // anonymous namespace
+
 MediaWebContentsObserver::MediaWebContentsObserver(WebContents* web_contents)
     : WebContentsObserver(web_contents) {}
 
 MediaWebContentsObserver::~MediaWebContentsObserver() {}
+
+void MediaWebContentsObserver::WebContentsDestroyed() {
+  g_audible_metrics.Get().UpdateAudibleWebContentsState(web_contents(), false);
+}
 
 void MediaWebContentsObserver::RenderFrameDeleted(
     RenderFrameHost* render_frame_host) {
   ClearPowerSaveBlockers(render_frame_host);
 }
 
-void MediaWebContentsObserver::MaybeUpdateAudibleState(bool recently_audible) {
-  if (recently_audible) {
+void MediaWebContentsObserver::MaybeUpdateAudibleState() {
+  if (!AudioStreamMonitor::monitoring_available())
+    return;
+
+  AudioStreamMonitor* audio_stream_monitor =
+      static_cast<WebContentsImpl*>(web_contents())->audio_stream_monitor();
+
+  if (audio_stream_monitor->WasRecentlyAudible()) {
     if (!audio_power_save_blocker_)
       CreateAudioPowerSaveBlocker();
   } else {
     audio_power_save_blocker_.reset();
   }
+
+  g_audible_metrics.Get().UpdateAudibleWebContentsState(
+      web_contents(), audio_stream_monitor->IsCurrentlyAudible());
 }
 
 bool MediaWebContentsObserver::OnMessageReceived(

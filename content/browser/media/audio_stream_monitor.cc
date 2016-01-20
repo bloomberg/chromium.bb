@@ -30,7 +30,8 @@ AudioStreamMonitor* AudioStreamMonitorFromRenderFrame(int render_process_id,
 AudioStreamMonitor::AudioStreamMonitor(WebContents* contents)
     : web_contents_(contents),
       clock_(&default_tick_clock_),
-      was_recently_audible_(false)
+      was_recently_audible_(false),
+      is_audible_(false)
 {
   DCHECK(web_contents_);
 }
@@ -40,6 +41,11 @@ AudioStreamMonitor::~AudioStreamMonitor() {}
 bool AudioStreamMonitor::WasRecentlyAudible() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return was_recently_audible_;
+}
+
+bool AudioStreamMonitor::IsCurrentlyAudible() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return is_audible_;
 }
 
 // static
@@ -124,6 +130,9 @@ void AudioStreamMonitor::StopMonitoringStreamOnUIThread(int render_process_id,
 }
 
 void AudioStreamMonitor::Poll() {
+  bool was_audible = is_audible_;
+  is_audible_ = false;
+
   for (StreamPollCallbackMap::const_iterator it = poll_callbacks_.begin();
        it != poll_callbacks_.end();
        ++it) {
@@ -132,12 +141,17 @@ void AudioStreamMonitor::Poll() {
     // information except for "is it audible?"
     const float power_dbfs = it->second.Run().first;
     const float kSilenceThresholdDBFS = -72.24719896f;
+
     if (power_dbfs >= kSilenceThresholdDBFS) {
       last_blurt_time_ = clock_->NowTicks();
+      is_audible_ = true;
       MaybeToggle();
       break;  // No need to poll remaining streams.
     }
   }
+
+  if (is_audible_ != was_audible)
+    web_contents_->NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 }
 
 void AudioStreamMonitor::MaybeToggle() {

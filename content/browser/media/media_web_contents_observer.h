@@ -28,11 +28,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   explicit MediaWebContentsObserver(WebContents* web_contents);
   ~MediaWebContentsObserver() override;
 
-  // Called when the audible state has changed.  If inaudible any audio power
-  // save blockers are released.
-  void MaybeUpdateAudibleState(bool recently_audible);
+  // Called by WebContentsImpl when the audible state may have changed.
+  void MaybeUpdateAudibleState();
 
   // WebContentsObserver implementation.
+  void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
   bool OnMessageReceived(const IPC::Message& message,
                          RenderFrameHost* render_frame_host) override;

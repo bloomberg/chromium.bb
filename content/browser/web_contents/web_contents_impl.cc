@@ -1185,8 +1185,7 @@ void WebContentsImpl::NotifyNavigationStateChanged(
           "466285 WebContentsImpl::NotifyNavigationStateChanged"));
   // Notify the media observer of potential audibility changes.
   if (changed_flags & INVALIDATE_TYPE_TAB) {
-    media_web_contents_observer_->MaybeUpdateAudibleState(
-        AudioStreamMonitor::monitoring_available() && WasRecentlyAudible());
+    media_web_contents_observer_->MaybeUpdateAudibleState();
   }
 
   if (delegate_)

@@ -52,6 +52,11 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // the killing of tabs making sounds).
   bool WasRecentlyAudible() const;
 
+  // Returns true if the audio is currently audible from the given WebContents.
+  // The difference from WasRecentlyAudible() is that this method will return
+  // false as soon as the WebContents stop producing sound.
+  bool IsCurrentlyAudible() const;
+
   // Starts or stops audio level monitoring respectively for the stream owned by
   // the specified renderer.  Safe to call from any thread.
   //
@@ -138,6 +143,9 @@ class CONTENT_EXPORT AudioStreamMonitor {
   // Set to true if the last call to MaybeToggle() determined the indicator
   // should be turned on.
   bool was_recently_audible_;
+
+  // Whether the WebContents is currently audible.
+  bool is_audible_;
 
   // Calls Poll() at regular intervals while |poll_callbacks_| is non-empty.
   base::RepeatingTimer poll_timer_;

@@ -1002,6 +1002,8 @@
       'browser/media/android/provision_fetcher_impl.h',
       'browser/media/android/url_provision_fetcher.cc',
       'browser/media/android/url_provision_fetcher.h',
+      'browser/media/audible_metrics.cc',
+      'browser/media/audible_metrics.h',
       'browser/media/audio_stream_monitor.cc',
       'browser/media/audio_stream_monitor.h',
       'browser/media/capture/audio_mirroring_manager.cc',

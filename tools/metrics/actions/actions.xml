@@ -7718,6 +7718,16 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Media.Audible.AddTab">
+  <owner>mlamouri@chromium.org</owner>
+  <description>A tab became audible.</description>
+</action>
+
+<action name="Media.Audible.RemoveTab">
+  <owner>mlamouri@chromium.org</owner>
+  <description>A tab is no longer audible.</description>
+</action>
+
 <action name="MediaContextMenu_Controls">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -93,16 +93,37 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
               monitor_->off_timer_.IsRunning());
   }
 
-  void ExpectWebContentsWillBeNotifiedOnce(bool should_be_audible) {
+  void ExpectIsCurrentlyAudible() const {
+    EXPECT_TRUE(monitor_->IsCurrentlyAudible());
+  }
+
+  void ExpectNotCurrentlyAudible() const {
+    EXPECT_FALSE(monitor_->IsCurrentlyAudible());
+  }
+
+  void ExpectRecentlyAudibleChangeNotification(bool new_recently_audible) {
     EXPECT_CALL(
         mock_web_contents_delegate_,
         NavigationStateChanged(RenderViewHostTestHarness::web_contents(),
                                INVALIDATE_TYPE_TAB))
         .WillOnce(InvokeWithoutArgs(
             this,
-            should_be_audible
-                ? &AudioStreamMonitorTest::ExpectIsNotifyingForToggleOn
-                : &AudioStreamMonitorTest::ExpectIsNotifyingForToggleOff))
+            new_recently_audible
+                ? &AudioStreamMonitorTest::ExpectWasRecentlyAudible
+                : &AudioStreamMonitorTest::ExpectNotRecentlyAudible))
+        .RetiresOnSaturation();
+  }
+
+  void ExpectCurrentlyAudibleChangeNotification(bool new_audible) {
+    EXPECT_CALL(
+        mock_web_contents_delegate_,
+        NavigationStateChanged(RenderViewHostTestHarness::web_contents(),
+                               INVALIDATE_TYPE_TAB))
+        .WillOnce(InvokeWithoutArgs(
+            this,
+            new_audible
+                ? &AudioStreamMonitorTest::ExpectIsCurrentlyAudible
+                : &AudioStreamMonitorTest::ExpectNotCurrentlyAudible))
         .RetiresOnSaturation();
   }
 
@@ -136,11 +157,11 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
     return std::make_pair(current_power_[stream_id], false);
   }
 
-  void ExpectIsNotifyingForToggleOn() {
+  void ExpectWasRecentlyAudible() const {
     EXPECT_TRUE(monitor_->WasRecentlyAudible());
   }
 
-  void ExpectIsNotifyingForToggleOff() {
+  void ExpectNotRecentlyAudible() const {
     EXPECT_FALSE(monitor_->WasRecentlyAudible());
   }
 
@@ -155,14 +176,17 @@ class AudioStreamMonitorTest : public RenderViewHostTestHarness {
 // ReadPowerAndClipCallback, and is not polling at other times.
 TEST_F(AudioStreamMonitorTest, PollsWhenProvidedACallback) {
   EXPECT_FALSE(monitor_->WasRecentlyAudible());
+  ExpectNotCurrentlyAudible();
   ExpectIsPolling(kRenderProcessId, kStreamId, false);
 
   StartMonitoring(kRenderProcessId, kStreamId, CreatePollCallback(kStreamId));
   EXPECT_FALSE(monitor_->WasRecentlyAudible());
+  ExpectNotCurrentlyAudible();
   ExpectIsPolling(kRenderProcessId, kStreamId, true);
 
   StopMonitoring(kRenderProcessId, kStreamId);
   EXPECT_FALSE(monitor_->WasRecentlyAudible());
+  ExpectNotCurrentlyAudible();
   ExpectIsPolling(kRenderProcessId, kStreamId, false);
 }
 
@@ -175,19 +199,24 @@ TEST_F(AudioStreamMonitorTest,
 
   // Expect WebContents will get one call form AudioStreamMonitor to toggle the
   // indicator on upon the very first poll.
-  ExpectWebContentsWillBeNotifiedOnce(true);
+  ExpectRecentlyAudibleChangeNotification(true);
 
   // Loop, each time testing a slightly longer period of polled silence.  The
-  // indicator should remain on throughout.
-  int num_silence_polls = 0;
+  // recently audible state should not change while the currently audible one
+  // should.
+  int num_silence_polls = 1;
   base::TimeTicks last_blurt_time;
   do {
+    ExpectCurrentlyAudibleChangeNotification(true);
+
     // Poll an audible signal, and expect tab indicator state is on.
     SetStreamPower(kStreamId, media::AudioPowerMonitor::max_power());
     last_blurt_time = GetTestClockTime();
     SimulatePollTimerFired();
     ExpectTabWasRecentlyAudible(true, last_blurt_time);
     AdvanceClock(one_polling_interval());
+
+    ExpectCurrentlyAudibleChangeNotification(false);
 
     // Poll a silent signal repeatedly, ensuring that the indicator is being
     // held on during the holding period.
@@ -207,7 +236,7 @@ TEST_F(AudioStreamMonitorTest,
   // At this point, the clock has just advanced to beyond the holding period, so
   // the next firing of the off timer should turn off the tab indicator.  Also,
   // make sure it stays off for several cycles thereafter.
-  ExpectWebContentsWillBeNotifiedOnce(false);
+  ExpectRecentlyAudibleChangeNotification(false);
   for (int i = 0; i < 10; ++i) {
     SimulateOffTimerFired();
     ExpectTabWasRecentlyAudible(false, last_blurt_time);
@@ -224,15 +253,19 @@ TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
 
   base::TimeTicks last_blurt_time;
   ExpectTabWasRecentlyAudible(false, last_blurt_time);
+  ExpectNotCurrentlyAudible();
 
   // Measure audible sound from the first stream and silence from the second.
-  // The indicator turns on (i.e., tab was recently audible).
-  ExpectWebContentsWillBeNotifiedOnce(true);
+  // The tab becomes audible.
+  ExpectRecentlyAudibleChangeNotification(true);
+  ExpectCurrentlyAudibleChangeNotification(true);
+
   SetStreamPower(kStreamId, media::AudioPowerMonitor::max_power());
   SetStreamPower(kAnotherStreamId, media::AudioPowerMonitor::zero_power());
   last_blurt_time = GetTestClockTime();
   SimulatePollTimerFired();
   ExpectTabWasRecentlyAudible(true, last_blurt_time);
+  ExpectIsCurrentlyAudible();
 
   // Halfway through the holding period, the second stream joins in.  The
   // indicator stays on.
@@ -242,39 +275,52 @@ TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
   last_blurt_time = GetTestClockTime();
   SimulatePollTimerFired();  // Restarts holding period.
   ExpectTabWasRecentlyAudible(true, last_blurt_time);
+  ExpectIsCurrentlyAudible();
 
   // Now, measure silence from both streams.  After an entire holding period
-  // has passed (since the second stream joined in), the indicator should turn
-  // off.
-  ExpectWebContentsWillBeNotifiedOnce(false);
+  // has passed (since the second stream joined in), the tab will no longer
+  // become audible nor recently audible.
+  ExpectCurrentlyAudibleChangeNotification(false);
+  ExpectRecentlyAudibleChangeNotification(false);
+
   AdvanceClock(holding_period());
   SimulateOffTimerFired();
   SetStreamPower(kStreamId, media::AudioPowerMonitor::zero_power());
   SetStreamPower(kAnotherStreamId, media::AudioPowerMonitor::zero_power());
   SimulatePollTimerFired();
   ExpectTabWasRecentlyAudible(false, last_blurt_time);
+  ExpectNotCurrentlyAudible();
 
   // Now, measure silence from the first stream and audible sound from the
-  // second.  The indicator turns back on.
-  ExpectWebContentsWillBeNotifiedOnce(true);
+  // second.  The tab becomes audible again.
+  ExpectRecentlyAudibleChangeNotification(true);
+  ExpectCurrentlyAudibleChangeNotification(true);
+
   SetStreamPower(kAnotherStreamId, media::AudioPowerMonitor::max_power());
   last_blurt_time = GetTestClockTime();
   SimulatePollTimerFired();
   ExpectTabWasRecentlyAudible(true, last_blurt_time);
+  ExpectIsCurrentlyAudible();
 
   // From here onwards, both streams are silent.  Halfway through the holding
-  // period, the indicator should not have changed.
+  // period, the tab is no longer audible but stays as recently audible.
+  ExpectCurrentlyAudibleChangeNotification(false);
+
   SetStreamPower(kAnotherStreamId, media::AudioPowerMonitor::zero_power());
   AdvanceClock(holding_period() / 2);
   SimulatePollTimerFired();
   SimulateOffTimerFired();
   ExpectTabWasRecentlyAudible(true, last_blurt_time);
+  ExpectNotCurrentlyAudible();
 
-  // Just past the holding period, the indicator should be turned off.
-  ExpectWebContentsWillBeNotifiedOnce(false);
+  // Just past the holding period, the tab is no longer marked as recently
+  // audible.
+  ExpectRecentlyAudibleChangeNotification(false);
+
   AdvanceClock(holding_period() - (GetTestClockTime() - last_blurt_time));
   SimulateOffTimerFired();
   ExpectTabWasRecentlyAudible(false, last_blurt_time);
+  ExpectNotCurrentlyAudible();
 
   // Polling should not turn the indicator back while both streams are remaining
   // silent.
@@ -282,6 +328,7 @@ TEST_F(AudioStreamMonitorTest, HandlesMultipleStreamsBlurting) {
     AdvanceClock(one_polling_interval());
     SimulatePollTimerFired();
     ExpectTabWasRecentlyAudible(false, last_blurt_time);
+    ExpectNotCurrentlyAudible();
   }
 }
 

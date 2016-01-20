@@ -18313,6 +18313,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Audible.ConcurrentTabsTime" units="ms">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records how long more than one tab is audible at the same time. The
+    concurrent tabs might change during this period. The time recorded starts
+    when the browser goes from one to two audbile tabs and stops when it is back
+    below two.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audible.ConcurrentTabsWhenStarting">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records how many tabs were audible when a new tab started to be audible.
+  </summary>
+</histogram>
+
+<histogram name="Media.Audible.MaxConcurrentTabsInSession">
+  <owner>mlamouri@chromium.org</owner>
+  <summary>
+    Records how many tabs are audible at the same time during the session. It is
+    recording the maximum audible tab count everytime it increases. In other
+    words, a session with N concurrent audible tabs will record entries from 1
+    through N exactly once.
+  </summary>
+</histogram>
+
 <histogram name="Media.Audio.AutomaticGainControlMac" enum="BooleanEnabled">
   <owner>henrika@chromium.org</owner>
   <summary>
