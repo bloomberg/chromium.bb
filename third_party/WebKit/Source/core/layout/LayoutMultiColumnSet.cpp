@@ -99,7 +99,7 @@ bool LayoutMultiColumnSet::isPageLogicalHeightKnown() const
 
 LayoutUnit LayoutMultiColumnSet::nextLogicalTopForUnbreakableContent(LayoutUnit flowThreadOffset, LayoutUnit contentLogicalHeight) const
 {
-    ASSERT(pageLogicalTopForOffset(flowThreadOffset) == flowThreadOffset);
+    ASSERT(flowThreadOffset.mightBeSaturated() || pageLogicalTopForOffset(flowThreadOffset) == flowThreadOffset);
     FragmentationContext* enclosingFragmentationContext = multiColumnFlowThread()->enclosingFragmentationContext();
     if (!enclosingFragmentationContext) {
         // If there's no enclosing fragmentation context, there'll ever be only one row, and all
