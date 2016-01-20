@@ -90,7 +90,7 @@ public:
 
     bool blendedBoundsForBox(const FloatBox&, const TransformOperations& from, const double& minProgress, const double& maxProgress, FloatBox* bounds) const;
     TransformOperations blendByMatchingOperations(const TransformOperations& from, const double& progress) const;
-    TransformOperations blendByUsingMatrixInterpolation(const TransformOperations& from, double progress) const;
+    PassRefPtr<TransformOperation> blendByUsingMatrixInterpolation(const TransformOperations& from, double progress) const;
     TransformOperations blend(const TransformOperations& from, double progress) const;
     TransformOperations add(const TransformOperations& addend) const;
     TransformOperations zoom(double factor) const;
