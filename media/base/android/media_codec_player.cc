@@ -359,11 +359,11 @@ void MediaCodecPlayer::Release() {
   }
 }
 
-void MediaCodecPlayer::SetVolume(double volume) {
-  RUN_ON_MEDIA_THREAD(SetVolume, volume);
+void MediaCodecPlayer::UpdateEffectiveVolumeInternal(double effective_volume) {
+  RUN_ON_MEDIA_THREAD(UpdateEffectiveVolumeInternal, effective_volume);
 
-  DVLOG(1) << __FUNCTION__ << " " << volume;
-  audio_decoder_->SetVolume(volume);
+  DVLOG(1) << __FUNCTION__ << " " << effective_volume;
+  audio_decoder_->SetVolume(effective_volume);
 }
 
 bool MediaCodecPlayer::HasAudio() const {

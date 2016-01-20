@@ -41,33 +41,49 @@ class MockMediaSessionObserver : public MediaSessionObserver {
 
   // Implements MediaSessionObserver.
   void OnSuspend(int player_id) override {
-    DCHECK(player_id >= 0);
-    DCHECK(players_.size() > static_cast<size_t>(player_id));
+    EXPECT_GE(player_id, 0);
+    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
 
     ++received_suspend_calls_;
-    players_[player_id] = false;
+    players_[player_id].is_playing_ = false;
   }
+
   void OnResume(int player_id) override {
-    DCHECK(player_id >= 0);
-    DCHECK(players_.size() > static_cast<size_t>(player_id));
+    EXPECT_GE(player_id, 0);
+    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
 
     ++received_resume_calls_;
-    players_[player_id] = true;
+    players_[player_id].is_playing_ = true;
+  }
+
+  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override {
+    EXPECT_GE(player_id, 0);
+    EXPECT_GT(players_.size(), static_cast<size_t>(player_id));
+
+    EXPECT_GE(volume_multiplier, 0.0f);
+    EXPECT_LE(volume_multiplier, 1.0f);
+
+    players_[player_id].volume_multiplier_ = volume_multiplier;
   }
 
   int StartNewPlayer() {
-    players_.push_back(true);
+    players_.push_back(MockPlayer(true, 1.0f));
     return players_.size() - 1;
   }
 
   bool IsPlaying(size_t player_id) {
-    DCHECK(players_.size() > player_id);
-    return players_[player_id];
+    EXPECT_GT(players_.size(), player_id);
+    return players_[player_id].is_playing_;
+  }
+
+  double GetVolumeMultiplier(size_t player_id) {
+    EXPECT_GT(players_.size(), player_id);
+    return players_[player_id].volume_multiplier_;
   }
 
   void SetPlaying(size_t player_id, bool playing) {
-    DCHECK(players_.size() > player_id);
-    players_[player_id] = playing;
+    EXPECT_GT(players_.size(), player_id);
+    players_[player_id].is_playing_ = playing;
   }
 
   int received_suspend_calls() const {
@@ -79,9 +95,18 @@ class MockMediaSessionObserver : public MediaSessionObserver {
   }
 
  private:
+  struct MockPlayer {
+   public:
+    MockPlayer(bool is_playing = true, double volume_multiplier = 1.0f)
+        : is_playing_(is_playing),
+          volume_multiplier_(volume_multiplier) {}
+    bool is_playing_;
+    double volume_multiplier_;
+  };
+
   // Basic representation of the players. The position in the vector is the
-  // player_id. The value of the vector is the playing status.
-  std::vector<bool> players_;
+  // player_id. The value of the vector is the playing status and volume.
+  std::vector<MockPlayer> players_;
 
   int received_resume_calls_;
   int received_suspend_calls_;
@@ -176,6 +201,11 @@ class MediaSessionBrowserTest : public content::ContentBrowserTest {
     media_session_->OnSuspend(nullptr, nullptr, temporary);
   }
 
+  void SystemSetVolumeMultiplier(double volume_multiplier) {
+    media_session_->OnSetVolumeMultiplier(
+        nullptr, nullptr, volume_multiplier);
+  }
+
   MockWebContentsObserver* mock_web_contents_observer() {
     return mock_web_contents_observer_.get();
   }
@@ -219,7 +249,6 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
       new MockMediaSessionObserver);
 
   StartNewPlayer(media_session_observer_1.get(), MediaSession::Type::Content);
-
   StartNewPlayer(media_session_observer_2.get(), MediaSession::Type::Content);
   StartNewPlayer(media_session_observer_3.get(), MediaSession::Type::Content);
 
@@ -284,6 +313,25 @@ IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
   EXPECT_FALSE(media_session_observer->IsPlaying(0));
   EXPECT_TRUE(media_session_observer->IsPlaying(1));
   EXPECT_TRUE(media_session_observer->IsPlaying(2));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest,
+                       MediaSessionSetVolumeMultiplier) {
+  scoped_ptr<MockMediaSessionObserver> media_session_observer(
+      new MockMediaSessionObserver);
+
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  double volume_multiplier = 0.2f;
+  SystemSetVolumeMultiplier(volume_multiplier);
+
+  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(0));
+  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(1));
+
+  StartNewPlayer(media_session_observer.get(), MediaSession::Type::Content);
+
+  EXPECT_EQ(volume_multiplier, media_session_observer->GetVolumeMultiplier(2));
 }
 
 IN_PROC_BROWSER_TEST_F(MediaSessionBrowserTest, AudioFocusInitialState) {

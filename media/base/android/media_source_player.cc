@@ -207,8 +207,8 @@ void MediaSourcePlayer::Release() {
   on_decoder_resources_released_cb_.Run(player_id());
 }
 
-void MediaSourcePlayer::SetVolume(double volume) {
-  audio_decoder_job_->SetVolume(volume);
+void MediaSourcePlayer::UpdateEffectiveVolumeInternal(double effective_volume) {
+  audio_decoder_job_->SetVolume(effective_volume);
 }
 
 bool MediaSourcePlayer::CanPause() {

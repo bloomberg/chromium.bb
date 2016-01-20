@@ -45,7 +45,7 @@ public class PauseOnHeadsetUnplugTest extends ChromeActivityTestCaseBase<ChromeA
         waitForNotificationReady();
 
         simulateHeadsetUnplug();
-        DOMUtils.waitForMediaPause(tab.getWebContents(), VIDEO_ID);
+        DOMUtils.waitForMediaPauseBeforeEnd(tab.getWebContents(), VIDEO_ID);
     }
 
     @Override

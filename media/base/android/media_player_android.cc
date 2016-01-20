@@ -4,6 +4,8 @@
 
 #include "media/base/android/media_player_android.h"
 
+#include <algorithm>
+
 #include "base/android/context_utils.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -11,7 +13,15 @@
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_manager.h"
 
+namespace {
+
+const double kDefaultVolume = 1.0;
+
+}  // namespace
+
 namespace media {
+
+const double MediaPlayerAndroid::kDefaultVolumeMultiplier = 1.0;
 
 MediaPlayerAndroid::MediaPlayerAndroid(
     int player_id,
@@ -20,6 +30,8 @@ MediaPlayerAndroid::MediaPlayerAndroid(
     const GURL& frame_url)
     : on_decoder_resources_released_cb_(on_decoder_resources_released_cb),
       player_id_(player_id),
+      volume_(kDefaultVolume),
+      volume_multiplier_(kDefaultVolumeMultiplier),
       manager_(manager),
       frame_url_(frame_url),
       weak_factory_(this) {
@@ -28,6 +40,24 @@ MediaPlayerAndroid::MediaPlayerAndroid(
 }
 
 MediaPlayerAndroid::~MediaPlayerAndroid() {}
+
+void MediaPlayerAndroid::SetVolume(double volume) {
+  volume_ = std::max(0.0, std::min(volume, 1.0));
+  UpdateEffectiveVolume();
+}
+
+void MediaPlayerAndroid::SetVolumeMultiplier(double volume_multiplier) {
+  volume_multiplier_ = std::max(0.0, std::min(volume_multiplier, 1.0));
+  UpdateEffectiveVolume();
+}
+
+double MediaPlayerAndroid::GetEffectiveVolume() const {
+  return volume_ * volume_multiplier_;
+}
+
+void MediaPlayerAndroid::UpdateEffectiveVolume() {
+  UpdateEffectiveVolumeInternal(GetEffectiveVolume());
+}
 
 // For most subclasses we can delete on the caller thread.
 void MediaPlayerAndroid::DeleteOnCorrectThread() {

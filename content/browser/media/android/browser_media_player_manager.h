@@ -116,6 +116,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   // MediaSessionObserver overrides.
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
+  void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
 
   // Message handlers.
   virtual void OnEnterFullscreen(int player_id);

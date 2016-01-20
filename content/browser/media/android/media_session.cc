@@ -11,6 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "jni/MediaSession_jni.h"
+#include "media/base/android/media_player_android.h"
 
 namespace content {
 
@@ -62,6 +63,8 @@ MediaSession::~MediaSession() {
 bool MediaSession::AddPlayer(MediaSessionObserver* observer,
                              int player_id,
                              Type type) {
+  observer->OnSetVolumeMultiplier(player_id, volume_multiplier_);
+
   // If the audio focus is already granted and is of type Content, there is
   // nothing to do. If it is granted of type Transient the requested type is
   // also transient, there is also nothing to do. Otherwise, the session needs
@@ -149,6 +152,10 @@ void MediaSession::OnPlayerPaused(MediaSessionObserver* observer,
   // Otherwise, suspend the session.
   DCHECK(!IsSuspended());
   OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
+}
+void MediaSession::OnSetVolumeMultiplier(JNIEnv *env, jobject obj,
+                                         jdouble volume_multiplier) {
+  OnSetVolumeMultiplierInternal(volume_multiplier);
 }
 
 void MediaSession::Resume() {
@@ -271,10 +278,18 @@ void MediaSession::OnResumeInternal(SuspendType type) {
   UpdateWebContents();
 }
 
+void MediaSession::OnSetVolumeMultiplierInternal(double volume_multiplier) {
+  volume_multiplier_ = volume_multiplier;
+  for (const auto& it : players_)
+    it.observer->OnSetVolumeMultiplier(it.player_id, volume_multiplier_);
+}
+
 MediaSession::MediaSession(WebContents* web_contents)
     : WebContentsObserver(web_contents),
       audio_focus_state_(State::INACTIVE),
-      audio_focus_type_(Type::Transient) {}
+      audio_focus_type_(Type::Transient),
+      volume_multiplier_(media::MediaPlayerAndroid::kDefaultVolumeMultiplier) {
+}
 
 void MediaSession::Initialize() {
   JNIEnv* env = base::android::AttachCurrentThread();

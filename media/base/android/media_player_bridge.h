@@ -64,7 +64,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   void Pause(bool is_media_related_action) override;
   void SeekTo(base::TimeDelta timestamp) override;
   void Release() override;
-  void SetVolume(double volume) override;
   bool HasVideo() const override;
   bool HasAudio() const override;
   int GetVideoWidth() override;
@@ -108,6 +107,9 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
 
  private:
   friend class MediaPlayerBridgeTest;
+
+  // MediaPlayerAndroid implementation
+  void UpdateEffectiveVolumeInternal(double effective_volume) override;
 
   // Set the data source for the media player.
   void SetDataSource(const std::string& url);
@@ -193,9 +195,6 @@ class MEDIA_EXPORT MediaPlayerBridge : public MediaPlayerAndroid {
   base::RepeatingTimer time_update_timer_;
 
   base::TimeDelta last_time_update_timestamp_;
-
-  // Volume of playback.
-  double volume_;
 
   // Whether user credentials are allowed to be passed.
   bool allow_credentials_;

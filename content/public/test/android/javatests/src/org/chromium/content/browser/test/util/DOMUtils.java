@@ -65,6 +65,17 @@ public class DOMUtils {
     }
 
     /**
+     * Returns whether the media with given {@code id} has ended.
+     * @param webContents The WebContents in which the media element lives.
+     * @param id The element's id to check.
+     * @return whether the media has ended.
+     */
+    private static boolean isMediaEnded(final WebContents webContents, final String id)
+            throws InterruptedException, TimeoutException {
+        return getNodeField("ended", webContents, id, Boolean.class);
+    }
+
+    /**
      * Waits until the playback of the media with given {@code id} has started.
      * @param webContents The WebContents in which the media element lives.
      * @param id The element's id to check.
@@ -88,17 +99,18 @@ public class DOMUtils {
     }
 
     /**
-     * Waits until the playback of the media with given {@code id} has stopped.
+     * Waits until the playback of the media with given {@code id} has paused before ended.
      * @param webContents The WebContents in which the media element lives.
      * @param id The element's id to check.
      */
-    public static void waitForMediaPause(final WebContents webContents, final String id)
+    public static void waitForMediaPauseBeforeEnd(final WebContents webContents, final String id)
             throws InterruptedException {
         CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 try {
-                    return DOMUtils.isMediaPaused(webContents, id);
+                    return DOMUtils.isMediaPaused(webContents, id)
+                            && !DOMUtils.isMediaEnded(webContents, id);
                 } catch (InterruptedException e) {
                     // Intentionally do nothing
                     return false;

@@ -17,6 +17,11 @@ class MediaSessionObserver {
 
   // The given |player_id| has been resumed by the MediaSession.
   virtual void OnResume(int player_id) = 0;
+
+  // The given |player_id| has been set a new volume multiplier by
+  // the MediaSession.
+  virtual void OnSetVolumeMultiplier(int player_id,
+                                     double volume_multiplier) = 0;
 };
 
 }  // namespace content

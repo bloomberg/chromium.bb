@@ -25,8 +25,13 @@ import org.chromium.base.annotations.JNINamespace;
 public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
     private static final String TAG = "cr.MediaSession";
 
+    // These need to match the values in native apps.
+    public static final double DUCKING_VOLUME_MULTIPLIER = 0.2f;
+    public static final double DEFAULT_VOLUME_MULTIPLIER = 1.0f;
+
     private Context mContext;
     private int mFocusType;
+    private boolean mIsDucking = false;
 
     // Native pointer to C++ content::MediaSession.
     private final long mNativeMediaSession;
@@ -65,11 +70,19 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
     public void onAudioFocusChange(int focusChange) {
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
-                nativeOnResume(mNativeMediaSession);
+                if (mIsDucking) {
+                    nativeOnSetVolumeMultiplier(mNativeMediaSession, DEFAULT_VOLUME_MULTIPLIER);
+                    mIsDucking = false;
+                } else {
+                    nativeOnResume(mNativeMediaSession);
+                }
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
-            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
                 nativeOnSuspend(mNativeMediaSession, true);
+                break;
+            case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                mIsDucking = true;
+                nativeOnSetVolumeMultiplier(mNativeMediaSession, DUCKING_VOLUME_MULTIPLIER);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS:
                 abandonAudioFocus();
@@ -83,4 +96,6 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
 
     private native void nativeOnSuspend(long nativeMediaSession, boolean temporary);
     private native void nativeOnResume(long nativeMediaSession);
+    private native void nativeOnSetVolumeMultiplier(
+            long nativeMediaSession, double volumeMultiplier);
 }

@@ -38,6 +38,8 @@ class MEDIA_EXPORT MediaPlayerAndroid {
     MEDIA_ERROR_INVALID_CODE,
   };
 
+  static const double kDefaultVolumeMultiplier;
+
   // Callback when the player releases decoding resources.
   typedef base::Callback<void(int player_id)> OnDecoderResourcesReleasedCB;
 
@@ -62,8 +64,13 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   // Release the player resources.
   virtual void Release() = 0;
 
-  // Set the player volume.
-  virtual void SetVolume(double volume) = 0;
+  // Set the player volume, and take effect immediately.
+  // The volume should be between 0.0 and 1.0.
+  void SetVolume(double volume);
+
+  // Set the player volume multiplier, and take effect immediately.
+  // The volume should be between 0.0 and 1.0.
+  void SetVolumeMultiplier(double volume_multiplier);
 
   // Get the media information from the player.
   virtual bool HasVideo() const = 0;
@@ -125,6 +132,9 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   virtual void OnSeekComplete();
   virtual void OnMediaPrepared();
 
+  double GetEffectiveVolume() const;
+  void UpdateEffectiveVolume();
+
   // When destroying a subclassed object on a non-UI thread
   // it is still required to destroy the |listener_| related stuff
   // on the UI thread.
@@ -137,10 +147,21 @@ class MEDIA_EXPORT MediaPlayerAndroid {
   OnDecoderResourcesReleasedCB on_decoder_resources_released_cb_;
 
  private:
+  // Set the effective player volume, implemented by children classes.
+  virtual void UpdateEffectiveVolumeInternal(double effective_volume) = 0;
+
   friend class MediaPlayerListener;
 
   // Player ID assigned to this player.
   int player_id_;
+
+  // The player volume. Should be between 0.0 and 1.0.
+  double volume_;
+
+  // The player volume multiplier. Should be between 0.0 and 1.0.  This
+  // should be a cached version of the MediaSession volume multiplier,
+  // and should keep updated.
+  double volume_multiplier_;
 
   // Resource manager for all the media players.
   MediaPlayerManager* manager_;

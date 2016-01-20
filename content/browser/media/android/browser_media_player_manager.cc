@@ -438,6 +438,15 @@ void BrowserMediaPlayerManager::OnResume(int player_id) {
   Send(new MediaPlayerMsg_DidMediaPlayerPlay(RoutingID(), player_id));
 }
 
+void BrowserMediaPlayerManager::OnSetVolumeMultiplier(
+    int player_id, double volume_multiplier) {
+  MediaPlayerAndroid* player = GetPlayer(player_id);
+  if (!player)
+    return;
+
+  player->SetVolumeMultiplier(volume_multiplier);
+}
+
 #if defined(VIDEO_HOLE)
 void BrowserMediaPlayerManager::AttachExternalVideoSurface(int player_id,
                                                            jobject surface) {

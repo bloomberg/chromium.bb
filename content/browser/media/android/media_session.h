@@ -68,6 +68,11 @@ class CONTENT_EXPORT MediaSession
                  const base::android::JavaParamRef<jobject>& obj,
                  jboolean temporary);
 
+  // Called when the Android system requests the MediaSession to duck.
+  // Called by Java through JNI.
+  void OnSetVolumeMultiplier(JNIEnv* env, jobject obj,
+                             jdouble volume_multiplier);
+
   // Called when the Android system requests the MediaSession to be resumed.
   // Called by Java through JNI.
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -147,6 +152,7 @@ class CONTENT_EXPORT MediaSession
 
   void OnSuspendInternal(SuspendType type, State new_state);
   void OnResumeInternal(SuspendType type);
+  void OnSetVolumeMultiplierInternal(double volume_multiplier);
 
   // Requests audio focus to Android using |j_media_session_|.
   // Returns whether the request was granted. If |j_media_session_| is null, it
@@ -172,6 +178,10 @@ class CONTENT_EXPORT MediaSession
   Type audio_focus_type_;
 
   MediaSessionUmaHelper uma_helper_;
+
+  // The volume multiplier of this session. All players in this session should
+  // multiply their volume with this multiplier to get the effective volume.
+  double volume_multiplier_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSession);
 };

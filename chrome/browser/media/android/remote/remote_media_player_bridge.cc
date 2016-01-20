@@ -45,7 +45,6 @@ RemoteMediaPlayerBridge::RemoteMediaPlayerBridge(
       width_(0),
       height_(0),
       hide_url_log_(hide_url_log),
-      volume_(-1.0),
       url_(local_player->GetUrl()),
       first_party_for_cookies_(local_player->GetFirstPartyForCookies()),
       user_agent_(user_agent),
@@ -327,11 +326,12 @@ void RemoteMediaPlayerBridge::Release() {
   DetachListener();
 }
 
-void RemoteMediaPlayerBridge::SetVolume(double volume) {
+void RemoteMediaPlayerBridge::UpdateEffectiveVolumeInternal(
+    double effective_volume) {
   JNIEnv* env = AttachCurrentThread();
   CHECK(env);
   Java_RemoteMediaPlayerBridge_setVolume(
-      env, java_bridge_.obj(), volume);
+      env, java_bridge_.obj(), GetEffectiveVolume());
 }
 
 base::TimeDelta RemoteMediaPlayerBridge::GetCurrentTime() {

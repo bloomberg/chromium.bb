@@ -204,7 +204,6 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   void Pause(bool is_media_related_action) override;
   void SeekTo(base::TimeDelta timestamp) override;
   void Release() override;
-  void SetVolume(double volume) override;
   bool HasVideo() const override;
   bool HasAudio() const override;
   int GetVideoWidth() override;
@@ -268,6 +267,7 @@ class MEDIA_EXPORT MediaCodecPlayer : public MediaPlayerAndroid,
   };
 
   // MediaPlayerAndroid implementation.
+  void UpdateEffectiveVolumeInternal(double effective_volume) override;
 
   // This method requests playback permission from the manager on UI
   // thread, passing total duration and whether the media has audio

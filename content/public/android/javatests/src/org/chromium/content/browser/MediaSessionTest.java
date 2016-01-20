@@ -31,6 +31,7 @@ public class MediaSessionTest extends ContentShellTestBase {
     private static final String SHORT_VIDEO = "short-video";
     private static final String LONG_VIDEO = "long-video";
     private static final String LONG_VIDEO_SILENT = "long-video-silent";
+    private static final int AUDIO_FOCUS_CHANGE_TIMEOUT = 500;  // ms
 
     private AudioManager getAudioManager() {
         return (AudioManager) getActivity().getApplicationContext().getSystemService(
@@ -187,8 +188,8 @@ public class MediaSessionTest extends ContentShellTestBase {
         DOMUtils.playMedia(getWebContents(), LONG_VIDEO_SILENT);
         DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO_SILENT);
 
-        // TODO(zqzhang): we need to wait fot the OS to notify the audio focus loss.
-        Thread.sleep(500);
+        // TODO(zqzhang): we need to wait for the OS to notify the audio focus loss.
+        Thread.sleep(AUDIO_FOCUS_CHANGE_TIMEOUT);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
     }
 
@@ -243,7 +244,7 @@ public class MediaSessionTest extends ContentShellTestBase {
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), SHORT_AUDIO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), SHORT_AUDIO);
     }
 
     @SmallTest
@@ -263,7 +264,7 @@ public class MediaSessionTest extends ContentShellTestBase {
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), SHORT_VIDEO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), SHORT_VIDEO);
     }
 
     @MediumTest
@@ -282,7 +283,7 @@ public class MediaSessionTest extends ContentShellTestBase {
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_AUDIO);
     }
 
     @SmallTest
@@ -301,12 +302,12 @@ public class MediaSessionTest extends ContentShellTestBase {
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_VIDEO);
     }
 
     @SmallTest
     @Feature({"MediaSession"})
-    public void testMediaDontDuck() throws Exception {
+    public void testMediaDuck() throws Exception {
         assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
         mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
         assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
@@ -324,37 +325,21 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
                 mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
-    }
-
-    @MediumTest
-    @Feature({"MediaSession"})
-    public void testMediaResumeAfterTransientMayDuckFocusLoss() throws Exception {
-        assertEquals(AudioManager.AUDIOFOCUS_LOSS, mAudioFocusChangeListener.getAudioFocusState());
-        mAudioFocusChangeListener.requestAudioFocus(AudioManager.AUDIOFOCUS_GAIN);
-        assertEquals(AudioManager.AUDIOFOCUS_GAIN, mAudioFocusChangeListener.getAudioFocusState());
-
-        DOMUtils.playMedia(getWebContents(), LONG_AUDIO);
-        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
-        DOMUtils.playMedia(getWebContents(), LONG_VIDEO);
-        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
-
-        // Wait for the media to be really playing.
-        mAudioFocusChangeListener.waitForFocusStateChange(AudioManager.AUDIOFOCUS_LOSS);
-
-        mAudioFocusChangeListener.requestAudioFocus(
-                AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK);
-        assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK,
-                mAudioFocusChangeListener.getAudioFocusState());
-
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
+        // TODO(zqzhang): Currently, the volume change cannot be observed. If it could, the volume
+        // should be lower now.
+        Thread.sleep(AUDIO_FOCUS_CHANGE_TIMEOUT);
+        assertFalse(DOMUtils.isMediaPaused(getWebContents(), LONG_AUDIO));
+        assertFalse(DOMUtils.isMediaPaused(getWebContents(), LONG_VIDEO));
 
         mAudioFocusChangeListener.abandonAudioFocus();
+        assertEquals(AudioManager.AUDIOFOCUS_LOSS,
+                mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPlay(getWebContents(), LONG_AUDIO);
-        DOMUtils.waitForMediaPlay(getWebContents(), LONG_VIDEO);
+        // TODO(zqzhang): Currently, the volume change cannot be observed. If it could, the volume
+        // should be higher now.
+        Thread.sleep(AUDIO_FOCUS_CHANGE_TIMEOUT);
+        assertFalse(DOMUtils.isMediaPaused(getWebContents(), LONG_AUDIO));
+        assertFalse(DOMUtils.isMediaPaused(getWebContents(), LONG_VIDEO));
     }
 
     @MediumTest
@@ -376,8 +361,8 @@ public class MediaSessionTest extends ContentShellTestBase {
         assertEquals(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT,
                 mAudioFocusChangeListener.getAudioFocusState());
 
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_AUDIO);
-        DOMUtils.waitForMediaPause(getWebContents(), LONG_VIDEO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_AUDIO);
+        DOMUtils.waitForMediaPauseBeforeEnd(getWebContents(), LONG_VIDEO);
 
         mAudioFocusChangeListener.abandonAudioFocus();
 

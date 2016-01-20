@@ -49,10 +49,8 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_pause_(true),
       can_seek_forward_(true),
       can_seek_backward_(true),
-      volume_(-1.0),
       allow_credentials_(allow_credentials),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 MediaPlayerBridge::~MediaPlayerBridge() {
   if (!j_media_player_bridge_.is_null()) {
@@ -100,8 +98,7 @@ void MediaPlayerBridge::CreateJavaMediaPlayerBridge() {
   j_media_player_bridge_.Reset(Java_MediaPlayerBridge_create(
       env, reinterpret_cast<intptr_t>(this)));
 
-  if (volume_ >= 0)
-    SetVolume(volume_);
+  UpdateEffectiveVolume();
 
   AttachListener(j_media_player_bridge_.obj());
 }
@@ -386,17 +383,16 @@ void MediaPlayerBridge::Release() {
   DetachListener();
 }
 
-void MediaPlayerBridge::SetVolume(double volume) {
+void MediaPlayerBridge::UpdateEffectiveVolumeInternal(double effective_volume) {
   if (j_media_player_bridge_.is_null()) {
-    volume_ = volume;
     return;
   }
 
   JNIEnv* env = base::android::AttachCurrentThread();
   CHECK(env);
 
-  Java_MediaPlayerBridge_setVolume(
-      env, j_media_player_bridge_.obj(), volume);
+  Java_MediaPlayerBridge_setVolume(env, j_media_player_bridge_.obj(),
+                                   effective_volume);
 }
 
 void MediaPlayerBridge::OnVideoSizeChanged(int width, int height) {
