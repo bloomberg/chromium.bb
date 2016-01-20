@@ -55,6 +55,9 @@
 #include <errno.h>
 #include <sys/poll.h>
 #include <sys/time.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
