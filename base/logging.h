@@ -373,9 +373,6 @@ const LogSeverity LOG_0 = LOG_ERROR;
 #define LOG_IF(severity, condition) \
   LAZY_STREAM(LOG_STREAM(severity), LOG_IS_ON(severity) && (condition))
 
-#define SYSLOG(severity) LOG(severity)
-#define SYSLOG_IF(severity, condition) LOG_IF(severity, condition)
-
 // The VLOG macros log with negative verbosities.
 #define VLOG_STREAM(verbose_level) \
   logging::LogMessage(__FILE__, __LINE__, -verbose_level).stream()
@@ -408,8 +405,6 @@ const LogSeverity LOG_0 = LOG_ERROR;
 
 #define LOG_ASSERT(condition)  \
   LOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
-#define SYSLOG_ASSERT(condition) \
-  SYSLOG_IF(FATAL, !(condition)) << "Assert failed: " #condition ". "
 
 #if defined(OS_WIN)
 #define PLOG_STREAM(severity) \
