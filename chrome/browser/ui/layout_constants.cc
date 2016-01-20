@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 int GetLayoutConstant(LayoutConstant constant) {
   const int kFindBarVerticalOffset[] = {1, 6, 6};

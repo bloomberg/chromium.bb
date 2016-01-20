@@ -24,7 +24,7 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/image_operations.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/gfx/codec/png_codec.h"

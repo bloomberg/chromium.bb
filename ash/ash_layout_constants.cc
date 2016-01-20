@@ -5,7 +5,7 @@
 #include "ash/ash_layout_constants.h"
 
 #include "base/logging.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 gfx::Size GetAshLayoutSize(AshLayoutSize size) {
   const int kBrowserMaximizedCaptionButtonHeight[] = {27, 29, 33};

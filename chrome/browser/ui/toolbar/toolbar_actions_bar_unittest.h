@@ -13,7 +13,7 @@
 #include "chrome/browser/extensions/extension_action_test_util.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "extensions/common/feature_switch.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 class ExtensionAction;
 class ToolbarActionsBar;

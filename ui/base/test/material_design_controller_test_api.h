@@ -6,7 +6,7 @@
 #define UI_BASE_TEST_MATERIAL_DESIGN_CONTROLLER_TEST_API_H_
 
 #include "base/macros.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 namespace ui {
 namespace test {

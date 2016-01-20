@@ -33,7 +33,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/feature_switch.h"
 #include "grit/theme_resources.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
 

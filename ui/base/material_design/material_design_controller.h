@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_RESOURCE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
-#define UI_BASE_RESOURCE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
+#ifndef UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
+#define UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
 
 #include "base/macros.h"
 #include "ui/base/ui_base_export.h"
@@ -64,4 +64,4 @@ class UI_BASE_EXPORT MaterialDesignController {
 
 }  // namespace ui
 
-#endif  // UI_BASE_RESOURCE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_
+#endif  // UI_BASE_MATERIAL_DESIGN_MATERIAL_DESIGN_CONTROLLER_H_

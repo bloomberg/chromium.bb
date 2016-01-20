@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/infobar_container_delegate.h"
 
 #include "build/build_config.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 #if defined(TOOLKIT_VIEWS)

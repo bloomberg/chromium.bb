@@ -4,7 +4,7 @@
 
 #include "ui/native_theme/native_theme_dark_aura.h"
 
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 
 namespace ui {

@@ -11,7 +11,7 @@
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_container.h"
 #include "components/infobars/core/infobar_manager.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/animation/slide_animation.h"
 
 namespace infobars {

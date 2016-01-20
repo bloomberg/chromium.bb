@@ -5,7 +5,7 @@
 #include "ui/views/animation/ink_drop_animation_controller_factory.h"
 
 #include "base/macros.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/ink_drop_animation_controller.h"

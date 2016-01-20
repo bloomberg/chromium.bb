@@ -7,7 +7,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/material_design/material_design_controller.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/ui_base_switches.h"
 
