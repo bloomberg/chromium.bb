@@ -1881,6 +1881,8 @@
             'loader/LinkLoader.cpp',
             'loader/LinkLoader.h',
             'loader/LinkLoaderClient.h',
+            'loader/LinkPreloadResourceClients.cpp',
+            'loader/LinkPreloadResourceClients.h',
             'loader/MixedContentChecker.cpp',
             'loader/MixedContentChecker.h',
             'loader/NavigationPolicy.cpp',
