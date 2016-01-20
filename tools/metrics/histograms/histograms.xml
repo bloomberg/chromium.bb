@@ -3032,10 +3032,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Blink.RestoredCachedStyleSheet"
     enum="RestoredCachedStyleSheet">
+  <obsolete>
+    Deprecated 01/2016 and replaced by Blink.RestoredCachedStyleSheet2
+  </obsolete>
   <owner>kouhei@chromium.org</owner>
   <summary>
     On each link stylesheet tag resolve, record whether a Blink MemoryCached
     StyleSheetContents was reused.
+  </summary>
+</histogram>
+
+<histogram name="Blink.RestoredCachedStyleSheet2" enum="StyleSheetCacheStatus">
+  <owner>kouhei@chromium.org</owner>
+  <summary>
+    On each link stylesheet tag resolve, record which cache Blink hit.
   </summary>
 </histogram>
 
@@ -78783,6 +78793,12 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1" label="Erased pref: platform-specific store was empty"/>
   <int value="2" label="Overwrote pref: platform-specific store differed"/>
   <int value="3" label="No pref change: was equal to platform-specific store"/>
+</enum>
+
+<enum name="StyleSheetCacheStatus" type="int">
+  <int value="0" label="No usable cache found"/>
+  <int value="1" label="DiskCache served the CSS source"/>
+  <int value="2" label="MemoryCached StyleSheetContents was reused"/>
 </enum>
 
 <enum name="SuggestAppsDialogCloseReason" type="int">

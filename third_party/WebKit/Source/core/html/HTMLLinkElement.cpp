@@ -489,6 +489,13 @@ Document& LinkStyle::document()
     return m_owner->document();
 }
 
+enum StyleSheetCacheStatus {
+    StyleSheetNewEntry,
+    StyleSheetInDiskCache,
+    StyleSheetInMemoryCache,
+    StyleSheetCacheStatusCount,
+};
+
 void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const String& charset, const CSSStyleSheetResource* cachedStyleSheet)
 {
     if (!m_owner->inDocument()) {
@@ -531,10 +538,14 @@ void LinkStyle::setCSSStyleSheet(const String& href, const KURL& baseURL, const 
 
         m_loading = false;
         restoredSheet->checkLoaded();
+
         Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", true, 2);
+        Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet2", StyleSheetInMemoryCache, StyleSheetCacheStatusCount);
         return;
     }
     Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet", false, 2);
+    StyleSheetCacheStatus cacheStatus = cachedStyleSheet->response().wasCached() ? StyleSheetInDiskCache : StyleSheetNewEntry;
+    Platform::current()->histogramEnumeration("Blink.RestoredCachedStyleSheet2", cacheStatus, StyleSheetCacheStatusCount);
 
     RefPtrWillBeRawPtr<StyleSheetContents> styleSheet = StyleSheetContents::create(href, parserContext);
 
