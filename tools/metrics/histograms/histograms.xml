@@ -30992,6 +30992,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Result of removing an offline copy for a page.</summary>
 </histogram>
 
+<histogram name="OfflinePages.Edit.BookmarkUrlChangedForOfflinePage"
+    enum="BooleanMatched">
+  <owner>dougarnett@chromium.org</owner>
+  <summary>
+    Whether a user-edited bookmark URL had a saved offline page.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Filter.OnlineWhenEntering" enum="Boolean">
   <owner>fgorski@chromium.org</owner>
   <owner>jianli@chromium.org</owner>

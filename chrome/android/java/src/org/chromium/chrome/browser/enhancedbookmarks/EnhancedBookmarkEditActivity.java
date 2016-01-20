@@ -16,6 +16,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
@@ -201,6 +202,8 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     @Override
     protected void onStop() {
         if (mEnhancedBookmarksModel.doesBookmarkExist(mBookmarkId)) {
+            final String originalUrl =
+                    mEnhancedBookmarksModel.getBookmarkById(mBookmarkId).getUrl();
             final String title = mTitleEditText.getTrimmedText();
             final String url = mUrlEditText.getTrimmedText();
 
@@ -211,7 +214,14 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
             if (!mUrlEditText.isEmpty()
                     && mEnhancedBookmarksModel.getBookmarkById(mBookmarkId).isUrlEditable()) {
                 String fixedUrl = UrlUtilities.fixupUrl(url);
-                if (fixedUrl != null) mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, fixedUrl);
+                if (fixedUrl != null && !fixedUrl.equals(originalUrl)) {
+                    boolean hasOfflinePage = OfflinePageBridge.isEnabled()
+                            && mEnhancedBookmarksModel.getOfflinePageBridge()
+                                    .getPageByBookmarkId(mBookmarkId) != null;
+                    RecordHistogram.recordBooleanHistogram(
+                            "OfflinePages.Edit.BookmarkUrlChangedForOfflinePage", hasOfflinePage);
+                    mEnhancedBookmarksModel.setBookmarkUrl(mBookmarkId, fixedUrl);
+                }
             }
         }
 
