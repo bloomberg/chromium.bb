@@ -20,8 +20,8 @@ chromium.perf waterfall green.
 
 Everyone can view the chromium.perf waterfall at
 https://build.chromium.org/p/chromium.perf/, but for Googlers it is recommended
-that you use the url [**https://uberchromegw.corp.google.com/i/chromium.perf/**]
-(https://uberchromegw.corp.google.com/i/chromium.perf/) instead. The reason
+that you use the url **[https://uberchromegw.corp.google.com/i/chromium.perf/]
+(https://uberchromegw.corp.google.com/i/chromium.perf/)** instead. The reason
 for this is that in order to make the performance tests as realistic as
 possible, the chromium.perf waterfall runs release official builds of Chrome.
 But the logs from release official builds may leak info from our partners that
@@ -77,7 +77,7 @@ be investigated. When a test fails:
      run the test on the
      [perf trybots](https://www.chromium.org/developers/telemetry/performance-try-bots).
    * You can run a return code bisect to narrow down the culprit CL:
-      1. Open up the graph in the [perf dashboard](chromeperf.appspot.com/report)
+      1. Open up the graph in the [perf dashboard](https://chromeperf.appspot.com/report)
          on one of the failing platforms.
       2. Hover over a data point and click the "Bisect" button on the tooltip.
       3. Type the **Bug ID** from step 1, the **Good Revision** the last commit
