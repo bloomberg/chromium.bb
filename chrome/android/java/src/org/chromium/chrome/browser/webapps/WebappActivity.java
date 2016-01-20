@@ -540,6 +540,11 @@ public class WebappActivity extends FullScreenActivity {
                         if (!super.isShowingTopControlsEnabled()) return false;
                         return shouldShowTopControls(mTab.getUrl(), mTab.getSecurityLevel());
                     }
+
+                    @Override
+                    public boolean isHidingTopControlsEnabled() {
+                        return !isShowingTopControlsEnabled();
+                    }
                 };
             }
         };
