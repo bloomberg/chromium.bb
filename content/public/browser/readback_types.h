@@ -11,7 +11,8 @@ class SkBitmap;
 
 namespace content {
 
-// ReadbackResponse type used in ContentReadbackHandler.
+// ReadbackResponse indicates success/failure for an operation that reads pixel
+// content back into normal memory.
 //
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: (
@@ -24,6 +25,8 @@ enum ReadbackResponse {
   READBACK_BITMAP_ALLOCATION_FAILURE,
 };
 
+// A callback that is invoked upon completion or failure of a request to read
+// pixel data back into an SkBitmap.
 using ReadbackRequestCallback =
     base::Callback<void(const SkBitmap&, ReadbackResponse)>;
 
