@@ -5,7 +5,7 @@
 import json
 import unittest
 
-from request_track import (Request, RequestTrack, _TimingFromDict)
+from request_track import (Request, RequestTrack, TimingFromDict)
 
 
 class RequestTestCase(unittest.TestCase):
@@ -192,6 +192,9 @@ class RequestTrackTestCase(unittest.TestCase):
                               RequestTrackTestCase._REDIRECT)
     self.assertEquals(1, len(self.request_track._requests_in_flight))
     self.assertEquals(1, len(self.request_track.GetEvents()))
+    redirect_request = self.request_track.GetEvents()[0]
+    self.assertTrue(redirect_request.request_id.endswith(
+        RequestTrack.REDIRECT_SUFFIX))
 
   def testRejectDuplicates(self):
     msg = RequestTrackTestCase._REQUEST_WILL_BE_SENT
@@ -231,7 +234,7 @@ class RequestTrackTestCase(unittest.TestCase):
     self.assertEquals(False, r.served_from_cache)
     self.assertEquals(False, r.from_disk_cache)
     self.assertEquals(False, r.from_service_worker)
-    timing = _TimingFromDict(response['timing'])
+    timing = TimingFromDict(response['timing'])
     loading_finished = RequestTrackTestCase._LOADING_FINISHED['params']
     loading_finished_offset = r._TimestampOffsetFromStartMs(
         loading_finished['timestamp'])

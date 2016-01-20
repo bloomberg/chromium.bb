@@ -33,7 +33,7 @@ class Request(object):
   third_party/WebKit/Source/devtools/protocol.json.
 
   Fields:
-    request_id: (str) unique request ID. Postfixed with ".redirect" for
+    request_id: (str) unique request ID. Postfixed with REDIRECT_SUFFIX for
                 redirects.
     frame_id: (str) unique frame identifier.
     loader_id: (str) unique frame identifier.
@@ -122,6 +122,7 @@ class Request(object):
 
 class RequestTrack(devtools_monitor.Track):
   """Aggregates request data."""
+  REDIRECT_SUFFIX = '.redirect'
   # Request status
   _STATUS_SENT = 0
   _STATUS_RESPONSE = 1
@@ -197,8 +198,8 @@ class RequestTrack(devtools_monitor.Track):
                           (('headers', 'response_headers'),
                            ('encodedDataLength', 'encoded_data_length'),
                            ('fromDiskCache', 'from_disk_cache')))
-    r.timing = _TimingFromDict(redirect_response['timing'])
-    r.request_id = request_id + '.redirect'
+    r.timing = TimingFromDict(redirect_response['timing'])
+    r.request_id = request_id + self.REDIRECT_SUFFIX
     self._requests_in_flight[r.request_id] = (r, RequestTrack._STATUS_FINISHED)
     del self._requests_in_flight[request_id]
     self._FinalizeRequest(r.request_id)
@@ -236,7 +237,7 @@ class RequestTrack(devtools_monitor.Track):
       timing_dict = response['timing']
     else:
       timing_dict = {'requestTime': r.timestamp}
-    r.timing = _TimingFromDict(timing_dict)
+    r.timing = TimingFromDict(timing_dict)
     self._requests_in_flight[request_id] = (r, RequestTrack._STATUS_RESPONSE)
 
   def _DataReceived(self, request_id, params):
@@ -286,7 +287,8 @@ RequestTrack._METHOD_TO_HANDLER = {
     'Network.loadingFailed': RequestTrack._LoadingFailed}
 
 
-def _TimingFromDict(timing_dict):
+def TimingFromDict(timing_dict):
+  """Returns an instance of Timing from an () dict."""
   complete_timing_dict = {field: -1 for field in Timing._fields}
   timing_dict_mapped = {
       _TIMING_NAMES_MAPPING[k]: v for (k, v) in timing_dict.items()}
