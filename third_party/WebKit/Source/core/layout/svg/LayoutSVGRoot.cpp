@@ -122,10 +122,6 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalWidth(ShouldComputePreferred sho
     if (isEmbeddedThroughFrameContainingSVGDocument())
         return containingBlock()->availableLogicalWidth();
 
-    if (style()->logicalWidth().isSpecified() || style()->logicalMaxWidth().isSpecified())
-        return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
-
-    // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
     return LayoutReplaced::computeReplacedLogicalWidth(shouldComputePreferred);
 }
 
@@ -138,10 +134,6 @@ LayoutUnit LayoutSVGRoot::computeReplacedLogicalHeight() const
     if (isEmbeddedThroughFrameContainingSVGDocument())
         return containingBlock()->availableLogicalHeight(IncludeMarginBorderPadding);
 
-    if (style()->logicalHeight().isSpecified() || style()->logicalMaxHeight().isSpecified())
-        return LayoutReplaced::computeReplacedLogicalHeight();
-
-    // SVG embedded via SVGImage (background-image/border-image/etc) / Inline SVG.
     return LayoutReplaced::computeReplacedLogicalHeight();
 }
 
