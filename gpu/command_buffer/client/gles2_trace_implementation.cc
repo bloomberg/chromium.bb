@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/trace_event/trace_event.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
-#include "gpu/command_buffer/common/trace_event.h"
 
 namespace gpu {
 namespace gles2 {
