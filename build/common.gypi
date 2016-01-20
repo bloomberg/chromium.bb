@@ -5520,7 +5520,9 @@
                   'DEPLOYMENT_POSTPROCESSING': 'YES',
                   'STRIP_INSTALLED_PRODUCT': 'YES',
                   'conditions': [
-                    ['buildtype!="Official"', {
+                    ['buildtype=="Official"', {
+                      'DEBUG_INFORMATION_FORMAT': 'dwarf-with-dsym',
+                    }, {
                       # Remove dSYM to reduce build time.
                       'DEBUG_INFORMATION_FORMAT': 'dwarf',
                     }],
