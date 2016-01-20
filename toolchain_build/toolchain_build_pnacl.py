@@ -272,23 +272,18 @@ def HostArchToolFlags(host, extra_cflags, opts):
     if TripleIsLinux(host) and not TripleIsX8664(host):
       # Chrome clang defaults to 64-bit builds, even when run on 32-bit Linux.
       extra_cc_flags += ['-m32']
-    if not opts.gcc and host != 'le32-nacl':
-      # On mac and linux, use libc++ instead of libstdc++ (which is too old on
-      # Ubuntu Precise and any OSX to build LLVM)
-      result['CXXFLAGS'] += ['-stdlib=libc++']
-      if TripleIsLinux(host):
-        # Use our own libc++ on Linux.
-        # TODO(dschuff): Get the Chrome clang maintainers to build libc++ for
-        # Linux too and use that.
-        result['CXXFLAGS'] += ['-I%(' + FlavoredName('abs_libcxx', host, opts) +
-                               ')s/include/c++/v1']
-        result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
+    if opts.gcc or host == 'le32-nacl':
+      result['CFLAGS']  += extra_cc_flags
+      result['CXXFLAGS'] += extra_cc_flags
+    else:
+      result['CFLAGS'] += extra_cc_flags
+      result['LDFLAGS'] += ['-L%(' + FlavoredName('abs_libcxx',
                                                   host, opts) + ')s/lib']
-        deps.append(FlavoredName('libcxx', host, opts))
-
-    result['CFLAGS'] += extra_cc_flags
-    result['CXXFLAGS'] += extra_cc_flags
-
+      result['CXXFLAGS'] += ([
+        '-stdlib=libc++',
+        '-I%(' + FlavoredName('abs_libcxx', host, opts) + ')s/include/c++/v1'] +
+        extra_cc_flags)
+      deps.append(FlavoredName('libcxx', host, opts))
   return result, deps
 
 
@@ -577,9 +572,14 @@ def TestsuiteSources(GetGitSyncCmds):
 
 def CopyHostLibcxxForLLVMBuild(host, dest, options):
   """Copy libc++ to the working directory for build tools."""
-  if options.gcc or not TripleIsLinux(host):
+  if options.gcc:
     return []
-  libname = 'libc++.so.1'
+  if TripleIsLinux(host):
+    libname = 'libc++.so.1'
+  elif TripleIsMac(host):
+    libname = 'libc++.1.dylib'
+  else:
+    return []
   return [command.Mkdir(dest, parents=True),
           command.Copy('%(' +
                        FlavoredName('abs_libcxx', host, options) +')s/lib/' +
@@ -631,8 +631,8 @@ def HostLibs(host, options):
           ],
       },
     })
-  elif TripleIsLinux(host) and not options.gcc:
-    # Our Libc++ is only needed for Precise and only tested with clang.
+  elif not options.gcc:
+    # Libc++ is only tested with the clang build
     libcxx_host_arch_flags, libcxx_inputs = LibCxxHostArchFlags(host)
     libs.update({
         H('libcxx'): {
@@ -950,7 +950,7 @@ def TargetLibCompiler(host, options):
       },
   }
 
-  if TripleIsWindows(host) or TripleIsLinux(host) and not options.gcc:
+  if TripleIsWindows(host) or not options.gcc:
     host_lib = 'libdl' if TripleIsWindows(host) else H('libcxx')
     compiler['target_lib_compiler']['dependencies'].append(host_lib)
     compiler['target_lib_compiler']['commands'].append(
@@ -1198,7 +1198,7 @@ def GetUploadPackageTargets():
          'binutils_x86_%s' % legal_triple,
          'llvm_%s' % legal_triple,
          'driver_%s' % legal_triple])
-    if os_name == 'linux':
+    if os_name != 'win':
       host_packages[os_name].append('libcxx_%s' % legal_triple)
 
   # Unsandboxed target IRT libraries
