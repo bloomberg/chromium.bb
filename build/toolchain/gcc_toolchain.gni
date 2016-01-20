@@ -228,7 +228,7 @@ template("gcc_toolchain") {
       # POSIX-like toolchains such as NaCl on Windows).
       ar_wrapper =
           rebase_path("//build/toolchain/gcc_ar_wrapper.py", root_build_dir)
-      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=\"$ar\" $arflags rcs @\"$rspfile\""
+      command = "$python_path \"$ar_wrapper\" --output={{output}} --ar=\"$ar\" $arflags rcsD @\"$rspfile\""
       description = "AR {{output}}"
       rspfile_content = "{{inputs}}"
       outputs = [
