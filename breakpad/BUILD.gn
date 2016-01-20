@@ -554,12 +554,10 @@ if (is_linux || is_android) {
       cflags = [ "-marm" ]
     }
 
-    if (current_cpu == "x86" && is_clang) {
-      # Clang's -mstackrealign doesn't work well with
-      # linux_syscall_support.h hand written asm syscalls.
-      # See https://crbug.com/556393
-      cflags -= [ "-mstackrealign" ]
-    }
+    # Clang's -mstackrealign doesn't work well with
+    # linux_syscall_support.h hand written asm syscalls.
+    # See https://crbug.com/556393
+    configs -= [ "//build/config/compiler:clang_stackrealign" ]
 
     if (is_android) {
       sources += [ "src/common/android/breakpad_getcontext.S" ]
@@ -667,12 +665,10 @@ if (is_linux || is_android) {
       include_dirs += [ "src/common/android/include" ]
     }
 
-    if (current_cpu == "x86" && is_clang) {
-      # Clang's -mstackrealign doesn't work well with
-      # linux_syscall_support.h hand written asm syscalls.
-      # See https://crbug.com/556393
-      cflags -= [ "-mstackrealign" ]
-    }
+    # Clang's -mstackrealign doesn't work well with
+    # linux_syscall_support.h hand written asm syscalls.
+    # See https://crbug.com/556393
+    configs -= [ "//build/config/compiler:clang_stackrealign" ]
   }
 
   executable("linux_dumper_unittest_helper") {

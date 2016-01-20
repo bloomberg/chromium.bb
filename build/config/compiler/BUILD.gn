@@ -584,10 +584,6 @@ config("compiler_codegen") {
           # Else building libyuv gives clang's register allocator issues,
           # see llvm.org/PR15798 / crbug.com/233709
           "-momit-leaf-frame-pointer",
-
-          # Align the stack on 16-byte boundaries, http://crbug.com/418554.
-          "-mstack-alignment=16",
-          "-mstackrealign",
         ]
       }
     } else if (current_cpu == "arm") {
@@ -610,6 +606,20 @@ config("compiler_codegen") {
   }
 
   asmflags = cflags
+}
+
+# This is separate from :compiler_codegen (and not even a sub-config there)
+# so that some targets can remove it from the list with:
+#   configs -= [ "//build/config/compiler:clang_stackrealign" ]
+# See https://crbug.com/556393 for details of where it must be avoided.
+config("clang_stackrealign") {
+  if (is_clang && current_cpu == "x86" && !is_nacl) {
+    cflags = [
+      # Align the stack on 16-byte boundaries, http://crbug.com/418554.
+      "-mstack-alignment=16",
+      "-mstackrealign",
+    ]
+  }
 }
 
 config("compiler_arm_fpu") {
