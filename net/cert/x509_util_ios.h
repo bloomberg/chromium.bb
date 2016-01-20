@@ -11,6 +11,7 @@
 #include <Security/Security.h>
 #include <vector>
 
+#include "base/memory/ref_counted.h"
 #include "net/cert/x509_cert_types.h"
 
 // Forward declaration; real one in <cert.h>
@@ -35,7 +36,7 @@ SecCertificateRef CreateOSCertHandleFromNSSHandle(
 // intermediates. This is functionally equivalent to
 // X509Certificate::CreateFromHandle(), except it supports receiving
 // NSS CERTCertificate*s rather than iOS SecCertificateRefs.
-X509Certificate* CreateCertFromNSSHandles(
+scoped_refptr<X509Certificate> CreateCertFromNSSHandles(
     CERTCertificate* cert_handle,
     const std::vector<CERTCertificate*>& intermediates);
 

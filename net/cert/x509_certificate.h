@@ -140,36 +140,34 @@ class NET_EXPORT X509Certificate
                   base::Time start_date, base::Time expiration_date);
 
   // Create an X509Certificate from a handle to the certificate object in the
-  // underlying crypto library. The returned pointer must be stored in a
-  // scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromHandle(OSCertHandle cert_handle,
-                                           const OSCertHandles& intermediates);
+  // underlying crypto library.
+  static scoped_refptr<X509Certificate> CreateFromHandle(
+      OSCertHandle cert_handle,
+      const OSCertHandles& intermediates);
 
   // Create an X509Certificate from a chain of DER encoded certificates. The
   // first certificate in the chain is the end-entity certificate to which a
   // handle is returned. The other certificates in the chain are intermediate
-  // certificates. The returned pointer must be stored in a
-  // scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromDERCertChain(
+  // certificates.
+  static scoped_refptr<X509Certificate> CreateFromDERCertChain(
       const std::vector<base::StringPiece>& der_certs);
 
   // Create an X509Certificate from the DER-encoded representation.
   // Returns NULL on failure.
-  //
-  // The returned pointer must be stored in a scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromBytes(const char* data, size_t length);
+  static scoped_refptr<X509Certificate> CreateFromBytes(const char* data,
+                                                        size_t length);
 
 #if defined(USE_NSS_CERTS)
   // Create an X509Certificate from the DER-encoded representation.
   // |nickname| can be NULL if an auto-generated nickname is desired.
-  // Returns NULL on failure.  The returned pointer must be stored in a
-  // scoped_refptr<X509Certificate>.
+  // Returns NULL on failure.
   //
   // This function differs from CreateFromBytes in that it takes a
   // nickname that will be used when the certificate is imported into PKCS#11.
-  static X509Certificate* CreateFromBytesWithNickname(const char* data,
-                                                      size_t length,
-                                                      const char* nickname);
+  static scoped_refptr<X509Certificate> CreateFromBytesWithNickname(
+      const char* data,
+      size_t length,
+      const char* nickname);
 
   // The default nickname of the certificate, based on the certificate type
   // passed in.  If this object was created using CreateFromBytesWithNickname,
@@ -181,10 +179,9 @@ class NET_EXPORT X509Certificate
   // pickle.  The data for this object is found relative to the given
   // pickle_iter, which should be passed to the pickle's various Read* methods.
   // Returns NULL on failure.
-  //
-  // The returned pointer must be stored in a scoped_refptr<X509Certificate>.
-  static X509Certificate* CreateFromPickle(base::PickleIterator* pickle_iter,
-                                           PickleType type);
+  static scoped_refptr<X509Certificate> CreateFromPickle(
+      base::PickleIterator* pickle_iter,
+      PickleType type);
 
   // Parses all of the certificates possible from |data|. |format| is a
   // bit-wise OR of Format, indicating the possible formats the

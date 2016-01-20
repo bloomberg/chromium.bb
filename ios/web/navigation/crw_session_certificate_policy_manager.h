@@ -26,7 +26,8 @@ class CertificatePolicyCache;
 // The CRWSessionCertificatePolicyManager lives on the main thread.
 @interface CRWSessionCertificatePolicyManager : NSObject <NSCoding, NSCopying>
 
-- (void)registerAllowedCertificate:(net::X509Certificate*)certificate
+- (void)registerAllowedCertificate:
+            (const scoped_refptr<net::X509Certificate>)certificate
                            forHost:(const std::string&)host
                             status:(net::CertStatus)status;
 

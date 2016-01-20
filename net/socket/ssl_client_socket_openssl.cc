@@ -483,8 +483,8 @@ SSLClientSocketOpenSSL::PeerCertificateChain::AsOSChain() const {
     intermediates.push_back(sk_X509_value(openssl_chain_.get(), i));
   }
 
-  return make_scoped_refptr(X509Certificate::CreateFromHandle(
-      sk_X509_value(openssl_chain_.get(), 0), intermediates));
+  return X509Certificate::CreateFromHandle(
+      sk_X509_value(openssl_chain_.get(), 0), intermediates);
 #else
   // DER-encode the chain and convert to a platform certificate handle.
   std::vector<base::StringPiece> der_chain;
@@ -496,7 +496,7 @@ SSLClientSocketOpenSSL::PeerCertificateChain::AsOSChain() const {
     der_chain.push_back(der);
   }
 
-  return make_scoped_refptr(X509Certificate::CreateFromDERCertChain(der_chain));
+  return X509Certificate::CreateFromDERCertChain(der_chain);
 #endif
 }
 

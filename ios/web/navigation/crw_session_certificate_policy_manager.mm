@@ -76,7 +76,7 @@ NSData* CertificateToNSData(net::X509Certificate* certificate) {
   return [NSData dataWithBytes:s.c_str() length:s.length()];
 }
 
-net::X509Certificate* NSDataToCertificate(NSData* data) {
+scoped_refptr<net::X509Certificate> NSDataToCertificate(NSData* data) {
   return net::X509Certificate::CreateFromBytes((const char *)[data bytes],
                                                [data length]);
 }
@@ -99,7 +99,8 @@ void AddToCertificatePolicyCache(
   AllowedCertificates allowed_;
 }
 
-- (void)registerAllowedCertificate:(net::X509Certificate*)certificate
+- (void)registerAllowedCertificate:
+            (const scoped_refptr<net::X509Certificate>)certificate
                            forHost:(const std::string&)host
                             status:(net::CertStatus)status {
   DCHECK([NSThread isMainThread]);
@@ -140,11 +141,12 @@ void AddToCertificatePolicyCache(
         NOTREACHED();
         continue;
       }
-      net::X509Certificate* c = NSDataToCertificate([fields objectAtIndex:0]);
+      scoped_refptr<net::X509Certificate> cert =
+          NSDataToCertificate([fields objectAtIndex:0]);
       std::string host = base::SysNSStringToUTF8([fields objectAtIndex:1]);
       net::CertStatus status = (net::CertStatus)[[fields objectAtIndex:2]
           unsignedIntegerValue];
-      [self registerAllowedCertificate:c forHost:host status:status];
+      [self registerAllowedCertificate:cert forHost:host status:status];
     }
   }
   return self;

@@ -10,6 +10,7 @@
 #include <prtypes.h>
 
 #include "base/mac/scoped_cftyperef.h"
+#include "base/memory/ref_counted.h"
 #include "crypto/nss_util.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util_nss.h"
@@ -60,13 +61,13 @@ SecCertificateRef CreateOSCertHandleFromNSSHandle(
       nss_cert_handle->derCert.len);
 }
 
-X509Certificate* CreateCertFromNSSHandles(
+scoped_refptr<X509Certificate> CreateCertFromNSSHandles(
     CERTCertificate* cert_handle,
     const std::vector<CERTCertificate*>& intermediates) {
   ScopedCFTypeRef<SecCertificateRef> os_server_cert(
       CreateOSCertHandleFromNSSHandle(cert_handle));
   if (!os_server_cert)
-    return NULL;
+    return nullptr;
   std::vector<SecCertificateRef> os_intermediates;
   for (size_t i = 0; i < intermediates.size(); ++i) {
     SecCertificateRef intermediate =
@@ -76,7 +77,7 @@ X509Certificate* CreateCertFromNSSHandles(
     os_intermediates.push_back(intermediate);
   }
 
-  X509Certificate* cert = NULL;
+  scoped_refptr<X509Certificate> cert = nullptr;
   if (intermediates.size() == os_intermediates.size()) {
     cert = X509Certificate::CreateFromHandle(os_server_cert,
                                              os_intermediates);
@@ -100,7 +101,7 @@ SHA1HashValue CalculateFingerprintNSS(CERTCertificate* cert) {
 
 NSSCertificate::NSSCertificate(SecCertificateRef cert_handle) {
   nss_cert_handle_ = CreateNSSCertHandleFromOSHandle(cert_handle);
-  DLOG_IF(INFO, cert_handle && !nss_cert_handle_)
+  DLOG_IF(ERROR, cert_handle && !nss_cert_handle_)
       << "Could not convert SecCertificateRef to CERTCertificate*";
 }
 

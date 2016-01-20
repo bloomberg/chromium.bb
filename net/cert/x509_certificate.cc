@@ -255,7 +255,7 @@ X509Certificate::X509Certificate(const std::string& subject,
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromHandle(
+scoped_refptr<X509Certificate> X509Certificate::CreateFromHandle(
     OSCertHandle cert_handle,
     const OSCertHandles& intermediates) {
   DCHECK(cert_handle);
@@ -263,7 +263,7 @@ X509Certificate* X509Certificate::CreateFromHandle(
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromDERCertChain(
+scoped_refptr<X509Certificate> X509Certificate::CreateFromDERCertChain(
     const std::vector<base::StringPiece>& der_certs) {
   // TODO(cbentzel): Remove ScopedTracker below once crbug.com/424386 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
@@ -289,7 +289,7 @@ X509Certificate* X509Certificate::CreateFromDERCertChain(
         const_cast<char*>(der_certs[0].data()), der_certs[0].size());
   }
 
-  X509Certificate* cert = NULL;
+  scoped_refptr<X509Certificate> cert = nullptr;
   if (handle) {
     cert = CreateFromHandle(handle, intermediate_ca_certs);
     FreeOSCertHandle(handle);
@@ -302,19 +302,21 @@ X509Certificate* X509Certificate::CreateFromDERCertChain(
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromBytes(const char* data,
-                                                  size_t length) {
+scoped_refptr<X509Certificate> X509Certificate::CreateFromBytes(
+    const char* data,
+    size_t length) {
   OSCertHandle cert_handle = CreateOSCertHandleFromBytes(data, length);
   if (!cert_handle)
     return NULL;
 
-  X509Certificate* cert = CreateFromHandle(cert_handle, OSCertHandles());
+  scoped_refptr<X509Certificate> cert =
+      CreateFromHandle(cert_handle, OSCertHandles());
   FreeOSCertHandle(cert_handle);
   return cert;
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromPickle(
+scoped_refptr<X509Certificate> X509Certificate::CreateFromPickle(
     base::PickleIterator* pickle_iter,
     PickleType type) {
   if (type == PICKLETYPE_CERTIFICATE_CHAIN_V3) {
@@ -389,7 +391,7 @@ X509Certificate* X509Certificate::CreateFromPickle(
     }
   }
 
-  X509Certificate* cert = NULL;
+  scoped_refptr<X509Certificate> cert = nullptr;
   if (intermediates.size() == num_intermediates)
     cert = CreateFromHandle(cert_handle, intermediates);
   FreeOSCertHandle(cert_handle);
@@ -470,8 +472,7 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
 
   for (OSCertHandles::iterator it = certificates.begin();
        it != certificates.end(); ++it) {
-    X509Certificate* result = CreateFromHandle(*it, OSCertHandles());
-    results.push_back(scoped_refptr<X509Certificate>(result));
+    results.push_back(CreateFromHandle(*it, OSCertHandles()));
     FreeOSCertHandle(*it);
   }
 

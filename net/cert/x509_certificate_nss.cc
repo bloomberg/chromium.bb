@@ -40,7 +40,7 @@ void X509Certificate::Initialize() {
 }
 
 // static
-X509Certificate* X509Certificate::CreateFromBytesWithNickname(
+scoped_refptr<X509Certificate> X509Certificate::CreateFromBytesWithNickname(
     const char* data,
     size_t length,
     const char* nickname) {
@@ -50,7 +50,8 @@ X509Certificate* X509Certificate::CreateFromBytesWithNickname(
   if (!cert_handle)
     return NULL;
 
-  X509Certificate* cert = CreateFromHandle(cert_handle, OSCertHandles());
+  scoped_refptr<X509Certificate> cert =
+      CreateFromHandle(cert_handle, OSCertHandles());
   FreeOSCertHandle(cert_handle);
 
   if (nickname)
