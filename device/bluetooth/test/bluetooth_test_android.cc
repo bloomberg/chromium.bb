@@ -84,52 +84,16 @@ void BluetoothTestAndroid::SimulateGattConnection(BluetoothDevice* device) {
 
 void BluetoothTestAndroid::SimulateGattConnectionError(
     BluetoothDevice* device,
-    BluetoothDevice::ConnectErrorCode error) {
-  int android_error_value = 0;
-  switch (error) {  // Constants are from android.bluetooth.BluetoothGatt.
-    case BluetoothDevice::ERROR_ATTRIBUTE_LENGTH_INVALID:
-      android_error_value = 0x0000000d;  // GATT_INVALID_ATTRIBUTE_LENGTH
-      break;
-    case BluetoothDevice::ERROR_AUTH_FAILED:
-      android_error_value = 0x00000005;  // GATT_INSUFFICIENT_AUTHENTICATION
-      break;
-    case BluetoothDevice::ERROR_CONNECTION_CONGESTED:
-      android_error_value = 0x0000008f;  // GATT_CONNECTION_CONGESTED
-      break;
-    case BluetoothDevice::ERROR_FAILED:
-      android_error_value = 0x00000101;  // GATT_FAILURE
-      break;
-    case BluetoothDevice::ERROR_INSUFFICIENT_ENCRYPTION:
-      android_error_value = 0x0000000f;  // GATT_INSUFFICIENT_ENCRYPTION
-      break;
-    case BluetoothDevice::ERROR_OFFSET_INVALID:
-      android_error_value = 0x00000007;  // GATT_INVALID_OFFSET
-      break;
-    case BluetoothDevice::ERROR_READ_NOT_PERMITTED:
-      android_error_value = 0x00000002;  // GATT_READ_NOT_PERMITTED
-      break;
-    case BluetoothDevice::ERROR_REQUEST_NOT_SUPPORTED:
-      android_error_value = 0x00000006;  // GATT_REQUEST_NOT_SUPPORTED
-      break;
-    case BluetoothDevice::ERROR_WRITE_NOT_PERMITTED:
-      android_error_value = 0x00000003;  // GATT_WRITE_NOT_PERMITTED
-      break;
-    case BluetoothDevice::ERROR_AUTH_CANCELED:
-    case BluetoothDevice::ERROR_AUTH_REJECTED:
-    case BluetoothDevice::ERROR_AUTH_TIMEOUT:
-    case BluetoothDevice::ERROR_INPROGRESS:
-    case BluetoothDevice::ERROR_UNKNOWN:
-    case BluetoothDevice::ERROR_UNSUPPORTED_DEVICE:
-    case BluetoothDevice::NUM_CONNECT_ERROR_CODES:
-      NOTREACHED() << "No translation for error code: " << error;
-  }
-
+    BluetoothDevice::ConnectErrorCode) {
   BluetoothDeviceAndroid* device_android =
       static_cast<BluetoothDeviceAndroid*>(device);
 
   Java_FakeBluetoothDevice_connectionStateChange(
       AttachCurrentThread(), device_android->GetJavaObject().obj(),
-      android_error_value,
+      // TODO(ortuno): Add all types of errors Android can produce. For now we
+      // just return a timeout error.
+      // http://crbug.com/578191
+      0x08,    // Connection Timeout from Bluetooth Spec.
       false);  // connected
 }
 
@@ -139,7 +103,7 @@ void BluetoothTestAndroid::SimulateGattDisconnection(BluetoothDevice* device) {
 
   Java_FakeBluetoothDevice_connectionStateChange(
       AttachCurrentThread(), device_android->GetJavaObject().obj(),
-      0,       // android.bluetooth.BluetoothGatt.GATT_SUCCESS
+      0x13,    // Connection terminate by peer user from Bluetooth Spec.
       false);  // disconnected
 }
 

@@ -303,6 +303,10 @@ void BluetoothDevice::DidConnectGatt() {
 }
 
 void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
+  // Connection request should only be made if there are no active
+  // connections.
+  DCHECK(gatt_connections_.empty());
+
   for (const auto& error_callback : create_gatt_connection_error_callbacks_)
     error_callback.Run(error);
   create_gatt_connection_success_callbacks_.clear();
@@ -311,13 +315,8 @@ void BluetoothDevice::DidFailToConnectGatt(ConnectErrorCode error) {
 
 void BluetoothDevice::DidDisconnectGatt() {
   // Pending calls to connect GATT are not expected, if they were then
-  // DidFailToConnectGatt should be called. But in case callbacks exist
-  // flush them to ensure a consistent state.
-  if (create_gatt_connection_error_callbacks_.size() > 0) {
-    VLOG(1) << "Unexpected / unexplained DidDisconnectGatt call while "
-               "create_gatt_connection_error_callbacks_ are pending.";
-  }
-  DidFailToConnectGatt(ERROR_FAILED);
+  // DidFailToConnectGatt should have been called.
+  DCHECK(create_gatt_connection_error_callbacks_.empty());
 
   // Invalidate all BluetoothGattConnection objects.
   for (BluetoothGattConnection* connection : gatt_connections_) {

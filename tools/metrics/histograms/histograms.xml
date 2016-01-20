@@ -3149,6 +3149,39 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Bluetooth.Android.GATTConnection.Disconnected.Result"
+    enum="AndroidGATTConnectionErrorCodes">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Disconnected GATT connection status codes. Used to better understand errors
+    seen in Android.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Android.GATTConnection.Failure.Result"
+    enum="AndroidGATTConnectionErrorCodes">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Failed GATT connection error codes. Used to better understand errors seen in
+    Android.
+  </summary>
+</histogram>
+
+<histogram name="Bluetooth.Android.GATTConnection.Success.Result"
+    enum="AndroidGATTConnectionErrorCodes">
+  <owner>jyasskin@chromium.org</owner>
+  <owner>ortuno@chromium.org</owner>
+  <owner>scheib@chromium.org</owner>
+  <summary>
+    Successful GATT connection result codes. Used to better understand Android
+    results.
+  </summary>
+</histogram>
+
 <histogram name="Bluetooth.ConnectedDeviceCount" units="devices">
   <owner>keybuk@chromium.org</owner>
   <summary>
@@ -56364,6 +56397,91 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="2" label="LimitOfActiveTabs"/>
   <int value="3" label="EvictNTabs"/>
   <int value="4" label="EvictAll"/>
+</enum>
+
+<enum name="AndroidGATTConnectionErrorCodes" type="int">
+  <summary>
+    This list includes all errors from the Bluetooth Specification Version 4.2
+    [Vol 2, Part D] as well as an error from Android's BluetoothGatt (0x101
+    GATT_FAILURE) and an error from Bluedroid's gatt_api.h (0x100 L2CAP
+    connection cancelled).
+  </summary>
+  <int value="0" label="0x00 Success"/>
+  <int value="1" label="0x01 Unknown HCI Command"/>
+  <int value="2" label="0x02 Unknown Connection Identifier"/>
+  <int value="3" label="0x03 Hardware Failure"/>
+  <int value="4" label="0x04 Page Timeout"/>
+  <int value="5" label="0x05 Authentication Failure"/>
+  <int value="6" label="0x06 PIN or Key Missing"/>
+  <int value="7" label="0x07 Memory Capacity Exceeded"/>
+  <int value="8" label="0x08 Connection Timeout"/>
+  <int value="9" label="0x09 Connection Limit Exceeded"/>
+  <int value="10"
+      label="0x0A Synchronous Connection Limit To A Device Exceeded"/>
+  <int value="11" label="0x0B ACL Connection Already Exists"/>
+  <int value="12" label="0x0C Command Disallowed"/>
+  <int value="13" label="0x0D Connection Rejected due to Limited Resources"/>
+  <int value="14" label="0x0E Connection Rejected Due To Security Reasons"/>
+  <int value="15" label="0x0F Connection Rejected due to Unacceptable BD_ADDR"/>
+  <int value="16" label="0x10 Connection Accept Timeout Exceeded"/>
+  <int value="17" label="0x11 Unsupported Feature or Parameter Value"/>
+  <int value="18" label="0x12 Invalid HCI Command Parameters"/>
+  <int value="19" label="0x13 Remote User Terminated Connection"/>
+  <int value="20"
+      label="0x14 Remote Device Terminated Connection due to Low Resources"/>
+  <int value="21"
+      label="0x15 Remote Device Terminated Connection due to Power Off"/>
+  <int value="22" label="0x16 Connection Terminated By Local Host"/>
+  <int value="23" label="0x17 Repeated Attempts"/>
+  <int value="24" label="0x18 Pairing Not Allowed"/>
+  <int value="25" label="0x19 Unknown LMP PDU"/>
+  <int value="26"
+      label="0x1A Unsupported Remote Feature / Unsupported LMP Feature"/>
+  <int value="27" label="0x1B SCO Offset Rejected"/>
+  <int value="28" label="0x1C SCO Interval Rejected"/>
+  <int value="29" label="0x1D SCO Air Mode Rejected"/>
+  <int value="30" label="0x1E Invalid LMP Parameters / Invalid LL Parameters"/>
+  <int value="31" label="0x1F Unspecified Error"/>
+  <int value="32"
+      label="0x20 Unsupported LMP Parameter Value / Unsupported LL Parameter
+             Value"/>
+  <int value="33" label="0x21 Role Change Not Allowed"/>
+  <int value="34" label="0x22 LMP Response Timeout / LL Response Timeout"/>
+  <int value="35" label="0x23 LMP Error Transaction Collision"/>
+  <int value="36" label="0x24 LMP PDU Not Allowed"/>
+  <int value="37" label="0x25 Encryption Mode Not Acceptable"/>
+  <int value="38" label="0x26 Link Key cannot be Changed"/>
+  <int value="39" label="0x27 Requested QoS Not Supported"/>
+  <int value="40" label="0x28 Instant Passed"/>
+  <int value="41" label="0x29 Pairing With Unit Key Not Supported"/>
+  <int value="42" label="0x2A Different Transaction Collision"/>
+  <int value="43" label="0x2B Reserved"/>
+  <int value="44" label="0x2C QoS Unacceptable Parameter"/>
+  <int value="45" label="0x2D QoS Rejected"/>
+  <int value="46" label="0x2E Channel Classification Not Supported"/>
+  <int value="47" label="0x2F Insufficient Security"/>
+  <int value="48" label="0x30 Parameter Out Of Mandatory Range"/>
+  <int value="49" label="0x31 Reserved"/>
+  <int value="50" label="0x32 Role Switch Pending"/>
+  <int value="51" label="0x33 Reserved"/>
+  <int value="52" label="0x34 Reserved Slot Violation"/>
+  <int value="53" label="0x35 Role Switch Failed"/>
+  <int value="54" label="0x36 Extended Inquiry Response Too Large"/>
+  <int value="55" label="0x37 Secure Simple Pairing Not Supported By Host"/>
+  <int value="56" label="0x38 Host Busy - Pairing"/>
+  <int value="57"
+      label="0x39 Connection Rejected due to No Suitable Channel Found"/>
+  <int value="58" label="0x3A Controller Busy"/>
+  <int value="59" label="0x3B Unacceptable Connection Parameters"/>
+  <int value="60" label="0x3C Directed Advertising Timeout"/>
+  <int value="61" label="0x3D Connection Terminated due to MIC Failure"/>
+  <int value="62" label="0x3E Connection Failed to be Established"/>
+  <int value="63" label="0x3F MAC Connection Failed"/>
+  <int value="64"
+      label="0x40 Coarse Clock Adjustment Rejected but Will Try to Adjust
+             Using Clock Dragging"/>
+  <int value="256" label="0x100 Bluedroid L2CAP connection cancelled"/>
+  <int value="257" label="0x101 Android GATT Failure"/>
 </enum>
 
 <enum name="AndroidKernelVersion" type="int">
