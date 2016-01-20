@@ -319,6 +319,7 @@ void InlineSigninHelper::OnClientOAuthSuccess(const ClientOAuthResult& result) {
         reason == signin_metrics::Reason::REASON_UNLOCK) {
       signin_manager->MergeSigninCredentialIntoCookieJar();
     }
+    LogSigninReason(reason);
   } else {
     ProfileSyncService* sync_service =
         ProfileSyncServiceFactory::GetForProfile(profile_);
