@@ -108,6 +108,7 @@ class TabManager : public TabStripModelObserver {
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardedTabKeepsLastActiveTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DiscardWebContentsAt);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ReloadDiscardedTabContextMenu);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
 
@@ -211,6 +212,10 @@ class TabManager : public TabStripModelObserver {
 
   // Whether a tab can only ever discarded once.
   bool discard_once_;
+
+  // This allows protecting tabs for a certain amount of time after being
+  // backgrounded.
+  base::TimeDelta minimum_protection_time_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<TabManagerDelegate> delegate_;

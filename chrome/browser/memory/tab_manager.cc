@@ -141,6 +141,22 @@ void TabManager::Start() {
     discard_once_ = true;
   else
     discard_once_ = false;
+
+  // Check the variation parameter to see if a tab is to be protected for an
+  // amount of time after being backgrounded. The value is in seconds.
+  std::string minimum_protection_time_string =
+      variations::GetVariationParamValue(features::kAutomaticTabDiscarding.name,
+                                         "MinimumProtectionTime");
+  if (!minimum_protection_time_string.empty()) {
+    unsigned int minimum_protection_time_seconds = 0;
+    if (base::StringToUint(minimum_protection_time_string,
+                           &minimum_protection_time_seconds)) {
+      if (minimum_protection_time_seconds > 0)
+        minimum_protection_time_ =
+            base::TimeDelta::FromSeconds(minimum_protection_time_seconds);
+    }
+  }
+
 #elif defined(OS_CHROMEOS)
   // On Chrome OS, tab manager is always started and tabs can be discarded more
   // than once.
@@ -506,6 +522,14 @@ bool TabManager::CanDiscardTab(int64_t target_web_contents_id) const {
   if (discard_once_ && GetWebContentsData(web_contents)->DiscardCount() > 0)
     return false;
 
+  // Do not discard a recently used tab.
+  if (minimum_protection_time_.InSeconds() > 0) {
+    auto delta =
+        NowTicks() - GetWebContentsData(web_contents)->LastInactiveTime();
+    if (delta < minimum_protection_time_)
+      return false;
+  }
+
   return true;
 }
 
@@ -580,7 +604,9 @@ bool TabManager::IsAudioTab(WebContents* contents) const {
 TabManager::WebContentsData* TabManager::GetWebContentsData(
     content::WebContents* contents) const {
   WebContentsData::CreateForWebContents(contents);
-  return WebContentsData::FromWebContents(contents);
+  auto web_contents_data = WebContentsData::FromWebContents(contents);
+  web_contents_data->set_test_tick_clock(test_tick_clock_);
+  return web_contents_data;
 }
 
 // static
