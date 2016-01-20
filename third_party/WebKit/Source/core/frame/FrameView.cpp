@@ -40,7 +40,9 @@
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/PageScaleConstraintsSet.h"
 #include "core/frame/Settings.h"
+#include "core/frame/TopControls.h"
 #include "core/html/HTMLFrameElement.h"
 #include "core/html/HTMLPlugInElement.h"
 #include "core/html/HTMLTextFormControlElement.h"
@@ -1108,6 +1110,29 @@ IntRect FrameView::computeVisibleArea()
     }
 
     return us;
+}
+
+FloatSize FrameView::viewportSizeForViewportUnits() const
+{
+    FloatSize size(layoutSize(IncludeScrollbars));
+
+    // We use the layoutSize rather than frameRect to calculate viewport units
+    // so that we get correct results on mobile where the page is laid out into
+    // a rect that may be larger than the viewport (e.g. the 980px fallback
+    // width for desktop pages). Since the layout height is statically set to
+    // be the viewport with top controls showing, we add the top controls
+    // height, compensating for page scale as well, since we want to use the
+    // viewport with top controls hidden for vh (to match Safari).
+    TopControls& topControls = m_frame->host()->topControls();
+    if (m_frame->isMainFrame() && size.width()) {
+        float pageScaleAtLayoutWidth =
+            m_frame->host()->visualViewport().size().width() / size.width();
+        size.expand(0, topControls.height() / pageScaleAtLayoutWidth);
+    }
+
+    float scale = frame().pageZoomFactor();
+    size.scale(1 / scale);
+    return size;
 }
 
 DocumentLifecycle& FrameView::lifecycle() const

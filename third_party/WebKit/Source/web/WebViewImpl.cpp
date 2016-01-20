@@ -1837,7 +1837,14 @@ void WebViewImpl::resizeVisualViewport(const WebSize& newSize)
 
 void WebViewImpl::performResize()
 {
-    pageScaleConstraintsSet().didChangeViewSize(m_size);
+    // We'll keep the initial containing block size from changing when the top
+    // controls hide so that the ICB will always be the same size as the
+    // viewport with the top controls shown.
+    IntSize ICBSize = m_size;
+    if (!topControls().shrinkViewport())
+        ICBSize.expand(0, -topControls().height());
+
+    pageScaleConstraintsSet().didChangeInitialContainingBlockSize(ICBSize);
 
     updatePageDefinedViewportConstraints(mainFrameImpl()->frame()->document()->viewportDescription());
     updateMainFrameLayoutSize();
@@ -1918,7 +1925,7 @@ void WebViewImpl::resize(const WebSize& newSize)
         // so that it can be used for initalization if the main frame gets
         // swapped to a LocalFrame at a later time.
         m_size = newSize;
-        pageScaleConstraintsSet().didChangeViewSize(m_size);
+        pageScaleConstraintsSet().didChangeInitialContainingBlockSize(m_size);
         page()->frameHost().visualViewport().setSize(m_size);
         return;
     }
@@ -3297,7 +3304,11 @@ void WebViewImpl::setIgnoreViewportTagScaleLimits(bool ignore)
 
 IntSize WebViewImpl::mainFrameSize()
 {
-    return pageScaleConstraintsSet().mainFrameSize();
+    // The frame size should match the viewport size at minimum scale, since the
+    // viewport must always be contained by the frame.
+    FloatSize frameSize(m_size);
+    frameSize.scale(1 / minimumPageScaleFactor());
+    return expandedIntSize(frameSize);
 }
 
 PageScaleConstraintsSet& WebViewImpl::pageScaleConstraintsSet() const
@@ -4100,7 +4111,7 @@ void WebViewImpl::layoutUpdated(WebLocalFrameImpl* webframe)
             m_size = frameSize;
 
             page()->frameHost().visualViewport().setSize(m_size);
-            pageScaleConstraintsSet().didChangeViewSize(m_size);
+            pageScaleConstraintsSet().didChangeInitialContainingBlockSize(m_size);
 
             m_client->didAutoResize(m_size);
             sendResizeEventAndRepaint();

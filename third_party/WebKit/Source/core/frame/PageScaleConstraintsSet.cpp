@@ -57,7 +57,7 @@ const PageScaleConstraints& PageScaleConstraintsSet::defaultConstraints() const
 
 void PageScaleConstraintsSet::updatePageDefinedConstraints(const ViewportDescription& description, Length legacyFallbackWidth)
 {
-    m_pageDefinedConstraints = description.resolve(FloatSize(m_viewSize), legacyFallbackWidth);
+    m_pageDefinedConstraints = description.resolve(FloatSize(m_icbSize), legacyFallbackWidth);
 
     m_constraintsDirty = true;
 }
@@ -99,7 +99,7 @@ void PageScaleConstraintsSet::computeFinalConstraints()
 void PageScaleConstraintsSet::adjustFinalConstraintsToContentsSize(IntSize contentsSize, int nonOverlayScrollbarWidth, bool shrinksViewportContentToFit)
 {
     if (shrinksViewportContentToFit)
-        m_finalConstraints.fitToContentsWidth(contentsSize.width(), m_viewSize.width() - nonOverlayScrollbarWidth);
+        m_finalConstraints.fitToContentsWidth(contentsSize.width(), m_icbSize.width() - nonOverlayScrollbarWidth);
 
     m_finalConstraints.resolveAutoInitialScale();
 }
@@ -152,22 +152,13 @@ static float computeHeightByAspectRatio(float width, const FloatSize& deviceSize
     return width * (deviceSize.height() / deviceSize.width());
 }
 
-void PageScaleConstraintsSet::didChangeViewSize(const IntSize& size)
+void PageScaleConstraintsSet::didChangeInitialContainingBlockSize(const IntSize& size)
 {
-    if (m_viewSize == size)
+    if (m_icbSize == size)
         return;
 
-    m_viewSize = size;
+    m_icbSize = size;
     m_constraintsDirty = true;
-}
-
-IntSize PageScaleConstraintsSet::mainFrameSize() const
-{
-    // The frame size should match the viewport size at minimum scale, since the
-    // viewport must always be contained by the frame.
-    FloatSize frameSize(m_viewSize);
-    frameSize.scale(1 / finalConstraints().minimumScale);
-    return expandedIntSize(frameSize);
 }
 
 IntSize PageScaleConstraintsSet::layoutSize() const
@@ -215,16 +206,16 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
         if (useWideViewport && (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom != 1.0f) {
             if (layoutFallbackWidth)
                 adjustedLayoutSizeWidth = layoutFallbackWidth;
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_viewSize));
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_icbSize));
         } else if (!useWideViewport) {
             const float nonWideScale = description.zoom < 1 && description.maxWidth.type() != DeviceWidth && description.maxWidth.type() != DeviceHeight ? -1 : oldInitialScale;
-            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(FloatSize(m_viewSize), nonWideScale) / targetDensityDPIFactor;
+            adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(FloatSize(m_icbSize), nonWideScale) / targetDensityDPIFactor;
             float newInitialScale = targetDensityDPIFactor;
             if (m_userAgentConstraints.initialScale != -1 && (description.maxWidth.type() == DeviceWidth || ((description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom == -1))) {
                 adjustedLayoutSizeWidth /= m_userAgentConstraints.initialScale;
                 newInitialScale = m_userAgentConstraints.initialScale;
             }
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_viewSize));
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_icbSize));
             if (description.zoom < 1) {
                 m_pageDefinedConstraints.initialScale = newInitialScale;
                 if (m_pageDefinedConstraints.minimumScale != -1)
@@ -240,8 +231,8 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
         m_pageDefinedConstraints.minimumScale = m_pageDefinedConstraints.initialScale;
         m_pageDefinedConstraints.maximumScale = m_pageDefinedConstraints.initialScale;
         if (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom || description.maxWidth.type() == DeviceWidth) {
-            adjustedLayoutSizeWidth = m_viewSize.width() / targetDensityDPIFactor;
-            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_viewSize));
+            adjustedLayoutSizeWidth = m_icbSize.width() / targetDensityDPIFactor;
+            adjustedLayoutSizeHeight = computeHeightByAspectRatio(adjustedLayoutSizeWidth, FloatSize(m_icbSize));
         }
     }
 

@@ -962,16 +962,9 @@ bool LayoutView::backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const
     return m_frameView->hasOpaqueBackground();
 }
 
-double LayoutView::layoutViewportWidth() const
+FloatSize LayoutView::viewportSizeForViewportUnits() const
 {
-    float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
-    return viewWidth(IncludeScrollbars) / scale;
-}
-
-double LayoutView::layoutViewportHeight() const
-{
-    float scale = m_frameView ? m_frameView->frame().pageZoomFactor() : 1;
-    return viewHeight(IncludeScrollbars) / scale;
+    return frameView() ? frameView()->viewportSizeForViewportUnits() : FloatSize();
 }
 
 void LayoutView::willBeDestroyed()
