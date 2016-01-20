@@ -27,7 +27,7 @@
 #define EventHandler_h
 
 #include "core/CoreExport.h"
-#include "core/events/PointerEventFactory.h"
+#include "core/events/PointerEventManager.h"
 #include "core/events/TextEventInputType.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/page/DragActions.h"
@@ -284,11 +284,15 @@ private:
 
     void updateMouseEventTargetNode(Node*, const PlatformMouseEvent&);
 
-    // Returns true when the sent PE has defaultPrevented or defaultHandled set.
-    WebInputEventResult dispatchPointerEvent(Node* target, const AtomicString& eventType, const PlatformMouseEvent&, Node* relatedTarget = nullptr);
+    WebInputEventResult dispatchPointerEvent(EventTarget*, PassRefPtrWillBeRawPtr<PointerEvent>);
+    EventTarget* getEffectiveTargetForPointerEvent(EventTarget*, PassRefPtrWillBeRawPtr<PointerEvent>);
 
-    // Dispatches mouseover, mouseout, mouseenter and mouseleave events to appropriate nodes when the mouse pointer moves from one node to another.
-    void sendMouseEventsForNodeTransition(Node*, Node*, const PlatformMouseEvent&);
+    // Dispatches (pointer|mouse)(over|out|enter|leave) events to the specified node.
+    void sendPointerAndMouseTransitionEvents(Node* target, const AtomicString& mouseEventType,
+        const PlatformMouseEvent&, Node* relatedTarget, bool checkForListener);
+
+    // Locates the target nodes in DOM based on the transition and dispatches (pointer|mouse)(over|out|enter|leave) events to them.
+    void sendNodeTransitionEvents(Node*, Node*, const PlatformMouseEvent&);
 
     MouseEventWithHitTestResults prepareMouseEvent(const HitTestRequest&, const PlatformMouseEvent&);
 
@@ -428,7 +432,7 @@ private:
 
     bool m_touchPressed;
 
-    PointerEventFactory m_pointerEventFactory;
+    PointerEventManager m_pointerEventManager;
 
     // Prevents firing mousedown, mousemove & mouseup in-between a canceled pointerdown and next pointerup/pointercancel.
     // See "PREVENT MOUSE EVENT flag" in the spec:
