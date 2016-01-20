@@ -953,7 +953,6 @@ component("base") {
   ]
 
   deps = [
-    "//base/allocator",
     "//base/third_party/dynamic_annotations",
     "//third_party/modp_b64",
   ]
@@ -1862,6 +1861,7 @@ test("base_unittests") {
     ":message_loop_tests",
     ":prefs",
     ":prefs_test_support",
+    "//base/allocator",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
@@ -1869,9 +1869,6 @@ test("base_unittests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
-
-  # Some unittests depend on the ALLOCATOR_SHIM macro.
-  configs += [ "//base/allocator:allocator_shim_define" ]
 
   data = [
     "test/data/",
