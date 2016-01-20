@@ -8,7 +8,7 @@
       'variables': {
         'files': [
           '../../skia/resources/',
-          '../../skia/out/Debug/<(TOOL_NAME)',
+          '../../skia/out/<(CONFIGURATION)/<(TOOL_NAME)',
           '../content/test/ct/run_ct_skps.py',
           '../../skps/slave<(SLAVE_NUM)/',
         ],
@@ -19,6 +19,7 @@
           '--tool', '<(TOOL_NAME)',
           '--git_hash', '<(GIT_HASH)',
           '--isolated_outdir', '${ISOLATED_OUTDIR}',
+          '--configuration', '<(CONFIGURATION)',
         ],
       },
     }],

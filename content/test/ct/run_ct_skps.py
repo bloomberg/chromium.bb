@@ -28,13 +28,14 @@ def main():
                       help='The tool to run on the SKPs.')
   parser.add_argument('-g', '--git_hash', required=True,
                       help='The Skia hash the tool was built at.')
+  parser.add_argument('-c', '--configuration', required=True,
+                      help='The build configuration to use.')
   parser.add_argument('-i', '--isolated_outdir', required=True,
                       help='Swarming will automatically upload to '
                            'isolateserver all artifacts in this dir.')
   args = parser.parse_args()
 
-  build_type = 'Release' if args.tool == 'nanobench' else 'Debug'
-  tool_path = os.path.join(SKIA_SRC_DIR, 'out', build_type, args.tool)
+  tool_path = os.path.join(SKIA_SRC_DIR, 'out', args.configuration, args.tool)
   skps_dir = os.path.join(REPOS_BASE_DIR, 'skps', 'slave%d' % args.slave_num)
   resource_path = os.path.join(SKIA_SRC_DIR, 'resources')
 
