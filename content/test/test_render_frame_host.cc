@@ -120,14 +120,21 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   if (frame_tree_node()->navigation_request())
     PrepareForCommit();
 
+  bool is_auto_subframe =
+      GetParent() && !frame_tree_node()->has_committed_real_load();
+
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.page_id = ComputeNextPageID();
   params.nav_entry_id = 0;
   params.url = url;
-  params.transition = GetParent() ? ui::PAGE_TRANSITION_MANUAL_SUBFRAME
-                                  : ui::PAGE_TRANSITION_LINK;
+  if (!GetParent())
+    params.transition = ui::PAGE_TRANSITION_LINK;
+  else if (is_auto_subframe)
+    params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
+  else
+    params.transition = ui::PAGE_TRANSITION_MANUAL_SUBFRAME;
   params.should_update_history = true;
-  params.did_create_new_entry = true;
+  params.did_create_new_entry = !is_auto_subframe;
   params.gesture = NavigationGestureUser;
   params.contents_mime_type = contents_mime_type_;
   params.is_post = false;

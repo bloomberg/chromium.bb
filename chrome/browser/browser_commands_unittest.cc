@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
@@ -107,10 +108,22 @@ TEST_F(BrowserCommandsTest, DuplicateTab) {
 // Tests IDC_VIEW_SOURCE (See http://crbug.com/138140).
 TEST_F(BrowserCommandsTest, ViewSource) {
   GURL url1("http://foo/1");
+  GURL url1_subframe("http://foo/subframe");
   GURL url2("http://foo/2");
 
-  // Navigate to a URL, plus a pending URL that hasn't committed.
+  // Navigate to a URL and simulate a subframe committing.
   AddTab(browser(), url1);
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(
+          browser()->tab_strip_model()->GetWebContentsAt(0)->GetMainFrame());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+  content::RenderFrameHostTester* subframe_tester =
+      content::RenderFrameHostTester::For(subframe);
+  subframe_tester->SimulateNavigationStart(GURL(url1_subframe));
+  subframe_tester->SimulateNavigationCommit(GURL(url1_subframe));
+  subframe_tester->SimulateNavigationStop();
+
+  // Now start a pending navigation that hasn't committed.
   content::NavigationController& orig_controller =
       browser()->tab_strip_model()->GetWebContentsAt(0)->GetController();
   orig_controller.LoadURL(

@@ -264,9 +264,17 @@ void NavigationEntryImpl::SetPageState(const PageState& state) {
     return;
   }
 
-  // This should only be called when restoring a NavigationEntry, so there
-  // should be no subframe FrameNavigationEntries yet.
-  DCHECK_EQ(0U, frame_tree_->children.size());
+  // SetPageState should only be called before the NavigationEntry has been
+  // loaded, such as for restore (when there are no subframe
+  // FrameNavigationEntries yet).  However, some callers expect to call this
+  // after a Clone but before loading the page.  Clone will copy over the
+  // subframe entries, and we should reset them before setting the state again.
+  //
+  // TODO(creis): It would be good to verify that this NavigationEntry hasn't
+  // been loaded yet in cases that SetPageState is called while subframe
+  // entries exist, but there's currently no way to check that.
+  if (!frame_tree_->children.empty())
+    frame_tree_->children.clear();
 
   // If the PageState can't be parsed or has no children, just store it on the
   // main frame's FrameNavigationEntry without recursively creating subframe
