@@ -9573,6 +9573,7 @@ error::Error GLES2DecoderImpl::HandlePostSubBufferCHROMIUM(
   }
 
   if (supports_async_swap_) {
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
     surface_->PostSubBufferAsync(
         c.x, c.y, c.width, c.height,
         base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
@@ -12215,6 +12216,7 @@ void GLES2DecoderImpl::DoSwapBuffers() {
         glFlush();
     }
   } else if (supports_async_swap_) {
+    TRACE_EVENT_ASYNC_BEGIN0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
     surface_->SwapBuffersAsync(base::Bind(&GLES2DecoderImpl::FinishSwapBuffers,
                                           base::AsWeakPtr(this)));
   } else {
@@ -12239,6 +12241,10 @@ void GLES2DecoderImpl::FinishSwapBuffers(gfx::SwapResult result) {
     // The second buffer after a resize is new and needs to be cleared to
     // known values.
     backbuffer_needs_clear_bits_ |= GL_COLOR_BUFFER_BIT;
+  }
+
+  if (supports_async_swap_) {
+    TRACE_EVENT_ASYNC_END0("cc", "GLES2DecoderImpl::AsyncSwapBuffers", this);
   }
 }
 

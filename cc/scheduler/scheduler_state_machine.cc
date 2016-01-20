@@ -1003,7 +1003,8 @@ void SchedulerStateMachine::SetNeedsPrepareTiles() {
   }
 }
 void SchedulerStateMachine::DidSwapBuffers() {
-  TRACE_EVENT_ASYNC_BEGIN0("cc", "Scheduler:pending_swaps", this);
+  TRACE_EVENT_ASYNC_BEGIN1("cc", "Scheduler:pending_swaps", this,
+                           "pending_frames", pending_swaps_);
   DCHECK_LT(pending_swaps_, kMaxPendingSwaps);
 
   pending_swaps_++;
@@ -1014,7 +1015,8 @@ void SchedulerStateMachine::DidSwapBuffers() {
 }
 
 void SchedulerStateMachine::DidSwapBuffersComplete() {
-  TRACE_EVENT_ASYNC_END0("cc", "Scheduler:pending_swaps", this);
+  TRACE_EVENT_ASYNC_END1("cc", "Scheduler:pending_swaps", this,
+                         "pending_frames", pending_swaps_);
   pending_swaps_--;
 }
 

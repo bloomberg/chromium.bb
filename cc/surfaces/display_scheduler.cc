@@ -291,14 +291,14 @@ void DisplayScheduler::OnBeginFrameDeadline() {
 
 void DisplayScheduler::DidSwapBuffers() {
   pending_swaps_++;
-  TRACE_EVENT1("cc", "DisplayScheduler::DidSwapBuffers", "pending_frames",
-               pending_swaps_);
+  TRACE_EVENT_ASYNC_BEGIN1("cc", "DisplayScheduler:pending_swaps", this,
+                           "pending_frames", pending_swaps_);
 }
 
 void DisplayScheduler::DidSwapBuffersComplete() {
   pending_swaps_--;
-  TRACE_EVENT1("cc", "DisplayScheduler::DidSwapBuffersComplete",
-               "pending_frames", pending_swaps_);
+  TRACE_EVENT_ASYNC_END1("cc", "DisplayScheduler:pending_swaps", this,
+                         "pending_frames", pending_swaps_);
   ScheduleBeginFrameDeadline();
 }
 
