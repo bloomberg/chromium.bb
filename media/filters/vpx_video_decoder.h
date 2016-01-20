@@ -55,14 +55,6 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
     kError
   };
 
-  // Return values for decoding alpha plane.
-  enum AlphaDecodeStatus {
-    kAlphaPlaneProcessed,  // Alpha plane (if found) was decoded successfully.
-    kNoAlphaPlaneData,  // Alpha plane was found, but decoder did not return any
-                        // data.
-    kAlphaPlaneError  // Fatal error occured when trying to decode alpha plane.
-  };
-
   // Handles (re-)initializing the decoder with a (new) config.
   // Returns true when initialization was successful.
   bool ConfigureDecoder(const VideoDecoderConfig& config);
@@ -76,13 +68,7 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
                  scoped_refptr<VideoFrame>* video_frame);
 
   bool CopyVpxImageToVideoFrame(const struct vpx_image* vpx_image,
-                                const struct vpx_image* vpx_image_alpha,
                                 scoped_refptr<VideoFrame>* video_frame);
-
-  AlphaDecodeStatus DecodeAlphaPlane(
-      const struct vpx_image* vpx_image,
-      const struct vpx_image** vpx_image_alpha,
-      const scoped_refptr<DecoderBuffer>& buffer);
 
   base::ThreadChecker thread_checker_;
 

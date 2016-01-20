@@ -136,19 +136,18 @@ class VpxVideoDecoder::MemoryPool
   int NumberOfFrameBuffersInUseByDecoder() const;
   int NumberOfFrameBuffersInUseByDecoderAndVideoFrame() const;
 
+ private:
+  friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
+  ~MemoryPool() override;
+
   // Reference counted frame buffers used for VP9 decoding. Reference counting
   // is done manually because both chromium and libvpx has to release this
   // before a buffer can be re-used.
   struct VP9FrameBuffer {
     VP9FrameBuffer() : ref_cnt(0) {}
     std::vector<uint8_t> data;
-    std::vector<uint8_t> alpha_data;
     uint32_t ref_cnt;
   };
-
- private:
-  friend class base::RefCountedThreadSafe<VpxVideoDecoder::MemoryPool>;
-  ~MemoryPool() override;
 
   // Gets the next available frame buffer for use by libvpx.
   VP9FrameBuffer* GetFreeFrameBuffer(size_t min_size);
@@ -381,11 +380,11 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
     return false;
 
   // These are the combinations of codec-pixel format supported in principle.
+  // Note that VP9 does not support Alpha in the current implementation.
   DCHECK(
       (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_YV12) ||
       (config.codec() == kCodecVP8 && config.format() == PIXEL_FORMAT_YV12A) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV12) ||
-      (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV12A) ||
       (config.codec() == kCodecVP9 && config.format() == PIXEL_FORMAT_YV24));
 
 #if !defined(DISABLE_FFMPEG_VIDEO_DECODERS)
@@ -401,10 +400,9 @@ bool VpxVideoDecoder::ConfigureDecoder(const VideoDecoderConfig& config) {
   if (!vpx_codec_)
     return false;
 
-  // Configure VP9 to decode on our buffers to skip a data copy on
-  // decoding. For YV12A-VP9, we use our buffers for the Y, U and V planes and
-  // copy the A plane.
+  // Configure VP9 to decode on our buffers to skip a data copy on decoding.
   if (config.codec() == kCodecVP9) {
+    DCHECK_NE(PIXEL_FORMAT_YV12A, config.format());
     DCHECK(vpx_codec_get_caps(vpx_codec_->iface) &
            VPX_CODEC_CAP_EXTERNAL_FRAME_BUFFER);
 
@@ -472,26 +470,8 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
     return false;
   }
 
-  const vpx_image_t* vpx_image_alpha = nullptr;
-  AlphaDecodeStatus alpha_decode_status =
-      DecodeAlphaPlane(vpx_image, &vpx_image_alpha, buffer);
-  if (alpha_decode_status == kAlphaPlaneError) {
+  if (!CopyVpxImageToVideoFrame(vpx_image, video_frame))
     return false;
-  } else if (alpha_decode_status == kNoAlphaPlaneData) {
-    *video_frame = nullptr;
-    return true;
-  }
-  if (!CopyVpxImageToVideoFrame(vpx_image, vpx_image_alpha, video_frame)) {
-    return false;
-  }
-  if (vpx_image_alpha && config_.codec() == kCodecVP8) {
-    libyuv::CopyPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
-                      vpx_image_alpha->stride[VPX_PLANE_Y],
-                      (*video_frame)->visible_data(VideoFrame::kAPlane),
-                      (*video_frame)->stride(VideoFrame::kAPlane),
-                      (*video_frame)->visible_rect().width(),
-                      (*video_frame)->visible_rect().height());
-  }
 
   (*video_frame)->set_timestamp(base::TimeDelta::FromMicroseconds(timestamp));
 
@@ -505,26 +485,29 @@ bool VpxVideoDecoder::VpxDecode(const scoped_refptr<DecoderBuffer>& buffer,
   (*video_frame)
       ->metadata()
       ->SetInteger(VideoFrameMetadata::COLOR_SPACE, color_space);
-  return true;
-}
 
-VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
-    const struct vpx_image* vpx_image,
-    const struct vpx_image** vpx_image_alpha,
-    const scoped_refptr<DecoderBuffer>& buffer) {
-  if (!vpx_codec_alpha_ || buffer->side_data_size() < 8) {
-    return kAlphaPlaneProcessed;
+  if (!vpx_codec_alpha_)
+    return true;
+
+  if (buffer->side_data_size() < 8) {
+    // TODO(mcasas): Is this a warning or an error?
+    DLOG(WARNING) << "Making Alpha channel opaque due to missing input";
+    const uint32_t kAlphaOpaqueValue = 255;
+    libyuv::SetPlane((*video_frame)->visible_data(VideoFrame::kAPlane),
+                     (*video_frame)->stride(VideoFrame::kAPlane),
+                     (*video_frame)->visible_rect().width(),
+                     (*video_frame)->visible_rect().height(),
+                     kAlphaOpaqueValue);
+    return true;
   }
 
   // First 8 bytes of side data is |side_data_id| in big endian.
   const uint64_t side_data_id = base::NetToHost64(
       *(reinterpret_cast<const uint64_t*>(buffer->side_data())));
-  if (side_data_id != 1) {
-    return kAlphaPlaneProcessed;
-  }
+  if (side_data_id != 1)
+    return true;
 
-  // Try and decode buffer->side_data() minus the first 8 bytes as a full
-  // frame.
+  // Try and decode buffer->side_data() minus the first 8 bytes as a full frame.
   int64_t timestamp_alpha = buffer->timestamp().InMicroseconds();
   void* user_priv_alpha = reinterpret_cast<void*>(&timestamp_alpha);
   {
@@ -536,56 +519,48 @@ VpxVideoDecoder::AlphaDecodeStatus VpxVideoDecoder::DecodeAlphaPlane(
     if (status != VPX_CODEC_OK) {
       DLOG(ERROR) << "vpx_codec_decode() failed for the alpha: "
                   << vpx_codec_error(vpx_codec_);
-      return kAlphaPlaneError;
+      return false;
     }
   }
 
   vpx_codec_iter_t iter_alpha = NULL;
-  *vpx_image_alpha = vpx_codec_get_frame(vpx_codec_alpha_, &iter_alpha);
-  if (!(*vpx_image_alpha)) {
-    return kNoAlphaPlaneData;
+  const vpx_image_t* vpx_image_alpha =
+      vpx_codec_get_frame(vpx_codec_alpha_, &iter_alpha);
+  if (!vpx_image_alpha) {
+    *video_frame = nullptr;
+    return true;
   }
 
-  if ((*vpx_image_alpha)->user_priv != user_priv_alpha) {
+  if (vpx_image_alpha->user_priv != user_priv_alpha) {
     DLOG(ERROR) << "Invalid output timestamp on alpha.";
-    return kAlphaPlaneError;
+    return false;
   }
 
-  if ((*vpx_image_alpha)->d_h != vpx_image->d_h ||
-      (*vpx_image_alpha)->d_w != vpx_image->d_w) {
+  if (vpx_image_alpha->d_h != vpx_image->d_h ||
+      vpx_image_alpha->d_w != vpx_image->d_w) {
     DLOG(ERROR) << "The alpha plane dimensions are not the same as the "
                    "image dimensions.";
-    return kAlphaPlaneError;
+    return false;
   }
 
-  if (config_.codec() == kCodecVP9) {
-    VpxVideoDecoder::MemoryPool::VP9FrameBuffer* frame_buffer =
-        static_cast<VpxVideoDecoder::MemoryPool::VP9FrameBuffer*>(
-            vpx_image->fb_priv);
-    uint64_t alpha_plane_size =
-        (*vpx_image_alpha)->stride[VPX_PLANE_Y] * (*vpx_image_alpha)->d_h;
-    if (frame_buffer->alpha_data.size() < alpha_plane_size) {
-      frame_buffer->alpha_data.resize(alpha_plane_size);
-    }
-    libyuv::CopyPlane((*vpx_image_alpha)->planes[VPX_PLANE_Y],
-                      (*vpx_image_alpha)->stride[VPX_PLANE_Y],
-                      &frame_buffer->alpha_data[0],
-                      (*vpx_image_alpha)->stride[VPX_PLANE_Y],
-                      (*vpx_image_alpha)->d_w, (*vpx_image_alpha)->d_h);
-  }
-  return kAlphaPlaneProcessed;
+  libyuv::CopyPlane(vpx_image_alpha->planes[VPX_PLANE_Y],
+                    vpx_image_alpha->stride[VPX_PLANE_Y],
+                    (*video_frame)->visible_data(VideoFrame::kAPlane),
+                    (*video_frame)->stride(VideoFrame::kAPlane),
+                    (*video_frame)->visible_rect().width(),
+                    (*video_frame)->visible_rect().height());
+  return true;
 }
 
 bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
     const struct vpx_image* vpx_image,
-    const struct vpx_image* vpx_image_alpha,
     scoped_refptr<VideoFrame>* video_frame) {
   DCHECK(vpx_image);
 
   VideoPixelFormat codec_format;
   switch (vpx_image->fmt) {
     case VPX_IMG_FMT_I420:
-      codec_format = vpx_image_alpha ? PIXEL_FORMAT_YV12A : PIXEL_FORMAT_YV12;
+      codec_format = vpx_codec_alpha_ ? PIXEL_FORMAT_YV12A : PIXEL_FORMAT_YV12;
       break;
 
     case VPX_IMG_FMT_I444:
@@ -606,25 +581,17 @@ bool VpxVideoDecoder::CopyVpxImageToVideoFrame(
 
   if (memory_pool_.get()) {
     DCHECK_EQ(kCodecVP9, config_.codec());
-    if (vpx_image_alpha) {
-      VpxVideoDecoder::MemoryPool::VP9FrameBuffer* frame_buffer =
-          static_cast<VpxVideoDecoder::MemoryPool::VP9FrameBuffer*>(
-              vpx_image->fb_priv);
-      *video_frame = VideoFrame::WrapExternalYuvaData(
-          codec_format, coded_size, gfx::Rect(visible_size),
-          config_.natural_size(), vpx_image->stride[VPX_PLANE_Y],
-          vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
-          vpx_image_alpha->stride[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_Y],
-          vpx_image->planes[VPX_PLANE_U], vpx_image->planes[VPX_PLANE_V],
-          &frame_buffer->alpha_data[0], kNoTimestamp());
-    } else {
-      *video_frame = VideoFrame::WrapExternalYuvData(
-          codec_format, coded_size, gfx::Rect(visible_size),
-          config_.natural_size(), vpx_image->stride[VPX_PLANE_Y],
-          vpx_image->stride[VPX_PLANE_U], vpx_image->stride[VPX_PLANE_V],
-          vpx_image->planes[VPX_PLANE_Y], vpx_image->planes[VPX_PLANE_U],
-          vpx_image->planes[VPX_PLANE_V], kNoTimestamp());
-    }
+    DCHECK(!vpx_codec_alpha_) << "Uh-oh, VP9 and Alpha shouldn't coexist.";
+    *video_frame = VideoFrame::WrapExternalYuvData(
+        codec_format,
+        coded_size, gfx::Rect(visible_size), config_.natural_size(),
+        vpx_image->stride[VPX_PLANE_Y],
+        vpx_image->stride[VPX_PLANE_U],
+        vpx_image->stride[VPX_PLANE_V],
+        vpx_image->planes[VPX_PLANE_Y],
+        vpx_image->planes[VPX_PLANE_U],
+        vpx_image->planes[VPX_PLANE_V],
+        kNoTimestamp());
     if (!(*video_frame))
       return false;
 

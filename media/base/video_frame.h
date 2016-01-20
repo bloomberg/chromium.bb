@@ -206,23 +206,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       const gfx::GpuMemoryBufferHandle& v_handle,
       base::TimeDelta timestamp);
 
-  // Wraps external YUVA data of the given parameters with a VideoFrame.
-  // The returned VideoFrame does not own the data passed in.
-  static scoped_refptr<VideoFrame> WrapExternalYuvaData(
-      VideoPixelFormat format,
-      const gfx::Size& coded_size,
-      const gfx::Rect& visible_rect,
-      const gfx::Size& natural_size,
-      int32_t y_stride,
-      int32_t u_stride,
-      int32_t v_stride,
-      int32_t a_stride,
-      uint8_t* y_data,
-      uint8_t* u_data,
-      uint8_t* v_data,
-      uint8_t* a_data,
-      base::TimeDelta timestamp);
-
 #if defined(OS_LINUX)
   // Wraps provided dmabufs
   // (https://www.kernel.org/doc/Documentation/dma-buf-sharing.txt) with a
