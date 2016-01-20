@@ -33,7 +33,8 @@ def main():
                            'isolateserver all artifacts in this dir.')
   args = parser.parse_args()
 
-  tool_path = os.path.join(SKIA_SRC_DIR, 'out', 'Debug', args.tool)
+  build_type = 'Release' if args.tool == 'nanobench' else 'Debug'
+  tool_path = os.path.join(SKIA_SRC_DIR, 'out', build_type, args.tool)
   skps_dir = os.path.join(REPOS_BASE_DIR, 'skps', 'slave%d' % args.slave_num)
   resource_path = os.path.join(SKIA_SRC_DIR, 'resources')
 
