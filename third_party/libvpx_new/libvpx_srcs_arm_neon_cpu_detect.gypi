@@ -210,6 +210,8 @@
     '<(libvpx_source)/vp9/decoder/vp9_dsubexp.h',
     '<(libvpx_source)/vp9/decoder/vp9_dthread.c',
     '<(libvpx_source)/vp9/decoder/vp9_dthread.h',
+    '<(libvpx_source)/vp9/encoder/vp9_aq_360.c',
+    '<(libvpx_source)/vp9/encoder/vp9_aq_360.h',
     '<(libvpx_source)/vp9/encoder/vp9_aq_complexity.c',
     '<(libvpx_source)/vp9/encoder/vp9_aq_complexity.h',
     '<(libvpx_source)/vp9/encoder/vp9_aq_cyclicrefresh.c',
