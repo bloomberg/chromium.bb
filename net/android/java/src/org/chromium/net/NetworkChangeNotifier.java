@@ -415,7 +415,6 @@ public class NetworkChangeNotifier {
      */
     public static boolean isOnline() {
         int connectionType = getInstance().getCurrentConnectionType();
-        return connectionType != ConnectionType.CONNECTION_UNKNOWN
-                && connectionType != ConnectionType.CONNECTION_NONE;
+        return connectionType != ConnectionType.CONNECTION_NONE;
     }
 }

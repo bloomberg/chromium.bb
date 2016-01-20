@@ -675,4 +675,25 @@ public class NetworkChangeNotifierTest extends InstrumentationTestCase {
         // Verify network list purged.
         observer.assertLastChange(ChangeType.PURGE_LIST, NetId.INVALID);
     }
+
+    /**
+     * Tests that isOnline() returns the correct result.
+     */
+    @UiThreadTest
+    @MediumTest
+    @Feature({"Android-AppBase"})
+    public void testNetworkChangeNotifierIsOnline() throws InterruptedException {
+        NetworkChangeNotifier notifier = NetworkChangeNotifier.getInstance();
+        Intent intent = new Intent(ConnectivityManager.CONNECTIVITY_ACTION);
+        // For any connection type it should return true.
+        for (int i = ConnectivityManager.TYPE_MOBILE; i < ConnectivityManager.TYPE_VPN; i++) {
+            mConnectivityDelegate.setActiveNetworkExists(true);
+            mConnectivityDelegate.setNetworkType(i);
+            mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
+            assertTrue(notifier.isOnline());
+        }
+        mConnectivityDelegate.setActiveNetworkExists(false);
+        mReceiver.onReceive(getInstrumentation().getTargetContext(), intent);
+        assertFalse(notifier.isOnline());
+    }
 }
