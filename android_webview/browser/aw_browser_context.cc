@@ -267,10 +267,6 @@ void AwBrowserContext::PreMainMessageLoopRun() {
                                                     guid_file_path);
 }
 
-void AwBrowserContext::PostMainMessageLoopRun() {
-  AwMetricsServiceClient::GetInstance()->Finalize();
-}
-
 void AwBrowserContext::AddVisitedURLs(const std::vector<GURL>& urls) {
   DCHECK(visitedlink_master_);
   visitedlink_master_->AddURLs(urls);

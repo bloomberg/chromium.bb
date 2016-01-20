@@ -64,6 +64,7 @@ void GetOrCreateGUID(const base::FilePath guid_file_path, std::string* guid) {
 
 // static
 AwMetricsServiceClient* AwMetricsServiceClient::GetInstance() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   return g_lazy_instance_.Pointer();
 }
 
@@ -71,6 +72,7 @@ void AwMetricsServiceClient::Initialize(
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context,
     const base::FilePath guid_file_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!is_initialized_);
 
   pref_service_ = pref_service;
@@ -90,6 +92,7 @@ void AwMetricsServiceClient::Initialize(
 }
 
 void AwMetricsServiceClient::InitializeWithGUID(std::string* guid) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(!is_initialized_);
 
   pref_service_->SetString(metrics::prefs::kMetricsClientID, *guid);
@@ -129,12 +132,9 @@ void AwMetricsServiceClient::InitializeWithGUID(std::string* guid) {
     metrics_service_->Start();
 }
 
-void AwMetricsServiceClient::Finalize() {
-  DCHECK(is_initialized_);
-  metrics_service_->Stop();
-}
-
 void AwMetricsServiceClient::SetMetricsEnabled(bool enabled) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
   // If the client is already initialized, apply the setting immediately.
   // Otherwise, it will be applied on initialization.
   if (is_initialized_ && is_enabled_ != enabled) {

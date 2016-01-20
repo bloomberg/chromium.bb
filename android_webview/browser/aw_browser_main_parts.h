@@ -27,7 +27,6 @@ class AwBrowserMainParts : public content::BrowserMainParts {
   void PreEarlyInitialization() override;
   int PreCreateThreads() override;
   void PreMainMessageLoopRun() override;
-  void PostMainMessageLoopRun() override;
   bool MainMessageLoopRun(int* result_code) override;
 
  private:

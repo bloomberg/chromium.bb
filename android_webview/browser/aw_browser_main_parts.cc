@@ -98,10 +98,6 @@ void AwBrowserMainParts::PreMainMessageLoopRun() {
   content::RenderFrameHost::AllowInjectingJavaScriptForAndroidWebView();
 }
 
-void AwBrowserMainParts::PostMainMessageLoopRun() {
-  browser_context_->PostMainMessageLoopRun();
-}
-
 bool AwBrowserMainParts::MainMessageLoopRun(int* result_code) {
   // Android WebView does not use default MessageLoop. It has its own
   // Android specific MessageLoop.

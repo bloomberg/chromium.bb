@@ -9,7 +9,6 @@
 
 #include "android_webview/browser/aw_download_manager_delegate.h"
 #include "android_webview/browser/aw_message_port_service.h"
-#include "android_webview/browser/aw_metrics_service_client.h"
 #include "android_webview/browser/aw_ssl_host_state_delegate.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
@@ -85,9 +84,8 @@ class AwBrowserContext : public content::BrowserContext,
   static void SetDataReductionProxyEnabled(bool enabled);
   static void SetLegacyCacheRemovalDelayForTest(int delay_ms);
 
-  // These map to BrowserMainParts::Pre/PostMainMessageLoopRun.
+  // Maps to BrowserMainParts::PreMainMessageLoopRun.
   void PreMainMessageLoopRun();
-  void PostMainMessageLoopRun();
 
   // These methods map to Add methods in visitedlink::VisitedLinkMaster.
   void AddVisitedURLs(const std::vector<GURL>& urls);

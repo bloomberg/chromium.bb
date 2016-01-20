@@ -31,25 +31,26 @@ class URLRequestContextGetter;
 
 namespace android_webview {
 
-// This singleton manages metrics for an app using any number of WebViews.
-// Metrics is turned on and off by the homonymous Java class. It should only be
-// used on the main thread. In particular, Initialize, Finalize, and
-// SetMetricsEnabled must be called from the same thread, in order to prevent
-// enable/disable race conditions, and because MetricsService is
-// single-threaded.
+// This singleton manages metrics for an app using any number of WebViews. The
+// homonymous Java class is responsible for turning metrics on and off. This
+// singleton must always be used on the same thread. (Currently the UI thread
+// is enforced, but it could be any thread.) This is to prevent enable/disable
+// race conditions, and because MetricsService is single-threaded.
+// Initialization is asynchronous; even after Initialize has returned, some
+// methods may not be ready to use (see below).
 class AwMetricsServiceClient : public metrics::MetricsServiceClient {
   friend struct base::DefaultLazyInstanceTraits<AwMetricsServiceClient>;
 
  public:
+  // These may be called at any time.
   static AwMetricsServiceClient* GetInstance();
-
   void Initialize(PrefService* pref_service,
                   net::URLRequestContextGetter* request_context,
                   const base::FilePath guid_file_path);
-  void Finalize();
   void SetMetricsEnabled(bool enabled);
 
-  // metrics::MetricsServiceClient implementation
+  // These implement metrics::MetricsServiceClient. They must not be called
+  // until initialization has asynchronously finished.
   metrics::MetricsService* GetMetricsService() override;
   void SetMetricsClientId(const std::string& client_id) override;
   void OnRecordingDisabled() override;
