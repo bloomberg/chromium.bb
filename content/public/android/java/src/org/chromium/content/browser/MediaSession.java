@@ -65,9 +65,7 @@ public class MediaSession implements AudioManager.OnAudioFocusChangeListener {
     public void onAudioFocusChange(int focusChange) {
         switch (focusChange) {
             case AudioManager.AUDIOFOCUS_GAIN:
-                if (requestAudioFocusInternal()) {
-                    nativeOnResume(mNativeMediaSession);
-                }
+                nativeOnResume(mNativeMediaSession);
                 break;
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
             case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
