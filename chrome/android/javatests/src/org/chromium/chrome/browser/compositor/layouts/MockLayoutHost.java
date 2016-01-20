@@ -64,14 +64,6 @@ class MockLayoutHost implements LayoutManagerHost, LayoutRenderHost {
     public void onPhysicalBackingSizeChanged(int width, int height) { }
 
     @Override
-    public void onOverdrawBottomHeightChanged(int overdrawHeight) {}
-
-    @Override
-    public int getCurrentOverdrawBottomHeight() {
-        return 0;
-    }
-
-    @Override
     public Context getContext() {
         return mContext;
     }

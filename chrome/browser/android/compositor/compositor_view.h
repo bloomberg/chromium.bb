@@ -81,7 +81,6 @@ class CompositorView : public content::CompositorClient,
                          jfloat height,
                          jfloat visible_x_offset,
                          jfloat visible_y_offset,
-                         jfloat overdraw_bottom_height,
                          jfloat dp_to_pixel);
   void UpdateToolbarLayer(JNIEnv* env,
                           const base::android::JavaParamRef<jobject>& object,
@@ -140,8 +139,6 @@ class CompositorView : public content::CompositorClient,
 
   void SetBackground(bool visible, SkColor color);
 
-  int GetUsableContentHeight();
-
   base::android::ScopedJavaGlobalRef<jobject> obj_;
   scoped_ptr<content::Compositor> compositor_;
   LayerTitleCache* layer_title_cache_;
@@ -155,7 +152,6 @@ class CompositorView : public content::CompositorClient,
   int current_surface_format_;
   int content_width_;
   int content_height_;
-  int overdraw_bottom_height_;
   bool overlay_video_mode_;
   SkColor empty_background_color_;
 

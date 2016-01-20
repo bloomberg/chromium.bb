@@ -1038,17 +1038,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         return mPhysicalBackingHeightPix;
     }
 
-    /* TODO(aelias): Remove these when downstream callers disappear. */
-    @VisibleForTesting
-    public int getViewportSizeOffsetWidthPix() {
-        return 0;
-    }
-
-    @VisibleForTesting
-    public int getViewportSizeOffsetHeightPix() {
-        return mTopControlsShrinkBlinkSize ? mTopControlsHeightPix : 0;
-    }
-
     /**
      * @return The amount that the viewport size given to Blink is shrunk by the URL-bar..
      */
@@ -2363,7 +2352,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Screen
         final float controlsOffsetPix = controlsOffsetYCss * deviceScale;
         // TODO(aelias): Remove last argument after downstream removes it.
         getContentViewClient().onOffsetsForFullscreenChanged(
-                controlsOffsetPix, contentOffsetYPix, 0);
+                controlsOffsetPix, contentOffsetYPix);
 
         if (mBrowserAccessibilityManager != null) {
             mBrowserAccessibilityManager.notifyFrameInfoInitialized();

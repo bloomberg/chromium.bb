@@ -91,8 +91,6 @@ public class CompositorViewHolder extends FrameLayout
             new ArrayList<Invalidator.Client>();
     private boolean mSkipInvalidation = false;
 
-    private boolean mSkipNextToolbarTextureUpdate = false;
-
     /**
      * A task to be performed after a resize event.
      */
@@ -422,23 +420,6 @@ public class CompositorViewHolder extends FrameLayout
         sCachedCVCList.clear();
     }
 
-    @Override
-    public void onOverdrawBottomHeightChanged(int overdrawHeight) {
-        mSkipNextToolbarTextureUpdate = true;
-        requestRender();
-    }
-
-    @Override
-    public int getCurrentOverdrawBottomHeight() {
-        if (mTabVisible != null) {
-            float overdrawBottomHeight = mTabVisible.getFullscreenOverdrawBottomHeightPix();
-            if (!Float.isNaN(overdrawBottomHeight)) {
-                return (int) overdrawBottomHeight;
-            }
-        }
-        return mCompositorView.getOverdrawBottomHeight();
-    }
-
     /**
      * Called whenever the host activity is started.
      */
@@ -533,19 +514,11 @@ public class CompositorViewHolder extends FrameLayout
                 assert mProgressBarDrawingInfo == null;
             }
 
-            mCompositorView.finalizeLayers(mLayoutManager, mSkipNextToolbarTextureUpdate,
+            mCompositorView.finalizeLayers(mLayoutManager, false,
                     mProgressBarDrawingInfo);
-
-            // TODO(changwan): Check if this hack can be removed.
-            // This is a hack to draw one more frame if the screen just rotated for Nexus 10 + L.
-            // See http://crbug/440469 for more.
-            if (mSkipNextToolbarTextureUpdate) {
-                requestRender();
-            }
         }
 
         TraceEvent.end("CompositorViewHolder:layout");
-        mSkipNextToolbarTextureUpdate = false;
     }
 
     @Override

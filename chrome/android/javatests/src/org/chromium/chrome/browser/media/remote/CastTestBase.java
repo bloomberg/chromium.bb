@@ -616,12 +616,11 @@ public abstract class CastTestBase extends ChromeActivityTestCaseBase<ChromeActi
         ContentViewCore core = tab.getContentViewCore();
         int clickX =
                 (int) core.getRenderCoordinates().fromLocalCssToPix(
-                        ((float) (rect.left + rect.right)) / 2)
-                + core.getViewportSizeOffsetWidthPix();
+                        ((float) (rect.left + rect.right)) / 2);
         int clickY =
                 (int) core.getRenderCoordinates().fromLocalCssToPix(
                         ((float) (rect.top + rect.bottom)) / 2)
-                + core.getViewportSizeOffsetHeightPix();
+                + core.getTopControlsHeightPix();
         // Click using a virtual mouse, since a touch may result in a disambiguation pop-up.
         mouseSingleClickView(getInstrumentation(), tab.getView(), clickX, clickY);
     }

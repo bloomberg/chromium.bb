@@ -340,7 +340,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
     private FullscreenManager mFullscreenManager;
     private float mPreviousFullscreenTopControlsOffsetY = Float.NaN;
     private float mPreviousFullscreenContentOffsetY = Float.NaN;
-    private float mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
     private int mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
     private boolean mIsFullscreenWaitingForLoad = false;
 
@@ -371,9 +370,8 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
 
         @Override
         public void onOffsetsForFullscreenChanged(
-                float topControlsOffsetY, float contentOffsetY, float overdrawBottomHeight) {
-            onOffsetsChanged(topControlsOffsetY, contentOffsetY, overdrawBottomHeight,
-                    isShowingSadTab());
+                float topControlsOffsetY, float contentOffsetY) {
+            onOffsetsChanged(topControlsOffsetY, contentOffsetY, isShowingSadTab());
         }
 
         @Override
@@ -1186,7 +1184,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
                 mFullscreenManager.setPersistentFullscreenMode(false);
                 mFullscreenManager.hideControlsPersistent(mFullscreenHungRendererToken);
                 mFullscreenHungRendererToken = FullscreenManager.INVALID_TOKEN;
-                mPreviousFullscreenOverdrawBottomHeight = Float.NaN;
             }
 
             if (mTabUma != null) mTabUma.onHide();
@@ -2361,14 +2358,12 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
      * @param contentOffsetY The Y offset of the content in physical pixels.
-     * @param overdrawBottomHeight The overdraw height.
      * @param isNonFullscreenPage Whether a current page is non-fullscreen page or not.
      */
     private void onOffsetsChanged(float topControlsOffsetY, float contentOffsetY,
-            float overdrawBottomHeight, boolean isNonFullscreenPage) {
+            boolean isNonFullscreenPage) {
         mPreviousFullscreenTopControlsOffsetY = topControlsOffsetY;
         mPreviousFullscreenContentOffsetY = contentOffsetY;
-        mPreviousFullscreenOverdrawBottomHeight = overdrawBottomHeight;
 
         if (mFullscreenManager == null) return;
         if (isNonFullscreenPage || isNativePage()) {
@@ -2508,13 +2503,6 @@ public final class Tab implements ViewGroup.OnHierarchyChangeListener,
             mFullscreenManager.showControlsTransient();
             updateFullscreenEnabledState();
         }
-    }
-
-    /**
-     * @return The most recent frame's overdraw bottom height in pixels.
-     */
-    public float getFullscreenOverdrawBottomHeightPix() {
-        return mPreviousFullscreenOverdrawBottomHeight;
     }
 
     /**

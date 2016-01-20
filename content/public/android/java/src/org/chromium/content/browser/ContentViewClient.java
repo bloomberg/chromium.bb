@@ -46,11 +46,9 @@ public class ContentViewClient {
      * Notifies the client that the position of the top controls has changed.
      * @param topControlsOffsetYPix The Y offset of the top controls in physical pixels.
      * @param contentOffsetYPix The Y offset of the content in physical pixels.
-     * @param overdrawBottomHeightPix The overdraw height.
      */
     public void onOffsetsForFullscreenChanged(
-            float topControlsOffsetYPix, float contentOffsetYPix, float overdrawBottomHeightPix) {
-    }
+            float topControlsOffsetYPix, float contentOffsetYPix) { }
 
     public boolean shouldOverrideKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
