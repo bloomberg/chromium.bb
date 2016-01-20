@@ -1,34 +1,12 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1.  Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- * 2.  Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in the
- *     documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
- * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-// Tests for the Font class.
-
-#include "platform/fonts/Font.h"
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "platform/fonts/Character.h"
+
+#include "platform/Logging.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "wtf/text/CharacterNames.h"
 
 namespace blink {
 
@@ -53,7 +31,7 @@ static void TestSpecificUCharRange(UChar rangeStart, UChar rangeEnd)
     EXPECT_EQ(SimplePath, Character::characterRangeCodePath(above, 1));
 }
 
-TEST(FontTest, TestCharacterRangeCodePath)
+TEST(CharacterTest, TestCharacterRangeCodePath)
 {
     static UChar c1[] = { 0x0 };
     EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c1, 1));
@@ -98,7 +76,7 @@ TEST(FontTest, TestCharacterRangeCodePath)
     TestSpecificUCharRange(0xFE20, 0xFE2F);
 }
 
-TEST(FontTest, TestCharacterRangeCodePathSurrogate1)
+TEST(CharacterTest, TestCharacterRangeCodePathSurrogate1)
 {
     /* To be surrogate ... */
     /* 1st character must be 0xD800 .. 0xDBFF */
@@ -143,7 +121,7 @@ TEST(FontTest, TestCharacterRangeCodePathSurrogate1)
     EXPECT_EQ(SimplePath, Character::characterRangeCodePath(c15, 2));
 }
 
-TEST(FontTest, TestCharacterRangeCodePathString)
+TEST(CharacterTest, TestCharacterRangeCodePathString)
 {
     // Simple-Simple is still simple
     static UChar c1[] = { 0x2FF, 0x2FF };
@@ -174,7 +152,7 @@ static void TestSpecificUChar32RangeIdeograph(UChar32 rangeStart, UChar32 rangeE
     EXPECT_FALSE(Character::isCJKIdeograph(rangeEnd + 1));
 }
 
-TEST(FontTest, TestIsCJKIdeograph)
+TEST(CharacterTest, TestIsCJKIdeograph)
 {
     // The basic CJK Unified Ideographs block.
     TestSpecificUChar32RangeIdeograph(0x4E00, 0x9FFF);
@@ -204,7 +182,7 @@ static void TestSpecificUChar32RangeIdeographSymbol(UChar32 rangeStart, UChar32 
     EXPECT_FALSE(Character::isCJKIdeographOrSymbol(rangeEnd + 1));
 }
 
-TEST(FontTest, TestIsCJKIdeographOrSymbol)
+TEST(CharacterTest, TestIsCJKIdeographOrSymbol)
 {
     // CJK Compatibility Ideographs Supplement.
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2C7));
@@ -305,6 +283,7 @@ TEST(FontTest, TestIsCJKIdeographOrSymbol)
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2740));
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2756));
 
+    TestSpecificUChar32RangeIdeographSymbol(0x2763, 0x2764);
     TestSpecificUChar32RangeIdeographSymbol(0x2776, 0x277F);
 
     EXPECT_TRUE(Character::isCJKIdeographOrSymbol(0x2B1A));
@@ -348,5 +327,45 @@ TEST(FontTest, TestIsCJKIdeographOrSymbol)
     TestSpecificUChar32RangeIdeographSymbol(0x1F200, 0x1F6FF);
 }
 
-} // namespace blink
+TEST(CharacterTest, TestEmojiTextPresentation)
+{
+    EXPECT_TRUE(Character::isEmojiTextPresentation(0x0023));
+    EXPECT_TRUE(Character::isEmojiTextPresentation(0x1F9C0));
+    EXPECT_TRUE(Character::isEmojiTextPresentation(0x26BD));
+    EXPECT_TRUE(Character::isEmojiTextPresentation(0x26BE));
+    EXPECT_FALSE(Character::isEmojiTextPresentation('A'));
+    EXPECT_FALSE(Character::isEmojiTextPresentation(0x2713));
+}
 
+TEST(CharacterTest, TestEmojiEmojiPresentation)
+{
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x231A));
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F191));
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F19A));
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F9C0));
+    // Kiss
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F48F));
+    // Couple with heart
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F491));
+    EXPECT_TRUE(Character::isEmojiEmojiPresentation(0x1F46A));
+    EXPECT_FALSE(Character::isEmojiEmojiPresentation('A'));
+    EXPECT_FALSE(Character::isEmojiEmojiPresentation(0x1F202));
+}
+
+TEST(CharacterTest, TestEmojiModifierBase)
+{
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x261D));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F470));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F478));
+    EXPECT_TRUE(Character::isEmojiModifierBase(0x1F918));
+    EXPECT_FALSE(Character::isEmojiModifierBase('A'));
+    EXPECT_FALSE(Character::isEmojiModifierBase(0x1F47D));
+}
+
+TEST(CharacterTest, LineBreakAndQuoteNotEmoji)
+{
+    EXPECT_FALSE(Character::isEmojiTextPresentation('\n'));
+    EXPECT_FALSE(Character::isEmojiTextPresentation('"'));
+}
+
+} // namespace blink

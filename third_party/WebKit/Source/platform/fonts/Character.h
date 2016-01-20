@@ -95,6 +95,11 @@ public:
     }
     static bool canReceiveTextEmphasis(UChar32);
 
+    static bool isEmojiTextPresentation(UChar32);
+    static bool isEmojiEmojiPresentation(UChar32);
+    static bool isEmojiModifierBase(UChar32);
+    static bool isEmojiKeycapBase(UChar32);
+    static bool isRegionalIndicator(UChar32);
     static bool isModifier(UChar32 c)
     {
         return c >= 0x1F3FB && c <= 0x1F3FF;
@@ -126,6 +131,7 @@ public:
     static String normalizeSpaces(const UChar*, unsigned length);
 
     static bool isCommonOrInheritedScript(UChar32);
+
 };
 
 } // namespace blink
