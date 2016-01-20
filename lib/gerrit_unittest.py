@@ -317,10 +317,9 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
         is_master=False,
         dryrun=False)
 
-    by_repo = {repo: [patchA, patchB]}
-    pool.SubmitLocalChanges(
-        by_repo,
-        reason="Testing submitting changes in batch via Git.")
+    reason = "Testing submitting changes in batch via Git."
+    by_repo = {repo: {patchA: reason, patchB: reason}}
+    pool.SubmitLocalChanges(by_repo)
 
     self.assertTrue(helper.IsChangeCommitted(patchB.gerrit_number))
     self.assertTrue(helper.IsChangeCommitted(patchA.gerrit_number))
