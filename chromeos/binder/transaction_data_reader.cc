@@ -9,6 +9,7 @@
 
 #include <linux/android/binder.h>
 
+#include "base/logging.h"
 #include "chromeos/binder/local_object.h"
 #include "chromeos/binder/object.h"
 #include "chromeos/binder/remote_object.h"
