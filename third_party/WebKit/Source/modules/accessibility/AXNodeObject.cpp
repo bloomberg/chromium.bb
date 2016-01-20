@@ -430,6 +430,9 @@ AccessibilityRole AXNodeObject::nativeAccessibilityRoleIgnoringAria() const
     if (isHTMLFormElement(*node()))
         return FormRole;
 
+    if (node()->hasTagName(abbrTag))
+        return AbbrRole;
+
     if (node()->hasTagName(articleTag))
         return ArticleRole;
 

@@ -25,6 +25,8 @@ std::string RoleToString(blink::WebAXRole role)
 {
   std::string result = "AXRole: AX";
   switch (role) {
+    case blink::WebAXRoleAbbr:
+      return result.append("Abbr");
     case blink::WebAXRoleAlertDialog:
       return result.append("AlertDialog");
     case blink::WebAXRoleAlert:

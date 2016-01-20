@@ -57,6 +57,7 @@ typedef unsigned AXID;
 
 enum AccessibilityRole {
     UnknownRole = 0,
+    AbbrRole, // No mapping to ARIA role
     AlertDialogRole,
     AlertRole,
     AnnotationRole, // No mapping to ARIA role

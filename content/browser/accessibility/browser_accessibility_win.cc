@@ -4612,6 +4612,7 @@ void BrowserAccessibilityWin::InitRoleAndState() {
         ia2_state |= IA2_STATE_SINGLE_LINE;
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
       break;
+    case ui::AX_ROLE_ABBR:
     case ui::AX_ROLE_TIME:
       role_name = html_tag;
       ia_role = ROLE_SYSTEM_TEXT;

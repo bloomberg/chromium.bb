@@ -178,6 +178,7 @@ STATIC_ASSERT_MATCHING_ENUM(WebAXEventTextInserted, AXObjectCache::AXTextInserte
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventTextRemoved, AXObjectCache::AXTextRemoved);
 STATIC_ASSERT_MATCHING_ENUM(WebAXEventValueChanged, AXObjectCache::AXValueChanged);
 
+STATIC_ASSERT_MATCHING_ENUM(WebAXRoleAbbr, AbbrRole);
 STATIC_ASSERT_MATCHING_ENUM(WebAXRoleAlertDialog, AlertDialogRole);
 STATIC_ASSERT_MATCHING_ENUM(WebAXRoleAlert, AlertRole);
 STATIC_ASSERT_MATCHING_ENUM(WebAXRoleAnnotation, AnnotationRole);

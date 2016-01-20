@@ -24,6 +24,7 @@ typedef std::map<ui::AXRole, NSString*> RoleMap;
 
 RoleMap BuildRoleMap() {
   const MapEntry roles[] = {
+      {ui::AX_ROLE_ABBR, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ALERT, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ALERT_DIALOG, NSAccessibilityGroupRole},
       {ui::AX_ROLE_ANNOTATION, NSAccessibilityUnknownRole},

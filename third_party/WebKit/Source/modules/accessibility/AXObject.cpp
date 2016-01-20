@@ -135,6 +135,7 @@ struct InternalRoleEntry {
 
 const InternalRoleEntry internalRoles[] = {
     { UnknownRole, "Unknown" },
+    { AbbrRole, "Abbr" },
     { AlertDialogRole, "AlertDialog" },
     { AlertRole, "Alert" },
     { AnnotationRole, "Annotation" },

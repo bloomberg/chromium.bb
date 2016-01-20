@@ -53,6 +53,7 @@
 
   // Describes the purpose of an $(ref:automation.AutomationNode).
   enum RoleType {
+    abbr,
     alertDialog,
     alert,
     annotation,

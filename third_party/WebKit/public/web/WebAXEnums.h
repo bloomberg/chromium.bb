@@ -75,6 +75,7 @@ enum WebAXEvent {
 // Enforced in AssertMatchingEnums.cpp.
 enum WebAXRole {
     WebAXRoleUnknown = 0,
+    WebAXRoleAbbr,
     WebAXRoleAlertDialog,
     WebAXRoleAlert,
     WebAXRoleAnnotation,

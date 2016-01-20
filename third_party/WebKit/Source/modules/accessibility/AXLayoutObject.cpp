@@ -656,6 +656,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
     if (hasContentEditableAttributeSet())
         return false;
 
+    if (roleValue() == AbbrRole)
+        return false;
+
     // List items play an important role in defining the structure of lists. They should not be ignored.
     if (roleValue() == ListItemRole)
         return false;

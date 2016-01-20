@@ -92,6 +92,8 @@ uint32_t AXStateFromBlink(const blink::WebAXObject& o) {
 
 ui::AXRole AXRoleFromBlink(blink::WebAXRole role) {
   switch (role) {
+    case blink::WebAXRoleAbbr:
+      return ui::AX_ROLE_ABBR;
     case blink::WebAXRoleAlert:
       return ui::AX_ROLE_ALERT;
     case blink::WebAXRoleAlertDialog:
