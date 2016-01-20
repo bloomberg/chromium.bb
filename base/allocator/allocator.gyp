@@ -29,7 +29,7 @@
       'target_name': 'allocator',
       'variables': {
         'conditions': [
-          ['use_allocator!="none" or (OS=="win" and win_use_allocator_shim==1)', {
+          ['use_allocator!="none" or win_use_allocator_shim==1', {
             'allocator_target_type%': 'static_library',
           }, {
             'allocator_target_type%': 'none',
