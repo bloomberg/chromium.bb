@@ -108,6 +108,11 @@
             }
         }
     ],
+    "SchedulerExpensiveTaskBlocking": [
+        {
+            "group_name": "Enabled"
+        }
+    ],
     "SdchPersistence": [
         {
             "group_name": "Enabled"
