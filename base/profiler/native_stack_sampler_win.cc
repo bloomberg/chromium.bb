@@ -269,6 +269,21 @@ ScopedSuspendThread::~ScopedSuspendThread() {
   CHECK(resume_thread_succeeded) << "ResumeThread failed: " << GetLastError();
 }
 
+// Tests whether |stack_pointer| points to a location in the guard page.
+//
+// IMPORTANT NOTE: This function is invoked while the target thread is
+// suspended so it must not do any allocation from the default heap, including
+// indirectly via use of DCHECK/CHECK or other logging statements. Otherwise
+// this code can deadlock on heap locks in the default heap acquired by the
+// target thread before it was suspended.
+bool PointsToGuardPage(uintptr_t stack_pointer) {
+  MEMORY_BASIC_INFORMATION memory_info;
+  SIZE_T result = ::VirtualQuery(reinterpret_cast<LPCVOID>(stack_pointer),
+                                 &memory_info,
+                                 sizeof(memory_info));
+  return result != 0 && (memory_info.Protect & PAGE_GUARD);
+}
+
 // Suspends the thread with |thread_handle|, copies its stack and resumes the
 // thread, then records the stack into |instruction_pointers| and associated
 // modules into |modules|.
@@ -311,6 +326,12 @@ void SuspendThreadAndRecordStack(
 #endif
 
     if ((top - bottom) > stack_copy_buffer_size)
+      return;
+
+    // Dereferencing a pointer in the guard page in a thread that doesn't own
+    // the stack results in a STATUS_GUARD_PAGE_VIOLATION exception and a crash.
+    // This occurs very rarely, but reliably over the population.
+    if (PointsToGuardPage(bottom))
       return;
 
     std::memcpy(stack_copy_buffer, reinterpret_cast<const void*>(bottom),
