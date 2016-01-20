@@ -183,7 +183,7 @@ def GetCppResultWrapperType(kind):
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
-    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
@@ -223,7 +223,7 @@ def GetCppWrapperType(kind):
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
-    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsStringKind(kind):
@@ -255,7 +255,7 @@ def GetCppConstWrapperType(kind):
   if mojom.IsInterfaceRequestKind(kind):
     return "mojo::InterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceKind(kind):
-    return "mojo::AssociatedInterfacePtrInfo<%s>" % GetNameForKind(kind.kind)
+    return "%sAssociatedPtrInfo" % GetNameForKind(kind.kind)
   if mojom.IsAssociatedInterfaceRequestKind(kind):
     return "mojo::AssociatedInterfaceRequest<%s>" % GetNameForKind(kind.kind)
   if mojom.IsEnumKind(kind):

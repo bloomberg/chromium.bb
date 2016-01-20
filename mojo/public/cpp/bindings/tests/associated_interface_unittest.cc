@@ -75,7 +75,7 @@ class IntegerSenderConnectionImpl : public IntegerSenderConnection {
 
   void AsyncGetSender(const AsyncGetSenderCallback& callback) override {
     AssociatedInterfaceRequest<IntegerSender> request;
-    AssociatedInterfacePtrInfo<IntegerSender> ptr_info;
+    IntegerSenderAssociatedPtrInfo ptr_info;
     binding_.associated_group()->CreateAssociatedInterface(
         AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
     GetSender(std::move(request));
@@ -155,7 +155,7 @@ TEST_F(AssociatedInterfaceTest, InterfacesAtBothEnds) {
       new MultiplexRouter(false, std::move(pipe.handle1)));
 
   AssociatedInterfaceRequest<IntegerSender> request;
-  AssociatedInterfacePtrInfo<IntegerSender> ptr_info;
+  IntegerSenderAssociatedPtrInfo ptr_info;
 
   router0->CreateAssociatedGroup()->CreateAssociatedInterface(
       AssociatedGroup::WILL_PASS_PTR, &ptr_info, &request);
@@ -230,7 +230,7 @@ class TestSender {
   }
 
   // The following three methods are called on the corresponding sender thread.
-  void SetUp(AssociatedInterfacePtrInfo<IntegerSender> ptr_info,
+  void SetUp(IntegerSenderAssociatedPtrInfo ptr_info,
              TestSender* next_sender,
              int32_t max_value_to_send) {
     CHECK(sender_thread_.task_runner()->BelongsToCurrentThread());
@@ -367,7 +367,7 @@ TEST_F(AssociatedInterfaceTest, MultiThreadAccess) {
       new MultiplexRouter(false, std::move(pipe.handle1)));
 
   AssociatedInterfaceRequest<IntegerSender> requests[4];
-  AssociatedInterfacePtrInfo<IntegerSender> ptr_infos[4];
+  IntegerSenderAssociatedPtrInfo ptr_infos[4];
 
   for (size_t i = 0; i < 4; ++i) {
     router0->CreateAssociatedGroup()->CreateAssociatedInterface(
@@ -456,7 +456,7 @@ TEST_F(AssociatedInterfaceTest, FIFO) {
       new MultiplexRouter(false, std::move(pipe.handle1)));
 
   AssociatedInterfaceRequest<IntegerSender> requests[4];
-  AssociatedInterfacePtrInfo<IntegerSender> ptr_infos[4];
+  IntegerSenderAssociatedPtrInfo ptr_infos[4];
 
   for (size_t i = 0; i < 4; ++i) {
     router0->CreateAssociatedGroup()->CreateAssociatedInterface(
@@ -542,8 +542,7 @@ TEST_F(AssociatedInterfaceTest, PassAssociatedInterfaces) {
   IntegerSenderAssociatedPtr sender1;
   base::RunLoop run_loop2;
   connection_ptr->AsyncGetSender(
-      [&sender1, &run_loop2](
-          AssociatedInterfacePtrInfo<IntegerSender> ptr_info) {
+      [&sender1, &run_loop2](IntegerSenderAssociatedPtrInfo ptr_info) {
         sender1.Bind(std::move(ptr_info));
         run_loop2.Quit();
       });
