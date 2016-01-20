@@ -363,10 +363,6 @@ void StyleAdjuster::adjustStyleForHTMLElement(ComputedStyle& style, const Comput
     }
 
     if (isHTMLTableElement(element)) {
-        // Sites commonly use display:inline/block on <td>s and <table>s. In quirks mode we force
-        // these tags to retain their display types.
-        if (m_useQuirksModeStyles)
-            style.setDisplay(style.isDisplayInlineType() ? INLINE_TABLE : TABLE);
         // Tables never support the -webkit-* values for text-align and will reset back to the default.
         if (style.textAlign() == WEBKIT_LEFT || style.textAlign() == WEBKIT_CENTER || style.textAlign() == WEBKIT_RIGHT)
             style.setTextAlign(TASTART);
