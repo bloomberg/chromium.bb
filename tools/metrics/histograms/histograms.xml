@@ -65496,6 +65496,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1115" label="SVG1DOMImageElement"/>
   <int value="1116" label="SVG1DOMForeignObjectElement"/>
   <int value="1117" label="AudioContextCreateIIRFilter"/>
+  <int value="1118" label="CSSSelectorPseudoSlotted"/>
+  <int value="1119" label="MediaDevicesEnumerateDevices"/>
 </enum>
 
 <enum name="FetchRequestMode" type="int">

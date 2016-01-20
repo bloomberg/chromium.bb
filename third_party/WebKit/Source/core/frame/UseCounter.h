@@ -971,6 +971,7 @@ public:
         SVG1DOMForeignObjectElement = 1116,
         AudioContextCreateIIRFilter = 1117,
         CSSSelectorPseudoSlotted = 1118,
+        MediaDevicesEnumerateDevices = 1119,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.
