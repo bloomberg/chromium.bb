@@ -158,6 +158,24 @@
             ]
           }
         ]
+      }, {
+        "name": "setXkbLayout",
+        "type": "function",
+        "description": "Sets the XKB layout for the given input method.",
+        "parameters": [
+          {
+            "name": "xkb_name",
+            "type": "string",
+            "description": "The XKB layout name."
+          },
+          {
+            "name": "callback",
+            "type": "function",
+            "optional": true,
+            "description": "Callback which is called when the layout is set.",
+            "parameters": []
+          }
+        ]
       }
     ],
     "events": [

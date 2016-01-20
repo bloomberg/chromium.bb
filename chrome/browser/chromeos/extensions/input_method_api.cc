@@ -26,6 +26,7 @@
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
+#include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/keyboard/keyboard_util.h"
@@ -34,6 +35,7 @@ namespace AddWordToDictionary =
     extensions::api::input_method_private::AddWordToDictionary;
 namespace SetCurrentInputMethod =
     extensions::api::input_method_private::SetCurrentInputMethod;
+namespace SetXkbLayout = extensions::api::input_method_private::SetXkbLayout;
 namespace OnChanged = extensions::api::input_method_private::OnChanged;
 namespace OnDictionaryChanged =
     extensions::api::input_method_private::OnDictionaryChanged;
@@ -192,6 +194,21 @@ InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
   scoped_ptr<base::Value> ret(new base::FundamentalValue(
       profile_sync_service->IsEncryptEverythingEnabled()));
   return RespondNow(OneArgument(std::move(ret)));
+#endif
+}
+
+ExtensionFunction::ResponseAction
+InputMethodPrivateSetXkbLayoutFunction::Run() {
+#if !defined(OS_CHROMEOS)
+  EXTENSION_FUNCTION_VALIDATE(false);
+#else
+  scoped_ptr<SetXkbLayout::Params> params(SetXkbLayout::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  chromeos::input_method::InputMethodManager* manager =
+      chromeos::input_method::InputMethodManager::Get();
+  chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
+  keyboard->SetCurrentKeyboardLayoutByName(params->xkb_name);
+  return RespondNow(NoArguments());
 #endif
 }
 

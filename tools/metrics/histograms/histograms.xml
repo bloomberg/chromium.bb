@@ -63770,6 +63770,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1101" label="WEBRTCLOGGINGPRIVATE_STOPAUDIODEBUGRECORDINGS"/>
   <int value="1102" label="TERMINALPRIVATE_ACKOUTPUT"/>
   <int value="1103" label="INPUT_IME_CREATEWINDOW"/>
+  <int value="1104" label="INPUTMETHODPRIVATE_SETXKBLAYOUT"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

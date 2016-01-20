@@ -139,6 +139,23 @@ class InputMethodPrivateGetEncryptSyncEnabledFunction
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetEncryptSyncEnabledFunction);
 };
 
+// Implements the inputMethodPrivate.setXkbLayout method.
+class InputMethodPrivateSetXkbLayoutFunction
+    : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateSetXkbLayoutFunction() {}
+
+ protected:
+  ~InputMethodPrivateSetXkbLayoutFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.setXkbLayout",
+                             INPUTMETHODPRIVATE_SETXKBLAYOUT)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateSetXkbLayoutFunction);
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:
