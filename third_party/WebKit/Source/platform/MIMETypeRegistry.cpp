@@ -120,4 +120,9 @@ bool MIMETypeRegistry::isJavaAppletMIMEType(const String& mimeType)
         || mimeType.startsWith("application/x-java-vm", TextCaseInsensitive);
 }
 
+bool MIMETypeRegistry::isSupportedStyleSheetMIMEType(const String& mimeType)
+{
+    return equalIgnoringCase(mimeType, "text/css");
+}
+
 } // namespace blink

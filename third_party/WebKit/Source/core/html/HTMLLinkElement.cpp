@@ -51,6 +51,8 @@
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/NetworkHintsInterface.h"
 #include "core/style/StyleInheritedData.h"
+#include "platform/ContentType.h"
+#include "platform/MIMETypeRegistry.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "public/platform/Platform.h"
 #include "wtf/StdLibExtras.h"
@@ -124,6 +126,12 @@ static LinkEventSender& linkLoadEventSender()
 {
     DEFINE_STATIC_LOCAL(OwnPtrWillBePersistent<LinkEventSender>, sharedLoadEventSender, (LinkEventSender::create(EventTypeNames::load)));
     return *sharedLoadEventSender;
+}
+
+static bool styleSheetTypeIsSupported(const String& type)
+{
+    String trimmedType = ContentType(type).type();
+    return trimmedType.isEmpty() || MIMETypeRegistry::isSupportedStyleSheetMIMEType(trimmedType);
 }
 
 void HTMLLinkElement::parseSizesAttribute(const AtomicString& value, Vector<IntSize>& iconSizes)
@@ -713,6 +721,8 @@ void LinkStyle::process()
         return;
 
     if (m_disabledState != Disabled && m_owner->relAttribute().isStyleSheet() && shouldLoadResource() && builder.url().isValid()) {
+        if (!styleSheetTypeIsSupported(type))
+            UseCounter::countDeprecation(document(), UseCounter::NonCSSStyleSheetType);
 
         if (resource()) {
             removePendingSheet();
