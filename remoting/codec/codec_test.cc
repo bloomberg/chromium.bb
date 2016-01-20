@@ -343,48 +343,4 @@ void TestVideoEncoderDecoderGradient(VideoEncoder* encoder,
   decoder_tester.VerifyResultsApprox(max_error_limit, mean_error_limit);
 }
 
-float MeasureVideoEncoderFpsWithSize(VideoEncoder* encoder,
-                                     const DesktopSize& size) {
-  scoped_ptr<DesktopFrame> frame(PrepareFrame(size));
-  frame->mutable_updated_region()->SetRect(DesktopRect::MakeSize(size));
-  std::list<DesktopFrame*> frames;
-  frames.push_back(frame.get());
-  return MeasureVideoEncoderFpsWithFrames(encoder, frames);
-}
-
-float MeasureVideoEncoderFpsWithFrames(VideoEncoder* encoder,
-                                       const std::list<DesktopFrame*>& frames) {
-  const base::TimeDelta kTestTime = base::TimeDelta::FromSeconds(1);
-
-  // Encode some frames to "warm up" the encoder (i.e. to let it set up initial
-  // structures, establish a stable working set, etc), then encode at least
-  // kMinimumFrameCount frames to measure the encoder's performance.
-  const int kWarmUpFrameCount = 10;
-  const int kMinimumFrameCount = 10;
-  base::TimeTicks start_time;
-  base::TimeDelta elapsed;
-  std::list<DesktopFrame*> test_frames;
-  int frame_count;
-  for (frame_count = 0;
-       (frame_count < kMinimumFrameCount + kWarmUpFrameCount ||
-            elapsed < kTestTime);
-       ++frame_count) {
-    if (frame_count == kWarmUpFrameCount) {
-      start_time = base::TimeTicks::Now();
-    }
-
-    if (test_frames.empty()) {
-      test_frames = frames;
-    }
-    scoped_ptr<VideoPacket> packet = encoder->Encode(*test_frames.front());
-    test_frames.pop_front();
-
-    if (frame_count >= kWarmUpFrameCount) {
-      elapsed = base::TimeTicks::Now() - start_time;
-    }
-  }
-
-  return (frame_count * base::TimeDelta::FromSeconds(1)) / elapsed;
-}
-
 }  // namespace remoting

@@ -242,6 +242,10 @@ scoped_ptr<VideoEncoderVpx> VideoEncoderVpx::CreateForVP9() {
 
 VideoEncoderVpx::~VideoEncoderVpx() {}
 
+void VideoEncoderVpx::SetTickClockForTests(base::TickClock* tick_clock) {
+  clock_ = tick_clock;
+}
+
 void VideoEncoderVpx::SetLosslessEncode(bool want_lossless) {
   if (use_vp9_ && (want_lossless != lossless_encode_)) {
     lossless_encode_ = want_lossless;
@@ -296,7 +300,7 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
   }
 
   // Do the actual encoding.
-  int timestamp = (base::TimeTicks::Now() - timestamp_base_).InMilliseconds();
+  int timestamp = (clock_->NowTicks() - timestamp_base_).InMilliseconds();
   vpx_codec_err_t ret = vpx_codec_encode(
       codec_.get(), image_.get(), timestamp, 1, 0, VPX_DL_REALTIME);
   DCHECK_EQ(ret, VPX_CODEC_OK)
@@ -345,8 +349,9 @@ scoped_ptr<VideoPacket> VideoEncoderVpx::Encode(
 }
 
 VideoEncoderVpx::VideoEncoderVpx(bool use_vp9)
-    : use_vp9_(use_vp9), encode_unchanged_frame_(false) {
-}
+    : use_vp9_(use_vp9),
+      encode_unchanged_frame_(false),
+      clock_(&default_tick_clock_) {}
 
 void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
   DCHECK(use_vp9_ || !lossless_color_);
@@ -376,7 +381,7 @@ void VideoEncoderVpx::Configure(const webrtc::DesktopSize& size) {
 
   // (Re)Set the base for frame timestamps if the codec is being (re)created.
   if (!codec_) {
-    timestamp_base_ = base::TimeTicks::Now();
+    timestamp_base_ = clock_->NowTicks();
   }
 
   // Fetch a default configuration for the desired codec.

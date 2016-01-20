@@ -8,4 +8,5 @@ include_rules = [
   "+remoting/signaling",
   "+ui/gfx",
   "+ui/events/keycodes/dom",
+  "+third_party/skia",
 ]

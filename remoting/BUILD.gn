@@ -164,9 +164,7 @@ if (!is_mac) {
   if (enable_remoting_host) {
     test("remoting_perftests") {
       sources = [
-        "codec/codec_test.cc",
-        "codec/codec_test.h",
-        "codec/video_encoder_vpx_perftest.cc",
+        "test/codec_perftest.cc",
         "test/protocol_perftest.cc",
       ]
 

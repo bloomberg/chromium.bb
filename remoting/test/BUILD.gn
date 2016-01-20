@@ -18,6 +18,8 @@ source_set("test_support") {
     "connection_setup_info.h",
     "connection_time_observer.cc",
     "connection_time_observer.h",
+    "cyclic_frame_generator.cc",
+    "cyclic_frame_generator.h",
     "fake_access_token_fetcher.cc",
     "fake_access_token_fetcher.h",
     "fake_app_remoting_report_issue_request.cc",
@@ -76,6 +78,7 @@ source_set("test_support") {
 
   deps = [
     "//google_apis",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libjingle",

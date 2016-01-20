@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "remoting/codec/scoped_vpx_codec.h"
 #include "remoting/codec/video_encoder.h"
@@ -30,6 +31,8 @@ class VideoEncoderVpx : public VideoEncoder {
   static scoped_ptr<VideoEncoderVpx> CreateForVP9();
 
   ~VideoEncoderVpx() override;
+
+  void SetTickClockForTests(base::TickClock* tick_clock);
 
   // VideoEncoder interface.
   void SetLosslessEncode(bool want_lossless) override;
@@ -83,6 +86,9 @@ class VideoEncoderVpx : public VideoEncoder {
 
   // Used to help initialize VideoPackets from DesktopFrames.
   VideoEncoderHelper helper_;
+
+  base::DefaultTickClock default_tick_clock_;
+  base::TickClock* clock_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoEncoderVpx);
 };
