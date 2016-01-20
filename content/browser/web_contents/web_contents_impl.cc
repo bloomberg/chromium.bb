@@ -179,31 +179,12 @@ void NotifyCacheOnIO(
     cache->OnExternalCacheHit(url, http_method);
 }
 
-bool FindMatchingProcess(int render_process_id,
-                         bool* did_match_process,
-                         FrameTreeNode* node) {
-  if (node->current_frame_host()->GetProcess()->GetID() == render_process_id) {
-    *did_match_process = true;
-    return false;
+bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
+  for (FrameTreeNode* node : tree->Nodes()) {
+    if (node->current_frame_host()->GetProcess()->GetID() == render_process_id)
+      return true;
   }
-  return true;
-}
-
-bool ForEachFrameInternal(
-    const base::Callback<void(RenderFrameHost*)>& on_frame,
-    FrameTreeNode* node) {
-  on_frame.Run(node->current_frame_host());
-  return true;
-}
-
-bool ForEachPendingFrameInternal(
-    const base::Callback<void(RenderFrameHost*)>& on_frame,
-    FrameTreeNode* node) {
-  RenderFrameHost* pending_frame_host =
-      node->render_manager()->pending_frame_host();
-  if (pending_frame_host)
-    on_frame.Run(pending_frame_host);
-  return true;
+  return false;
 }
 
 void SendToAllFramesInternal(int* number_of_messages,
@@ -434,16 +415,14 @@ WebContentsImpl::~WebContentsImpl() {
 
   // Delete all RFH pending shutdown, which will lead the corresponding RVH to
   // shutdown and be deleted as well.
-  frame_tree_.ForEach(
-      base::Bind(&RenderFrameHostManager::ClearRFHsPendingShutdown));
+  for (FrameTreeNode* node : frame_tree_.Nodes())
+    node->render_manager()->ClearRFHsPendingShutdown();
 
-  // Destroy all WebUI instances.
-  frame_tree_.ForEach(base::Bind(&RenderFrameHostManager::ClearWebUIInstances));
+  for (FrameTreeNode* node : frame_tree_.Nodes())
+    node->render_manager()->ClearWebUIInstances();
 
-  for (std::set<RenderWidgetHostImpl*>::iterator iter =
-           created_widgets_.begin(); iter != created_widgets_.end(); ++iter) {
-    (*iter)->DetachDelegate();
-  }
+  for (RenderWidgetHostImpl* widget : created_widgets_)
+    widget->DetachDelegate();
   created_widgets_.clear();
 
   // Clear out any JavaScript state.
@@ -789,7 +768,9 @@ RenderFrameHostImpl* WebContentsImpl::FindFrameByFrameTreeNodeId(
 
 void WebContentsImpl::ForEachFrame(
     const base::Callback<void(RenderFrameHost*)>& on_frame) {
-  frame_tree_.ForEach(base::Bind(&ForEachFrameInternal, on_frame));
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    on_frame.Run(node->current_frame_host());
+  }
 }
 
 int WebContentsImpl::SendToAllFrames(IPC::Message* message) {
@@ -851,12 +832,14 @@ void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
     return;
 
   accessibility_mode_ = mode;
-  frame_tree_.ForEach(
-      base::Bind(&ForEachFrameInternal,
-                 base::Bind(&SetAccessibilityModeOnFrame, mode)));
-  frame_tree_.ForEach(
-      base::Bind(&ForEachPendingFrameInternal,
-                 base::Bind(&SetAccessibilityModeOnFrame, mode)));
+
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    SetAccessibilityModeOnFrame(mode, node->current_frame_host());
+    RenderFrameHost* pending_frame_host =
+        node->render_manager()->pending_frame_host();
+    if (pending_frame_host)
+      SetAccessibilityModeOnFrame(mode, pending_frame_host);
+  }
 }
 
 void WebContentsImpl::AddAccessibilityMode(AccessibilityMode mode) {
@@ -1300,7 +1283,8 @@ void WebContentsImpl::AttachToOuterWebContentsFrame(
 }
 
 void WebContentsImpl::Stop() {
-  frame_tree_.ForEach(base::Bind(&FrameTreeNode::StopLoading));
+  for (FrameTreeNode* node : frame_tree_.Nodes())
+    node->StopLoading();
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, NavigationStopped());
 }
 
@@ -1806,10 +1790,7 @@ void WebContentsImpl::CreateNewWindow(
   // in this WebContents' FrameTree. If any other process sends the request, it
   // is invalid and the process must be terminated.
   int render_process_id = source_site_instance->GetProcess()->GetID();
-  bool did_match_process = false;
-  frame_tree_.ForEach(
-      base::Bind(&FindMatchingProcess, render_process_id, &did_match_process));
-  if (!did_match_process) {
+  if (!HasMatchingProcess(&frame_tree_, render_process_id)) {
     RenderProcessHost* rph = source_site_instance->GetProcess();
     base::ProcessHandle process_handle = rph->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
@@ -1958,10 +1939,7 @@ void WebContentsImpl::CreateNewWidget(int32_t render_process_id,
   // A message to create a new widget can only come from an active process for
   // this WebContentsImpl instance. If any other process sends the request,
   // it is invalid and the process must be terminated.
-  bool did_match_process = false;
-  frame_tree_.ForEach(
-      base::Bind(&FindMatchingProcess, render_process_id, &did_match_process));
-  if (!did_match_process) {
+  if (!HasMatchingProcess(&frame_tree_, render_process_id)) {
     RenderProcessHost* rph = RenderProcessHost::FromID(render_process_id);
     base::ProcessHandle process_handle = rph->GetHandle();
     if (process_handle != base::kNullProcessHandle) {
