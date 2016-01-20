@@ -152,6 +152,10 @@ class MEDIA_EXPORT MediaSourceState {
   // (and therefore before parsing is performed) to prepare space for new data.
   size_t EstimateVideoDataSize(size_t muxed_data_chunk_size) const;
 
+  // Tracks the number of MEDIA_LOGs emitted for segments missing expected audio
+  // or video blocks. Useful to prevent log spam.
+  int num_missing_track_logs_ = 0;
+
   CreateDemuxerStreamCB create_demuxer_stream_cb_;
   NewTextTrackCB new_text_track_cb_;
 
@@ -179,6 +183,12 @@ class MEDIA_EXPORT MediaSourceState {
 
   // Keeps track of whether a media segment is being parsed.
   bool parsing_media_segment_;
+
+  // Valid only while |parsing_media_segment_| is true. These flags enable
+  // warning when at least one frame for each A/V track is not in a parsed media
+  // segment.
+  bool media_segment_contained_audio_frame_;
+  bool media_segment_contained_video_frame_;
 
   // The object used to parse appended data.
   scoped_ptr<StreamParser> stream_parser_;

@@ -54,7 +54,7 @@ void MP4StreamParser::Init(
     bool /* ignore_text_tracks */,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
-    const base::Closure& end_of_segment_cb,
+    const EndMediaSegmentCB& end_of_segment_cb,
     const scoped_refptr<MediaLog>& media_log) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());

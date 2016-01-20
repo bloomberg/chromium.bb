@@ -12,6 +12,13 @@
 
 namespace media {
 
+enum {
+  // Limits the number of MEDIA_LOG() calls warning the user that a muxed stream
+  // media segment is missing a block from at least one of the audio or video
+  // tracks.
+  kMaxMissingTrackInSegmentLogs = 10,
+};
+
 static TimeDelta EndTimestamp(const StreamParser::BufferQueue& queue) {
   return queue.back()->timestamp() + queue.back()->duration();
 }
@@ -85,6 +92,8 @@ MediaSourceState::MediaSourceState(
       timestamp_offset_during_append_(NULL),
       new_media_segment_(false),
       parsing_media_segment_(false),
+      media_segment_contained_audio_frame_(false),
+      media_segment_contained_video_frame_(false),
       stream_parser_(stream_parser.release()),
       audio_(NULL),
       video_(NULL),
@@ -180,6 +189,8 @@ void MediaSourceState::ResetParserState(TimeDelta append_window_start,
 
   frame_processor_->Reset();
   parsing_media_segment_ = false;
+  media_segment_contained_audio_frame_ = false;
+  media_segment_contained_video_frame_ = false;
 }
 
 void MediaSourceState::Remove(TimeDelta start,
@@ -637,12 +648,28 @@ void MediaSourceState::OnNewMediaSegment() {
   DVLOG(2) << "OnNewMediaSegment()";
   parsing_media_segment_ = true;
   new_media_segment_ = true;
+  media_segment_contained_audio_frame_ = false;
+  media_segment_contained_video_frame_ = false;
 }
 
 void MediaSourceState::OnEndOfMediaSegment() {
   DVLOG(2) << "OnEndOfMediaSegment()";
   parsing_media_segment_ = false;
   new_media_segment_ = false;
+
+  const bool missing_audio = audio_ && !media_segment_contained_audio_frame_;
+  const bool missing_video = video_ && !media_segment_contained_video_frame_;
+  if (!missing_audio && !missing_video)
+    return;
+
+  LIMITED_MEDIA_LOG(DEBUG, media_log_, num_missing_track_logs_,
+                    kMaxMissingTrackInSegmentLogs)
+      << "Media segment did not contain any "
+      << (missing_audio && missing_video ? "audio or video"
+                                         : missing_audio ? "audio" : "video")
+      << " coded frames, mismatching initialization segment. Therefore, MSE "
+         "coded frame processing may not interoperably detect discontinuities "
+         "in appended media.";
 }
 
 bool MediaSourceState::OnNewBuffers(
@@ -652,6 +679,9 @@ bool MediaSourceState::OnNewBuffers(
   DVLOG(2) << "OnNewBuffers()";
   DCHECK(timestamp_offset_during_append_);
   DCHECK(parsing_media_segment_);
+
+  media_segment_contained_audio_frame_ |= !audio_buffers.empty();
+  media_segment_contained_video_frame_ |= !video_buffers.empty();
 
   const TimeDelta timestamp_offset_before_processing =
       *timestamp_offset_during_append_;

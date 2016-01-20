@@ -33,7 +33,7 @@ void WebMStreamParser::Init(
     bool ignore_text_tracks,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
     const NewMediaSegmentCB& new_segment_cb,
-    const base::Closure& end_of_segment_cb,
+    const EndMediaSegmentCB& end_of_segment_cb,
     const scoped_refptr<MediaLog>& media_log) {
   DCHECK_EQ(state_, kWaitingForInit);
   DCHECK(init_cb_.is_null());
@@ -61,10 +61,8 @@ void WebMStreamParser::Flush() {
   byte_queue_.Reset();
   if (cluster_parser_)
     cluster_parser_->Reset();
-  if (state_ == kParsingClusters) {
+  if (state_ == kParsingClusters)
     ChangeState(kParsingHeaders);
-    end_of_segment_cb_.Run();
-  }
 }
 
 bool WebMStreamParser::Parse(const uint8_t* buf, int size) {
