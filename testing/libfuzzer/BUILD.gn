@@ -32,6 +32,8 @@ static_library("libfuzzer_main") {
     ]
   } else if (use_drfuzz) {
     sources += [ "drfuzz_main.cc" ]
+  } else {
+    sources += [ "unittest_main.cc" ]
   }
 }
 

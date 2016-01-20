@@ -8,6 +8,10 @@ import("//build/config/features.gni")
 import("//media/media_options.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
+# root BUILD depenends on this target. Needed for package discovery
+group("fuzzers") {
+}
+
 fuzzer_test("empty_fuzzer") {
   sources = [
     "empty_fuzzer.cc",
