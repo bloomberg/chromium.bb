@@ -473,11 +473,6 @@ bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
   return over_quota;
 }
 
-bool IndexedDBContextImpl::IsOverQuota(const GURL& origin_url) {
-  const int kOneAdditionalByte = 1;
-  return WouldBeOverQuota(origin_url, kOneAdditionalByte);
-}
-
 storage::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
   return quota_manager_proxy_.get();
 }

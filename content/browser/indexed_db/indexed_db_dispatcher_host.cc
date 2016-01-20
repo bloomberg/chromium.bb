@@ -546,12 +546,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateObjectStore(
                                             params.name,
                                             params.key_path,
                                             params.auto_increment);
-  if (parent_->Context()->IsOverQuota(
-          database_url_map_[params.ipc_database_id])) {
-    connection->database()->Abort(
-        host_transaction_id,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
-  }
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteObjectStore(
@@ -920,12 +914,6 @@ void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnCreateIndex(
                                       params.key_path,
                                       params.unique,
                                       params.multi_entry);
-  if (parent_->Context()->IsOverQuota(
-          database_url_map_[params.ipc_database_id])) {
-    connection->database()->Abort(
-        host_transaction_id,
-        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionQuotaError));
-  }
 }
 
 void IndexedDBDispatcherHost::DatabaseDispatcherHost::OnDeleteIndex(

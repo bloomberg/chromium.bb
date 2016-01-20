@@ -84,7 +84,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void TransactionComplete(const GURL& origin_url);
   void DatabaseDeleted(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64_t additional_bytes);
-  bool IsOverQuota(const GURL& origin_url);
 
   storage::QuotaManagerProxy* quota_manager_proxy();
 
