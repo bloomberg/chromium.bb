@@ -147,7 +147,9 @@ bool NavigationHandleImpl::IsErrorPage() {
 }
 
 void NavigationHandleImpl::Resume() {
-  CHECK(state_ == DEFERRING_START || state_ == DEFERRING_REDIRECT);
+  if (state_ != DEFERRING_START && state_ != DEFERRING_REDIRECT)
+    return;
+
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
   if (state_ == DEFERRING_START) {
     result = CheckWillStartRequest();
