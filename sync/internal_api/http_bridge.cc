@@ -29,7 +29,6 @@
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_status.h"
 #include "sync/internal_api/public/base/cancelation_signal.h"
-#include "third_party/zlib/zlib.h"
 
 namespace syncer {
 
@@ -66,87 +65,6 @@ void RecordSyncResponseContentLengthHistograms(
                        compressed_content_length);
   UMA_HISTOGRAM_COUNTS("Sync.ResponseContentLength.Original",
                        original_content_length);
-}
-
-// -----------------------------------------------------------------------------
-// The rest of the code in the anon namespace is copied from
-// components/compression/compression_utils.cc
-// TODO(gangwu): crbug.com/515695. The following code is copied from
-// components/compression/compression_utils.cc. We copied them because if we
-// reference them, we will get cycle dependency warning. Once the functions
-// have been moved from //component to //base, we can remove the following
-// functions.
-//------------------------------------------------------------------------------
-// The difference in bytes between a zlib header and a gzip header.
-const size_t kGzipZlibHeaderDifferenceBytes = 16;
-
-// Pass an integer greater than the following get a gzip header instead of a
-// zlib header when calling deflateInit2() and inflateInit2().
-const int kWindowBitsToGetGzipHeader = 16;
-
-// This describes the amount of memory zlib uses to compress data. It can go
-// from 1 to 9, with 8 being the default. For details, see:
-// http://www.zlib.net/manual.html (search for memLevel).
-const int kZlibMemoryLevel = 8;
-
-// This code is taken almost verbatim from third_party/zlib/compress.c. The only
-// difference is deflateInit2() is called which sets the window bits to be > 16.
-// That causes a gzip header to be emitted rather than a zlib header.
-int GzipCompressHelper(Bytef* dest,
-                       uLongf* dest_length,
-                       const Bytef* source,
-                       uLong source_length) {
-  z_stream stream;
-
-  stream.next_in = bit_cast<Bytef*>(source);
-  stream.avail_in = static_cast<uInt>(source_length);
-  stream.next_out = dest;
-  stream.avail_out = static_cast<uInt>(*dest_length);
-  if (static_cast<uLong>(stream.avail_out) != *dest_length)
-    return Z_BUF_ERROR;
-
-  stream.zalloc = static_cast<alloc_func>(0);
-  stream.zfree = static_cast<free_func>(0);
-  stream.opaque = static_cast<voidpf>(0);
-
-  gz_header gzip_header;
-  memset(&gzip_header, 0, sizeof(gzip_header));
-  int err = deflateInit2(&stream, Z_DEFAULT_COMPRESSION, Z_DEFLATED,
-                         MAX_WBITS + kWindowBitsToGetGzipHeader,
-                         kZlibMemoryLevel, Z_DEFAULT_STRATEGY);
-  if (err != Z_OK)
-    return err;
-
-  err = deflateSetHeader(&stream, &gzip_header);
-  if (err != Z_OK)
-    return err;
-
-  err = deflate(&stream, Z_FINISH);
-  if (err != Z_STREAM_END) {
-    deflateEnd(&stream);
-    return err == Z_OK ? Z_BUF_ERROR : err;
-  }
-  *dest_length = stream.total_out;
-
-  err = deflateEnd(&stream);
-  return err;
-}
-
-bool GzipCompress(const std::string& input, std::string* output) {
-  const uLongf input_size = static_cast<uLongf>(input.size());
-  std::vector<Bytef> compressed_data(kGzipZlibHeaderDifferenceBytes +
-                                     compressBound(input_size));
-
-  uLongf compressed_size = static_cast<uLongf>(compressed_data.size());
-  if (GzipCompressHelper(&compressed_data.front(), &compressed_size,
-                         bit_cast<const Bytef*>(input.data()),
-                         input_size) != Z_OK) {
-    return false;
-  }
-
-  compressed_data.resize(compressed_size);
-  output->assign(compressed_data.begin(), compressed_data.end());
-  return true;
 }
 
 }  // namespace
@@ -331,21 +249,15 @@ void HttpBridge::MakeAsynchronousPost() {
   fetch_state_.url_poster->SetRequestContext(request_context_getter_.get());
   fetch_state_.url_poster->SetExtraRequestHeaders(extra_headers_);
 
-  int64_t compressed_content_size = 0;
-  if (IsSyncHttpContentCompressionEnabled()) {
-    std::string compressed_request_content;
-    GzipCompress(request_content_, &compressed_request_content);
-    compressed_content_size = compressed_request_content.size();
-    fetch_state_.url_poster->SetUploadData(content_type_,
-                                           compressed_request_content);
-    fetch_state_.url_poster->AddExtraRequestHeader("Content-Encoding: gzip");
-  } else {
-    fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
+  if (!IsSyncHttpContentCompressionEnabled()) {
+    // We set "accept-encoding" here to avoid URLRequestHttpJob adding "gzip"
+    // into "accept-encoding" later.
     fetch_state_.url_poster->AddExtraRequestHeader(base::StringPrintf(
         "%s: %s", net::HttpRequestHeaders::kAcceptEncoding, "deflate"));
   }
 
-  RecordSyncRequestContentLengthHistograms(compressed_content_size,
+  fetch_state_.url_poster->SetUploadData(content_type_, request_content_);
+  RecordSyncRequestContentLengthHistograms(request_content_.size(),
                                            request_content_.size());
 
   fetch_state_.url_poster->AddExtraRequestHeader(base::StringPrintf(
