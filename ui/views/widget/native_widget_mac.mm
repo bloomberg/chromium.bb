@@ -484,7 +484,7 @@ bool NativeWidgetMac::IsFullscreen() const {
 }
 
 void NativeWidgetMac::SetOpacity(unsigned char opacity) {
-  NOTIMPLEMENTED();
+  [GetNativeWindow() setAlphaValue:opacity / 255.0];
 }
 
 void NativeWidgetMac::SetUseDragFrame(bool use_drag_frame) {
