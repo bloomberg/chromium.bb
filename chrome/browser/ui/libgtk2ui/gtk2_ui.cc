@@ -1356,10 +1356,10 @@ float Gtk2UI::GetDeviceScaleFactor() const {
     return gfx::Display::GetForcedDeviceScaleFactor();
   const int kCSSDefaultDPI = 96;
   const float scale = GetDPI() / kCSSDefaultDPI;
-  // Round to 1 decimal, e.g. to 1.4.
-  const float rounded = roundf(scale * 10) / 10;
-  // See crbug.com/484400
-  return rounded < 1.3 ? 1.0 : rounded;
+
+  // Blacklist scaling factors <130% (crbug.com/484400) and round
+  // to 1 decimal to prevent rendering problems (crbug.com/485183).
+  return scale < 1.3f ? 1.0f : roundf(scale * 10) / 10;
 }
 
 }  // namespace libgtk2ui
