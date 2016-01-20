@@ -32,7 +32,6 @@
 #include "ui/gfx/win/dpi.h"
 #include "win8/delegate_execute/chrome_util.h"
 #include "win8/delegate_execute/delegate_execute_util.h"
-#include "win8/viewer/metro_viewer_constants.h"
 
 namespace {
 // Helper function to retrieve the url from IShellItem interface passed in.
@@ -181,18 +180,8 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
     return E_FAIL;
   }
 
-  EC_HOST_UI_MODE mode = GetLaunchMode();
-  *pahe = (mode == ECHUIM_DESKTOP) ? AHE_DESKTOP : AHE_IMMERSIVE;
-
-  // If we're going to return AHE_IMMERSIVE, then both the browser process and
-  // the metro viewer need to launch and connect before the user can start
-  // browsing.  However we must not launch the metro viewer until we get a
-  // call to CommandExecuteImpl::Execute().  If we wait until then to launch
-  // the browser process as well, it will appear laggy while they connect to
-  // each other, so we pre-launch the browser process now.
-  if (*pahe == AHE_IMMERSIVE && verb_ != win8::kMetroViewerConnectVerb) {
-    LaunchChromeBrowserProcess();
-  }
+  // TODO(scottmg): Can all go eventually https://crbug.com/558054.
+  *pahe = AHE_DESKTOP;
   return S_OK;
 }
 

@@ -558,8 +558,6 @@
       'browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h',
       'browser/ui/ash/launcher/chrome_launcher_controller.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller.h',
-      'browser/ui/ash/launcher/chrome_launcher_controller_chromeos.cc',
-      'browser/ui/ash/launcher/chrome_launcher_controller_win.cc',
       'browser/ui/ash/launcher/launcher_app_tab_helper.cc',
       'browser/ui/ash/launcher/launcher_app_tab_helper.h',
       'browser/ui/ash/launcher/launcher_application_menu_item_model.cc',

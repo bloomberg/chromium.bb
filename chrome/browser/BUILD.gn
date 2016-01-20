@@ -859,7 +859,6 @@ source_set("browser") {
       "//third_party/isimpledom",
       "//third_party/wtl",
       "//ui/metro_viewer",
-      "//win8:metro_viewer",
     ]
 
     all_dependent_configs = [ ":browser_win_linker_flags" ]

@@ -38,10 +38,6 @@
 #if defined(OS_WIN)
 #include <shellapi.h>
 #include "ui/base/win/shell.h"
-
-#if defined(USE_AURA)
-#include "ui/aura/remote_window_tree_host_win.h"
-#endif
 #endif
 
 using base::UserMetricsAction;

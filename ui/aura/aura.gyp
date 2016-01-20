@@ -88,8 +88,6 @@
         'input_state_lookup_win.h',
         'layout_manager.cc',
         'layout_manager.h',
-        'remote_window_tree_host_win.cc',
-        'remote_window_tree_host_win.h',
         'scoped_window_targeter.cc',
         'scoped_window_targeter.h',
         'window.cc',

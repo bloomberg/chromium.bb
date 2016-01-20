@@ -52,10 +52,6 @@
 #include "extensions/browser/notification_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "ui/aura/remote_window_tree_host_win.h"
-#endif
-
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 using bookmarks::ManagedBookmarkService;
@@ -798,11 +794,6 @@ void BookmarksIOFunction::ShowSelectFileDialog(
   gfx::NativeWindow owning_window = web_contents ?
       platform_util::GetTopLevel(web_contents->GetNativeView())
           : NULL;
-#if defined(OS_WIN)
-  if (!owning_window &&
-      chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH)
-    owning_window = aura::RemoteWindowTreeHostWin::Instance()->GetAshWindow();
-#endif
   // |web_contents| can be NULL (for background pages), which is fine. In such
   // a case if file-selection dialogs are forbidden by policy, we will not
   // show an InfoBar, which is better than letting one appear out of the blue.

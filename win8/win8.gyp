@@ -10,35 +10,6 @@
   ],
   'targets': [
     {
-      'target_name': 'metro_viewer_constants',
-      'type': 'static_library',
-      'include_dirs': [
-        '..',
-      ],
-      'sources': [
-        'viewer/metro_viewer_constants.cc',
-        'viewer/metro_viewer_constants.h',
-      ],
-    },
-    {
-      'target_name': 'metro_viewer',
-      'type': '<(component)',
-      'dependencies': [
-        '../base/base.gyp:base',
-        '../ipc/ipc.gyp:ipc',
-        '../ui/aura/aura.gyp:aura',
-        '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
-        'metro_viewer_constants'
-      ],
-      'sources': [
-        'viewer/metro_viewer_process_host.cc',
-        'viewer/metro_viewer_process_host.h',
-      ],
-      'defines': [
-        'METRO_VIEWER_IMPLEMENTATION',
-      ],
-    },
-    {
       'target_name': 'test_support_win8',
       'type': 'static_library',
       'dependencies': [
