@@ -80,6 +80,7 @@
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/command.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
@@ -431,6 +432,10 @@ void SetUpBrowserWindowCommandHandler(NSWindow* window) {
             [self window],
             extensions::ExtensionKeybindingRegistry::ALL_EXTENSIONS,
             windowShim_.get()));
+
+    PrefService* prefs = browser_->profile()->GetPrefs();
+    shouldHideFullscreenToolbar_ =
+        prefs->GetBoolean(prefs::kHideFullscreenToolbar);
 
     blockLayoutSubviews_ = NO;
 
@@ -1909,6 +1914,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [sheet orderOut:self];
 }
 
+- (PresentationModeController*)presentationModeController {
+  return presentationModeController_.get();
+}
+
 - (void)executeExtensionCommand:(const std::string&)extension_id
                         command:(const extensions::Command&)command {
   // Global commands are handled by the ExtensionCommandsGlobalRegistry
@@ -1967,9 +1976,11 @@ willAnimateFromState:(BookmarkBar::State)oldState
   [self showFullscreenExitBubbleIfNecessary];
 }
 
-- (void)toggleFullscreenToolbar {
-  shouldHideFullscreenToolbar_ = !shouldHideFullscreenToolbar_;
+- (void)setFullscreenToolbarHidden:(BOOL)shouldHide {
+  if (shouldHideFullscreenToolbar_ == shouldHide)
+    return;
 
+  shouldHideFullscreenToolbar_ = shouldHide;
   if ([self isInAppKitFullscreen])
     [self updateFullscreenWithToolbar:!shouldHideFullscreenToolbar_];
 }

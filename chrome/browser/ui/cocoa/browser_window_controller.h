@@ -538,7 +538,7 @@ class Command;
 // Toggles and updates the toolbar's visibility in fullscreen mode. This
 // function toggles between the sliding styles: OMNIBOX_TABS_PRESENT and
 // OMNIBOX_TABS_HIDDEN.
-- (void)toggleFullscreenToolbar;
+- (void)setFullscreenToolbarHidden:(BOOL)isHidden;
 
 // Returns YES if the browser window is in or entering any fullscreen mode.
 - (BOOL)isInAnyFullscreenMode;
@@ -637,6 +637,9 @@ class Command;
 // Gets the rect, in window base coordinates, that the omnibox popup should be
 // positioned relative to.
 - (NSRect)omniboxPopupAnchorRect;
+
+// Returns the presentation mode controller.
+- (PresentationModeController*)presentationModeController;
 
 @end  // @interface BrowserWindowController (TestingAPI)
 

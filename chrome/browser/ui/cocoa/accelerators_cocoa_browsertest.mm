@@ -5,6 +5,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/logging.h"
+#include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gtest_mac.h"
@@ -127,7 +128,10 @@ IN_PROC_BROWSER_TEST_F(AcceleratorsCocoaBrowserTest,
     EXPECT_TRUE(item);
 
     // If the menu uses a commandDispatch:, the tag must match the command id!
-    if (item.action == @selector(commandDispatch:))
+    // Added an exception for IDC_TOGGLE_FULLSCREEN_TOOLBAR, which conflicts
+    // with IDC_PRESENTATION_MODE.
+    if (item.action == @selector(commandDispatch:)
+        && item.tag != IDC_TOGGLE_FULLSCREEN_TOOLBAR)
       EXPECT_EQ(item.tag, it->first);
   }
 }

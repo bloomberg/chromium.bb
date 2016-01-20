@@ -52,7 +52,7 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
     },
     { // STATE_BROWSER_FULLSCREEN_NO_CHROME:
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
-      STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TOGGLE_FULLSCREEN_CHROME
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TAB_FULLSCREEN_FALSE
       STATE_METRO_SNAP,                       // Event METRO_SNAP_TRUE
@@ -63,7 +63,7 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
     { // STATE_BROWSER_FULLSCREEN_WITH_CHROME:
-      STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event TOGGLE_FULLSCREEN
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event TAB_FULLSCREEN_TRUE
       STATE_BROWSER_FULLSCREEN_WITH_CHROME,   // Event TAB_FULLSCREEN_FALSE
@@ -123,7 +123,7 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_TAB_BROWSER_FULLSCREEN_CHROME,    // Event WINDOW_CHANGE
     },
     { // STATE_TO_NORMAL:
-      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
+      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN
       STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN_CHROME
       // TODO(scheib) Should be a route back to TAB. http://crbug.com/154196
       STATE_TO_NORMAL,                        // Event TAB_FULLSCREEN_TRUE
@@ -136,8 +136,8 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_NORMAL,                           // Event WINDOW_CHANGE
     },
     { // STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
-      STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME,// Event TOGGLE_FULLSCREEN_CHROME
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
       STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_TRUE
       STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TAB_FULLSCREEN_FALSE
@@ -154,7 +154,7 @@ FullscreenControllerStateTest::FullscreenControllerStateTest()
       STATE_BROWSER_FULLSCREEN_NO_CHROME,     // Event WINDOW_CHANGE
     },
     { // STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
-      STATE_TO_BROWSER_FULLSCREEN_NO_CHROME,  // Event TOGGLE_FULLSCREEN
+      STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN
       STATE_TO_NORMAL,                        // Event TOGGLE_FULLSCREEN_CHROME
       // TODO(scheib) Should be a route to TAB_BROWSER http://crbug.com/154196
       STATE_TAB_BROWSER_FULLSCREEN,           // Event TAB_FULLSCREEN_TRUE
