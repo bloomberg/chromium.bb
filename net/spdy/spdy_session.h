@@ -221,13 +221,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // TODO(akalin): Use base::TickClock when it becomes available.
   typedef base::TimeTicks (*TimeFunc)(void);
 
-  // How we handle flow control (version-dependent).
-  enum FlowControlState {
-    FLOW_CONTROL_NONE,
-    FLOW_CONTROL_STREAM,
-    FLOW_CONTROL_STREAM_AND_SESSION
-  };
-
   // Returns true if |hostname| can be pooled into an existing connection
   // associated with |ssl_info|.
   static bool CanPool(TransportSecurityState* transport_security_state,
@@ -452,11 +445,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     return pending_create_stream_queues_[priority].size();
   }
 
-  // Returns the (version-dependent) flow control state.
-  FlowControlState flow_control_state() const {
-    return flow_control_state_;
-  }
-
   // Returns the current |stream_initial_send_window_size_|.
   int32_t stream_initial_send_window_size() const {
     return stream_initial_send_window_size_;
@@ -464,11 +452,7 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Returns true if no stream in the session can send data due to
   // session flow control.
-  bool IsSendStalled() const {
-    return
-        flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
-        session_send_window_size_ == 0;
-  }
+  bool IsSendStalled() const { return session_send_window_size_ == 0; }
 
   const BoundNetLog& net_log() const { return net_log_; }
 
@@ -1128,9 +1112,6 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
 
   // Whether to send the (HTTP/2) connection header prefix.
   bool send_connection_header_prefix_;
-
-  // The (version-dependent) flow control state.
-  FlowControlState flow_control_state_;
 
   // Current send window size.  Zero unless session flow control is turned on.
   int32_t session_send_window_size_;

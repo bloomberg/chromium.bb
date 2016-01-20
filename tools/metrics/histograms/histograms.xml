@@ -26690,6 +26690,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SpdyFrameStreamFlowControlState"
     enum="SpdyFrameFlowControlState">
+  <obsolete>
+    The last protocol which would trigger this was deprecated in 2014 November.
+    This histogram is deprecated in 2016 January.
+  </obsolete>
   <owner>rch@chromium.org</owner>
   <summary>
     The counts of the flow control state of each frame (with stream flow control

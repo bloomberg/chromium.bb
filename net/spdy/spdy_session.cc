@@ -696,7 +696,6 @@ SpdySession::SpdySession(
       last_compressed_frame_len_(0),
       check_ping_status_pending_(false),
       send_connection_header_prefix_(false),
-      flow_control_state_(FLOW_CONTROL_NONE),
       session_send_window_size_(0),
       session_max_recv_window_size_(session_max_recv_window_size),
       session_recv_window_size_(0),
@@ -781,7 +780,6 @@ void SpdySession::InitializeWithSocket(
   if (protocol_ == kProtoHTTP2)
     send_connection_header_prefix_ = true;
 
-  flow_control_state_ = FLOW_CONTROL_STREAM_AND_SESSION;
   session_send_window_size_ = GetDefaultInitialWindowSize(protocol_);
   session_recv_window_size_ = GetDefaultInitialWindowSize(protocol_);
 
@@ -1195,9 +1193,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
 
   int effective_len = std::min(len, kMaxSpdyFrameChunkSize);
 
-  bool send_stalled_by_stream =
-      (flow_control_state_ >= FLOW_CONTROL_STREAM) &&
-      (stream->send_window_size() <= 0);
+  bool send_stalled_by_stream = (stream->send_window_size() <= 0);
   bool send_stalled_by_session = IsSendStalled();
 
   // NOTE: There's an enum of the same name in histograms.xml.
@@ -1219,49 +1215,35 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
     frame_flow_control_state = SEND_STALLED_BY_SESSION;
   }
 
-  if (flow_control_state_ == FLOW_CONTROL_STREAM) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.SpdyFrameStreamFlowControlState",
-        frame_flow_control_state,
-        SEND_STALLED_BY_STREAM + 1);
-  } else if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-    UMA_HISTOGRAM_ENUMERATION(
-        "Net.SpdyFrameStreamAndSessionFlowControlState",
-        frame_flow_control_state,
-        SEND_STALLED_BY_STREAM_AND_SESSION + 1);
+  UMA_HISTOGRAM_ENUMERATION("Net.SpdyFrameStreamAndSessionFlowControlState",
+                            frame_flow_control_state,
+                            SEND_STALLED_BY_STREAM_AND_SESSION + 1);
+
+  // Obey send window size of the stream.
+  if (send_stalled_by_stream) {
+    stream->set_send_stalled_by_flow_control(true);
+    // Even though we're currently stalled only by the stream, we
+    // might end up being stalled by the session also.
+    QueueSendStalledStream(*stream);
+    net_log().AddEvent(
+        NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW,
+        NetLog::IntCallback("stream_id", stream_id));
+    return scoped_ptr<SpdyBuffer>();
   }
 
-  // Obey send window size of the stream if stream flow control is
-  // enabled.
-  if (flow_control_state_ >= FLOW_CONTROL_STREAM) {
-    if (send_stalled_by_stream) {
-      stream->set_send_stalled_by_flow_control(true);
-      // Even though we're currently stalled only by the stream, we
-      // might end up being stalled by the session also.
-      QueueSendStalledStream(*stream);
-      net_log().AddEvent(
-          NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW,
-          NetLog::IntCallback("stream_id", stream_id));
-      return scoped_ptr<SpdyBuffer>();
-    }
+  effective_len = std::min(effective_len, stream->send_window_size());
 
-    effective_len = std::min(effective_len, stream->send_window_size());
+  // Obey send window size of the session.
+  if (send_stalled_by_session) {
+    stream->set_send_stalled_by_flow_control(true);
+    QueueSendStalledStream(*stream);
+    net_log().AddEvent(
+        NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW,
+        NetLog::IntCallback("stream_id", stream_id));
+    return scoped_ptr<SpdyBuffer>();
   }
 
-  // Obey send window size of the session if session flow control is
-  // enabled.
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-    if (send_stalled_by_session) {
-      stream->set_send_stalled_by_flow_control(true);
-      QueueSendStalledStream(*stream);
-      net_log().AddEvent(
-          NetLog::TYPE_HTTP2_SESSION_STREAM_STALLED_BY_SESSION_SEND_WINDOW,
-          NetLog::IntCallback("stream_id", stream_id));
-      return scoped_ptr<SpdyBuffer>();
-    }
-
-    effective_len = std::min(effective_len, session_send_window_size_);
-  }
+  effective_len = std::min(effective_len, session_send_window_size_);
 
   DCHECK_GE(effective_len, 0);
 
@@ -1289,8 +1271,7 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
 
   // Send window size is based on payload size, so nothing to do if this is
   // just a FIN with no payload.
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION &&
-      effective_len != 0) {
+  if (effective_len != 0) {
     DecreaseSendWindowSize(static_cast<int32_t>(effective_len));
     data_buffer->AddConsumeCallback(
         base::Bind(&SpdySession::OnWriteBufferConsumed,
@@ -2139,12 +2120,9 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
     CHECK_LE(len, static_cast<size_t>(kReadBufferSize));
     buffer.reset(new SpdyBuffer(data, len));
 
-    if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-      DecreaseRecvWindowSize(static_cast<int32_t>(len));
-      buffer->AddConsumeCallback(
-          base::Bind(&SpdySession::OnReadBufferConsumed,
-                     weak_factory_.GetWeakPtr()));
-    }
+    DecreaseRecvWindowSize(static_cast<int32_t>(len));
+    buffer->AddConsumeCallback(base::Bind(&SpdySession::OnReadBufferConsumed,
+                                          weak_factory_.GetWeakPtr()));
   } else {
     DCHECK_EQ(len, 0u);
   }
@@ -2172,9 +2150,6 @@ void SpdySession::OnStreamFrameData(SpdyStreamId stream_id,
 
 void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
   CHECK(in_io_loop_);
-
-  if (flow_control_state_ != FLOW_CONTROL_STREAM_AND_SESSION)
-    return;
 
   // Decrease window size because padding bytes are received.
   // Increase window size because padding bytes are consumed (by discarding).
@@ -2599,13 +2574,6 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
 
   if (stream_id == kSessionFlowControlStreamId) {
     // WINDOW_UPDATE for the session.
-    if (flow_control_state_ < FLOW_CONTROL_STREAM_AND_SESSION) {
-      LOG(WARNING) << "Received WINDOW_UPDATE for session when "
-                   << "session flow control is not turned on";
-      // TODO(akalin): Record an error and close the session.
-      return;
-    }
-
     if (delta_window_size < 1) {
       RecordProtocolErrorHistogram(PROTOCOL_ERROR_INVALID_WINDOW_UPDATE_SIZE);
       DoDrainSession(
@@ -2618,13 +2586,6 @@ void SpdySession::OnWindowUpdate(SpdyStreamId stream_id,
     IncreaseSendWindowSize(delta_window_size);
   } else {
     // WINDOW_UPDATE for a stream.
-    if (flow_control_state_ < FLOW_CONTROL_STREAM) {
-      // TODO(akalin): Record an error and close the session.
-      LOG(WARNING) << "Received WINDOW_UPDATE for stream " << stream_id
-                   << " when flow control is not turned on";
-      return;
-    }
-
     ActiveStreamMap::iterator it = active_streams_.find(stream_id);
 
     if (it == active_streams_.end()) {
@@ -2829,7 +2790,6 @@ void SpdySession::OnPushPromise(SpdyStreamId stream_id,
 
 void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
                                          uint32_t delta_window_size) {
-  CHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   CHECK(it != active_streams_.end());
   CHECK_EQ(it->second.stream->stream_id(), stream_id);
@@ -2858,26 +2818,23 @@ void SpdySession::SendInitialData() {
   // max concurrent streams and initial window size.
   settings_map[SETTINGS_MAX_CONCURRENT_STREAMS] =
       SettingsFlagsAndValue(SETTINGS_FLAG_NONE, kMaxConcurrentPushedStreams);
-  if (flow_control_state_ >= FLOW_CONTROL_STREAM &&
-      stream_max_recv_window_size_ != GetDefaultInitialWindowSize(protocol_)) {
+  if (stream_max_recv_window_size_ != GetDefaultInitialWindowSize(protocol_)) {
     settings_map[SETTINGS_INITIAL_WINDOW_SIZE] =
         SettingsFlagsAndValue(SETTINGS_FLAG_NONE, stream_max_recv_window_size_);
   }
   SendSettings(settings_map);
 
   // Next, notify the server about our initial recv window size.
-  if (flow_control_state_ == FLOW_CONTROL_STREAM_AND_SESSION) {
-    // Bump up the receive window size to the real initial value. This
-    // has to go here since the WINDOW_UPDATE frame sent by
-    // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
-    // This condition implies that |session_max_recv_window_size_| -
-    // |session_recv_window_size_| doesn't overflow.
-    DCHECK_GE(session_max_recv_window_size_, session_recv_window_size_);
-    DCHECK_GE(session_recv_window_size_, 0);
-    if (session_max_recv_window_size_ > session_recv_window_size_) {
-      IncreaseRecvWindowSize(session_max_recv_window_size_ -
-                             session_recv_window_size_);
-    }
+  // Bump up the receive window size to the real initial value. This
+  // has to go here since the WINDOW_UPDATE frame sent by
+  // IncreaseRecvWindowSize() call uses |buffered_spdy_framer_|.
+  // This condition implies that |session_max_recv_window_size_| -
+  // |session_recv_window_size_| doesn't overflow.
+  DCHECK_GE(session_max_recv_window_size_, session_recv_window_size_);
+  DCHECK_GE(session_recv_window_size_, 0);
+  if (session_max_recv_window_size_ > session_recv_window_size_) {
+    IncreaseRecvWindowSize(session_max_recv_window_size_ -
+                           session_recv_window_size_);
   }
 
   if (protocol_ == kProtoSPDY31) {
@@ -2927,12 +2884,6 @@ void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
       ProcessPendingStreamRequests();
       break;
     case SETTINGS_INITIAL_WINDOW_SIZE: {
-      if (flow_control_state_ < FLOW_CONTROL_STREAM) {
-        net_log().AddEvent(
-            NetLog::TYPE_HTTP2_SESSION_INITIAL_WINDOW_SIZE_NO_FLOW_CONTROL);
-        return;
-      }
-
       if (value > static_cast<uint32_t>(std::numeric_limits<int32_t>::max())) {
         net_log().AddEvent(
             NetLog::TYPE_HTTP2_SESSION_INITIAL_WINDOW_SIZE_OUT_OF_RANGE,
@@ -2954,7 +2905,6 @@ void SpdySession::HandleSetting(uint32_t id, uint32_t value) {
 }
 
 void SpdySession::UpdateStreamsSendWindowSize(int32_t delta_window_size) {
-  DCHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   for (ActiveStreamMap::iterator it = active_streams_.begin();
        it != active_streams_.end(); ++it) {
     it->second.stream->AdjustSendWindowSize(delta_window_size);
@@ -2983,12 +2933,10 @@ void SpdySession::SendPrefacePing() {
 void SpdySession::SendWindowUpdateFrame(SpdyStreamId stream_id,
                                         uint32_t delta_window_size,
                                         RequestPriority priority) {
-  CHECK_GE(flow_control_state_, FLOW_CONTROL_STREAM);
   ActiveStreamMap::const_iterator it = active_streams_.find(stream_id);
   if (it != active_streams_.end()) {
     CHECK_EQ(it->second.stream->stream_id(), stream_id);
   } else {
-    CHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
     CHECK_EQ(stream_id, kSessionFlowControlStreamId);
   }
 
@@ -3172,9 +3120,6 @@ void SpdySession::OnWriteBufferConsumed(
     SpdyBuffer::ConsumeSource consume_source) {
   // We can be called with |in_io_loop_| set if a write SpdyBuffer is
   // deleted (e.g., a stream is closed due to incoming data).
-
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
   if (consume_source == SpdyBuffer::DISCARD) {
     // If we're discarding a frame or part of it, increase the send
     // window by the number of discarded bytes. (Although if we're
@@ -3191,8 +3136,6 @@ void SpdySession::OnWriteBufferConsumed(
 void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
   // We can be called with |in_io_loop_| set if a SpdyBuffer is
   // deleted (e.g., a stream is closed due to incoming data).
-
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(delta_window_size, 1);
 
   // Check for overflow.
@@ -3220,8 +3163,6 @@ void SpdySession::IncreaseSendWindowSize(int delta_window_size) {
 }
 
 void SpdySession::DecreaseSendWindowSize(int32_t delta_window_size) {
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
   // We only call this method when sending a frame. Therefore,
   // |delta_window_size| should be within the valid frame size range.
   DCHECK_GE(delta_window_size, 1);
@@ -3243,8 +3184,6 @@ void SpdySession::OnReadBufferConsumed(
     SpdyBuffer::ConsumeSource consume_source) {
   // We can be called with |in_io_loop_| set if a read SpdyBuffer is
   // deleted (e.g., discarded by a SpdyReadQueue).
-
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(consume_size, 1u);
   DCHECK_LE(consume_size,
             static_cast<size_t>(std::numeric_limits<int32_t>::max()));
@@ -3253,7 +3192,6 @@ void SpdySession::OnReadBufferConsumed(
 }
 
 void SpdySession::IncreaseRecvWindowSize(int32_t delta_window_size) {
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(session_unacked_recv_window_bytes_, 0);
   DCHECK_GE(session_recv_window_size_, session_unacked_recv_window_bytes_);
   DCHECK_GE(delta_window_size, 1);
@@ -3277,7 +3215,6 @@ void SpdySession::IncreaseRecvWindowSize(int32_t delta_window_size) {
 
 void SpdySession::DecreaseRecvWindowSize(int32_t delta_window_size) {
   CHECK(in_io_loop_);
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
   DCHECK_GE(delta_window_size, 1);
 
   // The receiving window size as the peer knows it is
@@ -3310,8 +3247,6 @@ void SpdySession::QueueSendStalledStream(const SpdyStream& stream) {
 }
 
 void SpdySession::ResumeSendStalledStreams() {
-  DCHECK_EQ(flow_control_state_, FLOW_CONTROL_STREAM_AND_SESSION);
-
   // We don't have to worry about new streams being queued, since
   // doing so would cause IsSendStalled() to return true. But we do
   // have to worry about streams being closed, as well as ourselves

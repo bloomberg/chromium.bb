@@ -1327,10 +1327,6 @@ EVENT_TYPE(HTTP2_SESSION_CLOSE)
 // the maximum number of concurrent streams.
 EVENT_TYPE(HTTP2_SESSION_STALLED_MAX_STREAMS)
 
-// Received a value for initial window size in SETTINGS frame with
-// flow control turned off.
-EVENT_TYPE(HTTP2_SESSION_INITIAL_WINDOW_SIZE_NO_FLOW_CONTROL)
-
 // Received an out-of-range value for initial window size in SETTINGS
 // frame.
 //   {

@@ -1246,14 +1246,11 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
           GURL("http://www.example.org/a.dat"));
   EXPECT_TRUE(session_->unclaimed_pushed_streams_.end() != iter);
 
-  if (session_->flow_control_state_ ==
-      SpdySession::FLOW_CONTROL_STREAM_AND_SESSION) {
-    // Unclaimed push body consumed bytes from the session window.
-    EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()) -
-                  kUploadDataSize,
-              session_->session_recv_window_size_);
-    EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
-  }
+  // Unclaimed push body consumed bytes from the session window.
+  EXPECT_EQ(
+      SpdySession::GetDefaultInitialWindowSize(GetProtocol()) - kUploadDataSize,
+      session_->session_recv_window_size_);
+  EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
 
   // Shift time to expire the push stream. Read the second SYN_STREAM,
   // and verify a RST_STREAM was written.
@@ -1267,13 +1264,10 @@ TEST_P(SpdySessionTest, DeleteExpiredPushStreams) {
       GURL("http://www.example.org/0.dat"));
   EXPECT_TRUE(session_->unclaimed_pushed_streams_.end() != iter);
 
-  if (session_->flow_control_state_ ==
-      SpdySession::FLOW_CONTROL_STREAM_AND_SESSION) {
-    // Verify that the session window reclaimed the evicted stream body.
-    EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
-              session_->session_recv_window_size_);
-    EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
-  }
+  // Verify that the session window reclaimed the evicted stream body.
+  EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
+            session_->session_recv_window_size_);
+  EXPECT_EQ(kUploadDataSize, session_->session_unacked_recv_window_bytes_);
 
   // Read and process EOF.
   EXPECT_TRUE(session_);
@@ -3050,8 +3044,6 @@ TEST_P(SpdySessionTest, ProtocolNegotiation) {
 
   EXPECT_EQ(spdy_util_.spdy_version(),
             session_->buffered_spdy_framer_->protocol_version());
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
   EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
             session_->session_send_window_size_);
   EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
@@ -3470,8 +3462,6 @@ TEST_P(SpdySessionTest, AdjustRecvWindowSize) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   EXPECT_EQ(initial_window_size, session_->session_recv_window_size_);
   EXPECT_EQ(0, session_->session_unacked_recv_window_bytes_);
@@ -3517,8 +3507,6 @@ TEST_P(SpdySessionTest, AdjustSendWindowSize) {
 
   CreateNetworkSession();
   session_ = CreateFakeSpdySession(spdy_session_pool_, key_);
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   const int32_t initial_window_size =
       SpdySession::GetDefaultInitialWindowSize(GetProtocol());
@@ -3551,8 +3539,6 @@ TEST_P(SpdySessionTest, SessionFlowControlInactiveStream) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
             session_->session_recv_window_size_);
@@ -3592,8 +3578,6 @@ TEST_P(SpdySessionTest, SessionFlowControlPadding) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   EXPECT_EQ(SpdySession::GetDefaultInitialWindowSize(GetProtocol()),
             session_->session_recv_window_size_);
@@ -3644,7 +3628,6 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchData) {
   SpdySessionPoolPeer pool_peer(spdy_session_pool_);
   pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
   CreateInsecureSpdySession();
-  EXPECT_LE(SpdySession::FLOW_CONTROL_STREAM, session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
@@ -3717,8 +3700,6 @@ TEST_P(SpdySessionTest, SessionFlowControlTooMuchDataTwoDataFrames) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
   // Setting session level receiving window size to smaller than initial is not
   // possible via SpdySessionPoolPeer.
   session_->session_recv_window_size_ = session_max_recv_window_size;
@@ -3787,7 +3768,6 @@ TEST_P(SpdySessionTest, StreamFlowControlTooMuchDataTwoDataFrames) {
   pool_peer.SetStreamInitialRecvWindowSize(stream_max_recv_window_size);
 
   CreateInsecureSpdySession();
-  EXPECT_LE(SpdySession::FLOW_CONTROL_STREAM, session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> spdy_stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
@@ -4126,8 +4106,6 @@ void SpdySessionTest::RunResumeAfterUnstallTest(
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
@@ -4254,8 +4232,6 @@ TEST_P(SpdySessionTest, ResumeByPriorityAfterSendWindowSizeIncrease) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
@@ -4395,8 +4371,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedStreams) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());
@@ -4536,8 +4510,6 @@ TEST_P(SpdySessionTest, SendWindowSizeIncreaseWithDeletedSession) {
 
   CreateNetworkSession();
   CreateInsecureSpdySession();
-  EXPECT_EQ(SpdySession::FLOW_CONTROL_STREAM_AND_SESSION,
-            session_->flow_control_state());
 
   base::WeakPtr<SpdyStream> stream1 = CreateStreamSynchronously(
       SPDY_REQUEST_RESPONSE_STREAM, session_, test_url_, LOWEST, BoundNetLog());

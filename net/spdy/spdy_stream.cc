@@ -224,8 +224,6 @@ void SpdyStream::DetachDelegate() {
 }
 
 void SpdyStream::AdjustSendWindowSize(int32_t delta_window_size) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
-
   if (IsClosed())
     return;
 
@@ -246,7 +244,6 @@ void SpdyStream::OnWriteBufferConsumed(
     size_t frame_payload_size,
     size_t consume_size,
     SpdyBuffer::ConsumeSource consume_source) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   if (consume_source == SpdyBuffer::DISCARD) {
     // If we're discarding a frame or part of it, increase the send
     // window by the number of discarded bytes. (Although if we're
@@ -261,7 +258,6 @@ void SpdyStream::OnWriteBufferConsumed(
 }
 
 void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
   // Ignore late WINDOW_UPDATEs.
@@ -293,8 +289,6 @@ void SpdyStream::IncreaseSendWindowSize(int32_t delta_window_size) {
 }
 
 void SpdyStream::DecreaseSendWindowSize(int32_t delta_window_size) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
-
   if (IsClosed())
     return;
 
@@ -318,7 +312,6 @@ void SpdyStream::DecreaseSendWindowSize(int32_t delta_window_size) {
 void SpdyStream::OnReadBufferConsumed(
     size_t consume_size,
     SpdyBuffer::ConsumeSource consume_source) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(consume_size, 1u);
   DCHECK_LE(consume_size,
             static_cast<size_t>(std::numeric_limits<int32_t>::max()));
@@ -326,8 +319,6 @@ void SpdyStream::OnReadBufferConsumed(
 }
 
 void SpdyStream::IncreaseRecvWindowSize(int32_t delta_window_size) {
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
-
   // By the time a read is processed by the delegate, this stream may
   // already be inactive.
   if (!session_->IsStreamActive(stream_id_))
@@ -356,7 +347,6 @@ void SpdyStream::IncreaseRecvWindowSize(int32_t delta_window_size) {
 
 void SpdyStream::DecreaseRecvWindowSize(int32_t delta_window_size) {
   DCHECK(session_->IsStreamActive(stream_id_));
-  DCHECK_GE(session_->flow_control_state(), SpdySession::FLOW_CONTROL_STREAM);
   DCHECK_GE(delta_window_size, 1);
 
   // The receiving window size as the peer knows it is
@@ -543,15 +533,13 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 
   size_t length = buffer->GetRemainingSize();
   DCHECK_LE(length, session_->GetDataFrameMaximumPayload());
-  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
-    base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
-    // May close the stream.
-    DecreaseRecvWindowSize(static_cast<int32_t>(length));
-    if (!weak_this)
-      return;
-    buffer->AddConsumeCallback(
-        base::Bind(&SpdyStream::OnReadBufferConsumed, GetWeakPtr()));
-  }
+  base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
+  // May close the stream.
+  DecreaseRecvWindowSize(static_cast<int32_t>(length));
+  if (!weak_this)
+    return;
+  buffer->AddConsumeCallback(
+      base::Bind(&SpdyStream::OnReadBufferConsumed, GetWeakPtr()));
 
   // Track our bandwidth.
   recv_bytes_ += length;
@@ -562,18 +550,16 @@ void SpdyStream::OnDataReceived(scoped_ptr<SpdyBuffer> buffer) {
 }
 
 void SpdyStream::OnPaddingConsumed(size_t len) {
-  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
-    // Decrease window size because padding bytes are received.
-    // Increase window size because padding bytes are consumed (by discarding).
-    // Net result: |unacked_recv_window_bytes_| increases by |len|,
-    // |recv_window_size_| does not change.
-    base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
-    // May close the stream.
-    DecreaseRecvWindowSize(static_cast<int32_t>(len));
-    if (!weak_this)
-      return;
-    IncreaseRecvWindowSize(static_cast<int32_t>(len));
-  }
+  // Decrease window size because padding bytes are received.
+  // Increase window size because padding bytes are consumed (by discarding).
+  // Net result: |unacked_recv_window_bytes_| increases by |len|,
+  // |recv_window_size_| does not change.
+  base::WeakPtr<SpdyStream> weak_this = GetWeakPtr();
+  // May close the stream.
+  DecreaseRecvWindowSize(static_cast<int32_t>(len));
+  if (!weak_this)
+    return;
+  IncreaseRecvWindowSize(static_cast<int32_t>(len));
 }
 
 void SpdyStream::OnFrameWriteComplete(SpdyFrameType frame_type,
@@ -859,24 +845,21 @@ void SpdyStream::QueueNextDataFrame() {
   if (!data_buffer)
     return;
 
-  if (session_->flow_control_state() >= SpdySession::FLOW_CONTROL_STREAM) {
-    DCHECK_GE(data_buffer->GetRemainingSize(),
-              session_->GetDataFrameMinimumSize());
-    size_t payload_size =
-        data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
-    DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
+  DCHECK_GE(data_buffer->GetRemainingSize(),
+            session_->GetDataFrameMinimumSize());
+  size_t payload_size =
+      data_buffer->GetRemainingSize() - session_->GetDataFrameMinimumSize();
+  DCHECK_LE(payload_size, session_->GetDataFrameMaximumPayload());
 
-    // Send window size is based on payload size, so nothing to do if this is
-    // just a FIN with no payload.
-    if (payload_size != 0) {
-      DecreaseSendWindowSize(static_cast<int32_t>(payload_size));
-      // This currently isn't strictly needed, since write frames are
-      // discarded only if the stream is about to be closed. But have it
-      // here anyway just in case this changes.
-      data_buffer->AddConsumeCallback(
-          base::Bind(&SpdyStream::OnWriteBufferConsumed,
-                     GetWeakPtr(), payload_size));
-    }
+  // Send window size is based on payload size, so nothing to do if this is
+  // just a FIN with no payload.
+  if (payload_size != 0) {
+    DecreaseSendWindowSize(static_cast<int32_t>(payload_size));
+    // This currently isn't strictly needed, since write frames are
+    // discarded only if the stream is about to be closed. But have it
+    // here anyway just in case this changes.
+    data_buffer->AddConsumeCallback(base::Bind(
+        &SpdyStream::OnWriteBufferConsumed, GetWeakPtr(), payload_size));
   }
 
   session_->EnqueueStreamWrite(
