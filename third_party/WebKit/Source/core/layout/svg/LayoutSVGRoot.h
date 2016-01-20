@@ -114,6 +114,8 @@ private:
     void updateCachedBoundaries();
     void buildLocalToBorderBoxTransform();
 
+    FloatSize calculateIntrinsicSize() const;
+
     LayoutObjectChildList m_children;
     IntSize m_containerSize;
     FloatRect m_objectBoundingBox;
