@@ -1316,11 +1316,11 @@ VisiblePosition previousLinePosition(const VisiblePosition& visiblePosition, Lay
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
-        LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
-        Node* node = layoutObject.node();
+        LineLayoutItem lineLayoutItem = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->lineLayoutItem();
+        Node* node = lineLayoutItem.node();
         if (node && editingIgnoresContent(node))
             return createVisiblePosition(positionInParentBeforeNode(*node));
-        return createVisiblePosition(layoutObject.positionForPoint(pointInLine));
+        return createVisiblePosition(lineLayoutItem.positionForPoint(pointInLine));
     }
 
     // Could not find a previous line. This means we must already be on the first line.
@@ -1372,11 +1372,11 @@ VisiblePosition nextLinePosition(const VisiblePosition& visiblePosition, LayoutU
     if (root) {
         // FIXME: Can be wrong for multi-column layout and with transforms.
         LayoutPoint pointInLine = absoluteLineDirectionPointToLocalPointInBlock(root, lineDirectionPoint);
-        LayoutObject& layoutObject = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->layoutObject();
-        Node* node = layoutObject.node();
+        LineLayoutItem lineLayoutItem = root->closestLeafChildForPoint(pointInLine, isEditablePosition(p))->lineLayoutItem();
+        Node* node = lineLayoutItem.node();
         if (node && editingIgnoresContent(node))
             return createVisiblePosition(positionInParentBeforeNode(*node));
-        return createVisiblePosition(layoutObject.positionForPoint(pointInLine));
+        return createVisiblePosition(lineLayoutItem.positionForPoint(pointInLine));
     }
 
     // Could not find a next line. This means we must already be on the last line.
