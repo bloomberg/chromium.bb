@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.StrictMode;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Pair;
@@ -506,8 +507,14 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
         if (mPrioritizedTabId != Tab.INVALID_TAB_ID) {
             Entry entry = mEntryMap.get(mPrioritizedTabId);
             if (entry != null) {
-                entry.setTabState(
-                        mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito()));
+                // Temporarily allowing disk access while fixing. TODO: http://crbug.com/543201
+                StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+                try {
+                    entry.setTabState(
+                            mStorageDelegate.restoreTabState(mPrioritizedTabId, isIncognito()));
+                } finally {
+                    StrictMode.setThreadPolicy(oldPolicy);
+                }
                 entry.isTabStateReady = true;
             }
         }
