@@ -58,6 +58,23 @@
             "description": "Array of rectangles to draw the accessibility focus ring around."
           }
         ]
+      },
+      {
+        "name": "setKeyboardListener",
+        "type": "function",
+        "description": "Sets the calling extension as a listener of all keyboard events optionally allowing the calling extension to capture/swallow the key event via DOM apis. Returns false via callback when unable to set the listener.",
+        "parameters": [
+          {
+            "type": "boolean",
+            "name": "enabled",
+            "description": "True if the caller wants to listen to key events; false to stop listening to events. Note that there is only ever one extension listening to key events."
+          },
+          {
+            "type": "boolean",
+            "name": "capture",
+            "description": "True if key events should be swallowed natively and not propagated if preventDefault() gets called by the extension's background page."
+          }
+        ]
       }
     ],
     "events": [
