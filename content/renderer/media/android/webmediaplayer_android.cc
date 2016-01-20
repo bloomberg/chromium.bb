@@ -182,6 +182,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     media::CdmFactory* cdm_factory,
     scoped_refptr<StreamTextureFactory> factory,
     int frame_id,
+    bool enable_texture_copy,
     const media::WebMediaPlayerParams& params)
     : RenderFrameObserver(RenderFrame::FromWebFrame(frame)),
       frame_(frame),
@@ -223,6 +224,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
       is_local_resource_(false),
       interpolator_(&default_tick_clock_),
       frame_id_(frame_id),
+      enable_texture_copy_(enable_texture_copy),
       suppress_deleting_texture_(false),
       weak_factory_(this) {
   DCHECK(player_manager_);
@@ -1213,6 +1215,8 @@ void WebMediaPlayerAndroid::ReallocateVideoFrame() {
             &OnReleaseTexture, stream_texture_factory_, texture_id_ref)),
         natural_size_, gfx::Rect(natural_size_), natural_size_,
         base::TimeDelta());
+    new_frame->metadata()->SetBoolean(media::VideoFrameMetadata::COPY_REQUIRED,
+                                      enable_texture_copy_);
     SetCurrentFrameInternal(new_frame);
   }
 }

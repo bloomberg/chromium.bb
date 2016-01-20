@@ -34,6 +34,12 @@ class MEDIA_EXPORT VideoFrameMetadata {
     // GetInteger()/SetInteger() and ColorSpace enumeration.
     COLOR_SPACE,
 
+    // Indicates that this frame must be copied to a new texture before use,
+    // rather than being used directly. Specifically this is required for
+    // WebView because of limitations about sharing surface textures between GL
+    // contexts.
+    COPY_REQUIRED,
+
     // Indicates if the current frame is the End of its current Stream. Use
     // Get/SetBoolean() for this Key.
     END_OF_STREAM,

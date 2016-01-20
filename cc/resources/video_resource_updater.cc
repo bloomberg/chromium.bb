@@ -38,9 +38,12 @@ VideoFrameExternalResources::ResourceType ResourceTypeForVideoFrame(
         case GL_TEXTURE_2D:
           return (video_frame->format() == media::PIXEL_FORMAT_XRGB)
                      ? VideoFrameExternalResources::RGB_RESOURCE
-                     : VideoFrameExternalResources::RGBA_RESOURCE;
+                     : VideoFrameExternalResources::RGBA_PREMULTIPLIED_RESOURCE;
         case GL_TEXTURE_EXTERNAL_OES:
-          return VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
+          return video_frame->metadata()->IsTrue(
+                     media::VideoFrameMetadata::COPY_REQUIRED)
+                     ? VideoFrameExternalResources::RGBA_RESOURCE
+                     : VideoFrameExternalResources::STREAM_TEXTURE_RESOURCE;
         case GL_TEXTURE_RECTANGLE_ARB:
           return VideoFrameExternalResources::IO_SURFACE;
         default:
@@ -421,6 +424,73 @@ void VideoResourceUpdater::ReturnTexture(
   video_frame->UpdateReleaseSyncToken(&client);
 }
 
+// Create a copy of a texture-backed source video frame in a new GL_TEXTURE_2D
+// texture.
+void VideoResourceUpdater::CopyPlaneTexture(
+    const scoped_refptr<media::VideoFrame>& video_frame,
+    const gpu::MailboxHolder& mailbox_holder,
+    VideoFrameExternalResources* external_resources) {
+  gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
+  SyncTokenClientImpl client(gl, mailbox_holder.sync_token);
+
+  const gfx::Size output_plane_resource_size = video_frame->coded_size();
+  // The copy needs to be a direct transfer of pixel data, so we use an RGBA8
+  // target to avoid loss of precision or dropping any alpha component.
+  const ResourceFormat copy_target_format = ResourceFormat::RGBA_8888;
+
+  // Search for an existing resource to reuse.
+  VideoResourceUpdater::ResourceList::iterator resource = all_resources_.end();
+
+  for (auto it = all_resources_.begin(); it != all_resources_.end(); ++it) {
+    // Reuse resource if attributes match and the resource is a currently
+    // unreferenced texture.
+    if (it->resource_size == output_plane_resource_size &&
+        it->resource_format == copy_target_format && !it->mailbox.IsZero() &&
+        it->ref_count == 0) {
+      resource = it;
+      break;
+    }
+  }
+
+  // Otherwise allocate a new resource.
+  if (resource == all_resources_.end()) {
+    resource =
+        AllocateResource(output_plane_resource_size, copy_target_format, true);
+  }
+
+  ++resource->ref_count;
+
+  ResourceProvider::ScopedWriteLockGL lock(resource_provider_,
+                                           resource->resource_id);
+  uint32_t texture_id = lock.texture_id();
+
+  DCHECK_EQ(resource_provider_->GetResourceTextureTarget(resource->resource_id),
+            (GLenum)GL_TEXTURE_2D);
+
+  gl->WaitSyncTokenCHROMIUM(mailbox_holder.sync_token.GetConstData());
+  uint32_t src_texture_id = gl->CreateAndConsumeTextureCHROMIUM(
+      mailbox_holder.texture_target, mailbox_holder.mailbox.name);
+  gl->CopyTextureCHROMIUM(src_texture_id, texture_id, GL_RGBA, GL_UNSIGNED_BYTE,
+                          false, false, false);
+  gl->DeleteTextures(1, &src_texture_id);
+
+  // Sync point for use of frame copy.
+  gpu::SyncToken sync_token;
+  const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
+  gl->ShallowFlushCHROMIUM();
+  gl->GenSyncTokenCHROMIUM(fence_sync, sync_token.GetData());
+
+  // Done with the source video frame texture at this point.
+  video_frame->UpdateReleaseSyncToken(&client);
+
+  external_resources->mailboxes.push_back(
+      TextureMailbox(resource->mailbox, sync_token, GL_TEXTURE_2D,
+                     video_frame->coded_size(), false));
+
+  external_resources->release_callbacks.push_back(
+      base::Bind(&RecycleResource, AsWeakPtr(), resource->resource_id));
+}
+
 VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const scoped_refptr<media::VideoFrame>& video_frame) {
   TRACE_EVENT0("cc", "VideoResourceUpdater::CreateForHardwarePlanes");
@@ -443,13 +513,20 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
     const gpu::MailboxHolder& mailbox_holder = video_frame->mailbox_holder(i);
     if (mailbox_holder.mailbox.IsZero())
       break;
-    external_resources.mailboxes.push_back(
-        TextureMailbox(mailbox_holder.mailbox, mailbox_holder.sync_token,
-                       mailbox_holder.texture_target, video_frame->coded_size(),
-                       video_frame->metadata()->IsTrue(
-                           media::VideoFrameMetadata::ALLOW_OVERLAY)));
-    external_resources.release_callbacks.push_back(
-        base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
+
+    if (video_frame->metadata()->IsTrue(
+            media::VideoFrameMetadata::COPY_REQUIRED)) {
+      CopyPlaneTexture(video_frame, mailbox_holder, &external_resources);
+    } else {
+      external_resources.mailboxes.push_back(TextureMailbox(
+          mailbox_holder.mailbox, mailbox_holder.sync_token,
+          mailbox_holder.texture_target, video_frame->coded_size(),
+          video_frame->metadata()->IsTrue(
+              media::VideoFrameMetadata::ALLOW_OVERLAY)));
+
+      external_resources.release_callbacks.push_back(
+          base::Bind(&ReturnTexture, AsWeakPtr(), video_frame));
+    }
   }
   return external_resources;
 }

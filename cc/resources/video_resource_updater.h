@@ -38,6 +38,7 @@ class CC_EXPORT VideoFrameExternalResources {
     NONE,
     YUV_RESOURCE,
     RGB_RESOURCE,
+    RGBA_PREMULTIPLIED_RESOURCE,
     RGBA_RESOURCE,
     STREAM_TEXTURE_RESOURCE,
     IO_SURFACE,
@@ -117,6 +118,9 @@ class CC_EXPORT VideoResourceUpdater
                                           bool has_mailbox);
   void DeleteResource(ResourceList::iterator resource_it);
   bool VerifyFrame(const scoped_refptr<media::VideoFrame>& video_frame);
+  void CopyPlaneTexture(const scoped_refptr<media::VideoFrame>& video_frame,
+                        const gpu::MailboxHolder& mailbox_holder,
+                        VideoFrameExternalResources* external_resources);
   VideoFrameExternalResources CreateForHardwarePlanes(
       const scoped_refptr<media::VideoFrame>& video_frame);
   VideoFrameExternalResources CreateForSoftwarePlanes(

@@ -5628,12 +5628,16 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
     WebMediaPlayerEncryptedMediaClient* encrypted_client,
     const media::WebMediaPlayerParams& params) {
   scoped_refptr<StreamTextureFactory> stream_texture_factory;
+  bool enable_texture_copy = false;
   if (SynchronousCompositorFactory* factory =
           SynchronousCompositorFactory::GetInstance()) {
     stream_texture_factory = factory->CreateStreamTextureFactory(routing_id_);
   } else {
     stream_texture_factory =
         RenderThreadImpl::current()->GetStreamTexureFactory();
+    enable_texture_copy =
+        RenderThreadImpl::current()->sync_compositor_message_filter() !=
+        nullptr;
     if (!stream_texture_factory.get()) {
       LOG(ERROR) << "Failed to get stream texture factory!";
       return NULL;
@@ -5643,7 +5647,8 @@ WebMediaPlayer* RenderFrameImpl::CreateAndroidWebMediaPlayer(
   return new WebMediaPlayerAndroid(frame_, client, encrypted_client,
                                    GetWebMediaPlayerDelegate()->AsWeakPtr(),
                                    GetMediaPlayerManager(), GetCdmFactory(),
-                                   stream_texture_factory, routing_id_, params);
+                                   stream_texture_factory, routing_id_,
+                                   enable_texture_copy, params);
 }
 
 RendererMediaPlayerManager* RenderFrameImpl::GetMediaPlayerManager() {

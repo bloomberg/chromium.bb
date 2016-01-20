@@ -99,6 +99,7 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
       media::CdmFactory* cdm_factory,
       scoped_refptr<StreamTextureFactory> factory,
       int frame_id,
+      bool enable_texture_copy,
       const media::WebMediaPlayerParams& params);
   ~WebMediaPlayerAndroid() override;
 
@@ -535,6 +536,10 @@ class WebMediaPlayerAndroid : public blink::WebMediaPlayer,
   scoped_ptr<MediaSourceDelegate> media_source_delegate_;
 
   int frame_id_;
+
+  // Whether to require that surface textures are copied in order to support
+  // sharing between render and gpu threads in WebView.
+  bool enable_texture_copy_;
 
   // Whether to delete the existing texture and re-create it.
   bool suppress_deleting_texture_;
