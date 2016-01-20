@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "components/test_runner/mock_constraints.h"
 #include "components/test_runner/mock_webrtc_data_channel_handler.h"
 #include "components/test_runner/mock_webrtc_dtmf_sender_handler.h"
 #include "components/test_runner/test_interfaces.h"
@@ -164,12 +165,16 @@ MockWebRTCPeerConnectionHandler::MockWebRTCPeerConnectionHandler(
 bool MockWebRTCPeerConnectionHandler::initialize(
     const WebRTCConfiguration& configuration,
     const WebMediaConstraints& constraints) {
-  interfaces_->GetDelegate()->PostTask(new RTCPeerConnectionStateTask(
-      this,
-      client_,
-      WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted,
-      WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete));
-  return true;
+  if (MockConstraints::VerifyConstraints(constraints)) {
+    interfaces_->GetDelegate()->PostTask(new RTCPeerConnectionStateTask(
+        this,
+        client_,
+        WebRTCPeerConnectionHandlerClient::ICEConnectionStateCompleted,
+        WebRTCPeerConnectionHandlerClient::ICEGatheringStateComplete));
+    return true;
+  }
+
+  return false;
 }
 
 void MockWebRTCPeerConnectionHandler::createOffer(
