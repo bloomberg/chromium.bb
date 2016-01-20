@@ -794,9 +794,10 @@ void BackgroundSyncManager::FireOneShotSync(
 
   if (active_version->running_status() != ServiceWorkerVersion::RUNNING) {
     active_version->RunAfterStartWorker(
-        callback, base::Bind(&BackgroundSyncManager::FireOneShotSync,
-                             weak_ptr_factory_.GetWeakPtr(), handle_id,
-                             active_version, last_chance, callback));
+        base::Bind(&BackgroundSyncManager::FireOneShotSync,
+                   weak_ptr_factory_.GetWeakPtr(), handle_id, active_version,
+                   last_chance, callback),
+        callback);
     return;
   }
 

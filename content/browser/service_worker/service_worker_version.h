@@ -178,8 +178,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Starts the worker if it isn't already running, and calls |task| when the
   // worker is running, or |error_callback| if starting the worker failed.
-  void RunAfterStartWorker(const StatusCallback& error_callback,
-                           const base::Closure& task);
+  // If the worker is already running, |task| is executed synchronously (before
+  // this method returns).
+  void RunAfterStartWorker(const base::Closure& task,
+                           const StatusCallback& error_callback);
 
   // Call this while the worker is running before dispatching an event to the
   // worker. This informs ServiceWorkerVersion about the event in progress.

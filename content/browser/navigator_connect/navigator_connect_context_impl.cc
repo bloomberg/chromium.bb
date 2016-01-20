@@ -154,11 +154,11 @@ void NavigatorConnectContextImpl::GotServiceWorkerRegistration(
       registration->pattern().GetOrigin();
 
   active_version->RunAfterStartWorker(
-      base::Bind(&NavigatorConnectContextImpl::OnConnectError, this, callback,
-                 client_port_id, service_port_id),
       base::Bind(&NavigatorConnectContextImpl::DispatchConnectEvent, this,
                  callback, client_port_id, service_port_id, registration,
-                 make_scoped_refptr(active_version)));
+                 make_scoped_refptr(active_version)),
+      base::Bind(&NavigatorConnectContextImpl::OnConnectError, this, callback,
+                 client_port_id, service_port_id));
 }
 
 void NavigatorConnectContextImpl::DispatchConnectEvent(

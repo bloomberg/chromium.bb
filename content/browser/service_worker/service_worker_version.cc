@@ -506,8 +506,13 @@ bool ServiceWorkerVersion::FinishRequest(int request_id) {
 }
 
 void ServiceWorkerVersion::RunAfterStartWorker(
-    const StatusCallback& error_callback,
-    const base::Closure& task) {
+    const base::Closure& task,
+    const StatusCallback& error_callback) {
+  if (running_status() == RUNNING) {
+    DCHECK(start_callbacks_.empty());
+    task.Run();
+    return;
+  }
   StartWorker(base::Bind(&RunTaskAfterStartWorker, weak_factory_.GetWeakPtr(),
                          error_callback, task));
 }
