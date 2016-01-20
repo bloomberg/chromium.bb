@@ -129,17 +129,19 @@ std::vector<Bucket> BreakDownBy(const Bucket& bucket, BreakDownMode breakBy) {
   std::make_heap(buckets.begin(), buckets.end());
 
   // Keep including buckets until adding one would increase the number of
-  // bytes accounted for by less than a percent. The large buckets end up in
-  // [it, end()), [begin(), it) is the part that contains the max-heap of small
-  // buckets. TODO(ruuda): tweak the heuristic.
+  // bytes accounted for by less than 0.8 percent. This simple heuristic works
+  // quite well. The large buckets end up in [it, end()), [begin(), it) is the
+  // part that contains the max-heap of small buckets.
   size_t accounted_for = 0;
   std::vector<Bucket>::iterator it;
   for (it = buckets.end(); it != buckets.begin(); --it) {
-    // Compute contribution to number of bytes accounted for in percent, rounded
-    // down due to integer division. Buckets are iterated by descending size,
-    // so later buckets cannot have a larger contribution than this one.
+    // Compute the contribution to the number of bytes accounted for as a
+    // fraction of 125 (in increments of 0.8 percent). Anything less than 1/125
+    // is rounded down to 0 due to integer division. Buckets are iterated by
+    // descending size, so later buckets cannot have a larger contribution than
+    // this one.
     accounted_for += buckets.front().size;
-    size_t contribution = buckets.front().size * 100 / accounted_for;
+    size_t contribution = buckets.front().size * 125 / accounted_for;
     if (contribution == 0)
       break;
 

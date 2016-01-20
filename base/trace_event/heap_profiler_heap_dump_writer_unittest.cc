@@ -27,6 +27,7 @@ const char kBrowserMain[] = "BrowserMain";
 const char kRendererMain[] = "RendererMain";
 const char kCreateWidget[] = "CreateWidget";
 const char kInitialize[] = "Initialize";
+const char kGetBitmap[] = "GetBitmap";
 
 const char kInt[] = "int";
 const char kBool[] = "bool";
@@ -82,6 +83,22 @@ void AssertSizeEq(const std::set<Entry>& entries,
                                << ", type = " << type_id << ".";
   ASSERT_EQ(expected_size, it->size) << "Wrong size for sf = " << stack_frame_id
                                      << ", type = " << type_id << ".";
+}
+
+// Given a desired stack frame ID and type ID, asserts that no entry was dumped
+// for that that particular combination of stack frame and type.
+void AssertNotDumped(const std::set<Entry>& entries,
+                     int stack_frame_id,
+                     int type_id) {
+  // The comparison operator for |Entry| does not take size into account, so by
+  // setting only stack frame ID and type ID, the real entry can be found.
+  Entry entry;
+  entry.stack_frame_id = stack_frame_id;
+  entry.type_id = type_id;
+  auto it = entries.find(entry);
+  ASSERT_EQ(entries.end(), it)
+      << "Entry should not be present for sf = " << stack_frame_id
+      << ", type = " << type_id << ".";
 }
 
 TEST(HeapDumpWriterTest, BacktraceIndex) {
@@ -228,8 +245,53 @@ TEST(HeapDumpWriterTest, BacktraceTypeNameTable) {
   AssertSizeEq(dump, -1, type_id_string, 19);
 }
 
-// TODO(ruuda): Verify that cumulative sizes are computed correctly.
-// TODO(ruuda): Verify that insignificant values are not dumped.
+TEST(HeapDumpWriterTest, InsignificantValuesNotDumped) {
+  hash_map<AllocationContext, size_t> bytes_by_context;
+
+  AllocationContext ctx = AllocationContext::Empty();
+  ctx.backtrace.frames[0] = kBrowserMain;
+  ctx.backtrace.frames[1] = kCreateWidget;
+
+  // 0.5a KiB in BrowserMain -> CreateWidget itself.
+  bytes_by_context[ctx] = 512;
+
+  // 1 MiB in BrowserMain -> CreateWidget -> GetBitmap.
+  ctx.backtrace.frames[2] = kGetBitmap;
+  bytes_by_context[ctx] = 1024 * 1024;
+
+  // 0.5 KiB in BrowserMain -> CreateWidget -> Initialize.
+  ctx.backtrace.frames[2] = kInitialize;
+  bytes_by_context[ctx] = 512;
+
+  auto sf_deduplicator = make_scoped_refptr(new StackFrameDeduplicator);
+  auto tn_deduplicator = make_scoped_refptr(new TypeNameDeduplicator);
+  HeapDumpWriter writer(sf_deduplicator.get(), tn_deduplicator.get());
+  const std::set<Entry>& dump = writer.Summarize(bytes_by_context);
+
+  // Get the indices of the backtraces and types by adding them again to the
+  // deduplicator. Because they were added before, the same number is returned.
+  StackFrame bt0[] = {kBrowserMain, kCreateWidget, kGetBitmap};
+  StackFrame bt1[] = {kBrowserMain, kCreateWidget, kInitialize};
+  int bt_browser_main = sf_deduplicator->Insert(bt0, bt0 + 1);
+  int bt_create_widget = sf_deduplicator->Insert(bt0, bt0 + 2);
+  int bt_get_bitmap = sf_deduplicator->Insert(bt0, bt0 + 3);
+  int bt_initialize = sf_deduplicator->Insert(bt1, bt1 + 3);
+
+  // Full heap should have size of 1 MiB + 1 KiB.
+  AssertSizeEq(dump, -1, -1 /* No type specified */, 1024 * 1024 + 512 + 512);
+
+  // |GetBitmap| allocated 1 MiB.
+  AssertSizeEq(dump, bt_get_bitmap, -1, 1024 * 1024);
+
+  // Because |GetBitmap| was dumped, all of its parent nodes should have been
+  // dumped too. |CreateWidget| has 1 MiB in |GetBitmap|, 512 bytes in
+  // |Initialize|, and 512 bytes of its own.
+  AssertSizeEq(dump, bt_create_widget, -1, 1024 * 1024 + 512 + 512);
+  AssertSizeEq(dump, bt_browser_main, -1, 1024 * 1024 + 512 + 512);
+
+  // Initialize was not significant, it should not have been dumped.
+  AssertNotDumped(dump, bt_initialize, -1);
+}
 
 }  // namespace internal
 }  // namespace trace_event
