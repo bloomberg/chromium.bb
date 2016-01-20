@@ -26,7 +26,7 @@ import zipfile
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION = '257953'
+CLANG_REVISION = '257955'
 
 use_head_revision = 'LLVM_FORCE_HEAD_REVISION' in os.environ
 if use_head_revision:
@@ -275,23 +275,18 @@ def CreateChromeToolsShim():
     f.write('endif (CHROMIUM_TOOLS_SRC)\n')
 
 
-def MaybeDownloadHostGcc(args):
-  """Downloads gcc 4.8.2 if needed and makes sure args.gcc_toolchain is set."""
+def DownloadHostGcc(args):
+  """Downloads gcc 4.8.2 and makes sure args.gcc_toolchain is set."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
     return
-
-  if subprocess.check_output(['gcc', '-dumpversion']).rstrip() < '4.7.0':
-    # We need a newer gcc version.
-    gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482precise')
-    if not os.path.exists(gcc_dir):
-      print 'Downloading pre-built GCC 4.8.2...'
-      DownloadAndUnpack(
-          CDS_URL + '/tools/gcc482precise.tgz', LLVM_BUILD_TOOLS_DIR)
-    args.gcc_toolchain = gcc_dir
-  else:
-    # Always set gcc_toolchain; llvm-symbolizer needs the bundled libstdc++.
-    args.gcc_toolchain = \
-        os.path.dirname(os.path.dirname(distutils.spawn.find_executable('gcc')))
+  # Unconditionally download a prebuilt gcc to guarantee the included libstdc++
+  # works on Ubuntu Precise.
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc482precise')
+  if not os.path.exists(gcc_dir):
+    print 'Downloading pre-built GCC 4.8.2...'
+    DownloadAndUnpack(
+        CDS_URL + '/tools/gcc482precise.tgz', LLVM_BUILD_TOOLS_DIR)
+  args.gcc_toolchain = gcc_dir
 
 
 def AddCMakeToPath():
@@ -382,7 +377,7 @@ def UpdateClang(args):
     print 'for how to install the NDK, or pass --without-android.'
     return 1
 
-  MaybeDownloadHostGcc(args)
+  DownloadHostGcc(args)
   AddCMakeToPath()
 
   DeleteChromeToolsShim()
