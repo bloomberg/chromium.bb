@@ -2484,8 +2484,13 @@ void TabStrip::GenerateIdealBounds() {
       tabs_.set_ideal_bounds(i, tabs_bounds[i]);
   }
 
-  const int new_tab_x = tabs_.ideal_bounds(tabs_.view_size() - 1).right() -
-                        GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP);
+  const int max_new_tab_x = width() - newtab_button_bounds_.width();
+  // For non-stacked tabs the ideal bounds may go outside the bounds of the
+  // tabstrip. Constrain the x-coordinate of the new tab button so that it is
+  // always visible.
+  const int new_tab_x = std::min(
+      max_new_tab_x, tabs_.ideal_bounds(tabs_.view_size() - 1).right() -
+                         GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_OVERLAP));
   const int old_max_x = newtab_button_bounds_.right();
   newtab_button_bounds_.set_origin(gfx::Point(new_tab_x, 0));
   if (newtab_button_bounds_.right() != old_max_x)

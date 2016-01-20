@@ -44,7 +44,9 @@ void CalculateBoundsForPinnedTabs(const TabSizeInfo& tab_size_info,
                                   std::vector<gfx::Rect>* tabs_bounds);
 
 // Calculates and returns the bounds of the tabs. |width| is the available
-// width to use for tab layout.
+// width to use for tab layout. This never sizes the tabs smaller then the
+// minimum widths in TabSizeInfo, and as a result the calculated bounds may go
+// beyond |width|.
 std::vector<gfx::Rect> CalculateBounds(const TabSizeInfo& tab_size_info,
                                        int num_pinned_tabs,
                                        int num_tabs,
