@@ -45,6 +45,32 @@ const char kMarkSkipFile[] = "#<skip";
 const char kMarkEndOfFile[] = "<-- End-of-file -->";
 const char kSignalDiff[] = "*";
 
+// Helper function to be used with FrameTree::ForEach, so that
+// AccessibilityNotificationWaiter can listen for accessibility
+// events in all frames.
+bool ListenToFrame(AccessibilityNotificationWaiter* waiter,
+                   FrameTreeNode* frame_tree_node) {
+  waiter->ListenToAdditionalFrame(frame_tree_node->current_frame_host());
+  return true;
+}
+
+// Helper function to be used with FrameTree::ForEach, to get the
+// url of all frames.
+//
+// Ignore about:blank urls because of the case where a parent frame A
+// has a child iframe B and it writes to the document using
+// contentDocument.open() on the child frame B.
+//
+// In this scenario, B's contentWindow.location.href matches A's url,
+// but B's url in the browser frame tree is still "about:blank".
+bool GetFrameUrl(std::vector<std::string>* all_frame_urls,
+                 FrameTreeNode* frame_tree_node) {
+  std::string url = frame_tree_node->current_url().spec();
+  if (url != url::kAboutBlankURL)
+    all_frame_urls->push_back(url);
+  return true;
+}
+
 // Searches recursively and returns true if an accessibility node is found
 // that represents a fully loaded web document with the given url.
 bool AccessibilityTreeContainsLoadedDocWithUrl(BrowserAccessibility* node,
@@ -251,17 +277,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
       shell()->web_contents());
   FrameTree* frame_tree = web_contents->GetFrameTree();
   std::vector<std::string> all_frame_urls;
-  for (FrameTreeNode* node : frame_tree->Nodes()) {
-    // Ignore about:blank urls because of the case where a parent frame A
-    // has a child iframe B and it writes to the document using
-    // contentDocument.open() on the child frame B.
-    //
-    // In this scenario, B's contentWindow.location.href matches A's url,
-    // but B's url in the browser frame tree is still "about:blank".
-    std::string url = node->current_url().spec();
-    if (url != url::kAboutBlankURL)
-      all_frame_urls.push_back(url);
-  }
+  frame_tree->ForEach(base::Bind(GetFrameUrl, &all_frame_urls));
 
   // Wait for the accessibility tree to fully load for all frames,
   // by searching for the WEB_AREA node in the accessibility tree
@@ -316,8 +332,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
     VLOG(1) << "Waiting until the next accessibility event";
     AccessibilityNotificationWaiter accessibility_waiter(main_frame,
                                                          ui::AX_EVENT_NONE);
-    for (FrameTreeNode* node : frame_tree->Nodes())
-      accessibility_waiter.ListenToAdditionalFrame(node->current_frame_host());
+    frame_tree->ForEach(base::Bind(ListenToFrame, &accessibility_waiter));
     accessibility_waiter.WaitForNotification();
   }
 

@@ -58,6 +58,15 @@ bool AccessibilityTreeContainsText(BrowserAccessibility* node,
   return false;
 }
 
+// Helper function to be used with FrameTree::ForEach, so that
+// AccessibilityNotificationWaiter can listen for accessibility
+// events in all frames.
+bool ListenToFrame(AccessibilityNotificationWaiter* waiter,
+                   FrameTreeNode* frame_tree_node) {
+  waiter->ListenToAdditionalFrame(frame_tree_node->current_frame_host());
+  return true;
+}
+
 }  // namespace
 
 class MAYBE_SitePerProcessAccessibilityBrowserTest
@@ -104,10 +113,7 @@ class MAYBE_SitePerProcessAccessibilityBrowserTest
                main_frame_manager->GetRoot(), text)) {
       AccessibilityNotificationWaiter accessibility_waiter(main_frame,
                                                            ui::AX_EVENT_NONE);
-      for (FrameTreeNode* node : frame_tree->Nodes())
-        accessibility_waiter.ListenToAdditionalFrame(
-            node->current_frame_host());
-
+      frame_tree->ForEach(base::Bind(ListenToFrame, &accessibility_waiter));
       accessibility_waiter.WaitForNotification();
     }
   }
