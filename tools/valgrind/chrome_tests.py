@@ -111,6 +111,11 @@ class ChromeTests:
       if os.path.exists(platform_suppression_file):
         cmd.append("--suppressions=%s" % platform_suppression_file)
 
+    if tool_name == "drmemory":
+      if self._options.drmemory_ops:
+        # prepending " " to avoid Dr. Memory's option confusing optparse
+        cmd += ["--drmemory_ops", " " + self._options.drmemory_ops]
+
     if self._options.valgrind_tool_flags:
       cmd += self._options.valgrind_tool_flags.split(" ")
     if self._options.keep_logs:
@@ -771,6 +776,8 @@ def _main():
                     help="run the tests with --test-launcher-total-shards")
   parser.add_option("--test-launcher-shard-index", type=int,
                     help="run the tests with --test-launcher-shard-index")
+  parser.add_option("--drmemory_ops",
+                    help="extra options passed to Dr. Memory")
 
   options, args = parser.parse_args()
 
