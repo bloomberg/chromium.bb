@@ -150,7 +150,8 @@ public final class FirstRunSignInProcessor {
      * @return Whether there is no pending sign-in requests from the First Run Experience.
      * @param context A context
      */
-    private static boolean getFirstRunFlowSignInComplete(Context context) {
+    @VisibleForTesting
+    public static boolean getFirstRunFlowSignInComplete(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(FIRST_RUN_FLOW_SIGNIN_COMPLETE, false);
     }
