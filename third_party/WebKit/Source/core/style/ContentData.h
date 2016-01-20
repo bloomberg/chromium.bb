@@ -76,7 +76,7 @@ class ImageContentData final : public ContentData {
 public:
     const StyleImage* image() const { return m_image.get(); }
     StyleImage* image() { return m_image.get(); }
-    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image) { m_image = image; }
+    void setImage(PassRefPtrWillBeRawPtr<StyleImage> image) { ASSERT(image); m_image = image; }
 
     bool isImage() const override { return true; }
     LayoutObject* createLayoutObject(Document&, ComputedStyle&) const override;
@@ -94,6 +94,7 @@ private:
     ImageContentData(PassRefPtrWillBeRawPtr<StyleImage> image)
         : m_image(image)
     {
+        ASSERT(m_image);
     }
 
     PassOwnPtrWillBeRawPtr<ContentData> cloneInternal() const override

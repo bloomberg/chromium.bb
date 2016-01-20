@@ -128,14 +128,14 @@ StyleImage* CSSCursorImageValue::cachedImage(float deviceScaleFactor) const
     ASSERT(!isCachePending(deviceScaleFactor));
 
     if (m_imageValue->isImageSetValue())
-        return toCSSImageSetValue(*m_imageValue).cachedImageSet(deviceScaleFactor);
+        return toCSSImageSetValue(*m_imageValue).cachedImage(deviceScaleFactor);
     return m_cachedImage.get();
 }
 
 StyleImage* CSSCursorImageValue::cacheImage(Document* document, float deviceScaleFactor)
 {
     if (m_imageValue->isImageSetValue())
-        return toCSSImageSetValue(*m_imageValue).cacheImageSet(document, deviceScaleFactor);
+        return toCSSImageSetValue(*m_imageValue).cacheImage(document, deviceScaleFactor);
 
     if (m_isCachePending) {
         m_isCachePending = false;

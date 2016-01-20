@@ -81,7 +81,7 @@ PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::setOrPendingFromValue(
         m_pendingImageProperties.add(property);
         return StylePendingImage::create(value);
     }
-    return value.cachedImageSet(m_deviceScaleFactor);
+    return value.cachedImage(m_deviceScaleFactor);
 }
 
 PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::cachedOrPendingFromValue(CSSPropertyID property, const CSSImageValue& value)
@@ -149,7 +149,7 @@ PassRefPtrWillBeRawPtr<StyleImage> ElementStyleResources::loadPendingImage(Style
         return cursorImageValue->cacheImage(m_document, m_deviceScaleFactor);
 
     if (CSSImageSetValue* imageSetValue = pendingImage->cssImageSetValue())
-        return imageSetValue->cacheImageSet(m_document, m_deviceScaleFactor, crossOrigin);
+        return imageSetValue->cacheImage(m_document, m_deviceScaleFactor, crossOrigin);
 
     ASSERT_NOT_REACHED();
     return nullptr;
