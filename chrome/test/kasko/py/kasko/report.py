@@ -23,9 +23,10 @@ def ValidateCrashReport(report, expectations=None):
   expected_keys = {}
 
   # The following keys are all expected to be set in all crashes, and should
-  # be set by GetCrashKeysForKasko.
+  # be set by GetCrashKeysForKasko. The 'channel' crash-key doesn't need to be
+  # set as it is omitted when empty (developer builds).
   get_crash_keys = 'GetCrashKeysForKasko'
-  for k in ['guid', 'prod', 'plat', 'ver', 'ptype', 'channel']:
+  for k in ['guid', 'prod', 'plat', 'ver', 'ptype']:
     expected_keys[k] = get_crash_keys
 
   # The following crash keys are expected to be set by the Kasko code itself.
@@ -39,7 +40,12 @@ def ValidateCrashReport(report, expectations=None):
       expected_keys[key] = value
 
   # Validate the expectations.
+  missing_keys = False
   for expected_key, error in expected_keys.iteritems():
     if expected_key not in report:
       _LOGGER.error('Missing expected "%s" crash key.', expected_key)
-      raise Exception('"%s" integration appears broken.' % error)
+      _LOGGER.error('"%s" integration appears broken.', error)
+      missing_keys = True
+
+  if missing_keys:
+    raise Exception('Missing expected crash keys.')

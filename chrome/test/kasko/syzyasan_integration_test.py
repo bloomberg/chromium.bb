@@ -145,7 +145,7 @@ class _ScopedInstrumentedChrome(object):
         sys.stderr.write(stderr)
 
     if result != 0:
-      raise Exception('Failed to instrument: %s' % chrome_dll)
+      raise Exception('Failed to instrument: %s' % self.chrome_dll_)
 
     return
 
