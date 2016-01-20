@@ -93,6 +93,10 @@ class ArcBridgeService : public ArcBridgeHost {
     virtual void OnInputInstanceReady() {}
     virtual void OnInputInstanceClosed() {}
 
+    // Called whenever the ARC intent helper interface state changes.
+    virtual void OnIntentHelperInstanceReady() {}
+    virtual void OnIntentHelperInstanceClosed() {}
+
     // Called whenever the ARC notification interface state changes.
     virtual void OnNotificationsInstanceReady() {}
     virtual void OnNotificationsInstanceClosed() {}
@@ -155,6 +159,9 @@ class ArcBridgeService : public ArcBridgeHost {
   ClipboardInstance* clipboard_instance() { return clipboard_ptr_.get(); }
   ImeInstance* ime_instance() { return ime_ptr_.get(); }
   InputInstance* input_instance() { return input_ptr_.get(); }
+  IntentHelperInstance* intent_helper_instance() {
+    return intent_helper_ptr_.get();
+  }
   NotificationsInstance* notifications_instance() {
     return notifications_ptr_.get();
   }
@@ -168,6 +175,7 @@ class ArcBridgeService : public ArcBridgeHost {
   int32_t clipboard_version() const { return clipboard_ptr_.version(); }
   int32_t ime_version() const { return ime_ptr_.version(); }
   int32_t input_version() const { return input_ptr_.version(); }
+  int32_t intent_helper_version() const { return intent_helper_ptr_.version(); }
   int32_t notifications_version() const { return notifications_ptr_.version(); }
   int32_t power_version() const { return power_ptr_.version(); }
   int32_t process_version() const { return process_ptr_.version(); }
@@ -180,6 +188,8 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnClipboardInstanceReady(ClipboardInstancePtr clipboard_ptr) override;
   void OnImeInstanceReady(ImeInstancePtr ime_ptr) override;
   void OnInputInstanceReady(InputInstancePtr input_ptr) override;
+  void OnIntentHelperInstanceReady(
+      IntentHelperInstancePtr intent_helper_ptr) override;
   void OnNotificationsInstanceReady(
       NotificationsInstancePtr notifications_ptr) override;
   void OnPowerInstanceReady(PowerInstancePtr power_ptr) override;
@@ -222,6 +232,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void CloseClipboardChannel();
   void CloseImeChannel();
   void CloseInputChannel();
+  void CloseIntentHelperChannel();
   void CloseNotificationsChannel();
   void ClosePowerChannel();
   void CloseProcessChannel();
@@ -234,6 +245,7 @@ class ArcBridgeService : public ArcBridgeHost {
   void OnClipboardVersionReady(int32_t version);
   void OnImeVersionReady(int32_t version);
   void OnInputVersionReady(int32_t version);
+  void OnIntentHelperVersionReady(int32_t version);
   void OnNotificationsVersionReady(int32_t version);
   void OnPowerVersionReady(int32_t version);
   void OnProcessVersionReady(int32_t version);
@@ -246,6 +258,7 @@ class ArcBridgeService : public ArcBridgeHost {
   ClipboardInstancePtr clipboard_ptr_;
   ImeInstancePtr ime_ptr_;
   InputInstancePtr input_ptr_;
+  IntentHelperInstancePtr intent_helper_ptr_;
   NotificationsInstancePtr notifications_ptr_;
   PowerInstancePtr power_ptr_;
   ProcessInstancePtr process_ptr_;
@@ -263,6 +276,7 @@ class ArcBridgeService : public ArcBridgeHost {
   ClipboardInstancePtr temporary_clipboard_ptr_;
   ImeInstancePtr temporary_ime_ptr_;
   InputInstancePtr temporary_input_ptr_;
+  IntentHelperInstancePtr temporary_intent_helper_ptr_;
   NotificationsInstancePtr temporary_notifications_ptr_;
   PowerInstancePtr temporary_power_ptr_;
   ProcessInstancePtr temporary_process_ptr_;

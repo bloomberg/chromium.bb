@@ -9,6 +9,7 @@ import "auth.mojom";
 import "clipboard.mojom";
 import "ime.mojom";
 import "input.mojom";
+import "intent_helper.mojom";
 import "notifications.mojom";
 import "power.mojom";
 import "process.mojom";
@@ -34,6 +35,10 @@ interface ArcBridgeHost {
 
   // Notifies Chrome that the InputInstnace interface is ready.
   OnInputInstanceReady@101(InputInstance instance_ptr);
+
+  // Notifies Chrome that the IntentHelpernstnace interface is ready.
+  [MinVersion=4] OnIntentHelperInstanceReady@111(
+      IntentHelperInstance instance_ptr);
 
   // Notifies Chrome that the NotificationsInstance interface is ready.
   OnNotificationsInstanceReady@102(NotificationsInstance instance_ptr);
