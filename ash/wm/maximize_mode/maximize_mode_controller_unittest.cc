@@ -155,6 +155,10 @@ class MaximizeModeControllerTest : public test::AshTestBase {
     return maximize_mode_controller()->WasLidOpenedRecently();
   }
 
+  bool AreEventsBlocked() {
+    return !!maximize_mode_controller()->event_blocker_.get();
+  }
+
   base::UserActionTester* user_action_tester() { return &user_action_tester_; }
 
  private:
@@ -454,6 +458,7 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
 
   OpenLidToAngle(270.0f);
   EXPECT_TRUE(IsMaximizeModeStarted());
+  EXPECT_TRUE(AreEventsBlocked());
 
   // Deactivate internal display to simulate Docked Mode.
   std::vector<DisplayInfo> secondary_only;
@@ -462,9 +467,11 @@ TEST_F(MaximizeModeControllerTest, NoMaximizeModeWithDisabledInternalDisplay) {
   display_manager->OnNativeDisplaysChanged(secondary_only);
   ASSERT_FALSE(display_manager->IsActiveDisplayId(internal_display_id));
   EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
 
   OpenLidToAngle(270.0f);
   EXPECT_FALSE(IsMaximizeModeStarted());
+  EXPECT_FALSE(AreEventsBlocked());
 }
 
 class MaximizeModeControllerSwitchesTest : public MaximizeModeControllerTest {
