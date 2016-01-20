@@ -11,7 +11,6 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -282,17 +281,11 @@ void EchoInformation::UpdateAecDelayStats(
 
 void EnableEchoCancellation(AudioProcessing* audio_processing) {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("ReplaceAECMWithAEC");
-  if (group_name.empty() ||
-      !(group_name == "Enabled" || group_name == "DefaultEnabled")) {
-    // Mobile devices are using AECM.
-    int err = audio_processing->echo_control_mobile()->set_routing_mode(
-        webrtc::EchoControlMobile::kSpeakerphone);
-    err |= audio_processing->echo_control_mobile()->Enable(true);
-    CHECK_EQ(err, 0);
-    return;
-  }
+  // Mobile devices are using AECM.
+  CHECK_EQ(0, audio_processing->echo_control_mobile()->set_routing_mode(
+                  webrtc::EchoControlMobile::kSpeakerphone));
+  CHECK_EQ(0, audio_processing->echo_control_mobile()->Enable(true));
+  return;
 #endif
   int err = audio_processing->echo_cancellation()->set_suppression_level(
       webrtc::EchoCancellation::kHighSuppression);
