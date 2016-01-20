@@ -8,8 +8,6 @@
 # Chrome checkout.
 
 deps = {
-    "src/build/android/pylib":
-        "https://src.chromium.org/chrome/trunk/src/build/android/pylib",
     "src/chrome/test/data/perf/canvas_bench":
         "https://chromium.googlesource.com/chromium/canvas_bench.git",
     "src/chrome/test/data/third_party/spaceport":

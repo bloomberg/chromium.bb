@@ -10,8 +10,6 @@ group("perf") {
   data = [
     "//tools/perf/",
 
-    "//build/android/pylib/",
-
     # Field trial config
     "//tools/variations/",
     "//testing/variations/",

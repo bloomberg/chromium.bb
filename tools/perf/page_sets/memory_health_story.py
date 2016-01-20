@@ -9,8 +9,8 @@ from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
 from telemetry import story
 
-from pylib.constants import keyevent # pylint: disable=import-error
-from pylib.device import intent # pylint: disable=import-error
+from devil.android.sdk import intent # pylint: disable=import-error
+from devil.android.sdk import keyevent # pylint: disable=import-error
 
 
 DUMP_WAIT_TIME = 3

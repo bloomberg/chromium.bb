@@ -10,7 +10,6 @@
       'variables': {
         'files': [
          './',
-         '../../build/android/pylib/',
           # Field trial configs
           '../variations/',
           '../../testing/variations/',
