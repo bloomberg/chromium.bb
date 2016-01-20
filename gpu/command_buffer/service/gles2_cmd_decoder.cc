@@ -11409,12 +11409,16 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
   Clip(x, width, size.width(), &copyX, &copyWidth);
   Clip(y, height, size.height(), &copyY, &copyHeight);
 
-  if (xoffset != 0 || yoffset != 0 || width != size.width() ||
-      height != size.height()) {
+  GLint dx = copyX - x;
+  GLint dy = copyY - y;
+  GLint destX = xoffset + dx;
+  GLint destY = yoffset + dy;
+  if (destX != 0 || destY != 0 || copyWidth != size.width() ||
+      copyHeight != size.height()) {
     gfx::Rect cleared_rect;
     if (TextureManager::CombineAdjacentRects(
             texture->GetLevelClearedRect(target, level),
-            gfx::Rect(xoffset, yoffset, width, height), &cleared_rect)) {
+            gfx::Rect(destX, destY, copyWidth, copyHeight), &cleared_rect)) {
       DCHECK_GE(cleared_rect.size().GetArea(),
                 texture->GetLevelClearedRect(target, level).size().GetArea());
       texture_manager()->SetLevelClearedRect(texture_ref, target, level,
@@ -11433,31 +11437,7 @@ void GLES2DecoderImpl::DoCopyTexSubImage2D(
     texture_manager()->SetLevelCleared(texture_ref, target, level, true);
   }
 
-  if (copyX != x ||
-      copyY != y ||
-      copyWidth != width ||
-      copyHeight != height) {
-    // some part was clipped so clear the sub rect.
-    uint32_t pixels_size = 0;
-    if (!GLES2Util::ComputeImageDataSizes(
-        width, height, 1, format, type, state_.unpack_alignment, &pixels_size,
-        NULL, NULL)) {
-      LOCAL_SET_GL_ERROR(
-          GL_INVALID_VALUE, "glCopyTexSubImage2D", "dimensions too large");
-      return;
-    }
-    scoped_ptr<char[]> zero(new char[pixels_size]);
-    memset(zero.get(), 0, pixels_size);
-    glTexSubImage2D(
-        target, level, xoffset, yoffset, width, height,
-        format, type, zero.get());
-  }
-
   if (copyHeight > 0 && copyWidth > 0) {
-    GLint dx = copyX - x;
-    GLint dy = copyY - y;
-    GLint destX = xoffset + dx;
-    GLint destY = yoffset + dy;
     glCopyTexSubImage2D(target, level,
                         destX, destY, copyX, copyY,
                         copyWidth, copyHeight);
