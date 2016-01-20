@@ -263,9 +263,8 @@ void SVGSVGElement::collectStyleForPresentationAttribute(const QualifiedName& na
 void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     bool updateRelativeLengthsOrViewBox = false;
-    bool widthChanged = attrName == SVGNames::widthAttr;
-    bool heightChanged = attrName == SVGNames::heightAttr;
-    if (widthChanged || heightChanged
+    bool widthOrHeightChanged = attrName == SVGNames::widthAttr || attrName == SVGNames::heightAttr;
+    if (widthOrHeightChanged
         || attrName == SVGNames::xAttr
         || attrName == SVGNames::yAttr) {
         updateRelativeLengthsOrViewBox = true;
@@ -279,7 +278,7 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         // FIXME: For width/height animated as XML attributes on SVG
         // roots, there is an attribute synchronization missing. See
         // http://crbug.com/364807
-        if (widthChanged || heightChanged) {
+        if (widthOrHeightChanged) {
             LayoutObject* layoutObject = this->layoutObject();
             if (layoutObject && layoutObject->isSVGRoot()) {
                 invalidateSVGPresentationAttributeStyle();
