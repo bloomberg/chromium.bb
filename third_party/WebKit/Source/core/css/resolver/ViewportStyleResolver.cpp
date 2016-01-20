@@ -39,6 +39,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/ViewportDescription.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 
 namespace blink {
@@ -200,8 +201,12 @@ Length ViewportStyleResolver::viewportLengthValue(CSSPropertyID id) const
     bool documentStyleHasViewportUnits = documentStyle->hasViewportUnits();
     documentStyle->setHasViewportUnits(false);
 
+    FrameView* view = m_document->view();
+    float width = view ? view->width() : 0;
+    float height = view ? view->height() : 0;
+
     CSSToLengthConversionData::FontSizes fontSizes(documentStyle, documentStyle);
-    CSSToLengthConversionData::ViewportSize viewportSize(m_document->layoutView());
+    CSSToLengthConversionData::ViewportSize viewportSize(width, height);
 
     if (primitiveValue->getValueID() == CSSValueAuto)
         return Length(Auto);

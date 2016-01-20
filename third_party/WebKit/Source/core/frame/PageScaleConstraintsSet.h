@@ -85,7 +85,9 @@ public:
     // This is set when one of the inputs to finalConstraints changes.
     bool constraintsDirty() const { return m_constraintsDirty; }
 
-    void didChangeInitialContainingBlockSize(const IntSize&);
+    void didChangeViewSize(const IntSize&);
+
+    IntSize mainFrameSize() const;
 
     IntSize layoutSize() const;
 
@@ -101,7 +103,7 @@ private:
     PageScaleConstraints m_finalConstraints;
 
     int m_lastContentsWidth;
-    IntSize m_icbSize;
+    IntSize m_viewSize;
 
     bool m_needsReset;
     bool m_constraintsDirty;

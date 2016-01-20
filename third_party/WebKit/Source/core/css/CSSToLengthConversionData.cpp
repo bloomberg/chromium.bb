@@ -68,7 +68,8 @@ float CSSToLengthConversionData::FontSizes::ch() const
 }
 
 CSSToLengthConversionData::ViewportSize::ViewportSize(const LayoutView* layoutView)
-    : m_size(layoutView ? layoutView->viewportSizeForViewportUnits() : DoubleSize())
+    : m_width(layoutView ? layoutView->layoutViewportWidth() : 0)
+    , m_height(layoutView ? layoutView->layoutViewportHeight() : 0)
 {
 }
 
