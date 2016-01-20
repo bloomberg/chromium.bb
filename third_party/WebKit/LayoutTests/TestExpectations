@@ -1465,6 +1465,7 @@ crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/encoding/api-invali
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_entities01.html [ Slow ]
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_tests10.html [ Slow ]
 crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_webkit01.html [ Slow ]
+crbug.com/577381 [ Linux Debug ] imported/web-platform-tests/html/syntax/parsing/html5lib_domjs-unsafe.html [ Slow ]
 
 crbug.com/577746 [ Linux Debug ] compositing/iframes/iframe-in-composited-layer.html [ Pass Failure ]
 
