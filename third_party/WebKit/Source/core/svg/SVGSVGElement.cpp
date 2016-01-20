@@ -274,10 +274,6 @@ void SVGSVGElement::svgAttributeChanged(const QualifiedName& attrName)
         // At the SVG/HTML boundary (aka LayoutSVGRoot), the width and
         // height attributes can affect the replaced size so we need
         // to mark it for updating.
-        //
-        // FIXME: For width/height animated as XML attributes on SVG
-        // roots, there is an attribute synchronization missing. See
-        // http://crbug.com/364807
         if (widthOrHeightChanged) {
             LayoutObject* layoutObject = this->layoutObject();
             if (layoutObject && layoutObject->isSVGRoot()) {
