@@ -698,7 +698,7 @@ cr.define('extensions', function() {
       var isUnpacked =
           extension.location == chrome.developerPrivate.Location.UNPACKED;
       // The 'Reload' link.
-      this.updateVisibility_(wrapper, '.reload-link', isUnpacked);
+      this.updateVisibility_(wrapper, '.reload-link', isActive && isUnpacked);
 
       // The 'Launch' link.
       this.updateVisibility_(
