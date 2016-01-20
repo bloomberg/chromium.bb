@@ -74,12 +74,12 @@ test(() => {
 }, "getAssignedNodes");
 
 test(() => {
-  assert_array_equals(slot1.getDistributedNodes(), [fallback1, child1]);
-  assert_array_equals(slot2.getDistributedNodes(), [child1]);
-  assert_array_equals(slot3.getDistributedNodes(), [fallback3]);
-  assert_array_equals(slot4.getDistributedNodes(), [fallback3]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [fallback1, child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot3.getAssignedNodes({flatten: true}), [fallback3]);
+  assert_array_equals(slot4.getAssignedNodes({flatten: true}), [fallback3]);
 
-  assert_array_equals(slot_a.getDistributedNodes(), [fallback1, child1, fallback_a]);
-  assert_array_equals(slot_b.getDistributedNodes(), [fallback1, child1]);
+  assert_array_equals(slot_a.getAssignedNodes({flatten: true}), [fallback1, child1, fallback_a]);
+  assert_array_equals(slot_b.getAssignedNodes({flatten: true}), [fallback1, child1]);
 }, "getDistributedNodes");
 </script>

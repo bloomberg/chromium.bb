@@ -36,6 +36,8 @@
 
 namespace blink {
 
+class AssignedNodesOptions;
+
 class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
     DEFINE_WRAPPERTYPEINFO();
 public:
@@ -44,8 +46,7 @@ public:
     const WillBeHeapVector<RefPtrWillBeMember<Node>>& getAssignedNodes() const { ASSERT(!needsDistributionRecalc()); return m_assignedNodes; }
     const WillBeHeapVector<RefPtrWillBeMember<Node>>& getDistributedNodes() const { ASSERT(!needsDistributionRecalc()); return m_distributedNodes; }
 
-    const WillBeHeapVector<RefPtrWillBeMember<Node>> getAssignedNodesForBinding() { updateDistribution(); return m_assignedNodes; }
-    const WillBeHeapVector<RefPtrWillBeMember<Node>> getDistributedNodesForBinding() { updateDistribution(); return m_distributedNodes; }
+    const WillBeHeapVector<RefPtrWillBeMember<Node>> getAssignedNodesForBinding(const AssignedNodesOptions&);
 
     Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.first().get(); }
     Node* lastDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.last().get(); }

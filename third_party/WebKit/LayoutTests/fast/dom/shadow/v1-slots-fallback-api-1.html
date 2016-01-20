@@ -33,7 +33,7 @@ test(() => {
 }, "getAssignedNodes");
 
 test(() => {
-  assert_array_equals(slot1.getDistributedNodes(), [child1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 }, "getDistributedNodes");
 </script>

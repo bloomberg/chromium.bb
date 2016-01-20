@@ -34,6 +34,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/InsertionPoint.h"
+#include "core/html/AssignedNodesOptions.h"
 
 namespace blink {
 
@@ -45,6 +46,14 @@ inline HTMLSlotElement::HTMLSlotElement(Document& document)
 }
 
 DEFINE_NODE_FACTORY(HTMLSlotElement);
+
+const WillBeHeapVector<RefPtrWillBeMember<Node>> HTMLSlotElement::getAssignedNodesForBinding(const AssignedNodesOptions& options)
+{
+    updateDistribution();
+    if (options.hasFlatten() && options.flatten())
+        return getDistributedNodes();
+    return m_assignedNodes;
+}
 
 void HTMLSlotElement::appendAssignedNode(Node& node)
 {

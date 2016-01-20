@@ -2727,7 +2727,6 @@ interface HTMLSlotElement : HTMLElement
     getter name
     method constructor
     method getAssignedNodes
-    method getDistributedNodes
     setter name
 interface HTMLSourceElement : HTMLElement
     getter media

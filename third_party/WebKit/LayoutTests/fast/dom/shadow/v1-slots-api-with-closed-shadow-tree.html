@@ -49,8 +49,8 @@ test(() => {
 }, "A closed shadow tree has nothing to do with the behavior of getAssignedNodes");
 
 test(() => {
-  assert_array_equals(d1_s1.getDistributedNodes(), [d2]);
-  assert_array_equals(d1_s2.getDistributedNodes(), [d3]);
-  assert_array_equals(d1_1_s1.getDistributedNodes(), [d1_2, d2]);
-}, "A closed shadow tree has nothing to do with the behavior of getDistributedNodes");
+  assert_array_equals(d1_s1.getAssignedNodes({flatten: true}), [d2]);
+  assert_array_equals(d1_s2.getAssignedNodes({flatten: true}), [d3]);
+  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d1_2, d2]);
+}, "A closed shadow tree has nothing to do with the behavior of getAssignedNodes({flatten: true}}");
 </script>

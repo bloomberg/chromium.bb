@@ -40,8 +40,8 @@ test(() => {
 }, "assignedSlot");
 
 test(() => {
-  assert_array_equals(defaultSlot.getDistributedNodes(), [textHello, child2, textWorld]);
-  assert_array_equals(slot1.getDistributedNodes(), [child1]);
+  assert_array_equals(defaultSlot.getAssignedNodes({flatten: true}), [textHello, child2, textWorld]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
 }, "getDistributedNodes");
 
 add_completion_callback(() => {

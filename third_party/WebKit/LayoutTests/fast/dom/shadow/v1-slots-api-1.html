@@ -38,8 +38,8 @@ test(() => {
 }, "getAssignedNodes");
 
 test(() => {
-  assert_array_equals(slot1.getDistributedNodes(), [child1, child2]);
-  assert_array_equals(slot2.getDistributedNodes(), [child3]);
-  assert_array_equals(slot3.getDistributedNodes(), []);
-}, "getDistributedNodes");
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1, child2]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [child3]);
+  assert_array_equals(slot3.getAssignedNodes({flatten: true}), []);
+}, "getAssignedNodes({flatten: true})");
 </script>

@@ -71,11 +71,17 @@ test(() => {
 }, "getAssignedNodes");
 
 test(() => {
-  assert_array_equals(d1_s0.getDistributedNodes(), [d5]);
-  assert_array_equals(d1_s1.getDistributedNodes(), [d2]);
-  assert_array_equals(d1_s2.getDistributedNodes(), [d3]);
+  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: false}), [d1_s1, d1_4],
+                      "{flatten: false} should not have any effect");
+}, "getAssignedNodes({flatten: false})");
 
-  assert_array_equals(d1_1_s1.getDistributedNodes(), [d2, d1_4]);
-  assert_array_equals(d1_1_s2.getDistributedNodes(), []);
-}, "getDistributedNodes");
+test(() => {
+  assert_array_equals(d1_s0.getAssignedNodes({flatten: true}), [d5]);
+  assert_array_equals(d1_s1.getAssignedNodes({flatten: true}), [d2]);
+  assert_array_equals(d1_s2.getAssignedNodes({flatten: true}), [d3]);
+
+  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d2, d1_4]);
+  assert_array_equals(d1_1_s1.getAssignedNodes({flatten: true}), [d2, d1_4]);
+  assert_array_equals(d1_1_s2.getAssignedNodes({flatten: true}), []);
+}, "getAssignedNodes({flatten: true})");
 </script>

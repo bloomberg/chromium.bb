@@ -25,8 +25,8 @@ const fallback1 = host.shadowRoot.querySelector('#fallback1');
 const fallback2 = host.shadowRoot.querySelector('#fallback2');
 
 test(() => {
-  assert_array_equals(slot1.getDistributedNodes(), [child1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 }, "Slot's distributed nodes");
 
 test(() => {
@@ -35,24 +35,24 @@ test(() => {
   slot0.setAttribute('name', 'slot1');
   host.shadowRoot.insertBefore(slot0, slot1);
 
-  assert_array_equals(slot0.getDistributedNodes(), [child1]);
-  assert_array_equals(slot1.getDistributedNodes(), [fallback1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot0.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [fallback1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 
   // Remove
   host.shadowRoot.removeChild(slot0);
-  assert_array_equals(slot1.getDistributedNodes(), [child1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 }, "Slot's distributed nodes after inserting/removeing a slot.");
 
 test(() => {
   // Attribute change
   slot1.setAttribute('name', 'slot-foo');
-  assert_array_equals(slot1.getDistributedNodes(), [fallback1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [fallback1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 
   child1.setAttribute('slot', 'slot-foo');
-  assert_array_equals(slot1.getDistributedNodes(), [child1]);
-  assert_array_equals(slot2.getDistributedNodes(), [fallback2]);
+  assert_array_equals(slot1.getAssignedNodes({flatten: true}), [child1]);
+  assert_array_equals(slot2.getAssignedNodes({flatten: true}), [fallback2]);
 }, "Slot's distributed nodes after the attribute is changed.");
 </script>

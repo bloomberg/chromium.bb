@@ -857,7 +857,6 @@ html element shadow
     property getDistributedNodes
 html element slot
     property getAssignedNodes
-    property getDistributedNodes
     property name
 html element small
 html element source
