@@ -65,6 +65,7 @@ source_set("renderer") {
     "//mojo/shell/public/cpp",
     "//mojo/shell/public/interfaces",
     "//net",
+    "//sandbox",
     "//skia",
     "//skia/public",
     "//storage/common",
@@ -159,6 +160,7 @@ source_set("renderer") {
       "//third_party/libjingle:libjingle_webrtc",
       "//third_party/libjingle:libpeerconnection",
       "//third_party/libjingle:libstunprober",
+      "//third_party/libvpx_new",
       "//third_party/webrtc/base:rtc_base",
       "//third_party/webrtc/common_video",
       "//third_party/webrtc/modules/audio_device",
@@ -234,5 +236,9 @@ source_set("renderer") {
 
   if (use_seccomp_bpf) {
     defines += [ "USE_SECCOMP_BPF" ]
+  }
+
+  if (use_ozone) {
+    deps += [ "//ui/ozone" ]
   }
 }

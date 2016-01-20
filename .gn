@@ -38,6 +38,7 @@ check_targets = [
   #"//content/*",  # A whole lot of errors.
   "//content/public/common:result_codes",
   "//content/public/common:static_switches",
+  "//content/renderer:*",  # Excluding //content/renderer/mus.
   "//courgette/*",
   "//crypto/*",
   "//data/*",
