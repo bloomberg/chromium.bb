@@ -193,11 +193,7 @@ def main(args):
         _AddAssets(out_apk, _assets, disable_compression=False)
         _AddAssets(out_apk, _uncompressed_assets, disable_compression=True)
 
-        # 3. Resources
-        for info in resource_infos[1:]:
-          copy_resource(info)
-
-        # 4. Dex files
+        # 3. Dex files
         if options.dex_file and options.dex_file.endswith('.zip'):
           with zipfile.ZipFile(options.dex_file, 'r') as dex_zip:
             for dex in (d for d in dex_zip.namelist() if d.endswith('.dex')):
@@ -206,7 +202,7 @@ def main(args):
           build_utils.AddToZipHermetic(out_apk, 'classes.dex',
                                        src_path=options.dex_file)
 
-        # 5. Native libraries.
+        # 4. Native libraries.
         for path in native_libs:
           basename = os.path.basename(path)
           apk_path = 'lib/%s/%s' % (options.android_abi, basename)
@@ -217,6 +213,10 @@ def main(args):
           # to be empty in order to identify them as placeholders.
           apk_path = 'lib/%s/%s' % (options.android_abi, name)
           build_utils.AddToZipHermetic(out_apk, apk_path, data='')
+
+        # 5. Resources
+        for info in resource_infos[1:]:
+          copy_resource(info)
 
         # 6. Java resources. Used only when coverage is enabled, so order
         # doesn't matter).
