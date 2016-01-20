@@ -3215,6 +3215,8 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::parseSingleValue(CSSProperty
     case CSSPropertyContent:
         return consumeContent(m_range, m_context);
     case CSSPropertyListStyleImage:
+    case CSSPropertyBorderImageSource:
+    case CSSPropertyWebkitMaskBoxImageSource:
         return consumeImage(m_range, m_context);
     case CSSPropertyPerspective:
         return consumePerspective(m_range, m_context.mode(), unresolvedProperty);

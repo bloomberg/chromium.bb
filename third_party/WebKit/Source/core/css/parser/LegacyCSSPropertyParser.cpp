@@ -359,12 +359,6 @@ PassRefPtrWillBeRawPtr<CSSValue> CSSPropertyParser::legacyParseValue(CSSProperty
         ASSERT(!dummyValue);
         break;
     }
-    case CSSPropertyBorderImageSource: // <uri> | none | inherit
-    case CSSPropertyWebkitMaskBoxImageSource:
-        if (parseFillImage(m_valueList, parsedValue))
-            m_valueList->next();
-        break;
-
     case CSSPropertyBottom:               // <length> | <percentage> | auto | inherit
     case CSSPropertyLeft:                 // <length> | <percentage> | auto | inherit
     case CSSPropertyRight:                // <length> | <percentage> | auto | inherit
