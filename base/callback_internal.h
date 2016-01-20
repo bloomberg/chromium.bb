@@ -115,8 +115,8 @@ template <typename T> struct IsMoveOnlyType {
 
 // Specialization of IsMoveOnlyType so that std::unique_ptr is still considered
 // move-only, even without the sentinel member.
-template <typename T>
-struct IsMoveOnlyType<std::unique_ptr<T>> : std::true_type {};
+template <typename T, typename D>
+struct IsMoveOnlyType<std::unique_ptr<T, D>> : std::true_type {};
 
 template <typename>
 struct CallbackParamTraitsForMoveOnlyType;
