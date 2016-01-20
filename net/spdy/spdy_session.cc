@@ -2711,7 +2711,7 @@ bool SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   // TODO(mbelshe): DCHECK that this is a GET method?
 
   // Verify that the response had a URL for us.
-  GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion(), true);
+  GURL gurl = GetUrlFromHeaderBlock(headers, GetProtocolVersion());
   if (!gurl.is_valid()) {
     EnqueueResetStreamFrame(stream_id,
                             request_priority,

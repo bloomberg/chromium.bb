@@ -193,9 +193,7 @@ NET_EXPORT_PRIVATE RequestPriority ConvertSpdyPriorityToRequestPriority(
 }
 
 GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers,
-                           SpdyMajorVersion protocol_version,
-                           bool pushed) {
-  DCHECK_LE(SPDY3, protocol_version);
+                           SpdyMajorVersion protocol_version) {
   SpdyHeaderBlock::const_iterator it = headers.find(":scheme");
   if (it == headers.end())
     return GURL();

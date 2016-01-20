@@ -4679,7 +4679,7 @@ TEST_P(SpdySessionTest, SplitHeaders) {
   EXPECT_EQ("beta", alpha_val);
 
   GURL request_url =
-      GetUrlFromHeaderBlock(request_headers, spdy_util_.spdy_version(), true);
+      GetUrlFromHeaderBlock(request_headers, spdy_util_.spdy_version());
   EXPECT_EQ(kStreamUrl, request_url);
 }
 

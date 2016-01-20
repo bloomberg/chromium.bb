@@ -796,8 +796,7 @@ GURL SpdyStream::GetUrlFromHeaders() const {
   if (!request_headers_)
     return GURL();
 
-  return GetUrlFromHeaderBlock(
-      *request_headers_, GetProtocolVersion(), type_ == SPDY_PUSH_STREAM);
+  return GetUrlFromHeaderBlock(*request_headers_, GetProtocolVersion());
 }
 
 bool SpdyStream::HasUrlFromHeaders() const {
