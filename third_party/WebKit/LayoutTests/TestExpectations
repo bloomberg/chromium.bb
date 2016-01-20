@@ -1476,3 +1476,4 @@ crbug.com/516751 svg/custom/pointer-events-image-css-transform.svg [ NeedsRebase
 crbug.com/516751 svg/custom/pointer-events-image.svg [ NeedsRebaseline ]
 crbug.com/516751 svg/hixie/perf/004.xml [ NeedsRebaseline ]
 
+crbug.com/579365 [ Mac ] fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
