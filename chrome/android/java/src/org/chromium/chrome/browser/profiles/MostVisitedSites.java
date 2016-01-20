@@ -129,10 +129,16 @@ public class MostVisitedSites {
 
     /**
      * Blacklists a URL from the most visited URLs list.
-     * @param url The URL to be blacklisted.
      */
-    public void blacklistUrl(String url) {
-        nativeBlacklistUrl(mNativeMostVisitedSites, url);
+    public void addBlacklistedUrl(String url) {
+        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSites, url, true);
+    }
+
+    /**
+     * Removes a URL from the most visited URLs blacklist.
+     */
+    public void removeBlacklistedUrl(String url) {
+        nativeAddOrRemoveBlacklistedUrl(mNativeMostVisitedSites, url, false);
     }
 
     /**
@@ -159,7 +165,8 @@ public class MostVisitedSites {
             MostVisitedURLsObserver observer, int numSites);
     private native void nativeGetURLThumbnail(long nativeMostVisitedSites, String url,
             ThumbnailCallback callback);
-    private native void nativeBlacklistUrl(long nativeMostVisitedSites, String url);
+    private native void nativeAddOrRemoveBlacklistedUrl(long nativeMostVisitedSites, String url,
+            boolean addUrl);
     private native void nativeRecordTileTypeMetrics(long nativeMostVisitedSites, int[] tileTypes);
     private native void nativeRecordOpenedMostVisitedItem(long nativeMostVisitedSites, int index,
             int tileType);
