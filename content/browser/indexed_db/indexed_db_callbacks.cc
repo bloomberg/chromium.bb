@@ -251,9 +251,8 @@ static bool CreateAllBlobs(
     return false;
   for (i = 0; i < blob_info.size(); ++i) {
     (*blob_or_file_info)[i].uuid =
-        CreateBlobData(blob_info[i],
-                       dispatcher_host,
-                       dispatcher_host->Context()->TaskRunner());
+        CreateBlobData(blob_info[i], dispatcher_host,
+                       dispatcher_host->context()->TaskRunner());
   }
   return true;
 }

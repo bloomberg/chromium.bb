@@ -85,10 +85,16 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DatabaseDeleted(const GURL& origin_url);
   bool WouldBeOverQuota(const GURL& origin_url, int64_t additional_bytes);
 
-  storage::QuotaManagerProxy* quota_manager_proxy();
+  // Will be null in unit tests.
+  storage::QuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
 
+  // Returns a list of all origins with backing stores.
   std::vector<GURL> GetAllOrigins();
-  base::Time GetOriginLastModified(const GURL& origin_url);
+  bool HasOrigin(const GURL& origin);
+
+  // Used by IndexedDBInternalsUI to populate internals page.
   base::ListValue* GetAllOriginsDetails();
 
   // ForceClose takes a value rather than a reference since it may release the
@@ -99,10 +105,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   std::vector<base::FilePath> GetStoragePaths(const GURL& origin_url) const;
 
   base::FilePath data_path() const { return data_path_; }
-  bool IsInOriginSet(const GURL& origin_url) {
-    std::set<GURL>* set = GetOriginSet();
-    return set->find(origin_url) != set->end();
-  }
   size_t GetConnectionCount(const GURL& origin_url);
   int GetOriginBlobFileCount(const GURL& origin_url);
 
@@ -138,6 +140,8 @@ class CONTENT_EXPORT IndexedDBContextImpl
                         int64_t quota);
   void GotUpdatedQuota(const GURL& origin_url, int64_t usage, int64_t quota);
   void QueryAvailableQuota(const GURL& origin_url);
+  void QueryAvailableQuotaOnIOThread(const GURL& origin_url);
+  base::Time GetOriginLastModified(const GURL& origin_url);
 
   std::set<GURL>* GetOriginSet();
   bool AddToOriginSet(const GURL& origin_url) {

@@ -138,6 +138,12 @@ std::vector<GURL> IndexedDBContextImpl::GetAllOrigins() {
   return std::vector<GURL>(origins_set->begin(), origins_set->end());
 }
 
+bool IndexedDBContextImpl::HasOrigin(const GURL& origin) {
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+  std::set<GURL>* set = GetOriginSet();
+  return set->find(origin) != set->end();
+}
+
 std::vector<IndexedDBInfo> IndexedDBContextImpl::GetAllOriginsInfo() {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   std::vector<GURL> origins = GetAllOrigins();
@@ -289,7 +295,7 @@ int IndexedDBContextImpl::GetOriginBlobFileCount(const GURL& origin_url) {
 
 int64_t IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return 0;
   EnsureDiskUsageCacheInitialized(origin_url);
   return origin_size_map_[origin_url];
@@ -297,7 +303,7 @@ int64_t IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
 
 base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return base::Time();
   base::FilePath idb_directory = GetLevelDBPath(origin_url);
   base::File::Info file_info;
@@ -309,7 +315,7 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const GURL& origin_url) {
 void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   ForceClose(origin_url, FORCE_CLOSE_DELETE_ORIGIN);
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return;
 
   base::FilePath idb_directory = GetLevelDBPath(origin_url);
@@ -339,7 +345,7 @@ void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
                                           IndexedDBContext* dest_context) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
 
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return;
 
   IndexedDBContextImpl* dest_context_impl =
@@ -375,7 +381,7 @@ void IndexedDBContextImpl::ForceClose(const GURL origin_url,
                             reason,
                             FORCE_CLOSE_REASON_MAX);
 
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return;
 
   if (factory_.get())
@@ -385,7 +391,7 @@ void IndexedDBContextImpl::ForceClose(const GURL origin_url,
 
 size_t IndexedDBContextImpl::GetConnectionCount(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (data_path_.empty() || !IsInOriginSet(origin_url))
+  if (data_path_.empty() || !HasOrigin(origin_url))
     return 0;
 
   if (!factory_.get())
@@ -471,10 +477,6 @@ bool IndexedDBContextImpl::WouldBeOverQuota(const GURL& origin_url,
   }
   bool over_quota = additional_bytes > space_available_map_[origin_url];
   return over_quota;
-}
-
-storage::QuotaManagerProxy* IndexedDBContextImpl::quota_manager_proxy() {
-  return quota_manager_proxy_.get();
 }
 
 IndexedDBContextImpl::~IndexedDBContextImpl() {
@@ -579,17 +581,18 @@ void IndexedDBContextImpl::GotUpdatedQuota(const GURL& origin_url,
 }
 
 void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-    if (quota_manager_proxy()) {
-      BrowserThread::PostTask(
-          BrowserThread::IO,
-          FROM_HERE,
-          base::Bind(
-              &IndexedDBContextImpl::QueryAvailableQuota, this, origin_url));
-    }
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
+  // No-op in unit tests.
+  if (!quota_manager_proxy())
     return;
-  }
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IndexedDBContextImpl::QueryAvailableQuotaOnIOThread, this,
+                 origin_url));
+}
+
+void IndexedDBContextImpl::QueryAvailableQuotaOnIOThread(
+    const GURL& origin_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!quota_manager_proxy() || !quota_manager_proxy()->quota_manager())
     return;
