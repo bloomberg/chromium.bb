@@ -10,6 +10,9 @@
 #include "components/scheduler/renderer/renderer_scheduler_impl.h"
 #include "components/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "third_party/WebKit/public/platform/WebFrameScheduler.h"
+#include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebView.h"
 
 namespace scheduler {
 
@@ -21,7 +24,9 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       renderer_scheduler_(renderer_scheduler),
       page_in_background_(false),
       disable_background_timer_throttling_(
-          disable_background_timer_throttling) {}
+          disable_background_timer_throttling) {
+  renderer_scheduler->AddWebViewScheduler(this);
+}
 
 WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   // TODO(alexclarke): Find out why we can't rely on the web view outliving the
@@ -29,6 +34,7 @@ WebViewSchedulerImpl::~WebViewSchedulerImpl() {
   for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->DetachFromWebViewScheduler();
   }
+  renderer_scheduler_->RemoveWebViewScheduler(this);
 }
 
 void WebViewSchedulerImpl::setPageInBackground(bool page_in_background) {
@@ -60,6 +66,15 @@ WebViewSchedulerImpl::createFrameScheduler() {
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
+}
+
+void WebViewSchedulerImpl::AddConsoleWarning(const std::string& message) {
+  if (!web_view_ || !web_view_->mainFrame())
+    return;
+  blink::WebConsoleMessage console_message(
+      blink::WebConsoleMessage::LevelWarning,
+      blink::WebString::fromUTF8(message));
+  web_view_->mainFrame()->addMessageToConsole(console_message);
 }
 
 }  // namespace scheduler

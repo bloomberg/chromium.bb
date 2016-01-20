@@ -18,6 +18,7 @@
 #include "components/scheduler/renderer/task_cost_estimator.h"
 #include "components/scheduler/renderer/throttling_helper.h"
 #include "components/scheduler/renderer/user_model.h"
+#include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "components/scheduler/scheduler_export.h"
 
 namespace base {
@@ -28,6 +29,7 @@ class ConvertableToTraceFormat;
 
 namespace scheduler {
 class RenderWidgetSchedulingState;
+class WebViewSchedulerImpl;
 class ThrottlingHelper;
 
 class SCHEDULER_EXPORT RendererSchedulerImpl
@@ -94,6 +96,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   void UnregisterTimeDomain(TimeDomain* time_domain);
 
   void SetExpensiveTaskBlockingAllowed(bool allowed);
+
+  void AddWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
+  void RemoveWebViewScheduler(WebViewSchedulerImpl* web_view_scheduler);
 
   // Test helpers.
   SchedulerHelper* GetSchedulerHelperForTesting();
@@ -275,6 +280,9 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
   // current system state. Must be called from the main thread.
   base::TimeDelta EstimateLongestJankFreeTaskDuration() const;
 
+  // Log a console warning message to all WebViews in this process.
+  void BroadcastConsoleWarning(const std::string& message);
+
   void ApplyTaskQueuePolicy(TaskQueue* task_queue,
                             const TaskQueuePolicy& old_task_queue_policy,
                             const TaskQueuePolicy& new_task_queue_policy) const;
@@ -329,6 +337,7 @@ class SCHEDULER_EXPORT RendererSchedulerImpl
     bool has_visible_render_widget_with_touch_handler;
     bool begin_frame_not_expected_soon;
     bool expensive_task_blocking_allowed;
+    std::set<WebViewSchedulerImpl*> web_view_schedulers_;  // Not owned.
   };
 
   struct AnyThread {

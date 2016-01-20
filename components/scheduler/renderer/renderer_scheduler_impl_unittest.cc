@@ -2610,6 +2610,47 @@ TEST_F(RendererSchedulerImplTest,
             scheduler_->EstimateLongestJankFreeTaskDuration());
 }
 
+class WebViewSchedulerImplForTest : public WebViewSchedulerImpl {
+ public:
+  WebViewSchedulerImplForTest(RendererSchedulerImpl* scheduler)
+      : WebViewSchedulerImpl(nullptr, scheduler, false) {}
+  ~WebViewSchedulerImplForTest() override {}
+
+  void AddConsoleWarning(const std::string& message) override {
+    console_warnings_.push_back(message);
+  }
+
+  const std::vector<std::string>& console_warnings() const {
+    return console_warnings_;
+  }
+
+ private:
+  std::vector<std::string> console_warnings_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImplForTest);
+};
+
+TEST_F(RendererSchedulerImplTest, BlockedTimerNotification) {
+  // Make sure we see one (and just one) console warning about an expensive
+  // timer being deferred.
+  WebViewSchedulerImplForTest web_view_scheduler(scheduler_.get());
+
+  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
+  DoMainFrame();
+  SimulateExpensiveTasks(timer_task_runner_);
+  SimulateCompositorGestureStart(TouchEventPolicy::SEND_TOUCH_START);
+  ForceTouchStartToBeExpectedSoon();
+
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 T2");
+  RunUntilIdle();
+
+  EXPECT_EQ(0u, run_order.size());
+  EXPECT_EQ(1u, web_view_scheduler.console_warnings().size());
+  EXPECT_NE(std::string::npos,
+            web_view_scheduler.console_warnings()[0].find("crbug.com/574343"));
+}
+
 namespace {
 void SlowCountingTask(size_t* count,
                       base::SimpleTestTickClock* clock,

@@ -14,6 +14,7 @@
 #include "components/scheduler/base/task_queue_selector.h"
 #include "components/scheduler/base/virtual_time_domain.h"
 #include "components/scheduler/child/scheduler_tqm_delegate.h"
+#include "components/scheduler/renderer/web_view_scheduler_impl.h"
 #include "components/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
 
 namespace scheduler {
@@ -1120,10 +1121,11 @@ void RendererSchedulerImpl::ResumeTimerQueueWhenForegrounded() {
 void RendererSchedulerImpl::ResetForNavigationLocked() {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
+  AnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
+  AnyThread().have_seen_touchstart = false;
   MainThreadOnly().loading_task_cost_estimator.Clear();
   MainThreadOnly().timer_task_cost_estimator.Clear();
   MainThreadOnly().idle_time_estimator.Clear();
-  AnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
   MainThreadOnly().have_seen_a_begin_main_frame = false;
   MainThreadOnly().have_reported_blocking_intervention_since_navigation = false;
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
@@ -1154,6 +1156,25 @@ base::TickClock* RendererSchedulerImpl::tick_clock() const {
   return helper_.scheduler_tqm_delegate().get();
 }
 
+void RendererSchedulerImpl::AddWebViewScheduler(
+    WebViewSchedulerImpl* web_view_scheduler) {
+  MainThreadOnly().web_view_schedulers_.insert(web_view_scheduler);
+}
+
+void RendererSchedulerImpl::RemoveWebViewScheduler(
+    WebViewSchedulerImpl* web_view_scheduler) {
+  DCHECK(MainThreadOnly().web_view_schedulers_.find(web_view_scheduler) !=
+         MainThreadOnly().web_view_schedulers_.end());
+  MainThreadOnly().web_view_schedulers_.erase(web_view_scheduler);
+}
+
+void RendererSchedulerImpl::BroadcastConsoleWarning(
+    const std::string& message) {
+  helper_.CheckOnValidThread();
+  for (auto& web_view_scheduler : MainThreadOnly().web_view_schedulers_)
+    web_view_scheduler->AddConsoleWarning(message);
+}
+
 void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
     const TaskQueue& queue,
     const base::PendingTask& task) {
@@ -1162,10 +1183,18 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
         true;
     TRACE_TASK_EXECUTION("RendererSchedulerImpl::TaskBlocked", task);
   }
+
   if (!MainThreadOnly().have_reported_blocking_intervention_since_navigation) {
+    {
+      base::AutoLock lock(any_thread_lock_);
+      if (!AnyThread().have_seen_touchstart)
+        return;
+    }
     MainThreadOnly().have_reported_blocking_intervention_since_navigation =
         true;
-    // TODO(skyostil): Log a console warning.
+    BroadcastConsoleWarning(
+        "Deferred long-running timer task(s) to improve scrolling smoothness. "
+        "See crbug.com/574343.");
   }
 }
 
