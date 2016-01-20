@@ -43,14 +43,10 @@ struct DomKeyMapEntry {
 
 #define DOM_KEY_MAP_DECLARATION const DomKeyMapEntry dom_key_map[] =
 #define DOM_KEY_UNI(key, id, value) {DomKey::id, key}
-#define DOM_KEY_MAP_BEGIN
-#define DOM_KEY_MAP(key, id)        {DomKey::id, key}
-#define DOM_KEY_MAP_END
+#define DOM_KEY_MAP(key, id, value) {DomKey::id, key}
 #include "ui/events/keycodes/dom/dom_key_data.inc"
 #undef DOM_KEY_MAP_DECLARATION
-#undef DOM_KEY_MAP_BEGIN
 #undef DOM_KEY_MAP
-#undef DOM_KEY_MAP_END
 #undef DOM_KEY_UNI
 
 const size_t kDomKeyMapEntries = arraysize(dom_key_map);

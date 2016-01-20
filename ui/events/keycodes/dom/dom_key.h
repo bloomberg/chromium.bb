@@ -80,14 +80,10 @@ class DomKey {
 // included here to create constants for them in the DomKey:: scope.
 #define DOM_KEY_MAP_DECLARATION enum Key : Base
 #define DOM_KEY_UNI(key, id, value) id = (TYPE_UNICODE | (value))
-#define DOM_KEY_MAP_BEGIN FIRST_NON_UNICODE = TYPE_NON_UNICODE,
-#define DOM_KEY_MAP(key, id) id
-#define DOM_KEY_MAP_END LAST_NON_UNICODE
+#define DOM_KEY_MAP(key, id, value) id = (TYPE_NON_UNICODE | (value))
 #include "ui/events/keycodes/dom/dom_key_data.inc"
 #undef DOM_KEY_MAP_DECLARATION
-#undef DOM_KEY_MAP_BEGIN
 #undef DOM_KEY_MAP
-#undef DOM_KEY_MAP_END
 #undef DOM_KEY_UNI
 
   // Create a DomKey, with the undefined-value sentinel DomKey::NONE.

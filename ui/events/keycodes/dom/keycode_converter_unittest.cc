@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <set>
 
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -180,7 +181,9 @@ TEST(KeycodeConverter, DomKey) {
       EXPECT_STREQ(test.string, s.c_str());
     }
   }
-  // Round-trip test all UI Events KeyboardEvent.key strings.
+  // Round-trip test all UI Events KeyboardEvent.key strings, and check
+  // that encodings are distinct.
+  std::set<ui::DomKey::Base> keys;
   const char* s = nullptr;
   for (size_t i = 0;
        (s = ui::KeycodeConverter::DomKeyStringForTest(i)) != nullptr; ++i) {
@@ -188,6 +191,11 @@ TEST(KeycodeConverter, DomKey) {
     ui::DomKey key = ui::KeycodeConverter::KeyStringToDomKey(s);
     if (s) {
       EXPECT_STREQ(s, ui::KeycodeConverter::DomKeyToKeyString(key).c_str());
+      if (keys.count(key) == 0) {
+        keys.insert(key);
+      } else {
+        ADD_FAILURE() << "duplicate encoding:" << key;
+      }
     } else {
       EXPECT_EQ(ui::DomKey::NONE, key);
     }
