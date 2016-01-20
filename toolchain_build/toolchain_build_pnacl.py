@@ -281,6 +281,7 @@ def HostArchToolFlags(host, extra_cflags, opts):
                                                   host, opts) + ')s/lib']
       result['CXXFLAGS'] += ([
         '-stdlib=libc++',
+        '-nostdinc++',
         '-I%(' + FlavoredName('abs_libcxx', host, opts) + ')s/include/c++/v1'] +
         extra_cc_flags)
       deps.append(FlavoredName('libcxx', host, opts))
