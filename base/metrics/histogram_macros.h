@@ -10,6 +10,11 @@
 #include "base/metrics/histogram.h"
 #include "base/time/time.h"
 
+// Macros for efficient use of histograms. See documentation in histogram.h.
+//
+// UMA_HISTOGRAM_SPARSE_SLOWLY is defined in sparse_histogram.h as it has
+// different #include dependencies.
+
 //------------------------------------------------------------------------------
 // Histograms are often put in areas where they are called many many times, and
 // performance is critical.  As a result, they are designed to have a very low
