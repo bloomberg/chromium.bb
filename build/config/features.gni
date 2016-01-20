@@ -139,13 +139,14 @@ enable_print_preview = !is_android && !is_chromecast && !is_ios && !is_headless
 enable_pepper_cdms =
     enable_plugins && (is_linux || is_mac || is_win) && !is_chromecast
 
-# The seccomp-bpf sandbox is only supported on three architectures
+# The seccomp-bpf sandbox is only supported on five architectures
 # currently.
 # Do not disable seccomp_bpf anywhere without talking to
 # security@chromium.org!
-use_seccomp_bpf = (is_linux || is_android) &&
-                  (current_cpu == "x86" || current_cpu == "x64" ||
-                   current_cpu == "arm" || current_cpu == "mipsel")
+use_seccomp_bpf =
+    (is_linux || is_android) &&
+    (current_cpu == "x86" || current_cpu == "x64" || current_cpu == "arm" ||
+     current_cpu == "arm64" || current_cpu == "mipsel")
 
 # Enable notifications everywhere except iOS.
 enable_notifications = !is_ios
