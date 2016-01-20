@@ -64,7 +64,9 @@ class TracingTrack(devtools_monitor.Track):
 
     Returns:
       List of events active at that timestamp. Instantaneous (ie, instant,
-      sample and counter) events are never included.
+      sample and counter) events are never included. Event end times are
+      exclusive, so that an event ending at the usec parameter will not be
+      returned.
       TODO(mattcary): currently live objects are included. If this is too big we
       may break that out into a separate index.
     """
@@ -78,7 +80,6 @@ class TracingTrack(devtools_monitor.Track):
       return []
     return events.event_list
 
-
   def ToJsonDict(self):
     return {'events': [e.ToJsonDict() for e in self._events]}
 
@@ -89,6 +90,35 @@ class TracingTrack(devtools_monitor.Track):
     tracing_track = TracingTrack(None)
     tracing_track._events = events
     return tracing_track
+
+  def EventsEndingBetween(self, start_msec, end_msec):
+    """Gets the list of events whose end lies in a range.
+
+    Args:
+      start_msec: the start of the range to query, in milliseconds, inclusive.
+      end_msec: the end of the range to query, in milliseconds, inclusive.
+
+    Returns:
+      List of events whose end time lies in the range. Note that although the
+      range is inclusive at both ends, an ending timestamp is considered to be
+      exclusive of the actual event. An event ending at 10 msec will be returned
+      for a range [10, 14] as well as [8, 10], though the event is considered to
+      end the instant before 10 msec. In practice this is only important when
+      considering how events overlap; an event ending at 10 msec does not
+      overlap with one starting at 10 msec and so may unambiguously share ids,
+      etc.
+    """
+    self._IndexEvents()
+    low_idx = bisect.bisect_left(self._event_msec_index, start_msec) - 1
+    high_idx = bisect.bisect_right(self._event_msec_index, end_msec)
+    matched_events = []
+    for i in xrange(max(0, low_idx), high_idx):
+      if self._event_lists[i]:
+        for e in self._event_lists[i].event_list:
+          assert e.end_msec is not None
+          if e.end_msec >= start_msec and e.end_msec <= end_msec:
+            matched_events.append(e)
+    return matched_events
 
   def _IndexEvents(self):
     """Computes index for in-flight events.

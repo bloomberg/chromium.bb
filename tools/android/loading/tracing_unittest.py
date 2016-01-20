@@ -204,6 +204,46 @@ class TracingTrackTestCase(unittest.TestCase):
     for (e1, e2) in zip(self.track._events, deserialized_track._events):
       self.assertEquals(e1.tracing_event, e2.tracing_event)
 
+  def testEventsEndingBetween(self):
+    self.track.Handle(
+        'Tracing.dataCollected',
+        {'params':
+         {'value': [self.EventToMicroseconds(e) for e in
+          [{'ts': 5, 'ph': 'X', 'dur': 1, 'args': {'name': 'B'}},
+           {'ts': 3, 'ph': 'X', 'dur': 4, 'args': {'name': 'A'}},
+           {'ts': 10, 'ph': 'X', 'dur': 1, 'args': {'name': 'C'}},
+           {'ts': 10, 'ph': 'X', 'dur': 2, 'args': {'name': 'D'}},
+           {'ts': 13, 'ph': 'X', 'dur': 1, 'args': {'name': 'F'}},
+           {'ts': 12, 'ph': 'X', 'dur': 3, 'args': {'name': 'E'}}]]}})
+    self.assertEqual(set('ABCDEF'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(0, 100)]))
+    self.assertFalse([e.args['name']
+                      for e in self.track.EventsEndingBetween(3, 5)])
+    self.assertTrue('B' in set([e.args['name']
+                          for e in self.track.EventsEndingBetween(3, 6)]))
+    self.assertEqual(set('B'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(3, 6)]))
+    self.assertEqual(set('AB'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(3, 7)]))
+    self.assertEqual(set('AB'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(6, 7)]))
+    self.assertEqual(set('A'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(7, 10)]))
+    self.assertEqual(set('AC'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(7, 11)]))
+    self.assertEqual(set('CD'),
+                     set([e.args['name']
+                          for e in self.track.EventsEndingBetween(8, 13)]))
+
+
+
+
 
 if __name__ == '__main__':
   unittest.main()
