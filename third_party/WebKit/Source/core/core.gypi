@@ -3477,6 +3477,7 @@
             'svg/SVGNumberTearOff.h',
             'svg/SVGParserUtilities.cpp',
             'svg/SVGParserUtilities.h',
+            'svg/SVGParsingError.cpp',
             'svg/SVGParsingError.h',
             'svg/SVGPath.cpp',
             'svg/SVGPath.h',

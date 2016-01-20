@@ -158,11 +158,11 @@ void SVGLengthTearOff::setValueAsString(const String& str, ExceptionState& excep
 
     SVGParsingError status = target()->setValueAsString(str);
 
-    if (status == NoError && !hasExposedLengthUnit()) {
+    if (status == SVGParseStatus::NoError && !hasExposedLengthUnit()) {
         target()->setValueAsString(oldValue); // rollback to old value
-        status = ParsingAttributeFailedError;
+        status = SVGParseStatus::ParsingFailed;
     }
-    if (status != NoError) {
+    if (status != SVGParseStatus::NoError) {
         exceptionState.throwDOMException(SyntaxError, "The value provided ('" + str + "') is invalid.");
         return;
     }

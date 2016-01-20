@@ -73,12 +73,12 @@ SVGParsingError SVGRect::setValueAsString(const String& string)
     setInvalid();
 
     if (string.isNull())
-        return NoError;
+        return SVGParseStatus::NoError;
 
     if (string.isEmpty()) {
         m_value = FloatRect(0.0f, 0.0f, 0.0f, 0.0f);
         m_isValid = true;
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid;
@@ -91,7 +91,7 @@ SVGParsingError SVGRect::setValueAsString(const String& string)
         const UChar* end = ptr + string.length();
         valid = parse(ptr, end);
     }
-    return valid ? NoError : ParsingAttributeFailedError;
+    return valid ? SVGParseStatus::NoError : SVGParseStatus::ParsingFailed;
 }
 
 String SVGRect::valueAsString() const

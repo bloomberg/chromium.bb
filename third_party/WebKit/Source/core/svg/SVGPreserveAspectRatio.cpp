@@ -52,7 +52,7 @@ PassRefPtrWillBeRawPtr<SVGPreserveAspectRatio> SVGPreserveAspectRatio::clone() c
 }
 
 template<typename CharType>
-bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType* end, bool validate)
+SVGParsingError SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType* end, bool validate)
 {
     SVGPreserveAspectRatioType align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
     SVGMeetOrSliceType meetOrSlice = SVG_MEETORSLICE_MEET;
@@ -60,19 +60,20 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
     setAlign(align);
     setMeetOrSlice(meetOrSlice);
 
+    const CharType* start = ptr;
     if (!skipOptionalSVGSpaces(ptr, end))
-        return false;
+        return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
 
     if (*ptr == 'n') {
         if (!skipString(ptr, end, "none"))
-            return false;
+            return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
         align = SVG_PRESERVEASPECTRATIO_NONE;
         skipOptionalSVGSpaces(ptr, end);
     } else if (*ptr == 'x') {
         if ((end - ptr) < 8)
-            return false;
+            return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
         if (ptr[1] != 'M' || ptr[4] != 'Y' || ptr[5] != 'M')
-            return false;
+            return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
         if (ptr[2] == 'i') {
             if (ptr[3] == 'n') {
                 if (ptr[6] == 'i') {
@@ -81,11 +82,11 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
                     else if (ptr[7] == 'd')
                         align = SVG_PRESERVEASPECTRATIO_XMINYMID;
                     else
-                        return false;
+                        return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
                 } else if (ptr[6] == 'a' && ptr[7] == 'x') {
                     align = SVG_PRESERVEASPECTRATIO_XMINYMAX;
                 } else {
-                    return false;
+                    return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
                 }
             } else if (ptr[3] == 'd') {
                 if (ptr[6] == 'i') {
@@ -94,14 +95,14 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
                     else if (ptr[7] == 'd')
                         align = SVG_PRESERVEASPECTRATIO_XMIDYMID;
                     else
-                        return false;
+                        return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
                 } else if (ptr[6] == 'a' && ptr[7] == 'x') {
                     align = SVG_PRESERVEASPECTRATIO_XMIDYMAX;
                 } else {
-                    return false;
+                    return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
                 }
             } else {
-                return false;
+                return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             }
         } else if (ptr[2] == 'a' && ptr[3] == 'x') {
             if (ptr[6] == 'i') {
@@ -110,29 +111,29 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
                 else if (ptr[7] == 'd')
                     align = SVG_PRESERVEASPECTRATIO_XMAXYMID;
                 else
-                    return false;
+                    return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             } else if (ptr[6] == 'a' && ptr[7] == 'x') {
                 align = SVG_PRESERVEASPECTRATIO_XMAXYMAX;
             } else {
-                return false;
+                return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             }
         } else {
-            return false;
+            return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
         }
         ptr += 8;
         skipOptionalSVGSpaces(ptr, end);
     } else {
-        return false;
+        return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
     }
 
     if (ptr < end) {
         if (*ptr == 'm') {
             if (!skipString(ptr, end, "meet"))
-                return false;
+                return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             skipOptionalSVGSpaces(ptr, end);
         } else if (*ptr == 's') {
             if (!skipString(ptr, end, "slice"))
-                return false;
+                return SVGParsingError(SVGParseStatus::ExpectedEnumeration, ptr - start);
             skipOptionalSVGSpaces(ptr, end);
             if (align != SVG_PRESERVEASPECTRATIO_NONE)
                 meetOrSlice = SVG_MEETORSLICE_SLICE;
@@ -140,12 +141,12 @@ bool SVGPreserveAspectRatio::parseInternal(const CharType*& ptr, const CharType*
     }
 
     if (end != ptr && validate)
-        return false;
+        return SVGParsingError(SVGParseStatus::TrailingGarbage, ptr - start);
 
     setAlign(align);
     setMeetOrSlice(meetOrSlice);
 
-    return true;
+    return SVGParseStatus::NoError;
 }
 
 SVGParsingError SVGPreserveAspectRatio::setValueAsString(const String& string)
@@ -153,29 +154,26 @@ SVGParsingError SVGPreserveAspectRatio::setValueAsString(const String& string)
     setDefault();
 
     if (string.isEmpty())
-        return NoError;
+        return SVGParseStatus::NoError;
 
-    bool valid = false;
     if (string.is8Bit()) {
         const LChar* ptr = string.characters8();
         const LChar* end = ptr + string.length();
-        valid = parseInternal(ptr, end, true);
-    } else {
-        const UChar* ptr = string.characters16();
-        const UChar* end = ptr + string.length();
-        valid = parseInternal(ptr, end, true);
+        return parseInternal(ptr, end, true);
     }
-    return valid ? NoError : ParsingAttributeFailedError;
+    const UChar* ptr = string.characters16();
+    const UChar* end = ptr + string.length();
+    return parseInternal(ptr, end, true);
 }
 
 bool SVGPreserveAspectRatio::parse(const LChar*& ptr, const LChar* end, bool validate)
 {
-    return parseInternal(ptr, end, validate);
+    return parseInternal(ptr, end, validate) == SVGParseStatus::NoError;
 }
 
 bool SVGPreserveAspectRatio::parse(const UChar*& ptr, const UChar* end, bool validate)
 {
-    return parseInternal(ptr, end, validate);
+    return parseInternal(ptr, end, validate) == SVGParseStatus::NoError;
 }
 
 void SVGPreserveAspectRatio::transformRect(FloatRect& destRect, FloatRect& srcRect)

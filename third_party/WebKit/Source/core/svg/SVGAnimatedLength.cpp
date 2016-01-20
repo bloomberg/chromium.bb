@@ -43,10 +43,10 @@ SVGParsingError SVGAnimatedLength::setBaseValueAsString(const String& value)
 {
     SVGParsingError parseStatus = baseValue()->setValueAsString(value);
 
-    if (parseStatus != NoError)
+    if (parseStatus != SVGParseStatus::NoError)
         baseValue()->newValueSpecifiedUnits(CSSPrimitiveValue::UnitType::UserUnits, 0);
     else if (SVGLength::negativeValuesForbiddenForAnimatedLengthAttribute(attributeName()) && baseValue()->valueInSpecifiedUnits() < 0)
-        parseStatus = NegativeValueForbiddenError;
+        parseStatus = SVGParseStatus::NegativeValue;
 
     return parseStatus;
 }

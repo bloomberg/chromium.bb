@@ -92,7 +92,7 @@ SVGParsingError SVGPointList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid = false;
@@ -105,7 +105,7 @@ SVGParsingError SVGPointList::setValueAsString(const String& value)
         const UChar* end = ptr + value.length();
         valid = parse(ptr, end);
     }
-    return valid ? NoError : ParsingAttributeFailedError;
+    return valid ? SVGParseStatus::NoError : SVGParseStatus::ParsingFailed;
 }
 
 void SVGPointList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

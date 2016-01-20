@@ -95,10 +95,10 @@ PassRefPtrWillBeRawPtr<SVGPath> SVGPath::clone() const
 
 SVGParsingError SVGPath::setValueAsString(const String& string)
 {
-    SVGParsingError parseStatus = NoError;
+    SVGParsingError parseStatus;
     RefPtr<SVGPathByteStream> byteStream = SVGPathByteStream::create();
     if (!buildByteStreamFromString(string, *byteStream))
-        parseStatus = ParsingAttributeFailedError;
+        parseStatus = SVGParseStatus::ParsingFailed;
     m_pathValue = CSSPathValue::create(byteStream.release());
     return parseStatus;
 }

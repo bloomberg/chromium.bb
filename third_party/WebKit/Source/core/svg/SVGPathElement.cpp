@@ -38,8 +38,8 @@ public:
     SVGParsingError setBaseValueAsString(const String& value) override
     {
         SVGParsingError parseStatus = SVGAnimatedNumber::setBaseValueAsString(value);
-        if (parseStatus == NoError && baseValue()->value() < 0)
-            parseStatus = NegativeValueForbiddenError;
+        if (parseStatus == SVGParseStatus::NoError && baseValue()->value() < 0)
+            parseStatus = SVGParseStatus::NegativeValue;
         return parseStatus;
     }
 

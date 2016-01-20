@@ -108,7 +108,7 @@ SVGParsingError SVGStringList::setValueAsString(const String& data)
     m_values.clear();
 
     if (data.isEmpty())
-        return NoError;
+        return SVGParseStatus::NoError;
 
     if (data.is8Bit()) {
         const LChar* ptr = data.characters8();
@@ -119,7 +119,7 @@ SVGParsingError SVGStringList::setValueAsString(const String& data)
         const UChar* end = ptr + data.length();
         parseInternal(ptr, end);
     }
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 String SVGStringList::valueAsString() const

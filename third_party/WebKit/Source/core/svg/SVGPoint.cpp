@@ -84,7 +84,7 @@ SVGParsingError SVGPoint::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = FloatPoint(0.0f, 0.0f);
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid;
@@ -97,7 +97,7 @@ SVGParsingError SVGPoint::setValueAsString(const String& string)
         const UChar* end = ptr + string.length();
         valid = parse(ptr, end);
     }
-    return valid ? NoError : ParsingAttributeFailedError;
+    return valid ? SVGParseStatus::NoError : SVGParseStatus::ParsingFailed;
 }
 
 String SVGPoint::valueAsString() const

@@ -70,7 +70,7 @@ SVGParsingError SVGNumber::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = 0;
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid = false;
@@ -86,9 +86,9 @@ SVGParsingError SVGNumber::setValueAsString(const String& string)
 
     if (!valid) {
         m_value = 0;
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
     }
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 void SVGNumber::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)
@@ -120,10 +120,10 @@ PassRefPtrWillBeRawPtr<SVGNumber> SVGNumberAcceptPercentage::clone() const
 SVGParsingError SVGNumberAcceptPercentage::setValueAsString(const String& string)
 {
     if (parseNumberOrPercentage(string, m_value))
-        return NoError;
+        return SVGParseStatus::NoError;
 
     m_value = 0;
-    return ParsingAttributeFailedError;
+    return SVGParseStatus::ParsingFailed;
 }
 
 SVGNumberAcceptPercentage::SVGNumberAcceptPercentage(float value)

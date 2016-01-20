@@ -63,7 +63,7 @@ SVGParsingError SVGAnimatedOrder::setBaseValueAsString(const String& value)
     SVGParsingError parseStatus = SVGAnimatedIntegerOptionalInteger::setBaseValueAsString(value);
 
     ASSERT(contextElement());
-    if (parseStatus == NoError && (firstInteger()->baseValue()->value() < 1 || secondInteger()->baseValue()->value() < 1)) {
+    if (parseStatus == SVGParseStatus::NoError && (firstInteger()->baseValue()->value() < 1 || secondInteger()->baseValue()->value() < 1)) {
         contextElement()->document().accessSVGExtensions().reportWarning(
             "feConvolveMatrix: problem parsing order=\"" + value + "\".");
     }

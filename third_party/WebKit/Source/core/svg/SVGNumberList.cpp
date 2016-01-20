@@ -73,7 +73,7 @@ SVGParsingError SVGNumberList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid = false;
@@ -90,9 +90,9 @@ SVGParsingError SVGNumberList::setValueAsString(const String& value)
     if (!valid) {
         // No call to |clear()| here. SVG policy is to use valid items before error.
         // Spec: http://www.w3.org/TR/SVG/single-page.html#implnote-ErrorProcessing
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
     }
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 void SVGNumberList::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement* contextElement)

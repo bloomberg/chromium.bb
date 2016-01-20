@@ -84,19 +84,19 @@ SVGParsingError SVGLengthList::parseInternal(const CharType*& ptr, const CharTyp
 
         RefPtrWillBeRawPtr<SVGLength> length = SVGLength::create(m_mode);
         SVGParsingError lengthParseStatus = length->setValueAsString(valueString);
-        if (lengthParseStatus != NoError)
+        if (lengthParseStatus != SVGParseStatus::NoError)
             return lengthParseStatus;
         append(length);
         skipOptionalSVGSpacesOrDelimiter(ptr, end);
     }
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 SVGParsingError SVGLengthList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     SVGParsingError parseStatus;

@@ -163,7 +163,7 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
 {
     if (name == SVGNames::valuesAttr) {
         if (!parseValues(value, m_values)) {
-            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
+            reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
             return;
         }
         updateAnimationMode();
@@ -172,7 +172,7 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
 
     if (name == SVGNames::keyTimesAttr) {
         if (!parseKeyTimes(value, m_keyTimes, true))
-            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
+            reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
         return;
     }
 
@@ -181,14 +181,14 @@ void SVGAnimationElement::parseAttribute(const QualifiedName& name, const Atomic
             // This is specified to be an animateMotion attribute only but it is simpler to put it here
             // where the other timing calculatations are.
             if (!parseKeyTimes(value, m_keyPoints, false))
-                reportAttributeParsingError(ParsingAttributeFailedError, name, value);
+                reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
         }
         return;
     }
 
     if (name == SVGNames::keySplinesAttr) {
         if (!parseKeySplines(value, m_keySplines))
-            reportAttributeParsingError(ParsingAttributeFailedError, name, value);
+            reportAttributeParsingError(SVGParseStatus::ParsingFailed, name, value);
         return;
     }
 

@@ -79,9 +79,9 @@ String SVGIntegerOptionalInteger::valueAsString() const
 SVGParsingError SVGIntegerOptionalInteger::setValueAsString(const String& value)
 {
     float x, y;
-    SVGParsingError parseStatus = NoError;
+    SVGParsingError parseStatus;
     if (!parseNumberOptionalNumber(value, x, y)) {
-        parseStatus = ParsingAttributeFailedError;
+        parseStatus = SVGParseStatus::ParsingFailed;
         x = y = 0;
     }
 

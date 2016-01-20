@@ -62,7 +62,7 @@ public:
     SVGParsingError setValueAsString(const String& value)
     {
         m_value = value;
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     void add(PassRefPtrWillBeRawPtr<SVGPropertyBase>, SVGElement*) override;

@@ -92,7 +92,7 @@ private:
 
     void setDefault();
     template<typename CharType>
-    bool parseInternal(const CharType*& ptr, const CharType* end, bool validate);
+    SVGParsingError parseInternal(const CharType*& ptr, const CharType* end, bool validate);
 
     SVGPreserveAspectRatioType m_align;
     SVGMeetOrSliceType m_meetOrSlice;

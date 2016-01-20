@@ -63,8 +63,7 @@ PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGLength::cloneForAnimation(const Strin
     RefPtrWillBeRawPtr<SVGLength> length = create();
     length->m_unitMode = m_unitMode;
 
-    SVGParsingError status = length->setValueAsString(value);
-    if (status != NoError)
+    if (length->setValueAsString(value) != SVGParseStatus::NoError)
         length->m_value = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits);
 
     return length.release();
@@ -137,21 +136,21 @@ SVGParsingError SVGLength::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = cssValuePool().createValue(0, CSSPrimitiveValue::UnitType::UserUnits);
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     CSSParserContext svgParserContext(SVGAttributeMode, 0);
     RefPtrWillBeRawPtr<CSSValue> parsed = CSSParser::parseSingleValue(CSSPropertyX, string, svgParserContext);
     if (!parsed || !parsed->isPrimitiveValue())
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
 
     CSSPrimitiveValue* newValue = toCSSPrimitiveValue(parsed.get());
     // TODO(fs): Enable calc for SVG lengths
     if (newValue->isCalculated() || !isSupportedCSSUnitType(newValue->typeWithCalcResolved()))
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
 
     m_value = newValue;
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 String SVGLength::valueAsString() const

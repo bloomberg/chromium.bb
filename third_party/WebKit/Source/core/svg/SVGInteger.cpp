@@ -54,7 +54,7 @@ SVGParsingError SVGInteger::setValueAsString(const String& string)
 {
     if (string.isEmpty()) {
         m_value = 0;
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid = true;
@@ -62,9 +62,9 @@ SVGParsingError SVGInteger::setValueAsString(const String& string)
 
     if (!valid) {
         m_value = 0;
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
     }
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 void SVGInteger::add(PassRefPtrWillBeRawPtr<SVGPropertyBase> other, SVGElement*)

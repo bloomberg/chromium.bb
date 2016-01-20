@@ -237,18 +237,18 @@ SVGParsingError SVGAngle::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     if (value == "auto") {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
         m_orientType->setEnumValue(SVGMarkerOrientAuto);
-        return NoError;
+        return SVGParseStatus::NoError;
     }
     if (value == "auto-start-reverse") {
         newValueSpecifiedUnits(SVG_ANGLETYPE_UNSPECIFIED, 0);
         m_orientType->setEnumValue(SVGMarkerOrientAutoStartReverse);
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     float valueInSpecifiedUnits = 0;
@@ -257,12 +257,12 @@ SVGParsingError SVGAngle::setValueAsString(const String& value)
     bool success = value.is8Bit() ? parseValue<LChar>(value, valueInSpecifiedUnits, unitType)
                                   : parseValue<UChar>(value, valueInSpecifiedUnits, unitType);
     if (!success)
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
 
     m_orientType->setEnumValue(SVGMarkerOrientAngle);
     m_unitType = unitType;
     m_valueInSpecifiedUnits = valueInSpecifiedUnits;
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 void SVGAngle::newValueSpecifiedUnits(SVGAngleType unitType, float valueInSpecifiedUnits)

@@ -66,9 +66,8 @@ void writeIndent(int depth, StringBuilder* output)
 
 } // anonymous namespace
 
-void doubleQuoteStringForJSON(const String& str, StringBuilder* dst)
+void escapeStringForJSON(const String& str, StringBuilder* dst)
 {
-    dst->append('"');
     for (unsigned i = 0; i < str.length(); ++i) {
         UChar c = str[i];
         if (!escapeChar(c, dst)) {
@@ -84,6 +83,12 @@ void doubleQuoteStringForJSON(const String& str, StringBuilder* dst)
             }
         }
     }
+}
+
+void doubleQuoteStringForJSON(const String& str, StringBuilder* dst)
+{
+    dst->append('"');
+    escapeStringForJSON(str, dst);
     dst->append('"');
 }
 

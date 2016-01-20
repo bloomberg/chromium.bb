@@ -323,6 +323,7 @@ public:
     using JSONArrayBase::end;
 };
 
+PLATFORM_EXPORT void escapeStringForJSON(const String&, StringBuilder*);
 void doubleQuoteStringForJSON(const String&, StringBuilder*);
 
 } // namespace blink

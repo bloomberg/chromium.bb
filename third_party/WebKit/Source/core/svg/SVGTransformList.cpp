@@ -270,7 +270,7 @@ SVGParsingError SVGTransformList::setValueAsString(const String& value)
 {
     if (value.isEmpty()) {
         clear();
-        return NoError;
+        return SVGParseStatus::NoError;
     }
 
     bool valid = false;
@@ -286,10 +286,10 @@ SVGParsingError SVGTransformList::setValueAsString(const String& value)
 
     if (!valid) {
         clear();
-        return ParsingAttributeFailedError;
+        return SVGParseStatus::ParsingFailed;
     }
 
-    return NoError;
+    return SVGParseStatus::NoError;
 }
 
 PassRefPtrWillBeRawPtr<SVGPropertyBase> SVGTransformList::cloneForAnimation(const String& value) const
