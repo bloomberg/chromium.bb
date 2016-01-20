@@ -50000,6 +50000,21 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Tab.Close" units="ms">
+  <summary>
+    Time in milliseconds from trying to close the tab to actually closing it.
+    Includes time that's spent in JS OnUnload handlers.
+  </summary>
+</histogram>
+
+<histogram name="Tab.Close.UnloadTime" units="ms">
+  <summary>
+    Time in milliseconds from when JS OnUnload handlers have finished to
+    actually closing tab. Doesn't include time that's spent in JS OnUnload
+    handlers. If there are no UnLoad handlers, should be idential to Tab.Close.
+  </summary>
+</histogram>
+
 <histogram name="Tab.Discarding" enum="TabDiscardingEvents">
   <obsolete>
     Deprecated 10/2015, not needed anymore.
