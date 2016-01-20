@@ -1009,9 +1009,8 @@ class XcodeSettings(object):
       print 'Warning: Some codesign keys not implemented, ignoring: %s' % (
           ', '.join(sorted(unimpl)))
 
-    return ['%s code-sign-bundle "%s" "%s" "%s" "%s"' % (
+    return ['%s code-sign-bundle "%s" "%s" "%s"' % (
         os.path.join('${TARGET_BUILD_DIR}', 'gyp-mac-tool'), key,
-        settings.get('CODE_SIGN_RESOURCE_RULES_PATH', ''),
         settings.get('CODE_SIGN_ENTITLEMENTS', ''),
         settings.get('PROVISIONING_PROFILE', ''))
     ]
