@@ -340,6 +340,9 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
                                       shill::kSecurityClassProperty,
                                       base::StringValue(shill::kSecurityWep));
     service_test_->SetServiceProperty(kWifi1ServicePath,
+                                      shill::kWifiBSsid,
+                                      base::StringValue("00:01:02:03:04:05"));
+    service_test_->SetServiceProperty(kWifi1ServicePath,
                                       shill::kSignalStrengthProperty,
                                       base::FundamentalValue(40));
     service_test_->SetServiceProperty(kWifi1ServicePath,

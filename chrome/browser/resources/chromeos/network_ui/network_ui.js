@@ -17,10 +17,10 @@ var NetworkUI = (function() {
     'connectable',
     'ErrorState',
     'WiFi.Security',
-    ['Cellular.NetworkTechnology',
-     'EAP.EAP'],
+    ['Cellular.NetworkTechnology', 'EAP.EAP'],
     'Cellular.ActivationState',
     'Cellular.RoamingState',
+    'WiFi.Frequency',
     'WiFi.SignalStrength'
   ];
 

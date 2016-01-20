@@ -150,7 +150,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   bool UpdateName(const base::DictionaryValue& properties);
 
   // Set to true if the network is a member of Manager.Services.
-  bool visible_;
+  bool visible_ = false;
 
   // Network Service properties. Avoid adding any additional properties here.
   // Instead use NetworkConfigurationHandler::GetProperties() to asynchronously
@@ -163,7 +163,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string connection_state_;
   std::string profile_path_;
   std::vector<uint8_t> raw_ssid_;  // Unknown encoding. Not necessarily UTF-8.
-  int priority_;
+  int priority_ = 0;
 
   // Reflects the current Shill Service.Error property. This might get cleared
   // by Shill shortly after a failure.
@@ -179,13 +179,15 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string ip_address_;
   std::string gateway_;
   std::vector<std::string> dns_servers_;
-  int prefix_length_;  // Used by GetNetmask()
+  int prefix_length_ = 0;  // Used by GetNetmask()
   GURL web_proxy_auto_discovery_url_;
 
   // Wireless properties, used for icons and Connect logic.
-  bool connectable_;
-  bool is_captive_portal_;
-  int signal_strength_;
+  bool connectable_ = false;
+  bool is_captive_portal_ = false;
+  int signal_strength_ = 0;
+  std::string bssid_;  // For ARC
+  int frequency_ = 0;  // For ARC
 
   // Cellular properties, used for icons, Connect, and Activation.
   std::string network_technology_;
@@ -193,7 +195,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::string activation_state_;
   std::string roaming_;
   std::string payment_url_;
-  bool cellular_out_of_credits_;
+  bool cellular_out_of_credits_ = false;
 
   // VPN properties, used to construct the display name and to show the correct
   // configuration dialog.

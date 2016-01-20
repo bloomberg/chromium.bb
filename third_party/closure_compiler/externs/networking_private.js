@@ -838,6 +838,8 @@ chrome.networkingPrivate.ManagedWiFiProperties;
 
 /**
  * @typedef {{
+ *   BSSID: (string|undefined),
+ *   Frequency: (number|undefined),
  *   Security: string,
  *   SignalStrength: (number|undefined)
  * }}

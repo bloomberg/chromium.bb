@@ -225,6 +225,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '00:01:02:03:04:05',
+            Frequency: 2400,
             Security: 'WEP-PSK',
             SignalStrength: 40
           }
@@ -235,6 +237,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '',
+            Frequency: 5000,
             Security: 'WPA-PSK',
           }
         }], result);
@@ -253,6 +257,8 @@ var availableTests = [
               Source: 'User',
               Type: NetworkType.WI_FI,
               WiFi: {
+                BSSID: '00:01:02:03:04:05',
+                Frequency: 2400,
                 Security: 'WEP-PSK',
                 SignalStrength: 40
               }
@@ -304,6 +310,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '00:01:02:03:04:05',
+            Frequency: 2400,
             Security: 'WEP-PSK',
             SignalStrength: 40
           }
@@ -350,6 +358,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '',
+            Frequency: 5000,
             Security: 'WPA-PSK',
             SignalStrength: 80
           }
@@ -369,6 +379,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '00:01:02:03:04:05',
+            Frequency: 2400,
             Security: 'WEP-PSK',
             SignalStrength: 40
           }
@@ -381,6 +393,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '',
+            Frequency: 5000,
             Security: 'WPA-PSK',
             SignalStrength: 80
           }
@@ -461,6 +475,7 @@ var availableTests = [
           },
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '00:01:02:03:04:05',
             HexSSID: '7769666931', // 'wifi1'
             Frequency: 2400,
             FrequencyList: [2400],
@@ -658,6 +673,8 @@ var availableTests = [
           Source: 'User',
           Type: NetworkType.WI_FI,
           WiFi: {
+            BSSID: '',
+            Frequency: 5000,
             Security: 'WPA-PSK',
             SignalStrength: 80
           }

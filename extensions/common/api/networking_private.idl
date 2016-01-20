@@ -631,6 +631,8 @@ namespace networkingPrivate {
   };
 
   dictionary WiFiStateProperties {
+    DOMString? BSSID;
+    long? Frequency;
     DOMString Security;
     long? SignalStrength;
   };
