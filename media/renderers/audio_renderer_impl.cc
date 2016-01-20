@@ -354,24 +354,30 @@ void AudioRendererImpl::Initialize(
         buffer_size);
     buffer_converter_.reset();
   } else {
+    // To allow for seamless sample rate adaptations (i.e. changes from say
+    // 16kHz to 48kHz), always resample to the hardware rate.
+    int sample_rate = hw_params.sample_rate();
+    int preferred_buffer_size = hw_params.frames_per_buffer();
+
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+    // On ChromeOS and Android let the OS level resampler handle resampling
+    // unless the initial sample rate is too low; this allows support for
+    // sample rate adaptations where necessary.
+    if (stream->audio_decoder_config().samples_per_second() >= 44100) {
+      sample_rate = stream->audio_decoder_config().samples_per_second();
+      preferred_buffer_size = 0;  // No preference.
+    }
+#endif
+
     audio_parameters_.Reset(
         hw_params.format(),
         // Always use the source's channel layout to avoid premature downmixing
         // (http://crbug.com/379288), platform specific issues around channel
         // layouts (http://crbug.com/266674), and unnecessary upmixing overhead.
-        stream->audio_decoder_config().channel_layout(),
-#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
-        // On ChromeOS and Android let the OS level resampler handle resampling
-        // unless the initial sample rate is too low; this allows support for
-        // sample rate adaptations where necessary.
-        stream->audio_decoder_config().samples_per_second() < 44100
-            ? hw_params.sample_rate()
-            : stream->audio_decoder_config().samples_per_second(),
-#else
-        hw_params.sample_rate(),
-#endif
+        stream->audio_decoder_config().channel_layout(), sample_rate,
         hw_params.bits_per_sample(),
-        hardware_config_.GetHighLatencyBufferSize());
+        AudioHardwareConfig::GetHighLatencyBufferSize(sample_rate,
+                                                      preferred_buffer_size));
   }
 
   audio_clock_.reset(

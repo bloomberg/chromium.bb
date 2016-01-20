@@ -45,8 +45,9 @@ class MEDIA_EXPORT AudioHardwareConfig {
   // For clients which don't need low latency, a larger buffer size should be
   // used to save power and CPU resources.
   int GetHighLatencyBufferSize() const;
-  static int GetHighLatencyBufferSize(
-      const media::AudioParameters& output_params);
+
+  // |buffer_size| should be set to 0 if a client has no preference.
+  static int GetHighLatencyBufferSize(int sample_rate, int buffer_size);
 
  private:
   // Cached values; access is protected by |config_lock_|.
