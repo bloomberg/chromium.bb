@@ -414,7 +414,7 @@ tryAgain:
     return matchLength;
 }
 
-static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement;
+static const TextIteratorBehaviorFlags iteratorFlagsForFindPlainText = TextIteratorEntersTextControls | TextIteratorEntersOpenShadowRoots | TextIteratorDoesNotBreakAtReplacedElement | TextIteratorCollapseTrailingSpace;
 
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> findPlainTextAlgorithm(const EphemeralRangeTemplate<Strategy>& inputRange, const String& target, FindOptions options)

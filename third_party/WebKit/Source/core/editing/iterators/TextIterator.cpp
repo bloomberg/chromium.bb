@@ -458,8 +458,15 @@ bool TextIteratorAlgorithm<Strategy>::handleTextNode()
     if (!layoutObject->style()->collapseWhiteSpace()) {
         int runStart = m_offset;
         if (m_lastTextNodeEndedWithCollapsedSpace && hasVisibleTextNode(layoutObject)) {
-            emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
-            return false;
+            if (m_behavior & TextIteratorCollapseTrailingSpace) {
+                if (runStart > 0 && str[runStart - 1] == ' ') {
+                    emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
+                    return false;
+                }
+            } else {
+                emitCharacter(spaceCharacter, textNode, 0, runStart, runStart);
+                return false;
+            }
         }
         if (!m_handledFirstLetter && layoutObject->isTextFragment() && !m_offset) {
             handleTextNodeFirstLetter(toLayoutTextFragment(layoutObject));
@@ -671,7 +678,15 @@ bool TextIteratorAlgorithm<Strategy>::handleReplacedElement()
         return true;
     }
 
-    if (m_lastTextNodeEndedWithCollapsedSpace) {
+    if (m_behavior & TextIteratorCollapseTrailingSpace) {
+        if (m_lastTextNode) {
+            String str = m_lastTextNode->layoutObject()->text();
+            if (m_lastTextNodeEndedWithCollapsedSpace && m_offset > 0 && str[m_offset - 1] == ' ') {
+                emitCharacter(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
+                return false;
+            }
+        }
+    } else if (m_lastTextNodeEndedWithCollapsedSpace) {
         emitCharacter(spaceCharacter, Strategy::parent(*m_lastTextNode), m_lastTextNode, 1, 1);
         return false;
     }

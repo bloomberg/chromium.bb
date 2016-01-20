@@ -386,6 +386,14 @@ TEST_F(TextIteratorTest, RangeLengthWithReplacedElements)
     EXPECT_EQ(3, TextIterator::rangeLength(range->startPosition(), range->endPosition()));
 }
 
+TEST_F(TextIteratorTest, WhitespaceCollapseForReplacedElements)
+{
+    static const char* bodyContent = "<span>Some text </span> <input type='button' value='Button text'/><span>Some more text</span>";
+    setBodyContent(bodyContent);
+    EXPECT_EQ("[Some text ][][Some more text]", iterate<DOMTree>(TextIteratorCollapseTrailingSpace));
+    EXPECT_EQ("[Some text ][][Button text][Some more text]", iterate<ComposedTree>(TextIteratorCollapseTrailingSpace));
+}
+
 TEST_F(TextIteratorTest, copyTextTo)
 {
     const char* bodyContent = "<a id=host><b id=one>one</b> not appeared <b id=two>two</b></a>";
