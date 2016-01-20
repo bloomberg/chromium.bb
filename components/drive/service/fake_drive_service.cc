@@ -262,7 +262,7 @@ bool FakeDriveService::LoadAppListForDriveApi(
   CHECK_EQ(base::Value::TYPE_DICTIONARY, value->GetType());
   app_info_value_.reset(
       static_cast<base::DictionaryValue*>(value.release()));
-  return app_info_value_;
+  return !!app_info_value_;
 }
 
 void FakeDriveService::AddApp(const std::string& app_id,

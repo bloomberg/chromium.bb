@@ -20,7 +20,7 @@ class CRYPTO_EXPORT ScopedTestNSSDB {
   ScopedTestNSSDB();
   ~ScopedTestNSSDB();
 
-  bool is_open() const { return slot_; }
+  bool is_open() const { return !!slot_; }
   PK11SlotInfo* slot() const { return slot_.get(); }
 
  private:

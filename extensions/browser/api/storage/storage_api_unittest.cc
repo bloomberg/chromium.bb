@@ -67,7 +67,8 @@ class StorageApiUnittest : public ApiUnitTest {
       return testing::AssertionFailure() << "No result";
     base::DictionaryValue* dict = NULL;
     if (!result->GetAsDictionary(&dict))
-      return testing::AssertionFailure() << result << " was not a dictionary.";
+      return testing::AssertionFailure() << result.get()
+                                         << " was not a dictionary.";
     if (!dict->GetString(key, value)) {
       return testing::AssertionFailure() << " could not retrieve a string from"
           << dict << " at " << key;

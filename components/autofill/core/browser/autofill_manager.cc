@@ -963,7 +963,7 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
       }
     }
 
-    DumpAutofillData(imported_credit_card);
+    DumpAutofillData(!!imported_credit_card);
   }
 #endif  // ENABLE_FORM_DEBUG_DUMP
 

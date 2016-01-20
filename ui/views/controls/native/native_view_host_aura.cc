@@ -138,7 +138,7 @@ void NativeViewHostAura::InstallClip(int x, int y, int w, int h) {
 }
 
 bool NativeViewHostAura::HasInstalledClip() {
-  return clip_rect_;
+  return !!clip_rect_;
 }
 
 void NativeViewHostAura::UninstallClip() {

@@ -139,9 +139,7 @@ class TestLockHandler : public proximity_auth::ScreenlockBridge::LockHandler {
   }
 
   // Whether the custom icon is set.
-  bool HasCustomIcon() const {
-    return last_custom_icon_;
-  }
+  bool HasCustomIcon() const { return !!last_custom_icon_; }
 
   // If custom icon is set, returns the icon's id.
   // If there is no icon, or if it doesn't have an id set, returns an empty

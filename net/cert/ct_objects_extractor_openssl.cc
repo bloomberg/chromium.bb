@@ -232,7 +232,7 @@ bool GetPrecertLogEntry(X509Certificate::OSCertHandle leaf,
   // Extract the issuer's public key.
   std::string issuer_der;
   if (!X509Certificate::GetDEREncoded(issuer, &issuer_der))
-    return ScopedX509();
+    return false;
   base::StringPiece issuer_key;
   if (!asn1::ExtractSPKIFromDERCert(issuer_der, &issuer_key))
     return false;

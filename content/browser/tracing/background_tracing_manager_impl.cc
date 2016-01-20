@@ -188,7 +188,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
 }
 
 bool BackgroundTracingManagerImpl::HasActiveScenario() {
-  return config_;
+  return !!config_;
 }
 
 bool BackgroundTracingManagerImpl::IsTracingForTesting() {

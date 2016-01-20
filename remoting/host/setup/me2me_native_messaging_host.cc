@@ -261,13 +261,13 @@ void Me2MeNativeMessagingHost::ProcessGetPinHash(
 
   std::string host_id;
   if (!message->GetString("hostId", &host_id)) {
-    LOG(ERROR) << "'hostId' not found: " << message;
+    LOG(ERROR) << "'hostId' not found: " << message.get();
     OnError();
     return;
   }
   std::string pin;
   if (!message->GetString("pin", &pin)) {
-    LOG(ERROR) << "'pin' not found: " << message;
+    LOG(ERROR) << "'pin' not found: " << message.get();
     OnError();
     return;
   }

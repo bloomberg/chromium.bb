@@ -290,7 +290,7 @@ void ChromeOmniboxClient::OnResultChanged(
 
   const auto match = std::find_if(
       result.begin(), result.end(),
-      [](const AutocompleteMatch& current)->bool { return current.answer; });
+      [](const AutocompleteMatch& current) { return !!current.answer; });
   if (match != result.end()) {
     BitmapFetcherService* image_service =
         BitmapFetcherServiceFactory::GetForBrowserContext(profile_);

@@ -74,7 +74,7 @@ class ExtensionInstalledBubble : public BubbleDelegate {
   const Browser* browser() const { return browser_; }
   const SkBitmap& icon() const { return icon_; }
   BubbleType type() const { return type_; }
-  bool has_command_keybinding() const { return action_command_; }
+  bool has_command_keybinding() const { return !!action_command_; }
   int options() const { return options_; }
   AnchorPosition anchor_position() const { return anchor_position_; }
 

@@ -292,7 +292,7 @@ class BufferedResourceLoaderTest : public testing::Test {
     EXPECT_LE(loader_->buffer_.backward_capacity(), kMaxBufferCapacity);
   }
 
-  bool HasActiveLoader() { return loader_->active_loader_; }
+  bool HasActiveLoader() { return !!loader_->active_loader_; }
 
   MOCK_METHOD1(StartCallback, void(BufferedResourceLoader::Status));
   MOCK_METHOD2(ReadCallback, void(BufferedResourceLoader::Status, int));

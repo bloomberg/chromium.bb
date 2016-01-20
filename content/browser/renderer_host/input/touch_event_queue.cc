@@ -695,7 +695,7 @@ bool TouchEventQueue::IsAckTimeoutEnabled() const {
 }
 
 bool TouchEventQueue::HasPendingAsyncTouchMoveForTesting() const {
-  return pending_async_touchmove_;
+  return !!pending_async_touchmove_;
 }
 
 bool TouchEventQueue::IsTimeoutRunningForTesting() const {

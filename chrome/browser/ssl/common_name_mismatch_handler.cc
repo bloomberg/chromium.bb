@@ -99,5 +99,5 @@ void CommonNameMismatchHandler::OnURLFetchComplete(
 }
 
 bool CommonNameMismatchHandler::IsCheckingSuggestedUrl() const {
-  return url_fetcher_;
+  return !!url_fetcher_;
 }

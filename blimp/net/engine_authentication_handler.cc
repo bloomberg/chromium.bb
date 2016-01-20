@@ -106,7 +106,7 @@ void Authenticator::ProcessMessage(scoped_ptr<BlimpMessage> message,
              << message->protocol_control().start_connection().client_token();
     OnConnectionAuthenticated(true);
   } else {
-    DVLOG(1) << "Expected START_CONNECTION message, got " << message
+    DVLOG(1) << "Expected START_CONNECTION message, got " << message.get()
              << " instead.";
     OnConnectionAuthenticated(false);
   }

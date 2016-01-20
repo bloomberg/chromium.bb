@@ -44,7 +44,7 @@ class CC_EXPORT TopControlsManager
   float TopControlsShownRatio() const;
   float TopControlsHeight() const;
 
-  bool has_animation() const { return top_controls_animation_; }
+  bool has_animation() const { return !!top_controls_animation_; }
   AnimationDirection animation_direction() { return animation_direction_; }
 
   void UpdateTopControlsState(TopControlsState constraints,

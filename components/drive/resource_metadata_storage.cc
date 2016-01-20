@@ -630,7 +630,7 @@ bool ResourceMetadataStorage::Initialize() {
   UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBInitResult",
                             init_result,
                             DB_INIT_MAX_VALUE);
-  return resource_map_;
+  return !!resource_map_;
 }
 
 void ResourceMetadataStorage::RecoverCacheInfoFromTrashedResourceMap(

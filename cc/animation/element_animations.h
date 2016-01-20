@@ -58,10 +58,10 @@ class CC_EXPORT ElementAnimations : public AnimationDelegate,
   void LayerUnregistered(int layer_id, LayerTreeType tree_type);
 
   bool has_active_value_observer_for_testing() const {
-    return active_value_observer_;
+    return !!active_value_observer_;
   }
   bool has_pending_value_observer_for_testing() const {
-    return pending_value_observer_;
+    return !!pending_value_observer_;
   }
 
   void AddPlayer(AnimationPlayer* player);

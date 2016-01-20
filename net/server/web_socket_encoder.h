@@ -42,7 +42,7 @@ class WebSocketEncoder final {
                    int masking_key,
                    std::string* output);
 
-  bool deflate_enabled() const { return deflater_; }
+  bool deflate_enabled() const { return !!deflater_; }
 
  private:
   enum Type {

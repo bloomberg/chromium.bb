@@ -112,7 +112,7 @@ class OverscrollNavigationOverlayTest : public RenderViewHostImplTestHarness {
     // offset -1 on layer_delegate_.
     scoped_ptr<aura::Window> window(
         GetOverlay()->CreateBackWindow(GetBackSlideWindowBounds()));
-    bool window_created = window;
+    bool window_created = !!window;
     // Performs BACK navigation, sets image from layer_delegate_ on
     // image_delegate_.
     GetOverlay()->OnOverscrollCompleting();

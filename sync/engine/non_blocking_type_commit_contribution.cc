@@ -62,13 +62,13 @@ syncer::SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
       case sync_pb::CommitResponse::INVALID_MESSAGE:
         LOG(ERROR) << "Server reports commit message is invalid.";
         DLOG(ERROR) << "Message was: "
-                    << syncer::SyncEntityToValue(entities_.Get(i), false);
+                    << syncer::SyncEntityToValue(entities_.Get(i), false).get();
         unknown_error = true;
         break;
       case sync_pb::CommitResponse::CONFLICT:
         DVLOG(1) << "Server reports conflict for commit message.";
         DVLOG(1) << "Message was: "
-                 << syncer::SyncEntityToValue(entities_.Get(i), false);
+                 << syncer::SyncEntityToValue(entities_.Get(i), false).get();
         commit_conflict = true;
         break;
       case sync_pb::CommitResponse::SUCCESS: {

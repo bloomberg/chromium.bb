@@ -31,7 +31,7 @@ class BackoffTimer {
   void Stop();
 
   // Returns true if the user task may be invoked in the future.
-  bool IsRunning() const { return backoff_entry_; }
+  bool IsRunning() const { return !!backoff_entry_; }
 
   void SetTimerForTest(scoped_ptr<base::Timer> timer);
 

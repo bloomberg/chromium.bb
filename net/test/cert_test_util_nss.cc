@@ -37,7 +37,7 @@ bool ImportSensitiveKeyFromFile(const base::FilePath& dir,
                                              true /* permanent */));
   LOG_IF(ERROR, !private_key) << "Could not create key from file "
                               << key_path.value();
-  return private_key;
+  return !!private_key;
 }
 
 bool ImportClientCertToSlot(const scoped_refptr<X509Certificate>& cert,

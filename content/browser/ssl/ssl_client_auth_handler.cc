@@ -88,7 +88,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
         client_cert_store_(std::move(client_cert_store)),
         cert_request_info_(cert_request_info) {}
 
-  bool has_client_cert_store() const { return client_cert_store_; }
+  bool has_client_cert_store() const { return !!client_cert_store_; }
 
   void GetClientCerts() {
     if (client_cert_store_) {

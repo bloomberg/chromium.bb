@@ -717,7 +717,7 @@ void ResourceRawVarData::Write(IPC::Message* m,
   m->WriteInt(static_cast<int>(pp_resource_));
   m->WriteInt(pending_renderer_host_id_);
   m->WriteInt(pending_browser_host_id_);
-  m->WriteBool(creation_message_);
+  m->WriteBool(!!creation_message_);
   if (creation_message_)
     IPC::WriteParam(m, *creation_message_);
 }

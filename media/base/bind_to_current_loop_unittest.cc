@@ -23,7 +23,7 @@ void BoundBoolSetFromScopedPtr(bool* var, scoped_ptr<bool> val) {
 void BoundBoolSetFromScopedPtrFreeDeleter(
     bool* var,
     scoped_ptr<bool, base::FreeDeleter> val) {
-  *var = val;
+  *var = *val;
 }
 
 void BoundBoolSetFromScopedArray(bool* var, scoped_ptr<bool[]> val) {

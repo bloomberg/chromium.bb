@@ -45,7 +45,7 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
       return true;
 
     case WebInputEvent::GestureTapUnconfirmed:
-      return stashed_tap_down_;
+      return !!stashed_tap_down_;
 
     case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:

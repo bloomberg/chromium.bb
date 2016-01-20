@@ -293,9 +293,9 @@ class TrackedPreferencesMigrationTest : public testing::Test {
   bool HasPrefs(MockPrefStoreID store_id) {
     switch (store_id) {
       case MOCK_UNPROTECTED_PREF_STORE:
-        return unprotected_prefs_;
+        return !!unprotected_prefs_;
       case MOCK_PROTECTED_PREF_STORE:
-        return protected_prefs_;
+        return !!protected_prefs_;
     }
     NOTREACHED();
     return false;

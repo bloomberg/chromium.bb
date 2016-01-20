@@ -60,7 +60,7 @@ BlobStorageContext::BlobMapEntry::~BlobMapEntry() {
 }
 
 bool BlobStorageContext::BlobMapEntry::IsBeingBuilt() {
-  return data_builder;
+  return !!data_builder;
 }
 
 BlobStorageContext::BlobStorageContext() : memory_usage_(0) {

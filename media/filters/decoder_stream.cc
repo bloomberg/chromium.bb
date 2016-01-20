@@ -274,7 +274,7 @@ void DecoderStream<StreamType>::OnDecoderSelected(
   }
 
   media_log_->SetBooleanProperty(GetStreamTypeString() + "_dds",
-                                 decrypting_demuxer_stream_);
+                                 !!decrypting_demuxer_stream_);
   media_log_->SetStringProperty(GetStreamTypeString() + "_decoder",
                                 decoder_->GetDisplayName());
 

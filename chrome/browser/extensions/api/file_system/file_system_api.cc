@@ -1063,7 +1063,7 @@ bool FileSystemChooseEntryFunction::RunAsync() {
 
   file_system::ChooseEntryOptions* options = params->options.get();
   if (options) {
-    multiple_ = options->accepts_multiple;
+    multiple_ = !!options->accepts_multiple;
     if (multiple_)
       picker_type = ui::SelectFileDialog::SELECT_OPEN_MULTI_FILE;
 

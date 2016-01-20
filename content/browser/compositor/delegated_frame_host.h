@@ -155,7 +155,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   void BeginFrameSubscription(
       scoped_ptr<RenderWidgetHostViewFrameSubscriber> subscriber);
   void EndFrameSubscription();
-  bool HasFrameSubscriber() const { return frame_subscriber_; }
+  bool HasFrameSubscriber() const { return !!frame_subscriber_; }
   uint32_t GetSurfaceIdNamespace();
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.

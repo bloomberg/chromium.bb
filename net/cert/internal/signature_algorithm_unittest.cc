@@ -21,7 +21,7 @@ namespace {
 template <size_t N>
 bool ParseDer(const uint8_t(&data)[N], scoped_ptr<SignatureAlgorithm>* out) {
   *out = SignatureAlgorithm::CreateFromDer(der::Input(data, N));
-  return *out;
+  return !!*out;
 }
 
 // Parses a SignatureAlgorithm given an empty DER input.

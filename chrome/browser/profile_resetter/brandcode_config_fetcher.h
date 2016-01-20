@@ -26,7 +26,7 @@ class BrandcodeConfigFetcher : public net::URLFetcherDelegate {
                          const std::string& brandcode);
   ~BrandcodeConfigFetcher() override;
 
-  bool IsActive() const { return config_fetcher_; }
+  bool IsActive() const { return !!config_fetcher_; }
 
   scoped_ptr<BrandcodedDefaultSettings> GetSettings() {
     return std::move(default_settings_);

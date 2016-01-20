@@ -92,7 +92,7 @@ WindowState::~WindowState() {
 }
 
 bool WindowState::HasDelegate() const {
-  return delegate_;
+  return !!delegate_;
 }
 
 void WindowState::SetDelegate(scoped_ptr<WindowStateDelegate> delegate) {

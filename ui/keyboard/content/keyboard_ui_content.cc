@@ -201,7 +201,7 @@ aura::Window* KeyboardUIContent::GetKeyboardWindow() {
 }
 
 bool KeyboardUIContent::HasKeyboardWindow() const {
-  return keyboard_contents_;
+  return !!keyboard_contents_;
 }
 
 bool KeyboardUIContent::ShouldWindowOverscroll(aura::Window* window) const {

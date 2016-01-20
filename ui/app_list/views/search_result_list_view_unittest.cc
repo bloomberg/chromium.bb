@@ -100,9 +100,7 @@ class SearchResultListViewTest : public views::ViewsTestBase,
     return view_->OnKeyPressed(event);
   }
 
-  bool IsAutoLaunching() {
-    return view_->auto_launch_animation_;
-  }
+  bool IsAutoLaunching() { return !!view_->auto_launch_animation_; }
 
   void ForceAutoLaunch() {
     view_->ForceAutoLaunchForTest();

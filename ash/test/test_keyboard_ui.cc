@@ -17,7 +17,7 @@ TestKeyboardUI::TestKeyboardUI() {}
 TestKeyboardUI::~TestKeyboardUI() {}
 
 bool TestKeyboardUI::HasKeyboardWindow() const {
-  return keyboard_;
+  return !!keyboard_;
 }
 
 bool TestKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {

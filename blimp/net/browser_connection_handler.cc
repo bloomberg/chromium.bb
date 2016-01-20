@@ -43,7 +43,7 @@ scoped_ptr<BlimpMessageProcessor> BrowserConnectionHandler::RegisterFeature(
 void BrowserConnectionHandler::HandleConnection(
     scoped_ptr<BlimpConnection> connection) {
   DCHECK(connection);
-  VLOG(1) << "HandleConnection " << connection;
+  VLOG(1) << "HandleConnection " << connection.get();
 
   if (connection_) {
     DropCurrentConnection();

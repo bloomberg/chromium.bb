@@ -40,11 +40,11 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void WasHidden() override;
 
   bool has_audio_power_save_blocker_for_testing() const {
-    return audio_power_save_blocker_;
+    return !!audio_power_save_blocker_;
   }
 
   bool has_video_power_save_blocker_for_testing() const {
-    return video_power_save_blocker_;
+    return !!video_power_save_blocker_;
   }
 
  private:

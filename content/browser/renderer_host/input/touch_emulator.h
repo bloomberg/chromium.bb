@@ -30,7 +30,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
 
   // Note that TouchEmulator should always listen to touch events and their acks
   // (even in disabled state) to track native stream presence.
-  bool enabled() const { return gesture_provider_; }
+  bool enabled() const { return !!gesture_provider_; }
 
   // Returns |true| if the event was consumed. Consumed event should not
   // propagate any further.

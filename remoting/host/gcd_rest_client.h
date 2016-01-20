@@ -45,7 +45,7 @@ class GcdRestClient : public net::URLFetcherDelegate {
 
   // Tests whether is object is currently running a request.  Only one
   // request at a time may be pending.
-  bool HasPendingRequest() { return url_fetcher_; }
+  bool HasPendingRequest() { return !!url_fetcher_; }
 
   // Sends a 'patchState' request to the GCD API.  Constructs and
   // sends an appropriate JSON message M where |patch_details| becomes

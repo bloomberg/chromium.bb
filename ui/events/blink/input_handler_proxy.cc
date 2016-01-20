@@ -998,7 +998,7 @@ bool InputHandlerProxy::CancelCurrentFling() {
 }
 
 bool InputHandlerProxy::CancelCurrentFlingWithoutNotifyingClient() {
-  bool had_fling_animation = fling_curve_;
+  bool had_fling_animation = !!fling_curve_;
   if (had_fling_animation &&
       fling_parameters_.sourceDevice == blink::WebGestureDeviceTouchscreen) {
     cc::ScrollState scroll_state(0, 0, fling_parameters_.point.x,

@@ -98,7 +98,7 @@ void SingleThreadProxy::FinishAllRendering() {
 
 bool SingleThreadProxy::IsStarted() const {
   DCHECK(task_runner_provider_->IsMainThread());
-  return layer_tree_host_impl_;
+  return !!layer_tree_host_impl_;
 }
 
 bool SingleThreadProxy::CommitToActiveTree() const {

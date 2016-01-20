@@ -56,7 +56,7 @@ void WakeLockServiceContext::CancelWakeLock(int render_process_id,
 }
 
 bool WakeLockServiceContext::HasWakeLockForTests() const {
-  return wake_lock_;
+  return !!wake_lock_;
 }
 
 void WakeLockServiceContext::CreateWakeLock() {

@@ -45,7 +45,7 @@ class TestValue {
 
   int value() const { return value_->value(); }
   IntValue* value_ptr() const { return value_.get(); }
-  bool is_initialized() const { return value_; }
+  bool is_initialized() const { return !!value_; }
   bool is_default() const { return is_default_; }
 
   // TestValue uses the default traits struct with ProtoValuePtr<TestValue>.

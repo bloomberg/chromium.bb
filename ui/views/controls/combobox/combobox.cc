@@ -528,7 +528,7 @@ bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
       e.IsShiftDown() || e.IsControlDown() || e.IsAltDown()) {
     return false;
   }
-  return menu_runner_;
+  return !!menu_runner_;
 }
 
 bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {

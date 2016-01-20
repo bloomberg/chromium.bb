@@ -237,7 +237,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
     net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  bool is_user_db_available = cert_db->GetPublicSlot();
+  bool is_user_db_available = !!cert_db->GetPublicSlot();
   bool is_tpm_available = false;
 #if defined(OS_CHROMEOS)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();

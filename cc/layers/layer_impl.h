@@ -244,8 +244,8 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   const LayerImpl* replica_layer() const { return replica_layer_.get(); }
   scoped_ptr<LayerImpl> TakeReplicaLayer();
 
-  bool has_mask() const { return mask_layer_; }
-  bool has_replica() const { return replica_layer_; }
+  bool has_mask() const { return !!mask_layer_; }
+  bool has_replica() const { return !!replica_layer_; }
   bool replica_has_mask() const {
     return replica_layer_ && (mask_layer_ || replica_layer_->mask_layer_);
   }

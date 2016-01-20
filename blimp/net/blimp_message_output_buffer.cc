@@ -59,7 +59,7 @@ int BlimpMessageOutputBuffer::GetUnacknowledgedMessageCountForTest() const {
 void BlimpMessageOutputBuffer::ProcessMessage(
     scoped_ptr<BlimpMessage> message,
     const net::CompletionCallback& callback) {
-  DVLOG(2) << "OutputBuffer::ProcessMessage " << message;
+  DVLOG(2) << "OutputBuffer::ProcessMessage " << message.get();
 
   message->set_message_id(++prev_message_id_);
 

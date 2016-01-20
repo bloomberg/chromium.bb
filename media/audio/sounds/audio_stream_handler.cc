@@ -204,7 +204,7 @@ AudioStreamHandler::~AudioStreamHandler() {
 
 bool AudioStreamHandler::IsInitialized() const {
   DCHECK(CalledOnValidThread());
-  return stream_;
+  return !!stream_;
 }
 
 bool AudioStreamHandler::Play() {

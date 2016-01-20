@@ -821,7 +821,7 @@ void Pipeline::OnAddTextTrack(const TextTrackConfig& config,
 
 void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  demuxer_->Initialize(this, done_cb, text_renderer_);
+  demuxer_->Initialize(this, done_cb, !!text_renderer_);
 }
 
 void Pipeline::InitializeRenderer(const PipelineStatusCB& done_cb) {
