@@ -29,6 +29,7 @@ public class Website implements Serializable {
     private CameraInfo mCameraInfo;
     private CookieInfo mCookieInfo;
     private GeolocationInfo mGeolocationInfo;
+    private KeygenInfo mKeygenInfo;
     private MicrophoneInfo mMicrophoneInfo;
     private MidiInfo mMidiInfo;
     private ContentSettingException mJavaScriptException;
@@ -129,6 +130,37 @@ public class Website implements Serializable {
     public void setGeolocationPermission(ContentSetting value) {
         if (mGeolocationInfo != null) {
             mGeolocationInfo.setContentSetting(value);
+        }
+    }
+
+    /**
+     * Sets the KeygenInfo object for this Website.
+     */
+    public void setKeygenInfo(KeygenInfo info) {
+        mKeygenInfo = info;
+        WebsiteAddress embedder = WebsiteAddress.create(info.getEmbedder());
+        if (embedder != null) {
+            mSummary = embedder.getTitle();
+        }
+    }
+
+    public KeygenInfo getKeygenInfo() {
+        return mKeygenInfo;
+    }
+
+    /**
+     * Returns what permission governs keygen access.
+     */
+    public ContentSetting getKeygenPermission() {
+        return mKeygenInfo != null ? mKeygenInfo.getContentSetting() : null;
+    }
+
+    /**
+     * Configure keygen access setting for this site.
+     */
+    public void setKeygenPermission(ContentSetting value) {
+        if (mKeygenInfo != null) {
+            mKeygenInfo.setContentSetting(value);
         }
     }
 

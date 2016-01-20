@@ -138,6 +138,12 @@ public class ContentSettingsResources {
                     new ResourceItem(R.drawable.permission_protected_media,
                                  org.chromium.chrome.R.string.protected_content, 0,
                                  ContentSetting.ASK, ContentSetting.BLOCK, 0, 0));
+            localMap.put(ContentSettingsType.CONTENT_SETTINGS_TYPE_KEYGEN,
+                    new ResourceItem(R.drawable.permission_keygen,
+                                 R.string.keygen_permission_title,
+                                 R.string.keygen_permission_title, ContentSetting.ALLOW,
+                                 ContentSetting.BLOCK,
+                                 0, R.string.website_settings_category_blocked_recommended));
             sResourceInfo = localMap;
         }
         return sResourceInfo;

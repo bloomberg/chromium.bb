@@ -63,6 +63,8 @@ public class WebsitePermissionsFetcher {
         queue.add(new CookieInfoFetcher());
         // Fullscreen are stored per-origin.
         queue.add(new FullscreenInfoFetcher());
+        // Keygen permissions are per-origin.
+        queue.add(new KeygenInfoFetcher());
         // Local storage info is per-origin.
         queue.add(new LocalStorageInfoFetcher());
         // Website storage is per-host.
@@ -244,6 +246,17 @@ public class WebsitePermissionsFetcher {
                 for (Website site : sites) {
                     site.setJavaScriptException(exception);
                 }
+            }
+        }
+    }
+
+    private class KeygenInfoFetcher extends Task {
+        @Override
+        public void run() {
+            for (KeygenInfo info : WebsitePreferenceBridge.getKeygenInfo()) {
+                WebsiteAddress address = WebsiteAddress.create(info.getOrigin());
+                if (address == null) continue;
+                createSiteByOriginAndHost(address).setKeygenInfo(info);
             }
         }
     }

@@ -17,6 +17,7 @@
 #include "chrome/browser/browsing_data/local_data_container.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/content_settings/web_site_settings_uma_util.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
 #include "chrome/browser/profiles/profile.h"
@@ -203,6 +204,44 @@ static void SetGeolocationSettingForOrigin(
   SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_GEOLOCATION, origin,
                       ContentSettingsPattern::FromURLNoWildcard(embedder_url),
                       (ContentSetting) value, is_incognito);
+}
+
+static void GetKeygenOrigins(JNIEnv* env,
+                             const JavaParamRef<jclass>& clazz,
+                             const JavaParamRef<jobject>& list) {
+  GetOrigins(env, CONTENT_SETTINGS_TYPE_KEYGEN,
+             &Java_WebsitePreferenceBridge_insertKeygenInfoIntoList, list,
+             false);
+}
+
+static jint GetKeygenSettingForOrigin(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz,
+                                      const JavaParamRef<jstring>& origin,
+                                      const JavaParamRef<jstring>& embedder,
+                                      jboolean is_incognito) {
+  return GetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin,
+                             embedder, is_incognito);
+}
+
+static void SetKeygenSettingForOrigin(JNIEnv* env,
+                                      const JavaParamRef<jclass>& clazz,
+                                      const JavaParamRef<jstring>& origin,
+                                      const JavaParamRef<jstring>& embedder,
+                                      jint value,
+                                      jboolean is_incognito) {
+  GURL embedder_url(ConvertJavaStringToUTF8(env, embedder));
+  SetSettingForOrigin(env, CONTENT_SETTINGS_TYPE_KEYGEN, origin,
+                      ContentSettingsPattern::FromURLNoWildcard(embedder_url),
+                      (ContentSetting) value, is_incognito);
+}
+
+static jboolean GetKeygenBlocked(JNIEnv* env,
+                             const JavaParamRef<jclass>& clazz,
+                             const JavaParamRef<jobject>& java_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  return TabSpecificContentSettings::FromWebContents(
+      web_contents)->IsContentBlocked(CONTENT_SETTINGS_TYPE_KEYGEN);
 }
 
 static void GetMidiOrigins(JNIEnv* env,

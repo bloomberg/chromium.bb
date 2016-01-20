@@ -49,6 +49,8 @@
         android:key="push_notifications_list" />
     <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
         android:key="protected_media_identifier_permission_list" />
+    <org.chromium.chrome.browser.preferences.ChromeBaseListPreference
+        android:key="keygen_permission_list" />
     <org.chromium.chrome.browser.preferences.ButtonPreference
         android:key="reset_site_button"
         android:title="@string/website_reset" />
