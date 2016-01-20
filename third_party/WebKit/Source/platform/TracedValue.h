@@ -18,6 +18,7 @@ class TracedValue;
 
 namespace blink {
 
+// TracedValue copies all passed names and values and doesn't retain references.
 class PLATFORM_EXPORT TracedValue : public TraceEvent::ConvertableToTraceFormat {
     WTF_MAKE_NONCOPYABLE(TracedValue);
 
