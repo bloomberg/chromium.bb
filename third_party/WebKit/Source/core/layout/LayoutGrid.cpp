@@ -1502,15 +1502,16 @@ void LayoutGrid::offsetAndBreadthForPositionedChild(const LayoutBox& child, Grid
 
     GridPosition startPosition = isForColumns ? child.style()->gridColumnStart() : child.style()->gridRowStart();
     GridPosition endPosition = isForColumns ? child.style()->gridColumnEnd() : child.style()->gridRowEnd();
-    int lastExplicitLine = isForColumns ? gridColumnCount() : gridRowCount();
+    int firstExplicitLine = smallestStart;
+    int lastExplicitLine = (isForColumns ? GridResolvedPosition::explicitGridColumnCount(styleRef()) : GridResolvedPosition::explicitGridRowCount(styleRef())) + smallestStart;
 
     bool startIsAuto = startPosition.isAuto()
         || (startPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(startPosition.namedGridLine(), styleRef(), GridResolvedPosition::initialPositionSide(direction)))
-        || (resolvedInitialPosition < 0)
+        || (resolvedInitialPosition < firstExplicitLine)
         || (resolvedInitialPosition > lastExplicitLine);
     bool endIsAuto = endPosition.isAuto()
         || (endPosition.isNamedGridArea() && !GridResolvedPosition::isValidNamedLineOrArea(endPosition.namedGridLine(), styleRef(), GridResolvedPosition::finalPositionSide(direction)))
-        || (resolvedFinalPosition < 0)
+        || (resolvedFinalPosition < firstExplicitLine)
         || (resolvedFinalPosition > lastExplicitLine);
 
     size_t initialPosition = startIsAuto ? 0 : resolvedInitialPosition;
