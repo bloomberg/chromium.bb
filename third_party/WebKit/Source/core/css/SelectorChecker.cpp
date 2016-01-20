@@ -1039,17 +1039,13 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
         break;
     }
 
-    if (!context.inRightmostCompound && m_mode == ResolvingStyle)
-        return false;
-
     if (m_mode == QueryingRules)
         return false;
+    if (m_mode == SharingRules)
+        return true;
 
-    PseudoId pseudoId = CSSSelector::pseudoId(selector.pseudoType());
-    if (pseudoId != NOPSEUDO && m_mode != SharingRules)
-        result.dynamicPseudo = pseudoId;
-
-    // ::before, ::after, etc.
+    result.dynamicPseudo = CSSSelector::pseudoId(selector.pseudoType());
+    ASSERT(result.dynamicPseudo != NOPSEUDO);
     return true;
 }
 
