@@ -81,7 +81,7 @@ a:visited {
   height: calc(130px - 2px);
   line-height: 100%;
   margin: 0 8px;
-  width: 156px;
+  width: calc(156px - 2px);
 }
 
 .icon-ntp .mv-tile,

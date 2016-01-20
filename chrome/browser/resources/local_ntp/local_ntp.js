@@ -77,7 +77,7 @@ var NTP_DESIGN = {
   showFavicon: true,
   thumbnailTextColor: [50, 50, 50, 255],
   thumbnailFallback: 'dot',  // Draw single dot.
-  tileWidth: 156,
+  tileWidth: 154,
   tileMargin: 16,
   titleColor: [50, 50, 50, 255],
   titleColorAgainstDark: [210, 210, 210, 255],
