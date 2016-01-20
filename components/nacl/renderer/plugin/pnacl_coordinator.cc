@@ -145,17 +145,6 @@ void PnaclCoordinator::ReportNonPpapiError(PP_NaClError err_code,
   ExitWithError();
 }
 
-void PnaclCoordinator::ReportPpapiError(PP_NaClError err_code,
-                                        int32_t pp_error,
-                                        const std::string& message) {
-  std::stringstream ss;
-  ss << "PnaclCoordinator: " << message << " (pp_error=" << pp_error << ").";
-  ErrorInfo error_info;
-  error_info.SetReport(err_code, ss.str());
-  plugin_->ReportLoadError(error_info);
-  ExitWithError();
-}
-
 void PnaclCoordinator::ExitWithError() {
   PLUGIN_PRINTF(("PnaclCoordinator::ExitWithError\n"));
   // Free all the intermediate callbacks we ever created.
@@ -211,28 +200,13 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
       pnacl_options_.use_subzero, nexe_size, pexe_size_,
       translate_thread_->GetCompileTime());
 
-  NexeReadDidOpen(PP_OK);
+  NexeReadDidOpen();
 }
 
-void PnaclCoordinator::NexeReadDidOpen(int32_t pp_error) {
-  PLUGIN_PRINTF(("PnaclCoordinator::NexeReadDidOpen (pp_error=%"
-                 NACL_PRId32 ")\n", pp_error));
-  if (pp_error != PP_OK) {
-    if (pp_error == PP_ERROR_FILENOTFOUND) {
-      ReportPpapiError(PP_NACL_ERROR_PNACL_CACHE_FETCH_NOTFOUND,
-                       pp_error,
-                       "Failed to open translated nexe (not found).");
-      return;
-    }
-    if (pp_error == PP_ERROR_NOACCESS) {
-      ReportPpapiError(PP_NACL_ERROR_PNACL_CACHE_FETCH_NOACCESS,
-                       pp_error,
-                       "Failed to open translated nexe (no access).");
-      return;
-    }
-    ReportPpapiError(PP_NACL_ERROR_PNACL_CACHE_FETCH_OTHER,
-                     pp_error,
-                     "Failed to open translated nexe.");
+void PnaclCoordinator::NexeReadDidOpen() {
+  if (!temp_nexe_file_->IsValid()) {
+    ReportNonPpapiError(PP_NACL_ERROR_PNACL_CACHE_FETCH_OTHER,
+                        "Failed to open translated nexe.");
     return;
   }
 
@@ -268,7 +242,7 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
   }
   temp_nexe_file_.reset(new TempFile(plugin_, handle));
   // Open it for reading as the cached nexe file.
-  NexeReadDidOpen(temp_nexe_file_->CheckValidity());
+  NexeReadDidOpen();
 }
 
 void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
@@ -306,11 +280,9 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
     PP_FileHandle obj_handle =
         plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
     scoped_ptr<TempFile> temp_file(new TempFile(plugin_, obj_handle));
-    int32_t pp_error = temp_file->CheckValidity();
-    if (pp_error != PP_OK) {
-      ReportPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
-                       pp_error,
-                       "Failed to open scratch object file.");
+    if (!temp_file->IsValid()) {
+      ReportNonPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
+                          "Failed to open scratch object file.");
       return;
     } else {
       obj_files_.push_back(temp_file.release());
@@ -320,8 +292,7 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   temp_nexe_file_.reset(new TempFile(plugin_, nexe_handle));
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  int32_t pp_error = temp_nexe_file_->CheckValidity();
-  if (pp_error != PP_OK) {
+  if (!temp_nexe_file_->IsValid()) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,
         std::string(

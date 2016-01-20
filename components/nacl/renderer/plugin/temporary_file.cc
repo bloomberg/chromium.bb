@@ -21,12 +21,6 @@ TempFile::TempFile(Plugin* plugin, PP_FileHandle handle)
 
 TempFile::~TempFile() { }
 
-int32_t TempFile::CheckValidity() {
-  if (!file_handle_.IsValid())
-    return PP_ERROR_FAILED;
-  return PP_OK;
-}
-
 bool TempFile::Reset() {
   // file_handle_, read_wrapper_ and write_wrapper_ are all backed by the
   // same file handle/descriptor, so resetting the seek position of one

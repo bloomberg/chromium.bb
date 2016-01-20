@@ -111,7 +111,7 @@ class PnaclCoordinator {
   void TranslateFinished(int32_t pp_error);
 
   // Invoked when the read descriptor for nexe_file_ is created.
-  void NexeReadDidOpen(int32_t pp_error);
+  void NexeReadDidOpen();
 
   // Bring control back to the plugin by invoking the
   // |translate_notify_callback_|.  This does not set the ErrorInfo report,
@@ -120,12 +120,6 @@ class PnaclCoordinator {
   // Run |translate_notify_callback_| with an error condition that is not
   // PPAPI specific.  Also set ErrorInfo report.
   void ReportNonPpapiError(PP_NaClError err, const std::string& message);
-  // Run when faced with a PPAPI error condition. Bring control back to the
-  // plugin by invoking the |translate_notify_callback_|.
-  // Also set ErrorInfo report.
-  void ReportPpapiError(PP_NaClError err,
-                        int32_t pp_error, const std::string& message);
-
 
   // Keeps track of the pp_error upon entry to TranslateFinished,
   // for inspection after cleanup.

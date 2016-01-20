@@ -42,7 +42,7 @@ class TempFile {
   TempFile(Plugin* plugin, PP_FileHandle handle);
   ~TempFile();
 
-  int32_t CheckValidity();
+  bool IsValid() { return file_handle_.IsValid(); }
   // Resets file position of the handle, for reuse.
   bool Reset();
 
