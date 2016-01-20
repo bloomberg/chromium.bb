@@ -151,10 +151,6 @@ class DummyImeControlDelegate : public ImeControlDelegate {
   int handle_switch_ime_count() const {
     return handle_switch_ime_count_;
   }
-  ui::Accelerator RemapAccelerator(
-      const ui::Accelerator& accelerator) override {
-    return ui::Accelerator(accelerator);
-  }
 
  private:
   int handle_next_ime_count_;

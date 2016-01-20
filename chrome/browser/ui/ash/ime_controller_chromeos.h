@@ -22,11 +22,8 @@ class ImeController : public ash::ImeControlDelegate {
   void HandlePreviousIme() override;
   bool CanSwitchIme(const ui::Accelerator& accelerator) override;
   void HandleSwitchIme(const ui::Accelerator& accelerator) override;
-  ui::Accelerator RemapAccelerator(const ui::Accelerator& accelerator) override;
 
  private:
-  bool UsingFrenchInputMethod() const;
-
   DISALLOW_COPY_AND_ASSIGN(ImeController);
 };
 

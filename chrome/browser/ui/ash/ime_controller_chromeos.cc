@@ -36,39 +36,3 @@ void ImeController::HandleSwitchIme(const ui::Accelerator& accelerator) {
       chromeos::input_method::InputMethodManager::Get();
   manager->GetActiveIMEState()->SwitchInputMethod(accelerator);
 }
-
-ui::Accelerator ImeController::RemapAccelerator(
-    const ui::Accelerator& accelerator) {
-  ui::KeyboardCode key = accelerator.key_code();
-  // On French keyboards the user needs to press a number key in conjunction
-  // with the shift key. To get the right accelerator from our static table
-  // we modify the received accelerator to match this. See
-  // http://crbug.com/129017 for more details.
-  if (key < ui::VKEY_0 || key > ui::VKEY_9 || !UsingFrenchInputMethod())
-    return accelerator;
-
-  // We toggle the shift key to get the correct accelerator from our table.
-  int remapped_modifiers = accelerator.modifiers() ^ ui::EF_SHIFT_DOWN;
-
-  ui::Accelerator remapped_accelerator(key, remapped_modifiers);
-  remapped_accelerator.set_type(accelerator.type());
-  remapped_accelerator.set_is_repeat(accelerator.IsRepeat());
-  return remapped_accelerator;
-}
-
-bool ImeController::UsingFrenchInputMethod() const {
-  chromeos::input_method::InputMethodManager* manager =
-      chromeos::input_method::InputMethodManager::Get();
-  const chromeos::input_method::InputMethodManager::State* state =
-      manager->GetActiveIMEState().get();
-
-  // KeyEvent can come before default user profile is initialized, so IM is
-  // still in global default state "en_US".
-  if (!state)
-    return false;
-
-  const chromeos::input_method::InputMethodDescriptor& descriptor =
-      state->GetCurrentInputMethod();
-  const std::string& layout = descriptor.id();
-  return (layout == "xkb:fr::fra" || layout == "xkb:be::fra");
-}

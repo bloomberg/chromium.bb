@@ -775,10 +775,8 @@ void AcceleratorController::UnregisterAll(ui::AcceleratorTarget* target) {
 }
 
 bool AcceleratorController::Process(const ui::Accelerator& accelerator) {
-  if (ime_control_delegate_) {
-    return accelerator_manager_->Process(
-        ime_control_delegate_->RemapAccelerator(accelerator));
-  }
+  if (ime_control_delegate_)
+    return accelerator_manager_->Process(accelerator);
   return accelerator_manager_->Process(accelerator);
 }
 
@@ -789,11 +787,8 @@ bool AcceleratorController::IsRegistered(
 
 bool AcceleratorController::IsPreferred(
     const ui::Accelerator& accelerator) const {
-  const ui::Accelerator remapped_accelerator = ime_control_delegate_.get() ?
-      ime_control_delegate_->RemapAccelerator(accelerator) : accelerator;
-
   std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(remapped_accelerator);
+      accelerators_.find(accelerator);
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 
@@ -802,11 +797,8 @@ bool AcceleratorController::IsPreferred(
 
 bool AcceleratorController::IsReserved(
     const ui::Accelerator& accelerator) const {
-  const ui::Accelerator remapped_accelerator = ime_control_delegate_.get() ?
-      ime_control_delegate_->RemapAccelerator(accelerator) : accelerator;
-
   std::map<ui::Accelerator, AcceleratorAction>::const_iterator iter =
-      accelerators_.find(remapped_accelerator);
+      accelerators_.find(accelerator);
   if (iter == accelerators_.end())
     return false;  // not an accelerator.
 

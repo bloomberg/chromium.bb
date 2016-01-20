@@ -689,7 +689,6 @@
       # Ash implies the app list is enabled (only disabled on mobile).
       'browser/ui/ash/accessibility/ax_tree_source_aura_unittest.cc',
       'browser/ui/ash/chrome_screenshot_grabber_unittest.cc',
-      'browser/ui/ash/ime_controller_chromeos_unittest.cc',
       'browser/ui/ash/launcher/chrome_launcher_controller_unittest.cc',
       'browser/ui/ash/launcher/launcher_application_menu_item_model_unittest.cc',
       'browser/ui/ash/launcher/launcher_context_menu_unittest.cc',

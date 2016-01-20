@@ -33,11 +33,6 @@ class ImeControlDelegate {
 
   // Switches to the IME associated with |accelerator|.
   virtual void HandleSwitchIme(const ui::Accelerator& accelerator) = 0;
-
-  // Checks for special language anomalies and re-map the |accelerator|
-  // accordingly.
-  virtual ui::Accelerator RemapAccelerator(
-      const ui::Accelerator& accelerator) = 0;
 };
 
 }  // namespace ash
