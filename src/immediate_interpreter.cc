@@ -2792,7 +2792,8 @@ void ImmediateInterpreter::FillResultGesture(
     case kGestureTypePinch: {
       float current_dist = sqrtf(TwoFingerDistanceSq(hwstate));
       result_ = Gesture(kGesturePinch, changed_time_, hwstate.timestamp,
-                        current_dist / two_finger_start_distance_);
+                        current_dist / two_finger_start_distance_,
+                        GESTURES_ZOOM_UPDATE);
       break;
     }
     default:

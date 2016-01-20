@@ -181,6 +181,10 @@ struct HardwareState {
 #define GESTURES_FLING_START 0  // Scroll end/fling begin
 #define GESTURES_FLING_TAP_DOWN 1  // Finger touched down/fling end
 
+#define GESTURES_ZOOM_START 0  // Pinch zoom begin
+#define GESTURES_ZOOM_UPDATE 1  // Zoom-in/Zoom-out update
+#define GESTURES_ZOOM_END 2  // Pinch zoom end
+
 // Gesture sub-structs
 
 // Note about ordinal_* values: Sometimes, UI will want to use unaccelerated
@@ -232,6 +236,8 @@ typedef struct {
   // >1.0 for inwards pinch
   float dz;
   float ordinal_dz;
+  // GESTURES_ZOOM_START, GESTURES_ZOOM_UPDATE, or GESTURES_ZOOM_END
+  unsigned zoom_state;
 } GesturePinch;
 
 // Metrics types that we care about
@@ -319,11 +325,12 @@ struct Gesture {
     details.swipe.ordinal_dy = details.swipe.dy = dy;
   }
   Gesture(const GesturePinch&,
-          stime_t start, stime_t end, float dz)
+          stime_t start, stime_t end, float dz, unsigned state)
       : start_time(start),
         end_time(end),
         type(kGestureTypePinch) {
     details.pinch.ordinal_dz = details.pinch.dz = dz;
+    details.pinch.zoom_state = state;
   }
   Gesture(const GestureSwipeLift&, stime_t start, stime_t end)
       : start_time(start),

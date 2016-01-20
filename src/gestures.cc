@@ -625,5 +625,5 @@ const GestureScroll kGestureScroll = { 0, 0, 0, 0, 0 };
 const GestureButtonsChange kGestureButtonsChange = { 0, 0 };
 const GestureFling kGestureFling = { 0, 0, 0, 0, 0 };
 const GestureSwipe kGestureSwipe = { 0, 0, 0, 0 };
-const GesturePinch kGesturePinch = { 0, 0 };
+const GesturePinch kGesturePinch = { 0, 0, 0 };
 const GestureMetrics kGestureMetrics = { kGestureMetricsTypeUnknown, {0, 0} };
