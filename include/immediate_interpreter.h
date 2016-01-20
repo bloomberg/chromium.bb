@@ -425,9 +425,36 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
                              bool origin,
                              bool permit_warp = false) const;
 
+  // Returns true if there is a potential for pinch zoom but still it's too
+  // early to decide. In this case, there shouldn't be any move or scroll
+  // event.
+  bool EarlyZoomPotential(const HardwareState& hwstate) const;
+
+  // Returns true if there are two fingers moving in opposite directions.
+  // Moreover, this function makes sure that fingers moving direction hasn't
+  // changed recently.
+  bool ZoomFingersAreConsistent(const HardwareStateBuffer& state_buffer) const;
+
+  // Returns true if the finger that is closer to the bottom edge is moving
+  // towards the center.
+  bool InwardPinch(const HardwareStateBuffer& state_buffer,
+                   const FingerState& fs) const;
+
+  // Returns Cos(A) where A is the angle between the move vector of two fingers
+  float FingersAngle(const FingerState* before1, const FingerState* before2,
+                     const FingerState* curr1, const FingerState* curr2) const;
+
+  // Returns true if fingers are not moving in opposite directions.
+  bool ScrollAngle(const FingerState& finger1, const FingerState& finger2);
+
   // Returns the square of distance between two fingers.
   // Returns -1 if not exactly two fingers are present.
   float TwoFingerDistanceSq(const HardwareState& hwstate) const;
+
+  // Returns the square of distance between two given fingers.
+  // Returns -1 if fingers don't present in the hwstate.
+  float TwoSpecificFingerDistanceSq(const HardwareState& hwstate,
+                                    const FingerMap& fingers) const;
 
   // Updates thumb_ below.
   void UpdateThumbState(const HardwareState& hwstate);
@@ -491,7 +518,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Check for a pinch gesture and update the state machine for detection.
   // If a pinch was detected it will return true. False otherwise.
   // To reset the state machine call with reset=true
-  bool UpdatePinchState(const HardwareState& hwstate, bool reset);
+  bool UpdatePinchState(const HardwareState& hwstate, bool reset,
+                        const FingerMap& gs_fingers);
 
   // Returns a gesture assuming that at least one of the fingers performing
   // current_gesture_type has left
@@ -585,6 +613,9 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // Time when a contact arrived. Persists even when fingers change.
   map<short, stime_t, kMaxFingers> origin_timestamps_;
 
+  // Total distance travelled by a finger since the origin_timestamps_.
+  map<short, float, kMaxFingers> distance_walked_;
+
   // Button data
   // Which button we are going to send/have sent for the physical btn press
   int button_type_;  // left, middle, or right
@@ -660,7 +691,7 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   GestureType prev_gesture_type_;
 
   // Cache for distance between fingers at start of pinch gesture
-  float two_finger_start_distance_;
+  float two_finger_start_distance_sq_;
 
   HardwareStateBuffer state_buffer_;
   ScrollEventBuffer scroll_buffer_;
@@ -674,6 +705,8 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   stime_t pinch_guess_start_;
   // True when the pinch decision has been locked.
   bool pinch_locked_;
+  // Pinch status
+  unsigned pinch_status_;
 
   // Keeps track of if there was a finger seen during a physical click
   bool finger_seen_shortly_after_button_down_;
@@ -727,6 +760,29 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty change_timeout_;
   // Time [s] to wait before locking on to a gesture
   DoubleProperty evaluation_timeout_;
+  // Time [s] to wait before deciding if the pinch zoom is happening.
+  DoubleProperty pinch_evaluation_timeout_;
+  // Time [s] to wait before decide if a thumb is doing a pinch
+  DoubleProperty thumb_pinch_evaluation_timeout_;
+  // Minimum movement that a thumb should have to be a gesturing finger.
+  DoubleProperty thumb_pinch_min_movement_;
+  // If the ratio of gesturing fingers movement to thumb movement is greater
+  // than this threshold, then we might detect a slow pinch.
+  // The movements are compared by Distance_sq * Time * Time
+  DoubleProperty slow_pinch_guess_ratio_threshold_;
+  // If the ratio of gesturing fingers movement to thumb movement is greater
+  // than this number, then we can't have pinch with thumb.
+  DoubleProperty thumb_pinch_movement_ratio_;
+  // Ratio of Distance_sq * Time * Time for two fingers. This measure is used
+  // to compare the slow movement of two fingers.
+  DoubleProperty thumb_slow_pinch_similarity_ratio_;
+  // If a thumb arrives at the same time as the other fingers, the
+  // thumb_pinch_evaluation_timeout_ is multiplied by this factor
+  DoubleProperty thumb_pinch_delay_factor_;
+  // Minimum movement that fingers must have before we consider their
+  // relative direction. If the movement is smaller than this number, it
+  // will considered as noise.
+  DoubleProperty minimum_movement_direction_detection_;
   // A finger in the damp zone must move at least this much as much as
   // the other finger to count toward a gesture. Should be between 0 and 1.
   DoubleProperty damp_scroll_min_movement_factor_;
@@ -753,6 +809,10 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   // This much time after fingers change, stop allowing contacts classified
   // as thumb to be classified as non-thumb.
   DoubleProperty thumb_eval_timeout_;
+  // If thumb is doing an inward pinch, the thresholds for distance and speed
+  // that thumb needs to move to be a gesturing finger are multiplied by this
+  // factor
+  DoubleProperty thumb_pinch_threshold_ratio_;
   // If a finger is recognized as thumb, it has only this much time to change
   // its status and perform a click
   DoubleProperty thumb_click_prevention_timeout_;
@@ -818,8 +878,25 @@ class ImmediateInterpreter : public Interpreter, public PropertyDelegate {
   DoubleProperty pinch_noise_level_;
   // Minimal distance [mm] fingers have to move to indicate a pinch gesture.
   DoubleProperty pinch_guess_min_movement_;
+  // Minimal distance [mm] a thumb have to move to do a pinch gesture.
+  DoubleProperty pinch_thumb_min_movement_;
   // Minimal distance [mm] fingers have to move to lock a pinch gesture.
   DoubleProperty pinch_certain_min_movement_;
+  // Minimum Cos(A) that is acceptable for an inward pinch zoom, where A
+  // is the angle between the lower finger and a vertical vector directed
+  // from top to bottom.
+  DoubleProperty inward_pinch_min_angle_;
+  // Maximum Cos(A) to perform a pinch zoom, where A is the angle between
+  // two fingers.
+  DoubleProperty pinch_zoom_max_angle_;
+  // Minimum Cos(A) to perform a scroll gesture when pinch is enabled,
+  // where A is the angle between two fingers.
+  DoubleProperty scroll_min_angle_;
+  // Minimum movement in opposite directions that two fingers must have
+  // before we call it a consistent move for pinch.
+  DoubleProperty pinch_guess_min_consistent_movement_;
+  // Minimum number of touch events needed to start a pinch zoom
+  IntProperty pinch_zoom_min_events_;
   // Temporary flag to turn pinch on/off while we tune it.
   BoolProperty pinch_enable_;
 
