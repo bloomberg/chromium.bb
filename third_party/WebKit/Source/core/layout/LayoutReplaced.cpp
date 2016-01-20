@@ -120,9 +120,6 @@ bool LayoutReplaced::shouldPaint(const PaintInfo& paintInfo, const LayoutPoint& 
         && paintInfo.phase != PaintPhaseSelection && paintInfo.phase != PaintPhaseMask && paintInfo.phase != PaintPhaseClippingMask)
         return false;
 
-    if (!paintInfo.shouldPaintWithinRoot(this))
-        return false;
-
     // if we're invisible or haven't received a layout yet, then just bail.
     if (style()->visibility() != VISIBLE)
         return false;

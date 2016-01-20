@@ -66,7 +66,7 @@ static EBorderStyle collapsedBorderStyle(EBorderStyle style)
 
 void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const CollapsedBorderValue& currentBorderValue)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell) || m_layoutTableCell.style()->visibility() != VISIBLE)
+    if (m_layoutTableCell.style()->visibility() != VISIBLE)
         return;
 
     const ComputedStyle& styleForCellFlow = m_layoutTableCell.styleForCellFlow();
@@ -133,9 +133,6 @@ void TableCellPainter::paintCollapsedBorders(const PaintInfo& paintInfo, const L
 
 void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, const LayoutObject* backgroundObject, DisplayItem::Type type)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell))
-        return;
-
     if (!backgroundObject)
         return;
 
@@ -177,9 +174,6 @@ void TableCellPainter::paintBackgroundsBehindCell(const PaintInfo& paintInfo, co
 
 void TableCellPainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!paintInfo.shouldPaintWithinRoot(&m_layoutTableCell))
-        return;
-
     LayoutTable* table = m_layoutTableCell.table();
     if (!table->collapseBorders() && m_layoutTableCell.style()->emptyCells() == HIDE && !m_layoutTableCell.firstChild())
         return;

@@ -18,7 +18,6 @@ namespace blink {
 // rely on PaintController here.
 class SkPictureBuilder final {
     WTF_MAKE_NONCOPYABLE(SkPictureBuilder);
-    STACK_ALLOCATED();
 public:
     SkPictureBuilder(const FloatRect& bounds, SkMetaData* metaData = nullptr, GraphicsContext* containingContext = nullptr)
         : m_bounds(bounds)
