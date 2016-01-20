@@ -14,6 +14,8 @@ import os
 
 from chromite.lib import cros_test_lib
 
+from chromite.lib import gs
+from chromite.lib import osutils
 from chromite.lib.paygen import gslib
 from chromite.lib.paygen import utils
 
@@ -716,37 +718,37 @@ class TestGsLibAccess(cros_test_lib.MoxTempDirTestCase):
   bucket, which is world-readable.  Any .boto setup should do, but without
   a .boto there will be failures.
   """
-  small_gs_path = 'gs://chromeos-releases-public/small-test-file'
+  def populateUri(self, uri):
+    local_path = os.path.join(self.tempdir, 'remote_content')
+    osutils.WriteFile(local_path, 'some sample content')
+    gslib.Copy(local_path, uri)
+    return local_path
 
   @cros_test_lib.NetworkTest()
   def testCopyAndMD5Sum(self):
-    """Higher-level functional test.  Test MD5Sum OK:
-
-    1) List files on GS.
-    2) Select a small one by asking for byte size of files on GS.
-    3) Get MD5 sum of file on GS.
-    4) Copy file down to local file.
-    5) Recalculate MD5 sum for local file.
-    6) Verify that MD5 values are the same.
-    """
-    gs_md5 = gslib.MD5Sum(self.small_gs_path)
-    local_path = os.path.join(self.tempdir, 'md5-check-file')
-    gslib.Copy(self.small_gs_path, local_path)
-    local_md5 = gslib.filelib.MD5Sum(local_path)
-    self.assertEqual(gs_md5, local_md5)
+    """Higher-level functional test. Test MD5Sum OK."""
+    with gs.TemporaryURL('chromite.gslib.md5') as tempuri:
+      local_path = self.populateUri(tempuri)
+      local_md5 = gslib.filelib.MD5Sum(local_path)
+      gs_md5 = gslib.MD5Sum(tempuri)
+      self.assertEqual(gs_md5, local_md5)
 
   @cros_test_lib.NetworkTest()
   def testExistsLazy(self):
-    self.assertTrue(gslib.ExistsLazy(self.small_gs_path))
+    with gs.TemporaryURL('chromite.gslib.exists_lazy') as tempuri:
+      self.populateUri(tempuri)
+      self.assertTrue(gslib.ExistsLazy(tempuri))
 
-    bogus_gs_path = 'gs://chromeos-releases/wert/sdgi/sadg/sdgi'
+    bogus_gs_path = 'gs://chromeos-releases-test/bogus/non-existent-url'
     self.assertFalse(gslib.ExistsLazy(bogus_gs_path))
 
   @cros_test_lib.NetworkTest()
   def testExists(self):
-    self.assertTrue(gslib.Exists(self.small_gs_path))
+    with gs.TemporaryURL('chromite.gslib.exists') as tempuri:
+      self.populateUri(tempuri)
+      self.assertTrue(gslib.Exists(tempuri))
 
-    bogus_gs_path = 'gs://chromeos-releases/wert/sdgi/sadg/sdgi'
+    bogus_gs_path = 'gs://chromeos-releases-test/bogus/non-existent-url'
     self.assertFalse(gslib.Exists(bogus_gs_path))
 
   @cros_test_lib.NetworkTest()
