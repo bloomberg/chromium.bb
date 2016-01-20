@@ -78,7 +78,9 @@ private:
     void didAcceptIndices(const WebVector<int>& indices) override;
     void didCancel() override;
 
+    bool showInternal();
     void dispatchEvent(Timer<ExternalPopupMenu>*);
+    void update();
 
     RawPtrWillBeMember<HTMLSelectElement> m_ownerElement;
     RefPtrWillBeMember<LocalFrame> m_localFrame;
@@ -87,6 +89,7 @@ private:
     Timer<ExternalPopupMenu> m_dispatchEventTimer;
     // The actual implementor of the show menu.
     WebExternalPopupMenu* m_webExternalPopupMenu;
+    bool m_needsUpdate = false;
 };
 
 } // namespace blink

@@ -1984,9 +1984,9 @@ void HTMLSelectElement::showPopup()
     m_popupIsVisible = true;
 
     LayoutMenuList* menuList = toLayoutMenuList(layoutObject());
-    FloatQuad quad(menuList->localToAbsoluteQuad(FloatQuad(menuList->borderBoundingBox())));
     IntSize size = pixelSnappedIntRect(menuList->frameRect()).size();
-    m_popup->show(quad, size, optionToListIndex(selectedIndex()));
+    // TODO(tkent): Remove show() arguments.  They are unused.
+    m_popup->show(FloatQuad(), size, optionToListIndex(selectedIndex()));
     if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->didShowMenuListPopup(menuList);
 }
