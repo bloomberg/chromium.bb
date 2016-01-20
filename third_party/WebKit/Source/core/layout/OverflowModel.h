@@ -84,8 +84,8 @@ public:
     {
     }
 
-    const LayoutRect layoutOverflowRect() const { return m_layoutOverflow; }
-    const LayoutRect visualOverflowRect() const { return m_visualOverflow; }
+    const LayoutRect& layoutOverflowRect() const { return m_layoutOverflow; }
+    const LayoutRect& visualOverflowRect() const { return m_visualOverflow; }
     LayoutRect contentsVisualOverflowRect() const { return m_contentsVisualOverflow; }
 
     void move(LayoutUnit dx, LayoutUnit dy);
