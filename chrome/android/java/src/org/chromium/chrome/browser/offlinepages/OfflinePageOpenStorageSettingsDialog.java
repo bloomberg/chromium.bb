@@ -33,10 +33,12 @@ public class OfflinePageOpenStorageSettingsDialog {
 
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(context, R.style.AlertDialogTheme)
-                        .setTitle(R.string.offline_pages_free_up_space_title)
+                        .setTitle(OfflinePageUtils.getStringId(
+                                R.string.offline_pages_free_up_space_title))
                         .setPositiveButton(R.string.offline_pages_view_button, listener)
                         .setNegativeButton(R.string.cancel, listener)
-                        .setMessage(R.string.offline_pages_open_storage_settings_dialog_text);
+                        .setMessage(OfflinePageUtils.getStringId(
+                                R.string.offline_pages_open_storage_settings_dialog_text));
         builder.create().show();
     }
 }

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.components.offlinepages.DeletePageResult;
+import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.components.offlinepages.SavePageResult;
 import org.chromium.content_public.browser.WebContents;
 
@@ -33,8 +34,8 @@ public final class OfflinePageBridge {
     private final ObserverList<OfflinePageModelObserver> mObservers =
             new ObserverList<OfflinePageModelObserver>();
 
-    /** Whether the offline pages feature is enabled. */
-    private static Boolean sIsEnabled;
+    /** Mode of the offline pages feature */
+    private static Integer sFeatureMode;
 
     /**
      * Callback used to saving an offline page.
@@ -158,12 +159,22 @@ public final class OfflinePageBridge {
     }
 
     /**
-     * Returns true if the offline pages feature is enabled.
+     * @return The mode of the offline pages feature. Uses
+     *     {@see org.chromium.components.offlinepages.FeatureMode} enum.
+     */
+    public static int getFeatureMode() {
+        ThreadUtils.assertOnUiThread();
+        if (sFeatureMode == null) sFeatureMode = nativeGetFeatureMode();
+        return sFeatureMode;
+    }
+
+    /**
+     * @return True if the offline pages feature is enabled, regardless whether bookmark or saved
+     *     page shown in UI strings.
      */
     public static boolean isEnabled() {
         ThreadUtils.assertOnUiThread();
-        if (sIsEnabled == null) sIsEnabled = nativeIsOfflinePagesEnabled();
-        return sIsEnabled;
+        return getFeatureMode() != FeatureMode.DISABLED;
     }
 
     /**
@@ -413,7 +424,7 @@ public final class OfflinePageBridge {
                 url, bookmarkId, offlineUrl, fileSize, creationTime, accessCount, lastAccessTimeMs);
     }
 
-    private static native boolean nativeIsOfflinePagesEnabled();
+    private static native int nativeGetFeatureMode();
     private static native boolean nativeCanSavePage(String url);
 
     private native long nativeInit(Profile profile);

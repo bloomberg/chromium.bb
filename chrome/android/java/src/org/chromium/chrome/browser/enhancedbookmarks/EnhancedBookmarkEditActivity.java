@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.DeletePageCall
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.OfflinePageModelObserver;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge.SavePageCallback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.widget.EmptyAlertEditText;
 import org.chromium.chrome.browser.widget.TintedDrawable;
@@ -106,9 +107,7 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        int title = OfflinePageBridge.isEnabled()
-                ? R.string.offline_pages_edit_item
-                : R.string.edit_bookmark;
+        int title = OfflinePageUtils.getStringId(R.string.edit_bookmark);
         setTitle(title);
         EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(title));
         mEnhancedBookmarksModel = new EnhancedBookmarksModel();
@@ -257,17 +256,21 @@ public class EnhancedBookmarkEditActivity extends EnhancedBookmarkActivityBase {
                 .getPageByBookmarkId(mBookmarkId);
         if (offlinePage != null) {
             // Offline page exists. Show information and button to remove.
-            offlinePageInfoTextView.setText(getString(R.string.bookmark_offline_page_size,
-                    Formatter.formatFileSize(this, offlinePage.getFileSize())));
+            offlinePageInfoTextView.setText(
+                    getString(OfflinePageUtils.getStringId(
+                                      R.string.offline_pages_as_bookmarks_offline_page_size),
+                            Formatter.formatFileSize(this, offlinePage.getFileSize())));
             updateButtonToDeleteOfflinePage(saveRemoveVisitButton);
         } else if (mWebContents != null) {
             // Offline page is not saved, but a bookmarked page is opened. Show save button.
-            offlinePageInfoTextView.setText(getString(R.string.bookmark_offline_page_none));
+            offlinePageInfoTextView.setText(
+                    getString(OfflinePageUtils.getStringId(R.string.bookmark_offline_page_none)));
             updateButtonToSaveOfflinePage(saveRemoveVisitButton);
         } else {
             // Offline page is not saved, and edit page was opened from the bookmarks UI, which
             // means there is no action the user can take any action - hide button.
-            offlinePageInfoTextView.setText(getString(R.string.bookmark_offline_page_visit));
+            offlinePageInfoTextView.setText(getString(OfflinePageUtils.getStringId(
+                    R.string.offline_pages_as_bookmarks_offline_page_visit)));
             updateButtonToVisitOfflinePage(saveRemoveVisitButton);
         }
     }

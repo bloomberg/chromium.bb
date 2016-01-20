@@ -16,7 +16,7 @@
         <item
             android:id="@+id/search_menu_id"
             android:icon="@drawable/ic_search"
-            android:title="@string/enhanced_bookmark_action_bar_search"
+            android:title="@null"
             android:visible="false"
             chrome:showAsAction="ifRoom"/>
         <item
@@ -31,17 +31,17 @@
         <item
             android:id="@+id/selection_mode_edit_menu_id"
             android:icon="@drawable/eb_edit_active"
-            android:title="@string/edit_bookmark"
+            android:title="@null"
             chrome:showAsAction="ifRoom"/>
         <item
             android:id="@+id/selection_mode_move_menu_id"
             android:icon="@drawable/eb_move_active"
-            android:title="@string/enhanced_bookmark_action_bar_move"
+            android:title="@null"
             chrome:showAsAction="ifRoom"/>
         <item
             android:id="@+id/selection_mode_delete_menu_id"
             android:icon="@drawable/eb_delete_white"
-            android:title="@string/enhanced_bookmark_action_bar_delete"
+            android:title="@null"
             chrome:showAsAction="ifRoom"/>
     </group>
 

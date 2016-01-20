@@ -52,7 +52,8 @@ public class OfflinePageFreeUpSpaceDialog
      * Creates a snackbar informing user that the storage has been cleared.
      */
     public static Snackbar createStorageClearedSnackbar(Context context) {
-        return Snackbar.make(context.getString(R.string.offline_pages_storage_cleared),
+        return Snackbar.make(context.getString(OfflinePageUtils.getStringId(
+                R.string.offline_pages_storage_cleared)),
                 new SnackbarController() {
                     @Override
                     public void onDismissForEachType(boolean isTimeout) {}
@@ -70,10 +71,12 @@ public class OfflinePageFreeUpSpaceDialog
         mOfflinePagesToDelete = mOfflinePageBridge.getPagesToCleanUp();
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(getActivity(), R.style.AlertDialogTheme)
-                        .setTitle(R.string.offline_pages_free_up_space_title)
+                        .setTitle(OfflinePageUtils.getStringId(
+                                R.string.offline_pages_free_up_space_title))
                         .setPositiveButton(R.string.delete, this)
                         .setNegativeButton(R.string.cancel, this)
-                        .setMessage(getString(R.string.offline_pages_free_up_space_message,
+                        .setMessage(getString(OfflinePageUtils.getStringId(
+                                R.string.offline_pages_free_up_space_message),
                                 mOfflinePagesToDelete.size(),
                                 Formatter.formatFileSize(getActivity(), getTotalSize())));
         return builder.create();

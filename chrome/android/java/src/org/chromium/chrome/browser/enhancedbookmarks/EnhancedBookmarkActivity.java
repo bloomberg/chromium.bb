@@ -11,7 +11,7 @@ import android.view.WindowManager;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.UrlConstants;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.components.bookmarks.BookmarkId;
@@ -42,9 +42,8 @@ public class EnhancedBookmarkActivity extends EnhancedBookmarkActivityBase imple
         mBookmarkManager.updateForUrl(url);
 
         setContentView(mBookmarkManager.getView());
-        EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(this, getString(
-                OfflinePageBridge.isEnabled() ? R.string.offline_pages_saved_pages
-                        : R.string.bookmarks));
+        EnhancedBookmarkUtils.setTaskDescriptionInDocumentMode(
+                this, getString(OfflinePageUtils.getStringId(R.string.bookmarks)));
 
         // Hack to work around inferred theme false lint error: http://crbug.com/445633
         assert (R.layout.eb_main_content != 0);

@@ -33,6 +33,10 @@
 #include "base/win/windows_version.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "components/offline_pages/offline_page_feature.h"
+#endif
+
 using error_page::OfflinePageStatus;
 
 // Some error pages have no details.
@@ -775,8 +779,11 @@ void LocalizedError::GetStrings(int error_code,
                OfflinePageStatus::HAS_OTHER_OFFLINE_PAGES) {
       base::DictionaryValue* show_offline_pages_button =
           new base::DictionaryValue;
-      base::string16 button_text =
-          l10n_util::GetStringUTF16(IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES);
+      base::string16 button_text = l10n_util::GetStringUTF16(
+          offline_pages::GetOfflinePageFeatureMode() ==
+              offline_pages::FeatureMode::ENABLED_AS_BOOKMARKS
+                  ? IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES_AS_BOOKMARKS
+                  : IDS_ERRORPAGES_BUTTON_SHOW_OFFLINE_PAGES);
       show_offline_pages_button->SetString("msg", button_text);
       error_strings->Set("showOfflinePagesButton", show_offline_pages_button);
     }

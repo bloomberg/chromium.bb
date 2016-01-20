@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.components.bookmarks.BookmarkId;
 
 import java.util.ArrayList;
@@ -326,10 +327,8 @@ class EnhancedBookmarkDrawerListViewAdapter extends BaseAdapter {
 
         switch (item.mType) {
             case TYPE_ALL_ITEMS:
-                title = listItemView.getContext().getResources()
-                        .getString(OfflinePageBridge.isEnabled()
-                                ? R.string.offline_pages_all_items
-                                : R.string.enhanced_bookmark_drawer_all_items);
+                title = listItemView.getContext().getResources().getString(
+                        OfflinePageUtils.getStringId(R.string.enhanced_bookmark_drawer_all_items));
                 iconDrawableId = R.drawable.btn_star;
                 break;
             case TYPE_FOLDER:

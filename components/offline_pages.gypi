@@ -70,8 +70,17 @@
     ['OS == "android"', {
       'targets': [
         {
-          # GN: //components/offline_pages:offline_pages_enums_java
-          'target_name': 'offline_pages_enums_java',
+          # GN: //components/offline_pages:offline_page_feature_enums_java
+          'target_name': 'offline_page_feature_enums_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'offline_pages/offline_page_feature.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+        {
+          # GN: //components/offline_pages:offline_page_model_enums_java
+          'target_name': 'offline_page_model_enums_java',
           'type': 'none',
           'variables': {
             'source_file': 'offline_pages/offline_page_model.h',

@@ -32,7 +32,7 @@
         <item android:id="@+id/new_incognito_tab_menu_id"
             android:title="@string/menu_new_incognito_tab" />
         <item android:id="@+id/all_bookmarks_menu_id"
-            android:title="@string/menu_bookmarks" />
+            android:title="@null" />
         <item android:id="@+id/recent_tabs_menu_id"
             android:title="@string/menu_recent_tabs" />
         <item android:id="@+id/open_history_menu_id"

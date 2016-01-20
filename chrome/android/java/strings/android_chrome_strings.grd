@@ -2000,6 +2000,39 @@ Just open Chrome on your computer, go to the menu, and select “Sign in to Chro
         View
       </message>
 
+      <!-- Offline pages (Use 'bookmarks' name in UI strings) -->
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_OFFLINE_PAGE_SIZE" desc="Label specifying that given saved page has an offline copy of a specific size (Use 'bookmarks' name in UI strings).">
+        <ph name="PAGE_SIZE_STRING">%1$s<ex>1.32 MB</ex></ph> bookmark saved offline
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_OFFLINE_PAGE_VISIT" desc="Label specifying that given saved page does not have an offline copy, and user does not have that page open (Use 'bookmarks' name in UI strings).">
+        Visit bookmark to save offline
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED" desc="Message shown after user adds a new offline page (Use 'bookmarks' name in UI strings).">
+        Bookmark saved offline
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED_FOLDER" desc="Message shown after user saves a new offline page. Also specifies in which folder the bookmark was added (Use 'bookmarks' name in UI strings).">
+        Bookmark saved offline to <ph name="FOLDER_NAME">%1$s<ex>Mobile bookmarks</ex></ph>
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SKIPPED" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to that the page is not HTTP or HTTPS page (Use 'bookmarks' name in UI strings).">
+        Bookmarked
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_SAVED_STORAGE_NEAR_FULL" desc="Message shown after user adds a new offline page and the storage is almost full (Use 'bookmarks' name in UI strings).">
+        Bookmark saved offline. Storage almost full.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_FAILED_TO_SAVE" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to problems other than storage (Use 'bookmarks' name in UI strings).">
+        Bookmark not available offline
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_PAGE_FAILED_TO_SAVE_STORAGE_NEAR_FULL" desc="Message shown after a page was saved as a bookmark, but an offline copy was not created due to storage problem (Use 'bookmarks' name in UI strings).">
+        Bookmark not available offline. Storage almost full.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_STORAGE_SPACE_MESSAGE" desc="Text explaining how much storage is currently used for offline copies of saved pages (Use 'bookmarks' name in UI strings).">
+        Bookmarks are currently taking up <ph name="TOTAL_OFFLINE_STORAGE_SIZE">%1$s<ex>780 MB</ex></ph>.
+      </message>
+      <message name="IDS_OFFLINE_PAGES_AS_BOOKMARKS_VIEWING_OFFLINE_PAGE" desc="Text explaining that the user is viewing an offline copy of a web page (Use 'bookmarks' name in UI strings).">
+        Viewing an offline copy of this bookmark
+      </message>
+
+
       <!-- Find in page -->
       <message name="IDS_HINT_FIND_IN_PAGE" desc="Hint text to show for the find in page search field when the search field is empty.">
         Find in page

@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
+import org.chromium.components.offlinepages.FeatureMode;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
 
@@ -68,6 +69,66 @@ public class OfflinePageUtils {
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo != null && networkInfo.isConnected();
+    }
+
+    /**
+     * Finds out the appropriate resource ID of UI string shown to the user.
+     * @param stringResId The resource ID of UI string used when 'bookmarks' name is used  in UI
+     *        strings.
+     * return The resource ID of UI string shown to the user, depending on the experiment.
+     */
+    public static int getStringId(int stringResId) {
+        if (!OfflinePageBridge.isEnabled()) {
+            return stringResId;
+        }
+        if (OfflinePageBridge.getFeatureMode() != FeatureMode.ENABLED_AS_SAVED_PAGES) {
+            return stringResId;
+        }
+        if (stringResId == R.string.enhanced_bookmark_action_bar_delete) {
+            return R.string.offline_pages_action_bar_delete;
+        } else if (stringResId == R.string.enhanced_bookmark_action_bar_move) {
+            return R.string.offline_pages_action_bar_move;
+        } else if (stringResId == R.string.enhanced_bookmark_action_bar_search) {
+            return R.string.offline_pages_action_bar_search;
+        } else if (stringResId == R.string.edit_bookmark) {
+            return R.string.offline_pages_edit_item;
+        } else if (stringResId == R.string.enhanced_bookmark_drawer_all_items) {
+            return R.string.offline_pages_all_items;
+        } else if (stringResId == R.string.enhanced_bookmark_title_bar_all_items) {
+            return R.string.offline_pages_all_items;
+        } else if (stringResId == R.string.bookmarks) {
+            return R.string.offline_pages_saved_pages;
+        } else if (stringResId == R.string.menu_bookmarks) {
+            return R.string.menu_bookmarks_offline_pages;
+        } else if (stringResId == R.string.ntp_bookmarks) {
+            return R.string.offline_pages_ntp_button_name;
+        } else if (stringResId == R.string.accessibility_ntp_toolbar_btn_bookmarks) {
+            return R.string.offline_pages_ntp_button_accessibility;
+        } else if (stringResId == R.string.bookmarks_folder_empty) {
+            return R.string.offline_pages_folder_empty;
+        } else if (stringResId == R.string.new_tab_incognito_message) {
+            return R.string.offline_pages_new_tab_incognito_message;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_page_saved) {
+            return R.string.offline_pages_page_saved;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_page_skipped) {
+            return R.string.offline_pages_page_skipped;
+        } else if (stringResId
+                == R.string.offline_pages_as_bookmarks_page_saved_storage_near_full) {
+            return R.string.offline_pages_page_saved_storage_near_full;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_page_failed_to_save) {
+            return R.string.offline_pages_page_failed_to_save;
+        } else if (stringResId
+                == R.string.offline_pages_as_bookmarks_page_failed_to_save_storage_near_full) {
+            return R.string.offline_pages_page_failed_to_save_storage_near_full;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_storage_space_message) {
+            return R.string.offline_pages_storage_space_message;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_viewing_offline_page) {
+            return R.string.offline_pages_viewing_offline_page;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_offline_page_size) {
+            return R.string.bookmark_offline_page_size;
+        } else {
+            return stringResId;
+        }
     }
 
     /**
@@ -190,7 +251,7 @@ public class OfflinePageUtils {
             final long bookmarkId, final int buttonType, final int actionTextId) {
         Context context = activity.getBaseContext();
 
-        final int snackbarTextId = R.string.offline_pages_viewing_offline_page;
+        final int snackbarTextId = getStringId(R.string.offline_pages_viewing_offline_page);
 
         SnackbarController snackbarController = new SnackbarController() {
             @Override

@@ -12,4 +12,12 @@ const char kEnableOfflinePages[] = "enable-offline-pages";
 // Disable Offline Pages.
 const char kDisableOfflinePages[] = "disable-offline-pages";
 
+// Enable Offline Pages showing "bookmarks" in UI strings.
+const char kEnableOfflinePagesAsBookmarks[] =
+    "enable-offline-pages-as-bookmarks";
+
+// Enable Offline Pages showing "saved pages" in UI strings.
+const char kEnableOfflinePagesAsSavedPages[] =
+    "enable-offline-pages-as-saved-pages";
+
 }  // namespace switches

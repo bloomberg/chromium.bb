@@ -9,6 +9,8 @@ namespace switches {
 
 extern const char kEnableOfflinePages[];
 extern const char kDisableOfflinePages[];
+extern const char kEnableOfflinePagesAsBookmarks[];
+extern const char kEnableOfflinePagesAsSavedPages[];
 
 }  // namespace switches
 

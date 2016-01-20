@@ -14,7 +14,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.enhancedbookmarks.EnhancedBookmarkDelegate.EnhancedBookmarkStateChangeListener;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -46,8 +46,7 @@ public class EnhancedBookmarkPage implements NativePage, EnhancedBookmarkStateCh
     private EnhancedBookmarkPage(Activity activity, Tab tab) {
         mActivity = activity;
         mTab = tab;
-        mTitle = activity.getString(OfflinePageBridge.isEnabled()
-                ? R.string.offline_pages_saved_pages : R.string.bookmarks);
+        mTitle = activity.getString(OfflinePageUtils.getStringId(R.string.bookmarks));
         mBackgroundColor = ApiCompatibilityUtils.getColor(activity.getResources(),
                 R.color.default_primary_color);
         mThemeColor = ApiCompatibilityUtils.getColor(

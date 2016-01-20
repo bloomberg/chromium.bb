@@ -133,26 +133,30 @@ public class EnhancedBookmarkUtils {
             int buttonId = R.string.enhanced_bookmark_item_edit;
 
             if (saveResult == AddBookmarkCallback.SKIPPED) {
-                messageId = R.string.offline_pages_page_skipped;
+                messageId = OfflinePageUtils.getStringId(
+                        R.string.offline_pages_as_bookmarks_page_skipped);
             } else if (isStorageAlmostFull) {
-                messageId = saveResult == AddBookmarkCallback.SAVED
-                        ? R.string.offline_pages_page_saved_storage_near_full
-                        : R.string.offline_pages_page_failed_to_save_storage_near_full;
+                messageId = OfflinePageUtils.getStringId(saveResult == AddBookmarkCallback.SAVED
+                    ? R.string.offline_pages_as_bookmarks_page_saved_storage_near_full
+                    : R.string.offline_pages_as_bookmarks_page_failed_to_save_storage_near_full);
                 // Show "Free up space" button.
-                buttonId = R.string.offline_pages_free_up_space_title;
+                buttonId = OfflinePageUtils.getStringId(R.string.offline_pages_free_up_space_title);
                 snackbarController = createSnackbarControllerForFreeUpSpaceButton(
                         bookmarkModel, snackbarManager, activity);
             } else {
                 if (saveResult == AddBookmarkCallback.SAVED) {
                     if (getLastUsedParent(activity) == null) {
-                        messageId = R.string.offline_pages_page_saved;
+                        messageId = OfflinePageUtils.getStringId(
+                                R.string.offline_pages_as_bookmarks_page_saved);
                     } else {
-                        messageId = R.string.offline_pages_page_saved_folder;
+                        messageId = OfflinePageUtils.getStringId(
+                                R.string.offline_pages_as_bookmarks_page_saved_folder);
                         suffix = bookmarkModel.getBookmarkTitle(
                                 bookmarkModel.getBookmarkById(bookmarkId).getParentId());
                     }
                 } else {
-                    messageId = R.string.offline_pages_page_failed_to_save;
+                    messageId = OfflinePageUtils.getStringId(
+                            R.string.offline_pages_as_bookmarks_page_failed_to_save);
                 }
             }
             if (snackbarController == null) {

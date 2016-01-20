@@ -11,6 +11,19 @@
 
 namespace offline_pages {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.offlinepages
+enum class FeatureMode {
+  // Offline pages feature is disabled.
+  DISABLED,
+  // Offline pages feature is enabled, showing bookmarks in UI strings.
+  ENABLED_AS_BOOKMARKS,
+  // Offline pages feature is enabled, showing saved pages in UI strings.
+  ENABLED_AS_SAVED_PAGES
+};
+
+// Returns the mode where Offline Pages feature is running.
+FeatureMode GetOfflinePageFeatureMode();
+
 // Returns true if offline pages is enabled.
 bool IsOfflinePagesEnabled();
 

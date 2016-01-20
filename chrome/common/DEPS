@@ -16,6 +16,7 @@ include_rules = [
   "+components/metrics/client_info.h",
   "+components/metrics/metrics_pref_names.h",
   "+components/nacl/common",
+  "+components/offline_pages/offline_page_feature.h",
   "+components/password_manager/core/common",
   "+components/printing/common",
   "+components/policy/core/common",

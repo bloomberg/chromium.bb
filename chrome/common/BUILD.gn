@@ -85,6 +85,7 @@ static_library("common") {
     "//components/metrics:net",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
+    "//components/offline_pages:switches",
     "//components/omnibox/common",
     "//components/policy:policy_component_common",
     "//components/strings",

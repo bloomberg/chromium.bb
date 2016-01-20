@@ -174,7 +174,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:background="?attr/listChoiceBackgroundIndicator"
-            android:contentDescription="@string/accessibility_ntp_toolbar_btn_bookmarks"
+            android:contentDescription="@null"
             android:paddingTop="12dp"
             android:paddingBottom="12dp" >
             <TextView
@@ -183,7 +183,7 @@
                 android:layout_gravity="center_horizontal"
                 android:drawablePadding="8dp"
                 android:gravity="center_vertical"
-                android:text="@string/ntp_bookmarks"
+                android:text="@null"
                 android:textSize="12sp"
                 android:textColor="#5a5a5a" />
         </FrameLayout>

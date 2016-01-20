@@ -19,7 +19,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmark.BookmarksBridge.BookmarkModelObserver;
-import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.widget.NumberRollView;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -58,16 +58,20 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
         if (DeviceFormFactor.isTablet(context)) getMenu().removeItem(R.id.close_menu_id);
         setOnMenuItemClickListener(this);
 
-        if (OfflinePageBridge.isEnabled()) {
-            getMenu().findItem(R.id.search_menu_id).setTitle(
-                    R.string.offline_pages_action_bar_search);
-            getMenu().findItem(R.id.selection_mode_edit_menu_id).setTitle(
-                    R.string.offline_pages_edit_item);
-            getMenu().findItem(R.id.selection_mode_move_menu_id).setTitle(
-                    R.string.offline_pages_action_bar_move);
-            getMenu().findItem(R.id.selection_mode_delete_menu_id).setTitle(
-                    R.string.offline_pages_action_bar_delete);
-        }
+        getMenu()
+                .findItem(R.id.search_menu_id)
+                .setTitle(OfflinePageUtils.getStringId(
+                        R.string.enhanced_bookmark_action_bar_search));
+        getMenu()
+                .findItem(R.id.selection_mode_edit_menu_id)
+                .setTitle(OfflinePageUtils.getStringId(R.string.edit_bookmark));
+        getMenu()
+                .findItem(R.id.selection_mode_move_menu_id)
+                .setTitle(OfflinePageUtils.getStringId(R.string.enhanced_bookmark_action_bar_move));
+        getMenu()
+                .findItem(R.id.selection_mode_delete_menu_id)
+                .setTitle(OfflinePageUtils.getStringId(
+                        R.string.enhanced_bookmark_action_bar_delete));
     }
 
     @Override
@@ -295,8 +299,6 @@ public class EnhancedBookmarkActionBar extends Toolbar implements EnhancedBookma
     }
 
     private int getTitleForAllItems() {
-        return OfflinePageBridge.isEnabled()
-                ? R.string.offline_pages_all_items
-                : R.string.enhanced_bookmark_title_bar_all_items;
+        return OfflinePageUtils.getStringId(R.string.enhanced_bookmark_title_bar_all_items);
     }
 }

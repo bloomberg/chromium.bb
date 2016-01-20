@@ -178,7 +178,8 @@ android_library("chrome_java") {
       ":custom_tabs_service_aidl",
       "//chrome:page_info_connection_type_javagen",
       "//components/enhanced_bookmarks:enhanced_bookmarks_java_enums_srcjar",
-      "//components/offline_pages:offline_pages_enums_java",
+      "//components/offline_pages:offline_page_feature_enums_java",
+      "//components/offline_pages:offline_page_model_enums_java",
       "//components/omnibox/browser:autocomplete_match_type_javagen",
       "//components/security_state:security_state_enums_java",
     ]

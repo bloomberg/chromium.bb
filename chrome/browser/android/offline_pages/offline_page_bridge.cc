@@ -67,9 +67,8 @@ void ToJavaOfflinePageList(JNIEnv* env,
 
 }  // namespace
 
-static jboolean IsOfflinePagesEnabled(JNIEnv* env,
-                                      const JavaParamRef<jclass>& clazz) {
-  return offline_pages::IsOfflinePagesEnabled();
+static jint GetFeatureMode(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
+  return static_cast<jint>(offline_pages::GetOfflinePageFeatureMode());
 }
 
 static jboolean CanSavePage(JNIEnv* env,

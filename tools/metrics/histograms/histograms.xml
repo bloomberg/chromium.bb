@@ -69584,6 +69584,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-378033324" label="disable-win32k-renderer-lockdown"/>
   <int value="-360038744" label="invert-viewport-scroll-order"/>
   <int value="-351552989" label="disable-hosted-apps-in-windows"/>
+  <int value="-351127770" label="enable-offline-pages-as-bookmarks"/>
   <int value="-349057743" label="extensions-on-chrome-urls"/>
   <int value="-345838366" label="enable-hosted-apps-in-windows"/>
   <int value="-344343842" label="disable-experimental-app-list"/>
@@ -69623,6 +69624,7 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="-23090520" label="disable-search-button-in-omnibox"/>
   <int value="-22544408" label="enable-video-player-chromecast-support"/>
   <int value="-13918890" label="disable-download-notification"/>
+  <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-2371418" label="disable-display-list-2d-canvas"/>
   <int value="0" label="BAD_FLAG_FORMAT">
