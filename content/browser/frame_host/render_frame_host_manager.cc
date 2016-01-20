@@ -775,14 +775,13 @@ void RenderFrameHostManager::MoveToPendingDeleteHosts(
   // |render_frame_host| will be deleted when its SwapOut ACK is received, or
   // when the timer times out, or when the RFHM itself is deleted (whichever
   // comes first).
-  pending_delete_hosts_.push_back(
-      linked_ptr<RenderFrameHostImpl>(render_frame_host.release()));
+  pending_delete_hosts_.push_back(std::move(render_frame_host));
 }
 
 bool RenderFrameHostManager::IsPendingDeletion(
     RenderFrameHostImpl* render_frame_host) {
   for (const auto& rfh : pending_delete_hosts_) {
-    if (rfh == render_frame_host)
+    if (rfh.get() == render_frame_host)
       return true;
   }
   return false;
@@ -793,7 +792,7 @@ bool RenderFrameHostManager::DeleteFromPendingList(
   for (RFHPendingDeleteList::iterator iter = pending_delete_hosts_.begin();
        iter != pending_delete_hosts_.end();
        iter++) {
-    if (*iter == render_frame_host) {
+    if (iter->get() == render_frame_host) {
       pending_delete_hosts_.erase(iter);
       return true;
     }

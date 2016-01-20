@@ -760,10 +760,8 @@ class CONTENT_EXPORT RenderFrameHostManager
   base::ScopedPtrHashMap<int32_t, scoped_ptr<RenderFrameProxyHost>>
       proxy_hosts_;
 
-  // A list of RenderFrameHosts waiting to shut down after swapping out.  We use
-  // a linked list since we expect frequent deletes and no indexed access, and
-  // because sets don't appear to support linked_ptrs.
-  typedef std::list<linked_ptr<RenderFrameHostImpl> > RFHPendingDeleteList;
+  // A list of RenderFrameHosts waiting to shut down after swapping out.
+  using RFHPendingDeleteList = std::list<scoped_ptr<RenderFrameHostImpl>>;
   RFHPendingDeleteList pending_delete_hosts_;
 
   // The intersitial page currently shown if any, not own by this class
