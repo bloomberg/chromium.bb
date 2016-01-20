@@ -168,7 +168,7 @@ ProtoDatabaseImpl<T>::ProtoDatabaseImpl(
 template <typename T>
 ProtoDatabaseImpl<T>::~ProtoDatabaseImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release()))
+  if (db_.get() && !task_runner_->DeleteSoon(FROM_HERE, db_.release()))
     DLOG(WARNING) << "Proto database will not be deleted.";
 }
 
@@ -189,7 +189,15 @@ void ProtoDatabaseImpl<T>::Destroy(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(db_);
   DCHECK(!database_dir_.empty());
-  db_.reset();
+
+  // Note that |db_| should be released from task runner.
+  if (!task_runner_->DeleteSoon(FROM_HERE, db_.release())) {
+    DLOG(WARNING) << "Proto database will not be deleted.";
+    callback.Run(false);
+    return;
+  }
+
+  // After |db_| is released, we can now wipe out the database directory.
   bool* success = new bool(false);
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::Bind(DestroyFromTaskRunner, database_dir_, success),

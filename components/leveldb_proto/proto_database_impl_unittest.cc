@@ -50,6 +50,7 @@ class MockDB : public LevelDB {
 class MockDatabaseCaller {
  public:
   MOCK_METHOD1(InitCallback, void(bool));
+  MOCK_METHOD1(DestroyCallback, void(bool));
   MOCK_METHOD1(SaveCallback, void(bool));
   void LoadCallback(bool success, scoped_ptr<std::vector<TestProto> > entries) {
     LoadCallback1(success, entries.get());
@@ -347,6 +348,38 @@ TEST(ProtoDatabaseImplThreadingTest, TestDBDestruction) {
   db->Init(
       kTestLevelDBClientName, temp_dir.path(),
       base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  db.reset();
+
+  base::RunLoop run_loop;
+  db_thread.task_runner()->PostTaskAndReply(
+      FROM_HERE, base::Bind(base::DoNothing), run_loop.QuitClosure());
+  run_loop.Run();
+}
+
+// This tests that normal usage of the real database does not cause any
+// threading violations.
+TEST(ProtoDatabaseImplThreadingTest, TestDBDestroy) {
+  base::MessageLoop main_loop;
+
+  ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  base::Thread db_thread("dbthread");
+  ASSERT_TRUE(db_thread.Start());
+
+  scoped_ptr<ProtoDatabaseImpl<TestProto>> db(
+      new ProtoDatabaseImpl<TestProto>(db_thread.task_runner()));
+
+  MockDatabaseCaller caller;
+  EXPECT_CALL(caller, InitCallback(_));
+  db->Init(
+      kTestLevelDBClientName, temp_dir.path(),
+      base::Bind(&MockDatabaseCaller::InitCallback, base::Unretained(&caller)));
+
+  EXPECT_CALL(caller, DestroyCallback(_));
+  db->Destroy(base::Bind(&MockDatabaseCaller::DestroyCallback,
+                         base::Unretained(&caller)));
 
   db.reset();
 
