@@ -25,17 +25,14 @@ if env.Bit('nonsfi_nacl'):
   Return()
 
 
-def MakeAndTranslatePso(dest, bitcode_file, do_simplify):
-  # Run opt to apply PNaCl ABI simplifications to the IR and to run the
-  # PNaCl ABI checker.  We are bypassing pnacl-ld for now because its
-  # invocation of Gold internalizes __pnacl_pso_root, which we want to keep
-  # externally-visible.
-  passes = ''
-  if do_simplify:
-    passes = '-pnacl-abi-simplify-preopt -pnacl-abi-simplify-postopt '
+def MakeAndTranslatePso(dest, bitcode_file, llvm_passes):
+  # Run opt to optionally apply PNaCl ABI simplifications to the IR and to
+  # run the PNaCl ABI checker.  We are bypassing pnacl-ld for now because
+  # its invocation of Gold internalizes __pnacl_pso_root, which we want to
+  # keep externally-visible.
   opt_result = env.Command(
       dest + '.nonfinal.pso', [bitcode_file],
-      '${PNACLOPT} ' + passes +
+      '${PNACLOPT} ' + llvm_passes + ' '
       '-verify-pnaclabi-module -verify-pnaclabi-functions '
       '-pnaclabi-allow-debug-metadata '
       '${SOURCES} -o ${TARGET}')
@@ -55,11 +52,16 @@ def PsoFromLLVMAssembly(base_name):
       [Action('${ASCOM}', '${ASCOMSTR}')])
   return MakeAndTranslatePso(base_name, [bitcode_file],
                              # Skip PNaCl passes because they add TLS functions.
-                             do_simplify=False)
+                             llvm_passes='')
 
 
-dso1 = MakeAndTranslatePso('test_pso', [env.ComponentObject('test_pso.c')],
-                           do_simplify=True)
+# The loader currently depends on the allocate_code_data() interface
+# provided by the IRT.
+is_broken = not env.Bit('tests_use_irt')
+
+dso1 = MakeAndTranslatePso(
+    'test_pso', [env.ComponentObject('test_pso.c')],
+    llvm_passes='-pnacl-abi-simplify-preopt -pnacl-abi-simplify-postopt')
 dso2 = PsoFromLLVMAssembly('data_only_pso')
 dso3 = PsoFromLLVMAssembly('data_only_pso_largebss')
 
@@ -73,7 +75,28 @@ node = env.CommandSelLdrTestNacl(
     sel_ldr_flags=['-a'])
 env.AddNodeToTestSuite(
     node, ['small_tests', 'toolchain_tests'],
-    'run_pnacl_dynamic_loading_test',
-    # The loader currently depends on the allocate_code_data() interface
-    # provided by the IRT.
-    is_broken=not env.Bit('tests_use_irt'))
+    'run_pnacl_dynamic_loading_test', is_broken=is_broken)
+
+
+# Use of the ConvertToPSO pass requires this toolchain version.
+if env['TOOLCHAIN_FEATURE_VERSION'] < 13:
+  Return()
+
+dso4 = MakeAndTranslatePso(
+    'test_psl', [env.ComponentObject('test_psl.c')],
+    # Skip the pre-opt passes because they add TLS functions.  However, we
+    # still need to run the post-opt passes so that the LLVM IR passes the
+    # PNaCl ABI checker.
+    llvm_passes='-convert-to-pso -pnacl-abi-simplify-postopt')
+
+psl_symbols_test = env.ComponentProgram(
+    'psl_symbols_test', ['psl_symbols_test.cc'],
+    EXTRA_LIBS=['${NONIRT_LIBS}', 'pnacl_dynloader', 'platform'])
+
+node = env.CommandSelLdrTestNacl(
+    'psl_symbols_test.out', psl_symbols_test, [dso4],
+    # Add '-a' to enable filesystem access for opening DSOs.
+    sel_ldr_flags=['-a'])
+env.AddNodeToTestSuite(
+    node, ['small_tests', 'toolchain_tests'],
+    'run_psl_symbols_test', is_broken=is_broken)
