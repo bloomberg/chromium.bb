@@ -140,6 +140,16 @@
         'dependencies': [
           '../third_party/boringssl/boringssl.gyp:boringssl',
         ],
+        'conditions': [
+          ['chromecast==1 and use_nss_certs==1', {
+            'sources': [
+              'ssl/ssl_platform_key_chromecast.cc',
+            ],
+            'sources!': [
+              'ssl/ssl_platform_key_nss.cc',
+            ],
+          }],
+        ],
       },
       {  # else !use_openssl: remove the unneeded files and depend on NSS.
         'sources!': [

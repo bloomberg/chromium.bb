@@ -319,6 +319,11 @@ if (!is_nacl) {
     net_shared_sources += [ "third_party/nss/ssl/cmpcert.c" ]
   }
 
+  if (is_chromecast && use_nss_certs) {
+    net_shared_sources += [ "ssl/ssl_platform_key_chromecast.cc" ]
+    net_shared_sources -= [ "ssl/ssl_platform_key_nss.cc" ]
+  }
+
   if (!enable_mdns) {
     net_shared_sources -= [
       "dns/mdns_cache.cc",
