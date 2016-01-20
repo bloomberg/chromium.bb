@@ -15,7 +15,7 @@
 }
 
 .permission-header {
-  -webkit-margin-start: 6px;
+  -webkit-margin-start: -1px;
 }
 
 .permission-list {
