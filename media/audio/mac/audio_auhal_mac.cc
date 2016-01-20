@@ -61,15 +61,16 @@ AUHALStream::AUHALStream(AudioManagerMac* manager,
   // We must have a manager.
   DCHECK(manager_);
 
-  DVLOG(1) << "AUHALStream::AUHALStream()";
-  DVLOG(1) << "Device: " << device;
-  DVLOG(1) << "Output channels: " << output_channels_;
-  DVLOG(1) << "Sample rate: " << params_.sample_rate();
-  DVLOG(1) << "Buffer size: " << number_of_frames_;
+  DVLOG(1) << "ctor";
+  DVLOG(1) << "device ID: 0x" << std::hex << device;
+  DVLOG(1) << "buffer size: " << number_of_frames_;
+  DVLOG(1) << "output channels: " << output_channels_;
+  DVLOG(1) << "sample rate: " << params_.sample_rate();
 }
 
 AUHALStream::~AUHALStream() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "~dtor";
   CHECK(!audio_unit_);
 
   ReportAndResetStats();
@@ -79,6 +80,7 @@ bool AUHALStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!output_bus_.get());
   DCHECK(!audio_unit_);
+  DVLOG(1) << "Open";
 
   // Get the total number of output channels that the
   // hardware supports.
@@ -118,6 +120,7 @@ bool AUHALStream::Open() {
 
 void AUHALStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Close";
   CloseAudioUnit();
   // Inform the audio manager that we have been closed. This will cause our
   // destruction.
@@ -126,6 +129,7 @@ void AUHALStream::Close() {
 
 void AUHALStream::Start(AudioSourceCallback* callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Start";
   DCHECK(callback);
   if (!audio_unit_) {
     DLOG(ERROR) << "Open() has not been called successfully";
@@ -170,15 +174,13 @@ void AUHALStream::Stop() {
   deferred_start_cb_.Cancel();
   if (stopped_)
     return;
-
+  DVLOG(1) << "Stop";
   OSStatus result = AudioOutputUnitStop(audio_unit_);
   OSSTATUS_DLOG_IF(ERROR, result != noErr, result)
       << "AudioOutputUnitStop() failed.";
   if (result != noErr)
     source_->OnError(this);
-
   ReportAndResetStats();
-
   base::AutoLock auto_lock(source_lock_);
   source_ = NULL;
   stopped_ = true;

@@ -86,11 +86,14 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   format_.mBytesPerFrame = format_.mBytesPerPacket;
   format_.mReserved = 0;
 
-  DVLOG(1) << "Desired output format: " << format_;
+  DVLOG(1) << "ctor";
+  DVLOG(1) << "device ID: 0x" << std::hex << audio_device_id;
+  DVLOG(1) << "buffer size : " << number_of_frames_;
+  DVLOG(1) << "desired output format: " << format_;
 
   // Derive size (in bytes) of the buffers that we will render to.
   UInt32 data_byte_size = number_of_frames_ * format_.mBytesPerFrame;
-  DVLOG(1) << "Size of data buffer in bytes : " << data_byte_size;
+  DVLOG(1) << "size of data buffer in bytes : " << data_byte_size;
 
   // Allocate AudioBuffers to be used as storage for the received audio.
   // The AudioBufferList structure works as a placeholder for the
@@ -104,11 +107,14 @@ AUAudioInputStream::AUAudioInputStream(AudioManagerMac* manager,
   audio_buffer->mData = audio_data_buffer_.get();
 }
 
-AUAudioInputStream::~AUAudioInputStream() {}
+AUAudioInputStream::~AUAudioInputStream() {
+  DVLOG(1) << "~dtor";
+}
 
 // Obtain and open the AUHAL AudioOutputUnit for recording.
 bool AUAudioInputStream::Open() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Open";
   // Verify that we are not already opened.
   if (audio_unit_)
     return false;
@@ -306,6 +312,7 @@ void AUAudioInputStream::Start(AudioInputCallback* callback) {
   DLOG_IF(ERROR, !audio_unit_) << "Open() has not been called successfully";
   if (started_ || !audio_unit_)
     return;
+  DVLOG(1) << "Start";
 
   // Check if we should defer Start() for http://crbug.com/160920.
   if (manager_->ShouldDeferStreamStart()) {
@@ -347,6 +354,7 @@ void AUAudioInputStream::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!started_)
     return;
+  DVLOG(1) << "Stop";
   StopAgc();
   input_callback_timer_.reset();
   OSStatus result = AudioOutputUnitStop(audio_unit_);
@@ -361,6 +369,7 @@ void AUAudioInputStream::Stop() {
 
 void AUAudioInputStream::Close() {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DVLOG(1) << "Close";
   // It is valid to call Close() before calling open or Start().
   // It is also valid to call Close() after Start() has been called.
   if (started_) {
@@ -552,6 +561,7 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   UInt32 new_size = number_of_frames * audio_input->format_.mBytesPerFrame;
   AudioBuffer* audio_buffer = audio_input->audio_buffer_list()->mBuffers;
   if (new_size != audio_buffer->mDataByteSize) {
+    DVLOG(1) << "New size of number_of_frames detected: " << number_of_frames;
     if (new_size > audio_buffer->mDataByteSize) {
       // This can happen if the device is unpluged during recording. We
       // allocate enough memory here to avoid depending on how CoreAudio

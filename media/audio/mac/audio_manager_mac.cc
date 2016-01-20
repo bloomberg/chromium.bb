@@ -89,6 +89,22 @@ static bool HasAudioHardware(AudioObjectPropertySelector selector) {
       output_device_id != kAudioObjectUnknown;
 }
 
+static std::string GetAudioDeviceNameFromDeviceId(AudioDeviceID device_id,
+                                                  bool is_input) {
+  CFStringRef device_name = nullptr;
+  UInt32 data_size = sizeof(device_name);
+  AudioObjectPropertyAddress property_address = GetAudioObjectPropertyAddress(
+      kAudioDevicePropertyDeviceNameCFString, is_input);
+  OSStatus result = AudioObjectGetPropertyData(
+      device_id, &property_address, 0, nullptr, &data_size, &device_name);
+  std::string device;
+  if (result == noErr) {
+    device = base::SysCFStringRefToUTF8(device_name);
+    CFRelease(device_name);
+  }
+  return device;
+}
+
 // Retrieves information on audio devices, and prepends the default
 // device to the list if the list is non-empty.
 static void GetAudioDeviceInfo(bool is_input,
@@ -263,7 +279,7 @@ class AudioManagerMac::AudioPowerObserver : public base::PowerObserver {
   AudioPowerObserver()
       : is_suspending_(false),
         is_monitoring_(base::PowerMonitor::Get()) {
-    // The PowerMonitor requires signifcant setup (a CFRunLoop and preallocated
+    // The PowerMonitor requires significant setup (a CFRunLoop and preallocated
     // IO ports) so it's not available under unit tests.  See the OSX impl of
     // base::PowerMonitorDeviceSource for more details.
     if (!is_monitoring_)
@@ -353,7 +369,7 @@ bool AudioManagerMac::GetDefaultOutputDevice(AudioDeviceID* device) {
 bool AudioManagerMac::GetDefaultDevice(AudioDeviceID* device, bool input) {
   CHECK(device);
 
-  // Obtain the current output device selected by the user.
+  // Obtain the AudioDeviceID of the default input or output AudioDevice.
   AudioObjectPropertyAddress pa;
   pa.mSelector = input ? kAudioHardwarePropertyDefaultInputDevice :
       kAudioHardwarePropertyDefaultOutputDevice;
@@ -367,12 +383,10 @@ bool AudioManagerMac::GetDefaultDevice(AudioDeviceID* device, bool input) {
                                                0,
                                                &size,
                                                device);
-
   if ((result != kAudioHardwareNoError) || (*device == kAudioDeviceUnknown)) {
     DLOG(ERROR) << "Error getting default AudioDevice.";
     return false;
   }
-
   return true;
 }
 
@@ -387,8 +401,13 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
                                         AudioObjectPropertyScope scope,
                                         int* channels) {
   CHECK(channels);
+  const bool is_input = (scope == kAudioDevicePropertyScopeInput);
+  DVLOG(1) << "GetDeviceChannels(id=0x" << std::hex << device
+           << ", is_input=" << is_input << ")";
 
-  // Get stream configuration.
+  // Get the stream configuration of the device in an AudioBufferList (with the
+  // buffer pointers set to NULL) which describes the list of streams and the
+  // number of channels in each stream.
   AudioObjectPropertyAddress pa;
   pa.mSelector = kAudioDevicePropertyStreamConfiguration;
   pa.mScope = scope;
@@ -399,7 +418,6 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
   if (result != noErr || !size)
     return false;
 
-  // Allocate storage.
   scoped_ptr<uint8_t[]> list_storage(new uint8_t[size]);
   AudioBufferList& buffer_list =
       *reinterpret_cast<AudioBufferList*>(list_storage.get());
@@ -408,17 +426,16 @@ bool AudioManagerMac::GetDeviceChannels(AudioDeviceID device,
   if (result != noErr)
     return false;
 
-  // Determine number of input channels.
-  int channels_per_frame = buffer_list.mNumberBuffers > 0 ?
-      buffer_list.mBuffers[0].mNumberChannels : 0;
-  if (channels_per_frame == 1 && buffer_list.mNumberBuffers > 1) {
-    // Non-interleaved.
-    *channels = buffer_list.mNumberBuffers;
-  } else {
-    // Interleaved.
-    *channels = channels_per_frame;
+  // Determine number of channels based on the AudioBufferList.
+  // |mNumberBuffers] is the  number of interleaved channels in the buffer.
+  // If the number is 1, the buffer is noninterleaved.
+  // TODO(henrika): add UMA stats to track utilized hardware configurations.
+  int num_channels = 0;
+  for (UInt32 i = 0; i < buffer_list.mNumberBuffers; ++i) {
+    num_channels += buffer_list.mBuffers[i].mNumberChannels;
   }
-
+  *channels = num_channels;
+  DVLOG(1) << "#channels: " << *channels;
   return true;
 }
 
@@ -577,7 +594,7 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
       return *iter;
   }
 
-  // Failed to figure out which is the matching device, return an emtpy string.
+  // Failed to figure out which is the matching device, return an empty string.
   return std::string();
 }
 
@@ -746,8 +763,9 @@ void AudioManagerMac::HandleDeviceChanges() {
   GetDefaultOutputDevice(&new_output_device);
 
   if (current_sample_rate_ == new_sample_rate &&
-      current_output_device_ == new_output_device)
+      current_output_device_ == new_output_device) {
     return;
+  }
 
   current_sample_rate_ = new_sample_rate;
   current_output_device_ = new_output_device;
@@ -792,10 +810,15 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
                                             bool* size_was_changed) {
   const bool is_input = (element == 1);
   DVLOG(1) << "MaybeChangeBufferSize(id=0x" << std::hex << device_id
-           << ", is_input=" << is_input << ", buffer_size=" << std::dec
+           << ", is_input=" << is_input << ", desired_buffer_size=" << std::dec
            << desired_buffer_size << ")";
 
   *size_was_changed = false;
+
+  // Log the device name (and id) for debugging purposes.
+  std::string device_name = GetAudioDeviceNameFromDeviceId(device_id, is_input);
+  DVLOG(1) << "name: " << device_name << " (ID: 0x" << std::hex << device_id
+           << ")";
 
   // Get the current size of the I/O buffer for the specified device. The
   // property is read on a global scope, hence using element 0. The default IO
@@ -858,7 +881,7 @@ bool AudioManagerMac::MaybeChangeBufferSize(AudioDeviceID device_id,
   // 4410 will on most devices be limited to 4096 without any further notice.
   UInt32 minimum, maximum;
   GetIOBufferFrameSizeRange(device_id, is_input, &minimum, &maximum);
-  DVLOG(1) << "valid IO buffe size range: [" << minimum << ", " << maximum
+  DVLOG(1) << "valid IO buffer size range: [" << minimum << ", " << maximum
            << "]";
   buffer_size = desired_buffer_size;
   if (buffer_size < minimum)
