@@ -8,7 +8,6 @@
 #include "core/fileapi/FileCallback.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/heap/Handle.h"
-#include "public/platform/WebThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"
@@ -23,7 +22,6 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 public:
     static PassRefPtr<CanvasAsyncBlobCreator> create(PassRefPtr<DOMUint8ClampedArray> unpremultipliedRGBAImageData, const String& mimeType, const IntSize&, FileCallback*, ExecutionContext*);
     void scheduleAsyncBlobCreation(bool canUseIdlePeriodScheduling, double quality = 0.0);
-    static WebThread* getToBlobThreadInstance();
     virtual ~CanvasAsyncBlobCreator();
 
 protected:

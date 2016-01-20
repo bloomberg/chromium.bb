@@ -11,6 +11,7 @@
 #include "platform/graphics/ImageBuffer.h"
 #include "platform/heap/Handle.h"
 #include "platform/image-encoders/skia/PNGImageEncoder.h"
+#include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 #include "public/platform/WebTaskRunner.h"
@@ -24,6 +25,7 @@ namespace {
 
 const double SlackBeforeDeadline = 0.001; // a small slack period between deadline and current time for safety
 const int NumChannelsPng = 4;
+const int LongTaskImageSizeThreshold = 1000 * 1000; // The max image size we expect to encode in 14ms on Linux in PNG format
 
 bool isDeadlineNearOrPassed(double deadlineSeconds)
 {
@@ -110,7 +112,8 @@ void CanvasAsyncBlobCreator::scheduleAsyncBlobCreation(bool canUseIdlePeriodSche
         ASSERT(m_mimeType == "image/png");
         Platform::current()->mainThread()->scheduler()->postIdleTask(BLINK_FROM_HERE, WTF::bind<double>(&CanvasAsyncBlobCreator::initiatePngEncoding, this));
     } else {
-        getToBlobThreadInstance()->taskRunner()->postTask(BLINK_FROM_HERE, new Task(threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality)));
+        BackgroundTaskRunner::TaskSize taskSize = (m_size.height() * m_size.width() >= LongTaskImageSizeThreshold) ? BackgroundTaskRunner::TaskSizeLongRunningTask : BackgroundTaskRunner::TaskSizeShortRunningTask;
+        BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&CanvasAsyncBlobCreator::encodeImageOnEncoderThread, AllowCrossThreadAccess(this), quality), taskSize);
     }
 }
 
@@ -223,15 +226,6 @@ void CanvasAsyncBlobCreator::progressiveEncodeImageOnEncoderThread()
     }
 
     scheduleCreateBlobAndCallOnMainThread();
-}
-
-WebThread* CanvasAsyncBlobCreator::getToBlobThreadInstance()
-{
-    DEFINE_STATIC_LOCAL(OwnPtr<WebThread>, s_toBlobThread, ());
-    if (!s_toBlobThread) {
-        s_toBlobThread = adoptPtr(Platform::current()->createThread("Async toBlob"));
-    }
-    return s_toBlobThread.get();
 }
 
 void CanvasAsyncBlobCreator::createContextObserver(ExecutionContext* executionContext)

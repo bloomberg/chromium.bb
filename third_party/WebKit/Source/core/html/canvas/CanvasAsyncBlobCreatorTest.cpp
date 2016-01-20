@@ -5,6 +5,8 @@
 #include "core/html/canvas/CanvasAsyncBlobCreator.h"
 
 #include "core/html/ImageData.h"
+#include "platform/ThreadSafeFunctional.h"
+#include "platform/threading/BackgroundTaskRunner.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWaitableEvent.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -75,36 +77,6 @@ private:
 
 //============================================================================
 
-class ImageEncodingTask : public WebTaskRunner::Task {
-public:
-    ImageEncodingTask(CanvasAsyncBlobCreatorTest* testHost, WebWaitableEvent* startEvent, WebWaitableEvent* doneEvent)
-        : m_testHost(testHost)
-        , m_startEvent(startEvent)
-        , m_doneEvent(doneEvent)
-    {
-    }
-
-    virtual ~ImageEncodingTask() { }
-
-    void run() override
-    {
-        bool initializationSuccess = m_testHost->initializeEncodeImage();
-        if (!!m_startEvent)
-            m_startEvent->signal();
-        if (initializationSuccess)
-            m_testHost->startEncodeImage();
-        m_doneEvent->signal();
-    }
-
-private:
-    CanvasAsyncBlobCreatorTest* m_testHost;
-    WebWaitableEvent* m_startEvent;
-    WebWaitableEvent* m_doneEvent;
-};
-
-//============================================================================
-
-
 CanvasAsyncBlobCreatorTest::CanvasAsyncBlobCreatorTest()
 {
 }
@@ -132,6 +104,23 @@ void FakeContextObserver::contextDestroyed()
     m_asyncBlobCreator = nullptr;
 }
 
+void ImageEncodingTask(CanvasAsyncBlobCreatorTest* testHost, WebWaitableEvent* startEvent, WebWaitableEvent* doneEvent)
+{
+    bool initializationSuccess = testHost->initializeEncodeImage();
+    startEvent->signal();
+    if (initializationSuccess)
+        testHost->startEncodeImage();
+    doneEvent->signal();
+}
+
+void ImageEncodingTaskWithoutStartSignal(CanvasAsyncBlobCreatorTest* testHost, WebWaitableEvent* doneEvent)
+{
+    bool initializationSuccess = testHost->initializeEncodeImage();
+    if (initializationSuccess)
+        testHost->startEncodeImage();
+    doneEvent->signal();
+}
+
 MockCanvasAsyncBlobCreator* CanvasAsyncBlobCreatorTest::asyncBlobCreator()
 {
     return m_asyncBlobCreator.get();
@@ -151,7 +140,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, CancelImageEncodingWhenContextTornDown)
 
     EXPECT_CALL(*(asyncBlobCreator()), scheduleClearSelfRefOnMainThread());
 
-    CanvasAsyncBlobCreator::getToBlobThreadInstance()->taskRunner()->postTask(BLINK_FROM_HERE, new ImageEncodingTask(this, startEvent.get(), doneEvent.get()));
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageEncodingTask, AllowCrossThreadAccess(this), AllowCrossThreadAccess(startEvent.get()), AllowCrossThreadAccess(doneEvent.get())), BackgroundTaskRunner::TaskSizeLongRunningTask);
     startEvent->wait();
     contextObserver()->contextDestroyed();
     doneEvent->wait();
@@ -168,7 +157,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, CompleteImageEncodingWithoutContextTornDown)
 
     EXPECT_CALL(*(asyncBlobCreator()), scheduleCreateBlobAndCallOnMainThread());
 
-    CanvasAsyncBlobCreator::getToBlobThreadInstance()->taskRunner()->postTask(BLINK_FROM_HERE, new ImageEncodingTask(this, nullptr, doneEvent.get()));
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageEncodingTaskWithoutStartSignal, AllowCrossThreadAccess(this), AllowCrossThreadAccess(doneEvent.get())), BackgroundTaskRunner::TaskSizeShortRunningTask);
     doneEvent->wait();
 
     ::testing::Mock::VerifyAndClearExpectations(asyncBlobCreator());
@@ -183,7 +172,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, FailedImageEncodingOnEmptyImageData)
 
     EXPECT_CALL(*(asyncBlobCreator()), scheduleCreateNullptrAndCallOnMainThread());
 
-    CanvasAsyncBlobCreator::getToBlobThreadInstance()->taskRunner()->postTask(BLINK_FROM_HERE, new ImageEncodingTask(this, nullptr, doneEvent.get()));
+    BackgroundTaskRunner::postOnBackgroundThread(BLINK_FROM_HERE, threadSafeBind(&ImageEncodingTaskWithoutStartSignal, AllowCrossThreadAccess(this), AllowCrossThreadAccess(doneEvent.get())), BackgroundTaskRunner::TaskSizeShortRunningTask);
     doneEvent->wait();
 
     ::testing::Mock::VerifyAndClearExpectations(asyncBlobCreator());
