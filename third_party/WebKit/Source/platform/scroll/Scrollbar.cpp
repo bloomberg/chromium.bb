@@ -181,11 +181,11 @@ void Scrollbar::autoscrollTimerFired(Timer<Scrollbar>*)
     autoscrollPressedPart(theme().autoscrollTimerDelay());
 }
 
-static bool thumbUnderMouse(Scrollbar& scrollbar)
+bool Scrollbar::thumbWillBeUnderMouse() const
 {
-    int thumbPos = scrollbar.theme().trackPosition(scrollbar) + scrollbar.theme().thumbPosition(scrollbar);
-    int thumbLength = scrollbar.theme().thumbLength(scrollbar);
-    return scrollbar.pressedPos() >= thumbPos && scrollbar.pressedPos() < thumbPos + thumbLength;
+    int thumbPos = theme().trackPosition(*this) + theme().thumbPosition(*this, scrollableAreaTargetPos());
+    int thumbLength = theme().thumbLength(*this);
+    return pressedPos() >= thumbPos && pressedPos() < thumbPos + thumbLength;
 }
 
 void Scrollbar::autoscrollPressedPart(double delay)
@@ -195,7 +195,7 @@ void Scrollbar::autoscrollPressedPart(double delay)
         return;
 
     // Handle the track.
-    if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbUnderMouse(*this)) {
+    if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbWillBeUnderMouse()) {
         setHoveredPart(ThumbPart);
         return;
     }
@@ -213,7 +213,7 @@ void Scrollbar::startTimerIfNeeded(double delay)
 
     // Handle the track.  We halt track scrolling once the thumb is level
     // with us.
-    if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbUnderMouse(*this)) {
+    if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && thumbWillBeUnderMouse()) {
         setHoveredPart(ThumbPart);
         return;
     }
@@ -560,6 +560,17 @@ float Scrollbar::scrollableAreaCurrentPos() const
         return m_scrollableArea->scrollPosition().x() - m_scrollableArea->minimumScrollPosition().x();
 
     return m_scrollableArea->scrollPosition().y() - m_scrollableArea->minimumScrollPosition().y();
+}
+
+float Scrollbar::scrollableAreaTargetPos() const
+{
+    if (!m_scrollableArea)
+        return 0;
+
+    if (m_orientation == HorizontalScrollbar)
+        return m_scrollableArea->scrollAnimator().desiredTargetPosition().x() - m_scrollableArea->minimumScrollPosition().x();
+
+    return m_scrollableArea->scrollAnimator().desiredTargetPosition().y() - m_scrollableArea->minimumScrollPosition().y();
 }
 
 void Scrollbar::setNeedsPaintInvalidation(ScrollbarPart invalidParts)

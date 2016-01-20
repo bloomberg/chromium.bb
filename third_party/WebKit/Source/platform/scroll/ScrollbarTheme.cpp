@@ -207,14 +207,14 @@ bool ScrollbarTheme::shouldSnapBackToDragOrigin(const ScrollbarThemeClient& scro
     return Platform::current()->scrollbarBehavior()->shouldSnapBackToDragOrigin(mousePosition, trackRect(scrollbar), scrollbar.orientation() == HorizontalScrollbar);
 }
 
-int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar)
+int ScrollbarTheme::thumbPosition(const ScrollbarThemeClient& scrollbar, float scrollPosition)
 {
     if (scrollbar.enabled()) {
         float size = scrollbar.totalSize() - scrollbar.visibleSize();
         // Avoid doing a floating point divide by zero and return 1 when usedTotalSize == visibleSize.
         if (!size)
             return 0;
-        float pos = std::max(0.0f, scrollbar.currentPos()) * (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
+        float pos = std::max(0.0f, scrollPosition) * (trackLength(scrollbar) - thumbLength(scrollbar)) / size;
         return (pos < 1 && pos > 0) ? 1 : pos;
     }
     return 0;

@@ -45,7 +45,7 @@ public:
     int scrollbarMargin() const override;
     bool usesOverlayScrollbars() const override;
 
-    int thumbPosition(const ScrollbarThemeClient&) override;
+    int thumbPosition(const ScrollbarThemeClient&, float scrollPosition) override;
     int thumbLength(const ScrollbarThemeClient&) override;
 
     bool hasButtons(const ScrollbarThemeClient&) override { return false; }

@@ -33,6 +33,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/PlatformWheelEvent.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/heap/Handle.h"
 #include "platform/scroll/ScrollAnimatorCompositorCoordinator.h"
@@ -41,7 +42,6 @@
 
 namespace blink {
 
-class FloatPoint;
 class ScrollableArea;
 class Scrollbar;
 class WebCompositorAnimationTimeline;
@@ -71,6 +71,7 @@ public:
 
     void setCurrentPosition(const FloatPoint&);
     FloatPoint currentPosition() const;
+    virtual FloatPoint desiredTargetPosition() const { return currentPosition(); }
 
     // Returns how much of pixelDelta will be used by the underlying scrollable
     // area.

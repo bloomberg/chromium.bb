@@ -73,13 +73,13 @@ bool ScrollbarThemeOverlay::usesOverlayScrollbars() const
     return true;
 }
 
-int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient& scrollbar)
+int ScrollbarThemeOverlay::thumbPosition(const ScrollbarThemeClient& scrollbar, float scrollPosition)
 {
     if (!scrollbar.totalSize())
         return 0;
 
     int trackLen = trackLength(scrollbar);
-    float proportion = static_cast<float>(scrollbar.currentPos()) / scrollbar.totalSize();
+    float proportion = static_cast<float>(scrollPosition) / scrollbar.totalSize();
     return round(proportion * trackLen);
 }
 

@@ -222,6 +222,8 @@ private:
     void invalidateRect(const IntRect&) override { setNeedsPaintInvalidation(AllParts); }
 
     float scrollableAreaCurrentPos() const;
+    float scrollableAreaTargetPos() const;
+    bool thumbWillBeUnderMouse() const;
 
     bool m_trackNeedsRepaint;
     bool m_thumbNeedsRepaint;

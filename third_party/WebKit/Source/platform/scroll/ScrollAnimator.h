@@ -53,6 +53,7 @@ public:
 
     ScrollResultOneDimensional userScroll(ScrollbarOrientation, ScrollGranularity, float step, float delta) override;
     void scrollToOffsetWithoutAnimation(const FloatPoint&) override;
+    FloatPoint desiredTargetPosition() const override;
 
     // ScrollAnimatorCompositorCoordinator implementation.
     void tickAnimation(double monotonicTime) override;
@@ -71,8 +72,6 @@ protected:
     WTF::TimeFunction m_timeFunction;
 
 private:
-    FloatPoint desiredTargetPosition() const;
-
     // Returns true if the animation was scheduled successfully. If animation
     // could not be scheduled (e.g. because the frame is detached), scrolls
     // immediately to the target and returns false.

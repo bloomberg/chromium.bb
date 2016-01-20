@@ -30,6 +30,7 @@
 #include "platform/geometry/IntRect.h"
 #include "platform/graphics/paint/DisplayItem.h"
 #include "platform/scroll/ScrollTypes.h"
+#include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/WebScrollbarButtonsPlacement.h"
 
 namespace blink {
@@ -37,7 +38,6 @@ namespace blink {
 class CullRect;
 class GraphicsContext;
 class PlatformMouseEvent;
-class ScrollbarThemeClient;
 class ScrollbarThemePaintParams;
 
 class PLATFORM_EXPORT ScrollbarTheme {
@@ -85,7 +85,9 @@ public:
     virtual bool shouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&, const PlatformMouseEvent&) { return false; }
 
     // The position of the thumb relative to the track.
-    virtual int thumbPosition(const ScrollbarThemeClient&);
+    int thumbPosition(const ScrollbarThemeClient& scrollbar) { return thumbPosition(scrollbar, scrollbar.currentPos()); }
+    // The position the thumb would have, relative to the track, at the specified scroll position.
+    virtual int thumbPosition(const ScrollbarThemeClient&, float scrollPosition);
     // The length of the thumb along the axis of the scrollbar.
     virtual int thumbLength(const ScrollbarThemeClient&);
     // The position of the track relative to the scrollbar.
