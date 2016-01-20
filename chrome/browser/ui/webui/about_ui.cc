@@ -746,7 +746,8 @@ std::string AboutSandbox() {
   data.append("</h1>");
 
   // Get expected sandboxing status of renderers.
-  const int status = content::ZygoteHost::GetInstance()->GetSandboxStatus();
+  const int status =
+      content::ZygoteHost::GetInstance()->GetRendererSandboxStatus();
 
   data.append("<table>");
 

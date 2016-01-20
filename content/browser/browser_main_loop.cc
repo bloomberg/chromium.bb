@@ -53,9 +53,11 @@
 #include "content/browser/mojo/mojo_shell_context.h"
 #include "content/browser/net/browser_online_state_observer.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/startup_task_runner.h"
 #include "content/browser/time_zone_monitor.h"
+#include "content/browser/utility_process_host_impl.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
@@ -152,6 +154,10 @@
 #include "content/browser/renderer_host/render_sandbox_host_linux.h"
 #include "content/browser/zygote_host/zygote_host_impl_linux.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
+
+#if !defined(OS_ANDROID)
+#include "content/browser/ppapi_plugin_process_host.h"
+#endif
 #endif
 
 #if defined(ENABLE_PLUGINS)
@@ -220,6 +226,9 @@ void SetupSandbox(const base::CommandLine& parsed_command_line) {
 
   // Tickle the sandbox host and zygote host so they fork now.
   RenderSandboxHostLinux::GetInstance()->Init();
+  RenderProcessHostImpl::EarlyZygoteLaunch();
+  PpapiPluginProcessHost::EarlyZygoteLaunch();
+  UtilityProcessHostImpl::EarlyZygoteLaunch();
   ZygoteHostImpl::GetInstance()->Init(sandbox_binary.value());
 }
 #endif
