@@ -2,7 +2,6 @@ AXWebArea
 ++AXGroup
 ++++AXStaticText AXValue='Test for modal dialog closed in an iframe. '
 ++++AXGroup
-++++++AXUnknown
-++++++++AXWebArea
-++++++++++AXGroup
-++++++++++++AXButton AXTitle='I am a non-inert button!'
+++++++AXWebArea
+++++++++AXGroup
+++++++++++AXButton AXTitle='I am a non-inert button!'

@@ -170,11 +170,9 @@ element
                 AXRole: AXInlineTextBox "This is an open dialog window"
     AXRole: AXGroup
         AXRole: AXUnknown
-            AXRole: AXScrollArea
-                AXRole: AXWebArea
+            AXRole: AXWebArea
         AXRole: AXUnknown
-            AXRole: AXScrollArea
-                AXRole: AXWebArea
+            AXRole: AXWebArea
     AXRole: AXTable "Caption"
         AXRole: AXCaption
             AXRole: AXStaticText "Caption"

@@ -1,6 +1,5 @@
 rootWebArea
 ++group
 ++++iframe
-++++++scrollArea
-++++++++webArea
+++++++webArea
 <-- End-of-file -->

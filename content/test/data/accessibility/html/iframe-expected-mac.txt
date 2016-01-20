@@ -1,5 +1,4 @@
 AXWebArea AXRoleDescription='HTML content'
 ++AXGroup AXRoleDescription='group'
 ++++AXGroup AXRoleDescription='group'
-++++++AXUnknown AXRoleDescription='unknown'
-++++++++AXWebArea AXRoleDescription='HTML content'
+++++++AXWebArea AXRoleDescription='HTML content'

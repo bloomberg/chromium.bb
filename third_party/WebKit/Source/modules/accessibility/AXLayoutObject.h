@@ -81,7 +81,6 @@ protected:
     bool isAXLayoutObject() const override { return true; }
 
     // Check object role or purpose.
-    bool isAttachment() const override;
     bool isEditable() const override;
     bool isRichlyEditable() const override;
     bool isLinked() const override;
@@ -181,7 +180,6 @@ protected:
     Document* document() const override;
     FrameView* documentFrameView() const override;
     Element* anchorElement() const override;
-    Widget* widgetForAttachmentView() const override;
 
     void setValue(const String&) override;
 
@@ -210,7 +208,7 @@ private:
     void addTextFieldChildren();
     void addImageMapChildren();
     void addCanvasChildren();
-    void addAttachmentChildren();
+    void addFrameChildren();
     void addPopupChildren();
     void addRemoteSVGChildren();
     void addInlineTextBoxChildren(bool force);

@@ -14,7 +14,6 @@ PASS successfullyParsed is true
 
 TEST COMPLETE
 PASS iframe.isEqual(newIframe) is true
-PASS scrollarea.isEqual(newScrollarea) is false
 PASS subwebarea.isEqual(newSubwebarea) is false
 PASS newSubwebarea.childrenCount > 0 is true
 

@@ -41,9 +41,11 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/iterators/CharacterIterator.h"
 #include "core/editing/iterators/TextIterator.h"
+#include "core/frame/FrameOwner.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
+#include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLLabelElement.h"
 #include "core/html/HTMLOptionElement.h"
@@ -346,17 +348,6 @@ void AXLayoutObject::detach()
 // Check object role or purpose.
 //
 
-bool AXLayoutObject::isAttachment() const
-{
-    LayoutBoxModelObject* layoutObject = layoutBoxModelObject();
-    if (!layoutObject)
-        return false;
-    // Widgets are the replaced elements that we represent to AX as attachments
-    bool isLayoutPart = layoutObject->isLayoutPart();
-    ASSERT(!isLayoutPart || (layoutObject->isAtomicInlineLevel() && !isImage()));
-    return isLayoutPart;
-}
-
 static bool isLinkable(const AXObject& object)
 {
     if (!object.layoutObject())
@@ -575,9 +566,9 @@ bool AXLayoutObject::computeAccessibilityIsIgnored(IgnoredReasons* ignoredReason
         return true;
     }
 
-    // TODO: we should refactor this - but right now this is necessary to make
-    // sure scroll areas stay in the tree.
-    if (isAttachment())
+    // A LayoutPart is an iframe element or embedded object element or something like
+    // that. We don't want to ignore those.
+    if (m_layoutObject->isLayoutPart())
         return false;
 
     // find out if this element is inside of a label element.
@@ -1529,9 +1520,16 @@ AXObject* AXLayoutObject::computeParent() const
     if (parentObj)
         return axObjectCache().getOrCreate(parentObj);
 
-    // WebArea's parent should be the scroll view containing it.
-    if (isWebArea())
-        return axObjectCache().getOrCreate(m_layoutObject->frame()->view());
+    // A WebArea's parent should be the containing frame (if local) or page popup owner.
+    if (isWebArea()) {
+        LocalFrame* frame = m_layoutObject->frame();
+        if (frame->owner() && frame->owner()->isLocal()) {
+            HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
+            if (owner && owner->layoutObject())
+                return axObjectCache().getOrCreate(owner->layoutObject());
+        }
+        return axObjectCache().getOrCreate(frame->pagePopupOwner());
+    }
 
     return 0;
 }
@@ -1555,9 +1553,16 @@ AXObject* AXLayoutObject::computeParentIfExists() const
     if (parentObj)
         return axObjectCache().get(parentObj);
 
-    // WebArea's parent should be the scroll view containing it.
-    if (isWebArea())
-        return axObjectCache().get(m_layoutObject->frame()->view());
+    // A WebArea's parent should be the containing frame (if local) or page popup owner.
+    if (isWebArea()) {
+        LocalFrame* frame = m_layoutObject->frame();
+        if (frame->owner() && frame->owner()->isLocal()) {
+            HTMLFrameOwnerElement* owner = toHTMLFrameOwnerElement(frame->owner());
+            if (owner && owner->layoutObject())
+                return axObjectCache().get(owner->layoutObject());
+        }
+        return axObjectCache().get(frame->pagePopupOwner());
+    }
 
     return 0;
 }
@@ -1646,7 +1651,7 @@ void AXLayoutObject::addChildren()
     }
 
     addHiddenChildren();
-    addAttachmentChildren();
+    addFrameChildren();
     addPopupChildren();
     addImageMapChildren();
     addTextFieldChildren();
@@ -1757,13 +1762,6 @@ Element* AXLayoutObject::anchorElement() const
     }
 
     return 0;
-}
-
-Widget* AXLayoutObject::widgetForAttachmentView() const
-{
-    if (!isAttachment())
-        return 0;
-    return toLayoutPart(m_layoutObject)->widget();
 }
 
 //
@@ -2442,19 +2440,22 @@ void AXLayoutObject::addCanvasChildren()
     AXNodeObject::addChildren();
 }
 
-void AXLayoutObject::addAttachmentChildren()
+void AXLayoutObject::addFrameChildren()
 {
-    if (!isAttachment())
+    if (!m_layoutObject || !m_layoutObject->isLayoutPart())
         return;
 
-    // FrameView's need to be inserted into the AX hierarchy when encountered.
-    Widget* widget = widgetForAttachmentView();
+    Widget* widget = toLayoutPart(m_layoutObject)->widget();
     if (!widget || !widget->isFrameView())
         return;
 
-    AXObject* axWidget = axObjectCache().getOrCreate(widget);
-    if (!axWidget->accessibilityIsIgnored())
-        m_children.append(axWidget);
+    Document* doc = toFrameView(widget)->frame().document();
+    if (!doc || !doc->layoutView())
+        return;
+
+    AXObject* axChildFrame = axObjectCache().getOrCreate(doc);
+    if (!axChildFrame->accessibilityIsIgnored())
+        m_children.append(axChildFrame);
 }
 
 void AXLayoutObject::addPopupChildren()

@@ -40,7 +40,6 @@ class HTMLOptionElement;
 class HTMLSelectElement;
 class LayoutMenuList;
 class Page;
-class Widget;
 
 class CORE_EXPORT AXObjectCache : public GarbageCollectedFinalized<AXObjectCache> {
     WTF_MAKE_NONCOPYABLE(AXObjectCache);
@@ -98,7 +97,6 @@ public:
 
     virtual void remove(LayoutObject*) = 0;
     virtual void remove(Node*) = 0;
-    virtual void remove(Widget*) = 0;
     virtual void remove(AbstractInlineTextBox*) = 0;
 
     virtual const Element* rootAXEditableElement(const Node*) = 0;
@@ -130,7 +128,6 @@ public:
     virtual void handleScrollPositionChanged(LayoutObject*) = 0;
 
     // Called when scroll bars are added / removed (as the view resizes).
-    virtual void handleScrollbarUpdate(FrameView*) = 0;
     virtual void handleLayoutComplete(LayoutObject*) = 0;
     virtual void handleScrolledToAnchor(const Node* anchorNode) = 0;
 

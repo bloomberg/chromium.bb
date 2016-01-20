@@ -51,7 +51,6 @@ class NameSource;
 class Node;
 class LayoutObject;
 class ScrollableArea;
-class Widget;
 
 typedef unsigned AXID;
 
@@ -548,8 +547,6 @@ public:
     virtual bool isAXLayoutObject() const { return false; }
     virtual bool isAXListBox() const { return false; }
     virtual bool isAXListBoxOption() const { return false; }
-    virtual bool isAXScrollbar() const { return false; }
-    virtual bool isAXScrollView() const { return false; }
     virtual bool isAXSVGRoot() const { return false; }
 
     // Check object role or purpose.
@@ -558,7 +555,6 @@ public:
     virtual bool isARIATreeGridRow() const { return false; }
     virtual bool isAXTable() const { return false; }
     virtual bool isAnchor() const { return false; }
-    virtual bool isAttachment() const { return false; }
     bool isButton() const;
     bool isCanvas() const { return roleValue() == CanvasRole; }
     bool isCheckbox() const { return roleValue() == CheckBoxRole; }
@@ -834,7 +830,6 @@ public:
     virtual FrameView* documentFrameView() const;
     virtual Element* anchorElement() const { return 0; }
     virtual Element* actionElement() const { return 0; }
-    virtual Widget* widgetForAttachmentView() const { return 0; }
     String language() const;
     bool hasAttribute(const QualifiedName&) const;
     const AtomicString& getAttribute(const QualifiedName&) const;

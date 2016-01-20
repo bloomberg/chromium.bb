@@ -1110,18 +1110,16 @@ IntRect AXObject::boundingBoxForQuads(LayoutObject* obj, const Vector<FloatQuad>
 
 AXObject* AXObject::elementAccessibilityHitTest(const IntPoint& point) const
 {
-    // Send the hit test back into the sub-frame if necessary.
-    if (isAttachment()) {
-        Widget* widget = widgetForAttachmentView();
-        // Normalize the point for the widget's bounds.
-        if (widget && widget->isFrameView())
-            return axObjectCache().getOrCreate(widget)->accessibilityHitTest(IntPoint(point - widget->frameRect().location()));
-    }
-
-    // Check if there are any mock elements that need to be handled.
+    // Check if there are any mock elements or child frames that need to be handled.
     for (const auto& child : m_children) {
         if (child->isMockObject() && child->elementRect().contains(point))
             return child->elementAccessibilityHitTest(point);
+
+        if (child->isWebArea()) {
+            FrameView* frameView = child->documentFrameView();
+            if (frameView)
+                return child->accessibilityHitTest(IntPoint(point - frameView->frameRect().location()));
+        }
     }
 
     return const_cast<AXObject*>(this);
@@ -1428,7 +1426,7 @@ void AXObject::scrollToMakeVisibleWithSubFocus(const IntRect& subfocus) const
     ScrollableArea* scrollableArea = 0;
     while (scrollParent) {
         scrollableArea = scrollParent->getScrollableAreaIfScrollable();
-        if (scrollableArea && !scrollParent->isAXScrollView())
+        if (scrollableArea)
             break;
         scrollParent = scrollParent->parentObject();
     }
@@ -1477,7 +1475,7 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
     HeapVector<Member<const AXObject>> objects;
     AXObject* parentObject;
     for (parentObject = this->parentObject(); parentObject; parentObject = parentObject->parentObject()) {
-        if (parentObject->getScrollableAreaIfScrollable() && !parentObject->isAXScrollView())
+        if (parentObject->getScrollableAreaIfScrollable())
             objects.prepend(parentObject);
     }
     objects.append(this);

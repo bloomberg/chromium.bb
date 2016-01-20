@@ -12,19 +12,16 @@
 
         if (window.accessibilityController) {
             window.iframe = accessibilityController.accessibleElementById('iframe');
-            window.scrollarea = iframe.childAtIndex(0);
-            window.subwebarea = scrollarea.childAtIndex(0);
+            window.subwebarea = iframe.childAtIndex(0);
         }
 
         window.iframeElement = document.getElementById("iframe");
         iframeElement.addEventListener("load", function() {
             if (window.accessibilityController) {
                 window.newIframe = accessibilityController.accessibleElementById('iframe');
-                window.newScrollarea = newIframe.childAtIndex(0);
-                window.newSubwebarea = newScrollarea.childAtIndex(0);
+                window.newSubwebarea = newIframe.childAtIndex(0);
 
                 shouldBeTrue("iframe.isEqual(newIframe)");
-                shouldBeFalse("scrollarea.isEqual(newScrollarea)");
                 shouldBeFalse("subwebarea.isEqual(newSubwebarea)");
                 shouldBeTrue("newSubwebarea.childrenCount > 0");
             }

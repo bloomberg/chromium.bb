@@ -699,11 +699,7 @@ bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
   if (!parent)
     return false;
 
-  BrowserAccessibility* grandparent = parent->GetParent();
-  if (!grandparent)
-    return false;
-
-  return grandparent->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
+  return parent->GetRole() == ui::AX_ROLE_IFRAME_PRESENTATIONAL;
 }
 
 bool BrowserAccessibility::IsControl() const {
