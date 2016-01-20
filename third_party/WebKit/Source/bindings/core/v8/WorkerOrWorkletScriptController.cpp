@@ -302,7 +302,6 @@ void WorkerOrWorkletScriptController::rethrowExceptionFromImportedScript(PassRef
 DEFINE_TRACE(WorkerOrWorkletScriptController)
 {
     visitor->trace(m_globalScope);
-    visitor->trace(m_rejectedPromises);
 }
 
 } // namespace blink

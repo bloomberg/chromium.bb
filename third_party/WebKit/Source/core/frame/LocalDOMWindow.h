@@ -146,7 +146,7 @@ public:
     void cancelAnimationFrame(int id) override;
     int requestIdleCallback(IdleRequestCallback*, const IdleRequestOptions&) override;
     void cancelIdleCallback(int id) override;
-    void schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent>, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace);
+    void schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent>, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtr<ScriptCallStack> stackTrace);
 
     void registerProperty(DOMWindowProperty*);
     void unregisterProperty(DOMWindowProperty*);
@@ -169,7 +169,7 @@ public:
 
     void postMessageTimerFired(PostMessageTimer*);
     void removePostMessageTimer(PostMessageTimer*);
-    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtrWillBeRawPtr<ScriptCallStack>);
+    void dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event>, PassRefPtr<ScriptCallStack>);
 
     // Events
     // EventTarget API

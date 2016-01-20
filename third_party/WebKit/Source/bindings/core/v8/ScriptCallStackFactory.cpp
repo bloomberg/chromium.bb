@@ -77,20 +77,20 @@ static void toScriptCallFramesVector(v8::Local<v8::StackTrace> stackTrace, Vecto
     }
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> createScriptCallStack(v8::Isolate* isolate, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
+PassRefPtr<ScriptCallStack> createScriptCallStack(v8::Isolate* isolate, v8::Local<v8::StackTrace> stackTrace, size_t maxStackSize)
 {
     ASSERT(isolate->InContext());
     ASSERT(!stackTrace.IsEmpty());
     v8::HandleScope scope(isolate);
     Vector<ScriptCallFrame> scriptCallFrames;
     toScriptCallFramesVector(stackTrace, scriptCallFrames, maxStackSize, isolate);
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = ScriptCallStack::create(scriptCallFrames);
+    RefPtr<ScriptCallStack> callStack = ScriptCallStack::create(scriptCallFrames);
     if (InspectorInstrumentation::hasFrontends() && maxStackSize > 1)
         InspectorInstrumentation::appendAsyncCallStack(currentExecutionContext(isolate), callStack.get());
     return callStack.release();
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> currentScriptCallStack(size_t maxStackSize)
+PassRefPtr<ScriptCallStack> currentScriptCallStack(size_t maxStackSize)
 {
     v8::Isolate* isolate = v8::Isolate::GetCurrent();
     if (!isolate->InContext())
@@ -100,7 +100,7 @@ PassRefPtrWillBeRawPtr<ScriptCallStack> currentScriptCallStack(size_t maxStackSi
     return createScriptCallStack(isolate, stackTrace, maxStackSize);
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> currentScriptCallStackForConsole(size_t maxStackSize)
+PassRefPtr<ScriptCallStack> currentScriptCallStackForConsole(size_t maxStackSize)
 {
     size_t stackSize = 1;
     if (InspectorInstrumentation::hasFrontends()) {

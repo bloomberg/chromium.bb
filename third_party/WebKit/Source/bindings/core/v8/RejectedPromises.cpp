@@ -25,16 +25,11 @@ namespace blink {
 
 static const unsigned maxReportedHandlersPendingResolution = 1000;
 
-class RejectedPromises::Message final : public NoBaseWillBeGarbageCollectedFinalized<RejectedPromises::Message> {
+class RejectedPromises::Message final {
 public:
-    static PassOwnPtrWillBeRawPtr<Message> create(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+    static PassOwnPtr<Message> create(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
     {
-        return adoptPtrWillBeNoop(new Message(scriptState, promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus));
-    }
-
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_callStack);
+        return adoptPtr(new Message(scriptState, promise, exception, errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus));
     }
 
     bool isCollected()
@@ -154,7 +149,7 @@ public:
     }
 
 private:
-    Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+    Message(ScriptState* scriptState, v8::Local<v8::Promise> promise, v8::Local<v8::Value> exception, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
         : m_scriptState(scriptState)
         , m_promise(scriptState->isolate(), promise)
         , m_exception(scriptState->isolate(), exception)
@@ -190,7 +185,7 @@ private:
     int m_scriptId;
     int m_lineNumber;
     int m_columnNumber;
-    RefPtrWillBeMember<ScriptCallStack> m_callStack;
+    RefPtr<ScriptCallStack> m_callStack;
     unsigned m_consoleMessageId;
     bool m_collected;
     bool m_shouldLogToConsole;
@@ -201,15 +196,11 @@ RejectedPromises::RejectedPromises()
 {
 }
 
-DEFINE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
-
-DEFINE_TRACE(RejectedPromises)
+RejectedPromises::~RejectedPromises()
 {
-    visitor->trace(m_queue);
-    visitor->trace(m_reportedAsErrors);
 }
 
-void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void RejectedPromises::rejectedWithNoHandler(ScriptState* scriptState, v8::PromiseRejectMessage data, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     m_queue.append(Message::create(scriptState, data.GetPromise(), data.GetValue(), errorMessage, resourceName, scriptId, lineNumber, columnNumber, callStack, corsStatus));
 }
@@ -236,9 +227,9 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data)
     }
 }
 
-PassOwnPtrWillBeRawPtr<RejectedPromises::MessageQueue> RejectedPromises::createMessageQueue()
+PassOwnPtr<RejectedPromises::MessageQueue> RejectedPromises::createMessageQueue()
 {
-    return adoptPtrWillBeNoop(new MessageQueue());
+    return adoptPtr(new MessageQueue());
 }
 
 void RejectedPromises::dispose()
@@ -246,7 +237,7 @@ void RejectedPromises::dispose()
     if (m_queue.isEmpty())
         return;
 
-    OwnPtrWillBeRawPtr<MessageQueue> queue = createMessageQueue();
+    OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
     processQueueNow(queue.release());
 }
@@ -256,12 +247,12 @@ void RejectedPromises::processQueue()
     if (m_queue.isEmpty())
         return;
 
-    OwnPtrWillBeRawPtr<MessageQueue> queue = createMessageQueue();
+    OwnPtr<MessageQueue> queue = createMessageQueue();
     queue->swap(m_queue);
-    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&RejectedPromises::processQueueNow, PassRefPtrWillBeRawPtr<RejectedPromises>(this), queue.release())));
+    Platform::current()->currentThread()->scheduler()->timerTaskRunner()->postTask(BLINK_FROM_HERE, new Task(bind(&RejectedPromises::processQueueNow, PassRefPtr<RejectedPromises>(this), queue.release())));
 }
 
-void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue> queue)
+void RejectedPromises::processQueueNow(PassOwnPtr<MessageQueue> queue)
 {
     // Remove collected handlers.
     for (size_t i = 0; i < m_reportedAsErrors.size();) {
@@ -272,7 +263,7 @@ void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue> queu
     }
 
     while (!queue->isEmpty()) {
-        OwnPtrWillBeRawPtr<Message> message = queue->takeFirst();
+        OwnPtr<Message> message = queue->takeFirst();
         if (message->isCollected())
             continue;
         if (!message->hasHandler()) {
@@ -285,7 +276,7 @@ void RejectedPromises::processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue> queu
     }
 }
 
-void RejectedPromises::revokeNow(PassOwnPtrWillBeRawPtr<Message> message)
+void RejectedPromises::revokeNow(PassOwnPtr<Message> message)
 {
     message->revoke();
 }

@@ -57,19 +57,19 @@ class EventListenerInfo;
 // InjectedScriptHost must never implemment methods that have more power over the page than the
 // page already has itself (e.g. origin restriction bypasses).
 
-class InjectedScriptHost : public RefCountedWillBeGarbageCollectedFinalized<InjectedScriptHost> {
+class InjectedScriptHost : public RefCounted<InjectedScriptHost> {
 public:
-    static PassRefPtrWillBeRawPtr<InjectedScriptHost> create();
+    static PassRefPtr<InjectedScriptHost> create();
     ~InjectedScriptHost();
-    DECLARE_TRACE();
 
     using InspectCallback = Function<void(PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>)>;
+    using ClearConsoleCallback = Function<void()>;
 
-    void init(InspectorConsoleAgent* consoleAgent, V8DebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
+    void init(V8DebuggerAgent* debuggerAgent, PassOwnPtr<InspectCallback> inspectCallback, PassOwnPtr<ClearConsoleCallback> clearConsoleCallback, V8Debugger* debugger, PassOwnPtr<InjectedScriptHostClient> injectedScriptHostClient)
     {
-        m_consoleAgent = consoleAgent;
         m_debuggerAgent = debuggerAgent;
         m_inspectCallback = std::move(inspectCallback);
+        m_clearConsoleCallback = std::move(clearConsoleCallback);
         m_debugger = debugger;
         m_client = std::move(injectedScriptHostClient);
     }
@@ -78,14 +78,13 @@ public:
 
     void disconnect();
 
-    class InspectableObject : public NoBaseWillBeGarbageCollectedFinalized<InspectableObject> {
-        USING_FAST_MALLOC_WILL_BE_REMOVED(InspectableObject);
+    class InspectableObject {
+        USING_FAST_MALLOC(InspectableObject);
     public:
         virtual ScriptValue get(ScriptState*);
         virtual ~InspectableObject() { }
-        DEFINE_INLINE_VIRTUAL_TRACE() { }
     };
-    void addInspectedObject(PassOwnPtrWillBeRawPtr<InspectableObject>);
+    void addInspectedObject(PassOwnPtr<InspectableObject>);
     void clearInspectedObjects();
     InspectableObject* inspectedObject(unsigned num);
 
@@ -108,12 +107,12 @@ public:
 private:
     InjectedScriptHost();
 
-    RawPtrWillBeMember<InspectorConsoleAgent> m_consoleAgent;
     V8DebuggerAgent* m_debuggerAgent;
     OwnPtr<InspectCallback> m_inspectCallback;
+    OwnPtr<ClearConsoleCallback> m_clearConsoleCallback;
     V8Debugger* m_debugger;
-    WillBeHeapVector<OwnPtrWillBeMember<InspectableObject>> m_inspectedObjects;
-    OwnPtrWillBeMember<InspectableObject> m_defaultInspectableObject;
+    Vector<OwnPtr<InspectableObject>> m_inspectedObjects;
+    OwnPtr<InspectableObject> m_defaultInspectableObject;
     OwnPtr<InjectedScriptHostClient> m_client;
     v8::Global<v8::FunctionTemplate> m_wrapperTemplate;
 };

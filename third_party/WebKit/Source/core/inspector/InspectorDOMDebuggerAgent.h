@@ -121,7 +121,7 @@ private:
     void eventListeners(InjectedScript&, v8::Local<v8::Value>, const String& objectGroup, RefPtr<TypeBuilder::Array<TypeBuilder::DOMDebugger::EventListener>>& listenersArray);
     PassRefPtr<TypeBuilder::DOMDebugger::EventListener> buildObjectForEventListener(InjectedScript&, v8::Local<v8::Object> handler, bool useCapture, const String& type, const String& objectGroupId);
 
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     V8DebuggerAgent* m_debuggerAgent;
     WillBeHeapHashMap<RawPtrWillBeMember<Node>, uint32_t> m_domBreakpoints;

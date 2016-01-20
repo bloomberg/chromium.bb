@@ -59,12 +59,6 @@ InspectorConsoleAgent::~InspectorConsoleAgent()
 #endif
 }
 
-DEFINE_TRACE(InspectorConsoleAgent)
-{
-    visitor->trace(m_injectedScriptManager);
-    InspectorBaseAgent::trace(visitor);
-}
-
 void InspectorConsoleAgent::enable(ErrorString*)
 {
     if (m_enabled)
@@ -116,6 +110,12 @@ void InspectorConsoleAgent::addMessageToConsole(ConsoleMessage* consoleMessage)
         return;
     if (m_debuggerAgent->debugger().pauseOnExceptionsState() != V8Debugger::DontPauseOnExceptions)
         m_debuggerAgent->breakProgram(InspectorFrontend::Debugger::Reason::Assert, nullptr);
+}
+
+void InspectorConsoleAgent::clearAllMessages()
+{
+    ErrorString error;
+    clearMessages(&error);
 }
 
 void InspectorConsoleAgent::consoleMessagesCleared()
@@ -226,7 +226,7 @@ void InspectorConsoleAgent::sendConsoleMessageToFrontend(ConsoleMessage* console
     if (consoleMessage->callStack()) {
         if (consoleMessage->callStack()->size())
             jsonObj->setStackTrace(consoleMessage->callStack()->buildInspectorArray());
-        RefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack = consoleMessage->callStack()->asyncCallStack();
+        RefPtr<ScriptAsyncCallStack> asyncCallStack = consoleMessage->callStack()->asyncCallStack();
         if (asyncCallStack)
             jsonObj->setAsyncStackTrace(asyncCallStack->buildInspectorObject());
     }

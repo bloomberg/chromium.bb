@@ -114,7 +114,7 @@ private:
     bool m_executionScheduledToTerminate;
     mutable Mutex m_scheduledTerminationMutex;
 
-    RefPtrWillBeMember<RejectedPromises> m_rejectedPromises;
+    RefPtr<RejectedPromises> m_rejectedPromises;
 
     // |m_executionState| refers to a stack object that evaluate() allocates;
     // evaluate() ensuring that the pointer reference to it is removed upon

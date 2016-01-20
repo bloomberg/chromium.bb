@@ -7,28 +7,25 @@
 
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 
 namespace blink {
 
-class ScriptAsyncCallStack : public RefCountedWillBeGarbageCollectedFinalized<ScriptAsyncCallStack> {
+class ScriptAsyncCallStack : public RefCounted<ScriptAsyncCallStack> {
 public:
-    static PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> create(const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
+    static PassRefPtr<ScriptAsyncCallStack> create(const String&, PassRefPtr<ScriptCallStack>, PassRefPtr<ScriptAsyncCallStack>);
 
     ~ScriptAsyncCallStack();
 
     PassRefPtr<TypeBuilder::Console::AsyncStackTrace> buildInspectorObject() const;
 
-    DECLARE_TRACE();
-
 private:
-    ScriptAsyncCallStack(const String&, PassRefPtrWillBeRawPtr<ScriptCallStack>, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
+    ScriptAsyncCallStack(const String&, PassRefPtr<ScriptCallStack>, PassRefPtr<ScriptAsyncCallStack>);
 
     String m_description;
-    RefPtrWillBeMember<ScriptCallStack> m_callStack;
-    RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncStackTrace;
+    RefPtr<ScriptCallStack> m_callStack;
+    RefPtr<ScriptAsyncCallStack> m_asyncStackTrace;
 };
 
 } // namespace blink

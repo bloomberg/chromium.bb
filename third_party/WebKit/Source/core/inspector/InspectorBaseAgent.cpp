@@ -42,15 +42,11 @@ InspectorAgent::InspectorAgent(const String& name)
 
 InspectorAgent::~InspectorAgent()
 {
-#if ENABLE(OILPAN)
-    m_state = nullptr;
-#endif
 }
 
 DEFINE_TRACE(InspectorAgent)
 {
     visitor->trace(m_instrumentingAgents);
-    visitor->trace(m_state);
 }
 
 void InspectorAgent::appended(InstrumentingAgents* instrumentingAgents, InspectorState* inspectorState)
@@ -111,7 +107,6 @@ void InspectorAgentRegistry::flushPendingProtocolNotifications()
 DEFINE_TRACE(InspectorAgentRegistry)
 {
     visitor->trace(m_instrumentingAgents);
-    visitor->trace(m_inspectorState);
 #if ENABLE(OILPAN)
     visitor->trace(m_agents);
 #endif

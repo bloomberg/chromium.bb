@@ -53,7 +53,6 @@ public:
     }
 
     ~InspectorInspectorAgent() override;
-    DECLARE_VIRTUAL_TRACE();
 
     // Inspector front-end API.
     void enable(ErrorString*) override;
@@ -71,7 +70,7 @@ public:
 private:
     explicit InspectorInspectorAgent(InjectedScriptManager*);
 
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
 
     Vector<std::pair<long, String>> m_pendingEvaluateTestCommands;
 };

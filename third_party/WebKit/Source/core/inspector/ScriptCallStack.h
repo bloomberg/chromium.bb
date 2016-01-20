@@ -34,7 +34,6 @@
 #include "core/CoreExport.h"
 #include "core/InspectorTypeBuilder.h"
 #include "core/inspector/ScriptCallFrame.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -44,30 +43,28 @@ namespace blink {
 class ScriptAsyncCallStack;
 class TracedValue;
 
-class CORE_EXPORT ScriptCallStack final : public RefCountedWillBeGarbageCollectedFinalized<ScriptCallStack> {
+class CORE_EXPORT ScriptCallStack final : public RefCounted<ScriptCallStack> {
 public:
     static const size_t maxCallStackSizeToCapture = 200;
 
-    static PassRefPtrWillBeRawPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
+    static PassRefPtr<ScriptCallStack> create(Vector<ScriptCallFrame>&);
 
     ~ScriptCallStack();
 
     const ScriptCallFrame &at(size_t) const;
     size_t size() const;
 
-    PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack() const;
-    void setAsyncCallStack(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack>);
+    PassRefPtr<ScriptAsyncCallStack> asyncCallStack() const;
+    void setAsyncCallStack(PassRefPtr<ScriptAsyncCallStack>);
 
     PassRefPtr<TypeBuilder::Array<TypeBuilder::Console::CallFrame> > buildInspectorArray() const;
     void toTracedValue(TracedValue*, const char* name) const;
-
-    DECLARE_TRACE();
 
 private:
     explicit ScriptCallStack(Vector<ScriptCallFrame>&);
 
     Vector<ScriptCallFrame> m_frames;
-    RefPtrWillBeMember<ScriptAsyncCallStack> m_asyncCallStack;
+    RefPtr<ScriptAsyncCallStack> m_asyncCallStack;
 };
 
 } // namespace blink

@@ -930,7 +930,7 @@ public:
     void cancelIdleCallback(int id);
 
     EventTarget* errorEventTarget() final;
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) final;
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final;
 
     void initDNSPrefetch();
 

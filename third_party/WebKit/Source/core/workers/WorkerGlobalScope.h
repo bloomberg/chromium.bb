@@ -156,7 +156,7 @@ protected:
     WorkerGlobalScope(const KURL&, const String& userAgent, WorkerThread*, double timeOrigin, PassOwnPtr<SecurityOrigin::PrivilegeData>, PassOwnPtrWillBeRawPtr<WorkerClients>);
     void applyContentSecurityPolicyFromVector(const Vector<CSPHeaderAndType>& headers);
 
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override;
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override;
     void addMessageToWorkerConsole(PassRefPtrWillBeRawPtr<ConsoleMessage>);
     void setV8CacheOptions(V8CacheOptions v8CacheOptions) { m_v8CacheOptions = v8CacheOptions; }
 

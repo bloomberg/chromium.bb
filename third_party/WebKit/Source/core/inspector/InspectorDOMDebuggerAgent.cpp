@@ -110,7 +110,6 @@ InspectorDOMDebuggerAgent::~InspectorDOMDebuggerAgent()
 
 DEFINE_TRACE(InspectorDOMDebuggerAgent)
 {
-    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_domAgent);
 #if ENABLE(OILPAN)
     visitor->trace(m_domBreakpoints);

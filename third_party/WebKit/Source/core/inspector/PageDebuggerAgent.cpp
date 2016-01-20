@@ -70,7 +70,6 @@ PageDebuggerAgent::~PageDebuggerAgent()
 DEFINE_TRACE(PageDebuggerAgent)
 {
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_injectedScriptManager);
     InspectorDebuggerAgent::trace(visitor);
 }
 

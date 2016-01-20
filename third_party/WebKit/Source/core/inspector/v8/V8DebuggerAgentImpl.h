@@ -130,7 +130,7 @@ public:
     void removeBreakpoint(const String& scriptId, int lineNumber, int columnNumber, BreakpointSource) override;
 
     // Async call stacks implementation
-    PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole() override;
+    PassRefPtr<ScriptAsyncCallStack> currentAsyncStackTraceForConsole() override;
     int traceAsyncOperationStarting(const String& description) override;
     void traceAsyncCallbackStarting(int operationId) override;
     void traceAsyncCallbackCompleted() override;
@@ -200,11 +200,11 @@ private:
         StepOut
     };
 
-    RawPtrWillBeWeakPersistent<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     V8DebuggerImpl* m_debugger;
     int m_contextGroupId;
     bool m_enabled;
-    RawPtrWillBeWeakPersistent<InspectorState> m_state;
+    InspectorState* m_state;
     InspectorFrontend::Debugger* m_frontend;
     v8::Isolate* m_isolate;
     RefPtr<ScriptState> m_pausedScriptState;

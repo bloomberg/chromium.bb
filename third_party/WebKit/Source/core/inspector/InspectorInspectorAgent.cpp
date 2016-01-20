@@ -59,12 +59,6 @@ InspectorInspectorAgent::~InspectorInspectorAgent()
 {
 }
 
-DEFINE_TRACE(InspectorInspectorAgent)
-{
-    visitor->trace(m_injectedScriptManager);
-    InspectorBaseAgent::trace(visitor);
-}
-
 void InspectorInspectorAgent::enable(ErrorString*)
 {
     m_state->setBoolean(InspectorAgentState::inspectorAgentEnabled, true);

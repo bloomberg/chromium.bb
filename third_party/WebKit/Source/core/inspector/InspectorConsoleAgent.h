@@ -45,7 +45,6 @@ class CORE_EXPORT InspectorConsoleAgent : public InspectorBaseAgent<InspectorCon
 public:
     explicit InspectorConsoleAgent(InjectedScriptManager*);
     ~InspectorConsoleAgent() override;
-    DECLARE_VIRTUAL_TRACE();
 
     void setDebuggerAgent(V8DebuggerAgent* debuggerAgent) { m_debuggerAgent = debuggerAgent; }
 
@@ -56,6 +55,7 @@ public:
     void restore() final;
 
     void addMessageToConsole(ConsoleMessage*);
+    void clearAllMessages();
     void consoleMessagesCleared();
 
 protected:
@@ -65,7 +65,7 @@ protected:
     virtual void enableStackCapturingIfNeeded() = 0;
     virtual void disableStackCapturingIfNeeded() = 0;
 
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     V8DebuggerAgent* m_debuggerAgent;
     bool m_enabled;
 };

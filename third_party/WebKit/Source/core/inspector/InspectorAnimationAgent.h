@@ -75,7 +75,7 @@ private:
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
     RawPtrWillBeMember<InspectorDOMAgent> m_domAgent;
     RawPtrWillBeMember<InspectorCSSAgent> m_cssAgent;
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimation;
     PersistentHeapHashMapWillBeHeapHashMap<String, Member<Animation>> m_idToAnimationClone;
     WillBeHeapHashMap<String, AnimationType> m_idToAnimationType;

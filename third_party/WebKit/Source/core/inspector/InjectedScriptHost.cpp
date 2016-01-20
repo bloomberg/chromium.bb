@@ -42,36 +42,29 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<InjectedScriptHost> InjectedScriptHost::create()
+PassRefPtr<InjectedScriptHost> InjectedScriptHost::create()
 {
-    return adoptRefWillBeNoop(new InjectedScriptHost());
+    return adoptRef(new InjectedScriptHost());
 }
 
 InjectedScriptHost::InjectedScriptHost()
-    : m_consoleAgent(nullptr)
-    , m_debuggerAgent(nullptr)
+    : m_debuggerAgent(nullptr)
     , m_inspectCallback(nullptr)
+    , m_clearConsoleCallback(nullptr)
     , m_debugger(nullptr)
 {
-    m_defaultInspectableObject = adoptPtrWillBeNoop(new InspectableObject());
+    m_defaultInspectableObject = adoptPtr(new InspectableObject());
 }
 
 InjectedScriptHost::~InjectedScriptHost()
 {
 }
 
-DEFINE_TRACE(InjectedScriptHost)
-{
-    visitor->trace(m_consoleAgent);
-    visitor->trace(m_inspectedObjects);
-    visitor->trace(m_defaultInspectableObject);
-}
-
 void InjectedScriptHost::disconnect()
 {
-    m_consoleAgent = nullptr;
     m_debuggerAgent = nullptr;
     m_inspectCallback = nullptr;
+    m_clearConsoleCallback = nullptr;
     m_debugger = nullptr;
 }
 
@@ -90,10 +83,8 @@ void InjectedScriptHost::getEventListenersImpl(EventTarget* target, WillBeHeapVe
 
 void InjectedScriptHost::clearConsoleMessages()
 {
-    if (m_consoleAgent) {
-        ErrorString error;
-        m_consoleAgent->clearMessages(&error);
-    }
+    if (m_clearConsoleCallback)
+        (*m_clearConsoleCallback)();
 }
 
 ScriptValue InjectedScriptHost::InspectableObject::get(ScriptState*)
@@ -101,7 +92,7 @@ ScriptValue InjectedScriptHost::InspectableObject::get(ScriptState*)
     return ScriptValue();
 };
 
-void InjectedScriptHost::addInspectedObject(PassOwnPtrWillBeRawPtr<InjectedScriptHost::InspectableObject> object)
+void InjectedScriptHost::addInspectedObject(PassOwnPtr<InjectedScriptHost::InspectableObject> object)
 {
     m_inspectedObjects.prepend(object);
     while (m_inspectedObjects.size() > 5)

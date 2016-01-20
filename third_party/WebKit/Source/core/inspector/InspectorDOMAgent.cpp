@@ -159,7 +159,7 @@ ScriptValue nodeAsScriptValue(ScriptState* scriptState, Node* node)
     ScriptState::Scope scope(scriptState);
     v8::Isolate* isolate = scriptState->isolate();
     ExceptionState exceptionState(ExceptionState::ExecutionContext, "nodeAsScriptValue", "InjectedScriptHost", scriptState->context()->Global(), isolate);
-    if (!BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), node, exceptionState))
+    if (!node || !BindingSecurity::shouldAllowAccessTo(isolate, callingDOMWindow(isolate), node, exceptionState))
         return ScriptValue(scriptState, v8::Null(isolate));
     return ScriptValue(scriptState, toV8(node, scriptState->context()->Global(), isolate));
 }
@@ -2066,18 +2066,14 @@ void InspectorDOMAgent::pushNodesByBackendIdsToFrontend(ErrorString* errorString
 
 class InspectableNode final : public InjectedScriptHost::InspectableObject {
 public:
-    explicit InspectableNode(Node* node) : m_node(node) { }
+    explicit InspectableNode(Node* node) : m_nodeId(DOMNodeIds::idForNode(node)) { }
+
     ScriptValue get(ScriptState* state) override
     {
-        return nodeAsScriptValue(state, m_node);
-    }
-    DEFINE_INLINE_VIRTUAL_TRACE()
-    {
-        visitor->trace(m_node);
-        InspectableObject::trace(visitor);
+        return nodeAsScriptValue(state, DOMNodeIds::nodeForId(m_nodeId));
     }
 private:
-    RawPtrWillBeMember<Node> m_node;
+    int m_nodeId;
 };
 
 void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
@@ -2085,7 +2081,7 @@ void InspectorDOMAgent::setInspectedNode(ErrorString* errorString, int nodeId)
     Node* node = assertNode(errorString, nodeId);
     if (!node)
         return;
-    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtrWillBeNoop(new InspectableNode(node)));
+    m_injectedScriptManager->injectedScriptHost()->addInspectedObject(adoptPtr(new InspectableNode(node)));
     if (m_client)
         m_client->setInspectedNode(node);
 }
@@ -2147,7 +2143,6 @@ DEFINE_TRACE(InspectorDOMAgent)
 {
     visitor->trace(m_domListener);
     visitor->trace(m_inspectedFrames);
-    visitor->trace(m_injectedScriptManager);
 #if ENABLE(OILPAN)
     visitor->trace(m_documentNodeToIdMap);
     visitor->trace(m_danglingNodeToIdMaps);

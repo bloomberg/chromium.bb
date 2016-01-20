@@ -582,7 +582,7 @@ v8::Local<v8::FunctionTemplate> V8InjectedScriptHost::createWrapperTemplate(v8::
     return InjectedScriptHostWrapper::createWrapperTemplate(isolate, methods, attributes);
 }
 
-v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtrWillBeRawPtr<InjectedScriptHost> host)
+v8::Local<v8::Object> V8InjectedScriptHost::wrap(v8::Local<v8::FunctionTemplate> constructorTemplate, v8::Local<v8::Context> context, PassRefPtr<InjectedScriptHost> host)
 {
     return InjectedScriptHostWrapper::wrap(constructorTemplate, context, host);
 }

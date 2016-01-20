@@ -101,7 +101,7 @@ void FrameConsole::addMessage(PassRefPtrWillBeRawPtr<ConsoleMessage> prpConsoleM
     if (consoleMessage->source() == NetworkMessageSource)
         return;
 
-    RefPtrWillBeRawPtr<ScriptCallStack> reportedCallStack = nullptr;
+    RefPtr<ScriptCallStack> reportedCallStack;
     if (consoleMessage->source() != ConsoleAPIMessageSource) {
         if (consoleMessage->callStack() && frame().chromeClient().shouldReportDetailedMessageForSource(frame(), messageURL))
             reportedCallStack = consoleMessage->callStack();
@@ -136,7 +136,7 @@ void FrameConsole::reportResourceResponseReceived(DocumentLoader* loader, unsign
     addMessage(consoleMessage.release());
 }
 
-String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+String FrameConsole::formatStackTraceString(const String& originalMessage, PassRefPtr<ScriptCallStack> callStack)
 {
     StringBuilder stackTrace;
     for (size_t i = 0; i < callStack->size(); ++i) {

@@ -48,7 +48,7 @@ private:
     bool isRecording() const;
 
     v8::Isolate* m_isolate;
-    RawPtrWillBeWeakPersistent<InspectorState> m_state;
+    InspectorState* m_state;
     InspectorFrontend::Profiler* m_frontend;
     bool m_enabled;
     bool m_recordingCPUProfile;

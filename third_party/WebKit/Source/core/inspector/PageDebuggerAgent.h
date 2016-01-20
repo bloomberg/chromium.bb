@@ -71,7 +71,7 @@ private:
     bool canExecuteScripts() const;
 
     RawPtrWillBeMember<InspectedFrames> m_inspectedFrames;
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     HashMap<String, String> m_compiledScriptURLs;
 };
 

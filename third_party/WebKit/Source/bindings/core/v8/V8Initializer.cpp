@@ -96,10 +96,10 @@ static void reportFatalErrorInMainThread(const char* location, const char* messa
     CRASH();
 }
 
-static PassRefPtrWillBeRawPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Local<v8::Message> message, int* const scriptId)
+static PassRefPtr<ScriptCallStack> extractCallStack(v8::Isolate* isolate, v8::Local<v8::Message> message, int* const scriptId)
 {
     v8::Local<v8::StackTrace> stackTrace = message->GetStackTrace();
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
+    RefPtr<ScriptCallStack> callStack = nullptr;
     *scriptId = message->GetScriptOrigin().ScriptID()->Value();
     // Currently stack trace is only collected when inspector is open.
     if (!stackTrace.IsEmpty() && stackTrace->GetFrameCount() > 0) {
@@ -143,7 +143,7 @@ static void messageHandlerInMainThread(v8::Local<v8::Message> message, v8::Local
         return;
 
     int scriptId = 0;
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
+    RefPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
     String resourceName = extractResourceName(message, enteredWindow->document());
     AccessControlStatus accessControlStatus = NotSharableCrossOrigin;
     if (message->IsOpaque())
@@ -191,7 +191,7 @@ namespace {
 static RejectedPromises& rejectedPromisesOnMainThread()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(RefPtrWillBePersistent<RejectedPromises>, rejectedPromises, (RejectedPromises::create()));
+    DEFINE_STATIC_LOCAL(RefPtr<RejectedPromises>, rejectedPromises, (RejectedPromises::create()));
     return *rejectedPromises;
 }
 
@@ -231,7 +231,7 @@ static void promiseRejectHandler(v8::PromiseRejectMessage data, RejectedPromises
     String resourceName = fallbackResourceName;
     String errorMessage;
     AccessControlStatus corsStatus = NotSharableCrossOrigin;
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = nullptr;
+    RefPtr<ScriptCallStack> callStack;
 
     v8::Local<v8::Message> message = v8::Exception::CreateMessage(isolate, exception);
     if (!message.IsEmpty()) {
@@ -408,7 +408,7 @@ static void messageHandlerInWorker(v8::Local<v8::Message> message, v8::Local<v8:
         String errorMessage = toCoreStringWithNullCheck(message->Get());
         TOSTRING_VOID(V8StringResource<>, sourceURL, message->GetScriptOrigin().ResourceName());
         int scriptId = 0;
-        RefPtrWillBeRawPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
+        RefPtr<ScriptCallStack> callStack = extractCallStack(isolate, message, &scriptId);
 
         int lineNumber = 0;
         int columnNumber = 0;

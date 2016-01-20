@@ -42,10 +42,10 @@
 
 namespace blink {
 
-class ExecutionContext::PendingException : public NoBaseWillBeGarbageCollectedFinalized<ExecutionContext::PendingException> {
+class ExecutionContext::PendingException {
     WTF_MAKE_NONCOPYABLE(PendingException);
 public:
-    PendingException(const String& errorMessage, int lineNumber, int columnNumber, int scriptId, const String& sourceURL, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+    PendingException(const String& errorMessage, int lineNumber, int columnNumber, int scriptId, const String& sourceURL, PassRefPtr<ScriptCallStack> callStack)
         : m_errorMessage(errorMessage)
         , m_lineNumber(lineNumber)
         , m_columnNumber(columnNumber)
@@ -54,16 +54,13 @@ public:
         , m_callStack(callStack)
     {
     }
-    DEFINE_INLINE_TRACE()
-    {
-        visitor->trace(m_callStack);
-    }
+
     String m_errorMessage;
     int m_lineNumber;
     int m_columnNumber;
     int m_scriptId;
     String m_sourceURL;
-    RefPtrWillBeMember<ScriptCallStack> m_callStack;
+    RefPtr<ScriptCallStack> m_callStack;
 };
 
 ExecutionContext::ExecutionContext()
@@ -149,13 +146,13 @@ bool ExecutionContext::shouldSanitizeScriptError(const String& sourceURL, Access
     return !(securityOrigin()->canRequestNoSuborigin(completeURL(sourceURL)) || corsStatus == SharableCrossOrigin);
 }
 
-void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
+void ExecutionContext::reportException(PassRefPtrWillBeRawPtr<ErrorEvent> event, int scriptId, PassRefPtr<ScriptCallStack> callStack, AccessControlStatus corsStatus)
 {
     RefPtrWillBeRawPtr<ErrorEvent> errorEvent = event;
     if (m_inDispatchErrorEvent) {
         if (!m_pendingExceptions)
-            m_pendingExceptions = adoptPtrWillBeNoop(new WillBeHeapVector<OwnPtrWillBeMember<PendingException>>());
-        m_pendingExceptions->append(adoptPtrWillBeNoop(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), scriptId, errorEvent->filename(), callStack)));
+            m_pendingExceptions = adoptPtr(new Vector<OwnPtr<PendingException>>());
+        m_pendingExceptions->append(adoptPtr(new PendingException(errorEvent->messageForConsole(), errorEvent->lineno(), errorEvent->colno(), scriptId, errorEvent->filename(), callStack)));
         return;
     }
 
@@ -300,7 +297,6 @@ void ExecutionContext::enforceSuborigin(const String& name)
 DEFINE_TRACE(ExecutionContext)
 {
 #if ENABLE(OILPAN)
-    visitor->trace(m_pendingExceptions);
     visitor->trace(m_publicURLManager);
     HeapSupplementable<ExecutionContext>::trace(visitor);
 #endif

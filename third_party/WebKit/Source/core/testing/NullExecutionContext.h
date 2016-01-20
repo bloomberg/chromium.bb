@@ -38,7 +38,7 @@ public:
     DOMTimerCoordinator* timers() override { return nullptr; }
 
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) override { }
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) override { }
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) override { }
 
     bool isSecureContext(String& errorMessage, const SecureContextCheck = StandardSecureContextCheck) const override;
 

@@ -104,10 +104,10 @@ public:
     KURL contextCompleteURL(const String& url) const { return virtualCompleteURL(url); }
 
     bool shouldSanitizeScriptError(const String& sourceURL, AccessControlStatus);
-    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, int scriptId, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
+    void reportException(PassRefPtrWillBeRawPtr<ErrorEvent>, int scriptId, PassRefPtr<ScriptCallStack>, AccessControlStatus);
 
     virtual void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) = 0;
-    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) = 0;
+    virtual void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
 
     PublicURLManager& publicURLManager();
 
@@ -180,7 +180,7 @@ private:
 
     bool m_inDispatchErrorEvent;
     class PendingException;
-    OwnPtrWillBeMember<WillBeHeapVector<OwnPtrWillBeMember<PendingException>>> m_pendingExceptions;
+    OwnPtr<Vector<OwnPtr<PendingException>>> m_pendingExceptions;
 
     bool m_activeDOMObjectsAreSuspended;
     bool m_activeDOMObjectsAreStopped;

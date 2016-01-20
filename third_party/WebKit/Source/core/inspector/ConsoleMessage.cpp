@@ -90,12 +90,12 @@ void ConsoleMessage::setLineNumber(unsigned lineNumber)
     m_lineNumber = lineNumber;
 }
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> ConsoleMessage::callStack() const
+PassRefPtr<ScriptCallStack> ConsoleMessage::callStack() const
 {
     return m_callStack;
 }
 
-void ConsoleMessage::setCallStack(PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void ConsoleMessage::setCallStack(PassRefPtr<ScriptCallStack> callStack)
 {
     m_callStack = callStack;
     if (m_callStack && m_callStack->size() && !m_scriptId) {
@@ -213,7 +213,6 @@ void ConsoleMessage::collectCallStack()
 
 DEFINE_TRACE(ConsoleMessage)
 {
-    visitor->trace(m_callStack);
     visitor->trace(m_scriptArguments);
 }
 

@@ -144,9 +144,9 @@ private:
 #endif
 
     RefPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    OwnPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    OwnPtr<InjectedScriptManager> m_injectedScriptManager;
     OwnPtrWillBeMember<InspectorResourceContentLoader> m_resourceContentLoader;
-    OwnPtrWillBeMember<InspectorCompositeState> m_state;
+    OwnPtr<InspectorCompositeState> m_state;
     OwnPtrWillBeMember<InspectorOverlay> m_overlay;
     OwnPtrWillBeMember<InspectedFrames> m_inspectedFrames;
 

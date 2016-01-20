@@ -265,7 +265,7 @@ bool InspectorDebuggerAgent::isPaused()
     return m_v8DebuggerAgent->isPaused();
 }
 
-PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
+PassRefPtr<ScriptAsyncCallStack> InspectorDebuggerAgent::currentAsyncStackTraceForConsole()
 {
     ScriptForbiddenScope::AllowUserAgentScript allowScripting;
     return m_v8DebuggerAgent->currentAsyncStackTraceForConsole();

@@ -5,7 +5,7 @@
 #include "core/inspector/v8/V8AsyncCallTracker.h"
 
 #include "bindings/core/v8/V8PerContextData.h"
-#include "core/inspector/AsyncOperationMap.h"
+#include "core/inspector/v8/AsyncOperationMap.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"

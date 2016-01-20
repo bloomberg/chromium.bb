@@ -319,7 +319,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_instrumentingAgents(m_webLocalFrameImpl->frame()->instrumentingAgents())
     , m_injectedScriptManager(InjectedScriptManager::createForPage())
     , m_resourceContentLoader(InspectorResourceContentLoader::create(m_webLocalFrameImpl->frame()))
-    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(this)))
+    , m_state(adoptPtr(new InspectorCompositeState(this)))
     , m_overlay(overlay)
     , m_inspectedFrames(InspectedFrames::create(m_webLocalFrameImpl->frame()))
     , m_inspectorAgent(nullptr)
@@ -411,9 +411,7 @@ DEFINE_TRACE(WebDevToolsAgentImpl)
 {
     visitor->trace(m_webLocalFrameImpl);
     visitor->trace(m_instrumentingAgents);
-    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_resourceContentLoader);
-    visitor->trace(m_state);
     visitor->trace(m_overlay);
     visitor->trace(m_inspectedFrames);
     visitor->trace(m_inspectorAgent);
@@ -485,9 +483,9 @@ void WebDevToolsAgentImpl::initializeDeferredAgents()
 
     MainThreadDebugger* mainThreadDebugger = MainThreadDebugger::instance();
     m_injectedScriptManager->injectedScriptHost()->init(
-        m_pageConsoleAgent.get(),
         debuggerAgent->v8DebuggerAgent(),
         bind<PassRefPtr<TypeBuilder::Runtime::RemoteObject>, PassRefPtr<JSONObject>>(&InspectorInspectorAgent::inspect, m_inspectorAgent.get()),
+        bind<>(&InspectorConsoleAgent::clearAllMessages, m_pageConsoleAgent.get()),
         mainThreadDebugger->debugger(),
         adoptPtr(new PageInjectedScriptHostClient()));
 

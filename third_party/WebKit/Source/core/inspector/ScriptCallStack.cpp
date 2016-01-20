@@ -35,9 +35,9 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
+PassRefPtr<ScriptCallStack> ScriptCallStack::create(Vector<ScriptCallFrame>& frames)
 {
-    return adoptRefWillBeNoop(new ScriptCallStack(frames));
+    return adoptRef(new ScriptCallStack(frames));
 }
 
 ScriptCallStack::ScriptCallStack(Vector<ScriptCallFrame>& frames)
@@ -60,12 +60,12 @@ size_t ScriptCallStack::size() const
     return m_frames.size();
 }
 
-PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> ScriptCallStack::asyncCallStack() const
+PassRefPtr<ScriptAsyncCallStack> ScriptCallStack::asyncCallStack() const
 {
     return m_asyncCallStack;
 }
 
-void ScriptCallStack::setAsyncCallStack(PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncCallStack)
+void ScriptCallStack::setAsyncCallStack(PassRefPtr<ScriptAsyncCallStack> asyncCallStack)
 {
     m_asyncCallStack = asyncCallStack;
 }
@@ -84,11 +84,6 @@ void ScriptCallStack::toTracedValue(TracedValue* value, const char* name) const
     for (size_t i = 0; i < m_frames.size(); i++)
         m_frames.at(i).toTracedValue(value);
     value->endArray();
-}
-
-DEFINE_TRACE(ScriptCallStack)
-{
-    visitor->trace(m_asyncCallStack);
 }
 
 } // namespace blink

@@ -84,7 +84,7 @@ public:
         return EventTargetNames::DedicatedWorkerGlobalScope;
     }
 
-    void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtrWillBeRawPtr<ScriptCallStack>) override
+    void logExceptionToConsole(const String&, int, const String&, int, int, PassRefPtr<ScriptCallStack>) override
     {
     }
 

@@ -6,12 +6,12 @@
 
 namespace blink {
 
-PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> ScriptAsyncCallStack::create(const String& description, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncStackTrace)
+PassRefPtr<ScriptAsyncCallStack> ScriptAsyncCallStack::create(const String& description, PassRefPtr<ScriptCallStack> callStack, PassRefPtr<ScriptAsyncCallStack> asyncStackTrace)
 {
-    return adoptRefWillBeNoop(new ScriptAsyncCallStack(description, callStack, asyncStackTrace));
+    return adoptRef(new ScriptAsyncCallStack(description, callStack, asyncStackTrace));
 }
 
-ScriptAsyncCallStack::ScriptAsyncCallStack(const String& description, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack, PassRefPtrWillBeRawPtr<ScriptAsyncCallStack> asyncStackTrace)
+ScriptAsyncCallStack::ScriptAsyncCallStack(const String& description, PassRefPtr<ScriptCallStack> callStack, PassRefPtr<ScriptAsyncCallStack> asyncStackTrace)
     : m_description(description)
     , m_callStack(callStack)
     , m_asyncStackTrace(asyncStackTrace)
@@ -32,12 +32,6 @@ PassRefPtr<TypeBuilder::Console::AsyncStackTrace> ScriptAsyncCallStack::buildIns
     if (m_asyncStackTrace)
         result->setAsyncStackTrace(m_asyncStackTrace->buildInspectorObject());
     return result.release();
-}
-
-DEFINE_TRACE(ScriptAsyncCallStack)
-{
-    visitor->trace(m_callStack);
-    visitor->trace(m_asyncStackTrace);
 }
 
 } // namespace blink

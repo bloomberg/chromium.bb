@@ -86,7 +86,7 @@ private:
     void stopTrackingHeapObjectsInternal();
 
     v8::Isolate* m_isolate;
-    RawPtrWillBeMember<InjectedScriptManager> m_injectedScriptManager;
+    InjectedScriptManager* m_injectedScriptManager;
     OwnPtrWillBeMember<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 

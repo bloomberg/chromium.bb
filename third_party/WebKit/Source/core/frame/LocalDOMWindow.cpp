@@ -111,7 +111,7 @@ void LocalDOMWindow::WindowFrameObserver::contextDestroyed()
 class PostMessageTimer final : public NoBaseWillBeGarbageCollectedFinalized<PostMessageTimer>, public SuspendableTimer {
     WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(PostMessageTimer);
 public:
-    PostMessageTimer(LocalDOMWindow& window, PassRefPtrWillBeRawPtr<MessageEvent> event, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, SecurityOrigin* targetOrigin, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
+    PostMessageTimer(LocalDOMWindow& window, PassRefPtrWillBeRawPtr<MessageEvent> event, PassRefPtrWillBeRawPtr<LocalDOMWindow> source, SecurityOrigin* targetOrigin, PassRefPtr<ScriptCallStack> stackTrace, UserGestureToken* userGestureToken)
         : SuspendableTimer(window.document())
         , m_event(event)
         , m_window(&window)
@@ -144,7 +144,6 @@ public:
     {
         visitor->trace(m_event);
         visitor->trace(m_window);
-        visitor->trace(m_stackTrace);
         SuspendableTimer::trace(visitor);
     }
 
@@ -166,7 +165,7 @@ private:
     RefPtrWillBeMember<MessageEvent> m_event;
     RawPtrWillBeMember<LocalDOMWindow> m_window;
     RefPtr<SecurityOrigin> m_targetOrigin;
-    RefPtrWillBeMember<ScriptCallStack> m_stackTrace;
+    RefPtr<ScriptCallStack> m_stackTrace;
     RefPtr<UserGestureToken> m_userGestureToken;
     int m_asyncOperationId;
     bool m_preventDestruction;
@@ -666,7 +665,7 @@ Navigator* LocalDOMWindow::navigator() const
     return m_navigator.get();
 }
 
-void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> event, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::schedulePostMessage(PassRefPtrWillBeRawPtr<MessageEvent> event, LocalDOMWindow* source, SecurityOrigin* target, PassRefPtr<ScriptCallStack> stackTrace)
 {
     // Schedule the message.
     OwnPtrWillBeRawPtr<PostMessageTimer> timer = adoptPtrWillBeNoop(new PostMessageTimer(*this, event, source, target, stackTrace, UserGestureIndicator::currentToken()));
@@ -694,7 +693,7 @@ void LocalDOMWindow::removePostMessageTimer(PostMessageTimer* timer)
     m_postMessageTimers.remove(timer);
 }
 
-void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event> event, PassRefPtrWillBeRawPtr<ScriptCallStack> stackTrace)
+void LocalDOMWindow::dispatchMessageEventWithOriginCheck(SecurityOrigin* intendedTargetOrigin, PassRefPtrWillBeRawPtr<Event> event, PassRefPtr<ScriptCallStack> stackTrace)
 {
     if (intendedTargetOrigin) {
         // Check target origin now since the target document may have changed since the timer was scheduled.

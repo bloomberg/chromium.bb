@@ -42,14 +42,14 @@ namespace blink {
 
 class InspectorStateClient;
 
-class CORE_EXPORT InspectorStateUpdateListener : public WillBeGarbageCollectedMixin {
+class CORE_EXPORT InspectorStateUpdateListener {
 public:
     virtual ~InspectorStateUpdateListener() { }
     virtual void inspectorStateUpdated() = 0;
 };
 
-class CORE_EXPORT InspectorState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorState> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorState);
+class CORE_EXPORT InspectorState final {
+    USING_FAST_MALLOC(InspectorState);
 public:
     InspectorState(InspectorStateUpdateListener*, PassRefPtr<JSONObject>);
 
@@ -74,8 +74,6 @@ public:
 
     void remove(const String&);
 
-    DECLARE_TRACE();
-
 private:
     void updateCookie();
     void setValue(const String& propertyName, PassRefPtr<JSONValue>);
@@ -85,14 +83,13 @@ private:
 
     friend class InspectorCompositeState;
 
-    RawPtrWillBeMember<InspectorStateUpdateListener> m_listener;
+    InspectorStateUpdateListener* m_listener;
     RefPtr<JSONObject> m_properties;
 };
 
-class CORE_EXPORT InspectorCompositeState final : public NoBaseWillBeGarbageCollectedFinalized<InspectorCompositeState>, public InspectorStateUpdateListener {
-    WILL_BE_USING_GARBAGE_COLLECTED_MIXIN(InspectorCompositeState);
+class CORE_EXPORT InspectorCompositeState final : public InspectorStateUpdateListener {
     WTF_MAKE_NONCOPYABLE(InspectorCompositeState);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InspectorCompositeState);
+    USING_FAST_MALLOC(InspectorCompositeState);
 public:
     InspectorCompositeState(InspectorStateClient* inspectorStateClient)
         : m_client(inspectorStateClient)
@@ -101,7 +98,6 @@ public:
     {
     }
     virtual ~InspectorCompositeState() { }
-    DECLARE_TRACE();
 
     void mute();
     void unmute();
@@ -110,7 +106,7 @@ public:
     void loadFromCookie(const String&);
 
 private:
-    typedef WillBeHeapHashMap<String, OwnPtrWillBeMember<InspectorState> > InspectorStateMap;
+    typedef HashMap<String, OwnPtr<InspectorState>> InspectorStateMap;
 
     // From InspectorStateUpdateListener.
     void inspectorStateUpdated() override;

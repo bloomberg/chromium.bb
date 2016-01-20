@@ -511,7 +511,6 @@ DEFINE_TRACE(InspectorAnimationAgent)
     visitor->trace(m_inspectedFrames);
     visitor->trace(m_domAgent);
     visitor->trace(m_cssAgent);
-    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_idToAnimation);
     visitor->trace(m_idToAnimationType);
     visitor->trace(m_idToAnimationClone);

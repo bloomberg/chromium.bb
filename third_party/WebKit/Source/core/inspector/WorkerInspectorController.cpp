@@ -131,7 +131,7 @@ public:
 WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGlobalScope)
     : m_workerGlobalScope(workerGlobalScope)
     , m_stateClient(adoptPtr(new WorkerStateClient(workerGlobalScope)))
-    , m_state(adoptPtrWillBeNoop(new InspectorCompositeState(m_stateClient.get())))
+    , m_state(adoptPtr(new InspectorCompositeState(m_stateClient.get())))
     , m_instrumentingAgents(InstrumentingAgents::create())
     , m_injectedScriptManager(InjectedScriptManager::createForWorker())
     , m_workerThreadDebugger(adoptPtr(new WorkerThreadDebugger(workerGlobalScope->thread())))
@@ -159,7 +159,12 @@ WorkerInspectorController::WorkerInspectorController(WorkerGlobalScope* workerGl
 
     m_agents.append(InspectorTimelineAgent::create());
 
-    m_injectedScriptManager->injectedScriptHost()->init(workerConsoleAgentPtr, m_workerDebuggerAgent->v8DebuggerAgent(), nullptr, m_workerThreadDebugger->debugger(), adoptPtr(new WorkerInjectedScriptHostClient()));
+    m_injectedScriptManager->injectedScriptHost()->init(
+        m_workerDebuggerAgent->v8DebuggerAgent(),
+        nullptr,
+        bind<>(&InspectorConsoleAgent::clearAllMessages, workerConsoleAgentPtr),
+        m_workerThreadDebugger->debugger(),
+        adoptPtr(new WorkerInjectedScriptHostClient()));
 }
 
 WorkerInspectorController::~WorkerInspectorController()
@@ -260,9 +265,7 @@ void WorkerInspectorController::pauseOnStart()
 DEFINE_TRACE(WorkerInspectorController)
 {
     visitor->trace(m_workerGlobalScope);
-    visitor->trace(m_state);
     visitor->trace(m_instrumentingAgents);
-    visitor->trace(m_injectedScriptManager);
     visitor->trace(m_backendDispatcher);
     visitor->trace(m_agents);
     visitor->trace(m_pageInspectorProxy);

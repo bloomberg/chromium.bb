@@ -69,7 +69,7 @@ public:
 
 protected:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RawPtrWillBeMember<InspectorState> m_state;
+    InspectorState* m_state;
 
 private:
     String m_name;
@@ -94,7 +94,7 @@ public:
 
 private:
     RawPtrWillBeMember<InstrumentingAgents> m_instrumentingAgents;
-    RawPtrWillBeMember<InspectorCompositeState> m_inspectorState;
+    InspectorCompositeState* m_inspectorState;
     WillBeHeapVector<OwnPtrWillBeMember<InspectorAgent> > m_agents;
 };
 

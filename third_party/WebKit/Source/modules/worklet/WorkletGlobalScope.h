@@ -64,7 +64,7 @@ public:
     // TODO(ikilpatrick): implement when we implement devtools support.
     void reportBlockedScriptExecutionToInspector(const String& directiveText) final { }
     void addConsoleMessage(PassRefPtrWillBeRawPtr<ConsoleMessage>) final { }
-    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>) final { }
+    void logExceptionToConsole(const String& errorMessage, int scriptId, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) final { }
 
     DECLARE_VIRTUAL_TRACE();
 

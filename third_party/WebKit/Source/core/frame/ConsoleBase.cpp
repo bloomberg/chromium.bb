@@ -103,7 +103,7 @@ void ConsoleBase::assertCondition(ScriptState* scriptState, PassRefPtrWillBeRawP
 
 void ConsoleBase::count(ScriptState* scriptState, PassRefPtrWillBeRawPtr<ScriptArguments> arguments)
 {
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack(currentScriptCallStackForConsole(1));
+    RefPtr<ScriptCallStack> callStack(currentScriptCallStackForConsole(1));
     const ScriptCallFrame& lastCaller = callStack->at(0);
     // Follow Firebug's behavior of counting with null and undefined title in
     // the same bucket as no argument

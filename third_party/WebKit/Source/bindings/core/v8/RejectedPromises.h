@@ -17,19 +17,18 @@ namespace blink {
 class ScriptCallStack;
 class ScriptState;
 
-class RejectedPromises final : public RefCountedWillBeGarbageCollected<RejectedPromises> {
-    USING_FAST_MALLOC_WILL_BE_REMOVED(RejectedPromises);
-    DECLARE_EMPTY_DESTRUCTOR_WILL_BE_REMOVED(RejectedPromises);
+class RejectedPromises final : public RefCounted<RejectedPromises> {
+    USING_FAST_MALLOC(RejectedPromises);
 public:
-    static PassRefPtrWillBeRawPtr<RejectedPromises> create()
+    static PassRefPtr<RejectedPromises> create()
     {
-        return adoptRefWillBeNoop(new RejectedPromises);
+        return adoptRef(new RejectedPromises());
     }
 
+    ~RejectedPromises();
     void dispose();
-    DECLARE_TRACE();
 
-    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack>, AccessControlStatus);
+    void rejectedWithNoHandler(ScriptState*, v8::PromiseRejectMessage, const String& errorMessage, const String& resourceName, int scriptId, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>, AccessControlStatus);
     void handlerAdded(v8::PromiseRejectMessage);
 
     void processQueue();
@@ -39,14 +38,14 @@ private:
 
     RejectedPromises();
 
-    using MessageQueue = WillBeHeapDeque<OwnPtrWillBeMember<Message>>;
-    PassOwnPtrWillBeRawPtr<MessageQueue> createMessageQueue();
+    using MessageQueue = Deque<OwnPtr<Message>>;
+    PassOwnPtr<MessageQueue> createMessageQueue();
 
-    void processQueueNow(PassOwnPtrWillBeRawPtr<MessageQueue>);
-    void revokeNow(PassOwnPtrWillBeRawPtr<Message>);
+    void processQueueNow(PassOwnPtr<MessageQueue>);
+    void revokeNow(PassOwnPtr<Message>);
 
     MessageQueue m_queue;
-    WillBeHeapVector<OwnPtrWillBeMember<Message>> m_reportedAsErrors;
+    Vector<OwnPtr<Message>> m_reportedAsErrors;
 };
 
 } // namespace blink

@@ -45,14 +45,13 @@ class InjectedScriptNative;
 class RemoteObjectIdBase;
 class ScriptValue;
 
-class CORE_EXPORT InjectedScriptManager : public NoBaseWillBeGarbageCollectedFinalized<InjectedScriptManager> {
+class CORE_EXPORT InjectedScriptManager {
     WTF_MAKE_NONCOPYABLE(InjectedScriptManager);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(InjectedScriptManager);
+    USING_FAST_MALLOC(InjectedScriptManager);
 public:
-    static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForPage();
-    static PassOwnPtrWillBeRawPtr<InjectedScriptManager> createForWorker();
+    static PassOwnPtr<InjectedScriptManager> createForPage();
+    static PassOwnPtr<InjectedScriptManager> createForWorker();
     ~InjectedScriptManager();
-    DECLARE_TRACE();
 
     void disconnect();
 
@@ -81,7 +80,7 @@ private:
 
     typedef HashMap<int, InjectedScript> IdToInjectedScriptMap;
     IdToInjectedScriptMap m_idToInjectedScript;
-    RefPtrWillBeMember<InjectedScriptHost> m_injectedScriptHost;
+    RefPtr<InjectedScriptHost> m_injectedScriptHost;
     InspectedStateAccessCheck m_inspectedStateAccessCheck;
     bool m_customObjectFormatterEnabled;
 };

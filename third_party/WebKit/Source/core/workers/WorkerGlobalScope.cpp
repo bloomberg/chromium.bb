@@ -283,7 +283,7 @@ EventTarget* WorkerGlobalScope::errorEventTarget()
     return this;
 }
 
-void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtrWillBeRawPtr<ScriptCallStack> callStack)
+void WorkerGlobalScope::logExceptionToConsole(const String& errorMessage, int, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack> callStack)
 {
     unsigned long exceptionId = ++m_workerExceptionUniqueIdentifier;
     RefPtrWillBeRawPtr<ConsoleMessage> consoleMessage = ConsoleMessage::create(JSMessageSource, ErrorMessageLevel, errorMessage, sourceURL, lineNumber, columnNumber);

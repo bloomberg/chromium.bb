@@ -155,7 +155,7 @@ void WorkerWebSocketChannel::fail(const String& reason, MessageLevel level, cons
     if (!m_bridge)
         return;
 
-    RefPtrWillBeRawPtr<ScriptCallStack> callStack = currentScriptCallStack(1);
+    RefPtr<ScriptCallStack> callStack = currentScriptCallStack(1);
     if (callStack && callStack->size())  {
         // In order to emulate the ConsoleMessage behavior,
         // we should ignore the specified url and line number if
