@@ -120,9 +120,8 @@
 #include "gpu/config/gpu_info.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
-#include "net/cookies/canonical_cookie.h"
-#include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_options.h"
+#include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/database/database_tracker.h"
@@ -4205,21 +4204,19 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   std::string origin_id = storage::GetIdentifierFromOrigin(ext_url);
 
   // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster = profile()
-                                           ->GetRequestContextForExtensions()
-                                           ->GetURLRequestContext()
-                                           ->cookie_store()
-                                           ->GetCookieMonster();
-  ASSERT_TRUE(cookie_monster);
+  net::CookieStore* cookie_store = profile()->GetRequestContextForExtensions()
+                                            ->GetURLRequestContext()
+                                            ->cookie_store();
+  ASSERT_TRUE(cookie_store);
   net::CookieOptions options;
-  cookie_monster->SetCookieWithOptionsAsync(
+  cookie_store->SetCookieWithOptionsAsync(
        ext_url, "dummy=value", options,
        base::Bind(&ExtensionCookieCallback::SetCookieCallback,
                   base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback.result_);
 
-  cookie_monster->GetAllCookiesForURLAsync(
+  cookie_store->GetAllCookiesForURLAsync(
       ext_url,
       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                  base::Unretained(&callback)));
@@ -4272,7 +4269,7 @@ TEST_F(ExtensionServiceTest, ClearExtensionData) {
   run_loop.Run();
 
   // Check that the cookie is gone.
-  cookie_monster->GetAllCookiesForURLAsync(
+  cookie_store->GetAllCookiesForURLAsync(
        ext_url,
        base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                   base::Unretained(&callback)));
@@ -4328,21 +4325,19 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       origin2));
 
   // Set a cookie for the extension.
-  net::CookieMonster* cookie_monster = profile()
-                                           ->GetRequestContext()
-                                           ->GetURLRequestContext()
-                                           ->cookie_store()
-                                           ->GetCookieMonster();
-  ASSERT_TRUE(cookie_monster);
+  net::CookieStore* cookie_store = profile()->GetRequestContext()
+                                            ->GetURLRequestContext()
+                                            ->cookie_store();
+  ASSERT_TRUE(cookie_store);
   net::CookieOptions options;
-  cookie_monster->SetCookieWithOptionsAsync(
+  cookie_store->SetCookieWithOptionsAsync(
        origin1, "dummy=value", options,
        base::Bind(&ExtensionCookieCallback::SetCookieCallback,
                   base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(callback.result_);
 
-  cookie_monster->GetAllCookiesForURLAsync(
+  cookie_store->GetAllCookiesForURLAsync(
       origin1,
       base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                  base::Unretained(&callback)));
@@ -4392,7 +4387,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
       origin1));
 
   // Check that the cookie is still there.
-  cookie_monster->GetAllCookiesForURLAsync(
+  cookie_store->GetAllCookiesForURLAsync(
        origin1,
        base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                   base::Unretained(&callback)));
@@ -4407,7 +4402,7 @@ TEST_F(ExtensionServiceTest, ClearAppData) {
           origin1));
 
   // Check that the cookie is gone.
-  cookie_monster->GetAllCookiesForURLAsync(
+  cookie_store->GetAllCookiesForURLAsync(
        origin1,
        base::Bind(&ExtensionCookieCallback::GetAllCookiesCallback,
                   base::Unretained(&callback)));
