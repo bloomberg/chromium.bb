@@ -21,7 +21,6 @@
         'optimize': 'max',
       },
       'dependencies': [
-        'allocator/allocator.gyp:allocator',
         'base_debugging_flags#target',
         'base_static',
         '../testing/gtest.gyp:gtest_prod',
@@ -763,7 +762,14 @@
           'dependencies': [
             'malloc_wrapper',
           ],
-        }],
+          'conditions': [
+            ['use_allocator!="none"', {
+              'dependencies': [
+                'allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ]},
+        ],
         [ 'OS == "win" and target_arch == "x64"', {
           'sources': [
             'profiler/win32_stack_frame_unwinder_unittest.cc',
@@ -784,6 +790,16 @@
             4267,
           ],
           'conditions': [
+            # This is needed so base_unittests uses the allocator shim, as
+            # SecurityTest.MemoryAllocationRestriction* tests are dependent
+            # on tcmalloc.
+            # TODO(wfh): crbug.com/246278 Move tcmalloc specific tests into
+            # their own test suite.
+            ['win_use_allocator_shim==1', {
+              'dependencies': [
+                'allocator/allocator.gyp:allocator',
+              ],
+            }],
             ['icu_use_data_file_flag==0', {
               # This is needed to trigger the dll copy step on windows.
               # TODO(mark): This should not be necessary.
