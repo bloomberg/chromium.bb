@@ -6,6 +6,7 @@ package org.chromium.chrome.browser;
 
 import android.content.Context;
 import android.content.Intent;
+import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 
 import org.chromium.base.test.util.Feature;
@@ -114,6 +115,7 @@ public class PowerBroadcastReceiverTest extends ChromeTabbedActivityTestBase {
     /**
      * Check that the runnable gets posted and canceled when Main is sent to the background.
      */
+    @FlakyTest // https://crbug.com/579363
     @MediumTest
     @Feature({"Omaha", "Sync"})
     public void testRunnableGetsCanceled() throws Exception {
