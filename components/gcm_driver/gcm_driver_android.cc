@@ -108,15 +108,6 @@ void GCMDriverAndroid::OnMessageReceived(
   DispatchMessage(app_id, message);
 }
 
-void GCMDriverAndroid::OnMessagesDeleted(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    const JavaParamRef<jstring>& j_app_id) {
-  std::string app_id = ConvertJavaStringToUTF8(env, j_app_id);
-
-  GetAppHandler(app_id)->OnMessagesDeleted(app_id);
-}
-
 // static
 bool GCMDriverAndroid::RegisterBindings(JNIEnv* env) {
   return RegisterNativesImpl(env);

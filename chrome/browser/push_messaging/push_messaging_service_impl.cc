@@ -314,8 +314,8 @@ void PushMessagingServiceImpl::SetMessageCallbackForTesting(
 // Other gcm::GCMAppHandler methods --------------------------------------------
 
 void PushMessagingServiceImpl::OnMessagesDeleted(const std::string& app_id) {
-  // TODO(mvanouwerkerk): Fire push error event on the Service Worker
-  // corresponding to app_id.
+  // TODO(mvanouwerkerk): Consider firing an event on the Service Worker
+  // corresponding to |app_id| to inform the app about deleted messages.
 }
 
 void PushMessagingServiceImpl::OnSendError(
