@@ -19,17 +19,17 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
 } else if (is_android) {
   import("//build/config/android/config.gni")
   if (current_cpu == "x86") {
-    sysroot = rebase_path("$android_ndk_root/$x86_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$x86_android_sysroot_subdir"
   } else if (current_cpu == "arm") {
-    sysroot = rebase_path("$android_ndk_root/$arm_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$arm_android_sysroot_subdir"
   } else if (current_cpu == "mipsel") {
-    sysroot = rebase_path("$android_ndk_root/$mips_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$mips_android_sysroot_subdir"
   } else if (current_cpu == "x64") {
-    sysroot = rebase_path("$android_ndk_root/$x86_64_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$x86_64_android_sysroot_subdir"
   } else if (current_cpu == "arm64") {
-    sysroot = rebase_path("$android_ndk_root/$arm64_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$arm64_android_sysroot_subdir"
   } else if (current_cpu == "mips64") {
-    sysroot = rebase_path("$android_ndk_root/$mips64_android_sysroot_subdir")
+    sysroot = "$android_ndk_root/$mips64_android_sysroot_subdir"
   } else {
     sysroot = ""
   }
@@ -37,13 +37,13 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
   # By default build against a sysroot image downloaded from Cloud Storage
   # during gclient runhooks.
   if (current_cpu == "x64") {
-    sysroot = rebase_path("//build/linux/debian_wheezy_amd64-sysroot")
+    sysroot = "//build/linux/debian_wheezy_amd64-sysroot"
   } else if (current_cpu == "x86") {
-    sysroot = rebase_path("//build/linux/debian_wheezy_i386-sysroot")
+    sysroot = "//build/linux/debian_wheezy_i386-sysroot"
   } else if (current_cpu == "mipsel") {
-    sysroot = rebase_path("//build/linux/debian_wheezy_mips-sysroot")
+    sysroot = "//build/linux/debian_wheezy_mips-sysroot"
   } else if (current_cpu == "arm") {
-    sysroot = rebase_path("//build/linux/debian_wheezy_arm-sysroot")
+    sysroot = "//build/linux/debian_wheezy_arm-sysroot"
   } else {
     # Any other builds don't use a sysroot.
     sysroot = ""
@@ -63,7 +63,9 @@ if (current_toolchain == default_toolchain && target_sysroot != "") {
       _script_arch = "amd64"
     }
     assert(
-        exec_script("//build/dir_exists.py", [ sysroot ], "string") == "True",
+        exec_script("//build/dir_exists.py",
+                    [ rebase_path(sysroot) ],
+                    "string") == "True",
         "Missing sysroot ($sysroot). To fix, run: build/linux/sysroot_scripts/install-sysroot.py --arch=$_script_arch")
   }
 } else if (is_mac) {
