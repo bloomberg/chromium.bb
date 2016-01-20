@@ -2243,10 +2243,11 @@ LayoutRect PaintLayer::boundingBoxForCompositing(const PaintLayer* ancestorLayer
         else
             expandRectForReflectionAndStackingChildren(this, result);
 
-        // FIXME: We can optimize the size of the composited layers, by not enlarging
-        // filtered areas with the outsets if we know that the filter is going to render in hardware.
-        // https://bugs.webkit.org/show_bug.cgi?id=81239
-        result.expand(filterOutsets());
+        // Only enlarge by the filter outsets if we know the filter is going to be rendered in software.
+        // Accelerated filters will handle their own outsets.
+        if (paintsWithFilters()) {
+            result.expand(filterOutsets());
+        }
     }
 
     if (transform() && paintsWithTransform(GlobalPaintNormalPhase) && (this != ancestorLayer || options == MaybeIncludeTransformForAncestorLayer))

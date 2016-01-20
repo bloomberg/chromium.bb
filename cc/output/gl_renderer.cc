@@ -56,6 +56,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/gfx/geometry/quad_f.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/skia_util.h"
 
 using gpu::gles2::GLES2Interface;
 
@@ -601,7 +602,8 @@ void GLRenderer::DrawDebugBorderQuad(const DrawingFrame* frame,
 static skia::RefPtr<SkImage> ApplyImageFilter(
     scoped_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
     ResourceProvider* resource_provider,
-    const gfx::Rect& rect,
+    const gfx::RectF& src_rect,
+    const gfx::RectF& dst_rect,
     const gfx::Vector2dF& scale,
     SkImageFilter* filter,
     ScopedResource* source_texture_resource) {
@@ -634,7 +636,7 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
 
   // Create surface to draw into.
   SkImageInfo dst_info =
-      SkImageInfo::MakeN32Premul(srcImage->width(), srcImage->height());
+      SkImageInfo::MakeN32Premul(dst_rect.width(), dst_rect.height());
   skia::RefPtr<SkSurface> surface = skia::AdoptRef(SkSurface::NewRenderTarget(
       use_gr_context->context(), SkSurface::kYes_Budgeted, dst_info, 0));
   if (!surface) {
@@ -647,17 +649,17 @@ static skia::RefPtr<SkImage> ApplyImageFilter(
   // bottom-left, but the orientation is the same, so we must translate the
   // filter so that it renders at the bottom of the texture to avoid
   // misregistration.
-  int y_translate = source_texture_resource->size().height() - rect.height() -
-                    rect.origin().y();
-  SkMatrix localM;
-  localM.setTranslate(-rect.origin().x(), y_translate);
-  localM.preScale(scale.x(), scale.y());
-  skia::RefPtr<SkImageFilter> localIMF =
-      skia::AdoptRef(filter->newWithLocalMatrix(localM));
+  float y_offset = source_texture_resource->size().height() - src_rect.height();
+  SkMatrix local_matrix;
+  local_matrix.setScale(scale.x(), scale.y());
+  skia::RefPtr<SkImageFilter> filter_with_local_scale =
+      skia::AdoptRef(filter->newWithLocalMatrix(local_matrix));
 
   SkPaint paint;
-  paint.setImageFilter(localIMF.get());
-  surface->getCanvas()->drawImage(srcImage.get(), 0, 0, &paint);
+  paint.setImageFilter(filter_with_local_scale.get());
+  surface->getCanvas()->translate(-dst_rect.x(), -dst_rect.y());
+  surface->getCanvas()->drawImage(srcImage.get(), src_rect.x(),
+                                  src_rect.y() - y_offset, &paint);
 
   skia::RefPtr<SkImage> image = skia::AdoptRef(surface->newImageSnapshot());
   if (!image || !image->isTextureBacked()) {
@@ -822,6 +824,13 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
     backdrop_rect.Inset(-kOutsetForAntialiasing, -kOutsetForAntialiasing);
   }
 
+  if (!quad->filters.IsEmpty()) {
+    // If we have filters, grab an extra one-pixel border around the
+    // background, so texture edge clamping gives us a transparent border
+    // in case the filter expands the result.
+    backdrop_rect.Inset(-1, -1, -1, -1);
+  }
+
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       frame, frame->current_render_pass->output_rect));
   return backdrop_rect;
@@ -846,13 +855,14 @@ scoped_ptr<ScopedResource> GLRenderer::GetBackdropTexture(
 skia::RefPtr<SkImage> GLRenderer::ApplyBackgroundFilters(
     DrawingFrame* frame,
     const RenderPassDrawQuad* quad,
-    ScopedResource* background_texture) {
+    ScopedResource* background_texture,
+    const gfx::RectF& rect) {
   DCHECK(ShouldApplyBackgroundFilters(quad));
   skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
       quad->background_filters, gfx::SizeF(background_texture->size()));
 
   skia::RefPtr<SkImage> background_with_filters = ApplyImageFilter(
-      ScopedUseGrContext::Create(this, frame), resource_provider_, quad->rect,
+      ScopedUseGrContext::Create(this, frame), resource_provider_, rect, rect,
       quad->filters_scale, filter.get(), background_texture);
   return background_with_filters;
 }
@@ -925,8 +935,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
       if (ShouldApplyBackgroundFilters(quad) && background_texture) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
-        background_image =
-            ApplyBackgroundFilters(frame, quad, background_texture.get());
+        background_image = ApplyBackgroundFilters(
+            frame, quad, background_texture.get(), gfx::RectF(background_rect));
         if (background_image)
           background_image_id = background_image->getTextureHandle(true);
         DCHECK(background_image_id);
@@ -963,6 +973,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   GLuint filter_image_id = 0;
   SkScalar color_matrix[20];
   bool use_color_matrix = false;
+  gfx::RectF rect = gfx::RectF(quad->rect);
   if (!quad->filters.IsEmpty()) {
     skia::RefPtr<SkImageFilter> filter = RenderSurfaceFilters::BuildImageFilter(
         quad->filters, gfx::SizeF(contents_texture->size()));
@@ -980,9 +991,28 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         // in the compositor.
         use_color_matrix = true;
       } else {
-        filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this, frame), resource_provider_,
-            quad->rect, quad->filters_scale, filter.get(), contents_texture);
+        gfx::RectF src_rect = rect;
+        gfx::Vector2dF scale = quad->filters_scale;
+        // Compute the destination rect for the filtered output.
+        // Note that we leave the dest rect equal to the src rect when
+        // a filter chain cannot compute its bounds. This is correct
+        // behaviour, but Skia is a little conservative at the moment.
+        // Once Skia makes the fast-bounds traversal crop-rect aware
+        // (http://skbug.com/4627), this won't be a problem
+        // for Chrome since Blink always sets a crop rect on the leaf nodes
+        // of the DAG, making it always computable.
+        // TODO(senorblanco): remove this comment when http://skbug.com/4627
+        // is fixed.
+        if (filter->canComputeFastBounds()) {
+          SkRect result_rect;
+          rect.Scale(1.0f / scale.x(), 1.0f / scale.y());
+          filter->computeFastBounds(gfx::RectFToSkRect(rect), &result_rect);
+          rect = gfx::SkRectToRectF(result_rect);
+          rect.Scale(scale.x(), scale.y());
+        }
+        filter_image = ApplyImageFilter(ScopedUseGrContext::Create(this, frame),
+                                        resource_provider_, src_rect, rect,
+                                        scale, filter.get(), contents_texture);
         if (filter_image) {
           filter_image_id = filter_image->getTextureHandle(true);
           DCHECK(filter_image_id);
@@ -1096,10 +1126,16 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     program->fragment_shader().FillLocations(&locations);
     gl_->Uniform1i(locations.sampler, 0);
   }
-  float tex_scale_x =
-      quad->rect.width() / static_cast<float>(contents_texture->size().width());
-  float tex_scale_y = quad->rect.height() /
-                      static_cast<float>(contents_texture->size().height());
+  float tex_scale_x, tex_scale_y;
+  if (filter_image) {
+    // Skia filters always return SkImages with snug textures.
+    tex_scale_x = tex_scale_y = 1.0f;
+  } else {
+    tex_scale_x = quad->rect.width() /
+                  static_cast<float>(contents_texture->size().width());
+    tex_scale_y = quad->rect.height() /
+                  static_cast<float>(contents_texture->size().height());
+  }
   DCHECK_LE(tex_scale_x, 1.0f);
   DCHECK_LE(tex_scale_y, 1.0f);
 
@@ -1197,7 +1233,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
   SetShaderOpacity(quad->shared_quad_state->opacity, locations.alpha);
   SetShaderQuadF(surface_quad, locations.quad);
   DrawQuadGeometry(frame, quad->shared_quad_state->quad_to_target_transform,
-                   gfx::RectF(quad->rect), locations.matrix);
+                   rect, locations.matrix);
 
   // Flush the compositor context before the filter bitmap goes out of
   // scope, so the draw gets processed before the filter texture gets deleted.

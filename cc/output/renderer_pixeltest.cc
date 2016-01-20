@@ -1773,11 +1773,11 @@ class RendererPixelTestWithBackgroundFilter
           root_pass->CreateAndAppendDrawQuad<RenderPassDrawQuad>();
       filter_pass_quad->SetNew(shared_state, filter_pass_layer_rect_,
                                filter_pass_layer_rect_, filter_pass_id,
-                               0,                   // mask_resource_id
-                               gfx::Vector2dF(),    // mask_uv_scale
-                               gfx::Size(),         // mask_texture_size
-                               FilterOperations(),  // filters
-                               gfx::Vector2dF(),    // filters_scale
+                               0,                           // mask_resource_id
+                               gfx::Vector2dF(),            // mask_uv_scale
+                               gfx::Size(),                 // mask_texture_size
+                               FilterOperations(),          // filters
+                               gfx::Vector2dF(1.0f, 1.0f),  // filters_scale
                                this->background_filters_);
     }
 

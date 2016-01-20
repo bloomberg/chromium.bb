@@ -116,8 +116,6 @@ void toWebTransformOperations(const TransformOperations& transformOperations, We
 void toWebFilterOperations(const FilterOperations& inOperations, WebFilterOperations* outOperations)
 {
     SkiaImageFilterBuilder builder;
-    FilterOutsets outsets = inOperations.outsets();
-    builder.setCropOffset(FloatSize(outsets.left(), outsets.top()));
     builder.buildFilterOperations(inOperations, outOperations);
 }
 

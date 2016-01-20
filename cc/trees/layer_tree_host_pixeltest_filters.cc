@@ -10,6 +10,7 @@
 #include "cc/test/pixel_comparator.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
+#include "third_party/skia/include/effects/SkOffsetImageFilter.h"
 
 #if !defined(OS_ANDROID)
 
@@ -531,6 +532,59 @@ TEST_F(EnlargedTextureWithAlphaThresholdFilter, Software) {
   RunPixelTestType(
       PIXEL_TEST_SOFTWARE,
       base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_threshold.png")));
+}
+
+class EnlargedTextureWithCropOffsetFilter
+    : public LayerTreeHostFiltersPixelTest {
+ protected:
+  void RunPixelTestType(PixelTestType test_type, base::FilePath image_name) {
+    // Rectangles choosen so that if flipped, the test will fail.
+    gfx::Rect rect1(10, 10, 10, 15);
+    gfx::Rect rect2(20, 25, 70, 65);
+
+    scoped_refptr<SolidColorLayer> child1 =
+        CreateSolidColorLayer(rect1, SK_ColorRED);
+    scoped_refptr<SolidColorLayer> child2 =
+        CreateSolidColorLayer(rect2, SK_ColorGREEN);
+    scoped_refptr<SolidColorLayer> background =
+        CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorBLUE);
+    scoped_refptr<SolidColorLayer> filter_layer =
+        CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
+
+    // Make sure a transformation does not cause misregistration of the filter
+    // and source texture.
+    gfx::Transform filter_transform;
+    filter_transform.Scale(2.f, 2.f);
+    filter_layer->SetTransform(filter_transform);
+    filter_layer->AddChild(child1);
+    filter_layer->AddChild(child2);
+
+    FilterOperations filters;
+    SkImageFilter::CropRect cropRect(SkRect::MakeXYWH(10, 10, 80, 80));
+    skia::RefPtr<SkImageFilter> filter(
+        skia::AdoptRef(SkOffsetImageFilter::Create(0, 0, nullptr, &cropRect)));
+    filters.Append(FilterOperation::CreateReferenceFilter(filter));
+    filter_layer->SetFilters(filters);
+
+    background->AddChild(filter_layer);
+
+    // Force the allocation a larger textures.
+    set_enlarge_texture_amount(gfx::Vector2d(50, 50));
+
+    RunPixelTest(test_type, background, image_name);
+  }
+};
+
+TEST_F(EnlargedTextureWithCropOffsetFilter, GL) {
+  RunPixelTestType(
+      PIXEL_TEST_GL,
+      base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
+}
+
+TEST_F(EnlargedTextureWithCropOffsetFilter, Software) {
+  RunPixelTestType(
+      PIXEL_TEST_SOFTWARE,
+      base::FilePath(FILE_PATH_LITERAL("enlarged_texture_on_crop_offset.png")));
 }
 
 }  // namespace

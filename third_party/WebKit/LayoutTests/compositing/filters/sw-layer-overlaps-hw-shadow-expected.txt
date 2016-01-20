@@ -10,9 +10,9 @@
           "shouldFlattenTransform": false,
           "children": [
             {
-              "position": [80, 80],
-              "transformOrigin": [75, 75],
-              "bounds": [125, 125],
+              "position": [105, 105],
+              "bounds": [100, 100],
+              "contentsOpaque": true,
               "drawsContent": true,
               "backgroundColor": "#000000"
             },

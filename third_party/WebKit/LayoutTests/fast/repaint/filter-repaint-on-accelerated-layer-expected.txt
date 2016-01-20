@@ -7,12 +7,11 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [-20, -20],
-          "bounds": [256, 256],
+          "position": [8, 8],
+          "bounds": [200, 200],
           "drawsContent": true,
           "children": [
             {
-              "position": [28, 28],
               "bounds": [100, 200],
               "contentsOpaque": true,
               "drawsContent": true,

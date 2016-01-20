@@ -7,8 +7,9 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [30, 30],
-          "bounds": [240, 240],
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#008000"
         }

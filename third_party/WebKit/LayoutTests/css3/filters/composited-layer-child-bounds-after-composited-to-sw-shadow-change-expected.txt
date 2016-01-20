@@ -7,14 +7,13 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [50, 50],
-          "transformOrigin": [100, 100],
-          "bounds": [150, 150],
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FF0000",
           "children": [
             {
-              "position": [50, 50],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,
@@ -35,14 +34,13 @@
       "drawsContent": true,
       "children": [
         {
-          "position": [50, 50],
-          "transformOrigin": [100, 100],
-          "bounds": [150, 150],
+          "position": [100, 100],
+          "bounds": [100, 100],
+          "contentsOpaque": true,
           "drawsContent": true,
           "backgroundColor": "#FF0000",
           "children": [
             {
-              "position": [50, 50],
               "bounds": [100, 100],
               "contentsOpaque": true,
               "drawsContent": true,

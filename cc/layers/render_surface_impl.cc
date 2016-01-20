@@ -50,6 +50,11 @@ gfx::RectF RenderSurfaceImpl::DrawableContentRect() const {
     drawable_content_rect.Union(MathUtil::MapClippedRect(
         replica_draw_transform_, gfx::RectF(content_rect_)));
   }
+  if (!owning_layer_->filters().IsEmpty()) {
+    int left, top, right, bottom;
+    owning_layer_->filters().GetOutsets(&top, &right, &bottom, &left);
+    drawable_content_rect.Inset(-left, -top, -right, -bottom);
+  }
 
   // If the rect has a NaN coordinate, we return empty rect to avoid crashes in
   // functions (for example, gfx::ToEnclosedRect) that are called on this rect.

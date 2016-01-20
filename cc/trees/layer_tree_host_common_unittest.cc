@@ -1362,6 +1362,47 @@ TEST_F(LayerTreeHostCommonTest,
             parent->render_surface()->DrawableContentRect());
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceListForFilter) {
+  LayerImpl* root = root_layer();
+  LayerImpl* parent = AddChild<LayerImpl>(root);
+  LayerImpl* child1 = AddChild<LayerImpl>(parent);
+  LayerImpl* child2 = AddChild<LayerImpl>(parent);
+  child1->SetDrawsContent(true);
+  child2->SetDrawsContent(true);
+
+  const gfx::Transform identity_matrix;
+  gfx::Transform scale_matrix;
+  scale_matrix.Scale(2.0f, 2.0f);
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(100, 100), true, false,
+                               true);
+  SetLayerPropertiesForTesting(parent, scale_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(), true, false, true);
+  SetLayerPropertiesForTesting(child1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(0, 0), gfx::Size(25, 25), true,
+                               false, true);
+  SetLayerPropertiesForTesting(child2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(25, 25), gfx::Size(25, 25), true,
+                               false, true);
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateBlurFilter(10.0f));
+  parent->SetFilters(filters);
+
+  LayerImplList render_surface_layer_list;
+  parent->layer_tree_impl()->IncrementRenderSurfaceListIdForTesting();
+  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
+      root, root->bounds(), &render_surface_layer_list,
+      root->layer_tree_impl()->current_render_surface_list_id());
+  inputs.can_adjust_raster_scales = true;
+  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
+
+  ASSERT_TRUE(parent->render_surface());
+  EXPECT_EQ(2U, parent->render_surface()->layer_list().size());
+  EXPECT_EQ(4U, render_surface_layer_list.size());
+  EXPECT_EQ(gfx::RectF(-29, -29, 158, 158),
+            parent->render_surface()->DrawableContentRect());
+}
+
 TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   LayerImpl* parent = root_layer();
   LayerImpl* child = AddChild<LayerImpl>(parent);
