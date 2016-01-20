@@ -546,6 +546,7 @@
       'browser/renderer_host/input/mock_input_router_client.cc',
       'browser/renderer_host/input/mock_input_router_client.h',
       'browser/renderer_host/input/motion_event_web_unittest.cc',
+      'browser/renderer_host/input/mouse_wheel_event_queue_unittest.cc',
       'browser/renderer_host/input/mouse_wheel_rails_filter_unittest_mac.cc',
       'browser/renderer_host/input/render_widget_host_latency_tracker_unittest.cc',
       'browser/renderer_host/input/stylus_text_selector_unittest.cc',

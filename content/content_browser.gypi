@@ -1158,6 +1158,8 @@
       'browser/renderer_host/input/input_router_impl.h',
       'browser/renderer_host/input/motion_event_web.cc',
       'browser/renderer_host/input/motion_event_web.h',
+      'browser/renderer_host/input/mouse_wheel_event_queue.cc',
+      'browser/renderer_host/input/mouse_wheel_event_queue.h',
       'browser/renderer_host/input/mouse_wheel_rails_filter_mac.cc',
       'browser/renderer_host/input/mouse_wheel_rails_filter_mac.h',
       'browser/renderer_host/input/render_widget_host_latency_tracker.cc',

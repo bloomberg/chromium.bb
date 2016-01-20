@@ -57,6 +57,11 @@ const char* GetEventAckName(InputEventAckState ack_result) {
   return "";
 }
 
+bool UseGestureBasedWheelScrolling() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableWheelGestures);
+}
+
 } // namespace
 
 InputRouterImpl::Config::Config() {
@@ -74,10 +79,12 @@ InputRouterImpl::InputRouterImpl(IPC::Sender* sender,
       select_message_pending_(false),
       move_caret_pending_(false),
       mouse_move_pending_(false),
-      mouse_wheel_pending_(false),
       current_ack_source_(ACK_SOURCE_NONE),
       flush_requested_(false),
       active_renderer_fling_count_(0),
+      wheel_event_queue_(this,
+                         UseGestureBasedWheelScrolling(),
+                         kDefaultWheelScrollTransactionMs),
       touch_event_queue_(this, config.touch_config),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f) {
@@ -124,38 +131,7 @@ void InputRouterImpl::SendMouseEvent(
 
 void InputRouterImpl::SendWheelEvent(
     const MouseWheelEventWithLatencyInfo& wheel_event) {
-  if (mouse_wheel_pending_) {
-    // If there's already a mouse wheel event waiting to be sent to the
-    // renderer, add the new deltas to that event. Not doing so (e.g., by
-    // dropping the old event, as for mouse moves) results in very slow
-    // scrolling on the Mac.
-    if (wheel_event.event.hasPreciseScrollingDeltas)
-      DCHECK(wheel_event.event.canScroll);
-    DCHECK(!(wheel_event.event.hasPreciseScrollingDeltas &&
-             !wheel_event.event.canScroll));
-    if (coalesced_mouse_wheel_events_.empty() ||
-        (!coalesced_mouse_wheel_events_.empty() &&
-         !coalesced_mouse_wheel_events_.back().CanCoalesceWith(wheel_event))) {
-      coalesced_mouse_wheel_events_.push_back(wheel_event);
-    } else {
-      coalesced_mouse_wheel_events_.back().CoalesceWith(wheel_event);
-      TRACE_EVENT_INSTANT2("input", "InputRouterImpl::CoalescedWheelEvent",
-                           TRACE_EVENT_SCOPE_THREAD,
-                           "total_dx",
-                           coalesced_mouse_wheel_events_.back().event.deltaX,
-                           "total_dy",
-                           coalesced_mouse_wheel_events_.back().event.deltaY);
-    }
-    return;
-  }
-
-  mouse_wheel_pending_ = true;
-  current_wheel_event_ = wheel_event;
-
-  LOCAL_HISTOGRAM_COUNTS_100("Renderer.WheelQueueSize",
-                             coalesced_mouse_wheel_events_.size());
-
-  FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency);
+  wheel_event_queue_.QueueEvent(wheel_event);
 }
 
 void InputRouterImpl::SendKeyboardEvent(
@@ -180,6 +156,8 @@ void InputRouterImpl::SendGestureEvent(
 
   if (touch_action_filter_.FilterGestureEvent(&gesture_event.event))
     return;
+
+  wheel_event_queue_.OnGestureScrollEvent(gesture_event);
 
   if (gesture_event.event.sourceDevice == blink::WebGestureDeviceTouchscreen)
     touch_event_queue_.OnGestureScrollEvent(gesture_event);
@@ -251,14 +229,10 @@ void InputRouterImpl::RequestNotificationWhenFlushed() {
 }
 
 bool InputRouterImpl::HasPendingEvents() const {
-  return !touch_event_queue_.empty() ||
-         !gesture_event_queue_.empty() ||
-         !key_queue_.empty() ||
-         mouse_move_pending_ ||
-         mouse_wheel_pending_ ||
-         select_message_pending_ ||
-         move_caret_pending_ ||
-         active_renderer_fling_count_ > 0;
+  return !touch_event_queue_.empty() || !gesture_event_queue_.empty() ||
+         !key_queue_.empty() || mouse_move_pending_ ||
+         wheel_event_queue_.has_pending() || select_message_pending_ ||
+         move_caret_pending_ || active_renderer_fling_count_ > 0;
 }
 
 void InputRouterImpl::SetDeviceScaleFactor(float device_scale_factor) {
@@ -302,6 +276,17 @@ void InputRouterImpl::OnGestureEventAck(
     InputEventAckState ack_result) {
   touch_event_queue_.OnGestureEventAck(event, ack_result);
   ack_handler_->OnGestureEventAck(event, ack_result);
+}
+
+void InputRouterImpl::SendMouseWheelEventImmediately(
+    const MouseWheelEventWithLatencyInfo& wheel_event) {
+  FilterAndSendWebInputEvent(wheel_event.event, wheel_event.latency);
+}
+
+void InputRouterImpl::OnMouseWheelEventAck(
+    const MouseWheelEventWithLatencyInfo& event,
+    InputEventAckState ack_result) {
+  ack_handler_->OnWheelEventAck(event, ack_result);
 }
 
 bool InputRouterImpl::SendSelectMessage(
@@ -594,27 +579,7 @@ void InputRouterImpl::ProcessMouseAck(blink::WebInputEvent::Type type,
 
 void InputRouterImpl::ProcessWheelAck(InputEventAckState ack_result,
                                       const ui::LatencyInfo& latency) {
-  // TODO(miletus): Add renderer side latency to each uncoalesced mouse
-  // wheel event and add terminal component to each of them.
-  current_wheel_event_.latency.AddNewLatencyFrom(latency);
-
-  // Process the unhandled wheel event here before calling SendWheelEvent()
-  // since it will mutate current_wheel_event_.
-  ack_handler_->OnWheelEventAck(current_wheel_event_, ack_result);
-
-  // Mark the wheel event complete only after the ACKs have been handled above.
-  // For example, ACKing the GesturePinchUpdate could cause another
-  // GesturePinchUpdate to be sent, which should queue a wheel event rather than
-  // send it immediately.
-  mouse_wheel_pending_ = false;
-
-  // Send the next (coalesced or synthetic) mouse wheel event.
-  if (!coalesced_mouse_wheel_events_.empty()) {
-    MouseWheelEventWithLatencyInfo next_wheel_event =
-        coalesced_mouse_wheel_events_.front();
-    coalesced_mouse_wheel_events_.pop_front();
-    SendWheelEvent(next_wheel_event);
-  }
+  wheel_event_queue_.ProcessMouseWheelAck(ack_result, latency);
 }
 
 void InputRouterImpl::ProcessGestureAck(WebInputEvent::Type type,

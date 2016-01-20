@@ -534,9 +534,21 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
 #endif
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
-  if (gesture_event.data.scrollBegin.targetViewport) {
+  if (gesture_event.data.scrollBegin.deltaHintUnits ==
+      blink::WebGestureEvent::ScrollUnits::Page) {
+    scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
+    scroll_status.main_thread_scrolling_reasons =
+          cc::InputHandler::CONTINUING_MAIN_THREAD_SCROLL;
+  } else if (gesture_event.data.scrollBegin.targetViewport) {
     scroll_status = input_handler_->RootScrollBegin(&scroll_state,
                                                     cc::InputHandler::GESTURE);
+  } else if (smooth_scroll_enabled_ &&
+             gesture_event.data.scrollBegin.deltaHintUnits ==
+                 blink::WebGestureEvent::ScrollUnits::Pixels) {
+    gfx::Vector2dF scroll_delta(-gesture_event.data.scrollBegin.deltaXHint,
+                                -gesture_event.data.scrollBegin.deltaYHint);
+    scroll_status = input_handler_->ScrollAnimated(
+        gfx::Point(gesture_event.x, gesture_event.y), scroll_delta);
   } else {
     scroll_status =
         input_handler_->ScrollBegin(&scroll_state, cc::InputHandler::GESTURE);
@@ -573,15 +585,31 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 #ifndef NDEBUG
   DCHECK(expect_scroll_update_end_);
 #endif
-
   if (!gesture_scroll_on_impl_thread_ && !gesture_pinch_on_impl_thread_)
     return DID_NOT_HANDLE;
 
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
-  cc::InputHandlerScrollResult scroll_result =
-      input_handler_->ScrollBy(&scroll_state);
-  HandleOverscroll(gfx::Point(gesture_event.x, gesture_event.y), scroll_result);
-  return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
+  gfx::Point scroll_point(gesture_event.x, gesture_event.y);
+  gfx::Vector2dF scroll_delta(-gesture_event.data.scrollUpdate.deltaX,
+                              -gesture_event.data.scrollUpdate.deltaY);
+
+  if (smooth_scroll_enabled_ &&
+      gesture_event.data.scrollUpdate.deltaUnits ==
+          blink::WebGestureEvent::ScrollUnits::Pixels) {
+    switch (input_handler_->ScrollAnimated(scroll_point, scroll_delta).thread) {
+      case cc::InputHandler::SCROLL_ON_IMPL_THREAD:
+        return DID_HANDLE;
+      case cc::InputHandler::SCROLL_IGNORED:
+        return DROP_EVENT;
+      default:
+        return DID_NOT_HANDLE;
+    }
+  } else {
+    cc::InputHandlerScrollResult scroll_result =
+        input_handler_->ScrollBy(&scroll_state);
+    HandleOverscroll(scroll_point, scroll_result);
+    return scroll_result.did_scroll ? DID_HANDLE : DROP_EVENT;
+  }
 }
 
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(

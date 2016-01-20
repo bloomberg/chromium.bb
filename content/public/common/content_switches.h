@@ -146,6 +146,7 @@ CONTENT_EXPORT extern const char kEnableVtune[];
 CONTENT_EXPORT extern const char kEnableWebGLDraftExtensions[];
 CONTENT_EXPORT extern const char kEnableWebGLImageChromium[];
 CONTENT_EXPORT extern const char kEnableWebVR[];
+CONTENT_EXPORT extern const char kEnableWheelGestures[];
 CONTENT_EXPORT extern const char kEnableZeroCopy[];
 CONTENT_EXPORT extern const char kExplicitlyAllowedPorts[];
 CONTENT_EXPORT extern const char kExtraPluginDir[];

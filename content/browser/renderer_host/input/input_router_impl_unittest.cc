@@ -1781,7 +1781,8 @@ TEST_F(InputRouterImplTest, TouchpadPinchAndScrollUpdate) {
   EXPECT_EQ(1, client_->in_flight_event_count());
 
   // Ack the wheel event.
-  SendInputEventACK(WebInputEvent::MouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
   EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
   EXPECT_EQ(0, client_->in_flight_event_count());
