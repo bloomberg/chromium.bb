@@ -39,7 +39,7 @@ struct BrowserGpuChannelHostFactory::CreateRequest {
       : event(true, false),
         gpu_host_id(0),
         route_id(route_id),
-        result(CREATE_COMMAND_BUFFER_FAILED) {}
+        result(CREATE_COMMAND_BUFFER_FAILED_AND_CHANNEL_LOST) {}
   ~CreateRequest() {}
   base::WaitableEvent event;
   int gpu_host_id;
