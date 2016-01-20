@@ -28,7 +28,9 @@ TaskQueueImpl::TaskQueueImpl(
       main_thread_only_(task_queue_manager, this),
       wakeup_policy_(spec.wakeup_policy),
       should_monitor_quiescence_(spec.should_monitor_quiescence),
-      should_notify_observers_(spec.should_notify_observers) {
+      should_notify_observers_(spec.should_notify_observers),
+      should_report_when_execution_blocked_(
+          spec.should_report_when_execution_blocked) {
   DCHECK(time_domain);
   time_domain->RegisterQueue(this);
 }
@@ -93,14 +95,10 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
     TaskQueueManager* task_queue_manager,
     TaskQueueImpl* task_queue)
     : task_queue_manager(task_queue_manager),
-      delayed_work_queue(
-          new WorkQueue(task_queue_manager->selector_.delayed_task_queue_sets(),
-                        task_queue,
-                        "delayed")),
-      immediate_work_queue(new WorkQueue(
-          task_queue_manager->selector_.immediate_task_queue_sets(),
-          task_queue,
-          "immediate")) {}
+      delayed_work_queue(new WorkQueue(task_queue, "delayed")),
+      immediate_work_queue(new WorkQueue(task_queue, "immediate")),
+      set_index(0),
+      is_enabled(true) {}
 
 TaskQueueImpl::MainThreadOnly::~MainThreadOnly() {}
 
@@ -224,11 +222,21 @@ void TaskQueueImpl::ScheduleDelayedWorkTask(TimeDomain* time_domain,
   time_domain->ScheduleDelayedWork(this, desired_run_time, &lazy_now);
 }
 
-bool TaskQueueImpl::IsQueueEnabled() const {
+void TaskQueueImpl::SetQueueEnabled(bool enabled) {
+  if (main_thread_only().is_enabled == enabled)
+    return;
+  main_thread_only().is_enabled = enabled;
   if (!main_thread_only().task_queue_manager)
-    return false;
+    return;
+  if (enabled) {
+    main_thread_only().task_queue_manager->selector_.EnableQueue(this);
+  } else {
+    main_thread_only().task_queue_manager->selector_.DisableQueue(this);
+  }
+}
 
-  return main_thread_only().task_queue_manager->selector_.IsQueueEnabled(this);
+bool TaskQueueImpl::IsQueueEnabled() const {
+  return main_thread_only().is_enabled;
 }
 
 bool TaskQueueImpl::IsEmpty() const {
@@ -307,8 +315,11 @@ void TaskQueueImpl::MoveReadyDelayedTasksToDelayedWorkQueueLocked(
   while (!any_thread().delayed_incoming_queue.empty() &&
          any_thread().delayed_incoming_queue.top().delayed_run_time <=
              lazy_now->Now()) {
+    // Note: the const_cast is needed because there is no direct way to move
+    // elements out of a priority queue. The queue must not be modified between
+    // the top() and the pop().
     main_thread_only().delayed_work_queue->PushAndSetEnqueueOrder(
-        std::move(any_thread().delayed_incoming_queue.top()),
+        std::move(const_cast<Task&>(any_thread().delayed_incoming_queue.top())),
         any_thread().task_queue_manager->GetNextSequenceNumber());
     any_thread().delayed_incoming_queue.pop();
   }
@@ -419,9 +430,14 @@ const char* TaskQueueImpl::GetName() const {
 void TaskQueueImpl::SetQueuePriority(QueuePriority priority) {
   if (!main_thread_only().task_queue_manager)
     return;
-
   main_thread_only().task_queue_manager->selector_.SetQueuePriority(this,
                                                                     priority);
+}
+
+TaskQueueImpl::QueuePriority TaskQueueImpl::GetQueuePriority() const {
+  size_t set_index = immediate_work_queue()->work_queue_set_index();
+  DCHECK_EQ(set_index, delayed_work_queue()->work_queue_set_index());
+  return static_cast<TaskQueue::QueuePriority>(set_index);
 }
 
 // static
@@ -465,8 +481,6 @@ const char* TaskQueueImpl::PriorityToString(QueuePriority priority) {
       return "normal";
     case BEST_EFFORT_PRIORITY:
       return "best_effort";
-    case DISABLED_PRIORITY:
-      return "disabled";
     default:
       NOTREACHED();
       return nullptr;
@@ -477,6 +491,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
   base::AutoLock lock(any_thread_lock_);
   state->BeginDictionary();
   state->SetString("name", GetName());
+  state->SetBoolean("enabled", main_thread_only().is_enabled);
   state->SetString("time_domain_name", any_thread().time_domain->GetName());
   state->SetString("pump_policy", PumpPolicyToString(any_thread().pump_policy));
   state->SetString("wakeup_policy", WakeupPolicyToString(wakeup_policy_));
@@ -505,10 +520,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
     QueueAsValueInto(any_thread().delayed_incoming_queue, state);
     state->EndArray();
   }
-  state->SetString(
-      "priority",
-      PriorityToString(static_cast<QueuePriority>(
-          main_thread_only().immediate_work_queue->work_queue_set_index())));
+  state->SetString("priority", PriorityToString(GetQueuePriority()));
   state->EndDictionary();
 }
 

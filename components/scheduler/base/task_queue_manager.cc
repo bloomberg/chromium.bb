@@ -356,4 +356,14 @@ void TaskQueueManager::OnTaskQueueEnabled(internal::TaskQueueImpl* queue) {
   }
 }
 
+void TaskQueueManager::OnTriedToSelectBlockedWorkQueue(
+    internal::WorkQueue* work_queue) {
+  DCHECK(main_thread_checker_.CalledOnValidThread());
+  DCHECK(!work_queue->Empty());
+  if (observer_) {
+    observer_->OnTriedToExecuteBlockedTask(*work_queue->task_queue(),
+                                           *work_queue->GetFrontTask());
+  }
+}
+
 }  // namespace scheduler

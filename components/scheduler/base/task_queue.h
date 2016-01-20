@@ -35,8 +35,6 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     // Queues with best effort priority will only be run if all other queues are
     // empty. They can be starved by the other queues.
     BEST_EFFORT_PRIORITY,
-    // Queues with this priority are never run.  Must be penultimate entry.
-    DISABLED_PRIORITY,
     // Must be the last entry.
     QUEUE_PRIORITY_COUNT,
     FIRST_QUEUE_PRIORITY = CONTROL_PRIORITY,
@@ -86,7 +84,8 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
           pump_policy(TaskQueue::PumpPolicy::AUTO),
           wakeup_policy(TaskQueue::WakeupPolicy::CAN_WAKE_OTHER_QUEUES),
           time_domain(nullptr),
-          should_notify_observers(true) {}
+          should_notify_observers(true),
+          should_report_when_execution_blocked(false) {}
 
     Spec SetShouldMonitorQuiescence(bool should_monitor) {
       should_monitor_quiescence = should_monitor;
@@ -113,17 +112,26 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
       return *this;
     }
 
+    // See TaskQueueManager::Observer::OnTriedToExecuteBlockedTask.
+    Spec SetShouldReportWhenExecutionBlocked(bool should_report) {
+      should_report_when_execution_blocked = should_report;
+      return *this;
+    }
+
     const char* name;
     bool should_monitor_quiescence;
     TaskQueue::PumpPolicy pump_policy;
     TaskQueue::WakeupPolicy wakeup_policy;
     TimeDomain* time_domain;
     bool should_notify_observers;
+    bool should_report_when_execution_blocked;
   };
 
-  // Returns true if the queue priority is not
-  // TaskQueueSelector::DISABLED_PRIORITY. NOTE this must be called on the
-  // thread this TaskQueue was created by.
+  // Enable or disable task execution for this queue. NOTE this must be called
+  // on the thread this TaskQueue was created by.
+  virtual void SetQueueEnabled(bool enabled) = 0;
+
+  // NOTE this must be called on the thread this TaskQueue was created by.
   virtual bool IsQueueEnabled() const = 0;
 
   // Returns true if the queue is completely empty.
@@ -143,6 +151,9 @@ class SCHEDULER_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Set the priority of the queue to |priority|. NOTE this must be called on
   // the thread this TaskQueue was created by.
   virtual void SetQueuePriority(QueuePriority priority) = 0;
+
+  // Returns the current queue priority.
+  virtual QueuePriority GetQueuePriority() const = 0;
 
   // Set the pumping policy of the queue to |pump_policy|. NOTE this must be
   // called on the thread this TaskQueue was created by.

@@ -26,13 +26,6 @@ class SCHEDULER_EXPORT TaskQueueSelector {
   TaskQueueSelector();
   ~TaskQueueSelector();
 
-  // Set the priority of |queue| to |priority|.
-  void SetQueuePriority(internal::TaskQueueImpl* queue,
-                        TaskQueue::QueuePriority priority);
-
-  // Whether |queue| is enabled.
-  bool IsQueueEnabled(const internal::TaskQueueImpl* queue) const;
-
   // Called to register a queue that can be selected. This function is called
   // on the main thread.
   void AddQueue(internal::TaskQueueImpl* queue);
@@ -40,6 +33,18 @@ class SCHEDULER_EXPORT TaskQueueSelector {
   // The specified work will no longer be considered for selection. This
   // function is called on the main thread.
   void RemoveQueue(internal::TaskQueueImpl* queue);
+
+  // Make |queue| eligible for selection.
+  void EnableQueue(internal::TaskQueueImpl* queue);
+
+  // Disable selection from |queue|. If task blocking is enabled for the queue,
+  // Observer::OnTriedToSelectBlockedWorkQueue will be emitted if the
+  // SelectWorkQueueToService tries to select this disabled queue for execution.
+  void DisableQueue(internal::TaskQueueImpl* queue);
+
+  // Called get or set the priority of |queue|.
+  void SetQueuePriority(internal::TaskQueueImpl* queue,
+                        TaskQueue::QueuePriority priority);
 
   // Called to choose the work queue from which the next task should be taken
   // and run. Return true if |out_work_queue| indicates the queue to service or
@@ -57,59 +62,107 @@ class SCHEDULER_EXPORT TaskQueueSelector {
 
     // Called when |queue| transitions from disabled to enabled.
     virtual void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) = 0;
+
+    // Called when the selector tried to select a task from a disabled work
+    // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked. A single
+    // call to SelectWorkQueueToService will only result in up to one
+    // blocking notification even if multiple disabled queues could have been
+    // selected.
+    virtual void OnTriedToSelectBlockedWorkQueue(
+        internal::WorkQueue* work_queue) = 0;
   };
 
   // Called once to set the Observer. This function is called
   // on the main thread. If |observer| is null, then no callbacks will occur.
   void SetTaskQueueSelectorObserver(Observer* observer);
 
-  WorkQueueSets* delayed_task_queue_sets() { return &delayed_work_queue_sets_; }
-  WorkQueueSets* immediate_task_queue_sets() {
-    return &immediate_work_queue_sets_;
-  }
-
   // Returns true if all the enabled work queues are empty. Returns false
   // otherwise.
   bool EnabledWorkQueuesEmpty() const;
 
  protected:
+  class SCHEDULER_EXPORT PrioritizingSelector {
+   public:
+    PrioritizingSelector(TaskQueueSelector* task_queue_selector);
+
+    void AssignQueueToSet(internal::TaskQueueImpl* queue,
+                          TaskQueue::QueuePriority priority);
+    void RemoveQueue(internal::TaskQueueImpl* queue);
+
+    bool SelectWorkQueueToService(TaskQueue::QueuePriority max_priority,
+                                  WorkQueue** out_work_queue,
+                                  bool* out_chose_delayed_over_immediate);
+
+    WorkQueueSets* delayed_work_queue_sets() {
+      return &delayed_work_queue_sets_;
+    }
+    WorkQueueSets* immediate_work_queue_sets() {
+      return &immediate_work_queue_sets_;
+    }
+
+    const WorkQueueSets* delayed_work_queue_sets() const {
+      return &delayed_work_queue_sets_;
+    }
+    const WorkQueueSets* immediate_work_queue_sets() const {
+      return &immediate_work_queue_sets_;
+    }
+
+    bool ChooseOldestWithPriority(TaskQueue::QueuePriority priority,
+                                  bool* out_chose_delayed_over_immediate,
+                                  WorkQueue** out_work_queue) const;
+
+   private:
+    bool ChooseOldestImmediateTaskWithPriority(
+        TaskQueue::QueuePriority priority,
+        WorkQueue** out_work_queue) const;
+
+    bool ChooseOldestDelayedTaskWithPriority(TaskQueue::QueuePriority priority,
+                                             WorkQueue** out_work_queue) const;
+
+    // Return true if |out_queue| contains the queue with the oldest pending
+    // task from the set of queues of |priority|, or false if all queues of that
+    // priority are empty. In addition |out_chose_delayed_over_immediate| is set
+    // to true iff we chose a delayed work queue in favour of an immediate work
+    // queue.
+    bool ChooseOldestImmediateOrDelayedTaskWithPriority(
+        TaskQueue::QueuePriority priority,
+        bool* out_chose_delayed_over_immediate,
+        WorkQueue** out_work_queue) const;
+
+    const TaskQueueSelector* task_queue_selector_;
+    WorkQueueSets delayed_work_queue_sets_;
+    WorkQueueSets immediate_work_queue_sets_;
+
+    DISALLOW_COPY_AND_ASSIGN(PrioritizingSelector);
+  };
+
   // Return true if |out_queue| contains the queue with the oldest pending task
   // from the set of queues of |priority|, or false if all queues of that
   // priority are empty. In addition |out_chose_delayed_over_immediate| is set
   // to true iff we chose a delayed work queue in favour of an immediate work
   // queue.  This method will force select an immediate task if those are being
   // starved by delayed tasks.
-  bool ChooseOldestWithPriority(TaskQueue::QueuePriority priority,
-                                bool* out_chose_delayed_over_immediate,
-                                WorkQueue** out_work_queue) const;
-
   void SetImmediateStarvationCountForTest(size_t immediate_starvation_count);
+
+  PrioritizingSelector* enabled_selector_for_test() {
+    return &enabled_selector_;
+  }
 
  private:
   // Returns the priority which is next after |priority|.
   static TaskQueue::QueuePriority NextPriority(
       TaskQueue::QueuePriority priority);
 
-  bool ChooseOldestImmediateTaskWithPriority(TaskQueue::QueuePriority priority,
-                                             WorkQueue** out_work_queue) const;
-
-  bool ChooseOldestDelayedTaskWithPriority(TaskQueue::QueuePriority priority,
-                                           WorkQueue** out_work_queue) const;
-
-  // Return true if |out_queue| contains the queue with the oldest pending task
-  // from the set of queues of |priority|, or false if all queues of that
-  // priority are empty. In addition |out_chose_delayed_over_immediate| is set
-  // to true iff we chose a delayed work queue in favour of an immediate work
-  // queue.
-  bool ChooseOldestImmediateOrDelayedTaskWithPriority(
-      TaskQueue::QueuePriority priority,
-      bool* out_chose_delayed_over_immediate,
-      WorkQueue** out_work_queue) const;
+  bool SelectWorkQueueToServiceInternal(WorkQueue** out_work_queue);
 
   // Called whenever the selector chooses a task queue for execution with the
   // priority |priority|.
   void DidSelectQueueWithPriority(TaskQueue::QueuePriority priority,
                                   bool chose_delayed_over_immediate);
+
+  // Check if we could have chosen a disabled (blocked) work queue instead.
+  // |chosen_enabled_queue| is the enabled queue that got chosen (or null).
+  void TrySelectingBlockedQueue(WorkQueue* chosen_enabled_queue);
 
   // Number of high priority tasks which can be run before a normal priority
   // task should be selected to prevent starvation.
@@ -122,10 +175,13 @@ class SCHEDULER_EXPORT TaskQueueSelector {
 
  private:
   base::ThreadChecker main_thread_checker_;
-  WorkQueueSets delayed_work_queue_sets_;
-  WorkQueueSets immediate_work_queue_sets_;
+
+  PrioritizingSelector enabled_selector_;
+  PrioritizingSelector blocked_selector_;
   size_t immediate_starvation_count_;
   size_t high_priority_starvation_count_;
+  size_t num_blocked_queues_to_report_;
+
   Observer* task_queue_selector_observer_;  // NOT OWNED
   DISALLOW_COPY_AND_ASSIGN(TaskQueueSelector);
 };

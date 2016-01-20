@@ -21,10 +21,13 @@ class WorkQueueSets;
 
 class SCHEDULER_EXPORT WorkQueue {
  public:
-  WorkQueue(WorkQueueSets* task_queue_sets,
-            TaskQueueImpl* task_queue,
-            const char* name);
+  WorkQueue(TaskQueueImpl* task_queue, const char* name);
   ~WorkQueue();
+
+  // Associates this work queue with the given work queue sets. This must be
+  // called before any tasks can be inserted into this work queue.
+  void AssignToWorkQueueSets(WorkQueueSets* work_queue_sets,
+                             size_t work_queue_set_index);
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -39,13 +42,16 @@ class SCHEDULER_EXPORT WorkQueue {
   // function returns false.
   bool GetFrontTaskEnqueueOrder(EnqueueOrder* enqueue_order) const;
 
+  // Returns the first task in this queue or null if the queue is empty.
+  const TaskQueueImpl::Task* GetFrontTask() const;
+
   // Pushes the task onto the |work_queue_| and informs the WorkQueueSets if
   // the head changed.
-  void Push(const TaskQueueImpl::Task&& task);
+  void Push(TaskQueueImpl::Task&& task);
 
   // Pushes the task onto the |work_queue_|, sets the |enqueue_order| and
   // informs the WorkQueueSets if the head changed.
-  void PushAndSetEnqueueOrder(const TaskQueueImpl::Task&& task,
+  void PushAndSetEnqueueOrder(TaskQueueImpl::Task&& task,
                               EnqueueOrder enqueue_order);
 
   // Swap the |work_queue_| with |incoming_queue| and informs the
@@ -62,15 +68,18 @@ class SCHEDULER_EXPORT WorkQueue {
 
   TaskQueueImpl* task_queue() const { return task_queue_; }
 
-  size_t work_queue_set_index() const { return work_queue_set_index_; }
+  WorkQueueSets* work_queue_sets() const { return work_queue_sets_; }
 
-  void set_work_queue_set_index(size_t work_queue_set_index) {
-    work_queue_set_index_ = work_queue_set_index;
-  }
+  size_t work_queue_set_index() const { return work_queue_set_index_; }
 
   // Test support functions.  These should not be used in production code.
   void PopTaskForTest();
-  void PushTaskForTest(const TaskQueueImpl::Task&& task);
+  void PushTaskForTest(TaskQueueImpl::Task&& task);
+
+  // Returns true if the front task in this queue has an older enqueue order
+  // than the front task of |other_queue|. Both queue are assumed to be
+  // non-empty.
+  bool ShouldRunBefore(const WorkQueue* other_queue) const;
 
  private:
   std::queue<TaskQueueImpl::Task> work_queue_;

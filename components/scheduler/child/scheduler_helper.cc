@@ -143,9 +143,16 @@ void SchedulerHelper::UnregisterTimeDomain(TimeDomain* time_domain) {
 }
 
 void SchedulerHelper::OnUnregisterTaskQueue(
-    const scoped_refptr<internal::TaskQueueImpl>& queue) {
+    const scoped_refptr<TaskQueue>& queue) {
   if (observer_)
     observer_->OnUnregisterTaskQueue(queue);
+}
+
+void SchedulerHelper::OnTriedToExecuteBlockedTask(
+    const TaskQueue& queue,
+    const base::PendingTask& task) {
+  if (observer_)
+    observer_->OnTriedToExecuteBlockedTask(queue, task);
 }
 
 }  // namespace scheduler

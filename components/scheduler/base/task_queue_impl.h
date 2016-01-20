@@ -86,11 +86,13 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
                                   const base::Closure& task,
                                   base::TimeDelta delay) override;
 
+  void SetQueueEnabled(bool enabled) override;
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
   bool HasPendingImmediateWork() const override;
   bool NeedsPumping() const override;
   void SetQueuePriority(QueuePriority priority) override;
+  QueuePriority GetQueuePriority() const override;
   void PumpQueue(bool may_post_dowork) override;
   void SetPumpPolicy(PumpPolicy pump_policy) override;
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
@@ -147,6 +149,10 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     return main_thread_only().immediate_work_queue.get();
   }
 
+  bool should_report_when_execution_blocked() const {
+    return should_report_when_execution_blocked_;
+  }
+
  private:
   friend class WorkQueue;
 
@@ -185,6 +191,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
     scoped_ptr<WorkQueue> immediate_work_queue;
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
+    bool is_enabled;
   };
 
   ~TaskQueueImpl() override;
@@ -261,6 +268,7 @@ class SCHEDULER_EXPORT TaskQueueImpl final : public TaskQueue {
   const WakeupPolicy wakeup_policy_;
   const bool should_monitor_quiescence_;
   const bool should_notify_observers_;
+  const bool should_report_when_execution_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueImpl);
 };

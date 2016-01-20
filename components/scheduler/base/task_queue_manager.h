@@ -102,7 +102,12 @@ class SCHEDULER_EXPORT TaskQueueManager
 
     // Called when |queue| is unregistered.
     virtual void OnUnregisterTaskQueue(
-        const scoped_refptr<internal::TaskQueueImpl>& queue) = 0;
+        const scoped_refptr<TaskQueue>& queue) = 0;
+
+    // Called when the manager tried to execute a task from a disabled
+    // queue. See TaskQueue::Spec::SetShouldReportWhenExecutionBlocked.
+    virtual void OnTriedToExecuteBlockedTask(const TaskQueue& queue,
+                                             const base::PendingTask& task) = 0;
   };
 
   // Called once to set the Observer. This function is called on the main
@@ -140,6 +145,8 @@ class SCHEDULER_EXPORT TaskQueueManager
 
   // TaskQueueSelector::Observer implementation:
   void OnTaskQueueEnabled(internal::TaskQueueImpl* queue) override;
+  void OnTriedToSelectBlockedWorkQueue(
+      internal::WorkQueue* work_queue) override;
 
   // Called by the task queue to register a new pending task.
   void DidQueueTask(const internal::TaskQueueImpl::Task& pending_task);

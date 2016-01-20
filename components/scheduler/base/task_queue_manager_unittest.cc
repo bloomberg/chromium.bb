@@ -412,13 +412,13 @@ TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  runners_[0]->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  runners_[0]->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
+  runners_[0]->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -428,12 +428,12 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  runners_[0]->SetQueueEnabled(false);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
+  runners_[0]->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -443,14 +443,14 @@ TEST_F(TaskQueueManagerTest, DenyRunning_ManuallyPumpedTransitionsToAuto) {
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::MANUAL);
-  runners_[0]->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  runners_[0]->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
   runners_[0]->SetPumpPolicy(TaskQueue::PumpPolicy::AUTO);
-  runners_[0]->SetQueuePriority(TaskQueue::NORMAL_PRIORITY);
+  runners_[0]->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -1350,7 +1350,9 @@ namespace {
 class MockObserver : public TaskQueueManager::Observer {
  public:
   MOCK_METHOD1(OnUnregisterTaskQueue,
-               void(const scoped_refptr<internal::TaskQueueImpl>& queue));
+               void(const scoped_refptr<TaskQueue>& queue));
+  MOCK_METHOD2(OnTriedToExecuteBlockedTask,
+               void(const TaskQueue& queue, const base::PendingTask& task));
 };
 
 }  // namespace
@@ -1366,6 +1368,39 @@ TEST_F(TaskQueueManagerTest, OnUnregisterTaskQueue) {
 
   EXPECT_CALL(observer, OnUnregisterTaskQueue(_)).Times(1);
   task_queue->UnregisterTaskQueue();
+
+  manager_->SetObserver(nullptr);
+}
+
+TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
+  Initialize(0u);
+
+  MockObserver observer;
+  manager_->SetObserver(&observer);
+
+  scoped_refptr<internal::TaskQueueImpl> task_queue = manager_->NewTaskQueue(
+      TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
+  task_queue->SetQueueEnabled(false);
+  task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
+  test_task_runner_->RunPendingTasks();
+
+  manager_->SetObserver(nullptr);
+}
+
+TEST_F(TaskQueueManagerTest, ExecutedNonBlockedTask) {
+  Initialize(0u);
+
+  MockObserver observer;
+  manager_->SetObserver(&observer);
+
+  scoped_refptr<internal::TaskQueueImpl> task_queue = manager_->NewTaskQueue(
+      TaskQueue::Spec("test_queue").SetShouldReportWhenExecutionBlocked(true));
+  task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
+
+  EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(0);
+  test_task_runner_->RunPendingTasks();
 
   manager_->SetObserver(nullptr);
 }

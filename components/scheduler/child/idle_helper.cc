@@ -47,7 +47,8 @@ IdleHelper::IdleHelper(
       idle_queue_, helper_->ControlAfterWakeUpTaskRunner(), this,
       tracing_category));
 
-  idle_queue_->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  idle_queue_->SetQueueEnabled(false);
+  idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
 
   helper_->AddTaskObserver(this);
 }
@@ -174,7 +175,7 @@ void IdleHelper::StartIdlePeriod(IdlePeriodState new_state,
   }
 
   TRACE_EVENT0(disabled_by_default_tracing_category_, "StartIdlePeriod");
-  idle_queue_->SetQueuePriority(TaskQueue::BEST_EFFORT_PRIORITY);
+  idle_queue_->SetQueueEnabled(true);
   idle_queue_->PumpQueue(true);
 
   state_.UpdateState(new_state, idle_period_deadline, now);
@@ -191,7 +192,7 @@ void IdleHelper::EndIdlePeriod() {
   if (!IsInIdlePeriod(state_.idle_period_state()))
     return;
 
-  idle_queue_->SetQueuePriority(TaskQueue::DISABLED_PRIORITY);
+  idle_queue_->SetQueueEnabled(false);
   state_.UpdateState(IdlePeriodState::NOT_IN_IDLE_PERIOD, base::TimeTicks(),
                      base::TimeTicks());
 }
