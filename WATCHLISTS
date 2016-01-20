@@ -1259,7 +1259,7 @@
                  'rouslan+autofill@chromium.org',
                  'vabr+watchlistautofill@chromium.org'],
     'automation': ['robertshield@chromium.org'],
-    'background_sync': ['jkarlin+watch@chromium.org'],
+    'background_sync': ['jkarlin+watch@chromium.org','peter@chromium.org'],
     'base': ['vmpstr+watch@chromium.org'],
     'base_allocator': ['dmikurube@chromium.org',
                        'wfh+watch@chromium.org'],
