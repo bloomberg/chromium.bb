@@ -1586,17 +1586,20 @@ bool isRenderedAsNonInlineTableImageOrHR(const Node* node)
     return layoutObject && ((layoutObject->isTable() && !layoutObject->isInline()) || (layoutObject->isImage() && !layoutObject->isInline()) || layoutObject->isHR());
 }
 
-bool areIdenticalElements(const Node* first, const Node* second)
+bool areIdenticalElements(const Node& first, const Node& second)
 {
-    if (!first->isElementNode() || !second->isElementNode())
+    if (!first.isElementNode() || !second.isElementNode())
         return false;
 
-    const Element* firstElement = toElement(first);
-    const Element* secondElement = toElement(second);
-    if (!firstElement->hasTagName(secondElement->tagQName()))
+    const Element& firstElement = toElement(first);
+    const Element& secondElement = toElement(second);
+    if (!firstElement.hasTagName(secondElement.tagQName()))
         return false;
 
-    return firstElement->hasEquivalentAttributes(secondElement);
+    if (!firstElement.hasEquivalentAttributes(&secondElement))
+        return false;
+
+    return firstElement.hasEditableStyle() && secondElement.hasEditableStyle();
 }
 
 bool isNonTableCellHTMLBlockElement(const Node* node)

@@ -1305,7 +1305,7 @@ bool ApplyStyleCommand::mergeStartWithPreviousIfIdentical(const Position& start,
 
     Node* previousSibling = startNode->previousSibling();
 
-    if (previousSibling && areIdenticalElements(startNode, previousSibling)) {
+    if (previousSibling && areIdenticalElements(*startNode, *previousSibling)) {
         Element* previousElement = toElement(previousSibling);
         Element* element = toElement(startNode);
         Node* startChild = element->firstChild();
@@ -1341,7 +1341,7 @@ bool ApplyStyleCommand::mergeEndWithNextIfIdentical(const Position& start, const
         return false;
 
     Node* nextSibling = endNode->nextSibling();
-    if (nextSibling && areIdenticalElements(endNode, nextSibling)) {
+    if (nextSibling && areIdenticalElements(*endNode, *nextSibling)) {
         Element* nextElement = toElement(nextSibling);
         Element* element = toElement(endNode);
         Node* nextChild = nextElement->firstChild();
@@ -1382,13 +1382,13 @@ void ApplyStyleCommand::surroundNodeRangeWithElement(PassRefPtrWillBeRawPtr<Node
     RefPtrWillBeRawPtr<Node> nextSibling = element->nextSibling();
     RefPtrWillBeRawPtr<Node> previousSibling = element->previousSibling();
     if (nextSibling && nextSibling->isElementNode() && nextSibling->hasEditableStyle()
-        && areIdenticalElements(element.get(), toElement(nextSibling)))
+        && areIdenticalElements(*element, toElement(*nextSibling)))
         mergeIdenticalElements(element.get(), toElement(nextSibling));
 
     if (previousSibling && previousSibling->isElementNode() && previousSibling->hasEditableStyle()) {
         Node* mergedElement = previousSibling->nextSibling();
         if (mergedElement->isElementNode() && mergedElement->hasEditableStyle()
-            && areIdenticalElements(toElement(previousSibling), toElement(mergedElement)))
+            && areIdenticalElements(toElement(*previousSibling), toElement(*mergedElement)))
             mergeIdenticalElements(toElement(previousSibling), toElement(mergedElement));
     }
 

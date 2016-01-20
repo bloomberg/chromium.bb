@@ -541,7 +541,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
         }
 
         // FIXME: Tolerate differences in id, class, and style attributes.
-        if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(element, element->parentNode())
+        if (element->parentNode() && isNonTableCellHTMLBlockElement(element) && areIdenticalElements(*element, *element->parentNode())
             && createVisiblePosition(firstPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(firstPositionInNode(element)).deepEquivalent()
             && createVisiblePosition(lastPositionInNode(element->parentNode())).deepEquivalent() == createVisiblePosition(lastPositionInNode(element)).deepEquivalent()) {
             insertedNodes.willRemoveNodePreservingChildren(*element);

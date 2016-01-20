@@ -141,7 +141,9 @@ bool isListItem(const Node*);
 bool isNodeRendered(const Node&);
 bool isNodeVisiblyContainedWithin(Node&, const Range&);
 bool isRenderedAsNonInlineTableImageOrHR(const Node*);
-bool areIdenticalElements(const Node*, const Node*);
+// Returns true if specified nodes are elements, have identical tag names,
+// have identical attributes, and are editable.
+CORE_EXPORT bool areIdenticalElements(const Node&, const Node&);
 bool isNonTableCellHTMLBlockElement(const Node*);
 bool isBlockFlowElement(const Node&);
 bool nodeIsUserSelectAll(const Node*);
