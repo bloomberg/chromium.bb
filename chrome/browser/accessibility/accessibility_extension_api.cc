@@ -10,9 +10,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/accessibility/accessibility_extension_api.h"
 #include "chrome/browser/extensions/api/tabs/tabs_constants.h"
-#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -29,7 +27,6 @@
 #include "extensions/common/manifest_handlers/background_info.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #endif
 
@@ -84,37 +81,4 @@ bool AccessibilityPrivateSetFocusRingFunction::RunSync() {
 
   error_ = kErrorNotSupported;
   return false;
-}
-
-ExtensionFunction::ResponseAction
-AccessibilityPrivateSetKeyboardListenerFunction::Run() {
-  ChromeExtensionFunctionDetails details(this);
-  CHECK(extension());
-
-#if defined(OS_CHROMEOS)
-  bool enabled;
-  bool capture;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(0, &enabled));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &capture));
-
-  chromeos::AccessibilityManager* manager =
-      chromeos::AccessibilityManager::Get();
-
-  const std::string current_id = manager->keyboard_listener_extension_id();
-  if (!current_id.empty() && extension()->id() != current_id)
-    return RespondNow(Error("Existing keyboard listener registered."));
-
-  if (enabled) {
-    manager->SetKeyboardListenerExtensionId(extension()->id(),
-                                            details.GetProfile());
-    manager->set_keyboard_listener_capture(capture);
-  } else {
-    manager->SetKeyboardListenerExtensionId(std::string(),
-                                            details.GetProfile());
-    manager->set_keyboard_listener_capture(false);
-  }
-  return RespondNow(NoArguments());
-#endif  // defined OS_CHROMEOS
-
-  return RespondNow(Error(kErrorNotSupported));
 }

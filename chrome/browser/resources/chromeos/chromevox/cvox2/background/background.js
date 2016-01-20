@@ -123,9 +123,6 @@ Background = function() {
 
   // Live region handler.
   this.liveRegions_ = new LiveRegions(this);
-
-  if (!chrome.accessibilityPrivate.setKeyboardListener)
-    chrome.accessibilityPrivate.setKeyboardListener = function() {};
 };
 
 Background.prototype = {
@@ -156,13 +153,10 @@ Background.prototype = {
       if (chrome.commands &&
           chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.removeListener(this.onGotCommand);
-      chrome.accessibilityPrivate.setKeyboardListener(false, false);
     } else {
       if (chrome.commands &&
           !chrome.commands.onCommand.hasListener(this.onGotCommand))
         chrome.commands.onCommand.addListener(this.onGotCommand);
-        chrome.accessibilityPrivate.setKeyboardListener(
-            true, cvox.ChromeVox.isStickyPrefOn);
     }
 
     chrome.tabs.query({active: true}, function(tabs) {
@@ -470,11 +464,6 @@ Background.prototype = {
         cvox.ChromeVoxBackground.setPref('sticky',
                                          !cvox.ChromeVox.isStickyPrefOn,
                                          true);
-
-        if (cvox.ChromeVox.isStickyPrefOn)
-          chrome.accessibilityPrivate.setKeyboardListener(true, true);
-        else
-          chrome.accessibilityPrivate.setKeyboardListener(true, false);
         break;
       default:
         return true;

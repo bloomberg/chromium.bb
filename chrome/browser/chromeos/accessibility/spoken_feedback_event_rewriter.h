@@ -26,8 +26,7 @@ class SpokenFeedbackEventRewriterDelegate
   virtual bool IsSpokenFeedbackEnabled() const;
 
   // Returns true when |key_event| is dispatched to ChromeVox.
-  virtual bool DispatchKeyEventToChromeVox(const ui::KeyEvent& key_event,
-                                           bool capture);
+  virtual bool DispatchKeyEventToChromeVox(const ui::KeyEvent& key_event);
 
   // WebContentsDelegate:
   void HandleKeyboardEvent(

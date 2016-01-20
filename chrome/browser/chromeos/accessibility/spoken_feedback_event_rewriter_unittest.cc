@@ -54,8 +54,7 @@ class TestDelegate : public SpokenFeedbackEventRewriterDelegate {
     return is_spoken_feedback_enabled_;
   }
 
-  bool DispatchKeyEventToChromeVox(const ui::KeyEvent& key_event,
-                                   bool capture) override {
+  bool DispatchKeyEventToChromeVox(const ui::KeyEvent& key_event) override {
     return dispatch_result_;
   }
 

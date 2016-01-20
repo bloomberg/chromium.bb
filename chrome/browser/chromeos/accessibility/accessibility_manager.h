@@ -79,7 +79,6 @@ class ChromeVoxPanelWidgetObserver;
 class AccessibilityManager
     : public content::NotificationObserver,
       public extensions::api::braille_display_private::BrailleObserver,
-      public extensions::ExtensionRegistryObserver,
       public ash::SessionStateObserver,
       public ash::ShellObserver,
       public input_method::InputMethodManager::Observer {
@@ -213,19 +212,6 @@ class AccessibilityManager
   // Profile having the a11y context.
   Profile* profile() { return profile_; }
 
-  // Extension id of extension receiving keyboard events.
-  void SetKeyboardListenerExtensionId(const std::string& id,
-                                      content::BrowserContext* context);
-  const std::string& keyboard_listener_extension_id() {
-    return keyboard_listener_extension_id_;
-  }
-
-  // Whether keyboard listener extension gets to capture keys.
-  void set_keyboard_listener_capture(bool val) {
-    keyboard_listener_capture_ = val;
-  }
-  bool keyboard_listener_capture() { return keyboard_listener_capture_; }
-
  protected:
   AccessibilityManager();
   ~AccessibilityManager() override;
@@ -268,12 +254,6 @@ class AccessibilityManager
           display_state) override;
   void OnBrailleKeyEvent(
       const extensions::api::braille_display_private::KeyEvent& event) override;
-
-  // ExtensionRegistryObserver implementation.
-  void OnExtensionUnloaded(
-      content::BrowserContext* browser_context,
-      const extensions::Extension* extension,
-      extensions::UnloadedExtensionInfo::Reason reason) override;
 
   // InputMethodManager::Observer
   void InputMethodChanged(input_method::InputMethodManager* manager,
@@ -324,14 +304,6 @@ class AccessibilityManager
 
   ChromeVoxPanel* chromevox_panel_;
   scoped_ptr<ChromeVoxPanelWidgetObserver> chromevox_panel_widget_observer_;
-
-  std::string keyboard_listener_extension_id_;
-  bool keyboard_listener_capture_;
-
-  // Listen to extension unloaded notifications.
-  ScopedObserver<extensions::ExtensionRegistry,
-                 extensions::ExtensionRegistryObserver>
-      extension_registry_observer_;
 
   base::WeakPtrFactory<AccessibilityManager> weak_ptr_factory_;
 
