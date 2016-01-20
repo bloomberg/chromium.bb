@@ -9,14 +9,14 @@
 // WebKit/public/platform/WebMediaConstraints.h
 TEST(MediaTrackConstraintsTest, LongConstraint)
 {
-    blink::LongConstraint rangeConstraint;
+    blink::LongConstraint rangeConstraint(nullptr);
     rangeConstraint.setMin(5);
     rangeConstraint.setMax(6);
     EXPECT_TRUE(rangeConstraint.matches(5));
     EXPECT_TRUE(rangeConstraint.matches(6));
     EXPECT_FALSE(rangeConstraint.matches(4));
     EXPECT_FALSE(rangeConstraint.matches(7));
-    blink::LongConstraint exactConstraint;
+    blink::LongConstraint exactConstraint(nullptr);
     exactConstraint.setExact(5);
     EXPECT_FALSE(exactConstraint.matches(4));
     EXPECT_TRUE(exactConstraint.matches(5));
@@ -25,7 +25,7 @@ TEST(MediaTrackConstraintsTest, LongConstraint)
 
 TEST(MediaTrackConstraintsTest, DoubleConstraint)
 {
-    blink::DoubleConstraint rangeConstraint;
+    blink::DoubleConstraint rangeConstraint(nullptr);
     EXPECT_TRUE(rangeConstraint.isEmpty());
     rangeConstraint.setMin(5.0);
     rangeConstraint.setMax(6.5);
@@ -33,7 +33,7 @@ TEST(MediaTrackConstraintsTest, DoubleConstraint)
     // Matching within epsilon
     EXPECT_TRUE(rangeConstraint.matches(5.0 - blink::DoubleConstraint::kConstraintEpsilon / 2));
     EXPECT_TRUE(rangeConstraint.matches(6.5 + blink::DoubleConstraint::kConstraintEpsilon / 2));
-    blink::DoubleConstraint exactConstraint;
+    blink::DoubleConstraint exactConstraint(nullptr);
     exactConstraint.setExact(5.0);
     EXPECT_FALSE(rangeConstraint.isEmpty());
     EXPECT_FALSE(exactConstraint.matches(4.9));
@@ -45,7 +45,7 @@ TEST(MediaTrackConstraintsTest, DoubleConstraint)
 
 TEST(MediaTrackConstraintsTest, BooleanConstraint)
 {
-    blink::BooleanConstraint boolConstraint;
+    blink::BooleanConstraint boolConstraint(nullptr);
     EXPECT_TRUE(boolConstraint.isEmpty());
     EXPECT_TRUE(boolConstraint.matches(false));
     EXPECT_TRUE(boolConstraint.matches(true));
@@ -64,4 +64,11 @@ TEST(MediaTrackConstraintsTest, ConstraintSetEmpty)
     EXPECT_TRUE(theSet.isEmpty());
     theSet.echoCancellation.setExact(false);
     EXPECT_FALSE(theSet.isEmpty());
+}
+
+TEST(MediaTrackConstraintsTest, ConstraintName)
+{
+    const char* theName = "name";
+    blink::BooleanConstraint boolConstraint(theName);
+    EXPECT_EQ(theName, boolConstraint.name());
 }

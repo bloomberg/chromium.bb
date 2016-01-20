@@ -145,7 +145,27 @@ const WebVector<WebMediaTrackConstraintSet>& WebMediaConstraintsPrivate::advance
 
 // *Constraints
 
-double DoubleConstraint::kConstraintEpsilon = 0.00001;
+BaseConstraint::BaseConstraint(const char* name)
+    : m_name(name)
+{
+}
+
+BaseConstraint::~BaseConstraint()
+{
+}
+
+LongConstraint::LongConstraint(const char* name)
+    : BaseConstraint(name)
+    , m_min()
+    , m_max()
+    , m_exact()
+    , m_ideal()
+    , m_hasMin(false)
+    , m_hasMax(false)
+    , m_hasExact(false)
+    , m_hasIdeal(false)
+{
+}
 
 bool LongConstraint::matches(long value) const
 {
@@ -166,6 +186,21 @@ bool LongConstraint::isEmpty() const
     return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
 }
 
+double DoubleConstraint::kConstraintEpsilon = 0.00001;
+
+DoubleConstraint::DoubleConstraint(const char* name)
+    : BaseConstraint(name)
+    , m_min()
+    , m_max()
+    , m_exact()
+    , m_ideal()
+    , m_hasMin(false)
+    , m_hasMax(false)
+    , m_hasExact(false)
+    , m_hasIdeal(false)
+{
+}
+
 bool DoubleConstraint::matches(double value) const
 {
     if (m_hasMin && value < m_min - kConstraintEpsilon) {
@@ -183,6 +218,13 @@ bool DoubleConstraint::matches(double value) const
 bool DoubleConstraint::isEmpty() const
 {
     return !m_hasMin && !m_hasMax && !m_hasExact && !m_hasIdeal;
+}
+
+StringConstraint::StringConstraint(const char* name)
+    : BaseConstraint(name)
+    , m_exact()
+    , m_ideal()
+{
 }
 
 bool StringConstraint::matches(WebString value) const
@@ -213,6 +255,15 @@ const WebVector<WebString>& StringConstraint::ideal() const
     return m_ideal;
 }
 
+BooleanConstraint::BooleanConstraint(const char* name)
+    : BaseConstraint(name)
+    , m_ideal(false)
+    , m_exact(false)
+    , m_hasIdeal(false)
+    , m_hasExact(false)
+{
+}
+
 bool BooleanConstraint::matches(bool value) const
 {
     if (m_hasExact && static_cast<bool>(m_exact) != value) {
@@ -224,6 +275,61 @@ bool BooleanConstraint::matches(bool value) const
 bool BooleanConstraint::isEmpty() const
 {
     return !m_hasIdeal && !m_hasExact;
+}
+
+WebMediaTrackConstraintSet::WebMediaTrackConstraintSet()
+    : width("width")
+    , height("height")
+    , aspectRatio("aspectRatio")
+    , frameRate("frameRate")
+    , facingMode("facingMode")
+    , volume("volume")
+    , sampleRate("sampleRate")
+    , sampleSize("sampleSize")
+    , echoCancellation("echoCancellation")
+    , latency("latency")
+    , channelCount("channelCount")
+    , deviceId("deviceId")
+    , groupId("groupId")
+    , mediaStreamSource("mediaStreamSource")
+    , renderToAssociatedSink("renderToAssociatedSink")
+    , hotwordEnabled("hotwordEnabled")
+    , googEchoCancellation("googEchoCancellation")
+    , googExperimentalEchoCancellation("googExperimentalEchoCancellation")
+    , googAutoGainControl("googAutoGainControl")
+    , googExperimentalAutoGainControl("googExperimentalAutoGainControl")
+    , googNoiseSuppression("gogNoiseSuppression")
+    , googHighpassFilter("googHighpassFilter")
+    , googTypingNoiseDetection("googTypingNoiseDetection")
+    , googExperimentalNoiseSuppression("googExperimentalNoiseSuppression")
+    , googBeamforming("googBeamforming")
+    , googArrayGeometry("googArrayGeometry")
+    , googAudioMirroring("googAudioMirroring")
+    , googDAEchoCancellation("googDAEchoCancellation")
+    , googAecDump("googAecDump")
+    , googNoiseReduction("googNoiseReduction")
+    , offerToReceiveAudio("offerToReceiveAudio")
+    , offerToReceiveVideo("offerToReceiveVideo")
+    , voiceActivityDetection("voiceActivityDetection")
+    , iceRestart("iceRestart")
+    , googUseRtpMux("googUseRtpMux")
+    , enableDtlsSrtp("enableDtlsSrtp")
+    , enableRtpDataChannels("enableRtpDataChannels")
+    , enableDscp("enableDscp")
+    , enableIPv6("enableIPv6")
+    , googEnableVideoSuspendBelowMinBitrate("googEnableVideoSuspendBelowMinBitrate")
+    , googNumUnsignalledRecvStreams("googNumUnsignalledRecvStreams")
+    , googCombinedAudioVideoBwe("googCombinedAudioVideoBwe")
+    , googScreencastMinBitrate("googScreencastMinBitrate")
+    , googCpuOveruseDetection("googCpuOveruseDetection")
+    , googCpuUnderuseThreshold("googCpuUnderuseThreshold")
+    , googCpuOveruseThreshold("googCpuOveruseThreshold")
+    , googCpuUnderuseEncodeRsdThreshold("googCpuUnderuseEncodeRsdThreshold")
+    , googCpuOveruseEncodeRsdThreshold("googCpuOveruseEncodeRsdThreshold")
+    , googCpuOveruseEncodeUsage("googCpuOveruseEncodeUsage")
+    , googHighStartBitrate("googHighStartBitrate")
+    , googPayloadPadding("googPayloadPadding")
+{
 }
 
 bool WebMediaTrackConstraintSet::isEmpty() const

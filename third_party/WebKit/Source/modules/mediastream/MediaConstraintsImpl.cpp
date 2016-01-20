@@ -393,7 +393,7 @@ WebMediaConstraints create(const Dictionary& constraintsDictionary, MediaErrorSt
     return createFromNamedConstraints(mandatory, optional, errorState);
 }
 
-void copyLongConstraint(ConstrainLongRange blinkForm, LongConstraint& webForm)
+void copyLongConstraint(const ConstrainLongRange& blinkForm, LongConstraint& webForm)
 {
     if (blinkForm.hasMin()) {
         webForm.setMin(blinkForm.min());
@@ -409,7 +409,7 @@ void copyLongConstraint(ConstrainLongRange blinkForm, LongConstraint& webForm)
     }
 }
 
-void copyDoubleConstraint(ConstrainDoubleRange blinkForm, DoubleConstraint& webForm)
+void copyDoubleConstraint(const ConstrainDoubleRange& blinkForm, DoubleConstraint& webForm)
 {
     if (blinkForm.hasMin()) {
         webForm.setMin(blinkForm.min());
@@ -425,20 +425,17 @@ void copyDoubleConstraint(ConstrainDoubleRange blinkForm, DoubleConstraint& webF
     }
 }
 
-void copyStringConstraint(ConstrainDOMStringParameters blinkForm, StringConstraint& webForm)
+void copyStringConstraint(const ConstrainDOMStringParameters& blinkForm, StringConstraint& webForm)
 {
-    WebVector<WebString> ideal;
-    WebVector<WebString> exact;
     if (blinkForm.hasIdeal()) {
-        ideal = WebVector<WebString>(blinkForm.ideal());
+        webForm.setIdeal(WebVector<WebString>(blinkForm.ideal()));
     }
     if (blinkForm.hasExact()) {
-        exact = WebVector<WebString>(blinkForm.exact());
+        webForm.setExact(WebVector<WebString>(blinkForm.exact()));
     }
-    webForm = StringConstraint(ideal, exact);
 }
 
-void copyBooleanConstraint(ConstrainBooleanParameters blinkForm, BooleanConstraint& webForm)
+void copyBooleanConstraint(const ConstrainBooleanParameters& blinkForm, BooleanConstraint& webForm)
 {
     if (blinkForm.hasIdeal()) {
         webForm.setIdeal(blinkForm.ideal());
