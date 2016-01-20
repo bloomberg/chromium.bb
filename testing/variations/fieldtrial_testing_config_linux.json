@@ -180,11 +180,6 @@
             "group_name": "Enabled"
         }
     ],
-    "UseDelayAgnosticAEC": [
-        {
-            "group_name": "DefaultEnabled"
-        }
-    ],
     "VarationsServiceControl": [
         {
             "group_name": "Interval_30min",

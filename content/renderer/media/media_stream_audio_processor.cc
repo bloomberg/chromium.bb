@@ -102,15 +102,8 @@ void RecordProcessingState(AudioTrackProcessingStates state) {
 }
 
 bool IsDelayAgnosticAecEnabled() {
-  // Note: It's important to query the field trial state first, to ensure that
-  // UMA reports the correct group.
-  const std::string group_name =
-      base::FieldTrialList::FindFullName("UseDelayAgnosticAEC");
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kDisableDelayAgnosticAec))
-    return false;
-
-  return (group_name == "Enabled" || group_name == "DefaultEnabled");
+  return !command_line->HasSwitch(switches::kDisableDelayAgnosticAec);
 }
 
 // Checks if the default minimum starting volume value for the AGC is overridden
