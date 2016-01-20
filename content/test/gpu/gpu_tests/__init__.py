@@ -6,10 +6,16 @@ import os
 import sys
 
 def Init():
-  telemetry_path = os.path.join(
-    os.path.dirname(__file__),
-    '..', '..', '..', '..', 'tools', 'telemetry')
-  absolute_telemetry_path = os.path.abspath(telemetry_path)
-  sys.path.append(absolute_telemetry_path)
+  chromium_src_dir = os.path.abspath(os.path.join(
+    os.path.dirname(__file__), '..', '..', '..', '..'))
+
+  telemetry_path = os.path.join(chromium_src_dir, 'tools', 'telemetry')
+  if telemetry_path not in sys.path:
+    sys.path.append(telemetry_path)
+
+  catapult_base_path = os.path.join(
+      chromium_src_dir, 'third_party', 'catapult', 'catapult_base')
+  if catapult_base_path not in sys.path:
+    sys.path.append(catapult_base_path)
 
 Init()
