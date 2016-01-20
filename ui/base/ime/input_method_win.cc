@@ -262,6 +262,22 @@ LRESULT InputMethodWin::OnChar(HWND window_handle,
                                BOOL* handled) {
   *handled = TRUE;
 
+  if (!system_toplevel_window_focused()) {
+    GetLogCollector()->AddString(
+        "Unexpected OnChar: InputMethod is not active. Window focused: ");
+    GetLogCollector()->AddBoolean(
+        ::GetActiveWindow() == toplevel_window_handle_);
+    GetLogCollector()->DumpLogs();
+    // There are random issues that the keyboard typing doesn't work.
+    // The root cause might be the InputMethod::OnFocus() is not correctly
+    // called when the top-level window is activated
+    // (in DNWA::HandleActivationChanged).
+    // Calls OnFocus here to unblock the keyboard typing.
+    OnFocus();
+  } else {
+    GetLogCollector()->ClearLogs();
+  }
+
   // We need to send character events to the focused text input client event if
   // its text input type is ui::TEXT_INPUT_TYPE_NONE.
   if (GetTextInputClient()) {
@@ -295,6 +311,7 @@ LRESULT InputMethodWin::OnImeSetContext(HWND window_handle,
                                         WPARAM wparam,
                                         LPARAM lparam,
                                         BOOL* handled) {
+  GetLogCollector()->AddString("WM_IME_SETCONTEXT");
   if (!!wparam) {
     imm32_manager_.CreateImeWindow(window_handle);
     if (system_toplevel_window_focused()) {

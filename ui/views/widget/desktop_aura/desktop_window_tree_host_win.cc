@@ -916,6 +916,14 @@ void DesktopWindowTreeHostWin::HandleWindowSizeChanged() {
                                   compositor()->size());
 }
 
+void DesktopWindowTreeHostWin::AddStringLog(const char* log_string) {
+  GetInputMethod()->GetLogCollector()->AddString(log_string);
+}
+
+void DesktopWindowTreeHostWin::AddBooleanLog(bool bool_val) {
+  GetInputMethod()->GetLogCollector()->AddBoolean(bool_val);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, private:
 

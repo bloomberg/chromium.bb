@@ -126,6 +126,7 @@
 #include "ui/accessibility/ax_view_state.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/ime/input_method.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1706,6 +1707,8 @@ bool BrowserView::CanActivate() const {
       FROM_HERE, base::Bind(&BrowserView::ActivateAppModalDialog,
                             activate_modal_dialog_factory_.GetWeakPtr()));
 #endif
+  GetNativeWindow()->GetHost()->GetInputMethod()->GetLogCollector()->AddString(
+      "BrowserView cannot be activated.");
   return false;
 }
 

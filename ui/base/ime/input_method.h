@@ -11,6 +11,7 @@
 
 #include "base/event_types.h"
 #include "build/build_config.h"
+#include "ui/base/ime/input_method_log_collector.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -152,6 +153,8 @@ class InputMethod {
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;
   virtual void RemoveObserver(InputMethodObserver* observer) = 0;
+
+  virtual InputMethodLogCollector* GetLogCollector() = 0;
 };
 
 }  // namespace ui

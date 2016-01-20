@@ -369,8 +369,11 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   native_widget_delegate_->OnNativeWidgetActivationChanged(active);
   aura::client::ActivationClient* activation_client =
       aura::client::GetActivationClient(host_->window());
-  if (!activation_client)
+  if (!activation_client) {
+    GetInputMethod()->GetLogCollector()->AddString(
+        "Missing OnFocus call when activating due to no activation client.");
     return;
+  }
   if (active) {
     if (GetWidget()->HasFocusManager()) {
       // This function can be called before the focus manager has had a
@@ -387,6 +390,9 @@ void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
       // Refreshes the focus info to IMF in case that IMF cached the old info
       // about focused text input client when it was "inactive".
       GetInputMethod()->OnFocus();
+    } else {
+      GetInputMethod()->GetLogCollector()->AddString(
+          "Missing OnFocus call when activating due to no focus manager.");
     }
   } else {
     // If we're not active we need to deactivate the corresponding

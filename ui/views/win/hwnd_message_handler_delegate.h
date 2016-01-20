@@ -228,6 +228,9 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
   // Called when the window size has finished changing.
   virtual void HandleWindowSizeChanged() = 0;
 
+  virtual void AddStringLog(const char* log_string) = 0;
+  virtual void AddBooleanLog(bool bool_val) = 0;
+
  protected:
   virtual ~HWNDMessageHandlerDelegate() {}
 };

@@ -928,8 +928,12 @@ LRESULT HWNDMessageHandler::OnWndProc(UINT message,
       delegate_->HandleDestroyed();
   }
 
-  if (message == WM_ACTIVATE && IsTopLevelWindow(window))
-    PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
+  if (message == WM_ACTIVATE) {
+    if (IsTopLevelWindow(window))
+      PostProcessActivateMessage(LOWORD(w_param), !!HIWORD(w_param));
+    else
+      delegate_->AddStringLog("WM_ACTIVATE on non-top-level window.");
+  }
   return result;
 }
 
@@ -1033,6 +1037,8 @@ void HWNDMessageHandler::PostProcessActivateMessage(int activation_state,
   const bool active = activation_state != WA_INACTIVE && !minimized;
   if (delegate_->CanActivate())
     delegate_->HandleActivationChanged(active);
+  else
+    delegate_->AddStringLog("Missing call to HandleActivationChanged.");
 }
 
 void HWNDMessageHandler::RestoreEnabledIfNecessary() {
@@ -1231,6 +1237,8 @@ void HWNDMessageHandler::ForceRedrawWindow(int attempts) {
 // Message handlers ------------------------------------------------------------
 
 void HWNDMessageHandler::OnActivateApp(BOOL active, DWORD thread_id) {
+  delegate_->AddStringLog("WM_ACTIVATEAPP: ");
+  delegate_->AddBooleanLog(active ? true : false);
   if (delegate_->IsWidgetWindow() && !active &&
       thread_id != GetCurrentThreadId()) {
     delegate_->HandleAppDeactivated();
@@ -1486,6 +1494,8 @@ void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
 LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
+  if (message == WM_KEYDOWN || message == WM_SYSKEYDOWN)
+    delegate_->AddStringLog("WM_KEYDOWN || WM_SYSKEYDOWN");
   MSG msg = {
       hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
@@ -1503,6 +1513,7 @@ void HWNDMessageHandler::OnKillFocus(HWND focused_window) {
 LRESULT HWNDMessageHandler::OnMouseActivate(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
+  delegate_->AddStringLog("WM_MOUSEACTIVATE");
   // Please refer to the comments in the header for the touch_down_contexts_
   // member for the if statement below.
   if (touch_down_contexts_)
@@ -1567,6 +1578,8 @@ void HWNDMessageHandler::OnMoving(UINT param, const RECT* new_bounds) {
 LRESULT HWNDMessageHandler::OnNCActivate(UINT message,
                                          WPARAM w_param,
                                          LPARAM l_param) {
+  delegate_->AddStringLog("WM_NCACTIVATE: ");
+  delegate_->AddBooleanLog(w_param ? true : false);
   // Per MSDN, w_param is either TRUE or FALSE. However, MSDN also hints that:
   // "If the window is minimized when this message is received, the application
   // should pass the message to the DefWindowProc function."

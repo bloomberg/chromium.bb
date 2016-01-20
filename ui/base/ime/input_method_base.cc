@@ -15,10 +15,10 @@
 namespace ui {
 
 InputMethodBase::InputMethodBase()
-  : delegate_(NULL),
-    text_input_client_(NULL),
-    system_toplevel_window_focused_(false) {
-}
+    : delegate_(NULL),
+      text_input_client_(NULL),
+      system_toplevel_window_focused_(false),
+      log_collector_(new InputMethodLogCollector()) {}
 
 InputMethodBase::~InputMethodBase() {
   FOR_EACH_OBSERVER(InputMethodObserver,
@@ -36,6 +36,8 @@ void InputMethodBase::OnFocus() {
 
 void InputMethodBase::OnBlur() {
   system_toplevel_window_focused_ = false;
+  log_collector_->ClearLogs();
+  log_collector_->AddString("Input method is blurred.");
 }
 
 void InputMethodBase::SetFocusedTextInputClient(TextInputClient* client) {
@@ -88,6 +90,10 @@ void InputMethodBase::AddObserver(InputMethodObserver* observer) {
 
 void InputMethodBase::RemoveObserver(InputMethodObserver* observer) {
   observer_list_.RemoveObserver(observer);
+}
+
+InputMethodLogCollector* InputMethodBase::GetLogCollector() {
+  return log_collector_.get();
 }
 
 bool InputMethodBase::IsTextInputClientFocused(const TextInputClient* client) {

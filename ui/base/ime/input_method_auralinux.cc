@@ -46,6 +46,19 @@ bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
 void InputMethodAuraLinux::DispatchKeyEvent(ui::KeyEvent* event) {
   DCHECK(event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
+  if (!system_toplevel_window_focused()) {
+    GetLogCollector()->AddString(
+        "Unexpected DispatchKeyEvent: InputMethod is not active.");
+    GetLogCollector()->DumpLogs();
+    // There are random issues that the keyboard typing doesn't work.
+    // The root cause might be the InputMethod::OnFocus() is not correctly
+    // called when the top-level window is activated
+    // (in DNWA::HandleActivationChanged).
+    // Calls OnFocus here to unblock the keyboard typing.
+    OnFocus();
+  } else {
+    GetLogCollector()->ClearLogs();
+  }
 
   // If no text input client, do nothing.
   if (!GetTextInputClient()) {

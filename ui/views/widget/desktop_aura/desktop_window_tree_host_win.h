@@ -193,6 +193,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool HandleScrollEvent(const ui::ScrollEvent& event) override;
   void HandleWindowSizeChanging() override;
   void HandleWindowSizeChanged() override;
+  void AddStringLog(const char* log_string) override;
+  void AddBooleanLog(bool bool_val) override;
 
   Widget* GetWidget();
   const Widget* GetWidget() const;

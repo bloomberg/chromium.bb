@@ -56,6 +56,8 @@ class UI_BASE_IME_EXPORT InputMethodBase
   void AddObserver(InputMethodObserver* observer) override;
   void RemoveObserver(InputMethodObserver* observer) override;
 
+  InputMethodLogCollector* GetLogCollector() override;
+
  protected:
   virtual void OnWillChangeFocusedClient(TextInputClient* focused_before,
                                          TextInputClient* focused) {}
@@ -100,6 +102,8 @@ class UI_BASE_IME_EXPORT InputMethodBase
   base::ObserverList<InputMethodObserver> observer_list_;
 
   bool system_toplevel_window_focused_;
+
+  scoped_ptr<InputMethodLogCollector> log_collector_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodBase);
 };
