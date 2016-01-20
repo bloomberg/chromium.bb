@@ -771,7 +771,14 @@ class DownloadJob(object):
     assert self.thread, 'DownloadJob must be started before WaitFor is called.'
     print 'Downloading revision %s...' % str(self.rev)
     self.progress_event.set()  # Display progress of download.
-    self.thread.join()
+    try:
+      while self.thread.isAlive():
+        # The parameter to join is needed to keep the main thread responsive to
+        # signals. Without it, the program will not respond to interruptions.
+        self.thread.join(1)
+    except (KeyboardInterrupt, SystemExit):
+      self.Stop()
+      raise
 
 
 def Bisect(context,
