@@ -3322,17 +3322,17 @@
             'MinimumRequiredVersion': '5.02',  # Server 2003.
             'TargetMachine': '17', # x86 - 64
             'AdditionalLibraryDirectories!':
-              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x86'],
+              ['<(windows_sdk_path)/Lib/10.0.10586.0/um/x86'],
             'AdditionalLibraryDirectories':
-              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x64'],
+              ['<(windows_sdk_path)/Lib/10.0.10586.0/um/x64'],
             # Doesn't exist x64 SDK. Should use oleaut32 in any case.
             'IgnoreDefaultLibraryNames': [ 'olepro32.lib' ],
           },
           'VCLibrarianTool': {
             'AdditionalLibraryDirectories!':
-              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x86'],
+              ['<(windows_sdk_path)/Lib/10.0.10586.0/um/x86'],
             'AdditionalLibraryDirectories':
-              ['<(windows_sdk_path)/Lib/10.0.10240.0/um/x64'],
+              ['<(windows_sdk_path)/Lib/10.0.10586.0/um/x64'],
             'TargetMachine': '17', # x64
           },
         },
@@ -5663,9 +5663,9 @@
           }],
         ],
         'msvs_system_include_dirs': [
-          '<(windows_sdk_path)/Include/10.0.10240.0/shared',
-          '<(windows_sdk_path)/Include/10.0.10240.0/um',
-          '<(windows_sdk_path)/Include/10.0.10240.0/winrt',
+          '<(windows_sdk_path)/Include/10.0.10586.0/shared',
+          '<(windows_sdk_path)/Include/10.0.10586.0/um',
+          '<(windows_sdk_path)/Include/10.0.10586.0/winrt',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_shell': 0,
