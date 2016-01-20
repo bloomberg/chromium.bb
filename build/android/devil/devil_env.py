@@ -14,6 +14,9 @@ CATAPULT_ROOT_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', 'third_party', 'catapult'))
 DEPENDENCY_MANAGER_PATH = os.path.join(
     CATAPULT_ROOT_PATH, 'dependency_manager')
+PYMOCK_PATH = os.path.join(
+    CATAPULT_ROOT_PATH, 'third_party', 'mock')
+
 
 @contextlib.contextmanager
 def SysPath(path):
