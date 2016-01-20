@@ -8,6 +8,7 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/TextPainter.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -65,7 +66,7 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo, const LayoutP
 
 void EllipsisBoxPainter::paintSelection(GraphicsContext& context, const LayoutPoint& boxOrigin, const ComputedStyle& style, const Font& font)
 {
-    Color textColor = m_ellipsisBox.layoutObject().resolveColor(style, CSSPropertyColor);
+    Color textColor = LineLayoutPaintShim::layoutObjectFrom(m_ellipsisBox.lineLayoutItem())->resolveColor(style, CSSPropertyColor);
     Color c = m_ellipsisBox.lineLayoutItem().selectionBackgroundColor();
     if (!c.alpha())
         return;
