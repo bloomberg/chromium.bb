@@ -355,6 +355,11 @@ IPC_MESSAGE_CONTROL4(ResourceMsg_SetDataBuffer,
 IPC_MESSAGE_CONTROL2(ResourceMsg_DataReceivedDebug,
                      int /* request_id */,
                      int /* data_offset */)
+IPC_MESSAGE_CONTROL4(ResourceMsg_DataReceivedDebug2,
+                     int /* request_id */,
+                     int /* data_offset */,
+                     int /* data_length */,
+                     int /* encoded_data_length */)
 
 // Sent when some data from a resource request is ready.  The data offset and
 // length specify a byte range into the shared memory buffer provided by the

@@ -229,6 +229,22 @@ void ResourceDispatcher::OnReceivedDataDebug(int request_id, int data_offset) {
   }
 }
 
+void ResourceDispatcher::OnReceivedDataDebug2(int request_id,
+                                              int data_offset,
+                                              int data_length,
+                                              int encoded_data_length) {
+  PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
+  if (request_info) {
+    // TODO(erikchen): Temporary debugging. http://crbug.com/527588.
+    // ResourceMsg_DataReceivedDebug2 should be indistinguishable from
+    // ResourceMsg_DataReceived, which means that data_offset should exceed
+    // 512k. The second assertion is expected to fail for some users.
+    CHECK_GE(data_offset, 0);
+    CHECK_LE(data_offset, 512 * 1024);
+    request_info->data_offset2 = data_offset;
+  }
+}
+
 void ResourceDispatcher::OnReceivedData(int request_id,
                                         int data_offset,
                                         int data_length,
@@ -249,6 +265,9 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     if (data_offset > 512 * 1024) {
       int cached_data_offset = request_info->data_offset;
       base::debug::Alias(&cached_data_offset);
+      int cached_data_offset2 = request_info->data_offset2;
+      base::debug::Alias(&cached_data_offset2);
+      CHECK_EQ(cached_data_offset, cached_data_offset2);
       CHECK(false);
     }
 
@@ -551,6 +570,7 @@ void ResourceDispatcher::DispatchMessage(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ResourceMsg_ReceivedRedirect, OnReceivedRedirect)
     IPC_MESSAGE_HANDLER(ResourceMsg_SetDataBuffer, OnSetDataBuffer)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug, OnReceivedDataDebug)
+    IPC_MESSAGE_HANDLER(ResourceMsg_DataReceivedDebug2, OnReceivedDataDebug2)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataReceived, OnReceivedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_DataDownloaded, OnDownloadedData)
     IPC_MESSAGE_HANDLER(ResourceMsg_RequestComplete, OnRequestComplete)
@@ -735,6 +755,7 @@ bool ResourceDispatcher::IsResourceDispatcherMessage(
     case ResourceMsg_ReceivedRedirect::ID:
     case ResourceMsg_SetDataBuffer::ID:
     case ResourceMsg_DataReceivedDebug::ID:
+    case ResourceMsg_DataReceivedDebug2::ID:
     case ResourceMsg_DataReceived::ID:
     case ResourceMsg_DataDownloaded::ID:
     case ResourceMsg_RequestComplete::ID:
