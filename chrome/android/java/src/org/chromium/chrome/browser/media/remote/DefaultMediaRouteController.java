@@ -49,14 +49,12 @@ import javax.annotation.Nullable;
  * remotely meaning that we don't have to start the session but to replace the current video with
  * the new one
  *
- *  Casting the first video takes three intents sent to the selected media route:
- * ACTION_START_SESSION, ACTION_SYNC_STATUS and ACTION_PLAY. The first one is sent before anything
- * else. We get the session id from the result bundle of the intent but need to wait until the
- * session becomes active before continuing to the next step. Then we send the ACTION_SYNC_STATUS
- * intent to update the media item status and pass the PendingIntent for the media item status
- * events to the Cast MRP. Finally we send the video URL via the ACTION_PLAY intent.
+ *  Casting the first video takes two intents sent to the selected media route:
+ * ACTION_START_SESSION and ACTION_PLAY. The first one is sent before anything else. We get the
+ * session id from the result bundle of the intent but need to wait until the session becomes
+ * active before sending the video URL via the ACTION_PLAY intent.
  *
- *  Casting the second video to the same target device should only take one ACTION_PLAY intent if
+ *  Casting the second video to the same target device only takes one ACTION_PLAY intent if
  * the session is still active. Otherwise, the scenario is the same as for the first video.
  */
 public class DefaultMediaRouteController extends AbstractMediaRouteController {
@@ -600,16 +598,6 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
         mSeeking = false;
     }
 
-    private void syncStatus(String sessionId, ResultBundleHandler bundleHandler) {
-        if (sessionId == null) return;
-        Intent intent = new Intent(CastMediaControlIntent.ACTION_SYNC_STATUS);
-        intent.addCategory(CastMediaControlIntent.categoryForRemotePlayback());
-        intent.putExtra(MediaControlIntent.EXTRA_SESSION_ID, sessionId);
-        intent.putExtra(MediaControlIntent.EXTRA_ITEM_STATUS_UPDATE_RECEIVER,
-                mMediaStatusUpdateIntent);
-        sendIntentToRoute(intent, bundleHandler);
-    }
-
     private void processSessionStatusBundle(Bundle statusBundle) {
         MediaSessionStatus status = MediaSessionStatus.fromBundle(
                 statusBundle.getBundle(MediaControlIntent.EXTRA_SESSION_STATUS));
@@ -621,23 +609,9 @@ public class DefaultMediaRouteController extends AbstractMediaRouteController {
 
         switch (sessionState) {
             case MediaSessionStatus.SESSION_STATE_ACTIVE:
-                // TODO(aberent): This should not be needed. Remove this once b/12921924 is fixed.
-                // TODO(dgn): It's fixed now. Should be looked at in the context of
-                // https://crbug.com/577110
-                syncStatus(mCurrentSessionId, new ResultBundleHandler() {
-                    @Override
-                    public void onResult(Bundle data) {
-                        processMediaStatusBundle(data);
-                        if (mLocalVideoUri != null) {
-                            startPlayback(mPreferredTitle, mStartPositionMillis);
-                        }
-                    }
-
-                    @Override
-                    public void onError(String message, Bundle data) {
-                        release();
-                    }
-                });
+                if (mLocalVideoUri != null) {
+                    startPlayback(mPreferredTitle, mStartPositionMillis);
+                }
                 break;
 
             case MediaSessionStatus.SESSION_STATE_ENDED:
