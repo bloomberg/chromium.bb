@@ -402,7 +402,9 @@
       # Set NEON compilation flags.
       'arm_neon%': 1,
 
-      # Detect NEON support at run-time.
+      # Detect NEON support at run-time. TODO(pasko): This variable is no longer
+      # set to non-zero, remove it when the last official build with NEON
+      # runtime detection propagates to Stable channel.
       'arm_neon_optional%': 0,
 
       # Use libjpeg-turbo as the JPEG codec used by Chromium.
@@ -828,8 +830,6 @@
           'cld2_table_size%': 0,
           'enable_themes%': 0,
           'remoting%': 0,
-          'arm_neon%': 0,
-          'arm_neon_optional%': 1,
           'enable_basic_printing%': 1,
           'enable_print_preview%': 0,
           'enable_task_manager%':0,
