@@ -1244,10 +1244,18 @@ void LayoutObject::invalidateDisplayItemClient(const DisplayItemClient& displayI
 
 void LayoutObject::invalidateDisplayItemClients(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason) const
 {
+    // It's caller's responsibility to ensure enclosingLayer's needsRepaint is set.
+    // Don't set the flag here because enclosingLayer() has cost and the caller can use
+    // various ways (e.g. PaintInvalidatinState::enclosingLayer()) to reduce the cost.
+    ASSERT(!enclosingLayer() || enclosingLayer()->needsRepaint());
     paintInvalidationContainer.invalidateDisplayItemClientOnBacking(*this, invalidationReason);
+}
 
-    if (PaintLayer* enclosingLayer = this->enclosingLayer())
-        enclosingLayer->setNeedsRepaint();
+void LayoutObject::invalidateDisplayItemClientsWithPaintInvalidationState(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason) const
+{
+    ASSERT(&paintInvalidationState.enclosingLayer(*this) == enclosingLayer());
+    paintInvalidationState.enclosingLayer(*this).setNeedsRepaint();
+    invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
 }
 
 LayoutRect LayoutObject::boundsRectForPaintInvalidation(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState* paintInvalidationState) const
@@ -1274,6 +1282,8 @@ const LayoutBoxModelObject* LayoutObject::invalidatePaintRectangleInternal(const
 
 void LayoutObject::invalidatePaintRectangle(const LayoutRect& rect) const
 {
+    if (PaintLayer* enclosingLayer = this->enclosingLayer())
+        enclosingLayer->setNeedsRepaint();
     const LayoutBoxModelObject* paintInvalidationContainer = invalidatePaintRectangleInternal(rect);
     if (paintInvalidationContainer)
         invalidateDisplayItemClients(*paintInvalidationContainer, PaintInvalidationRectangle);
@@ -1348,7 +1358,7 @@ void LayoutObject::setPreviousSelectionRectForPaintInvalidation(const LayoutRect
 }
 
 // TODO(wangxianzhu): Remove this for slimming paint v2 because we won't care about paint invalidation rects.
-inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason invalidationReason)
+inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject& paintInvalidationContainer, const PaintInvalidationState& paintInvalidationState, PaintInvalidationReason invalidationReason)
 {
     // Update selection rect when we are doing full invalidation (in case that the object is moved, composite status changed, etc.)
     // or shouldInvalidationSelection is set (in case that the selection itself changed).
@@ -1369,7 +1379,7 @@ inline void LayoutObject::invalidateSelectionIfNeeded(const LayoutBoxModelObject
     setPreviousSelectionRectForPaintInvalidation(newSelectionRect);
 
     if (shouldInvalidateSelection())
-        invalidateDisplayItemClients(paintInvalidationContainer, PaintInvalidationSelection);
+        invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationContainer, paintInvalidationState, PaintInvalidationSelection);
 
     if (fullInvalidation)
         return;
@@ -1409,7 +1419,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
 
     // We need to invalidate the selection before checking for whether we are doing a full invalidation.
     // This is because we need to update the old rect regardless.
-    invalidateSelectionIfNeeded(paintInvalidationContainer, invalidationReason);
+    invalidateSelectionIfNeeded(paintInvalidationContainer, paintInvalidationState, invalidationReason);
 
     TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), "LayoutObject::invalidatePaintIfNeeded()",
         "object", this->debugName().ascii(),
@@ -1427,12 +1437,12 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(PaintInvalidationS
         // invalidation is issued. See crbug.com/508383 and crbug.com/515977.
         // This is a workaround to force display items to update paint offset.
         if (!RuntimeEnabledFeatures::slimmingPaintOffsetCachingEnabled() && paintInvalidationState.forcedSubtreeInvalidationWithinContainer())
-            invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
+            invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationContainer, paintInvalidationState, invalidationReason);
 
         return invalidationReason;
     }
 
-    invalidateDisplayItemClients(paintInvalidationContainer, invalidationReason);
+    invalidateDisplayItemClientsWithPaintInvalidationState(paintInvalidationContainer, paintInvalidationState, invalidationReason);
 
     if (invalidationReason == PaintInvalidationIncremental) {
         incrementallyInvalidatePaint(paintInvalidationContainer, oldBounds, newBounds, newLocation);
@@ -3400,12 +3410,19 @@ void LayoutObject::invalidateDisplayItemClientsIncludingNonCompositingDescendant
     }
 
     traverseNonCompositingDescendants(const_cast<LayoutObject&>(*this), [&paintInvalidationContainer, paintInvalidationReason](LayoutObject& object) {
+        if (object.hasLayer())
+            toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
         object.invalidateDisplayItemClients(*paintInvalidationContainer, paintInvalidationReason);
     });
 }
 
 void LayoutObject::invalidatePaintOfPreviousPaintInvalidationRect(const LayoutBoxModelObject& paintInvalidationContainer, PaintInvalidationReason reason)
 {
+    // It's caller's responsibility to ensure enclosingLayer's needsRepaint is set.
+    // Don't set the flag here because enclosingLayer() has cost and the caller can use
+    // various ways (e.g. PaintInvalidatinState::enclosingLayer()) to reduce the cost.
+    ASSERT(!enclosingLayer() || enclosingLayer()->needsRepaint());
+
     // These disablers are valid because we want to use the current compositing/invalidation status.
     DisablePaintInvalidationStateAsserts invalidationDisabler;
     DisableCompositingQueryAsserts compositingDisabler;
@@ -3427,6 +3444,8 @@ void LayoutObject::invalidatePaintIncludingNonCompositingDescendants()
     // Since we're only painting non-composited layers, we know that they all share the same paintInvalidationContainer.
     const LayoutBoxModelObject& paintInvalidationContainer = containerForPaintInvalidation();
     traverseNonCompositingDescendants(*this, [&paintInvalidationContainer](LayoutObject& object) {
+        if (object.hasLayer())
+            toLayoutBoxModelObject(object).layer()->setNeedsRepaint();
         object.invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationLayer);
     });
 }
@@ -3441,13 +3460,22 @@ void LayoutObject::setShouldDoFullPaintInvalidationIncludingNonCompositingDescen
     });
 }
 
-void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer)
+void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(const LayoutBoxModelObject& paintInvalidationContainer)
 {
     invalidatePaintOfPreviousPaintInvalidationRect(paintInvalidationContainer, PaintInvalidationLayer);
     for (LayoutObject* child = slowFirstChild(); child; child = child->nextSibling()) {
+        if (child->hasLayer())
+            toLayoutBoxModelObject(child)->layer()->setNeedsRepaint();
         if (!child->hasLayer() || !toLayoutBoxModelObject(child)->layer()->isSelfPaintingLayer())
-            child->invalidatePaintIncludingNonSelfPaintingLayerDescendants(paintInvalidationContainer);
+            child->invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(paintInvalidationContainer);
     }
+}
+
+void LayoutObject::invalidatePaintIncludingNonSelfPaintingLayerDescendants(const LayoutBoxModelObject& paintInvalidationContainer)
+{
+    if (PaintLayer* enclosingLayer = this->enclosingLayer())
+        enclosingLayer->setNeedsRepaint();
+    invalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(paintInvalidationContainer);
 }
 
 void LayoutObject::setIsBackgroundAttachmentFixedObject(bool isBackgroundAttachmentFixedObject)

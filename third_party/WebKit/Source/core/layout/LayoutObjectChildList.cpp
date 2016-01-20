@@ -185,6 +185,7 @@ void LayoutObjectChildList::invalidatePaintOnRemoval(LayoutObject& oldChild)
         oldChild.view()->setShouldDoFullPaintInvalidation();
         return;
     }
+    oldChild.enclosingLayer()->setNeedsRepaint();
     oldChild.invalidatePaintOfPreviousPaintInvalidationRect(oldChild.containerForPaintInvalidation(), PaintInvalidationLayoutObjectRemoval);
 }
 

@@ -16,6 +16,7 @@ class LayoutBoxModelObject;
 class LayoutObject;
 class LayoutSVGModelObject;
 class LayoutView;
+class PaintLayer;
 
 // PaintInvalidationState is an optimization used during the paint
 // invalidation phase.
@@ -67,6 +68,8 @@ public:
     bool viewClippingAndScrollOffsetDisabled() const { return m_viewClippingAndScrollOffsetDisabled; }
     void setViewClippingAndScrollOffsetDisabled(bool b) { m_viewClippingAndScrollOffsetDisabled = b; }
 
+    PaintLayer& enclosingLayer(const LayoutObject&) const;
+
 private:
     PaintInvalidationState(const LayoutView&, Vector<LayoutObject*>& pendingDelayedPaintInvalidations, PaintInvalidationState* ownerPaintInvalidationState);
 
@@ -97,6 +100,8 @@ private:
     AffineTransform m_svgTransform;
 
     Vector<LayoutObject*>& m_pendingDelayedPaintInvalidations;
+
+    PaintLayer& m_enclosingLayer;
 };
 
 } // namespace blink
