@@ -177,6 +177,7 @@ PlayerUtils.setVideoSource = function(player) {
     Utils.timeLog('Loading media using src.');
     player.video.src = player.testConfig.mediaFile;
   }
+  Utils.timeLog('video.src has been set to ' + player.video.src);
 };
 
 // Initialize the player to play encrypted content. Returns a promise that
@@ -184,6 +185,7 @@ PlayerUtils.setVideoSource = function(player) {
 PlayerUtils.initEMEPlayer = function(player) {
   return player.registerEventListeners().then(function(result) {
     PlayerUtils.setVideoSource(player);
+    Utils.timeLog('initEMEPlayer() done');
     return player;
   });
 };
