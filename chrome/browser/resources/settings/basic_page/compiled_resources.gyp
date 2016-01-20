@@ -8,6 +8,7 @@
       'variables': {
         'depends': [
           '../../../../../ui/webui/resources/js/compiled_resources.gyp:load_time_data',
+          '../../../../../ui/webui/resources/js/i18n_behavior.js',
           '../settings_page/compiled_resources.gyp:settings_page_visibility',
         ],
       },

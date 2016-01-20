@@ -49,9 +49,9 @@ Polymer({
 
   },
 
+  behaviors: [I18nBehavior, SettingsPageVisibility],
+
   onResetDone_: function() {
     this.showResetProfileBanner_ = false;
   },
-
-  behaviors: [SettingsPageVisibility],
 });
