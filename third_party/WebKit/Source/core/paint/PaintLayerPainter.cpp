@@ -259,9 +259,10 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     // content. When not composited scrolling, the outline is painted in the
     // foreground phase. Since scrolled contents are moved by paint invalidation in this
     // case, the outline won't get 'dragged along'.
-    bool shouldPaintOutline = isSelfPaintingLayer && !isPaintingOverlayScrollbars
+    bool shouldPaintSelfOutline = isSelfPaintingLayer && !isPaintingOverlayScrollbars
         && ((isPaintingScrollingContent && isPaintingCompositedBackground)
-        || (!isPaintingScrollingContent && isPaintingCompositedForeground));
+            || (!isPaintingScrollingContent && isPaintingCompositedForeground))
+        && m_paintLayer.layoutObject()->styleRef().hasOutline();
     bool shouldPaintContent = m_paintLayer.hasVisibleContent() && isSelfPaintingLayer && !isPaintingOverlayScrollbars;
 
     PaintResult result = FullyPainted;
@@ -323,7 +324,7 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
     localPaintingInfo.subPixelAccumulation = subpixelAccumulation;
 
     PaintLayerFragments layerFragments;
-    if (shouldPaintContent || shouldPaintOutline || isPaintingOverlayScrollbars) {
+    if (shouldPaintContent || shouldPaintSelfOutline || isPaintingOverlayScrollbars) {
         // Collect the fragments. This will compute the clip rectangles and paint offsets for each layer fragment.
         ClipRectsCacheSlot cacheSlot = (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects : PaintingClipRects;
         if (fragmentPolicy == ForceSingleFragment)
@@ -377,8 +378,8 @@ PaintLayerPainter::PaintResult PaintLayerPainter::paintLayerContents(GraphicsCon
                 localPaintingInfo, selectionOnly, paintFlags);
         }
 
-        if (shouldPaintOutline)
-            paintOutlineForFragments(layerFragments, context, localPaintingInfo, paintFlags);
+        if (shouldPaintSelfOutline)
+            paintSelfOutlineForFragments(layerFragments, context, localPaintingInfo, paintFlags);
 
         if (shouldPaintNormalFlowAndPosZOrderLists) {
             if (paintChildren(NormalFlowChildren | PositiveZOrderChildren, context, paintingInfo, paintFlags) == MayBeClippedByPaintDirtyRect)
@@ -692,7 +693,7 @@ void PaintLayerPainter::paintForegroundForFragmentsWithPhase(PaintPhase phase,
     }
 }
 
-void PaintLayerPainter::paintOutlineForFragments(const PaintLayerFragments& layerFragments,
+void PaintLayerPainter::paintSelfOutlineForFragments(const PaintLayerFragments& layerFragments,
     GraphicsContext& context, const PaintLayerPaintingInfo& localPaintingInfo, PaintLayerFlags paintFlags)
 {
     bool needsScope = layerFragments.size() > 1;

@@ -63,7 +63,7 @@ private:
     void paintForegroundForFragments(const PaintLayerFragments&, GraphicsContext&,
         const LayoutRect& transparencyPaintDirtyRect, const PaintLayerPaintingInfo&, bool selectionOnly, PaintLayerFlags);
     void paintForegroundForFragmentsWithPhase(PaintPhase, const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags, ClipState);
-    void paintOutlineForFragments(const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
+    void paintSelfOutlineForFragments(const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
     void paintOverflowControlsForFragments(const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
     void paintMaskForFragments(const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
     void paintChildClippingMaskForFragments(const PaintLayerFragments&, GraphicsContext&, const PaintLayerPaintingInfo&, PaintLayerFlags);
