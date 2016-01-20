@@ -6405,6 +6405,44 @@ TEST_F(LayerTreeHostCommonTest, ClippedByScrollParent) {
   EXPECT_TRUE(scroll_child->is_clipped());
 }
 
+TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
+  // Tests the computation of draw transform for the scroll child when its
+  // target is different from its scroll parent's target.
+  LayerImpl* root = root_layer();
+  LayerImpl* scroll_child_target = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_child_target);
+  LayerImpl* scroll_parent_target = AddChild<LayerImpl>(scroll_child_target);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_target);
+
+  scroll_parent->SetDrawsContent(true);
+  scroll_child->SetDrawsContent(true);
+
+  scroll_child->SetScrollParent(scroll_parent);
+  scoped_ptr<std::set<LayerImpl*>> scroll_children(new std::set<LayerImpl*>);
+  scroll_children->insert(scroll_child);
+  scroll_parent->SetScrollChildren(scroll_children.release());
+
+  gfx::Transform identity_transform;
+  SetLayerPropertiesForTesting(root, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               true);
+  SetLayerPropertiesForTesting(scroll_child_target, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, true);
+  SetLayerPropertiesForTesting(scroll_child, identity_transform, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(50, 50), true, false,
+                               false);
+  SetLayerPropertiesForTesting(scroll_parent_target, identity_transform,
+                               gfx::Point3F(), gfx::PointF(10, 10),
+                               gfx::Size(50, 50), true, false, true);
+  SetLayerPropertiesForTesting(scroll_parent, identity_transform,
+                               gfx::Point3F(), gfx::PointF(), gfx::Size(50, 50),
+                               true, false, true);
+
+  ExecuteCalculateDrawProperties(root);
+  EXPECT_EQ(scroll_child->DrawTransform(), identity_transform);
+}
+
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   LayerImpl* root = root_layer();
   root->SetDrawsContent(true);

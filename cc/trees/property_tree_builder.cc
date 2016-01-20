@@ -224,9 +224,18 @@ bool AddTransformNodeIfNeeded(
 
   const bool has_surface = created_render_surface;
 
+  // A transform node is needed to change the render target for subtree when
+  // a scroll child's render target is different from the scroll parent's render
+  // target.
+  const bool scroll_child_has_different_target =
+      layer->scroll_parent() &&
+      layer->parent()->effect_tree_index() !=
+          layer->scroll_parent()->effect_tree_index();
+
   bool requires_node = is_root || is_scrollable || has_significant_transform ||
                        has_any_transform_animation || has_surface || is_fixed ||
-                       is_page_scale_layer || is_overscroll_elasticity_layer;
+                       is_page_scale_layer || is_overscroll_elasticity_layer ||
+                       scroll_child_has_different_target;
 
   LayerType* transform_parent = GetTransformParent(data_from_ancestor, layer);
   DCHECK(is_root || transform_parent);
@@ -659,6 +668,9 @@ void BuildPropertyTreesInternal(
     for (LayerType* scroll_child : *layer->scroll_children()) {
       DCHECK_EQ(scroll_child->scroll_parent(), layer);
       DataForRecursionFromChild<LayerType> data_from_child;
+      DCHECK(scroll_child->parent());
+      data_for_children.render_target =
+          scroll_child->parent()->effect_tree_index();
       BuildPropertyTreesInternal(scroll_child, data_for_children,
                                  &data_from_child);
       data_to_parent->Merge(data_from_child);
