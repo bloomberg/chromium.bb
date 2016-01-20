@@ -17,6 +17,7 @@ SUPPORTED_UBUNTU_VERSIONS = (
   {'number': '14.04', 'codename': 'trusty'},
   {'number': '14.10', 'codename': 'utopic'},
   {'number': '15.04', 'codename': 'vivid'},
+  {'number': '15.10', 'codename': 'wily'},
 )
 
 
@@ -30,7 +31,6 @@ _packages_chromeos_dev = (
 
 # Packages needed for development.
 _packages_dev = (
-  'apache2.2-bin',
   'bison',
   'cdbs',
   'curl',
@@ -103,7 +103,6 @@ _packages_dev = (
   'ttf-kochi-gothic',
   'ttf-kochi-mincho',
   'wdiff',
-  'xfonts-mathml',
   'zip',
 )
 
@@ -359,6 +358,16 @@ def compute_dynamic_package_lists():
     _packages_dev += ('libbrlapi0.6',)
   else:
     _packages_dev += ('libbrlapi0.5',)
+
+  if package_exists('apache2-bin'):
+    _packages_dev += ('apache2-bin',)
+  else:
+    _packages_dev += ('apache2.2-bin',)
+
+  if package_exists('fonts-stix'):
+    _packages_dev += ('fonts-stix',)
+  else:
+    _packages_dev += ('xfonts-mathml',)
 
   # Some packages are only needed if the distribution actually supports
   # installing them.
