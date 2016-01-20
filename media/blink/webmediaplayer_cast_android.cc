@@ -137,8 +137,12 @@ scoped_refptr<VideoFrame> MakeTextFrameForCast(
   gpu::Mailbox texture_mailbox;
   gl->GenMailboxCHROMIUM(texture_mailbox.name);
   gl->ProduceTextureCHROMIUM(texture_target, texture_mailbox.name);
+  const GLuint64 fence_sync = gl->InsertFenceSyncCHROMIUM();
   gl->Flush();
-  gpu::SyncToken texture_mailbox_sync_token(gl->InsertSyncPointCHROMIUM());
+
+  gpu::SyncToken texture_mailbox_sync_token;
+  gl->GenUnverifiedSyncTokenCHROMIUM(fence_sync,
+                                     texture_mailbox_sync_token.GetData());
 
   return VideoFrame::WrapNativeTexture(
       media::PIXEL_FORMAT_ARGB,
