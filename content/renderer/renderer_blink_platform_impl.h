@@ -36,6 +36,7 @@ class WebCanvasCaptureHandler;
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
+class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebServiceWorkerCacheStorage;
@@ -156,6 +157,9 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebSize& size,
       double frame_rate,
       blink::WebMediaStreamTrack* track) override;
+  void createHTMLVideoElementCapturer(
+      blink::WebMediaStream* web_media_stream,
+      blink::WebMediaPlayer* web_media_player) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(
       const blink::WebGraphicsContext3D::Attributes& attributes) override;
   blink::WebGraphicsContext3D* createOffscreenGraphicsContext3D(

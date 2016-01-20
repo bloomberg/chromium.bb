@@ -79,7 +79,9 @@ class WebGraphicsContext3DProvider;
 class WebIDBFactory;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
+class WebMediaPlayer;
 class WebMediaRecorderHandler;
+class WebMediaStream;
 class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMediaStreamTrack;
@@ -529,14 +531,19 @@ public:
     // May return null if the functionality is not available or out of resources.
     virtual WebMediaRecorderHandler* createMediaRecorderHandler() { return nullptr; }
 
-    // May return null if WebRTC functionality is not avaliable or out of resources.
+    // May return null if WebRTC functionality is not available or out of resources.
     virtual WebRTCCertificateGenerator* createRTCCertificateGenerator() { return nullptr; }
 
-    // May return null if WebRTC functionality is not avaliable or out of resources.
+    // May return null if WebRTC functionality is not available or out of resources.
     virtual WebMediaStreamCenter* createMediaStreamCenter(WebMediaStreamCenterClient*) { return nullptr; }
 
     // Creates an WebCanvasCaptureHandler to capture Canvas output.
     virtual WebCanvasCaptureHandler* createCanvasCaptureHandler(const WebSize&, double, WebMediaStreamTrack*) { return nullptr; }
+
+    // Fills in the WebMediaStream to capture from the WebMediaPlayer identified
+    // by the second parameter.
+    virtual void createHTMLVideoElementCapturer(WebMediaStream*, WebMediaPlayer*) {}
+
     // WebWorker ----------------------------------------------------------
 
     virtual void didStartWorkerThread() { }

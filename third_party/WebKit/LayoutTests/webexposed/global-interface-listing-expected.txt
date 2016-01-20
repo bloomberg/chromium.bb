@@ -2443,6 +2443,7 @@ interface HTMLMediaElement : HTMLElement
     getter webkitVideoDecodedByteCount
     method addTextTrack
     method canPlayType
+    method captureStream
     method constructor
     method load
     method pause

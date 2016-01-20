@@ -51,6 +51,7 @@
 #include "content/public/common/service_registry.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
+#include "content/public/renderer/media_stream_api.h"
 #include "content/renderer/battery_status/battery_status_dispatcher.h"
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_light_event_pump.h"
@@ -61,6 +62,7 @@
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/canvas_capture_handler.h"
+#include "content/renderer/media/html_video_element_capturer_source.h"
 #include "content/renderer/media/media_recorder_handler.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
 #include "content/renderer/media/renderer_webmidiaccessor_impl.h"
@@ -148,7 +150,9 @@ using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
 using blink::WebMIDIAccessor;
+using blink::WebMediaPlayer;
 using blink::WebMediaRecorderHandler;
+using blink::WebMediaStream;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMediaStreamTrack;
@@ -939,6 +943,22 @@ WebCanvasCaptureHandler* RendererBlinkPlatformImpl::createCanvasCaptureHandler(
 #else
   return nullptr;
 #endif  // defined(ENABLE_WEBRTC)
+}
+
+//------------------------------------------------------------------------------
+
+void RendererBlinkPlatformImpl::createHTMLVideoElementCapturer(
+    WebMediaStream* web_media_stream,
+    WebMediaPlayer* web_media_player) {
+#if defined(ENABLE_WEBRTC)
+  DCHECK(web_media_stream);
+  DCHECK(web_media_player);
+  AddVideoTrackToMediaStream(
+      HtmlVideoElementCapturerSource::CreateFromWebMediaPlayerImpl(
+          web_media_player,
+          content::RenderThread::Get()->GetIOMessageLoopProxy()),
+      false /* is_remote */, false /* is_readonly */, web_media_stream);
+#endif
 }
 
 //------------------------------------------------------------------------------

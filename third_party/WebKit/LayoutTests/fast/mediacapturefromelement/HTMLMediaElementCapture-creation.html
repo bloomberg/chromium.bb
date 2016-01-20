@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+// Run createStream() on <video>s and <audio>s.
+
+test(function() {
+  var video = document.createElement('video');
+  assert_throws("NotSupportedError", function () { video.captureStream() },
+                "captureStream() cannot be created out of a source-less <video>" );
+}, 'check that captureStream() raises an exception on a <video> with no source.');
+
+test(function() {
+  var audio = document.createElement('audio');
+  assert_throws("NotSupportedError", function () { audio.captureStream() },
+                "captureStream() cannot be created out of a source-less <audio>" );
+}, 'check that captureStream() raises an exception on an <audio> with no source.');
+
+test(function() {
+  var video = document.createElement('video');
+  video.src = "file:///super_duper_videos/amazing_video.webm";
+  video.load();
+  var stream = video.captureStream();
+
+  assert_not_equals(stream, null);
+  assert_equals(1, stream.getVideoTracks().length);
+  assert_equals(0, stream.getAudioTracks().length);
+}, 'check <video> captureStream().');
+
+test(function() {
+  var audio = document.createElement('audio');
+  audio.src = "file:///super_duper_videos/amazing_audio_file.webm";
+  audio.load();
+  var stream = audio.captureStream();
+
+  // TODO(mcasas): http://crbug.com/575492, implement <audio>.captureStream().
+  assert_equals(stream, null);
+}, 'check <audio> captureStream().');
+
+test(function() {
+  var video = document.createElement('video');
+
+  const onEncrypted = this.step_func_done();
+
+  assert_equals(null, video.error);
+  assert_equals(null, video.mediaKeys);
+  video.onencrypted = onEncrypted;
+
+  navigator.requestMediaKeySystemAccess('org.w3.clearkey', [{}]).then(function(access) {
+      return access.createMediaKeys();
+  }).then(function(mediaKeys) {
+      return video.setMediaKeys(mediaKeys);
+  }).then(function(result) {
+      video.src = "../../media/content/test-encrypted.webm";
+      video.load();
+      assert_throws("NotSupportedError",
+                    function() { var stream = video.captureStream(); },
+                    "Cannot create a captureStream() out of a protected <video>");
+  });
+
+}, 'check <video> captureStream() fails on an encrypted/protected media');
+
+</script>
