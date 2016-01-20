@@ -50,8 +50,6 @@
 #include "ui/gfx/range/range.h"
 #include "ui/surface/transport_dib.h"
 
-struct ViewMsg_Resize_Params;
-
 namespace IPC {
 class SyncMessage;
 class SyncMessageFilter;
@@ -90,6 +88,7 @@ class RenderWidgetCompositor;
 class ResizingModeSelector;
 struct ContextMenuParams;
 struct DidOverscrollParams;
+struct ResizeParams;
 struct WebPluginGeometry;
 
 // RenderWidget provides a communication bridge between a WebWidget and
@@ -422,7 +421,7 @@ class CONTENT_EXPORT RenderWidget
   virtual void OnSetFocus(bool enable);
   void OnClose();
   void OnCreatingNewAck();
-  virtual void OnResize(const ViewMsg_Resize_Params& params);
+  virtual void OnResize(const ResizeParams& params);
   void OnEnableDeviceEmulation(const blink::WebDeviceEmulationParams& params);
   void OnDisableDeviceEmulation();
   void OnColorProfile(const std::vector<char>& color_profile);

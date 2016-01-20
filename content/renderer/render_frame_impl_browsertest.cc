@@ -134,7 +134,7 @@ TEST_F(RenderFrameImplTest, MAYBE_SubframeWidget) {
 // Verify a subframe RenderWidget properly processes its viewport being
 // resized.
 TEST_F(RenderFrameImplTest, MAYBE_FrameResize) {
-  ViewMsg_Resize_Params resize_params;
+  ResizeParams resize_params;
   gfx::Size size(200, 200);
   resize_params.screen_info = blink::WebScreenInfo();
   resize_params.new_size = size;

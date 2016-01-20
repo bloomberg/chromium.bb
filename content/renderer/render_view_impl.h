@@ -80,7 +80,6 @@
 class SkBitmap;
 struct PP_NetAddress_Private;
 struct ViewMsg_New_Params;
-struct ViewMsg_Resize_Params;
 struct ViewMsg_StopFinding_Params;
 
 namespace base {
@@ -139,6 +138,7 @@ struct FaviconURL;
 struct FileChooserParams;
 struct FileChooserFileInfo;
 struct RenderViewImplParams;
+struct ResizeParams;
 
 #if defined(OS_ANDROID)
 class WebMediaPlayerProxyAndroid;
@@ -477,7 +477,7 @@ class CONTENT_EXPORT RenderViewImpl
   // RenderWidget overrides:
   void CloseForFrame() override;
   void Close() override;
-  void OnResize(const ViewMsg_Resize_Params& params) override;
+  void OnResize(const ResizeParams& params) override;
   void DidInitiatePaint() override;
   void DidFlushPaint() override;
   gfx::Vector2d GetScrollOffset() override;

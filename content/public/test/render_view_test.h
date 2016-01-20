@@ -25,8 +25,6 @@
 #include "third_party/WebKit/public/web/WebLeakDetector.h"
 #include "third_party/mojo/src/mojo/edk/test/scoped_ipc_support.h"
 
-struct ViewMsg_Resize_Params;
-
 namespace blink {
 class WebInputElement;
 class WebWidget;
@@ -50,6 +48,7 @@ class PageState;
 class RendererMainPlatformDelegate;
 class RendererBlinkPlatformImplTestOverrideImpl;
 class RenderView;
+struct ResizeParams;
 
 class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
  public:
@@ -178,7 +177,7 @@ class RenderViewTest : public testing::Test, blink::WebLeakDetectorClient {
   virtual ContentRendererClient* CreateContentRendererClient();
 
   // Allows a subclass to customize the initial size of the RenderView.
-  virtual scoped_ptr<ViewMsg_Resize_Params> InitialSizeParams();
+  virtual scoped_ptr<ResizeParams> InitialSizeParams();
 
   // testing::Test
   void SetUp() override;

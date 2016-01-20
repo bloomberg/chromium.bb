@@ -64,7 +64,7 @@ class RenderWidgetFullscreenPepper : public RenderWidgetFullscreen,
   void DidInitiatePaint() override;
   void DidFlushPaint() override;
   void Close() override;
-  void OnResize(const ViewMsg_Resize_Params& params) override;
+  void OnResize(const ResizeParams& params) override;
 
   // RenderWidgetFullscreen API.
   blink::WebWidget* CreateWebWidget() override;

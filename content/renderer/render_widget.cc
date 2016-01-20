@@ -220,7 +220,7 @@ class RenderWidget::ScreenMetricsEmulator {
 
   // The following methods alter handlers' behavior for messages related to
   // widget size and position.
-  void OnResizeMessage(const ViewMsg_Resize_Params& params);
+  void OnResizeMessage(const ResizeParams& params);
   void OnUpdateScreenRectsMessage(const gfx::Rect& view_screen_rect,
                                   const gfx::Rect& window_screen_rect);
   void OnShowContextMenu(ContextMenuParams* params);
@@ -391,7 +391,7 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
 }
 
 void RenderWidget::ScreenMetricsEmulator::OnResizeMessage(
-    const ViewMsg_Resize_Params& params) {
+    const ResizeParams& params) {
   bool need_ack = params.new_size != original_size_ &&
       !params.new_size.IsEmpty() && !params.physical_backing_size.IsEmpty();
   original_size_ = params.new_size;
@@ -870,7 +870,7 @@ void RenderWidget::OnClose() {
   Release();
 }
 
-void RenderWidget::OnResize(const ViewMsg_Resize_Params& params) {
+void RenderWidget::OnResize(const ResizeParams& params) {
   if (resizing_mode_selector_->ShouldAbortOnResize(this, params))
     return;
 

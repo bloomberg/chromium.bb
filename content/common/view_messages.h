@@ -22,6 +22,7 @@
 #include "content/common/frame_replication_state.h"
 #include "content/common/media/media_param_traits.h"
 #include "content/common/navigation_gesture.h"
+#include "content/common/resize_params.h"
 #include "content/common/view_message_enums.h"
 #include "content/common/webplugin_geometry.h"
 #include "content/public/common/common_param_traits.h"
@@ -181,6 +182,19 @@ IPC_STRUCT_TRAITS_BEGIN(blink::WebScreenInfo)
   IPC_STRUCT_TRAITS_MEMBER(availableRect)
   IPC_STRUCT_TRAITS_MEMBER(orientationType)
   IPC_STRUCT_TRAITS_MEMBER(orientationAngle)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(content::ResizeParams)
+  IPC_STRUCT_TRAITS_MEMBER(screen_info)
+  IPC_STRUCT_TRAITS_MEMBER(new_size)
+  IPC_STRUCT_TRAITS_MEMBER(physical_backing_size)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_shrink_blink_size)
+  IPC_STRUCT_TRAITS_MEMBER(top_controls_height)
+  IPC_STRUCT_TRAITS_MEMBER(visible_viewport_size)
+  IPC_STRUCT_TRAITS_MEMBER(resizer_rect)
+  IPC_STRUCT_TRAITS_MEMBER(is_fullscreen_granted)
+  IPC_STRUCT_TRAITS_MEMBER(display_mode)
+  IPC_STRUCT_TRAITS_MEMBER(needs_resize_ack)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::MenuItem)
@@ -479,34 +493,6 @@ IPC_STRUCT_BEGIN(ViewHostMsg_UpdateRect_Params)
   IPC_STRUCT_MEMBER(int, flags)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(ViewMsg_Resize_Params)
-  // Information about the screen (dpi, depth, etc..).
-  IPC_STRUCT_MEMBER(blink::WebScreenInfo, screen_info)
-  // The size of the renderer.
-  IPC_STRUCT_MEMBER(gfx::Size, new_size)
-  // The size of the view's backing surface in non-DPI-adjusted pixels.
-  IPC_STRUCT_MEMBER(gfx::Size, physical_backing_size)
-  // Whether or not Blink's viewport size should be shrunk by the height of the
-  // URL-bar (always false on platforms where URL-bar hiding isn't supported).
-  IPC_STRUCT_MEMBER(bool, top_controls_shrink_blink_size)
-  // The height of the top controls (always 0 on platforms where URL-bar hiding
-  // isn't supported).
-  IPC_STRUCT_MEMBER(float, top_controls_height)
-  // The size of the visible viewport, which may be smaller than the view if the
-  // view is partially occluded (e.g. by a virtual keyboard).  The size is in
-  // DPI-adjusted pixels.
-  IPC_STRUCT_MEMBER(gfx::Size, visible_viewport_size)
-  // The resizer rect.
-  IPC_STRUCT_MEMBER(gfx::Rect, resizer_rect)
-  // Indicates whether tab-initiated fullscreen was granted.
-  IPC_STRUCT_MEMBER(bool, is_fullscreen_granted)
-  // The display mode.
-  IPC_STRUCT_MEMBER(blink::WebDisplayMode, display_mode)
-  // If set, requests the renderer to reply with a ViewHostMsg_UpdateRect
-  // with the ViewHostMsg_UpdateRect_Flags::IS_RESIZE_ACK bit set in flags.
-  IPC_STRUCT_MEMBER(bool, needs_resize_ack)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   // Renderer-wide preferences.
   IPC_STRUCT_MEMBER(content::RendererPreferences, renderer_preferences)
@@ -558,7 +544,7 @@ IPC_STRUCT_BEGIN(ViewMsg_New_Params)
   IPC_STRUCT_MEMBER(int32_t, next_page_id)
 
   // The initial renderer size.
-  IPC_STRUCT_MEMBER(ViewMsg_Resize_Params, initial_size)
+  IPC_STRUCT_MEMBER(content::ResizeParams, initial_size)
 
   // Whether to enable auto-resize.
   IPC_STRUCT_MEMBER(bool, enable_auto_resize)
@@ -642,8 +628,7 @@ IPC_MESSAGE_ROUTED0(ViewMsg_Close)
 // the view's current size.  The generated ViewHostMsg_UpdateRect message will
 // have the IS_RESIZE_ACK flag set. It also receives the resizer rect so that
 // we don't have to fetch it every time WebKit asks for it.
-IPC_MESSAGE_ROUTED1(ViewMsg_Resize,
-                    ViewMsg_Resize_Params /* params */)
+IPC_MESSAGE_ROUTED1(ViewMsg_Resize, content::ResizeParams /* params */)
 
 // Enables device emulation. See WebDeviceEmulationParams for description.
 IPC_MESSAGE_ROUTED1(ViewMsg_EnableDeviceEmulation,

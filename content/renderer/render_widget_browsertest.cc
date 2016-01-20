@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/view_messages.h"
+#include "content/common/resize_params.h"
 #include "content/public/test/render_widget_test.h"
 #include "content/renderer/render_widget.h"
 
@@ -11,7 +11,7 @@ namespace content {
 TEST_F(RenderWidgetTest, OnResize) {
   // The initial bounds is empty, so setting it to the same thing should do
   // nothing.
-  ViewMsg_Resize_Params resize_params;
+  ResizeParams resize_params;
   resize_params.screen_info = blink::WebScreenInfo();
   resize_params.new_size = gfx::Size();
   resize_params.physical_backing_size = gfx::Size();
@@ -68,9 +68,8 @@ class RenderWidgetInitialSizeTest : public RenderWidgetTest {
       : RenderWidgetTest(), initial_size_(200, 100) {}
 
  protected:
-  scoped_ptr<ViewMsg_Resize_Params> InitialSizeParams() override {
-    scoped_ptr<ViewMsg_Resize_Params> initial_size_params(
-        new ViewMsg_Resize_Params());
+  scoped_ptr<ResizeParams> InitialSizeParams() override {
+    scoped_ptr<ResizeParams> initial_size_params(new ResizeParams());
     initial_size_params->new_size = initial_size_;
     initial_size_params->physical_backing_size = initial_size_;
     initial_size_params->needs_resize_ack = true;

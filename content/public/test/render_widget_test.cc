@@ -23,7 +23,7 @@ RenderWidget* RenderWidgetTest::widget() {
   return static_cast<RenderViewImpl*>(view_);
 }
 
-void RenderWidgetTest::OnResize(const ViewMsg_Resize_Params& params) {
+void RenderWidgetTest::OnResize(const ResizeParams& params) {
   widget()->OnResize(params);
 }
 

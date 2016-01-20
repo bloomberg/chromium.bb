@@ -18,9 +18,8 @@ bool ResizingModeSelector::NeverUsesSynchronousResize() const {
          !RenderThreadImpl::current()->layout_test_mode();
 }
 
-bool ResizingModeSelector::ShouldAbortOnResize(
-    RenderWidget* widget,
-    const ViewMsg_Resize_Params& params) {
+bool ResizingModeSelector::ShouldAbortOnResize(RenderWidget* widget,
+                                               const ResizeParams& params) {
   return is_synchronous_mode_ &&
       params.is_fullscreen_granted == widget->is_fullscreen_granted() &&
       params.display_mode == widget->display_mode() &&

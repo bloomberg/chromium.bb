@@ -51,7 +51,7 @@ class ScreenOrientationBrowserTest : public ContentBrowserTest  {
     ASSERT_NE(blink::WebScreenOrientationUndefined, type);
     screen_info.orientationType = type;
 
-    ViewMsg_Resize_Params params;
+    ResizeParams params;
     params.screen_info = screen_info;
     params.new_size = gfx::Size(0, 0);
     params.physical_backing_size = gfx::Size(300, 300);

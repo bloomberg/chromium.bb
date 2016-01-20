@@ -488,6 +488,8 @@
       'common/push_messaging_messages.h',
       'common/quota_messages.h',
       'common/render_process_messages.h',
+      'common/resize_params.cc',
+      'common/resize_params.h',
       'common/resource_messages.cc',
       'common/resource_messages.h',
       'common/resource_request_body.cc',

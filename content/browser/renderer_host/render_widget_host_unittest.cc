@@ -22,6 +22,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
+#include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -494,7 +495,7 @@ class RenderWidgetHostTest : public testing::Test {
   }
 
   void SetInitialRenderSizeParams() {
-    ViewMsg_Resize_Params render_size_params;
+    ResizeParams render_size_params;
     host_->GetResizeParams(&render_size_params);
     host_->SetInitialRenderSizeParams(render_size_params);
   }
@@ -1627,7 +1628,7 @@ TEST_F(RenderWidgetHostTest, ResizeParams) {
   view_->set_bounds(bounds);
   view_->SetMockPhysicalBackingSize(physical_backing_size);
 
-  ViewMsg_Resize_Params resize_params;
+  ResizeParams resize_params;
   host_->GetResizeParams(&resize_params);
   EXPECT_EQ(bounds.size(), resize_params.new_size);
   EXPECT_EQ(physical_backing_size, resize_params.physical_backing_size);

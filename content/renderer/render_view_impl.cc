@@ -1642,7 +1642,7 @@ WebView* RenderViewImpl::createView(WebLocalFrame* creator,
   // TODO(vangelis): Can we tell if the new view will be a background page?
   bool never_visible = false;
 
-  ViewMsg_Resize_Params initial_size = ViewMsg_Resize_Params();
+  ResizeParams initial_size = ResizeParams();
   initial_size.screen_info = screen_info_;
 
   // The initial hidden state for the RenderViewImpl here has to match what the
@@ -2865,7 +2865,7 @@ void RenderViewImpl::OnMoveOrResizeStarted() {
     webview()->hidePopups();
 }
 
-void RenderViewImpl::OnResize(const ViewMsg_Resize_Params& params) {
+void RenderViewImpl::OnResize(const ResizeParams& params) {
   TRACE_EVENT0("renderer", "RenderViewImpl::OnResize");
   if (webview()) {
     webview()->hidePopups();
@@ -3639,7 +3639,7 @@ void RenderViewImpl::SetFocusAndActivateForTesting(bool enable) {
 }
 
 void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
-  ViewMsg_Resize_Params params;
+  ResizeParams params;
   params.screen_info = screen_info_;
   params.screen_info.deviceScaleFactor = factor;
   params.new_size = size();

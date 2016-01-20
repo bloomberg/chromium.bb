@@ -49,7 +49,6 @@
 struct ViewHostMsg_SelectionBounds_Params;
 struct ViewHostMsg_TextInputState_Params;
 struct ViewHostMsg_UpdateRect_Params;
-struct ViewMsg_Resize_Params;
 
 namespace blink {
 class WebInputEvent;
@@ -81,6 +80,7 @@ class TimeoutMonitor;
 class TouchEmulator;
 class WebCursor;
 struct EditCommand;
+struct ResizeParams;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
@@ -485,11 +485,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
 
   // Fills in the |resize_params| struct.
   // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetResizeParams(ViewMsg_Resize_Params* resize_params);
+  bool GetResizeParams(ResizeParams* resize_params);
 
   // Sets the |resize_params| that were sent to the renderer bundled with the
   // request to create a new RenderWidget.
-  void SetInitialRenderSizeParams(const ViewMsg_Resize_Params& resize_params);
+  void SetInitialRenderSizeParams(const ResizeParams& resize_params);
 
   // Called when we receive a notification indicating that the renderer process
   // is gone. This will reset our state so that our state will be consistent if
@@ -684,7 +684,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   gfx::Size current_size_;
 
   // Resize information that was previously sent to the renderer.
-  scoped_ptr<ViewMsg_Resize_Params> old_resize_params_;
+  scoped_ptr<ResizeParams> old_resize_params_;
 
   // The next auto resize to send.
   gfx::Size new_auto_size_;

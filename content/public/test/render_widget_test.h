@@ -11,14 +11,15 @@
 #include "content/public/test/render_view_test.h"
 
 class SkBitmap;
-struct ViewMsg_Resize_Params;
 
 namespace gfx {
 class Size;
 }
 
 namespace content {
+
 class RenderWidget;
+struct ResizeParams;
 
 class RenderWidgetTest : public RenderViewTest {
  public:
@@ -26,7 +27,7 @@ class RenderWidgetTest : public RenderViewTest {
 
  protected:
   RenderWidget* widget();
-  void OnResize(const ViewMsg_Resize_Params& params);
+  void OnResize(const ResizeParams& params);
   bool next_paint_is_resize_ack();
 
   static const int kNumBytesPerPixel;

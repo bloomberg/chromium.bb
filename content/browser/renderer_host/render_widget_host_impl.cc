@@ -54,6 +54,7 @@
 #include "content/common/gpu/gpu_messages.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/input_messages.h"
+#include "content/common/resize_params.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/notification_service.h"
@@ -580,9 +581,8 @@ void RenderWidgetHostImpl::WasShown(const ui::LatencyInfo& latency_info) {
   WasResized();
 }
 
-bool RenderWidgetHostImpl::GetResizeParams(
-    ViewMsg_Resize_Params* resize_params) {
-  *resize_params = ViewMsg_Resize_Params();
+bool RenderWidgetHostImpl::GetResizeParams(ResizeParams* resize_params) {
+  *resize_params = ResizeParams();
 
   GetWebScreenInfo(&resize_params->screen_info);
   if (delegate_) {
@@ -633,11 +633,10 @@ bool RenderWidgetHostImpl::GetResizeParams(
 }
 
 void RenderWidgetHostImpl::SetInitialRenderSizeParams(
-    const ViewMsg_Resize_Params& resize_params) {
+    const ResizeParams& resize_params) {
   resize_ack_pending_ = resize_params.needs_resize_ack;
 
-  old_resize_params_ =
-      make_scoped_ptr(new ViewMsg_Resize_Params(resize_params));
+  old_resize_params_ = make_scoped_ptr(new ResizeParams(resize_params));
 }
 
 void RenderWidgetHostImpl::WasResized() {
@@ -650,7 +649,7 @@ void RenderWidgetHostImpl::WasResized() {
     return;
   }
 
-  scoped_ptr<ViewMsg_Resize_Params> params(new ViewMsg_Resize_Params);
+  scoped_ptr<ResizeParams> params(new ResizeParams);
   if (color_profile_out_of_date_)
     DispatchColorProfile();
   if (!GetResizeParams(params.get()))

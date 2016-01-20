@@ -17,6 +17,7 @@
 #include "content/common/dom_storage/dom_storage_types.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
+#include "content/common/resize_params.h"
 #include "content/common/site_isolation_policy.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/content_browser_client.h"
@@ -586,7 +587,7 @@ uint32_t RenderViewTest::GetNavigationIPCType() {
 void RenderViewTest::Resize(gfx::Size new_size,
                             gfx::Rect resizer_rect,
                             bool is_fullscreen_granted) {
-  ViewMsg_Resize_Params params;
+  ResizeParams params;
   params.screen_info = blink::WebScreenInfo();
   params.new_size = new_size;
   params.physical_backing_size = new_size;
@@ -688,8 +689,8 @@ ContentRendererClient* RenderViewTest::CreateContentRendererClient() {
   return new ContentRendererClient;
 }
 
-scoped_ptr<ViewMsg_Resize_Params> RenderViewTest::InitialSizeParams() {
-  return make_scoped_ptr(new ViewMsg_Resize_Params());
+scoped_ptr<ResizeParams> RenderViewTest::InitialSizeParams() {
+  return make_scoped_ptr(new ResizeParams());
 }
 
 void RenderViewTest::GoToOffset(int offset, const PageState& state) {
