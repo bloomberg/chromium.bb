@@ -14,19 +14,7 @@
 
 namespace plugin {
 
-NaClSubprocess::NaClSubprocess(const std::string& description,
-                               ServiceRuntime* service_runtime)
-  : description_(description),
-    service_runtime_(service_runtime) {
-}
-
-std::string NaClSubprocess::detailed_description() const {
-  std::stringstream ss;
-  ss << description()
-     << "={ this=" << static_cast<const void*>(this)
-     << ", service_runtime=" << static_cast<void*>(service_runtime_.get())
-     << " }";
-  return ss.str();
+NaClSubprocess::NaClSubprocess() {
 }
 
 // Shutdown the socket connection and service runtime, in that order.

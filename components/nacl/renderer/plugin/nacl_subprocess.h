@@ -26,8 +26,7 @@ class ServiceRuntime;
 // A class representing an instance of a NaCl module, loaded by the plugin.
 class NaClSubprocess {
  public:
-  NaClSubprocess(const std::string& description,
-                 ServiceRuntime* service_runtime);
+  NaClSubprocess();
   virtual ~NaClSubprocess();
 
   ServiceRuntime* service_runtime() const { return service_runtime_.get(); }
@@ -35,19 +34,10 @@ class NaClSubprocess {
     service_runtime_.reset(service_runtime);
   }
 
-  // A basic description of the subprocess.
-  std::string description() const { return description_; }
-
-  // A detailed description of the subprocess that may contain addresses.
-  // Only use for debugging, but do not expose this to untrusted webapps.
-  std::string detailed_description() const;
-
   // Fully shut down the subprocess.
   void Shutdown();
 
  private:
-  std::string description_;
-
   // The service runtime representing the NaCl module instance.
   scoped_ptr<ServiceRuntime> service_runtime_;
 

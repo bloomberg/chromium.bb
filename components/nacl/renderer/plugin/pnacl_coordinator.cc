@@ -95,8 +95,6 @@ PnaclCoordinator::PnaclCoordinator(
       plugin_(plugin),
       translate_notify_callback_(translate_notify_callback),
       translation_finished_reported_(false),
-      compiler_subprocess_("compiler.nexe", NULL),
-      ld_subprocess_("linker.nexe", NULL),
       pexe_url_(pexe_url),
       pnacl_options_(pnacl_options),
       architecture_attributes_(GetArchitectureAttributes(plugin)),

@@ -65,13 +65,6 @@ void Plugin::LoadNaClModule(PP_NaClFileInfo file_info,
   ServiceRuntime* service_runtime = new ServiceRuntime(
       this, pp_instance(), true, uses_nonsfi_mode);
   main_subprocess_.set_service_runtime(service_runtime);
-  if (NULL == service_runtime) {
-    error_info.SetReport(
-        PP_NACL_ERROR_SEL_LDR_INIT,
-        "sel_ldr init failure " + main_subprocess_.description());
-    ReportLoadError(error_info);
-    return;
-  }
 
   StartSelLdr(service_runtime, params,
               pp::CompletionCallback(NoOpCallback, NULL));
@@ -109,7 +102,6 @@ bool Plugin::Init(uint32_t argc, const char* argn[], const char* argv[]) {
 
 Plugin::Plugin(PP_Instance pp_instance)
     : pp::Instance(pp_instance),
-      main_subprocess_("main subprocess", NULL),
       uses_nonsfi_mode_(false),
       nacl_interface_(NULL),
       uma_interface_(this) {
