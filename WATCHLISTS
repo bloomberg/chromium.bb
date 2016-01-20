@@ -503,12 +503,13 @@
     'metrics': {
       'filepath': 'base/metrics/'\
                   '|chrome/browser/metrics/'\
-                  '|chrome/common/metrics/'\
                   '|chrome/browser/chromeos/external_metrics'\
                   '|chrome/browser/extensions/api/metrics_private/'\
                   '|chrome/browser/ui/webui/metrics_handler'\
+                  '|chromecast/browser/metrics/'\
                   '|content/browser/user_metrics.cc'\
                   '|components/metrics/'\
+                  '|components/metrics_services_manager/'\
                   '|components/rappor/'\
                   '|components/variations/'\
                   '|content/public/browser/user_metrics.h'\
