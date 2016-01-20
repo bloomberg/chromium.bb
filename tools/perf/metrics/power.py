@@ -48,7 +48,7 @@ class PowerMetric(Metric):
       logging.info("Attempting to stop non-running monitor")
       return
     self._running = False
-    logging.info("StopInternal: PowerMetric set to not running")
+    logging.info("StopInternal: PowerMetric running")
     self._results = self._platform.StopMonitoringPower()
     if self._results:  # StopMonitoringPower() can return None.
       self._results['cpu_stats'] = (
@@ -90,9 +90,9 @@ class PowerMetric(Metric):
     self._platform.StartMonitoringPower(self._browser)
 
     self._running = True
-    logging.info("Start: PowerMetric set to running")
+    logging.info("Start: PowerMetric running")
 
-  def Stop(self, page=None, tab=None):
+  def Stop(self, _, tab):
     if (not self._platform.CanMonitorPower() or
         not self._browser.supports_power_metrics):
       return
@@ -102,7 +102,8 @@ class PowerMetric(Metric):
   def Close(self):
     # TODO(rnephew): Remove when crbug.com/553601 is solved.
     logging.info('Closing power monitors')
-    self.Stop()
+    if self._platform.IsMonitoringPower():
+      self._platform.StopMonitoringPower()
 
   def AddResults(self, _, results):
     """Add the collected power data into the results object.
