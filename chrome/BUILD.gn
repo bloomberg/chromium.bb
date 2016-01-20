@@ -146,7 +146,6 @@ if (!is_android) {
         "//third_party/kasko",
         "//ui/gfx",
         "//win8/delegate_execute",
-        "//win8/metro_driver",
       ]
       data_deps = [
         "//chrome/app/version_assembly:version_assembly_manifest",
