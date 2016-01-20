@@ -46,7 +46,7 @@ void LayoutFieldset::computePreferredLogicalWidths()
         int legendMinWidth = legend->minPreferredLogicalWidth();
 
         Length legendMarginLeft = legend->style()->marginLeft();
-        Length legendMarginRight = legend->style()->marginLeft();
+        Length legendMarginRight = legend->style()->marginRight();
 
         if (legendMarginLeft.isFixed())
             legendMinWidth += legendMarginLeft.value();
