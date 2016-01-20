@@ -3472,7 +3472,7 @@ def CMDowners(parser, args):
       disable_color=options.no_color).run()
 
 
-def BuildGitDiffCmd(diff_type, upstream_commit, args, extensions):
+def BuildGitDiffCmd(diff_type, upstream_commit, args):
   """Generates a diff command."""
   # Generate diff for the current branch's changes.
   diff_cmd = ['diff', '--no-ext-diff', '--no-prefix', diff_type,
@@ -3480,17 +3480,16 @@ def BuildGitDiffCmd(diff_type, upstream_commit, args, extensions):
 
   if args:
     for arg in args:
-      if os.path.isdir(arg):
-        diff_cmd.extend(os.path.join(arg, '*' + ext) for ext in extensions)
-      elif os.path.isfile(arg):
+      if os.path.isdir(arg) or os.path.isfile(arg):
         diff_cmd.append(arg)
       else:
         DieWithError('Argument "%s" is not a file or a directory' % arg)
-  else:
-    diff_cmd.extend('*' + ext for ext in extensions)
 
   return diff_cmd
 
+def MatchingFileType(file_name, extensions):
+  """Returns true if the file name ends with one of the given extensions."""
+  return bool([ext for ext in extensions if file_name.lower().endswith(ext)])
 
 @subcommand.usage('[files or directories to diff]')
 def CMDformat(parser, args):
@@ -3527,15 +3526,13 @@ def CMDformat(parser, args):
     DieWithError('Could not find base commit for this branch. '
                  'Are you in detached state?')
 
-  if opts.full:
-    # Only list the names of modified files.
-    diff_type = '--name-only'
-  else:
-    # Only generate context-less patches.
-    diff_type = '-U0'
+  changed_files_cmd = BuildGitDiffCmd('--name-only', upstream_commit, args)
+  diff_output = RunGit(changed_files_cmd)
+  diff_files = diff_output.splitlines()
 
-  diff_cmd = BuildGitDiffCmd(diff_type, upstream_commit, args, CLANG_EXTS)
-  diff_output = RunGit(diff_cmd)
+  clang_diff_files = [x for x in diff_files if MatchingFileType(x, CLANG_EXTS)]
+  python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
+  dart_diff_files = [x for x in diff_files if MatchingFileType(x, ['.dart'])]
 
   top_dir = os.path.normpath(
       RunGit(["rev-parse", "--show-toplevel"]).rstrip('\n'))
@@ -3551,19 +3548,16 @@ def CMDformat(parser, args):
   return_value = 0
 
   if opts.full:
-    # diff_output is a list of files to send to clang-format.
-    files = diff_output.splitlines()
-    if files:
+    if clang_diff_files:
       cmd = [clang_format_tool]
       if not opts.dry_run and not opts.diff:
         cmd.append('-i')
-      stdout = RunCommand(cmd + files, cwd=top_dir)
+      stdout = RunCommand(cmd + clang_diff_files, cwd=top_dir)
       if opts.diff:
         sys.stdout.write(stdout)
   else:
     env = os.environ.copy()
     env['PATH'] = str(os.path.dirname(clang_format_tool))
-    # diff_output is a patch to send to clang-format-diff.py
     try:
       script = clang_format.FindClangFormatScriptInChromiumTree(
           'clang-format-diff.py')
@@ -3574,6 +3568,9 @@ def CMDformat(parser, args):
     if not opts.dry_run and not opts.diff:
       cmd.append('-i')
 
+    diff_cmd = BuildGitDiffCmd('-U0', upstream_commit, clang_diff_files)
+    diff_output = RunGit(diff_cmd)
+
     stdout = RunCommand(cmd, stdin=diff_output, cwd=top_dir, env=env)
     if opts.diff:
       sys.stdout.write(stdout)
@@ -3583,19 +3580,16 @@ def CMDformat(parser, args):
   # Similar code to above, but using yapf on .py files rather than clang-format
   # on C/C++ files
   if opts.python:
-    diff_cmd = BuildGitDiffCmd(diff_type, upstream_commit, args, ['.py'])
-    diff_output = RunGit(diff_cmd)
     yapf_tool = gclient_utils.FindExecutable('yapf')
     if yapf_tool is None:
       DieWithError('yapf not found in PATH')
 
     if opts.full:
-      files = diff_output.splitlines()
-      if files:
+      if python_diff_files:
         cmd = [yapf_tool]
         if not opts.dry_run and not opts.diff:
           cmd.append('-i')
-        stdout = RunCommand(cmd + files, cwd=top_dir)
+        stdout = RunCommand(cmd + python_diff_files, cwd=top_dir)
         if opts.diff:
           sys.stdout.write(stdout)
     else:
@@ -3603,18 +3597,14 @@ def CMDformat(parser, args):
       # https://github.com/google/yapf/issues/154
       DieWithError('--python currently only works with --full')
 
-  # Build a diff command that only operates on dart files. dart's formatter
-  # does not have the nice property of only operating on modified chunks, so
-  # hard code full.
-  dart_diff_cmd = BuildGitDiffCmd('--name-only', upstream_commit,
-                                  args, ['.dart'])
-  dart_diff_output = RunGit(dart_diff_cmd)
-  if dart_diff_output:
+  # Dart's formatter does not have the nice property of only operating on
+  # modified chunks, so hard code full.
+  if dart_diff_files:
     try:
       command = [dart_format.FindDartFmtToolInChromiumTree()]
       if not opts.dry_run and not opts.diff:
         command.append('-w')
-      command.extend(dart_diff_output.splitlines())
+      command.extend(dart_diff_files)
 
       stdout = RunCommand(command, cwd=top_dir, env=env)
       if opts.dry_run and stdout:
