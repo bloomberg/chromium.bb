@@ -35,6 +35,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/SharedWorker.h"
@@ -136,14 +137,14 @@ void SharedWorkerRepositoryClientImpl::connect(SharedWorker* worker, PassOwnPtr<
         if (creationError == WebWorkerCreationErrorURLMismatch) {
             // Existing worker does not match this url, so return an error back to the caller.
             exceptionState.throwDOMException(URLMismatchError, "The location of the SharedWorker named '" + name + "' does not exactly match the provided URL ('" + url.elidedString() + "').");
+            return;
         } else if (creationError == WebWorkerCreationErrorSecureContextMismatch) {
             if (isSecureContext) {
-                exceptionState.throwSecurityError("The SharedWorker named '" + name + "' was created from a nonsecure context and this context is secure.");
+                UseCounter::count(document, UseCounter::NonSecureSharedWorkerAccessedFromSecureContext);
             } else {
-                exceptionState.throwSecurityError("The SharedWorker named '" + name + "' was created from a secure context and this context is not secure.");
+                UseCounter::count(document, UseCounter::SecureSharedWorkerAccessedFromNonSecureContext);
             }
         }
-        return;
     }
 
     // The connector object manages its own lifecycle (and the lifecycles of the two worker objects).
