@@ -116,6 +116,9 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
         return;
 
+    // Text clips are painted only for the direct inline children of the object that has a text clip style on it, not block children.
+    ASSERT(paintInfo.phase != PaintPhaseTextClip);
+
     LayoutPoint childPoint = paintOffset;
     if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
         childPoint = LineLayoutPaintShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
