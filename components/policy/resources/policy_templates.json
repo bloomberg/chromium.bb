@@ -137,7 +137,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 312
+#   For your editing convenience: highest ID currently used: 315
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -3053,6 +3053,38 @@
           If this policy is left not set, 'PromptOnAccess' will be used and the user will be able to change it.''',
         },
         {
+          'name': 'DefaultKeygenSetting',
+          'type': 'int-enum',
+          'schema': {
+            'type': 'integer',
+            'enum': [ 1, 2 ],
+          },
+          'items': [
+            {
+              'name': 'AllowKeygen',
+              'value': 1,
+              'caption': '''Allow all sites to use key generation''',
+            },
+            {
+              'name': 'BlockKeygen',
+              'value': 2,
+              'caption': '''Do not allow any site to use key generation''',
+            },
+          ],
+          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': 2,
+          'id': 313,
+          'caption': '''Default key generation setting''',
+          'tags': ['system-security', 'website-sharing', 'local-data-access'],
+          'desc': '''Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
+
+          If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.''',
+        },
+        {
           'name': 'AutoSelectCertificateForUrls',
           'type': 'list',
           'schema': {
@@ -3232,6 +3264,46 @@
           'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to run JavaScript.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultJavaScriptSetting' policy if it is set, or the user's personal configuration otherwise.''',
+        },
+        {
+          'name': 'KeygenAllowedForUrls',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
+          'id': 314,
+          'caption': '''Allow key generation on these sites''',
+          'tags': ['system-security', 'website-sharing', 'local-data-access'],
+          'desc': '''Allows you to set a list of url patterns that specify sites which are allowed to use key generation. If a url pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.''',
+        },
+        {
+          'name': 'KeygenBlockedForUrls',
+          'type': 'list',
+          'schema': {
+            'type': 'array',
+            'items': { 'type': 'string' },
+          },
+          'supported_on': ['chrome.*:49-', 'chrome_os:49-', 'android:49-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': True,
+          },
+          'example_value': ['https://www.example.com', '[*.]example.edu'],
+          'id': 315,
+          'caption': '''Block key generation on these sites''',
+          'tags': ['system-security', 'website-sharing', 'local-data-access'],
+          'desc': '''Allows you to set a list of url patterns that specify sites which are not allowed to use key generation. If a url pattern is in 'KeygenAllowedForUrls', this policy overrides these exceptions.
+
+          If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set, or the user's personal configuration otherwise.''',
         },
         {
           'name': 'PluginsAllowedForUrls',

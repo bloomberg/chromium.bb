@@ -992,6 +992,24 @@
     "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
   },
 
+  "DefaultKeygenSetting": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "DefaultKeygenSetting": 2 },
+    "pref_mappings": [
+      { "pref": "profile.managed_default_content_settings.keygen",
+        "indicator_selector": "[content-setting=keygen]",
+        "indicator_tests": [
+          { "policy": { "DefaultKeygenSetting": 1 },
+            "value": "allow"},
+          { "policy": { "DefaultKeygenSetting": 2 },
+            "value": "block"}
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
   "DefaultPluginsSetting": {
     "os": ["win", "linux", "mac", "chromeos"],
     "test_policy": { "DefaultPluginsSetting": 2 },
@@ -1309,6 +1327,38 @@
         "indicator_selector": "[content-exception=javascript]",
         "indicator_tests": [
           { "policy": { "JavaScriptBlockedForUrls": ["[*.]google.com"] } }
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
+  "KeygenAllowedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "KeygenAllowedForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_keygen_allowed_for_urls",
+        "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=keygen]').click();",
+        "indicator_selector": "[content-exception=keygen]",
+        "indicator_tests": [
+          { "policy": { "KeygenAllowedForUrls": ["[*.]google.com"] } }
+        ]
+      }
+    ],
+
+    "note": "TODO(bartfab): Flag this with can_be_recommended when http://crbug.com/106682 is fixed."
+  },
+
+  "KeygenBlockedForUrls": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "KeygenBlockedForUrls": ["[*.]google.com"] },
+    "pref_mappings": [
+      { "pref": "profile.managed_keygen_blocked_for_urls",
+        "indicator_test_setup_js": "document.querySelector('button.exceptions-list-button[contentType=keygen]').click();",
+        "indicator_selector": "[content-exception=keygen]",
+        "indicator_tests": [
+          { "policy": { "KeygenBlockedForUrls": ["[*.]google.com"] } }
         ]
       }
     ],

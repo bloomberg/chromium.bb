@@ -61854,8 +61854,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="308" label="Default printer selection rules"/>
   <int value="309" label="Allow Dinosaur Easter Egg Game"/>
   <int value="310" label="Whether RC4 cipher suites in TLS are enabled"/>
-  <int value="311" label="Default value for Display Rotation"/>
-  <int value="312" label="Allow export of supervised user data"/>
+  <int value="311"
+      label="Set default display rotation, reapplied on every reboot"/>
+  <int value="312" label="Enable the supervised user content provider"/>
+  <int value="313" label="Default key generation setting"/>
+  <int value="314" label="Allow key generation on these sites"/>
+  <int value="315" label="Block key generation on these sites"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations" type="int">
