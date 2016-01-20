@@ -331,7 +331,7 @@ Polymer({
   ready: function() {
     this.elementReadyTimeMs_ = performance.now();
     this.showSinkList_();
-    this.updateMaxSinkListHeight(this.dialogHeight_);
+    this.updateElementPositioning_();
   },
 
   attached: function() {
@@ -765,7 +765,7 @@ Polymer({
       this.currentView_ = media_router.MediaRouterView.ISSUE;
     } else {
       this.async(function() {
-        this.updateMaxSinkListHeight(this.dialogHeight_);
+        this.updateElementPositioning_();
       });
     }
   },
@@ -1132,27 +1132,32 @@ Polymer({
   },
 
   /**
-   * Compute the new maximum height of the sink list and update the style.
+   * Update the position-related styling of some elements.
    *
-   * @param {number} dialogHeight The height of the Media Router dialog.
+   * @private
    */
-  updateMaxSinkListHeight: function(dialogHeight) {
-    this.dialogHeight_ = dialogHeight;
+  updateElementPositioning_: function() {
     var headerHeight = this.$$('#container-header').offsetHeight;
-    var firstRunFlowHeight =
-        this.computeShowFirstRunFlow_(this.showFirstRunFlow,
-                                      this.currentView_) ?
+    var firstRunFlowHeight = this.$$('#first-run-flow') ?
         this.$$('#first-run-flow').offsetHeight : 0;
-    this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
-    this.$['sink-list-view'].style.marginTop =
-        firstRunFlowHeight + headerHeight + 'px';
-
-    // A non-blocking issue banner may appear below the sink list.
     var issueHeight = this.$$('#issue-banner') ?
         this.$$('#issue-banner').offsetHeight : 0;
 
+    this.$['container-header'].style.marginTop = firstRunFlowHeight + 'px';
+    this.$['sink-list-view'].style.marginTop =
+        firstRunFlowHeight + headerHeight + 'px';
     this.$['sink-list'].style.maxHeight =
         this.dialogHeight_ - headerHeight - firstRunFlowHeight -
-        issueHeight + 'px';
+            issueHeight + 'px';
+  },
+
+  /**
+   * Update the max dialog height and update the positioning of the elements.
+   *
+   * @param {number} height The max height of the Media Router dialog.
+   */
+  updateMaxDialogHeight: function(height) {
+    this.dialogHeight_ = height;
+    this.updateElementPositioning_();
   },
 });

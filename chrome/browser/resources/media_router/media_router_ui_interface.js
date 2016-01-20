@@ -107,7 +107,7 @@ cr.define('media_router.ui', function() {
    * @param {number} height
    */
   function updateMaxHeight(height) {
-    container.updateMaxSinkListHeight(height);
+    container.updateMaxDialogHeight(height);
   }
 
   return {
