@@ -90,7 +90,4 @@ public class DataUseSnackbarController implements SnackbarManager.SnackbarContro
 
     @Override
     public void onDismissNoAction(Object actionData) {}
-
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {}
 }

@@ -87,10 +87,7 @@ public class AutoSigninSnackbarController
     public void onAction(Object actionData) {}
 
     @Override
-    public void onDismissNoAction(Object actionData) {}
-
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {
+    public void onDismissNoAction(Object actionData) {
         mTab.removeObserver(mTabObserver);
     }
 }

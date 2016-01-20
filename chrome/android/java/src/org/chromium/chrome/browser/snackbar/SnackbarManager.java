@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 
-import java.util.HashSet;
 import java.util.Stack;
 
 /**
@@ -56,30 +55,16 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
      */
     public static interface SnackbarController {
         /**
-         * Callback triggered when user clicks on button at end of snackbar. This method is only
-         * called for controller having posted the entry the user clicked on; other controllers are
-         * not notified. Also once this {@link #onAction(Object)} is called,
-         * {@link #onDismissNoAction(Object)} and {@link #onDismissForEachType(boolean)} will not be
-         * called.
+         * Called when the user clicks the action button on the snackbar.
          * @param actionData Data object passed when showing this specific snackbar.
          */
         void onAction(Object actionData);
 
         /**
-         * Callback triggered when the snackbar is dismissed by either timeout or UI environment
-         * change. This callback will be called for each entry a controller has posted, _except_ for
-         * entries which the user has done action with, by clicking the action button.
+         * Called when the snackbar is dismissed by tiemout or UI enviroment change.
          * @param actionData Data object associated with the dismissed snackbar entry.
          */
         void onDismissNoAction(Object actionData);
-
-        /**
-         * Notify each SnackbarControllers instance only once immediately before the snackbar is
-         * dismissed. This function is likely to be used for controllers to do user metrics for
-         * dismissal.
-         * @param isTimeout Whether this dismissal is triggered by timeout.
-         */
-        void onDismissForEachType(boolean isTimeout);
     }
 
     private static final int DEFAULT_SNACKBAR_DURATION_MS = 3000;
@@ -186,14 +171,8 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
             mPopup = null;
         }
 
-        HashSet<SnackbarController> controllers = new HashSet<SnackbarController>();
-
         while (!mStack.isEmpty()) {
             Snackbar snackbar = mStack.pop();
-            if (!controllers.contains(snackbar.getController())) {
-                snackbar.getController().onDismissForEachType(isTimeout);
-                controllers.add(snackbar.getController());
-            }
             snackbar.getController().onDismissNoAction(snackbar.getActionData());
 
             if (isTimeout && !mStack.isEmpty() && mStack.peek().getForceDisplay()) {
@@ -221,7 +200,7 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         }
         if (!isFound) return;
 
-        finishSnackbarRemoval(controller);
+        finishSnackbarRemoval();
     }
 
     /**
@@ -242,12 +221,10 @@ public class SnackbarManager implements OnClickListener, OnGlobalLayoutListener 
         }
         if (!isFound) return;
 
-        finishSnackbarRemoval(controller);
+        finishSnackbarRemoval();
     }
 
-    private void finishSnackbarRemoval(SnackbarController controller) {
-        controller.onDismissForEachType(false);
-
+    private void finishSnackbarRemoval() {
         if (mStack.isEmpty()) {
             dismissAllSnackbars(false);
         } else {

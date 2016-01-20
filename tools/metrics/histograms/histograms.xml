@@ -56439,8 +56439,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="0" label="Undo Shown (Cold)"/>
   <int value="1" label="Undo Shown (Warm)"/>
   <int value="2" label="Undo Pressed"/>
-  <int value="3" label="Undos Dismissed (Timeout)"/>
-  <int value="4" label="Undos Dismissed (Action)"/>
+  <int value="3" label="Undos Dismissed (Timeout) (Deprecated)"/>
+  <int value="4" label="Undos Dismissed (Action) (Deprecated)"/>
 </enum>
 
 <enum name="AppBannersDismissEvent" type="int">

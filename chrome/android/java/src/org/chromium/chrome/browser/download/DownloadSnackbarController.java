@@ -42,10 +42,6 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     public void onDismissNoAction(Object actionData) {
     }
 
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {
-    }
-
     /**
      * Called to display the download succeeded snackbar.
      *

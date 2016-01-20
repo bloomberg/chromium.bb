@@ -126,9 +126,6 @@ public class GeolocationSnackbarController implements SnackbarController {
     public void onDismissNoAction(Object actionData) {}
 
     @Override
-    public void onDismissForEachType(boolean isTimeout) {}
-
-    @Override
     public void onAction(Object actionData) {
         View view = (View) actionData;
         UiUtils.hideKeyboard(view);

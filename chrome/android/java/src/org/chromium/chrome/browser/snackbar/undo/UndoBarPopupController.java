@@ -41,8 +41,6 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
     private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_COLD = 0;
     private static final int TAB_CLOSE_UNDO_TOAST_SHOWN_WARM = 1;
     private static final int TAB_CLOSE_UNDO_TOAST_PRESSED = 2;
-    private static final int TAB_CLOSE_UNDO_TOAST_DISMISSED_TIMEOUT = 3;
-    private static final int TAB_CLOSE_UNDO_TOAST_DISMISSED_ACTION = 4;
     private static final int TAB_CLOSE_UNDO_TOAST_COUNT = 5;
 
     private final TabModelSelector mTabModelSelector;
@@ -192,13 +190,5 @@ public class UndoBarPopupController implements SnackbarManager.SnackbarControlle
     private void commitTabClosure(int tabId) {
         TabModel model = mTabModelSelector.getModelForTabId(tabId);
         if (model != null) model.commitTabClosure(tabId);
-    }
-
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {
-        RecordHistogram.recordEnumeratedHistogram("AndroidTabCloseUndo.Toast",
-                isTimeout ? TAB_CLOSE_UNDO_TOAST_DISMISSED_TIMEOUT
-                          : TAB_CLOSE_UNDO_TOAST_DISMISSED_ACTION,
-                TAB_CLOSE_UNDO_TOAST_COUNT);
     }
 }

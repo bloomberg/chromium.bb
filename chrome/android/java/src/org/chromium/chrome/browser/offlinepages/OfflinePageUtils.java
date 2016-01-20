@@ -293,9 +293,6 @@ public class OfflinePageUtils {
                         break;
                 }
             }
-
-            @Override
-            public void onDismissForEachType(boolean isTimeout) {}
         };
         Snackbar snackbar = Snackbar.make(context.getString(snackbarTextId), snackbarController)
                                     .setAction(context.getString(actionTextId), buttonType);

@@ -210,8 +210,6 @@ public class EnhancedBookmarkUtils {
             final EnhancedBookmarksModel bookmarkModel, final Activity activity,
             final BookmarkId bookmarkId) {
         return new SnackbarController() {
-            @Override
-            public void onDismissForEachType(boolean isTimeout) {}
 
             @Override
             public void onDismissNoAction(Object actionData) {
@@ -237,9 +235,6 @@ public class EnhancedBookmarkUtils {
             final EnhancedBookmarksModel bookmarkModel, final SnackbarManager snackbarManager,
             final Activity activity) {
         return new SnackbarController() {
-            @Override
-            public void onDismissForEachType(boolean isTimeout) {}
-
             @Override
             public void onDismissNoAction(Object actionData) {
                 // This method will be called only if the snackbar is dismissed by timeout.

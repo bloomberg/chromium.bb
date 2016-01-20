@@ -56,8 +56,6 @@ public class OfflinePageFreeUpSpaceDialog
                 R.string.offline_pages_storage_cleared)),
                 new SnackbarController() {
                     @Override
-                    public void onDismissForEachType(boolean isTimeout) {}
-                    @Override
                     public void onDismissNoAction(Object actionData) {}
                     @Override
                     public void onAction(Object actionData) {}

@@ -125,7 +125,4 @@ public class LoFiBarPopupController implements SnackbarManager.SnackbarControlle
 
     @Override
     public void onDismissNoAction(Object actionData) {}
-
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {}
 }

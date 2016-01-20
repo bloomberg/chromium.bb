@@ -59,10 +59,6 @@ public class EnhancedBookmarkUndoController extends BookmarkModelObserver implem
     public void onDismissNoAction(Object actionData) {
     }
 
-    @Override
-    public void onDismissForEachType(boolean isTimeout) {
-    }
-
     // Overriding BookmarkModelObserver
     @Override
     public void bookmarkModelChanged() {
