@@ -87,7 +87,7 @@ public:
     LayoutUnit pageLogicalHeightForOffset(LayoutUnit);
     LayoutUnit pageRemainingLogicalHeightForOffset(LayoutUnit, PageBoundaryRule);
 
-    virtual void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) = 0;
+    virtual void contentWasLaidOut(LayoutUnit logicalBottomInFlowThreadAfterPagination) = 0;
 
     // Find and return the next logical top after |flowThreadOffset| that can fit unbreakable
     // content as tall as |contentLogicalHeight|. |flowThreadOffset| is expected to be at the exact

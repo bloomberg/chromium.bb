@@ -721,7 +721,7 @@ LayoutUnit LayoutBlockFlow::adjustBlockChildForPagination(LayoutUnit logicalTop,
         }
     }
 
-    paginatedContentWasLaidOut(newLogicalTop);
+    paginatedContentWasLaidOut(newLogicalTop + child.logicalHeight());
 
     // Similar to how we apply clearance. Go ahead and boost height() to be the place where we're going to position the child.
     setLogicalHeight(logicalHeight() + (newLogicalTop - logicalTop));
@@ -781,7 +781,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         // The new offset may require us to insert a new row for columns (fragmentainer group).
         // Give the multicol machinery an opportunity to do so (before checking the height of a
         // column that wouldn't have existed yet otherwise).
-        paginatedContentWasLaidOut(newLogicalOffset);
+        paginatedContentWasLaidOut(newLogicalOffset + lineHeight);
         // Moving to a different page or column may mean that its height is different.
         pageLogicalHeight = pageLogicalHeightForOffset(newLogicalOffset);
         if (lineHeight > pageLogicalHeight) {
@@ -842,7 +842,7 @@ void LayoutBlockFlow::adjustLinePositionForPagination(RootInlineBox& lineBox, La
         }
     }
 
-    paginatedContentWasLaidOut(logicalOffset);
+    paginatedContentWasLaidOut(logicalOffset + lineHeight);
 }
 
 LayoutUnit LayoutBlockFlow::adjustForUnsplittableChild(LayoutBox& child, LayoutUnit logicalOffset) const

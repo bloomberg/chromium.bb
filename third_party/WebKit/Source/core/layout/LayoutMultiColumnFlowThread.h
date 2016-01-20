@@ -204,7 +204,7 @@ public:
     // If we've run out of columns in the last fragmentainer group (column row), we have to insert
     // another fragmentainer group in order to hold more columns. This means that we're moving to
     // the next outer column (in the enclosing fragmentation context).
-    void appendNewFragmentainerGroupIfNeeded(LayoutUnit offsetInFlowThread);
+    void appendNewFragmentainerGroupIfNeeded(LayoutUnit bottomOffsetInFlowThread);
 
     // Implementing FragmentationContext:
     bool isFragmentainerLogicalHeightKnown() final;
@@ -236,7 +236,7 @@ private:
     void computePreferredLogicalWidths() override;
     void computeLogicalHeight(LayoutUnit logicalHeight, LayoutUnit logicalTop, LogicalExtentComputedValues&) const override;
     void updateLogicalWidth() override;
-    void contentWasLaidOut(LayoutUnit logicalTopInFlowThreadAfterPagination) override;
+    void contentWasLaidOut(LayoutUnit logicalBottomInFlowThreadAfterPagination) override;
 
     // The last set we worked on. It's not to be used as the "current set". The concept of a
     // "current set" is difficult, since layout may jump back and forth in the tree, due to wrong

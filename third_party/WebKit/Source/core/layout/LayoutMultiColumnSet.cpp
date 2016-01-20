@@ -145,12 +145,12 @@ LayoutMultiColumnSet* LayoutMultiColumnSet::previousSiblingMultiColumnSet() cons
     return nullptr;
 }
 
-bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit offsetInFlowThread) const
+bool LayoutMultiColumnSet::hasFragmentainerGroupForColumnAt(LayoutUnit bottomOffsetInFlowThread) const
 {
     const MultiColumnFragmentainerGroup& lastRow = lastFragmentainerGroup();
-    if (lastRow.logicalTopInFlowThread() > offsetInFlowThread)
+    if (lastRow.logicalTopInFlowThread() > bottomOffsetInFlowThread)
         return true;
-    return offsetInFlowThread - lastRow.logicalTopInFlowThread() < lastRow.logicalHeight() * usedColumnCount();
+    return bottomOffsetInFlowThread - lastRow.logicalTopInFlowThread() <= lastRow.logicalHeight() * usedColumnCount();
 }
 
 MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup()
@@ -163,7 +163,6 @@ MultiColumnFragmentainerGroup& LayoutMultiColumnSet::appendNewFragmentainerGroup
         LayoutUnit blockOffsetInFlowThread = previousGroup.logicalTopInFlowThread() + previousGroup.logicalHeight() * usedColumnCount();
         previousGroup.setLogicalBottomInFlowThread(blockOffsetInFlowThread);
         newGroup.setLogicalTopInFlowThread(blockOffsetInFlowThread);
-
         newGroup.setLogicalTop(previousGroup.logicalTop() + previousGroup.logicalHeight());
         newGroup.resetColumnHeight();
     }

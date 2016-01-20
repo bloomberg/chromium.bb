@@ -473,9 +473,9 @@ protected:
     LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset, PageBoundaryRule) const;
 
     // Paginated content inside this block was laid out.
-    // |logicalTopOffsetAfterPagination| is the logical top offset of the child content after
-    // applying any forced or unforced break, if needed.
-    void paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination);
+    // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the child content after
+    // applying any forced or unforced breaks as needed.
+    void paginatedContentWasLaidOut(LayoutUnit logicalBottomOffsetAfterPagination);
 
     // Adjust from painting offsets to the local coords of this layoutObject
     void offsetForContents(LayoutPoint&) const;

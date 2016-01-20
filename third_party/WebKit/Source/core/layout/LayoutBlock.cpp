@@ -2658,10 +2658,10 @@ LayoutUnit LayoutBlock::calculatePaginationStrutToFitContent(LayoutUnit offset, 
     return strutToNextPage + flowThread->nextLogicalTopForUnbreakableContent(flowThreadOffset, contentLogicalHeight) - flowThreadOffset;
 }
 
-void LayoutBlock::paginatedContentWasLaidOut(LayoutUnit logicalTopOffsetAfterPagination)
+void LayoutBlock::paginatedContentWasLaidOut(LayoutUnit logicalBottomOffsetAfterPagination)
 {
     if (LayoutFlowThread* flowThread = flowThreadContainingBlock())
-        flowThread->contentWasLaidOut(offsetFromLogicalTopOfFirstPage() + logicalTopOffsetAfterPagination);
+        flowThread->contentWasLaidOut(offsetFromLogicalTopOfFirstPage() + logicalBottomOffsetAfterPagination);
 }
 
 LayoutUnit LayoutBlock::collapsedMarginBeforeForChild(const LayoutBox& child) const
