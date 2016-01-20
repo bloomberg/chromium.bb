@@ -61,7 +61,7 @@ void WordAwareIterator::advance()
 
     while (1) {
         // If this chunk ends in whitespace we can just use it as our chunk.
-        if (isSpaceOrNewline(m_textIterator.text().characterAt(m_textIterator.length() - 1)))
+        if (isSpaceOrNewline(m_textIterator.characterAt(m_textIterator.length() - 1)))
             return;
 
         // If this is the first chunk that failed, save it in m_buffer before look ahead.

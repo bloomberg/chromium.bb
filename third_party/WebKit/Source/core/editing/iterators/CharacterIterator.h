@@ -50,7 +50,7 @@ public:
     bool atEnd() const { return m_textIterator.atEnd(); }
 
     int length() const { return m_textIterator.length() - m_runOffset; }
-    UChar characterAt(unsigned index) const { return m_textIterator.text().characterAt(m_runOffset + index); }
+    UChar characterAt(unsigned index) const { return m_textIterator.characterAt(m_runOffset + index); }
 
     template<typename BufferType>
     void appendTextTo(BufferType& output) { m_textIterator.copyTextTo(output, m_runOffset); }

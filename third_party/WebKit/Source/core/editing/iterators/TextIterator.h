@@ -75,6 +75,7 @@ public:
 
     const TextIteratorTextState& text() const { return m_textState; }
     int length() const { return m_textState.length(); }
+    UChar characterAt(unsigned index) const { return m_textState.characterAt(index); }
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }
 

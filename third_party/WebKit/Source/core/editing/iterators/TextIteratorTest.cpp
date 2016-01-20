@@ -437,4 +437,52 @@ TEST_F(TextIteratorTest, copyTextTo)
     EXPECT_EQ("three two one zero", String(output2)) << String::format(message, 2, "three two one zero").utf8().data();
 }
 
+TEST_F(TextIteratorTest, characterAt)
+{
+    const char* bodyContent = "<a id=host><b id=one>one</b> not appeared <b id=two>two</b></a>";
+    const char* shadowContent = "three <content select=#two></content> <content select=#one></content> zero";
+    setBodyContent(bodyContent);
+    setShadowContent(shadowContent, "host");
+    updateLayoutAndStyleForPainting();
+
+    Element* host = document().getElementById("host");
+
+    EphemeralRangeTemplate<EditingStrategy> range1(EphemeralRangeTemplate<EditingStrategy>::rangeOfContents(*host));
+    TextIteratorAlgorithm<EditingStrategy> iter1(range1.startPosition(), range1.endPosition());
+    const char* message1 = "|iter1| should emit 'one' and 'two'.";
+    EXPECT_EQ('o', iter1.characterAt(0)) << message1;
+    EXPECT_EQ('n', iter1.characterAt(1)) << message1;
+    EXPECT_EQ('e', iter1.characterAt(2)) << message1;
+    iter1.advance();
+    EXPECT_EQ('t', iter1.characterAt(0)) << message1;
+    EXPECT_EQ('w', iter1.characterAt(1)) << message1;
+    EXPECT_EQ('o', iter1.characterAt(2)) << message1;
+
+    EphemeralRangeTemplate<EditingInComposedTreeStrategy> range2(EphemeralRangeTemplate<EditingInComposedTreeStrategy>::rangeOfContents(*host));
+    TextIteratorAlgorithm<EditingInComposedTreeStrategy> iter2(range2.startPosition(), range2.endPosition());
+    const char* message2 = "|iter2| should emit 'three ', 'two', ' ', 'one' and ' zero'.";
+    EXPECT_EQ('t', iter2.characterAt(0)) << message2;
+    EXPECT_EQ('h', iter2.characterAt(1)) << message2;
+    EXPECT_EQ('r', iter2.characterAt(2)) << message2;
+    EXPECT_EQ('e', iter2.characterAt(3)) << message2;
+    EXPECT_EQ('e', iter2.characterAt(4)) << message2;
+    EXPECT_EQ(' ', iter2.characterAt(5)) << message2;
+    iter2.advance();
+    EXPECT_EQ('t', iter2.characterAt(0)) << message2;
+    EXPECT_EQ('w', iter2.characterAt(1)) << message2;
+    EXPECT_EQ('o', iter2.characterAt(2)) << message2;
+    iter2.advance();
+    EXPECT_EQ(' ', iter2.characterAt(0)) << message2;
+    iter2.advance();
+    EXPECT_EQ('o', iter2.characterAt(0)) << message2;
+    EXPECT_EQ('n', iter2.characterAt(1)) << message2;
+    EXPECT_EQ('e', iter2.characterAt(2)) << message2;
+    iter2.advance();
+    EXPECT_EQ(' ', iter2.characterAt(0)) << message2;
+    EXPECT_EQ('z', iter2.characterAt(1)) << message2;
+    EXPECT_EQ('e', iter2.characterAt(2)) << message2;
+    EXPECT_EQ('r', iter2.characterAt(3)) << message2;
+    EXPECT_EQ('o', iter2.characterAt(4)) << message2;
+}
+
 } // namespace blink
