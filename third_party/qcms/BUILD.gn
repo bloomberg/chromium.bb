@@ -6,8 +6,11 @@ config("qcms_config") {
   include_dirs = [ "src" ]
 }
 
+# Do not build QCMS on Android or iOS. (See http://crbug.com/577155)
+disable_qcms = is_android || is_ios
+
 source_set("qcms") {
-  if (is_android || is_ios) {
+  if (disable_qcms) {
     sources = [
       "src/empty.c",
     ]
@@ -45,7 +48,7 @@ source_set("qcms") {
   }
 }
 
-if (current_cpu == "x86" || current_cpu == "x64") {
+if (!disable_qcms && (current_cpu == "x86" || current_cpu == "x64")) {
   executable("qcms_tests") {
     defines = [ "SSE2_ENABLE" ]
     sources = [
