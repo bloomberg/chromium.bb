@@ -12,6 +12,7 @@
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8IteratorResultValue.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "core/dom/Document.h"
 #include "platform/heap/Handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <v8.h>
@@ -110,7 +111,13 @@ private:
 
 class ReadableStreamOperationsTest : public ::testing::Test {
 public:
-    ReadableStreamOperationsTest() : m_scope(v8::Isolate::GetCurrent()), m_block(isolate()) {}
+    ReadableStreamOperationsTest()
+        : m_scope(v8::Isolate::GetCurrent())
+        , m_block(isolate())
+        , m_document(Document::create())
+    {
+        scriptState()->setExecutionContext(m_document.get());
+    }
     ~ReadableStreamOperationsTest() override
     {
         // Execute all pending microtasks
@@ -148,6 +155,7 @@ public:
 
     V8TestingScope m_scope;
     v8::TryCatch m_block;
+    RefPtrWillBePersistent<Document> m_document;
 };
 
 TEST_F(ReadableStreamOperationsTest, IsReadableStream)
