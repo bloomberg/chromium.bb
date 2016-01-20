@@ -77,6 +77,7 @@
         'ime/composition_text_util_pango_unittest.cc',
         'ime/input_method_base_unittest.cc',
         'ime/input_method_chromeos_unittest.cc',
+        'ime/remote_input_method_win_unittest.cc',
         'ime/win/imm32_manager_unittest.cc',
         'ime/win/tsf_input_scope_unittest.cc',
         'models/list_model_unittest.cc',

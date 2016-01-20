@@ -779,6 +779,11 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
     return;
   }
 
+#if defined(OS_WIN)
+  if (LaunchedInNativeDesktop(app_id))
+    return;
+#endif
+
   // The app will be created for the currently active profile.
   AppLaunchParams params(
       profile_, extension, ui::DispositionFromEventFlags(event_flags),

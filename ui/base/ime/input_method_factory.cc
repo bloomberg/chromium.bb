@@ -11,6 +11,7 @@
 #include "ui/base/ime/input_method_chromeos.h"
 #elif defined(OS_WIN)
 #include "ui/base/ime/input_method_win.h"
+#include "ui/base/ime/remote_input_method_win.h"
 #elif defined(OS_MACOSX)
 #include "ui/base/ime/input_method_mac.h"
 #elif defined(USE_AURA) && defined(OS_LINUX) && defined(USE_X11) && \
@@ -52,6 +53,8 @@ scoped_ptr<InputMethod> CreateInputMethod(
 #if defined(OS_CHROMEOS)
   return make_scoped_ptr(new InputMethodChromeOS(delegate));
 #elif defined(OS_WIN)
+  if (IsRemoteInputMethodWinRequired(widget))
+    return CreateRemoteInputMethodWin(delegate);
   return make_scoped_ptr(new InputMethodWin(delegate, widget));
 #elif defined(OS_MACOSX)
   return make_scoped_ptr(new InputMethodMac(delegate));

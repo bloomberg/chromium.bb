@@ -1356,6 +1356,8 @@
       'browser/usb/web_usb_permission_bubble.h',
     ],
     'chrome_browser_win_sources': [
+      'browser/browser_process_platform_part_aurawin.cc',
+      'browser/browser_process_platform_part_aurawin.h',
       'browser/first_run/try_chrome_dialog_view.cc',
       'browser/first_run/try_chrome_dialog_view.h',
       'browser/first_run/upgrade_util.cc',
@@ -1367,6 +1369,8 @@
       'browser/hang_monitor/hung_plugin_action.h',
       'browser/hang_monitor/hung_window_detector.cc',
       'browser/hang_monitor/hung_window_detector.h',
+      'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.cc',
+      'browser/metro_viewer/chrome_metro_viewer_process_host_aurawin.h',
       'browser/password_manager/password_manager_util_win.cc',
       'browser/password_manager/password_manager_util_win.h',
     ],
@@ -3832,6 +3836,7 @@
             '../ui/metro_viewer/metro_viewer.gyp:metro_viewer_messages',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
+            '../win8/win8.gyp:metro_viewer',
           ],
           'export_dependent_settings': [
             '../third_party/kasko/kasko.gyp:kasko',

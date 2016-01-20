@@ -517,6 +517,7 @@
             '../third_party/codesighs/codesighs.gyp:msdump2symdb',
             '../third_party/codesighs/codesighs.gyp:msmap2tsv',
             '../third_party/pdfium/samples/samples.gyp:pdfium_diff',
+            '../win8/win8.gyp:metro_viewer',
           ],
         }],
         ['chromecast==1', {

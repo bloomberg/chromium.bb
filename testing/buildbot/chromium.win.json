@@ -348,6 +348,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ash_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "aura_unittests"
       },
       {
@@ -734,6 +740,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_unittests",
       "aura_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",
@@ -801,6 +808,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
       },
       {
         "swarming": {
@@ -1201,6 +1214,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "ash_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "aura_unittests"
       },
       {
@@ -1540,6 +1559,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_unittests",
       "aura_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",
@@ -1650,6 +1670,7 @@
       "accessibility_unittests",
       "app_list_unittests",
       "app_shell_unittests",
+      "ash_unittests",
       "aura_unittests",
       "cacheinvalidation_unittests",
       "cast_unittests",

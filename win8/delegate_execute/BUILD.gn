@@ -50,6 +50,10 @@ source_set("lib") {
     "//ui/gfx/geometry",
   ]
 
+  if (use_aura) {
+    public_deps += [ "//win8:metro_viewer_constants" ]
+  }
+
   if (is_chrome_branded) {
     public_deps += [ "//google_update" ]
   }

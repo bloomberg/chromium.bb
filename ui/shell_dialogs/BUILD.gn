@@ -70,6 +70,10 @@ component("shell_dialogs") {
       "select_file_dialog_auraandroid.h",
     ]
   }
+
+  if (is_win) {
+    deps += [ "//win8:metro_viewer" ]
+  }
 }
 
 test("shell_dialogs_unittests") {

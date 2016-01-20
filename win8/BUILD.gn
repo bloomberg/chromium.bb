@@ -2,6 +2,31 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("metro_viewer_constants") {
+  sources = [
+    "viewer/metro_viewer_constants.cc",
+    "viewer/metro_viewer_constants.h",
+  ]
+}
+
+component("metro_viewer") {
+  sources = [
+    "viewer/metro_viewer_process_host.cc",
+    "viewer/metro_viewer_process_host.h",
+  ]
+
+  defines = [ "METRO_VIEWER_IMPLEMENTATION" ]
+
+  deps = [
+    ":metro_viewer_constants",
+    "//base",
+    "//ipc",
+    "//ui/aura",
+    "//ui/gfx",
+    "//ui/metro_viewer",
+  ]
+}
+
 source_set("test_support_win8") {
   sources = [
     "test/open_with_dialog_async.cc",
