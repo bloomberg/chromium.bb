@@ -107,7 +107,8 @@ class CC_EXPORT InputHandler {
     NOT_SCROLLABLE = 1 << 9,
     CONTINUING_MAIN_THREAD_SCROLL = 1 << 10,
     NON_INVERTIBLE_TRANSFORM = 1 << 11,
-    MainThreadScrollingReasonCount = 13
+    PAGE_BASED_SCROLLING = 1 << 12,
+    MainThreadScrollingReasonCount = 14
   };
 
   struct ScrollStatus {

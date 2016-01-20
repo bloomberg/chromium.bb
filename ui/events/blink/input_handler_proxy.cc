@@ -433,6 +433,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     // TODO(jamesr): We don't properly handle scroll by page in the compositor
     // thread, so punt it to the main thread. http://crbug.com/236639
     result = DID_NOT_HANDLE;
+    RecordMainThreadScrollingReasons(wheel_event.type,
+                                     cc::InputHandler::PAGE_BASED_SCROLLING);
+
   } else if (!wheel_event.canScroll) {
     // Wheel events with |canScroll| == false will not trigger scrolling,
     // only event handlers.  Forward to the main thread.
