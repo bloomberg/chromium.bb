@@ -105,8 +105,6 @@ public:
 protected:
     explicit DocumentParser(Document*);
 
-    virtual void flush() = 0;
-
 private:
     enum ParserState {
         ParsingState,

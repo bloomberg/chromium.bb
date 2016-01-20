@@ -45,17 +45,9 @@ protected:
     }
 
 private:
-    void flush() override
-    {
-        // Make sure appendBytes is called at least once.
-        appendBytes(0, 0);
-    }
+    void insert(const SegmentedString&) final {}
 
-    void insert(const SegmentedString&) override
-    {
-    }
-
-    void append(const String&) override
+    void append(const String&) final
     {
         ASSERT_NOT_REACHED();
     }

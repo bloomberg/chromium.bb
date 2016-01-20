@@ -40,7 +40,7 @@ public:
 
     // The below functions are used by DocumentWriter (the loader).
     void appendBytes(const char* bytes, size_t length) override;
-    void flush() override;
+    virtual void flush();
     bool needsDecoder() const final { return m_needsDecoder; }
     void setDecoder(PassOwnPtr<TextResourceDecoder>) override;
     TextResourceDecoder* decoder() final;
