@@ -275,7 +275,6 @@ class TestWebGraphicsContext3D {
                                            GLuint io_surface_id,
                                            GLuint plane) {}
 
-  virtual GLuint insertSyncPoint();
   virtual GLuint64 insertFenceSync();
   virtual void genSyncToken(GLuint64 fence_sync, GLbyte* sync_token);
   virtual void waitSyncToken(const GLbyte* sync_token);

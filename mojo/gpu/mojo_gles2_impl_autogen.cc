@@ -1630,14 +1630,6 @@ void MojoGLES2Impl::LoseContextCHROMIUM(GLenum current, GLenum other) {
   MojoGLES2MakeCurrent(context_);
   glLoseContextCHROMIUM(current, other);
 }
-GLuint MojoGLES2Impl::InsertSyncPointCHROMIUM() {
-  MojoGLES2MakeCurrent(context_);
-  return glInsertSyncPointCHROMIUM();
-}
-void MojoGLES2Impl::WaitSyncPointCHROMIUM(GLuint sync_point) {
-  MojoGLES2MakeCurrent(context_);
-  glWaitSyncPointCHROMIUM(sync_point);
-}
 GLuint64 MojoGLES2Impl::InsertFenceSyncCHROMIUM() {
   MojoGLES2MakeCurrent(context_);
   return glInsertFenceSyncCHROMIUM();

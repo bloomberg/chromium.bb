@@ -322,14 +322,6 @@ struct GenMailboxCHROMIUM {
   CommandHeader header;
 };
 
-struct InsertSyncPointCHROMIUM {
-  typedef InsertSyncPointCHROMIUM ValueType;
-  static const CommandId kCmdId = kInsertSyncPointCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
-  CommandHeader header;
-};
-
 struct CreateAndConsumeTextureCHROMIUMImmediate {
   typedef CreateAndConsumeTextureCHROMIUMImmediate ValueType;
   static const CommandId kCmdId = kCreateAndConsumeTextureCHROMIUMImmediate;

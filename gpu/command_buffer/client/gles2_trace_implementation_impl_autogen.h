@@ -2126,16 +2126,6 @@ void GLES2TraceImplementation::LoseContextCHROMIUM(GLenum current,
   gl_->LoseContextCHROMIUM(current, other);
 }
 
-GLuint GLES2TraceImplementation::InsertSyncPointCHROMIUM() {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertSyncPointCHROMIUM");
-  return gl_->InsertSyncPointCHROMIUM();
-}
-
-void GLES2TraceImplementation::WaitSyncPointCHROMIUM(GLuint sync_point) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::WaitSyncPointCHROMIUM");
-  gl_->WaitSyncPointCHROMIUM(sync_point);
-}
-
 GLuint64 GLES2TraceImplementation::InsertFenceSyncCHROMIUM() {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::InsertFenceSyncCHROMIUM");
   return gl_->InsertFenceSyncCHROMIUM();

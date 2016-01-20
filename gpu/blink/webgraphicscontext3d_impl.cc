@@ -216,16 +216,6 @@ uint32_t WebGraphicsContext3DImpl::lastFlushID() {
   return flush_id_;
 }
 
-bool WebGraphicsContext3DImpl::insertSyncPoint(WGC3Dbyte* sync_token) {
-  const uint32_t sync_point = gl_->InsertSyncPointCHROMIUM();
-  if (!sync_point)
-    return false;
-
-  gpu::SyncToken sync_token_data(sync_point);
-  memcpy(sync_token, &sync_token_data, sizeof(sync_token_data));
-  return true;
-}
-
 DELEGATE_TO_GL_R(insertFenceSyncCHROMIUM, InsertFenceSyncCHROMIUM, WGC3Duint64)
 
 bool WebGraphicsContext3DImpl::genSyncTokenCHROMIUM(WGC3Duint64 fenceSync,

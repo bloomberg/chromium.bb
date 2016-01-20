@@ -193,22 +193,6 @@ class ResourceProviderContext : public TestWebGraphicsContext3D {
     return make_scoped_ptr(new ResourceProviderContext(shared_data));
   }
 
-  GLuint insertSyncPoint() override {
-    const uint32_t sync_point =
-        static_cast<uint32_t>(shared_data_->InsertFenceSync());
-    gpu::SyncToken sync_token_data(sync_point);
-
-    // Commit the produceTextureCHROMIUM calls at this point, so that
-    // they're associated with the sync point.
-    for (const scoped_ptr<PendingProduceTexture>& pending_texture :
-         pending_produce_textures_) {
-      shared_data_->ProduceTexture(pending_texture->mailbox, sync_token_data,
-                                   pending_texture->texture);
-    }
-    pending_produce_textures_.clear();
-    return sync_point;
-  }
-
   GLuint64 insertFenceSync() override {
     return shared_data_->InsertFenceSync();
   }

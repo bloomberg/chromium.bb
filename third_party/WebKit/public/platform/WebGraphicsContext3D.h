@@ -148,7 +148,6 @@ public:
     virtual void discardBackbufferCHROMIUM() { }
     virtual void ensureBackbufferCHROMIUM() { }
 
-    virtual bool insertSyncPoint(WGC3Dbyte*) { return false; }
     virtual WGC3Duint64 insertFenceSyncCHROMIUM() { return 0; }
     virtual bool genSyncTokenCHROMIUM(WGC3Duint64, WGC3Dbyte*) { return false; }
     virtual void waitSyncTokenCHROMIUM(const WGC3Dbyte*) {}

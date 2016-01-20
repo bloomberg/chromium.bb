@@ -992,10 +992,6 @@ void GLES2InterfaceStub::DiscardFramebufferEXT(
     const GLenum* /* attachments */) {}
 void GLES2InterfaceStub::LoseContextCHROMIUM(GLenum /* current */,
                                              GLenum /* other */) {}
-GLuint GLES2InterfaceStub::InsertSyncPointCHROMIUM() {
-  return 0;
-}
-void GLES2InterfaceStub::WaitSyncPointCHROMIUM(GLuint /* sync_point */) {}
 GLuint64 GLES2InterfaceStub::InsertFenceSyncCHROMIUM() {
   return 0;
 }

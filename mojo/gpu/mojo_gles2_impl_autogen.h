@@ -750,8 +750,6 @@ class MojoGLES2Impl : public gpu::gles2::GLES2Interface {
                              GLsizei count,
                              const GLenum* attachments) override;
   void LoseContextCHROMIUM(GLenum current, GLenum other) override;
-  GLuint InsertSyncPointCHROMIUM() override;
-  void WaitSyncPointCHROMIUM(GLuint sync_point) override;
   GLuint64 InsertFenceSyncCHROMIUM() override;
   void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override;
   void GenUnverifiedSyncTokenCHROMIUM(GLuint64 fence_sync,

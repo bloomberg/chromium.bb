@@ -308,8 +308,6 @@ VISIT_GL_CALL(LoseContextCHROMIUM,
               void,
               (GLenum current, GLenum other),
               (current, other))
-VISIT_GL_CALL(InsertSyncPointCHROMIUM, GLuint, (), ())
-VISIT_GL_CALL(WaitSyncPointCHROMIUM, void, (GLuint sync_point), (sync_point))
 VISIT_GL_CALL(InsertFenceSyncCHROMIUM, GLuint64, (), ())
 VISIT_GL_CALL(GenSyncTokenCHROMIUM,
               void,

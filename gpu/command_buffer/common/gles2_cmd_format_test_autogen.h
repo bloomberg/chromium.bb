@@ -4690,17 +4690,6 @@ TEST_F(GLES2FormatTest, LoseContextCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, WaitSyncPointCHROMIUM) {
-  cmds::WaitSyncPointCHROMIUM& cmd =
-      *GetBufferAs<cmds::WaitSyncPointCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLuint>(11));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::WaitSyncPointCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLuint>(11), cmd.sync_point);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, InsertFenceSyncCHROMIUM) {
   cmds::InsertFenceSyncCHROMIUM& cmd =
       *GetBufferAs<cmds::InsertFenceSyncCHROMIUM>();

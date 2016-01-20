@@ -649,10 +649,6 @@ GLuint TestWebGraphicsContext3D::createGpuMemoryBufferImageCHROMIUM(
   return image_id;
 }
 
-GLuint TestWebGraphicsContext3D::insertSyncPoint() {
-  return static_cast<GLuint>(next_insert_fence_sync_++);
-}
-
 GLuint64 TestWebGraphicsContext3D::insertFenceSync() {
   return next_insert_fence_sync_++;
 }

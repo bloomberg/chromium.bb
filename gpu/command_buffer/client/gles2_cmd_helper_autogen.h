@@ -2729,14 +2729,6 @@ void LoseContextCHROMIUM(GLenum current, GLenum other) {
   }
 }
 
-void WaitSyncPointCHROMIUM(GLuint sync_point) {
-  gles2::cmds::WaitSyncPointCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::WaitSyncPointCHROMIUM>();
-  if (c) {
-    c->Init(sync_point);
-  }
-}
-
 void InsertFenceSyncCHROMIUM(GLuint64 release_count) {
   gles2::cmds::InsertFenceSyncCHROMIUM* c =
       GetCmdSpace<gles2::cmds::InsertFenceSyncCHROMIUM>();

@@ -13367,39 +13367,6 @@ static_assert(offsetof(LoseContextCHROMIUM, current) == 4,
 static_assert(offsetof(LoseContextCHROMIUM, other) == 8,
               "offset of LoseContextCHROMIUM other should be 8");
 
-struct WaitSyncPointCHROMIUM {
-  typedef WaitSyncPointCHROMIUM ValueType;
-  static const CommandId kCmdId = kWaitSyncPointCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLuint _sync_point) {
-    SetHeader();
-    sync_point = _sync_point;
-  }
-
-  void* Set(void* cmd, GLuint _sync_point) {
-    static_cast<ValueType*>(cmd)->Init(_sync_point);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t sync_point;
-};
-
-static_assert(sizeof(WaitSyncPointCHROMIUM) == 8,
-              "size of WaitSyncPointCHROMIUM should be 8");
-static_assert(offsetof(WaitSyncPointCHROMIUM, header) == 0,
-              "offset of WaitSyncPointCHROMIUM header should be 0");
-static_assert(offsetof(WaitSyncPointCHROMIUM, sync_point) == 4,
-              "offset of WaitSyncPointCHROMIUM sync_point should be 4");
-
 struct InsertFenceSyncCHROMIUM {
   typedef InsertFenceSyncCHROMIUM ValueType;
   static const CommandId kCmdId = kInsertFenceSyncCHROMIUM;

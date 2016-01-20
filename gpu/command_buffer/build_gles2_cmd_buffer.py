@@ -4273,22 +4273,6 @@ _FUNCTION_INFO = {
     'chromium': True,
     'trace_level': 1,
   },
-  'InsertSyncPointCHROMIUM': {
-    'type': 'HandWritten',
-    'impl_func': False,
-    'extension': "CHROMIUM_sync_point",
-    'chromium': True,
-    'trace_level': 1,
-  },
-  'WaitSyncPointCHROMIUM': {
-    'type': 'Custom',
-    'impl_func': False,
-    'unit_test': False,
-    'client_test': False,
-    'extension': "CHROMIUM_sync_point",
-    'chromium': True,
-    'trace_level': 1,
-  },
   'InsertFenceSyncCHROMIUM': {
     'type': 'Custom',
     'impl_func': False,

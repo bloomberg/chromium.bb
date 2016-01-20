@@ -323,10 +323,6 @@ void TestGLES2Interface::BufferData(GLenum target,
   test_context_->bufferData(target, size, data, usage);
 }
 
-GLuint TestGLES2Interface::InsertSyncPointCHROMIUM() {
-  return test_context_->insertSyncPoint();
-}
-
 GLuint64 TestGLES2Interface::InsertFenceSyncCHROMIUM() {
   return test_context_->insertFenceSync();
 }

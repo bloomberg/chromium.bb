@@ -1010,10 +1010,6 @@ void DiscardFramebufferEXT(GLenum target,
 
 void LoseContextCHROMIUM(GLenum current, GLenum other) override;
 
-GLuint InsertSyncPointCHROMIUM() override;
-
-void WaitSyncPointCHROMIUM(GLuint sync_point) override;
-
 GLuint64 InsertFenceSyncCHROMIUM() override;
 
 void GenSyncTokenCHROMIUM(GLuint64 fence_sync, GLbyte* sync_token) override;

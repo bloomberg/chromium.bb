@@ -12586,25 +12586,6 @@ bool GLES2DecoderImpl::CheckResetStatus() {
   return false;
 }
 
-error::Error GLES2DecoderImpl::HandleInsertSyncPointCHROMIUM(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  return error::kUnknownCommand;
-}
-
-error::Error GLES2DecoderImpl::HandleWaitSyncPointCHROMIUM(
-    uint32_t immediate_data_size,
-    const void* cmd_data) {
-  const gles2::cmds::WaitSyncPointCHROMIUM& c =
-      *static_cast<const gles2::cmds::WaitSyncPointCHROMIUM*>(cmd_data);
-  uint32_t sync_point = c.sync_point;
-  if (wait_sync_point_callback_.is_null())
-    return error::kNoError;
-
-  return wait_sync_point_callback_.Run(sync_point) ?
-      error::kNoError : error::kDeferCommandUntilLater;
-}
-
 error::Error GLES2DecoderImpl::HandleInsertFenceSyncCHROMIUM(
     uint32_t immediate_data_size,
     const void* cmd_data) {

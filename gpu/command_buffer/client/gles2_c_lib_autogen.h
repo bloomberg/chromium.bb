@@ -1457,12 +1457,6 @@ void GL_APIENTRY GLES2DiscardFramebufferEXT(GLenum target,
 void GL_APIENTRY GLES2LoseContextCHROMIUM(GLenum current, GLenum other) {
   gles2::GetGLContext()->LoseContextCHROMIUM(current, other);
 }
-GLuint GL_APIENTRY GLES2InsertSyncPointCHROMIUM() {
-  return gles2::GetGLContext()->InsertSyncPointCHROMIUM();
-}
-void GL_APIENTRY GLES2WaitSyncPointCHROMIUM(GLuint sync_point) {
-  gles2::GetGLContext()->WaitSyncPointCHROMIUM(sync_point);
-}
 GLuint64 GL_APIENTRY GLES2InsertFenceSyncCHROMIUM() {
   return gles2::GetGLContext()->InsertFenceSyncCHROMIUM();
 }
@@ -2830,14 +2824,6 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glLoseContextCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glLoseContextCHROMIUM),
-    },
-    {
-        "glInsertSyncPointCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glInsertSyncPointCHROMIUM),
-    },
-    {
-        "glWaitSyncPointCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glWaitSyncPointCHROMIUM),
     },
     {
         "glInsertFenceSyncCHROMIUM",

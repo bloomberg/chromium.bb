@@ -117,14 +117,6 @@ public:
         return m_mostRecentlyProducedSize;
     }
 
-    bool insertSyncPoint(WGC3Dbyte* syncToken) override
-    {
-        static WGC3Duint syncPointGenerator = 0;
-        WGC3Duint newSyncPoint = ++syncPointGenerator;
-        memcpy(syncToken, &newSyncPoint, sizeof(newSyncPoint));
-        return true;
-    }
-
     WGC3Duint64 insertFenceSyncCHROMIUM() override
     {
         static WGC3Duint64 syncPointGenerator = 0;
