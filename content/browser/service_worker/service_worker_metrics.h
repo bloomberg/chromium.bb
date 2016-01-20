@@ -82,6 +82,7 @@ class ServiceWorkerMetrics {
     PUSH,
     GEOFENCING,
     SERVICE_PORT_CONNECT,
+    MESSAGE,
     // Add new events to record here.
 
     NUM_TYPES

@@ -208,6 +208,7 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
     // For now event duration for these events is not recorded.
     case EventType::GEOFENCING:
     case EventType::SERVICE_PORT_CONNECT:
+    case EventType::MESSAGE:
       break;
 
     case EventType::NUM_TYPES:

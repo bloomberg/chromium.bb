@@ -478,6 +478,12 @@ int ServiceWorkerVersion::StartRequest(
   OnBeginEvent();
   DCHECK_EQ(RUNNING, running_status())
       << "Can only start a request with a running worker.";
+  DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
+         event_type == ServiceWorkerMetrics::EventType::ACTIVATE ||
+         event_type == ServiceWorkerMetrics::EventType::MESSAGE ||
+         status() == ACTIVATED)
+      << "Event of type " << static_cast<int>(event_type)
+      << " can only be dispatched to an active worker: " << status();
   return AddRequest(error_callback, &custom_requests_, REQUEST_CUSTOM,
                     event_type);
 }
