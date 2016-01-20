@@ -93,9 +93,18 @@ class DesktopSessionAgent::SharedBuffer : public webrtc::SharedMemory {
                scoped_ptr<base::SharedMemory> memory,
                size_t size,
                int id)
-      : SharedMemory(memory->memory(), size, 0, id),
+      : SharedMemory(memory->memory(),
+                     size,
+// webrtc::ScreenCapturer uses webrtc::SharedMemory::handle() only on Windows.
+#if defined(OS_WIN)
+                     memory->handle().GetHandle(),
+#else
+                     0,
+#endif
+                     id),
         agent_(agent),
-        shared_memory_(std::move(memory)) {}
+        shared_memory_(std::move(memory)) {
+  }
 
   DesktopSessionAgent* agent_;
   scoped_ptr<base::SharedMemory> shared_memory_;
@@ -306,6 +315,9 @@ void DesktopSessionAgent::OnCaptureCompleted(webrtc::DesktopFrame* frame) {
   last_frame_.reset(frame);
 
   current_size_ = frame->size();
+
+  // Verify that the captured frame was stored in the shared memory buffer.
+  CHECK(frame->data() == frame->shared_memory()->data());
 
   // Serialize webrtc::DesktopFrame.
   SerializedDesktopFrame serialized_frame;
