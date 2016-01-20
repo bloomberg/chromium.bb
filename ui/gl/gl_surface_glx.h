@@ -58,7 +58,7 @@ class GL_EXPORT NativeViewGLSurfaceGLX : public GLSurfaceGLX,
   explicit NativeViewGLSurfaceGLX(gfx::AcceleratedWidget window);
 
   // Implement GLSurfaceGLX.
-  bool Initialize() override;
+  bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
@@ -106,7 +106,7 @@ class GL_EXPORT UnmappedNativeViewGLSurfaceGLX : public GLSurfaceGLX {
   explicit UnmappedNativeViewGLSurfaceGLX(const gfx::Size& size);
 
   // Implement GLSurfaceGLX.
-  bool Initialize() override;
+  bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool IsOffscreen() override;
   gfx::SwapResult SwapBuffers() override;

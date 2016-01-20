@@ -276,6 +276,7 @@ class GpuCommandBufferStub
   scoped_ptr<gpu::GpuScheduler> scheduler_;
   scoped_ptr<gpu::SyncPointClient> sync_point_client_;
   scoped_refptr<gfx::GLSurface> surface_;
+  gfx::GLSurface::Format surface_format_;
 
   GpuWatchdog* watchdog_;
 

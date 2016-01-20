@@ -527,6 +527,8 @@ void CompositorImpl::CreateOutputSurface() {
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   attrs.noAutomaticFlushes = true;
+  attrs.alpha = has_transparent_background_;
+
   pending_swapbuffers_ = 0;
 
   DCHECK(window_);

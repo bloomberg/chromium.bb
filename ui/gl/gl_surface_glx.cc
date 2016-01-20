@@ -450,7 +450,7 @@ GLXDrawable NativeViewGLSurfaceGLX::GetDrawableHandle() const {
   return glx_window_;
 }
 
-bool NativeViewGLSurfaceGLX::Initialize() {
+bool NativeViewGLSurfaceGLX::Initialize(GLSurface::Format format) {
   XWindowAttributes attributes;
   if (!XGetWindowAttributes(g_display, parent_window_, &attributes)) {
     LOG(ERROR) << "XGetWindowAttributes failed for window " << parent_window_
@@ -588,7 +588,7 @@ UnmappedNativeViewGLSurfaceGLX::UnmappedNativeViewGLSurfaceGLX(
     size_.SetSize(1, 1);
 }
 
-bool UnmappedNativeViewGLSurfaceGLX::Initialize() {
+bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurface::Format format) {
   DCHECK(!window_);
 
   gfx::AcceleratedWidget parent_window =

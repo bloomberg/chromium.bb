@@ -19,7 +19,8 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle) {
+    const gfx::GLSurfaceHandle& handle,
+    gfx::GLSurface::Format format) {
   DCHECK(GpuSurfaceLookup::GetInstance());
   DCHECK_EQ(handle.transport_type, gfx::NATIVE_DIRECT);
   ANativeWindow* window =
@@ -30,7 +31,7 @@ scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
   }
   scoped_refptr<gfx::GLSurface> surface =
       new gfx::NativeViewGLSurfaceEGL(window);
-  bool initialize_success = surface->Initialize();
+  bool initialize_success = surface->Initialize(format);
   ANativeWindow_release(window);
   if (!initialize_success)
     return scoped_refptr<gfx::GLSurface>();

@@ -31,13 +31,14 @@ ImageTransportSurface::~ImageTransportSurface() {}
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle) {
+    const gfx::GLSurfaceHandle& handle,
+    gfx::GLSurface::Format format) {
   scoped_refptr<gfx::GLSurface> surface;
   if (handle.transport_type == gfx::NULL_TRANSPORT) {
     surface = manager->GetDefaultOffscreenSurface();
   } else {
-    surface = CreateNativeSurface(manager, stub, handle);
-    if (!surface.get() || !surface->Initialize())
+    surface = CreateNativeSurface(manager, stub, handle, format);
+    if (!surface.get() || !surface->Initialize(format))
       return NULL;
   }
 
@@ -64,7 +65,7 @@ ImageTransportHelper::~ImageTransportHelper() {
   manager_->RemoveRoute(route_id_);
 }
 
-bool ImageTransportHelper::Initialize() {
+bool ImageTransportHelper::Initialize(gfx::GLSurface::Format format) {
   gpu::gles2::GLES2Decoder* decoder = Decoder();
 
   if (!decoder)
@@ -154,9 +155,10 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
                                          gfx::kNullPluginWindow));
 }
 
-bool PassThroughImageTransportSurface::Initialize() {
+bool PassThroughImageTransportSurface::Initialize(
+    gfx::GLSurface::Format format) {
   // The surface is assumed to have already been initialized.
-  return helper_->Initialize();
+  return helper_->Initialize(format);
 }
 
 void PassThroughImageTransportSurface::Destroy() {

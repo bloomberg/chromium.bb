@@ -54,13 +54,14 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 
 // static
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    GLSurface::Format format) {
   CHECK_NE(kGLImplementationNone, GetGLImplementation());
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new GLSurfaceOSMesa(OSMesaSurfaceFormatBGRA, size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;
@@ -74,7 +75,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
         surface = new PbufferGLSurfaceEGL(size);
       }
 
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
       return surface;
     }

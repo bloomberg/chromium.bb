@@ -49,7 +49,7 @@ class GL_EXPORT GLSurfaceOzoneEGL : public NativeViewGLSurfaceEGL {
                     AcceleratedWidget widget);
 
   // GLSurface:
-  bool Initialize() override;
+  bool Initialize(gfx::GLSurface::Format format) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;
@@ -81,7 +81,8 @@ GLSurfaceOzoneEGL::GLSurfaceOzoneEGL(
       ozone_surface_(std::move(ozone_surface)),
       widget_(widget) {}
 
-bool GLSurfaceOzoneEGL::Initialize() {
+bool GLSurfaceOzoneEGL::Initialize(gfx::GLSurface::Format format) {
+  format_ = format;
   return Initialize(ozone_surface_->CreateVSyncProvider());
 }
 
@@ -137,7 +138,7 @@ bool GLSurfaceOzoneEGL::ReinitializeNativeSurface() {
   }
 
   window_ = ozone_surface_->GetNativeWindow();
-  if (!Initialize()) {
+  if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to initialize.";
     return false;
   }
@@ -151,7 +152,7 @@ class GL_EXPORT GLSurfaceOzoneSurfaceless : public SurfacelessEGL {
                             AcceleratedWidget widget);
 
   // GLSurface:
-  bool Initialize() override;
+  bool Initialize(gfx::GLSurface::Format format) override;
   bool Resize(const gfx::Size& size,
               float scale_factor,
               bool has_alpha) override;
@@ -232,8 +233,8 @@ GLSurfaceOzoneSurfaceless::GLSurfaceOzoneSurfaceless(
   unsubmitted_frames_.push_back(new PendingFrame());
 }
 
-bool GLSurfaceOzoneSurfaceless::Initialize() {
-  if (!SurfacelessEGL::Initialize())
+bool GLSurfaceOzoneSurfaceless::Initialize(gfx::GLSurface::Format format) {
+  if (!SurfacelessEGL::Initialize(format))
     return false;
   vsync_provider_ = ozone_surface_->CreateVSyncProvider();
   if (!vsync_provider_)
@@ -687,12 +688,12 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 
 // static
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+    const gfx::Size& size, GLSurface::Format format) {
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new GLSurfaceOSMesa(OSMesaSurfaceFormatBGRA, size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return nullptr;
 
       return surface;
@@ -705,7 +706,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
       } else
         surface = new PbufferGLSurfaceEGL(size);
 
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return nullptr;
       return surface;
     }

@@ -10,7 +10,8 @@ namespace content {
 scoped_refptr<gfx::GLSurface> ImageTransportSurface::CreateNativeSurface(
     GpuChannelManager* manager,
     GpuCommandBufferStub* stub,
-    const gfx::GLSurfaceHandle& handle) {
+    const gfx::GLSurfaceHandle& handle,
+    gfx::GLSurface::Format format) {
   DCHECK(handle.handle);
   DCHECK(handle.transport_type == gfx::NATIVE_DIRECT);
   scoped_refptr<gfx::GLSurface> surface;

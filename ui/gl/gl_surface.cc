@@ -96,6 +96,10 @@ bool GLSurface::InitializeOneOffImplementation(GLImplementation impl,
 GLSurface::GLSurface() {}
 
 bool GLSurface::Initialize() {
+  return Initialize(SURFACE_DEFAULT);
+}
+
+bool GLSurface::Initialize(GLSurface::Format format) {
   return true;
 }
 
@@ -260,8 +264,8 @@ void GLSurface::OnSetSwapInterval(int interval) {
 
 GLSurfaceAdapter::GLSurfaceAdapter(GLSurface* surface) : surface_(surface) {}
 
-bool GLSurfaceAdapter::Initialize() {
-  return surface_->Initialize();
+bool GLSurfaceAdapter::Initialize(GLSurface::Format format) {
+  return surface_->Initialize(format);
 }
 
 void GLSurfaceAdapter::Destroy() {

@@ -280,8 +280,9 @@ ImageTransportSurfaceOverlayMac::~ImageTransportSurfaceOverlayMac() {
   Destroy();
 }
 
-bool ImageTransportSurfaceOverlayMac::Initialize() {
-  if (!helper_->Initialize())
+bool ImageTransportSurfaceOverlayMac::Initialize(
+    gfx::GLSurface::Format format) {
+  if (!helper_->Initialize(format))
     return false;
 
   // Create the CAContext to send this to the GPU process, and the layer for

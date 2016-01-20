@@ -74,7 +74,8 @@ class ImageTransportSurface {
   static scoped_refptr<gfx::GLSurface> CreateSurface(
       GpuChannelManager* manager,
       GpuCommandBufferStub* stub,
-      const gfx::GLSurfaceHandle& handle);
+      const gfx::GLSurfaceHandle& handle,
+      gfx::GLSurface::Format format);
 
 #if defined(OS_MACOSX)
   CONTENT_EXPORT static void SetAllowOSMesaForTesting(bool allow);
@@ -96,7 +97,8 @@ class ImageTransportSurface {
   static scoped_refptr<gfx::GLSurface> CreateNativeSurface(
       GpuChannelManager* manager,
       GpuCommandBufferStub* stub,
-      const gfx::GLSurfaceHandle& handle);
+      const gfx::GLSurfaceHandle& handle,
+      gfx::GLSurface::Format format);
 
   DISALLOW_COPY_AND_ASSIGN(ImageTransportSurface);
 };
@@ -112,7 +114,7 @@ class ImageTransportHelper
                        gfx::PluginWindowHandle handle);
   ~ImageTransportHelper() override;
 
-  bool Initialize();
+  bool Initialize(gfx::GLSurface::Format format);
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -169,7 +171,7 @@ class PassThroughImageTransportSurface
                                    gfx::GLSurface* surface);
 
   // GLSurface implementation.
-  bool Initialize() override;
+  bool Initialize(gfx::GLSurface::Format format) override;
   void Destroy() override;
   gfx::SwapResult SwapBuffers() override;
   void SwapBuffersAsync(const SwapCompletionCallback& callback) override;

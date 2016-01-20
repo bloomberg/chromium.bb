@@ -29,7 +29,7 @@ class GL_EXPORT NoOpGLSurface : public GLSurface {
   explicit NoOpGLSurface(const gfx::Size& size) : size_(size) {}
 
   // Implement GLSurface.
-  bool Initialize() override { return true; }
+  bool Initialize(GLSurface::Format format) override { return true; }
   void Destroy() override {}
   bool IsOffscreen() override { return true; }
   gfx::SwapResult SwapBuffers() override {
@@ -133,13 +133,14 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    GLSurface::Format format) {
   TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new GLSurfaceOSMesa(OSMesaSurfaceFormatRGBA, size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;
@@ -148,7 +149,7 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     case kGLImplementationDesktopGLCoreProfile:
     case kGLImplementationAppleGL: {
       scoped_refptr<GLSurface> surface(new NoOpGLSurface(size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;

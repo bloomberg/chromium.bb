@@ -32,7 +32,7 @@ class NativeViewGLSurfaceOSMesa : public GLSurfaceOSMesa {
   static bool InitializeOneOff();
 
   // Implement a subset of GLSurface.
-  bool Initialize() override;
+  bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& new_size,
               float scale_factor,
@@ -109,8 +109,8 @@ bool NativeViewGLSurfaceOSMesa::InitializeOneOff() {
   return true;
 }
 
-bool NativeViewGLSurfaceOSMesa::Initialize() {
-  if (!GLSurfaceOSMesa::Initialize())
+bool NativeViewGLSurfaceOSMesa::Initialize(GLSurface::Format format) {
+  if (!GLSurfaceOSMesa::Initialize(format))
     return false;
 
   window_graphics_context_ = XCreateGC(xdisplay_, window_, 0, NULL);
@@ -303,13 +303,13 @@ scoped_refptr<GLSurface> GLSurface::CreateViewGLSurface(
 }
 
 scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
-    const gfx::Size& size) {
+    const gfx::Size& size, GLSurface::Format format) {
   TRACE_EVENT0("gpu", "GLSurface::CreateOffscreenGLSurface");
   switch (GetGLImplementation()) {
     case kGLImplementationOSMesaGL: {
       scoped_refptr<GLSurface> surface(
           new GLSurfaceOSMesa(OSMesaSurfaceFormatRGBA, size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;
@@ -317,14 +317,14 @@ scoped_refptr<GLSurface> GLSurface::CreateOffscreenGLSurface(
     case kGLImplementationDesktopGL: {
       scoped_refptr<GLSurface> surface(
           new UnmappedNativeViewGLSurfaceGLX(size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;
     }
     case kGLImplementationEGLGLES2: {
       scoped_refptr<GLSurface> surface(new PbufferGLSurfaceEGL(size));
-      if (!surface->Initialize())
+      if (!surface->Initialize(format))
         return NULL;
 
       return surface;

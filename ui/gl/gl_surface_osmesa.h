@@ -24,7 +24,7 @@ class GL_EXPORT GLSurfaceOSMesa : public GLSurface {
   GLSurfaceOSMesa(OSMesaSurfaceFormat format, const gfx::Size& size);
 
   // Implement GLSurface.
-  bool Initialize() override;
+  bool Initialize(GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& new_size,
               float scale_factor,

@@ -32,7 +32,7 @@ GLSurfaceOSMesa::GLSurfaceOSMesa(OSMesaSurfaceFormat format,
     size_.SetSize(1, 1);
 }
 
-bool GLSurfaceOSMesa::Initialize() {
+bool GLSurfaceOSMesa::Initialize(GLSurface::Format format) {
   return Resize(size_, 1.f, true);
 }
 

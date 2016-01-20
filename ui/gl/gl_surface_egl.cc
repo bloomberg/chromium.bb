@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <map>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -116,7 +118,6 @@ const unsigned int MULTISWAP_FRAME_VSYNC_THRESHOLD = 60;
 
 namespace {
 
-EGLConfig g_config;
 EGLDisplay g_display;
 EGLNativeDisplayType g_native_display;
 
@@ -240,6 +241,166 @@ const char* DisplayTypeString(DisplayType display_type) {
   }
 }
 
+bool ValidateEglConfig(EGLDisplay display,
+                       const EGLint* config_attribs,
+                       EGLint* num_configs) {
+  if (!eglChooseConfig(display,
+                       config_attribs,
+                       NULL,
+                       0,
+                       num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << GetLastEGLErrorString();
+    return false;
+  }
+  if (*num_configs == 0) {
+    LOG(ERROR) << "No suitable EGL configs found.";
+    return false;
+  }
+  return true;
+}
+
+EGLConfig ChooseConfig(GLSurface::Format format) {
+  static std::map<GLSurface::Format, EGLConfig> config_map;
+
+  if (config_map.find(format) != config_map.end()) {
+    return config_map[format];
+  }
+
+  // Choose an EGL configuration.
+  // On X this is only used for PBuffer surfaces.
+  EGLint renderable_type = EGL_OPENGL_ES2_BIT;
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableUnsafeES3APIs)) {
+    renderable_type = EGL_OPENGL_ES3_BIT;
+  }
+
+  EGLint buffer_size = 32;
+  EGLint alpha_size = 8;
+
+#if defined(USE_X11) && !defined(OS_CHROMEOS)
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kWindowDepth)) {
+    std::string depth =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+            switches::kWindowDepth);
+
+    bool succeed = base::StringToInt(depth, &buffer_size);
+    DCHECK(succeed);
+
+    alpha_size = buffer_size == 32 ? 8 : 0;
+  }
+#endif
+
+  EGLint config_attribs_8888[] = {
+    EGL_BUFFER_SIZE, buffer_size,
+    EGL_ALPHA_SIZE, alpha_size,
+    EGL_BLUE_SIZE, 8,
+    EGL_GREEN_SIZE, 8,
+    EGL_RED_SIZE, 8,
+    EGL_RENDERABLE_TYPE, renderable_type,
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    EGL_NONE
+  };
+
+  EGLint* choose_attributes = config_attribs_8888;
+  EGLint config_attribs_565[] = {
+    EGL_BUFFER_SIZE, 16,
+    EGL_BLUE_SIZE, 5,
+    EGL_GREEN_SIZE, 6,
+    EGL_RED_SIZE, 5,
+    EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
+    EGL_NONE
+  };
+  if (format == GLSurface::SURFACE_RGB565) {
+    choose_attributes = config_attribs_565;
+  }
+
+  const EGLint* config_attribs;
+#if defined(USE_OZONE)
+  config_attribs = ui::OzonePlatform::GetInstance()
+                       ->GetSurfaceFactoryOzone()
+                       ->GetEGLSurfaceProperties(choose_attributes);
+#else
+  config_attribs = choose_attributes;
+#endif
+
+  EGLint num_configs;
+  EGLint config_size = 1;
+  EGLConfig config = nullptr;
+  EGLConfig* config_data = &config;
+  // Validate if there are any configs for given attribs.
+  if (!ValidateEglConfig(g_display,
+                         config_attribs,
+                         &num_configs)) {
+    return config;
+  }
+
+  scoped_ptr<EGLConfig[]> matching_configs(new EGLConfig[num_configs]);
+  if (format == GLSurface::SURFACE_RGB565) {
+    config_size = num_configs;
+    config_data = matching_configs.get();
+  }
+
+  if (!eglChooseConfig(g_display,
+                       config_attribs,
+                       config_data,
+                       config_size,
+                       &num_configs)) {
+    LOG(ERROR) << "eglChooseConfig failed with error "
+               << GetLastEGLErrorString();
+    return config;
+  }
+
+  if (format == GLSurface::SURFACE_RGB565) {
+    // Because of the EGL config sort order, we have to iterate
+    // through all of them (it'll put higher sum(R,G,B) bits
+    // first with the above attribs).
+    bool match_found = false;
+    for (int i = 0; i < num_configs; i++) {
+      EGLint red, green, blue, alpha;
+      // Read the relevant attributes of the EGLConfig.
+      if (eglGetConfigAttrib(g_display, matching_configs[i],
+                             EGL_RED_SIZE, &red) &&
+          eglGetConfigAttrib(g_display, matching_configs[i],
+                             EGL_BLUE_SIZE, &blue) &&
+          eglGetConfigAttrib(g_display, matching_configs[i],
+                             EGL_GREEN_SIZE, &green) &&
+          eglGetConfigAttrib(g_display, matching_configs[i],
+                             EGL_ALPHA_SIZE, &alpha) &&
+          alpha == 0 &&
+          red == 5 &&
+          green == 6 &&
+          blue == 5) {
+        config = matching_configs[i];
+        match_found = true;
+        break;
+      }
+    }
+    if (!match_found) {
+      // To fall back to default 32 bit format, choose with
+      // the right attributes again.
+      if (!ValidateEglConfig(g_display,
+                             config_attribs_8888,
+                             &num_configs)) {
+        return config;
+      }
+      if (!eglChooseConfig(g_display,
+                           config_attribs_8888,
+                           &config,
+                           1,
+                           &num_configs)) {
+        LOG(ERROR) << "eglChooseConfig failed with error "
+                   << GetLastEGLErrorString();
+        return config;
+      }
+    }
+  }
+  config_map[format] = config;
+  return config;
+}
+
 }  // namespace
 
 void GetEGLInitDisplays(bool supports_angle_d3d,
@@ -301,7 +462,9 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
   }
 }
 
-GLSurfaceEGL::GLSurfaceEGL() {}
+GLSurfaceEGL::GLSurfaceEGL() :
+    config_(nullptr),
+    format_(SURFACE_DEFAULT) {}
 
 bool GLSurfaceEGL::InitializeOneOff() {
   static bool initialized = false;
@@ -311,76 +474,6 @@ bool GLSurfaceEGL::InitializeOneOff() {
   InitializeDisplay();
   if (g_display == EGL_NO_DISPLAY)
     return false;
-
-  // Choose an EGL configuration.
-  // On X this is only used for PBuffer surfaces.
-  EGLint renderable_type = EGL_OPENGL_ES2_BIT;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableUnsafeES3APIs)) {
-    renderable_type = EGL_OPENGL_ES3_BIT;
-  }
-
-  EGLint buffer_size = 32;
-  EGLint alpha_size = 8;
-
-#if defined(USE_X11) && !defined(OS_CHROMEOS)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kWindowDepth)) {
-    std::string depth =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-            switches::kWindowDepth);
-
-    bool succeed = base::StringToInt(depth, &buffer_size);
-    DCHECK(succeed);
-
-    alpha_size = buffer_size == 32 ? 8 : 0;
-  }
-#endif
-
-  const EGLint kConfigAttribs[] = {
-    EGL_BUFFER_SIZE, buffer_size,
-    EGL_ALPHA_SIZE, alpha_size,
-    EGL_BLUE_SIZE, 8,
-    EGL_GREEN_SIZE, 8,
-    EGL_RED_SIZE, 8,
-    EGL_RENDERABLE_TYPE, renderable_type,
-    EGL_SURFACE_TYPE, EGL_WINDOW_BIT | EGL_PBUFFER_BIT,
-    EGL_NONE
-  };
-
-#if defined(USE_OZONE)
-  const EGLint* config_attribs = ui::OzonePlatform::GetInstance()
-                                     ->GetSurfaceFactoryOzone()
-                                     ->GetEGLSurfaceProperties(kConfigAttribs);
-#else
-  const EGLint* config_attribs = kConfigAttribs;
-#endif
-
-  EGLint num_configs;
-  if (!eglChooseConfig(g_display,
-                       config_attribs,
-                       NULL,
-                       0,
-                       &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed with error "
-               << GetLastEGLErrorString();
-    return false;
-  }
-
-  if (num_configs == 0) {
-    LOG(ERROR) << "No suitable EGL configs found.";
-    return false;
-  }
-
-  if (!eglChooseConfig(g_display,
-                       config_attribs,
-                       &g_config,
-                       1,
-                       &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed with error "
-               << GetLastEGLErrorString();
-    return false;
-  }
 
   g_egl_extensions = eglQueryString(g_display, EGL_EXTENSIONS);
   g_egl_create_context_robustness_supported =
@@ -436,6 +529,13 @@ bool GLSurfaceEGL::InitializeOneOff() {
 
 EGLDisplay GLSurfaceEGL::GetDisplay() {
   return g_display;
+}
+
+EGLConfig GLSurfaceEGL::GetConfig() {
+  if (!config_) {
+    config_ = ChooseConfig(format_);
+  }
+  return config_;
 }
 
 EGLDisplay GLSurfaceEGL::GetHardwareDisplay() {
@@ -526,7 +626,6 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay() {
 
 NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
     : window_(window),
-      config_(NULL),
       size_(1, 1),
       alpha_(true),
       enable_fixed_size_angle_(false),
@@ -549,6 +648,11 @@ NativeViewGLSurfaceEGL::NativeViewGLSurfaceEGL(EGLNativeWindowType window)
 }
 
 bool NativeViewGLSurfaceEGL::Initialize() {
+  return Initialize(SURFACE_DEFAULT);
+}
+
+bool NativeViewGLSurfaceEGL::Initialize(GLSurface::Format format) {
+  format_ = format;
   return Initialize(nullptr);
 }
 
@@ -644,10 +748,6 @@ void NativeViewGLSurfaceEGL::Destroy() {
   }
 }
 
-EGLConfig NativeViewGLSurfaceEGL::GetConfig() {
-  return g_config;
-}
-
 bool NativeViewGLSurfaceEGL::IsOffscreen() {
   return false;
 }
@@ -740,7 +840,7 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
 
   Destroy();
 
-  if (!Initialize()) {
+  if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to resize window.";
     return false;
   }
@@ -750,7 +850,7 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size,
 
 bool NativeViewGLSurfaceEGL::Recreate() {
   Destroy();
-  if (!Initialize()) {
+  if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to create surface.";
     return false;
   }
@@ -864,8 +964,9 @@ PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)
     size_.SetSize(1, 1);
 }
 
-bool PbufferGLSurfaceEGL::Initialize() {
+bool PbufferGLSurfaceEGL::Initialize(GLSurface::Format format) {
   EGLSurface old_surface = surface_;
+  format_ = format;
 
   EGLDisplay display = GetDisplay();
   if (!display) {
@@ -916,10 +1017,6 @@ void PbufferGLSurfaceEGL::Destroy() {
   }
 }
 
-EGLConfig PbufferGLSurfaceEGL::GetConfig() {
-  return g_config;
-}
-
 bool PbufferGLSurfaceEGL::IsOffscreen() {
   return true;
 }
@@ -950,7 +1047,7 @@ bool PbufferGLSurfaceEGL::Resize(const gfx::Size& size,
 
   size_ = size;
 
-  if (!Initialize()) {
+  if (!Initialize(format_)) {
     LOG(ERROR) << "Failed to resize pbuffer.";
     return false;
   }
@@ -993,15 +1090,12 @@ SurfacelessEGL::SurfacelessEGL(const gfx::Size& size)
     : size_(size) {
 }
 
-bool SurfacelessEGL::Initialize() {
+bool SurfacelessEGL::Initialize(GLSurface::Format format) {
+  format_ = format;
   return true;
 }
 
 void SurfacelessEGL::Destroy() {
-}
-
-EGLConfig SurfacelessEGL::GetConfig() {
-  return g_config;
 }
 
 bool SurfacelessEGL::IsOffscreen() {

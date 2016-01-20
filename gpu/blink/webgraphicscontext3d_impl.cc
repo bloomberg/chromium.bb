@@ -10,6 +10,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/sys_info.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
@@ -1269,6 +1270,20 @@ void WebGraphicsContext3DImpl::ConvertAttributes(
     ::gpu::gles2::ContextCreationAttribHelper* output_attribs) {
   output_attribs->alpha_size = attributes.alpha ? 8 : 0;
   output_attribs->depth_size = attributes.depth ? 24 : 0;
+  // TODO(jinsukkim): Pass RGBA info directly from client by cleaning up
+  //   how this is passed to the constructor.
+#if defined(OS_ANDROID)
+  if (base::SysInfo::IsLowEndDevice() && !attributes.alpha) {
+    output_attribs->red_size = 5;
+    output_attribs->green_size = 6;
+    output_attribs->blue_size = 5;
+    output_attribs->depth_size = 16;
+  } else {
+    output_attribs->red_size = 8;
+    output_attribs->green_size = 8;
+    output_attribs->blue_size = 8;
+  }
+#endif
   output_attribs->stencil_size = attributes.stencil ? 8 : 0;
   output_attribs->samples = attributes.antialias ? 4 : 0;
   output_attribs->sample_buffers = attributes.antialias ? 1 : 0;

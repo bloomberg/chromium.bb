@@ -30,7 +30,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                   gfx::PluginWindowHandle handle);
 
   // GLSurface implementation
-  bool Initialize() override;
+  bool Initialize(gfx::GLSurface::Format format) override;
   void Destroy() override;
   bool Resize(const gfx::Size& size,
               float scale_factor,

@@ -191,7 +191,7 @@ NativeViewGLSurfaceWGL::~NativeViewGLSurfaceWGL() {
   Destroy();
 }
 
-bool NativeViewGLSurfaceWGL::Initialize() {
+bool NativeViewGLSurfaceWGL::Initialize(GLSurface::Format format) {
   DCHECK(!device_context_);
 
   RECT rect;
@@ -305,7 +305,7 @@ PbufferGLSurfaceWGL::~PbufferGLSurfaceWGL() {
   Destroy();
 }
 
-bool PbufferGLSurfaceWGL::Initialize() {
+bool PbufferGLSurfaceWGL::Initialize(GLSurface::Format format) {
   DCHECK(!device_context_);
 
   if (!gfx::g_driver_wgl.fn.wglCreatePbufferARBFn) {

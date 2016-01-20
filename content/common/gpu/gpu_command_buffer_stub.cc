@@ -169,6 +169,19 @@ uint64_t GetCommandBufferID(int channel_id, int32_t route_id) {
   return (static_cast<uint64_t>(channel_id) << 32) | route_id;
 }
 
+gfx::GLSurface::Format GetSurfaceFormatFromAttribute(
+    const gpu::gles2::ContextCreationAttribHelper& attrib,
+    bool use_virtualized_gl_context) {
+  gfx::GLSurface::Format format = gfx::GLSurface::SURFACE_DEFAULT;  // ARGB8888
+  if (!use_virtualized_gl_context &&
+      attrib.red_size <= 5 &&
+      attrib.green_size <= 6 &&
+      attrib.blue_size <= 5 &&
+      attrib.alpha_size == 0) {
+    format = gfx::GLSurface::SURFACE_RGB565;
+  }
+  return format;
+}
 }  // namespace
 
 GpuCommandBufferStub::GpuCommandBufferStub(
@@ -205,6 +218,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
       route_id_(route_id),
       offscreen_(offscreen),
       last_flush_count_(0),
+      surface_format_(gfx::GLSurface::SURFACE_DEFAULT),
       watchdog_(watchdog),
       waiting_for_sync_point_(false),
       previous_processed_num_(0),
@@ -244,6 +258,9 @@ GpuCommandBufferStub::GpuCommandBufferStub(
   // MailboxManagerSync synchronization correctness currently depends on having
   // only a single context. See crbug.com/510243 for details.
   use_virtualized_gl_context_ |= mailbox_manager->UsesSync();
+
+  surface_format_ = GetSurfaceFormatFromAttribute(attrib_parser,
+                                                  use_virtualized_gl_context_);
 
   if (offscreen && initial_size_.IsEmpty()) {
     // If we're an offscreen surface with zero width and/or height, set to a
@@ -549,7 +566,8 @@ void GpuCommandBufferStub::OnInitialize(
     surface_ = ImageTransportSurface::CreateSurface(
         channel_->gpu_channel_manager(),
         this,
-        handle_);
+        handle_,
+        surface_format_);
   } else {
     surface_ = manager->GetDefaultOffscreenSurface();
   }
@@ -966,7 +984,6 @@ bool GpuCommandBufferStub::OnWaitSyncPoint(uint32_t sync_point) {
       base::Bind(&RunOnThread, task_runner_,
                  base::Bind(&GpuCommandBufferStub::OnWaitSyncPointCompleted,
                             this->AsWeakPtr(), sync_point)));
-
   if (!waiting_for_sync_point_)
     return true;
 
