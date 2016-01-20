@@ -23,6 +23,9 @@ static void recordSelectorStats(const CSSParserContext& context, const CSSSelect
             case CSSSelector::PseudoUnresolved:
                 feature = UseCounter::CSSSelectorPseudoUnresolved;
                 break;
+            case CSSSelector::PseudoSlotted:
+                feature = UseCounter::CSSSelectorPseudoSlotted;
+                break;
             case CSSSelector::PseudoContent:
                 feature = UseCounter::CSSSelectorPseudoContent;
                 break;
@@ -499,6 +502,19 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::consumePseudo(CSSParserTokenRan
             selector->adoptSelectorVector(selectorVector);
             return selector.release();
         }
+    case CSSSelector::PseudoSlotted:
+        {
+            DisallowPseudoElementsScope scope(this);
+
+            OwnPtr<CSSParserSelector> innerSelector = consumeCompoundSelector(block);
+            block.consumeWhitespace();
+            if (!innerSelector || !block.atEnd() || !RuntimeEnabledFeatures::shadowDOMV1Enabled())
+                return nullptr;
+            Vector<OwnPtr<CSSParserSelector>> selectorVector;
+            selectorVector.append(innerSelector.release());
+            selector->adoptSelectorVector(selectorVector);
+            return selector.release();
+        }
     case CSSSelector::PseudoLang:
         {
             // FIXME: CSS Selectors Level 4 allows :lang(*-foo)
@@ -692,7 +708,7 @@ const AtomicString& CSSSelectorParser::determineNamespace(const AtomicString& pr
 
 void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespacePrefix, const AtomicString& elementName, CSSParserSelector* compoundSelector)
 {
-    if (elementName.isNull() && defaultNamespace() == starAtom && !compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
+    if (elementName.isNull() && defaultNamespace() == starAtom && !compoundSelector->needsImplicitShadowCombinatorForMatching())
         return;
 
     AtomicString determinedElementName = elementName.isNull() ? starAtom : elementName;
@@ -711,7 +727,7 @@ void CSSSelectorParser::prependTypeSelectorIfNeeded(const AtomicString& namespac
     // ::cue, ::shadow), we need a universal selector to set the combinator
     // (relation) on in the cases where there are no simple selectors preceding
     // the pseudo element.
-    if (tag != anyQName() || compoundSelector->isHostPseudoSelector() || compoundSelector->needsImplicitShadowCrossingCombinatorForMatching())
+    if (tag != anyQName() || compoundSelector->isHostPseudoSelector() || compoundSelector->needsImplicitShadowCombinatorForMatching())
         compoundSelector->prependTagSelector(tag, elementName.isNull());
 }
 
@@ -735,17 +751,21 @@ PassOwnPtr<CSSParserSelector> CSSSelectorParser::splitCompoundAtImplicitShadowCr
     // the selector parser as a single compound selector.
     //
     // Example: input#x::-webkit-clear-button -> [ ::-webkit-clear-button, input, #x ]
-
+    //
+    // Likewise, ::slotted() pseudo element has an implicit ShadowSlot combinator to its left
+    // for finding matching slot element in other TreeScope.
+    //
+    // Example: slot[name=foo]::slotted(div) -> [ ::slotted(div), slot, [name=foo] ]
     CSSParserSelector* splitAfter = compoundSelector.get();
 
-    while (splitAfter->tagHistory() && !splitAfter->tagHistory()->needsImplicitShadowCrossingCombinatorForMatching())
+    while (splitAfter->tagHistory() && !splitAfter->tagHistory()->needsImplicitShadowCombinatorForMatching())
         splitAfter = splitAfter->tagHistory();
 
     if (!splitAfter || !splitAfter->tagHistory())
         return compoundSelector;
 
     OwnPtr<CSSParserSelector> secondCompound = splitAfter->releaseTagHistory();
-    secondCompound->appendTagHistory(CSSSelector::ShadowPseudo, compoundSelector);
+    secondCompound->appendTagHistory(secondCompound->pseudoType() == CSSSelector::PseudoSlotted ? CSSSelector::ShadowSlot : CSSSelector::ShadowPseudo, compoundSelector);
     return secondCompound.release();
 }
 

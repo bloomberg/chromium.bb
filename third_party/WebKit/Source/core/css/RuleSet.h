@@ -146,6 +146,7 @@ public:
     const WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes>>& keyframesRules() const { return m_keyframesRules; }
     const WillBeHeapVector<MinimalRuleData>& deepCombinatorOrShadowPseudoRules() const { return m_deepCombinatorOrShadowPseudoRules; }
     const WillBeHeapVector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
+    const WillBeHeapVector<MinimalRuleData>& shadowSlottedRules() const { return m_shadowSlottedRules; }
     const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
     const MediaQueryResultList& deviceDependentMediaQueryResults() const { return m_deviceDependentMediaQueryResults; }
 
@@ -222,9 +223,8 @@ private:
     WillBeHeapVector<RawPtrWillBeMember<StyleRuleFontFace>> m_fontFaceRules;
     WillBeHeapVector<RawPtrWillBeMember<StyleRuleKeyframes>> m_keyframesRules;
     WillBeHeapVector<MinimalRuleData> m_deepCombinatorOrShadowPseudoRules;
-    // TODO(kochi): "shadowDistributed" means the selector has ::content pseudo element.
-    // Once ::slotted is introduced, come up with more readable name.
     WillBeHeapVector<MinimalRuleData> m_shadowDistributedRules;
+    WillBeHeapVector<MinimalRuleData> m_shadowSlottedRules;
 
     MediaQueryResultList m_viewportDependentMediaQueryResults;
     MediaQueryResultList m_deviceDependentMediaQueryResults;

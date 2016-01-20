@@ -451,6 +451,9 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             }
             return SelectorFailsCompletely;
         }
+    case CSSSelector::ShadowSlot:
+        // TODO(kochi): Add this in later CL.
+        return SelectorFailsCompletely;
 
     case CSSSelector::SubSelector:
         ASSERT_NOT_REACHED();

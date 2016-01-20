@@ -161,10 +161,17 @@ bool CSSSelectorList::selectorsNeedNamespaceResolution()
     }, this);
 }
 
-bool CSSSelectorList::selectorHasShadowDistributed(size_t index) const
+bool CSSSelectorList::selectorHasContentPseudo(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) -> bool {
         return selector.relationIsAffectedByPseudoContent();
+    }, selectorAt(index));
+}
+
+bool CSSSelectorList::selectorHasSlottedPseudo(size_t index) const
+{
+    return forEachTagSelector([](const CSSSelector& selector) ->  bool {
+        return selector.pseudoType() == CSSSelector::PseudoSlotted;
     }, selectorAt(index));
 }
 

@@ -117,7 +117,8 @@ public:
         DirectAdjacent, // + combinator
         IndirectAdjacent, // ~ combinator
         ShadowPseudo, // Special case of shadow DOM pseudo elements / shadow pseudo element
-        ShadowDeep // /deep/ combinator
+        ShadowDeep, // /deep/ combinator
+        ShadowSlot // slotted to <slot> element
     };
 
     enum PseudoType {
@@ -201,7 +202,8 @@ public:
         PseudoHostContext,
         PseudoShadow,
         PseudoSpatialNavigationFocus,
-        PseudoListBox
+        PseudoListBox,
+        PseudoSlotted
     };
 
     enum AttributeMatchType {
@@ -296,7 +298,7 @@ private:
     unsigned m_hasRareData            : 1;
     unsigned m_isForPage              : 1;
     unsigned m_tagIsImplicit          : 1;
-    unsigned m_relationIsAffectedByPseudoContent  : 1;
+    unsigned m_relationIsAffectedByPseudoContent : 1;
 
     void setPseudoType(PseudoType pseudoType)
     {

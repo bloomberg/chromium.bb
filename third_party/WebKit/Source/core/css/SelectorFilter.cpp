@@ -162,6 +162,9 @@ void SelectorFilter::collectIdentifierHashes(const CSSSelector& selector, unsign
             skipOverSubselectors = false;
             collectDescendantSelectorIdentifierHashes(*current, hash);
             break;
+        case CSSSelector::ShadowSlot:
+            // TODO(kochi): Add this in later CL.
+            break;
         }
         if (hash == end)
             return;

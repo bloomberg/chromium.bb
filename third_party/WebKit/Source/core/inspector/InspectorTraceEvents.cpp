@@ -149,6 +149,7 @@ const char* pseudoTypeToString(CSSSelector::PseudoType pseudoType)
         DEFINE_STRING_MAPPING(PseudoHost)
         DEFINE_STRING_MAPPING(PseudoHostContext)
         DEFINE_STRING_MAPPING(PseudoShadow)
+        DEFINE_STRING_MAPPING(PseudoSlotted)
         DEFINE_STRING_MAPPING(PseudoSpatialNavigationFocus)
         DEFINE_STRING_MAPPING(PseudoListBox)
 #undef DEFINE_STRING_MAPPING
