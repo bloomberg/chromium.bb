@@ -35,7 +35,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <sys/time.h>
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
