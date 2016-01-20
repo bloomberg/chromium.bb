@@ -58,7 +58,7 @@ To make a release of Weston and/or Wayland, follow these steps.
 
 
   5.  Compose the release announcements.  The script will generate
-      *.x.y.0.announce files with a list of changes and tags, one for
+      *.x.y.z.announce files with a list of changes and tags, one for
       wayland, one for weston.  Prepend these with a human-readable
       listing of the most notable changes.  For x.y.0 releases, indicate
       the schedule for the x.y+1.0 release.
@@ -66,10 +66,7 @@ To make a release of Weston and/or Wayland, follow these steps.
   6.  pgp sign the the release announcements and send them to
       wayland-devel@lists.freedesktop.org
 
-  7.  Get your freshly posted release email URL from
-      http://lists.freedesktop.org/archives/wayland-devel/
-
-  8.  Update releases.html in wayland-web with links to tarballs and
+  7.  Update releases.html in wayland-web with links to tarballs and
       the release email URL.
 
       The register_release script in wayland-web will generate an HTML
@@ -79,11 +76,11 @@ To make a release of Weston and/or Wayland, follow these steps.
 
       Once satisfied:
 
-      $ git commit ./releases.html -m "Add ${RELEASE_NUMBER} release"
+      $ git commit ./releases.html -m "releases: Add ${RELEASE_NUMBER} release"
       $ git push
       $ ./deploy
 
-  9.  Update topic in #wayland to point to the release announcement URL
+  8.  Update topic in #wayland to point to the release announcement URL
 
 For x.y.0 releases, also create the release series x.y branch.  The x.y
 branch is for bug fixes and conservative changes to the x.y.0 release,
