@@ -34,6 +34,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
     if (paintPhase != PaintPhaseSelfOutlineOnly) {
         PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
+        paintInfoForDescendants.updatePaintingRootForChildren(&m_layoutTable);
 
         for (LayoutObject* child = m_layoutTable.firstChild(); child; child = child->nextSibling()) {
             if (child->isBox() && !toLayoutBox(child)->hasSelfPaintingLayer() && (child->isTableSection() || child->isTableCaption())) {
@@ -62,7 +63,7 @@ void TablePainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& pa
 
 void TablePainter::paintBoxDecorationBackground(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (!m_layoutTable.hasBoxDecorationBackground() || m_layoutTable.style()->visibility() != VISIBLE)
+    if (!m_layoutTable.hasBoxDecorationBackground() || m_layoutTable.style()->visibility() != VISIBLE || !paintInfo.shouldPaintWithinRoot(&m_layoutTable))
         return;
 
     LayoutRect rect(paintOffset, m_layoutTable.size());

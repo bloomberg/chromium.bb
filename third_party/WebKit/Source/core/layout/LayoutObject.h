@@ -974,9 +974,8 @@ public:
 
     static FloatRect absoluteBoundingBoxRectForRange(const Range*);
 
-    // The bounding box (see: absoluteBoundingBoxRect) including all descendant
-    // bounding boxes.
-    IntRect absoluteBoundingBoxRectIncludingDescendants() const;
+    // the rect that will be painted if this object is passed as the paintingRoot
+    IntRect paintingRootRect(IntRect& topLevelRect);
 
     // This function returns the minimal logical width this object can have
     // without overflowing. This means that all the opportunities for wrapping

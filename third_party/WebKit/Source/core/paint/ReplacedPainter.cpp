@@ -49,6 +49,9 @@ void ReplacedPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paint
     if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection && !m_layoutReplaced.canHaveChildren() && paintInfo.phase != PaintPhaseClippingMask)
         return;
 
+    if (!paintInfo.shouldPaintWithinRoot(&m_layoutReplaced))
+        return;
+
     if (paintInfo.phase == PaintPhaseSelection)
         if (m_layoutReplaced.selectionState() == SelectionNone)
             return;

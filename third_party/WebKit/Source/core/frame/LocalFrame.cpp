@@ -60,8 +60,6 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
-#include "core/paint/ObjectPainter.h"
-#include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -73,7 +71,6 @@
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/SkPictureBuilder.h"
-#include "platform/graphics/paint/TransformDisplayItem.h"
 #include "platform/text/TextStream.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebSecurityOrigin.h"
@@ -88,57 +85,27 @@ using namespace HTMLNames;
 
 namespace {
 
-// Convenience class for initializing a GraphicsContext to build a DragImage from a specific
-// region specified by |bounds|. After painting the using context(), the DragImage returned from
-// createImage() will only contain the content in |bounds| with the appropriate device scale
-// factor included.
-class DragImageBuilder {
+struct ScopedFramePaintingState {
     STACK_ALLOCATED();
 public:
-    DragImageBuilder(const LocalFrame& localFrame, const IntRect& bounds, Node* draggedNode, float opacity = 1)
-        : m_localFrame(localFrame)
-        , m_draggedNode(draggedNode)
-        , m_bounds(bounds)
-        , m_opacity(opacity)
+    ScopedFramePaintingState(LocalFrame* frame, Node* node)
+        : frame(frame)
+        , node(node)
     {
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            m_draggedNode->layoutObject()->updateDragState(true);
-
-        float deviceScaleFactor = m_localFrame.host()->deviceScaleFactor();
-        m_bounds.setWidth(m_bounds.width() * deviceScaleFactor);
-        m_bounds.setHeight(m_bounds.height() * deviceScaleFactor);
-        m_pictureBuilder = adoptPtr(new SkPictureBuilder(SkRect::MakeIWH(m_bounds.width(), m_bounds.height())));
-
-        AffineTransform transform;
-        transform.scale(deviceScaleFactor, deviceScaleFactor);
-        transform.translate(-m_bounds.x(), -m_bounds.y());
-        context().paintController().createAndAppend<BeginTransformDisplayItem>(m_localFrame, transform);
+        ASSERT(!node || node->layoutObject());
+        if (node)
+            node->layoutObject()->updateDragState(true);
     }
 
-    GraphicsContext& context() { return m_pictureBuilder->context(); }
-
-    PassOwnPtr<DragImage> createImage()
+    ~ScopedFramePaintingState()
     {
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            m_draggedNode->layoutObject()->updateDragState(false);
-        context().paintController().endItem<EndTransformDisplayItem>(m_localFrame);
-        RefPtr<const SkPicture> recording = m_pictureBuilder->endRecording();
-        RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
-            SkISize::Make(m_bounds.width(), m_bounds.height()), nullptr, nullptr));
-        RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
-        RespectImageOrientationEnum imageOrientation = DoNotRespectImageOrientation;
-        if (m_draggedNode && m_draggedNode->layoutObject())
-            imageOrientation = LayoutObject::shouldRespectImageOrientation(m_draggedNode->layoutObject());
-        return DragImage::create(image.get(), imageOrientation,
-            m_localFrame.host()->deviceScaleFactor(), InterpolationHigh, m_opacity);
+        if (node && node->layoutObject())
+            node->layoutObject()->updateDragState(false);
+        frame->view()->setNodeToDraw(0);
     }
 
-private:
-    const LocalFrame& m_localFrame;
-    Node* m_draggedNode;
-    IntRect m_bounds;
-    float m_opacity;
-    OwnPtr<SkPictureBuilder> m_pictureBuilder;
+    RawPtrWillBeMember<LocalFrame> frame;
+    RawPtrWillBeMember<Node> node;
 };
 
 inline float parentPageZoomFactor(LocalFrame* frame)
@@ -641,43 +608,63 @@ double LocalFrame::devicePixelRatio() const
     return ratio;
 }
 
-PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(const GlobalPaintFlags globalPaintFlags,
-    IntRect paintingRect, Node* draggedNode, float opacity)
+PassOwnPtr<DragImage> LocalFrame::paintIntoDragImage(
+    const DisplayItemClient& displayItemClient,
+    RespectImageOrientationEnum shouldRespectImageOrientation,
+    const GlobalPaintFlags globalPaintFlags, IntRect paintingRect, float opacity)
 {
     ASSERT(document()->isActive());
     // Not flattening compositing layers will result in a broken image being painted.
     ASSERT(globalPaintFlags & GlobalPaintFlattenCompositingLayers);
 
-    DragImageBuilder dragImageBuilder(*this, paintingRect, draggedNode, opacity);
-    m_view->paintContents(dragImageBuilder.context(), globalPaintFlags, paintingRect);
-    return dragImageBuilder.createImage();
+    float deviceScaleFactor = m_host->deviceScaleFactor();
+    paintingRect.setWidth(paintingRect.width() * deviceScaleFactor);
+    paintingRect.setHeight(paintingRect.height() * deviceScaleFactor);
+
+    // The content is shifted to origin, to fit within the image bounds - which are the same
+    // as the picture bounds.
+    SkRect pictureBounds = SkRect::MakeIWH(paintingRect.width(), paintingRect.height());
+    SkPictureBuilder pictureBuilder(pictureBounds);
+    {
+        GraphicsContext& paintContext = pictureBuilder.context();
+
+        AffineTransform transform;
+        transform.scale(deviceScaleFactor, deviceScaleFactor);
+        transform.translate(-paintingRect.x(), -paintingRect.y());
+        TransformRecorder transformRecorder(paintContext, displayItemClient, transform);
+
+        m_view->paintContents(paintContext, globalPaintFlags, paintingRect);
+
+    }
+    RefPtr<const SkPicture> recording = pictureBuilder.endRecording();
+    RefPtr<SkImage> skImage = adoptRef(SkImage::NewFromPicture(recording.get(),
+        SkISize::Make(paintingRect.width(), paintingRect.height()), nullptr, nullptr));
+    RefPtr<Image> image = StaticBitmapImage::create(skImage.release());
+
+    return DragImage::create(image.get(), shouldRespectImageOrientation, deviceScaleFactor,
+        InterpolationHigh, opacity);
 }
 
 PassOwnPtr<DragImage> LocalFrame::nodeImage(Node& node)
 {
+    if (!node.layoutObject())
+        return nullptr;
+
+    const ScopedFramePaintingState state(this, &node);
+
     m_view->updateAllLifecyclePhases();
+
+    m_view->setNodeToDraw(&node); // Enable special sub-tree drawing mode.
+
+    // Document::updateLayout may have blown away the original LayoutObject.
     LayoutObject* layoutObject = node.layoutObject();
     if (!layoutObject)
         return nullptr;
 
-    // Directly paint boxes as if they are a stacking context.
-    if (layoutObject->isBox() && layoutObject->container()) {
-        IntRect boundingBox = layoutObject->absoluteBoundingBoxRectIncludingDescendants();
-        LayoutPoint paintOffset = boundingBox.location() - layoutObject->offsetFromContainer(layoutObject->container(), LayoutPoint());
+    IntRect rect;
 
-        DragImageBuilder dragImageBuilder(*this, boundingBox, &node);
-        {
-            PaintInfo paintInfo(dragImageBuilder.context(), boundingBox, PaintPhase::PaintPhaseForeground, GlobalPaintFlattenCompositingLayers, 0);
-            ObjectPainter(*layoutObject).paintAsPseudoStackingContext(paintInfo, LayoutPoint(paintOffset));
-        }
-        return dragImageBuilder.createImage();
-    }
-
-    // TODO(pdr): This will also paint the background if the object contains transparency. We can
-    // directly call layoutObject->paint(...) (see: ObjectPainter::paintAsPseudoStackingContext) but
-    // painters are inconsistent about which transform space they expect (see: svg, inlines, etc.)
-    // TODO(pdr): SVG and inlines are painted offset (crbug.com/579153, crbug.com/579158).
-    return paintIntoDragImage(GlobalPaintFlattenCompositingLayers, layoutObject->absoluteBoundingBoxRectIncludingDescendants(), &node);
+    return paintIntoDragImage(*layoutObject, LayoutObject::shouldRespectImageOrientation(layoutObject),
+        GlobalPaintFlattenCompositingLayers, layoutObject->paintingRootRect(rect));
 }
 
 PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
@@ -685,10 +672,12 @@ PassOwnPtr<DragImage> LocalFrame::dragImageForSelection(float opacity)
     if (!selection().isRange())
         return nullptr;
 
+    const ScopedFramePaintingState state(this, 0);
     m_view->updateAllLifecyclePhases();
 
-    return paintIntoDragImage(GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers,
-        enclosingIntRect(selection().bounds()), nullptr, opacity);
+    return paintIntoDragImage(*this, DoNotRespectImageOrientation,
+        GlobalPaintSelectionOnly | GlobalPaintFlattenCompositingLayers,
+        enclosingIntRect(selection().bounds()), opacity);
 }
 
 String LocalFrame::selectedText() const

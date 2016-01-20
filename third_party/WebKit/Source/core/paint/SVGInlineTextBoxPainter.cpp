@@ -39,6 +39,7 @@ bool SVGInlineTextBoxPainter::shouldPaintSelection(const PaintInfo& paintInfo) c
 
 void SVGInlineTextBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
+    ASSERT(paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_svgInlineTextBox.lineLayoutItem())));
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
     ASSERT(m_svgInlineTextBox.truncation() == cNoTruncation);
 

@@ -48,6 +48,7 @@ void SVGContainerPainter::paint(const PaintInfo& paintInfo)
             continueRendering = paintContext.applyClipMaskAndFilterIfNecessary();
 
         if (continueRendering) {
+            paintContext.paintInfo().updatePaintingRootForChildren(&m_layoutSVGContainer);
             for (LayoutObject* child = m_layoutSVGContainer.firstChild(); child; child = child->nextSibling())
                 child->paint(paintContext.paintInfo(), IntPoint());
         }

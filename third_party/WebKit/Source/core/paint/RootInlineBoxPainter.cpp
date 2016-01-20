@@ -13,7 +13,8 @@ namespace blink {
 
 void RootInlineBoxPainter::paintEllipsisBox(const PaintInfo& paintInfo, const LayoutPoint& paintOffset, LayoutUnit lineTop, LayoutUnit lineBottom) const
 {
-    if (m_rootInlineBox.hasEllipsisBox() && m_rootInlineBox.lineLayoutItem().style()->visibility() == VISIBLE && paintInfo.phase == PaintPhaseForeground)
+    if (m_rootInlineBox.hasEllipsisBox() && paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_rootInlineBox.lineLayoutItem())) && m_rootInlineBox.lineLayoutItem().style()->visibility() == VISIBLE
+        && paintInfo.phase == PaintPhaseForeground)
         m_rootInlineBox.ellipsisBox()->paint(paintInfo, paintOffset, lineTop, lineBottom);
 }
 

@@ -260,6 +260,7 @@ bool InlineTextBoxPainter::shouldPaintTextBox(const PaintInfo& paintInfo)
     // tests for != PaintPhaseTextClip.
     bool paintLineBreaks = RuntimeEnabledFeatures::selectionPaintingWithoutSelectionGapsEnabled();
     if ((!paintLineBreaks && m_inlineTextBox.isLineBreak())
+        || !paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::layoutObjectFrom(m_inlineTextBox.lineLayoutItem()))
         || m_inlineTextBox.lineLayoutItem().style()->visibility() != VISIBLE
         || m_inlineTextBox.truncation() == cFullTruncation
         || !m_inlineTextBox.len())

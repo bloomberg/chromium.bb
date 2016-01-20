@@ -74,6 +74,7 @@ void BlockPainter::paintOverflowControlsIfNeeded(const PaintInfo& paintInfo, con
     if (m_layoutBlock.hasOverflowClip()
         && m_layoutBlock.style()->visibility() == VISIBLE
         && shouldPaintSelfBlockBackground(paintInfo.phase)
+        && paintInfo.shouldPaintWithinRoot(&m_layoutBlock)
         && !paintInfo.paintRootBackgroundOnly()) {
         Optional<ClipRecorder> clipRecorder;
         if (!m_layoutBlock.layer()->isSelfPaintingLayer()) {
@@ -113,7 +114,7 @@ void BlockPainter::paintChildAsPseudoStackingContext(const LayoutBox& child, con
 
 void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& paintInfo, const LayoutPoint& paintOffset)
 {
-    if (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection)
+    if (!paintInfo.shouldPaintWithinRoot(LineLayoutPaintShim::constLayoutObjectFrom(inlineBox.lineLayoutItem())) || (paintInfo.phase != PaintPhaseForeground && paintInfo.phase != PaintPhaseSelection))
         return;
 
     LayoutPoint childPoint = paintOffset;
@@ -250,6 +251,7 @@ void BlockPainter::paintContents(const PaintInfo& paintInfo, const LayoutPoint& 
             LineBoxListPainter(m_layoutBlock.lineBoxes()).paint(m_layoutBlock, paintInfo, paintOffset);
     } else {
         PaintInfo paintInfoForDescendants = paintInfo.forDescendants();
+        paintInfoForDescendants.updatePaintingRootForChildren(&m_layoutBlock);
         m_layoutBlock.paintChildren(paintInfoForDescendants, paintOffset);
     }
 }
