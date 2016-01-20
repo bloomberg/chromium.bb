@@ -107,6 +107,30 @@ Polymer({
     },
 
     /**
+     * The text for the learn more link about cloud services in the first run
+     * flow.
+     * @private {string}
+     */
+    firstRunFlowCloudLearnMore_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.valueExists('firstRunFlowCloudLearnMore') ?
+          loadTimeData.getString('firstRunFlowCloudLearnMore') : '',
+    },
+
+    /**
+     * The text for the cloud services preference description in the first run
+     * flow.
+     * @private {string}
+     */
+    firstRunFlowCloudPrefText_: {
+      type: String,
+      readOnly: true,
+      value: loadTimeData.valueExists('firstRunFlowCloudPrefText') ?
+          loadTimeData.getString('firstRunFlowCloudPrefText') : '',
+    },
+
+    /**
      * The text description for the first run flow.
      * @private {string}
      */
@@ -248,6 +272,15 @@ Polymer({
      * @type {boolean}
      */
     showFirstRunFlow: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * Whether to show the cloud preference setting in the first run flow.
+     * @type {boolean}
+     */
+    showFirstRunFlowCloudPref: {
       type: Boolean,
       value: false,
     },

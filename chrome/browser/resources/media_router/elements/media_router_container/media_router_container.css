@@ -54,6 +54,19 @@
   justify-content: flex-end;
 }
 
+#first-run-cloud-checkbox,
+#first-run-text {
+  font-size: 1.0em;
+  line-height: 1.5em;
+}
+
+#first-run-cloud-checkbox,
+#first-run-text,
+#first-run-title {
+  color: white;
+  padding-bottom: 24px;
+}
+
 #first-run-flow {
   background-color: rgb(33, 150, 243);
   padding: 24px 16px 4px 16px;
@@ -61,15 +74,9 @@
   z-index: 1;
 }
 
-#first-run-text,
-#first-run-title {
-  color: white;
-  padding-bottom: 24px;
-}
-
-#first-run-text {
-  font-size: 1.0em;
-  line-height: 1.5em;
+#first-run-learn-more {
+  font-weight: bold;
+  text-transform: uppercase;
 }
 
 #first-run-title {
@@ -84,6 +91,14 @@
 #issue-banner.non-blocking {
   bottom: 0;
   margin-top: 0;
+}
+
+paper-checkbox {
+  --paper-checkbox-checked-color: rgb(33, 150, 243);
+  --paper-checkbox-checked-ink-color: rgb(33, 150, 243);
+  --paper-checkbox-label-color: white;
+  --paper-checkbox-unchecked-color: white;
+  --paper-checkbox-unchecked-ink-color: white;
 }
 
 paper-item {

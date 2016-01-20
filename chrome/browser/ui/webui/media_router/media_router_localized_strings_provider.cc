@@ -45,8 +45,8 @@ void AddMediaRouterContainerStrings(content::WebUIDataSource* html_source) {
 #if defined(GOOGLE_CHROME_BUILD)
   html_source->AddLocalizedString("firstRunFlowCloudLearnMore",
       IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_LEARN_MORE);
-  html_source->AddLocalizedString("firstRunFlowCloudOptInText",
-      IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_OPT_IN_TEXT);
+  html_source->AddLocalizedString("firstRunFlowCloudPrefText",
+      IDS_MEDIA_ROUTER_FIRST_RUN_FLOW_CLOUD_PREF_TEXT);
 #endif  // defined(GOOGLE_CHROME_BUILD)
   html_source->AddLocalizedString("autoCastMode",
                                   IDS_MEDIA_ROUTER_AUTO_CAST_MODE);
