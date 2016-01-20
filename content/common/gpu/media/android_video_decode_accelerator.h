@@ -125,9 +125,11 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   void OnFrameAvailable();
 
  private:
+  // TODO(timav): evaluate the need for more states in the AVDA state machine.
   enum State {
     NO_ERROR,
     ERROR,
+    WAITING_FOR_KEY,
   };
 
   static const base::TimeDelta kDecodePollDelay;
@@ -293,6 +295,10 @@ class CONTENT_EXPORT AndroidVideoDecodeAccelerator
   // The MediaCrypto object is used in the MediaCodec.configure() in case of
   // an encrypted stream.
   media::MediaDrmBridge::JavaObjectPtr media_crypto_;
+
+  // Index of the dequeued and filled buffer that we keep trying to enqueue.
+  // Such buffer appears in MEDIA_CODEC_NO_KEY processing.
+  int pending_input_buf_index_;
 
   // WeakPtrFactory for posting tasks back to |this|.
   base::WeakPtrFactory<AndroidVideoDecodeAccelerator> weak_this_factory_;

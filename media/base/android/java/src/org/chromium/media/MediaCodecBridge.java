@@ -351,12 +351,12 @@ class MediaCodecBridge {
                     keyId, iv, MediaCodec.CRYPTO_MODE_AES_CTR);
             mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
         } catch (MediaCodec.CryptoException e) {
-            Log.e(TAG, "Failed to queue secure input buffer", e);
             if (e.getErrorCode() == MediaCodec.CryptoException.ERROR_NO_KEY) {
-                Log.e(TAG, "MediaCodec.CryptoException.ERROR_NO_KEY");
+                Log.d(TAG, "Failed to queue secure input buffer: CryptoException.ERROR_NO_KEY");
                 return MEDIA_CODEC_NO_KEY;
             }
-            Log.e(TAG, "MediaCodec.CryptoException with error code " + e.getErrorCode());
+            Log.e(TAG, "Failed to queue secure input buffer, CryptoException with error code "
+                            + e.getErrorCode());
             return MEDIA_CODEC_ERROR;
         } catch (IllegalStateException e) {
             Log.e(TAG, "Failed to queue secure input buffer, IllegalStateException " + e);
