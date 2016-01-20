@@ -23,6 +23,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "content/common/input/synthetic_gesture_params.h"
+#include "content/renderer/gpu/render_widget_compositor_delegate.h"
 #include "content/renderer/input/render_widget_input_handler.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
 #include "content/renderer/message_delivery_policy.h"
@@ -103,6 +104,7 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       NON_EXPORTED_BASE(virtual public blink::WebWidgetClient),
+      public RenderWidgetCompositorDelegate,
       public RenderWidgetInputHandlerDelegate,
       public base::RefCounted<RenderWidget> {
  public:
@@ -137,7 +139,6 @@ class CONTENT_EXPORT RenderWidget
   // Temporary for debugging purposes...
   bool closing() const { return closing_; }
   bool is_swapped_out() { return is_swapped_out_; }
-  bool for_oopif() { return for_oopif_; }
   bool has_host_context_menu_location() {
     return has_host_context_menu_location_;
   }
@@ -167,6 +168,33 @@ class CONTENT_EXPORT RenderWidget
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
+
+  // RenderWidgetCompositorDelegate
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
+                           const gfx::Vector2dF& outer_delta,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float page_scale,
+                           float top_controls_delta) override;
+  void BeginMainFrame(double frame_time_sec) override;
+  scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback) override;
+  scoped_ptr<cc::BeginFrameSource> CreateExternalBeginFrameSource() override;
+  void DidCommitAndDrawCompositorFrame() override;
+  void DidCommitCompositorFrame() override;
+  void DidCompletePageScaleAnimation() override;
+  void DidCompleteSwapBuffers() override;
+  bool ForOOPIF() const override;
+  void ForwardCompositorProto(const std::vector<uint8_t>& proto) override;
+  bool IsClosing() const override;
+  void OnSwapBuffersAborted() override;
+  void OnSwapBuffersComplete() override;
+  void OnSwapBuffersPosted() override;
+  void RecordFrameTimingEvents(
+      scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
+      scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events)
+      override;
+  void ScheduleAnimation() override;
+  void UpdateVisualState() override;
+  void WillBeginCompositorFrame() override;
 
   // RenderWidgetInputHandlerDelegate
   void FocusChangeComplete() override;
@@ -256,8 +284,6 @@ class CONTENT_EXPORT RenderWidget
   // we should not send an extra ack (see SendAckForMouseMoveFromDebugger).
   void IgnoreAckForMouseMoveFromDebugger();
 
-  virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface(bool fallback);
-
   // Callback for use with synthetic gestures (e.g. BeginSmoothScroll).
   typedef base::Callback<void()> SyntheticGestureCompletionCallback;
 
@@ -286,9 +312,6 @@ class CONTENT_EXPORT RenderWidget
   // Returns whether we currently should handle an IME event.
   bool ShouldHandleImeEvent();
 
-  // Called by the compositor when page scale animation completed.
-  virtual void DidCompletePageScaleAnimation() {}
-
   // ScreenMetricsEmulator class manages screen emulation inside a render
   // widget. This includes resizing, placing view on the screen at desired
   // position, changing device scale factor, and scaling down the whole
@@ -298,29 +321,9 @@ class CONTENT_EXPORT RenderWidget
   void SetPopupOriginAdjustmentsForEmulation(ScreenMetricsEmulator* emulator);
   gfx::Rect AdjustValidationMessageAnchor(const gfx::Rect& anchor);
 
-  // Indicates that the compositor is about to begin a frame. This is primarily
-  // to signal to flow control mechanisms that a frame is beginning, not to
-  // perform actual painting work.
-  void WillBeginCompositorFrame();
-
-  // Notifies about a compositor frame commit operation having finished.
-  virtual void DidCommitCompositorFrame();
-
-  // Notifies that the draw commands for a committed frame have been issued.
-  void DidCommitAndDrawCompositorFrame();
-
-  // Notifies that the compositor has posted a swapbuffers operation to the GPU
-  // process.
-  void DidCompleteSwapBuffers();
 
   void ScheduleComposite();
   void ScheduleCompositeWithForcedRedraw();
-
-  // Called by the compositor in single-threaded mode when a swap is posted,
-  // completes or is aborted.
-  void OnSwapBuffersPosted();
-  void OnSwapBuffersComplete();
-  void OnSwapBuffersAborted();
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
@@ -328,7 +331,6 @@ class CONTENT_EXPORT RenderWidget
 
   // Called by the compositor to forward a proto that represents serialized
   // compositor state.
-  void ForwardCompositorProto(const std::vector<uint8_t>& proto);
 
   virtual void GetSelectionBounds(gfx::Rect* start, gfx::Rect* end);
 
@@ -339,8 +341,6 @@ class CONTENT_EXPORT RenderWidget
   // process. This method does nothing when the browser process is not able to
   // handle composition range and composition character bounds.
   void UpdateCompositionInfo(bool should_update_range);
-
-  bool host_closing() const { return host_closing_; }
 
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class

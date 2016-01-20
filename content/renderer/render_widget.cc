@@ -24,6 +24,7 @@
 #include "cc/base/switches.h"
 #include "cc/debug/benchmark_instrumentation.h"
 #include "cc/output/output_surface.h"
+#include "cc/scheduler/begin_frame_source.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/scheduler/renderer/render_widget_scheduling_state.h"
 #include "components/scheduler/renderer/renderer_scheduler.h"
@@ -963,6 +964,46 @@ GURL RenderWidget::GetURLForGraphicsContext3D() {
   return GURL();
 }
 
+void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
+                                      const ui::LatencyInfo& latency_info) {
+  if (!input_event)
+    return;
+  input_handler_->HandleInputEvent(*input_event, latency_info);
+}
+
+void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
+  if (webwidget_)
+    webwidget_->setCursorVisibilityState(is_visible);
+}
+
+void RenderWidget::OnMouseCaptureLost() {
+  if (webwidget_)
+    webwidget_->mouseCaptureLost();
+}
+
+void RenderWidget::OnSetFocus(bool enable) {
+  if (webwidget_)
+    webwidget_->setFocus(enable);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// RenderWidgetCompositorDelegate
+
+void RenderWidget::ApplyViewportDeltas(
+    const gfx::Vector2dF& inner_delta,
+    const gfx::Vector2dF& outer_delta,
+    const gfx::Vector2dF& elastic_overscroll_delta,
+    float page_scale,
+    float top_controls_delta) {
+  webwidget_->applyViewportDeltas(inner_delta, outer_delta,
+                                  elastic_overscroll_delta, page_scale,
+                                  top_controls_delta);
+}
+
+void RenderWidget::BeginMainFrame(double frame_time_sec) {
+  webwidget_->beginFrame(frame_time_sec);
+}
+
 scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
   DCHECK(webwidget_);
   // For widgets that are never visible, we don't start the compositor, so we
@@ -1055,14 +1096,72 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
       worker_context_provider, frame_swap_message_queue_, cc::RGBA_8888));
 }
 
+scoped_ptr<cc::BeginFrameSource>
+RenderWidget::CreateExternalBeginFrameSource() {
+  return compositor_deps_->CreateExternalBeginFrameSource(routing_id_);
+}
+
+void RenderWidget::DidCommitAndDrawCompositorFrame() {
+  // NOTE: Tests may break if this event is renamed or moved. See
+  // tab_capture_performancetest.cc.
+  TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
+  // Notify subclasses that we initiated the paint operation.
+  DidInitiatePaint();
+}
+
+void RenderWidget::DidCommitCompositorFrame() {
+  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
+                    DidCommitCompositorFrame());
+  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
+                    DidCommitCompositorFrame());
+#if defined(VIDEO_HOLE)
+  FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
+                    DidCommitCompositorFrame());
+#endif  // defined(VIDEO_HOLE)
+  input_handler_->FlushPendingInputEventAck();
+}
+
+void RenderWidget::DidCompletePageScaleAnimation() {}
+
+void RenderWidget::DidCompleteSwapBuffers() {
+  TRACE_EVENT0("renderer", "RenderWidget::DidCompleteSwapBuffers");
+
+  // Notify subclasses threaded composited rendering was flushed to the screen.
+  DidFlushPaint();
+
+  if (!next_paint_flags_ && !need_update_rect_for_auto_resize_ &&
+      !plugin_window_moves_.size()) {
+    return;
+  }
+
+  ViewHostMsg_UpdateRect_Params params;
+  params.view_size = size_;
+  params.plugin_window_moves.swap(plugin_window_moves_);
+  params.flags = next_paint_flags_;
+
+  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
+  next_paint_flags_ = 0;
+  need_update_rect_for_auto_resize_ = false;
+}
+
+bool RenderWidget::ForOOPIF() const {
+  // TODO(simonhong): Remove this when we enable BeginFrame scheduling for
+  // OOPIF(crbug.com/471411).
+  return for_oopif_;
+}
+
+void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
+  Send(new ViewHostMsg_ForwardCompositorProto(routing_id_, proto));
+}
+
+bool RenderWidget::IsClosing() const {
+  return host_closing_;
+}
+
 void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
   // Schedule another frame so the compositor learns about it.
   ScheduleComposite();
-}
-
-void RenderWidget::OnSwapBuffersPosted() {
-  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
 }
 
 void RenderWidget::OnSwapBuffersComplete() {
@@ -1072,26 +1171,58 @@ void RenderWidget::OnSwapBuffersComplete() {
   DidFlushPaint();
 }
 
-void RenderWidget::OnHandleInputEvent(const blink::WebInputEvent* input_event,
-                                      const ui::LatencyInfo& latency_info) {
-  if (!input_event)
-    return;
-  input_handler_->HandleInputEvent(*input_event, latency_info);
+void RenderWidget::OnSwapBuffersPosted() {
+  TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
 }
 
-void RenderWidget::OnCursorVisibilityChange(bool is_visible) {
-  if (webwidget_)
-    webwidget_->setCursorVisibilityState(is_visible);
+void RenderWidget::RecordFrameTimingEvents(
+    scoped_ptr<cc::FrameTimingTracker::CompositeTimingSet> composite_events,
+    scoped_ptr<cc::FrameTimingTracker::MainFrameTimingSet> main_frame_events) {
+  for (const auto& composite_event : *composite_events) {
+    int64_t frameId = composite_event.first;
+    const std::vector<cc::FrameTimingTracker::CompositeTimingEvent>& events =
+        composite_event.second;
+    std::vector<blink::WebFrameTimingEvent> webEvents;
+    for (size_t i = 0; i < events.size(); ++i) {
+      webEvents.push_back(blink::WebFrameTimingEvent(
+          events[i].frame_id,
+          (events[i].timestamp - base::TimeTicks()).InSecondsF()));
+    }
+    webwidget_->recordFrameTimingEvent(blink::WebWidget::CompositeEvent,
+                                       frameId, webEvents);
+  }
+  for (const auto& main_frame_event : *main_frame_events) {
+    int64_t frameId = main_frame_event.first;
+    const std::vector<cc::FrameTimingTracker::MainFrameTimingEvent>& events =
+        main_frame_event.second;
+    std::vector<blink::WebFrameTimingEvent> webEvents;
+    for (size_t i = 0; i < events.size(); ++i) {
+      webEvents.push_back(blink::WebFrameTimingEvent(
+          events[i].frame_id,
+          (events[i].timestamp - base::TimeTicks()).InSecondsF(),
+          (events[i].end_time - base::TimeTicks()).InSecondsF()));
+    }
+    webwidget_->recordFrameTimingEvent(blink::WebWidget::RenderEvent, frameId,
+                                       webEvents);
+  }
 }
 
-void RenderWidget::OnMouseCaptureLost() {
-  if (webwidget_)
-    webwidget_->mouseCaptureLost();
+void RenderWidget::ScheduleAnimation() {
+  scheduleAnimation();
 }
 
-void RenderWidget::OnSetFocus(bool enable) {
-  if (webwidget_)
-    webwidget_->setFocus(enable);
+void RenderWidget::UpdateVisualState() {
+  webwidget_->updateAllLifecyclePhases();
+}
+
+void RenderWidget::WillBeginCompositorFrame() {
+  TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
+
+  // The UpdateTextInputState can result in further layout and possibly
+  // enable GPU acceleration so they need to be called before any painting
+  // is done.
+  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
+  UpdateSelectionBounds();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1248,7 +1379,8 @@ void RenderWidget::AutoResizeCompositor()  {
 void RenderWidget::initializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
+  compositor_ = RenderWidgetCompositor::Create(this, device_scale_factor_,
+                                               compositor_deps_);
   compositor_->setViewportSize(physical_backing_size_);
   OnDeviceScaleFactorChanged();
   // For background pages and certain tests, we don't want to trigger
@@ -1284,58 +1416,6 @@ void RenderWidget::didMeaningfulLayout(blink::WebMeaningfulLayout layout_type) {
 
   FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
                     DidMeaningfulLayout(layout_type));
-}
-
-void RenderWidget::WillBeginCompositorFrame() {
-  TRACE_EVENT0("gpu", "RenderWidget::willBeginCompositorFrame");
-
-  // The UpdateTextInputState can result in further layout and possibly
-  // enable GPU acceleration so they need to be called before any painting
-  // is done.
-  UpdateTextInputState(ShowIme::HIDE_IME, ChangeSource::FROM_NON_IME);
-  UpdateSelectionBounds();
-}
-
-void RenderWidget::DidCommitCompositorFrame() {
-  FOR_EACH_OBSERVER(RenderFrameImpl, render_frames_,
-                    DidCommitCompositorFrame());
-  FOR_EACH_OBSERVER(RenderFrameProxy, render_frame_proxies_,
-                    DidCommitCompositorFrame());
-#if defined(VIDEO_HOLE)
-  FOR_EACH_OBSERVER(RenderFrameImpl, video_hole_frames_,
-                    DidCommitCompositorFrame());
-#endif  // defined(VIDEO_HOLE)
-  input_handler_->FlushPendingInputEventAck();
-}
-
-void RenderWidget::DidCommitAndDrawCompositorFrame() {
-  // NOTE: Tests may break if this event is renamed or moved. See
-  // tab_capture_performancetest.cc.
-  TRACE_EVENT0("gpu", "RenderWidget::DidCommitAndDrawCompositorFrame");
-  // Notify subclasses that we initiated the paint operation.
-  DidInitiatePaint();
-}
-
-void RenderWidget::DidCompleteSwapBuffers() {
-  TRACE_EVENT0("renderer", "RenderWidget::DidCompleteSwapBuffers");
-
-  // Notify subclasses threaded composited rendering was flushed to the screen.
-  DidFlushPaint();
-
-  if (!next_paint_flags_ &&
-      !need_update_rect_for_auto_resize_ &&
-      !plugin_window_moves_.size()) {
-    return;
-  }
-
-  ViewHostMsg_UpdateRect_Params params;
-  params.view_size = size_;
-  params.plugin_window_moves.swap(plugin_window_moves_);
-  params.flags = next_paint_flags_;
-
-  Send(new ViewHostMsg_UpdateRect(routing_id_, params));
-  next_paint_flags_ = 0;
-  need_update_rect_for_auto_resize_ = false;
 }
 
 void RenderWidget::ScheduleComposite() {
@@ -1888,10 +1968,6 @@ void RenderWidget::UpdateSelectionBounds() {
   }
 
   UpdateCompositionInfo(false);
-}
-
-void RenderWidget::ForwardCompositorProto(const std::vector<uint8_t>& proto) {
-  Send(new ViewHostMsg_ForwardCompositorProto(routing_id_, proto));
 }
 
 // Check blink::WebTextInputType and ui::TextInputType is kept in sync.
