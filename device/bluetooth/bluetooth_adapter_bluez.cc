@@ -74,6 +74,8 @@ UMABluetoothDiscoverySessionOutcome TranslateDiscoveryErrorToUMA(
     return UMABluetoothDiscoverySessionOutcome::BLUEZ_DBUS_IN_PROGRESS;
   } else if (error_name == bluetooth_device::kErrorNotReady) {
     return UMABluetoothDiscoverySessionOutcome::BLUEZ_DBUS_NOT_READY;
+  } else if (error_name == bluetooth_device::kErrorNotSupported) {
+    return UMABluetoothDiscoverySessionOutcome::BLUEZ_DBUS_UNSUPPORTED_DEVICE;
   } else if (error_name == bluetooth_device::kErrorFailed) {
     return UMABluetoothDiscoverySessionOutcome::FAILED;
   } else {

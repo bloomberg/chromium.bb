@@ -57486,13 +57486,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Active BluetoothDiscoverySession wasn't found in
              BluetoothAdapter"/>
   <int value="8" label="Failed without a more specific reason"/>
-  <int value="9" label="(ChromeOS) DBus failed to find the adapter"/>
-  <int value="10" label="(ChromeOS) DBus didn't return an error code"/>
-  <int value="11" label="(ChromeOS) org.bluez.Error.InProgress"/>
-  <int value="12" label="(ChromeOS) org.bluez.Error.NotReady"/>
+  <int value="9" label="(BlueZ) DBus failed to find the adapter"/>
+  <int value="10" label="(BlueZ) DBus didn't return an error code"/>
+  <int value="11" label="(BlueZ) org.bluez.Error.InProgress"/>
+  <int value="12" label="(BlueZ) org.bluez.Error.NotReady"/>
   <int value="13"
-      label="(ChromeOS) org.bluez.Error.Failed inside SetDiscoveryFilter,
-             maybe indicating an unsupported transport"/>
+      label="(BlueZ) org.bluez.Error.Failed inside SetDiscoveryFilter, maybe
+             indicating an unsupported transport"/>
+  <int value="14"
+      label="(BlueZ) org.bluez.Error.NotSupported inside SetDiscoverFilter,
+             indicating a kernel that does not support Start Service
+             Discovery."/>
 </enum>
 
 <enum name="BluetoothGATTErrors" type="int">
