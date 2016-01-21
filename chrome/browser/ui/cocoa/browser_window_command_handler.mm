@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller_private.h"
 #include "chrome/browser/ui/toolbar/encoding_menu_controller.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
@@ -54,8 +53,7 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
   }
 
   if (tag == IDC_TOGGLE_FULLSCREEN_TOOLBAR) {
-    PrefService* prefs = browser->profile()->GetPrefs();
-    SetToggleState(prefs->GetBoolean(prefs::kHideFullscreenToolbar), item);
+    SetToggleState(browser->window()->ShouldHideFullscreenToolbar(), item);
     return;
   }
 
@@ -173,12 +171,7 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
     }
     case IDC_PRESENTATION_MODE: {
       if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
-        if (chrome::mac::SupportsSystemFullscreen()) {
-          [menuItem setHidden:YES];
-          enable = NO;
-        } else {
-          [menuItem setTitle:GetTitleForPresentationModeMenuItem(browser)];
-        }
+        [menuItem setTitle:GetTitleForPresentationModeMenuItem(browser)];
       }
       break;
     }
@@ -214,11 +207,13 @@ Browser* FindBrowserForSender(id sender, NSWindow* window) {
       break;
     }
     case IDC_TOGGLE_FULLSCREEN_TOOLBAR: {
-      if (!chrome::mac::SupportsSystemFullscreen()) {
-        NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+      // TODO(spqchan): Implement a preferences for this command and replace
+      // the Presentation Mode menu item with item.
+      if (NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item)) {
         [menuItem setHidden:YES];
-        enable = NO;
+        enable = false;
       }
+      break;
     }
     default:
       // Special handling for the contents of the Text Encoding submenu. On

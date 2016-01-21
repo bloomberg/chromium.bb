@@ -37,6 +37,17 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kShowHomeButton,
       false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+#if defined(OS_MACOSX)
+  // This really belongs in platform code, but there's no good place to
+  // initialize it between the time when the AppController is created
+  // (where there's no profile) and the time the controller gets another
+  // crack at the start of the main event loop. By that time,
+  // StartupBrowserCreator has already created the browser window, and it's too
+  // late: we need the pref to be already initialized. Doing it here also saves
+  // us from having to hard-code pref registration in the several unit tests
+  // that use this preference.
+  registry->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
+#endif
   registry->RegisterBooleanPref(
       prefs::kDeleteBrowsingHistory,
       true,
@@ -124,21 +135,7 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kPluginsAlwaysAuthorize, false);
   registry->RegisterBooleanPref(prefs::kClearPluginLSODataEnabled, true);
   registry->RegisterBooleanPref(prefs::kHideWebStoreIcon, false);
-#if defined(OS_MACOSX)
-  // This really belongs in platform code, but there's no good place to
-  // initialize it between the time when the AppController is created
-  // (where there's no profile) and the time the controller gets another
-  // crack at the start of the main event loop. By that time,
-  // StartupBrowserCreator has already created the browser window, and it's too
-  // late: we need the pref to be already initialized. Doing it here also saves
-  // us from having to hard-code pref registration in the several unit tests
-  // that use this preference.
-  registry->RegisterBooleanPref(prefs::kShowUpdatePromotionInfoBar, true);
-  registry->RegisterBooleanPref(
-      prefs::kHideFullscreenToolbar,
-      false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-#else
+#if !defined(OS_MACOSX)
   registry->RegisterBooleanPref(prefs::kFullscreenAllowed, true);
 #endif
 }
