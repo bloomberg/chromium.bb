@@ -821,6 +821,7 @@ void ContentSettingsHandler::Observe(
       Profile* profile = content::Source<Profile>(source).ptr();
       if (profile->IsOffTheRecord()) {
         UpdateAllOTRExceptionsViewsFromModel();
+        UpdateAllOTRChooserExceptionsViewsFromModel();
         observer_.Add(HostContentSettingsMapFactory::GetForProfile(profile));
       }
       break;
@@ -1118,91 +1119,32 @@ void ContentSettingsHandler::UpdateAllChooserExceptionsViewsFromModel() {
     UpdateChooserExceptionsViewFromModel(chooser_type);
 }
 
+void ContentSettingsHandler::UpdateAllOTRChooserExceptionsViewsFromModel() {
+  for (const ChooserTypeNameEntry& chooser_type : kChooserTypeGroupNames)
+    UpdateOTRChooserExceptionsViewFromModel(chooser_type);
+}
+
 void ContentSettingsHandler::UpdateChooserExceptionsViewFromModel(
     const ChooserTypeNameEntry& chooser_type) {
-  ChooserContextBase* chooser_context =
-      chooser_type.get_context(Profile::FromWebUI(web_ui()));
-  std::vector<scoped_ptr<ChooserContextBase::Object>> objects =
-      chooser_context->GetAllGrantedObjects();
-  AllOriginObjects all_origin_objects;
-  for (const auto& object : objects) {
-    std::string name;
-    bool found = object->object.GetString(chooser_type.ui_name_key, &name);
-    DCHECK(found);
-    // It is safe for this structure to hold references into |objects| because
-    // they are both destroyed at the end of this function.
-    all_origin_objects[make_pair(object->requesting_origin,
-                                 object->source)][object->embedding_origin]
-        .insert(make_pair(name, &object->object));
-  }
-
-  // Keep the exceptions sorted by provider so they will be displayed in
-  // precedence order.
-  std::vector<scoped_ptr<base::DictionaryValue>>
-      all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
-
-  for (const auto& all_origin_objects_entry : all_origin_objects) {
-    const GURL& requesting_origin = all_origin_objects_entry.first.first;
-    const std::string& source = all_origin_objects_entry.first.second;
-    const OneOriginObjects& one_origin_objects =
-        all_origin_objects_entry.second;
-
-    auto& this_provider_exceptions = all_provider_exceptions
-        [HostContentSettingsMap::GetProviderTypeFromSource(source)];
-
-    // Add entries for any non-embedded origins.
-    bool has_embedded_entries = false;
-    for (const auto& one_origin_objects_entry : one_origin_objects) {
-      const GURL& embedding_origin = one_origin_objects_entry.first;
-      const SortedObjects& sorted_objects = one_origin_objects_entry.second;
-
-      // Skip the embedded settings which will be added below.
-      if (requesting_origin != embedding_origin) {
-        has_embedded_entries = true;
-        continue;
-      }
-
-      for (const auto& sorted_objects_entry : sorted_objects) {
-        this_provider_exceptions.push_back(GetChooserExceptionForPage(
-            requesting_origin, embedding_origin, source,
-            sorted_objects_entry.first, sorted_objects_entry.second));
-      }
-    }
-
-    if (has_embedded_entries) {
-      // Add a "parent" entry that simply acts as a heading for all entries
-      // where |requesting_origin| has been embedded.
-      this_provider_exceptions.push_back(
-          GetChooserExceptionForPage(requesting_origin, requesting_origin,
-                                     source, std::string(), nullptr));
-
-      // Add the "children" for any embedded settings.
-      for (const auto& one_origin_objects_entry : one_origin_objects) {
-        const GURL& embedding_origin = one_origin_objects_entry.first;
-        const SortedObjects& sorted_objects = one_origin_objects_entry.second;
-
-        // Skip the non-embedded setting which we already added above.
-        if (requesting_origin == embedding_origin)
-          continue;
-
-        for (const auto& sorted_objects_entry : sorted_objects) {
-          this_provider_exceptions.push_back(GetChooserExceptionForPage(
-              requesting_origin, embedding_origin, source,
-              sorted_objects_entry.first, sorted_objects_entry.second));
-        }
-      }
-    }
-  }
-
   base::ListValue exceptions;
-  for (auto& one_provider_exceptions : all_provider_exceptions) {
-    for (auto& exception : one_provider_exceptions)
-      exceptions.Append(std::move(exception));
-  }
-
+  GetChooserExceptionsFromProfile(false, chooser_type, &exceptions);
   base::StringValue type_string(chooser_type.name);
   web_ui()->CallJavascriptFunction("ContentSettings.setExceptions", type_string,
                                    exceptions);
+
+  UpdateOTRChooserExceptionsViewFromModel(chooser_type);
+}
+
+void ContentSettingsHandler::UpdateOTRChooserExceptionsViewFromModel(
+    const ChooserTypeNameEntry& chooser_type) {
+  if (!Profile::FromWebUI(web_ui())->HasOffTheRecordProfile())
+    return;
+
+  base::ListValue exceptions;
+  GetChooserExceptionsFromProfile(true, chooser_type, &exceptions);
+  base::StringValue type_string(chooser_type.name);
+  web_ui()->CallJavascriptFunction("ContentSettings.setOTRExceptions",
+                                   type_string, exceptions);
 }
 
 void ContentSettingsHandler::UpdateZoomLevelsExceptionsView() {
@@ -1433,6 +1375,97 @@ void ContentSettingsHandler::GetExceptionsFromHostContentSettingsMap(
         [HostContentSettingsMap::GetProviderTypeFromSource(kPolicyProviderId)];
     DCHECK(policy_exceptions.empty());
     GetPolicyAllowedUrls(type, &policy_exceptions);
+  }
+
+  for (auto& one_provider_exceptions : all_provider_exceptions) {
+    for (auto& exception : one_provider_exceptions)
+      exceptions->Append(std::move(exception));
+  }
+}
+
+void ContentSettingsHandler::GetChooserExceptionsFromProfile(
+    bool incognito,
+    const ChooserTypeNameEntry& chooser_type,
+    base::ListValue* exceptions) {
+  Profile* profile = Profile::FromWebUI(web_ui());
+  if (incognito) {
+    if (profile->HasOffTheRecordProfile())
+      profile = profile->GetOffTheRecordProfile();
+    else
+      return;
+  }
+
+  ChooserContextBase* chooser_context = chooser_type.get_context(profile);
+  std::vector<scoped_ptr<ChooserContextBase::Object>> objects =
+      chooser_context->GetAllGrantedObjects();
+  AllOriginObjects all_origin_objects;
+  for (const auto& object : objects) {
+    std::string name;
+    bool found = object->object.GetString(chooser_type.ui_name_key, &name);
+    DCHECK(found);
+    // It is safe for this structure to hold references into |objects| because
+    // they are both destroyed at the end of this function.
+    all_origin_objects[make_pair(object->requesting_origin,
+                                 object->source)][object->embedding_origin]
+        .insert(make_pair(name, &object->object));
+  }
+
+  // Keep the exceptions sorted by provider so they will be displayed in
+  // precedence order.
+  std::vector<scoped_ptr<base::DictionaryValue>>
+      all_provider_exceptions[HostContentSettingsMap::NUM_PROVIDER_TYPES];
+
+  for (const auto& all_origin_objects_entry : all_origin_objects) {
+    const GURL& requesting_origin = all_origin_objects_entry.first.first;
+    const std::string& source = all_origin_objects_entry.first.second;
+    const OneOriginObjects& one_origin_objects =
+        all_origin_objects_entry.second;
+
+    auto& this_provider_exceptions = all_provider_exceptions
+        [HostContentSettingsMap::GetProviderTypeFromSource(source)];
+
+    // Add entries for any non-embedded origins.
+    bool has_embedded_entries = false;
+    for (const auto& one_origin_objects_entry : one_origin_objects) {
+      const GURL& embedding_origin = one_origin_objects_entry.first;
+      const SortedObjects& sorted_objects = one_origin_objects_entry.second;
+
+      // Skip the embedded settings which will be added below.
+      if (requesting_origin != embedding_origin) {
+        has_embedded_entries = true;
+        continue;
+      }
+
+      for (const auto& sorted_objects_entry : sorted_objects) {
+        this_provider_exceptions.push_back(GetChooserExceptionForPage(
+            requesting_origin, embedding_origin, source,
+            sorted_objects_entry.first, sorted_objects_entry.second));
+      }
+    }
+
+    if (has_embedded_entries) {
+      // Add a "parent" entry that simply acts as a heading for all entries
+      // where |requesting_origin| has been embedded.
+      this_provider_exceptions.push_back(
+          GetChooserExceptionForPage(requesting_origin, requesting_origin,
+                                     source, std::string(), nullptr));
+
+      // Add the "children" for any embedded settings.
+      for (const auto& one_origin_objects_entry : one_origin_objects) {
+        const GURL& embedding_origin = one_origin_objects_entry.first;
+        const SortedObjects& sorted_objects = one_origin_objects_entry.second;
+
+        // Skip the non-embedded setting which we already added above.
+        if (requesting_origin == embedding_origin)
+          continue;
+
+        for (const auto& sorted_objects_entry : sorted_objects) {
+          this_provider_exceptions.push_back(GetChooserExceptionForPage(
+              requesting_origin, embedding_origin, source,
+              sorted_objects_entry.first, sorted_objects_entry.second));
+        }
+      }
+    }
   }
 
   for (auto& one_provider_exceptions : all_provider_exceptions) {

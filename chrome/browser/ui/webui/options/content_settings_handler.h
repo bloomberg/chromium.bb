@@ -157,9 +157,16 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
   // Clobbers and rebuilds all chooser-based exception tables.
   void UpdateAllChooserExceptionsViewsFromModel();
 
+  // As above, but only OTR tables.
+  void UpdateAllOTRChooserExceptionsViewsFromModel();
+
   // Clobbers and rebuilds the exception table for a particular chooser-based
   // permission.
   void UpdateChooserExceptionsViewFromModel(
+      const ChooserTypeNameEntry& chooser_type);
+
+  // As above, but only OTR tables.
+  void UpdateOTRChooserExceptionsViewFromModel(
       const ChooserTypeNameEntry& chooser_type);
 
   // Modifies the zoom level exceptions list to display correct chrome
@@ -254,6 +261,11 @@ class ContentSettingsHandler : public OptionsPageUIHandler,
       const HostContentSettingsMap* map,
       ContentSettingsType type,
       base::ListValue* exceptions);
+
+  // Fills in |exceptions| with Values for the given |type| from |map|.
+  void GetChooserExceptionsFromProfile(bool incognito,
+                                       const ChooserTypeNameEntry& type,
+                                       base::ListValue* exceptions);
 
   void OnPepperFlashPrefChanged();
 
