@@ -10,10 +10,9 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/strings/string16.h"
+#include "ui/gfx/range/range.h"
 
-namespace autofill {
-struct PasswordForm;
-}  // autofill
+@class HyperlinkTextView;
 
 const CGFloat kDesiredBubbleWidth = 370;
 const CGFloat kFramePadding = 16;
@@ -42,5 +41,14 @@ std::pair<CGFloat, CGFloat> GetResizedColumns(
 
 // Returns a password text field initialized with |text|.
 NSSecureTextField* PasswordLabel(const base::string16& text);
+
+// Returns a button of the standard style for the bubble.
+NSButton* DialogButton(NSString* title);
+
+// Returns the title label with |text|. Nonempty |range| may specify a link
+// range.
+HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
+                                      gfx::Range range,
+                                      id<NSTextViewDelegate> delegate);
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_PASSWORDS_BUBBLE_UTILS_H_

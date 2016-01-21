@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/passwords/passwords_bubble_utils.h"
 
 @implementation ManagePasswordsBubbleContentViewController
 
@@ -22,17 +23,11 @@
                 toView:(NSView*)view
                 target:(id)target
                 action:(SEL)action {
-  base::scoped_nsobject<NSButton> button(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
-  [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
-  [button setTitle:title];
-  [button setBezelStyle:NSRoundedBezelStyle];
-  [[button cell] setControlSize:NSSmallControlSize];
+  NSButton* button = DialogButton(title);
   [button setTarget:target];
   [button setAction:action];
-  [button sizeToFit];
-  [view addSubview:button.get()];
-  return button.autorelease();
+  [view addSubview:button];
+  return button;
 }
 
 - (NSTextField*)addTitleLabel:(NSString*)title toView:(NSView*)view {

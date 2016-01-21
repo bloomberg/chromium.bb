@@ -103,21 +103,6 @@ void ManagePasswordsControllerTest::SetUpManageState() {
   ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(ui_controller_));
 }
 
-void ManagePasswordsControllerTest::SetUpAccountChooser(
-    ScopedVector<const autofill::PasswordForm> local,
-    ScopedVector<const autofill::PasswordForm> federations) {
-  EXPECT_CALL(*ui_controller_, GetCurrentForms())
-      .WillOnce(ReturnRef(local.get()));
-  EXPECT_CALL(*ui_controller_, GetFederatedForms())
-      .WillOnce(ReturnRef(federations.get()));
-  EXPECT_CALL(*ui_controller_, GetState())
-      .WillOnce(Return(password_manager::ui::CREDENTIAL_REQUEST_STATE));
-  GURL origin(kSiteOrigin);
-  EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));
-  GetModelAndCreateIfNull();
-  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(ui_controller_));
-}
-
 ManagePasswordsBubbleModel::DisplayReason
 ManagePasswordsControllerTest::GetDisplayReason() const {
   return ManagePasswordsBubbleModel::AUTOMATIC;

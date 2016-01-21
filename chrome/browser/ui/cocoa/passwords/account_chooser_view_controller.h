@@ -8,13 +8,15 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/credential_item_view.h"
 
 @class AccountAvatarFetcherManager;
-@class BubbleCombobox;
-class ManagePasswordsBubbleModel;
-@class ManagePasswordCredentialItemViewController;
+
+class PasswordDialogController;
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 // A custom cell that displays a credential item in an NSTableView.
 @interface CredentialItemCell : NSCell
@@ -22,25 +24,50 @@ class ManagePasswordsBubbleModel;
 @property(nonatomic, readonly) CredentialItemView* view;
 @end
 
+// An interface for the bridge between AccountChooserViewController and platform
+// independent UI code.
+class AccountChooserBridge {
+ public:
+  // Closes the dialog.
+  virtual void PerformClose() = 0;
+
+  // Returns the controller containing the data.
+  virtual PasswordDialogController* GetDialogController() = 0;
+
+  // Returns the request context for fetching the avatars.
+  virtual net::URLRequestContextGetter* GetRequestContext() const = 0;
+
+ protected:
+  virtual ~AccountChooserBridge() = default;
+};
+
 // Manages a view that shows a list of credentials that can be used for
 // authentication to a site.
-@interface ManagePasswordsBubbleAccountChooserViewController
-    : ManagePasswordsBubbleContentViewController<CredentialItemDelegate,
-                                                 NSTableViewDataSource,
-                                                 NSTableViewDelegate> {
+@interface AccountChooserViewController
+    : NSViewController<CredentialItemDelegate,
+                       NSTableViewDataSource,
+                       NSTableViewDelegate,
+                       NSTextViewDelegate> {
  @private
-  ManagePasswordsBubbleModel* model_;  // Weak.
+  AccountChooserBridge* bridge_;  // Weak.
   NSButton* cancelButton_;  // Weak.
-  BubbleCombobox* moreButton_;  // Weak.
   NSTableView* credentialsView_;  // Weak.
+  NSTextView* titleView_;  //  Weak.
   base::scoped_nsobject<NSArray> credentialItems_;
   base::scoped_nsobject<AccountAvatarFetcherManager> avatarManager_;
 }
 
 // Initializes a new account chooser and populates it with the credentials
-// stored in |model|. Designated initializer.
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
+// stored in |bridge->controller()|.
+- (id)initWithBridge:(AccountChooserBridge*)bridge;
+@end
+
+@interface AccountChooserViewController(Testing)
+- (id)initWithBridge:(AccountChooserBridge*)bridge
+      avatarManager:(AccountAvatarFetcherManager*)avatarManager;
+@property(nonatomic, readonly) NSButton* cancelButton;
+@property(nonatomic, readonly) NSTableView* credentialsView;
+@property(nonatomic, readonly) NSTextView* titleView;
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_PASSWORDS_ACCOUNT_CHOOSER_VIEW_CONTROLLER_H_

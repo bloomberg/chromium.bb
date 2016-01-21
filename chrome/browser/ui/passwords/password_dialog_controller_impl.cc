@@ -37,6 +37,7 @@ void PasswordDialogControllerImpl::ShowAccountChooser(
     std::vector<scoped_ptr<autofill::PasswordForm>> locals,
     std::vector<scoped_ptr<autofill::PasswordForm>> federations) {
   DCHECK(!current_dialog_);
+  DCHECK(dialog);
   local_credentials_.swap(locals);
   federated_credentials_.swap(federations);
   current_dialog_ = dialog;

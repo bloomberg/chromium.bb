@@ -6,8 +6,9 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
-#include "components/autofill/core/common/password_form.h"
+#include "chrome/browser/ui/chrome_style.h"
+#include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
@@ -55,4 +56,51 @@ NSSecureTextField* PasswordLabel(const base::string16& text) {
       [[NSSecureTextField alloc] initWithFrame:NSZeroRect]);
   InitLabel(textField, text);
   return textField.autorelease();
+}
+
+NSButton* DialogButton(NSString* title) {
+  base::scoped_nsobject<NSButton> button(
+      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  [button setFont:[NSFont systemFontOfSize:[NSFont smallSystemFontSize]]];
+  [button setTitle:title];
+  [button setBezelStyle:NSRoundedBezelStyle];
+  [[button cell] setControlSize:NSSmallControlSize];
+  [button sizeToFit];
+  return button.autorelease();
+}
+
+HyperlinkTextView* TitleLabelWithLink(const base::string16& text,
+                                      gfx::Range range,
+                                      id<NSTextViewDelegate> delegate) {
+  base::scoped_nsobject<HyperlinkTextView> titleView(
+      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
+  NSColor* textColor = [NSColor blackColor];
+  NSFont* font = ResourceBundle::GetSharedInstance()
+                     .GetFontList(ResourceBundle::MediumFont)
+                     .GetPrimaryFont()
+                     .GetNativeFont();
+  [titleView setMessage:base::SysUTF16ToNSString(text)
+               withFont:font
+           messageColor:textColor];
+  NSRange titleBrandLinkRange = range.ToNSRange();
+  if (titleBrandLinkRange.length) {
+    NSColor* linkColor =
+        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
+    [titleView addLinkRange:titleBrandLinkRange
+                    withURL:nil
+                  linkColor:linkColor];
+    [titleView setDelegate:delegate];
+
+    // Create the link with no underlining.
+    [titleView setLinkTextAttributes:nil];
+    NSTextStorage* text = [titleView textStorage];
+    [text addAttribute:NSUnderlineStyleAttributeName
+                 value:@(NSUnderlineStyleNone)
+                 range:titleBrandLinkRange];
+  } else {
+    // TODO(vasilii): remove if crbug.com/515189 is fixed.
+    [titleView setRefusesFirstResponder:YES];
+  }
+
+  return titleView.autorelease();
 }

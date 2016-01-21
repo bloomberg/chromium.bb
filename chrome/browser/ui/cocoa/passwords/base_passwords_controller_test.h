@@ -31,9 +31,6 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
   void SetUpUpdatePendingState(bool multiple_forms);
   void SetUpConfirmationState();
   void SetUpManageState();
-  void SetUpAccountChooser(
-      ScopedVector<const autofill::PasswordForm> local,
-      ScopedVector<const autofill::PasswordForm> federations);
 
   // An opportunity for tests to override the constructor parameter of
   // ManagePasswordsBubbleModel.

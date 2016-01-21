@@ -104,18 +104,12 @@ bool ManagePasswordsUIController::OnChooseCredentials(
       CopyFormVector(federated_credentials);
   passwords_data_.OnRequestCredentials(
       std::move(local_credentials), std::move(federated_credentials), origin);
-#if defined(OS_MACOSX)
-  // TODO(vasilii): remove once Mac supports the dialog.
-  // http://crbug.com/550922
-  base::AutoReset<bool> resetter(&should_pop_up_bubble_, true);
-#else
   dialog_controller_.reset(new PasswordDialogControllerImpl(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
       this));
   dialog_controller_->ShowAccountChooser(
       CreateAccountChooser(dialog_controller_.get()),
       std::move(locals), std::move(federations));
-#endif
   UpdateBubbleAndIconVisibility();
   if (!should_pop_up_bubble_) {
     passwords_data_.set_credentials_callback(callback);
@@ -361,18 +355,10 @@ void ManagePasswordsUIController::UpdateBubbleAndIconVisibility() {
   location_bar->UpdateManagePasswordsIconAndBubble();
 }
 
-#if defined(OS_MACOSX)
-// TODO(vasilii): remove once Mac supports the dialog.
-AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
-    PasswordDialogController* controller) {
-  return nullptr;
-}
-#else
 AccountChooserPrompt* ManagePasswordsUIController::CreateAccountChooser(
     PasswordDialogController* controller) {
   return CreateAccountChooserPromptView(controller, web_contents());
 }
-#endif
 
 void ManagePasswordsUIController::DidNavigateMainFrame(
     const content::LoadCommittedDetails& details,

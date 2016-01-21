@@ -14274,16 +14274,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_NO_THANKS" desc="Text of the button to dismiss the account chooser.">
         No thanks
       </message>
-      <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_MORE" desc="Text of the button to show more options on the account chooser.">
-        More
-      </message>
-      <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_PASSWORDS_LINK" desc="Text of the item on the account chooser to show existing passwords.">
-        Settings
-      </message>
-      <message name="IDS_CREDENTIAL_MANAGEMENT_ACCOUNT_CHOOSER_LEARN_MORE" desc="Text of the item on the account chooser to show the help center article about credential management.">
-        Learn more
-      </message>
-
+      
       <message name="IDS_ALLOW_INSECURE_LOCALHOST" desc="Name of the 'Allow insecure localhost' flag.">
         Allow invalid certificates for resources loaded from localhost.
       </message>

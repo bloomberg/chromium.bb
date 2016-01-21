@@ -90,35 +90,8 @@ const SkColor kWarmWelcomeColor = SkColorSetRGB(0x64, 0x64, 0x64);
   [view addSubview:closeButton_];
 
   // Title.
-  base::scoped_nsobject<HyperlinkTextView> titleView(
-      [[HyperlinkTextView alloc] initWithFrame:NSZeroRect]);
-  NSColor* textColor = [NSColor blackColor];
-  NSFont* font = ResourceBundle::GetSharedInstance()
-                     .GetFontList(ResourceBundle::SmallFont)
-                     .GetPrimaryFont()
-                     .GetNativeFont();
-  [titleView setMessage:base::SysUTF16ToNSString(model_->title())
-               withFont:font
-           messageColor:textColor];
-  NSRange titleBrandLinkRange = model_->title_brand_link_range().ToNSRange();
-  if (titleBrandLinkRange.length) {
-    NSColor* linkColor =
-        skia::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-    [titleView addLinkRange:titleBrandLinkRange
-                    withURL:nil
-                  linkColor:linkColor];
-    [titleView.get() setDelegate:self];
-
-    // Create the link with no underlining.
-    [titleView setLinkTextAttributes:nil];
-    NSTextStorage* text = [titleView textStorage];
-    [text addAttribute:NSUnderlineStyleAttributeName
-                 value:@(NSUnderlineStyleNone)
-                 range:titleBrandLinkRange];
-  } else {
-    // TODO(vasilii): remove if crbug.com/515189 is fixed.
-    [titleView setRefusesFirstResponder:YES];
-  }
+  HyperlinkTextView* titleView = TitleLabelWithLink(
+      model_->title(), model_->title_brand_link_range(), self);
 
   // Force the text to wrap to fit in the bubble size.
   int titleRightPadding =

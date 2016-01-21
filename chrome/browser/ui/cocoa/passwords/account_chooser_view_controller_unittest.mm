@@ -7,29 +7,17 @@
 #include <utility>
 
 #include "base/mac/foundation_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#import "chrome/browser/ui/cocoa/bubble_combobox.h"
-#include "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/passwords/account_avatar_fetcher_manager.h"
 #import "chrome/browser/ui/cocoa/passwords/account_chooser_view_controller.h"
-#include "chrome/browser/ui/cocoa/passwords/base_passwords_controller_test.h"
-#include "chrome/browser/ui/passwords/account_chooser_more_combobox_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
-#include "chrome/browser/ui/passwords/manage_passwords_ui_controller_mock.h"
-#include "components/password_manager/core/common/password_manager_ui.h"
+#include "chrome/browser/ui/passwords/password_dialog_controller.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
-@interface ManagePasswordsBubbleAccountChooserViewController(Testing)
-- (id)initWithModel:(ManagePasswordsBubbleModel*)model
-      avatarManager:(AccountAvatarFetcherManager*)avatarManager
-           delegate:(id<ManagePasswordsBubbleContentViewDelegate>)delegate;
-@property(nonatomic, readonly) NSButton* cancelButton;
-@property(nonatomic, readonly) BubbleCombobox* moreButton;
-@property(nonatomic, readonly) NSTableView* credentialsView;
-@end
 
 @interface CredentialItemView(Testing)
 @property(nonatomic, readonly) NSTextField* upperLabel;
@@ -55,6 +43,8 @@
 
 namespace {
 
+const char kDialogTitle[] = "Choose an account";
+
 // Returns a PasswordForm with only a username.
 scoped_ptr<autofill::PasswordForm> Credential(const char* username) {
   scoped_ptr<autofill::PasswordForm> credential(new autofill::PasswordForm);
@@ -62,51 +52,100 @@ scoped_ptr<autofill::PasswordForm> Credential(const char* username) {
   return credential;
 }
 
-// Tests for the account chooser view of the password management bubble.
-class ManagePasswordsBubbleAccountChooserViewControllerTest
-    : public ManagePasswordsControllerTest {
+class PasswordDialogControllerMock : public PasswordDialogController {
  public:
-  ManagePasswordsBubbleAccountChooserViewControllerTest() : controller_(nil) {}
+  MOCK_CONST_METHOD0(GetLocalForms, const FormsVector&());
+  MOCK_CONST_METHOD0(GetFederationsForms, const FormsVector&());
+  MOCK_CONST_METHOD0(GetAccoutChooserTitle,
+                     std::pair<base::string16, gfx::Range>());
+  MOCK_METHOD0(OnSmartLockLinkClicked, void());
+  MOCK_METHOD2(OnChooseCredentials, void(
+      const autofill::PasswordForm& password_form,
+      password_manager::CredentialType credential_type));
+  MOCK_METHOD0(OnCloseAccountChooser, void());
+};
 
-  void SetUp() override {
-    ManagePasswordsControllerTest::SetUp();
-    delegate_.reset([[ContentViewDelegateMock alloc] init]);
-    avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
+// Tests for the account chooser dialog view.
+class AccountChooserViewControllerTest : public CocoaProfileTest,
+                                         public AccountChooserBridge {
+ public:
+  void SetUp() override;
+
+  PasswordDialogControllerMock& dialog_controller() {
+    return dialog_controller_;
   }
-
-  ContentViewDelegateMock* delegate() { return delegate_.get(); }
 
   AccountAvatarFetcherTestManager* avatar_manager() {
     return avatar_manager_.get();
   }
 
-  ManagePasswordsBubbleAccountChooserViewController* controller() {
-    if (!controller_) {
-      controller_.reset(
-          [[ManagePasswordsBubbleAccountChooserViewController alloc]
-              initWithModel:GetModelAndCreateIfNull()
-              avatarManager:avatar_manager()
-                   delegate:delegate()]);
-      [controller_ loadView];
-    }
-    return controller_.get();
+  AccountChooserViewController* view_controller() {
+    return view_controller_.get();
   }
 
+  void SetUpAccountChooser(
+      PasswordDialogController::FormsVector local,
+      PasswordDialogController::FormsVector federations);
+
+  MOCK_METHOD0(OnPerformClose, void());
+
+  // AccountChooserBridge:
+  void PerformClose() override;
+  PasswordDialogController* GetDialogController() override;
+  net::URLRequestContextGetter* GetRequestContext() const override;
+
  private:
+  PasswordDialogControllerMock dialog_controller_;
   base::scoped_nsobject<AccountAvatarFetcherTestManager> avatar_manager_;
-  base::scoped_nsobject<ManagePasswordsBubbleAccountChooserViewController>
-      controller_;
-  base::scoped_nsobject<ContentViewDelegateMock> delegate_;
+  base::scoped_nsobject<AccountChooserViewController> view_controller_;
 };
 
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
-  ScopedVector<const autofill::PasswordForm> local_forms;
+void AccountChooserViewControllerTest::SetUp() {
+  CocoaProfileTest::SetUp();
+  avatar_manager_.reset([[AccountAvatarFetcherTestManager alloc] init]);
+}
+
+void AccountChooserViewControllerTest::SetUpAccountChooser(
+    PasswordDialogController::FormsVector local,
+    PasswordDialogController::FormsVector federations) {
+  view_controller_.reset([[AccountChooserViewController alloc]
+      initWithBridge:this
+      avatarManager:avatar_manager()]);
+  EXPECT_CALL(dialog_controller_, GetLocalForms())
+      .WillOnce(testing::ReturnRef(local));
+  EXPECT_CALL(dialog_controller_, GetFederationsForms())
+      .WillOnce(testing::ReturnRef(federations));
+  EXPECT_CALL(dialog_controller_, GetAccoutChooserTitle())
+      .WillOnce(testing::Return(std::make_pair(base::ASCIIToUTF16(kDialogTitle),
+                                               gfx::Range(0, 5))));
+  [view_controller_ view];
+  ASSERT_TRUE(testing::Mock::VerifyAndClearExpectations(&dialog_controller_));
+}
+
+void AccountChooserViewControllerTest::PerformClose() {
+  view_controller_.reset();
+  OnPerformClose();
+}
+
+PasswordDialogController*
+AccountChooserViewControllerTest::GetDialogController() {
+  return &dialog_controller_;
+}
+
+net::URLRequestContextGetter*
+AccountChooserViewControllerTest::GetRequestContext() const {
+  NOTREACHED();
+  return nullptr;
+}
+
+TEST_F(AccountChooserViewControllerTest, ConfiguresViews) {
+  PasswordDialogController::FormsVector local_forms;
   local_forms.push_back(Credential("pizza"));
-  ScopedVector<const autofill::PasswordForm> federated_forms;
+  PasswordDialogController::FormsVector federated_forms;
   federated_forms.push_back(Credential("taco"));
   SetUpAccountChooser(std::move(local_forms), std::move(federated_forms));
   // Trigger creation of controller and check the views.
-  NSTableView* view = controller().credentialsView;
+  NSTableView* view = view_controller().credentialsView;
   ASSERT_NSNE(nil, view);
   ASSERT_EQ(2U, view.numberOfRows);
   EXPECT_NSEQ(
@@ -124,72 +163,53 @@ TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest, ConfiguresViews) {
   EXPECT_TRUE(avatar_manager().fetchedAvatars.empty());
 }
 
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
-       ForwardsAvatarFetchToManager) {
-  ScopedVector<const autofill::PasswordForm> local_forms;
+TEST_F(AccountChooserViewControllerTest, ForwardsAvatarFetchToManager) {
+  PasswordDialogController::FormsVector local_forms;
   scoped_ptr<autofill::PasswordForm> form = Credential("taco");
-  form->icon_url = GURL("http://foo");
+  form->icon_url = GURL("http://foo.com");
   local_forms.push_back(std::move(form));
   SetUpAccountChooser(std::move(local_forms),
-                      ScopedVector<const autofill::PasswordForm>());
-  // Trigger creation of the controller and check the fetched URLs.
-  controller();
+                      PasswordDialogController::FormsVector());
   EXPECT_FALSE(avatar_manager().fetchedAvatars.empty());
   EXPECT_TRUE(std::find(avatar_manager().fetchedAvatars.begin(),
                         avatar_manager().fetchedAvatars.end(),
-                        GURL("http://foo")) !=
+                        GURL("http://foo.com")) !=
               avatar_manager().fetchedAvatars.end());
 }
 
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
+TEST_F(AccountChooserViewControllerTest,
        SelectingCredentialInformsModelAndClosesDialog) {
-  ScopedVector<const autofill::PasswordForm> local_forms;
+  PasswordDialogController::FormsVector local_forms;
   local_forms.push_back(Credential("pizza"));
-  ScopedVector<const autofill::PasswordForm> federated_forms;
+  PasswordDialogController::FormsVector federated_forms;
   federated_forms.push_back(Credential("taco"));
   SetUpAccountChooser(std::move(local_forms), std::move(federated_forms));
-  EXPECT_CALL(*ui_controller(),
-              ChooseCredential(
+  EXPECT_CALL(dialog_controller(),
+              OnChooseCredentials(
                   *Credential("taco"),
                   password_manager::CredentialType::CREDENTIAL_TYPE_FEDERATED));
-  [controller().credentialsView
+  [view_controller().credentialsView
           selectRowIndexes:[NSIndexSet indexSetWithIndex:1]
       byExtendingSelection:NO];
-  EXPECT_TRUE(delegate().dismissed);
 }
 
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
-       SelectingNopeDismissesDialog) {
-  ScopedVector<const autofill::PasswordForm> local_forms;
+TEST_F(AccountChooserViewControllerTest, SelectingNopeDismissesDialog) {
+  PasswordDialogController::FormsVector local_forms;
   local_forms.push_back(Credential("pizza"));
   SetUpAccountChooser(std::move(local_forms),
-                      ScopedVector<const autofill::PasswordForm>());
-  [controller().cancelButton performClick:nil];
-  EXPECT_TRUE(delegate().dismissed);
+                      PasswordDialogController::FormsVector());
+  EXPECT_CALL(*this, OnPerformClose());
+  [view_controller().cancelButton performClick:nil];
 }
 
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
-       SelectingSettingsShowsSettingsPage) {
-  SetUpAccountChooser(ScopedVector<const autofill::PasswordForm>(),
-                      ScopedVector<const autofill::PasswordForm>());
-  BubbleCombobox* moreButton = controller().moreButton;
-  EXPECT_TRUE(moreButton);
-  EXPECT_CALL(*ui_controller(), NavigateToPasswordManagerSettingsPage());
-  [[moreButton menu] performActionForItemAtIndex:
-                         AccountChooserMoreComboboxModel::INDEX_SETTINGS];
-  EXPECT_TRUE(delegate().dismissed);
-}
-
-TEST_F(ManagePasswordsBubbleAccountChooserViewControllerTest,
-       SelectingLearnMoreShowsHelpCenterArticle) {
-  SetUpAccountChooser(ScopedVector<const autofill::PasswordForm>(),
-                      ScopedVector<const autofill::PasswordForm>());
-  BubbleCombobox* moreButton = controller().moreButton;
-  EXPECT_TRUE(moreButton);
-  [[moreButton menu] performActionForItemAtIndex:
-                         AccountChooserMoreComboboxModel::INDEX_LEARN_MORE];
-  EXPECT_TRUE(delegate().dismissed);
-  // TODO(dconnelly): Test this when the article is written.
+TEST_F(AccountChooserViewControllerTest, ClickTitleLink) {
+  PasswordDialogController::FormsVector local_forms;
+  local_forms.push_back(Credential("pizza"));
+  SetUpAccountChooser(std::move(local_forms),
+                      PasswordDialogController::FormsVector());
+  EXPECT_CALL(dialog_controller(), OnSmartLockLinkClicked());
+  [view_controller().titleView clickedOnLink:@""
+                                     atIndex:0];
 }
 
 }  // namespace
