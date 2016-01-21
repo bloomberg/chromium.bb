@@ -10,6 +10,7 @@ source_set("android") {
   deps = [
     "//base",
     "//components/data_usage/core",
+    "//components/variations",
     "//net",
     "//url",
   ]
