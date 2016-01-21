@@ -1,4 +1,4 @@
-CONSOLE ERROR: line 10: Error: Invalid negative value for <svg> attribute width="-100"
+CONSOLE ERROR: line 10: Error: <svg> attribute width: A negative value is not valid. ("-100")
 layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x105
