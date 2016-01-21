@@ -970,6 +970,8 @@ public:
         SVG1DOMImageElement = 1115,
         SVG1DOMForeignObjectElement = 1116,
         AudioContextCreateIIRFilter = 1117,
+        // The above items are available in M49 branch
+
         CSSSelectorPseudoSlotted = 1118,
         MediaDevicesEnumerateDevices = 1119,
         NonSecureSharedWorkerAccessedFromSecureContext = 1120,
@@ -977,6 +979,9 @@ public:
         NonCSSStyleSheetType = 1122,
         EventDeepPath = 1123,
         LinkHeaderPreload = 1124,
+        MouseWheelEvent = 1125,
+        WheelEvent = 1126,
+        MouseWheelAndWheelEvent = 1127,
 
         // Add new features immediately above this line. Don't change assigned
         // numbers of any item, and don't reuse removed slots.

@@ -328,6 +328,10 @@ void EventTarget::countLegacyEvents(const AtomicString& legacyTypeName, EventLis
         prefixedFeature = UseCounter::PrefixedAnimationIterationEvent;
         unprefixedFeature = UseCounter::UnprefixedAnimationIterationEvent;
         prefixedAndUnprefixedFeature = UseCounter::PrefixedAndUnprefixedAnimationIterationEvent;
+    } else if (legacyTypeName == EventTypeNames::mousewheel) {
+        prefixedFeature = UseCounter::MouseWheelEvent;
+        unprefixedFeature = UseCounter::WheelEvent;
+        prefixedAndUnprefixedFeature = UseCounter::MouseWheelAndWheelEvent;
     } else {
         return;
     }
