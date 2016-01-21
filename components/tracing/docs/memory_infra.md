@@ -26,7 +26,7 @@ click of a button you can understand where memory is being used in your system.
 [record-trace]:     https://sites.google.com/a/chromium.org/dev/developers/how-tos/trace-event-profiling-tool/recording-tracing-runs
 [tracing]:          chrome://tracing
 [inspect-tracing]:  chrome://inspect?tracing
-[memory-infra-box]: https://drive.google.com/uc?export=view&id=0Bx14iZPZRgb5RHBJM1llY1g4cDg
+[memory-infra-box]: https://storage.googleapis.com/chromium-docs.appspot.com/1c6d1886584e7cc6ffed0d377f32023f8da53e02
 
 ![Timeline View and Analysis View][tracing-views]
 
@@ -47,10 +47,10 @@ The purple ![M][m-purple] dots represent heavy dumps. In these dumps, components
 can provide more details than in the regular dumps. The full details of the
 MemoryInfra UI are explained in its [design doc][mi-ui-doc].
 
-[tracing-views]:     https://drive.google.com/uc?export=view&id=0Bx14iZPZRgb5dFVYV2dtZmNxQjg
-[m-blue]:            https://drive.google.com/uc?export=view&id=0Bx14iZPZRgb5b1ZTcWY4em42a0U
-[partalloc-details]: https://drive.google.com/uc?export=view&id=0Bx14iZPZRgb5eVpPR09yTW9Ebjg
-[m-purple]:          https://drive.google.com/uc?export=view&id=0Bx14iZPZRgb5RFFGc0xZZEJWVFk
+[tracing-views]:     https://storage.googleapis.com/chromium-docs.appspot.com/db12015bd262385f0f8bd69133330978a99da1ca
+[m-blue]:            https://storage.googleapis.com/chromium-docs.appspot.com/b60f342e38ff3a3767bbe4c8640d96a2d8bc864b
+[partalloc-details]: https://storage.googleapis.com/chromium-docs.appspot.com/02eade61d57c83f8ef8227965513456555fc3324
+[m-purple]:          https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
 [mi-ui-doc]:         https://docs.google.com/document/d/1b5BSBEd1oB-3zj_CBAQWiQZ0cmI0HmjmXG-5iNveLqw/edit
 
 ## Columns

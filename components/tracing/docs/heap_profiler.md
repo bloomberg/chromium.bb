@@ -30,8 +30,8 @@ intergrated with the chrome://tracing ecosystem.
  6. Pinpoint the memory bug and live happily ever after.
 
 [memory-infra]:    memory_infra.md
-[m-purple]:        https://drive.google.com/uc?id=0Bx14iZPZRgb5RFFGc0xZZEJWVFk
-[cells-heap-dump]: https://drive.google.com/uc?id=0Bx14iZPZRgb5NGlJSFRONTFoWEU
+[m-purple]:        https://storage.googleapis.com/chromium-docs.appspot.com/d7bdf4d16204c293688be2e5a0bcb2bf463dbbc3
+[cells-heap-dump]: https://storage.googleapis.com/chromium-docs.appspot.com/a24d80d6a08da088e2e9c8b2b64daa215be4dacb
 
 ## Heap Details
 
@@ -107,8 +107,8 @@ around 72 MiB.)
 
 ![Diff of The Verge before and after loading ads][diff]
 
-[pseudo-stack]:            https://drive.google.com/uc?id=0Bx14iZPZRgb5M194Y2RqQjhoZkk
-[break-down-by-backtrace]: https://drive.google.com/uc?id=0Bx14iZPZRgb5ZDRQdGNnNDNIazA
-[break-down-by-type]:      https://drive.google.com/uc?id=0Bx14iZPZRgb5THJMYlpyTEN2Q2s
-[type-then-backtrace]:     https://drive.google.com/uc?id=0Bx14iZPZRgb5UGZFX1pDUVpOLUU
-[diff]:                    https://drive.google.com/uc?id=0Bx14iZPZRgb5UzNvMmVOa0RnQWs
+[pseudo-stack]:            https://storage.googleapis.com/chromium-docs.appspot.com/058e50350836f55724e100d4dbbddf4b9803f550
+[break-down-by-backtrace]: https://storage.googleapis.com/chromium-docs.appspot.com/ec61c5f15705f5bcf3ca83a155ed647a0538bbe1
+[break-down-by-type]:      https://storage.googleapis.com/chromium-docs.appspot.com/2236e61021922c0813908c6745136953fa20a37b
+[type-then-backtrace]:     https://storage.googleapis.com/chromium-docs.appspot.com/c5367dde11476bdbf2d5a1c51674148915573d11
+[diff]:                    https://storage.googleapis.com/chromium-docs.appspot.com/802141906869cd533bb613da5f91bd0b071ceb24
