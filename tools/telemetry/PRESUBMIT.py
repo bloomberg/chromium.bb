@@ -12,7 +12,28 @@ def _CommonChecks(input_api, output_api):
   results.extend(_CheckNoMoreUsageOfDeprecatedCode(
     input_api, output_api, deprecated_code='GetChromiumSrcDir()',
     crbug_number=511332))
+
+  results.extend(_TemporarilyReadOnly(input_api, output_api))
   return results
+
+
+def _TemporarilyReadOnly(input_api, output_api):
+  # Temporarily make tools/telemetry/ read-only for the move to catapult.
+
+  def other_files(f):
+    this_presubmit_file = input_api.os_path.join(
+        input_api.PresubmitLocalPath(), 'PRESUBMIT.py')
+    return not f.AbsoluteLocalPath() == this_presubmit_file
+
+  changed_files = input_api.AffectedSourceFiles(other_files)
+  if changed_files:
+    return [output_api.PresubmitError(
+        'tools/telemetry/ is temporarily read-only while it moves to catapult.'
+        '\nPlease make your changes to telemetry/ '
+        'in https://github.com/catapult-project/catapult/tree/master/telemetry.'
+        '\nContact aiolos@ for further questions. Changed files:\n',
+        items=changed_files)]
+  return []
 
 
 def _RunArgs(args, input_api):
@@ -110,7 +131,6 @@ def _GetPathsToPrepend(input_api):
       input_api.os_path.join(chromium_src_dir,
                              'third_party', 'catapult', 'tracing'),
   ]
-
 
 
 def CheckChangeOnUpload(input_api, output_api):
