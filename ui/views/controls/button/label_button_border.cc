@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "third_party/skia/include/effects/SkLerpXfermode.h"
+#include "third_party/skia/include/effects/SkArithmeticMode.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/canvas.h"
@@ -148,9 +148,10 @@ void LabelButtonAssetBorder::Paint(const View& view, gfx::Canvas* canvas) {
     PaintHelper(this, canvas, state, rect, extra);
 
     SkPaint paint;
-    skia::RefPtr<SkXfermode> sk_lerp_xfer =
-        skia::AdoptRef(SkLerpXfermode::Create(animation->GetCurrentValue()));
-    paint.setXfermode(sk_lerp_xfer.get());
+    double scale = animation->GetCurrentValue();
+    skia::RefPtr<SkXfermode> sk_arith_xfer =
+        skia::AdoptRef(SkArithmeticMode::Create(0.0f, scale, 1.0 - scale, 0.0));
+    paint.setXfermode(sk_arith_xfer.get());
     canvas->sk_canvas()->saveLayer(&sk_rect, &paint);
     state = native_theme_delegate->GetForegroundThemeState(&extra);
     PaintHelper(this, canvas, state, rect, extra);
