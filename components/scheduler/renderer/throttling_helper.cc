@@ -79,6 +79,10 @@ void ThrottlingHelper::DecreaseThrottleRefCount(TaskQueue* task_queue) {
   }
 }
 
+void ThrottlingHelper::UnregisterTaskQueue(TaskQueue* task_queue) {
+  throttled_queues_.erase(task_queue);
+}
+
 void ThrottlingHelper::OnTimeDomainHasImmediateWork() {
   // Forward to the main thread if called from another thread.
   if (!task_runner_->RunsTasksOnCurrentThread()) {

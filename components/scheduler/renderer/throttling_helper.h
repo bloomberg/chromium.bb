@@ -39,6 +39,9 @@ class SCHEDULER_EXPORT ThrottlingHelper : public TimeDomain::Observer {
   // zero this function does nothing.
   void DecreaseThrottleRefCount(TaskQueue* task_queue);
 
+  // Removes |task_queue| from |throttled_queues_|.
+  void UnregisterTaskQueue(TaskQueue* task_queue);
+
   const VirtualTimeDomain* time_domain() const { return time_domain_.get(); }
 
   static base::TimeTicks ThrottledRunTime(base::TimeTicks unthrottled_runtime);

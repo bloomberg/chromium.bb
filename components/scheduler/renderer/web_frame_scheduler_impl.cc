@@ -25,11 +25,8 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   if (loading_task_queue_.get())
     loading_task_queue_->UnregisterTaskQueue();
 
-  if (timer_task_queue_.get()) {
-    renderer_scheduler_->throttling_helper()->DecreaseThrottleRefCount(
-        timer_task_queue_.get());
+  if (timer_task_queue_.get())
     timer_task_queue_->UnregisterTaskQueue();
-  }
 
   if (parent_web_view_scheduler_)
     parent_web_view_scheduler_->Unregister(this);

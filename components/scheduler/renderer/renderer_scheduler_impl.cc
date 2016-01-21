@@ -224,6 +224,9 @@ RendererSchedulerImpl::NewRenderWidgetSchedulingState() {
 
 void RendererSchedulerImpl::OnUnregisterTaskQueue(
     const scoped_refptr<TaskQueue>& task_queue) {
+  if (throttling_helper_.get())
+    throttling_helper_->UnregisterTaskQueue(task_queue.get());
+
   if (loading_task_runners_.find(task_queue) != loading_task_runners_.end()) {
     task_queue->RemoveTaskObserver(
         &MainThreadOnly().loading_task_cost_estimator);
