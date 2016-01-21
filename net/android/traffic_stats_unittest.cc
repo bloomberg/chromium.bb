@@ -42,9 +42,9 @@ TEST(TrafficStatsAndroidTest, BasicsTest) {
   int64_t tx_bytes_after_request = -1;
   int64_t rx_bytes_after_request = -1;
   EXPECT_TRUE(android::traffic_stats::GetTotalTxBytes(&tx_bytes_after_request));
-  DCHECK_GT(tx_bytes_after_request, tx_bytes_before_request);
+  EXPECT_GT(tx_bytes_after_request, tx_bytes_before_request);
   EXPECT_TRUE(android::traffic_stats::GetTotalRxBytes(&rx_bytes_after_request));
-  DCHECK_GT(rx_bytes_after_request, rx_bytes_before_request);
+  EXPECT_GT(rx_bytes_after_request, rx_bytes_before_request);
 }
 
 TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
@@ -76,10 +76,10 @@ TEST(TrafficStatsAndroidTest, UIDBasicsTest) {
   int64_t rx_bytes_after_request = -1;
   EXPECT_TRUE(
       android::traffic_stats::GetCurrentUidTxBytes(&tx_bytes_after_request));
-  DCHECK_GT(tx_bytes_after_request, tx_bytes_before_request);
+  EXPECT_GT(tx_bytes_after_request, tx_bytes_before_request);
   EXPECT_TRUE(
       android::traffic_stats::GetCurrentUidRxBytes(&rx_bytes_after_request));
-  DCHECK_GT(rx_bytes_after_request, rx_bytes_before_request);
+  EXPECT_GT(rx_bytes_after_request, rx_bytes_before_request);
 }
 
 }  // namespace
