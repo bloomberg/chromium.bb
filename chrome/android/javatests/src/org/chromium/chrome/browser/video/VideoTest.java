@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.video;
 
-import android.test.FlakyTest;
+import android.test.suitebuilder.annotation.LargeTest;
 
+import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
@@ -24,11 +25,8 @@ public class VideoTest extends ChromeActivityTestCaseBase<ChromeActivity> {
         super(ChromeActivity.class);
     }
 
-    /*
-     * @LargeTest
-     * @Feature({"Media", "Media-Video", "Main"})
-     */
-    @FlakyTest
+    @Feature({"Media", "Media-Video", "Main"})
+    @LargeTest
     public void testLoadMediaUrl() throws InterruptedException, TimeoutException {
         Tab tab = getActivity().getActivityTab();
         TabTitleObserver titleObserver = new TabTitleObserver(tab, "ready_to_play");
