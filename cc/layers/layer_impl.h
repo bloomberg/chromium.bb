@@ -493,7 +493,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   void ApplySentScrollDeltasFromAbortedCommit();
 
   void set_main_thread_scrolling_reasons(
-      InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons) {
+      uint32_t main_thread_scrolling_reasons) {
     main_thread_scrolling_reasons_ = main_thread_scrolling_reasons;
   }
   bool should_scroll_on_main_thread() const {
@@ -774,7 +774,7 @@ class CC_EXPORT LayerImpl : public LayerAnimationValueObserver,
   int scroll_clip_layer_id_;
 
   gfx::Vector2dF offset_to_transform_parent_;
-  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons_;
+  uint32_t main_thread_scrolling_reasons_;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;
 

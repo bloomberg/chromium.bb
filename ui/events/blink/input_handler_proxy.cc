@@ -16,6 +16,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "ui/events/blink/input_handler_proxy_client.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
@@ -359,9 +360,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
   return DID_NOT_HANDLE;
 }
 
-void RecordMainThreadScrollingReasons(
-    WebInputEvent::Type type,
-    cc::InputHandler::MainThreadScrollingReason reasons) {
+void RecordMainThreadScrollingReasons(WebInputEvent::Type type,
+                                      uint32_t reasons) {
   static const char* kGestureHistogramName =
       "Renderer4.MainThreadGestureScrollReason";
   static const char* kWheelHistogramName =
@@ -375,30 +375,33 @@ void RecordMainThreadScrollingReasons(
     return;
   }
 
-  if (reasons == cc::InputHandler::NOT_SCROLLING_ON_MAIN) {
+  if (reasons == cc::MainThreadScrollingReason::kNotScrollingOnMain) {
     if (type == WebInputEvent::GestureScrollBegin) {
       UMA_HISTOGRAM_ENUMERATION(
-          kGestureHistogramName, cc::InputHandler::NOT_SCROLLING_ON_MAIN,
-          cc::InputHandler::MainThreadScrollingReasonCount);
+          kGestureHistogramName,
+          cc::MainThreadScrollingReason::kNotScrollingOnMain,
+          cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
     } else {
       UMA_HISTOGRAM_ENUMERATION(
-          kWheelHistogramName, cc::InputHandler::NOT_SCROLLING_ON_MAIN,
-          cc::InputHandler::MainThreadScrollingReasonCount);
+          kWheelHistogramName,
+          cc::MainThreadScrollingReason::kNotScrollingOnMain,
+          cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
     }
   }
 
-  for (int i = 0; i < cc::InputHandler::MainThreadScrollingReasonCount - 1;
+  for (uint32_t i = 0;
+       i < cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount - 1;
        ++i) {
     unsigned val = 1 << i;
     if (reasons & val) {
       if (type == WebInputEvent::GestureScrollBegin) {
         UMA_HISTOGRAM_ENUMERATION(
             kGestureHistogramName, i + 1,
-            cc::InputHandler::MainThreadScrollingReasonCount);
+            cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
       } else {
         UMA_HISTOGRAM_ENUMERATION(
             kWheelHistogramName, i + 1,
-            cc::InputHandler::MainThreadScrollingReasonCount);
+            cc::MainThreadScrollingReason::kMainThreadScrollingReasonCount);
       }
     }
   }
@@ -433,8 +436,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
     // TODO(jamesr): We don't properly handle scroll by page in the compositor
     // thread, so punt it to the main thread. http://crbug.com/236639
     result = DID_NOT_HANDLE;
-    RecordMainThreadScrollingReasons(wheel_event.type,
-                                     cc::InputHandler::PAGE_BASED_SCROLLING);
+    RecordMainThreadScrollingReasons(
+        wheel_event.type, cc::MainThreadScrollingReason::kPageBasedScrolling);
 
   } else if (!wheel_event.canScroll) {
     // Wheel events with |canScroll| == false will not trigger scrolling,
@@ -500,9 +503,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleMouseWheel(
       case cc::InputHandler::SCROLL_ON_MAIN_THREAD:
         result = DID_NOT_HANDLE;
         break;
-      case cc::InputHandler::ScrollStatusCount:
-        NOTREACHED();
-        break;
     }
   }
 
@@ -538,7 +538,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       blink::WebGestureEvent::ScrollUnits::Page) {
     scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
     scroll_status.main_thread_scrolling_reasons =
-          cc::InputHandler::CONTINUING_MAIN_THREAD_SCROLL;
+        cc::MainThreadScrollingReason::kContinuingMainThreadScroll;
   } else if (gesture_event.data.scrollBegin.targetViewport) {
     scroll_status = input_handler_->RootScrollBegin(&scroll_state,
                                                     cc::InputHandler::GESTURE);
@@ -555,7 +555,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
   }
   UMA_HISTOGRAM_ENUMERATION("Renderer4.CompositorScrollHitTestResult",
                             scroll_status.thread,
-                            cc::InputHandler::ScrollStatusCount);
+                            cc::InputHandler::LAST_SCROLL_STATUS + 1);
 
   RecordMainThreadScrollingReasons(gesture_event.type,
                                    scroll_status.main_thread_scrolling_reasons);
@@ -572,9 +572,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       return DID_NOT_HANDLE;
     case cc::InputHandler::SCROLL_IGNORED:
       return DROP_EVENT;
-    case cc::InputHandler::ScrollStatusCount:
-      NOTREACHED();
-      break;
   }
   return DID_NOT_HANDLE;
 }
@@ -631,7 +628,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
   cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
   cc::InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
-      cc::InputHandler::NOT_SCROLLING_ON_MAIN;
+      cc::MainThreadScrollingReason::kNotScrollingOnMain;
   switch (gesture_event.sourceDevice) {
   case blink::WebGestureDeviceTouchpad:
     if (gesture_event.data.flingStart.targetViewport) {
@@ -646,7 +643,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
     if (!gesture_scroll_on_impl_thread_) {
       scroll_status.thread = cc::InputHandler::SCROLL_ON_MAIN_THREAD;
       scroll_status.main_thread_scrolling_reasons =
-          cc::InputHandler::CONTINUING_MAIN_THREAD_SCROLL;
+          cc::MainThreadScrollingReason::kContinuingMainThreadScroll;
     } else {
       scroll_status = input_handler_->FlingScrollBegin();
     }
@@ -717,9 +714,6 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
       }
       return DROP_EVENT;
     }
-    case cc::InputHandler::ScrollStatusCount:
-      NOTREACHED();
-      break;
   }
   return DID_NOT_HANDLE;
 }

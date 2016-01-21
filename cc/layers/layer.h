@@ -277,8 +277,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   }
   bool user_scrollable_vertical() const { return user_scrollable_vertical_; }
 
-  void AddMainThreadScrollingReasons(
-      InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons);
+  void AddMainThreadScrollingReasons(uint32_t main_thread_scrolling_reasons);
   void ClearMainThreadScrollingReasons();
   bool should_scroll_on_main_thread() const {
     return !!main_thread_scrolling_reasons_;
@@ -726,7 +725,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer>,
   uint64_t element_id_;
   uint32_t mutable_properties_;
   gfx::Vector2dF offset_to_transform_parent_;
-  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons_;
+  uint32_t main_thread_scrolling_reasons_;
   bool should_flatten_transform_from_property_tree_ : 1;
   bool have_wheel_event_handlers_ : 1;
   bool have_scroll_event_handlers_ : 1;

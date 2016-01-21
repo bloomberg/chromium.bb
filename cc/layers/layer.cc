@@ -22,6 +22,7 @@
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/simple_enclosed_region.h"
 #include "cc/debug/frame_viewer_instrumentation.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_client.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_proto_converter.h"
@@ -66,7 +67,8 @@ Layer::Layer(const LayerSettings& settings)
       property_tree_sequence_number_(-1),
       element_id_(0),
       mutable_properties_(kMutablePropertyNone),
-      main_thread_scrolling_reasons_(InputHandler::NOT_SCROLLING_ON_MAIN),
+      main_thread_scrolling_reasons_(
+          MainThreadScrollingReason::kNotScrollingOnMain),
       should_flatten_transform_from_property_tree_(false),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
@@ -948,7 +950,7 @@ void Layer::SetUserScrollable(bool horizontal, bool vertical) {
 }
 
 void Layer::AddMainThreadScrollingReasons(
-    InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons) {
+    uint32_t main_thread_scrolling_reasons) {
   DCHECK(IsPropertyChangeAllowed());
   DCHECK(main_thread_scrolling_reasons);
   if (main_thread_scrolling_reasons_ == main_thread_scrolling_reasons)
@@ -961,7 +963,8 @@ void Layer::ClearMainThreadScrollingReasons() {
   DCHECK(IsPropertyChangeAllowed());
   if (!main_thread_scrolling_reasons_)
     return;
-  main_thread_scrolling_reasons_ = InputHandler::NOT_SCROLLING_ON_MAIN;
+  main_thread_scrolling_reasons_ =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   SetNeedsCommit();
 }
 
@@ -1563,9 +1566,7 @@ void Layer::FromLayerSpecificPropertiesProto(
   hide_layer_and_subtree_ = base.hide_layer_and_subtree();
   has_render_surface_ = base.has_render_surface();
   masks_to_bounds_ = base.masks_to_bounds();
-  main_thread_scrolling_reasons_ =
-      static_cast<InputHandler::MainThreadScrollingReason>(
-          base.main_thread_scrolling_reasons());
+  main_thread_scrolling_reasons_ = base.main_thread_scrolling_reasons();
   have_wheel_event_handlers_ = base.have_wheel_event_handlers();
   have_scroll_event_handlers_ = base.have_scroll_event_handlers();
   non_fast_scrollable_region_ =

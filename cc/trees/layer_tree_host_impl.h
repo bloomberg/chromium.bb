@@ -684,8 +684,7 @@ class CC_EXPORT LayerTreeHostImpl
       LayerImpl* layer_hit_by_point,
       bool* scroll_on_main_thread,
       bool* optional_has_ancestor_scroll_handler,
-      InputHandler::MainThreadScrollingReason* main_thread_scrolling_reason)
-      const;
+      uint32_t* main_thread_scrolling_reason) const;
   float DeviceSpaceDistanceToLayer(const gfx::PointF& device_viewport_point,
                                    LayerImpl* layer_impl);
   void StartScrollbarFadeRecursive(LayerImpl* layer);

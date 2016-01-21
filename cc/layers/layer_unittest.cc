@@ -12,6 +12,7 @@
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/mutable_properties.h"
 #include "cc/base/math_util.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_settings.h"
 #include "cc/output/copy_output_request.h"
@@ -249,7 +250,8 @@ class LayerSerializationTest : public testing::Test {
     layer->hide_layer_and_subtree_ = false;
     layer->has_render_surface_ = false;
     layer->masks_to_bounds_ = true;
-    layer->main_thread_scrolling_reasons_ = InputHandler::NOT_SCROLLING_ON_MAIN;
+    layer->main_thread_scrolling_reasons_ =
+        MainThreadScrollingReason::kNotScrollingOnMain;
     layer->have_wheel_event_handlers_ = true;
     layer->have_scroll_event_handlers_ = false;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
@@ -300,7 +302,7 @@ class LayerSerializationTest : public testing::Test {
     layer->has_render_surface_ = !layer->has_render_surface_;
     layer->masks_to_bounds_ = !layer->masks_to_bounds_;
     layer->main_thread_scrolling_reasons_ =
-        InputHandler::HAS_BACKGROUND_ATTACHMENT_FIXED_OBJECTS;
+        MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
     layer->have_wheel_event_handlers_ = !layer->have_wheel_event_handlers_;
     layer->have_scroll_event_handlers_ = !layer->have_scroll_event_handlers_;
     layer->non_fast_scrollable_region_ = Region(gfx::Rect(5, 1, 14, 3));
@@ -968,7 +970,7 @@ TEST_F(LayerTest, CheckPropertyChangeCausesCorrectBehavior) {
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetScrollOffset(
       gfx::ScrollOffset(10, 10)));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->AddMainThreadScrollingReasons(
-                                 InputHandler::EVENT_HANDLERS));
+                                 MainThreadScrollingReason::kEventHandlers));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetNonFastScrollableRegion(
       Region(gfx::Rect(1, 1, 2, 2))));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetHaveWheelEventHandlers(true));

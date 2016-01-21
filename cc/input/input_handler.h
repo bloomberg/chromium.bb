@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "cc/base/cc_export.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/input/scrollbar.h"
 #include "cc/trees/swap_promise_monitor.h"
@@ -82,45 +83,19 @@ class CC_EXPORT InputHandler {
     SCROLL_ON_IMPL_THREAD,
     SCROLL_IGNORED,
     SCROLL_UNKNOWN,
-    // This must be the last entry.
-    ScrollStatusCount
-  };
-
-  // Ensure this stays in sync with MainThreadScrollingReason in histograms.xml,
-  // and that this extends ScrollingCoordinator::MainThreadScrollingReason.
-  // ScrollingCoordinator::MainThreadScrollingReason contains the flags
-  // which are associated with a layer. The flags only contained in
-  // InputHandler::MainThreadScrollingReason are computed for each scroll
-  // begin.
-  enum MainThreadScrollingReason {
-    NOT_SCROLLING_ON_MAIN = 0,
-    HAS_BACKGROUND_ATTACHMENT_FIXED_OBJECTS = 1 << 0,
-    HAS_NON_LAYER_VIEWPORT_CONSTRAINED_OBJECTS = 1 << 1,
-    THREADED_SCROLLING_DISABLED = 1 << 2,
-    SCROLL_BAR_SCROLLING = 1 << 3,
-    PAGE_OVERLAY = 1 << 4,
-    MaxNonTransientScrollingReason = PAGE_OVERLAY,
-    NON_FAST_SCROLLABLE_REGION = 1 << 5,
-    EVENT_HANDLERS = 1 << 6,
-    FAILED_HIT_TEST = 1 << 7,
-    NO_SCROLLING_LAYER = 1 << 8,
-    NOT_SCROLLABLE = 1 << 9,
-    CONTINUING_MAIN_THREAD_SCROLL = 1 << 10,
-    NON_INVERTIBLE_TRANSFORM = 1 << 11,
-    PAGE_BASED_SCROLLING = 1 << 12,
-    MainThreadScrollingReasonCount = 14
+    LAST_SCROLL_STATUS = SCROLL_UNKNOWN
   };
 
   struct ScrollStatus {
     ScrollStatus()
         : thread(SCROLL_ON_IMPL_THREAD),
-          main_thread_scrolling_reasons(NOT_SCROLLING_ON_MAIN) {}
-    ScrollStatus(ScrollThread thread,
-                 MainThreadScrollingReason main_thread_scrolling_reasons)
+          main_thread_scrolling_reasons(
+              MainThreadScrollingReason::kNotScrollingOnMain) {}
+    ScrollStatus(ScrollThread thread, uint32_t main_thread_scrolling_reasons)
         : thread(thread),
           main_thread_scrolling_reasons(main_thread_scrolling_reasons) {}
     ScrollThread thread;
-    MainThreadScrollingReason main_thread_scrolling_reasons;
+    uint32_t main_thread_scrolling_reasons;
   };
 
   enum ScrollInputType { GESTURE, WHEEL, ANIMATED_WHEEL, NON_BUBBLING_GESTURE };
@@ -218,13 +193,6 @@ class CC_EXPORT InputHandler {
  private:
   DISALLOW_COPY_AND_ASSIGN(InputHandler);
 };
-
-inline const InputHandler::MainThreadScrollingReason& operator|=(
-    InputHandler::MainThreadScrollingReason& a,
-    InputHandler::MainThreadScrollingReason b) {
-  return a = static_cast<InputHandler::MainThreadScrollingReason>(
-             static_cast<unsigned>(a) | static_cast<unsigned>(b));
-}
 
 }  // namespace cc
 

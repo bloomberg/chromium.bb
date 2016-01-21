@@ -6,6 +6,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/trees/swap_promise_monitor.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -244,15 +245,15 @@ WebTouchPoint CreateWebTouchPoint(WebTouchPoint::State state, float x,
 
 const cc::InputHandler::ScrollStatus kImplThreadScrollState(
     cc::InputHandler::SCROLL_ON_IMPL_THREAD,
-    cc::InputHandler::NOT_SCROLLING_ON_MAIN);
+    cc::MainThreadScrollingReason::kNotScrollingOnMain);
 
 const cc::InputHandler::ScrollStatus kMainThreadScrollState(
     cc::InputHandler::SCROLL_ON_MAIN_THREAD,
-    cc::InputHandler::EVENT_HANDLERS);
+    cc::MainThreadScrollingReason::kEventHandlers);
 
 const cc::InputHandler::ScrollStatus kScrollIgnoredScrollState(
     cc::InputHandler::SCROLL_IGNORED,
-    cc::InputHandler::NOT_SCROLLABLE);
+    cc::MainThreadScrollingReason::kNotScrollable);
 
 }  // namespace
 

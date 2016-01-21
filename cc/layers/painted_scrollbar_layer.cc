@@ -8,6 +8,7 @@
 
 #include "base/auto_reset.h"
 #include "cc/base/math_util.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/painted_scrollbar_layer_impl.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/trees/draw_property_utils.h"
@@ -50,7 +51,8 @@ PaintedScrollbarLayer::PaintedScrollbarLayer(const LayerSettings& settings,
       has_thumb_(scrollbar_->HasThumb()),
       thumb_opacity_(scrollbar_->ThumbOpacity()) {
   if (!scrollbar_->IsOverlay())
-    AddMainThreadScrollingReasons(InputHandler::SCROLL_BAR_SCROLLING);
+    AddMainThreadScrollingReasons(
+        MainThreadScrollingReason::kScrollbarScrolling);
 }
 
 PaintedScrollbarLayer::~PaintedScrollbarLayer() {}

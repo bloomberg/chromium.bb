@@ -22,6 +22,7 @@
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/debug/micro_benchmark_impl.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scroll_state.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_utils.h"
@@ -57,7 +58,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl,
       layer_tree_impl_(tree_impl),
       scroll_offset_(scroll_offset),
       scroll_clip_layer_id_(Layer::INVALID_ID),
-      main_thread_scrolling_reasons_(InputHandler::NOT_SCROLLING_ON_MAIN),
+      main_thread_scrolling_reasons_(
+          MainThreadScrollingReason::kNotScrollingOnMain),
       have_wheel_event_handlers_(false),
       have_scroll_event_handlers_(false),
       scroll_blocks_on_(SCROLL_BLOCKS_ON_NONE),
@@ -509,7 +511,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     ScrollBlocksOn effective_block_mode) const {
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
-      InputHandler::NOT_SCROLLING_ON_MAIN;
+      MainThreadScrollingReason::kNotScrollingOnMain;
   if (should_scroll_on_main_thread()) {
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Failed ShouldScrollOnMainThread");
     scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
@@ -523,7 +525,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
     TRACE_EVENT0("cc", "LayerImpl::TryScroll: Ignored NonInvertibleTransform");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
     scroll_status.main_thread_scrolling_reasons =
-        InputHandler::NON_INVERTIBLE_TRANSFORM;
+        MainThreadScrollingReason::kNonInvertibleTransform;
     return scroll_status;
   }
 
@@ -546,7 +548,7 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
                    "LayerImpl::tryScroll: Failed NonFastScrollableRegion");
       scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
       scroll_status.main_thread_scrolling_reasons =
-          InputHandler::NON_FAST_SCROLLABLE_REGION;
+          MainThreadScrollingReason::kNonFastScrollableRegion;
       return scroll_status;
     }
   }
@@ -555,7 +557,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
       effective_block_mode & SCROLL_BLOCKS_ON_SCROLL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed ScrollEventHandlers");
     scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons = InputHandler::EVENT_HANDLERS;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kEventHandlers;
     return scroll_status;
   }
 
@@ -564,14 +567,16 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
       effective_block_mode & SCROLL_BLOCKS_ON_WHEEL_EVENT) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Failed WheelEventHandlers");
     scroll_status.thread = InputHandler::SCROLL_ON_MAIN_THREAD;
-    scroll_status.main_thread_scrolling_reasons = InputHandler::EVENT_HANDLERS;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kEventHandlers;
     return scroll_status;
   }
 
   if (!scrollable()) {
     TRACE_EVENT0("cc", "LayerImpl::tryScroll: Ignored not scrollable");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons = InputHandler::NOT_SCROLLABLE;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollable;
     return scroll_status;
   }
 
@@ -581,7 +586,8 @@ InputHandler::ScrollStatus LayerImpl::TryScroll(
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
     scroll_status.thread = InputHandler::SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons = InputHandler::NOT_SCROLLABLE;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNotScrollable;
     return scroll_status;
   }
 

@@ -163,7 +163,7 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   InputHandler::ScrollStatus status = scrollbar_layer_impl->TryScroll(
       gfx::PointF(), InputHandler::GESTURE, SCROLL_BLOCKS_ON_NONE);
   EXPECT_EQ(InputHandler::SCROLL_ON_MAIN_THREAD, status.thread);
-  EXPECT_EQ(InputHandler::SCROLL_BAR_SCROLLING,
+  EXPECT_EQ(MainThreadScrollingReason::kScrollbarScrolling,
             status.main_thread_scrolling_reasons);
 
   // Create and attach an overlay scrollbar.
@@ -180,7 +180,8 @@ TEST_F(ScrollbarLayerTest, ShouldScrollNonOverlayOnMainThread) {
   status = scrollbar_layer_impl->TryScroll(gfx::PointF(), InputHandler::GESTURE,
                                            SCROLL_BLOCKS_ON_NONE);
   EXPECT_EQ(InputHandler::SCROLL_IGNORED, status.thread);
-  EXPECT_EQ(InputHandler::NOT_SCROLLABLE, status.main_thread_scrolling_reasons);
+  EXPECT_EQ(MainThreadScrollingReason::kNotScrollable,
+            status.main_thread_scrolling_reasons);
 }
 
 TEST_F(ScrollbarLayerTest, ScrollOffsetSynchronization) {

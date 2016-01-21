@@ -36,6 +36,7 @@
 #include "cc/debug/frame_viewer_instrumentation.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
 #include "cc/debug/traced_value.h"
+#include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/page_scale_animation.h"
 #include "cc/input/scroll_elasticity_helper.h"
 #include "cc/input/scroll_state.h"
@@ -548,7 +549,7 @@ bool LayerTreeHostImpl::IsCurrentlyScrollingLayerAt(
       active_tree_->FindLayerThatIsHitByPoint(device_viewport_point);
 
   bool scroll_on_main_thread = false;
-  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons;
+  uint32_t main_thread_scrolling_reasons;
   LayerImpl* test_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, type, layer_impl, &scroll_on_main_thread, nullptr,
       &main_thread_scrolling_reasons);
@@ -2479,11 +2480,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     LayerImpl* layer_impl,
     bool* scroll_on_main_thread,
     bool* optional_has_ancestor_scroll_handler,
-    InputHandler::MainThreadScrollingReason* main_thread_scrolling_reasons)
-    const {
+    uint32_t* main_thread_scrolling_reasons) const {
   DCHECK(scroll_on_main_thread);
   DCHECK(main_thread_scrolling_reasons);
-  *main_thread_scrolling_reasons = InputHandler::NOT_SCROLLING_ON_MAIN;
+  *main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
 
   ScrollBlocksOn block_mode = EffectiveScrollBlocksOn(layer_impl);
 
@@ -2496,11 +2497,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
         layer_impl->TryScroll(device_viewport_point, type, block_mode);
     if (status.thread == SCROLL_ON_MAIN_THREAD) {
       if (layer_impl->should_scroll_on_main_thread()) {
-        DCHECK(status.main_thread_scrolling_reasons <=
-               InputHandler::MaxNonTransientScrollingReason);
+        DCHECK_LE(status.main_thread_scrolling_reasons,
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
       } else {
-        DCHECK(status.main_thread_scrolling_reasons >
-               InputHandler::MaxNonTransientScrollingReason);
+        DCHECK_GT(status.main_thread_scrolling_reasons,
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
       }
 
       *scroll_on_main_thread = true;
@@ -2518,11 +2519,11 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
     // If any layer wants to divert the scroll event to the main thread, abort.
     if (status.thread == SCROLL_ON_MAIN_THREAD) {
       if (layer_impl->should_scroll_on_main_thread()) {
-        DCHECK(status.main_thread_scrolling_reasons <=
-               InputHandler::MaxNonTransientScrollingReason);
+        DCHECK_LE(status.main_thread_scrolling_reasons,
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
       } else {
-        DCHECK(status.main_thread_scrolling_reasons >
-               InputHandler::MaxNonTransientScrollingReason);
+        DCHECK_GT(status.main_thread_scrolling_reasons,
+                  MainThreadScrollingReason::kMaxNonTransientScrollingReason);
       }
 
       *scroll_on_main_thread = true;
@@ -2581,10 +2582,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   DCHECK(scroll_state->delta_x() == 0 && scroll_state->delta_y() == 0);
 
   InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
+  scroll_status.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   if (!scrolling_layer_impl) {
     scroll_status.thread = SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons = NO_SCROLLING_LAYER;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;
   }
   scroll_status.thread = SCROLL_ON_IMPL_THREAD;
@@ -2624,7 +2627,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     ScrollState* scroll_state,
     InputHandler::ScrollInputType type) {
   ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
+  scroll_status.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBegin");
 
   ClearCurrentlyScrollingLayer();
@@ -2645,7 +2649,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         !HasScrollAncestor(layer_impl, scroll_layer_impl)) {
       scroll_status.thread = SCROLL_UNKNOWN;
       scroll_status.main_thread_scrolling_reasons =
-          InputHandler::FAILED_HIT_TEST;
+          MainThreadScrollingReason::kFailedHitTest;
       return scroll_status;
     }
   }
@@ -2673,13 +2677,15 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
     const gfx::Point& viewport_point,
     const gfx::Vector2dF& scroll_delta) {
   InputHandler::ScrollStatus scroll_status;
-  scroll_status.main_thread_scrolling_reasons = NOT_SCROLLING_ON_MAIN;
+  scroll_status.main_thread_scrolling_reasons =
+      MainThreadScrollingReason::kNotScrollingOnMain;
   if (LayerImpl* layer_impl = CurrentlyScrollingLayer()) {
     if (ScrollAnimationUpdateTarget(layer_impl, scroll_delta)) {
       scroll_status.thread = SCROLL_ON_IMPL_THREAD;
     } else {
       scroll_status.thread = SCROLL_IGNORED;
-      scroll_status.main_thread_scrolling_reasons = NOT_SCROLLABLE;
+      scroll_status.main_thread_scrolling_reasons =
+          MainThreadScrollingReason::kNotScrollable;
     }
     return scroll_status;
   }
@@ -3054,10 +3060,11 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state) {
 InputHandler::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
   InputHandler::ScrollStatus scroll_status;
   scroll_status.main_thread_scrolling_reasons =
-      InputHandler::NOT_SCROLLING_ON_MAIN;
+      MainThreadScrollingReason::kNotScrollingOnMain;
   if (!CurrentlyScrollingLayer()) {
     scroll_status.thread = SCROLL_IGNORED;
-    scroll_status.main_thread_scrolling_reasons = NO_SCROLLING_LAYER;
+    scroll_status.main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNoScrollingLayer;
   } else {
     scroll_status.thread = SCROLL_ON_IMPL_THREAD;
   }
@@ -3089,7 +3096,7 @@ void LayerTreeHostImpl::MouseMoveAt(const gfx::Point& viewport_point) {
     return;
 
   bool scroll_on_main_thread = false;
-  InputHandler::MainThreadScrollingReason main_thread_scrolling_reasons;
+  uint32_t main_thread_scrolling_reasons;
   LayerImpl* scroll_layer_impl = FindScrollLayerForDeviceViewportPoint(
       device_viewport_point, InputHandler::GESTURE, layer_impl,
       &scroll_on_main_thread, NULL, &main_thread_scrolling_reasons);

@@ -345,39 +345,39 @@ bool WebLayerImpl::haveScrollEventHandlers() const {
   return layer_->have_scroll_event_handlers();
 }
 
-static_assert(static_cast<cc::InputHandler::MainThreadScrollingReason>(
+static_assert(static_cast<uint32_t>(
                   blink::WebMainThreadScrollingReason::NotScrollingOnMain) ==
-                  cc::InputHandler::NOT_SCROLLING_ON_MAIN,
-              "InputHandler::MainThreadScrollingReason and "
-              "WebMainThreadScrollingReason enums must match");
-static_assert(static_cast<cc::InputHandler::MainThreadScrollingReason>(
-                  blink::WebMainThreadScrollingReason::
-                      HasBackgroundAttachmentFixedObjects) ==
-                  cc::InputHandler::HAS_BACKGROUND_ATTACHMENT_FIXED_OBJECTS,
-              "InputHandler::MainThreadScrollingReason and "
-              "WebMainThreadScrollingReason enums must match");
-static_assert(static_cast<cc::InputHandler::MainThreadScrollingReason>(
-                  blink::WebMainThreadScrollingReason::
-                      HasNonLayerViewportConstrainedObjects) ==
-                  cc::InputHandler::HAS_NON_LAYER_VIEWPORT_CONSTRAINED_OBJECTS,
-              "InputHandler::MainThreadScrollingReason and "
+                  cc::MainThreadScrollingReason::kNotScrollingOnMain,
+              "MainThreadScrollingReason and "
               "WebMainThreadScrollingReason enums must match");
 static_assert(
-    static_cast<cc::InputHandler::MainThreadScrollingReason>(
-        blink::WebMainThreadScrollingReason::ThreadedScrollingDisabled) ==
-        cc::InputHandler::THREADED_SCROLLING_DISABLED,
-    "InputHandler::MainThreadScrollingReason and "
+    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::
+                              HasBackgroundAttachmentFixedObjects) ==
+        cc::MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
+    "MainThreadScrollingReason and "
     "WebMainThreadScrollingReason enums must match");
-static_assert(static_cast<cc::InputHandler::MainThreadScrollingReason>(
+static_assert(
+    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::
+                              HasNonLayerViewportConstrainedObjects) ==
+        cc::MainThreadScrollingReason::kHasNonLayerViewportConstrainedObjects,
+    "MainThreadScrollingReason and "
+    "WebMainThreadScrollingReason enums must match");
+static_assert(
+    static_cast<uint32_t>(
+        blink::WebMainThreadScrollingReason::ThreadedScrollingDisabled) ==
+        cc::MainThreadScrollingReason::kThreadedScrollingDisabled,
+    "MainThreadScrollingReason and "
+    "WebMainThreadScrollingReason enums must match");
+static_assert(static_cast<uint32_t>(
                   blink::WebMainThreadScrollingReason::ScrollBarScrolling) ==
-                  cc::InputHandler::SCROLL_BAR_SCROLLING,
-              "InputHandler::MainThreadScrollingReason and "
+                  cc::MainThreadScrollingReason::kScrollbarScrolling,
+              "MainThreadScrollingReason and "
               "WebMainThreadScrollingReason enums must match");
-static_assert(static_cast<cc::InputHandler::MainThreadScrollingReason>(
-                  blink::WebMainThreadScrollingReason::PageOverlay) ==
-                  cc::InputHandler::PAGE_OVERLAY,
-              "InputHandler::MainThreadScrollingReason and "
-              "WebMainThreadScrollingReason enums must match");
+static_assert(
+    static_cast<uint32_t>(blink::WebMainThreadScrollingReason::PageOverlay) ==
+        cc::MainThreadScrollingReason::kPageOverlay,
+    "MainThreadScrollingReason and "
+    "WebMainThreadScrollingReason enums must match");
 
 void WebLayerImpl::addMainThreadScrollingReasons(
     blink::WebMainThreadScrollingReason::WebMainThreadScrollingReason
@@ -389,10 +389,8 @@ void WebLayerImpl::addMainThreadScrollingReasons(
       main_thread_scrolling_reasons,
       static_cast<
           blink::WebMainThreadScrollingReason::WebMainThreadScrollingReason>(
-          cc::InputHandler::MaxNonTransientScrollingReason));
-  layer_->AddMainThreadScrollingReasons(
-      static_cast<cc::InputHandler::MainThreadScrollingReason>(
-          main_thread_scrolling_reasons));
+          cc::MainThreadScrollingReason::kMaxNonTransientScrollingReason));
+  layer_->AddMainThreadScrollingReasons(main_thread_scrolling_reasons);
 }
 
 void WebLayerImpl::clearMainThreadScrollingReasons() {

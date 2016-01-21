@@ -9,7 +9,7 @@
 
 namespace blink {
 
-// Ensure this stays in sync with InputHandler::MainThreadScrollingReason.
+// Ensure this stays in sync with cc::MainThreadScrollingReason.
 namespace WebMainThreadScrollingReason {
 enum WebMainThreadScrollingReason {
     NotScrollingOnMain = 0,
