@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.res.TypedArray;
 import android.util.SparseBooleanArray;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -128,7 +129,11 @@ public class SelectPopupDialog implements SelectPopup {
 
     @Override
     public void show() {
-        mListBoxPopup.show();
+        try {
+            mListBoxPopup.show();
+        } catch (WindowManager.BadTokenException e) {
+            notifySelection(null);
+        }
     }
 
     @Override
