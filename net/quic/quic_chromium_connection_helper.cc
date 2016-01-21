@@ -21,8 +21,8 @@ class QuicChromeAlarm : public QuicAlarm {
  public:
   QuicChromeAlarm(const QuicClock* clock,
                   base::TaskRunner* task_runner,
-                  QuicAlarm::Delegate* delegate)
-      : QuicAlarm(delegate),
+                  QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
+      : QuicAlarm(std::move(delegate)),
         clock_(clock),
         task_runner_(task_runner),
         task_deadline_(QuicTime::Zero()),
@@ -110,9 +110,22 @@ QuicRandom* QuicChromiumConnectionHelper::GetRandomGenerator() {
   return random_generator_;
 }
 
+QuicArenaScopedPtr<QuicAlarm> QuicChromiumConnectionHelper::CreateAlarm(
+    QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+    QuicConnectionArena* arena) {
+  if (arena != nullptr) {
+    return arena->New<QuicChromeAlarm>(clock_, task_runner_,
+                                       std::move(delegate));
+  } else {
+    return QuicArenaScopedPtr<QuicAlarm>(
+        new QuicChromeAlarm(clock_, task_runner_, std::move(delegate)));
+  }
+}
+
 QuicAlarm* QuicChromiumConnectionHelper::CreateAlarm(
     QuicAlarm::Delegate* delegate) {
-  return new QuicChromeAlarm(clock_, task_runner_, delegate);
+  return new QuicChromeAlarm(clock_, task_runner_,
+                             QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
 }
 
 QuicBufferAllocator* QuicChromiumConnectionHelper::GetBufferAllocator() {

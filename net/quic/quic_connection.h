@@ -36,6 +36,7 @@
 #include "net/quic/quic_blocked_writer_interface.h"
 #include "net/quic/quic_fec_group.h"
 #include "net/quic/quic_framer.h"
+#include "net/quic/quic_one_block_arena.h"
 #include "net/quic/quic_packet_creator.h"
 #include "net/quic/quic_packet_generator.h"
 #include "net/quic/quic_packet_writer.h"
@@ -250,6 +251,10 @@ class NET_EXPORT_PRIVATE QuicConnectionDebugVisitor
   virtual void OnRttChanged(QuicTime::Delta rtt) const {}
 };
 
+// QuicConnections currently use around 1KB of polymorphic types which would
+// ordinarily be on the heap. Instead, store them inline in an arena.
+using QuicConnectionArena = QuicOneBlockArena<1024>;
+
 class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
  public:
   virtual ~QuicConnectionHelperInterface() {}
@@ -260,10 +265,19 @@ class NET_EXPORT_PRIVATE QuicConnectionHelperInterface {
   // Returns a QuicRandom to be used for all random number related functions.
   virtual QuicRandom* GetRandomGenerator() = 0;
 
-  // Creates a new platform-specific alarm which will be configured to
-  // notify |delegate| when the alarm fires.  Caller takes ownership
-  // of the new alarm, which will not yet be "set" to fire.
+  // Creates a new platform-specific alarm which will be configured to notify
+  // |delegate| when the alarm fires. Returns an alarm allocated on the heap.
+  // Caller takes ownership of the new alarm, which will not yet be "set" to
+  // fire.
   virtual QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) = 0;
+
+  // Creates a new platform-specific alarm which will be configured to notify
+  // |delegate| when the alarm fires. Caller takes ownership of the new alarm,
+  // which will not yet be "set" to fire. If |arena| is null, then the alarm
+  // will be created on the heap. Otherwise, it will be created in |arena|.
+  virtual QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) = 0;
 
   // Returns a QuicBufferAllocator to be used for all stream frame buffers.
   virtual QuicBufferAllocator* GetBufferAllocator() = 0;
@@ -870,22 +884,25 @@ class NET_EXPORT_PRIVATE QuicConnection
   // Indicates the retransmission alarm needs to be set.
   bool pending_retransmission_alarm_;
 
+  // Arena to store class implementations within the QuicConnection.
+  QuicConnectionArena arena_;
+
   // An alarm that fires when an ACK should be sent to the peer.
-  scoped_ptr<QuicAlarm> ack_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> ack_alarm_;
   // An alarm that fires when a packet needs to be retransmitted.
-  scoped_ptr<QuicAlarm> retransmission_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> retransmission_alarm_;
   // An alarm that is scheduled when the SentPacketManager requires a delay
   // before sending packets and fires when the packet may be sent.
-  scoped_ptr<QuicAlarm> send_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> send_alarm_;
   // An alarm that is scheduled when the connection can still write and there
   // may be more data to send.
-  scoped_ptr<QuicAlarm> resume_writes_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> resume_writes_alarm_;
   // An alarm that fires when the connection may have timed out.
-  scoped_ptr<QuicAlarm> timeout_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> timeout_alarm_;
   // An alarm that fires when a ping should be sent.
-  scoped_ptr<QuicAlarm> ping_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> ping_alarm_;
   // An alarm that fires when an MTU probe should be sent.
-  scoped_ptr<QuicAlarm> mtu_discovery_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> mtu_discovery_alarm_;
 
   // Neither visitor is owned by this class.
   QuicConnectionVisitorInterface* visitor_;
@@ -894,7 +911,7 @@ class NET_EXPORT_PRIVATE QuicConnection
   QuicPacketGenerator packet_generator_;
 
   // An alarm that fires when an FEC packet should be sent.
-  scoped_ptr<QuicAlarm> fec_alarm_;
+  QuicArenaScopedPtr<QuicAlarm> fec_alarm_;
 
   // Network idle time before we kill of this connection.
   QuicTime::Delta idle_network_timeout_;

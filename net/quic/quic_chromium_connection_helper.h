@@ -40,6 +40,9 @@ class NET_EXPORT_PRIVATE QuicChromiumConnectionHelper
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override;
   QuicBufferAllocator* GetBufferAllocator() override;
 
  private:

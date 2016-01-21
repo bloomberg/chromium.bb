@@ -41,6 +41,10 @@ class QuicEpollConnectionHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override;
+
   QuicBufferAllocator* GetBufferAllocator() override;
 
   EpollServer* epoll_server() { return epoll_server_; }

@@ -82,6 +82,10 @@ bool FLAGS_quic_general_loss_algorithm = true;
 // considered to be caused by NATs.
 bool FLAGS_quic_disable_non_nat_address_migration = true;
 
+// If true, QuicOneBlockArenas will allocate out of their local memory.
+// Otherwise, they will always use the heap.
+bool FLAGS_quic_enable_arena_allocation = true;
+
 // If true, QUIC connections will timeout when packets are not being recieved,
 // even if they are being sent.
 bool FLAGS_quic_use_new_idle_timeout = true;

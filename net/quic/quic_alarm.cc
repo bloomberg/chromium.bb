@@ -8,8 +8,8 @@
 
 namespace net {
 
-QuicAlarm::QuicAlarm(Delegate* delegate)
-    : delegate_(delegate), deadline_(QuicTime::Zero()) {}
+QuicAlarm::QuicAlarm(QuicArenaScopedPtr<Delegate> delegate)
+    : delegate_(std::move(delegate)), deadline_(QuicTime::Zero()) {}
 
 QuicAlarm::~QuicAlarm() {}
 

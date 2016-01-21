@@ -202,7 +202,8 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
  public:
   class TestAlarm : public QuicAlarm {
    public:
-    explicit TestAlarm(QuicAlarm::Delegate* delegate) : QuicAlarm(delegate) {}
+    explicit TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
+        : QuicAlarm(std::move(delegate)) {}
 
     void SetImpl() override {}
     void CancelImpl() override {}
@@ -220,7 +221,13 @@ class TestConnectionHelper : public QuicConnectionHelperInterface {
   QuicRandom* GetRandomGenerator() override { return random_generator_; }
 
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
-    return new TestAlarm(delegate);
+    return new TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
+  }
+
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override {
+    return arena->New<TestAlarm>(std::move(delegate));
   }
 
   QuicBufferAllocator* GetBufferAllocator() override {

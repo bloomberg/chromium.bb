@@ -194,7 +194,19 @@ QuicRandom* MockConnectionHelper::GetRandomGenerator() {
 }
 
 QuicAlarm* MockConnectionHelper::CreateAlarm(QuicAlarm::Delegate* delegate) {
-  return new MockConnectionHelper::TestAlarm(delegate);
+  return new MockConnectionHelper::TestAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
+}
+
+QuicArenaScopedPtr<QuicAlarm> MockConnectionHelper::CreateAlarm(
+    QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+    QuicConnectionArena* arena) {
+  if (arena != nullptr) {
+    return arena->New<MockConnectionHelper::TestAlarm>(std::move(delegate));
+  } else {
+    return QuicArenaScopedPtr<MockConnectionHelper::TestAlarm>(
+        new TestAlarm(std::move(delegate)));
+  }
 }
 
 QuicBufferAllocator* MockConnectionHelper::GetBufferAllocator() {

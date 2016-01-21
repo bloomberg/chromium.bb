@@ -18,6 +18,16 @@
 #include "net/base/net_export.h"
 #include "net/quic/quic_protocol.h"
 
+#ifdef _MSC_VER
+// MSVC 2013 and prior don't have alignof or aligned(); they have __alignof and
+// a __declspec instead.
+#define QUIC_ALIGN_OF __alignof
+#define QUIC_ALIGNED(X) __declspec(align(X))
+#else
+#define QUIC_ALIGN_OF alignof
+#define QUIC_ALIGNED(X) __attribute__((aligned(X)))
+#endif  // _MSC_VER
+
 namespace net {
 
 class NET_EXPORT_PRIVATE QuicUtils {

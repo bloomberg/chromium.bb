@@ -28,6 +28,7 @@ NET_EXPORT_PRIVATE extern bool FLAGS_quic_measure_headers_hol_blocking_time;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_pacing;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_general_loss_algorithm;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_disable_non_nat_address_migration;
+NET_EXPORT_PRIVATE extern bool FLAGS_quic_enable_arena_allocation;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_new_idle_timeout;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_use_stream_sequencer_buffer;
 NET_EXPORT_PRIVATE extern bool FLAGS_quic_respect_send_alarm2;

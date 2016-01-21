@@ -302,13 +302,17 @@ class MockConnectionHelper : public QuicConnectionHelperInterface {
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
   QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override;
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override;
   QuicBufferAllocator* GetBufferAllocator() override;
   void AdvanceTime(QuicTime::Delta delta);
 
   // No-op alarm implementation
   class TestAlarm : public QuicAlarm {
    public:
-    explicit TestAlarm(QuicAlarm::Delegate* delegate) : QuicAlarm(delegate) {}
+    explicit TestAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
+        : QuicAlarm(std::move(delegate)) {}
 
     void SetImpl() override {}
     void CancelImpl() override {}
