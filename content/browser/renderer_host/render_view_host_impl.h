@@ -150,11 +150,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   void OnWebkitPreferencesChanged() override;
   void SelectWordAroundCaret() override;
 
-#if defined(OS_ANDROID)
-  void ActivateNearestFindResult(int request_id, float x, float y) override;
-  void RequestFindMatchRects(int current_version) override;
-#endif
-
   // RenderProcessHostObserver implementation
   void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,

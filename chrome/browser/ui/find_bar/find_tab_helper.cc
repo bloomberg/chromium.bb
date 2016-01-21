@@ -141,14 +141,14 @@ void FindTabHelper::ActivateFindInPageResultForAccessibility() {
 #if defined(OS_ANDROID)
 void FindTabHelper::ActivateNearestFindResult(float x, float y) {
   if (!find_op_aborted_ && !find_text_.empty()) {
-    web_contents()->GetRenderViewHost()->ActivateNearestFindResult(
+    web_contents()->GetMainFrame()->ActivateNearestFindResult(
         current_find_request_id_, x, y);
   }
 }
 
 void FindTabHelper::RequestFindMatchRects(int current_version) {
   if (!find_op_aborted_ && !find_text_.empty())
-    web_contents()->GetRenderViewHost()->RequestFindMatchRects(current_version);
+    web_contents()->GetMainFrame()->RequestFindMatchRects(current_version);
 }
 #endif
 

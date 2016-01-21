@@ -157,6 +157,7 @@
 #include "third_party/WebKit/public/platform/modules/webusb/WebUSBClient.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameSerializer.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -164,6 +165,8 @@
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 #include "third_party/WebKit/public/web/WebPlugin.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
+#include "third_party/WebKit/public/web/WebPluginDocument.h"
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "third_party/WebKit/public/web/WebScopedUserGesture.h"
@@ -204,6 +207,7 @@
 #include "content/renderer/media/android/webmediaplayer_android.h"
 #include "content/renderer/media/android/webmediasession_android.h"
 #include "media/base/android/media_codec_util.h"
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #else
 #include "cc/blink/context_provider_web_context.h"
 #include "device/devices_app/public/cpp/constants.h"
@@ -243,6 +247,7 @@ using blink::WebDOMMessageEvent;
 using blink::WebElement;
 using blink::WebExternalPopupMenu;
 using blink::WebExternalPopupMenuClient;
+using blink::WebFindOptions;
 using blink::WebFrame;
 using blink::WebFrameSerializer;
 using blink::WebFrameSerializerClient;
@@ -256,9 +261,11 @@ using blink::WebMediaSession;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
 using blink::WebNode;
+using blink::WebPluginDocument;
 using blink::WebPluginParams;
 using blink::WebPopupMenuInfo;
 using blink::WebRange;
+using blink::WebRect;
 using blink::WebReferrerPolicy;
 using blink::WebScriptSource;
 using blink::WebSearchableFormData;
@@ -278,6 +285,11 @@ using blink::WebVector;
 using blink::WebView;
 using base::Time;
 using base::TimeDelta;
+
+#if defined(OS_ANDROID)
+using blink::WebFloatPoint;
+using blink::WebFloatRect;
+#endif
 
 namespace content {
 
@@ -914,6 +926,7 @@ RenderFrameImpl::RenderFrameImpl(const CreateParams& params)
       proxy_routing_id_(MSG_ROUTING_NONE),
 #if defined(ENABLE_PLUGINS)
       plugin_power_saver_helper_(nullptr),
+      plugin_find_handler_(nullptr),
 #endif
       cookie_jar_(this),
       selection_text_offset_(0),
@@ -1360,7 +1373,12 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
                         OnGetSerializedHtmlWithLocalLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_SerializeAsMHTML, OnSerializeAsMHTML)
+    IPC_MESSAGE_HANDLER(FrameMsg_Find, OnFind)
+    IPC_MESSAGE_HANDLER(FrameMsg_StopFinding, OnStopFinding)
 #if defined(OS_ANDROID)
+    IPC_MESSAGE_HANDLER(InputMsg_ActivateNearestFindResult,
+                        OnActivateNearestFindResult)
+    IPC_MESSAGE_HANDLER(FrameMsg_FindMatchRects, OnFindMatchRects)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItems, OnSelectPopupMenuItems)
 #elif defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
@@ -2065,31 +2083,6 @@ void RenderFrameImpl::OnPostMessageEvent(
                                channels);
   frame_->dispatchMessageEventWithOriginCheck(target_origin, msg_event);
 }
-
-#if defined(OS_ANDROID)
-void RenderFrameImpl::OnSelectPopupMenuItems(
-    bool canceled,
-    const std::vector<int>& selected_indices) {
-  // It is possible to receive more than one of these calls if the user presses
-  // a select faster than it takes for the show-select-popup IPC message to make
-  // it to the browser UI thread. Ignore the extra-messages.
-  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
-  if (!external_popup_menu_)
-    return;
-
-  external_popup_menu_->DidSelectItems(canceled, selected_indices);
-  external_popup_menu_.reset();
-}
-#endif
-
-#if defined(OS_MACOSX)
-void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
-  if (external_popup_menu_ == NULL)
-    return;
-  external_popup_menu_->DidSelectItem(selected_index);
-  external_popup_menu_.reset();
-}
-#endif
 
 void RenderFrameImpl::OnReload(bool ignore_cache) {
   frame_->reload(ignore_cache);
@@ -3998,18 +3991,16 @@ void RenderFrameImpl::reportFindInPageMatchCount(int request_id,
   if (!count)
     active_match_ordinal = 0;
 
-  render_view_->Send(new ViewHostMsg_Find_Reply(
-      render_view_->GetRoutingID(), request_id, count,
-      gfx::Rect(), active_match_ordinal, final_update));
+  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, count, gfx::Rect(),
+                                   active_match_ordinal, final_update));
 }
 
 void RenderFrameImpl::reportFindInPageSelection(
     int request_id,
     int active_match_ordinal,
     const blink::WebRect& selection_rect) {
-  render_view_->Send(new ViewHostMsg_Find_Reply(
-      render_view_->GetRoutingID(), request_id, -1, selection_rect,
-      active_match_ordinal, false));
+  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, -1, selection_rect,
+                                   active_match_ordinal, false));
 }
 
 void RenderFrameImpl::requestStorageQuota(
@@ -4981,6 +4972,231 @@ void RenderFrameImpl::OnSerializeAsMHTML(
       digests_of_uris_of_serialized_resources));
 }
 
+void RenderFrameImpl::OnFind(int request_id,
+                             const base::string16& search_text,
+                             const WebFindOptions& options) {
+  // This should only be received on the main frame, since find-in-page is
+  // currently orchestrated by the main frame.
+  if (!is_main_frame_) {
+    NOTREACHED();
+    return;
+  }
+
+  DCHECK(!search_text.empty());
+
+  blink::WebPlugin* plugin = GetWebPluginForFind();
+  // Check if the plugin still exists in the document.
+  if (plugin) {
+    if (options.findNext) {
+      // Just navigate back/forward.
+      plugin->selectFindResult(options.forward);
+    } else {
+      if (!plugin->startFind(search_text, options.matchCase, request_id)) {
+        // Send "no results".
+        SendFindReply(request_id, 0, 0, gfx::Rect(), true);
+      }
+    }
+    return;
+  }
+
+  WebFrame* main_frame = GetWebFrame();
+  WebFrame* frame_after_main = main_frame->traverseNext(true);
+  WebFrame* focused_frame = render_view_->webview()->focusedFrame();
+  WebFrame* search_frame = focused_frame;  // start searching focused frame.
+
+  bool multi_frame = (frame_after_main != main_frame);
+
+  // If we have multiple frames, we don't want to wrap the search within the
+  // frame, so we check here if we only have main_frame in the chain.
+  bool wrap_within_frame = !multi_frame;
+
+  WebRect selection_rect;
+  bool result = false;
+
+  // If something is selected when we start searching it means we cannot just
+  // increment the current match ordinal; we need to re-generate it.
+  WebRange current_selection = focused_frame->selectionRange();
+
+  do {
+    result = search_frame->find(request_id, search_text, options,
+                                wrap_within_frame, &selection_rect);
+
+    if (!result) {
+      // Don't leave text selected as you move to the next frame.
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"),
+                                   GetFocusedElement());
+
+      // Find the next frame, but skip the invisible ones.
+      do {
+        // What is the next frame to search (we might be going backwards)? Note
+        // that we specify wrap=true so that search_frame never becomes NULL.
+        search_frame = options.forward ? search_frame->traverseNext(true)
+                                       : search_frame->traversePrevious(true);
+      } while (!search_frame->hasVisibleContent() &&
+               search_frame != focused_frame);
+
+      // Make sure selection doesn't affect the search operation in new frame.
+      search_frame->executeCommand(WebString::fromUTF8("Unselect"),
+                                   GetFocusedElement());
+
+      // If we have multiple frames and we have wrapped back around to the
+      // focused frame, we need to search it once more allowing wrap within
+      // the frame, otherwise it will report 'no match' if the focused frame has
+      // reported matches, but no frames after the focused_frame contain a
+      // match for the search word(s).
+      if (multi_frame && search_frame == focused_frame) {
+        result = search_frame->find(request_id, search_text, options,
+                                    true,  // Force wrapping.
+                                    &selection_rect);
+      }
+    }
+
+    render_view_->webview()->setFocusedFrame(search_frame);
+  } while (!result && search_frame != focused_frame);
+
+  if (options.findNext && current_selection.isNull()) {
+    // Force the main_frame to report the actual count.
+    main_frame->increaseMatchCount(0, request_id);
+  } else {
+    // If nothing is found, set result to "0 of 0", otherwise, set it to
+    // "-1 of 1" to indicate that we found at least one item, but we don't know
+    // yet what is active.
+    int ordinal = result ? -1 : 0;  // -1 here means we might know more later.
+    int match_count = result ? 1 : 0;  // 1 here means possibly more coming.
+
+    // If we find no matches then this will be our last status update.
+    // Otherwise the scoping effort will send more results.
+    bool final_status_update = !result;
+
+    SendFindReply(request_id, match_count, ordinal, selection_rect,
+                  final_status_update);
+
+    // Scoping effort begins, starting with the main frame.
+    search_frame = main_frame;
+
+    main_frame->resetMatchCount();
+
+    do {
+      // Cancel all old scoping requests before starting a new one.
+      search_frame->cancelPendingScopingEffort();
+
+      // We don't start another scoping effort unless at least one match has
+      // been found.
+      if (result) {
+        // Start new scoping request. If the scoping function determines that it
+        // needs to scope, it will defer until later.
+        search_frame->scopeStringMatches(request_id, search_text, options,
+                                         true);  // reset the tickmarks
+      }
+
+      // Iterate to the next frame. The frame will not necessarily scope, for
+      // example if it is not visible.
+      search_frame = search_frame->traverseNext(true);
+    } while (search_frame != main_frame);
+  }
+}
+
+void RenderFrameImpl::OnStopFinding(StopFindAction action) {
+  // This should only be received on the main frame, since find-in-page is
+  // currently orchestrated by the main frame.
+  if (!is_main_frame_) {
+    NOTREACHED();
+    return;
+  }
+
+  WebView* view = render_view_->webview();
+  if (!view)
+    return;
+
+  blink::WebPlugin* plugin = GetWebPluginForFind();
+  if (plugin) {
+    plugin->stopFind();
+    return;
+  }
+
+  bool clear_selection = action == STOP_FIND_ACTION_CLEAR_SELECTION;
+  if (clear_selection) {
+    view->focusedFrame()->executeCommand(WebString::fromUTF8("Unselect"),
+                                         GetFocusedElement());
+  }
+
+  WebFrame* frame = view->mainFrame();
+  while (frame) {
+    frame->stopFinding(clear_selection);
+    frame = frame->traverseNext(false);
+  }
+
+  if (action == STOP_FIND_ACTION_ACTIVATE_SELECTION) {
+    WebFrame* focused_frame = view->focusedFrame();
+    if (focused_frame) {
+      WebDocument doc = focused_frame->document();
+      if (!doc.isNull()) {
+        WebElement element = doc.focusedElement();
+        if (!element.isNull())
+          element.simulateClick();
+      }
+    }
+  }
+}
+
+#if defined(OS_ANDROID)
+void RenderFrameImpl::OnActivateNearestFindResult(int request_id,
+                                                  float x,
+                                                  float y) {
+  WebRect selection_rect;
+  int ordinal =
+      frame_->selectNearestFindMatch(WebFloatPoint(x, y), &selection_rect);
+  if (ordinal == -1) {
+    // Something went wrong, so send a no-op reply (force the frame to report
+    // the current match count) in case the host is waiting for a response due
+    // to rate-limiting.
+    frame_->increaseMatchCount(0, request_id);
+    return;
+  }
+
+  SendFindReply(request_id, -1 /* number_of_matches */, ordinal, selection_rect,
+                true /* final_update */);
+}
+
+void RenderFrameImpl::OnFindMatchRects(int current_version) {
+  std::vector<gfx::RectF> match_rects;
+
+  int rects_version = frame_->findMatchMarkersVersion();
+  if (current_version != rects_version) {
+    WebVector<WebFloatRect> web_match_rects;
+    frame_->findMatchRects(web_match_rects);
+    match_rects.reserve(web_match_rects.size());
+    for (size_t i = 0; i < web_match_rects.size(); ++i)
+      match_rects.push_back(gfx::RectF(web_match_rects[i]));
+  }
+
+  gfx::RectF active_rect = frame_->activeFindMatchRect();
+  Send(new FrameHostMsg_FindMatchRects_Reply(routing_id_, rects_version,
+                                             match_rects, active_rect));
+}
+
+void RenderFrameImpl::OnSelectPopupMenuItems(
+    bool canceled,
+    const std::vector<int>& selected_indices) {
+  // It is possible to receive more than one of these calls if the user presses
+  // a select faster than it takes for the show-select-popup IPC message to make
+  // it to the browser UI thread. Ignore the extra-messages.
+  // TODO(jcivelli): http:/b/5793321 Implement a better fix, as detailed in bug.
+  if (!external_popup_menu_)
+    return;
+
+  external_popup_menu_->DidSelectItems(canceled, selected_indices);
+  external_popup_menu_.reset();
+}
+#elif defined(OS_MACOSX)
+void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
+  if (external_popup_menu_ == NULL)
+    return;
+  external_popup_menu_->DidSelectItem(selected_index);
+  external_popup_menu_.reset();
+}
+#endif
+
 void RenderFrameImpl::OpenURL(const GURL& url,
                               const Referrer& referrer,
                               WebNavigationPolicy policy,
@@ -5804,6 +6020,31 @@ void RenderFrameImpl::checkIfAudioSinkExistsAndIsAuthorized(
   media::OutputDeviceStatus status = device->GetDeviceStatus();
   device->Stop();
   callback.Run(status);
+}
+
+blink::WebPlugin* RenderFrameImpl::GetWebPluginForFind() {
+  if (!is_main_frame_)
+    return nullptr;
+
+  if (frame_->document().isPluginDocument())
+    return frame_->document().to<WebPluginDocument>().plugin();
+
+#if defined(ENABLE_PLUGINS)
+  if (plugin_find_handler_)
+    return plugin_find_handler_->container()->plugin();
+#endif
+
+  return nullptr;
+}
+
+void RenderFrameImpl::SendFindReply(int request_id,
+                                    int match_count,
+                                    int ordinal,
+                                    const WebRect& selection_rect,
+                                    bool final_status_update) {
+  Send(new FrameHostMsg_Find_Reply(routing_id_, request_id, match_count,
+                                   selection_rect, ordinal,
+                                   final_status_update));
 }
 
 }  // namespace content

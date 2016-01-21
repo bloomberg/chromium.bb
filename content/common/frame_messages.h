@@ -35,11 +35,13 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
+#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
 #include "third_party/WebKit/public/web/WebTreeScopeType.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
@@ -84,6 +86,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContextMenuData::InputFieldType,
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFocusType, blink::WebFocusTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFrameOwnerProperties::ScrollingMode,
                           blink::WebFrameOwnerProperties::ScrollingMode::Last)
+IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
+                          content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::Last)
@@ -91,6 +95,12 @@ IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(content::LoFiState,
                               content::LOFI_UNSPECIFIED,
                               content::LOFI_ON)
+
+IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
+  IPC_STRUCT_TRAITS_MEMBER(forward)
+  IPC_STRUCT_TRAITS_MEMBER(matchCase)
+  IPC_STRUCT_TRAITS_MEMBER(findNext)
+IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ColorSuggestion)
   IPC_STRUCT_TRAITS_MEMBER(color)
@@ -746,6 +756,17 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetTextTrackSettings,
 IPC_MESSAGE_ROUTED1(FrameMsg_PostMessageEvent, FrameMsg_PostMessage_Params)
 
 #if defined(OS_ANDROID)
+// Sent when the browser wants the bounding boxes of the current find matches.
+//
+// If match rects are already cached on the browser side, |current_version|
+// should be the version number from the FrameHostMsg_FindMatchRects_Reply
+// they came in, so the renderer can tell if it needs to send updated rects.
+// Otherwise just pass -1 to always receive the list of rects.
+//
+// There must be an active search string (it is probably most useful to call
+// this immediately after a FrameHostMsg_Find_Reply message arrives with
+// final_update set to true).
+IPC_MESSAGE_ROUTED1(FrameMsg_FindMatchRects, int /* current_version */)
 
 // External popup menus.
 IPC_MESSAGE_ROUTED2(FrameMsg_SelectPopupMenuItems,
@@ -805,6 +826,16 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetFrameOwnerProperties,
 IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
                     blink::WebFocusType /* type */,
                     int32_t /* source_routing_id */)
+
+// Sent when the user wants to search for a word on the page (find-in-page).
+IPC_MESSAGE_ROUTED3(FrameMsg_Find,
+                    int /* request_id */,
+                    base::string16 /* search_text */,
+                    blink::WebFindOptions)
+
+// This message notifies the renderer that the user has closed the find-in-page
+// window (and what action to take regarding the selection).
+IPC_MESSAGE_ROUTED1(FrameMsg_StopFinding, content::StopFindAction /* action */)
 
 #if defined(ENABLE_PLUGINS)
 // Notifies the renderer of updates to the Plugin Power Saver origin whitelist.
@@ -1361,6 +1392,19 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
                     blink::WebFocusType /* type */,
                     int32_t /* source_routing_id */)
 
+// Result of string search in the document.
+// Response to FrameMsg_Find with the results of the requested find-in-page
+// search, the number of matches found and the selection rect (in screen
+// coordinates) for the string found. If |final_update| is false, it signals
+// that this is not the last Find_Reply message - more will be sent as the
+// scoping effort continues.
+IPC_MESSAGE_ROUTED5(FrameHostMsg_Find_Reply,
+                    int /* request_id */,
+                    int /* number of matches */,
+                    gfx::Rect /* selection_rect */,
+                    int /* active_match_ordinal */,
+                    bool /* final_update */)
+
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
 
 // Message to show/hide a popup menu using native controls.
@@ -1368,6 +1412,28 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,
                     FrameHostMsg_ShowPopup_Params)
 IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
 
+#endif
+
+#if defined(OS_ANDROID)
+// Response to FrameMsg_FindMatchRects.
+//
+// |version| will contain the current version number of the renderer's find
+// match list (incremented whenever they change), which should be passed in the
+// next call to FrameMsg_FindMatchRects.
+//
+// |rects| will either contain a list of the enclosing rects of all matches
+// found by the most recent Find operation, or will be empty if |version| is not
+// greater than the |current_version| passed to FrameMsg_FindMatchRects (hence
+// your locally cached rects should still be valid). The rect coords will be
+// custom normalized fractions of the document size. The rects will be sorted by
+// frame traversal order starting in the main frame, then by dom order.
+//
+// |active_rect| will contain the bounding box of the active find-in-page match
+// marker, in similarly normalized coords (or an empty rect if there isn't one).
+IPC_MESSAGE_ROUTED3(FrameHostMsg_FindMatchRects_Reply,
+                    int /* version */,
+                    std::vector<gfx::RectF> /* rects */,
+                    gfx::RectF /* active_rect */)
 #endif
 
 // Adding a new message? Stick to the sort order above: first platform

@@ -27,6 +27,7 @@
 #include "content/public/common/console_message_level.h"
 #include "content/public/common/javascript_message_type.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
@@ -80,6 +81,7 @@ class WebWakeLockClient;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;
+struct WebFindOptions;
 struct WebScreenInfo;
 }
 
@@ -288,6 +290,14 @@ class CONTENT_EXPORT RenderFrameImpl
   void FocusedNodeChangedForAccessibility(const blink::WebNode& node);
 
 #if defined(ENABLE_PLUGINS)
+  // Get/set the plugin which will be used to handle document find requests.
+  void set_plugin_find_handler(PepperPluginInstanceImpl* plugin) {
+    plugin_find_handler_ = plugin;
+  }
+  PepperPluginInstanceImpl* plugin_find_handler() {
+    return plugin_find_handler_;
+  }
+
   // Notification that a PPAPI plugin has been created.
   void PepperPluginCreated(RendererPpapiHost* host);
 
@@ -773,14 +783,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnTextTrackSettingsChanged(
       const FrameMsg_TextTrackSettings_Params& params);
   void OnPostMessageEvent(const FrameMsg_PostMessage_Params& params);
-#if defined(OS_ANDROID)
-  void OnSelectPopupMenuItems(bool canceled,
-                              const std::vector<int>& selected_indices);
-#elif defined(OS_MACOSX)
-  void OnSelectPopupMenuItem(int selected_index);
-  void OnCopyToFindPboard();
-#endif
-
   void OnCommitNavigation(const ResourceResponseHead& response,
                           const GURL& stream_url,
                           const CommonNavigationParams& common_params,
@@ -793,6 +795,19 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path);
   void OnSerializeAsMHTML(const FrameMsg_SerializeAsMHTML_Params& params);
+  void OnFind(int request_id,
+              const base::string16& search_text,
+              const blink::WebFindOptions& options);
+  void OnStopFinding(StopFindAction action);
+#if defined(OS_ANDROID)
+  void OnActivateNearestFindResult(int request_id, float x, float y);
+  void OnFindMatchRects(int current_version);
+  void OnSelectPopupMenuItems(bool canceled,
+                              const std::vector<int>& selected_indices);
+#elif defined(OS_MACOSX)
+  void OnSelectPopupMenuItem(int selected_index);
+  void OnCopyToFindPboard();
+#endif
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should
@@ -944,6 +959,18 @@ class CONTENT_EXPORT RenderFrameImpl
   // |media_player_delegate_| is NULL, one is created.
   media::RendererWebMediaPlayerDelegate* GetWebMediaPlayerDelegate();
 
+  // Called to get the WebPlugin to handle find requests in the document.
+  // Returns nullptr if there is no such WebPlugin.
+  blink::WebPlugin* GetWebPluginForFind();
+
+  // Sends a reply to the current find operation handling if it was a
+  // synchronous find request.
+  void SendFindReply(int request_id,
+                     int match_count,
+                     int ordinal,
+                     const blink::WebRect& selection_rect,
+                     bool final_status_update);
+
   // Stores the WebLocalFrame we are associated with.  This is null from the
   // constructor until BindToWebFrame is called, and it is null after
   // frameDetached is called until destruction (which is asynchronous in the
@@ -1009,6 +1036,8 @@ class CONTENT_EXPORT RenderFrameImpl
   base::string16 pepper_composition_text_;
 
   PluginPowerSaverHelper* plugin_power_saver_helper_;
+
+  PepperPluginInstanceImpl* plugin_find_handler_;
 #endif
 
   RendererWebCookieJarImpl cookie_jar_;

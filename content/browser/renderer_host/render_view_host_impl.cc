@@ -569,19 +569,6 @@ void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   delegate_->Close(this);
 }
 
-#if defined(OS_ANDROID)
-void RenderViewHostImpl::ActivateNearestFindResult(int request_id,
-                                                   float x,
-                                                   float y) {
-  Send(new InputMsg_ActivateNearestFindResult(GetRoutingID(),
-                                              request_id, x, y));
-}
-
-void RenderViewHostImpl::RequestFindMatchRects(int current_version) {
-  Send(new ViewMsg_FindMatchRects(GetRoutingID(), current_version));
-}
-#endif
-
 void RenderViewHostImpl::RenderProcessReady(RenderProcessHost* host) {
   if (render_view_ready_on_process_launch_) {
     render_view_ready_on_process_launch_ = false;

@@ -639,7 +639,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                         OnUnregisterProtocolHandler)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdatePageImportanceSignals,
                         OnUpdatePageImportanceSignals)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_Find_Reply, OnFindReply)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_Find_Reply, OnFindReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_AppCacheAccessed, OnAppCacheAccessed)
     IPC_MESSAGE_HANDLER(ViewHostMsg_WebUISend, OnWebUISend)
 #if defined(ENABLE_PLUGINS)
@@ -663,7 +663,7 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
     IPC_MESSAGE_HANDLER(ViewHostMsg_MoveValidationMessage,
                         OnMoveValidationMessage)
 #if defined(OS_ANDROID) && !defined(USE_AURA)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FindMatchRects_Reply,
+    IPC_MESSAGE_HANDLER(FrameHostMsg_FindMatchRects_Reply,
                         OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenDateTimeDialog,
                         OnOpenDateTimeDialog)
@@ -2836,7 +2836,8 @@ void WebContentsImpl::Find(int request_id,
       browser_plugin_embedder_->Find(request_id, search_text, options)) {
     return;
   }
-  Send(new ViewMsg_Find(GetRoutingID(), request_id, search_text, options));
+  GetMainFrame()->Send(new FrameMsg_Find(GetMainFrame()->GetRoutingID(),
+                                         request_id, search_text, options));
 }
 
 void WebContentsImpl::StopFinding(StopFindAction action) {
@@ -2845,7 +2846,8 @@ void WebContentsImpl::StopFinding(StopFindAction action) {
       browser_plugin_embedder_->StopFinding(action)) {
     return;
   }
-  Send(new ViewMsg_StopFinding(GetRoutingID(), action));
+  GetMainFrame()->Send(
+      new FrameMsg_StopFinding(GetMainFrame()->GetRoutingID(), action));
 }
 
 void WebContentsImpl::InsertCSS(const std::string& css) {

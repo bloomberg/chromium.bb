@@ -168,6 +168,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void InsertVisualStateCallback(
       const VisualStateCallback& callback) override;
   bool IsRenderFrameLive() override;
+#if defined(OS_ANDROID)
+  void ActivateNearestFindResult(int request_id, float x, float y) override;
+  void RequestFindMatchRects(int current_version) override;
+#endif
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;

@@ -2351,6 +2351,17 @@ void RenderFrameHostImpl::DidCancelPopupMenu() {
 
 #elif defined(OS_ANDROID)
 
+void RenderFrameHostImpl::ActivateNearestFindResult(int request_id,
+                                                    float x,
+                                                    float y) {
+  Send(
+      new InputMsg_ActivateNearestFindResult(GetRoutingID(), request_id, x, y));
+}
+
+void RenderFrameHostImpl::RequestFindMatchRects(int current_version) {
+  Send(new FrameMsg_FindMatchRects(GetRoutingID(), current_version));
+}
+
 void RenderFrameHostImpl::DidSelectPopupMenuItems(
     const std::vector<int>& selected_indices) {
   Send(new FrameMsg_SelectPopupMenuItems(routing_id_, false, selected_indices));

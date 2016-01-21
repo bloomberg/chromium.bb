@@ -35,7 +35,6 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
 #include "content/public/common/window_container_type.h"
 #include "ipc/ipc_channel_handle.h"
@@ -50,7 +49,6 @@
 #include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 #include "third_party/WebKit/public/web/WebDeviceEmulationParams.h"
-#include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebMediaPlayerAction.h"
 #include "third_party/WebKit/public/web/WebPluginAction.h"
 #include "third_party/WebKit/public/web/WebPopupType.h"
@@ -112,8 +110,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::SubpixelRendering,
                           gfx::FontRenderParams::SUBPIXEL_RENDERING_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(content::TapMultipleTargetsStrategy,
                           content::TAP_MULTIPLE_TARGETS_STRATEGY_MAX)
-IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
-                          content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::ThreeDAPIType,
                           content::THREE_D_API_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(media::MediaLogEvent::Type,
@@ -128,12 +124,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::ScrollerStyleOverlay)
 #endif
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
-  IPC_STRUCT_TRAITS_MEMBER(forward)
-  IPC_STRUCT_TRAITS_MEMBER(matchCase)
-  IPC_STRUCT_TRAITS_MEMBER(findNext)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -669,17 +659,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_ShowContextMenu,
                     ui::MenuSourceType,
                     gfx::Point /* location where menu should be shown */)
 
-// Sent when the user wants to search for a word on the page (find in page).
-IPC_MESSAGE_ROUTED3(ViewMsg_Find,
-                    int /* request_id */,
-                    base::string16 /* search_text */,
-                    blink::WebFindOptions)
-
-// This message notifies the renderer that the user has closed the FindInPage
-// window (and what action to take regarding the selection).
-IPC_MESSAGE_ROUTED1(ViewMsg_StopFinding,
-                    content::StopFindAction /* action */)
-
 // Copies the image at location x, y to the clipboard (if there indeed is an
 // image at that location).
 IPC_MESSAGE_ROUTED2(ViewMsg_CopyImageAt,
@@ -899,19 +878,6 @@ IPC_MESSAGE_CONTROL3(ViewMsg_SystemColorsChanged,
 IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
                      bool /* suspend */)
 
-// Sent when the browser wants the bounding boxes of the current find matches.
-//
-// If match rects are already cached on the browser side, |current_version|
-// should be the version number from the ViewHostMsg_FindMatchRects_Reply
-// they came in, so the renderer can tell if it needs to send updated rects.
-// Otherwise just pass -1 to always receive the list of rects.
-//
-// There must be an active search string (it is probably most useful to call
-// this immediately after a ViewHostMsg_Find_Reply message arrives with
-// final_update set to true).
-IPC_MESSAGE_ROUTED1(ViewMsg_FindMatchRects,
-                    int /* current_version */)
-
 // Notifies the renderer whether hiding/showing the top controls is enabled
 // and whether or not to animate to the proper state.
 IPC_MESSAGE_ROUTED3(ViewMsg_UpdateTopControlsState,
@@ -1055,19 +1021,6 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_UpdateScreenRects_ACK)
 // the browser may ignore this message.
 IPC_MESSAGE_ROUTED1(ViewHostMsg_RequestMove,
                     gfx::Rect /* position */)
-
-// Result of string search in the page.
-// Response to ViewMsg_Find with the results of the requested find-in-page
-// search, the number of matches found and the selection rect (in screen
-// coordinates) for the string found. If |final_update| is false, it signals
-// that this is not the last Find_Reply message - more will be sent as the
-// scoping effort continues.
-IPC_MESSAGE_ROUTED5(ViewHostMsg_Find_Reply,
-                    int /* request_id */,
-                    int /* number of matches */,
-                    gfx::Rect /* selection_rect */,
-                    int /* active_match_ordinal */,
-                    bool /* final_update */)
 
 // Indicates that the render view has been closed in respose to a
 // Close message.
@@ -1349,26 +1302,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ForwardCompositorProto,
                     std::vector<uint8_t> /* proto */)
 
 #if defined(OS_ANDROID)
-// Response to ViewMsg_FindMatchRects.
-//
-// |version| will contain the current version number of the renderer's find
-// match list (incremented whenever they change), which should be passed in the
-// next call to ViewMsg_FindMatchRects.
-//
-// |rects| will either contain a list of the enclosing rects of all matches
-// found by the most recent Find operation, or will be empty if |version| is not
-// greater than the |current_version| passed to ViewMsg_FindMatchRects (hence
-// your locally cached rects should still be valid). The rect coords will be
-// custom normalized fractions of the document size. The rects will be sorted by
-// frame traversal order starting in the main frame, then by dom order.
-//
-// |active_rect| will contain the bounding box of the active find-in-page match
-// marker, in similarly normalized coords (or an empty rect if there isn't one).
-IPC_MESSAGE_ROUTED3(ViewHostMsg_FindMatchRects_Reply,
-                    int /* version */,
-                    std::vector<gfx::RectF> /* rects */,
-                    gfx::RectF /* active_rect */)
-
 // Start an android intent with the given URI.
 IPC_MESSAGE_ROUTED2(ViewHostMsg_StartContentIntent,
                     GURL /* content_url */,

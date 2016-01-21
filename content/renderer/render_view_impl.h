@@ -36,7 +36,6 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
-#include "content/public/common/stop_find_action.h"
 #include "content/public/common/top_controls_state.h"
 #include "content/public/common/web_preferences.h"
 #include "content/public/renderer/render_view.h"
@@ -108,7 +107,6 @@ class WebURLRequest;
 struct WebActiveWheelFlingParameters;
 struct WebDateTimeChooserParams;
 struct WebFileChooserParams;
-struct WebFindOptions;
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
@@ -248,14 +246,6 @@ class CONTENT_EXPORT RenderViewImpl
   // Plugin-related functions --------------------------------------------------
 
 #if defined(ENABLE_PLUGINS)
-  // Get/set the plugin which will be used as to handle document find requests.
-  void set_plugin_find_handler(PepperPluginInstanceImpl* plugin) {
-    plugin_find_handler_ = plugin;
-  }
-  PepperPluginInstanceImpl* plugin_find_handler() {
-    return plugin_find_handler_;
-  }
-
   PepperPluginInstanceImpl* focused_pepper_plugin() {
     return focused_pepper_plugin_;
   }
@@ -506,7 +496,6 @@ class CONTENT_EXPORT RenderViewImpl
   void DidCompletePageScaleAnimation() override;
   void OnDeviceScaleFactorChanged() override;
 
- protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const ViewMsg_New_Params& params);
 
@@ -656,9 +645,6 @@ class CONTENT_EXPORT RenderViewImpl
                                     const std::vector<base::FilePath>& paths);
   void OnFileChooserResponse(
       const std::vector<content::FileChooserFileInfo>& files);
-  void OnFind(int request_id,
-              const base::string16&,
-              const blink::WebFindOptions&);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const blink::WebMediaPlayerAction& action);
   void OnPluginActionAt(const gfx::Point& location,
@@ -676,7 +662,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnSetWebUIProperty(const std::string& name, const std::string& value);
   void OnSetZoomLevelForLoadingURL(const GURL& url, double zoom_level);
   void OnSetZoomLevelForView(bool uses_temporary_zoom_level, double level);
-  void OnStopFinding(StopFindAction action);
   void OnSuppressDialogsUntilSwapOut();
   void OnThemeChanged();
   void OnUpdateTargetURLAck();
@@ -687,8 +672,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnForceRedraw(int request_id);
   void OnSelectWordAroundCaret();
 #if defined(OS_ANDROID)
-  void OnActivateNearestFindResult(int request_id, float x, float y);
-  void OnFindMatchRects(int current_version);
   void OnUndoScrollFocusedEditableNodeIntoRect();
   void OnUpdateTopControlsState(bool enable_hiding,
                                 bool enable_showing,
@@ -714,24 +697,12 @@ class CONTENT_EXPORT RenderViewImpl
   // Gets the currently focused element, if any.
   blink::WebElement GetFocusedElement() const;
 
-  // Called to get the WebPlugin to handle find requests in the document.
-  // Returns NULL if there is no such WebPlugin.
-  blink::WebPlugin* GetWebPluginForFind();
-
 #if defined(OS_ANDROID)
   // Launch an Android content intent with the given URL.
   void LaunchAndroidContentIntent(const GURL& intent_url,
                                   size_t request_id,
                                   bool is_main_frame);
 #endif
-
-  // Sends a reply to the current find operation handling if it was a
-  // synchronous find request.
-  void SendFindReply(int request_id,
-                     int match_count,
-                     int ordinal,
-                     const blink::WebRect& selection_rect,
-                     bool final_status_update);
 
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_MACOSX))
   void UpdateFontRenderingFromRendererPrefs();
@@ -978,8 +949,6 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
 
 #if defined(ENABLE_PLUGINS)
-  PepperPluginInstanceImpl* plugin_find_handler_;
-
   typedef std::set<PepperPluginInstanceImpl*> PepperPluginSet;
   PepperPluginSet active_pepper_instances_;
 
