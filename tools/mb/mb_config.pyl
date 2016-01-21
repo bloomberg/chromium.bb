@@ -10,13 +10,15 @@
   # bots all using the 'gn_release_bot' config).
   'configs': {
     'android_cast_gyp_debug_static_bot': ['android', 'cast', 'gyp', 'debug_static_bot'],
-    'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],
+    'android_clang_asan_gyp_debug_bot': ['android', 'clang', 'asan', 'gyp', 'debug_bot'],\
     'android_gn_debug_bot': ['android', 'gn', 'debug_bot'],
-    'android_aura_gn_debug_bot': ['android', 'gn', 'debug_bot', 'aura'],
     'android_gn_release_bot': ['android', 'gn', 'release_bot'],
     'android_gn_release_trybot': ['android', 'gn', 'release_trybot'],
     'android_gyp_debug_static_bot': ['android', 'gyp', 'debug_static_bot'],
     'android_gyp_debug_static_bot_arm64': ['android', 'gyp', 'debug_static_bot', 'arm64'],
+    'android_gyp_debug_static_bot_mipsel': ['android', 'gyp', 'debug_static_bot', 'mipsel'],
+    'android_gyp_debug_static_bot_x64': ['android', 'gyp', 'debug_static_bot', 'x64'],
+    'android_gyp_debug_static_bot_x86': ['android', 'gyp', 'debug_static_bot', 'x86'],
     'android_gyp_release_bot': ['android', 'gyp', 'release_bot'],
     'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot', 'minimal_symbols'],
     'cast_gyp_release_bot': ['cast', 'gyp', 'release_bot'],
@@ -63,7 +65,6 @@
     'gyp_official_goma_minimal_symbols_x64': ['gyp', 'official', 'goma', 'minimal_symbols', 'x64'],
     'gyp_official_goma_minimal_symbols_x86': ['gyp', 'official', 'goma', 'minimal_symbols', 'x86'],
     'gyp_release_bot_android': ['gyp', 'release_bot', 'android'],
-    'android_gyp_release_bot_minimal_symbols': ['android', 'gyp', 'release_bot', 'minimal_symbols'],
     'gyp_release_trybot': ['gyp', 'release_trybot'],
     'gyp_release_trybot_x64': ['gyp', 'release_trybot', 'x64'],
     'libfuzzer_upload_bot': ['gn', 'release', 'libfuzzer', 'asan', 'proprietary_codecs'],
@@ -186,11 +187,6 @@
       'gyp_defines': 'asan=1',
     },
 
-    'aura': {
-      'gn_args': 'use_aura=true',
-      'gyp_defines': '# aura not supported on gyp',
-    },
-
     'cast': {
       'gn_args': '# TODO: Need the GN equivalents for a Chromecast build.',
       'gyp_defines': 'chromecast=1',
@@ -237,7 +233,7 @@
     },
 
     'debug_static_bot': {
-      'mixins': ['debug', 'static', 'minimal_symbols', 'goma']
+      'mixins': ['debug', 'static', 'minimal_symbols', 'goma'],
     },
 
     'debug_trybot': {
@@ -311,6 +307,11 @@
     'minimal_symbols': {
       'gn_args': 'symbol_level=1',
       'gyp_defines': 'fastbuild=1',
+    },
+
+    'mipsel': {
+      'gn_args': 'target_cpu="mipsel"',
+      'gyp_defines': 'target_arch=mipsel',
     },
 
     'msan': {
@@ -428,7 +429,20 @@
     },
     'chromium.android': {
       'Android GN Builder (dbg)': 'android_gn_debug_bot',
-      'Android Aura Builder (dbg)': 'android_aura_gn_debug_bot',
+      'Android MIPS Builder (dbg)': 'android_gyp_debug_static_bot_mipsel',
+      'Android arm Builder (dbg)': 'android_gyp_debug_static_bot',
+      'Android arm64 Builder (dbg)': 'android_gyp_debug_static_bot_arm64',
+      'Android x64 Builder (dbg)': 'android_gyp_debug_static_bot_x64',
+      'Android x86 Builder (dbg)': 'android_gyp_debug_static_bot_x86',
+      'Jelly Bean Tester': 'android_gyp_debug_static_bot',
+      'KitKat Tablet Tester': 'android_gyp_debug_static_bot',
+      'Lollipop Consumer Tester': 'android_gyp_debug_static_bot_arm64',
+      'Lollipop Low-end Tester': 'android_gyp_debug_static_bot',
+      'Lollipop Phone Tester': 'android_gyp_debug_static_bot',
+      'Lollipop Tablet Tester': 'android_gyp_debug_static_bot',
+      'Marshmallow 64 bit Tester': 'android_gyp_debug_static_bot_arm64',
+      'Marshmallow Tablet Tester': 'android_gyp_debug_static_bot',
+      'Android Swarm Builder': 'android_gyp_release_bot_minimal_symbols',
     },
     'chromium.chrome': {
       'Google Chrome Win': 'gyp_official_goma_minimal_symbols_x86',
@@ -594,8 +608,6 @@
       'blink_presubmit': 'none',
     },
     'tryserver.chromium.android': {
-      'android_aura_compile': 'android_aura_gn_debug_bot',
-      'android_aura_tester': 'android_aura_gn_debug_bot',
       'android_chromium_gn_compile_dbg': 'android_gn_debug_bot',
       'android_chromium_gn_compile_rel': 'android_gn_release_trybot',
       'android_chromium_gn_rel': 'android_gn_release_trybot',
