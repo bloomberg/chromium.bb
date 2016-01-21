@@ -1144,6 +1144,8 @@ void IOThread::InitializeNetworkSessionParamsFromGlobals(
   globals.enable_brotli.CopyToIfSet(&params->enable_brotli);
 
   globals.enable_quic.CopyToIfSet(&params->enable_quic);
+  globals.disable_quic_on_timeout_with_open_streams.CopyToIfSet(
+    &params->disable_quic_on_timeout_with_open_streams);
   globals.enable_quic_for_proxies.CopyToIfSet(&params->enable_quic_for_proxies);
   globals.quic_always_require_handshake_confirmation.CopyToIfSet(
       &params->quic_always_require_handshake_confirmation);
@@ -1268,6 +1270,8 @@ void IOThread::ConfigureQuicGlobals(
   bool enable_quic = ShouldEnableQuic(command_line, quic_trial_group,
                                       quic_allowed_by_policy);
   globals->enable_quic.set(enable_quic);
+  globals->disable_quic_on_timeout_with_open_streams.set(
+    ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(quic_trial_params));
   bool enable_quic_for_proxies = ShouldEnableQuicForProxies(
       command_line, quic_trial_group, quic_allowed_by_policy);
   globals->enable_quic_for_proxies.set(enable_quic_for_proxies);
@@ -1364,6 +1368,14 @@ void IOThread::ConfigureQuicGlobals(
       globals->origin_to_force_quic_on.set(quic_origin);
     }
   }
+}
+
+bool IOThread::ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+    GetVariationParam(quic_trial_params,
+      "disable_quic_on_timeout_with_open_streams"),
+      "true");
 }
 
 bool IOThread::ShouldEnableQuic(const base::CommandLine& command_line,

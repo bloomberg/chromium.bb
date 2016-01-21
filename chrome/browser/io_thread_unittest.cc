@@ -213,6 +213,7 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   net::HttpNetworkSession::Params params;
   InitializeNetworkSessionParams(&params);
   EXPECT_TRUE(params.enable_quic);
+  EXPECT_FALSE(params.disable_quic_on_timeout_with_open_streams);
   EXPECT_TRUE(params.enable_quic_for_proxies);
   EXPECT_EQ(1350u, params.quic_max_packet_length);
   EXPECT_EQ(1.0, params.alternative_service_probability_threshold);
@@ -237,6 +238,16 @@ TEST_F(IOThreadTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(IOThread::ShouldEnableQuicForDataReductionProxy());
   EXPECT_TRUE(params.quic_host_whitelist.empty());
+}
+
+TEST_F(IOThreadTest,
+       DisableQuicWhenConnectionTimesOutWithOpenStreamsFromFieldTrialParams) {
+  field_trial_group_ = "Enabled";
+  field_trial_params_["disable_quic_on_timeout_with_open_streams"] = "true";
+  ConfigureQuicGlobals();
+  net::HttpNetworkSession::Params params;
+  InitializeNetworkSessionParams(&params);
+  EXPECT_TRUE(params.disable_quic_on_timeout_with_open_streams);
 }
 
 TEST_F(IOThreadTest, EnableQuicFromQuicProxyFieldTrialGroup) {

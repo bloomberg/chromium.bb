@@ -219,6 +219,7 @@ class IOThread : public content::BrowserThreadDelegate {
     Optional<bool> enable_brotli;
 
     Optional<bool> enable_quic;
+    Optional<bool> disable_quic_on_timeout_with_open_streams;
     Optional<bool> enable_quic_for_proxies;
     Optional<bool> enable_quic_port_selection;
     Optional<bool> quic_always_require_handshake_confirmation;
@@ -370,6 +371,11 @@ class IOThread : public content::BrowserThreadDelegate {
       const VariationParameters& quic_trial_params,
       bool quic_allowed_by_policy,
       Globals* globals);
+
+  // Returns true if QUIC should be disabled when a connection times out with
+  // open streams.
+  static bool ShouldDisableQuicWhenConnectionTimesOutWithOpenStreams(
+      const VariationParameters& quic_trial_params);
 
   // Returns true if QUIC should be enabled, either as a result
   // of a field trial or a command line flag.

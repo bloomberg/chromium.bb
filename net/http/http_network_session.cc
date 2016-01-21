@@ -101,6 +101,7 @@ HttpNetworkSession::Params::Params()
       enable_npn(true),
       enable_brotli(false),
       enable_quic(false),
+      disable_quic_on_timeout_with_open_streams(false),
       enable_quic_for_proxies(false),
       enable_quic_port_selection(true),
       quic_always_require_handshake_confirmation(false),
