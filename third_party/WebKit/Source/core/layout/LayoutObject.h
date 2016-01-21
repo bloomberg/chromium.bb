@@ -741,7 +741,11 @@ public:
     // :first-letter pseudo elements for which their parent node is returned.
     Node* generatingNode() const { return isPseudoElement() ? node()->parentOrShadowHostNode() : node(); }
 
-    Document& document() const { return m_node->document(); }
+    Document& document() const
+    {
+        ASSERT(m_node || parent()); // crbug.com/402056
+        return m_node ? m_node->document() : parent()->document();
+    }
     LocalFrame* frame() const { return document().frame(); }
 
     virtual LayoutMultiColumnSpannerPlaceholder* spannerPlaceholder() const { return nullptr; }
