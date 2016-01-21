@@ -17,6 +17,9 @@ class BrowserContext;
 namespace extensions {
 
 // Observe listeners to 'onSinksUpdated' events.
+// This class initiates/stops listening for the available sinks
+// by the DisplaySourceConnectionDelegate, depending on whether
+// there are existing listeners to 'onSinksUpdated' event.
 class DisplaySourceEventRouter
     : public KeyedService,
       public EventRouter::Observer,
@@ -39,6 +42,9 @@ class DisplaySourceEventRouter
 
   // DisplaySourceConnectionDelegate::Observer overrides:
   void OnSinksUpdated(const DisplaySourceSinkInfoList& sinks) override;
+  void OnConnectionError(int sink_id,
+                         DisplaySourceErrorType type,
+                         const std::string& description) override {}
 
  private:
   void StartOrStopListeningForSinksChanges();

@@ -15,25 +15,45 @@ namespace extensions {
 using DisplaySourceSinkInfoPtr = linked_ptr<api::display_source::SinkInfo>;
 using DisplaySourceSinkInfoList = std::vector<DisplaySourceSinkInfoPtr>;
 using DisplaySourceAuthInfo = api::display_source::AuthenticationInfo;
-
+using DisplaySourceErrorType = api::display_source::ErrorType;
 // The DisplaySourceConnectionDelegate interface should be implemented
 // to provide sinks search and connection functionality for
 // 'chrome.displaySource' API.
 class DisplaySourceConnectionDelegate : public KeyedService {
  public:
   using AuthInfoCallback = base::Callback<void(const DisplaySourceAuthInfo&)>;
-  using FailureCallback = base::Callback<void(const std::string&)>;
+  using StringCallback = base::Callback<void(const std::string&)>;
   using SinkInfoListCallback =
       base::Callback<void(const DisplaySourceSinkInfoList&)>;
 
   const static int kInvalidSinkId = -1;
 
-  struct Connection {
+  class Connection {
+   public:
+    // Returns a pointer to the connected sink object. The result is
+    // guaranteed not to be NULL.
+    virtual DisplaySourceSinkInfoPtr GetConnectedSink() const = 0;
+
+    // Returns the local address of the source.
+    virtual std::string GetLocalAddress() const = 0;
+
+    // Returns the address of the connected sink.
+    virtual std::string GetSinkAddress() const = 0;
+
+    // Sends a control message to the connected sink.
+    // If an error occurs 'Observer::OnConnectionError' is invoked.
+    virtual void SendMessage(const std::string& message) const = 0;
+
+    // Sets a callback to receive control messages from the connected sink.
+    // This method should only be called once in the lifetime of each
+    // Connection object.
+    // If an error occurs 'Observer::OnConnectionError' is invoked.
+    virtual void SetMessageReceivedCallback(
+        const StringCallback& callback) const = 0;
+
+   protected:
     Connection();
-    ~Connection();
-    DisplaySourceSinkInfoPtr connected_sink;
-    std::string local_ip;
-    std::string sink_ip;
+    virtual ~Connection();
   };
 
   class Observer {
@@ -44,6 +64,13 @@ class DisplaySourceConnectionDelegate : public KeyedService {
     // available sinks (after 'StartWatchingAvailableSinks' was called).
     // Also this method is called to reflect current connection updates.
     virtual void OnSinksUpdated(const DisplaySourceSinkInfoList& sinks) = 0;
+
+    // This method is called during the established connection to report
+    // a transport layer fatal error (which implies that the connection
+    // becomes broken/disconnected).
+    virtual void OnConnectionError(int sink_id,
+                                   DisplaySourceErrorType type,
+                                   const std::string& description) = 0;
 
    protected:
     virtual ~Observer() {}
@@ -68,7 +95,7 @@ class DisplaySourceConnectionDelegate : public KeyedService {
 
   // Queries the list of currently available sinks.
   virtual void GetAvailableSinks(const SinkInfoListCallback& sinks_callback,
-                                 const FailureCallback& failure_callback) = 0;
+                                 const StringCallback& failure_callback) = 0;
 
   // Queries the authentication method required by the sink for connection.
   // If the used authentication method requires authentication data to be
@@ -77,17 +104,17 @@ class DisplaySourceConnectionDelegate : public KeyedService {
   virtual void RequestAuthentication(
       int sink_id,
       const AuthInfoCallback& auth_info_callback,
-      const FailureCallback& failure_callback) = 0;
+      const StringCallback& failure_callback) = 0;
 
   // Connects to a sink by given id and auth info.
   virtual void Connect(int sink_id,
                        const DisplaySourceAuthInfo& auth_info,
-                       const FailureCallback& failure_callback) = 0;
+                       const StringCallback& failure_callback) = 0;
 
   // Disconnects the current connection to sink, the 'failure_callback'
   // is called if an error has occurred or if there is no established
   // connection.
-  virtual void Disconnect(const FailureCallback& failure_callback) = 0;
+  virtual void Disconnect(const StringCallback& failure_callback) = 0;
 
   // Implementation should start watching the available sinks updates.
   virtual void StartWatchingAvailableSinks() = 0;

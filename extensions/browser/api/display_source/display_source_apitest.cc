@@ -36,14 +36,14 @@ class MockDisplaySourceConnectionDelegate
   DisplaySourceSinkInfoList last_found_sinks() const override { return sinks_; }
   const Connection* connection() const override { return nullptr; }
   void GetAvailableSinks(const SinkInfoListCallback& sinks_callback,
-                         const FailureCallback& failure_callback) override {
+                         const StringCallback& failure_callback) override {
     AddSink(CreateSinkInfoPtr(1, "sink 1", SINK_STATE_DISCONNECTED));
     sinks_callback.Run(sinks_);
   }
 
   void RequestAuthentication(int sink_id,
                              const AuthInfoCallback& auth_info_callback,
-                             const FailureCallback& failure_callback) override {
+                             const StringCallback& failure_callback) override {
     DisplaySourceAuthInfo info;
     info.method = AUTHENTICATION_METHOD_PBC;
     auth_info_callback.Run(info);
@@ -51,9 +51,9 @@ class MockDisplaySourceConnectionDelegate
 
   void Connect(int sink_id,
                const DisplaySourceAuthInfo& auth_info,
-               const FailureCallback& failure_callback) override {}
+               const StringCallback& failure_callback) override {}
 
-  void Disconnect(const FailureCallback& failure_callback) override {}
+  void Disconnect(const StringCallback& failure_callback) override {}
 
   void StartWatchingAvailableSinks() override {
     AddSink(CreateSinkInfoPtr(2, "sink 2", SINK_STATE_DISCONNECTED));

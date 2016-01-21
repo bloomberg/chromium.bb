@@ -39,14 +39,22 @@ class WiFiDisplaySessionServiceImpl
 
   // DisplaySourceConnectionDelegate::Observer overrides.
   void OnSinksUpdated(const DisplaySourceSinkInfoList& sinks) override;
+  void OnConnectionError(int sink_id,
+                         DisplaySourceErrorType type,
+                         const std::string& description) override;
 
   explicit WiFiDisplaySessionServiceImpl(
       DisplaySourceConnectionDelegate* delegate,
       mojo::InterfaceRequest<WiFiDisplaySessionService> request);
 
-  void OnConnectFailed(int sink_id, const std::string& message);
-  void OnDisconnectFailed(int sink_id, const std::string& message);
+  // Called if a message is received from the connected sink.
+  void OnSinkMessage(const std::string& message);
 
+  // Failure callbacks for Connect and Disconnect methods.
+  void OnConnectFailed(int sink_id, const std::string& reason);
+  void OnDisconnectFailed(int sink_id, const std::string& reason);
+
+  // Mojo error callback.
   void OnClientConnectionError();
 
   mojo::StrongBinding<WiFiDisplaySessionService> binding_;
