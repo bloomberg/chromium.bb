@@ -9,6 +9,10 @@ import os
 import textwrap
 
 
+# TODO(brettw) bug 535386: This should not take a directory as an input, but
+# rather a response file listing the inputs or sometimes the build will be
+# incorrect.
+
 def AggregateVectorIcons(working_directory, output_cc, output_h):
   """Compiles all .icon files in a directory into two C++ files.
 
