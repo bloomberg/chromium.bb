@@ -24642,6 +24642,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Net.HttpStreamFactoryJob.StreamReadyCallbackTime" units="ms">
+  <owner>rtenneti@chromium.org</owner>
+  <summary>Time it takes for OnStreamReadyCallback to be called.</summary>
+</histogram>
+
 <histogram name="Net.HttpTimeToFirstByte" units="ms">
   <owner>mmenke@chromium.org</owner>
   <summary>

@@ -343,6 +343,9 @@ void HttpStreamFactoryImpl::Job::OnStreamReadyCallback() {
   DCHECK(!IsPreconnecting());
   DCHECK(!stream_factory_->for_websockets_);
 
+  UMA_HISTOGRAM_TIMES("Net.HttpStreamFactoryJob.StreamReadyCallbackTime",
+                      base::TimeTicks::Now() - job_stream_ready_start_time_);
+
   MaybeCopyConnectionAttemptsFromSocketOrHandle();
 
   if (IsOrphaned()) {
@@ -638,6 +641,7 @@ int HttpStreamFactoryImpl::Job::RunLoop(int result) {
 #endif
       } else {
         DCHECK(stream_.get());
+        job_stream_ready_start_time_ = base::TimeTicks::Now();
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE,
             base::Bind(&Job::OnStreamReadyCallback, ptr_factory_.GetWeakPtr()));

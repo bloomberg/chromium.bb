@@ -407,6 +407,7 @@ class HttpStreamFactoryImpl::Job {
 
   JobStatus job_status_;
   JobStatus other_job_status_;
+  base::TimeTicks job_stream_ready_start_time_;
 
   // True if BidirectionalStreamJob is requested.
   bool for_bidirectional_;
