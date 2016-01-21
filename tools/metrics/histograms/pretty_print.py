@@ -45,6 +45,7 @@ class Error(Exception):
 
 
 UNIT_REWRITES = {
+  'millisecond': 'ms',
   'milliseconds': 'ms',
   'kb': 'KB',
   'kB': 'KB',
@@ -52,6 +53,7 @@ UNIT_REWRITES = {
   'kbits/s': 'kbps',
   'percent': '%',
   'Percent': '%',
+  'percentage': '%',
 }
 
 

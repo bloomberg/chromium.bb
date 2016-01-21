@@ -9927,8 +9927,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Screen unlock events detected while EasyUnlock was enabled.</summary>
 </histogram>
 
-<histogram name="EmbeddedWorkerInstance.ExistingProcessAllocation"
-    units="millisecond">
+<histogram name="EmbeddedWorkerInstance.ExistingProcessAllocation" units="ms">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     The time taken to allocate a process to start the EmbeddedWorkerInstance.
@@ -9936,8 +9935,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="EmbeddedWorkerInstance.NewProcessAllocation"
-    units="millisecond">
+<histogram name="EmbeddedWorkerInstance.NewProcessAllocation" units="ms">
   <owner>ksakamoto@chromium.org</owner>
   <summary>
     The time taken to allocate a process to start the EmbeddedWorkerInstance.
@@ -9945,7 +9943,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="EmbeddedWorkerInstance.ProcessAllocation" units="millisecond">
+<histogram name="EmbeddedWorkerInstance.ProcessAllocation" units="ms">
   <obsolete>
     Deprecated as of 05/2015. Replaced by
     EmbeddedWorkerInstance.NewProcessAllocation and
@@ -9965,15 +9963,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="EmbeddedWorkerInstance.ScriptEvaluate" units="millisecond">
+<histogram name="EmbeddedWorkerInstance.ScriptEvaluate" units="ms">
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to evaluate the script to start the EmbeddedWorkerInstance.
   </summary>
 </histogram>
 
-<histogram name="EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess"
-    units="millisecond">
+<histogram name="EmbeddedWorkerInstance.ScriptLoadWithNetworkAccess" units="ms">
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to load the script file for the EmbeddedWorkerInstance with
@@ -9982,7 +9979,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="EmbeddedWorkerInstance.ScriptLoadWithoutNetworkAccess"
-    units="millisecond">
+    units="ms">
   <owner>horo@chromium.org</owner>
   <summary>
     The time taken to load the script file for the EmbeddedWorkerInstance
@@ -22632,7 +22629,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.AsyncResourceHandler_SharedIOBuffer_UsedPercentage"
-    units="percentage">
+    units="%">
   <obsolete>
     Deprecated 03/2015.
   </obsolete>
@@ -36585,7 +36582,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Precache.Fetch.PercentCompleted" units="percentage">
+<histogram name="Precache.Fetch.PercentCompleted" units="%">
   <owner>twifkak@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
   <summary>
@@ -39818,7 +39815,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Host.PredictedPrefetchFromNetwork but
@@ -39843,8 +39840,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Host.PrefetchCancelled"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchCancelled" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39853,8 +39849,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Host.PrefetchFailed"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchFailed" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39864,7 +39859,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheNotUsed"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39875,7 +39870,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromCache"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39887,7 +39882,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromCacheUsedFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39898,7 +39893,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkNotUsed"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39910,7 +39905,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromCache"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39922,7 +39917,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Host.PrefetchFromNetworkUsedFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of
@@ -39932,8 +39927,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Host.PrefetchNotStarted"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Host.PrefetchNotStarted" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
@@ -40152,7 +40146,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetworkPercentOfTotalFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     Similar to ResourcePrefetchPredictor.Url.PredictedPrefetchFromNetwork but as
@@ -40177,8 +40171,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Url.PrefetchCancelled"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchCancelled" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
@@ -40187,8 +40180,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Url.PrefetchFailed"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchFailed" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of prefetches
@@ -40198,7 +40190,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheNotUsed"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40209,7 +40201,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromCache"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40221,7 +40213,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromCacheUsedFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40232,7 +40224,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkNotUsed"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40244,7 +40236,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromCache"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40256,7 +40248,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram
     name="ResourcePrefetchPredictor.Url.PrefetchFromNetworkUsedFromNetwork"
-    units="percentage">
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on the main frame URL, the percentage of successful
@@ -40266,8 +40258,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ResourcePrefetchPredictor.Url.PrefetchNotStarted"
-    units="percentage">
+<histogram name="ResourcePrefetchPredictor.Url.PrefetchNotStarted" units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     For prefetching based on host of main frame URL, the percentage of resources
@@ -42322,7 +42313,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SBIRS.PruneRatio" units="percentage">
+<histogram name="SBIRS.PruneRatio" units="%">
   <owner>caitkp@google.com</owner>
   <obsolete>
     Deprecated 08/2015.
@@ -43757,7 +43748,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.ActivateEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.ActivateEventExecutionTime" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.ActivateEvent.Time.
@@ -43929,7 +43920,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.FetchEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.FetchEventExecutionTime" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.FetchEvent.Time.
@@ -43949,7 +43940,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.InstallEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.InstallEventExecutionTime" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.InstallEvent.Time.
@@ -43971,7 +43962,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Execution time of ServiceWorkerGlobalScope.onmessage.</summary>
 </histogram>
 
-<histogram name="ServiceWorker.MessageEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.MessageEventExecutionTime" units="ms">
   <owner>shimazu@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.MessageEvent.Time.
@@ -43988,8 +43979,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.NotificationClickEventExecutionTime"
-    units="millisecond">
+<histogram name="ServiceWorker.NotificationClickEventExecutionTime" units="ms">
   <owner>peter@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.NotificationClickEvent.Time.
@@ -44013,7 +44003,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.PushEventExecutionTime" units="millisecond">
+<histogram name="ServiceWorker.PushEventExecutionTime" units="ms">
   <owner>johnme@chromium.org</owner>
   <obsolete>
     Deprecated 2015-05 in favor of ServiceWorker.PushEvent.Time.
