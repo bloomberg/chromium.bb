@@ -746,7 +746,7 @@ void LinkStyle::process()
 
         // Don't hold up layout tree construction and script execution on stylesheets
         // that are not needed for the layout at the moment.
-        bool blocking = mediaQueryMatches && !m_owner->isAlternate();
+        bool blocking = mediaQueryMatches && !m_owner->isAlternate() && m_owner->isCreatedByParser();
         addPendingSheet(blocking ? Blocking : NonBlocking);
 
         // Load stylesheets that are not needed for the layout immediately with low priority.
