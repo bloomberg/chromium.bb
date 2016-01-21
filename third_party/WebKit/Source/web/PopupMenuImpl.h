@@ -38,7 +38,7 @@ private:
     void addElementStyle(ItemIterationContext&, HTMLElement&);
 
     // PopupMenu functions:
-    void show(const FloatQuad& controlPosition, const IntSize& controlSize, int index) override;
+    void show() override;
     void hide() override;
     void disconnectClient() override;
     void updateFromElement() override;
