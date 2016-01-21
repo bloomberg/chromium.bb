@@ -4,9 +4,9 @@
 
 #include "core/paint/RootInlineBoxPainter.h"
 
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/RootInlineBox.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 
 namespace blink {

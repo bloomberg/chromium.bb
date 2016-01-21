@@ -10,6 +10,7 @@
 #include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/LayoutFlexibleBox.h"
 #include "core/layout/LayoutInline.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/page/Page.h"
 #include "core/paint/BoxClipper.h"
@@ -17,7 +18,6 @@
 #include "core/paint/InlinePainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/LineBoxListPainter.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ScopeRecorder.h"
@@ -121,9 +121,9 @@ void BlockPainter::paintInlineBox(const InlineBox& inlineBox, const PaintInfo& p
 
     LayoutPoint childPoint = paintOffset;
     if (inlineBox.parent()->lineLayoutItem().style()->isFlippedBlocksWritingMode()) // Faster than calling containingBlock().
-        childPoint = LineLayoutPaintShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
+        childPoint = LineLayoutAPIShim::layoutObjectFrom(inlineBox.lineLayoutItem())->containingBlock()->flipForWritingModeForChild(&toLayoutBox(inlineBox.layoutObject()), childPoint);
 
-    ObjectPainter(*LineLayoutPaintShim::constLayoutObjectFrom(inlineBox.lineLayoutItem())).paintAsPseudoStackingContext(paintInfo, childPoint);
+    ObjectPainter(*LineLayoutAPIShim::constLayoutObjectFrom(inlineBox.lineLayoutItem())).paintAsPseudoStackingContext(paintInfo, childPoint);
 }
 
 void BlockPainter::paintObject(const PaintInfo& paintInfo, const LayoutPoint& paintOffset)

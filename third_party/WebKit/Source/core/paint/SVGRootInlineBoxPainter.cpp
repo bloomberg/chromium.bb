@@ -4,12 +4,12 @@
 
 #include "core/paint/SVGRootInlineBoxPainter.h"
 
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
@@ -26,7 +26,7 @@ void SVGRootInlineBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
     PaintInfo paintInfoBeforeFiltering(paintInfo);
     if (hasSelection && !LayoutObjectDrawingRecorder::useCachedDrawingIfPossible(paintInfoBeforeFiltering.context, m_svgRootInlineBox.layoutObject(),
         paintInfoBeforeFiltering.phase, paintOffset)) {
-        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutPaintShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering.phase,
+        LayoutObjectDrawingRecorder recorder(paintInfoBeforeFiltering.context, *LineLayoutAPIShim::constLayoutObjectFrom(m_svgRootInlineBox.lineLayoutItem()), paintInfoBeforeFiltering.phase,
             paintInfoBeforeFiltering.cullRect().m_rect, paintOffset);
         for (InlineBox* child = m_svgRootInlineBox.firstChild(); child; child = child->nextOnLine()) {
             if (child->isSVGInlineTextBox())

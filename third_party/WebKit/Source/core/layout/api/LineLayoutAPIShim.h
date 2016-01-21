@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef LineLayoutPaintShim_h
-#define LineLayoutPaintShim_h
+#ifndef LineLayoutAPIShim_h
+#define LineLayoutAPIShim_h
 
 #include "core/layout/api/LineLayoutItem.h"
 
@@ -11,8 +11,8 @@ namespace blink {
 
 class LayoutObject;
 
-// TODO(pilgrim): Remove this kludge once Paint objects have a real API and no longer need access to the underlying LayoutObject.
-class LineLayoutPaintShim {
+// TODO(pilgrim): Remove this kludge once clients have a real API and no longer need access to the underlying LayoutObject.
+class LineLayoutAPIShim {
 public:
     static LayoutObject* layoutObjectFrom(LineLayoutItem item)
     {
@@ -27,4 +27,4 @@ public:
 
 } // namespace blink
 
-#endif // LineLayoutPaintShim_h
+#endif // LineLayoutAPIShim_h

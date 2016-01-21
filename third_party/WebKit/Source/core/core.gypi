@@ -499,6 +499,7 @@
         ],
         'webcore_rendering_files': [
             'layout/api/HitTestAction.h',
+            'layout/api/LineLayoutAPIShim.h',
             'layout/api/LineLayoutBlockFlow.h',
             'layout/api/LineLayoutBox.h',
             'layout/api/LineLayoutBoxModel.h',
@@ -2029,7 +2030,6 @@
             'paint/LayoutObjectDrawingRecorder.h',
             'paint/LineBoxListPainter.cpp',
             'paint/LineBoxListPainter.h',
-            'paint/LineLayoutPaintShim.h',
             'paint/ListItemPainter.cpp',
             'paint/ListItemPainter.h',
             'paint/ListMarkerPainter.cpp',

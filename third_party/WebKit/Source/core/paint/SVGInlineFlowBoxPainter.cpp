@@ -5,9 +5,9 @@
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 
 #include "core/layout/LayoutInline.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
@@ -32,7 +32,7 @@ void SVGInlineFlowBoxPainter::paint(const PaintInfo& paintInfo, const LayoutPoin
 {
     ASSERT(paintInfo.phase == PaintPhaseForeground || paintInfo.phase == PaintPhaseSelection);
 
-    SVGPaintContext paintContext(*LineLayoutPaintShim::constLayoutObjectFrom(m_svgInlineFlowBox.lineLayoutItem()), paintInfo);
+    SVGPaintContext paintContext(*LineLayoutAPIShim::constLayoutObjectFrom(m_svgInlineFlowBox.lineLayoutItem()), paintInfo);
     if (paintContext.applyClipMaskAndFilterIfNecessary()) {
         for (InlineBox* child = m_svgInlineFlowBox.firstChild(); child; child = child->nextOnLine())
             child->paint(paintContext.paintInfo(), paintOffset, 0, 0);

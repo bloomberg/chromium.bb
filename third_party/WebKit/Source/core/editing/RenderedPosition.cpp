@@ -33,8 +33,8 @@
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/compositing/CompositedSelectionBound.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -89,7 +89,7 @@ RenderedPosition::RenderedPosition(const Position& position, TextAffinity affini
     m_inlineBox = boxPosition.inlineBox;
     m_offset = boxPosition.offsetInBox;
     if (m_inlineBox)
-        m_layoutObject = LineLayoutPaintShim::layoutObjectFrom(m_inlineBox->lineLayoutItem());
+        m_layoutObject = LineLayoutAPIShim::layoutObjectFrom(m_inlineBox->lineLayoutItem());
     else
         m_layoutObject = layoutObjectFromPosition(position);
 }

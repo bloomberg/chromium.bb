@@ -53,10 +53,10 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
-#include "core/paint/LineLayoutPaintShim.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/Logging.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -2124,7 +2124,7 @@ LayoutRect localCaretRectOfPositionTemplate(const PositionWithAffinityTemplate<S
     InlineBoxPosition boxPosition = computeInlineBoxPosition(position.position(), position.affinity());
 
     if (boxPosition.inlineBox)
-        layoutObject = LineLayoutPaintShim::layoutObjectFrom(boxPosition.inlineBox->lineLayoutItem());
+        layoutObject = LineLayoutAPIShim::layoutObjectFrom(boxPosition.inlineBox->lineLayoutItem());
 
     return layoutObject->localCaretRect(boxPosition.inlineBox, boxPosition.offsetInBox);
 }
@@ -2536,7 +2536,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (LineLayoutPaintShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (LineLayoutAPIShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -2545,7 +2545,7 @@ static PositionTemplate<Strategy> mostBackwardCaretPosition(const PositionTempla
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (LineLayoutPaintShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
+                    if (otherBox == lastTextBox || (LineLayoutAPIShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() > textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -2667,7 +2667,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
                     otherBox = otherBox->nextLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (LineLayoutPaintShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (LineLayoutAPIShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -2676,7 +2676,7 @@ PositionTemplate<Strategy> mostForwardCaretPosition(const PositionTemplate<Strat
                     otherBox = otherBox->prevLeafChild();
                     if (!otherBox)
                         break;
-                    if (otherBox == lastTextBox || (LineLayoutPaintShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
+                    if (otherBox == lastTextBox || (LineLayoutAPIShim::layoutObjectFrom(otherBox->lineLayoutItem()) == textLayoutObject && toInlineTextBox(otherBox)->start() >= textOffset))
                         continuesOnNextLine = false;
                 }
 
@@ -3084,7 +3084,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
         if (!box)
             return primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
 
-        LayoutObject* layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+        LayoutObject* layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
 
         while (true) {
             if ((layoutObject->isAtomicInlineLevel() || layoutObject->isBR()) && offset == box->caretLeftmostOffset())
@@ -3094,7 +3094,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                 box = box->nextLeafChild();
                 if (!box)
                     return primaryDirection == LTR ? nextVisuallyDistinctCandidate(deepPosition) : previousVisuallyDistinctCandidate(deepPosition);
-                layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                 offset = box->caretLeftmostOffset();
                 continue;
             }
@@ -3124,7 +3124,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                 // Reposition at the other logical position corresponding to our
                 // edge's visual position and go for another round.
                 box = nextBox;
-                layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                 offset = nextBox->caretLeftmostOffset();
                 continue;
             }
@@ -3139,7 +3139,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                     InlineBox* logicalEnd = 0;
                     if (primaryDirection == LTR ? box->root().getLogicalEndBoxWithNode(logicalEnd) : box->root().getLogicalStartBoxWithNode(logicalEnd)) {
                         box = logicalEnd;
-                        layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                        layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                         offset = primaryDirection == LTR ? box->caretMaxOffset() : box->caretMinOffset();
                     }
                     break;
@@ -3161,7 +3161,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
 
                 // For example, abc 123 ^ CBA or 123 ^ CBA abc
                 box = nextBox;
-                layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                 offset = box->caretLeftmostOffset();
                 if (box->direction() == primaryDirection)
                     break;
@@ -3173,7 +3173,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
 
             if (nextBox) {
                 box = nextBox;
-                layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                 offset = box->caretLeftmostOffset();
 
                 if (box->bidiLevel() > level) {
@@ -3204,7 +3204,7 @@ static PositionTemplate<Strategy> rightVisuallyDistinctCandidate(const VisiblePo
                         break;
                     level = box->bidiLevel();
                 }
-                layoutObject = LineLayoutPaintShim::layoutObjectFrom(box->lineLayoutItem());
+                layoutObject = LineLayoutAPIShim::layoutObjectFrom(box->lineLayoutItem());
                 offset = primaryDirection == LTR ? box->caretMaxOffset() : box->caretMinOffset();
             }
             break;
