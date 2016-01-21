@@ -34,32 +34,6 @@ function checkInstalled(callback) {
   checkItemInstalled(extensionId, callback);
 }
 
-var cachedIcon = null;
-var img = null;
-
-// This returns the base64-encoded content of the extension's image.
-function getIconData(callback) {
-  if (cachedIcon) {
-    callback(cachedIcon);
-    return;
-  }
-  var canvas = document.createElement("canvas");
-  canvas.style.display = "none";
-  canvas.width = 128;
-  canvas.height = 128;
-  img = new Image();
-  img.onload = function() {
-    console.log('img.onload called');
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0);
-    var tmp = canvas.toDataURL();
-    // Strip the data url prefix to just get the base64-encoded bytes.
-    cachedIcon = tmp.slice(tmp.search(",")+1);
-    callback(cachedIcon);
-  };
-  img.src = "extension/icon.png";
-}
-
 // This returns the string contents of the extension's manifest file.
 function getManifest(alternativePath) {
   // Do a synchronous XHR to get the manifest.

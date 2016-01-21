@@ -16,16 +16,14 @@ var tests = [
 
     var manifest = getManifest('localized_extension/manifest.json');
     var messages = getManifest('localized_extension/_locales/fr/messages.json');
-    getIconData(function(icon) {
-      // Begin installing.
-      chrome.webstorePrivate.beginInstallWithManifest3(
-        { 'id':localizedId, 'iconData': icon, 'manifest': manifest,
-          'localizedName': 'Le Title', 'locale': 'fr' },
-        callbackPass(function(result) {
-          assertEq(result, "");
-          chrome.webstorePrivate.completeInstall(localizedId, callbackPass());
-      }));
-    });
+    // Begin installing.
+    chrome.webstorePrivate.beginInstallWithManifest3(
+      { 'id':localizedId, 'manifest': manifest, 'localizedName': 'Le Title',
+        'locale': 'fr' },
+      callbackPass(function(result) {
+        assertEq(result, "");
+        chrome.webstorePrivate.completeInstall(localizedId, callbackPass());
+    }));
   }
 
 ];

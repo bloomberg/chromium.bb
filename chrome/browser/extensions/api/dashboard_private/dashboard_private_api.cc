@@ -27,8 +27,6 @@ namespace {
 
 // Error messages that can be returned by the API.
 const char kAlreadyInstalledError[] = "This item is already installed";
-const char kCannotSpecifyIconDataAndUrlError[] =
-    "You cannot specify both icon data and an icon url";
 const char kInvalidBundleError[] = "Invalid bundle";
 const char kInvalidIconUrlError[] = "Invalid icon url";
 const char kInvalidIdError[] = "Invalid id";
@@ -67,11 +65,6 @@ DashboardPrivateShowPermissionPromptForDelegatedInstallFunction::Run() {
   if (!crx_file::id_util::IdIsValid(params_->details.id)) {
     return RespondNow(BuildResponse(api::dashboard_private::RESULT_INVALID_ID,
                                     kInvalidIdError));
-  }
-
-  if (params_->details.icon_data && params_->details.icon_url) {
-    return RespondNow(BuildResponse(api::dashboard_private::RESULT_ICON_ERROR,
-                                    kCannotSpecifyIconDataAndUrlError));
   }
 
   GURL icon_url;

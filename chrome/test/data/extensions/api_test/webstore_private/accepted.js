@@ -39,11 +39,11 @@ var tests = [
     });
 
     var manifest = getManifest();
-    getIconData(function(icon) {
-        installAndCleanUp(
-            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
-            function() {});
-    });
+    installAndCleanUp(
+        {'id': extensionId, 'iconUrl': 'extension/icon.png',
+         'manifest': manifest},
+         function() {}
+    );
   },
 
   function duplicateInstall() {
@@ -53,23 +53,22 @@ var tests = [
     });
 
     var manifest = getManifest();
-    getIconData(function(icon) {
-        installAndCleanUp(
-            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
-            function() {
-              // Kick off a serial second install. This should fail.
-              var expectedError = "This item is already installed";
-              chrome.webstorePrivate.beginInstallWithManifest3(
-                  {'id': extensionId, 'iconData': icon, 'manifest': manifest},
-                  callbackFail(expectedError));
-            });
+    iconUrl = 'extension/icon.png';
+    installAndCleanUp(
+        {'id': extensionId, 'iconUrl': iconUrl, 'manifest': manifest},
+        function() {
+          // Kick off a serial second install. This should fail.
+          var expectedError = "This item is already installed";
+          chrome.webstorePrivate.beginInstallWithManifest3(
+              {'id': extensionId, 'iconUrl': iconUrl, 'manifest': manifest},
+              callbackFail(expectedError));
+        });
 
-        // Kick off a simultaneous second install. This should fail.
-        var expectedError = "This item is already installed";
-        chrome.webstorePrivate.beginInstallWithManifest3(
-            {'id': extensionId, 'iconData': icon, 'manifest': manifest},
-            callbackFail(expectedError));
-    });
+    // Kick off a simultaneous second install. This should fail.
+    var expectedError = "This item is already installed";
+    chrome.webstorePrivate.beginInstallWithManifest3(
+        {'id': extensionId, 'iconUrl': iconUrl, 'manifest': manifest},
+        callbackFail(expectedError));
   }
 ];
 

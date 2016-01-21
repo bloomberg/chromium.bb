@@ -116,11 +116,6 @@
                 "optional": true,
                 "desciption": "A URL for the image to display in the confirmation dialog"
               },
-              "iconData": {
-                "type": "string",
-                "optional": true,
-                "description": "An icon as a base64-encoded image, displayed in a confirmation dialog."
-              },
               "localizedName": {
                 "type": "string",
                 "optional": true,

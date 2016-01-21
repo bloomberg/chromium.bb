@@ -3,18 +3,15 @@
 // found in the LICENSE file.
 
 var manifest = getManifest();
-getIconData(function(icon) {
+// Begin installing.
+chrome.webstorePrivate.beginInstallWithManifest3(
+    {'id': extensionId, 'manifest': manifest},
+    function(result) {
+      assertNoLastError();
+      assertEq(result, "");
 
-  // Begin installing.
-  chrome.webstorePrivate.beginInstallWithManifest3(
-      {'id': extensionId,'iconData': icon, 'manifest': manifest },
-      function(result) {
-        assertNoLastError();
-        assertEq(result, "");
-
-        // Now complete the installation.
-        var expectedError = "Package is invalid: 'CRX_HEADER_INVALID'.";
-        chrome.webstorePrivate.completeInstall(extensionId,
-                                               callbackFail(expectedError));
-  });
+      // Now complete the installation.
+      var expectedError = "Package is invalid: 'CRX_HEADER_INVALID'.";
+      chrome.webstorePrivate.completeInstall(extensionId,
+                                             callbackFail(expectedError));
 });
