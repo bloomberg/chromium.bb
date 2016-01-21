@@ -8,8 +8,7 @@ to them, and re-ordering headers as needed.  If multiple source files are
 specified, the destination must be a directory.  Updates include guards in
 moved header files.  Assumes Chromium coding style.
 
-Attempts to update paths used in .gyp(i) files, but does not reorder
-or restructure .gyp(i) files in any way.
+Attempts to update and reorder paths used in .gyp(i) files.
 
 Updates full-path references to files in // comments in source files.
 
@@ -213,11 +212,18 @@ def UpdateIncludeGuard(old_path, new_path):
     f.write(new_contents)
 
 def main():
-  if not os.path.isdir('.git'):
-    print 'Fatal: You must run from the root of a git checkout.'
+  # We use "git rev-parse" to check if the script is run from a git checkout. It
+  # returns 0 even when run in the .git directory. We don't want people running
+  # this in the .git directory.
+  if (os.system('git rev-parse') != 0 or
+      os.path.basename(os.getcwd()) == '.git'):
+    print 'Fatal: You must run in a git checkout.'
     return 1
 
-  in_blink = os.getcwd().endswith("third_party/WebKit")
+  cwd = os.getcwd()
+  parent = os.path.dirname(cwd)
+  in_blink = (os.path.basename(parent) == 'third_party' and
+              os.path.basename(cwd) == 'WebKit')
 
   parser = optparse.OptionParser(usage='%prog FROM_PATH... TO_PATH')
   parser.add_option('--already_moved', action='store_true',
