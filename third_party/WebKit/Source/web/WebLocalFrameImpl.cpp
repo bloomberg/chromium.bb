@@ -2267,4 +2267,9 @@ WebSandboxFlags WebLocalFrameImpl::effectiveSandboxFlags() const
     return static_cast<WebSandboxFlags>(frame()->loader().effectiveSandboxFlags());
 }
 
+void WebLocalFrameImpl::forceSandboxFlags(WebSandboxFlags flags)
+{
+    frame()->loader().forceSandboxFlags(static_cast<SandboxFlags>(flags));
+}
+
 } // namespace blink

@@ -4857,4 +4857,137 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(frame_url.GetOrigin().spec(), GetDocumentOrigin(grandchild) + "/");
 }
 
+// Verify that popups opened from sandboxed frames inherit sandbox flags from
+// their opener, and that they keep these inherited flags after being navigated
+// cross-site.  See https://crbug.com/483584.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       NewPopupInheritsSandboxFlagsFromOpener) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Set sandbox flags for child frame.
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(),
+                            "document.querySelector('iframe').sandbox = "
+                            "    'allow-scripts allow-popups';"));
+
+  // Calculate expected flags.  Note that "allow-scripts" resets both
+  // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
+  // blink::parseSandboxPolicy().
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures &
+      ~blink::WebSandboxFlags::Popups;
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
+
+  // Navigate child frame cross-site.  The sandbox flags should take effect.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestFrameNavigationObserver frame_observer(root->child_at(0));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  frame_observer.Wait();
+  EXPECT_EQ(expected_flags, root->child_at(0)->effective_sandbox_flags());
+
+  // Verify that they've also taken effect on the renderer side.  The sandboxed
+  // frame's origin should be unique.
+  EXPECT_EQ("null", GetDocumentOrigin(root->child_at(0)));
+
+  // Open a popup named "foo" from the sandboxed child frame.
+  Shell* foo_shell = OpenPopup(root->child_at(0)->current_frame_host(),
+                               GURL(url::kAboutBlankURL), "foo");
+  EXPECT_TRUE(foo_shell);
+
+  FrameTreeNode* foo_root =
+      static_cast<WebContentsImpl*>(foo_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // Check that the sandbox flags for new popup are correct in the browser
+  // process.
+  EXPECT_EQ(expected_flags, foo_root->effective_sandbox_flags());
+
+  // The popup's origin should be unique, since it's sandboxed.
+  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+
+  // Navigate the popup cross-site.  This should keep the unique origin and the
+  // inherited sandbox flags.
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  TestFrameNavigationObserver popup_observer(foo_root);
+  EXPECT_TRUE(ExecuteScript(foo_root->current_frame_host(),
+                            "location.href = '" + c_url.spec() + "';"));
+  popup_observer.Wait();
+  EXPECT_EQ(c_url, foo_shell->web_contents()->GetLastCommittedURL());
+
+  // Confirm that the popup is still sandboxed, both on browser and renderer
+  // sides.
+  EXPECT_EQ(expected_flags, foo_root->effective_sandbox_flags());
+  EXPECT_EQ("null", GetDocumentOrigin(foo_root));
+}
+
+// Verify that popups opened from frames sandboxed with the
+// "allow-popups-to-escape-sandbox" directive do *not* inherit sandbox flags
+// from their opener.
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       OpenUnsandboxedPopupFromSandboxedFrame) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  // Set sandbox flags for child frame, specifying that popups opened from it
+  // should not be sandboxed.
+  EXPECT_TRUE(ExecuteScript(
+      root->current_frame_host(),
+      "document.querySelector('iframe').sandbox = "
+      "    'allow-scripts allow-popups allow-popups-to-escape-sandbox';"));
+
+  // Set expected flags for the child frame.  Note that "allow-scripts" resets
+  // both WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits
+  // per blink::parseSandboxPolicy().
+  blink::WebSandboxFlags expected_flags =
+      blink::WebSandboxFlags::All & ~blink::WebSandboxFlags::Scripts &
+      ~blink::WebSandboxFlags::AutomaticFeatures &
+      ~blink::WebSandboxFlags::Popups &
+      ~blink::WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts;
+  EXPECT_EQ(expected_flags, root->child_at(0)->pending_sandbox_flags());
+
+  // Navigate child frame cross-site.  The sandbox flags should take effect.
+  GURL frame_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+  TestFrameNavigationObserver frame_observer(root->child_at(0));
+  NavigateFrameToURL(root->child_at(0), frame_url);
+  frame_observer.Wait();
+  EXPECT_EQ(expected_flags, root->child_at(0)->effective_sandbox_flags());
+
+  // Open a cross-site popup named "foo" from the child frame.
+  GURL b_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  Shell* foo_shell =
+      OpenPopup(root->child_at(0)->current_frame_host(), b_url, "foo");
+  EXPECT_TRUE(foo_shell);
+
+  FrameTreeNode* foo_root =
+      static_cast<WebContentsImpl*>(foo_shell->web_contents())
+          ->GetFrameTree()
+          ->root();
+
+  // Check that the sandbox flags for new popup are correct in the browser
+  // process.  They should not have been inherited.
+  EXPECT_EQ(blink::WebSandboxFlags::None, foo_root->effective_sandbox_flags());
+
+  // The popup's origin should match |b_url|, since it's not sandboxed.
+  std::string popup_origin;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      foo_root->current_frame_host(),
+      "domAutomationController.send(document.origin)",
+      &popup_origin));
+  EXPECT_EQ(b_url.GetOrigin().spec(), popup_origin + "/");
+}
+
 }  // namespace content

@@ -793,8 +793,17 @@ void RenderViewImpl::Initialize(const ViewMsg_New_Params& params,
 
   // If we have an opener_frame but we weren't created by a renderer, then it's
   // the browser asking us to set our opener to another frame.
-  if (opener_frame && !was_created_by_renderer)
+  if (opener_frame && !was_created_by_renderer) {
     webview()->mainFrame()->setOpener(opener_frame);
+
+    // Ensure that sandbox flags are inherited from an opener in a different
+    // process.  In that case, the browser process will set any inherited
+    // sandbox flags in |replicated_frame_state|, so apply them here.
+    if (webview()->mainFrame()->isWebLocalFrame()) {
+      webview()->mainFrame()->toWebLocalFrame()->forceSandboxFlags(
+          params.replicated_frame_state.sandbox_flags);
+    }
+  }
 
   // If we are initially swapped out, navigate to kSwappedOutURL.
   // This ensures we are in a unique origin that others cannot script.

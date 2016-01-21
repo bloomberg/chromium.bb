@@ -88,7 +88,7 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     FrameHost* host = &page->frameHost();
 
     ASSERT(page->mainFrame());
-    Frame& frame = *page->mainFrame();
+    LocalFrame& frame = *toLocalFrame(page->mainFrame());
 
     if (request.frameName() != "_blank")
         frame.tree().setName(request.frameName());
@@ -114,10 +114,8 @@ static Frame* createWindow(LocalFrame& openerFrame, LocalFrame& lookupFrame, con
     host->chromeClient().setWindowRectWithAdjustment(windowRect);
     host->chromeClient().show(policy);
 
-    // TODO(japhet): There's currently no way to set sandbox flags on a RemoteFrame and have it propagate
-    // to the real frame in a different process. See crbug.com/483584.
-    if (frame.isLocalFrame() && openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
-        toLocalFrame(&frame)->loader().forceSandboxFlags(openerFrame.document()->sandboxFlags());
+    if (openerFrame.document()->isSandboxed(SandboxPropagatesToAuxiliaryBrowsingContexts))
+        frame.loader().forceSandboxFlags(openerFrame.securityContext()->sandboxFlags());
 
     created = true;
     return &frame;

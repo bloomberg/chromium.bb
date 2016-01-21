@@ -201,6 +201,12 @@ public:
     // Returns the effective sandbox flags which are inherited from their parent frame.
     virtual WebSandboxFlags effectiveSandboxFlags() const = 0;
 
+    // Set sandbox flags that will always be forced on this frame.  This is
+    // used to inherit sandbox flags from cross-process opener frames in popups.
+    //
+    // TODO(dcheng): Remove this once we have WebLocalFrame::createMainFrame.
+    virtual void forceSandboxFlags(WebSandboxFlags) = 0;
+
 protected:
     explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) { }
 };

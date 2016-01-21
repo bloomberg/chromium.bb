@@ -114,6 +114,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "skia/public/type_converters.h"
+#include "third_party/WebKit/public/web/WebSandboxFlags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/display.h"
@@ -502,9 +503,26 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
   TRACE_EVENT0("browser", "WebContentsImpl::CreateWithOpener");
   WebContentsImpl* new_contents = new WebContentsImpl(params.browser_context);
 
+  FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
+
   if (!params.opener_suppressed && opener) {
-    new_contents->GetFrameTree()->root()->SetOpener(opener);
+    new_root->SetOpener(opener);
     new_contents->created_with_opener_ = true;
+  }
+
+  // If the opener is sandboxed, a new popup must inherit the opener's sandbox
+  // flags, and these flags take effect immediately.  An exception is if the
+  // opener's sandbox flags lack the PropagatesToAuxiliaryBrowsingContexts
+  // bit (which is controlled by the "allow-popups-to-escape-sandbox" token).
+  // See https://html.spec.whatwg.org/#attr-iframe-sandbox.
+  if (opener) {
+    blink::WebSandboxFlags opener_flags = opener->effective_sandbox_flags();
+    const blink::WebSandboxFlags inherit_flag =
+        blink::WebSandboxFlags::PropagatesToAuxiliaryBrowsingContexts;
+    if ((opener_flags & inherit_flag) == inherit_flag) {
+      new_root->SetPendingSandboxFlags(opener_flags);
+      new_root->CommitPendingSandboxFlags();
+    }
   }
 
   // This may be true even when opener is null, such as when opening blocked
