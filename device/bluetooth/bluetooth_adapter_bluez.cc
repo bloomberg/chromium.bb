@@ -495,9 +495,12 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     // PlayStation joystick tries to reconnect after disconnection from USB.
     // If it is still not trusted, set it, so it becomes available on the
     // list of known devices.
-    if (properties->connected.value() && device_bluez->IsTrustable() &&
-        !properties->trusted.value())
-      device_bluez->SetTrusted();
+    if (properties->connected.value()) {
+      if (device_bluez->IsTrustable() && !properties->trusted.value())
+        device_bluez->SetTrusted();
+    } else {
+      device_bluez->SetGattServicesDiscoveryComplete(false);
+    }
 
     int count = 0;
 
