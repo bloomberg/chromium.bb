@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<script src='../resources/testharness.js'></script>
+<script src='../resources/testharnessreport.js'></script>
+
+<script>
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'px');
+
+  var result = simpleLength1.add(simpleLength2);
+
+  assert_not_equals(simpleLength1, result);
+  assert_not_equals(simpleLength2, result);
+  assert_true(result instanceof SimpleLength);
+  assert_equals(result.value, 15.1);
+  assert_equals(result.type, 'px');
+}, 'Test that adding SimpleLengths with the same unit produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'percent');
+
+  var result = simpleLength1.add(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, 10);
+    
+}, 'Test that adding SimpleLengths with different units produces a calc length with the correct values.');
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'px');
+
+  var result = simpleLength1.subtract(simpleLength2);
+
+  assert_not_equals(simpleLength1, result);
+  assert_not_equals(simpleLength2, result);
+  assert_true(result instanceof SimpleLength);
+  assert_equals(result.value, -4.9);
+  assert_equals(result.type, 'px');
+}, 'Test that subtracting SimpleLengths with the same unit produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength1 = new SimpleLength(5.1, 'px');
+  var simpleLength2 = new SimpleLength(10, 'percent');
+
+  var result = simpleLength1.subtract(simpleLength2);
+
+  assert_true(result instanceof CalcLength);
+  assert_equals(result.px, 5.1);
+  assert_equals(result.percent, -10);
+    
+}, 'Test that subtracting SimpleLengths with different units produces a calc length with the correct values.');
+
+test(function() {
+  var simpleLength = new SimpleLength(5.2, 'px');
+  var result = simpleLength.multiply(4);
+
+  assert_not_equals(simpleLength, result);
+  assert_true(result instanceof SimpleLength);
+  assert_approx_equals(result.value, 20.8, 0.00000001);
+  assert_equals(result.type, 'px');
+}, 'Test that multiplying a SimpleLength produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var simpleLength = new SimpleLength(25, 'px');
+  var result = simpleLength.divide(2);
+
+  assert_not_equals(simpleLength, result);
+  assert_true(result instanceof SimpleLength);
+  assert_equals(result.value, 12.5);
+  assert_equals(result.type, 'px');
+}, 'Test that dividing a SimpleLength produces a new SimpleLength with the correct value.');
+
+test(function() {
+  var values = [
+    {input: new SimpleLength(1, 'px'), cssString: '1px' },
+    {input: new SimpleLength(2, 'percent'), cssString: '2%' },
+    {input: new SimpleLength(3, '%'), cssString: '3%' },
+    {input: new SimpleLength(4, 'em'), cssString: '4em' },
+    {input: new SimpleLength(5, 'ex'), cssString: '5ex' },
+    {input: new SimpleLength(6, 'ch'), cssString: '6ch' },
+    {input: new SimpleLength(7, 'rem'), cssString: '7rem' },
+    {input: new SimpleLength(8, 'vw'), cssString: '8vw' },
+    {input: new SimpleLength(9, 'vh'), cssString: '9vh' },
+    {input: new SimpleLength(10, 'vmin'), cssString: '10vmin' },
+    {input: new SimpleLength(11, 'vmax'), cssString: '11vmax' },
+    {input: new SimpleLength(12, 'cm'), cssString: '12cm' },
+    {input: new SimpleLength(13, 'mm'), cssString: '13mm' },
+    {input: new SimpleLength(14, 'in'), cssString: '14in' },
+    {input: new SimpleLength(15, 'pc'), cssString: '15pc' },
+    {input: new SimpleLength(16, 'pt'), cssString: '16pt' },
+    // Same again to double check that it's case insensitive.
+    {input: new SimpleLength(1, 'PX'), cssString: '1px' },
+    {input: new SimpleLength(2, 'PERCENT'), cssString: '2%' },
+    {input: new SimpleLength(3, '%'), cssString: '3%' },
+    {input: new SimpleLength(4, 'EM'), cssString: '4em' },
+    {input: new SimpleLength(5, 'EX'), cssString: '5ex' },
+    {input: new SimpleLength(6, 'CH'), cssString: '6ch' },
+    {input: new SimpleLength(7, 'REM'), cssString: '7rem' },
+    {input: new SimpleLength(8, 'VW'), cssString: '8vw' },
+    {input: new SimpleLength(9, 'VH'), cssString: '9vh' },
+    {input: new SimpleLength(10, 'VMIN'), cssString: '10vmin' },
+    {input: new SimpleLength(11, 'VMAX'), cssString: '11vmax' },
+    {input: new SimpleLength(12, 'CM'), cssString: '12cm' },
+    {input: new SimpleLength(13, 'MM'), cssString: '13mm' },
+    {input: new SimpleLength(14, 'IN'), cssString: '14in' },
+    {input: new SimpleLength(15, 'PC'), cssString: '15pc' },
+    {input: new SimpleLength(16, 'PT'), cssString: '16pt' },
+  ];
+
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, values[i].cssString);
+  }
+}, 'Test that the SimpleLength css string is generated correctly for each unit type.');
+
+test(function() {
+  var values = [
+    {value: NaN, unit: 'px'},
+    {value: Infinity, unit: 'px'},
+    {value: -Infinity, unit: 'px'},
+    {value: 5, unit: 'puppies'}
+  ];
+
+  for (var i = 0; i < values.length; ++i) {
+    assert_throws(null, function() { new SimpleLength(values[i].value, values[i].unit); });          
+  }
+
+}, 'Test that invalid input throws an exception.');
+
+</script>
+
+<body>
+</body>

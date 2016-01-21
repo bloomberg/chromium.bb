@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<script>
+var values = [
+  {input: new NumberValue(0), cssString: '0'},
+  {input: new NumberValue(1), cssString: '1'},
+  {input: new NumberValue(-2), cssString: '-2'},
+  {input: new NumberValue(3.4), cssString: '3.4'}
+];
+
+test(function() {
+  for (var i = 0; i < values.length; ++i) {
+    assert_equals(values[i].input.cssString, values[i].cssString);
+  }
+}, "Test that the css string for NumberValue is correct.");
+
+</script>
+
+<body>
+</body>
+
