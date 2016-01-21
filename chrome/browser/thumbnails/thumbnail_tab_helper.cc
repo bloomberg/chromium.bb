@@ -53,73 +53,10 @@ using thumbnails::ClipResult;
 using thumbnails::ThumbnailingContext;
 using thumbnails::ThumbnailingAlgorithm;
 
-namespace {
-
-// Feed the constructed thumbnail to the thumbnail service.
-void UpdateThumbnail(const ThumbnailingContext& context,
-                     const SkBitmap& thumbnail) {
-  gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
-  context.service->SetPageThumbnail(context, image);
-  DVLOG(1) << "Thumbnail taken for " << context.url << ": "
-           << context.score.ToString();
-}
-
-void ProcessCapturedBitmap(scoped_refptr<ThumbnailingContext> context,
-                           scoped_refptr<ThumbnailingAlgorithm> algorithm,
-                           const SkBitmap& bitmap,
-                           content::ReadbackResponse response) {
-  if (response != content::READBACK_SUCCESS)
-    return;
-
-  // On success, we must be on the UI thread (on failure because of shutdown we
-  // are not on the UI thread).
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-
-  algorithm->ProcessBitmap(context, base::Bind(&UpdateThumbnail), bitmap);
-}
-
-void AsyncProcessThumbnail(content::WebContents* web_contents,
-                           scoped_refptr<ThumbnailingContext> context,
-                           scoped_refptr<ThumbnailingAlgorithm> algorithm) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  RenderWidgetHost* render_widget_host =
-      web_contents->GetRenderViewHost()->GetWidget();
-  content::RenderWidgetHostView* view = render_widget_host->GetView();
-  if (!view)
-    return;
-  if (!view->IsSurfaceAvailableForCopy())
-    return;
-
-  gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
-  // Clip the pixels that will commonly hold a scrollbar, which looks bad in
-  // thumbnails.
-  int scrollbar_size = gfx::scrollbar_size();
-  gfx::Size copy_size;
-  copy_rect.Inset(0, 0, scrollbar_size, scrollbar_size);
-
-  if (copy_rect.IsEmpty())
-    return;
-
-  ui::ScaleFactor scale_factor =
-      ui::GetSupportedScaleFactor(
-          ui::GetScaleFactorForNativeView(view->GetNativeView()));
-  context->clip_result = algorithm->GetCanvasCopyInfo(
-      copy_rect.size(),
-      scale_factor,
-      &copy_rect,
-      &context->requested_copy_size);
-  render_widget_host->CopyFromBackingStore(
-      copy_rect,
-      context->requested_copy_size,
-      base::Bind(&ProcessCapturedBitmap, context, algorithm),
-      kN32_SkColorType);
-}
-
-}  // namespace
-
 ThumbnailTabHelper::ThumbnailTabHelper(content::WebContents* contents)
     : content::WebContentsObserver(contents),
-      load_interrupted_(false) {
+      load_interrupted_(false),
+      weak_factory_(this) {
   // Even though we deal in RenderWidgetHosts, we only care about its
   // subclass, RenderViewHost when it is in a tab. We don't make thumbnails
   // for RenderViewHosts that aren't in tabs, or RenderWidgetHosts that
@@ -172,20 +109,29 @@ void ThumbnailTabHelper::NavigationStopped() {
   load_interrupted_ = true;
 }
 
-void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
-    WebContents* web_contents) {
+void ThumbnailTabHelper::UpdateThumbnailIfNecessary() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Ignore thumbnail update requests if one is already in progress. This can
+  // happen at the end of thumbnail generation when
+  // CleanUpFromThumbnailGeneration() calls DecrementCapturerCount(), triggering
+  // a call to content::WebContentsImpl::WasHidden() which eventually calls
+  // ThumbnailTabHelper::UpdateThumbnailIfNecessary().
+  if (thumbnailing_context_) {
+    return;
+  }
+
   // Destroying a WebContents may trigger it to be hidden, prompting a snapshot
   // which would be unwise to attempt <http://crbug.com/130097>. If the
   // WebContents is in the middle of destruction, do not risk it.
-  if (!web_contents || web_contents->IsBeingDestroyed())
+  if (!web_contents() || web_contents()->IsBeingDestroyed())
     return;
   // Skip if a pending entry exists. WidgetHidden can be called while navigating
   // pages and this is not a time when thumbnails should be generated.
-  if (web_contents->GetController().GetPendingEntry())
+  if (web_contents()->GetController().GetPendingEntry())
     return;
-  const GURL& url = web_contents->GetURL();
+  const GURL& url = web_contents()->GetURL();
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   scoped_refptr<thumbnails::ThumbnailService> thumbnail_service =
       ThumbnailServiceFactory::GetForProfile(profile);
@@ -196,12 +142,102 @@ void ThumbnailTabHelper::UpdateThumbnailIfNecessary(
     return;
   }
 
+  // Prevent the web contents from disappearing before the async thumbnail
+  // generation code executes. See https://crbug.com/530707 .
+  web_contents()->IncrementCapturerCount(gfx::Size());
+
+  AsyncProcessThumbnail(thumbnail_service);
+}
+
+void ThumbnailTabHelper::AsyncProcessThumbnail(
+    scoped_refptr<thumbnails::ThumbnailService> thumbnail_service) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  RenderWidgetHost* render_widget_host =
+      web_contents()->GetRenderViewHost()->GetWidget();
+  content::RenderWidgetHostView* view = render_widget_host->GetView();
+  if (!view || !view->IsSurfaceAvailableForCopy()) {
+    return;
+  }
+
+  gfx::Rect copy_rect = gfx::Rect(view->GetViewBounds().size());
+  // Clip the pixels that will commonly hold a scrollbar, which looks bad in
+  // thumbnails.
+  int scrollbar_size = gfx::scrollbar_size();
+  gfx::Size copy_size;
+  copy_rect.Inset(0, 0, scrollbar_size, scrollbar_size);
+
+  if (copy_rect.IsEmpty()) {
+    return;
+  }
+
   scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm(
       thumbnail_service->GetThumbnailingAlgorithm());
 
-  scoped_refptr<ThumbnailingContext> context(new ThumbnailingContext(
-      web_contents, thumbnail_service.get(), load_interrupted_));
-  AsyncProcessThumbnail(web_contents, context, algorithm);
+  thumbnailing_context_ = new ThumbnailingContext(web_contents(),
+                                                  thumbnail_service.get(),
+                                                  load_interrupted_);
+
+  ui::ScaleFactor scale_factor =
+      ui::GetSupportedScaleFactor(
+          ui::GetScaleFactorForNativeView(view->GetNativeView()));
+  thumbnailing_context_->clip_result = algorithm->GetCanvasCopyInfo(
+      copy_rect.size(),
+      scale_factor,
+      &copy_rect,
+      &thumbnailing_context_->requested_copy_size);
+  render_widget_host->CopyFromBackingStore(
+      copy_rect,
+      thumbnailing_context_->requested_copy_size,
+      base::Bind(&ThumbnailTabHelper::ProcessCapturedBitmap,
+                 weak_factory_.GetWeakPtr(),
+                 algorithm),
+      kN32_SkColorType);
+}
+
+void ThumbnailTabHelper::ProcessCapturedBitmap(
+    scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm,
+    const SkBitmap& bitmap,
+    content::ReadbackResponse response) {
+  if (response == content::READBACK_SUCCESS) {
+    // On success, we must be on the UI thread.
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    algorithm->ProcessBitmap(thumbnailing_context_,
+                             base::Bind(&ThumbnailTabHelper::UpdateThumbnail,
+                                        weak_factory_.GetWeakPtr()),
+                             bitmap);
+  } else {
+    // On failure because of shutdown we are not on the UI thread, so ensure
+    // that cleanup happens on that thread.
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&ThumbnailTabHelper::CleanUpFromThumbnailGeneration,
+                   weak_factory_.GetWeakPtr()));
+  }
+}
+
+void ThumbnailTabHelper::CleanUpFromThumbnailGeneration() {
+  if (web_contents()) {
+    // Balance the call to IncrementCapturerCount() made in
+    // UpdateThumbnailIfNecessary().
+    web_contents()->DecrementCapturerCount();
+  }
+
+  // Make a note that thumbnail generation is complete.
+  thumbnailing_context_ = nullptr;
+}
+
+void ThumbnailTabHelper::UpdateThumbnail(
+    const thumbnails::ThumbnailingContext& context,
+    const SkBitmap& thumbnail) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Feed the constructed thumbnail to the thumbnail service.
+  gfx::Image image = gfx::Image::CreateFrom1xBitmap(thumbnail);
+  context.service->SetPageThumbnail(context, image);
+  DVLOG(1) << "Thumbnail taken for " << context.url << ": "
+      << context.score.ToString();
+
+  CleanUpFromThumbnailGeneration();
 }
 
 void ThumbnailTabHelper::RenderViewHostCreated(
@@ -219,5 +255,5 @@ void ThumbnailTabHelper::RenderViewHostCreated(
 }
 
 void ThumbnailTabHelper::WidgetHidden(RenderWidgetHost* widget) {
-  UpdateThumbnailIfNecessary(web_contents());
+  UpdateThumbnailIfNecessary();
 }

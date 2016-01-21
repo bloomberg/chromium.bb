@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_THUMBNAILS_THUMBNAIL_TAB_HELPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/thumbnails/thumbnailing_context.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -40,7 +41,25 @@ class ThumbnailTabHelper
   void NavigationStopped() override;
 
   // Update the thumbnail of the given tab contents if necessary.
-  void UpdateThumbnailIfNecessary(content::WebContents* web_contents);
+  void UpdateThumbnailIfNecessary();
+
+  // Initiate asynchronous generation of a thumbnail from the web contents.
+  void AsyncProcessThumbnail(
+      scoped_refptr<thumbnails::ThumbnailService> thumbnail_service);
+
+  // Create a thumbnail from the web contents bitmap.
+  void ProcessCapturedBitmap(
+      scoped_refptr<thumbnails::ThumbnailingAlgorithm> algorithm,
+      const SkBitmap& bitmap,
+      content::ReadbackResponse response);
+
+  // Pass the thumbnail to the thumbnail service.
+  void UpdateThumbnail(
+      const thumbnails::ThumbnailingContext& context,
+      const SkBitmap& thumbnail);
+
+  // Clean up after thumbnail generation has ended.
+  void CleanUpFromThumbnailGeneration();
 
   // Called when a render view host was created for a WebContents.
   void RenderViewHostCreated(content::RenderViewHost* renderer);
@@ -49,8 +68,11 @@ class ThumbnailTabHelper
   void WidgetHidden(content::RenderWidgetHost* widget);
 
   content::NotificationRegistrar registrar_;
+  scoped_refptr<thumbnails::ThumbnailingContext> thumbnailing_context_;
 
   bool load_interrupted_;
+
+  base::WeakPtrFactory<ThumbnailTabHelper> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailTabHelper);
 };

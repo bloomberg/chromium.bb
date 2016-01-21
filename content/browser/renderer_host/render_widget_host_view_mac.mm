@@ -892,7 +892,7 @@ void RenderWidgetHostViewMac::WasOccluded() {
   // occur in this specific order. However, because thumbnail generation is
   // asychronous, that operation won't run before SuspendBrowserCompositorView()
   // completes. As a result you won't get a thumbnail for the page unless you
-  // happen to switch back to it. See http://crbug.com/530707 .
+  // execute these two statements in this specific order.
   render_widget_host_->WasHidden();
   SuspendBrowserCompositorView();
 }

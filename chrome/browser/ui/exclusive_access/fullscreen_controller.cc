@@ -93,13 +93,14 @@ bool FullscreenController::IsUserAcceptedFullscreen() const {
 
 bool FullscreenController::IsFullscreenForTabOrPending(
     const WebContents* web_contents) const {
+  if (IsFullscreenForCapturedTab(web_contents))
+    return true;
   if (web_contents == exclusive_access_tab()) {
     DCHECK(web_contents ==
            exclusive_access_manager()->context()->GetActiveWebContents());
-    DCHECK(web_contents->GetCapturerCount() == 0);
     return true;
   }
-  return IsFullscreenForCapturedTab(web_contents);
+  return false;
 }
 
 bool FullscreenController::IsFullscreenCausedByTab() const {

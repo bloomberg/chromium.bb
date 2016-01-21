@@ -410,7 +410,7 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     }
     last_output_surface_id_ = output_surface_id;
   }
-  bool immediate_ack = !compositor_;
+  bool skip_frame = false;
   pending_delegated_ack_count_++;
 
   if (frame_size.IsEmpty()) {
@@ -447,10 +447,10 @@ void DelegatedFrameHost::SwapDelegatedFrame(
 
       gfx::Size desired_size = client_->DelegatedFrameHostDesiredSizeInDIP();
       if (desired_size != frame_size_in_dip && !desired_size.IsEmpty())
-        immediate_ack = true;
+        skip_frame = true;
 
       cc::SurfaceFactory::DrawCallback ack_callback;
-      if (compositor_ && !immediate_ack) {
+      if (compositor_ && !skip_frame) {
         ack_callback = base::Bind(&DelegatedFrameHost::SurfaceDrawn,
                                   AsWeakPtr(), output_surface_id);
       }
@@ -486,7 +486,9 @@ void DelegatedFrameHost::SwapDelegatedFrame(
     client_->DelegatedFrameHostGetLayer()->OnDelegatedFrameDamage(
         damage_rect_in_dip);
 
-  if (immediate_ack) {
+  // Note that |compositor_| may be reset by SetShowSurface or
+  // SetShowDelegatedContent above.
+  if (!compositor_ || skip_frame) {
     SendDelegatedFrameAck(output_surface_id);
   } else if (!use_surfaces_) {
     std::vector<ui::LatencyInfo>::const_iterator it;
