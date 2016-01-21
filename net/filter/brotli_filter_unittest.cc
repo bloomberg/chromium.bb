@@ -250,4 +250,20 @@ TEST_F(BrotliUnitTest, DecodeMissingData) {
   EXPECT_EQ(Filter::FILTER_ERROR, code);
 }
 
+// Decoding brotli stream with empty output data.
+TEST_F(BrotliUnitTest, DecodeEmptyData) {
+  char data[1] = {6};  // WBITS = 16, ISLAST = 1, ISLASTEMPTY = 1
+  int data_len = 1;
+
+  InitFilter();
+  char decode_buffer[kDefaultBufferSize];
+  int decode_size = kDefaultBufferSize;
+  int code = DecodeAllWithFilter(filter_.get(), data, data_len, decode_buffer,
+                                 &decode_size);
+
+  // Expect success / empty output.
+  EXPECT_EQ(Filter::FILTER_DONE, code);
+  EXPECT_EQ(0, decode_size);
+}
+
 }  // namespace net

@@ -41,9 +41,12 @@ class BrotliFilter : public Filter {
         "BrotliFilter.Status", static_cast<int>(decoding_status_),
         static_cast<int>(DecodingStatus::DECODING_STATUS_COUNT));
     if (decoding_status_ == DecodingStatus::DECODING_DONE) {
-      UMA_HISTOGRAM_PERCENTAGE(
-          "BrotliFilter.CompressionPercent",
-          static_cast<int>((consumed_bytes_ * 100) / produced_bytes_));
+      // CompressionPercent is undefined when there is no output produced.
+      if (produced_bytes_ != 0) {
+        UMA_HISTOGRAM_PERCENTAGE(
+            "BrotliFilter.CompressionPercent",
+            static_cast<int>((consumed_bytes_ * 100) / produced_bytes_));
+      }
     }
 
     // All code here is for gathering stats, and can be removed when
