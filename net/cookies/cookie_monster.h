@@ -204,19 +204,6 @@ class NET_EXPORT CookieMonster : public CookieStore {
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   const DeleteCookieCallback& callback);
 
-  // Resets the list of cookieable schemes to the supplied schemes. Does
-  // nothing if called after first use of the instance (i.e. after the
-  // instance initialization process).
-  void SetCookieableSchemes(const char* const schemes[], size_t num_schemes);
-
-  // Instructs the cookie monster to not delete expired cookies. This is used
-  // in cases where the cookie monster is used as a data structure to keep
-  // arbitrary cookies.
-  void SetKeepExpiredCookies();
-
-  // Protects session cookies from deletion on shutdown.
-  void SetForceKeepSessionState();
-
   // Flush the backing store (if any) to disk and post the given callback when
   // done.
   // WARNING: THE CALLBACK WILL RUN ON A RANDOM THREAD. IT MUST BE THREAD SAFE.
@@ -278,17 +265,23 @@ class NET_EXPORT CookieMonster : public CookieStore {
 
   CookieMonster* GetCookieMonster() override;
 
+  // Resets the list of cookieable schemes to the supplied schemes. Does
+  // nothing if called after first use of the instance (i.e. after the
+  // instance initialization process).
+  void SetCookieableSchemes(const char* const schemes[], size_t num_schemes);
+
+  // Instructs the cookie monster to not delete expired cookies. This is used
+  // in cases where the cookie monster is used as a data structure to keep
+  // arbitrary cookies.
+  void SetKeepExpiredCookies();
+
+  // Protects session cookies from deletion on shutdown.
+  void SetForceKeepSessionState();
+
   // Enables writing session cookies into the cookie database. If this this
   // method is called, it must be called before first use of the instance
   // (i.e. as part of the instance initialization process).
   void SetPersistSessionCookies(bool persist_session_cookies);
-
-  // Debugging method to perform various validation checks on the map.
-  // Currently just checking that there are no null CanonicalCookie pointers
-  // in the map.
-  // Argument |arg| is to allow retaining of arbitrary data if the CHECKs
-  // in the function trip.  TODO(rdsmith):Remove hack.
-  void ValidateMap(int arg);
 
   // Determines if the scheme of the URL is a scheme that cookies will be
   // stored for.
@@ -516,6 +509,7 @@ class NET_EXPORT CookieMonster : public CookieStore {
                               const base::Time& delete_end);
 
   int DeleteAllForHost(const GURL& url);
+
   int DeleteAllCreatedBetweenForHost(const base::Time delete_begin,
                                      const base::Time delete_end,
                                      const GURL& url);
