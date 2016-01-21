@@ -126,11 +126,6 @@ void IconLabelBubbleView::Layout() {
 
 void IconLabelBubbleView::OnNativeThemeChanged(
     const ui::NativeTheme* native_theme) {
-  // If the background isn't visible, the label and border won't be either, so
-  // don't bother updating them.
-  if (!ShouldShowBackground())
-    return;
-
   label_->SetEnabledColor(GetTextColor());
 
   if (!ui::MaterialDesignController::IsModeMaterial())

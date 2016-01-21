@@ -31,11 +31,9 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
     : IconLabelBubbleView(0, font_list, parent_background_color, false),
       text_color_(text_color),
       profile_(profile) {
-  if (!ui::MaterialDesignController::IsModeMaterial()) {
-    static const int kBackgroundImages[] =
-        IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
-    SetBackgroundImageGrid(kBackgroundImages);
-  }
+  static const int kBackgroundImages[] =
+      IMAGE_GRID(IDR_OMNIBOX_SELECTED_KEYWORD_BUBBLE);
+  SetBackgroundImageGrid(kBackgroundImages);
   full_label_.SetFontList(font_list);
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);

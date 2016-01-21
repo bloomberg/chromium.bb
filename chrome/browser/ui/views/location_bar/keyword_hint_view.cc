@@ -43,6 +43,7 @@ class TabKeyBubbleView : public IconLabelBubbleView {
   // IconLabelBubbleView:
   SkColor GetTextColor() const override;
   SkColor GetBorderColor() const override;
+  bool ShouldShowBackground() const override;
 
   SkColor text_color_;
 
@@ -68,6 +69,10 @@ SkColor TabKeyBubbleView::GetTextColor() const {
 
 SkColor TabKeyBubbleView::GetBorderColor() const {
   return text_color_;
+}
+
+bool TabKeyBubbleView::ShouldShowBackground() const {
+  return true;
 }
 
 }  // namespace
