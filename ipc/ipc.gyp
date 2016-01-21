@@ -81,6 +81,10 @@
           ],
         }],
         ['OS == "android"', {
+          'sources!': [
+            # These multiprocess tests don't work on Android.
+            'ipc_channel_unittest.cc',
+          ],
           'dependencies': [
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
