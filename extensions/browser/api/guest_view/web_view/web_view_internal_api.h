@@ -8,8 +8,8 @@
 #include <stdint.h>
 
 #include "base/macros.h"
-#include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
+#include "extensions/browser/api/web_contents_capture_client.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/guest_view/web_view/web_ui/web_ui_url_fetcher.h"
 #include "extensions/browser/guest_view/web_view/web_view_guest.h"
@@ -35,6 +35,29 @@ class WebViewInternalExtensionFunction : public AsyncExtensionFunction {
 
  private:
   virtual bool RunAsyncSafe(WebViewGuest* guest) = 0;
+};
+
+class WebViewInternalCaptureVisibleRegionFunction
+    : public WebViewInternalExtensionFunction,
+      public WebContentsCaptureClient {
+ public:
+  DECLARE_EXTENSION_FUNCTION("webViewInternal.captureVisibleRegion",
+                             WEBVIEWINTERNAL_CAPTUREVISIBLEREGION);
+  WebViewInternalCaptureVisibleRegionFunction() {}
+
+ protected:
+  ~WebViewInternalCaptureVisibleRegionFunction() override {}
+
+ private:
+  // WebViewInternalExtensionFunction implementation.
+  bool RunAsyncSafe(WebViewGuest* guest) override;
+
+  // extensions::WebContentsCaptureClient:
+  bool IsScreenshotEnabled() override;
+  void OnCaptureSuccess(const SkBitmap& bitmap) override;
+  void OnCaptureFailure(FailureReason reason) override;
+
+  DISALLOW_COPY_AND_ASSIGN(WebViewInternalCaptureVisibleRegionFunction);
 };
 
 class WebViewInternalNavigateFunction

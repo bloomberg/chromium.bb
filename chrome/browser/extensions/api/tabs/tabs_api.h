@@ -15,8 +15,8 @@
 #include "components/ui/zoom/zoom_controller.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/api/capture_web_contents_function.h"
 #include "extensions/browser/api/execute_code_function.h"
+#include "extensions/browser/api/web_contents_capture_client.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/user_script.h"
 #include "url/gurl.h"
@@ -195,11 +195,17 @@ class TabsDetectLanguageFunction : public ChromeAsyncExtensionFunction,
   content::NotificationRegistrar registrar_;
   DECLARE_EXTENSION_FUNCTION("tabs.detectLanguage", TABS_DETECTLANGUAGE)
 };
+
 class TabsCaptureVisibleTabFunction
-    : public extensions::CaptureWebContentsFunction {
+    : public extensions::WebContentsCaptureClient,
+      public AsyncExtensionFunction {
  public:
   TabsCaptureVisibleTabFunction();
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
+
+  // ExtensionFunction implementation.
+  bool HasPermission() override;
+  bool RunAsync() override;
 
  protected:
   ~TabsCaptureVisibleTabFunction() override {}
@@ -207,9 +213,11 @@ class TabsCaptureVisibleTabFunction
  private:
   ChromeExtensionFunctionDetails chrome_details_;
 
-  // extensions::CaptureWebContentsFunction:
+  content::WebContents* GetWebContentsForID(int window_id);
+
+  // extensions::WebContentsCaptureClient:
   bool IsScreenshotEnabled() override;
-  content::WebContents* GetWebContentsForID(int id) override;
+  void OnCaptureSuccess(const SkBitmap& bitmap) override;
   void OnCaptureFailure(FailureReason reason) override;
 
   DECLARE_EXTENSION_FUNCTION("tabs.captureVisibleTab", TABS_CAPTUREVISIBLETAB)

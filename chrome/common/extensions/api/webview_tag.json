@@ -676,6 +676,28 @@
     ],
     "functions": [
       {
+        "name": "captureVisibleRegion",
+        "type": "function",
+        "description": "Captures the visible region of the webview.",
+        "parameters": [
+          {
+            "$ref": "extensionTypes.ImageDetails",
+            "name": "options",
+            "optional": true
+          },
+          {
+            "type": "function",
+            "name": "callback",
+            "parameters": [
+              {"type": "string",
+                "name": "dataUrl",
+                "description": "A data URL which encodes an image of the visible area of the captured tab. May be assigned to the 'src' property of an HTML Image element for display."
+              }
+            ]
+          }
+        ]
+      },
+      {
         "name": "addContentScripts",
         "type": "function",
         "description": "<p>Adds content script injection rules to the <code>webview</code>. When the <code>webview</code> navigates to a page matching one or more rules, the associated scripts will be injected. You can programmatically add rules or update existing rules.</p><p>The following example adds two rules to the <code>webview</code>: 'myRule' and 'anotherRule'.</p><pre>webview.addContentScripts([\r  {\r    name: 'myRule',\r    matches: ['http://www.foo.com/*'],\r    css: { files: ['mystyles.css'] },\r    js: { files: ['jquery.js', 'myscript.js'] },\r    run_at: 'document_start'\r  },\r  {\r    name: 'anotherRule',\r    matches: ['http://www.bar.com/*'],\r    js: { code: \"document.body.style.backgroundColor = 'red';\" },\r    run_at: 'document_end'\r  }]);\r ...\r\r// Navigates webview.\rwebview.src = 'http://www.foo.com';</pre><p>You can defer addContentScripts call until you needs to inject scripts.</p><p>The following example shows how to overwrite an existing rule.</p><pre>webview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.foo.com/*'],\r    js: { files: ['scriptA.js'] },\r    run_at: 'document_start'}]);\r\r// Do something.\rwebview.src = 'http://www.foo.com/*';\r ...\r// Overwrite 'rule' defined before.\rwebview.addContentScripts([{\r    name: 'rule',\r    matches: ['http://www.bar.com/*'],\r    js: { files: ['scriptB.js'] },\r    run_at: 'document_end'}]);</pre><p>If <code>webview</code> has been naviagted to the origin (e.g., foo.com) and calls <code>webview.addContentScripts</code> to add 'myRule', you need to wait for next navigation to make the scripts injected. If you want immediate injection, <code>executeScript</code> will do the right thing.</p><p>Rules are preserved even if the guest process crashes or is killed or even if the <code>webview</code> is reparented.</p><p>Refer to the <a href='/extensions/content_scripts'>content scripts</a> documentation for more details.</p>",

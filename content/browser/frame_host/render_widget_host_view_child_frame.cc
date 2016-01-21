@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "build/build_config.h"
+#include "cc/output/copy_output_request.h"
+#include "cc/output/copy_output_result.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_manager.h"
@@ -426,11 +428,21 @@ bool RenderWidgetHostViewChildFrame::PostProcessEventForPluginIme(
 #endif  // defined(OS_MACOSX)
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurface(
-    const gfx::Rect& /* src_subrect */,
-    const gfx::Size& /* dst_size */,
+    const gfx::Rect& src_subrect,
+    const gfx::Size& output_size,
     const ReadbackRequestCallback& callback,
-    const SkColorType /* preferred_color_type */) {
-  callback.Run(SkBitmap(), READBACK_FAILED);
+    const SkColorType preferred_color_type) {
+  if (!surface_factory_ || surface_id_.is_null())
+    callback.Run(SkBitmap(), READBACK_FAILED);
+
+  scoped_ptr<cc::CopyOutputRequest> request =
+      cc::CopyOutputRequest::CreateRequest(
+          base::Bind(&CopyFromCompositingSurfaceHasResult, output_size,
+                     preferred_color_type, callback));
+  if (!src_subrect.IsEmpty())
+    request->set_area(src_subrect);
+
+  surface_factory_->RequestCopyOfSurface(surface_id_, std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(

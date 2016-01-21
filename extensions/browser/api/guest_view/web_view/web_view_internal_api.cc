@@ -259,6 +259,62 @@ bool WebViewInternalExtensionFunction::RunAsync() {
   return RunAsyncSafe(guest);
 }
 
+bool WebViewInternalCaptureVisibleRegionFunction::RunAsyncSafe(
+    WebViewGuest* guest) {
+  using api::extension_types::ImageDetails;
+
+  scoped_ptr<web_view_internal::CaptureVisibleRegion::Params> params(
+      web_view_internal::CaptureVisibleRegion::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+
+  scoped_ptr<ImageDetails> image_details;
+  if (args_->GetSize() > 1) {
+    base::Value* spec = NULL;
+    EXTENSION_FUNCTION_VALIDATE(args_->Get(1, &spec) && spec);
+    image_details = ImageDetails::FromValue(*spec);
+  }
+
+  return CaptureAsync(guest->web_contents(), image_details.get(),
+                      base::Bind(&WebViewInternalCaptureVisibleRegionFunction::
+                                     CopyFromBackingStoreComplete,
+                                 this));
+}
+bool WebViewInternalCaptureVisibleRegionFunction::IsScreenshotEnabled() {
+  // TODO(wjmaclean): Is it ok to always return true here?
+  return true;
+}
+
+void WebViewInternalCaptureVisibleRegionFunction::OnCaptureSuccess(
+    const SkBitmap& bitmap) {
+  std::string base64_result;
+  if (!EncodeBitmap(bitmap, &base64_result)) {
+    OnCaptureFailure(FAILURE_REASON_ENCODING_FAILED);
+    return;
+  }
+
+  SetResult(new base::StringValue(base64_result));
+  SendResponse(true);
+}
+
+void WebViewInternalCaptureVisibleRegionFunction::OnCaptureFailure(
+    FailureReason reason) {
+  const char* reason_description = "internal error";
+  switch (reason) {
+    case FAILURE_REASON_UNKNOWN:
+      reason_description = "unknown error";
+      break;
+    case FAILURE_REASON_ENCODING_FAILED:
+      reason_description = "encoding failed";
+      break;
+    case FAILURE_REASON_VIEW_INVISIBLE:
+      reason_description = "view is invisible";
+      break;
+  }
+  error_ = ErrorUtils::FormatErrorMessage("Failed to capture webview: *",
+                                          reason_description);
+  SendResponse(false);
+}
+
 bool WebViewInternalNavigateFunction::RunAsyncSafe(WebViewGuest* guest) {
   scoped_ptr<web_view_internal::Navigate::Params> params(
       web_view_internal::Navigate::Params::Create(*args_));
