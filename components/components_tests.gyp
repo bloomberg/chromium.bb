@@ -341,6 +341,7 @@
       'login/screens/screen_context_unittest.cc',
     ],
     'memory_pressure_unittest_sources': [
+      'memory_pressure/direct_memory_pressure_calculator_linux_unittest.cc',
       'memory_pressure/direct_memory_pressure_calculator_win_unittest.cc',
       'memory_pressure/filtered_memory_pressure_calculator_unittest.cc',
       'memory_pressure/memory_pressure_stats_collector_unittest.cc',

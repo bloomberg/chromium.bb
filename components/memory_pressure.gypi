@@ -16,6 +16,8 @@
       ],
       'sources': [
         'memory_pressure/direct_memory_pressure_calculator.h',
+        'memory_pressure/direct_memory_pressure_calculator_linux.cc',
+        'memory_pressure/direct_memory_pressure_calculator_linux.h',
         'memory_pressure/direct_memory_pressure_calculator_win.cc',
         'memory_pressure/direct_memory_pressure_calculator_win.h',
         'memory_pressure/filtered_memory_pressure_calculator.cc',

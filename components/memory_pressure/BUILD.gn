@@ -6,6 +6,8 @@
 source_set("memory_pressure") {
   sources = [
     "direct_memory_pressure_calculator.h",
+    "direct_memory_pressure_calculator_linux.cc",
+    "direct_memory_pressure_calculator_linux.h",
     "direct_memory_pressure_calculator_win.cc",
     "direct_memory_pressure_calculator_win.h",
     "filtered_memory_pressure_calculator.cc",
@@ -25,6 +27,7 @@ source_set("memory_pressure") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "direct_memory_pressure_calculator_linux_unittest.cc",
     "direct_memory_pressure_calculator_win_unittest.cc",
     "filtered_memory_pressure_calculator_unittest.cc",
     "memory_pressure_stats_collector_unittest.cc",

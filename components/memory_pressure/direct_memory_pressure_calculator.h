@@ -5,8 +5,10 @@
 #ifndef COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_H_
 #define COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_H_
 
-#ifdef OS_WIN
+#if defined(OS_LINUX)
+#include "components/memory_pressure/direct_memory_pressure_calculator_linux.h"
+#elsif defined(OS_WIN)
 #include "components/memory_pressure/direct_memory_pressure_calculator_win.h"
-#endif  // OS_WIN
+#endif  // OS_LINUX
 
 #endif  // COMPONENTS_MEMORY_PRESSURE_DIRECT_MEMORY_PRESSURE_CALCULATOR_H_

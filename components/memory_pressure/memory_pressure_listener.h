@@ -15,9 +15,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 
-// ChromeOS and Linux operating systems will be added to this as they are
-// implemented.
-#if defined(OS_WIN)
+// Other operating systems will be added to this as they are implemented.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MEMORY_PRESSURE_IS_POLLING
 #endif
 
