@@ -432,9 +432,11 @@ int main(int argc, const char* argv[]) {
                                    // Overloaded operators have special names
                                    // and should never be renamed.
                                    isOverloadedOperator(),
-                                   // Similarly, constructors and destructors
-                                   // should not be considered for renaming.
-                                   cxxConstructorDecl(), cxxDestructorDecl())),
+                                   // Similarly, constructors, destructors, and
+                                   // conversion functions should not be
+                                   // considered for renaming.
+                                   cxxConstructorDecl(), cxxDestructorDecl(),
+                                   cxxConversionDecl())),
                                in_blink_namespace));
   // Note that the matcher for overridden methods doesn't need to filter for
   // special member functions: see implementation of FunctionDeclRewriter for

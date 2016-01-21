@@ -16,7 +16,12 @@ class Task {
   // Note: this is purposely copyable and assignable, to make sure the Clang
   // tool doesn't try to emit replacements for things that aren't explicitly
   // written.
-  // TODO(dcheng): Add an explicit test for something like operator+.
+
+  // Overloaded operators should not be rewritten.
+  Task& operator++() { return *this; }
+
+  // Conversion functions should not be rewritten.
+  explicit operator int() const { return 42; }
 };
 
 // Test that the actual method definition is also updated.
