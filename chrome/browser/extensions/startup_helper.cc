@@ -181,8 +181,7 @@ bool StartupHelper::ValidateCrx(const base::CommandLine& cmd_line,
   scoped_refptr<ValidateCrxHelper> helper(
       new ValidateCrxHelper(file, temp_dir.path(), &run_loop));
   helper->Start();
-  if (!helper->finished())
-    run_loop.Run();
+  run_loop.Run();
 
   bool success = helper->success();
   if (!success)
