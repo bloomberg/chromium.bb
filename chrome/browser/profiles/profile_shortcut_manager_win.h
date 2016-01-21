@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_
 #define CHROME_BROWSER_PROFILES_PROFILE_SHORTCUT_MANAGER_WIN_H_
 
-#include <set>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
@@ -27,31 +25,6 @@ base::FilePath GetProfileIconPath(const base::FilePath& profile_path);
 // single-user installation if |profile_name| is empty.
 base::string16 GetShortcutFilenameForProfile(const base::string16& profile_name,
                                              BrowserDistribution* distribution);
-
-// The same as GetShortcutFilenameForProfile but uniqueness is guaranteed.
-// Makes an unique filename among |excludes|.
-base::string16 GetUniqueShortcutFilenameForProfile(
-    const base::string16& profile_name,
-    const std::set<base::FilePath>& excludes,
-    BrowserDistribution* distribution);
-
-// This class checks that shortcut filename matches certain profile.
-class ShortcutFilenameMatcher {
- public:
-  ShortcutFilenameMatcher(const base::string16& profile_name,
-                          BrowserDistribution* distribution);
-
-  // Check that shortcut filename has a name given by us (by
-  // GetShortcutFilenameForProfile or GetUniqueShortcutFilenameForProfile).
-  bool IsCanonical(const base::string16& filename) const;
-
- private:
-  const base::string16 profile_shortcut_filename_;
-  const base::StringPiece16 lnk_ext_;
-  base::StringPiece16 profile_shortcut_name_;
-
-  DISALLOW_COPY_AND_ASSIGN(ShortcutFilenameMatcher);
-};
 
 // Returns the command-line flags to launch Chrome with the given profile.
 base::string16 CreateProfileShortcutFlags(const base::FilePath& profile_path);
