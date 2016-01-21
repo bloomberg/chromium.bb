@@ -102,6 +102,10 @@ MediaCodecPlayer::~MediaCodecPlayer()
     audio_decoder_->ReleaseDecoderResources();
 
   if (cdm_) {
+    // Cancel previously registered callback (if any).
+    static_cast<MediaDrmBridge*>(cdm_.get())
+        ->SetMediaCryptoReadyCB(MediaDrmBridge::MediaCryptoReadyCB());
+
     DCHECK(cdm_registration_id_);
     static_cast<MediaDrmBridge*>(cdm_.get())
         ->UnregisterPlayer(cdm_registration_id_);

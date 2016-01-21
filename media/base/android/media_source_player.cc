@@ -74,6 +74,10 @@ MediaSourcePlayer::~MediaSourcePlayer() {
   Release();
   DCHECK_EQ(!cdm_, !cdm_registration_id_);
   if (cdm_) {
+    // Cancel previously registered callback (if any).
+    static_cast<MediaDrmBridge*>(cdm_.get())
+        ->SetMediaCryptoReadyCB(MediaDrmBridge::MediaCryptoReadyCB());
+
     static_cast<MediaDrmBridge*>(cdm_.get())
         ->UnregisterPlayer(cdm_registration_id_);
     cdm_registration_id_ = 0;
