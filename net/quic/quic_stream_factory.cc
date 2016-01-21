@@ -1183,22 +1183,25 @@ void QuicStreamFactory::OnNetworkSoonToDisconnect(
   MaybeMigrateOrCloseSessions(network, /*force_close=*/false);
 }
 
+NetworkChangeNotifier::NetworkHandle QuicStreamFactory::FindAlternateNetwork(
+    NetworkChangeNotifier::NetworkHandle old_network) {
+  // Find a new network that sessions bound to |old_network| can be migrated to.
+  NetworkChangeNotifier::NetworkList network_list;
+  NetworkChangeNotifier::GetConnectedNetworks(&network_list);
+  for (NetworkChangeNotifier::NetworkHandle new_network : network_list) {
+    if (new_network != old_network) {
+      return new_network;
+    }
+  }
+  return NetworkChangeNotifier::kInvalidNetworkHandle;
+}
+
 void QuicStreamFactory::MaybeMigrateOrCloseSessions(
     NetworkChangeNotifier::NetworkHandle network,
     bool force_close) {
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
-
-  // Find a new network that sessions bound to |network| can be migrated to.
-  NetworkChangeNotifier::NetworkList network_list;
-  NetworkChangeNotifier::GetConnectedNetworks(&network_list);
   NetworkChangeNotifier::NetworkHandle new_network =
-      NetworkChangeNotifier::kInvalidNetworkHandle;
-  for (NetworkChangeNotifier::NetworkHandle n : network_list) {
-    if (n != network) {
-      new_network = n;
-      break;
-    }
-  }
+      FindAlternateNetwork(network);
 
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
   while (it != all_sessions_.end()) {
@@ -1228,38 +1231,58 @@ void QuicStreamFactory::MaybeMigrateOrCloseSessions(
       }
       continue;
     }
-
-    // Use OS-specified port for socket (DEFAULT_BIND) instead of
-    // using the PortSuggester since the connection is being migrated
-    // and not being newly created.
-    scoped_ptr<DatagramClientSocket> socket(
-        client_socket_factory_->CreateDatagramClientSocket(
-            DatagramSocket::DEFAULT_BIND, RandIntCallback(),
-            session->net_log().net_log(), session->net_log().source()));
-
-    QuicConnection* connection = session->connection();
-    if (ConfigureSocket(socket.get(), connection->peer_address(),
-                        new_network) != OK) {
-      session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
-      HistogramMigrationStatus(MIGRATION_STATUS_INTERNAL_ERROR);
-      continue;
-    }
-
-    scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
-        socket.get(), clock_.get(), session, yield_after_packets_,
-        yield_after_duration_, session->net_log()));
-    scoped_ptr<QuicPacketWriter> new_writer(
-        new QuicDefaultPacketWriter(socket.get()));
-
-    if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
-                                  std::move(new_writer))) {
-      session->CloseSessionOnError(ERR_NETWORK_CHANGED,
-                                   QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
-      HistogramMigrationStatus(MIGRATION_STATUS_TOO_MANY_CHANGES);
-    } else {
-      HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
-    }
+    MigrateSessionToNetwork(session, new_network);
   }
+}
+
+void QuicStreamFactory::MaybeMigrateSessionEarly(
+    QuicChromiumClientSession* session) {
+  if (session->GetNumActiveStreams() == 0) {
+    return;
+  }
+  NetworkChangeNotifier::NetworkHandle current_network =
+      session->GetDefaultSocket()->GetBoundNetwork();
+  NetworkChangeNotifier::NetworkHandle new_network =
+      FindAlternateNetwork(current_network);
+  if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+    // No alternate network found.
+    return;
+  }
+  OnSessionGoingAway(session);
+  MigrateSessionToNetwork(session, new_network);
+}
+
+void QuicStreamFactory::MigrateSessionToNetwork(
+    QuicChromiumClientSession* session,
+    NetworkChangeNotifier::NetworkHandle new_network) {
+  // Use OS-specified port for socket (DEFAULT_BIND) instead of
+  // using the PortSuggester since the connection is being migrated
+  // and not being newly created.
+  scoped_ptr<DatagramClientSocket> socket(
+      client_socket_factory_->CreateDatagramClientSocket(
+          DatagramSocket::DEFAULT_BIND, RandIntCallback(),
+          session->net_log().net_log(), session->net_log().source()));
+  QuicConnection* connection = session->connection();
+  if (ConfigureSocket(socket.get(), connection->peer_address(), new_network) !=
+      OK) {
+    session->CloseSessionOnError(ERR_NETWORK_CHANGED, QUIC_INTERNAL_ERROR);
+    HistogramMigrationStatus(MIGRATION_STATUS_INTERNAL_ERROR);
+    return;
+  }
+  scoped_ptr<QuicPacketReader> new_reader(new QuicPacketReader(
+      socket.get(), clock_.get(), session, yield_after_packets_,
+      yield_after_duration_, session->net_log()));
+  scoped_ptr<QuicPacketWriter> new_writer(
+      new QuicDefaultPacketWriter(socket.get()));
+
+  if (!session->MigrateToSocket(std::move(socket), std::move(new_reader),
+                                std::move(new_writer))) {
+    session->CloseSessionOnError(ERR_NETWORK_CHANGED,
+                                 QUIC_CONNECTION_MIGRATION_TOO_MANY_CHANGES);
+    HistogramMigrationStatus(MIGRATION_STATUS_TOO_MANY_CHANGES);
+    return;
+  }
+  HistogramMigrationStatus(MIGRATION_STATUS_SUCCESS);
 }
 
 void QuicStreamFactory::OnSSLConfigChanged() {
