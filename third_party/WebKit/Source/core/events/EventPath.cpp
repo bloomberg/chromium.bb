@@ -34,6 +34,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
+#include "core/html/HTMLSlotElement.h"
 
 namespace blink {
 
@@ -126,6 +127,13 @@ void EventPath::calculatePath()
             }
             current = insertionPoints.last();
             continue;
+        }
+        if (current->isChildOfV1ShadowHost()) {
+            if (HTMLSlotElement* slot = current->assignedSlot()) {
+                current = slot;
+                nodesInPath.append(current);
+                continue;
+            }
         }
         if (current->isShadowRoot()) {
             if (m_event && shouldStopAtShadowRoot(*m_event, *toShadowRoot(current), *m_node))
