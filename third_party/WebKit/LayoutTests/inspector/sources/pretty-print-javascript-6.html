@@ -46,6 +46,12 @@ function test()
         {
             var mappingQueries = ["setTimeout", "function", "alert", "2000"];
             testJSFormatter("setTimeout(function(){alert(1);},2000);", mappingQueries, next);
+        },
+
+        function arrowFunction(next)
+        {
+            var mappingQueries = ["function", "console", "=>", "2"];
+            testJSFormatter("function test(arg){console.log(arg);}test(a=>a+2);", mappingQueries, next);
         }
     ]);
 }

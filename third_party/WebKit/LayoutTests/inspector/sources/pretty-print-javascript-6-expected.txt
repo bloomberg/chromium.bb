@@ -80,3 +80,16 @@ Correct mapping for <function>
 Correct mapping for <alert>
 Correct mapping for <2000>
 
+Running: arrowFunction
+====== 8< ------
+function test(arg) {
+    console.log(arg);
+}
+test(a=>a + 2);
+
+------ >8 ======
+Correct mapping for <function>
+Correct mapping for <console>
+Correct mapping for <=>>
+Correct mapping for <2>
+
