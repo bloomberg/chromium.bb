@@ -187,12 +187,14 @@ def GenerateSetEnvCmd(target_dir):
             'set VCINSTALLDIR=%~dp0..\\..\\VC\\\n'
             'set PATH=%~dp0..\\..\\Common7\\IDE;%PATH%\n'
             'set INCLUDE=%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\um;'
-               '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\shared;'
-               '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\winrt;'
-               '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\ucrt;' # VS 2015
-               '%~dp0..\\..\\VC\\include;'
-               '%~dp0..\\..\\VC\\atlmfc\\include\n'
-            'if "%1"=="/x64" goto x64\n'.replace('WINVERSION', WIN_VERSION))
+            '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\shared;'
+            '%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\winrt;'.replace(
+                'WINVERSION', WIN_VERSION))
+    if VS_VERSION == '2015':
+      f.write('%~dp0..\\..\\win_sdk\\Include\\WINVERSION\\ucrt;'.replace(
+                  'WINVERSION', WIN_VERSION))
+    f.write('%~dp0..\\..\\VC\\include;'
+            '%~dp0..\\..\\VC\\atlmfc\\include\n')
 
     # x86. Always use amd64_x86 cross, not x86 on x86.
     f.write('set PATH=%~dp0..\\..\\win_sdk\\bin\\x86;'
