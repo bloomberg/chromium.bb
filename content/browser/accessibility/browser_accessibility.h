@@ -287,6 +287,8 @@ class CONTENT_EXPORT BrowserAccessibility {
                        bool* is_defined,
                        bool* is_mixed) const;
 
+  virtual base::string16 GetText() const;
+
   // Returns true if the bit corresponding to the given state enum is 1.
   bool HasState(ui::AXState state_enum) const;
 
@@ -295,9 +297,6 @@ class CONTENT_EXPORT BrowserAccessibility {
 
   // Returns true if the caret is active on this object.
   bool HasCaret() const;
-
-  // Returns true if this node is an editable text field of any kind.
-  bool IsEditableText() const;
 
   // True if this is a web area, and its grandparent is a presentational iframe.
   bool IsWebAreaForPresentationalIframe() const;
@@ -321,8 +320,11 @@ class CONTENT_EXPORT BrowserAccessibility {
   ui::AXNode* node_;
 
  private:
+  // |GetInnerText| recursively includes all the text from descendants such as
+  // text found in any embedded object. In contrast, |GetText| might include a
+  // special character in the place of every embedded object instead of its
+  // text, depending on the platform.
   base::string16 GetInnerText() const;
-  int GetInnerTextLength() const;
 
   // If a bounding rectangle is empty, compute it based on the union of its
   // children, since most accessibility APIs don't like elements with no

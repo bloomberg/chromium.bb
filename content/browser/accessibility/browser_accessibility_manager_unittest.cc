@@ -686,8 +686,10 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
           new CountedBrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
   BrowserAccessibility* static_text_accessible =
       root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, static_text_accessible);
 
   EXPECT_EQ(gfx::Rect(100, 100, 6, 9).ToString(),
             static_text_accessible->GetLocalBoundsForRange(0, 1).ToString());
@@ -707,12 +709,9 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRange) {
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             static_text_accessible->GetLocalBoundsForRange(0, 13).ToString());
 
-  // Test range that's beyond the text.
-  EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
-            static_text_accessible->GetLocalBoundsForRange(-1, 999).ToString());
-
-  // Test that we can call bounds for range on the parent element, too,
-  // and it still works.
+  // Note that each child in the parent element is represented by a single
+  // embedded object character and not by its text.
+  // TODO(nektar): Investigate failure on Linux.
   EXPECT_EQ(gfx::Rect(100, 100, 29, 18).ToString(),
             root_accessible->GetLocalBoundsForRange(0, 13).ToString());
 }
@@ -721,7 +720,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
   // In this example, we assume that the string "123abc" is rendered with
   // "123" going left-to-right and "abc" going right-to-left. In other
   // words, on-screen it would look like "123cba". This is possible to
-  // acheive if the source string had unicode control characters
+  // achieve if the source string had unicode control characters
   // to switch directions. This test doesn't worry about how, though - it just
   // tests that if something like that were to occur, GetLocalBoundsForRange
   // returns the correct bounds for different ranges.
@@ -774,8 +773,10 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeBiDi) {
           new CountedBrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
   BrowserAccessibility* static_text_accessible =
       root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, static_text_accessible);
 
   EXPECT_EQ(gfx::Rect(100, 100, 60, 20).ToString(),
             static_text_accessible->GetLocalBoundsForRange(0, 6).ToString());
@@ -834,8 +835,10 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
           new CountedBrowserAccessibilityFactory()));
 
   BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
   BrowserAccessibility* static_text_accessible =
       root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, static_text_accessible);
 
   if (manager->UseRootScrollOffsetsWhenComputingBounds()) {
     EXPECT_EQ(gfx::Rect(75, 50, 16, 9).ToString(),
@@ -846,13 +849,7 @@ TEST(BrowserAccessibilityManagerTest, BoundsForRangeScrolledWindow) {
   }
 }
 
-#if defined(OS_WIN)
-#define MAYBE_BoundsForRangeOnParentElement \
-  DISABLED_BoundsForRangeOnParentElement
-#else
-#define MAYBE_BoundsForRangeOnParentElement BoundsForRangeOnParentElement
-#endif
-TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
+TEST(BrowserAccessibilityManagerTest, BoundsForRangeOnParentElement) {
   ui::AXNodeData root;
   root.id = 1;
   root.role = ui::AX_ROLE_ROOT_WEB_AREA;
@@ -875,6 +872,7 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
 
   ui::AXNodeData img;
   img.id = 4;
+  img.SetName("Test image");
   img.role = ui::AX_ROLE_IMAGE;
   img.location = gfx::Rect(140, 100, 20, 20);
 
@@ -919,24 +917,27 @@ TEST(BrowserAccessibilityManagerTest, MAYBE_BoundsForRangeOnParentElement) {
           nullptr,
           new CountedBrowserAccessibilityFactory()));
   BrowserAccessibility* root_accessible = manager->GetRoot();
+  ASSERT_NE(nullptr, root_accessible);
+  BrowserAccessibility* div_accessible = root_accessible->PlatformGetChild(0);
+  ASSERT_NE(nullptr, div_accessible);
 
   EXPECT_EQ(gfx::Rect(100, 100, 20, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(0, 1).ToString());
+            div_accessible->GetLocalBoundsForRange(0, 1).ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 40, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(0, 2).ToString());
+            div_accessible->GetLocalBoundsForRange(0, 2).ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 80, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(0, 3).ToString());
+            div_accessible->GetLocalBoundsForRange(0, 4).ToString());
 
   EXPECT_EQ(gfx::Rect(120, 100, 60, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(1, 2).ToString());
+            div_accessible->GetLocalBoundsForRange(1, 3).ToString());
 
   EXPECT_EQ(gfx::Rect(120, 100, 80, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(1, 3).ToString());
+            div_accessible->GetLocalBoundsForRange(1, 4).ToString());
 
   EXPECT_EQ(gfx::Rect(100, 100, 100, 20).ToString(),
-            root_accessible->GetLocalBoundsForRange(0, 4).ToString());
+            div_accessible->GetLocalBoundsForRange(0, 5).ToString());
 }
 
 TEST(BrowserAccessibilityManagerTest, TestNextPreviousInTreeOrder) {

@@ -713,6 +713,8 @@ BrowserAccessibilityWin
                          REFIID iid,
                          void** object);
 
+  CONTENT_EXPORT base::string16 GetText() const override;
+
   // Accessors.
   int32_t ia_role() const { return win_attributes_->ia_role; }
   int32_t ia_state() const { return win_attributes_->ia_state; }
@@ -725,7 +727,6 @@ BrowserAccessibilityWin
   base::string16 name() const { return win_attributes_->name; }
   base::string16 description() const { return win_attributes_->description; }
   base::string16 value() const { return win_attributes_->value; }
-  base::string16 hypertext() const { return win_attributes_->hypertext; }
   std::map<int32_t, int32_t>& hyperlink_offset_to_index() const {
     return win_attributes_->hyperlink_offset_to_index;
   }

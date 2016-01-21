@@ -50,7 +50,7 @@ class CONTENT_EXPORT BrowserAccessibilityAndroid : public BrowserAccessibility {
   bool HasFocusableChild() const;
 
   const char* GetClassName() const;
-  base::string16 GetText() const;
+  base::string16 GetText() const override;
 
   int GetItemIndex() const;
   int GetItemCount() const;

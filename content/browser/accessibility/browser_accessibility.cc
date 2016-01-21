@@ -99,12 +99,13 @@ bool BrowserAccessibility::IsDescendantOf(
 
 bool BrowserAccessibility::IsTextOnlyObject() const {
   return GetRole() == ui::AX_ROLE_STATIC_TEXT ||
-      GetRole() == ui::AX_ROLE_LINE_BREAK;
+         GetRole() == ui::AX_ROLE_LINE_BREAK ||
+         GetRole() == ui::AX_ROLE_INLINE_TEXT_BOX;
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
-  DCHECK(child_index < PlatformChildCount());
+  DCHECK_LT(child_index, PlatformChildCount());
   BrowserAccessibility* result = nullptr;
 
   if (HasIntAttribute(ui::AX_ATTR_CHILD_TREE_ID)) {
@@ -260,20 +261,38 @@ gfx::Rect BrowserAccessibility::GetGlobalBoundsRect() const {
 
 gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
     const {
+  DCHECK_GE(start, 0);
+  DCHECK_GE(len, 0);
+
+  // Standard text fields such as textarea have an embedded div inside them that
+  // holds all the text.
+  if (IsSimpleTextControl() && InternalChildCount() == 1)
+    return InternalGetChild(0)->GetLocalBoundsForRange(start, len);
+
   if (GetRole() != ui::AX_ROLE_STATIC_TEXT) {
-    // Apply recursively to all static text descendants. For example, if
-    // you call it on a div with two text node children, it just calls
-    // GetLocalBoundsForRange on each of the two children (adjusting
-    // |start| for each one) and unions the resulting rects.
     gfx::Rect bounds;
-    for (size_t i = 0; i < InternalChildCount(); ++i) {
+    for (size_t i = 0; i < InternalChildCount() && len > 0; ++i) {
       BrowserAccessibility* child = InternalGetChild(i);
-      int child_len = child->GetInnerTextLength();
-      if (start < child_len && start + len > 0) {
-        gfx::Rect child_rect = child->GetLocalBoundsForRange(start, len);
+      // Child objects are of length one, since they are represented by a single
+      // embedded object character. The exception is text-only objects.
+      int child_length_in_parent = 1;
+      if (child->IsTextOnlyObject())
+        child_length_in_parent = static_cast<int>(child->GetText().size());
+      if (start < child_length_in_parent) {
+        gfx::Rect child_rect;
+        if (child->IsTextOnlyObject()) {
+          child_rect = child->GetLocalBoundsForRange(start, len);
+        } else {
+          child_rect = child->GetLocalBoundsForRange(
+              0, static_cast<int>(child->GetText().size()));
+        }
         bounds.Union(child_rect);
+        len -= (child_length_in_parent - start);
       }
-      start -= child_len;
+      if (start > child_length_in_parent)
+        start -= child_length_in_parent;
+      else
+        start = 0;
     }
     return ElementBoundsToLocalBounds(bounds);
   }
@@ -281,7 +300,6 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
   int end = start + len;
   int child_start = 0;
   int child_end = 0;
-
   gfx::Rect bounds;
   for (size_t i = 0; i < InternalChildCount() && child_end < start + len; ++i) {
     BrowserAccessibility* child = InternalGetChild(i);
@@ -291,11 +309,9 @@ gfx::Rect BrowserAccessibility::GetLocalBoundsForRange(int start, int len)
       continue;
     }
 
-    std::string child_text;
-    child->GetStringAttribute(ui::AX_ATTR_NAME, &child_text);
-    int child_len = static_cast<int>(child_text.size());
+    int child_length = static_cast<int>(child->GetText().size());
     child_start = child_end;
-    child_end += child_len;
+    child_end += child_length;
 
     if (child_end < start)
       continue;
@@ -382,7 +398,7 @@ int BrowserAccessibility::GetWordStartBoundary(
     int start, ui::TextBoundaryDirection direction) const {
   DCHECK_GE(start, -1);
   // Special offset that indicates that a word boundary has not been found.
-  int word_start_not_found = GetInnerTextLength();
+  int word_start_not_found = static_cast<int>(GetText().size());
   int word_start = word_start_not_found;
 
   switch (GetRole()) {
@@ -397,9 +413,7 @@ int BrowserAccessibility::GetWordStartBoundary(
         child_start = child_end;
         BrowserAccessibility* child = InternalGetChild(i);
         DCHECK_EQ(child->GetRole(), ui::AX_ROLE_INLINE_TEXT_BOX);
-        const std::string& child_text = child->GetStringAttribute(
-            ui::AX_ATTR_NAME);
-        int child_len = static_cast<int>(child_text.size());
+        int child_len = static_cast<int>(GetText().size());
         child_end += child_len; // End is one past the last character.
 
         const std::vector<int32_t>& word_starts =
@@ -452,22 +466,32 @@ int BrowserAccessibility::GetWordStartBoundary(
       if (!InternalChildCount())
         return word_start_not_found;
 
+      const BrowserAccessibility* this_object = this;
+      // Standard text fields such as textarea have an embedded div inside them
+      // that should be skipped.
+      if (IsSimpleTextControl() && InternalChildCount() == 1) {
+        this_object = InternalGetChild(0);
+      }
       int child_start = 0;
-      for (size_t i = 0; i < InternalChildCount(); ++i) {
-        BrowserAccessibility* child = InternalGetChild(i);
-        int child_len = child->GetInnerTextLength();
-        int child_word_start = child->GetWordStartBoundary(start, direction);
-        if (child_word_start < child_len) {
-          // We have found a possible word boundary.
-          word_start = child_start + child_word_start;
-        }
+      for (size_t i = 0; i < this_object->InternalChildCount(); ++i) {
+        BrowserAccessibility* child = this_object->InternalGetChild(i);
+        // Child objects are of length one, since they are represented by a
+        // single embedded object character. The exception is text-only objects.
+        int child_len = 1;
+        if (child->IsTextOnlyObject()) {
+          child_len = static_cast<int>(child->GetText().size());
+          int child_word_start = child->GetWordStartBoundary(start, direction);
+          if (child_word_start < child_len) {
+            // We have found a possible word boundary.
+            word_start = child_start + child_word_start;
+          }
 
-        // Decide when to stop searching.
-        if ((word_start != word_start_not_found &&
-            direction == ui::FORWARDS_DIRECTION) ||
-            (start < child_len &&
-            direction == ui::BACKWARDS_DIRECTION)) {
-          break;
+          // Decide when to stop searching.
+          if ((word_start != word_start_not_found &&
+               direction == ui::FORWARDS_DIRECTION) ||
+              (start < child_len && direction == ui::BACKWARDS_DIRECTION)) {
+            break;
+          }
         }
 
         child_start += child_len;
@@ -656,7 +680,11 @@ bool BrowserAccessibility::GetAriaTristate(
   if (base::EqualsASCII(value, "mixed"))
     *is_mixed = true;
 
-  return false;  // Not set
+  return false;  // Not set.
+}
+
+base::string16 BrowserAccessibility::GetText() const {
+  return GetInnerText();
 }
 
 bool BrowserAccessibility::HasState(ui::AXState state_enum) const {
@@ -670,7 +698,8 @@ bool BrowserAccessibility::IsCellOrTableHeaderRole() const {
 }
 
 bool BrowserAccessibility::HasCaret() const {
-  if (IsEditableText() && !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+  if (HasState(ui::AX_STATE_EDITABLE) &&
+      !HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_START) &&
       HasIntAttribute(ui::AX_ATTR_TEXT_SEL_END)) {
     return true;
@@ -683,10 +712,6 @@ bool BrowserAccessibility::HasCaret() const {
     return false;
 
   return focus_object->IsDescendantOf(this);
-}
-
-bool BrowserAccessibility::IsEditableText() const {
-  return HasState(ui::AX_STATE_EDITABLE);
 }
 
 bool BrowserAccessibility::IsWebAreaForPresentationalIframe() const {
@@ -783,10 +808,6 @@ base::string16 BrowserAccessibility::GetInnerText() const {
   for (size_t i = 0; i < InternalChildCount(); ++i)
     text += InternalGetChild(i)->GetInnerText();
   return text;
-}
-
-int BrowserAccessibility::GetInnerTextLength() const {
-  return static_cast<int>(GetInnerText().size());
 }
 
 void BrowserAccessibility::FixEmptyBounds(gfx::Rect* bounds) const

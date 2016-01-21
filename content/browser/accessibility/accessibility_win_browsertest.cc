@@ -17,6 +17,7 @@
 #include "content/browser/accessibility/accessibility_mode_helper.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
+#include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
@@ -63,6 +64,8 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       base::win::ScopedComPtr<IAccessibleText>* input_text);
   void SetUpTextareaField(
       base::win::ScopedComPtr<IAccessibleText>* textarea_text);
+  void SetUpSampleParagraph(
+      base::win::ScopedComPtr<IAccessibleText>* paragraph_text);
 
   static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
@@ -75,7 +78,7 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
                                           int32_t depth,
                                           bool* found);
   static void CheckTextAtOffset(
-      base::win::ScopedComPtr<IAccessibleText>& element,
+      base::win::ScopedComPtr<IAccessibleText>& object,
       LONG offset,
       IA2TextBoundaryType boundary_type,
       LONG expected_start_offset,
@@ -133,26 +136,25 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   ASSERT_EQ(1u, document_children.size());
 
   base::win::ScopedComPtr<IAccessible2> form;
-  HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
-      document.get(), document_children[0].AsInput()).get(), form.Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.get(), document_children[0].AsInput())
+          .get(),
+      form.Receive()));
   std::vector<base::win::ScopedVariant> form_children =
       GetAllAccessibleChildren(form.get());
   ASSERT_EQ(2u, form_children.size());
 
   // Find the input text field.
   base::win::ScopedComPtr<IAccessible2> input;
-  hr = QueryIAccessible2(GetAccessibleFromVariant(
-      form.get(), form_children[1].AsInput()).get(), input.Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(form.get(), form_children[1].AsInput()).get(),
+      input.Receive()));
   LONG input_role = 0;
-  hr = input->role(&input_role);
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(input->role(&input_role));
   ASSERT_EQ(ROLE_SYSTEM_TEXT, input_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  hr = input.QueryInterface(input_text->Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(input.QueryInterface(input_text->Receive()));
 
   // Set the caret on the last character.
   AccessibilityNotificationWaiter waiter(
@@ -185,26 +187,26 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_EQ(1u, document_children.size());
 
   base::win::ScopedComPtr<IAccessible2> section;
-  HRESULT hr = QueryIAccessible2(GetAccessibleFromVariant(
-      document.get(), document_children[0].AsInput()).get(), section.Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.get(), document_children[0].AsInput())
+          .get(),
+      section.Receive()));
   std::vector<base::win::ScopedVariant> section_children =
       GetAllAccessibleChildren(section.get());
   ASSERT_EQ(1u, section_children.size());
 
   // Find the textarea text field.
   base::win::ScopedComPtr<IAccessible2> textarea;
-  hr = QueryIAccessible2(GetAccessibleFromVariant(
-      section.get(), section_children[0].AsInput()).get(), textarea.Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(section.get(), section_children[0].AsInput())
+          .get(),
+      textarea.Receive()));
   LONG textarea_role = 0;
-  hr = textarea->role(&textarea_role);
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(textarea->role(&textarea_role));
   ASSERT_EQ(ROLE_SYSTEM_TEXT, textarea_role);
 
   // Retrieve the IAccessibleText interface for the field.
-  hr = textarea.QueryInterface(textarea_text->Receive());
-  ASSERT_EQ(S_OK, hr);
+  ASSERT_HRESULT_SUCCEEDED(textarea.QueryInterface(textarea_text->Receive()));
 
   // Set the caret on the last character.
   AccessibilityNotificationWaiter waiter(
@@ -220,6 +222,33 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   waiter.WaitForNotification();
 }
 
+// Loads a page with  a paragraph of sample text.
+void AccessibilityWinBrowserTest::SetUpSampleParagraph(
+    base::win::ScopedComPtr<IAccessibleText>* paragraph_text) {
+  ASSERT_NE(nullptr, paragraph_text);
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      "<!DOCTYPE html><html><body>"
+      "<p><b>Game theory</b> is \"the study of "
+      "<a href=\"#\" title=\"Mathematical model\">mathematical models</a> "
+      "of conflict and<br>cooperation between intelligent rational "
+      "decision-makers.\"</p></body></html>"));
+
+  // Retrieve the IAccessible interface for the web page.
+  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  std::vector<base::win::ScopedVariant> document_children =
+      GetAllAccessibleChildren(document.get());
+  ASSERT_EQ(1u, document_children.size());
+
+  base::win::ScopedComPtr<IAccessible2> paragraph;
+  ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
+      GetAccessibleFromVariant(document.get(), document_children[0].AsInput())
+          .get(),
+      paragraph.Receive()));
+  LONG paragraph_role = 0;
+  ASSERT_HRESULT_SUCCEEDED(paragraph->role(&paragraph_role));
+  ASSERT_EQ(IA2_ROLE_PARAGRAPH, paragraph_role);
+  ASSERT_HRESULT_SUCCEEDED(paragraph.QueryInterface(paragraph_text->Receive()));
+}
 
 // Static helpers ------------------------------------------------
 
@@ -307,7 +336,7 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
 // Ensures that the text and the start and end offsets retrieved using
 // get_textAtOffset match the expected values.
 void AccessibilityWinBrowserTest::CheckTextAtOffset(
-    base::win::ScopedComPtr<IAccessibleText>& element,
+    base::win::ScopedComPtr<IAccessibleText>& object,
     LONG offset,
     IA2TextBoundaryType boundary_type,
     LONG expected_start_offset,
@@ -321,9 +350,8 @@ void AccessibilityWinBrowserTest::CheckTextAtOffset(
   LONG start_offset = 0;
   LONG end_offset = 0;
   base::win::ScopedBstr text;
-  HRESULT hr = element->get_textAtOffset(
-      offset, boundary_type,
-      &start_offset, &end_offset, text.Receive());
+  HRESULT hr = object->get_textAtOffset(offset, boundary_type, &start_offset,
+                                        &end_offset, text.Receive());
   EXPECT_EQ(S_OK, hr);
   EXPECT_EQ(expected_start_offset, start_offset);
   EXPECT_EQ(expected_end_offset, end_offset);
@@ -954,7 +982,107 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestSetCaretOffset) {
+                       TestCharacterExtentsWithInvalidArguments) {
+  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraph(&paragraph_text);
+
+  LONG invalid_offset = -3;
+  LONG x = -1, y = -1;
+  LONG width = -1, height = -1;
+
+  HRESULT hr = paragraph_text->get_characterExtents(
+      invalid_offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height);
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(-1, x);
+  EXPECT_EQ(-1, y);
+  EXPECT_EQ(-1, width);
+  EXPECT_EQ(-1, height);
+  hr = paragraph_text->get_characterExtents(
+      invalid_offset, IA2_COORDTYPE_PARENT_RELATIVE, &x, &y, &width, &height);
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(-1, x);
+  EXPECT_EQ(-1, y);
+  EXPECT_EQ(-1, width);
+  EXPECT_EQ(-1, height);
+
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text->get_nCharacters(&n_characters));
+  ASSERT_LT(0, n_characters);
+
+  invalid_offset = n_characters + 1;
+  hr = paragraph_text->get_characterExtents(
+      invalid_offset, IA2_COORDTYPE_SCREEN_RELATIVE, &x, &y, &width, &height);
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(-1, x);
+  EXPECT_EQ(-1, y);
+  EXPECT_EQ(-1, width);
+  EXPECT_EQ(-1, height);
+  hr = paragraph_text->get_characterExtents(
+      invalid_offset, IA2_COORDTYPE_PARENT_RELATIVE, &x, &y, &width, &height);
+  EXPECT_EQ(E_INVALIDARG, hr);
+  EXPECT_EQ(-1, x);
+  EXPECT_EQ(-1, y);
+  EXPECT_EQ(-1, width);
+  EXPECT_EQ(-1, height);
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
+  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraph(&paragraph_text);
+
+  const LONG newline_offset = 46;
+  LONG n_characters;
+  ASSERT_HRESULT_SUCCEEDED(paragraph_text->get_nCharacters(&n_characters));
+  ASSERT_LT(0, n_characters);
+
+  LONG x, y, width, height;
+  LONG previous_x, previous_y;
+
+  for (int coordinate = IA2_COORDTYPE_SCREEN_RELATIVE;
+       coordinate <= IA2_COORDTYPE_PARENT_RELATIVE; ++coordinate) {
+    auto coordinate_type = static_cast<IA2CoordinateType>(coordinate);
+    EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+        0, coordinate_type, &x, &y, &width, &height));
+    EXPECT_LE(0, x) << "at offset 0";
+    EXPECT_LE(0, y) << "at offset 0";
+    EXPECT_LT(0, width) << "at offset 0";
+    EXPECT_LT(0, height) << "at offset 0";
+
+    for (LONG offset = 1; offset < newline_offset; ++offset) {
+      previous_x = x;
+      previous_y = y;
+
+      EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+          offset, coordinate_type, &x, &y, &width, &height));
+      EXPECT_LT(previous_x, x) << "at offset " << offset;
+      EXPECT_EQ(previous_y, y) << "at offset " << offset;
+      EXPECT_LT(0, width) << "at offset " << offset;
+      EXPECT_LT(0, height) << "at offset " << offset;
+    }
+
+    EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+        newline_offset + 1, coordinate_type, &x, &y, &width, &height));
+    EXPECT_LE(0, x) << "at offset " << newline_offset + 1;
+    EXPECT_GT(previous_x, x) << "at offset " << newline_offset + 1;
+    EXPECT_LT(previous_y, y) << "at offset " << newline_offset + 1;
+    EXPECT_LT(0, width) << "at offset " << newline_offset + 1;
+    EXPECT_LT(0, height) << "at offset " << newline_offset + 1;
+
+    for (LONG offset = newline_offset + 2; offset < n_characters; ++offset) {
+      previous_x = x;
+      previous_y = y;
+
+      EXPECT_HRESULT_SUCCEEDED(paragraph_text->get_characterExtents(
+          offset, coordinate_type, &x, &y, &width, &height));
+      EXPECT_LT(previous_x, x) << "at offset " << offset;
+      EXPECT_EQ(previous_y, y) << "at offset " << offset;
+      EXPECT_LT(0, width) << "at offset " << offset;
+      EXPECT_LT(0, height) << "at offset " << offset;
+    }
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
   base::win::ScopedComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
@@ -1000,7 +1128,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestTextAtOffsetWithInvalidArgs) {
+                       TestTextAtOffsetWithInvalidArguments) {
   base::win::ScopedComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
   HRESULT hr = input_text->get_textAtOffset(
@@ -1093,7 +1221,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
-                       TestMultiLineTextAtOffsetWithInvalidArgs) {
+                       TestMultiLineTextAtOffsetWithInvalidArguments) {
   base::win::ScopedComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   HRESULT hr = textarea_text->get_textAtOffset(
@@ -1375,6 +1503,39 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Test special offsets.
   CheckTextAtOffset(textarea_text, IA2_TEXT_OFFSET_CARET,
       IA2_TEXT_BOUNDARY_WORD, 40, CONTENTS_LENGTH, L"like\".");
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
+                       TestStaticTextAtOffsetWithBoundaryWord) {
+  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  SetUpSampleParagraph(&paragraph_text);
+  base::string16 embedded_character(
+      1, BrowserAccessibilityWin::kEmbeddedCharacter);
+  std::vector<std::wstring> words;
+  words.push_back(L"Game ");
+  words.push_back(L"theory ");
+  words.push_back(L"is \"");
+  words.push_back(L"the ");
+  words.push_back(L"study ");
+  words.push_back(L"of " + embedded_character + L' ');
+  words.push_back(L"of ");
+  words.push_back(L"conflict ");
+  words.push_back(L"and\n");
+  words.push_back(L"cooperation ");
+  words.push_back(L"between ");
+  words.push_back(L"intelligent ");
+  words.push_back(L"rational ");
+  words.push_back(L"decision-");
+  words.push_back(L"makers.\"");
+
+  // Try to retrieve one word after another.
+  LONG word_start_offset = 0;
+  for (auto& word : words) {
+    LONG word_end_offset = word_start_offset + word.size();
+    CheckTextAtOffset(paragraph_text, word_start_offset, IA2_TEXT_BOUNDARY_WORD,
+                      word_start_offset, word_end_offset, word);
+    word_start_offset = word_end_offset;
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,

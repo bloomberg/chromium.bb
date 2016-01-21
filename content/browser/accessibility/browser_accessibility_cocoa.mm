@@ -1652,7 +1652,7 @@ bool InitializeAccessibilityTreeSearch(
         nil]];
   }
 
-  if (browserAccessibility_->IsEditableText()) {
+  if (browserAccessibility_->HasState(ui::AX_STATE_EDITABLE)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityLineForIndexParameterizedAttribute,
         NSAccessibilityRangeForLineParameterizedAttribute,
@@ -1835,7 +1835,7 @@ bool InitializeAccessibilityTreeSearch(
   }
 
   // Caret navigation and text selection attributes.
-  if (browserAccessibility_->IsEditableText()) {
+  if (browserAccessibility_->HasState(ui::AX_STATE_EDITABLE)) {
     [ret addObjectsFromArray:[NSArray arrayWithObjects:
         NSAccessibilityInsertionPointLineNumberAttribute,
         NSAccessibilityNumberOfCharactersAttribute,
@@ -1975,7 +1975,7 @@ bool InitializeAccessibilityTreeSearch(
   }
 
   if ([attribute isEqualToString:NSAccessibilitySelectedTextRangeAttribute] &&
-      browserAccessibility_->IsEditableText()) {
+      browserAccessibility_->HasState(ui::AX_STATE_EDITABLE)) {
     return YES;
   }
 
