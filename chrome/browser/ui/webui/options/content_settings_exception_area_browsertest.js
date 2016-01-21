@@ -18,7 +18,7 @@ ContentSettingsExceptionAreaWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/contentExceptions',
 };
 
-// See crbug.com/579830 for OS_LINUX
+// See crbug.com/579666 for OS_LINUX
 GEN('#if defined(OS_CHROMEOS) || defined(OS_LINUX)');
 GEN('#define MAYBE_testOpenContentSettingsExceptionArea ' +
         'DISABLED_testOpenContentSettingsExceptionArea');

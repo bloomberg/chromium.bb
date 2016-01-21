@@ -19,7 +19,7 @@ SearchEngineManagerWebUITest.prototype = {
 };
 
 // See crosbug.com/22673 for OS_CHROMEOS
-// See crbug.com/579827 for OS_LINUX
+// See crbug.com/579666 for OS_LINUX
 GEN('#if defined(OS_CHROMEOS) || defined(OS_LINUX)');
 GEN('#define MAYBE_testOpenSearchEngineManager ' +
         'DISABLED_testOpenSearchEngineManager');

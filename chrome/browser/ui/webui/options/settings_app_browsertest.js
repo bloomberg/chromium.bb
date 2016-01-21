@@ -20,8 +20,14 @@ SettingsAppWebUITest.prototype = {
 
 GEN('#if defined(ENABLE_SETTINGS_APP)');
 
+// This test is flaky on Linux bot. See crbug.com/579666
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_testOpenSettingsApp DISABLED_testOpenSettingsApp');
+GEN('#else');
+GEN('#define MAYBE_testOpenSettingsApp testOpenSettingsApp');
+GEN('#endif  // defined(OS_LINUX)');
 // Test opening Settings App, and do some checks on section visibility.
-TEST_F('SettingsAppWebUITest', 'testOpenSettingsApp', function() {
+TEST_F('SettingsAppWebUITest', 'MAYBE_testOpenSettingsApp', function() {
   // Note there is no location bar in the Settings App.
 
   // Some things are hidden via a parent, so make a helper function.
@@ -41,10 +47,16 @@ TEST_F('SettingsAppWebUITest', 'testOpenSettingsApp', function() {
   assertFalse(isVisible('startup-section'));
 });
 
+// This test is flaky on Linux bot. See crbug.com/579666
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_testStrings DISABLED_testStrings');
+GEN('#else');
+GEN('#define MAYBE_testStrings testStrings');
+GEN('#endif  // defined(OS_LINUX)');
 // Check functionality of LoadTimeData.overrideValues(), which the Settings App
 // uses. Do spot checks, so the test is not too fragile. Some of the content
 // strings rely on waiting for sync sign-in status, or platform-specifics.
-TEST_F('SettingsAppWebUITest', 'testStrings', function() {
+TEST_F('SettingsAppWebUITest', 'MAYBE_testStrings', function() {
   // Ensure we check against the override values.
   assertTrue(!!loadTimeData.getValue('settingsApp'));
 

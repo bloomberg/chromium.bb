@@ -81,7 +81,13 @@ SyncSetupWebUITestAsync.prototype = {
   },
 };
 
-TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
+// This test is flaky on Linux bot. See crbug.com/579666
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_VerifySignIn DISABLED_VerifySignIn');
+GEN('#else');
+GEN('#define MAYBE_VerifySignIn VerifySignIn');
+GEN('#endif  // defined(OS_LINUX)');
+TEST_F('SyncSetupWebUITestAsync', 'MAYBE_VerifySignIn', function() {
   // Handle SyncSetupStartSignIn by displaying the sync setup dialog, verifying
   // that a confirmation dialog appears, and clicking OK to dismiss the dialog.
   // Note that this test doesn't actually do a gaia sign in.
@@ -101,8 +107,14 @@ TEST_F('SyncSetupWebUITestAsync', 'VerifySignIn', function() {
   this.startSyncing();
 });
 
+// This test is flaky on Linux bot. See crbug.com/579666
+GEN('#if defined(OS_LINUX)');
+GEN('#define MAYBE_RestoreSyncDataTypes DISABLED_RestoreSyncDataTypes');
+GEN('#else');
+GEN('#define MAYBE_RestoreSyncDataTypes RestoreSyncDataTypes');
+GEN('#endif  // defined(OS_LINUX)');
 // Test that switching to and from "Sync everything" saves and restores types.
-TEST_F('SyncSetupWebUITestAsync', 'RestoreSyncDataTypes', function() {
+TEST_F('SyncSetupWebUITestAsync', 'MAYBE_RestoreSyncDataTypes', function() {
   this.mockHandler.expects(once()).SyncSetupStartSignIn(
     'access-point-settings').will(callFunction(function() {
     SyncSetupOverlay.showSyncSetupPage('configure', {});
