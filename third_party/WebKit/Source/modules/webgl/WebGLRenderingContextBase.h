@@ -474,6 +474,8 @@ protected:
     void destroyContext();
     void markContextChanged(ContentChangeType);
 
+    void notifyCanvasContextChanged();
+
     // Query if the context is NPOT strict.
     bool isNPOTStrict() { return !isWebGL2OrHigher(); }
     // Query if depth_stencil buffer is supported.
@@ -1121,6 +1123,14 @@ protected:
     // If the vector is empty, return the maximum allowed active context number.
     static WebGLRenderingContextBase* oldestContext();
     static WebGLRenderingContextBase* oldestEvictedContext();
+
+#if ENABLE(OILPAN)
+    CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase> createWeakThisPointer() { return CrossThreadWeakPersistentThisPointer<WebGLRenderingContextBase>(this); }
+#else
+    WeakPtr<WebGLRenderingContextBase> createWeakThisPointer() { return m_weakPtrFactory.createWeakPtr(); }
+
+    WeakPtrFactory<WebGLRenderingContextBase> m_weakPtrFactory;
+#endif
 };
 
 DEFINE_TYPE_CASTS(WebGLRenderingContextBase, CanvasRenderingContext, context, context->is3d(), context.is3d());

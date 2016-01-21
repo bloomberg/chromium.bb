@@ -962,6 +962,9 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     , m_isOESTextureHalfFloatFormatsTypesAdded(false)
     , m_isWebGLDepthTextureFormatsTypesAdded(false)
     , m_isEXTsRGBFormatsTypesAdded(false)
+#if !ENABLE(OILPAN)
+    , m_weakPtrFactory(this)
+#endif
 {
     ASSERT(context);
 
@@ -978,7 +981,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(HTMLCanvasElement* passedCa
     }
 
     m_drawingBuffer = buffer.release();
-
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, createWeakThisPointer()));
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     setupFlags();
 
@@ -1238,6 +1241,14 @@ void WebGLRenderingContextBase::markContextChanged(ContentChangeType changeType)
             canvas()->didDraw(FloatRect(FloatPoint(0, 0), FloatSize(clampedCanvasSize())));
         }
     }
+}
+
+void WebGLRenderingContextBase::notifyCanvasContextChanged()
+{
+    if (!canvas())
+        return;
+
+    canvas()->notifyListenersCanvasChanged();
 }
 
 WebGLRenderingContextBase::HowToClear WebGLRenderingContextBase::clearIfComposited(GLbitfield mask)
@@ -6663,6 +6674,7 @@ void WebGLRenderingContextBase::maybeRestoreContext(Timer<WebGLRenderingContextB
     }
 
     m_drawingBuffer = buffer.release();
+    m_drawingBuffer->addNewMailboxCallback(WTF::bind(&WebGLRenderingContextBase::notifyCanvasContextChanged, createWeakThisPointer()));
 
     drawingBuffer()->bind(GL_FRAMEBUFFER);
     m_lostContextErrors.clear();
