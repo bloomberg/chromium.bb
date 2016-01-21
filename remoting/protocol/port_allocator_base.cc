@@ -24,7 +24,7 @@ typedef std::map<std::string, std::string> StringMap;
 StringMap ParseMap(const std::string& string) {
   StringMap map;
   base::StringPairs pairs;
-  base::SplitStringIntoKeyValuePairs(string, '\r', '=', &pairs);
+  base::SplitStringIntoKeyValuePairs(string, '=', '\n', &pairs);
 
   for (auto& pair : pairs) {
     map[pair.first] = pair.second;
