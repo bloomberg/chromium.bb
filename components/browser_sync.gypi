@@ -74,6 +74,7 @@
         '../google_apis/google_apis.gyp:google_apis',
         '../sync/sync.gyp:sync',
         '../testing/gmock.gyp:gmock',
+        'sync_driver',
         'sync_driver_test_support',
       ],
       'include_dirs': [
@@ -83,6 +84,8 @@
         # Note: file list duplicated in GN build.
         'browser_sync/browser/profile_sync_service_mock.cc',
         'browser_sync/browser/profile_sync_service_mock.h',
+        'browser_sync/browser/profile_sync_test_util.cc',
+        'browser_sync/browser/profile_sync_test_util.h',
       ],
     }
   ],

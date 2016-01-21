@@ -5,8 +5,8 @@
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_test_util.h"
 
 #include "base/bind.h"
-#include "base/time/time.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
+#include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
@@ -16,14 +16,6 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/public/provider/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/web/public/web_thread.h"
-
-namespace {
-
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&) {}
-
-}  // namespace
 
 ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
     scoped_ptr<sync_driver::SyncClient> sync_client,
@@ -39,7 +31,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
       sync_client ? std::move(sync_client)
                   : make_scoped_ptr(new IOSChromeSyncClient(browser_state));
   init_params.network_time_update_callback =
-      base::Bind(&EmptyNetworkTimeUpdate);
+      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
   init_params.base_directory = browser_state->GetStatePath();
   init_params.url_request_context = browser_state->GetRequestContext();
   init_params.debug_identifier = browser_state->GetDebugName();

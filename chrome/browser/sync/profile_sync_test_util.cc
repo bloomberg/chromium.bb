@@ -15,22 +15,13 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/signin_manager_wrapper.h"
 #include "components/sync_driver/startup_controller.h"
 #include "components/sync_driver/sync_api_component_factory_mock.h"
 
 using content::BrowserThread;
-
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&) {}
-
-SyncServiceObserverMock::SyncServiceObserverMock() {
-}
-
-SyncServiceObserverMock::~SyncServiceObserverMock() {
-}
 
 ThreadNotifier::ThreadNotifier(base::Thread* notify_thread)
     : done_event_(false, false),
@@ -86,7 +77,7 @@ ProfileSyncService::InitParams CreateProfileSyncServiceParamsForTest(
   init_params.start_behavior = browser_sync::MANUAL_START;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback =
-      base::Bind(&EmptyNetworkTimeUpdate);
+      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
   init_params.base_directory = profile->GetPath();
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();

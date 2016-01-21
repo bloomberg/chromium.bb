@@ -12,18 +12,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "components/browser_sync/browser/profile_sync_service_mock.h"
-#include "components/sync_driver/sync_service_observer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/notification_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
-
-namespace base {
-class Thread;
-class Time;
-class TimeDelta;
-}
 
 namespace content {
 class BrowserContext;
@@ -38,12 +31,6 @@ class Profile;
 class ProfileSyncServiceMock;
 class TestingProfile;
 
-// An empty syncer::NetworkTimeUpdateCallback. Used in various tests to
-// instantiate ProfileSyncService.
-void EmptyNetworkTimeUpdate(const base::Time&,
-                            const base::TimeDelta&,
-                            const base::TimeDelta&);
-
 ACTION_P(Notify, type) {
   content::NotificationService::current()->Notify(
       type,
@@ -55,14 +42,6 @@ ACTION(QuitUIMessageLoop) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   base::MessageLoop::current()->QuitWhenIdle();
 }
-
-class SyncServiceObserverMock : public sync_driver::SyncServiceObserver {
- public:
-  SyncServiceObserverMock();
-  virtual ~SyncServiceObserverMock();
-
-  MOCK_METHOD0(OnStateChanged, void());
-};
 
 class ThreadNotifier :  // NOLINT
     public base::RefCountedThreadSafe<ThreadNotifier> {

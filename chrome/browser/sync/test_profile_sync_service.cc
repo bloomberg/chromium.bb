@@ -17,9 +17,9 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/test/test_http_bridge_factory.h"
 #include "chrome/common/channel_info.h"
+#include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/sync_driver/glue/sync_backend_host.h"
@@ -46,13 +46,26 @@ ProfileSyncService::InitParams GetInitParams(
     SigninManagerBase* signin,
     ProfileOAuth2TokenService* oauth2_token_service,
     browser_sync::ProfileSyncServiceStartBehavior behavior) {
-  ProfileSyncService::InitParams init_params =
-      CreateProfileSyncServiceParamsForTest(profile);
+  ProfileSyncService::InitParams init_params;
 
   init_params.signin_wrapper =
       make_scoped_ptr(new SigninManagerWrapper(signin));
   init_params.oauth2_token_service = oauth2_token_service;
   init_params.start_behavior = behavior;
+  init_params.sync_client =
+      make_scoped_ptr(new browser_sync::ChromeSyncClient(profile));
+  init_params.network_time_update_callback =
+      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
+  init_params.base_directory = profile->GetPath();
+  init_params.url_request_context = profile->GetRequestContext();
+  init_params.debug_identifier = profile->GetDebugName();
+  init_params.channel = chrome::GetChannel();
+  init_params.db_thread = content::BrowserThread::GetMessageLoopProxyForThread(
+      content::BrowserThread::DB);
+  init_params.file_thread =
+      content::BrowserThread::GetMessageLoopProxyForThread(
+          content::BrowserThread::FILE);
+  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   return init_params;
 }

@@ -16,7 +16,6 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/chrome_sync_client.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/supervised_user_signin_manager_wrapper.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -24,6 +23,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
+#include "components/browser_sync/browser/profile_sync_test_util.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -75,7 +75,7 @@ ProfileSyncService::InitParams GetInitParams(
   init_params.start_behavior = start_behavior;
   init_params.sync_client = std::move(sync_client);
   init_params.network_time_update_callback =
-      base::Bind(&EmptyNetworkTimeUpdate);
+      base::Bind(&browser_sync::EmptyNetworkTimeUpdate);
   init_params.base_directory = profile->GetPath();
   init_params.url_request_context = profile->GetRequestContext();
   init_params.debug_identifier = profile->GetDebugName();
@@ -243,7 +243,7 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   TestingProfileManager profile_manager_;
   TestingProfile* profile_;
   ProfileSyncService* sync_;
-  SyncServiceObserverMock observer_;
+  browser_sync::SyncServiceObserverMock observer_;
   sync_driver::DataTypeStatusTable data_type_status_table_;
 };
 
