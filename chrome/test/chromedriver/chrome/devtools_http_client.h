@@ -46,6 +46,7 @@ struct WebViewInfo {
   ~WebViewInfo();
 
   bool IsFrontend() const;
+  bool IsInactiveBackgroundPage() const;
 
   std::string id;
   std::string debugger_url;
@@ -89,7 +90,7 @@ class DevToolsHttpClient {
 
   const BrowserInfo* browser_info();
   const DeviceMetrics* device_metrics();
-  bool IsBrowserWindow(WebViewInfo::Type window_type) const;
+  bool IsBrowserWindow(const WebViewInfo& view) const;
 
  private:
   Status CloseFrontends(const std::string& for_client_id);

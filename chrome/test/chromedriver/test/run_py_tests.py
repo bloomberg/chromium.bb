@@ -218,22 +218,25 @@ class ChromeDriverBaseTest(unittest.TestCase):
     self._drivers += [driver]
     return driver
 
-  def WaitForNewWindow(self, driver, old_handles):
+  def WaitForNewWindow(self, driver, old_handles, check_closed_windows=True):
     """Wait for at least one new window to show up in 20 seconds.
 
     Args:
       old_handles: Handles to all old windows before the new window is added.
+      check_closed_windows: If True, assert that no windows are closed before
+          the new window is added.
 
     Returns:
       Handle to a new window. None if timeout.
     """
     deadline = time.time() + 20
     while time.time() < deadline:
-      new_handles = driver.GetWindowHandles()
-      if len(new_handles) > len(old_handles):
-        for index, old_handle in enumerate(old_handles):
-          self.assertEquals(old_handle, new_handles[index])
-        return new_handles[len(old_handles)]
+      handles = driver.GetWindowHandles()
+      if check_closed_windows:
+        self.assertTrue(set(old_handles).issubset(handles))
+      new_handles = set(handles).difference(set(old_handles))
+      if len(new_handles) > 0:
+        return new_handles.pop()
       time.sleep(0.01)
     return None
 
@@ -1393,6 +1396,25 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
     driver.SwitchToWindow(new_window_handle)
     body_element = driver.FindElement('tag name', 'body')
     self.assertEqual('It works!', body_element.GetText())
+
+  def testCanInspectBackgroundPage(self):
+    app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
+    extension_path = os.path.join(_TEST_DATA_DIR, 'all_frames')
+    driver = self.CreateDriver(
+        chrome_switches=['load-extension=%s' % app_path],
+        experimental_options={'windowTypes': ['background_page']})
+    old_handles = driver.GetWindowHandles()
+    driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
+    new_window_handle = self.WaitForNewWindow(
+        driver, old_handles, check_closed_windows=False)
+    handles = driver.GetWindowHandles()
+    for handle in handles:
+      driver.SwitchToWindow(handle)
+      if driver.GetCurrentUrl() == 'chrome-extension://' \
+          'gegjcdcfeiojglhifpmibkadodekakpc/_generated_background_page.html':
+        self.assertEqual(42, driver.ExecuteScript('return magic;'))
+        return
+    self.fail("couldn't find generated background page for test app")
 
   def testDontExecuteScriptsInContentScriptContext(self):
     # This test extension has a content script which runs in all frames (see

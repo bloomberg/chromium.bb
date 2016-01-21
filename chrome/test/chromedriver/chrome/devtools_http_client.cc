@@ -33,6 +33,10 @@ bool WebViewInfo::IsFrontend() const {
   return url.find("chrome-devtools://") == 0u;
 }
 
+bool WebViewInfo::IsInactiveBackgroundPage() const {
+  return type == WebViewInfo::kBackgroundPage && debugger_url.empty();
+}
+
 WebViewsInfo::WebViewsInfo() {}
 
 WebViewsInfo::WebViewsInfo(const std::vector<WebViewInfo>& info)
@@ -148,8 +152,12 @@ const DeviceMetrics* DevToolsHttpClient::device_metrics() {
   return device_metrics_.get();
 }
 
-bool DevToolsHttpClient::IsBrowserWindow(WebViewInfo::Type window_type) const {
-  return window_types_->find(window_type) != window_types_->end();
+bool DevToolsHttpClient::IsBrowserWindow(const WebViewInfo& view) const {
+  return window_types_->find(view.type) != window_types_->end() ||
+      (view.type == WebViewInfo::kOther &&
+        (view.url.find("chrome-extension://") == 0 ||
+         view.url == "chrome://print/" ||
+         view.url == "chrome://media-router/"));
 }
 
 Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 chrome.app.runtime.onLaunched.addListener(function() {
+  magic = 42;
   chrome.app.window.create('window.html', {
     'bounds': {
       'width': 400,
