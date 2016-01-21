@@ -21,7 +21,7 @@ class ContiguousContainerBase::Buffer {
     WTF_MAKE_NONCOPYABLE(Buffer);
     USING_FAST_MALLOC(Buffer);
 public:
-    explicit Buffer(size_t bufferSize, const char* typeName)
+    Buffer(size_t bufferSize, const char* typeName)
     {
         m_capacity = WTF::Partitions::bufferActualSize(bufferSize);
         m_begin = m_end = static_cast<char*>(
@@ -65,17 +65,10 @@ private:
     size_t m_capacity;
 };
 
-ContiguousContainerBase::ContiguousContainerBase(size_t maxObjectSize, const char* typeName)
+ContiguousContainerBase::ContiguousContainerBase(size_t maxObjectSize)
     : m_endIndex(0)
     , m_maxObjectSize(maxObjectSize)
 {
-}
-
-ContiguousContainerBase::ContiguousContainerBase(
-    size_t maxObjectSize, size_t initialSizeBytes, const char* typeName)
-    : ContiguousContainerBase(maxObjectSize, typeName)
-{
-    allocateNewBufferForNextAllocation(std::max(maxObjectSize, initialSizeBytes), typeName);
 }
 
 ContiguousContainerBase::~ContiguousContainerBase()
@@ -102,6 +95,11 @@ size_t ContiguousContainerBase::memoryUsageInBytes() const
 {
     return sizeof(*this) + capacityInBytes()
         + m_elements.capacity() * sizeof(m_elements[0]);
+}
+
+void ContiguousContainerBase::reserveInitialCapacity(size_t bufferSize, const char* typeName)
+{
+    allocateNewBufferForNextAllocation(bufferSize, typeName);
 }
 
 void* ContiguousContainerBase::allocate(size_t objectSize, const char* typeName)

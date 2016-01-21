@@ -41,8 +41,7 @@ class PLATFORM_EXPORT ContiguousContainerBase {
     DISALLOW_NEW();
     WTF_MAKE_NONCOPYABLE(ContiguousContainerBase);
 protected:
-    explicit ContiguousContainerBase(size_t maxObjectSize, const char* typeName);
-    ContiguousContainerBase(size_t maxObjectSize, size_t initialSizeBytes, const char* typeName);
+    explicit ContiguousContainerBase(size_t maxObjectSize);
     ~ContiguousContainerBase();
 
     size_t size() const { return m_elements.size(); }
@@ -52,6 +51,7 @@ protected:
     size_t memoryUsageInBytes() const;
 
     // These do not invoke constructors or destructors.
+    void reserveInitialCapacity(size_t, const char* typeName);
     void* allocate(size_t objectSize, const char* typeName);
     void removeLast();
     void clear();
@@ -108,10 +108,13 @@ public:
     using reverse_iterator = IteratorWrapper<Vector<void*>::reverse_iterator, BaseElementType>;
     using const_reverse_iterator = IteratorWrapper<Vector<void*>::const_reverse_iterator, const BaseElementType>;
 
-    explicit ContiguousContainer(size_t maxObjectSize)
-        : ContiguousContainerBase(align(maxObjectSize), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType)) {}
+    explicit ContiguousContainer(size_t maxObjectSize) : ContiguousContainerBase(align(maxObjectSize)) {}
+
     ContiguousContainer(size_t maxObjectSize, size_t initialSizeBytes)
-        : ContiguousContainerBase(align(maxObjectSize), initialSizeBytes, WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType)) {}
+        : ContiguousContainer(maxObjectSize)
+    {
+        reserveInitialCapacity(std::max(maxObjectSize, initialSizeBytes), WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+    }
 
     ~ContiguousContainer()
     {
@@ -151,7 +154,7 @@ public:
         static_assert(alignment % WTF_ALIGN_OF(DerivedElementType) == 0,
             "Derived type requires stronger alignment.");
         size_t allocSize = align(sizeof(DerivedElementType));
-        return *new (allocate(allocSize, WTF_HEAP_PROFILER_TYPE_NAME(DerivedElementType))) DerivedElementType(std::forward<Args>(args)...);
+        return *new (allocate(allocSize)) DerivedElementType(std::forward<Args>(args)...);
     }
 
     void removeLast()
@@ -177,13 +180,18 @@ public:
     BaseElementType& appendByMoving(BaseElementType& item, size_t size)
     {
         ASSERT(size >= sizeof(BaseElementType));
-        void* newItem = allocate(size, WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+        void* newItem = allocate(size);
         memcpy(newItem, static_cast<void*>(&item), size);
         new (&item) BaseElementType;
         return *static_cast<BaseElementType*>(newItem);
     }
 
 private:
+    void* allocate(size_t objectSize)
+    {
+        return ContiguousContainerBase::allocate(objectSize, WTF_HEAP_PROFILER_TYPE_NAME(BaseElementType));
+    }
+
     static size_t align(size_t size)
     {
         size_t alignedSize = alignment * ((size + alignment - 1) / alignment);
