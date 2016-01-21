@@ -37,7 +37,7 @@ using WebBluetoothGetCharacteristicCallbacks = WebCallbacks<WebPassOwnPtr<WebBlu
 using WebBluetoothReadValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
 
 // Success and failure callbacks for writeValue.
-using WebBluetoothWriteValueCallbacks = WebCallbacks<void, const WebBluetoothError&>;
+using WebBluetoothWriteValueCallbacks = WebCallbacks<const WebVector<uint8_t>&, const WebBluetoothError&>;
 
 // Success and failure callbacks for characteristic.startNotifications and
 // characteristic.stopNotifications.

@@ -145,6 +145,33 @@ ScriptPromise BluetoothGATTCharacteristic::readValue(ScriptState* scriptState)
     return promise;
 }
 
+class WriteValueCallback : public WebBluetoothWriteValueCallbacks {
+public:
+    WriteValueCallback(BluetoothGATTCharacteristic* characteristic, ScriptPromiseResolver* resolver) : m_webCharacteristic(characteristic), m_resolver(resolver) {}
+
+    void onSuccess(const WebVector<uint8_t>& value) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+
+        if (m_webCharacteristic) {
+            m_webCharacteristic->setValue(ConvertWebVectorToDataView(value));
+        }
+        m_resolver->resolve();
+    }
+
+    void onError(const WebBluetoothError& e) override
+    {
+        if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
+            return;
+        m_resolver->reject(BluetoothError::take(m_resolver, e));
+    }
+
+private:
+    WeakPersistent<BluetoothGATTCharacteristic> m_webCharacteristic;
+    Persistent<ScriptPromiseResolver> m_resolver;
+};
+
 ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, const DOMArrayPiece& value)
 {
     WebBluetooth* webbluetooth = BluetoothSupplement::fromScriptState(scriptState);
@@ -163,7 +190,7 @@ ScriptPromise BluetoothGATTCharacteristic::writeValue(ScriptState* scriptState, 
     ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
 
     ScriptPromise promise = resolver->promise();
-    webbluetooth->writeValue(m_webCharacteristic->characteristicInstanceID, valueVector, new CallbackPromiseAdapter<void, BluetoothError>(resolver));
+    webbluetooth->writeValue(m_webCharacteristic->characteristicInstanceID, valueVector, new WriteValueCallback(this, resolver));
 
     return promise;
 }

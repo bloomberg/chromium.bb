@@ -33,6 +33,7 @@ class Message;
 
 struct BluetoothCharacteristicRequest;
 struct BluetoothPrimaryServiceRequest;
+struct BluetoothWriteValueRequest;
 struct BluetoothNotificationsRequest;
 
 namespace content {
@@ -241,7 +242,7 @@ class BluetoothDispatcher : public WorkerThread::Observer {
   // Tracks requests to read from a characteristics.
   IDMap<blink::WebBluetoothReadValueCallbacks, IDMapOwnPointer>
       pending_read_value_requests_;
-  IDMap<blink::WebBluetoothWriteValueCallbacks, IDMapOwnPointer>
+  IDMap<BluetoothWriteValueRequest, IDMapOwnPointer>
       pending_write_value_requests_;
   IDMap<BluetoothNotificationsRequest, IDMapOwnPointer>
       pending_notifications_requests_;

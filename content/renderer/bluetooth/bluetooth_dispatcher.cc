@@ -67,6 +67,17 @@ struct BluetoothCharacteristicRequest {
   scoped_ptr<blink::WebBluetoothGetCharacteristicCallbacks> callbacks;
 };
 
+// Struct that holds a pending WriteValue request.
+struct BluetoothWriteValueRequest {
+  BluetoothWriteValueRequest(const blink::WebVector<uint8_t>& value,
+                             blink::WebBluetoothWriteValueCallbacks* callbacks)
+      : value(value), callbacks(callbacks) {}
+  ~BluetoothWriteValueRequest() {}
+
+  const blink::WebVector<uint8_t> value;
+  scoped_ptr<blink::WebBluetoothWriteValueCallbacks> callbacks;
+};
+
 // Struct that holds a pending Start/StopNotifications request.
 struct BluetoothNotificationsRequest {
   BluetoothNotificationsRequest(
@@ -273,8 +284,8 @@ void BluetoothDispatcher::writeValue(
     const blink::WebString& characteristic_instance_id,
     const blink::WebVector<uint8_t>& value,
     blink::WebBluetoothWriteValueCallbacks* callbacks) {
-  int request_id = pending_write_value_requests_.Add(callbacks);
-
+  int request_id = pending_write_value_requests_.Add(
+      new BluetoothWriteValueRequest(value, callbacks));
   Send(new BluetoothHostMsg_WriteValue(
       CurrentWorkerId(), request_id, frame_routing_id,
       characteristic_instance_id.utf8(),
@@ -695,7 +706,9 @@ void BluetoothDispatcher::OnReadValueError(int thread_id,
 void BluetoothDispatcher::OnWriteValueSuccess(int thread_id, int request_id) {
   DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
 
-  pending_write_value_requests_.Lookup(request_id)->onSuccess();
+  BluetoothWriteValueRequest* request =
+      pending_write_value_requests_.Lookup(request_id);
+  request->callbacks->onSuccess(request->value);
 
   pending_write_value_requests_.Remove(request_id);
 }
@@ -705,8 +718,9 @@ void BluetoothDispatcher::OnWriteValueError(int thread_id,
                                             WebBluetoothError error) {
   DCHECK(pending_write_value_requests_.Lookup(request_id)) << request_id;
 
-  pending_write_value_requests_.Lookup(request_id)
-      ->onError(WebBluetoothError(error));
+  BluetoothWriteValueRequest* request =
+      pending_write_value_requests_.Lookup(request_id);
+  request->callbacks->onError(WebBluetoothError(error));
 
   pending_write_value_requests_.Remove(request_id);
 }
