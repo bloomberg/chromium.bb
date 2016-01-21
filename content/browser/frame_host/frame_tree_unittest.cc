@@ -51,14 +51,6 @@ void AppendTreeNodeState(FrameTreeNode* node, std::string* result) {
   result->append("]");
 }
 
-bool AppendRoutingId(std::string* result, FrameTreeNode* node) {
-  if (!result->empty())
-    result->append(" ");
-  result->append(
-      base::Int64ToString(node->current_frame_host()->GetRoutingID()));
-  return true;
-}
-
 // Logs calls to WebContentsObserver along with the state of the frame tree,
 // for later use in EXPECT_EQ().
 class TreeWalkingWebContentsLogger : public WebContentsObserver {
@@ -132,7 +124,11 @@ class FrameTreeTest : public RenderViewHostImplTestHarness {
   std::string GetTraversalOrder(FrameTree* frame_tree,
                                 FrameTreeNode* node_to_skip) {
     std::string result;
-    frame_tree->ForEach(base::Bind(&AppendRoutingId, &result), node_to_skip);
+    for (FrameTreeNode* node : frame_tree->NodesExcept(node_to_skip)) {
+      if (!result.empty())
+        result += " ";
+      result += base::Int64ToString(node->current_frame_host()->GetRoutingID());
+    }
     return result;
   }
 };

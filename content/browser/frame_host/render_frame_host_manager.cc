@@ -48,61 +48,6 @@
 
 namespace content {
 
-namespace {
-
-// Helper function to add the FrameTree of the given node's opener to the list
-// of |opener_trees|, if it doesn't exist there already. |visited_index|
-// indicates which FrameTrees in |opener_trees| have already been visited
-// (i.e., those at indices less than |visited_index|). |nodes_with_back_links|
-// collects FrameTreeNodes with openers in FrameTrees that have already been
-// visited (such as those with cycles).  This function is intended to be used
-// with FrameTree::ForEach, so it always returns true to visit all nodes in the
-// tree.
-bool OpenerForFrameTreeNode(
-    size_t visited_index,
-    std::vector<FrameTree*>* opener_trees,
-    base::hash_set<FrameTreeNode*>* nodes_with_back_links,
-    FrameTreeNode* node) {
-  if (!node->opener())
-    return true;
-
-  FrameTree* opener_tree = node->opener()->frame_tree();
-
-  const auto& existing_tree_it =
-      std::find(opener_trees->begin(), opener_trees->end(), opener_tree);
-  if (existing_tree_it == opener_trees->end()) {
-    // This is a new opener tree that we will need to process.
-    opener_trees->push_back(opener_tree);
-  } else {
-    // If this tree is already on our processing list *and* we have visited it,
-    // then this node's opener is a back link.  This means the node will need
-    // special treatment to process its opener.
-    size_t position = std::distance(opener_trees->begin(), existing_tree_it);
-    if (position < visited_index)
-      nodes_with_back_links->insert(node);
-  }
-  return true;
-}
-
-}  // namespace
-
-// static
-bool RenderFrameHostManager::ClearRFHsPendingShutdown(FrameTreeNode* node) {
-  node->render_manager()->pending_delete_hosts_.clear();
-  return true;
-}
-
-// static
-bool RenderFrameHostManager::ClearWebUIInstances(FrameTreeNode* node) {
-  node->current_frame_host()->ClearAllWebUI();
-  if (node->render_manager()->pending_render_frame_host_)
-    node->render_manager()->pending_render_frame_host_->ClearAllWebUI();
-  // PlzNavigate
-  if (node->render_manager()->speculative_render_frame_host_)
-    node->render_manager()->speculative_render_frame_host_->ClearAllWebUI();
-  return true;
-}
-
 RenderFrameHostManager::RenderFrameHostManager(
     FrameTreeNode* frame_tree_node,
     RenderFrameHostDelegate* render_frame_delegate,
@@ -806,6 +751,19 @@ void RenderFrameHostManager::ResetProxyHosts() {
         ->RemoveObserver(this);
   }
   proxy_hosts_.clear();
+}
+
+void RenderFrameHostManager::ClearRFHsPendingShutdown() {
+  pending_delete_hosts_.clear();
+}
+
+void RenderFrameHostManager::ClearWebUIInstances() {
+  current_frame_host()->ClearAllWebUI();
+  if (pending_render_frame_host_)
+    pending_render_frame_host_->ClearAllWebUI();
+  // PlzNavigate
+  if (speculative_render_frame_host_)
+    speculative_render_frame_host_->ClearAllWebUI();
 }
 
 // PlzNavigate
@@ -2369,12 +2327,39 @@ void RenderFrameHostManager::CollectOpenerFrameTrees(
   CHECK(opener_frame_trees);
   opener_frame_trees->push_back(frame_tree_node_->frame_tree());
 
+  // Add the FrameTree of the given node's opener to the list of
+  // |opener_frame_trees| if it doesn't exist there already. |visited_index|
+  // indicates which FrameTrees in |opener_frame_trees| have already been
+  // visited (i.e., those at indices less than |visited_index|).
+  // |nodes_with_back_links| collects FrameTreeNodes with openers in FrameTrees
+  // that have already been visited (such as those with cycles).
   size_t visited_index = 0;
   while (visited_index < opener_frame_trees->size()) {
     FrameTree* frame_tree = (*opener_frame_trees)[visited_index];
     visited_index++;
-    frame_tree->ForEach(base::Bind(&OpenerForFrameTreeNode, visited_index,
-                                   opener_frame_trees, nodes_with_back_links));
+    for (FrameTreeNode* node : frame_tree->Nodes()) {
+      if (!node->opener())
+        continue;
+
+      FrameTree* opener_tree = node->opener()->frame_tree();
+      const auto& existing_tree_it = std::find(
+          opener_frame_trees->begin(), opener_frame_trees->end(), opener_tree);
+
+      if (existing_tree_it == opener_frame_trees->end()) {
+        // This is a new opener tree that we will need to process.
+        opener_frame_trees->push_back(opener_tree);
+      } else {
+        // If this tree is already on our processing list *and* we have visited
+        // it,
+        // then this node's opener is a back link.  This means the node will
+        // need
+        // special treatment to process its opener.
+        size_t position =
+            std::distance(opener_frame_trees->begin(), existing_tree_it);
+        if (position < visited_index)
+          nodes_with_back_links->insert(node);
+      }
+    }
   }
 }
 

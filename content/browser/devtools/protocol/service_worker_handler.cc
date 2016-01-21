@@ -176,11 +176,6 @@ ServiceWorkerDevToolsAgentHost::Map GetMatchingServiceWorkers(
   return result;
 }
 
-bool CollectURLs(std::set<GURL>* urls, FrameTreeNode* tree_node) {
-  urls->insert(tree_node->current_url());
-  return false;
-}
-
 void StopServiceWorkerOnIO(scoped_refptr<ServiceWorkerContextWrapper> context,
                            int64_t version_id) {
   if (content::ServiceWorkerVersion* version =
@@ -268,8 +263,10 @@ void ServiceWorkerHandler::UpdateHosts() {
   urls_.clear();
   BrowserContext* browser_context = nullptr;
   if (render_frame_host_) {
-    render_frame_host_->frame_tree_node()->frame_tree()->ForEach(
-        base::Bind(&CollectURLs, &urls_));
+    for (FrameTreeNode* node :
+         render_frame_host_->frame_tree_node()->frame_tree()->Nodes())
+      urls_.insert(node->current_url());
+
     browser_context = render_frame_host_->GetProcess()->GetBrowserContext();
   }
 
@@ -277,12 +274,12 @@ void ServiceWorkerHandler::UpdateHosts() {
   ServiceWorkerDevToolsAgentHost::Map new_hosts =
       GetMatchingServiceWorkers(browser_context, urls_);
 
-  for (auto pair : old_hosts) {
+  for (const auto& pair : old_hosts) {
     if (new_hosts.find(pair.first) == new_hosts.end())
       ReportWorkerTerminated(pair.second.get());
   }
 
-  for (auto pair : new_hosts) {
+  for (const auto& pair : new_hosts) {
     if (old_hosts.find(pair.first) == old_hosts.end())
       ReportWorkerCreated(pair.second.get());
   }
