@@ -315,6 +315,7 @@ void ChildFrameCompositingHelper::OnSetSurface(
       cc::SurfaceLayer::Create(cc_blink::WebLayerImpl::LayerSettings(),
                                satisfy_callback, require_callback);
   surface_layer->SetSurfaceId(surface_id, scale_factor, frame_size);
+  surface_layer->SetMasksToBounds(true);
   blink::WebLayer* layer = new cc_blink::WebLayerImpl(surface_layer);
   UpdateWebLayer(layer);
 
