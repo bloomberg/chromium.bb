@@ -242,10 +242,6 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_BITMAP_FILTER
 #endif
 
-#ifndef    SK_SUPPORT_LEGACY_TRANSLATEROUNDHACK
-#   define SK_SUPPORT_LEGACY_TRANSLATEROUNDHACK
-#endif
-
 #ifndef    SK_SUPPORT_LEGACY_ARCTO
 #   define SK_SUPPORT_LEGACY_ARCTO
 #endif
