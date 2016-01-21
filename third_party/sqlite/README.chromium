@@ -136,7 +136,7 @@ git rebase sqlite_${BASE}
 # SQLite's download page is at <http://www.sqlite.org/download.html>.  Scroll to
 # "Legacy Source Code Distribution Formats", and grab sqlite-src-<VERSION>.zip.
 # Unzip it and pull it into the repo.
-wget http://www.sqlite.org/2014/sqlite-src-${VERSION}.zip
+wget http://www.sqlite.org/2016/sqlite-src-${VERSION}.zip
 unzip sqlite-src-${VERSION}.zip
 rm sqlite-src-${VERSION}.zip
 # -f includes ignored files, of which there are a couple.
@@ -146,7 +146,8 @@ git commit -m "Begin import of sqlite-src-${VERSION}"
 # OSX and Linux and fixes those files, but double-check the results before
 # committing:
 egrep --exclude="*.eps" --exclude="*.ico" --exclude="*.jpg" \
-      --exclude="*.gif" --exclude="*.tiff" --exclude="*.vsix" -URl '\r' \
+      --exclude="*.gif" --exclude="*.tiff" --exclude="*.vsix" \
+      --exclude="*.db" -URl '\r' \
       sqlite-src-${VERSION}/ | LANG=C xargs sed -i~ -e $'s/\r$//'
 # This might fail for lack of changes.
 git commit -a -m "Fix line endings for sqlite-src-${VERSION}"
