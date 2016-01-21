@@ -169,7 +169,10 @@ public class CreateRouteRequest implements GoogleApiClient.ConnectionCallbacks,
 
     @Override
     public void onResult(Cast.ApplicationConnectionResult result) {
-        if (mState != STATE_LAUNCHING_APPLICATION) throwInvalidState();
+        if (mState != STATE_LAUNCHING_APPLICATION
+                && mState != STATE_API_CONNECTION_SUSPENDED) {
+            throwInvalidState();
+        }
 
         Status status = result.getStatus();
         if (!status.isSuccess()) {
