@@ -290,6 +290,12 @@ const NSTimeInterval kRecurringPumpDelay = .01;
 }
 
 - (void)restoreSearchTerm {
+  // Pasteboards always return nil in background:
+  if ([[UIApplication sharedApplication] applicationState] !=
+      UIApplicationStateActive) {
+    return;
+  }
+
   NSString* term = [self findPasteboard].string;
   [[self findInPageModel] updateQuery:(term ? term : @"") matches:0];
 }
