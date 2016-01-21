@@ -8,6 +8,7 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/DOMArrayPiece.h"
+#include "core/dom/DOMDataView.h"
 #include "modules/EventTargetModules.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/modules/bluetooth/WebBluetoothGATTCharacteristic.h"
@@ -48,7 +49,7 @@ public:
     static BluetoothGATTCharacteristic* take(ScriptPromiseResolver*, PassOwnPtr<WebBluetoothGATTCharacteristicInit>);
 
     // Save value.
-    void setValue(const PassRefPtr<DOMArrayBuffer>&);
+    void setValue(const PassRefPtr<DOMDataView>&);
 
     // WebBluetoothGATTCharacteristic interface:
     void dispatchCharacteristicValueChanged(const WebVector<uint8_t>&) override;
@@ -75,7 +76,7 @@ public:
     String uuid() { return m_webCharacteristic->uuid; }
 
     BluetoothCharacteristicProperties* properties() { return m_properties; }
-    PassRefPtr<DOMArrayBuffer> value() const { return m_value; }
+    PassRefPtr<DOMDataView> value() const { return m_value; }
     ScriptPromise readValue(ScriptState*);
     ScriptPromise writeValue(ScriptState*, const DOMArrayPiece&);
     ScriptPromise startNotifications(ScriptState*);
@@ -91,7 +92,7 @@ private:
     OwnPtr<WebBluetoothGATTCharacteristicInit> m_webCharacteristic;
     bool m_stopped;
     Member<BluetoothCharacteristicProperties> m_properties;
-    RefPtr<DOMArrayBuffer> m_value;
+    RefPtr<DOMDataView> m_value;
 };
 
 } // namespace blink

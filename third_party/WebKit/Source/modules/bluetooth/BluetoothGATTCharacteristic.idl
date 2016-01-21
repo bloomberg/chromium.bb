@@ -14,12 +14,12 @@
     // TODO(ortuno): Add test to make sure service matches the service
     // used to call getCharacteristic.
     // readonly    attribute BluetoothGATTService     service;
-    readonly    attribute UUID                   uuid;
+    readonly    attribute UUID                  uuid;
     readonly    attribute BluetoothCharacteristicProperties properties;
-    readonly    attribute ArrayBuffer?             value;
+    readonly    attribute DataView?             value;
     // Promise<BluetoothGATTDescriptor>           getDescriptor(BluetoothDescriptorUUID descriptor);
     // Promise<sequence<BluetoothGATTDescriptor>> getDescriptors(optional BluetoothDescriptorUUID descriptor);
-    [CallWith=ScriptState] Promise<ArrayBuffer> readValue();
+    [CallWith=ScriptState] Promise<DataView>    readValue();
     [CallWith=ScriptState] Promise<void>        writeValue(BufferSource value);
     [CallWith=ScriptState] Promise<void>        startNotifications();
     [CallWith=ScriptState] Promise<void>        stopNotifications();

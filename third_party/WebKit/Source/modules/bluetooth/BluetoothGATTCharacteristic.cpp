@@ -7,6 +7,7 @@
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMDataView.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/Event.h"
@@ -19,12 +20,13 @@ namespace blink {
 
 namespace {
 
-PassRefPtr<DOMArrayBuffer> ConvertWebVectorToArrayBuffer(
+PassRefPtr<DOMDataView> ConvertWebVectorToDataView(
     const WebVector<uint8_t>& webVector)
 {
     static_assert(sizeof(*webVector.data()) == 1, "uint8_t should be a single byte");
     RefPtr<DOMArrayBuffer> domBuffer = DOMArrayBuffer::create(webVector.data(), webVector.size());
-    return domBuffer;
+    RefPtr<DOMDataView> domDataView = DOMDataView::create(domBuffer, 0, webVector.size());
+    return domDataView;
 }
 
 } // anonymous namespace
@@ -51,16 +53,16 @@ BluetoothGATTCharacteristic* BluetoothGATTCharacteristic::take(ScriptPromiseReso
 }
 
 void BluetoothGATTCharacteristic::setValue(
-    const PassRefPtr<DOMArrayBuffer>& domBuffer)
+    const PassRefPtr<DOMDataView>& domDataView)
 {
-    m_value = domBuffer;
+    m_value = domDataView;
 }
 
 void BluetoothGATTCharacteristic::dispatchCharacteristicValueChanged(
     const WebVector<uint8_t>& value)
 {
-    RefPtr<DOMArrayBuffer> domBuffer = ConvertWebVectorToArrayBuffer(value);
-    this->setValue(domBuffer);
+    RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
+    this->setValue(domDataView);
     dispatchEvent(Event::create(EventTypeNames::characteristicvaluechanged));
 }
 
@@ -113,11 +115,11 @@ public:
         if (!m_resolver->executionContext() || m_resolver->executionContext()->activeDOMObjectsAreStopped())
             return;
 
-        RefPtr<DOMArrayBuffer> domBuffer = ConvertWebVectorToArrayBuffer(value);
+        RefPtr<DOMDataView> domDataView = ConvertWebVectorToDataView(value);
         if (m_webCharacteristic) {
-            m_webCharacteristic->setValue(domBuffer);
+            m_webCharacteristic->setValue(domDataView);
         }
-        m_resolver->resolve(domBuffer);
+        m_resolver->resolve(domDataView);
     }
 
     void onError(const WebBluetoothError& e) override

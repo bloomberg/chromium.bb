@@ -18,10 +18,10 @@ promise_test(() => {
                                               'readValue',
                                               'characteristicvaluechanged');
     }).then(results => {
-      let read_value = new Uint8Array(results[0]);
-      let event_value = new Uint8Array(results[1]);
-      // TODO(ortuno): The ArrayBuffer used to resolve the promise
-      // should be the same ArrayBuffer as the one saved in the
+      let read_value = results[0].buffer;
+      let event_value = results[1].buffer;
+      // TODO(ortuno): The DataView used to resolve the promise
+      // should be the same DataView as the one saved in the
       // characteristic.
       // http://crbug.com/543347
       // assert_equals(event.target.value, value);
@@ -41,11 +41,11 @@ promise_test(() => {
                                               'characteristicvaluechanged',
                                               3 /* attach 3 listeners */);
     }).then(results => {
-      let read_value = new Uint8Array(results[0]);
-      let event_values = results.slice(1).map(v => new Uint8Array(v));
+      let read_value = results[0].buffer;
+      let event_values = results.slice(1).map(v => v.buffer);
       for (let event_value of event_values) {
-        // TODO(ortuno): The ArrayBuffer used to resolve the promise
-        // should be the same ArrayBuffer as the one saved in the
+        // TODO(ortuno): The DataView used to resolve the promise
+        // should be the same DataView as the one saved in the
         // characteristic.
         // http://crbug.com/543347
         // assert_equals(event.target.value, value);
