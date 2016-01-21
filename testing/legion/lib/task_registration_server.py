@@ -24,8 +24,6 @@ class TaskRegistrationServer(object):
     self._rpc_server = None
     self._thread = None
     self._port = common_lib.GetUnusedPort()
-    # Register for the shutdown event
-    common_lib.OnShutdown += self.Shutdown
 
   @property
   def port(self):
