@@ -915,15 +915,13 @@ static float LayerDrawOpacity(const LayerImpl* layer, const EffectTree& tree) {
 
 static float SurfaceDrawOpacity(RenderSurfaceImpl* render_surface,
                                 const EffectTree& tree) {
+  // Draw opacity of a surface is the product of opacities between the surface
+  // (included) and its target surface (excluded).
   const EffectNode* node = tree.Node(render_surface->EffectTreeIndex());
-  float target_opacity_tree_index = render_surface->TargetEffectTreeIndex();
-  if (target_opacity_tree_index < 0)
-    return node->data.screen_space_opacity;
-  const EffectNode* target_node = tree.Node(target_opacity_tree_index);
-  float draw_opacity = 1.f;
-  while (node != target_node) {
+  float draw_opacity = node->data.opacity;
+  for (node = tree.parent(node); node && !node->data.has_render_surface;
+       node = tree.parent(node)) {
     draw_opacity *= node->data.opacity;
-    node = tree.parent(node);
   }
   return draw_opacity;
 }

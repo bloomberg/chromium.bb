@@ -1432,6 +1432,43 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceForBlendMode) {
   EXPECT_EQ(SkXfermode::kSrcOver_Mode, child->draw_blend_mode());
 }
 
+TEST_F(LayerTreeHostCommonTest, RenderSurfaceDrawOpacity) {
+  LayerImpl* root = root_layer();
+  LayerImpl* surface1 = AddChildToRoot<LayerImpl>();
+  LayerImpl* not_surface = AddChild<LayerImpl>(surface1);
+  LayerImpl* surface2 = AddChild<LayerImpl>(not_surface);
+
+  const gfx::Transform identity_matrix;
+  SetLayerPropertiesForTesting(root, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(surface1, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  SetLayerPropertiesForTesting(not_surface, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               false);
+  SetLayerPropertiesForTesting(surface2, identity_matrix, gfx::Point3F(),
+                               gfx::PointF(), gfx::Size(10, 10), true, false,
+                               true);
+  surface1->SetDrawsContent(true);
+  surface2->SetDrawsContent(true);
+
+  surface1->SetOpacity(0.5f);
+  not_surface->SetOpacity(0.5f);
+  surface2->SetOpacity(0.5f);
+
+  ExecuteCalculateDrawProperties(root);
+
+  ASSERT_TRUE(surface1->render_surface());
+  ASSERT_FALSE(not_surface->render_surface());
+  ASSERT_TRUE(surface2->render_surface());
+  EXPECT_EQ(0.5f, surface1->render_surface()->draw_opacity());
+  // surface2's draw opacity should include the opacity of not-surface and
+  // itself, but not the opacity of surface1.
+  EXPECT_EQ(0.25f, surface2->render_surface()->draw_opacity());
+}
+
 TEST_F(LayerTreeHostCommonTest, DrawOpacityWhenCannotRenderToSeparateSurface) {
   // Tests that when separate surfaces are disabled, a layer's draw opacity is
   // the product of all ancestor layer opacties and the layer's own opacity.
