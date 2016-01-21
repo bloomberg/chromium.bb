@@ -465,6 +465,7 @@ DEFINE_TRACE(HTMLLinkElement)
     visitor->trace(m_linkLoader);
     visitor->trace(m_relList);
     HTMLElement::trace(visitor);
+    LinkLoaderClient::trace(visitor);
     DOMSettableTokenListObserver::trace(visitor);
 }
 
