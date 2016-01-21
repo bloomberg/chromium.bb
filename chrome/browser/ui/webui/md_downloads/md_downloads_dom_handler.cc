@@ -82,6 +82,7 @@ MdDownloadsDOMHandler::MdDownloadsDOMHandler(
   Profile* profile = Profile::FromBrowserContext(
       download_manager->GetBrowserContext());
   content::URLDataSource::Add(profile, new FileIconSource());
+  CheckForRemovedFiles();
 }
 
 MdDownloadsDOMHandler::~MdDownloadsDOMHandler() {
@@ -136,6 +137,7 @@ void MdDownloadsDOMHandler::RenderViewReused(
     content::RenderViewHost* render_view_host) {
   list_tracker_.Stop();
   list_tracker_.Reset();
+  CheckForRemovedFiles();
 }
 
 void MdDownloadsDOMHandler::HandleGetDownloads(const base::ListValue* args) {
@@ -408,4 +410,11 @@ content::DownloadItem* MdDownloadsDOMHandler::GetDownloadById(uint32_t id) {
 
 content::WebContents* MdDownloadsDOMHandler::GetWebUIWebContents() {
   return web_ui()->GetWebContents();
+}
+
+void MdDownloadsDOMHandler::CheckForRemovedFiles() {
+  if (GetMainNotifierManager())
+    GetMainNotifierManager()->CheckForHistoryFilesRemoval();
+  if (GetOriginalNotifierManager())
+    GetOriginalNotifierManager()->CheckForHistoryFilesRemoval();
 }

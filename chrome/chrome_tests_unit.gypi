@@ -1582,6 +1582,7 @@
       'browser/ui/webui/downloads_util_unittest.cc',
       'browser/ui/webui/help/version_updater_chromeos_unittest.cc',
       'browser/ui/webui/md_downloads/downloads_list_tracker_unittest.cc',
+      'browser/ui/webui/md_downloads/md_downloads_dom_handler_unittest.cc',
       'browser/ui/webui/ntp/ntp_user_data_logger_unittest.cc',
       'browser/ui/webui/options/autofill_options_handler_unittest.cc',
       'browser/ui/webui/options/language_options_handler_unittest.cc',

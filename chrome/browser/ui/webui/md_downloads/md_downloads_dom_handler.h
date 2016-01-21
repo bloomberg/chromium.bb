@@ -130,6 +130,9 @@ class MdDownloadsDOMHandler : public content::WebUIMessageHandler {
   // Remove all downloads in |to_remove| with the ability to undo removal later.
   void RemoveDownloads(const DownloadVector& to_remove);
 
+  // Checks whether a download's file was removed from its original location.
+  void CheckForRemovedFiles();
+
   DownloadsListTracker list_tracker_;
 
   // IDs of downloads to remove when this handler gets deleted.
