@@ -6,11 +6,11 @@
 
 (Redirect the following to the general model module once we have one)
 A model is an object with the following methods.
-  CostMs(): return the cost of the cost in milliseconds.
-  Set(): set model-specifical parameters.
+  CostMs(): return the cost of the model in milliseconds.
+  Set(): set model-specific parameters.
 
 ResourceGraph
-  This creates a DAG of resource dependancies from loading.log_requests to model
+  This creates a DAG of resource dependencies from loading.log_requests to model
   loading time. The model may be parameterized by changing the loading time of
   a particular or all resources.
 """
@@ -21,7 +21,7 @@ import urlparse
 import sys
 
 import dag
-import log_parser
+import request_dependencies_lens
 
 class ResourceGraph(object):
   """A model of loading by a DAG (tree?) of resource dependancies.
@@ -29,14 +29,13 @@ class ResourceGraph(object):
   Set parameters:
     cache_all: if true, assume zero loading time for all resources.
   """
-
-  def __init__(self, requests):
-    """Create from a parsed request set.
+  def __init__(self, trace):
+    """Create from a LoadingTrace.
 
     Args:
-      requests: [RequestData, ...] filtered RequestData from loading.log_parser.
+      trace: (LoadingTrace) Loading trace.
     """
-    self._BuildDag(requests)
+    self._BuildDag(trace)
     self._global_start = min([n.StartTime() for n in self._node_info])
     # Sort before splitting children so that we can correctly dectect if a
     # reparented child is actually a dependency for a child of its new parent.
@@ -182,7 +181,7 @@ class ResourceGraph(object):
       while n.Predecessors():
         n = reduce(lambda costliest, next:
                    next if (self._node_filter(next) and
-                            cost[next.Index()] > cost[costliest.Index()])
+                            costs[next.Index()] > costs[costliest.Index()])
                         else costliest,
                    n.Predecessors())
         path_list.insert(0, self._node_info[n.Index()])
@@ -322,10 +321,10 @@ class ResourceGraph(object):
       self._node = node
       self._edge_costs = {}
       self._edge_annotations = {}
-      # All fields in timing are millis relative to requestTime, which is epoch
+      # All fields in timing are millis relative to request_time, which is epoch
       # seconds.
       self._node_cost = max([t for f, t in request.timing._asdict().iteritems()
-                             if f != 'requestTime'])
+                             if f != 'request_time'])
 
     def __str__(self):
       return self.ShortName()
@@ -346,20 +345,37 @@ class ResourceGraph(object):
       return self._edge_costs[s]
 
     def StartTime(self):
-      return self._request.timing.requestTime * 1000
+      return self._request.timing.request_time * 1000
 
     def EndTime(self):
-      return self._request.timing.requestTime * 1000 + self._node_cost
+      return self._request.timing.request_time * 1000 + self._node_cost
 
     def EdgeAnnotation(self, s):
       assert s.Node() in self.Node().Successors()
       return self._edge_annotations.get(s, [])
 
     def ContentType(self):
-      return log_parser.Resource.FromRequest(self._request).GetContentType()
+      return self._request.GetContentType()
 
     def ShortName(self):
-      return log_parser.Resource.FromRequest(self._request).GetShortName()
+      """Returns either the hostname of the resource, or the filename,
+      or the end of the path. Tries to include the domain as much as possible.
+      """
+      parsed = urlparse.urlparse(self._request.url)
+      path = parsed.path
+      if path != '' and path != '/':
+        last_path = parsed.path.split('/')[-1]
+        if len(last_path) < 10:
+          if len(path) < 10:
+            return parsed.hostname + '/' + path
+          else:
+            return parsed.hostname + '/..' + parsed.path[-10:]
+        elif len(last_path) > 10:
+          return parsed.hostname + '/..' + last_path[:5]
+        else:
+          return parsed.hostname + '/..' + last_path
+      else:
+        return parsed.hostname
 
     def Url(self):
       return self._request.url
@@ -422,7 +438,7 @@ class ResourceGraph(object):
     return self._node_info[parent.Index()].EdgeAnnotation(
         self._node_info[child.Index()])
 
-  def _BuildDag(self, requests):
+  def _BuildDag(self, trace):
     """Build DAG of resources.
 
     Build a DAG from our requests and augment with _NodeInfo (see above) in a
@@ -431,112 +447,36 @@ class ResourceGraph(object):
     Creates self._nodes and self._node_info.
 
     Args:
-      requests: [Request, ...] Requests from loading.log_parser.
+      trace: A LoadingTrace.
     """
     self._nodes = []
     self._node_info = []
-    indicies_by_url = {}
-    requests_by_completion = log_parser.SortedByCompletion(requests)
-    for request in requests:
+    index_by_request = {}
+    for request in trace.request_track.GetEvents():
       next_index = len(self._nodes)
-      indicies_by_url.setdefault(request.url, []).append(next_index)
+      assert request not in index_by_request
+      index_by_request[request] = next_index
       node = dag.Node(next_index)
       node_info = self._NodeInfo(node, request)
       self._nodes.append(node)
       self._node_info.append(node_info)
-    for url, indicies in indicies_by_url.iteritems():
-      if len(indicies) > 1:
-        logging.warning('Multiple loads (%d) for url: %s' %
-                        (len(indicies), url))
-    for i in xrange(len(requests)):
-      request = requests[i]
-      current_node_info = self._node_info[i]
-      resource = log_parser.Resource.FromRequest(current_node_info.Request())
-      initiator = request.initiator
-      initiator_type = initiator['type']
-      predecessor_url = None
-      predecessor_type = None
-      # Classify & infer the predecessor. If a candidate url we identify as the
-      # predecessor is not in index_by_url, then we haven't seen it in our
-      # requests and we will try to find a better predecessor.
-      if initiator_type == 'parser':
-        url = initiator['url']
-        if url in indicies_by_url:
-          predecessor_url = url
-          predecessor_type = 'parser'
-      elif initiator_type == 'script' and 'stackTrace' in initiator:
-        for frame in initiator['stackTrace']:
-          url = frame['url']
-          if url in indicies_by_url:
-            predecessor_url = url
-            predecessor_type = 'stack'
-            break
-      elif initiator_type == 'script':
-        # When the initiator is a script without a stackTrace, infer that it
-        # comes from the most recent script from the same hostname.  TLD+1 might
-        # be better, but finding what is a TLD requires a database.
-        request_hostname = urlparse.urlparse(request.url).hostname
-        sorted_script_requests_from_hostname = [
-            r for r in requests_by_completion
-            if (resource.GetContentType() in ('script', 'html', 'json')
-                and urlparse.urlparse(r.url).hostname == request_hostname)]
-        most_recent = None
-        # Linear search is bad, but this shouldn't matter here.
-        for r in sorted_script_requests_from_hostname:
-          if r.timestamp < request.timing.requestTime:
-            most_recent = r
-          else:
-            break
-        if most_recent is not None:
-          url = most_recent.url
-          if url in indicies_by_url:
-            predecessor_url = url
-            predecessor_type = 'script_inferred'
-      # TODO(mattcary): we skip initiator type other, is that correct?
-      if predecessor_url is not None:
-        predecessor = self._FindBestPredecessor(
-            current_node_info, indicies_by_url[predecessor_url])
-        edge_cost = current_node_info.StartTime() - predecessor.EndTime()
-        if edge_cost < 0:
-          edge_cost = 0
-        if current_node_info.StartTime() < predecessor.StartTime():
+
+    dependencies = request_dependencies_lens.RequestDependencyLens(
+        trace).GetRequestDependencies()
+    for child_rq, parent_rq, reason in dependencies:
+      parent = self._node_info[index_by_request[parent_rq]]
+      child = self._node_info[index_by_request[child_rq]]
+      edge_cost = child.StartTime() - parent.EndTime()
+      if edge_cost < 0:
+        edge_cost = 0
+        if child.StartTime() < parent.StartTime():
           logging.error('Inverted dependency: %s->%s',
-                        predecessor.ShortName(), current_node_info.ShortName())
-          # Note that current.StartTime() < predecessor.EndTime() appears to
-          # happen a fair amount in practice.
-        predecessor.Node().AddSuccessor(current_node_info.Node())
-        predecessor.SetEdgeCost(current_node_info, edge_cost)
-        predecessor.AddEdgeAnnotation(current_node_info, predecessor_type)
-
-  def _FindBestPredecessor(self, node_info, candidate_indicies):
-    """Find best predecessor for node_info
-
-    If there is only one candidate, we use it regardless of timings. We will
-    later warn about inverted dependencies. If there are more than one, we use
-    the latest whose end time is before node_info's start time. If there is no
-    such candidate, we throw up our hands and return an arbitrary one.
-
-    Args:
-      node_info: _NodeInfo of interest.
-      candidate_indicies: indicies of candidate predecessors.
-
-    Returns:
-      _NodeInfo of best predecessor.
-    """
-    assert candidate_indicies
-    if len(candidate_indicies) == 1:
-      return self._node_info[candidate_indicies[0]]
-    candidate = self._node_info[candidate_indicies[0]]
-    for i in xrange(1, len(candidate_indicies)):
-      next_candidate = self._node_info[candidate_indicies[i]]
-      if (next_candidate.EndTime() < node_info.StartTime() and
-          next_candidate.StartTime() > candidate.StartTime()):
-        candidate = next_candidate
-    if candidate.EndTime() > node_info.StartTime():
-      logging.warning('Multiple candidates but all inverted for ' +
-                      node_info.ShortName())
-    return candidate
-
+                        parent.ShortName(), child.ShortName())
+          # Note that child.StartTime() < parent.EndTime() appears to happen a
+          # fair amount in practice.
+      parent.Node().AddSuccessor(child.Node())
+      parent.SetEdgeCost(child, edge_cost)
+      parent.AddEdgeAnnotation(child, reason)
 
   def _SplitChildrenByTime(self, parent):
     """Split children of a node by request times.
@@ -624,7 +564,7 @@ class ResourceGraph(object):
     """
     node_info = self._node_info[index]
     color = self._CONTENT_TYPE_TO_COLOR[node_info.ContentType()]
-    max_age = log_parser.MaxAge(node_info.Request())
+    max_age = node_info.Request().MaxAge()
     shape = 'polygon' if max_age > 300 else 'oval'
     styles = ['filled']
     if highlight:

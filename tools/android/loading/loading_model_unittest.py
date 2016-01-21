@@ -8,22 +8,62 @@ import unittest
 
 import dag
 import loading_model
-import log_parser
+import loading_trace
+import request_track
+import request_dependencies_lens
+
+
+class SimpleLens(object):
+  def __init__(self, trace):
+    self._trace = trace
+
+  def GetRequestDependencies(self):
+    url_to_rq = {}
+    deps = []
+    for rq in self._trace.request_track.GetEvents():
+      assert rq.url not in url_to_rq
+      url_to_rq[rq.url] = rq
+    for rq in self._trace.request_track.GetEvents():
+      if rq.initiator in url_to_rq:
+        deps.append((rq, url_to_rq[rq.initiator], ''))
+    return deps
+
+
+class MockRequestTrack(object):
+  def __init__(self, requests):
+    self._requests = requests
+
+  def GetEvents(self):
+    return self._requests
+
 
 class LoadingModelTestCase(unittest.TestCase):
 
+  def setUp(self):
+    request_dependencies_lens.RequestDependencyLens = SimpleLens
+    self._next_request_id = 0
+
   def MakeParserRequest(self, url, source_url, start_time, end_time,
                         magic_content_type=False):
-    timing_data = {f: -1 for f in log_parser.Timing._fields}
-    # We should ignore connectEnd.
-    timing_data['connectEnd'] = (end_time - start_time) / 2
-    timing_data['receiveHeadersEnd'] = end_time - start_time
-    timing_data['requestTime'] = start_time / 1000.0
-    return log_parser.RequestData(
-        None, {'Content-Type': 'null' if not magic_content_type
-                                      else 'magic-debug-content' },
-        None, start_time, timing_data, 'http://' + str(url), False,
-        {'type': 'parser', 'url': 'http://' + str(source_url)})
+    rq = request_track.Request.FromJsonDict({
+        'request_id': self._next_request_id,
+        'url': 'http://' + str(url),
+        'initiator': 'http://' + str(source_url),
+        'response_headers': {'Content-Type':
+                             'null' if not magic_content_type
+                             else 'magic-debug-content' },
+        'timing': request_track.TimingFromDict({
+            # connectEnd should be ignored.
+            'connectEnd': (end_time - start_time) / 2,
+            'receiveHeadersEnd': end_time - start_time,
+            'requestTime': start_time / 1000.0})
+        })
+    self._next_request_id += 1
+    return rq
+
+  def MakeGraph(self, requests):
+    return loading_model.ResourceGraph(loading_trace.LoadingTrace(
+        None, None, None, MockRequestTrack(requests), None))
 
   def SortedIndicies(self, graph):
     return [n.Index() for n in dag.TopologicalSort(graph._nodes)]
@@ -39,7 +79,7 @@ class LoadingModelTestCase(unittest.TestCase):
                 self.MakeParserRequest(4, 3, 127, 128),
                 self.MakeParserRequest(5, 'null', 100, 105),
                 self.MakeParserRequest(6, 5, 105, 110)]
-    graph = loading_model.ResourceGraph(requests)
+    graph = self.MakeGraph(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 2])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [])
@@ -60,7 +100,7 @@ class LoadingModelTestCase(unittest.TestCase):
                 self.MakeParserRequest(4, 3, 127, 128),
                 self.MakeParserRequest(5, 'null', 100, 105),
                 self.MakeParserRequest(6, 5, 105, 110)]
-    graph = loading_model.ResourceGraph(requests)
+    graph = self.MakeGraph(requests)
     path_list = []
     self.assertEqual(28, graph.Cost(path_list))
     self.assertEqual([0, 1, 3, 4], [n.Index() for n in path_list])
@@ -76,10 +116,11 @@ class LoadingModelTestCase(unittest.TestCase):
                                        magic_content_type=True),
                 self.MakeParserRequest(2, 0, 121, 122,
                                        magic_content_type=True),
-                self.MakeParserRequest(3, 0, 112, 119),
+                self.MakeParserRequest(3, 0, 112, 119,
+                                       magic_content_type=True),
                 self.MakeParserRequest(4, 2, 122, 126),
                 self.MakeParserRequest(5, 2, 122, 126)]
-    graph = loading_model.ResourceGraph(requests)
+    graph = self.MakeGraph(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [2])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -88,10 +129,10 @@ class LoadingModelTestCase(unittest.TestCase):
     self.assertEqual(self.SuccessorIndicies(graph._nodes[5]), [])
     self.assertEqual(self.SortedIndicies(graph), [0, 1, 3, 2, 4, 5])
 
-    # Change node 1 so it is a parent of 3, which become parent of 2.
+    # Change node 1 so it is a parent of 3, which becomes the parent of 2.
     requests[1] = self.MakeParserRequest(1, 0, 110, 111,
                                          magic_content_type=True)
-    graph = loading_model.ResourceGraph(requests)
+    graph = self.MakeGraph(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -101,14 +142,15 @@ class LoadingModelTestCase(unittest.TestCase):
     self.assertEqual(self.SortedIndicies(graph), [0, 1, 3, 2, 4, 5])
 
     # Add an initiator dependence to 1 that will become the parent of 3.
-    requests[1] = self.MakeParserRequest(1, 0, 110, 111)
-    requests.append(self.MakeParserRequest(6, 1, 111, 112))
-    graph = loading_model.ResourceGraph(requests)
-    # Check it doesn't change until we change the content type of 1.
-    self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [3, 6])
     requests[1] = self.MakeParserRequest(1, 0, 110, 111,
                                          magic_content_type=True)
-    graph = loading_model.ResourceGraph(requests)
+    requests.append(self.MakeParserRequest(6, 1, 111, 112))
+    graph = self.MakeGraph(requests)
+    # Check it doesn't change until we change the content type of 6.
+    self.assertEqual(self.SuccessorIndicies(graph._nodes[6]), [])
+    requests[6] = self.MakeParserRequest(6, 1, 111, 112,
+                                         magic_content_type=True)
+    graph = self.MakeGraph(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [6])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])
@@ -127,8 +169,8 @@ class LoadingModelTestCase(unittest.TestCase):
                 self.MakeParserRequest(4, 2, 122, 126),
                 self.MakeParserRequest(5, 2, 122, 126)]
     for r in requests:
-      r.headers['Content-Type'] = 'image/gif'
-    graph = loading_model.ResourceGraph(requests)
+      r.response_headers['Content-Type'] = 'image/gif'
+    graph = self.MakeGraph(requests)
     self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 2, 3])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [])
     self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [4, 5])

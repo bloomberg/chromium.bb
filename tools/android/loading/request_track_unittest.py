@@ -268,6 +268,21 @@ class RequestTrackTestCase(unittest.TestCase):
     request_track = RequestTrack.FromJsonDict(json_dict)
     self.assertEquals(self.request_track, request_track)
 
+  def testMaxAge(self):
+    rq = Request()
+    self.assertEqual(-1, rq.MaxAge())
+    rq.response_headers = {}
+    self.assertEqual(-1, rq.MaxAge())
+    rq.response_headers[
+        'Cache-Control'] = 'private,s-maxage=0,max-age=0,must-revalidate'
+    self.assertEqual(0, rq.MaxAge())
+    rq.response_headers[
+        'Cache-Control'] = 'private,s-maxage=0,no-store,max-age=100'
+    self.assertEqual(-1, rq.MaxAge())
+    rq.response_headers[
+        'Cache-Control'] = 'private,s-maxage=0'
+    self.assertEqual(-1, rq.MaxAge())
+
   @classmethod
   def _ValidSequence(cls, request_track):
     request_track.Handle(

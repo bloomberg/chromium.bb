@@ -117,9 +117,34 @@ class Request(object):
   def IsDataRequest(self):
     return self.protocol == 'data'
 
-  # For testing.
+  def MaxAge(self):
+    """Returns the max-age of a resource, or -1."""
+    # TODO(lizeb): Handle the "Expires" header as well.
+    cache_control = {}
+    if not self.response_headers:
+      return -1
+    cache_control_str = self.response_headers.get('Cache-Control', None)
+    if cache_control_str is not None:
+      directives = [s.strip() for s in cache_control_str.split(',')]
+      for directive in directives:
+        parts = [s.strip() for s in directive.split('=')]
+        if len(parts) == 1:
+          cache_control[parts[0]] = True
+        else:
+          cache_control[parts[0]] = parts[1]
+    if (u'no-store' in cache_control
+        or u'no-cache' in cache_control
+        or len(cache_control) == 0):
+      return -1
+    if 'max-age' in cache_control:
+      return int(cache_control['max-age'])
+    return -1
+
   def __eq__(self, o):
     return self.__dict__ == o.__dict__
+
+  def __hash__(self):
+    return hash(self.request_id)
 
 
 class RequestTrack(devtools_monitor.Track):
