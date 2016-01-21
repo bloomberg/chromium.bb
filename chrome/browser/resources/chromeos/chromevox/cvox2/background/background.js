@@ -475,7 +475,7 @@ Background.prototype = {
           chrome.accessibilityPrivate.setKeyboardListener(true, true);
         else
           chrome.accessibilityPrivate.setKeyboardListener(true, false);
-        break;
+        return false;
       default:
         return true;
     }

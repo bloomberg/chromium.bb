@@ -18,6 +18,20 @@ KeyboardHandler = function() {
   cvox.ChromeVoxKbHandler.commandHandler = this.handleCommand_.bind(this);
   cvox.ChromeVoxKbHandler.handlerKeyMap = cvox.KeyMap.fromNext();
   document.addEventListener('keydown', this.handleKeyDown_.bind(this), false);
+
+  // Register for Classic pref changes to get sticky mode state.
+  cvox.ExtensionBridge.addMessageListener(function(msg) {
+    if (msg['prefs']) {
+      var prefs = msg['prefs'];
+      cvox.ChromeVox.isStickyPrefOn = prefs['sticky'] == 'true';
+    }
+  });
+
+  // Make the initial request for prefs.
+  cvox.ExtensionBridge.send({
+    'target': 'Prefs',
+    'action': 'getPrefs'
+  });
 };
 
 KeyboardHandler.prototype = {
@@ -30,6 +44,9 @@ KeyboardHandler.prototype = {
       'target': 'next',
       'action': 'flushNextUtterance'
     });
+
+    evt.stickyMode = cvox.ChromeVox.isStickyPrefOn;
+
     cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt);
   },
 
