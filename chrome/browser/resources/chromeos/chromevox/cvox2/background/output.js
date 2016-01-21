@@ -1185,9 +1185,20 @@ Output.prototype = {
       return mergedRoleBlock;
     };
 
+    // Hash the roles we've entered.
+    var enteredRoleSet = {};
+    for (var j = uniqueAncestors.length - 2, hashNode;
+         (hashNode = uniqueAncestors[j]);
+         j--)
+      enteredRoleSet[hashNode.role] = true;
+
     for (var i = 0, formatPrevNode;
          (formatPrevNode = prevUniqueAncestors[i]);
          i++) {
+      // This prevents very repetitive announcements.
+      if (enteredRoleSet[formatPrevNode.role])
+        continue;
+
       var roleBlock = getMergedRoleBlock(formatPrevNode.role);
       if (roleBlock.leave)
         this.format_(formatPrevNode, roleBlock.leave, buff, opt_exclude);

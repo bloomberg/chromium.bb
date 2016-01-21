@@ -541,3 +541,33 @@ TEST_F('OutputE2ETest', 'DivOmitsRole', function() {
         o);
   });
 });
+
+TEST_F('OutputE2ETest', 'LessVerboseAncestry', function() {
+  this.runWithLoadedTree(function() {/*!
+    <div role="article"><p>inside</p></div>
+    <div role="article"><p>inside</p></div>
+    <div role="banner"><p>inside</p></div>
+  */},
+  function(root) {
+    var first = root.children[0].firstChild;
+    var second = root.children[1].firstChild;
+    var third = root.children[2].firstChild;
+    var firstRange = cursors.Range.fromNode(first);
+    var secondRange = cursors.Range.fromNode(second);
+    var thirdRange = cursors.Range.fromNode(third);
+
+    var oWithoutPrev = new Output().withSpeech(firstRange, null, 'navigate');
+    var oWithPrev =
+        new Output().withSpeech(secondRange, firstRange, 'navigate');
+    var oWithPrevExit =
+        new Output().withSpeech(thirdRange, secondRange, 'navigate');
+    assertEquals('|Article|inside', oWithoutPrev.speechOutputForTest.string_);
+
+    // Make sure we don't read the exited article ancestry change.
+    assertEquals('|Article|inside', oWithPrev.speechOutputForTest.string_);
+
+    // Different role; do read the exited article ancestry here.
+    assertEquals('Exited Article.||Banner|inside',
+                 oWithPrevExit.speechOutputForTest.string_);
+  });
+});
