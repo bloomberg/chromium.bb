@@ -587,8 +587,10 @@ void RemoteDesktopBrowserTest::ConnectToRemoteHost(
   EXPECT_FALSE(host_id.empty());
   std::string element_id = "host_" + host_id;
 
+  // Wait for the hosts to be online. Try 3 times each spanning 20 seconds
+  // successively for 60 seconds.
   ConditionalTimeoutWaiter hostOnlineWaiter(
-      base::TimeDelta::FromSeconds(30), base::TimeDelta::FromSeconds(5),
+      base::TimeDelta::FromSeconds(60), base::TimeDelta::FromSeconds(20),
       base::Bind(&RemoteDesktopBrowserTest::IsHostOnline,
                  base::Unretained(this), host_id));
   EXPECT_TRUE(hostOnlineWaiter.Wait());
@@ -820,14 +822,10 @@ void RemoteDesktopBrowserTest::WaitForConnection() {
 }
 
 bool RemoteDesktopBrowserTest::IsHostOnline(const std::string& host_id) {
-  bool refresh_host_list =
-      ExecuteScriptAndExtractBool("remoting.hostList.refreshAndDisplay()");
 
-  if (!refresh_host_list) {
-    return false;
-  }
+  ExecuteScript("remoting.hostList.refreshAndDisplay()");
 
-  // Verify the host is online.
+ // Verify the host is online.
   std::string element_id = "host_" + host_id;
   std::string host_div_class = ExecuteScriptAndExtractString(
       "document.getElementById('" + element_id + "').parentNode.className");
