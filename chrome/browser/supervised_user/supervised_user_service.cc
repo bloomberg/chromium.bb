@@ -785,7 +785,7 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
 
   bool use_online_check =
       supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
-  if (use_online_check != !url_filter_context_.HasAsyncURLChecker()) {
+  if (use_online_check != url_filter_context_.HasAsyncURLChecker()) {
     if (use_online_check)
       url_filter_context_.InitAsyncURLChecker(profile_->GetRequestContext());
     else
