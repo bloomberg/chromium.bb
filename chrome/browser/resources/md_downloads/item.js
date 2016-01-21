@@ -265,7 +265,8 @@ cr.define('downloads', function() {
     observeIsDangerous_: function() {
       if (this.data && !this.isDangerous_) {
         var filePath = encodeURIComponent(this.data.file_path);
-        this.$['file-icon'].src = 'chrome://fileicon/' + filePath;
+        var scaleFactor = '?scale=' + window.devicePixelRatio + 'x';
+        this.$['file-icon'].src = 'chrome://fileicon/' + filePath + scaleFactor;
       }
     },
 
