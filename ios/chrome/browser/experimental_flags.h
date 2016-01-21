@@ -40,10 +40,6 @@ bool IsTargetedToWKWebViewExperimentControlGroup();
 // Whether the user is part of a control group for the WKWebView experiment.
 bool IsInWKWebViewExperimentControlGroup();
 
-// Returns a string containing extra params that should be sent along with
-// omnibox search requests.  The returned value contains a leading "&".
-std::string GetWKWebViewSearchParams();
-
 // Whether viewing and copying passwords is enabled.
 bool IsViewCopyPasswordsEnabled();
 

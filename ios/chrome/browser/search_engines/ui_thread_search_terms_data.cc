@@ -103,16 +103,6 @@ std::string UIThreadSearchTermsData::ForceInstantResultsParam(
   return search::ForceInstantResultsParam(for_prerender);
 }
 
-std::string UIThreadSearchTermsData::IOSWebViewTypeParam() const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  std::string param = experimental_flags::GetWKWebViewSearchParams();
-  if (param.empty()) {
-    return std::string();
-  }
-
-  return "&esrch=" + net::EscapeQueryParamValue(param, true);
-}
-
 std::string UIThreadSearchTermsData::GoogleImageSearchSource() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::string version(version_info::GetProductName() + " " +

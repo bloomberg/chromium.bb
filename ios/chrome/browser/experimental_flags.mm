@@ -184,14 +184,6 @@ bool IsInWKWebViewExperimentControlGroup() {
                           base::CompareCase::INSENSITIVE_ASCII);
 }
 
-std::string GetWKWebViewSearchParams() {
-  if (!CanCheckWKWebViewExperiment()) {
-    return std::string();
-  }
-
-  return variations::GetVariationParamValue(kWKWebViewTrialName, "esrch");
-}
-
 bool IsViewCopyPasswordsEnabled() {
   NSString* viewCopyPasswordFlag = [[NSUserDefaults standardUserDefaults]
       objectForKey:kEnableViewCopyPasswords];

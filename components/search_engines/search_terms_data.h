@@ -56,11 +56,6 @@ class SearchTermsData {
   // incrementally.
   virtual std::string ForceInstantResultsParam(bool for_prerender) const;
 
-  // Returns a string indicating which webview is currently in use on iOS,
-  // suitable for adding as a query string param to search requests.  Returns an
-  // empty string if no parameter should be passed along with search requests.
-  virtual std::string IOSWebViewTypeParam() const;
-
   // Returns the value to use for replacements of type
   // GOOGLE_IMAGE_SEARCH_SOURCE.
   virtual std::string GoogleImageSearchSource() const;
