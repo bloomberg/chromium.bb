@@ -20,9 +20,9 @@ class TabStackTraceTest(tab_test_case.TabTestCase):
       self.assertIn('Thread 0 (crashed)', '\n'.join(e.stack_trace))
 
   # Currently stack traces do not work on windows: http://crbug.com/476110
-  # Currently symbols do not work on swarming: http://crbug.com/563716
   # Linux stack traces depends on fission support: http://crbug.com/405623
-  @decorators.Disabled('all')
+  @decorators.Enabled('mac')
+  @decorators.Disabled('snowleopard')
   def testCrashSymbols(self):
     try:
       self._tab.Navigate('chrome://crash', timeout=5)
