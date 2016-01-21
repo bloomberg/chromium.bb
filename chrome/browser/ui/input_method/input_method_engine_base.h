@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
-#define CHROME_BROWSER_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#ifndef CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#define CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
 
 #include <map>
 #include <string>
@@ -196,4 +196,4 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
 
 }  // namespace input_method
 
-#endif  // CHROME_BROWSER_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_
+#endif  // CHROME_BROWSER_UI_INPUT_METHOD_INPUT_METHOD_ENGINE_BASE_H_

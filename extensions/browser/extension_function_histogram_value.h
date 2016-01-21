@@ -1164,6 +1164,8 @@ enum HistogramValue {
   INPUT_IME_CREATEWINDOW,
   INPUTMETHODPRIVATE_SETXKBLAYOUT,
   ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER,
+  INPUT_IME_ACTIVATE,
+  INPUT_IME_DEACTIVATE,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

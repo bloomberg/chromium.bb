@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 #include "base/time/time.h"
-#include "chrome/browser/input_method/input_method_engine_base.h"
+#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"

@@ -596,6 +596,36 @@
                 "description": "The JavaScript 'window' object of the newly created IME window."
               }
             ]
+           }
+         ]
+      },
+      {
+        "name": "activate",
+        "type": "function",
+        "description": "Activates the IME extension so that it can receive events.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
+          }
+        ]
+      },
+      {
+        "name": "deactivate",
+        "type": "function",
+        "description": "Deactivates the IME extension so that it cannot receive events.",
+        "platforms": ["win", "linux"],
+        "parameters": [
+          {
+            "type": "function",
+            "name": "callback",
+            "optional": true,
+            "description": "Called when the operation completes.",
+            "parameters": []
           }
         ]
       }

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/input_method/input_method_engine_base.h"
+#include "chrome/browser/ui/input_method/input_method_engine_base.h"
 
 #undef FocusIn
 #undef FocusOut

@@ -984,8 +984,6 @@
       'browser/download/notification/download_notification.h',
       'browser/download/notification/download_notification_manager.cc',
       'browser/download/notification/download_notification_manager.h',
-      'browser/input_method/input_method_engine_base.cc',
-      'browser/input_method/input_method_engine_base.h',
       'browser/media/protected_media_identifier_permission_context.cc',
       'browser/media/protected_media_identifier_permission_context.h',
       'browser/media/protected_media_identifier_permission_context_factory.cc',
@@ -3601,13 +3599,9 @@
             '<(SHARED_INTERMEDIATE_DIR)/ui/chromeos/resources/grit/ui_chromeos_resources_map.cc',
           ],
           'dependencies': [
-            '../base/base.gyp:base',
             'browser_chromeos',
             '../components/components.gyp:user_manager',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
-            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
-            '../ui/base/ui_base.gyp:ui_base',
-            '../ui/events/events.gyp:dom_keycode_converter',
           ],
         }],
         ['use_cups==1', {

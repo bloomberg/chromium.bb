@@ -63788,6 +63788,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="1103" label="INPUT_IME_CREATEWINDOW"/>
   <int value="1104" label="INPUTMETHODPRIVATE_SETXKBLAYOUT"/>
   <int value="1105" label="ACCESSIBILITY_PRIVATE_SETKEYBOARDLISTENER"/>
+  <int value="1106" label="INPUT_IME_ACTIVATE"/>
+  <int value="1107" label="INPUT_IME_DEACTIVATE"/>
 </enum>
 
 <enum name="ExtensionInstallCause" type="int">

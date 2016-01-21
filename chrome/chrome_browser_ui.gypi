@@ -694,6 +694,8 @@
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.h',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.cc',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.h',
+      'browser/ui/input_method/input_method_engine_base.cc',
+      'browser/ui/input_method/input_method_engine_base.h',
       'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h',
       # On chromeos, file manager extension handles the file open/save dialog.
@@ -1321,6 +1323,10 @@
     ],
     # Desktop Linux. Assume aura/ash/views/x11.
     'chrome_browser_ui_desktop_linux_sources': [
+      'browser/ui/input_method/input_method_engine.cc',
+      'browser/ui/input_method/input_method_engine.h',
+      'browser/ui/input_method/input_method_engine_base.cc',
+      'browser/ui/input_method/input_method_engine_base.h',
       'browser/ui/views/app_list/linux/app_list_linux.cc',
       'browser/ui/views/app_list/linux/app_list_linux.h',
       'browser/ui/views/app_list/linux/app_list_service_linux.cc',
@@ -2517,6 +2523,10 @@
     ],
     # Windows-only. Assume ash/aura/views.
     'chrome_browser_ui_win_sources': [
+      'browser/ui/input_method/input_method_engine.cc',
+      'browser/ui/input_method/input_method_engine.h',
+      'browser/ui/input_method/input_method_engine_base.cc',
+      'browser/ui/input_method/input_method_engine_base.h',
       'browser/ui/network_profile_bubble.cc',
       'browser/ui/network_profile_bubble.h',
       'browser/ui/views/color_chooser_dialog.cc',
@@ -2973,8 +2983,10 @@
             'browser_chromeos',
             '../components/components.gyp:proximity_auth_webui',
             '../device/nfc/nfc.gyp:device_nfc',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos',
             '../ui/chromeos/ui_chromeos.gyp:ui_chromeos_resources',
+            '../ui/events/events.gyp:dom_keycode_converter',
           ],
         }],
         ['enable_app_list==1 and chromeos==1', {
@@ -3162,6 +3174,8 @@
             '../third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
             '../third_party/isimpledom/isimpledom.gyp:isimpledom',
             '../ui/app_list/app_list.gyp:app_list',
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+            '../ui/events/events.gyp:dom_keycode_converter',
             '../ui/views/controls/webview/webview.gyp:webview',
             '../ui/views/views.gyp:views',
           ],
@@ -3208,6 +3222,10 @@
           ],
         }],
         ['desktop_linux==1', {
+          'dependencies': [
+            '../ui/base/ime/ui_base_ime.gyp:ui_base_ime',
+            '../ui/events/events.gyp:dom_keycode_converter',
+          ],
           'sources': [ '<@(chrome_browser_ui_desktop_linux_sources)' ],
         }],
         ['OS=="linux"', {  # Both desktop Linux and ChromeOS.
