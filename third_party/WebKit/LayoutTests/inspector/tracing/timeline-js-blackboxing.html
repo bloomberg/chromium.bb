@@ -277,7 +277,7 @@ function test()
         var timelineData = dataProvider.timelineData();
         for (var i = 0; i < timelineData.entryStartTimes.length; ++i) {
             var name = dataProvider.entryTitle(i);
-            var padding = "  ".repeat(timelineData.entryLevels[i]);
+            var padding = "  ".repeat(timelineData.entryLevels[i] - 1);
             InspectorTest.addResult(padding + name + ": " + timelineData.entryTotalTimes[i] + " @ " + timelineData.entryStartTimes[i]);
         }
     }
@@ -285,7 +285,7 @@ function test()
     Runtime.experiments.enableForTest("blackboxJSFramesOnTimeline");
     var tracingTimelineModel = InspectorTest.tracingTimelineModel();
     tracingTimelineModel.setEventsForTest(rawTraceEvents);
-    var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel);
+    var dataProvider = new WebInspector.TimelineFlameChartDataProvider(tracingTimelineModel, new WebInspector.TracingTimelineFrameModel());
 
     InspectorTest.addResult("\nBlackboxed url: lib_script.js");
     WebInspector.BlackboxSupport.blackboxURL("lib_script.js");
