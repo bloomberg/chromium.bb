@@ -154,9 +154,9 @@ void MinidumpGenerator::GatherSystemInformation() {
   if (!data) {
     return;
   }
-  CFDictionaryRef list =
-      static_cast<CFDictionaryRef>(CFPropertyListCreateWithData(
-          NULL, data, kCFPropertyListImmutable, NULL, NULL));
+  CFDictionaryRef list = static_cast<CFDictionaryRef>
+    (CFPropertyListCreateFromXMLData(NULL, data, kCFPropertyListImmutable,
+                                     NULL));
   CFRelease(data);
   if (!list) {
     return;
