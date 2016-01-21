@@ -110,6 +110,8 @@ public class OfflinePageUtils {
             return R.string.offline_pages_new_tab_incognito_message;
         } else if (stringResId == R.string.offline_pages_as_bookmarks_page_saved) {
             return R.string.offline_pages_page_saved;
+        } else if (stringResId == R.string.offline_pages_as_bookmarks_page_saved_folder) {
+            return R.string.offline_pages_page_saved_folder;
         } else if (stringResId == R.string.offline_pages_as_bookmarks_page_skipped) {
             return R.string.offline_pages_page_skipped;
         } else if (stringResId
