@@ -4771,70 +4771,6 @@ std::string GLES2Util::GetStringTextureParameter(uint32_t value) {
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringTextureSizedColorRenderableInternalFormat(
-    uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_R8, "GL_R8"},
-      {GL_R8UI, "GL_R8UI"},
-      {GL_R8I, "GL_R8I"},
-      {GL_R16UI, "GL_R16UI"},
-      {GL_R16I, "GL_R16I"},
-      {GL_R32UI, "GL_R32UI"},
-      {GL_R32I, "GL_R32I"},
-      {GL_RG8, "GL_RG8"},
-      {GL_RG8UI, "GL_RG8UI"},
-      {GL_RG8I, "GL_RG8I"},
-      {GL_RG16UI, "GL_RG16UI"},
-      {GL_RG16I, "GL_RG16I"},
-      {GL_RG32UI, "GL_RG32UI"},
-      {GL_RG32I, "GL_RG32I"},
-      {GL_RGB8, "GL_RGB8"},
-      {GL_RGB565, "GL_RGB565"},
-      {GL_RGBA8, "GL_RGBA8"},
-      {GL_SRGB8_ALPHA8, "GL_SRGB8_ALPHA8"},
-      {GL_RGB5_A1, "GL_RGB5_A1"},
-      {GL_RGBA4, "GL_RGBA4"},
-      {GL_RGB10_A2, "GL_RGB10_A2"},
-      {GL_RGBA8UI, "GL_RGBA8UI"},
-      {GL_RGBA8I, "GL_RGBA8I"},
-      {GL_RGB10_A2UI, "GL_RGB10_A2UI"},
-      {GL_RGBA16UI, "GL_RGBA16UI"},
-      {GL_RGBA16I, "GL_RGBA16I"},
-      {GL_RGBA32UI, "GL_RGBA32UI"},
-      {GL_RGBA32I, "GL_RGBA32I"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringTextureSizedTextureFilterableInternalFormat(
-    uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_R8, "GL_R8"},
-      {GL_R8_SNORM, "GL_R8_SNORM"},
-      {GL_R16F, "GL_R16F"},
-      {GL_RG8, "GL_RG8"},
-      {GL_RG8_SNORM, "GL_RG8_SNORM"},
-      {GL_RG16F, "GL_RG16F"},
-      {GL_RGB8, "GL_RGB8"},
-      {GL_SRGB8, "GL_SRGB8"},
-      {GL_RGB565, "GL_RGB565"},
-      {GL_RGB8_SNORM, "GL_RGB8_SNORM"},
-      {GL_R11F_G11F_B10F, "GL_R11F_G11F_B10F"},
-      {GL_RGB9_E5, "GL_RGB9_E5"},
-      {GL_RGB16F, "GL_RGB16F"},
-      {GL_RGBA8, "GL_RGBA8"},
-      {GL_SRGB8_ALPHA8, "GL_SRGB8_ALPHA8"},
-      {GL_RGBA8_SNORM, "GL_RGBA8_SNORM"},
-      {GL_RGB5_A1, "GL_RGB5_A1"},
-      {GL_RGBA4, "GL_RGBA4"},
-      {GL_RGB10_A2, "GL_RGB10_A2"},
-      {GL_RGBA16F, "GL_RGBA16F"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
 std::string GLES2Util::GetStringTextureTarget(uint32_t value) {
   static const EnumToString string_table[] = {
       {GL_TEXTURE_2D, "GL_TEXTURE_2D"},
@@ -4844,18 +4780,6 @@ std::string GLES2Util::GetStringTextureTarget(uint32_t value) {
       {GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Y"},
       {GL_TEXTURE_CUBE_MAP_POSITIVE_Z, "GL_TEXTURE_CUBE_MAP_POSITIVE_Z"},
       {GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, "GL_TEXTURE_CUBE_MAP_NEGATIVE_Z"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
-std::string GLES2Util::GetStringTextureUnsizedInternalFormat(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_ALPHA, "GL_ALPHA"},
-      {GL_LUMINANCE, "GL_LUMINANCE"},
-      {GL_LUMINANCE_ALPHA, "GL_LUMINANCE_ALPHA"},
-      {GL_RGB, "GL_RGB"},
-      {GL_RGBA, "GL_RGBA"},
   };
   return GLES2Util::GetQualifiedEnumString(string_table,
                                            arraysize(string_table), value);

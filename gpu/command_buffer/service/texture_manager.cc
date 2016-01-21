@@ -529,9 +529,11 @@ void Texture::SetMailboxManager(MailboxManager* mailbox_manager) {
   mailbox_manager_ = mailbox_manager;
 }
 
-void Texture::MarkMipmapsGenerated(
+bool Texture::MarkMipmapsGenerated(
     const FeatureInfo* feature_info) {
-  DCHECK(CanGenerateMipmaps(feature_info));
+  if (!CanGenerateMipmaps(feature_info)) {
+    return false;
+  }
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     const Texture::FaceInfo& face_info = face_infos_[ii];
     const Texture::LevelInfo& level0_info = face_info.level_infos[base_level_];
@@ -552,6 +554,8 @@ void Texture::MarkMipmapsGenerated(
                    level0_info.type, gfx::Rect(width, height));
     }
   }
+
+  return true;
 }
 
 void Texture::SetTarget(
@@ -596,32 +600,19 @@ bool Texture::CanGenerateMipmaps(
     return false;
   }
 
-  bool valid_internal_format = false;
-  if (feature_info->validators()->texture_unsized_internal_format.IsValid(
-      base.internal_format)) {
-    valid_internal_format = true;
-  } else if (feature_info->validators()->
-      texture_sized_color_renderable_internal_format.IsValid(
-          base.internal_format) && feature_info->validators()->
-      texture_sized_texture_filterable_internal_format.IsValid(
-          base.internal_format)) {
-    valid_internal_format = true;
-  }
-  if (!valid_internal_format) {
-    return false;
-  }
-
+  // TODO(gman): Check internal_format, format and type.
   for (size_t ii = 0; ii < face_infos_.size(); ++ii) {
     const LevelInfo& info = face_infos_[ii].level_infos[base_level_];
-    if ((info.target == 0) ||
+    if ((info.target == 0) || (info.width != base.width) ||
+        (info.height != base.height) || (info.depth != base.depth) ||
+        (info.format != base.format) ||
+        (info.internal_format != base.internal_format) ||
+        (info.type != base.type) ||
         feature_info->validators()->compressed_texture_format.IsValid(
             info.internal_format) ||
         info.image.get()) {
       return false;
     }
-  }
-  if (face_infos_.size() == 6 && !cube_complete_) {
-    return false;
   }
   return true;
 }
@@ -1121,8 +1112,7 @@ void Texture::Update(const FeatureInfo* feature_info) {
   texture_complete_ =
       max_level_set_ >= (levels_needed - 1) && max_level_set_ >= 0;
   cube_complete_ = (face_infos_.size() == 6) &&
-                   (first_level.width == first_level.height) &&
-                   (first_level.width > 0);
+                   (first_level.width == first_level.height);
 
   if (first_level.width == 0 || first_level.height == 0) {
     texture_complete_ = false;
@@ -1705,12 +1695,13 @@ void TextureManager::SetParameterf(
   }
 }
 
-void TextureManager::MarkMipmapsGenerated(TextureRef* ref) {
+bool TextureManager::MarkMipmapsGenerated(TextureRef* ref) {
   DCHECK(ref);
   Texture* texture = ref->texture();
   texture->GetMemTracker()->TrackMemFree(texture->estimated_size());
-  texture->MarkMipmapsGenerated(feature_info_.get());
+  bool result = texture->MarkMipmapsGenerated(feature_info_.get());
   texture->GetMemTracker()->TrackMemAlloc(texture->estimated_size());
+  return result;
 }
 
 TextureRef* TextureManager::CreateTexture(

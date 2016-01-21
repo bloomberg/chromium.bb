@@ -89,12 +89,7 @@ static std::string GetStringTextureInternalFormatStorage(uint32_t value);
 static std::string GetStringTextureMagFilterMode(uint32_t value);
 static std::string GetStringTextureMinFilterMode(uint32_t value);
 static std::string GetStringTextureParameter(uint32_t value);
-static std::string GetStringTextureSizedColorRenderableInternalFormat(
-    uint32_t value);
-static std::string GetStringTextureSizedTextureFilterableInternalFormat(
-    uint32_t value);
 static std::string GetStringTextureTarget(uint32_t value);
-static std::string GetStringTextureUnsizedInternalFormat(uint32_t value);
 static std::string GetStringTextureUsage(uint32_t value);
 static std::string GetStringTextureWrapMode(uint32_t value);
 static std::string GetStringTransformFeedbackBindTarget(uint32_t value);

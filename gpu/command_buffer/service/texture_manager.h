@@ -344,7 +344,7 @@ class GPU_EXPORT Texture {
       const FeatureInfo* feature_info, GLenum pname, GLfloat param);
 
   // Makes each of the mip levels as though they were generated.
-  void MarkMipmapsGenerated(const FeatureInfo* feature_info);
+  bool MarkMipmapsGenerated(const FeatureInfo* feature_info);
 
   bool NeedsMips() const {
     return min_filter_ != GL_NEAREST && min_filter_ != GL_LINEAR;
@@ -756,7 +756,8 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
       TextureRef* ref, GLenum pname, GLfloat param);
 
   // Makes each of the mip levels as though they were generated.
-  void MarkMipmapsGenerated(TextureRef* ref);
+  // Returns false if that's not allowed for the given texture.
+  bool MarkMipmapsGenerated(TextureRef* ref);
 
   // Clears any uncleared renderable levels.
   bool ClearRenderableLevels(GLES2Decoder* decoder, TextureRef* ref);
