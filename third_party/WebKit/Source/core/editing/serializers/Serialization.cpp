@@ -245,7 +245,7 @@ String CreateMarkupAlgorithm<Strategy>::createMarkup(const PositionTemplate<Stra
     if (startPosition.isNull() || endPosition.isNull())
         return emptyString();
 
-    ASSERT(startPosition.compareTo(endPosition) <= 0);
+    RELEASE_ASSERT(startPosition.compareTo(endPosition) <= 0);
 
     bool collapsed = startPosition == endPosition;
     if (collapsed)
