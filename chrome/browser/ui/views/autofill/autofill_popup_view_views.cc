@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/autofill/autofill_popup_view_views.h"
 
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -51,7 +52,7 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   OnPaintBorder(canvas);
 
   for (size_t i = 0; i < controller_->GetLineCount(); ++i) {
-    gfx::Rect line_rect = controller_->GetRowBounds(i);
+    gfx::Rect line_rect = controller_->layout_model().GetRowBounds(i);
 
     if (controller_->GetSuggestionAt(i).frontend_id ==
         POPUP_ITEM_ID_SEPARATOR) {
@@ -63,7 +64,7 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AutofillPopupViewViews::InvalidateRow(size_t row) {
-  SchedulePaintInRect(controller_->GetRowBounds(row));
+  SchedulePaintInRect(controller_->layout_model().GetRowBounds(row));
 }
 
 void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
@@ -76,7 +77,7 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
   const int text_align =
       is_rtl ? gfx::Canvas::TEXT_ALIGN_RIGHT : gfx::Canvas::TEXT_ALIGN_LEFT;
   gfx::Rect value_rect = entry_rect;
-  value_rect.Inset(kEndPadding, 0);
+  value_rect.Inset(AutofillPopupLayoutModel::kEndPadding, 0);
   canvas->DrawStringRectWithFlags(
       controller_->GetElidedValueAt(index),
       controller_->GetValueFontListForRow(index),
@@ -84,13 +85,15 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
       value_rect, text_align);
 
   // Use this to figure out where all the other Autofill items should be placed.
-  int x_align_left = is_rtl ? kEndPadding : entry_rect.right() - kEndPadding;
+  int x_align_left =
+      is_rtl ? AutofillPopupLayoutModel::kEndPadding
+             : entry_rect.right() - AutofillPopupLayoutModel::kEndPadding;
 
   // Draw the Autofill icon, if one exists
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  int row_height = controller_->GetRowBounds(index).height();
+  int row_height = controller_->layout_model().GetRowBounds(index).height();
   if (!controller_->GetSuggestionAt(index).icon.empty()) {
-    int icon = controller_->GetIconResourceID(
+    int icon = controller_->layout_model().GetIconResourceID(
         controller_->GetSuggestionAt(index).icon);
     DCHECK_NE(-1, icon);
     const gfx::ImageSkia* image = rb.GetImageSkiaNamed(icon);
@@ -100,7 +103,9 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
 
     canvas->DrawImageInt(*image, x_align_left, icon_y);
 
-    x_align_left += is_rtl ? image->width() + kIconPadding : -kIconPadding;
+    x_align_left +=
+        is_rtl ? image->width() + AutofillPopupLayoutModel::kIconPadding
+               : -AutofillPopupLayoutModel::kIconPadding;
   }
 
   // Draw the label text.

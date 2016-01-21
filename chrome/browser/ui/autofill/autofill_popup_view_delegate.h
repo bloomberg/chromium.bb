@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_DELEGATE_H_
 #define CHROME_BROWSER_UI_AUTOFILL_AUTOFILL_POPUP_VIEW_DELEGATE_H_
 
+#include <stddef.h>
+#include <vector>
+
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -14,6 +17,8 @@ class RectF;
 }
 
 namespace autofill {
+
+struct Suggestion;
 
 // Base class for Controllers of Autofill-style popups. This interface is
 // used by the relevant views to communicate with the controller.
@@ -39,7 +44,7 @@ class AutofillPopupViewDelegate {
   virtual void SelectionCleared() = 0;
 
   // The actual bounds of the popup.
-  virtual const gfx::Rect& popup_bounds() const = 0;
+  virtual gfx::Rect popup_bounds() const = 0;
 
   // The view that the form field element sits in.
   virtual gfx::NativeView container_view() = 0;
@@ -49,6 +54,15 @@ class AutofillPopupViewDelegate {
 
   // If the current popup should be displayed in RTL mode.
   virtual bool IsRTL() const = 0;
+
+  // Returns the full set of autofill suggestions, if applicable.
+  virtual const std::vector<autofill::Suggestion> GetSuggestions() = 0;
+
+#if !defined(OS_ANDROID)
+  // Returns elided values and labels for the given |row|.
+  virtual int GetElidedValueWidthForRow(size_t row) = 0;
+  virtual int GetElidedLabelWidthForRow(size_t row) = 0;
+#endif
 
  protected:
   virtual ~AutofillPopupViewDelegate() {}

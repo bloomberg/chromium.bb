@@ -8,7 +8,6 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "content/public/browser/render_widget_host.h"
-#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -16,10 +15,6 @@ namespace content {
 struct NativeWebKeyboardEvent;
 class RenderViewHost;
 class WebContents;
-}
-
-namespace gfx {
-class Display;
 }
 
 namespace autofill {
@@ -40,14 +35,6 @@ class PopupControllerCommon {
   gfx::NativeView container_view() { return container_view_; }
   content::WebContents* web_contents() { return web_contents_; }
 
-  // Returns the enclosing rectangle for |element_bounds_|.
-  const gfx::Rect RoundedElementBounds() const;
-
-  // Returns the bounds that the popup should be placed at, given the desired
-  // width and height. By default this places the popup below |element_bounds|
-  // but it will be placed above if there isn't enough space.
-  gfx::Rect GetPopupBounds(int desired_width, int desired_height) const;
-
   // Callback used to register with RenderViewHost. This can only be set once,
   // or else a callback may be registered that will not be removed
   // (crbug.com/338070). Call will crash if callback is already set.
@@ -63,24 +50,7 @@ class PopupControllerCommon {
   // call even if the callback is not currently registered.
   void RemoveKeyPressCallback();
 
- protected:
-  // A helper function to get the display closest to the given point (virtual
-  // for testing).
-  virtual gfx::Display GetDisplayNearestPoint(const gfx::Point& point) const;
-
  private:
-  std::pair<int, int> CalculatePopupXAndWidth(
-      const gfx::Display& left_display,
-      const gfx::Display& right_display,
-      int popup_required_width) const;
-
-  // Calculates the height of the popup and the y position of it. These values
-  // will stay on the screen.
-  std::pair<int, int> CalculatePopupYAndHeight(
-      const gfx::Display& top_display,
-      const gfx::Display& bottom_display,
-      int popup_required_height) const;
-
   // The bounds of the text element that is the focus of the popup.
   // These coordinates are in screen space.
   gfx::RectF element_bounds_;

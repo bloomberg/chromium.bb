@@ -11,9 +11,9 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
-class AutofillPopupController;
-
 namespace autofill {
+
+class AutofillPopupController;
 
 // Views toolkit implementation for AutofillPopupView.
 class AutofillPopupViewViews : public AutofillPopupBaseView,

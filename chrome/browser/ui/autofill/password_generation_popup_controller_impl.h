@@ -5,12 +5,14 @@
 #ifndef CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
 #define CHROME_BROWSER_UI_AUTOFILL_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
 
+#include <stddef.h>
 #include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/password_generation_popup_controller.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
+#include "chrome/browser/ui/autofill/popup_view_common.h"
 #include "components/autofill/core/common/password_form.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -32,6 +34,7 @@ namespace autofill {
 class PasswordGenerator;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupView;
+struct Suggestion;
 
 // This class controls a PasswordGenerationPopupView. It is responsible for
 // determining the location of the popup, handling keypress events while the
@@ -98,9 +101,15 @@ class PasswordGenerationPopupControllerImpl
   void OnSavedPasswordsLinkClicked() override;
   int GetMinimumWidth() override;
   gfx::NativeView container_view() override;
-  const gfx::Rect& popup_bounds() const override;
+  gfx::Rect popup_bounds() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
+  const std::vector<autofill::Suggestion> GetSuggestions() override;
+#if !defined(OS_ANDROID)
+  int GetElidedValueWidthForRow(size_t row) override;
+  int GetElidedLabelWidthForRow(size_t row) override;
+#endif
+
   bool display_password() const override;
   bool password_selected() const override;
   base::string16 password() const override;
@@ -148,6 +157,8 @@ class PasswordGenerationPopupControllerImpl
 
   // Bounds for all the elements of the popup.
   gfx::Rect popup_bounds_;
+
+  PopupViewCommon view_common_;
 
   base::WeakPtrFactory<PasswordGenerationPopupControllerImpl> weak_ptr_factory_;
 

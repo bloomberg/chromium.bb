@@ -9,6 +9,7 @@
 #include "chrome/browser/android/resource_mapper.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "grit/components_strings.h"
@@ -24,16 +25,14 @@ namespace autofill {
 namespace {
 
 void AddToJavaArray(const Suggestion& suggestion,
-                    const AutofillPopupController& controller,
+                    int icon_id,
                     JNIEnv* env,
                     jobjectArray data_array,
                     size_t position,
                     bool deletable) {
   int android_icon_id = 0;
-  if (!suggestion.icon.empty()) {
-    android_icon_id = ResourceMapper::MapFromChromiumId(
-        controller.GetIconResourceID(suggestion.icon));
-  }
+  if (!suggestion.icon.empty())
+    android_icon_id = ResourceMapper::MapFromChromiumId(icon_id);
 
   Java_AutofillKeyboardAccessoryBridge_addToAutofillSuggestionArray(
       env, data_array, position,
@@ -46,8 +45,7 @@ void AddToJavaArray(const Suggestion& suggestion,
 
 AutofillKeyboardAccessoryView::AutofillKeyboardAccessoryView(
     AutofillPopupController* controller)
-    : controller_(controller),
-      deleting_index_(-1) {
+    : controller_(controller), deleting_index_(-1) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(Java_AutofillKeyboardAccessoryBridge_create(env));
 }
@@ -89,8 +87,9 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
   for (size_t i = 0; i < count; ++i) {
     const Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (suggestion.frontend_id == POPUP_ITEM_ID_CLEAR_FORM) {
-      AddToJavaArray(suggestion, *controller_, env, data_array.obj(), position,
-                     false);
+      AddToJavaArray(suggestion, controller_->layout_model().GetIconResourceID(
+                                     suggestion.icon),
+                     env, data_array.obj(), position, false);
       positions_[position++] = i;
     }
   }
@@ -100,8 +99,9 @@ void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
     if (suggestion.frontend_id != POPUP_ITEM_ID_CLEAR_FORM) {
       bool deletable =
           controller_->GetRemovalConfirmationText(i, nullptr, nullptr);
-      AddToJavaArray(suggestion, *controller_, env, data_array.obj(), position,
-                     deletable);
+      AddToJavaArray(suggestion, controller_->layout_model().GetIconResourceID(
+                                     suggestion.icon),
+                     env, data_array.obj(), position, deletable);
       positions_[position++] = i;
     }
   }

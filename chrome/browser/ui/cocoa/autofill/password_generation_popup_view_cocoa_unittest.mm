@@ -4,10 +4,13 @@
 
 #import "chrome/browser/ui/cocoa/autofill/password_generation_popup_view_cocoa.h"
 
+#include <stddef.h>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -53,12 +56,13 @@ class MockPasswordGenerationPopupController
   void SetSelectionAtPoint(const gfx::Point&) override {}
   bool AcceptSelectedLine() override { return true; }
   void SelectionCleared() override {}
-  const gfx::Rect& popup_bounds() const override {
-    return popup_bounds_;
-  }
+  gfx::Rect popup_bounds() const override { return popup_bounds_; }
   MOCK_METHOD0(container_view, gfx::NativeView());
   MOCK_CONST_METHOD0(element_bounds, gfx::RectF&());
   MOCK_CONST_METHOD0(IsRTL, bool());
+  MOCK_METHOD0(GetSuggestions, const std::vector<autofill::Suggestion>());
+  MOCK_METHOD1(GetElidedValueWidthForRow, int(size_t));
+  MOCK_METHOD1(GetElidedLabelWidthForRow, int(size_t));
 
  private:
   base::string16 help_text_;

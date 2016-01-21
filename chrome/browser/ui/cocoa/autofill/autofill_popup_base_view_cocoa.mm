@@ -48,13 +48,13 @@
                  frame:(NSRect)frame {
   self = [super initWithFrame:frame];
   if (self)
-    delegate_ = delegate;
+    popup_delegate_ = delegate;
 
   return self;
 }
 
 - (void)delegateDestroyed {
-  delegate_ = NULL;
+  popup_delegate_ = NULL;
 }
 
 - (void)drawSeparatorWithBounds:(NSRect)bounds {
@@ -90,7 +90,7 @@
 
 - (void)mouseUp:(NSEvent*)theEvent {
   // If the view is in the process of being destroyed, abort.
-  if (!delegate_)
+  if (!popup_delegate_)
     return;
 
   // Only accept single-click.
@@ -101,20 +101,21 @@
                                fromView:nil];
 
   if (NSPointInRect(location, [self bounds])) {
-    delegate_->SetSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
-    delegate_->AcceptSelectedLine();
+    popup_delegate_->SetSelectionAtPoint(
+        gfx::Point(NSPointToCGPoint(location)));
+    popup_delegate_->AcceptSelectedLine();
   }
 }
 
 - (void)mouseMoved:(NSEvent*)theEvent {
   // If the view is in the process of being destroyed, abort.
-  if (!delegate_)
+  if (!popup_delegate_)
     return;
 
   NSPoint location = [self convertPoint:[theEvent locationInWindow]
                                fromView:nil];
 
-  delegate_->SetSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
+  popup_delegate_->SetSelectionAtPoint(gfx::Point(NSPointToCGPoint(location)));
 }
 
 - (void)mouseDragged:(NSEvent*)theEvent {
@@ -123,17 +124,17 @@
 
 - (void)mouseExited:(NSEvent*)theEvent {
   // If the view is in the process of being destroyed, abort.
-  if (!delegate_)
+  if (!popup_delegate_)
     return;
 
-  delegate_->SelectionCleared();
+  popup_delegate_->SelectionCleared();
 }
 
 #pragma mark -
 #pragma mark Messages from AutofillPopupViewBridge:
 
 - (void)updateBoundsAndRedrawPopup {
-  NSRect frame = NSRectFromCGRect(delegate_->popup_bounds().ToCGRect());
+  NSRect frame = NSRectFromCGRect(popup_delegate_->popup_bounds().ToCGRect());
 
   // Flip coordinates back into Cocoa-land.  The controller's platform-neutral
   // coordinate space places the origin at the top-left of the first screen,
@@ -160,8 +161,8 @@
   [window setOpaque:YES];
 
   [self updateBoundsAndRedrawPopup];
-  [[delegate_->container_view() window] addChildWindow:window
-                                               ordered:NSWindowAbove];
+  [[popup_delegate_->container_view() window] addChildWindow:window
+                                                     ordered:NSWindowAbove];
 }
 
 - (void)hidePopup {

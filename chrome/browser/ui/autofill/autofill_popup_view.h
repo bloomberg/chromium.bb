@@ -7,15 +7,8 @@
 
 #include <stddef.h>
 
-#include "ui/gfx/native_widget_types.h"
-
-namespace gfx {
-class Rect;
-}
-
-namespace ui {
-class KeyEvent;
-}
+#include "base/strings/string16.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
 namespace autofill {
 
@@ -25,22 +18,6 @@ class AutofillPopupController;
 // AutofillPopupView.
 class AutofillPopupView {
  public:
-  // The minimum amount of padding between the Autofill name and subtext,
-  // in pixels.
-  static const size_t kNamePadding = 15;
-
-  // The amount of padding between icons in pixels.
-  static const int kIconPadding = 5;
-
-  // The amount of padding at the end of the popup in pixels.
-  static const int kEndPadding = 3;
-
-  // Height of the delete icon in pixels.
-  static const int kDeleteIconHeight = 16;
-
-  // Width of the delete icon in pixels.
-  static const int kDeleteIconWidth = 16;
-
   // Displays the Autofill popup and fills it in with data from the controller.
   virtual void Show() = 0;
 

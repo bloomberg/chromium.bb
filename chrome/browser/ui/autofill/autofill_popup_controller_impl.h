@@ -13,6 +13,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
@@ -70,20 +71,24 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                               base::i18n::TextDirection text_direction);
   ~AutofillPopupControllerImpl() override;
 
-  // AutofillPopupController implementation.
+  // AutofillPopupViewDelegate implementation.
   void UpdateBoundsAndRedrawPopup() override;
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
   void AcceptSuggestion(size_t index) override;
-  int GetIconResourceID(const base::string16& resource_name) const override;
   bool IsWarning(size_t index) const override;
-  gfx::Rect GetRowBounds(size_t index) override;
-  const gfx::Rect& popup_bounds() const override;
+  gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
+  const std::vector<autofill::Suggestion> GetSuggestions() override;
+#if !defined(OS_ANDROID)
+  int GetElidedValueWidthForRow(size_t row) override;
+  int GetElidedLabelWidthForRow(size_t row) override;
+#endif
 
+  // AutofillPopupController implementation.
   size_t GetLineCount() const override;
   const autofill::Suggestion& GetSuggestionAt(size_t row) const override;
   const base::string16& GetElidedValueAt(size_t row) const override;
@@ -97,6 +102,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   const gfx::FontList& GetLabelFontList() const override;
 #endif
   int selected_line() const override;
+  const AutofillPopupLayoutModel& layout_model() const override;
 
   content::WebContents* web_contents();
 
@@ -111,12 +117,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   // The user has removed a suggestion.
   bool RemoveSelectedLine();
-
-  // Convert a y-coordinate to the closest line.
-  int LineFromY(int y);
-
-  // Returns the height of a row depending on its type.
-  int GetRowHeightFromId(int identifier) const;
 
   // Returns true if the given id refers to an element that can be accepted.
   bool CanAccept(int id);
@@ -134,20 +134,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   virtual void ShowView();
   virtual void InvalidateRow(size_t row);
 
-  // Protected so tests can access.
-#if !defined(OS_ANDROID)
-  // Calculates the desired width of the popup based on its contents.
-  int GetDesiredPopupWidth() const;
-
-  // Calculates the desired height of the popup based on its contents.
-  int GetDesiredPopupHeight() const;
-
-  // Calculate the width of the row, excluding all the text. This provides
-  // the size of the row that won't be reducible (since all the text can be
-  // elided if there isn't enough space).
-  int RowWidthWithoutText(int row) const;
-#endif
-
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 
   // Contains common popup functionality such as popup layout. Protected for
@@ -155,21 +141,22 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   scoped_ptr<PopupControllerCommon> controller_common_;
 
  private:
+#if !defined(OS_ANDROID)
+  FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest, ElideText);
+
+  // Helper method which elides the value and label for the suggestion at |row|
+  // given the |available_width|. Puts the results in |elided_values_| and
+  // |elided_labels_|.
+  void ElideValueAndLabelForRow(size_t row, int available_width);
+#endif
+
   // Clear the internal state of the controller. This is needed to ensure that
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
 
-#if !defined(OS_ANDROID)
-  // Calculates and sets the bounds of the popup, including placing it properly
-  // to prevent it from going off the screen.
-  void UpdatePopupBounds();
-#endif
-
   AutofillPopupView* view_;  // Weak reference.
+  AutofillPopupLayoutModel layout_model_;
   base::WeakPtr<AutofillPopupDelegate> delegate_;
-
-  // The bounds of the Autofill popup.
-  gfx::Rect popup_bounds_;
 
   // The text direction of the popup.
   base::i18n::TextDirection text_direction_;

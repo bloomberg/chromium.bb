@@ -1,0 +1,107 @@
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
+
+#include <stddef.h>
+
+#include "base/memory/scoped_ptr.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
+#include "chrome/browser/ui/autofill/popup_constants.h"
+#include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/autofill/core/browser/suggestion.h"
+#include "content/public/browser/web_contents.h"
+#include "grit/components_scaled_resources.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/native_widget_types.h"
+
+namespace autofill {
+
+namespace {
+
+class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
+ public:
+  explicit TestAutofillPopupViewDelegate(content::WebContents* web_contents)
+      : element_bounds_(0.0, 0.0, 100.0, 100.0),
+        container_view_(web_contents->GetNativeView()) {}
+
+  void Hide() override {}
+  void ViewDestroyed() override{};
+  void SetSelectionAtPoint(const gfx::Point& point) override {}
+  bool AcceptSelectedLine() override { return true; }
+  void SelectionCleared() override {}
+  gfx::Rect popup_bounds() const override { return gfx::Rect(0, 0, 100, 100); }
+  gfx::NativeView container_view() override { return container_view_; }
+  const gfx::RectF& element_bounds() const override { return element_bounds_; }
+  bool IsRTL() const override { return false; }
+
+  const std::vector<autofill::Suggestion> GetSuggestions() override {
+    // Give elements 1 and 3 subtexts and elements 2 and 3 icons, to ensure
+    // all combinations of subtexts and icons.
+    std::vector<Suggestion> suggestions;
+    suggestions.push_back(Suggestion("", "", "", 0));
+    suggestions.push_back(Suggestion("", "x", "", 0));
+    suggestions.push_back(Suggestion("", "", "americanExpressCC", 0));
+    suggestions.push_back(Suggestion("", "x", "genericCC", 0));
+    return suggestions;
+  }
+#if !defined(OS_ANDROID)
+  int GetElidedValueWidthForRow(size_t row) override { return 0; }
+  int GetElidedLabelWidthForRow(size_t row) override { return 0; }
+#endif
+
+ private:
+  gfx::RectF element_bounds_;
+  gfx::NativeView container_view_;
+};
+
+class AutofillPopupLayoutModelTest : public ChromeRenderViewHostTestHarness {
+ public:
+  void SetUp() override {
+    ChromeRenderViewHostTestHarness::SetUp();
+
+    delegate_.reset(new TestAutofillPopupViewDelegate(web_contents()));
+    layout_model_.reset(new AutofillPopupLayoutModel(delegate_.get()));
+  }
+
+  AutofillPopupLayoutModel* layout_model() { return layout_model_.get(); }
+
+ private:
+  scoped_ptr<TestAutofillPopupViewDelegate> delegate_;
+  scoped_ptr<AutofillPopupLayoutModel> layout_model_;
+};
+
+}  // namespace
+
+#if !defined(OS_ANDROID)
+TEST_F(AutofillPopupLayoutModelTest, RowWidthWithoutText) {
+  int base_size =
+      AutofillPopupLayoutModel::kEndPadding * 2 + kPopupBorderThickness * 2;
+  int subtext_increase = AutofillPopupLayoutModel::kNamePadding;
+
+  // Refer to GetSuggestions() in TestAutofillPopupViewDelegate.
+  EXPECT_EQ(base_size,
+            layout_model()->RowWidthWithoutText(0, /* with_label= */ false));
+  EXPECT_EQ(base_size + subtext_increase,
+            layout_model()->RowWidthWithoutText(1, /* with_label= */ true));
+  EXPECT_EQ(base_size + AutofillPopupLayoutModel::kIconPadding +
+                ui::ResourceBundle::GetSharedInstance()
+                    .GetImageNamed(IDR_AUTOFILL_CC_AMEX)
+                    .Width(),
+            layout_model()->RowWidthWithoutText(2, /* with_label= */ false));
+  EXPECT_EQ(base_size + subtext_increase +
+                AutofillPopupLayoutModel::kIconPadding +
+                ui::ResourceBundle::GetSharedInstance()
+                    .GetImageNamed(IDR_AUTOFILL_CC_GENERIC)
+                    .Width(),
+            layout_model()->RowWidthWithoutText(3, /* with_label= */ true));
+}
+#endif
+
+}  // namespace autofill

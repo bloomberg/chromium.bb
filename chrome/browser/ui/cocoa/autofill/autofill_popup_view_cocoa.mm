@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_bridge.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
@@ -19,6 +20,7 @@
 #include "ui/gfx/image/image.h"
 
 using autofill::AutofillPopupView;
+using autofill::AutofillPopupLayoutModel;
 
 @interface AutofillPopupViewCocoa ()
 
@@ -72,14 +74,17 @@ using autofill::AutofillPopupView;
 
 - (id)initWithFrame:(NSRect)frame {
   NOTREACHED();
-  return [self initWithController:NULL frame:frame];
+  return [self initWithController:NULL frame:frame delegate:NULL];
 }
 
 - (id)initWithController:(autofill::AutofillPopupController*)controller
-                   frame:(NSRect)frame {
+                   frame:(NSRect)frame
+                delegate:(autofill::AutofillPopupViewCocoaDelegate*)delegate {
   self = [super initWithDelegate:controller frame:frame];
-  if (self)
+  if (self) {
     controller_ = controller;
+    delegate_ = delegate;
+  }
 
   return self;
 }
@@ -96,8 +101,7 @@ using autofill::AutofillPopupView;
 
   for (size_t i = 0; i < controller_->GetLineCount(); ++i) {
     // Skip rows outside of the dirty rect.
-    NSRect rowBounds =
-        NSRectFromCGRect(controller_->GetRowBounds(i).ToCGRect());
+    NSRect rowBounds = NSRectFromCGRect(delegate_->GetRowBounds(i).ToCGRect());
     if (!NSIntersectsRect(rowBounds, dirtyRect))
       continue;
     const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
@@ -133,8 +137,7 @@ using autofill::AutofillPopupView;
 }
 
 - (void)invalidateRow:(size_t)row {
-  NSRect dirty_rect =
-      NSRectFromCGRect(controller_->GetRowBounds(row).ToCGRect());
+  NSRect dirty_rect = NSRectFromCGRect(delegate_->GetRowBounds(row).ToCGRect());
   [self setNeedsDisplayInRect:dirty_rect];
 }
 
@@ -156,8 +159,8 @@ using autofill::AutofillPopupView;
   BOOL isRTL = controller_->IsRTL();
 
   // The X values of the left and right borders of the autofill widget.
-  CGFloat leftX = NSMinX(bounds) + AutofillPopupView::kEndPadding;
-  CGFloat rightX = NSMaxX(bounds) - AutofillPopupView::kEndPadding;
+  CGFloat leftX = NSMinX(bounds) + AutofillPopupLayoutModel::kEndPadding;
+  CGFloat rightX = NSMaxX(bounds) - AutofillPopupLayoutModel::kEndPadding;
 
   // Draw left side if isRTL == NO, right side if isRTL == YES.
   CGFloat x = isRTL ? rightX : leftX;
@@ -220,8 +223,8 @@ using autofill::AutofillPopupView;
       respectFlipped:YES
                hints:nil];
 
-    x += rightAlign ? -AutofillPopupView::kIconPadding
-                    : iconSize.width + AutofillPopupView::kIconPadding;
+    x += rightAlign ? -AutofillPopupLayoutModel::kIconPadding
+                    : iconSize.width + AutofillPopupLayoutModel::kIconPadding;
     return x;
 }
 
@@ -252,7 +255,7 @@ using autofill::AutofillPopupView;
   if (icon.empty())
     return nil;
 
-  int iconId = controller_->GetIconResourceID(icon);
+  int iconId = delegate_->GetIconResourceID(icon);
   DCHECK_NE(-1, iconId);
 
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

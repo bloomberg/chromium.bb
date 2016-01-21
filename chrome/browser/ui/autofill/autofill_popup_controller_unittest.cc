@@ -12,8 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
-#include "chrome/browser/ui/autofill/popup_constants.h"
-#include "chrome/browser/ui/autofill/test_popup_controller_common.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
@@ -25,10 +23,8 @@
 #include "components/autofill/core/browser/test_autofill_client.h"
 #include "components/autofill/core/browser/test_autofill_external_delegate.h"
 #include "content/public/browser/web_contents.h"
-#include "grit/components_scaled_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_utils.h"
@@ -75,24 +71,15 @@ class MockAutofillClient : public autofill::TestAutofillClient {
 
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
  public:
-  explicit TestAutofillPopupController(
+  TestAutofillPopupController(
       base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
       : AutofillPopupControllerImpl(external_delegate,
                                     NULL,
                                     NULL,
                                     element_bounds,
-                                    base::i18n::UNKNOWN_DIRECTION),
-        test_controller_common_(
-            new TestPopupControllerCommon(element_bounds,
-                                          base::i18n::LEFT_TO_RIGHT)) {
-    controller_common_.reset(test_controller_common_);
-  }
+                                    base::i18n::UNKNOWN_DIRECTION) {}
   ~TestAutofillPopupController() override {}
-
-  void set_display(const gfx::Display& display) {
-    test_controller_common_->set_display(display);
-  }
 
   // Making protected functions public for testing
   using AutofillPopupControllerImpl::GetLineCount;
@@ -109,11 +96,8 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 #if !defined(OS_ANDROID)
   using AutofillPopupControllerImpl::GetValueFontListForRow;
   using AutofillPopupControllerImpl::GetLabelFontList;
-  using AutofillPopupControllerImpl::RowWidthWithoutText;
 #endif
   using AutofillPopupControllerImpl::SetValues;
-  using AutofillPopupControllerImpl::GetDesiredPopupWidth;
-  using AutofillPopupControllerImpl::GetDesiredPopupHeight;
   using AutofillPopupControllerImpl::GetWeakPtr;
   MOCK_METHOD1(InvalidateRow, void(size_t));
   MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
@@ -125,8 +109,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
 
  private:
   void ShowView() override {}
-
-  TestPopupControllerCommon* test_controller_common_;
 };
 
 }  // namespace
@@ -298,39 +280,6 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
   EXPECT_EQ(0, autofill_popup_controller_->selected_line());
 }
 
-TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
-  // Give elements 1 and 3 subtexts and elements 2 and 3 icons, to ensure
-  // all combinations of subtexts and icons.
-  std::vector<Suggestion> suggestions;
-  suggestions.push_back(Suggestion("", "", "", 0));
-  suggestions.push_back(Suggestion("", "x", "", 0));
-  suggestions.push_back(Suggestion("", "", "americanExpressCC", 0));
-  suggestions.push_back(Suggestion("", "x", "genericCC", 0));
-
-  // Set up some visible display so the text values are kept.
-  gfx::Display display(0, gfx::Rect(0, 0, 100, 100));
-  autofill_popup_controller_->set_display(display);
-
-  autofill_popup_controller_->Show(suggestions);
-
-  int base_size =
-      AutofillPopupView::kEndPadding * 2 +
-      kPopupBorderThickness * 2;
-  int subtext_increase = AutofillPopupView::kNamePadding;
-
-  EXPECT_EQ(base_size, autofill_popup_controller_->RowWidthWithoutText(0));
-  EXPECT_EQ(base_size + subtext_increase,
-            autofill_popup_controller_->RowWidthWithoutText(1));
-  EXPECT_EQ(base_size + AutofillPopupView::kIconPadding +
-                ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                    IDR_AUTOFILL_CC_AMEX).Width(),
-            autofill_popup_controller_->RowWidthWithoutText(2));
-  EXPECT_EQ(base_size + subtext_increase + AutofillPopupView::kIconPadding +
-                ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                    IDR_AUTOFILL_CC_GENERIC).Width(),
-            autofill_popup_controller_->RowWidthWithoutText(3));
-}
-
 TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion("", "", "", 1));
@@ -490,8 +439,7 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
   suggestions.push_back(
       Suggestion("untrimmed", "Untrimmed", "genericCC", 0));
 
-  // Show the popup once so we can easily generate the size it needs.
-  autofill_popup_controller_->Show(suggestions);
+  autofill_popup_controller_->SetValues(suggestions);
 
   // Ensure the popup will be too small to display all of the first row.
   int popup_max_width =
@@ -501,16 +449,16 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
       gfx::GetStringWidth(
           suggestions[0].label,
           autofill_popup_controller_->GetLabelFontList()) - 25;
-  gfx::Rect popup_bounds = gfx::Rect(0, 0, popup_max_width, 0);
-  autofill_popup_controller_->set_display(gfx::Display(0, popup_bounds));
 
-  autofill_popup_controller_->Show(suggestions);
+  autofill_popup_controller_->ElideValueAndLabelForRow(0, popup_max_width);
 
   // The first element was long so it should have been trimmed.
   EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).value,
             autofill_popup_controller_->GetElidedValueAt(0));
   EXPECT_NE(autofill_popup_controller_->GetSuggestionAt(0).label,
             autofill_popup_controller_->GetElidedLabelAt(0));
+
+  autofill_popup_controller_->ElideValueAndLabelForRow(1, popup_max_width);
 
   // The second element was shorter so it should be unchanged.
   EXPECT_EQ(autofill_popup_controller_->GetSuggestionAt(1).value,

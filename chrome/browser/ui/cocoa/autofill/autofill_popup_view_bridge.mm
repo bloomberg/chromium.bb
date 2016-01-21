@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
 #include "ui/gfx/geometry/rect.h"
@@ -17,14 +18,23 @@ namespace autofill {
 AutofillPopupViewBridge::AutofillPopupViewBridge(
     AutofillPopupController* controller)
     : controller_(controller) {
-  view_.reset(
-      [[AutofillPopupViewCocoa alloc] initWithController:controller
-                                                   frame:NSZeroRect]);
+  view_.reset([[AutofillPopupViewCocoa alloc] initWithController:controller
+                                                           frame:NSZeroRect
+                                                        delegate:this]);
 }
 
 AutofillPopupViewBridge::~AutofillPopupViewBridge() {
   [view_ controllerDestroyed];
   [view_ hidePopup];
+}
+
+gfx::Rect AutofillPopupViewBridge::GetRowBounds(size_t index) {
+  return controller_->layout_model().GetRowBounds(index);
+}
+
+int AutofillPopupViewBridge::GetIconResourceID(
+    const base::string16& resource_name) {
+  return controller_->layout_model().GetIconResourceID(resource_name);
 }
 
 void AutofillPopupViewBridge::Hide() {

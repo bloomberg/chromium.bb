@@ -12,6 +12,7 @@
 
 namespace autofill {
 class AutofillPopupController;
+class AutofillPopupViewCocoaDelegate;
 }  // namespace autofill
 
 // Draws the native Autofill popup view on Mac.
@@ -19,11 +20,14 @@ class AutofillPopupController;
  @private
   // The cross-platform controller for this view.
   autofill::AutofillPopupController* controller_;  // weak
+  // The delegate back to the AutofillPopupViewBridge.
+  autofill::AutofillPopupViewCocoaDelegate* delegate_;  // weak
 }
 
 // Designated initializer.
 - (id)initWithController:(autofill::AutofillPopupController*)controller
-                   frame:(NSRect)frame;
+                   frame:(NSRect)frame
+                delegate:(autofill::AutofillPopupViewCocoaDelegate*)delegate;
 
 // Informs the view that its controller has been (or will imminently be)
 // destroyed.

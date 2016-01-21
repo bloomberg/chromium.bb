@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/android/autofill/autofill_keyboard_accessory_view.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
+#include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "content/public/browser/android/content_view_core.h"
@@ -25,8 +26,7 @@ namespace autofill {
 
 AutofillPopupViewAndroid::AutofillPopupViewAndroid(
     AutofillPopupController* controller)
-    : controller_(controller),
-      deleting_index_(-1) {}
+    : controller_(controller), deleting_index_(-1) {}
 
 AutofillPopupViewAndroid::~AutofillPopupViewAndroid() {}
 
@@ -75,7 +75,7 @@ void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
     const autofill::Suggestion& suggestion = controller_->GetSuggestionAt(i);
     if (!suggestion.icon.empty()) {
       android_icon_id = ResourceMapper::MapFromChromiumId(
-          controller_->GetIconResourceID(suggestion.icon));
+          controller_->layout_model().GetIconResourceID(suggestion.icon));
     }
 
     bool deletable =

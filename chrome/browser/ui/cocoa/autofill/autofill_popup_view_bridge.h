@@ -22,12 +22,28 @@ namespace autofill {
 
 class AutofillPopupViewDelegate;
 
+class AutofillPopupViewCocoaDelegate {
+ public:
+  // Returns the bounds of the item at |index| in the popup, relative to
+  // the top left of the popup.
+  virtual gfx::Rect GetRowBounds(size_t index) = 0;
+
+  // Gets the resource value for the given resource, returning -1 if the
+  // resource isn't recognized.
+  virtual int GetIconResourceID(const base::string16& resource_name) = 0;
+};
+
 // Mac implementation of the AutofillPopupView interface.
 // Serves as a bridge to an instance of the Objective-C class which actually
 // implements the view.
-class AutofillPopupViewBridge : public AutofillPopupView {
+class AutofillPopupViewBridge : public AutofillPopupView,
+                                public AutofillPopupViewCocoaDelegate {
  public:
   explicit AutofillPopupViewBridge(AutofillPopupController* controller);
+
+  // AutofillPopupViewCocoaDelegate implementation.
+  gfx::Rect GetRowBounds(size_t index) override;
+  int GetIconResourceID(const base::string16& resource_name) override;
 
  private:
   ~AutofillPopupViewBridge() override;

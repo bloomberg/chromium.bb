@@ -25,6 +25,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/content/common/autofill_messages.h"
 #include "components/autofill/core/browser/password_generator.h"
+#include "components/autofill/core/browser/suggestion.h"
 #include "components/browser_sync/browser/profile_sync_service.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -174,14 +175,15 @@ int PasswordGenerationPopupControllerImpl::GetMinimumWidth() {
 
   // If the width of the field is longer than the minimum, use that instead.
   return std::max(minimum_width,
-                  controller_common_.RoundedElementBounds().width());
+                  gfx::ToEnclosingRect(element_bounds()).width());
 }
 
 void PasswordGenerationPopupControllerImpl::CalculateBounds() {
   gfx::Size bounds = view_->GetPreferredSizeOfPasswordView();
 
-  popup_bounds_ = controller_common_.GetPopupBounds(bounds.width(),
-                                                    bounds.height());
+  popup_bounds_ = view_common_.CalculatePopupBounds(
+      bounds.width(), bounds.height(), gfx::ToEnclosingRect(element_bounds()),
+      container_view(), IsRTL());
 }
 
 void PasswordGenerationPopupControllerImpl::Show(bool display_password) {
@@ -264,7 +266,7 @@ gfx::NativeView PasswordGenerationPopupControllerImpl::container_view() {
   return controller_common_.container_view();
 }
 
-const gfx::Rect& PasswordGenerationPopupControllerImpl::popup_bounds() const {
+gfx::Rect PasswordGenerationPopupControllerImpl::popup_bounds() const {
   return popup_bounds_;
 }
 
@@ -276,6 +278,23 @@ const gfx::RectF& PasswordGenerationPopupControllerImpl::element_bounds()
 bool PasswordGenerationPopupControllerImpl::IsRTL() const {
   return base::i18n::IsRTL();
 }
+
+const std::vector<autofill::Suggestion>
+PasswordGenerationPopupControllerImpl::GetSuggestions() {
+  return std::vector<autofill::Suggestion>();
+}
+
+#if !defined(OS_ANDROID)
+int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(
+    size_t row) {
+  return 0;
+}
+
+int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(
+    size_t row) {
+  return 0;
+}
+#endif
 
 bool PasswordGenerationPopupControllerImpl::display_password() const {
   return display_password_;
