@@ -306,6 +306,16 @@
             'src/common/simple_string_dictionary.cc',
             'src/common/string_conversion.cc',
           ],
+          'conditions': [
+            ['OS=="ios"', {
+              'xcode_settings' : {
+                'WARNING_CFLAGS': [
+                  # See https://bugs.chromium.org/p/google-breakpad/issues/detail?id=675.
+                  '-Wno-deprecated-declarations',
+                ],
+              },
+            }],
+          ],
         },
         {
           # GN version: //breakpad:crash_inspector
