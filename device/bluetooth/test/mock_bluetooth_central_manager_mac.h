@@ -21,8 +21,8 @@
 // respond to 'stub').
 @interface MockCentralManager : NSObject
 
-@property(nonatomic, assign) BOOL scanForPeripheralsCallCount;
-@property(nonatomic, assign) BOOL stopScanCallCount;
+@property(nonatomic, assign) NSInteger scanForPeripheralsCallCount;
+@property(nonatomic, assign) NSInteger stopScanCallCount;
 @property(nonatomic, assign) id<CBCentralManagerDelegate> delegate;
 @property(nonatomic, assign) CBCentralManagerState state;
 
