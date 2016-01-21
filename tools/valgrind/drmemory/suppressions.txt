@@ -637,12 +637,10 @@ content.dll!content::MessageRouter::RouteMessage
 
 HANDLE LEAK
 name=http://crbug.com/441785
-system call NtCreateSection
-*!CreateFileMappingW
-*!base::SharedMemory::Create
-*!content::ChildThreadImpl::AllocateSharedMemory
+system call NtDuplicateObject
 ...
-*!content::ChildSharedBitmapManager::AllocateSharedBitmap
+*!ChildProcessHostMsg_AllocatedSharedBitmap::ChildProcessHostMsg_AllocatedSharedBitmap
+*!content::ChildSharedBitmapManager::AllocateSharedMemoryBitmap
 
 HANDLE LEAK
 name=http://crbug.com/449989
