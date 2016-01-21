@@ -604,7 +604,7 @@ static int main_loop(int argc, const char **argv_) {
       summary = 1;
     else if (arg_match(&arg, &threadsarg, argi))
       cfg.threads = arg_parse_uint(&arg);
-#if CONFIG_VP9_DECODER || CONFIG_VP10_DECODER
+#if CONFIG_VP10_DECODER
     else if (arg_match(&arg, &frameparallelarg, argi))
       frame_parallel = 1;
 #endif

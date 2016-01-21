@@ -607,7 +607,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 #
 # Forward transform
 #
-if ((vpx_config("CONFIG_VP9_ENCODER") eq "yes") || (vpx_config("CONFIG_VP10_ENCODER") eq "yes")) {
+if (vpx_config("CONFIG_VP10_ENCODER") eq "yes") {
 if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void vpx_fdct4x4/, "const int16_t *input, tran_low_t *output, int stride";
   specialize qw/vpx_fdct4x4 sse2/;
@@ -687,11 +687,11 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void vpx_fdct32x32_1/, "const int16_t *input, tran_low_t *output, int stride";
   specialize qw/vpx_fdct32x32_1 sse2 msa/;
 }  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_VP9_ENCODER || CONFIG_VP10_ENCODER
+}  # CONFIG_VP10_ENCODER
 
 #
 # Inverse transform
-if ((vpx_config("CONFIG_VP9") eq "yes") || (vpx_config("CONFIG_VP10") eq "yes")) {
+if (vpx_config("CONFIG_VP10") eq "yes") {
 if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   # Note as optimized versions of these functions are added we need to add a check to ensure
   # that when CONFIG_EMULATE_HARDWARE is on, it defaults to the C versions only.
@@ -925,12 +925,12 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
     specialize qw/vpx_iwht4x4_16_add msa/, "$sse2_x86inc";
   }  # CONFIG_EMULATE_HARDWARE
 }  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_VP9 || CONFIG_VP10
+}  # CONFIG_VP10
 
 #
 # Quantization
 #
-if ((vpx_config("CONFIG_VP9_ENCODER") eq "yes") || (vpx_config("CONFIG_VP10_ENCODER") eq "yes")) {
+if (vpx_config("CONFIG_VP10_ENCODER") eq "yes") {
   add_proto qw/void vpx_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
   specialize qw/vpx_quantize_b sse2/, "$ssse3_x86_64_x86inc", "$avx_x86_64_x86inc";
 
@@ -944,7 +944,7 @@ if ((vpx_config("CONFIG_VP9_ENCODER") eq "yes") || (vpx_config("CONFIG_VP10_ENCO
     add_proto qw/void vpx_highbd_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
     specialize qw/vpx_highbd_quantize_b_32x32 sse2/;
   }  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_VP9_ENCODER || CONFIG_VP10_ENCODER
+}  # CONFIG_VP10_ENCODER
 
 if (vpx_config("CONFIG_ENCODERS") eq "yes") {
 #
@@ -998,7 +998,7 @@ specialize qw/vpx_sad4x4 mmx neon msa/, "$sse2_x86inc";
 #
 # Avg
 #
-if ((vpx_config("CONFIG_VP9_ENCODER") eq "yes") || (vpx_config("CONFIG_VP10_ENCODER") eq "yes")) {
+if (vpx_config("CONFIG_VP10_ENCODER") eq "yes") {
   add_proto qw/unsigned int vpx_avg_8x8/, "const uint8_t *, int p";
   specialize qw/vpx_avg_8x8 sse2 neon msa/;
 
@@ -1025,7 +1025,7 @@ if ((vpx_config("CONFIG_VP9_ENCODER") eq "yes") || (vpx_config("CONFIG_VP10_ENCO
 
   add_proto qw/int vpx_vector_var/, "int16_t const *ref, int16_t const *src, const int bwl";
   specialize qw/vpx_vector_var neon sse2/;
-}  # CONFIG_VP9_ENCODER || CONFIG_VP10_ENCODER
+}  # CONFIG_VP10_ENCODER
 
 add_proto qw/unsigned int vpx_sad64x64_avg/, "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred";
 specialize qw/vpx_sad64x64_avg avx2 msa/, "$sse2_x86inc";
