@@ -1436,9 +1436,6 @@ void ContainerNode::invalidateNodeListCachesInAncestors(const QualifiedName* att
 
 PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagName(const AtomicString& localName)
 {
-    if (localName.isNull())
-        return nullptr;
-
     if (document().isHTMLDocument())
         return ensureCachedCollection<HTMLTagCollection>(HTMLTagCollectionType, localName);
     return ensureCachedCollection<TagCollection>(TagCollectionType, localName);
@@ -1446,9 +1443,6 @@ PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagName(const 
 
 PassRefPtrWillBeRawPtr<TagCollection> ContainerNode::getElementsByTagNameNS(const AtomicString& namespaceURI, const AtomicString& localName)
 {
-    if (localName.isNull())
-        return nullptr;
-
     if (namespaceURI == starAtom)
         return getElementsByTagName(localName);
 
