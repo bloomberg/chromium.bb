@@ -6,6 +6,7 @@
 #define NET_BASE_NETWORK_CHANGE_NOTIFIER_LINUX_H_
 
 #include "base/compiler_specific.h"
+#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"

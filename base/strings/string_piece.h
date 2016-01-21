@@ -439,9 +439,9 @@ BASE_EXPORT std::ostream& operator<<(std::ostream& o,
 // We provide appropriate hash functions so StringPiece and StringPiece16 can
 // be used as keys in hash sets and maps.
 
-// This hash function is copied from base/containers/hash_tables.h. We don't
-// use the ones already defined for string and string16 directly because it
-// would require the string constructors to be called, which we don't want.
+// This hash function is copied from base/strings/string16.h. We don't use the
+// ones already defined for string and string16 directly because it would
+// require the string constructors to be called, which we don't want.
 #define HASH_STRING_PIECE(StringPieceType, string_piece)                \
   std::size_t result = 0;                                               \
   for (StringPieceType::const_iterator i = string_piece.begin();        \

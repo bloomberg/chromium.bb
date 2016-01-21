@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <algorithm>
 #include <set>
 
 #include "base/i18n/icu_string_conversions.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/google/google_brand.h"
 
+#include <algorithm>
 #include <string>
 
 #include "base/macros.h"

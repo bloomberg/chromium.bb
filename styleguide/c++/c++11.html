@@ -363,6 +363,17 @@ std::end</a></td>
 </tr>
 
 <tr>
+<td>Forwarding references</td>
+<td><code>std::forward()</code></td>
+<td>Perfectly forwards arguments (including rvalues)</td>
+<td><a href="http://en.cppreference.com/w/cpp/utility/forward"><code>std::forward</code></a></td>
+<td>
+  Allowed, though usage should be rare (primarily for forwarding constructor arguments, or in carefully reviewed library code).
+  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-O7euklhSxs/discussion">Discussion thread</a>
+</td>
+</tr>
+
+<tr>
 <td>Lexicographical struct comparison</td>
 <td><code>tie(a, b, c) &lt;<br>&nbsp; tie(rhs.a, rhs.b, rhs.c)</code></td>
 <td>Idiom for <code>operator&lt;</code> implementation</td>
@@ -395,17 +406,6 @@ std::end</a></td>
 </tr>
 
 <tr>
-<td>Forwarding references</td>
-<td><code>std::forward()</code></td>
-<td>Perfectly forwards arguments (including rvalues)</td>
-<td><a href="http://en.cppreference.com/w/cpp/utility/forward"><code>std::forward</code></a></td>
-<td>
-  Allowed, though usage should be rare (primarily for forwarding constructor arguments, or in carefully reviewed library code).
-  <a href="https://groups.google.com/a/chromium.org/d/topic/cxx/-O7euklhSxs/discussion">Discussion thread</a>
-</td>
-</tr>
-
-<tr>
 <td>Type Traits</td>
 <td>Class templates within <code>&lt;type_traits&gt;</code></td>
 <td>Allows compile-time inspection of the properties of types</td>
@@ -420,6 +420,17 @@ Standard library header &lt;type_traits&gt;</a></td>
 <td>Useful for math-related code</td>
 <td><a href="http://en.cppreference.com/w/cpp/header/cmath"><code>&lt;cmath&gt;</code></a></td>
 <td>Anything in <code>&lt;cmath&gt;</code> is allowed. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/P-1bFBXMeUk">Discussion thread</a></td>
+</tr>
+
+<tr>
+<td>Unordered Associative Containers</td>
+<td><code>std::unordered_set</code>, <code>std::unordered_map</code>,
+<code>std::unordered_multiset</code>, and <code>std::unordered_multimap</code></td>
+<td>Allows efficient containers of key/value pairs</td>
+<td><a href="http://en.cppreference.com/w/cpp/container/unordered_map">std::unordered_map</a>
+and <a href="http://en.cppreference.com/w/cpp/container/unordered_set">std::unordered_set</a>
+</td>
+<td>Per the <a href="https://google.github.io/styleguide/cppguide.html#std_hash">Google style guide</a>, specify custom hashers instead of specializing <code>std::hash</code> for custom types. <a href="https://groups.google.com/a/chromium.org/forum/#!topic/cxx/nCdjQqnouO4">Discussion thread</a>.</td>
 </tr>
 
 </tbody>
@@ -1055,17 +1066,6 @@ within both associative and unordered containers</td>
 <td>TODO: documentation link</td>
 <td><a href="https://google.github.io/styleguide/cppguide.html#Ownership_and_Smart_Pointers">
 Ownership and Smart Pointers</a></td>
-</tr>
-
-<tr>
-<td>Unordered Associative Containers</td>
-<td><code>std::unordered_set</code>, <code>std::unordered_map</code>,
-<code>std::unordered_multiset</code>, and <code>std::unordered_multimap</code></td>
-<td>Allows efficient containers of key/value pairs</td>
-<td><a href="http://en.cppreference.com/w/cpp/container/unordered_map">std::unordered_map</a>
-and <a href="http://en.cppreference.com/w/cpp/container/unordered_set">std::unordered_set</a>
-</td>
-<td></td>
 </tr>
 
 <tr>
