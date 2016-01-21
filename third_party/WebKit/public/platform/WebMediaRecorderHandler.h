@@ -17,7 +17,7 @@ class WebString;
 class BLINK_PLATFORM_EXPORT WebMediaRecorderHandler {
 public:
     virtual ~WebMediaRecorderHandler() = default;
-    virtual bool initialize(WebMediaRecorderHandlerClient* client, const WebMediaStream& stream, const WebString& type, const WebString& codecs) { return false; }
+    virtual bool initialize(WebMediaRecorderHandlerClient* client, const WebMediaStream& stream, const WebString& type, const WebString& codecs, int32_t audioBitsPerSecond, int32_t videoBitsPerSecond) { return false; }
     virtual bool start() { return false; }
     virtual bool start(int timeslice) { return false; }
     virtual void stop() {}

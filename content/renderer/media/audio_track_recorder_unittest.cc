@@ -97,7 +97,8 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
     PrepareBlinkTrack();
     audio_track_recorder_.reset(new AudioTrackRecorder(
         blink_track_, base::Bind(&AudioTrackRecorderTest::OnEncodedAudio,
-                                 base::Unretained(this))));
+                                 base::Unretained(this)),
+        0 /* bits_per_second */));
   }
 
   ~AudioTrackRecorderTest() {

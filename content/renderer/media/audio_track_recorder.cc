@@ -45,14 +45,8 @@ enum {
 class AudioTrackRecorder::AudioEncoder
     : public base::RefCountedThreadSafe<AudioEncoder> {
  public:
-  explicit AudioEncoder(const OnEncodedAudioCB& on_encoded_audio_cb)
-      : on_encoded_audio_cb_(on_encoded_audio_cb), opus_encoder_(nullptr) {
-    // AudioEncoder is constructed on the thread that ATR lives on, but should
-    // operate only on the encoder thread after that. Reset
-    // |encoder_thread_checker_| here, as the next call to CalledOnValidThread()
-    // will be from the encoder thread.
-    encoder_thread_checker_.DetachFromThread();
-  }
+  AudioEncoder(const OnEncodedAudioCB& on_encoded_audio_cb,
+               int32_t bits_per_second);
 
   void OnSetFormat(const media::AudioParameters& params);
 
@@ -76,6 +70,9 @@ class AudioTrackRecorder::AudioEncoder
 
   const OnEncodedAudioCB on_encoded_audio_cb_;
 
+  // Target bitrate for Opus. If 0, Opus provide automatic bitrate is used.
+  const int32_t bits_per_second_;
+
   base::ThreadChecker encoder_thread_checker_;
 
   // In the case where a call to EncodeAudio() cannot completely fill the
@@ -98,6 +95,19 @@ class AudioTrackRecorder::AudioEncoder
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };
 
+AudioTrackRecorder::AudioEncoder::AudioEncoder(
+    const OnEncodedAudioCB& on_encoded_audio_cb,
+    int32_t bits_per_second)
+    : on_encoded_audio_cb_(on_encoded_audio_cb),
+      bits_per_second_(bits_per_second),
+      opus_encoder_(nullptr) {
+  // AudioEncoder is constructed on the thread that ATR lives on, but should
+  // operate only on the encoder thread after that. Reset
+  // |encoder_thread_checker_| here, as the next call to CalledOnValidThread()
+  // will be from the encoder thread.
+  encoder_thread_checker_.DetachFromThread();
+}
+
 AudioTrackRecorder::AudioEncoder::~AudioEncoder() {
   // We don't DCHECK that we're on the encoder thread here, as it should have
   // already been deleted at this point.
@@ -112,7 +122,7 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
 
   DestroyExistingOpusEncoder();
 
-  if (!params.IsValid()) {
+  if (!params.IsValid() || params.channels() > 2) {
     DLOG(ERROR) << "Invalid audio params: " << params.AsHumanReadableString();
     return;
   }
@@ -137,6 +147,11 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
   buffer_.reset(new float[params.channels() * frames_per_buffer_]);
 
   // Initialize OpusEncoder.
+  DCHECK((params.sample_rate() != 48000) || (params.sample_rate() != 24000) ||
+         (params.sample_rate() != 16000) || (params.sample_rate() != 12000) ||
+         (params.sample_rate() != 8000))
+      << "Opus supports only sample rates of {48, 24, 16, 12, 8}000, requested "
+      << params.sample_rate();
   int opus_result;
   opus_encoder_ = opus_encoder_create(params.sample_rate(), params.channels(),
                                       OPUS_APPLICATION_AUDIO, &opus_result);
@@ -151,8 +166,10 @@ void AudioTrackRecorder::AudioEncoder::OnSetFormat(
   // variable bitrate up to 102kbps for 2-channel, 48 kHz audio and a 10 ms
   // buffer duration. The opus library authors may, of course, adjust this in
   // later versions.
-  if (opus_encoder_ctl(opus_encoder_, OPUS_SET_BITRATE(OPUS_AUTO)) != OPUS_OK) {
-    DLOG(ERROR) << "Failed to set opus bitrate.";
+  const opus_int32 bitrate =
+      (bits_per_second_ > 0) ? bits_per_second_ : OPUS_AUTO;
+  if (opus_encoder_ctl(opus_encoder_, OPUS_SET_BITRATE(bitrate)) != OPUS_OK) {
+    DLOG(ERROR) << "Failed to set opus bitrate: " << bitrate;
     return;
   }
 
@@ -250,9 +267,11 @@ bool AudioTrackRecorder::AudioEncoder::EncodeFromFilledBuffer(
 
 AudioTrackRecorder::AudioTrackRecorder(
     const blink::WebMediaStreamTrack& track,
-    const OnEncodedAudioCB& on_encoded_audio_cb)
+    const OnEncodedAudioCB& on_encoded_audio_cb,
+    int32_t bits_per_second)
     : track_(track),
-      encoder_(new AudioEncoder(media::BindToCurrentLoop(on_encoded_audio_cb))),
+      encoder_(new AudioEncoder(media::BindToCurrentLoop(on_encoded_audio_cb),
+                                bits_per_second)),
       encoder_thread_("AudioEncoderThread") {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());

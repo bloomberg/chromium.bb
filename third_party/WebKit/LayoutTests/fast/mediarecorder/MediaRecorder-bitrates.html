@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<script src=../../resources/testharness.js></script>
+<script src=../../resources/testharnessreport.js></script>
+<script>
+// This test verifies that MediaRecorder can be created or not with different
+// bitrates for video, audio and for both [1].
+// TODO(mcasas): test also the expected allocated values once [2] is closed.
+// [1] https://rawgit.com/w3c/mediacapture-record/master/MediaRecorder.html#MediaRecorderOptions
+// [2] https://github.com/w3c/mediacapture-record/issues/43
+
+
+function makeAsyncTest(options, message) {
+    return async_test(function(test) {
+        const constraints = {video: true,  audio: false};
+
+        const gotStream = test.step_func(function(stream) {
+            assert_throws("NotSupportedError",
+                function() {
+                    var recorder = new MediaRecorder(stream, options);
+                },
+                "recorder rejects too large bit rates");
+            test.done();
+        });
+
+        const onError = this.step_func(function() {
+            assert_unreached('Error creating MediaStream.');
+        });
+
+        try {
+            navigator.webkitGetUserMedia(constraints, gotStream, onError);
+        }
+        catch (e) {
+            assert_unreached('Exception launching getUserMedia(): ' + e);
+        }
+    }, message);
+};
+
+makeAsyncTest({audioBitsPerSecond:4294967294}, 'Audio bitrate too large');
+makeAsyncTest({videoBitsPerSecond:4294967294}, 'Video bitrate too large');
+makeAsyncTest({bitsPerSecond:4294967294}, 'Overall bitrate too large');
+
+</script>

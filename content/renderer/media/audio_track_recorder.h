@@ -37,7 +37,8 @@ class CONTENT_EXPORT AudioTrackRecorder
                           base::TimeTicks capture_time)>;
 
   AudioTrackRecorder(const blink::WebMediaStreamTrack& track,
-                     const OnEncodedAudioCB& on_encoded_audio_cb);
+                     const OnEncodedAudioCB& on_encoded_audio_cb,
+                     int32_t bits_per_second);
   ~AudioTrackRecorder() override;
 
   // Implement MediaStreamAudioSink.

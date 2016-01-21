@@ -67,10 +67,10 @@ class VideoTrackRecorderTest : public TestWithParam<TrackRecorderTestParams> {
     blink_track_.setExtraData(track_);
 
     video_track_recorder_.reset(new VideoTrackRecorder(
-        GetParam().use_vp9 /* use_vp9 */,
-        blink_track_,
+        GetParam().use_vp9 /* use_vp9 */, blink_track_,
         base::Bind(&VideoTrackRecorderTest::OnEncodedVideo,
-                   base::Unretained(this))));
+                   base::Unretained(this)),
+        0 /* bits_per_second */));
     // Paranoia checks.
     EXPECT_EQ(blink_track_.source().extraData(), blink_source_.extraData());
     EXPECT_TRUE(message_loop_.IsCurrent());

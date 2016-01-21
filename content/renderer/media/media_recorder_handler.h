@@ -53,7 +53,9 @@ class CONTENT_EXPORT MediaRecorderHandler final
   bool initialize(blink::WebMediaRecorderHandlerClient* client,
                   const blink::WebMediaStream& media_stream,
                   const blink::WebString& type,
-                  const blink::WebString& codecs) override;
+                  const blink::WebString& codecs,
+                  int32_t audio_bits_per_second,
+                  int32_t video_bits_per_second) override;
   bool start() override;
   bool start(int timeslice) override;
   void stop() override;
@@ -80,6 +82,10 @@ class CONTENT_EXPORT MediaRecorderHandler final
 
   // Bound to the main render thread.
   base::ThreadChecker main_render_thread_checker_;
+
+  // Sanitized video and audio bitrate settings passed on initialize().
+  int32_t video_bits_per_second_;
+  int32_t audio_bits_per_second_;
 
   // Force using VP9 for video encoding, otherwise VP8 will be used by default.
   bool use_vp9_;

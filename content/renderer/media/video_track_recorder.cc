@@ -78,7 +78,9 @@ class VideoTrackRecorder::VpxEncoder final
   static void ShutdownEncoder(scoped_ptr<base::Thread> encoding_thread,
                               ScopedVpxCodecCtxPtr encoder);
 
-  VpxEncoder(bool use_vp9, const OnEncodedVideoCB& on_encoded_video_callback);
+  VpxEncoder(bool use_vp9,
+             const OnEncodedVideoCB& on_encoded_video_callback,
+             int32_t bits_per_second);
 
   void StartFrameEncode(const scoped_refptr<VideoFrame>& frame,
                         base::TimeTicks capture_timestamp);
@@ -107,14 +109,17 @@ class VideoTrackRecorder::VpxEncoder final
   // Force usage of VP9 for encoding, instead of VP8 which is the default.
   const bool use_vp9_;
 
+  // This callback should be exercised on IO thread.
+  const OnEncodedVideoCB on_encoded_video_callback_;
+
+  // Target bitrate or video encoding. If 0, a standard bitrate is used.
+  const int32_t bits_per_second_;
+
   // Used to shutdown properly on the same thread we were created.
   const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
 
   // Task runner where frames to encode and reply callbacks must happen.
   scoped_refptr<base::SingleThreadTaskRunner> origin_task_runner_;
-
-  // This callback should be exercised on IO thread.
-  const OnEncodedVideoCB on_encoded_video_callback_;
 
   // Thread for encoding. Active for the lifetime of VpxEncoder. All variables
   // below this are used in this thread.
@@ -143,11 +148,13 @@ void VideoTrackRecorder::VpxEncoder::ShutdownEncoder(
 
 VideoTrackRecorder::VpxEncoder::VpxEncoder(
     bool use_vp9,
-    const OnEncodedVideoCB& on_encoded_video_callback)
+    const OnEncodedVideoCB& on_encoded_video_callback,
+    int32_t bits_per_second)
     : paused_(false),
       use_vp9_(use_vp9),
-      main_task_runner_(base::MessageLoop::current()->task_runner()),
       on_encoded_video_callback_(on_encoded_video_callback),
+      bits_per_second_(bits_per_second),
+      main_task_runner_(base::MessageLoop::current()->task_runner()),
       encoding_thread_(new base::Thread("EncodingThread")) {
   DCHECK(!on_encoded_video_callback_.is_null());
 
@@ -258,13 +265,18 @@ void VideoTrackRecorder::VpxEncoder::ConfigureEncoding(const gfx::Size& size) {
                                                               0 /* reserved */);
   DCHECK_EQ(VPX_CODEC_OK, result);
 
-  // Adjust default bit rate to account for the actual size.
   DCHECK_EQ(320u, codec_config_.g_w);
   DCHECK_EQ(240u, codec_config_.g_h);
   DCHECK_EQ(256u, codec_config_.rc_target_bitrate);
-  codec_config_.rc_target_bitrate = size.GetArea() *
-                                    codec_config_.rc_target_bitrate /
-                                    codec_config_.g_w / codec_config_.g_h;
+  // Use the selected bitrate or adjust default bit rate to account for the
+  // actual size.
+  if (bits_per_second_ > 0) {
+    codec_config_.rc_target_bitrate = bits_per_second_;
+  } else {
+    codec_config_.rc_target_bitrate = size.GetArea() *
+                                      codec_config_.rc_target_bitrate /
+                                      codec_config_.g_w / codec_config_.g_h;
+  }
   // Both VP8/VP9 configuration should be Variable BitRate by default.
   DCHECK_EQ(VPX_VBR, codec_config_.rc_end_usage);
   if (use_vp9_) {
@@ -348,9 +360,11 @@ base::TimeDelta VideoTrackRecorder::VpxEncoder::CalculateFrameDuration(
 VideoTrackRecorder::VideoTrackRecorder(
     bool use_vp9,
     const blink::WebMediaStreamTrack& track,
-    const OnEncodedVideoCB& on_encoded_video_callback)
+    const OnEncodedVideoCB& on_encoded_video_callback,
+    int32_t bits_per_second)
     : track_(track),
-      encoder_(new VpxEncoder(use_vp9, on_encoded_video_callback)) {
+      encoder_(
+          new VpxEncoder(use_vp9, on_encoded_video_callback, bits_per_second)) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   DCHECK(!track_.isNull());
   DCHECK(track_.extraData());

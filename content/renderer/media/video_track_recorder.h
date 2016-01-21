@@ -35,7 +35,8 @@ class CONTENT_EXPORT VideoTrackRecorder
   // |use_vp9| forces using VP9, otherwise VP8 will be used by default.
   VideoTrackRecorder(bool use_vp9,
                      const blink::WebMediaStreamTrack& track,
-                     const OnEncodedVideoCB& on_encoded_video_cb);
+                     const OnEncodedVideoCB& on_encoded_video_cb,
+                     int32_t bits_per_second);
   ~VideoTrackRecorder() override;
 
   void Pause();

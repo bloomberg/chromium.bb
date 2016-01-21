@@ -32,7 +32,9 @@ using base::TimeTicks;
 namespace content {
 
 MediaRecorderHandler::MediaRecorderHandler()
-    : use_vp9_(false),
+    : video_bits_per_second_(0),
+      audio_bits_per_second_(0),
+      use_vp9_(false),
       recording_(false),
       client_(nullptr),
       weak_factory_(this) {}
@@ -84,7 +86,9 @@ bool MediaRecorderHandler::initialize(
     blink::WebMediaRecorderHandlerClient* client,
     const blink::WebMediaStream& media_stream,
     const blink::WebString& type,
-    const blink::WebString& codecs) {
+    const blink::WebString& codecs,
+    int32_t audio_bits_per_second,
+    int32_t video_bits_per_second) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
   // Save histogram data so we can see how much MediaStream Recorder is used.
   // The histogram counts the number of calls to the JS API.
@@ -100,6 +104,8 @@ bool MediaRecorderHandler::initialize(
   DCHECK(client);
   client_ = client;
 
+  audio_bits_per_second_ = audio_bits_per_second;
+  video_bits_per_second_ = video_bits_per_second;
   return true;
 }
 
@@ -152,8 +158,8 @@ bool MediaRecorderHandler::start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedVideo, weak_factory_.GetWeakPtr()));
 
-    video_recorders_.push_back(
-        new VideoTrackRecorder(use_vp9_, video_track, on_encoded_video_cb));
+    video_recorders_.push_back(new VideoTrackRecorder(
+        use_vp9_, video_track, on_encoded_video_cb, video_bits_per_second_));
   }
 
   if (use_audio_tracks) {
@@ -170,8 +176,8 @@ bool MediaRecorderHandler::start(int timeslice) {
         media::BindToCurrentLoop(base::Bind(
             &MediaRecorderHandler::OnEncodedAudio, weak_factory_.GetWeakPtr()));
 
-    audio_recorders_.push_back(
-        new AudioTrackRecorder(audio_track, on_encoded_audio_cb));
+    audio_recorders_.push_back(new AudioTrackRecorder(
+        audio_track, on_encoded_audio_cb, audio_bits_per_second_));
   }
 
   recording_ = true;
@@ -227,7 +233,6 @@ void MediaRecorderHandler::OnEncodedAudio(const media::AudioParameters& params,
 
 void MediaRecorderHandler::WriteData(base::StringPiece data) {
   DCHECK(main_render_thread_checker_.CalledOnValidThread());
-
   // Non-buffered mode does not need to check timestamps.
   if (timeslice_.is_zero()) {
     client_->writeData(data.data(), data.length(), true  /* lastInSlice */);

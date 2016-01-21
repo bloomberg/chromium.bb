@@ -181,10 +181,8 @@ TEST_P(MediaRecorderHandlerTest, InitializeStartStop) {
   AddTracks();
   const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
   const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
-  EXPECT_TRUE(media_recorder_handler_->initialize(this,
-                                                  registry_.test_stream(),
-                                                  mime_type,
-                                                  codecs));
+  EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
+                                                  mime_type, codecs, 0, 0));
   EXPECT_FALSE(recording());
   EXPECT_FALSE(hasVideoRecorders());
   EXPECT_FALSE(hasAudioRecorders());
@@ -216,7 +214,7 @@ TEST_P(MediaRecorderHandlerTest, EncodeVideoFrames) {
   const WebString mime_type(base::UTF8ToUTF16(GetParam().mime_type));
   const WebString codecs(base::UTF8ToUTF16(GetParam().codecs));
   EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
-                                                  mime_type, codecs));
+                                                  mime_type, codecs, 0, 0));
   EXPECT_TRUE(media_recorder_handler_->start());
 
   InSequence s;
@@ -275,8 +273,8 @@ TEST_P(MediaRecorderHandlerTest, EncodeAudioFrames) {
   AddTracks();
 
   const WebString mime_type(base::UTF8ToUTF16("audio/webm"));
-  EXPECT_TRUE(media_recorder_handler_->initialize(this, registry_.test_stream(),
-                                                  mime_type, WebString()));
+  EXPECT_TRUE(media_recorder_handler_->initialize(
+      this, registry_.test_stream(), mime_type, WebString(), 0, 0));
   EXPECT_TRUE(media_recorder_handler_->start());
 
   InSequence s;
