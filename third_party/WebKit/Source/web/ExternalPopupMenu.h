@@ -39,7 +39,9 @@
 
 namespace blink {
 
+class FloatQuad;
 class HTMLSelectElement;
+class IntSize;
 class LocalFrame;
 class WebExternalPopupMenu;
 class WebMouseEvent;
@@ -65,7 +67,7 @@ public:
 
 private:
     // PopupMenu methods:
-    void show() override;
+    void show(const FloatQuad& controlPosition, const IntSize&, int index) override;
     void hide() override;
     void updateFromElement() override;
     void disconnectClient() override;
