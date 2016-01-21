@@ -700,6 +700,7 @@ class RequestsLibEngine(object):
     """
     return (
         socket.timeout, ssl.SSLError, requests.Timeout,
+        requests.packages.urllib3.exceptions.ProtocolError,
         requests.packages.urllib3.exceptions.TimeoutError)
 
   def __init__(self):
