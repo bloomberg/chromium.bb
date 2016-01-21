@@ -311,7 +311,7 @@ int ViewCacheHelper::DoReadResponseComplete(int result) {
       data_->append(EscapeForHTML(response.headers->GetStatusLine()));
       data_->push_back('\n');
 
-      void* iter = NULL;
+      size_t iter = 0;
       std::string name, value;
       while (response.headers->EnumerateHeaderLines(&iter, &name, &value)) {
         data_->append(EscapeForHTML(name));

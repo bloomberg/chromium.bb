@@ -462,7 +462,7 @@ void AppCacheInternalsUI::OnFileDetailsReady(
         response_info->http_response_info()->headers->GetStatusLine()));
     headers.push_back('\n');
 
-    void* iter = nullptr;
+    size_t iter = 0;
     std::string name, value;
     while (response_info->http_response_info()->headers->EnumerateHeaderLines(
         &iter, &name, &value)) {

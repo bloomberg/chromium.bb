@@ -133,7 +133,7 @@ void WebRequestEventDetails::SetResponseHeaders(
   if (extra_info_spec_ & ExtraInfoSpec::RESPONSE_HEADERS) {
     base::ListValue* headers = new base::ListValue();
     if (response_headers) {
-      void* iter = nullptr;
+      size_t iter = 0;
       std::string name;
       std::string value;
       while (response_headers->EnumerateHeaderLines(&iter, &name, &value))

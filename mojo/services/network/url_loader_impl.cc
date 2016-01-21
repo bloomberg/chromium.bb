@@ -77,7 +77,7 @@ URLResponsePtr MakeURLResponse(const net::URLRequest* url_request) {
 
     response->headers = Array<HttpHeaderPtr>::New(0);
     std::vector<String> header_lines;
-    void* iter = nullptr;
+    size_t iter = 0;
     std::string name, value;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
       HttpHeaderPtr header = HttpHeader::New();

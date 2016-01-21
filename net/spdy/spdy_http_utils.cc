@@ -164,7 +164,7 @@ void CreateSpdyHeadersFromHttpResponse(
       std::find(after_version + 1, status_line.end(), ' ');
   (*headers)[status_key] = std::string(after_version + 1, after_status);
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string raw_name, value;
   while (response_headers.EnumerateHeaderLines(&iter, &raw_name, &value)) {
     std::string name = base::ToLowerASCII(raw_name);

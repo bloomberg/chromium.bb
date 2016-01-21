@@ -1055,7 +1055,7 @@ TEST_P(EnumerateHeaderLinesTest, EnumerateHeaderLines) {
 
   std::string name, value, lines;
 
-  void* iter = NULL;
+  size_t iter = 0;
   while (parsed->EnumerateHeaderLines(&iter, &name, &value)) {
     lines.append(name);
     lines.append(": ");

@@ -376,7 +376,7 @@ static void GetAllHeaders(JNIEnv* env,
   if (headers == NULL)
     return;
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string header_name;
   std::string header_value;
   while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {

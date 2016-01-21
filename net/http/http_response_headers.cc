@@ -313,7 +313,7 @@ void HttpResponseHeaders::RemoveHeaderLine(const std::string& name,
 
   new_raw_headers.reserve(raw_headers_.size());
 
-  void* iter = NULL;
+  size_t iter = 0;
   std::string old_header_name;
   std::string old_header_value;
   while (EnumerateHeaderLines(&iter, &old_header_name, &old_header_value)) {
@@ -549,10 +549,10 @@ std::string HttpResponseHeaders::GetStatusText() const {
   return std::string(begin, end);
 }
 
-bool HttpResponseHeaders::EnumerateHeaderLines(void** iter,
+bool HttpResponseHeaders::EnumerateHeaderLines(size_t* iter,
                                                std::string* name,
                                                std::string* value) const {
-  size_t i = reinterpret_cast<size_t>(*iter);
+  size_t i = *iter;
   if (i == parsed_.size())
     return false;
 
@@ -567,7 +567,7 @@ bool HttpResponseHeaders::EnumerateHeaderLines(void** iter,
 
   value->assign(value_begin, value_end);
 
-  *iter = reinterpret_cast<void*>(i);
+  *iter = i;
   return true;
 }
 
@@ -1394,7 +1394,7 @@ scoped_ptr<base::Value> HttpResponseHeaders::NetLogCallback(
   scoped_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   base::ListValue* headers = new base::ListValue();
   headers->Append(new base::StringValue(GetStatusLine()));
-  void* iterator = NULL;
+  size_t iterator = 0;
   std::string name;
   std::string value;
   while (EnumerateHeaderLines(&iterator, &name, &value)) {

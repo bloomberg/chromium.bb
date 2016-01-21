@@ -2090,7 +2090,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
   EXPECT_TRUE(allowed_unsafe_redirect_url1.is_empty());
   std::multimap<std::string, std::string> expected1;
   expected1.insert(std::pair<std::string, std::string>("Key2", "Value3"));
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name;
   std::string value;
   std::multimap<std::string, std::string> actual1;
@@ -2122,7 +2122,7 @@ TEST(ExtensionWebRequestHelpersTest, TestMergeOnHeadersReceivedResponses) {
                                   &net_log);
   ASSERT_TRUE(new_headers2.get());
   EXPECT_TRUE(allowed_unsafe_redirect_url2.is_empty());
-  iter = NULL;
+  iter = 0;
   std::multimap<std::string, std::string> actual2;
   while (new_headers2->EnumerateHeaderLines(&iter, &name, &value)) {
     actual2.insert(std::pair<std::string, std::string>(name, value));
@@ -2172,7 +2172,7 @@ TEST(ExtensionWebRequestHelpersTest,
   expected1.insert(std::pair<std::string, std::string>("Key1", "Value1"));
   expected1.insert(std::pair<std::string, std::string>("Key1", "Value3"));
   expected1.insert(std::pair<std::string, std::string>("Key2", "Value4"));
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name;
   std::string value;
   std::multimap<std::string, std::string> actual1;

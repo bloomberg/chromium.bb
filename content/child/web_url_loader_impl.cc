@@ -1003,7 +1003,7 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     response->setLastModifiedDate(time_val.ToDoubleT());
 
   // Build up the header map.
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
     response->addHTTPHeaderField(WebString::fromLatin1(name),

@@ -24,7 +24,7 @@ mojo::Map<mojo::String, mojo::String> CreateResponseHeadersMap(
   if (!headers)
     return mojo::Map<mojo::String, mojo::String>::From(result);
 
-  void* iter = nullptr;
+  size_t iter = 0;
   std::string header_name;
   std::string header_value;
   while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {

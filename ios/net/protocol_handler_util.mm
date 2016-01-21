@@ -90,7 +90,7 @@ NSURLResponse* GetNSURLResponseForRequest(URLRequest* request) {
     NSMutableDictionary* header_fields = [NSMutableDictionary dictionary];
     HttpResponseHeaders* headers = request->response_headers();
     if (headers != nullptr) {
-      void* iter = nullptr;
+      size_t iter = 0;
       std::string name, value;
       while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
         NSString* key = base::SysUTF8ToNSString(name);

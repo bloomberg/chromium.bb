@@ -359,7 +359,7 @@ CronetURLRequestAdapter::GetResponseHeaders(JNIEnv* env) {
   const net::HttpResponseHeaders* headers = url_request_->response_headers();
   // Returns an empty array if |headers| is nullptr.
   if (headers != nullptr) {
-    void* iter = nullptr;
+    size_t iter = 0;
     std::string header_name;
     std::string header_value;
     while (headers->EnumerateHeaderLines(&iter, &header_name, &header_value)) {

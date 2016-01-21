@@ -138,8 +138,8 @@ void DevToolsNetLogObserver::OnAddURLRequestEntry(
       // several http requests (e.g. see http://crbug.com/80157).
       info->response_headers.clear();
 
-      for (void* it = NULL;
-           response_headers->EnumerateHeaderLines(&it, &name, &value); ) {
+      for (size_t it = 0;
+           response_headers->EnumerateHeaderLines(&it, &name, &value);) {
         info->response_headers.push_back(std::make_pair(name, value));
       }
 

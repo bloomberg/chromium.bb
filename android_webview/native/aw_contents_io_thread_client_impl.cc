@@ -466,7 +466,7 @@ void AwContentsIoThreadClientImpl::OnReceivedHttpError(
   vector<string> response_header_names;
   vector<string> response_header_values;
   {
-    void* headers_iterator = NULL;
+    size_t headers_iterator = 0;
     string header_name, header_value;
     while (response_headers->EnumerateHeaderLines(
         &headers_iterator, &header_name, &header_value)) {

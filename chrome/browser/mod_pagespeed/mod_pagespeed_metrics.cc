@@ -86,7 +86,7 @@ void RecordMetrics(const content::ResourceType resource_type,
   if (!response_headers)
     return;
 
-  void* iter = nullptr;
+  size_t iter = 0;
   std::string name;
   std::string value;
   while (response_headers->EnumerateHeaderLines(&iter, &name, &value)) {

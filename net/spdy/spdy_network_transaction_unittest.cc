@@ -3067,7 +3067,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeaders) {
 
     scoped_refptr<HttpResponseHeaders> headers = out.response_info.headers;
     EXPECT_TRUE(headers.get() != NULL);
-    void* iter = NULL;
+    size_t iter = 0;
     std::string name, value;
     SpdyHeaderBlock header_block;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
@@ -3180,7 +3180,7 @@ TEST_P(SpdyNetworkTransactionTest, SynReplyHeadersVary) {
     // Check the headers.
     scoped_refptr<HttpResponseHeaders> headers = out.response_info.headers;
     ASSERT_TRUE(headers.get() != NULL) << i;
-    void* iter = NULL;
+    size_t iter = 0;
     std::string name, value, lines;
     while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
       lines.append(name);

@@ -965,7 +965,7 @@ void URLRequestHttpJob::OnStartCompleted(int result) {
     scoped_refptr<HttpResponseHeaders> headers = GetResponseHeaders();
 
     if (headers) {
-      void* iter = NULL;
+      size_t iter = 0;
       std::string name;
       std::string value;
       bool invalid_header_values_in_rfc7230 = false;

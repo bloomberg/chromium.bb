@@ -694,7 +694,7 @@ bool WebRequestConditionAttributeResponseHeaders::IsFulfilled(
   bool passed = false;  // Did some header pass TestNameValue?
   std::string name;
   std::string value;
-  void* iter = NULL;
+  size_t iter = 0;
   while (!passed && headers->EnumerateHeaderLines(&iter, &name, &value)) {
     passed |= header_matcher_->TestNameValue(name, value);
   }

@@ -151,7 +151,7 @@ void ThreatDetailsCacheCollector::ReadResponse(
   ClientSafeBrowsingReportRequest::HTTPResponse* pb_response =
       pb_resource->mutable_response();
   pb_response->mutable_firstline()->set_code(headers->response_code());
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name, value;
   while (headers->EnumerateHeaderLines(&iter, &name, &value)) {
     ClientSafeBrowsingReportRequest::HTTPHeader* pb_header =

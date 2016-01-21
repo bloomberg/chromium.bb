@@ -254,7 +254,7 @@ ChannelState WebSocketEventHandler::OnFinishOpeningHandshake(
   response_to_pass.url.Swap(&response->url);
   response_to_pass.status_code = response->status_code;
   response_to_pass.status_text.swap(response->status_text);
-  void* iter = NULL;
+  size_t iter = 0;
   std::string name, value;
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value))
     response_to_pass.headers.push_back(std::make_pair(name, value));
