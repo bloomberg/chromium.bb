@@ -1503,6 +1503,7 @@ bool UnownedCheckoutFormElementsAndFieldSetsToFormData(
     "address",
     "delivery",
     "shipping",
+    "wallet"
   };
 
   for (const auto& keyword : kKeywords) {
