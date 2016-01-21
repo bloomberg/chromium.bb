@@ -1393,6 +1393,7 @@ interface Event
     getter cancelBubble
     getter cancelable
     getter currentTarget
+    getter deepPath
     getter defaultPrevented
     getter eventPhase
     getter path
