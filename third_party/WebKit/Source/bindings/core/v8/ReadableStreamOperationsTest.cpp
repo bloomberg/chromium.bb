@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/ScriptState.h"
+#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
 #include "bindings/core/v8/V8BindingMacros.h"
@@ -128,24 +129,24 @@ public:
     ScriptState* scriptState() const { return m_scope.scriptState(); }
     v8::Isolate* isolate() const { return scriptState()->isolate(); }
 
-    v8::MaybeLocal<v8::Value> eval(const char* s)
+    ScriptValue eval(const char* s)
     {
         v8::Local<v8::String> source;
         v8::Local<v8::Script> script;
         if (!v8Call(v8::String::NewFromUtf8(isolate(), s, v8::NewStringType::kNormal), source)) {
             ADD_FAILURE();
-            return v8::MaybeLocal<v8::Value>();
+            return ScriptValue();
         }
         if (!v8Call(v8::Script::Compile(scriptState()->context(), source), script)) {
             ADD_FAILURE() << "Compilation fails";
-            return v8::MaybeLocal<v8::Value>();
+            return ScriptValue();
         }
-        return script->Run(scriptState()->context());
+        return ScriptValue(scriptState(), script->Run(scriptState()->context()));
     }
-    v8::MaybeLocal<v8::Value> evalWithPrintingError(const char* s)
+    ScriptValue evalWithPrintingError(const char* s)
     {
         v8::TryCatch block(isolate());
-        v8::MaybeLocal<v8::Value> r = eval(s);
+        ScriptValue r = eval(s);
         if (block.HasCaught()) {
             ADD_FAILURE() << toCoreString(block.Exception()->ToString(isolate())).utf8().data();
             block.ReThrow();
@@ -160,29 +161,29 @@ public:
 
 TEST_F(ReadableStreamOperationsTest, IsReadableStream)
 {
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), v8::Undefined(isolate())));
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), v8::Null(isolate())));
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), v8::Object::New(isolate())));
-    v8::Local<v8::Value> stream;
-    ASSERT_TRUE(v8Call(evalWithPrintingError("new ReadableStream()"), stream));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate()))));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), ScriptValue::createNull(scriptState())));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), ScriptValue(scriptState(), v8::Object::New(isolate()))));
+    ScriptValue stream = evalWithPrintingError("new ReadableStream()");
+    EXPECT_FALSE(stream.isEmpty());
     EXPECT_TRUE(ReadableStreamOperations::isReadableStream(scriptState(), stream));
 }
 
 TEST_F(ReadableStreamOperationsTest, IsReadableStreamReaderInvalid)
 {
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), v8::Undefined(isolate())));
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), v8::Null(isolate())));
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), v8::Object::New(isolate())));
-    v8::Local<v8::Value> stream;
-    ASSERT_TRUE(v8Call(evalWithPrintingError("new ReadableStream()"), stream));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), ScriptValue(scriptState(), v8::Undefined(isolate()))));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), ScriptValue::createNull(scriptState())));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), ScriptValue(scriptState(), v8::Object::New(isolate()))));
+    ScriptValue stream = evalWithPrintingError("new ReadableStream()");
+    EXPECT_FALSE(stream.isEmpty());
 
     EXPECT_FALSE(ReadableStreamOperations::isReadableStreamReader(scriptState(), stream));
 }
 
 TEST_F(ReadableStreamOperationsTest, GetReader)
 {
-    v8::Local<v8::Value> stream;
-    ASSERT_TRUE(v8Call(evalWithPrintingError("new ReadableStream()"), stream));
+    ScriptValue stream = evalWithPrintingError("new ReadableStream()");
+    EXPECT_FALSE(stream.isEmpty());
 
     EXPECT_FALSE(ReadableStreamOperations::isLocked(scriptState(), stream));
     ScriptValue reader;
@@ -194,8 +195,8 @@ TEST_F(ReadableStreamOperationsTest, GetReader)
     EXPECT_TRUE(ReadableStreamOperations::isLocked(scriptState(), stream));
     ASSERT_FALSE(reader.isEmpty());
 
-    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), reader.v8Value()));
-    EXPECT_TRUE(ReadableStreamOperations::isReadableStreamReader(scriptState(), reader.v8Value()));
+    EXPECT_FALSE(ReadableStreamOperations::isReadableStream(scriptState(), reader));
+    EXPECT_TRUE(ReadableStreamOperations::isReadableStreamReader(scriptState(), reader));
 
     // Already locked!
     {
@@ -208,23 +209,23 @@ TEST_F(ReadableStreamOperationsTest, GetReader)
 
 TEST_F(ReadableStreamOperationsTest, IsDisturbed)
 {
-    v8::Local<v8::Value> stream;
-    ASSERT_TRUE(v8Call(evalWithPrintingError("stream = new ReadableStream()"), stream));
+    ScriptValue stream = evalWithPrintingError("stream = new ReadableStream()");
+    EXPECT_FALSE(stream.isEmpty());
 
     EXPECT_FALSE(ReadableStreamOperations::isDisturbed(scriptState(), stream));
 
-    ASSERT_FALSE(evalWithPrintingError("stream.cancel()").IsEmpty());
+    ASSERT_FALSE(evalWithPrintingError("stream.cancel()").isEmpty());
 
     EXPECT_TRUE(ReadableStreamOperations::isDisturbed(scriptState(), stream));
 }
 
 TEST_F(ReadableStreamOperationsTest, Read)
 {
-    v8::Local<v8::Value> reader;
-    ASSERT_TRUE(v8Call(evalWithPrintingError(
+    ScriptValue reader = evalWithPrintingError(
         "var controller;"
         "function start(c) { controller = c; }"
-        "new ReadableStream({start}).getReader()"), reader));
+        "new ReadableStream({start}).getReader()");
+    EXPECT_FALSE(reader.isEmpty());
     ASSERT_TRUE(ReadableStreamOperations::isReadableStreamReader(scriptState(), reader));
 
     Iteration* it1 = new Iteration();
@@ -240,7 +241,7 @@ TEST_F(ReadableStreamOperationsTest, Read)
     EXPECT_FALSE(it1->isSet());
     EXPECT_FALSE(it2->isSet());
 
-    ASSERT_FALSE(evalWithPrintingError("controller.enqueue('hello')").IsEmpty());
+    ASSERT_FALSE(evalWithPrintingError("controller.enqueue('hello')").isEmpty());
     isolate()->RunMicrotasks();
     EXPECT_TRUE(it1->isSet());
     EXPECT_TRUE(it1->isValid());
@@ -248,7 +249,7 @@ TEST_F(ReadableStreamOperationsTest, Read)
     EXPECT_EQ("hello", it1->value());
     EXPECT_FALSE(it2->isSet());
 
-    ASSERT_FALSE(evalWithPrintingError("controller.close()").IsEmpty());
+    ASSERT_FALSE(evalWithPrintingError("controller.close()").isEmpty());
     isolate()->RunMicrotasks();
     EXPECT_TRUE(it1->isSet());
     EXPECT_TRUE(it1->isValid());

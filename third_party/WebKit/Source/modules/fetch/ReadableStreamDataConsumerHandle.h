@@ -5,12 +5,12 @@
 #ifndef ReadableStreamDataConsumerHandle_h
 #define ReadableStreamDataConsumerHandle_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "modules/ModulesExport.h"
 #include "modules/fetch/FetchDataConsumerHandle.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
-#include <v8.h>
 
 namespace blink {
 
@@ -28,7 +28,7 @@ class ScriptState;
 class MODULES_EXPORT ReadableStreamDataConsumerHandle final : public FetchDataConsumerHandle {
     WTF_MAKE_NONCOPYABLE(ReadableStreamDataConsumerHandle);
 public:
-    static PassOwnPtr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, v8::Local<v8::Value> stream)
+    static PassOwnPtr<ReadableStreamDataConsumerHandle> create(ScriptState* scriptState, ScriptValue stream)
     {
         return adoptPtr(new ReadableStreamDataConsumerHandle(scriptState, stream));
     }
@@ -36,7 +36,7 @@ public:
 
 private:
     class ReadingContext;
-    ReadableStreamDataConsumerHandle(ScriptState*, v8::Local<v8::Value> stream);
+    ReadableStreamDataConsumerHandle(ScriptState*, ScriptValue stream);
     Reader* obtainReaderInternal(Client*) override;
     const char* debugName() const override { return "ReadableStreamDataConsumerHandle"; }
 

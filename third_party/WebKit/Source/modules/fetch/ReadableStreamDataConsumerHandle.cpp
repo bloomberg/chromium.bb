@@ -119,7 +119,7 @@ public:
         RefPtr<ReadingContext> m_readingContext;
     };
 
-    static PassRefPtr<ReadingContext> create(ScriptState* scriptState, v8::Local<v8::Value> stream)
+    static PassRefPtr<ReadingContext> create(ScriptState* scriptState, ScriptValue stream)
     {
         return adoptRef(new ReadingContext(scriptState, stream));
     }
@@ -156,7 +156,7 @@ public:
             m_isReading = true;
             ScriptState::Scope scope(m_reader.scriptState());
             V8RecursionScope recursionScope(m_reader.isolate());
-            ReadableStreamOperations::read(m_reader.scriptState(), m_reader.v8Value()).then(
+            ReadableStreamOperations::read(m_reader.scriptState(), m_reader).then(
                 OnFulfilled::createFunction(m_reader.scriptState(), m_weakPtrFactory.createWeakPtr()),
                 OnRejected::createFunction(m_reader.scriptState(), m_weakPtrFactory.createWeakPtr()));
             // Note: Microtasks may run here.
@@ -226,7 +226,7 @@ public:
     }
 
 private:
-    ReadingContext(ScriptState* scriptState, v8::Local<v8::Value> stream)
+    ReadingContext(ScriptState* scriptState, ScriptValue stream)
         : m_client(nullptr)
         , m_weakPtrFactory(this)
         , m_pendingOffset(0)
@@ -260,7 +260,7 @@ private:
     bool m_isInRecursion;
 };
 
-ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* scriptState, v8::Local<v8::Value> stream)
+ReadableStreamDataConsumerHandle::ReadableStreamDataConsumerHandle(ScriptState* scriptState, ScriptValue stream)
     : m_readingContext(ReadingContext::create(scriptState, stream))
 {
 }

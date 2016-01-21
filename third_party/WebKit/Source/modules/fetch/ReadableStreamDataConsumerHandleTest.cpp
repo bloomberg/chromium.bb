@@ -87,7 +87,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Create)
     ScriptState::Scope scope(scriptState());
     ScriptValue stream(scriptState(), evalWithPrintingError("new ReadableStream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -110,7 +110,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EmptyStream)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.close()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -141,7 +141,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, ErroredStream)
     ScriptValue stream(scriptState(), evalWithPrintingError(
         "new ReadableStream({start: c => c.error()})"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -177,7 +177,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, Read)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -239,7 +239,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, TwoPhaseRead)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -309,7 +309,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, LockedStream)
         "stream.getReader();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -339,7 +339,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueUndefined)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -374,7 +374,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueNull)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;
@@ -409,7 +409,7 @@ TEST_F(ReadableStreamDataConsumerHandleTest, EnqueueString)
         "controller.close();"
         "stream"));
     ASSERT_FALSE(stream.isEmpty());
-    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream.v8Value());
+    OwnPtr<ReadableStreamDataConsumerHandle> handle = ReadableStreamDataConsumerHandle::create(scriptState(), stream);
     ASSERT_TRUE(handle);
     MockClient* client = MockClient::create();
     Checkpoint checkpoint;

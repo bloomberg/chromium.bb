@@ -16,7 +16,7 @@ class ScriptState;
 
 // This class has various methods for ReadableStream[Reader] implemented with
 // V8 Extras.
-// All methods should be called in an appropriate V8 context. All v8 handle
+// All methods should be called in an appropriate V8 context. All ScriptValue
 // arguments must not be empty.
 class CORE_EXPORT ReadableStreamOperations {
     STATIC_ONLY(ReadableStreamOperations);
@@ -25,25 +25,25 @@ public:
     // This function assumes |isReadableStream(stream)|.
     // Returns an empty value and throws an error via the ExceptionState when
     // errored.
-    static ScriptValue getReader(ScriptState*, v8::Local<v8::Value> stream, ExceptionState&);
+    static ScriptValue getReader(ScriptState*, ScriptValue stream, ExceptionState&);
 
     // IsReadableStream
-    static bool isReadableStream(ScriptState*, v8::Local<v8::Value>);
+    static bool isReadableStream(ScriptState*, ScriptValue);
 
     // IsReadableStreamDisturbed
     // This function assumes |isReadableStream(stream)|.
-    static bool isDisturbed(ScriptState*, v8::Local<v8::Value> stream);
+    static bool isDisturbed(ScriptState*, ScriptValue stream);
 
     // IsReadableStreamLocked
     // This function assumes |isReadableStream(stream)|.
-    static bool isLocked(ScriptState*, v8::Local<v8::Value> stream);
+    static bool isLocked(ScriptState*, ScriptValue stream);
 
     // IsReadableStreamReader
-    static bool isReadableStreamReader(ScriptState*, v8::Local<v8::Value>);
+    static bool isReadableStreamReader(ScriptState*, ScriptValue);
 
     // ReadFromReadableStreamReader
     // This function assumes |isReadableStreamReader(reader)|.
-    static ScriptPromise read(ScriptState*, v8::Local<v8::Value> reader);
+    static ScriptPromise read(ScriptState*, ScriptValue reader);
 };
 
 } // namespace blink

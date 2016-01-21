@@ -133,8 +133,8 @@ Response* Response::create(ScriptState* scriptState, ScriptValue bodyValue, cons
         // FormDataEncoder::generateUniqueBoundaryString.
         contentType = AtomicString("multipart/form-data; boundary=", AtomicString::ConstructFromLiteral) + formData->boundary().data();
         bodyHandle = FetchFormDataConsumerHandle::create(executionContext, formData.release());
-    } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, body)) {
-        bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, body);
+    } else if (RuntimeEnabledFeatures::responseConstructedWithReadableStreamEnabled() && ReadableStreamOperations::isReadableStream(scriptState, bodyValue)) {
+        bodyHandle = ReadableStreamDataConsumerHandle::create(scriptState, bodyValue);
     } else {
         String string = toUSVString(isolate, body, exceptionState);
         if (exceptionState.hadException())
