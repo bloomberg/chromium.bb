@@ -16,17 +16,16 @@ namespace blink {
 
 class ScriptState;
 
-class V8AsyncCallTracker final : public NoBaseWillBeGarbageCollectedFinalized<V8AsyncCallTracker>, public ScriptState::Observer {
+class V8AsyncCallTracker final : public ScriptState::Observer {
     WTF_MAKE_NONCOPYABLE(V8AsyncCallTracker);
-    USING_FAST_MALLOC_WILL_BE_REMOVED(V8AsyncCallTracker);
+    USING_FAST_MALLOC(V8AsyncCallTracker);
 public:
-    static PassOwnPtrWillBeRawPtr<V8AsyncCallTracker> create(V8DebuggerAgentImpl* debuggerAgent)
+    static PassOwnPtr<V8AsyncCallTracker> create(V8DebuggerAgentImpl* debuggerAgent)
     {
-        return adoptPtrWillBeNoop(new V8AsyncCallTracker(debuggerAgent));
+        return adoptPtr(new V8AsyncCallTracker(debuggerAgent));
     }
 
     ~V8AsyncCallTracker();
-    DECLARE_TRACE();
 
     void asyncCallTrackingStateChanged(bool tracking);
     void resetAsyncOperations();
@@ -38,12 +37,13 @@ public:
 
 private:
     explicit V8AsyncCallTracker(V8DebuggerAgentImpl*);
+    using V8ContextAsyncOperations = HashMap<String, int>;
 
     void didEnqueueV8AsyncTask(ScriptState*, const String& eventName, int id);
     void willHandleV8AsyncTask(ScriptState*, const String& eventName, int id);
+    void completeOperations(V8ContextAsyncOperations* contextCallChains);
 
-    class V8ContextAsyncOperations;
-    WillBeHeapHashMap<RefPtr<ScriptState>, OwnPtrWillBeMember<V8ContextAsyncOperations>> m_contextAsyncOperationMap;
+    HashMap<RefPtr<ScriptState>, OwnPtr<V8ContextAsyncOperations>> m_contextAsyncOperationMap;
     V8DebuggerAgentImpl* m_debuggerAgent;
 };
 

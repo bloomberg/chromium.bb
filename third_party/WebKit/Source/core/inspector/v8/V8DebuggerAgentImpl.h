@@ -231,7 +231,7 @@ private:
     OwnPtr<ScriptRegexp> m_cachedSkipStackRegExp;
     unsigned m_cachedSkipStackGeneration;
     // This field must be destroyed before the listeners set above.
-    OwnPtrWillBePersistent<V8AsyncCallTracker> m_v8AsyncCallTracker;
+    OwnPtr<V8AsyncCallTracker> m_v8AsyncCallTracker;
     OwnPtr<PromiseTracker> m_promiseTracker;
 
     using AsyncOperationIdToAsyncCallChain = HashMap<int, RefPtr<AsyncCallChain>>;
