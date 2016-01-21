@@ -72,8 +72,7 @@ def _EnsureNoPylibUse(input_api, output_api):
   return []
 
 
-def _TemporarilyReadOnly(input_api, output_api):
-  # Temporarily make devil/ read-only for the move to catapult.
+def _CatapultMoveWarning(input_api, output_api):
   # TODO(jbudorick): Remove this after the move is complete.
 
   def other_files(f):
@@ -83,8 +82,9 @@ def _TemporarilyReadOnly(input_api, output_api):
 
   changed_files = input_api.AffectedSourceFiles(other_files)
   if changed_files:
-    return [output_api.PresubmitError(
-        'devil/ is temporarily read-only while it moves to catapult. '
+    return [output_api.PresubmitNotifyResult(
+        'devil/ changes should also be made in catapult '
+        '(https://github.com/catapult-project/catapult). '
         'Questions? Contact jbudorick@',
         items=changed_files)]
   return []
@@ -95,7 +95,7 @@ def CommonChecks(input_api, output_api):
   output += _RunPylint(input_api, output_api)
   output += _RunUnitTests(input_api, output_api)
   output += _EnsureNoPylibUse(input_api, output_api)
-  output += _TemporarilyReadOnly(input_api, output_api)
+  output += _CatapultMoveWarning(input_api, output_api)
   return output
 
 
