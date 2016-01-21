@@ -81,6 +81,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       dialog_contents, sink_name_script);
   ASSERT_EQ(kTestSinkName, sink_name);
 
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Simulate moving the mouse off the dialog. Confirm that the dialog closes
   // automatically after the route is closed.
   // In tests, it sometimes takes too long to CloseRouteOnUI() to finish so
@@ -91,8 +92,11 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "window.document.getElementById('media-router-container').dispatchEvent("
       "new Event('mouseleave')))");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_leave_script));
+#endif
   CloseRouteOnUI();
+#if defined(OS_MACOSX) || defined(OS_WIN)
   WaitUntilDialogClosed(web_contents);
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
