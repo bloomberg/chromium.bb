@@ -418,7 +418,7 @@ Background.prototype = {
               .go();
           prevRange = this.currentRange_;
           this.setCurrentRange(
-              this.currentRange_.move(cursors.Unit.NODE, Dir.FORWARD));
+              this.currentRange_.move(cursors.Unit.DOM_NODE, Dir.FORWARD));
 
           if (!this.currentRange_ || this.currentRange_.equals(prevRange))
             global.isReadingContinuously = false;
