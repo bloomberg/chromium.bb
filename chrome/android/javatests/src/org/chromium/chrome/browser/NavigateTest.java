@@ -13,6 +13,7 @@ import android.view.KeyEvent;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.UrlUtils;
@@ -122,6 +123,7 @@ public class NavigateTest extends ChromeTabbedActivityTestBase {
         assertEquals(expectedLocation(url), result);
     }
 
+    @DisabledTest // https://crbug.com/516018
     @Restriction(RESTRICTION_TYPE_TABLET)
     @MediumTest
     @Feature({"Navigation"})
