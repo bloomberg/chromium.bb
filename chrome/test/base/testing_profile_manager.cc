@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
@@ -233,6 +234,10 @@ ProfileManager* TestingProfileManager::profile_manager() {
 ProfileInfoCache* TestingProfileManager::profile_info_cache() {
   DCHECK(called_set_up_);
   return &profile_manager_->GetProfileInfoCache();
+}
+
+ProfileAttributesStorage* TestingProfileManager::profile_attributes_storage() {
+  return profile_info_cache();
 }
 
 void TestingProfileManager::SetUpInternal() {

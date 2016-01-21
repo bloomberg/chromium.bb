@@ -163,7 +163,12 @@ class ProfileManager : public base::NonThreadSafe,
 
   // Returns a ProfileInfoCache object which can be used to get information
   // about profiles without having to load them from disk.
+  // Deprecated, use GetProfileAttributesStorage() instead.
   ProfileInfoCache& GetProfileInfoCache();
+
+  // Returns a ProfileAttributesStorage object which can be used to get
+  // information about profiles without having to load them from disk.
+  ProfileAttributesStorage& GetProfileAttributesStorage();
 
   // Returns a ProfileShortcut Manager that enables the caller to create
   // profile specfic desktop shortcuts.

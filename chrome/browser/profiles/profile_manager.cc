@@ -38,6 +38,7 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/bookmark_model_loaded_observer.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
@@ -660,6 +661,10 @@ ProfileInfoCache& ProfileManager::GetProfileInfoCache() {
         g_browser_process->local_state(), user_data_dir_));
   }
   return *profile_info_cache_.get();
+}
+
+ProfileAttributesStorage& ProfileManager::GetProfileAttributesStorage() {
+  return GetProfileInfoCache();
 }
 
 ProfileShortcutManager* ProfileManager::profile_shortcut_manager() {

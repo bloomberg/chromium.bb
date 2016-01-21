@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile.h"
 
 class ProfileInfoCache;
+class ProfileAttributesStorage;
 class ProfileManager;
 class TestingBrowserProcess;
 class TestingProfile;
@@ -105,6 +106,7 @@ class TestingProfileManager {
   const base::FilePath& profiles_dir();
   ProfileManager* profile_manager();
   ProfileInfoCache* profile_info_cache();
+  ProfileAttributesStorage* profile_attributes_storage();
 
  private:
   typedef std::map<std::string, TestingProfile*> TestingProfilesMap;

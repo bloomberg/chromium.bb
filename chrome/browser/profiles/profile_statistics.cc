@@ -18,7 +18,6 @@
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
-#include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
@@ -354,10 +353,9 @@ void GatherProfileStatistics(Profile* profile,
 
 ProfileCategoryStats GetProfileStatisticsFromCache(
     const base::FilePath& profile_path) {
-  ProfileInfoCache& profile_info_cache =
-      g_browser_process->profile_manager()->GetProfileInfoCache();
   ProfileAttributesEntry* entry = nullptr;
-  bool has_entry = profile_info_cache.
+  bool has_entry = g_browser_process->profile_manager()->
+      GetProfileAttributesStorage().
       GetProfileAttributesWithPath(profile_path, &entry);
 
   ProfileCategoryStats stats;
@@ -397,9 +395,9 @@ void SetProfileStatisticsInCache(const base::FilePath& profile_path,
   if (!profile_manager)
     return;
 
-  ProfileInfoCache& profile_info_cache = profile_manager->GetProfileInfoCache();
   ProfileAttributesEntry* entry = nullptr;
-  if (!profile_info_cache.GetProfileAttributesWithPath(profile_path, &entry))
+  if (!profile_manager->GetProfileAttributesStorage().
+      GetProfileAttributesWithPath(profile_path, &entry))
     return;
 
   if (category == kProfileStatisticsBrowsingHistory) {
