@@ -163,7 +163,7 @@ class CALayerTree {
                     ContentLayer* old_layer,
                     float scale_factor);
 
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
+    const base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
     gfx::RectF contents_rect;
     gfx::Rect rect;
     unsigned background_color = 0;

@@ -118,7 +118,14 @@ CALayerTree::ContentLayer::ContentLayer(
       rect(rect),
       background_color(background_color),
       edge_aa_mask(edge_aa_mask),
-      opacity(opacity) {}
+      opacity(opacity) {
+  // Ensure that the IOSurface be in use as soon as it is added to a
+  // ContentLayer, so that, by the time that the call to SwapBuffers completes,
+  // all IOSurfaces that can be used as CALayer contents in the future will be
+  // marked as InUse.
+  if (io_surface)
+    IOSurfaceIncrementUseCount(io_surface);
+}
 
 CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
     : io_surface(layer.io_surface),
@@ -129,12 +136,19 @@ CALayerTree::ContentLayer::ContentLayer(ContentLayer&& layer)
       opacity(layer.opacity),
       ca_layer(layer.ca_layer) {
   DCHECK(!layer.ca_layer);
-  layer.io_surface.reset();
   layer.ca_layer.reset();
+  // See remarks in the non-move constructor.
+  if (io_surface)
+    IOSurfaceIncrementUseCount(io_surface);
 }
 
 CALayerTree::ContentLayer::~ContentLayer() {
   [ca_layer removeFromSuperlayer];
+  // By the time the destructor is called, the IOSurface will have been passed
+  // to the WindowServer, and will remain InUse by the WindowServer as long as
+  // is needed to avoid recycling bugs.
+  if (io_surface)
+    IOSurfaceDecrementUseCount(io_surface);
 }
 
 bool CALayerTree::RootLayer::AddContentLayer(
