@@ -21,6 +21,8 @@
 
 namespace content {
 
+class CALayerTree;
+
 class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                                         public ImageTransportSurface,
                                         public ui::GpuSwitchingObserver {
@@ -53,10 +55,11 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
                        float opacity,
                        unsigned background_color,
                        unsigned edge_aa_mask,
-                       const gfx::RectF& bounds_rect,
+                       const gfx::RectF& rect,
                        bool is_clipped,
                        const gfx::RectF& clip_rect,
-                       const gfx::Transform& transform) override;
+                       const gfx::Transform& transform,
+                       int sorting_context_id) override;
   bool IsSurfaceless() const override;
 
   // ImageTransportSurface implementation
@@ -78,9 +81,9 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   void UpdateRootAndPartialDamagePlanes(
       const linked_ptr<OverlayPlane>& new_root_plane,
       const gfx::RectF& pixel_damage_rect);
-  void UpdateOverlayPlanes(
-      const std::vector<linked_ptr<OverlayPlane>>& new_overlay_planes);
-  void UpdateCALayerTree();
+  void UpdateRootAndPartialDamageCALayers(float scale_factor);
+  void UpdateCALayerTree(scoped_ptr<CALayerTree> ca_layer_tree,
+                         float scale_factor);
 
   // Returns true if the front of |pending_swaps_| has completed, or has timed
   // out by |now|.
@@ -123,7 +126,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // Planes that have been scheduled, but have not had a subsequent SwapBuffers
   // call made yet.
   linked_ptr<OverlayPlane> pending_root_plane_;
-  std::vector<linked_ptr<OverlayPlane>> pending_overlay_planes_;
+  scoped_ptr<CALayerTree> pending_ca_layer_tree_;
 
   // A queue of all frames that have been created by SwapBuffersInternal but
   // have not yet been displayed. This queue is checked at the beginning of
@@ -133,7 +136,7 @@ class ImageTransportSurfaceOverlayMac : public gfx::GLSurface,
   // The planes that are currently being displayed on the screen.
   linked_ptr<OverlayPlane> current_root_plane_;
   std::list<linked_ptr<OverlayPlane>> current_partial_damage_planes_;
-  std::list<linked_ptr<OverlayPlane>> current_overlay_planes_;
+  scoped_ptr<CALayerTree> current_ca_layer_tree_;
 
   // The time of the last swap was issued. If this is more than two vsyncs, then
   // use the simpler non-smooth animation path.

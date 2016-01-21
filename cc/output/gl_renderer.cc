@@ -3587,14 +3587,16 @@ void GLRenderer::ScheduleCALayers(DrawingFrame* frame) {
         ca_layer_overlay.contents_rect.height(),
     };
     GLfloat bounds_rect[4] = {
-        0, 0, ca_layer_overlay.bounds_size.width(),
-        ca_layer_overlay.bounds_size.height(),
+        ca_layer_overlay.bounds_rect.x(), ca_layer_overlay.bounds_rect.y(),
+        ca_layer_overlay.bounds_rect.width(),
+        ca_layer_overlay.bounds_rect.height(),
     };
-    GLboolean is_clipped = GL_FALSE;
-    GLfloat clip_rect[4] = {
-        0, 0, 0, 0,
-    };
-    GLint sorting_context_id = 0;
+    GLboolean is_clipped = ca_layer_overlay.is_clipped;
+    GLfloat clip_rect[4] = {ca_layer_overlay.clip_rect.x(),
+                            ca_layer_overlay.clip_rect.y(),
+                            ca_layer_overlay.clip_rect.width(),
+                            ca_layer_overlay.clip_rect.height()};
+    GLint sorting_context_id = ca_layer_overlay.sorting_context_id;
     GLfloat transform[16];
     ca_layer_overlay.transform.asColMajorf(transform);
     gl_->ScheduleCALayerCHROMIUM(

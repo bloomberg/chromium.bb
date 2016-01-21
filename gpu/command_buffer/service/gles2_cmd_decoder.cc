@@ -9668,7 +9668,7 @@ error::Error GLES2DecoderImpl::HandleScheduleCALayerCHROMIUM(
   if (!surface_->ScheduleCALayer(image, contents_rect, c.opacity,
                                  c.background_color, c.edge_aa_mask,
                                  bounds_rect, c.is_clipped ? true : false,
-                                 clip_rect, transform)) {
+                                 clip_rect, transform, c.sorting_context_id)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glScheduleCALayerCHROMIUM",
                        "failed to schedule CALayer");
   }

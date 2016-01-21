@@ -89,7 +89,7 @@ CALayerResult FromTextureQuad(ResourceProvider* resource_provider,
     // frame is the composition of a vertical flip about the anchor point, and a
     // translation by the height of the layer.
     ca_layer_overlay->transform.preTranslate(
-        0, ca_layer_overlay->bounds_size.height(), 0);
+        0, ca_layer_overlay->bounds_rect.height(), 0);
     ca_layer_overlay->transform.preScale(1, -1, 1);
   }
   ca_layer_overlay->contents_resource_id = resource_id;
@@ -125,10 +125,6 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
   if (quad->shared_quad_state->blend_mode != SkXfermode::kSrcOver_Mode)
     return CA_LAYER_FAILED_QUAD_BLEND_MODE;
 
-  // TODO(ccameron): Handle 3D transforms.
-  if (!quad->shared_quad_state->quad_to_target_transform.IsFlat())
-    return CA_LAYER_FAILED_QUAD_TRANSFORM;
-
   // Early-out for invisible quads.
   if (quad->shared_quad_state->opacity == 0.f) {
     *skip = true;
@@ -146,31 +142,16 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
   if (quad->IsTopEdge())
     ca_layer_overlay->edge_aa_mask |= GL_CA_LAYER_EDGE_TOP_CHROMIUM;
 
-  // Check rect clipping.
-  gfx::RectF quad_rect(quad->rect);
-  if (quad->shared_quad_state->is_clipped) {
-    gfx::RectF clip_rect = gfx::RectF(quad->shared_quad_state->clip_rect);
-    gfx::RectF quad_rect_in_clip_space = gfx::RectF(quad->rect);
-    quad->shared_quad_state->quad_to_target_transform.TransformRect(
-        &quad_rect_in_clip_space);
-    quad_rect_in_clip_space.Intersect(display_rect);
-    // Skip quads that are entirely clipped.
-    if (!quad_rect_in_clip_space.Intersects(clip_rect)) {
-      *skip = true;
-      return CA_LAYER_SUCCESS;
-    }
-    // Fall back if the clip rect actually has an effect.
-    // TODO(ccameron): Handle more clip rects.
-    if (!clip_rect.Contains(quad_rect_in_clip_space)) {
-      return CA_LAYER_FAILED_QUAD_CLIPPING;
-    }
-  }
+  // Set rect clipping and sorting context ID.
+  ca_layer_overlay->sorting_context_id =
+      quad->shared_quad_state->sorting_context_id;
+  ca_layer_overlay->is_clipped = quad->shared_quad_state->is_clipped;
+  ca_layer_overlay->clip_rect = gfx::RectF(quad->shared_quad_state->clip_rect);
 
   ca_layer_overlay->opacity = quad->shared_quad_state->opacity;
-  ca_layer_overlay->bounds_size = gfx::SizeF(quad->rect.size());
-  ca_layer_overlay->transform.setTranslate(quad->rect.x(), quad->rect.y(), 0);
-  ca_layer_overlay->transform.postConcat(
-      quad->shared_quad_state->quad_to_target_transform.matrix());
+  ca_layer_overlay->bounds_rect = gfx::RectF(quad->rect);
+  ca_layer_overlay->transform =
+      quad->shared_quad_state->quad_to_target_transform.matrix();
 
   switch (quad->material) {
     case DrawQuad::IO_SURFACE_CONTENT:
@@ -202,7 +183,6 @@ CALayerResult FromDrawQuad(ResourceProvider* resource_provider,
     case DrawQuad::YUV_VIDEO_CONTENT:
       return CA_LAYER_FAILED_YUV_VIDEO_CONTENT;
     default:
-      return CA_LAYER_FAILED_UNKNOWN;
       break;
   }
 
@@ -220,18 +200,37 @@ bool ProcessForCALayerOverlays(ResourceProvider* resource_provider,
                                const QuadList& quad_list,
                                CALayerOverlayList* ca_layer_overlays) {
   CALayerResult result = CA_LAYER_SUCCESS;
+  ca_layer_overlays->reserve(quad_list.size());
+
   for (auto it = quad_list.BackToFrontBegin(); it != quad_list.BackToFrontEnd();
        ++it) {
     const DrawQuad* quad = *it;
-    CALayerOverlay ca_layer_overlay;
+    CALayerOverlay ca_layer;
     bool skip = false;
-    result = FromDrawQuad(resource_provider, display_rect, quad,
-                          &ca_layer_overlay, &skip);
+    result =
+        FromDrawQuad(resource_provider, display_rect, quad, &ca_layer, &skip);
     if (result != CA_LAYER_SUCCESS)
       break;
+
     if (skip)
       continue;
-    ca_layer_overlays->push_back(ca_layer_overlay);
+
+    // It is not possible to correctly represent two different clipping settings
+    // within one sorting context.
+    if (!ca_layer_overlays->empty()) {
+      const CALayerOverlay& previous_ca_layer = ca_layer_overlays->back();
+      if (ca_layer.sorting_context_id &&
+          previous_ca_layer.sorting_context_id == ca_layer.sorting_context_id) {
+        if (previous_ca_layer.is_clipped != ca_layer.is_clipped ||
+            previous_ca_layer.clip_rect != ca_layer.clip_rect) {
+          // TODO(ccameron): Add a histogram value for this.
+          result = CA_LAYER_FAILED_UNKNOWN;
+          break;
+        }
+      }
+    }
+
+    ca_layer_overlays->push_back(ca_layer);
   }
 
   UMA_HISTOGRAM_ENUMERATION("Compositing.Renderer.CALayerResult", result,

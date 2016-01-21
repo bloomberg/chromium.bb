@@ -20,6 +20,12 @@ class CC_EXPORT CALayerOverlay {
   CALayerOverlay();
   ~CALayerOverlay();
 
+  // If |is_clipped| is true, then clip to |clip_rect| in the target space.
+  bool is_clipped = false;
+  gfx::RectF clip_rect;
+  // Layers in a non-zero sorting context exist in the same 3D space and should
+  // intersect.
+  unsigned sorting_context_id = 0;
   // Texture that corresponds to an IOSurface to set as the content of the
   // CALayer. If this is 0 then the CALayer is a solid color.
   unsigned contents_resource_id = 0;
@@ -32,7 +38,7 @@ class CC_EXPORT CALayerOverlay {
   // The edge anti-aliasing mask property for the CALayer.
   unsigned edge_aa_mask = 0;
   // The bounds for the CALayer in pixels.
-  gfx::SizeF bounds_size;
+  gfx::RectF bounds_rect;
   // The transform to apply to the CALayer.
   SkMatrix44 transform = SkMatrix44(SkMatrix44::kIdentity_Constructor);
 };

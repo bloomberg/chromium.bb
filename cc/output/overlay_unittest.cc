@@ -1516,7 +1516,7 @@ TEST_F(CALayerOverlayTest, AllowNonAxisAlignedTransform) {
   EXPECT_EQ(1U, ca_layer_list.size());
 }
 
-TEST_F(CALayerOverlayTest, Disallow3DTransform) {
+TEST_F(CALayerOverlayTest, ThreeDTransform) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
@@ -1534,9 +1534,13 @@ TEST_F(CALayerOverlayTest, Disallow3DTransform) {
                                          &overlay_list, &ca_layer_list,
                                          &damage_rect);
   ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(1U, pass_list.back()->quad_list.size());
-  EXPECT_EQ(1U, overlay_list.size());
-  EXPECT_EQ(0U, ca_layer_list.size());
+  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, overlay_list.size());
+  EXPECT_EQ(1U, ca_layer_list.size());
+  gfx::Transform expected_transform;
+  expected_transform.RotateAboutXAxis(45.f);
+  gfx::Transform actual_transform(ca_layer_list.back().transform);
+  EXPECT_EQ(expected_transform.ToString(), actual_transform.ToString());
 }
 
 TEST_F(CALayerOverlayTest, AllowContainingClip) {
@@ -1562,31 +1566,7 @@ TEST_F(CALayerOverlayTest, AllowContainingClip) {
   EXPECT_EQ(1U, ca_layer_list.size());
 }
 
-TEST_F(CALayerOverlayTest, SkipDisjointClip) {
-  scoped_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateQuad(resource_provider_.get(),
-                                pass->shared_quad_state_list.back(),
-                                pass.get());
-  pass->shared_quad_state_list.back()->is_clipped = true;
-  pass->shared_quad_state_list.back()->clip_rect =
-      gfx::Rect(128, 128, 128, 128);
-
-  gfx::Rect damage_rect;
-  RenderPassList pass_list;
-  pass_list.push_back(std::move(pass));
-  CALayerOverlayList ca_layer_list;
-  OverlayCandidateList overlay_list(
-      BackbufferOverlayList(pass_list.back().get()));
-  overlay_processor_->ProcessForOverlays(resource_provider_.get(), &pass_list,
-                                         &overlay_list, &ca_layer_list,
-                                         &damage_rect);
-  ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
-  EXPECT_EQ(0U, overlay_list.size());
-  EXPECT_EQ(0U, ca_layer_list.size());
-}
-
-TEST_F(CALayerOverlayTest, DisallowNontrivialClip) {
+TEST_F(CALayerOverlayTest, NontrivialClip) {
   scoped_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
                                 pass->shared_quad_state_list.back(),
@@ -1605,9 +1585,11 @@ TEST_F(CALayerOverlayTest, DisallowNontrivialClip) {
                                          &damage_rect);
 
   ASSERT_EQ(1U, pass_list.size());
-  EXPECT_EQ(1U, pass_list.back()->quad_list.size());
-  EXPECT_EQ(1U, overlay_list.size());
-  EXPECT_EQ(0U, ca_layer_list.size());
+  EXPECT_EQ(0U, pass_list.back()->quad_list.size());
+  EXPECT_EQ(0U, overlay_list.size());
+  EXPECT_EQ(1U, ca_layer_list.size());
+  EXPECT_TRUE(ca_layer_list.back().is_clipped);
+  EXPECT_EQ(gfx::RectF(64, 64, 128, 128), ca_layer_list.back().clip_rect);
 }
 
 TEST_F(CALayerOverlayTest, SkipTransparent) {

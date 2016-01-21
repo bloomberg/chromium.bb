@@ -28,7 +28,6 @@ BrowserCompositorOverlayCandidateValidatorMac::
 
 void BrowserCompositorOverlayCandidateValidatorMac::GetStrategies(
     cc::OverlayProcessor::StrategyList* strategies) {
-  strategies->push_back(make_scoped_ptr(new cc::OverlayStrategySandwich(this)));
 }
 
 bool BrowserCompositorOverlayCandidateValidatorMac::AllowCALayerOverlays() {

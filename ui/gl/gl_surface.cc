@@ -213,10 +213,11 @@ bool GLSurface::ScheduleCALayer(gl::GLImage* contents_image,
                                 float opacity,
                                 unsigned background_color,
                                 unsigned edge_aa_mask,
-                                const RectF& bounds_rect,
+                                const RectF& rect,
                                 bool is_clipped,
                                 const RectF& clip_rect,
-                                const Transform& transform) {
+                                const Transform& transform,
+                                int sorting_content_id) {
   NOTIMPLEMENTED();
   return false;
 }
