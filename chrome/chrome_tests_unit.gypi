@@ -33,7 +33,6 @@
       'browser/app_controller_mac_unittest.mm',
       'browser/autocomplete/builtin_provider_unittest.cc',
       'browser/autocomplete/history_quick_provider_unittest.cc',
-      'browser/autocomplete/history_url_provider_unittest.cc',
       'browser/autocomplete/in_memory_url_index_unittest.cc',
       'browser/autocomplete/search_provider_unittest.cc',
       'browser/autocomplete/shortcuts_backend_unittest.cc',
