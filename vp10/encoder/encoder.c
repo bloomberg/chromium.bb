@@ -4067,7 +4067,6 @@ int vp10_get_compressed_data(VP10_COMP *cpi, unsigned int *frame_flags,
       if (cpi->b_calculate_psnr) {
         YV12_BUFFER_CONFIG *orig = cpi->Source;
         YV12_BUFFER_CONFIG *recon = cpi->common.frame_to_show;
-        YV12_BUFFER_CONFIG *pp = &cm->post_proc_buffer;
         PSNR_STATS psnr;
 #if CONFIG_VPX_HIGHBITDEPTH
         calc_highbd_psnr(orig, recon, &psnr, cpi->td.mb.e_mbd.bd,
@@ -4083,21 +4082,8 @@ int vp10_get_compressed_data(VP10_COMP *cpi, unsigned int *frame_flags,
         samples = psnr.samples[0];
 
         {
-          PSNR_STATS psnr2;
           double frame_ssim2 = 0, weight = 0;
           vpx_clear_system_state();
-
-#if CONFIG_VPX_HIGHBITDEPTH
-          calc_highbd_psnr(orig, pp, &psnr2, cpi->td.mb.e_mbd.bd,
-                           cpi->oxcf.input_bit_depth);
-#else
-          calc_psnr(orig, pp, &psnr2);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
-
-          cpi->totalp_sq_error += psnr2.sse[0];
-          cpi->totalp_samples += psnr2.samples[0];
-          adjust_image_stat(psnr2.psnr[1], psnr2.psnr[2], psnr2.psnr[3],
-                            psnr2.psnr[0], &cpi->psnrp);
 
 #if CONFIG_VPX_HIGHBITDEPTH
           if (cm->use_highbitdepth) {
@@ -4113,17 +4099,6 @@ int vp10_get_compressed_data(VP10_COMP *cpi, unsigned int *frame_flags,
           cpi->worst_ssim= VPXMIN(cpi->worst_ssim, frame_ssim2);
           cpi->summed_quality += frame_ssim2 * weight;
           cpi->summed_weights += weight;
-
-#if CONFIG_VPX_HIGHBITDEPTH
-          if (cm->use_highbitdepth) {
-            frame_ssim2 = vpx_highbd_calc_ssim(
-                orig, &cm->post_proc_buffer, &weight, (int)cm->bit_depth);
-          } else {
-            frame_ssim2 = vpx_calc_ssim(orig, &cm->post_proc_buffer, &weight);
-          }
-#else
-          frame_ssim2 = vpx_calc_ssim(orig, &cm->post_proc_buffer, &weight);
-#endif  // CONFIG_VPX_HIGHBITDEPTH
 
           cpi->summedp_quality += frame_ssim2 * weight;
           cpi->summedp_weights += weight;
