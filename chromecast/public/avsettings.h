@@ -107,6 +107,11 @@ class AvSettings {
     // platform.
     WAKE_ON_CAST_CHANGED = 6,
 
+    // This event shall be fired whenever the volume step interval provided
+    // by the device is changed, for e.g. when connecting to an AVR setup
+    // where step interval should be 1%.
+    AUDIO_VOLUME_STEP_INTERVAL_CHANGED = 7,
+
     // This event should be fired when the device is connected to HDMI sinks.
     HDMI_CONNECTED = 100,
 
@@ -176,6 +181,18 @@ class AvSettings {
   // examples are Chromecast (which doesn't do CEC audio controls) and
   // Nexus Player which is fixed volume.
   virtual AudioVolumeControlType GetAudioVolumeControlType() = 0;
+
+  // Retrieves the volume step interval in range [0.0, 1.0] that specifies how
+  // much volume to change per step, e.g. 0.05 = 5%. Returns true if a valid
+  // interval is specified by platform; returns false if interval should defer
+  // to default values.
+  //
+  // Current default volume step intervals per control type are as follows:
+  //  - MASTER_VOLUME: 0.05 (5%)
+  //  - ATTENUATION_VOLUME: 0.02 (2%)
+  //  - FIXED_VOLUME: 0.01 (1%)
+  //  - UNKNOWN_VOLUME: 0.01 (1%)
+  virtual bool GetAudioVolumeStepInterval(float* step_inteval) = 0;
 
   // Returns the current volume level, which must be from 0.0 (inclusive) to
   // 1.0 (inclusive).
