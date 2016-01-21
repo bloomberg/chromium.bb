@@ -2300,7 +2300,6 @@
         'win_release_InlineFunctionExpansion': '0',
         'win_release_OmitFramePointers': '0',
 
-        'use_allocator': 'tcmalloc',
         'release_valgrind_build': 1,
         'werror': '',
         'component': 'static_library',
