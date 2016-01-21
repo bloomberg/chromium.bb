@@ -100,13 +100,11 @@ PassRefPtrWillBeRawPtr<Filter> ReferenceFilterBuilder::build(float zoom, Element
     SVGFilterElement& filterElement = toSVGFilterElement(*filter);
 
     FloatRect referenceBox;
-    if (element->inDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
-        if (referenceBoxSize) {
-            referenceBox = FloatRect(FloatPoint(), *referenceBoxSize);
-        } else {
-            FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
-            referenceBox = FloatRect(FloatPoint(), size);
-        }
+    if (referenceBoxSize) {
+        referenceBox = FloatRect(FloatPoint(), *referenceBoxSize);
+    } else if (element->inDocument() && element->layoutObject() && element->layoutObject()->enclosingLayer()) {
+        FloatSize size(element->layoutObject()->enclosingLayer()->physicalBoundingBoxIncludingReflectionAndStackingChildren(LayoutPoint()).size());
+        referenceBox = FloatRect(FloatPoint(), size);
     }
     referenceBox.scale(1.0f / zoom);
     FloatRect filterRegion = SVGLengthContext::resolveRectangle<SVGFilterElement>(&filterElement, filterElement.filterUnits()->currentValue()->enumValue(), referenceBox);
