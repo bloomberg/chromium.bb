@@ -104,6 +104,7 @@ class PowerMetric(Metric):
     logging.info('Closing power monitors')
     if self._platform.IsMonitoringPower():
       self._platform.StopMonitoringPower()
+      self._running = False
 
   def AddResults(self, _, results):
     """Add the collected power data into the results object.
