@@ -2,9 +2,27 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#availableIcons {
+#available-icons {
   -webkit-margin-start: 16px;
   margin-top: 16px;
+}
+
+#available-icons paper-button {
+  padding: 4px;
+}
+
+#preview-pane {
+  flex-shrink: 0;
+  margin: 18px 10px 0 0;
+  width: 228px;
+}
+
+#preview-pane img {
+  border: solid 1px #cacaca;
+  border-radius: 4px;
+  max-height: 220px;
+  max-width: 220px;
+  padding: 3px;
 }
 
 .user-image {

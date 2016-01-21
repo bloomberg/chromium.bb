@@ -39,6 +39,36 @@ Polymer({
     },
 
     /**
+     * True only if the user has selected the camera icon. Old photos captured
+     * from the camera are represented as the 'old' image.
+     * @private {boolean}
+     */
+    cameraActive_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * This differs from its default value only if the user has just captured
+     * a new photo from the camera.
+     * @private {string}
+     */
+    cameraImageUrl_: {
+      type: String,
+      value: settings.ChangePicturePrivateApi.ButtonImages.TAKE_PHOTO,
+    },
+
+    /**
+     * This differs from its default value only if the user has just captured
+     * a new photo from the camera.
+     * @private {string}
+     */
+    cameraImageTitle_: {
+      type: String,
+      value: function() { return loadTimeData.getString('takePhoto'); },
+    },
+
+    /**
      * The url of the 'old' image, which is the existing image sourced from
      * the camera, a file, or a deprecated default image.
      * @private {string}
@@ -81,6 +111,7 @@ Polymer({
        * @param {string} imageUrl
        */
       receiveSelectedImage: function(imageUrl) {
+        this.cameraActive_ = false;
         this.selectedImageUrl_ = imageUrl;
       }.bind(this),
 
@@ -92,6 +123,7 @@ Polymer({
        * @param {string} imageUrl
        */
       receiveOldImage: function(imageUrl) {
+        this.cameraActive_ = false;
         this.oldImageUrl_ = imageUrl;
         this.selectedImageUrl_ = imageUrl;
       }.bind(this),
@@ -103,8 +135,10 @@ Polymer({
        */
       receiveProfileImage: function(imageUrl, selected) {
         this.profileImageUrl_ = imageUrl;
-        if (selected)
+        if (selected) {
+          this.cameraActive_ = false;
           this.selectedImageUrl_ = imageUrl;
+        }
       }.bind(this),
 
       /**
@@ -124,6 +158,14 @@ Polymer({
     });
 
     settings.ChangePicturePrivateApi.initialize();
+  },
+
+  /**
+   * Handler for when the user clicks the camera image.
+   * @private
+   */
+  onCameraImageTap_: function() {
+    this.cameraActive_ = true;
   },
 
   /**
@@ -176,7 +218,7 @@ Polymer({
    * @param {string} selectedImageUrl
    * @return {boolean}
    */
-  isActiveImage_: function(imageUrl, selectedImageUrl) {
-    return imageUrl == selectedImageUrl;
+  isActiveImage_: function(cameraActive, imageUrl, selectedImageUrl) {
+    return !cameraActive && (imageUrl == selectedImageUrl);
   },
 });

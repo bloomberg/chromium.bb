@@ -75,6 +75,21 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
       changePicture.selectedImageUrl_ = '';
     });
 
+    test('select camera image', function() {
+      var cameraImage = changePicture.$$('#camera-image');
+      assertTrue(!!cameraImage);
+
+      assertFalse(changePicture.cameraActive_);
+      expectFalse(changePicture.$.previewImage.hidden);
+
+      MockInteractions.tap(cameraImage);
+
+      Polymer.dom.flush();
+
+      expectTrue(changePicture.cameraActive_);
+      expectTrue(changePicture.$.previewImage.hidden);
+    });
+
     test('select profile image', function() {
       var profileImage = changePicture.$$('#profile-image');
       assertTrue(!!profileImage);
@@ -87,6 +102,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
 
         Polymer.dom.flush();
         expectTrue(profileImage.active);
+        expectFalse(changePicture.$.previewImage.hidden);
       });
     });
 
@@ -111,12 +127,12 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
         var oldImage = changePicture.$$('#old-image');
         assertTrue(!!oldImage);
         expectTrue(oldImage.active);
+        expectFalse(changePicture.$.previewImage.hidden);
       });
     });
 
     test('select first default image', function() {
       var firstDefaultImage = changePicture.$$('.default-image');
-      console.log(firstDefaultImage);
       assertTrue(!!firstDefaultImage);
 
       MockInteractions.tap(firstDefaultImage);
@@ -128,6 +144,7 @@ TEST_F('SettingsChangePictureBrowserTest', 'MAYBE_ChangePicture', function() {
 
         Polymer.dom.flush();
         expectTrue(firstDefaultImage.active);
+        expectFalse(changePicture.$.previewImage.hidden);
       });
     });
   });
