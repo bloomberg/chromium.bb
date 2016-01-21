@@ -1105,6 +1105,13 @@ bool TextIteratorAlgorithm<Strategy>::isInTextSecurityMode() const
     return isTextSecurityNode(node());
 }
 
+template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(int position) const
+{
+    ASSERT(position >= 0);
+    return position > 0 && position < length() && U16_IS_LEAD(characterAt(position - 1)) && U16_IS_TRAIL(characterAt(position));
+}
+
 // --------
 
 template <typename Strategy>

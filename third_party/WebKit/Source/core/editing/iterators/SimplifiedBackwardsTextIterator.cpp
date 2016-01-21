@@ -403,6 +403,13 @@ UChar SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::characterAt(unsigned i
     return m_textContainer[m_textOffset + m_textLength - 1 - index];
 }
 
+template <typename Strategy>
+bool SimplifiedBackwardsTextIteratorAlgorithm<Strategy>::isBetweenSurrogatePair(int position) const
+{
+    ASSERT(position >= 0);
+    return position > 0 && position < length() && U16_IS_TRAIL(characterAt(position - 1)) && U16_IS_LEAD(characterAt(position));
+}
+
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingStrategy>;
 template class CORE_TEMPLATE_EXPORT SimplifiedBackwardsTextIteratorAlgorithm<EditingInComposedTreeStrategy>;
 

@@ -79,13 +79,19 @@ public:
 
     bool breaksAtReplacedElement() { return !(m_behavior & TextIteratorDoesNotBreakAtReplacedElement); }
 
-    // Append characters with offset range [position, position + copyLength)
-    // to the output buffer.
+    // Calculate the minimum |actualLength >= minLength| such that code units
+    // with offset range [position, position + actualLength) are whole code
+    // points. Append these code points to |output| and return |actualLength|.
     template<typename BufferType>
-    void copyTextTo(BufferType& output, int position, int copyLength) const { m_textState.appendTextTo(output, position, copyLength); }
+    int copyTextTo(BufferType& output, int position, int minLength) const
+    {
+        int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
+        copyCodeUnitsTo(output, position, copiedLength);
+        return copiedLength;
+    }
 
     template<typename BufferType>
-    void copyTextTo(BufferType& output, int position = 0) const { copyTextTo(output, position, length() - position); }
+    int copyTextTo(BufferType& output, int position = 0) const { return copyTextTo(output, position, length() - position); }
 
     // Computes the length of the given range using a text iterator. The default
     // iteration behavior is to always emit object replacement characters for
@@ -148,6 +154,13 @@ private:
     bool emitsObjectReplacementCharacter() const { return m_behavior & TextIteratorEmitsObjectReplacementCharacter; }
 
     bool excludesAutofilledValue() const { return m_behavior & TextIteratorExcludeAutofilledValue; }
+
+    bool isBetweenSurrogatePair(int position) const;
+
+    // Append code units with offset range [position, position + copyLength)
+    // to the output buffer.
+    template<typename BufferType>
+    void copyCodeUnitsTo(BufferType& output, int position, int copyLength) const { m_textState.appendTextTo(output, position, copyLength); }
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.

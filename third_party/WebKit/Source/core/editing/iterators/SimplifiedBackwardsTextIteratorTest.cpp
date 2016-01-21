@@ -141,4 +141,24 @@ TEST_F(SimplifiedBackwardsTextIteratorTest, copyTextTo)
     EXPECT_EQ("three two one zero", String(output2)) << String::format(message, 2, "three two one zero").utf8().data();
 }
 
+TEST_F(SimplifiedBackwardsTextIteratorTest, CopyWholeCodePoints)
+{
+    const char* bodyContent = "&#x13000;&#x13001;&#x13002; &#x13140;&#x13141;.";
+    setBodyContent(bodyContent);
+    updateLayoutAndStyleForPainting();
+
+    const UChar expected[] = {0xD80C, 0xDC00, 0xD80C, 0xDC01, 0xD80C, 0xDC02, ' ', 0xD80C, 0xDD40, 0xD80C, 0xDD41, '.'};
+
+    EphemeralRange range(EphemeralRange::rangeOfContents(document()));
+    SimplifiedBackwardsTextIterator iter(range.startPosition(), range.endPosition());
+    Vector<UChar> buffer;
+    EXPECT_EQ(1, iter.copyTextTo(buffer, 0, 1)) << "Should emit 1 UChar for '.'.";
+    EXPECT_EQ(2, iter.copyTextTo(buffer, 1, 1)) << "Should emit 2 UChars for 'U+13141'.";
+    EXPECT_EQ(2, iter.copyTextTo(buffer, 3, 2)) << "Should emit 2 UChars for 'U+13140'.";
+    EXPECT_EQ(5, iter.copyTextTo(buffer, 5, 4)) << "Should emit 5 UChars for 'U+13001U+13002 '.";
+    EXPECT_EQ(2, iter.copyTextTo(buffer, 10, 2)) << "Should emit 2 UChars for 'U+13000'.";
+    for (int i = 0; i < 12; i++)
+        EXPECT_EQ(expected[i], buffer[i]);
+}
+
 } // namespace blink

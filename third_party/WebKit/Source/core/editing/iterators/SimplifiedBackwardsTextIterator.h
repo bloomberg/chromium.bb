@@ -57,28 +57,19 @@ public:
 
     Node* node() const { return m_node; }
 
-    // Prepend characters with offset range [position, position + copyLength)
-    // to the output buffer.
+    // Calculate the minimum |actualLength >= minLength| such that code units
+    // with offset range [position, position + actualLength) are whole code
+    // points. Prepend these code points to |output| and return |actualLength|.
     template<typename BufferType>
-    void copyTextTo(BufferType& output, int position, int copyLength) const
+    int copyTextTo(BufferType& output, int position, int minLength) const
     {
-        ASSERT(position >= 0);
-        ASSERT(copyLength >= 0);
-        ASSERT(position + copyLength <= m_textLength);
-        // Make sure there's no integer overflow.
-        ASSERT(position + copyLength >= position);
-        if (!m_textLength)
-            return;
-        if (!copyLength)
-            return;
-        if (m_singleCharacterBuffer)
-            output.prepend(&m_singleCharacterBuffer, 1);
-        else
-            m_textContainer.prependTo(output, m_textOffset + m_textLength - position - copyLength, copyLength);
+        int copiedLength = isBetweenSurrogatePair(position + minLength) ? minLength + 1 : minLength;
+        copyCodeUnitsTo(output, position, copiedLength);
+        return copiedLength;
     }
 
     template<typename BufferType>
-    void copyTextTo(BufferType& output, int position = 0) const { copyTextTo(output, position, m_textLength - position); }
+    int copyTextTo(BufferType& output, int position = 0) const { return copyTextTo(output, position, m_textLength - position); }
 
     Node* startContainer() const;
     int endOffset() const;
@@ -96,6 +87,26 @@ private:
     bool handleNonTextNode();
     void emitCharacter(UChar, Node*, int startOffset, int endOffset);
     bool advanceRespectingRange(Node*);
+
+    bool isBetweenSurrogatePair(int position) const;
+
+    // Prepend code units with offset range [position, position + copyLength)
+    // to the output buffer.
+    template<typename BufferType>
+    void copyCodeUnitsTo(BufferType& output, int position, int copyLength) const
+    {
+        ASSERT(position >= 0);
+        ASSERT(copyLength >= 0);
+        ASSERT(position + copyLength <= m_textLength);
+        // Make sure there's no integer overflow.
+        ASSERT(position + copyLength >= position);
+        if (m_textLength == 0 || copyLength == 0)
+            return;
+        if (m_singleCharacterBuffer)
+            output.prepend(&m_singleCharacterBuffer, 1);
+        else
+            m_textContainer.prependTo(output, m_textOffset + m_textLength - position - copyLength, copyLength);
+    }
 
     // Current position, not necessarily of the text being returned, but position
     // as we walk through the DOM tree.
