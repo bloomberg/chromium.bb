@@ -350,6 +350,7 @@ BidiResolver<Iterator, Run, IsolatedRun>::~BidiResolver()
 {
     // The owner of this resolver should have handled the isolated runs.
     ASSERT(m_isolatedRuns.isEmpty());
+    ASSERT(!m_runs.runCount());
 }
 #endif
 

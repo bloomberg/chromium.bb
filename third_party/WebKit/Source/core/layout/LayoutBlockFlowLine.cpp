@@ -839,6 +839,9 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
     while (!endOfLine.atEnd()) {
         bool logicalWidthIsAvailable = false;
 
+        // The runs from the previous line should have been cleaned up.
+        ASSERT(!resolver.runs().runCount());
+
         // FIXME: Is this check necessary before the first iteration or can it be moved to the end?
         if (layoutState.endLine()) {
             layoutState.setEndLineMatched(layoutState.endLineMatched() || matchedEndLine(layoutState, resolver, cleanLineStart, cleanLineBidiStatus));
@@ -876,6 +879,7 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         if (layoutState.lineInfo().isEmpty()) {
             if (lastRootBox())
                 lastRootBox()->setLineBreakInfo(endOfLine.object(), endOfLine.offset(), resolver.status());
+            resolver.runs().deleteRuns();
         } else {
             VisualDirectionOverride override = (styleToUse.rtlOrdering() == VisualOrder ? (styleToUse.direction() == LTR ? VisualLeftToRightOverride : VisualRightToLeftOverride) : NoVisualOverride);
             if (isNewUBAParagraph && styleToUse.unicodeBidi() == Plaintext && !resolver.context()->parent()) {
@@ -948,6 +952,9 @@ void LayoutBlockFlow::layoutRunsAndFloatsInRange(LineLayoutState& layoutState,
         lineMidpointState.reset();
         resolver.setPosition(endOfLine, numberOfIsolateAncestors(endOfLine));
     }
+
+    // The resolver runs should have been cleared, otherwise they're leaking.
+    ASSERT(!resolver.runs().runCount());
 
     // In case we already adjusted the line positions during this layout to avoid widows
     // then we need to ignore the possibility of having a new widows situation.
