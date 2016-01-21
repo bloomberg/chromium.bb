@@ -1863,7 +1863,7 @@ void TextureManager::IncFramebufferStateChangeCount() {
 
 bool TextureManager::ValidateTextureParameters(
     ErrorState* error_state, const char* function_name,
-    GLenum format, GLenum type, GLenum internal_format, GLint level) {
+    GLenum format, GLenum type, GLint internal_format, GLint level) {
   const Validators* validators = feature_info_->validators();
   if (!validators->texture_format.IsValid(format)) {
     ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
@@ -1883,11 +1883,12 @@ bool TextureManager::ValidateTextureParameters(
   }
   // For TexSubImage calls, internal_format isn't part of the parameters,
   // so its validation needs to be after the internal_format/format/type
-  // combination validation. Otherwise, an unexpected INVALID_ENUM could be
+  // combination validation. Otherwise, an unexpected INVALID_VALUE could be
   // generated instead of INVALID_OPERATION.
   if (!validators->texture_internal_format.IsValid(internal_format)) {
-    ERRORSTATE_SET_GL_ERROR_INVALID_ENUM(
-        error_state, function_name, internal_format, "internal_format");
+    ERRORSTATE_SET_GL_ERROR(
+        error_state, GL_INVALID_VALUE, function_name,
+        "invalid internal_format");
     return false;
   }
   if (!feature_info_->IsES3Enabled()) {

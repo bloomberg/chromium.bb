@@ -941,7 +941,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   // parameter, so that this function may be used to validate texSubImage2D.
   bool ValidateTextureParameters(
     ErrorState* error_state, const char* function_name,
-    GLenum format, GLenum type, GLenum internal_format, GLint level);
+    GLenum format, GLenum type, GLint internal_format, GLint level);
 
   // base::trace_event::MemoryDumpProvider implementation.
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,

@@ -2200,12 +2200,12 @@ class TextureFormatTypeValidationTest : public TextureManagerTest {
   ~TextureFormatTypeValidationTest() override {}
 
  protected:
-  void ExpectValid(GLenum format, GLenum type, GLenum internal_format) {
+  void ExpectValid(GLenum format, GLenum type, GLint internal_format) {
     EXPECT_TRUE(manager_->ValidateTextureParameters(
         error_state_.get(), "", format, type, internal_format, 0));
   }
 
-  void ExpectInvalid(GLenum format, GLenum type, GLenum internal_format) {
+  void ExpectInvalid(GLenum format, GLenum type, GLint internal_format) {
     EXPECT_CALL(*error_state_,
                 SetGLError(_, _, _, _, _))
         .Times(1)
@@ -2214,7 +2214,7 @@ class TextureFormatTypeValidationTest : public TextureManagerTest {
         error_state_.get(), "", format, type, internal_format, 0));
   }
 
-  void ExpectInvalidEnum(GLenum format, GLenum type, GLenum internal_format) {
+  void ExpectInvalidEnum(GLenum format, GLenum type, GLint internal_format) {
     EXPECT_CALL(*error_state_,
                 SetGLErrorInvalidEnum(_, _, _, _, _))
         .Times(1)
@@ -2251,7 +2251,7 @@ TEST_F(TextureFormatTypeValidationTest, ES2Basic) {
   ExpectInvalidEnum(GL_SRGB_ALPHA_EXT, GL_UNSIGNED_BYTE, GL_SRGB_ALPHA_EXT);
 
   // ES3
-  ExpectInvalidEnum(GL_RGB, GL_UNSIGNED_BYTE, GL_RGB8);
+  ExpectInvalid(GL_RGB, GL_UNSIGNED_BYTE, GL_RGB8);
 }
 
 TEST_F(TextureFormatTypeValidationTest, ES2WithExtTextureFormatBGRA8888) {
