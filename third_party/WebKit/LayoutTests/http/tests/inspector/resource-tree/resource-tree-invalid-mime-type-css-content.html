@@ -21,7 +21,7 @@ function test()
         InspectorTest.addResult(cssResource.url);
         InspectorTest.assertEquals(cssResource.resourceType(), WebInspector.resourceTypes.Stylesheet, "Resource type should be Stylesheet.");
         InspectorTest.assertTrue(!cssResource.failed, "Resource loading failed.");
-        cssResource.requestContent(step2);
+        cssResource.requestContent().then(step2);
     }
 
     function step2()

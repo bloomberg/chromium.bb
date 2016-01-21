@@ -25,7 +25,7 @@ function test()
         InspectorTest.addResult("Added: " + event.data.url().replace(/VM[\d]+/, "VMXX") + " to " + event.data.project().type());
         if (event.data.project().type() !== "network")
             return;
-        event.data.requestContent(function(it, content) {
+        event.data.requestContent().then(function(it, content) {
             InspectorTest.addResult("Content: " + content);
             if (it)
                 InspectorTest.completeTest();

@@ -145,7 +145,7 @@ InspectorTest.dumpUISourceCode = function(uiSourceCode, callback)
     InspectorTest.addResult("UISourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
     if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
         InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts));
-    uiSourceCode.requestContent(didRequestContent);
+    uiSourceCode.requestContent().then(didRequestContent);
 
     function didRequestContent(content, contentEncoded)
     {

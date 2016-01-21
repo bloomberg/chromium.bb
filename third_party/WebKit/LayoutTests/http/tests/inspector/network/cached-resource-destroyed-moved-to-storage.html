@@ -36,7 +36,7 @@ function test()
     function step2()
     {
         imageRequest = InspectorTest.networkRequests().pop();
-        imageRequest.requestContent(step3);
+        imageRequest.requestContent().then(step3);
     }
 
     var originalContentLength;
@@ -69,7 +69,7 @@ function test()
     {
         // Re-request content now that CachedResource should have been destroyed.
         delete imageRequest._content;
-        imageRequest.requestContent(step7);
+        imageRequest.requestContent().then(step7);
     }
 
     function step7()

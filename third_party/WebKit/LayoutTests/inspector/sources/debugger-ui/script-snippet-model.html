@@ -89,22 +89,32 @@ function test()
             }
 
             resetSnippetsSettings();
-            
+
             WebInspector.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
-            
+
             function step2(uiSourceCode)
             {
                 uiSourceCode1 = uiSourceCode;
-                
-                uiSourceCode1.requestContent(contentCallback);
-                uiSourceCode1.addRevision("<snippet content>");
-                InspectorTest.addResult("Snippet content set.");
-                delete uiSourceCode1._content;
-                delete uiSourceCode1._contentLoaded;
-                uiSourceCode1.requestContent(contentCallback);
-                InspectorTest.addResult("Snippet1 created.");
 
-                WebInspector.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
+                uiSourceCode1.requestContent().then(contentCallback)
+                    .then(contentDumped1);
+
+                function contentDumped1()
+                {
+                    uiSourceCode1.addRevision("<snippet content>");
+                    InspectorTest.addResult("Snippet content set.");
+                    delete uiSourceCode1._content;
+                    delete uiSourceCode1._contentLoaded;
+                    uiSourceCode1.requestContent()
+                        .then(contentCallback)
+                        .then(contentDumped2)
+                }
+
+                function contentDumped2()
+                {
+                    InspectorTest.addResult("Snippet1 created.");
+                    WebInspector.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
+                }
             }
 
             function step3(uiSourceCode)
@@ -119,12 +129,16 @@ function test()
                 renameSnippetAndCheckWorkspace(uiSourceCode2, "foo");
                 delete uiSourceCode1._content;
                 delete uiSourceCode1._contentLoaded;
-                uiSourceCode1.requestContent(contentCallback);
-    
-                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode1.url());
-                WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode2.url());
+                uiSourceCode1.requestContent()
+                    .then(contentCallback)
+                    .then(onContentDumped);
 
-                WebInspector.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
+                function onContentDumped()
+                {
+                    WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode1.url());
+                    WebInspector.scriptSnippetModel.project().deleteFile(uiSourceCode2.url());
+                    WebInspector.scriptSnippetModel.project().createFile("", null, "", step4.bind(this));
+                }
             }
 
             function step4(uiSourceCode)

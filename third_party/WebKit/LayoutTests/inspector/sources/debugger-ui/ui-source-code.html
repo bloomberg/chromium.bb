@@ -28,7 +28,7 @@ function test()
 
                 if (callNumber === 3) {
                     // Check that sourceCodeProvider.requestContent won't be called anymore.
-                    uiSourceCode.requestContent(function(content)
+                    uiSourceCode.requestContent().then(function(content)
                     {
                         InspectorTest.assertEquals("text/javascript", WebInspector.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
                         InspectorTest.assertEquals("var x = 0;", content);
@@ -37,9 +37,9 @@ function test()
                 }
             }
             // Check that all callbacks will be invoked.
-            uiSourceCode.requestContent(didRequestContent.bind(null, 1));
-            uiSourceCode.requestContent(didRequestContent.bind(null, 2));
-            uiSourceCode.requestContent(didRequestContent.bind(null, 3));
+            uiSourceCode.requestContent().then(didRequestContent.bind(null, 1));
+            uiSourceCode.requestContent().then(didRequestContent.bind(null, 2));
+            uiSourceCode.requestContent().then(didRequestContent.bind(null, 3));
         }
     ]);
 };

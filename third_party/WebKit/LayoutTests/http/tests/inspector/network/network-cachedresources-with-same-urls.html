@@ -37,8 +37,8 @@ function test()
         var requests = InspectorTest.networkRequests();
         var request1 = requests[requests.length - 2];
         var request2 = requests[requests.length - 1];
-        request1.requestContent(contentLoaded);
-        request2.requestContent(contentLoaded);
+        request1.requestContent().then(contentLoaded);
+        request2.requestContent().then(contentLoaded);
     }
 
     var contentLoadedCount = 0;

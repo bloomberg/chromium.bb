@@ -134,13 +134,25 @@ function test()
             InspectorTest.addResult("Adding file system mapping.");
             fs.addFileMapping("http://localhost/", "/");
             fs.reportCreated(fileSystemCreated);
+            var sourceFrame;
+
+            function waitForMappingsCheck(callback)
+            {
+                InspectorTest.addSniffer(WebInspector.ResourceScriptFile.prototype, "_mappingCheckedForTest", onMappingChecked);
+
+                function onMappingChecked()
+                {
+                    setImmediate(callback);
+                }
+            }
 
             function fileSystemCreated()
             {
                 loadScript();
 
                 uiSourceCode = InspectorTest.testWorkspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
-                InspectorTest.showUISourceCode(uiSourceCode, didShowScriptSource);
+                InspectorTest.showUISourceCode(uiSourceCode, sf => sourceFrame = sf);
+                waitForMappingsCheck(didShowScriptSource);
             }
 
             function dumpUISourceCodeAndScriptContents()
@@ -150,14 +162,19 @@ function test()
                 InspectorTest.addResult("    script: " + scriptContent);
             }
 
-            function didShowScriptSource(sourceFrame)
+            function didShowScriptSource()
             {
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Editing uiSourceCode:");
+                waitForMappingsCheck(onMappingChecked1);
                 uiSourceCode.setWorkingCopy("<foo content edited>");
+            }
+
+            function onMappingChecked1()
+            {
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
@@ -168,8 +185,12 @@ function test()
                 InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideFailure);
 
                 InspectorTest.addResult("Committing uiSourceCode with live edit failure:");
+                waitForMappingsCheck(onMappingChecked2);
                 uiSourceCode.commitWorkingCopy();
+            }
 
+            function onMappingChecked2()
+            {
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
@@ -180,13 +201,23 @@ function test()
                 InspectorTest.addResult("Saved but diverged source frame should not be muted: " + !sourceFrame._muted);
 
                 InspectorTest.addResult("Loading script.");
+                waitForMappingsCheck(onMappingChecked3);
                 loadScript();
+            }
+
+            function onMappingChecked3()
+            {
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
                 InspectorTest.addResult("Editing uiSourceCode again:");
+                waitForMappingsCheck(onMappingChecked4);
                 uiSourceCode.setWorkingCopy("<foo content edited again>");
+            }
+
+            function onMappingChecked4()
+            {
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
@@ -198,8 +229,12 @@ function test()
                 InspectorTest.override(WebInspector.DebuggerModel.prototype, "setScriptSource", setScriptSourceOverrideSuccess);
 
                 InspectorTest.addResult("Committing uiSourceCode again (with live edit success now):");
+                waitForMappingsCheck(onMappingChecked5);
                 uiSourceCode.commitWorkingCopy();
+            }
 
+            function onMappingChecked5()
+            {
                 dumpUISourceCodeAndScriptContents();
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
@@ -209,7 +244,12 @@ function test()
                 InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
                 InspectorTest.addResult("Saved and merged source frame should not be muted: " + !sourceFrame._muted);
                 InspectorTest.addResult("Loading script.");
+                waitForMappingsCheck(onMappingChecked6);
                 loadScript();
+            }
+
+            function onMappingChecked6()
+            {
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 
@@ -219,7 +259,12 @@ function test()
                 InspectorTest.addResult("UISourceCode should not have script file after unloading scripts: " + !resourceScriptMapping.scriptFile(uiSourceCode));
                 InspectorTest.addResult("Dirty source frame should be muted: " + sourceFrame._muted);
                 InspectorTest.addResult("Loading script.");
+                waitForMappingsCheck(onMappingChecked7);
                 loadScript();
+            }
+
+            function onMappingChecked7()
+            {
                 InspectorTest.addResult(" - hasDivergedFromVM: " + !!resourceScriptMapping.scriptFile(uiSourceCode).hasDivergedFromVM());
                 InspectorTest.addResult(" - sourceFrame._muted: " + !!sourceFrame._muted);
 

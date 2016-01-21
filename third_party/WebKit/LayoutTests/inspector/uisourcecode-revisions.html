@@ -50,10 +50,14 @@ function test()
 
             InspectorTest.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
-            uiSourceCode.revertToOriginal();
-            InspectorTest.addResult("Reverted to original.");
-            dumpUISourceCodeWithRevisions(uiSourceCode);
-            next();
+            uiSourceCode.revertToOriginal().then(onReverted);
+
+            function onReverted()
+            {
+                InspectorTest.addResult("Reverted to original.");
+                dumpUISourceCodeWithRevisions(uiSourceCode);
+                next();
+            }
         },
 
         function testAddRevisionsRevertAndClearHistory(next)
@@ -98,16 +102,20 @@ function test()
 
             InspectorTest.addResult("Second revision added.");
             dumpUISourceCodeWithRevisions(uiSourceCode);
-            uiSourceCode.history[0].revertToThis();
-            InspectorTest.addResult("Reverted to previous revision.");
-            dumpUISourceCodeWithRevisions(uiSourceCode);
-            next();
+            uiSourceCode.history[0].revertToThis().then(onReverted);
+
+            function onReverted()
+            {
+                InspectorTest.addResult("Reverted to previous revision.");
+                dumpUISourceCodeWithRevisions(uiSourceCode);
+                next();
+            }
         },
 
         function testRequestContentAddRevisionsRevertToOriginal(next)
         {
             var uiSourceCode = new WebInspector.UISourceCode(createMockProject(), "url4", WebInspector.resourceTypes.Script);
-            uiSourceCode.requestContent(contentReceived);
+            uiSourceCode.requestContent().then(contentReceived);
 
             function contentReceived()
             {
@@ -125,17 +133,21 @@ function test()
 
                 InspectorTest.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
-                uiSourceCode.revertToOriginal();
-                InspectorTest.addResult("Reverted to original.");
-                dumpUISourceCodeWithRevisions(uiSourceCode);
-                next();
+                uiSourceCode.revertToOriginal().then(onReverted);
+
+                function onReverted()
+                {
+                    InspectorTest.addResult("Reverted to original.");
+                    dumpUISourceCodeWithRevisions(uiSourceCode);
+                    next();
+                }
             }
         },
 
         function testRequestContentAddRevisionsRevertAndClearHistory(next)
         {
             var uiSourceCode = new WebInspector.UISourceCode(createMockProject(), "url5", WebInspector.resourceTypes.Script);
-            uiSourceCode.requestContent(contentReceived);
+            uiSourceCode.requestContent().then(contentReceived);
 
             function contentReceived()
             {
@@ -167,7 +179,7 @@ function test()
         function testRequestContentAddRevisionsRevertToPrevious(next)
         {
             var uiSourceCode = new WebInspector.UISourceCode(createMockProject(), "url6", WebInspector.resourceTypes.Script);
-            uiSourceCode.requestContent(contentReceived);
+            uiSourceCode.requestContent().then(contentReceived);
 
             function contentReceived()
             {
@@ -185,10 +197,14 @@ function test()
 
                 InspectorTest.addResult("Second revision added.");
                 dumpUISourceCodeWithRevisions(uiSourceCode);
-                uiSourceCode.history[0].revertToThis();
-                InspectorTest.addResult("Reverted to previous revision.");
-                dumpUISourceCodeWithRevisions(uiSourceCode);
-                next();
+                uiSourceCode.history[0].revertToThis().then(onReverted);
+
+                function onReverted()
+                {
+                    InspectorTest.addResult("Reverted to previous revision.");
+                    dumpUISourceCodeWithRevisions(uiSourceCode);
+                    next();
+                }
             }
         },
     ]);

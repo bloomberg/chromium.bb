@@ -26,12 +26,17 @@ var test = function()
         function didSetBreakpointInDebugger()
         {
             counter--;
-            if (!counter) {
-                //Both breakpoints are resolved before reload
-                InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
-                waitForBreakpoints();
-                InspectorTest.reloadPage(onPageReloaded);
-            }
+            if (counter)
+                return;
+            //Both breakpoints are resolved before reload
+            InspectorTest.addSniffer(WebInspector.JavaScriptBreakpointsSidebarPane.prototype, "didReceiveBreakpointLineForTest", onBreakpointsReady);
+        }
+
+        function onBreakpointsReady()
+        {
+            InspectorTest.dumpBreakpointSidebarPane("Breakpoints before reload:");
+            waitForBreakpoints();
+            InspectorTest.reloadPage(onPageReloaded);
         }
 
         function waitForBreakpoints()

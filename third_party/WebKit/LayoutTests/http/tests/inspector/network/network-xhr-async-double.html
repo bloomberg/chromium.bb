@@ -33,8 +33,8 @@ function test()
         var requests = InspectorTest.networkRequests();
         var request1 = requests[requests.length - 2];
         var request2 = requests[requests.length - 1];
-        request1.requestContent(step3);
-        request2.requestContent(step3);
+        request1.requestContent().then(step3);
+        request2.requestContent().then(step3);
     }
 
     var toLoad = 2;

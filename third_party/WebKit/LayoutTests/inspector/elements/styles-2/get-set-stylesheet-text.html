@@ -29,7 +29,7 @@ function test()
             styleSheetHeader = styleSheetHeaders[i];
             if (styleSheetHeader.sourceURL.indexOf("get-set-stylesheet-text.css") >= 0) {
                 foundStyleSheetHeader = styleSheetHeader;
-                foundStyleSheetHeader.requestContent(callback);
+                foundStyleSheetHeader.requestContent().then(callback);
             }
             if (!foundStyleSheetHeader)
                 InspectorTest.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetAdded);

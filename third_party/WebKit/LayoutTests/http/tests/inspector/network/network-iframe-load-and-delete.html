@@ -49,7 +49,7 @@ function test()
         InspectorTest.addResult(request1.url);
         InspectorTest.addResult("resource.type: " + request1.resourceType());
         InspectorTest.addResult("resource.content before requesting content: " + request1.content);
-        request1.requestContent(step3);
+        request1.requestContent().then(step3);
     }
 
     function step3()
@@ -62,7 +62,7 @@ function test()
         InspectorTest.addResult(request2.url);
         InspectorTest.addResult("resource.type: " + request2.resourceType());
         InspectorTest.addResult("resource.content before requesting content: " + request2.content);
-        request2.requestContent(step4);
+        request2.requestContent().then(step4);
     }
 
     function step4()

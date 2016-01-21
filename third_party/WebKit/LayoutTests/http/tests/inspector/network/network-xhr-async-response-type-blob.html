@@ -16,7 +16,7 @@ function test()
         InspectorTest.addResult("resource.size: " + request1.resourceSize);
         InspectorTest.addResult("resource.content before requesting content: " + request1.content);
         InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
-        request1.requestContent(step3);
+        request1.requestContent().then(step3);
     }
 
     function step3()

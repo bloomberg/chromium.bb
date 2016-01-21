@@ -29,7 +29,7 @@ function test()
             InspectorTest.addResult("Cannot find resource");
             InspectorTest.completeTest();
         }
-        resource.requestContent(contentLoaded);
+        resource.requestContent().then(contentLoaded);
         contentWasRequested = true;
     }
 

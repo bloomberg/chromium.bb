@@ -52,9 +52,9 @@ function test()
         const documentURL = "http://localhost:8000/inspector/stylesheet-source-mapping.html";
         const frame = InspectorTest.resourceTreeModel.mainFrame;
         var resource = new WebInspector.Resource(target, null, url, documentURL, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, mimeType);
-        resource.requestContent = function(callback)
+        resource.requestContent = function()
         {
-            callback(content, false, mimeType);
+            return Promise.resolve(content);
         }
         return resource;
     }
@@ -94,7 +94,7 @@ function test()
         InspectorTest.checkUILocation(scssUISourceCode, 4, 11, rawLocationToUILocation(4, 11));
         InspectorTest.checkUILocation(scssUISourceCode, 4, 13, rawLocationToUILocation(4, 15));
         InspectorTest.checkUILocation(scssUISourceCode, 4, 17, rawLocationToUILocation(4, 20));
-        scssUISourceCode.requestContent(didRequestContent);
+        scssUISourceCode.requestContent().then(didRequestContent);
 
         function didRequestContent(content, contentEncoded, mimeType)
         {

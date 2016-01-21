@@ -52,7 +52,7 @@ function test()
 
     function step5(uiSourceCode)
     {
-        uiSourceCode.requestContent(step6);
+        uiSourceCode.requestContent().then(step6);
     }
 
     function step6(loadedScript)

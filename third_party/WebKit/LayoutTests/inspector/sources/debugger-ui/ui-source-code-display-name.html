@@ -8,10 +8,10 @@ function test()
     function createContentProvider(url)
     {
         var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Script, "");
-        contentProvider.requestContent = function(callback)
+        contentProvider.requestContent = function()
         {
             InspectorTest.addResult("Source requested for " + url);
-            callback("");
+            return Promise.resolve("");
         };
         return contentProvider;
     }

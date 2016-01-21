@@ -16,7 +16,7 @@ function test()
     function step3()
     {
         var request1 = InspectorTest.networkRequests().pop();
-        request1.requestContent(step4);
+        request1.requestContent().then(step4);
     }
 
     function step4()

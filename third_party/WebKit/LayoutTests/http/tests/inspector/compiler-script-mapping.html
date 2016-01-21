@@ -287,12 +287,12 @@ function test()
                 InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 1, 0));
                 InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
-                uiSourceCode1.requestContent(didRequestContent1);
+                uiSourceCode1.requestContent().then(didRequestContent1);
 
                 function didRequestContent1(content, contentEncoded, mimeType)
                 {
                     InspectorTest.assertEquals(0, content.indexOf("window.addEventListener"));
-                    uiSourceCode2.requestContent(didRequestContent2);
+                    uiSourceCode2.requestContent().then(didRequestContent2);
                 }
 
                 function didRequestContent2(content, contentEncoded, mimeType)
@@ -352,12 +352,12 @@ function test()
                 InspectorTest.checkRawLocation(script, 1, 85, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 1, 0));
                 InspectorTest.checkRawLocation(script, 1, 110, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode2, 5, 2));
 
-                uiSourceCode1.requestContent(didRequestContent1);
+                uiSourceCode1.requestContent().then(didRequestContent1);
 
                 function didRequestContent1(content, contentEncoded, mimeType)
                 {
                     InspectorTest.assertEquals(0, content.indexOf("window.addEventListener"));
-                    uiSourceCode2.requestContent(didRequestContent2);
+                    uiSourceCode2.requestContent().then(didRequestContent2);
                 }
 
                 function didRequestContent2(content, contentEncoded, mimeType)
@@ -401,7 +401,7 @@ function test()
                 InspectorTest.checkUILocation(uiSourceCode, 2, 4, uiLocation(script, 0, 18));
                 InspectorTest.checkRawLocation(script, 0, 18, InspectorTest.testDebuggerWorkspaceBinding.uiLocationToRawLocation(target, uiSourceCode, 2, 4));
 
-                uiSourceCode.requestContent(didRequestContent);
+                uiSourceCode.requestContent().then(didRequestContent);
 
                 function didRequestContent(content, contentEncoded, mimeType)
                 {

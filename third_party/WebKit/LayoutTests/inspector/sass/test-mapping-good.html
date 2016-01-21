@@ -22,7 +22,7 @@ function test()
 
     function onCSSLoaded(uiSourceCode)
     {
-        uiSourceCode.requestContentPromise()
+        uiSourceCode.requestContent()
             .then(text => InspectorTest.parseCSS(uiSourceCode.url(), text))
             .then(ast => cssAST = ast)
             .then(maybeCreateMapping);
@@ -30,7 +30,7 @@ function test()
 
     function onSCSSLoaded(uiSourceCode)
     {
-        uiSourceCode.requestContentPromise()
+        uiSourceCode.requestContent()
             .then(text => InspectorTest.parseSCSS(uiSourceCode.url(), text))
             .then(ast => sassModels.set(ast.document.url, ast))
             .then(maybeCreateMapping);

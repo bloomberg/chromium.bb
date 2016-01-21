@@ -33,9 +33,9 @@ function test()
         var resource1 = WebInspector.panels.network.resources[resourcesCount - 3];
         var resource2 = WebInspector.panels.network.resources[resourcesCount - 2];
         var resource3 = WebInspector.panels.network.resources[resourcesCount - 1];
-        resource1.requestContent(contentLoaded);
-        resource2.requestContent(contentLoaded);
-        resource3.requestContent(contentLoaded);
+        resource1.requestContent().then(contentLoaded);
+        resource2.requestContent().then(contentLoaded);
+        resource3.requestContent().then(contentLoaded);
     }
 
     var contentLoadedCount = 0;

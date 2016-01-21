@@ -26,17 +26,20 @@ function test()
     {
         var uiSourceCode = sourceFrame._uiSourceCode;
         InspectorTest.addResult("Inspector stylesheet URL: " + uiSourceCode.displayName());
-        uiSourceCode.requestContent(printContent());
+        uiSourceCode.requestContent().then(printContent(onContent))
 
-        InspectorTest.addResult("\nSetting new content");
-        uiSourceCode.setWorkingCopy("#inspected { background-color: green; }");
-        uiSourceCode.commitWorkingCopy();
-        step3(uiSourceCode);
+        function onContent()
+        {
+            InspectorTest.addResult("\nSetting new content");
+            uiSourceCode.setWorkingCopy("#inspected { background-color: green; }");
+            uiSourceCode.commitWorkingCopy();
+            step3(uiSourceCode);
+        }
     }
 
     function step3(uiSourceCode)
     {
-        uiSourceCode.requestContent(printContent(selectNode));
+        uiSourceCode.requestContent().then(printContent(selectNode));
         function selectNode()
         {
             InspectorTest.selectNodeAndWaitForStyles("inspected", dumpStyles);

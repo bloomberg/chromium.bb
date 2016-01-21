@@ -33,7 +33,7 @@ function test()
         {
             var request = lastRequest();
             reportRequest(request)
-            request.requestContent(step3);
+            request.requestContent().then(step3);
         }
         function step3()
         {
@@ -47,7 +47,7 @@ function test()
         {
             var request = lastRequest();
             reportRequest(request);
-            request.requestContent(step5);
+            request.requestContent().then(step5);
         }
         function step5()
         {

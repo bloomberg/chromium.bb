@@ -29,7 +29,7 @@ function test()
         function scriptLoaded()
         {
             var request = InspectorTest.networkRequests().pop();
-            request.requestContent(contentLoaded);
+            request.requestContent().then(contentLoaded);
         }
 
         function contentLoaded()

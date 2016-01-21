@@ -367,7 +367,12 @@ InspectorTest.showUISourceCode = function(uiSourceCode, callback)
 
 InspectorTest.showScriptSource = function(scriptName, callback)
 {
-    InspectorTest.waitForScriptSource(scriptName, function(uiSourceCode) { InspectorTest.showUISourceCode(uiSourceCode, callback); });
+    InspectorTest.waitForScriptSource(scriptName, onScriptSource);
+
+    function onScriptSource(uiSourceCode)
+    {
+        InspectorTest.showUISourceCode(uiSourceCode, callback);
+    }
 };
 
 InspectorTest.waitForScriptSource = function(scriptName, callback)
@@ -508,10 +513,10 @@ InspectorTest.createScriptMock = function(url, startLine, startColumn, isContent
     var endColumn = lineCount === 1 ? startColumn + source.length : source.length - source.lineEndings()[lineCount - 2];
     var hasSourceURL = !!source.match(/\/\/#\ssourceURL=\s*(\S*?)\s*$/m);
     var script = new WebInspector.Script(debuggerModel, scriptId, url, startLine, startColumn, endLine, endColumn, 0, isContentScript, false, false, undefined, hasSourceURL);
-    script.requestContent = function(callback)
+    script.requestContent = function()
     {
         var trimmedSource = WebInspector.Script._trimSourceURLComment(source);
-        callback(trimmedSource, false, "text/javascript");
+        return Promise.resolve(trimmedSource);
     };
     if (preRegisterCallback)
         preRegisterCallback(script);

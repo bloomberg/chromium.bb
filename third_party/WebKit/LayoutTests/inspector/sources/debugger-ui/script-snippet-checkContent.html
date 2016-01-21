@@ -20,7 +20,7 @@ function test()
     function onCreated(usc)
     {
         uiSourceCode = usc;
-        uiSourceCode.requestContent(onContentAvailable);
+        uiSourceCode.requestContent().then(onContentAvailable);
     }
 
     function onContentAvailable()

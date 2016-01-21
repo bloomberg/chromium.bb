@@ -17,7 +17,7 @@ function test()
             callback();
         }
 
-        request.requestContent(contentLoaded);
+        request.requestContent().then(contentLoaded);
     }
 
     InspectorTest.recordNetwork();

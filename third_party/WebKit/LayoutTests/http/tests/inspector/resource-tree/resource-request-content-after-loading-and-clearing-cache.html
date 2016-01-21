@@ -39,7 +39,7 @@ function test()
     {
         InspectorTest.addResult("Requesting content: ");
         resource = InspectorTest.resourceMatchingURL("dynamic-script.js");
-        resource.requestContent(step6);
+        resource.requestContent().then(step6);
     }
 
     function step6(content)
