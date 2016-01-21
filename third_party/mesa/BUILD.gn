@@ -719,6 +719,7 @@ loadable_module("osmesa") {
     ":mesa",
     ":mesa_headers",
     ":mesa_libglslcommon",
+    "//base",  # Required for the allocator implementation.
     "//build/config/sanitizers:deps",
   ]
 
