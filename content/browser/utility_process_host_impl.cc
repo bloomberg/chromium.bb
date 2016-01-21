@@ -37,22 +37,12 @@
 #include "ipc/ipc_switches.h"
 #include "ui/base/ui_base_switches.h"
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-#include "content/public/browser/zygote_handle_linux.h"
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
 #endif
 
 namespace content {
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-namespace {
-ZygoteHandle g_utility_zygote;
-}  // namespace
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 // NOTE: changes to this class need to be reviewed by the security team.
 class UtilitySandboxedProcessLauncherDelegate
@@ -68,9 +58,7 @@ class UtilitySandboxedProcessLauncherDelegate
         launch_elevated_(launch_elevated)
 #elif defined(OS_POSIX)
         env_(env),
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
         no_sandbox_(no_sandbox),
-#endif  // !defined(OS_MACOSX)  && !defined(OS_ANDROID)
         ipc_fd_(host->TakeClientFileDescriptor())
 #endif  // OS_WIN
   {}
@@ -100,13 +88,9 @@ class UtilitySandboxedProcessLauncherDelegate
 
 #elif defined(OS_POSIX)
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-  ZygoteHandle* GetZygote() override {
-    if (no_sandbox_ || !exposed_dir_.empty())
-      return nullptr;
-    return &g_utility_zygote;
+  bool ShouldUseZygote() override {
+    return !no_sandbox_ && exposed_dir_.empty();
   }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   base::EnvironmentMap GetEnvironment() override { return env_; }
   base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
@@ -122,9 +106,7 @@ class UtilitySandboxedProcessLauncherDelegate
   bool launch_elevated_;
 #elif defined(OS_POSIX)
   base::EnvironmentMap env_;
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   bool no_sandbox_;
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
   base::ScopedFD ipc_fd_;
 #endif  // OS_WIN
 };
@@ -237,14 +219,6 @@ ServiceRegistry* UtilityProcessHostImpl::GetServiceRegistry() {
 void UtilityProcessHostImpl::SetName(const base::string16& name) {
   name_ = name;
 }
-
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-// static
-void UtilityProcessHostImpl::EarlyZygoteLaunch() {
-  DCHECK(!g_utility_zygote);
-  g_utility_zygote = CreateZygote();
-}
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 bool UtilityProcessHostImpl::StartProcess() {
   if (started_)

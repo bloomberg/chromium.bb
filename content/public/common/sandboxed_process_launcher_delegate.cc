@@ -26,11 +26,9 @@ bool SandboxedProcessLauncherDelegate::PreSpawnTarget(
 }
 
 #elif(OS_POSIX)
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-ZygoteHandle* SandboxedProcessLauncherDelegate::GetZygote() {
-  return nullptr;
+bool SandboxedProcessLauncherDelegate::ShouldUseZygote() {
+  return false;
 }
-#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 base::EnvironmentMap SandboxedProcessLauncherDelegate::GetEnvironment() {
   return base::EnvironmentMap();

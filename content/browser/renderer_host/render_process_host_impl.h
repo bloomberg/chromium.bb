@@ -263,11 +263,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   BluetoothDispatcherHost* GetBluetoothDispatcherHost();
 
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-  // Launch the zygote early in the browser startup.
-  static void EarlyZygoteLaunch();
-#endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)
-
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread.
   scoped_ptr<IPC::ChannelProxy> channel_;

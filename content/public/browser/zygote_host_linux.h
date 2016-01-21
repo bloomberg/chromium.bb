@@ -14,7 +14,7 @@ namespace content {
 
 // http://code.google.com/p/chromium/wiki/LinuxZygote
 
-// The zygote host is an interface, in the browser process, to the zygote
+// The zygote host is the interface, in the browser process, to the zygote
 // process.
 class ZygoteHost {
  public:
@@ -24,11 +24,11 @@ class ZygoteHost {
   virtual ~ZygoteHost() {}
 
   // Returns the pid of the Zygote process.
-  virtual bool IsZygotePid(pid_t pid) = 0;
+  virtual pid_t GetPid() const = 0;
 
   // Returns an int which is a bitmask of kSandboxLinux* values. Only valid
   // after the first render has been forked.
-  virtual int GetRendererSandboxStatus() const = 0;
+  virtual int GetSandboxStatus() const = 0;
 
   // Adjust the OOM score of the given renderer's PID.  The allowed
   // range for the score is [0, 1000], where higher values are more

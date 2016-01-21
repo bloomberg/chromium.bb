@@ -67,7 +67,6 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 
-#include "content/public/browser/zygote_handle_linux.h"
 #include "ipc/ipc_channel_posix.h"
 #elif defined(OS_WIN)
 #include <windows.h>
@@ -155,10 +154,6 @@ bool RunningOnWOW64() {
 
 namespace {
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-content::ZygoteHandle g_nacl_zygote;
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
 // NOTE: changes to this class need to be reviewed by the security team.
 class NaClSandboxedProcessLauncherDelegate
     : public content::SandboxedProcessLauncherDelegate {
@@ -185,10 +180,7 @@ class NaClSandboxedProcessLauncherDelegate
     }
   }
 #elif defined(OS_POSIX)
-#if !defined(OS_MACOSX)
-  content::ZygoteHandle* GetZygote() override { return &g_nacl_zygote; }
-#endif  // !defined(OS_MACOSX)
-
+  bool ShouldUseZygote() override { return true; }
   base::ScopedFD TakeIpcFd() override { return std::move(ipc_fd_); }
 #endif  // OS_WIN
 
@@ -408,14 +400,6 @@ void NaClProcessHost::EarlyStartup() {
   }
   NaClBrowser::GetDelegate()->SetDebugPatterns(nacl_debug_mask);
 }
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-// static
-void NaClProcessHost::EarlyZygoteLaunch() {
-  DCHECK(!g_nacl_zygote);
-  g_nacl_zygote = content::CreateZygote();
-}
-#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
 // static
 void NaClProcessHost::SetPpapiKeepAliveThrottleForTesting(
