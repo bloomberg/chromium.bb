@@ -107,6 +107,7 @@ class FilterOperations;
 class AppliedTextDecoration;
 class BorderData;
 struct BorderEdge;
+class CSSVariableData;
 class CounterContent;
 class Font;
 class FontMetrics;

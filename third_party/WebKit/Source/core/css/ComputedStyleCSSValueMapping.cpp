@@ -56,6 +56,7 @@
 #include "core/style/PathStyleMotionPath.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
+#include "core/style/StyleVariableData.h"
 #include "core/svg/SVGPathUtilities.h"
 #include "platform/LengthFunctions.h"
 

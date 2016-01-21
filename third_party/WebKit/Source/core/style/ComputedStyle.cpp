@@ -35,6 +35,7 @@
 #include "core/style/ShadowList.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedData.h"
+#include "core/style/StyleVariableData.h"
 #include "platform/LengthFunctions.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/fonts/Font.h"
