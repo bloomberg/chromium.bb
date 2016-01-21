@@ -1,7 +1,9 @@
-armansito@chromium.org
-keybuk@chromium.org
 reillyg@chromium.org
 rockot@chromium.org
+
+# No longer fulltime chromium developers:
+armansito@chromium.org
+keybuk@chromium.org
 rpaquay@chromium.org
 
 per-file *.gyp*=*
