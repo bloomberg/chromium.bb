@@ -11,21 +11,21 @@
     <div class="settings-box">
       <div class="split">
         <div id="availableIcons">
-          <paper-button toggles
+          <paper-button id="profile-image" toggles
               active="{{isActiveImage_(profileImageUrl_, selectedImageUrl_)}}"
               on-tap="onProfileImageTap_">
             <img class="user-image" src="[[profileImageUrl_]]"
                 alt="[[i18n('profilePhotoLoading')]]">
           </paper-button>
           <template is="dom-if" if="[[oldImageUrl_]]">
-            <paper-button toggles
+            <paper-button id="old-image" toggles
                 active="{{isActiveImage_(oldImageUrl_, selectedImageUrl_)}}"
                 on-tap="onOldImageTap_">
               <img class="user-image" src="[[oldImageUrl_]]">
             </paper-button>
           </template>
           <template is="dom-repeat" items="[[defaultImages_]]">
-            <paper-button toggles
+            <paper-button class="default-image" toggles
                 active="{{isActiveImage_(item.url, selectedImageUrl_)}}"
                 on-tap="onDefaultImageTap_" data-image-url$="[[item.url]]">
               <img class="user-image" src="[[item.url]]" alt="[[item.title]]">

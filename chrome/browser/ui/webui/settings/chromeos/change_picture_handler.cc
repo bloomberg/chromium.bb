@@ -276,7 +276,7 @@ void ChangePictureHandler::HandleSelectImage(const base::ListValue* args) {
     NOTREACHED();
     return;
   }
-  DCHECK(!image_url.empty());
+  // |image_url| may be empty unless |image_type| is "default".
   DCHECK(!image_type.empty());
 
   UserImageManager* user_image_manager =

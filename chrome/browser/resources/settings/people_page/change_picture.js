@@ -2,6 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+cr.define('settings_test', function() {
+  var changePictureOptions = settings_test.changePictureOptions || {
+    /**
+     * True if property changes should fire events for testing purposes.
+     * @type {boolean}
+     */
+    notifyPropertyChangesForTest: false,
+  };
+  return {changePictureOptions: changePictureOptions};
+});
+
 /**
  * @fileoverview
  * 'settings-change-picture' is the settings subpage containing controls to
@@ -22,7 +33,10 @@ Polymer({
      * The currently selected profile image URL. May be a data URL.
      * @private {string}
      */
-    selectedImageUrl_: String,
+    selectedImageUrl_: {
+      type: String,
+      notify: settings_test.changePictureOptions.notifyPropertyChangesForTest,
+    },
 
     /**
      * The url of the 'old' image, which is the existing image sourced from
