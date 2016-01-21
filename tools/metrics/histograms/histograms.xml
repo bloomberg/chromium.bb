@@ -1654,7 +1654,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="AsyncDNS.ServerIsGood" units="BooleanSuccess">
+<histogram name="AsyncDNS.ServerIsGood" enum="BooleanSuccess">
   <owner>ttuttle@chromium.org</owner>
   <summary>
     The current server is &quot;good&quot; and does not have to be skipped.
@@ -3829,8 +3829,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Cast.Sender.CastTimeRemainingPercentage"
-    units="percent remaining">
+<histogram name="Cast.Sender.CastTimeRemainingPercentage" units="%">
   <owner>mfoltz@chromium.org</owner>
   <summary>
     Records the percentage of the video left at the time the remote playback is
@@ -11087,7 +11086,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Event.Touch.TimedOutOnDesktopSite" units="BooleanTimedOut">
+<histogram name="Event.Touch.TimedOutOnDesktopSite" enum="BooleanTimedOut">
   <owner>rbyers@chromium.org</owner>
   <summary>
     On non-mobile-optimized (desktop) sites, whether the ack response from the
@@ -11096,7 +11095,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Event.Touch.TimedOutOnMobileSite" units="BooleanTimedOut">
+<histogram name="Event.Touch.TimedOutOnMobileSite" enum="BooleanTimedOut">
   <owner>rbyers@chromium.org</owner>
   <summary>
     On mobile-optimized sites, whether the ack response from the renderer for
@@ -14307,7 +14306,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="FileBrowser.PhotoImport.ImportPercentage">
+<histogram name="FileBrowser.PhotoImport.ImportPercentage" units="%">
   <owner>joshwoodward@google.com</owner>
   <summary>
     Chrome OS Photo Import flow: the percent of photos imported among all the
@@ -19486,7 +19485,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.VideoCapture.AspectRatio">
+<histogram name="Media.VideoCapture.AspectRatio" units="%">
   <owner>mcasas@chromium.org</owner>
   <summary>
     Video Capture Device captured aspect ratio, as a rounded integer multiplied
@@ -19597,7 +19596,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Video codec profile used in HTML5 media.</summary>
 </histogram>
 
-<histogram name="Media.VideoCodedAspectRatio">
+<histogram name="Media.VideoCodedAspectRatio" units="%">
   <owner>scherkus@chromium.org</owner>
   <summary>Coded aspect ratio of HTML5 video.</summary>
 </histogram>
@@ -19697,7 +19696,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Media.VideoVisibleAspectRatio">
+<histogram name="Media.VideoVisibleAspectRatio" units="%">
   <owner>scherkus@chromium.org</owner>
   <summary>Visible aspect ratio of HTML5 video.</summary>
 </histogram>
@@ -20448,7 +20447,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Memory.Swap.HaveSwapped" units="BooleanSuccess">
+<histogram name="Memory.Swap.HaveSwapped" enum="BooleanSuccess">
   <owner>hajimehoshi@chromium.org</owner>
   <owner>kenjibaheux@google.com</owner>
   <owner>kouhei@chromium.org</owner>
@@ -23988,7 +23987,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.ErrorResponseHasContentMainFrame" units="BooleanSuccess">
+<histogram name="Net.ErrorResponseHasContentMainFrame" enum="BooleanSuccess">
   <owner>mmenke@chromium.org</owner>
   <summary>
     The number of main frame 4xx/5xx responses that have content, to determine
@@ -23997,8 +23996,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.ErrorResponseHasContentNonMainFrame"
-    units="BooleanSuccess">
+<histogram name="Net.ErrorResponseHasContentNonMainFrame" enum="BooleanSuccess">
   <owner>mmenke@chromium.org</owner>
   <summary>
     The number of non-main frame 4xx/5xx responses that have content, to
@@ -27038,7 +27036,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Net.SpdySynStreamCompressionPercentage">
+<histogram name="Net.SpdySynStreamCompressionPercentage" units="%">
   <owner>rch@chromium.org</owner>
   <summary>
     The percent compression achieved when compression SYN_STREAM frames.
@@ -35762,7 +35760,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Plugin.Flash.ClickSize.AspectRatio">
+<histogram name="Plugin.Flash.ClickSize.AspectRatio" units="%">
   <owner>tommycli@chromium.org</owner>
   <summary>
     Aspect ratio of Flash plugins users click at least once. The aspect ratio is
@@ -39271,7 +39269,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.GpuRasterizationEnabled" units="BooleanEnabled">
+<histogram name="Renderer4.GpuRasterizationEnabled" enum="BooleanEnabled">
   <owner>alokp@chromium.org</owner>
   <summary>
     Whether gpu rasterization is enabled (checked once after the page is painted
@@ -39280,7 +39278,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer4.GpuRasterizationSuitableContent"
-    units="BooleanEnabled">
+    enum="BooleanEnabled">
   <owner>alokp@chromium.org</owner>
   <summary>
     If gpu rasterization is enabled, whether the page contents are suitable for
@@ -39289,7 +39287,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.GpuRasterizationTriggered" units="BooleanEnabled">
+<histogram name="Renderer4.GpuRasterizationTriggered" enum="BooleanEnabled">
   <owner>alokp@chromium.org</owner>
   <summary>
     If gpu rasterization is enabled, whether it was triggered (checked once
@@ -39297,7 +39295,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.GpuRasterizationUsed" units="BooleanEnabled">
+<histogram name="Renderer4.GpuRasterizationUsed" enum="BooleanEnabled">
   <owner>alokp@chromium.org</owner>
   <summary>
     If gpu rasterization is enabled, whether it was actually used for the page
@@ -40288,7 +40286,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram
-    name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistoryPercent">
+    name="ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistoryPercent"
+    units="%">
   <owner>zhenw@chromium.org</owner>
   <summary>
     Same as ResourcePrefetchPredictor.UrlTableMainFrameUrlsDeletedNotInHistory
@@ -41380,7 +41379,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="SB2.PrefixSetUnsortedPercent">
+<histogram name="SB2.PrefixSetUnsortedPercent" units="%">
   <obsolete>
     Deprecated 9/2012. No longer generated.
   </obsolete>
@@ -44045,7 +44044,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="ServiceWorker.ScriptLoadSuccess" units="BooleanSuccess">
+<histogram name="ServiceWorker.ScriptLoadSuccess" enum="BooleanSuccess">
   <owner>falken@chromium.org</owner>
   <summary>
     Whether loading the service worker script succeeded. Only recorded for
@@ -48035,7 +48034,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.ReusedItem" units="BooleanReused">
+<histogram name="Storage.Blob.ReusedItem" enum="BooleanReused">
   <owner>dmurph@chromium.org</owner>
   <summary>
     True if we reuse an item for a blob created from using Blob.slice, recorded
@@ -48097,7 +48096,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Storage.BlobItemSize.File.Unknown" units="BooleanUnknown">
+<histogram name="Storage.BlobItemSize.File.Unknown" enum="BooleanUnknown">
   <owner>dmurph@chromium.org</owner>
   <summary>
     True if the file size on blob append is unknown (which means the full file),
@@ -48106,8 +48105,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Storage.BlobItemSize.FileSystem.Unknown"
-    units="BooleanUnknown">
+<histogram name="Storage.BlobItemSize.FileSystem.Unknown" enum="BooleanUnknown">
   <owner>dmurph@chromium.org</owner>
   <summary>
     True if the file size of a filesystem object on blob append is unknown
@@ -50306,7 +50304,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler"
-    units="Boolean">
+    enum="Boolean">
   <owner>georgesak@chromium.org</owner>
   <summary>
     Recorded for each discarding, allowing us to know whether the discarded tab
