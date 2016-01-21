@@ -23,17 +23,6 @@ crypto/aes-kw-wrap-unwrap-aes.html
 crypto/clone-hmacKey.html
 crypto/random-values.html
 crypto/sha-digest.html
-css1/cascade/important.html
-css1/classification/list_style.html
-css1/classification/list_style_image.html
-css1/classification/list_style_position.html
-css1/color_and_background/background_color.html
-css1/color_and_background/color.html
-css1/font_properties/font_style.html
-css1/font_properties/font_variant.html
-css1/formatting_model/canvas.html
-css1/formatting_model/horizontal_formatting.html
-css1/text_properties/text_align.html
 css1/units/rounding.html
 css3/blending/should-have-compositing-layer.html
 css3/device-adapt/viewport-insert-rule-after.html
@@ -59,7 +48,6 @@ fast/block/line-layout/inline-box-wrapper-crash.html
 fast/block/line-layout/line-break-obj-removal-crash.html
 fast/borders/negative-border-width.html
 fast/canvas/unclosed-canvas-2.html
-fast/compact/002.html
 fast/constructors/blob-sparse-array-assertion-failure.html
 fast/constructors/constructor-as-function-crash.html
 fast/doctypes/005-case-preserving.html
@@ -175,7 +163,6 @@ fast/selectors/style-sharing-adjacent-selector.html
 fast/shapes/shape-outside-floats/shape-outside-floats-ellipse-margin-right.html
 fast/speechsynthesis/speech-synthesis-cancel.html
 fast/sub-pixel/client-and-offset-width.html
-fast/text/chromium-linux-fontconfig-renderstyle.html
 fast/tokenizer/entities-04.html
 fast/tokenizer/external-script-document-open.html
 fast/transforms/container-transform-crash.html
@@ -200,7 +187,6 @@ svg/animations/animate-update-crash.xhtml
 svg/as-background-image/svg-width-100p-as-background.html
 svg/as-image/svg-canvas-not-tainted.html
 svg/batik/text/textAnchor3.svg
-svg/canvas/canvas-pattern-svg.html
 svg/carto.net/frameless-svg-parse-error.html
 svg/css/color-profile-crash.html
 svg/css/crash-css-generated-content.xhtml
