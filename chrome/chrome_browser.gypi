@@ -492,6 +492,8 @@
       'browser/renderer_host/thread_hop_resource_throttle.h',
       'browser/renderer_preferences_util.cc',
       'browser/renderer_preferences_util.h',
+      'browser/resource_delegate_mac.h',
+      'browser/resource_delegate_mac.mm',
       'browser/resources_util.cc',
       'browser/resources_util.h',
       'browser/safe_browsing/safe_browsing_tab_observer.cc',
