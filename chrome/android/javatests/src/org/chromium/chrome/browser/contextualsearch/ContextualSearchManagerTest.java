@@ -261,11 +261,15 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /**
      * Simulates a slow response for the most recent {@link FakeSlowResolveSearch} set up
      * by calling simulateSlowResolveSearch.
+     * @throws TimeoutException
+     * @throws InterruptedException
      */
-    private void simulateSlowResolveFinished() {
-        mLatestSlowResolveSearch.simulateSearchTermResolution();
+    private void simulateSlowResolveFinished() throws InterruptedException, TimeoutException {
+        // Allow the slow Resolution to finish, waiting for it to complete.
+        mLatestSlowResolveSearch.finishResolve();
         assertLoadedSearchTermMatches(mLatestSlowResolveSearch.getSearchTerm());
     }
+
     /**
      * Registers all fake searches to be used in tests.
      */
@@ -810,6 +814,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
 
     /**
      * Generate a click in the panel's bar.
+     * TODO(donnd): Replace this method with panelBarClick since this appears to be unreliable.
      * @barHeight The vertical position where the click should take place as a percentage
      *            of the screen size.
      */
@@ -898,6 +903,20 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
                 return mPolicy.didResetCounters();
             }
         }, TEST_TIMEOUT, DEFAULT_POLLING_INTERVAL);
+    }
+
+    /**
+     * Force the Panel to handle a click in the Bar.
+     * @throws InterruptedException
+     */
+    private void forcePanelToHandleBarClick() throws InterruptedException {
+        getInstrumentation().runOnMainSync(new Runnable() {
+            @Override
+            public void run() {
+                // TODO(donnd): provide better time and x,y data to make this more broadly useful.
+                mPanel.handleBarClick(0, 0, 0);
+            }
+        });
     }
 
     //============================================================================================
@@ -1380,23 +1399,14 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     /*
      * Test that tapping on the Search Bar before having a resolved search term does not
      * promote to a tab, and that after the resolution it does promote to a tab.
-     *
-     * Re-enable the test after fixing http://crbug.com/578334.
-     * @SmallTest
-     * @Feature({"ContextualSearch"})
      */
+    @SmallTest
+    @Feature({"ContextualSearch"})
     @Restriction({RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @CommandLineFlags.Add(ChromeSwitches.DISABLE_DOCUMENT_MODE)
-    @FlakyTest
     public void testTapSearchBarPromotesToTab() throws InterruptedException, TimeoutException {
-        // Tap on a word when the server is slow to resolve.
-        simulateSlowResolveSearch("search");
-
-        // Swipe Panel up and wait for it to maximize.
-        flingPanelUpToTop();
-        waitForPanelToMaximize();
-
-        // Create an observer to track that a new tab is created.
+        // -------- SET UP ---------
+        // Track Tab creation with this helper.
         final CallbackHelper tabCreatedHelper = new CallbackHelper();
         int tabCreatedHelperCallCount = tabCreatedHelper.getCallCount();
         TabModelSelectorObserver observer = new EmptyTabModelSelectorObserver() {
@@ -1406,30 +1416,34 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         };
         getActivity().getTabModelSelector().addObserver(observer);
+        // This tab tracking requires document mode be disabled.
+        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getContext()));
 
-        // Tap the Search Bar -- should not promote since we are still waiting to Resolve.
-        clickPanelBar(0.05f);
+        // -------- TEST ---------
+        // Start a slow-resolve search and maximize the Panel.
+        simulateSlowResolveSearch("search");
+        flingPanelUpToTop();
+        waitForPanelToMaximize();
 
-        // The Search Term Resolution response hasn't arrived yet, so the Panel should not
-        // be promoted. Therefore, we are asserting that the Panel is still maximized.
+        // A click in the Bar should not promote since we are still waiting to Resolve.
+        forcePanelToHandleBarClick();
+
+        // Assert that the Panel is still maximized.
         waitForPanelToMaximize();
 
         // Let the Search Term Resolution finish.
         simulateSlowResolveFinished();
 
-        // Tap the Search Bar again -- should promote to a separate tab.
-        clickPanelBar(0.05f);
+        // Now a click in the Bar should promote to a separate tab.
+        forcePanelToHandleBarClick();
 
-        // Now that the response has arrived, tapping on the Search Panel should promote it
-        // to a Tab. Therefore, we are asserting that the Panel got closed.
+        // The Panel should now be closed.
         waitForPanelToClose();
-
-        // Should not fail -- this test was set up to disable document mode.
-        assertFalse(FeatureUtilities.isDocumentMode(getInstrumentation().getContext()));
 
         // Make sure a tab was created.
         tabCreatedHelper.waitForCallback(tabCreatedHelperCallCount);
 
+        // -------- CLEAN UP ---------
         getActivity().getTabModelSelector().removeObserver(observer);
     }
 
