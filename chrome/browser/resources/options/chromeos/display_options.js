@@ -6,20 +6,50 @@ cr.exportPath('options');
 
 /**
  * @typedef {{
- *   availableColorProfiles: Array<{profileId: number, name: string}>,
- *   colorProfile: number,
+ *   left: number,
+ *   top: number,
+ *   width: number,
+ *   height: number
+ * }}
+ */
+options.DisplayBounds;
+
+/**
+ * @typedef {{
+ *   width: number,
  *   height: number,
+ *   originalWidth: number,
+ *   originalHeight: number,
+ *   deviceScaleFactor: number,
+ *   scale: number,
+ *   refreshRate: number,
+ *   isBest: boolean,
+ *   selected: boolean
+ * }}
+ */
+options.DisplayMode;
+
+/**
+ * @typedef {{
+ *   profileId: number,
+ *   name: string
+ * }}
+ */
+options.ColorProfile;
+
+/**
+ * @typedef {{
+ *   availableColorProfiles: !Array<!options.ColorProfile>,
+ *   bounds: options.DisplayBounds,
+ *   colorProfileId: number,
+ *   div: ?Element,
  *   id: string,
  *   isInternal: boolean,
  *   isPrimary: boolean,
- *   resolutions: Array<{width: number, height: number, originalWidth: number,
- *       originalHeight: number, deviceScaleFactor: number, scale: number,
- *       refreshRate: number, isBest: boolean, selected: boolean}>,
+ *   resolutions: !Array<!options.DisplayMode>,
  *   name: string,
- *   orientation: number,
- *   width: number,
- *   x: number,
- *   y: number
+ *   rotation: number,
+ *   originalPosition: ?{x: number, y: number}
  * }}
  */
 options.DisplayInfo;
@@ -148,7 +178,7 @@ cr.define('options', function() {
     /**
      * The array of current output displays.  It also contains the display
      * rectangles currently rendered on screen.
-     * @type {Array<options.DisplayInfo>}
+     * @type {!Array<!options.DisplayInfo>}
      * @private
      */
     displays_: [],
@@ -161,13 +191,15 @@ cr.define('options', function() {
     focusedIndex_: null,
 
     /**
-     * The primary display.
+     * The primary display edit info.
+     * @type {?options.DisplayInfo}
      * @private
      */
     primaryDisplay_: null,
 
     /**
-     * The secondary display.
+     * The secondary display edit info.
+     * @type {?options.DisplayInfo}
      * @private
      */
     secondaryDisplay_: null,
@@ -226,8 +258,8 @@ cr.define('options', function() {
       $('display-options-orientation-selection').onchange = (function(ev) {
         var displayIndex =
           (this.focusedIndex_ === null) ? 0 : this.focusedIndex_;
-        chrome.send('setOrientation', [this.displays_[displayIndex].id,
-                                       ev.target.value]);
+        var rotation = parseInt(ev.target.value, 10);
+        chrome.send('setRotation', [this.displays_[displayIndex].id, rotation]);
       }).bind(this);
       $('display-options-color-profile-selection').onchange = (function(ev) {
         chrome.send('setColorProfile', [this.displays_[this.focusedIndex_].id,
@@ -647,13 +679,14 @@ cr.define('options', function() {
       var orientation = $('display-options-orientation-selection');
       orientation.disabled = false;
       var orientationOptions = orientation.getElementsByTagName('option');
-      orientationOptions[display.orientation].selected = true;
+      var orientationIndex = Math.floor(display.rotation / 90);
+      orientationOptions[orientationIndex].selected = true;
       $('selected-display-name').textContent =
           loadTimeData.getString('mirroringDisplay');
       var resolution = $('display-options-resolution-selection');
       var option = document.createElement('option');
       option.value = 'default';
-      option.textContent = display.width + 'x' + display.height;
+      option.textContent = display.bounds.width + 'x' + display.bounds.height;
       resolution.appendChild(option);
       resolution.disabled = true;
     },
@@ -701,7 +734,8 @@ cr.define('options', function() {
       orientation.disabled = this.unifiedDesktopEnabled_;
 
       var orientationOptions = orientation.getElementsByTagName('option');
-      orientationOptions[display.orientation].selected = true;
+      var orientationIndex = Math.floor(display.rotation / 90);
+      orientationOptions[orientationIndex].selected = true;
 
       $('selected-display-name').textContent = display.name;
 
@@ -709,7 +743,7 @@ cr.define('options', function() {
       if (display.resolutions.length <= 1) {
         var option = document.createElement('option');
         option.value = 'default';
-        option.textContent = display.width + 'x' + display.height;
+        option.textContent = display.bounds.width + 'x' + display.bounds.height;
         option.selected = true;
         resolution.appendChild(option);
         resolution.disabled = true;
@@ -750,8 +784,7 @@ cr.define('options', function() {
           var colorProfile = display.availableColorProfiles[i];
           option.value = colorProfile.profileId;
           option.textContent = colorProfile.name;
-          option.selected = (
-              display.colorProfile == colorProfile.profileId);
+          option.selected = (display.colorProfileId == colorProfile.profileId);
           profiles.appendChild(option);
         }
       }
@@ -807,8 +840,9 @@ cr.define('options', function() {
       /** @const */ var MIRRORING_VERTICAL_MARGIN = 20;
 
       // The width/height should be same as the first display:
-      var width = Math.ceil(this.displays_[0].width * this.visualScale_);
-      var height = Math.ceil(this.displays_[0].height * this.visualScale_);
+      var width = Math.ceil(this.displays_[0].bounds.width * this.visualScale_);
+      var height =
+          Math.ceil(this.displays_[0].bounds.height * this.visualScale_);
 
       var numDisplays = Math.max(MIN_NUM_DISPLAYS, this.displays_.length);
 
@@ -838,7 +872,7 @@ cr.define('options', function() {
 
     /**
      * Creates a div element representing the specified display.
-     * @param {Object} display The display object.
+     * @param {!options.DisplayInfo} display The display object.
      * @param {boolean} focused True if it's focused.
      * @private
      */
@@ -856,8 +890,9 @@ cr.define('options', function() {
       var nameContainer = document.createElement('div');
       nameContainer.textContent = display.name;
       div.appendChild(nameContainer);
-      div.style.width = Math.floor(display.width * this.visualScale_) + 'px';
-      var newHeight = Math.floor(display.height * this.visualScale_);
+      div.style.width =
+          Math.floor(display.bounds.width * this.visualScale_) + 'px';
+      var newHeight = Math.floor(display.bounds.height * this.visualScale_);
       div.style.height = newHeight + 'px';
       nameContainer.style.marginTop =
           (newHeight - nameContainer.offsetHeight) / 2 + 'px';
@@ -887,14 +922,15 @@ cr.define('options', function() {
         if (i == this.focusedIndex_)
           focusedDisplay = display;
 
-        boundingBox.left = Math.min(boundingBox.left, display.x);
-        boundingBox.right = Math.max(
-            boundingBox.right, display.x + display.width);
-        boundingBox.top = Math.min(boundingBox.top, display.y);
-        boundingBox.bottom = Math.max(
-            boundingBox.bottom, display.y + display.height);
-        maxWidth = Math.max(maxWidth, display.width);
-        maxHeight = Math.max(maxHeight, display.height);
+        var bounds = display.bounds;
+        boundingBox.left = Math.min(boundingBox.left, bounds.left);
+        boundingBox.right =
+            Math.max(boundingBox.right, bounds.left + bounds.width);
+        boundingBox.top = Math.min(boundingBox.top, bounds.top);
+        boundingBox.bottom =
+            Math.max(boundingBox.bottom, bounds.top + bounds.height);
+        maxWidth = Math.max(maxWidth, bounds.width);
+        maxHeight = Math.max(maxHeight, bounds.height);
       }
       if (!this.primaryDisplay_)
         return;
@@ -914,9 +950,11 @@ cr.define('options', function() {
 
       // Centering the bounding box of the display rectangles.
       var offset = {
-        x: Math.floor(this.displaysView_.offsetWidth / 2 -
+        x: Math.floor(
+            this.displaysView_.offsetWidth / 2 -
             (boundingBox.right + boundingBox.left) * this.visualScale_ / 2),
-        y: Math.floor(this.displaysView_.offsetHeight / 2 -
+        y: Math.floor(
+            this.displaysView_.offsetHeight / 2 -
             (boundingBox.bottom + boundingBox.top) * this.visualScale_ / 2)
       };
 
@@ -925,13 +963,15 @@ cr.define('options', function() {
       var primaryDiv = this.createDisplayRectangle_(
           this.primaryDisplay_, this.primaryDisplay_ == focusedDisplay);
       primaryDiv.style.left =
-          Math.floor(this.primaryDisplay_.x * this.visualScale_) +
-              offset.x + 'px';
+          Math.floor(this.primaryDisplay_.bounds.left * this.visualScale_) +
+          offset.x + 'px';
       primaryDiv.style.top =
-          Math.floor(this.primaryDisplay_.y * this.visualScale_) +
-              offset.y + 'px';
+          Math.floor(this.primaryDisplay_.bounds.top * this.visualScale_) +
+          offset.y + 'px';
       this.primaryDisplay_.originalPosition = {
-        x: primaryDiv.offsetLeft, y: primaryDiv.offsetTop};
+        x: primaryDiv.offsetLeft,
+        y: primaryDiv.offsetTop
+      };
 
       if (this.secondaryDisplay_) {
         var secondaryDiv = this.createDisplayRectangle_(
@@ -939,38 +979,37 @@ cr.define('options', function() {
         // Don't trust the secondary display's x or y, because it may cause a
         // 1px gap due to rounding, which will create a fake update on end
         // dragging. See crbug.com/386401
+        var bounds = this.secondaryDisplay_.bounds;
         switch (this.layout_) {
-        case options.SecondaryDisplayLayout.TOP:
-          secondaryDiv.style.left =
-              Math.floor(this.secondaryDisplay_.x * this.visualScale_) +
-              offset.x + 'px';
-          secondaryDiv.style.top =
-              primaryDiv.offsetTop - secondaryDiv.offsetHeight + 'px';
-          break;
-        case options.SecondaryDisplayLayout.RIGHT:
-          secondaryDiv.style.left =
-              primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
-          secondaryDiv.style.top =
-              Math.floor(this.secondaryDisplay_.y * this.visualScale_) +
-              offset.y + 'px';
-          break;
-        case options.SecondaryDisplayLayout.BOTTOM:
-          secondaryDiv.style.left =
-              Math.floor(this.secondaryDisplay_.x * this.visualScale_) +
-              offset.x + 'px';
-          secondaryDiv.style.top =
-              primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
-          break;
-        case options.SecondaryDisplayLayout.LEFT:
-          secondaryDiv.style.left =
-              primaryDiv.offsetLeft - secondaryDiv.offsetWidth + 'px';
-          secondaryDiv.style.top =
-              Math.floor(this.secondaryDisplay_.y * this.visualScale_) +
-              offset.y + 'px';
-          break;
+          case options.SecondaryDisplayLayout.TOP:
+            secondaryDiv.style.left =
+                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
+            secondaryDiv.style.top =
+                primaryDiv.offsetTop - secondaryDiv.offsetHeight + 'px';
+            break;
+          case options.SecondaryDisplayLayout.RIGHT:
+            secondaryDiv.style.left =
+                primaryDiv.offsetLeft + primaryDiv.offsetWidth + 'px';
+            secondaryDiv.style.top =
+                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
+            break;
+          case options.SecondaryDisplayLayout.BOTTOM:
+            secondaryDiv.style.left =
+                Math.floor(bounds.left * this.visualScale_) + offset.x + 'px';
+            secondaryDiv.style.top =
+                primaryDiv.offsetTop + primaryDiv.offsetHeight + 'px';
+            break;
+          case options.SecondaryDisplayLayout.LEFT:
+            secondaryDiv.style.left =
+                primaryDiv.offsetLeft - secondaryDiv.offsetWidth + 'px';
+            secondaryDiv.style.top =
+                Math.floor(bounds.top * this.visualScale_) + offset.y + 'px';
+            break;
         }
         this.secondaryDisplay_.originalPosition = {
-          x: secondaryDiv.offsetLeft, y: secondaryDiv.offsetTop};
+          x: secondaryDiv.offsetLeft,
+          y: secondaryDiv.offsetTop
+        };
       }
     },
 

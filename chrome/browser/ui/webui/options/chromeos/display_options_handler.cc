@@ -148,6 +148,15 @@ base::DictionaryValue* ConvertDisplayModeToValue(int64_t display_id,
   return result;
 }
 
+base::DictionaryValue* ConvertBoundsToValue(const gfx::Rect& bounds) {
+  base::DictionaryValue* result = new base::DictionaryValue();
+  result->SetInteger("left", bounds.x());
+  result->SetInteger("top", bounds.y());
+  result->SetInteger("width", bounds.width());
+  result->SetInteger("height", bounds.height());
+  return result;
+}
+
 }  // namespace
 
 DisplayOptionsHandler::DisplayOptionsHandler() {
@@ -239,8 +248,8 @@ void DisplayOptionsHandler::RegisterMessages() {
       base::Bind(&DisplayOptionsHandler::HandleSetDisplayMode,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setOrientation",
-      base::Bind(&DisplayOptionsHandler::HandleSetOrientation,
+      "setRotation",
+      base::Bind(&DisplayOptionsHandler::HandleSetRotation,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setColorProfile",
@@ -285,19 +294,16 @@ void DisplayOptionsHandler::SendDisplayInfo(
   for (const gfx::Display& display : displays) {
     const ash::DisplayInfo& display_info =
         display_manager->GetDisplayInfo(display.id());
-    const gfx::Rect& bounds = display.bounds();
     base::DictionaryValue* js_display = new base::DictionaryValue();
     js_display->SetString("id", base::Int64ToString(display.id()));
-    js_display->SetInteger("x", bounds.x());
-    js_display->SetInteger("y", bounds.y());
-    js_display->SetInteger("width", bounds.width());
-    js_display->SetInteger("height", bounds.height());
     js_display->SetString("name",
                           display_manager->GetDisplayNameForId(display.id()));
+    base::DictionaryValue* display_bounds =
+        ConvertBoundsToValue(display.bounds());
+    js_display->Set("bounds", display_bounds);
     js_display->SetBoolean("isPrimary", display.id() == primary_id);
     js_display->SetBoolean("isInternal", display.IsInternal());
-    js_display->SetInteger("orientation",
-                           static_cast<int>(display_info.GetActiveRotation()));
+    js_display->SetInteger("rotation", display.RotationAsDegree());
 
     base::ListValue* js_resolutions = new base::ListValue();
     for (const ash::DisplayMode& display_mode : display_info.display_modes()) {
@@ -306,7 +312,7 @@ void DisplayOptionsHandler::SendDisplayInfo(
     }
     js_display->Set("resolutions", js_resolutions);
 
-    js_display->SetInteger("colorProfile", display_info.color_profile());
+    js_display->SetInteger("colorProfileId", display_info.color_profile());
     base::ListValue* available_color_profiles = new base::ListValue();
     for (const auto& color_profile : display_info.available_color_profiles()) {
       const base::string16 profile_name = GetColorProfileName(color_profile);
@@ -425,26 +431,26 @@ void DisplayOptionsHandler::HandleSetDisplayMode(const base::ListValue* args) {
                             base::Bind(&chromeos::StoreDisplayPrefs));
 }
 
-void DisplayOptionsHandler::HandleSetOrientation(const base::ListValue* args) {
+void DisplayOptionsHandler::HandleSetRotation(const base::ListValue* args) {
   DCHECK(!args->empty());
 
   int64_t display_id = GetDisplayId(args);
   if (display_id == gfx::Display::kInvalidDisplayID)
     return;
 
-  std::string rotation_value;
-  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_0;
-  if (!args->GetString(1, &rotation_value)) {
-    LOG(ERROR) << "Can't find new orientation";
+  int rotation_value = 0;
+  if (!args->GetInteger(1, &rotation_value)) {
+    LOG(ERROR) << "Can't parse rotation: " << args;
     return;
   }
-  if (rotation_value == "90")
+  gfx::Display::Rotation new_rotation = gfx::Display::ROTATE_0;
+  if (rotation_value == 90)
     new_rotation = gfx::Display::ROTATE_90;
-  else if (rotation_value == "180")
+  else if (rotation_value == 180)
     new_rotation = gfx::Display::ROTATE_180;
-  else if (rotation_value == "270")
+  else if (rotation_value == 270)
     new_rotation = gfx::Display::ROTATE_270;
-  else if (rotation_value != "0")
+  else if (rotation_value != 0)
     LOG(ERROR) << "Invalid rotation: " << rotation_value << " Falls back to 0";
 
   content::RecordAction(
