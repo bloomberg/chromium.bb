@@ -32,8 +32,16 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
   ASSERT_EQ(2, ExecuteScriptAndExtractInt(dialog_contents, sink_length_script));
 
   ChooseSink(web_contents, kTestSinkName);
-  WaitUntilRouteCreated();
 
+// Linux bots run browser tests without a physical display, which is causing
+// flaky event dispatching of mouseenter and mouseleave events. This causes
+// the dialog to sometimes close prematurely even though a mouseenter event
+// is explicitly dispatched in the test.
+// Here, we still dispatch the mouseenter event for OSX and Windows, but close
+// the dialog and reopen it on Linux.
+// The test succeeds fine when run with a physical display.
+// http://crbug.com/577943
+#if defined(OS_MACOSX) || defined(OS_WIN)
   // Simulate keeping the mouse on the dialog to prevent it from automatically
   // closing after the route has been created. Then, check that the dialog
   // remains open.
@@ -42,7 +50,17 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MANUAL_Dialog_Basic) {
       "window.document.getElementById('media-router-container').dispatchEvent("
       "new Event('mouseenter')))");
   ASSERT_TRUE(content::ExecuteScript(dialog_contents, mouse_enter_script));
+#endif
+  WaitUntilRouteCreated();
+
+#if defined(OS_MACOSX) || defined(OS_WIN)
   CheckDialogRemainsOpen(web_contents);
+#elif defined(OS_LINUX)
+  Wait(base::TimeDelta::FromSeconds(5));
+  WaitUntilDialogClosed(web_contents);
+  dialog_contents = OpenMRDialog(web_contents);
+  ChooseSink(web_contents, kTestSinkName);
+#endif
 
   // Verify the route details page.
   std::string route_info_script = base::StringPrintf(
