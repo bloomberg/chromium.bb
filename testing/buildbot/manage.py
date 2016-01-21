@@ -60,6 +60,8 @@ SKIP = {
 SKIP_GN_ISOLATE_MAP_TARGETS = {
   # TODO(GYP): These targets have not been ported to GN yet.
   'android_webview_unittests',
+  'angle_deqp_gles2_tests',
+  'angle_deqp_gles3_tests',
   'cast_media_unittests',
   'cast_shell_browser_test',
   'chromevox_tests',
@@ -67,6 +69,7 @@ SKIP_GN_ISOLATE_MAP_TARGETS = {
 
   # These targets are run on the bots but not listed in the
   # buildbot JSON files.
+  # TODO(kbr): remove these before closing http://crbug.com/542370 .
   'angle_end2end_tests',
   'content_gl_tests',
   'gl_tests',
