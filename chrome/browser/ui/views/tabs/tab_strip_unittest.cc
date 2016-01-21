@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/path.h"
@@ -323,6 +324,13 @@ TEST_F(TabStripTest, ImmersiveMode) {
 // of hit tests against the visible/occluded regions of a tab and the tab
 // close button of the active tab.
 TEST_F(TabStripTest, TabHitTestMaskWhenStacked) {
+  // TODO(varkha,pkasting): Update the test for Material Design layout.
+  // crbug.com/575327
+  if (ui::MaterialDesignController::IsModeMaterial()) {
+    VLOG(1) << "Test is DISABLED for material design layouts.";
+    return;
+  }
+
   tab_strip_->SetBounds(0, 0, 300, 20);
 
   controller_->AddTab(0, false);
