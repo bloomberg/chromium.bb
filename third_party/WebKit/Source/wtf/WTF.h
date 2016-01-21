@@ -41,7 +41,7 @@ typedef void(*HistogramEnumerationFunction)(const char* name, int sample, int bo
 typedef void(*AdjustAmountOfExternalAllocatedMemoryFunction)(int size);
 
 // This function must be called exactly once from the main thread before using anything else in WTF.
-WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, HistogramEnumerationFunction, AdjustAmountOfExternalAllocatedMemoryFunction);
+WTF_EXPORT void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, AdjustAmountOfExternalAllocatedMemoryFunction);
 WTF_EXPORT void shutdown();
 WTF_EXPORT bool isShutdown();
 

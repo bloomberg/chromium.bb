@@ -163,10 +163,11 @@ void initializeWithoutV8(Platform* platform)
     ASSERT(!s_webKitInitialized);
     s_webKitInitialized = true;
 
+    WTF::Partitions::initialize(histogramEnumerationFunction);
     ASSERT(platform);
     Platform::initialize(platform);
 
-    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, histogramEnumerationFunction, adjustAmountOfExternalAllocatedMemory);
+    WTF::initialize(currentTimeFunction, monotonicallyIncreasingTimeFunction, adjustAmountOfExternalAllocatedMemory);
     WTF::initializeMainThread(callOnMainThreadFunction);
     Heap::init();
 
@@ -247,6 +248,7 @@ void shutdownWithoutV8()
     WTF::shutdown();
     Platform::shutdown();
     WebPrerenderingSupport::shutdown();
+    WTF::Partitions::shutdown();
 }
 
 // TODO(tkent): The following functions to wrap LayoutTestSupport should be

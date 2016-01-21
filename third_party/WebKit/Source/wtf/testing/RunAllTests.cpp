@@ -30,6 +30,7 @@
 
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/MainThread.h"
+#include "wtf/Partitions.h"
 #include "wtf/WTF.h"
 #include <base/test/test_suite.h>
 #include <string.h>
@@ -41,8 +42,9 @@ static double CurrentTime()
 
 int main(int argc, char** argv)
 {
+    WTF::Partitions::initialize(nullptr);
     WTF::setAlwaysZeroRandomSourceForTesting();
-    WTF::initialize(CurrentTime, nullptr, nullptr, nullptr);
+    WTF::initialize(CurrentTime, nullptr, nullptr);
     WTF::initializeMainThread(0);
     return base::RunUnitTestsUsingBaseTestSuite(argc, argv);
 }

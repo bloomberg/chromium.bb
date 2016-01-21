@@ -57,8 +57,9 @@ static int runTestSuite(base::TestSuite* testSuite)
 
 int main(int argc, char** argv)
 {
+    WTF::Partitions::initialize(nullptr);
     WTF::setAlwaysZeroRandomSourceForTesting();
-    WTF::initialize(CurrentTime, CurrentTime, nullptr, nullptr);
+    WTF::initialize(CurrentTime, CurrentTime, nullptr);
     WTF::initializeMainThread(0);
 
     blink::TestingPlatformSupport::Config platformConfig;
@@ -80,5 +81,6 @@ int main(int argc, char** argv)
     blink::Heap::shutdown();
 
     WTF::shutdown();
+    WTF::Partitions::shutdown();
     return result;
 }

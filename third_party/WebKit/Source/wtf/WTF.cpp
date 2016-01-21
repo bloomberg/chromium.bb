@@ -41,7 +41,7 @@ extern void initializeThreading();
 bool s_initialized;
 bool s_shutdown;
 
-void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, HistogramEnumerationFunction histogramEnumerationFunction, AdjustAmountOfExternalAllocatedMemoryFunction adjustAmountOfExternalAllocatedMemoryFunction)
+void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncreasingTimeFunction, AdjustAmountOfExternalAllocatedMemoryFunction adjustAmountOfExternalAllocatedMemoryFunction)
 {
     // WTF, and Blink in general, cannot handle being re-initialized, even if shutdown first.
     // Make that explicit here.
@@ -50,7 +50,6 @@ void initialize(TimeFunction currentTimeFunction, TimeFunction monotonicallyIncr
     s_initialized = true;
     setCurrentTimeFunction(currentTimeFunction);
     setMonotonicallyIncreasingTimeFunction(monotonicallyIncreasingTimeFunction);
-    Partitions::initialize(histogramEnumerationFunction);
     ArrayBufferContents::setAdjustAmoutOfExternalAllocatedMemoryFunction(adjustAmountOfExternalAllocatedMemoryFunction);
     initializeThreading();
 }
@@ -60,7 +59,6 @@ void shutdown()
     RELEASE_ASSERT(s_initialized);
     RELEASE_ASSERT(!s_shutdown);
     s_shutdown = true;
-    Partitions::shutdown();
 }
 
 bool isShutdown()
