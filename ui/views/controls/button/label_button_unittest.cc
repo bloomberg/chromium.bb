@@ -284,4 +284,21 @@ TEST_F(LabelButtonTest, ChangeLabelImageSpacing) {
   EXPECT_EQ(original_width, button_->GetPreferredSize().width());
 }
 
+// Make sure the label gets the width it asks for and bolding it (via
+// SetDefault) causes the size to update. Regression test for crbug.com/578722
+TEST_F(LabelButtonTest, ButtonStyleIsDefaultSize) {
+  LabelButton* button = new LabelButton(nullptr, base::ASCIIToUTF16("Save"));
+  button->SetStyle(CustomButton::STYLE_BUTTON);
+  button_->GetWidget()->GetContentsView()->AddChildView(button);
+  button->SizeToPreferredSize();
+  button->Layout();
+  gfx::Size non_default_size = button->label_->size();
+  EXPECT_EQ(button->label_->GetPreferredSize().width(),
+            non_default_size.width());
+  button->SetIsDefault(true);
+  button->SizeToPreferredSize();
+  button->Layout();
+  EXPECT_NE(non_default_size, button->label_->size());
+}
+
 }  // namespace views
