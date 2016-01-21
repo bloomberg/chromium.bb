@@ -222,8 +222,6 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   State GetStateFast();
   void QueueTask(const base::Closure& task) { service_->ScheduleTask(task); }
   void CheckSequencedThread();
-  void RetireSyncPointOnGpuThread(uint32_t sync_point);
-  bool WaitSyncPointOnGpuThread(uint32_t sync_point);
   void FenceSyncReleaseOnGpuThread(uint64_t release);
   bool WaitFenceSyncOnGpuThread(gpu::CommandBufferNamespace namespace_id,
                                 uint64_t command_buffer_id,

@@ -341,12 +341,10 @@ SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
       client_id_(client_id) {}
 
 SyncPointManager::SyncPointManager(bool allow_threaded_wait)
-    : allow_threaded_wait_(allow_threaded_wait),
-      // To reduce the risk that a sync point created in a previous GPU process
+    : // To reduce the risk that a sync point created in a previous GPU process
       // will be in flight in the next GPU process, randomize the starting sync
       // point number. http://crbug.com/373452
-      next_sync_point_(base::RandInt(1, kMaxSyncBase)),
-      retire_cond_var_(&lock_) {
+      next_sync_point_(base::RandInt(1, kMaxSyncBase)) {
   global_order_num_.GetNext();
 }
 
@@ -420,8 +418,6 @@ void SyncPointManager::RetireSyncPoint(uint32_t sync_point) {
     }
     list.swap(it->second);
     sync_point_map_.erase(it);
-    if (allow_threaded_wait_)
-      retire_cond_var_.Broadcast();
   }
   for (ClosureList::iterator i = list.begin(); i != list.end(); ++i)
     i->Run();
@@ -443,18 +439,6 @@ void SyncPointManager::AddSyncPointCallback(uint32_t sync_point,
 bool SyncPointManager::IsSyncPointRetired(uint32_t sync_point) {
   base::AutoLock lock(lock_);
   return IsSyncPointRetiredLocked(sync_point);
-}
-
-void SyncPointManager::WaitSyncPoint(uint32_t sync_point) {
-  if (!allow_threaded_wait_) {
-    DCHECK(IsSyncPointRetired(sync_point));
-    return;
-  }
-
-  base::AutoLock lock(lock_);
-  while (!IsSyncPointRetiredLocked(sync_point)) {
-    retire_cond_var_.Wait();
-  }
 }
 
 bool SyncPointManager::IsSyncPointRetiredLocked(uint32_t sync_point) {

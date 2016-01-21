@@ -425,9 +425,6 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
   }
   *params.capabilities = decoder_->GetCapabilities();
 
-  decoder_->SetWaitSyncPointCallback(
-      base::Bind(&InProcessCommandBuffer::WaitSyncPointOnGpuThread,
-                 base::Unretained(this)));
   decoder_->SetFenceSyncReleaseCallback(
       base::Bind(&InProcessCommandBuffer::FenceSyncReleaseOnGpuThread,
                  base::Unretained(this)));
@@ -827,62 +824,22 @@ int32_t InProcessCommandBuffer::CreateGpuMemoryBufferImage(
 }
 
 uint32_t InProcessCommandBuffer::InsertSyncPoint() {
-  uint32_t sync_point = service_->sync_point_manager()->GenerateSyncPoint();
-  QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
-                       base::Unretained(this),
-                       sync_point));
-  return sync_point;
+  NOTREACHED();
+  return 0;
 }
 
 uint32_t InProcessCommandBuffer::InsertFutureSyncPoint() {
-  return service_->sync_point_manager()->GenerateSyncPoint();
+  NOTREACHED();
+  return 0;
 }
 
 void InProcessCommandBuffer::RetireSyncPoint(uint32_t sync_point) {
-  QueueTask(base::Bind(&InProcessCommandBuffer::RetireSyncPointOnGpuThread,
-                       base::Unretained(this),
-                       sync_point));
-}
-
-void InProcessCommandBuffer::RetireSyncPointOnGpuThread(uint32_t sync_point) {
-  gles2::MailboxManager* mailbox_manager =
-      decoder_->GetContextGroup()->mailbox_manager();
-  if (mailbox_manager->UsesSync()) {
-    bool make_current_success = false;
-    {
-      base::AutoLock lock(command_buffer_lock_);
-      make_current_success = MakeCurrent();
-    }
-    if (make_current_success) {
-      // Old sync points are global and do not have a command buffer ID,
-      // We can simply use the GPUIO namespace with 0 for the command buffer ID
-      // (under normal circumstances 0 is  invalid so  will not be used) until
-      // the old sync points are replaced.
-      SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 0,
-                           sync_point);
-      mailbox_manager->PushTextureUpdates(sync_token);
-    }
-  }
-  service_->sync_point_manager()->RetireSyncPoint(sync_point);
+  NOTREACHED();
 }
 
 void InProcessCommandBuffer::SignalSyncPoint(unsigned sync_point,
                                              const base::Closure& callback) {
-  service_->sync_point_manager()->AddSyncPointCallback(sync_point,
-                                                       WrapCallback(callback));
-}
-
-bool InProcessCommandBuffer::WaitSyncPointOnGpuThread(unsigned sync_point) {
-  service_->sync_point_manager()->WaitSyncPoint(sync_point);
-  gles2::MailboxManager* mailbox_manager =
-      decoder_->GetContextGroup()->mailbox_manager();
-  // Old sync points are global and do not have a command buffer ID,
-  // We can simply use the GPUIO namespace with 0 for the command buffer ID
-  // (under normal circumstances 0 is  invalid so  will not be used) until
-  // the old sync points are replaced.
-  SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 0, sync_point);
-  mailbox_manager->PullTextureUpdates(sync_token);
-  return true;
+  NOTREACHED();
 }
 
 void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {

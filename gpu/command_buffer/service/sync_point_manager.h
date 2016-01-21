@@ -300,10 +300,6 @@ class GPU_EXPORT SyncPointManager {
 
   bool IsSyncPointRetired(uint32_t sync_point);
 
-  // Block and wait until a sync point is signaled. This is only useful when
-  // the sync point is signaled on another thread.
-  void WaitSyncPoint(uint32_t sync_point);
-
  private:
   friend class SyncPointClient;
   friend class SyncPointOrderData;
@@ -317,8 +313,6 @@ class GPU_EXPORT SyncPointManager {
   void DestroySyncPointClient(CommandBufferNamespace namespace_id,
                               uint64_t client_id);
 
-  const bool allow_threaded_wait_;
-
   // Order number is global for all clients.
   base::AtomicSequenceNumber global_order_num_;
 
@@ -331,7 +325,6 @@ class GPU_EXPORT SyncPointManager {
   base::Lock lock_;
   SyncPointMap sync_point_map_;
   uint32_t next_sync_point_;
-  base::ConditionVariable retire_cond_var_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);
 };
