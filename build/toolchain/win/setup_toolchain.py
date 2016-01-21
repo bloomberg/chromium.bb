@@ -153,11 +153,13 @@ def main():
     # The Windows SDK include directories must be first. They both have a sal.h,
     # and the SDK one is newer and the SDK uses some newer features from it not
     # present in the Visual Studio one.
+    # Having the Windows SDK first is also the only way to control which SDK
+    # version is used.
 
     if win_sdk_path:
-      additional_includes = ('{sdk_dir}\\Include\\shared;' +
-                             '{sdk_dir}\\Include\\um;' +
-                             '{sdk_dir}\\Include\\winrt;').format(
+      additional_includes = ('{sdk_dir}\\Include\\10.0.10586.0\\shared;' +
+                             '{sdk_dir}\\Include\\10.0.10586.0\\um;' +
+                             '{sdk_dir}\\Include\\10.0.10586.0\\winrt;').format(
                                   sdk_dir=win_sdk_path)
       env['INCLUDE'] = additional_includes + env['INCLUDE']
     env_block = _FormatAsEnvironmentBlock(env)
