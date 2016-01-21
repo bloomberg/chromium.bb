@@ -187,7 +187,7 @@ TEST_F(VisibleSelectionTest, ShadowCrossing)
     EXPECT_EQ(PositionInComposedTree(six->firstChild(), 2), selectionInComposedTree.end());
 }
 
-TEST_F(VisibleSelectionTest, ShadowDistributedNodes)
+TEST_F(VisibleSelectionTest, ShadowV0DistributedNodes)
 {
     const char* bodyContent = "<p id='host'>00<b id='one'>11</b><b id='two'>22</b>33</p>";
     const char* shadowContent = "<a><span id='s4'>44</span><content select=#two></content><span id='s5'>55</span><content select=#one></content><span id='s6'>66</span></a>";
