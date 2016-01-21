@@ -91,9 +91,12 @@ MojoCdmService::MojoCdmService(
 }
 
 MojoCdmService::~MojoCdmService() {
+  if (cdm_id_ == CdmContext::kInvalidCdmId)
+    return;
+
   g_cdm_manager.Get().UnregisterCdm(cdm_id_);
 
-  if (cdm_id_ != CdmContext::kInvalidCdmId && context_)
+  if (context_)
     context_->UnregisterCdm(cdm_id_);
 }
 
