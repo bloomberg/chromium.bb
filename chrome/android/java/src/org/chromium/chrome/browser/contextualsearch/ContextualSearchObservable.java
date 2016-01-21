@@ -26,7 +26,7 @@ public class ContextualSearchObservable {
 
 
     ContextualSearchObservable(ChromeActivity activity) {
-        mPolicy = ContextualSearchPolicy.getInstance(activity);
+        mPolicy = new ContextualSearchPolicy(activity);
     }
 
     /**

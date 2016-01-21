@@ -29,7 +29,7 @@ public class ContextualSearchPolicyTest extends ChromeTabbedActivityTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mPolicy = ContextualSearchPolicy.getInstance(getActivity().getApplicationContext());
+                mPolicy = new ContextualSearchPolicy(getActivity().getApplicationContext());
             }
         });
     }

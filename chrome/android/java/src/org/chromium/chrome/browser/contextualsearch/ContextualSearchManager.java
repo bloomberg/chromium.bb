@@ -410,6 +410,14 @@ public class ContextualSearchManager extends ContextualSearchObservable
     }
 
     /**
+     * @return The ContextualSearchPolicy currently being used.
+     */
+    @VisibleForTesting
+    public ContextualSearchPolicy getContextualSearchPolicy() {
+        return mPolicy;
+    }
+
+    /**
      * Shows the Contextual Search UX.
      * Calls back into onGetContextualSearchQueryResponse.
      * @param stateChangeReason The reason explaining the change of state.

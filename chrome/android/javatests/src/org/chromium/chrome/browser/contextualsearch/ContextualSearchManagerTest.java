@@ -109,7 +109,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             mPanel = mManager.getContextualSearchPanel();
 
             mSelectionController = mManager.getSelectionController();
-            mPolicy = ContextualSearchPolicy.getInstance(getActivity());
+            mPolicy = mManager.getContextualSearchPolicy();
             mPolicy.overrideDecidedStateForTesting(true);
             resetCounters();
 

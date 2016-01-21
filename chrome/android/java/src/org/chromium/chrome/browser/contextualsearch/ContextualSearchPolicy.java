@@ -36,8 +36,6 @@ class ContextualSearchPolicy {
     private static final int TAP_RESOLVE_LIMIT_FOR_UNDECIDED = 20;
     private static final int TAP_PREFETCH_LIMIT_FOR_UNDECIDED = 20;
 
-    private static ContextualSearchPolicy sInstance;
-
     private final ChromePreferenceManager mPreferenceManager;
 
     // Members used only for testing purposes.
@@ -50,18 +48,10 @@ class ContextualSearchPolicy {
     private Integer mTapResolveLimitForUndecided;
     private Integer mTapPrefetchLimitForUndecided;
 
-    public static ContextualSearchPolicy getInstance(Context context) {
-        if (sInstance == null) {
-            sInstance = new ContextualSearchPolicy(context);
-        }
-        return sInstance;
-    }
-
     /**
-     * Private constructor -- use {@link #getInstance} to get the singleton instance.
      * @param context The Android Context.
      */
-    private ContextualSearchPolicy(Context context) {
+    public ContextualSearchPolicy(Context context) {
         mPreferenceManager = ChromePreferenceManager.getInstance(context);
     }
 
