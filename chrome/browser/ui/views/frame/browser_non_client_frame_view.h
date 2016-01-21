@@ -12,9 +12,6 @@
 #include "chrome/browser/ui/views/profiles/new_avatar_button.h"
 #endif
 
-#if defined(ENABLE_SUPERVISED_USERS)
-class SupervisedUserAvatarLabel;
-#endif
 class AvatarMenuButton;
 class BrowserFrame;
 class BrowserView;
@@ -31,14 +28,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
 #if defined(FRAME_AVATAR_BUTTON)
   NewAvatarButton* new_avatar_button() const { return new_avatar_button_; }
-#endif
-
-#if defined(ENABLE_SUPERVISED_USERS)
-  SupervisedUserAvatarLabel* supervised_user_avatar_label() const {
-    return supervised_user_avatar_label_;
-  }
-
-  void OnThemeChanged() override;
 #endif
 
   // Called when BrowserView creates all it's child views.
@@ -124,10 +113,6 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // The BrowserView hosted within this View.
   BrowserView* browser_view_;
-
-#if defined(ENABLE_SUPERVISED_USERS)
-  SupervisedUserAvatarLabel* supervised_user_avatar_label_;
-#endif
 
 #if defined(FRAME_AVATAR_BUTTON)
   // Menu button that displays the name of the active or guest profile.

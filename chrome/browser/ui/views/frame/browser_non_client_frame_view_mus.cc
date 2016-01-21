@@ -49,10 +49,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
-#endif
-
 namespace {
 
 #if defined(FRAME_AVATAR_BUTTON)
@@ -227,14 +223,6 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
       ConvertedHitTest(this, web_app_left_header_view_, point)) {
     return HTCLIENT;
   }
-
-#if defined(ENABLE_SUPERVISED_USERS)
-  // ...or within the avatar label, if it's a supervised user.
-  if (hit_test == HTCAPTION && supervised_user_avatar_label() &&
-      ConvertedHitTest(this, supervised_user_avatar_label(), point)) {
-    return HTCLIENT;
-  }
-#endif
 
   // When the window is restored we want a large click target above the tabs
   // to drag the window, so redirect clicks in the tab's shadow to caption.

@@ -30,17 +30,10 @@
 #include "ui/views/background.h"
 #include "ui/views/resources/grit/views_resources.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
-#endif
-
 BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
                                                      BrowserView* browser_view)
     : frame_(frame),
       browser_view_(browser_view),
-#if defined(ENABLE_SUPERVISED_USERS)
-      supervised_user_avatar_label_(nullptr),
-#endif
 #if defined(FRAME_AVATAR_BUTTON)
       new_avatar_button_(nullptr),
 #endif
@@ -108,13 +101,6 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(View* child) {
   }
 #endif
 }
-
-#if defined(ENABLE_SUPERVISED_USERS)
-void BrowserNonClientFrameView::OnThemeChanged() {
-  if (supervised_user_avatar_label_)
-    supervised_user_avatar_label_->UpdateLabelStyle();
-}
-#endif
 
 bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
   return browser_view_->IsBrowserTypeNormal();
@@ -196,16 +182,6 @@ void BrowserNonClientFrameView::UpdateAvatar() {
 void BrowserNonClientFrameView::UpdateOldAvatarButton() {
   if (browser_view_->ShouldShowAvatar()) {
     if (!avatar_button_) {
-#if defined(ENABLE_SUPERVISED_USERS)
-      Profile* profile = browser_view_->browser()->profile();
-      if (profile->IsSupervised() && !supervised_user_avatar_label_) {
-        supervised_user_avatar_label_ =
-            new SupervisedUserAvatarLabel(browser_view_);
-        supervised_user_avatar_label_->set_id(
-            VIEW_ID_SUPERVISED_USER_AVATAR_LABEL);
-        AddChildView(supervised_user_avatar_label_);
-      }
-#endif
       avatar_button_ = new AvatarMenuButton(browser_view_);
       avatar_button_->set_id(VIEW_ID_AVATAR_BUTTON);
       AddChildView(avatar_button_);
@@ -214,14 +190,6 @@ void BrowserNonClientFrameView::UpdateOldAvatarButton() {
       frame_->GetRootView()->Layout();
     }
   } else if (avatar_button_) {
-#if defined(ENABLE_SUPERVISED_USERS)
-    // The avatar label can just be there if there is also an avatar button.
-    if (supervised_user_avatar_label_) {
-      RemoveChildView(supervised_user_avatar_label_);
-      delete supervised_user_avatar_label_;
-      supervised_user_avatar_label_ = nullptr;
-    }
-#endif
     RemoveChildView(avatar_button_);
     delete avatar_button_;
     avatar_button_ = nullptr;

@@ -2390,8 +2390,6 @@
       'browser/ui/views/profiles/profile_chooser_view.h',
       'browser/ui/views/profiles/signin_view_controller.cc',
       'browser/ui/views/profiles/signin_view_controller.h',
-      'browser/ui/views/profiles/supervised_user_avatar_label.cc',
-      'browser/ui/views/profiles/supervised_user_avatar_label.h',
       'browser/ui/views/profiles/user_manager_view.cc',
       'browser/ui/views/profiles/user_manager_view.h',
       'browser/ui/views/proximity_auth/proximity_auth_error_bubble_view.cc',
@@ -3301,8 +3299,6 @@
         }],
         ['enable_supervised_users==0', {
           'sources!': [
-            'browser/ui/views/profiles/supervised_user_avatar_label.cc',
-            'browser/ui/views/profiles/supervised_user_avatar_label.h',
             'browser/ui/webui/options/supervised_user_create_confirm_handler.cc',
             'browser/ui/webui/options/supervised_user_create_confirm_handler.h',
             'browser/ui/webui/options/supervised_user_import_handler.cc',

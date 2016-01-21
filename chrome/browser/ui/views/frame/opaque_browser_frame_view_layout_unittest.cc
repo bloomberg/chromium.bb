@@ -20,10 +20,6 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 
-#if defined(ENABLE_SUPERVISED_USERS)
-#include "chrome/browser/ui/views/profiles/supervised_user_avatar_label.h"
-#endif
-
 using views::Widget;
 
 namespace {
@@ -226,9 +222,6 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   TabIconView* tab_icon_view_;
   views::Label* window_title_;
 
-#if defined(ENABLE_SUPERVISED_USERS)
-  SupervisedUserAvatarLabel* supervised_user_avatar_label_;
-#endif
   AvatarMenuButton* menu_button_;
   views::MenuButton* new_avatar_button_;
 
