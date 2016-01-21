@@ -107,6 +107,8 @@ class MediaThrottler implements MediaPlayer.OnErrorListener {
                     mPlayer = MediaPlayer.create(mContext, R.raw.empty);
                 } catch (IllegalStateException e) {
                     Log.e(TAG, "Exception happens while creating the watch dog player.", e);
+                } catch (RuntimeException e) {
+                    Log.e(TAG, "Exception happens while creating the watch dog player.", e);
                 }
                 if (mPlayer == null) {
                     Log.e(TAG, "Unable to create watch dog player, treat it as server crash.");
