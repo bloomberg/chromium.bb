@@ -46,12 +46,14 @@ class _Generator(object):
     for function in self._namespace.functions.values():
       self._AppendFunction(c, function)
 
+    c.TrimTrailingNewlines()
+    c.Eblock('};')
+    c.Append()
+
     for event in self._namespace.events.values():
       self._AppendEvent(c, event)
 
     c.TrimTrailingNewlines()
-
-    c.Eblock('};')
 
     return c
 
@@ -93,5 +95,7 @@ class _Generator(object):
     c.Append(self._js_util.GetSeeLink(self._namespace.name, 'event',
                                       event.name))
     c.Eblock(' */')
-    c.Append('%s: new ChromeEvent(),' % (event.name))
+
+    c.Append('%s.prototype.%s;' % (self._interface, event.name))
+
     c.Append()

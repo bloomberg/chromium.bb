@@ -104,14 +104,14 @@ FakeApi.prototype = {
    * @see https://developer.chrome.com/extensions/fakeApi#method-bazGreek
    */
   bazGreek: assertNotReached,
+};
 
-  /**
-   * Fired when we realize it's a trap!
-   * @type {!ChromeEvent}
-   * @see https://developer.chrome.com/extensions/fakeApi#event-onTrapDetected
-   */
-  onTrapDetected: new ChromeEvent(),
-};""" % (datetime.now().year, sys.argv[0]))
+/**
+ * Fired when we realize it's a trap!
+ * @type {!ChromeEvent}
+ * @see https://developer.chrome.com/extensions/fakeApi#event-onTrapDetected
+ */
+FakeApi.prototype.onTrapDetected;""" % (datetime.now().year, sys.argv[0]))
 
 class JsExternGeneratorTest(unittest.TestCase):
   def _GetNamespace(self, fake_content, filename):
