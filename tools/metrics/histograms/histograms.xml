@@ -19979,6 +19979,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Memory.CompressibleStringCount"
+    enum="CompressibleStringCountType">
+  <owner>hajimehoshi@chromium.org</owner>
+  <summary>
+    This records the frequency with which JavaScript source strings are
+    compressed and decompressed in foreground and background tabs.  Compressing
+    runs 10 seconds after the tab goes background and decompressing runs when
+    JavaScript source string is required (e.g. V8 starts to compile). This
+    measurement is a preparation to introduce CompressibleString class for
+    JavaScript source strings to reduce Blink memory usage.
+  </summary>
+</histogram>
+
 <histogram name="Memory.DiscardableAllocationSize" units="KB">
   <owner>reveman@chromium.org</owner>
   <summary>
@@ -58921,6 +58934,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <enum name="CompositorType" type="int">
   <int value="0" label="Software compositor"/>
   <int value="1" label="GPU compositor"/>
+</enum>
+
+<enum name="CompressibleStringCountType" type="int">
+  <int value="0" label="Compressed in a background tab"/>
+  <int value="1" label="Decompressed in a background tab"/>
+  <int value="2" label="Decompressed in a foreground tab"/>
 </enum>
 
 <enum name="ComputeCurrentSigninStatus" type="int">

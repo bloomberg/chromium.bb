@@ -30,6 +30,7 @@
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceClient.h"
 #include "core/fetch/TextResource.h"
+#include "platform/text/CompressibleString.h"
 
 namespace blink {
 
@@ -62,7 +63,7 @@ public:
 
     void destroyDecodedDataForFailedRevalidation() override;
 
-    const String& script();
+    const CompressibleString& script();
 
     AtomicString mimeType() const;
 
@@ -89,7 +90,7 @@ private:
     bool m_integrityChecked;
     IntegrityMetadataSet m_integrityMetadata;
 
-    AtomicString m_script;
+    CompressibleString m_script;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

@@ -36,6 +36,7 @@
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
+#include "platform/text/CompressibleString.h"
 #include "wtf/Allocator.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
@@ -98,7 +99,7 @@ private:
     class ExecutionState;
 
     // Evaluate a script file in the current execution environment.
-    ScriptValue evaluate(const String& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
+    ScriptValue evaluate(const CompressibleString& script, const String& fileName, const TextPosition& scriptStartPosition, CachedMetadataHandler*, V8CacheOptions);
 
     RawPtrWillBeMember<WorkerOrWorkletGlobalScope> m_globalScope;
 

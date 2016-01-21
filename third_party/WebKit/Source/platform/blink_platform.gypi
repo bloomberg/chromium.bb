@@ -890,6 +890,8 @@
       'text/BidiRunList.h',
       'text/BidiTextRun.cpp',
       'text/BidiTextRun.h',
+      'text/CompressibleString.cpp',
+      'text/CompressibleString.h',
       'text/DateTimeFormat.cpp',
       'text/DateTimeFormat.h',
       'text/DecodeEscapeSequences.h',

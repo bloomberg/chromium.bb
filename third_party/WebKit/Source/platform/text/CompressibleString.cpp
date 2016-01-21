@@ -1,0 +1,134 @@
+// Copyright 2016 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "platform/text/CompressibleString.h"
+
+#include "public/platform/Platform.h"
+#include "wtf/Assertions.h"
+#include "wtf/WTFThreadData.h"
+#include "wtf/text/WTFString.h"
+
+namespace blink {
+
+class CompressibleStringTable {
+    WTF_MAKE_NONCOPYABLE(CompressibleStringTable);
+public:
+    static CompressibleStringTable* create(WTFThreadData& data)
+    {
+        data.m_compressibleStringTable = new CompressibleStringTable;
+        data.m_compressibleStringTableDestructor = CompressibleStringTable::destroy;
+        return data.m_compressibleStringTable;
+    }
+
+    void add(CompressibleStringImpl* string)
+    {
+        ASSERT(!m_table.contains(string));
+        m_table.add(string);
+    }
+
+    bool contains(CompressibleStringImpl* string) const
+    {
+        return m_table.contains(string);
+    }
+
+    void remove(CompressibleStringImpl* string)
+    {
+        ASSERT(m_table.contains(string));
+        m_table.remove(string);
+    }
+
+    void compressAll()
+    {
+        HashSet<CompressibleStringImpl*>::iterator end = m_table.end();
+        for (HashSet<CompressibleStringImpl*>::iterator iter = m_table.begin(); iter != end; ++iter) {
+            CompressibleStringImpl* string = *iter;
+            if (!string->isCompressed())
+                string->compressString();
+        }
+    }
+
+private:
+    CompressibleStringTable() { }
+
+    static void destroy(CompressibleStringTable* table)
+    {
+        delete table;
+    }
+
+    HashSet<CompressibleStringImpl*> m_table;
+};
+
+static inline CompressibleStringTable& compressibleStringTable()
+{
+    WTFThreadData& data = wtfThreadData();
+    CompressibleStringTable* table = data.compressibleStringTable();
+    if (UNLIKELY(!table))
+        table = CompressibleStringTable::create(data);
+    return *table;
+}
+
+static const unsigned CompressibleStringImplSizeThrehold = 100000;
+
+bool CompressibleStringImpl::s_isPageBackground = false;
+
+void CompressibleStringImpl::compressAll()
+{
+    compressibleStringTable().compressAll();
+}
+
+void CompressibleStringImpl::setPageBackground(bool isPageBackground)
+{
+    s_isPageBackground = isPageBackground;
+}
+
+CompressibleStringImpl::CompressibleStringImpl(PassRefPtr<StringImpl> impl)
+    : m_string(impl)
+    , m_isCompressed(false)
+{
+    if (originalContentSizeInBytes() > CompressibleStringImplSizeThrehold)
+        compressibleStringTable().add(this);
+}
+
+CompressibleStringImpl::~CompressibleStringImpl()
+{
+    if (originalContentSizeInBytes() > CompressibleStringImplSizeThrehold)
+        compressibleStringTable().remove(this);
+}
+
+enum CompressibleStringCountType {
+    StringWasCompressedInBackgroundTab,
+    StringWasDecompressedInBackgroundTab,
+    StringWasDecompressedInForegroundTab,
+    CompressibleStringCountTypeMax = StringWasDecompressedInForegroundTab,
+};
+
+static void recordCompressibleStringCount(CompressibleStringCountType type)
+{
+    Platform::current()->histogramEnumeration("Memory.CompressibleStringCount", type, CompressibleStringCountTypeMax + 1);
+}
+
+// compressString does nothing but collect UMA so far.
+// TODO(hajimehoshi): Implement this.
+void CompressibleStringImpl::compressString()
+{
+    ASSERT(s_isPageBackground);
+    recordCompressibleStringCount(StringWasCompressedInBackgroundTab);
+    ASSERT(!isCompressed());
+    m_isCompressed = true;
+}
+
+// decompressString does nothing but collect UMA so far.
+// TODO(hajimehoshi): Implement this.
+void CompressibleStringImpl::decompressString()
+{
+    if (s_isPageBackground)
+        recordCompressibleStringCount(StringWasDecompressedInBackgroundTab);
+    else
+        recordCompressibleStringCount(StringWasDecompressedInForegroundTab);
+
+    ASSERT(isCompressed());
+    m_isCompressed = false;
+}
+
+} // namespace blink

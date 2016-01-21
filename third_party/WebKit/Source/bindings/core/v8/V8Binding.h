@@ -49,6 +49,7 @@
 #include "core/CoreExport.h"
 #include "platform/JSONValues.h"
 #include "platform/heap/Handle.h"
+#include "platform/text/CompressibleString.h"
 #include "wtf/text/AtomicString.h"
 #include <v8.h>
 
@@ -434,6 +435,13 @@ inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const String& string
     if (string.isNull())
         return v8::String::Empty(isolate);
     return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string.impl());
+}
+
+inline v8::Local<v8::String> v8String(v8::Isolate* isolate, const CompressibleString& string)
+{
+    if (string.isNull())
+        return v8::String::Empty(isolate);
+    return V8PerIsolateData::from(isolate)->stringCache()->v8ExternalString(isolate, string);
 }
 
 inline v8::Local<v8::String> v8AtomicString(v8::Isolate* isolate, const char* str, int length = -1)

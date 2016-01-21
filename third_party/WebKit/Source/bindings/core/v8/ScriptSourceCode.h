@@ -53,6 +53,7 @@ public:
     // Not sure if that matters.
     explicit ScriptSourceCode(ScriptResource*);
     ScriptSourceCode(const String&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
+    ScriptSourceCode(const CompressibleString&, const KURL& = KURL(), const TextPosition& startPosition = TextPosition::minimumPosition());
     ScriptSourceCode(PassRefPtrWillBeRawPtr<ScriptStreamer>, ScriptResource*);
 
     ~ScriptSourceCode();
@@ -64,7 +65,7 @@ public:
     // constructor, and differs from the empty script.
     bool isNull() const { return m_source.isNull(); }
 
-    const String& source() const { return m_source; }
+    const CompressibleString& source() const { return m_source; }
     ScriptResource* resource() const { return m_resource.get(); }
     const KURL& url() const;
     int startLine() const { return m_startPosition.m_line.oneBasedInt(); }
@@ -76,7 +77,7 @@ public:
 private:
     void treatNullSourceAsEmpty();
 
-    String m_source;
+    CompressibleString m_source;
     ResourcePtr<ScriptResource> m_resource;
     RefPtrWillBeMember<ScriptStreamer> m_streamer;
     mutable KURL m_url;

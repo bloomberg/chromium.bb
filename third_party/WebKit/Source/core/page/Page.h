@@ -34,6 +34,7 @@
 #include "core/page/PageVisibilityState.h"
 #include "platform/MemoryPurgeController.h"
 #include "platform/Supplementable.h"
+#include "platform/Timer.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/geometry/Region.h"
 #include "platform/heap/Handle.h"
@@ -234,6 +235,8 @@ private:
     // SettingsDelegate overrides.
     void settingsChanged(SettingsDelegate::ChangeType) override;
 
+    void compressStrings(Timer<Page>*);
+
     RefPtrWillBeMember<PageAnimator> m_animator;
     const OwnPtrWillBeMember<AutoscrollController> m_autoscrollController;
     RawPtrWillBeMember<ChromeClient> m_chromeClient;
@@ -290,6 +293,8 @@ private:
     OwnPtrWillBeMember<FrameHost> m_frameHost;
 
     OwnPtrWillBeMember<MemoryPurgeController> m_memoryPurgeController;
+
+    Timer<Page> m_timerForCompressStrings;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT WillBeHeapSupplement<Page>;

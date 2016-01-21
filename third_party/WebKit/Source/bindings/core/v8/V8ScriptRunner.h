@@ -29,6 +29,7 @@
 #include "bindings/core/v8/V8CacheOptions.h"
 #include "core/CoreExport.h"
 #include "core/fetch/AccessControlStatus.h"
+#include "platform/text/CompressibleString.h"
 #include "wtf/Allocator.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
@@ -50,7 +51,7 @@ public:
     // For the following methods, the caller sites have to hold
     // a HandleScope and a ContextScope.
     static v8::MaybeLocal<v8::Script> compileScript(const ScriptSourceCode&, v8::Isolate*, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
-    static v8::MaybeLocal<v8::Script> compileScript(const String&, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
+    static v8::MaybeLocal<v8::Script> compileScript(const CompressibleString&, const String& fileName, const String& sourceMapUrl, const TextPosition&, v8::Isolate*, CachedMetadataHandler* = nullptr, AccessControlStatus = SharableCrossOrigin, V8CacheOptions = V8CacheOptionsDefault);
     // CachedMetadataHandler is set when metadata caching is supported. For
     // normal scripe resources, CachedMetadataHandler is from ScriptResource.
     // For worker script, ScriptResource is null but CachedMetadataHandler may be

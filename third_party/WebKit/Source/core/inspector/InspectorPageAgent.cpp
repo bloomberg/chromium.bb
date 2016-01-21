@@ -216,7 +216,7 @@ bool InspectorPageAgent::cachedResourceContent(Resource* cachedResource, String*
             *result = toCSSStyleSheetResource(cachedResource)->sheetText();
             return true;
         case Resource::Script:
-            *result = cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script();
+            *result = cachedResource->resourceBuffer() ? toScriptResource(cachedResource)->decodedText() : toScriptResource(cachedResource)->script().toString();
             return true;
         case Resource::ImportResource: // Fall through.
         case Resource::Raw: {

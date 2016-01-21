@@ -357,7 +357,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
                 m_parserBlockingScript->setElement(script);
                 m_parserBlockingScript->setStartingPosition(scriptStartPosition);
             } else {
-                ScriptSourceCode sourceCode(script->textContent(), documentURLForScriptExecution(m_document), scriptStartPosition);
+                ScriptSourceCode sourceCode(CompressibleString(script->textContent().impl()), documentURLForScriptExecution(m_document), scriptStartPosition);
                 scriptLoader->executeScript(sourceCode);
             }
         } else {
