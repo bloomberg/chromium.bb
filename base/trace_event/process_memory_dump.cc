@@ -16,6 +16,10 @@
 #include <sys/mman.h>
 #endif
 
+#if defined(OS_WIN)
+#include <Psapi.h>
+#endif
+
 namespace base {
 namespace trace_event {
 
@@ -45,44 +49,58 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
   const size_t kMaxChunkSize = 32 * 1024 * 1024;
   size_t offset = 0;
   size_t total_resident_size = 0;
-  int result = 0;
+  bool failure = false;
   while (offset < mapped_size) {
-    void* chunk_start = reinterpret_cast<void*>(start_pointer + offset);
+    uintptr_t chunk_start = (start_pointer + offset);
     const size_t chunk_size = std::min(mapped_size - offset, kMaxChunkSize);
     const size_t page_count = (chunk_size + page_size - 1) / page_size;
     size_t resident_page_count = 0;
 
 #if defined(OS_MACOSX) || defined(OS_IOS)
-    std::vector<char> vec(page_count + 1);
+    std::vector<char> vec(page_count);
     // mincore in MAC does not fail with EAGAIN.
-    result = mincore(chunk_start, chunk_size, vec.data());
-    if (result)
-      break;
-
+    failure =
+        !!mincore(reinterpret_cast<void*>(chunk_start), chunk_size, vec.data());
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i] & MINCORE_INCORE ? 1 : 0;
-#else   // defined(OS_MACOSX) || defined(OS_IOS)
-    std::vector<unsigned char> vec(page_count + 1);
+#elif defined(OS_WIN)
+    std::vector<PSAPI_WORKING_SET_EX_INFORMATION> vec(page_count);
+    for (size_t i = 0; i < page_count; i++) {
+      vec[i].VirtualAddress =
+          reinterpret_cast<void*>(chunk_start + i * page_size);
+    }
+    DWORD vec_size = static_cast<DWORD>(
+        page_count * sizeof(PSAPI_WORKING_SET_EX_INFORMATION));
+    failure = !QueryWorkingSetEx(GetCurrentProcess(), vec.data(), vec_size);
+
+    for (size_t i = 0; i < page_count; i++)
+      resident_page_count += vec[i].VirtualAttributes.Valid;
+#elif defined(OS_POSIX)
+    std::vector<unsigned char> vec(page_count);
     int error_counter = 0;
+    int result = 0;
     // HANDLE_EINTR tries for 100 times. So following the same pattern.
     do {
-      result = mincore(chunk_start, chunk_size, vec.data());
+      result =
+          mincore(reinterpret_cast<void*>(chunk_start), chunk_size, vec.data());
     } while (result == -1 && errno == EAGAIN && error_counter++ < 100);
-    if (result)
-      break;
+    failure = !!result;
 
     for (size_t i = 0; i < page_count; i++)
       resident_page_count += vec[i];
-#endif  // defined(OS_MACOSX) || defined(OS_IOS)
+#endif
+
+    if (failure)
+      break;
 
     total_resident_size += resident_page_count * page_size;
     offset += kMaxChunkSize;
   }
 
-  DCHECK_EQ(0, result);
-  if (result) {
+  DCHECK(!failure);
+  if (failure) {
     total_resident_size = 0;
-    LOG(ERROR) << "mincore() call failed. The resident size is invalid";
+    LOG(ERROR) << "CountResidentBytes failed. The resident size is invalid";
   }
   return total_resident_size;
 }
