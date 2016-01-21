@@ -18,13 +18,14 @@ SearchEngineManagerWebUITest.prototype = {
   browsePreload: 'chrome://settings-frame/searchEngines',
 };
 
-// See crosbug.com/22673
-GEN('#if defined(OS_CHROMEOS)');
+// See crosbug.com/22673 for OS_CHROMEOS
+// See crbug.com/579827 for OS_LINUX
+GEN('#if defined(OS_CHROMEOS) || defined(OS_LINUX)');
 GEN('#define MAYBE_testOpenSearchEngineManager ' +
         'DISABLED_testOpenSearchEngineManager');
 GEN('#else');
 GEN('#define MAYBE_testOpenSearchEngineManager testOpenSearchEngineManager');
-GEN('#endif  // defined(OS_CHROMEOS)');
+GEN('#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)');
 
 // Test opening the search engine manager has correct location.
 TEST_F('SearchEngineManagerWebUITest', 'MAYBE_testOpenSearchEngineManager',
