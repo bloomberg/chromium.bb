@@ -17,7 +17,7 @@ import java.util.Locale;
  * the origin of logs, and enable or disable logging in different parts of the code.
  * </p>
  * <p>
- * Usage documentation: {@code //docs/logging.md}.
+ * Usage documentation: {@code //docs/android_logging.md}.
  * </p>
  */
 public class Log {
