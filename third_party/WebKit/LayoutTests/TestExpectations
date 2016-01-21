@@ -1505,6 +1505,4 @@ crbug.com/516751 svg/hixie/perf/004.xml [ NeedsRebaseline ]
 
 crbug.com/579365 [ Mac ] fast/replaced/border-radius-clip.html [ NeedsRebaseline ]
 
-crbug.com/579385 [ Win Linux Debug ] fast/forms/select-popup/popup-menu-resize-after-open.html [ Failure ]
-
 crbug.com/573206 http/tests/workers/shared-worker-secure-context.https.html [ Skip ]
