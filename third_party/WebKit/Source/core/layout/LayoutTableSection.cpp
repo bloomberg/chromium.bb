@@ -362,18 +362,16 @@ void LayoutTableSection::distributeExtraRowSpanHeightToPercentRows(LayoutTableCe
 }
 
 
-static void updatePositionIncreasedWithRowHeight(int extraHeight, float rowHeight, float totalHeight, int& accumulatedPositionIncrease, int& remainder)
+static void updatePositionIncreasedWithRowHeight(int extraHeight, float rowHeight, float totalHeight, int& accumulatedPositionIncrease, double& remainder)
 {
-    static_assert(sizeof(long long int) > sizeof(int), "int should be smaller than long long");
-
-    // Sometimes the multiplication of the 2 values below will overflow a float.
-    // So we convert them to 'long long' instead of 'float' to avoid the overflow
-    // and multiply with 100 for taking 2 decimal degits in calculation.
-    long long rHeight = rowHeight * 100;
-    long long tHeight = totalHeight * 100;
-
-    accumulatedPositionIncrease += (extraHeight * rHeight) / tHeight;
-    remainder += ((extraHeight * rHeight) % tHeight) / 100;
+    // Without the cast we lose enough precision to cause heights to miss pixels
+    // (and trigger asserts) in some layout tests.
+    double proportionalPositionIncrease = remainder + (extraHeight * double(rowHeight)) / totalHeight;
+    // The epsilon is to push any values that are close to a whole number but aren't due to floating point imprecision.
+    // The epsilons are not accumulated, any that aren't necessary are lost in the cast to int.
+    int positionIncreaseInt = proportionalPositionIncrease + 0.000001;
+    accumulatedPositionIncrease += positionIncreaseInt;
+    remainder = proportionalPositionIncrease - positionIncreaseInt;
 }
 
 // This is mainly used to distribute whole extra rowspanning height in percent rows when all spanning rows are
@@ -388,27 +386,18 @@ void LayoutTableSection::distributeWholeExtraRowSpanHeightToPercentRows(LayoutTa
 
     const unsigned rowSpan = cell->rowSpan();
     const unsigned rowIndex = cell->rowIndex();
-    int remainder = 0;
+    double remainder = 0;
 
     int accumulatedPositionIncrease = 0;
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         // TODO(alancutter): Make this work correctly for calc lengths.
         if (m_grid[row].logicalHeight.hasPercent()) {
             updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, m_grid[row].logicalHeight.percent(), totalPercent, accumulatedPositionIncrease, remainder);
-
-            // While whole extra spanning height is distributing in percent spanning rows, rational parts remains
-            // in every integer division. So accumulating all remainder part in integer division and when total remainder
-            // is equvalent to divisor then 1 unit increased in row position.
-            // Note that this algorithm is biased towards adding more space towards the lower rows.
-            if (remainder >= totalPercent) {
-                remainder -= totalPercent;
-                accumulatedPositionIncrease++;
-            }
         }
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT(!remainder);
+    ASSERT_WITH_MESSAGE(!round(remainder), "remainder was %f", remainder);
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
@@ -421,27 +410,18 @@ void LayoutTableSection::distributeExtraRowSpanHeightToAutoRows(LayoutTableCell*
     const unsigned rowSpan = cell->rowSpan();
     const unsigned rowIndex = cell->rowIndex();
     int accumulatedPositionIncrease = 0;
-    int remainder = 0;
+    double remainder = 0;
 
     // Aspect ratios of auto rows should not change otherwise table may look different than user expected.
     // So extra height distributed in auto spanning rows based on their weight in spanning cell.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         if (m_grid[row].logicalHeight.isAuto()) {
             updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, rowsHeight[row - rowIndex], totalAutoRowsHeight, accumulatedPositionIncrease, remainder);
-
-            // While whole extra spanning height is distributing in auto spanning rows, rational parts remains
-            // in every integer division. So accumulating all remainder part in integer division and when total remainder
-            // is equvalent to divisor then 1 unit increased in row position.
-            // Note that this algorithm is biased towards adding more space towards the lower rows.
-            if (remainder >= totalAutoRowsHeight) {
-                remainder -= totalAutoRowsHeight;
-                accumulatedPositionIncrease++;
-            }
         }
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT(!remainder);
+    ASSERT_WITH_MESSAGE(!round(remainder) , "remainder was %f", remainder);
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
@@ -454,27 +434,18 @@ void LayoutTableSection::distributeExtraRowSpanHeightToRemainingRows(LayoutTable
     const unsigned rowSpan = cell->rowSpan();
     const unsigned rowIndex = cell->rowIndex();
     int accumulatedPositionIncrease = 0;
-    int remainder = 0;
+    double remainder = 0;
 
     // Aspect ratios of the rows should not change otherwise table may look different than user expected.
     // So extra height distribution in remaining spanning rows based on their weight in spanning cell.
     for (unsigned row = rowIndex; row < (rowIndex + rowSpan); row++) {
         if (!m_grid[row].logicalHeight.hasPercent()) {
             updatePositionIncreasedWithRowHeight(extraRowSpanningHeight, rowsHeight[row - rowIndex], totalRemainingRowsHeight, accumulatedPositionIncrease, remainder);
-
-            // While whole extra spanning height is distributing in remaining spanning rows, rational parts remains
-            // in every integer division. So accumulating all remainder part in integer division and when total remainder
-            // is equvalent to divisor then 1 unit increased in row position.
-            // Note that this algorithm is biased towards adding more space towards the lower rows.
-            if (remainder >= totalRemainingRowsHeight) {
-                remainder -= totalRemainingRowsHeight;
-                accumulatedPositionIncrease++;
-            }
         }
         m_rowPos[row + 1] += accumulatedPositionIncrease;
     }
 
-    ASSERT(!remainder);
+    ASSERT_WITH_MESSAGE(!round(remainder), "remainder was %f", remainder);
 
     extraRowSpanningHeight -= accumulatedPositionIncrease;
 }
