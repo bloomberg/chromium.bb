@@ -13,9 +13,9 @@
 #include "base/compiler_specific.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
+#include "base/profiler/scoped_tracker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread_delegate.h"
 #include "content/public/browser/content_browser_client.h"
@@ -230,10 +230,11 @@ void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
 #endif
 
   BrowserThread::ID thread_id = ID_COUNT;
-  if (!GetCurrentThreadIdentifier(&thread_id))
-    return Thread::Run(message_loop);
+  CHECK(GetCurrentThreadIdentifier(&thread_id));
+  CHECK_EQ(identifier_, thread_id);
+  CHECK_EQ(Thread::message_loop(), message_loop);
 
-  switch (thread_id) {
+  switch (identifier_) {
     case BrowserThread::UI:
       return UIThreadRun(message_loop);
     case BrowserThread::DB:
@@ -252,7 +253,10 @@ void BrowserThreadImpl::Run(base::MessageLoop* message_loop) {
       CHECK(false);  // This shouldn't actually be reached!
       break;
   }
-  Thread::Run(message_loop);
+
+  // |identifier_| must be set to a valid enum value in the constructor, so it
+  // should be impossible to reach here.
+  CHECK(false);
 }
 
 void BrowserThreadImpl::CleanUp() {
@@ -267,6 +271,13 @@ void BrowserThreadImpl::CleanUp() {
 
   if (delegate)
     delegate->CleanUp();
+
+  // PostTaskHelper() accesses the message loop while holding this lock.
+  // However, the message loop will soon be destructed without any locking. So
+  // to prevent a race with accessing the message loop in PostTaskHelper(),
+  // remove this thread from the global array now.
+  base::AutoLock lock(globals.lock);
+  globals.threads[identifier_] = NULL;
 }
 
 void BrowserThreadImpl::Initialize() {
@@ -398,11 +409,6 @@ bool BrowserThread::IsThreadInitialized(ID identifier) {
 
 // static
 bool BrowserThread::CurrentlyOn(ID identifier) {
-  // We shouldn't use MessageLoop::current() since it uses LazyInstance which
-  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
-  // function.
-  // http://crbug.com/63678
-  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   BrowserThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
@@ -501,13 +507,13 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
   if (g_globals == NULL)
     return false;
 
-  // We shouldn't use MessageLoop::current() since it uses LazyInstance which
-  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
-  // function.
-  // http://crbug.com/63678
-  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   base::MessageLoop* cur_message_loop = base::MessageLoop::current();
   BrowserThreadGlobals& globals = g_globals.Get();
+  // Profiler to track potential contention on |globals.lock|. This only does
+  // real work on canary and local dev builds, so the cost of having this here
+  // should be minimal.
+  tracked_objects::ScopedTracker tracking_profile(FROM_HERE);
+  base::AutoLock lock(globals.lock);
   for (int i = 0; i < ID_COUNT; ++i) {
     if (globals.threads[i] &&
         globals.threads[i]->message_loop() == cur_message_loop) {
