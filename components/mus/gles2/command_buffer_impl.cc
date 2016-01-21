@@ -130,24 +130,6 @@ void CommandBufferImpl::DestroyTransferBuffer(int32_t id) {
                  base::Unretained(this), id));
 }
 
-void CommandBufferImpl::InsertSyncPoint(
-    bool retire,
-    const mojom::CommandBuffer::InsertSyncPointCallback& callback) {
-  uint32_t sync_point = gpu_state_->sync_point_manager()->GenerateSyncPoint();
-  sync_points_.push_back(sync_point);
-  callback.Run(sync_point);
-  if (retire)
-    RetireSyncPoint(sync_point);
-}
-
-void CommandBufferImpl::RetireSyncPoint(uint32_t sync_point) {
-  DCHECK(!sync_points_.empty() && sync_points_.front() == sync_point);
-  sync_points_.pop_front();
-  gpu_state_->command_buffer_task_runner()->PostTask(
-      driver_.get(), base::Bind(&CommandBufferImpl::RetireSyncPointOnGpuThread,
-                                base::Unretained(this), sync_point));
-}
-
 void CommandBufferImpl::CreateImage(int32_t id,
                                     mojo::ScopedHandle memory_handle,
                                     int32_t type,
@@ -242,12 +224,6 @@ bool CommandBufferImpl::RegisterTransferBufferOnGpuThread(
 bool CommandBufferImpl::DestroyTransferBufferOnGpuThread(int32_t id) {
   DCHECK(driver_->IsScheduled());
   driver_->DestroyTransferBuffer(id);
-  return true;
-}
-
-bool CommandBufferImpl::RetireSyncPointOnGpuThread(uint32_t sync_point) {
-  DCHECK(driver_->IsScheduled());
-  gpu_state_->sync_point_manager()->RetireSyncPoint(sync_point);
   return true;
 }
 

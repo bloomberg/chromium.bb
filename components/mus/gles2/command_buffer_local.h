@@ -123,7 +123,6 @@ class CommandBufferLocal : public gpu::CommandBuffer,
       mojo::ScopedSharedBufferHandle transfer_buffer,
       uint32_t size);
   bool DestroyTransferBufferOnGpuThread(int32_t id);
-  bool RetireSyncPointOnGpuThread(uint32_t sync_point);
   bool CreateImageOnGpuThread(int32_t id,
                               mojo::ScopedHandle memory_handle,
                               int32_t type,
@@ -144,7 +143,6 @@ class CommandBufferLocal : public gpu::CommandBuffer,
   scoped_ptr<CommandBufferDriver> driver_;
   CommandBufferLocalClient* client_;
   scoped_refptr<base::SingleThreadTaskRunner> client_thread_task_runner_;
-  std::deque<uint32_t> sync_points_;
 
   // Members accessed on the client thread:
   gpu::CommandBuffer::State last_state_;

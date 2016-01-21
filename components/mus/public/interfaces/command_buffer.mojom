@@ -43,11 +43,6 @@ interface CommandBuffer {
       int32 id, handle<shared_buffer> transfer_buffer, uint32 size);
   DestroyTransferBuffer(int32 id);
 
-  // If |retire| is true, the sync point is retired on insertion. Otherwise,
-  // explicitly call RetireSyncPoint to retire it.
-  InsertSyncPoint(bool retire) => (uint32 sync_point);
-  RetireSyncPoint(uint32 sync_point);
-
   CreateImage(int32 id,
               handle memory_handle,
               int32 type,

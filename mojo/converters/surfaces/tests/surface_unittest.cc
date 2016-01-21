@@ -407,7 +407,8 @@ TEST(SurfaceLibTest, MailboxHolder) {
   gpu::Mailbox mailbox;
   mailbox.Generate();
   uint32_t texture_target = GL_TEXTURE_2D;
-  gpu::SyncToken sync_token(7u);
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1, 7u);
+  sync_token.SetVerifyFlush();
   gpu::MailboxHolder holder(mailbox, sync_token, texture_target);
 
   MailboxHolderPtr mus_holder = MailboxHolder::From(holder);
@@ -458,7 +459,8 @@ TEST(SurfaceLibTest, TransferableResource) {
 
 TEST(SurfaceLibTest, ReturnedResource) {
   uint32_t id = 5u;
-  gpu::SyncToken sync_token(24u);
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1, 24u);
+  sync_token.SetVerifyFlush();
   int count = 2;
   bool lost = false;
   cc::ReturnedResource resource;

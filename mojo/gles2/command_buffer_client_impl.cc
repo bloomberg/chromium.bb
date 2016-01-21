@@ -272,31 +272,17 @@ int32_t CommandBufferClientImpl::CreateGpuMemoryBufferImage(
 }
 
 uint32_t CommandBufferClientImpl::InsertSyncPoint() {
-  uint32_t sync_point = 0;
-  command_buffer_->InsertSyncPoint(true,
-                                   base::Bind(&Copy<uint32_t>, &sync_point));
-
-  base::ThreadRestrictions::ScopedAllowWait wait;
-  if (!command_buffer_.WaitForIncomingResponse()) {
-    VLOG(1) << "Channel encountered error while creating command buffer.";
-  }
-  return sync_point;
+  NOTREACHED();
+  return 0;
 }
 
 uint32_t CommandBufferClientImpl::InsertFutureSyncPoint() {
-  uint32_t sync_point = 0;
-  command_buffer_->InsertSyncPoint(false,
-                                   base::Bind(&Copy<uint32_t>, &sync_point));
-
-  base::ThreadRestrictions::ScopedAllowWait wait;
-  if (!command_buffer_.WaitForIncomingResponse()) {
-    VLOG(1) << "Channel encountered error while creating command buffer.";
-  }
-  return sync_point;
+  NOTREACHED();
+  return 0;
 }
 
 void CommandBufferClientImpl::RetireSyncPoint(uint32_t sync_point) {
-  command_buffer_->RetireSyncPoint(sync_point);
+  NOTREACHED();
 }
 
 void CommandBufferClientImpl::SignalSyncPoint(uint32_t sync_point,

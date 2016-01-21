@@ -54,10 +54,6 @@ class CommandBufferImpl : public mojom::CommandBuffer {
                               mojo::ScopedSharedBufferHandle transfer_buffer,
                               uint32_t size) override;
   void DestroyTransferBuffer(int32_t id) override;
-  void InsertSyncPoint(
-      bool retire,
-      const mojom::CommandBuffer::InsertSyncPointCallback& callback) override;
-  void RetireSyncPoint(uint32_t sync_point) override;
   void CreateImage(int32_t id,
                    mojo::ScopedHandle memory_handle,
                    int32_t type,
@@ -82,7 +78,6 @@ class CommandBufferImpl : public mojom::CommandBuffer {
       mojo::ScopedSharedBufferHandle transfer_buffer,
       uint32_t size);
   bool DestroyTransferBufferOnGpuThread(int32_t id);
-  bool RetireSyncPointOnGpuThread(uint32_t sync_point);
   bool CreateImageOnGpuThread(int32_t id,
                               mojo::ScopedHandle memory_handle,
                               int32_t type,
