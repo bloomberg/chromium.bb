@@ -5248,6 +5248,19 @@ interface StorageManager
 interface Stream
     getter type
     method constructor
+interface StylePropertyMap
+    method append
+    method constructor
+    method delete
+    method entries
+    method forEach
+    method get
+    method getAll
+    method getProperties
+    method has
+    method keys
+    method set
+    method values
 interface StyleSheet
     getter disabled
     getter href
