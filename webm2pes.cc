@@ -302,6 +302,7 @@ bool Webm2Pes::ConvertToFile() {
     cluster = webm_parser_->GetNext(cluster);
   }
 
+  std::fflush(output_file_.get());
   return true;
 }
 

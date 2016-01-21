@@ -51,6 +51,27 @@ std::string GetTestFilePath(const std::string& name);
 // files match exactly, false otherwise.
 bool CompareFiles(const std::string& file1, const std::string& file2);
 
+// Returns a temporary file name.
+std::string GetTempFileName();
+
+// Returns size of file specified by |file_name|, or 0 upon failure.
+std::uint64_t GetFileSize(const std::string& file_name);
+
+// Manages life of temporary file specified at time of construction. Deletes
+// file upon destruction.
+class TempFileDeleter {
+ public:
+  TempFileDeleter();
+  explicit TempFileDeleter(std::string file_name) : file_name_(file_name) {}
+  ~TempFileDeleter();
+  TempFileDeleter(const TempFileDeleter&) = delete;
+  TempFileDeleter(TempFileDeleter&&) = delete;
+  const std::string& name() const { return file_name_; }
+
+ private:
+  std::string file_name_;
+};
+
 }  // namespace test
 }  // namespace libwebm
 

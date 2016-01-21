@@ -7,9 +7,13 @@
 // be found in the AUTHORS file in the root of the source tree.
 #include "testing/test_util.h"
 
+#include <sys/stat.h>
+
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
+#include <fstream>
+#include <ios>
 #include <memory>
 #include <string>
 
@@ -18,7 +22,9 @@
 namespace libwebm {
 namespace test {
 
-std::string GetTestDataDir() { return std::getenv("LIBWEBM_TEST_DATA_PATH"); }
+std::string GetTestDataDir() {
+  return std::getenv("LIBWEBM_TEST_DATA_PATH");
+}
 
 std::string GetTestFilePath(const std::string& name) {
   const std::string libwebm_testdata_dir = GetTestDataDir();
@@ -48,6 +54,38 @@ bool CompareFiles(const std::string& file1, const std::string& file2) {
   } while (!std::feof(f1.get()) && !std::feof(f2.get()));
 
   return std::feof(f1.get()) && std::feof(f2.get());
+}
+
+std::string GetTempFileName() {
+  // TODO(tomfinegan): This is only test code, but it would be nice to avoid
+  // using std::tmpnam().
+  return std::tmpnam(nullptr);
+}
+
+std::uint64_t GetFileSize(const std::string& file_name) {
+  std::uint64_t file_size = 0;
+#ifndef _MSC_VER
+  struct stat st = {0};
+  if (stat(file_name.c_str(), &st) == 0) {
+#else
+  struct _stat st = {0};
+  if (_stat(file_name.c_str(), &st) == 0) {
+#endif
+    file_size = st.st_size;
+  }
+  return file_size;
+}
+
+TempFileDeleter::TempFileDeleter() {
+  file_name_ = GetTempFileName();
+}
+
+TempFileDeleter::~TempFileDeleter() {
+  std::ifstream file(file_name_);
+  if (file.good()) {
+    file.close();
+    std::remove(file_name_.c_str());
+  }
 }
 
 }  // namespace test

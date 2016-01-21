@@ -90,4 +90,14 @@ if (ENABLE_TESTS)
                  "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
                  "${LIBWEBM_SRC_DIR}/testing/test_util.h")
   target_link_libraries(parser_tests LINK_PUBLIC webm gtest)
+
+  add_executable(webm2pes_tests
+                 "${LIBWEBM_SRC_DIR}/common/libwebm_utils.cc"
+                 "${LIBWEBM_SRC_DIR}/common/libwebm_utils.h"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.cc"
+                 "${LIBWEBM_SRC_DIR}/testing/test_util.h"
+                 "${LIBWEBM_SRC_DIR}/webm2pes.cc"
+                 "${LIBWEBM_SRC_DIR}/webm2pes.h"
+                 "${LIBWEBM_SRC_DIR}/testing/webm2pes_tests.cc")
+  target_link_libraries(webm2pes_tests LINK_PUBLIC webm gtest)
 endif (ENABLE_TESTS)
