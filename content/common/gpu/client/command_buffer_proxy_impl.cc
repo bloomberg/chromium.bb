@@ -530,7 +530,8 @@ bool CommandBufferProxyImpl::IsGpuChannelLost() {
 }
 
 void CommandBufferProxyImpl::EnsureWorkVisible() {
-  channel_->ValidateFlushIDReachedServer(stream_id_, true);
+  if (channel_)
+    channel_->ValidateFlushIDReachedServer(stream_id_, true);
 }
 
 gpu::CommandBufferNamespace CommandBufferProxyImpl::GetNamespaceID() const {
