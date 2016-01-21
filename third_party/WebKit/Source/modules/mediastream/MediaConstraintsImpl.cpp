@@ -354,7 +354,10 @@ static void parseOldStyleNames(const WebVector<WebMediaConstraint>& oldNames, We
             result.googPayloadPadding.setExact(toBoolean(constraint.m_value));
         } else if (constraint.m_name.equals(kTestConstraint1)
             || constraint.m_name.equals(kTestConstraint2)) {
-            // These constraints are only for testing parsing. Ignore them.
+            // These constraints are only for testing parsing.
+            // Values 0 and 1 are legal, all others are a ConstraintError.
+            if (!constraint.m_value.equals("0") && !constraint.m_value.equals("1"))
+                errorState.throwConstraintError("Illegal value for constraint", constraint.m_name);
         } else {
             // TODO(hta): UMA stats for unknown constraints passed.
             // https://crbug.com/576613

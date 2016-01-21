@@ -8,7 +8,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "components/test_runner/mock_constraints.h"
 #include "components/test_runner/web_test_delegate.h"
 #include "third_party/WebKit/public/platform/WebMediaConstraints.h"
 #include "third_party/WebKit/public/platform/WebMediaDeviceInfo.h"
@@ -144,22 +143,6 @@ void MockWebUserMediaClient::requestUserMedia(
       delegate_->PostTask(
           new UserMediaRequestPermissionDeniedTask(this, request));
         return;
-    }
-
-    WebMediaConstraints constraints = request.audioConstraints();
-    WebString failed_constraint;
-    if (!constraints.isNull() &&
-        !MockConstraints::VerifyConstraints(constraints, &failed_constraint)) {
-      delegate_->PostTask(new UserMediaRequestConstraintFailedTask(
-          this, request, failed_constraint));
-      return;
-    }
-    constraints = request.videoConstraints();
-    if (!constraints.isNull() &&
-        !MockConstraints::VerifyConstraints(constraints, &failed_constraint)) {
-      delegate_->PostTask(new UserMediaRequestConstraintFailedTask(
-          this, request, failed_constraint));
-      return;
     }
 
     WebMediaStream stream;
