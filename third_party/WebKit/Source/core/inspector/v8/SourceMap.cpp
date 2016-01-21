@@ -201,6 +201,9 @@ bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, int line, int colu
     if (!jsonStringArrayAsVector(mapObject->getArray(kSourcesString), &sources, true))
         return false;
 
+    if (sources.size() == 0)
+        return false;
+
     Vector<String> sourcesContent;
     if (jsonStringArrayAsVector(mapObject->getArray(kSourcesContentString), &sourcesContent, false)) {
         if (sourcesContent.size() != sources.size())
@@ -215,7 +218,7 @@ bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, int line, int colu
     if (!mapObject->getString(kMappingsString, &mappings))
         return false;
 
-    int sourceIndex = 0;
+    size_t sourceIndex = 0;
     String sourceURL = sources[sourceIndex];
     int sourceLine = 0;
     int sourceColumn = 0;
@@ -245,6 +248,8 @@ bool SourceMap::parseMap(PassRefPtr<JSONObject> prpMapObject, int line, int colu
         int sourceIndexDelta = decodeVLQ(it);
         if (sourceIndexDelta) {
             sourceIndex += sourceIndexDelta;
+            if (sourceIndex >= sources.size())
+                return false;
             sourceURL = sources[sourceIndex];
         }
 

@@ -43,7 +43,8 @@ TEST(SourceMapTest, ParseInvalid)
         "{{}",
         "{\"version\": 42, \"sources\": [\"1.js\"], \"sourcesContent\": [null], \"names\": [], \"mappings\":\";\"}",
         "{\"version\": 3, \"sources\": 42, \"sourcesContent\": [null], \"names\": [], \"mappings\":\";\"}",
-        "{\"version\": 3, \"sources\": [null], \"sourcesContent\": [null], \"names\": [], \"mappings\":\";\"}"
+        "{\"version\": 3, \"sources\": [null], \"sourcesContent\": [null], \"names\": [], \"mappings\":\";\"}",
+        "{\"version\": 3, \"sources\": [], \"sourcesContent\": [null], \"names\": [], \"mappings\":\";\"}"
     };
     for (size_t i = 0; i < sizeof(sources) / sizeof(const char*); ++i) {
         OwnPtr<SourceMap> sourceMap = SourceMap::parse(String::fromUTF8(sources[i]));
