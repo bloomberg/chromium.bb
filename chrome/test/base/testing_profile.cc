@@ -733,11 +733,10 @@ TestingProfile::GetExtensionSpecialStoragePolicy() {
 #endif
 }
 
-net::CookieMonster* TestingProfile::GetCookieMonster() {
+net::CookieStore* TestingProfile::GetCookieStore() {
   if (!GetRequestContext())
     return NULL;
-  return GetRequestContext()->GetURLRequestContext()->cookie_store()->
-      GetCookieMonster();
+  return GetRequestContext()->GetURLRequestContext()->cookie_store();
 }
 
 void TestingProfile::CreateTestingPrefService() {

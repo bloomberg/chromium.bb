@@ -29,7 +29,7 @@ class ZoomLevelDelegate;
 }
 
 namespace net {
-class CookieMonster;
+class CookieStore;
 class URLRequestContextGetter;
 }
 
@@ -269,7 +269,7 @@ class TestingProfile : public Profile {
   // TODO(ajwong): Remove this API in favor of directly retrieving the
   // CookieStore from the StoragePartition after ExtensionURLRequestContext
   // has been removed.
-  net::CookieMonster* GetCookieMonster();
+  net::CookieStore* GetCookieStore();
 
   PrefService* GetPrefs() override;
   const PrefService* GetPrefs() const override;

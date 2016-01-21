@@ -110,23 +110,21 @@ class BrowsingDataCookieHelperTest : public testing::Test {
   }
 
   void CreateCookiesForTest() {
-    scoped_refptr<net::CookieMonster> cookie_monster =
-        testing_profile_->GetCookieMonster();
-    cookie_monster->SetCookieWithOptionsAsync(
+    net::CookieStore* cookie_store = testing_profile_->GetCookieStore();
+    cookie_store->SetCookieWithOptionsAsync(
         GURL("http://www.google.com"), "A=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
-    cookie_monster->SetCookieWithOptionsAsync(
+    cookie_store->SetCookieWithOptionsAsync(
         GURL("http://www.gmail.google.com"), "B=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
   }
 
   void CreateCookiesForDomainCookieTest() {
-    scoped_refptr<net::CookieMonster> cookie_monster =
-        testing_profile_->GetCookieMonster();
-    cookie_monster->SetCookieWithOptionsAsync(
+    net::CookieStore* cookie_store = testing_profile_->GetCookieStore();
+    cookie_store->SetCookieWithOptionsAsync(
         GURL("http://www.google.com"), "A=1", net::CookieOptions(),
         net::CookieMonster::SetCookiesCallback());
-    cookie_monster->SetCookieWithOptionsAsync(
+    cookie_store->SetCookieWithOptionsAsync(
         GURL("http://www.google.com"), "A=2; Domain=.www.google.com ",
         net::CookieOptions(), net::CookieMonster::SetCookiesCallback());
   }
