@@ -119,10 +119,11 @@ void NotificationUIManagerMac::Add(const Notification& notification,
   // TODO(miguelg): Implement support for buttons
   toast.get().hasActionButton = NO;
 
-  // Some functionality is only available in 10.9+
+  // Some functionality is only available in 10.9+ or requires private APIs
   // Icon
-  if ([toast respondsToSelector:@selector(setContentImage:)]) {
-    [toast setValue:notification.icon().ToNSImage() forKey:@"contentImage"];
+  if ([toast respondsToSelector:@selector(_identityImage)]) {
+    [toast setValue:notification.icon().ToNSImage() forKey:@"_identityImage"];
+    [toast setValue:@NO forKey:@"_identityImageHasBorder"];
   }
 
   // Tag
