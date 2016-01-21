@@ -8,19 +8,11 @@ CC = cl.exe
 CFLAGS = /nologo /O2 /W3 /c /MD
 CFLAGS = $(CFLAGS) /D_CRT_NONSTDC_NO_DEPRECATE /D_CRT_SECURE_NO_WARNINGS
 CFLAGS = $(CFLAGS) /Iinclude
-GNULIBCFLAGS = $(CFLAGS) /I$(GNULIBDIR)
-YAMLCFLAGS = $(CFLAGS) /I$(SRCDIR) /I$(GNULIBDIR)
 HEADERS = $(SRCDIR)\louis.h include\liblouis.h include\config.h
-GNULIBHEADERS = $(GNULIBDIR)\error.h include\config.h include\unistd.h
-YAMLHEADERS = $(SRCDIR)\louis.h include\config.h \
-    $(GNULIBDIR)\error.h $(TESTSDIR)\brl_checks.h
 DLLFLAGS = /dll /nologo
 LIBFLAGS = /nologo
-EXEFLAGS = /nologo
 OBJ = compileTranslationTable.obj lou_translateString.obj \
     lou_backTranslateString.obj wrappers.obj logging.obj
-YAMLOBJ = liblouis.lib \
-    error.obj strndup.obj brl_checks.obj check_yaml.obj
 
 !if "$(UCS)" == "2"
 CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned short int"
@@ -30,19 +22,10 @@ CFLAGS = $(CFLAGS) /DWIDECHAR_TYPE="unsigned int"
 CFLAGS = $(CFLAGS) /DUNICODEBITS=32
 !endif
 
-!if EXIST($(LIBYAMLDIR)\include\yaml.h)
-YAMLHEADERS = $(YAMLHEADERS) $(LIBYAMLDIR)\include\yaml.h
-YAMLCFLAGS = $(YAMLCFLAGS) /DHAVE_LIBYAML /DYAML_DECLARE_STATIC
-YAMLCFLAGS = $(YAMLCFLAGS) /I$(LIBYAMLDIR)\include
-YAMLOBJ = yaml.lib $(YAMLOBJ)
-!endif
-
-all: liblouis.lib liblouis.def check_yaml.exe
+all: liblouis.lib liblouis.def
     link $(DLLFLAGS) /DEF:liblouis.def /OUT:liblouis.dll $(OBJ)  
 liblouis.lib: $(OBJ)
     lib $(LIBFLAGS) $(OBJ) /out:liblouis.lib
-check_yaml.exe: $(YAMLOBJ)
-    link $(EXEFLAGS) /OUT:check_yaml.exe $(YAMLOBJ)
 
 compileTranslationTable.obj: $(SRCDIR)\compileTranslationTable.c \
     $(HEADERS)
@@ -60,13 +43,3 @@ logging.obj: $(SRCDIR)\logging.c $(HEADERS)
 
 wrappers.obj: $(SRCDIR)\wrappers.c $(HEADERS)
     $(CC) $(CFLAGS) $(SRCDIR)\wrappers.c
-
-error.obj: $(GNULIBDIR)\error.c $(GNULIBHEADERS)
-    $(CC) $(GNULIBCFLAGS) $(GNULIBDIR)\error.c
-strndup.obj: $(GNULIBDIR)\strndup.c $(GNULIBHEADERS)
-    $(CC) $(GNULIBCFLAGS) $(GNULIBDIR)\strndup.c
-brl_checks.obj: $(TESTSDIR)\brl_checks.c $(YAMLHEADERS)
-# Disable MSVC warning C4333: '>>': right shift by too large amount, data loss
-    $(CC) $(YAMLCFLAGS) /wd4333 $(TESTSDIR)\brl_checks.c
-check_yaml.obj: $(TESTSDIR)\check_yaml.c $(YAMLHEADERS)
-    $(CC) $(YAMLCFLAGS) $(TESTSDIR)\check_yaml.c

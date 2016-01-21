@@ -22,12 +22,3 @@
    */
 
 #define PACKAGE_VERSION "liblouis-2.6.5"
-#define HAVE_DECL_STRERROR_R 1
-#define _GL_ATTRIBUTE_FORMAT_PRINTF(a, b)
-#define _GL_ARG_NONNULL(a)
-
-// HACK: string.h from MSVC doesn't have strndup
-#ifdef _WIN32
-#include <string.h>
-extern char *strndup (char const *s, size_t n);
-#endif

@@ -6,6 +6,5 @@ erase *.obj
 erase liblouis*.dll
 erase liblouis*.exp
 erase liblouis*.lib
-erase check_yaml.exe
 popd
 @echo on
