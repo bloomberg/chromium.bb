@@ -736,8 +736,5 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestWebViewInsideFrame) {
   LaunchApp("web_view/inside_iframe");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestCaptureVisibleRegion) {
-  RunTest("testCaptureVisibleRegion", "web_view/apitest");
-}
 
 }  // namespace extensions

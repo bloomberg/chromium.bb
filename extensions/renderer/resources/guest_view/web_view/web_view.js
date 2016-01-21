@@ -31,11 +31,6 @@ WebViewImpl.setupElement = function(proto) {
   // Public-facing API methods.
   var apiMethods = WebViewImpl.getApiMethods();
 
-  // Add the experimental API methods, if available.
-  var experimentalApiMethods =
-      WebViewImpl.maybeGetExperimentalApiMethods();
-  apiMethods = $Array.concat(apiMethods, experimentalApiMethods);
-
   // Create default implementations for undefined API methods.
   var createDefaultApiMethod = function(m) {
     return function(var_args) {
@@ -224,9 +219,6 @@ WebViewImpl.prototype.makeElementFullscreen = function() {
 
 // Implemented when the ChromeWebView API is available.
 WebViewImpl.prototype.maybeSetupContextMenus = function() {};
-
-// Implemented when the experimental WebView API is available.
-WebViewImpl.maybeGetExperimentalApiMethods = function() { return []; };
 
 GuestViewContainer.registerElement(WebViewImpl);
 
