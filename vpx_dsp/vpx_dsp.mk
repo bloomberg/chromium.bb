@@ -300,7 +300,7 @@ endif  # CONFIG_USE_X86INC
 
 endif  # CONFIG_ENCODERS
 
-ifneq ($(filter yes,$(CONFIG_ENCODERS) $(CONFIG_POSTPROC) $(CONFIG_VP9_POSTPROC)),)
+ifneq ($(filter yes,$(CONFIG_ENCODERS)),)
 DSP_SRCS-yes            += variance.c
 DSP_SRCS-yes            += variance.h
 
@@ -341,7 +341,7 @@ ifeq ($(CONFIG_USE_X86INC),yes)
 DSP_SRCS-$(HAVE_SSE2)   += x86/highbd_subpel_variance_impl_sse2.asm
 endif  # CONFIG_USE_X86INC
 endif  # CONFIG_VPX_HIGHBITDEPTH
-endif  # CONFIG_ENCODERS || CONFIG_POSTPROC || CONFIG_VP9_POSTPROC
+endif  # CONFIG_ENCODERS
 
 DSP_SRCS-no += $(DSP_SRCS_REMOVE-yes)
 

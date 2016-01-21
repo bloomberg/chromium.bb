@@ -1375,7 +1375,7 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
 }  # CONFIG_VPX_HIGHBITDEPTH
 }  # CONFIG_ENCODERS
 
-if (vpx_config("CONFIG_ENCODERS") eq "yes" || vpx_config("CONFIG_POSTPROC") eq "yes" || vpx_config("CONFIG_VP9_POSTPROC") eq "yes") {
+if (vpx_config("CONFIG_ENCODERS") eq "yes") {
 
 #
 # Variance
@@ -1899,6 +1899,6 @@ if (vpx_config("CONFIG_VPX_HIGHBITDEPTH") eq "yes") {
   add_proto qw/uint32_t vpx_highbd_8_sub_pixel_avg_variance4x4/, "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
 
 }  # CONFIG_VPX_HIGHBITDEPTH
-}  # CONFIG_ENCODERS || CONFIG_POSTPROC || CONFIG_VP9_POSTPROC
+}  # CONFIG_ENCODERS
 
 1;

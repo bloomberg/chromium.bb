@@ -40,7 +40,6 @@ Advanced options:
                                   hardware decoder compatibility
   ${toggle_vp10}                  VP10 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
-  ${toggle_postproc}              postprocessing
   ${toggle_multithread}           multithreaded encoding and decoding
   ${toggle_spatial_resampling}    spatial sampling (scaling) support
   ${toggle_realtime_only}         enable this option while building for real-time encoding
@@ -53,7 +52,6 @@ Advanced options:
   ${toggle_shared}                shared library support
   ${toggle_static}                static library support
   ${toggle_small}                 favor smaller size over speed
-  ${toggle_postproc_visualizer}   macro block / block level visualizers
   ${toggle_multi_res_encoding}    enable multiple-resolution encoding
   ${toggle_temporal_denoising}    enable temporal denoising and disable the spatial denoiser
   ${toggle_webm_io}               enable input from and output to WebM container
@@ -279,7 +277,6 @@ CONFIG_LIST="
     dequant_tokens
     dc_recon
     runtime_cpu_detect
-    postproc
     multithread
     internal_stats
     ${CODECS}
@@ -294,7 +291,6 @@ CONFIG_LIST="
     shared
     static
     small
-    postproc_visualizer
     os_support
     unit_tests
     webm_io
@@ -341,7 +337,6 @@ CMDLINE_SELECT="
 
     dequant_tokens
     dc_recon
-    postproc
     multithread
     internal_stats
     ${CODECS}
@@ -354,7 +349,6 @@ CMDLINE_SELECT="
     shared
     static
     small
-    postproc_visualizer
     unit_tests
     webm_io
     libyuv
@@ -437,7 +431,6 @@ process_targets() {
     done
     enabled debug_libs && DIST_DIR="${DIST_DIR}-debug"
     enabled codec_srcs && DIST_DIR="${DIST_DIR}-src"
-    ! enabled postproc && DIST_DIR="${DIST_DIR}-nopost"
     ! enabled multithread && DIST_DIR="${DIST_DIR}-nomt"
     ! enabled install_docs && DIST_DIR="${DIST_DIR}-nodocs"
     DIST_DIR="${DIST_DIR}-${tgt_isa}-${tgt_os}"
@@ -641,13 +634,6 @@ process_toolchain() {
              INLINE="__forceinline"
         ;;
     esac
-
-    # Other toolchain specific defaults
-    case $toolchain in x86*) soft_enable postproc;; esac
-
-    if enabled postproc_visualizer; then
-        enabled postproc || die "postproc_visualizer requires postproc to be enabled"
-    fi
 
     # Enable unit tests by default if we have a working C++ compiler.
     case "$toolchain" in

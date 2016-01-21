@@ -28,7 +28,6 @@ void vp10_init_context_buffers(struct VP10Common *cm);
 void vp10_free_context_buffers(struct VP10Common *cm);
 
 void vp10_free_ref_frame_buffers(struct BufferPool *pool);
-void vp10_free_postproc_buffers(struct VP10Common *cm);
 
 int vp10_alloc_state_buffers(struct VP10Common *cm, int width, int height);
 void vp10_free_state_buffers(struct VP10Common *cm);
