@@ -981,6 +981,7 @@ public class NewTabPageView extends FrameLayout
         }
 
         public void onIconUpdated(final String url) {
+            if (mMostVisitedItems == null) return;
             // Find a matching most visited item.
             for (MostVisitedItem item : mMostVisitedItems) {
                 if (item.getUrl().equals(url)) {
