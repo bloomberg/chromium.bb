@@ -20,6 +20,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -491,6 +492,7 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
     public void testBottomBar() throws InterruptedException {
         final int numItems = 3;
         final Bitmap expectedIcon = createTestBitmap(48, 24);
+        final int barColor = Color.GREEN;
 
         Intent intent = createMinimalCustomTabIntent();
         ArrayList<Bundle> bundles = new ArrayList<>();
@@ -499,12 +501,15 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
             bundles.add(bundle);
         }
         intent.putExtra(CustomTabsIntent.EXTRA_ACTION_BAR_ITEMS, bundles);
+        intent.putExtra(CustomTabsIntent.EXTRA_CUSTOM_ACTION_BAR_COLOR, barColor);
         startCustomTabActivityWithIntent(intent);
 
         ViewGroup bottomBar = (ViewGroup) getActivity().findViewById(R.id.bottombar);
         assertNotNull(bottomBar);
         assertEquals("Bottom Bar showing incorrect number of buttons.",
                 numItems, bottomBar.getChildCount());
+        assertEquals("Bottom bar not showing correct color", barColor,
+                ((ColorDrawable) bottomBar.getBackground()).getColor());
         for (int i = 1; i <= numItems; i++) {
             ImageButton button = (ImageButton) bottomBar.getChildAt(i - 1);
             assertTrue("Bottom Bar button does not have the correct bitmap.",

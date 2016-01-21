@@ -485,8 +485,6 @@ public class CustomTabActivity extends ChromeActivity {
      */
     private void showBottomBarIfNecessary() {
         // TODO (yusufo): Find a better place for the layout code here and in CustomButtonParams.
-        // TODO (ianwen): if button icon is too wide, show them in overflow menu instead. If button
-        // id is not specified, the overflow sequence should be toolbar -> bottom bar -> menu.
         if (!mIntentDataProvider.shouldShowBottomBar()) return;
 
         ViewStub bottomBarStub = ((ViewStub) findViewById(R.id.bottombar_stub));
@@ -500,7 +498,7 @@ public class CustomTabActivity extends ChromeActivity {
                 R.color.bottom_bar_shadow_color), FadingShadow.POSITION_BOTTOM);
 
         ViewGroup bottomBar = (ViewGroup) findViewById(R.id.bottombar);
-        bottomBar.setBackgroundColor(mIntentDataProvider.getToolbarColor());
+        bottomBar.setBackgroundColor(mIntentDataProvider.getBottomBarColor());
         List<CustomButtonParams> items = mIntentDataProvider.getCustomButtonsOnBottombar();
         for (CustomButtonParams params : items) {
             if (params.showOnToolbar()) continue;

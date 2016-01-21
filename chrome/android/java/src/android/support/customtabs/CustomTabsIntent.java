@@ -155,6 +155,13 @@ public class CustomTabsIntent {
     public static final int TOOLBAR_ACTION_BUTTON_ID = 0;
 
     /**
+     * Extra that changes the background color for the custom action bar. The value should be an int
+     * that specifies a {@link Color}, not a resource id.
+     */
+    public static final String EXTRA_CUSTOM_ACTION_BAR_COLOR =
+            "android.support.customtabs.extra.CUSTOM_ACTION_BAR_COLOR";
+
+    /**
      * Convenience method to create a VIEW intent without a session for the given package.
      * @param packageName The package name to set in the intent.
      * @param data        The data {@link Uri} to be used in the intent.

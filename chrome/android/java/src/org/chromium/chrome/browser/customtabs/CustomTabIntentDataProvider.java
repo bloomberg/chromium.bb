@@ -56,6 +56,7 @@ public class CustomTabIntentDataProvider {
     private final Intent mKeepAliveServiceIntent;
     private final int mTitleVisibilityState;
     private int mToolbarColor;
+    private int mBottomBarColor;
     private boolean mEnableUrlBarHiding;
     private List<CustomButtonParams> mCustomButtonParams;
     private Drawable mCloseButtonIcon;
@@ -75,6 +76,7 @@ public class CustomTabIntentDataProvider {
         mSession = IntentUtils.safeGetBinderExtra(intent, CustomTabsIntent.EXTRA_SESSION);
         retrieveCustomButtons(intent, context);
         retrieveToolbarColor(intent, context);
+        retrieveBottomBarColor(intent, context);
         mEnableUrlBarHiding = IntentUtils.safeGetBooleanExtra(
                 intent, CustomTabsIntent.EXTRA_ENABLE_URLBAR_HIDING, true);
         mKeepAliveServiceIntent = IntentUtils.safeGetParcelableExtra(intent, EXTRA_KEEP_ALIVE);
@@ -135,12 +137,21 @@ public class CustomTabIntentDataProvider {
      * Processes the color passed from the client app and updates {@link #mToolbarColor}.
      */
     private void retrieveToolbarColor(Intent intent, Context context) {
-        int color = IntentUtils.safeGetIntExtra(intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR,
-                ApiCompatibilityUtils.getColor(context.getResources(),
-                        R.color.default_primary_color));
         int defaultColor = ApiCompatibilityUtils.getColor(context.getResources(),
                 R.color.default_primary_color);
+        int color = IntentUtils.safeGetIntExtra(intent, CustomTabsIntent.EXTRA_TOOLBAR_COLOR,
+                defaultColor);
         mToolbarColor = removeTransparencyFromColor(color, defaultColor);
+    }
+
+    /**
+     * Must be called after calling {@link #retrieveToolbarColor(Intent, Context)}.
+     */
+    private void retrieveBottomBarColor(Intent intent, Context context) {
+        int defaultColor = mToolbarColor;
+        int color = IntentUtils.safeGetIntExtra(intent,
+                CustomTabsIntent.EXTRA_CUSTOM_ACTION_BAR_COLOR, defaultColor);
+        mBottomBarColor = removeTransparencyFromColor(color, defaultColor);
     }
 
     /**
@@ -226,6 +237,13 @@ public class CustomTabIntentDataProvider {
      */
     public boolean shouldShowBottomBar() {
         return !mBottombarButtons.isEmpty();
+    }
+
+    /**
+     * @return The color of the bottom bar, or {@link #getToolbarColor()} if not specified.
+     */
+    public int getBottomBarColor() {
+        return mBottomBarColor;
     }
 
     /**
