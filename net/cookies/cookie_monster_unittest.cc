@@ -2820,11 +2820,11 @@ TEST_F(MultiThreadedCookieMonsterTest, ThreadCheckDeleteCanonicalCookie) {
 // MultiThreadedCookieMonsterTest in order to test and use
 // GetAllCookiesForURLAsync, but it does not use any additional threads.
 TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
-  std::vector<CanonicalCookie*> cookies;
-  // This cookie will be freed by the CookieMonster.
-  cookies.push_back(CanonicalCookie::Create(
+  scoped_ptr<CanonicalCookie> cookie(CanonicalCookie::Create(
       http_www_google_.url(), kValidCookieLine, Time::Now(), CookieOptions()));
-  CanonicalCookie cookie = *cookies[0];
+
+  // This cookie will be freed by the CookieMonster.
+  std::vector<CanonicalCookie*> cookies = {new CanonicalCookie(*cookie)};
   scoped_refptr<NewMockPersistentCookieStore> store(
       new NewMockPersistentCookieStore);
   scoped_refptr<CookieMonster> cm(new CookieMonster(store.get(), NULL));
@@ -2856,7 +2856,7 @@ TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
   ASSERT_TRUE(callback.did_run());
   // See that the callback was called with the cookies.
   ASSERT_EQ(1u, callback.cookies().size());
-  EXPECT_TRUE(cookie.IsEquivalent(callback.cookies()[0]));
+  EXPECT_TRUE(cookie->IsEquivalent(callback.cookies()[0]));
 
   // All urls in |urls| should share the same cookie domain.
   const GURL kUrls[] = {
@@ -2870,7 +2870,7 @@ TEST_F(MultiThreadedCookieMonsterTest, GetAllCookiesForURLEffectiveDomain) {
     GetAllCookiesForURLTask(cm.get(), url, &callback);
     ASSERT_TRUE(callback.did_run());
     ASSERT_EQ(1u, callback.cookies().size());
-    EXPECT_TRUE(cookie.IsEquivalent(callback.cookies()[0]));
+    EXPECT_TRUE(cookie->IsEquivalent(callback.cookies()[0]));
   }
 }
 

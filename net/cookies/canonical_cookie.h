@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_constants.h"
@@ -52,26 +53,26 @@ class NET_EXPORT CanonicalCookie {
   // Creates a new |CanonicalCookie| from the |cookie_line| and the
   // |creation_time|. Canonicalizes and validates inputs. May return NULL if
   // an attribute value is invalid.
-  static CanonicalCookie* Create(const GURL& url,
-                                 const std::string& cookie_line,
-                                 const base::Time& creation_time,
-                                 const CookieOptions& options);
+  static scoped_ptr<CanonicalCookie> Create(const GURL& url,
+                                            const std::string& cookie_line,
+                                            const base::Time& creation_time,
+                                            const CookieOptions& options);
 
   // Creates a canonical cookie from unparsed attribute values.
   // Canonicalizes and validates inputs.  May return NULL if an attribute
   // value is invalid.
-  static CanonicalCookie* Create(const GURL& url,
-                                 const std::string& name,
-                                 const std::string& value,
-                                 const std::string& domain,
-                                 const std::string& path,
-                                 const base::Time& creation,
-                                 const base::Time& expiration,
-                                 bool secure,
-                                 bool http_only,
-                                 bool first_party_only,
-                                 bool enforce_strict_secure,
-                                 CookiePriority priority);
+  static scoped_ptr<CanonicalCookie> Create(const GURL& url,
+                                            const std::string& name,
+                                            const std::string& value,
+                                            const std::string& domain,
+                                            const std::string& path,
+                                            const base::Time& creation,
+                                            const base::Time& expiration,
+                                            bool secure,
+                                            bool http_only,
+                                            bool first_party_only,
+                                            bool enforce_strict_secure,
+                                            CookiePriority priority);
 
   const GURL& Source() const { return source_; }
   const std::string& Name() const { return name_; }

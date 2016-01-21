@@ -58,7 +58,7 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_FALSE(cookie->IsSecure());
 
   GURL url2("http://www.foo.com");
-  cookie.reset(CanonicalCookie::Create(url2, "B=1", creation_time, options));
+  cookie = CanonicalCookie::Create(url2, "B=1", creation_time, options);
   EXPECT_EQ(url2.GetOrigin(), cookie->Source());
   EXPECT_EQ("B", cookie->Name());
   EXPECT_EQ("1", cookie->Value());
@@ -68,34 +68,33 @@ TEST(CanonicalCookieTest, Create) {
 
   // Test creating secure cookies. RFC 6265 allows insecure urls to set secure
   // cookies.
-  cookie.reset(
-      CanonicalCookie::Create(url, "A=2; Secure", creation_time, options));
+  cookie = CanonicalCookie::Create(url, "A=2; Secure", creation_time, options);
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsSecure());
 
   // Test creating http only cookies.
-  cookie.reset(
-      CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options));
+  cookie =
+      CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options);
   EXPECT_FALSE(cookie.get());
   CookieOptions httponly_options;
   httponly_options.set_include_httponly();
-  cookie.reset(CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time,
-                                       httponly_options));
+  cookie = CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time,
+                                   httponly_options);
   EXPECT_TRUE(cookie->IsHttpOnly());
 
   // Test creating http only cookies.
   CookieOptions first_party_options;
   first_party_options.set_include_first_party_only_cookies();
-  cookie.reset(CanonicalCookie::Create(url, "A=2; First-Party-Only",
-                                       creation_time, httponly_options));
+  cookie = CanonicalCookie::Create(url, "A=2; First-Party-Only", creation_time,
+                                   httponly_options);
   EXPECT_TRUE(cookie.get());
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
 
   // Test the creating cookies using specific parameter instead of a cookie
   // string.
-  cookie.reset(CanonicalCookie::Create(
-      url, "A", "2", "www.example.com", "/test", creation_time, base::Time(),
-      false, false, false, false, COOKIE_PRIORITY_DEFAULT));
+  cookie = CanonicalCookie::Create(url, "A", "2", "www.example.com", "/test",
+                                   creation_time, base::Time(), false, false,
+                                   false, false, COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -105,9 +104,9 @@ TEST(CanonicalCookieTest, Create) {
   EXPECT_FALSE(cookie->IsHttpOnly());
   EXPECT_FALSE(cookie->IsFirstPartyOnly());
 
-  cookie.reset(CanonicalCookie::Create(
-      url, "A", "2", ".www.example.com", "/test", creation_time, base::Time(),
-      false, false, false, false, COOKIE_PRIORITY_DEFAULT));
+  cookie = CanonicalCookie::Create(url, "A", "2", ".www.example.com", "/test",
+                                   creation_time, base::Time(), false, false,
+                                   false, false, COOKIE_PRIORITY_DEFAULT);
   EXPECT_EQ(url.GetOrigin(), cookie->Source());
   EXPECT_EQ("A", cookie->Name());
   EXPECT_EQ("2", cookie->Value());
@@ -134,8 +133,7 @@ TEST(CanonicalCookieTest, EmptyExpiry) {
 
   // With a stale server time
   options.set_server_time(creation_time - base::TimeDelta::FromHours(1));
-  cookie.reset(
-      CanonicalCookie::Create(url, cookie_line, creation_time, options));
+  cookie = CanonicalCookie::Create(url, cookie_line, creation_time, options);
   EXPECT_TRUE(cookie.get());
   EXPECT_FALSE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
@@ -143,8 +141,7 @@ TEST(CanonicalCookieTest, EmptyExpiry) {
 
   // With a future server time
   options.set_server_time(creation_time + base::TimeDelta::FromHours(1));
-  cookie.reset(
-      CanonicalCookie::Create(url, cookie_line, creation_time, options));
+  cookie = CanonicalCookie::Create(url, cookie_line, creation_time, options);
   EXPECT_TRUE(cookie.get());
   EXPECT_FALSE(cookie->IsPersistent());
   EXPECT_FALSE(cookie->IsExpired(creation_time));
@@ -353,8 +350,8 @@ TEST(CanonicalCookieTest, IsDomainMatch) {
   EXPECT_FALSE(cookie->IsDomainMatch("www0.example.com"));
   EXPECT_FALSE(cookie->IsDomainMatch("example.com"));
 
-  cookie.reset(CanonicalCookie::Create(url, "A=2; Domain=www.example.com",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(url, "A=2; Domain=www.example.com",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsDomainCookie());
   EXPECT_TRUE(cookie->IsDomainMatch("www.example.com"));
   EXPECT_TRUE(cookie->IsDomainMatch("www.example.com"));
@@ -362,8 +359,8 @@ TEST(CanonicalCookieTest, IsDomainMatch) {
   EXPECT_FALSE(cookie->IsDomainMatch("www0.example.com"));
   EXPECT_FALSE(cookie->IsDomainMatch("example.com"));
 
-  cookie.reset(CanonicalCookie::Create(url, "A=2; Domain=.www.example.com",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(url, "A=2; Domain=.www.example.com",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsDomainMatch("www.example.com"));
   EXPECT_TRUE(cookie->IsDomainMatch("www.example.com"));
   EXPECT_TRUE(cookie->IsDomainMatch("foo.www.example.com"));
@@ -384,9 +381,8 @@ TEST(CanonicalCookieTest, IsOnPath) {
   // Test the empty string edge case.
   EXPECT_FALSE(cookie->IsOnPath(std::string()));
 
-  cookie.reset(
-      CanonicalCookie::Create(GURL("http://www.example.com/test/foo.html"),
-                              "A=2", creation_time, options));
+  cookie = CanonicalCookie::Create(GURL("http://www.example.com/test/foo.html"),
+                                   "A=2", creation_time, options);
   EXPECT_FALSE(cookie->IsOnPath("/"));
   EXPECT_TRUE(cookie->IsOnPath("/test"));
   EXPECT_TRUE(cookie->IsOnPath("/test/bar.html"));
@@ -412,16 +408,16 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
 
   // Test that cookie with a cookie path that does not match the url path are
   // not included.
-  cookie.reset(CanonicalCookie::Create(url, "A=2; Path=/foo/bar", creation_time,
-                                       options));
+  cookie = CanonicalCookie::Create(url, "A=2; Path=/foo/bar", creation_time,
+                                   options);
   EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
   EXPECT_TRUE(cookie->IncludeForRequestURL(
       GURL("http://www.example.com/foo/bar/index.html"), options));
 
   // Test that a secure cookie is not included for a non secure URL.
   GURL secure_url("https://www.example.com");
-  cookie.reset(CanonicalCookie::Create(secure_url, "A=2; Secure", creation_time,
-                                       options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure", creation_time,
+                                   options);
   EXPECT_TRUE(cookie->IsSecure());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
   EXPECT_FALSE(cookie->IncludeForRequestURL(url, options));
@@ -429,8 +425,8 @@ TEST(CanonicalCookieTest, IncludeForRequestURL) {
   // Test that http only cookies are only included if the include httponly flag
   // is set on the cookie options.
   options.set_include_httponly();
-  cookie.reset(
-      CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options));
+  cookie =
+      CanonicalCookie::Create(url, "A=2; HttpOnly", creation_time, options);
   EXPECT_TRUE(cookie->IsHttpOnly());
   EXPECT_TRUE(cookie->IncludeForRequestURL(url, options));
   options.set_exclude_httponly();
@@ -448,33 +444,33 @@ TEST(CanonicalCookieTest, IncludeFirstPartyForFirstPartyURL) {
 
   // First-party-only cookies are not included for non-first-party requests,
   // even if other properties match:
-  cookie.reset(CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie.reset(CanonicalCookie::Create(
-      secure_url, "A=2; Secure; First-Party-Only", creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; First-Party-Only",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie.reset(CanonicalCookie::Create(secure_url_with_path,
-                                       "A=2; First-Party-Only; path=/foo/bar",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url_with_path,
+                                   "A=2; First-Party-Only; path=/foo/bar",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_FALSE(cookie->IncludeForRequestURL(secure_url, options));
 
   // First-party-only cookies are included for first-party requests:
   options.set_include_first_party_only_cookies();
-  cookie.reset(CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; First-Party-Only",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie.reset(CanonicalCookie::Create(
-      secure_url, "A=2; Secure; First-Party-Only", creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url, "A=2; Secure; First-Party-Only",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url, options));
-  cookie.reset(CanonicalCookie::Create(secure_url_with_path,
-                                       "A=2; First-Party-Only; path=/foo/bar",
-                                       creation_time, options));
+  cookie = CanonicalCookie::Create(secure_url_with_path,
+                                   "A=2; First-Party-Only; path=/foo/bar",
+                                   creation_time, options);
   EXPECT_TRUE(cookie->IsFirstPartyOnly());
   EXPECT_TRUE(cookie->IncludeForRequestURL(secure_url_with_path, options));
 }
@@ -549,28 +545,24 @@ TEST(CanonicalCookieTest, SecureCookiePrefix) {
   CookieOptions options;
 
   // A __Secure- cookie must be Secure.
-  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Secure-A=B", creation_time, options)));
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__Secure-A=B; httponly", creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Secure-A=B", creation_time,
+                                       options));
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Secure-A=B; httponly",
+                                       creation_time, options));
 
   // A typoed prefix does not have to be Secure.
-  EXPECT_NE(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__secure-A=B; Secure", creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__secure-A=C;", creation_time, options)));
-  EXPECT_NE(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__SecureA=B; Secure", creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__SecureA=C;", creation_time, options)));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__secure-A=B; Secure",
+                                      creation_time, options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__secure-A=C;", creation_time,
+                                      options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__SecureA=B; Secure",
+                                      creation_time, options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__SecureA=C;", creation_time,
+                                      options));
 
   // A __Secure- cookie can't be set on a non-secure origin.
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                http_url, "__Secure-A=B; Secure", creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(http_url, "__Secure-A=B; Secure",
+                                       creation_time, options));
 }
 
 TEST(CanonicalCookieTest, HostCookiePrefix) {
@@ -581,54 +573,44 @@ TEST(CanonicalCookieTest, HostCookiePrefix) {
   std::string domain = https_url.host();
 
   // A __Host- cookie must be Secure.
-  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B;", creation_time, options)));
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__Host-A=B; Domain=" + domain + "; Path=/;",
-                creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B; Path=/; Secure;",
-                         creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Host-A=B;", creation_time,
+                                       options));
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "__Host-A=B; Domain=" + domain + "; Path=/;", creation_time,
+      options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Host-A=B; Path=/; Secure;",
+                                      creation_time, options));
 
   // A __Host- cookie must be set from a secure scheme.
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                http_url, "__Host-A=B; Domain=" + domain + "; Path=/; Secure;",
-                creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B; Path=/; Secure;",
-                         creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(
+      http_url, "__Host-A=B; Domain=" + domain + "; Path=/; Secure;",
+      creation_time, options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Host-A=B; Path=/; Secure;",
+                                      creation_time, options));
 
   // A __Host- cookie can't have a Domain.
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__Host-A=B; Domain=" + domain + "; Path=/; Secure;",
-                creation_time, options)));
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__Host-A=B; Domain=" + domain + "; Secure;",
-                creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "__Host-A=B; Domain=" + domain + "; Path=/; Secure;",
+      creation_time, options));
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "__Host-A=B; Domain=" + domain + "; Secure;", creation_time,
+      options));
 
   // A __Host- cookie must have a Path of "/".
-  EXPECT_EQ(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B; Path=/foo; Secure;",
-                         creation_time, options)));
-  EXPECT_EQ(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                https_url, "__Host-A=B; Secure;", creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B; Secure; Path=/;",
-                         creation_time, options)));
+  EXPECT_FALSE(CanonicalCookie::Create(
+      https_url, "__Host-A=B; Path=/foo; Secure;", creation_time, options));
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Host-A=B; Secure;",
+                                       creation_time, options));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Host-A=B; Secure; Path=/;",
+                                      creation_time, options));
 
   // Rules don't apply for a typoed prefix.
-  EXPECT_NE(nullptr,
-            make_scoped_ptr(CanonicalCookie::Create(
-                http_url, "__host-A=B; Domain=" + domain + "; Path=/; Secure;",
-                creation_time, options)));
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__HostA=B; Domain=" + domain + "; Secure;",
-                         creation_time, options)));
+  EXPECT_TRUE(CanonicalCookie::Create(
+      http_url, "__host-A=B; Domain=" + domain + "; Path=/; Secure;",
+      creation_time, options));
+  EXPECT_TRUE(CanonicalCookie::Create(
+      https_url, "__HostA=B; Domain=" + domain + "; Secure;", creation_time,
+      options));
 }
 
 TEST(CanonicalCookieTest, EnforceSecureCookiesRequireSecureScheme) {
@@ -683,48 +665,42 @@ TEST(CanonicalCookieTest, TestPrefixHistograms) {
   base::Time creation_time = base::Time::Now();
   CookieOptions options;
 
-  scoped_ptr<CanonicalCookie> cookie1 = make_scoped_ptr(CanonicalCookie::Create(
-      https_url, "__Host-A=B;", creation_time, options));
-  EXPECT_EQ(nullptr, cookie1);
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Host-A=B;", creation_time,
+                                       options));
 
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 1);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 1);
 
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Host-A=B; Path=/; Secure", creation_time,
-                         options)));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Host-A=B; Path=/; Secure",
+                                      creation_time, options));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 2);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 1);
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__HostA=B; Path=/; Secure", creation_time,
-                         options)));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__HostA=B; Path=/; Secure",
+                                      creation_time, options));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 2);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_HOST, 1);
 
-  scoped_ptr<CanonicalCookie> cookie2 = make_scoped_ptr(CanonicalCookie::Create(
-      https_url, "__Secure-A=B;", creation_time, options));
-  EXPECT_EQ(nullptr, cookie2);
+  EXPECT_FALSE(CanonicalCookie::Create(https_url, "__Secure-A=B;",
+                                       creation_time, options));
 
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__Secure-A=B; Path=/; Secure",
-                         creation_time, options)));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__Secure-A=B; Path=/; Secure",
+                                      creation_time, options));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 1);
-  EXPECT_NE(nullptr, make_scoped_ptr(CanonicalCookie::Create(
-                         https_url, "__SecureA=B; Path=/; Secure",
-                         creation_time, options)));
+  EXPECT_TRUE(CanonicalCookie::Create(https_url, "__SecureA=B; Path=/; Secure",
+                                      creation_time, options));
   histograms.ExpectBucketCount(kCookiePrefixHistogram,
                                CanonicalCookie::COOKIE_PREFIX_SECURE, 2);
   histograms.ExpectBucketCount(kCookiePrefixBlockedHistogram,

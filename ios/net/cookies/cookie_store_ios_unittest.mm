@@ -208,8 +208,11 @@ class TestPersistentCookieStore
     std::vector<net::CanonicalCookie*> cookies;
     net::CookieOptions options;
     options.set_include_httponly();
-    cookies.push_back(net::CanonicalCookie::Create(kTestCookieURL, "a=b",
-                                                   base::Time::Now(), options));
+
+    scoped_ptr<net::CanonicalCookie> cookie(net::CanonicalCookie::Create(
+        kTestCookieURL, "a=b", base::Time::Now(), options));
+    cookies.push_back(cookie.release());
+
     // Some canonical cookies cannot be converted into System cookies, for
     // example if value is not valid utf8. Such cookies are ignored.
     net::CanonicalCookie* bad_canonical_cookie = new net::CanonicalCookie(

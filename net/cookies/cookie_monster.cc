@@ -1153,8 +1153,7 @@ bool CookieMonster::SetCookieWithDetails(const GURL& url,
   Time creation_time = CurrentTime();
   last_time_seen_ = creation_time;
 
-  scoped_ptr<CanonicalCookie> cc;
-  cc.reset(CanonicalCookie::Create(
+  scoped_ptr<CanonicalCookie> cc(CanonicalCookie::Create(
       url, name, value, domain, path, creation_time, expiration_time, secure,
       http_only, first_party_only, enforce_strict_secure, priority));
 
