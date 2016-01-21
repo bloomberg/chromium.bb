@@ -204,7 +204,7 @@ PassRefPtr<SkImageFilter> FEComposite::createImageFilterInternal(SkiaImageFilter
 {
     RefPtr<SkImageFilter> foreground(builder.build(inputEffect(0), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
     RefPtr<SkImageFilter> background(builder.build(inputEffect(1), operatingColorSpace(), !mayProduceInvalidPreMultipliedPixels()));
-    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect();
     RefPtr<SkXfermode> mode;
     if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
         mode = adoptRef(SkArithmeticMode::Create(SkFloatToScalar(m_k1), SkFloatToScalar(m_k2), SkFloatToScalar(m_k3), SkFloatToScalar(m_k4), requiresPMColorValidation));

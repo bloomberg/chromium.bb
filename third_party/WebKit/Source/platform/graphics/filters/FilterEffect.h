@@ -156,7 +156,7 @@ protected:
 
     Color adaptColorToOperatingColorSpace(const Color& deviceColor);
 
-    SkImageFilter::CropRect getCropRect(const FloatSize& cropOffset) const;
+    SkImageFilter::CropRect getCropRect() const;
 
     void addAbsolutePaintRect(const FloatRect& absolutePaintRect);
 

@@ -137,7 +137,7 @@ PassRefPtr<SkImageFilter> FEComponentTransfer::createImageFilter(SkiaImageFilter
 
     SkAutoTUnref<SkColorFilter> colorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues));
 
-    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect();
     return adoptRef(SkColorFilterImageFilter::Create(colorFilter, input.get(), &cropRect));
 }
 

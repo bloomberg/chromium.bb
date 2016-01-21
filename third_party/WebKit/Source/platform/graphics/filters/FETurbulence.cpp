@@ -154,7 +154,7 @@ PassRefPtr<SkImageFilter> FETurbulence::createImageFilter(SkiaImageFilterBuilder
     SkAutoTUnref<SkShader> shader(createShader());
     SkPaint paint;
     paint.setShader(shader);
-    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect rect = getCropRect();
     return adoptRef(SkPaintImageFilter::Create(paint, &rect));
 }
 

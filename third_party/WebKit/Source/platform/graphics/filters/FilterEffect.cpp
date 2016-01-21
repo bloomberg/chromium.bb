@@ -201,7 +201,7 @@ PassRefPtr<SkImageFilter> FilterEffect::createImageFilterWithoutValidation(SkiaI
 PassRefPtr<SkImageFilter> FilterEffect::createTransparentBlack(SkiaImageFilterBuilder& builder) const
 {
     SkAutoTUnref<SkColorFilter> filter(SkColorFilter::CreateModeFilter(0, SkXfermode::kClear_Mode));
-    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect rect = getCropRect();
     return adoptRef(SkColorFilterImageFilter::Create(filter, nullptr, &rect));
 }
 
@@ -215,7 +215,7 @@ bool FilterEffect::hasConnectedInput() const
     return false;
 }
 
-SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) const
+SkImageFilter::CropRect FilterEffect::getCropRect() const
 {
     FloatRect rect;
     uint32_t flags = 0;
@@ -226,7 +226,6 @@ SkImageFilter::CropRect FilterEffect::getCropRect(const FloatSize& cropOffset) c
 
     rect = applyEffectBoundaries(rect);
 
-    rect.move(cropOffset);
     rect.scale(filter()->scale());
 
     flags |= hasX() ? SkImageFilter::CropRect::kHasLeft_CropEdge : 0;

@@ -73,7 +73,7 @@ PassRefPtr<SkImageFilter> FEFlood::createImageFilter(SkiaImageFilterBuilder& bui
 {
     Color color = floodColor().combineWithAlpha(floodOpacity());
 
-    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect rect = getCropRect();
     SkAutoTUnref<SkColorFilter> cf(SkColorFilter::CreateModeFilter(color.rgb(), SkXfermode::kSrc_Mode));
     return adoptRef(SkColorFilterImageFilter::Create(cf, 0, &rect));
 }

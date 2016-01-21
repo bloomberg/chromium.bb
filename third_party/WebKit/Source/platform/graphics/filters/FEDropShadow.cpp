@@ -73,7 +73,7 @@ PassRefPtr<SkImageFilter> FEDropShadow::createImageFilter(SkiaImageFilterBuilder
     float stdX = filter()->applyHorizontalScale(m_stdX);
     float stdY = filter()->applyVerticalScale(m_stdY);
     Color color = adaptColorToOperatingColorSpace(m_shadowColor.combineWithAlpha(m_shadowOpacity));
-    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect();
     return adoptRef(SkDropShadowImageFilter::Create(SkFloatToScalar(dx), SkFloatToScalar(dy), SkFloatToScalar(stdX), SkFloatToScalar(stdY), color.rgb(), SkDropShadowImageFilter::kDrawShadowAndForeground_ShadowMode, input.get(), &cropRect));
 }
 

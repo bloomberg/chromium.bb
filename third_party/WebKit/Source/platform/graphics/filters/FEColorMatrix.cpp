@@ -164,7 +164,7 @@ PassRefPtr<SkImageFilter> FEColorMatrix::createImageFilter(SkiaImageFilterBuilde
 {
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values));
-    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect rect = getCropRect();
     return adoptRef(SkColorFilterImageFilter::Create(filter, input.get(), &rect));
 }
 

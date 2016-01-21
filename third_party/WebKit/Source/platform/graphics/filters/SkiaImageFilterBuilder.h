@@ -50,10 +50,6 @@ public:
 
     PassRefPtr<SkImageFilter> transformColorSpace(
         SkImageFilter* input, ColorSpace srcColorSpace, ColorSpace dstColorSpace);
-    FloatSize cropOffset() { return m_cropOffset; }
-
-private:
-    FloatSize m_cropOffset;
 };
 
 } // namespace blink

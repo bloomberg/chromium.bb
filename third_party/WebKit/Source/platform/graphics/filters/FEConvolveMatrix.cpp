@@ -152,7 +152,7 @@ PassRefPtr<SkImageFilter> FEConvolveMatrix::createImageFilter(SkiaImageFilterBui
     OwnPtr<SkScalar[]> kernel = adoptArrayPtr(new SkScalar[numElements]);
     for (int i = 0; i < numElements; ++i)
         kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
-    SkImageFilter::CropRect cropRect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect cropRect = getCropRect();
     return adoptRef(SkMatrixConvolutionImageFilter::Create(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input.get(), &cropRect));
 }
 

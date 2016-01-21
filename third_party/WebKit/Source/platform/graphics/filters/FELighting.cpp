@@ -63,7 +63,7 @@ PassRefPtr<SkImageFilter> FELighting::createImageFilter(SkiaImageFilterBuilder& 
     if (!m_lightSource)
         return createTransparentBlack(builder);
 
-    SkImageFilter::CropRect rect = getCropRect(builder.cropOffset());
+    SkImageFilter::CropRect rect = getCropRect();
     Color lightColor = adaptColorToOperatingColorSpace(m_lightingColor);
     RefPtr<SkImageFilter> input(builder.build(inputEffect(0), operatingColorSpace()));
     switch (m_lightSource->type()) {
