@@ -362,8 +362,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         }
                     }
 
-                    // TODO enable after L release to AOSP
-                    //@Override
+                    @Override
                     public void clearClientCertPreferences(Runnable onCleared) {
                         AwContentsStatics.clearClientCertPreferences(onCleared);
                     }
@@ -376,7 +375,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
                         }
                     }
 
-                    // TODO: Add @Override.
+                    @Override
                     public void enableSlowWholeDocumentDraw() {
                         WebViewChromium.enableSlowWholeDocumentDraw();
                     }
