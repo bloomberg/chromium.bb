@@ -15,18 +15,45 @@ NSImage* GetImage(int image_id) {
       .ToNSImage();
 }
 
-// Whether windows should miniaturize on a double-click on the title bar.
-bool ShouldWindowsMiniaturizeOnDoubleClick() {
-  // We use an undocumented method in Cocoa; if it doesn't exist, default to
-  // |true|. If it ever goes away, we can do (using an undocumented pref key):
-  //   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
-  //   return ![defaults objectForKey:@"AppleMiniaturizeOnDoubleClick"] ||
-  //          [defaults boolForKey:@"AppleMiniaturizeOnDoubleClick"];
+// Double-click in window title bar actions.
+enum class DoubleClickAction {
+  NONE,
+  MINIMIZE,
+  MAXIMIZE,
+};
+
+// The action to take when the user double-clicks in the window title bar.
+DoubleClickAction WindowTitleBarDoubleClickAction() {
+  // El Capitan introduced a Dock preference to configure the window title bar
+  // double-click action (Minimize, Maximize, or nothing).
+  if (base::mac::IsOSElCapitanOrLater()) {
+    NSString* doubleClickAction = [[NSUserDefaults standardUserDefaults]
+                                      objectForKey:@"AppleActionOnDoubleClick"];
+
+    if ([doubleClickAction isEqualToString:@"Minimize"]) {
+      return DoubleClickAction::MINIMIZE;
+    } else if ([doubleClickAction isEqualToString:@"Maximize"]) {
+      return DoubleClickAction::MAXIMIZE;
+    }
+
+    return DoubleClickAction::NONE;
+  }
+
+  // Determine minimize using an undocumented method in Cocoa. If we're
+  // running on an earlier version of the OS that doesn't implement it,
+  // just default to the minimize action.
   BOOL methodImplemented =
       [NSWindow respondsToSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
-  DCHECK(methodImplemented);
-  return !methodImplemented ||
-         [NSWindow performSelector:@selector(_shouldMiniaturizeOnDoubleClick)];
+  if (!methodImplemented ||
+      [NSWindow performSelector:@selector(_shouldMiniaturizeOnDoubleClick)]) {
+    return DoubleClickAction::MINIMIZE;
+  }
+
+  // At this point _shouldMiniaturizeOnDoubleClick has returned |NO|. On
+  // Yosemite, that means a double-click should Maximize the window, and on
+  // all prior OSes a double-click should do nothing.
+  return base::mac::IsOSYosemite() ? DoubleClickAction::MAXIMIZE
+                                   : DoubleClickAction::NONE;
 }
 
 }  // namespace
@@ -54,10 +81,17 @@ void DrawNinePartImage(NSRect frame,
 }
 
 void WindowTitlebarReceivedDoubleClick(NSWindow* window, id sender) {
-  if (ShouldWindowsMiniaturizeOnDoubleClick()) {
-    [window performMiniaturize:sender];
-  } else if (base::mac::IsOSYosemiteOrLater()) {
-    [window performZoom:sender];
+  switch (WindowTitleBarDoubleClickAction()) {
+    case DoubleClickAction::MINIMIZE:
+      [window performMiniaturize:sender];
+      break;
+
+    case DoubleClickAction::MAXIMIZE:
+      [window performZoom:sender];
+      break;
+
+    case DoubleClickAction::NONE:
+      break;
   }
 }
 
