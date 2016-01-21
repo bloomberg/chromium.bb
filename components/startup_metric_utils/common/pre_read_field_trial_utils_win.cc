@@ -35,6 +35,10 @@ const base::char16 kPrefetchVirtualMemoryVariationName[] =
 // Registry key in which the PreRead field trial group is stored.
 const base::char16 kPreReadFieldTrialRegistryKey[] = L"\\PreReadFieldTrial";
 
+// Pre-read options to use for the current process. This is initialized by
+// InitializePreReadOptions().
+PreReadOptions g_pre_read_options = {false, false, false, false};
+
 // Returns the registry path in which the PreRead group is stored.
 base::string16 GetPreReadRegistryPath(
     const base::string16& product_registry_path) {
@@ -43,16 +47,8 @@ base::string16 GetPreReadRegistryPath(
 
 }  // namespace
 
-void GetPreReadOptions(const base::string16& product_registry_path,
-                       bool* no_pre_read,
-                       bool* high_priority,
-                       bool* only_if_cold,
-                       bool* prefetch_virtual_memory) {
+void InitializePreReadOptions(const base::string16& product_registry_path) {
   DCHECK(!product_registry_path.empty());
-  DCHECK(no_pre_read);
-  DCHECK(high_priority);
-  DCHECK(only_if_cold);
-  DCHECK(prefetch_virtual_memory);
 
   // Open the PreRead field trial's registry key.
   const base::string16 registry_path =
@@ -61,23 +57,31 @@ void GetPreReadOptions(const base::string16& product_registry_path,
                               KEY_QUERY_VALUE);
 
   // Set the PreRead field trial's options.
-  struct VariationMapping {
+  struct {
     const base::char16* name;
-    bool* variable;
+    bool* option;
   } const variations_mappings[] = {
-      {kNoPreReadVariationName, no_pre_read},
-      {kHighPriorityVariationName, high_priority},
-      {kOnlyIfColdVariationName, only_if_cold},
-      {kPrefetchVirtualMemoryVariationName, prefetch_virtual_memory},
+      {kNoPreReadVariationName, &g_pre_read_options.no_pre_read},
+      {kHighPriorityVariationName, &g_pre_read_options.high_priority},
+      {kOnlyIfColdVariationName, &g_pre_read_options.only_if_cold},
+      {kPrefetchVirtualMemoryVariationName,
+       &g_pre_read_options.prefetch_virtual_memory},
   };
 
   for (const auto& mapping : variations_mappings) {
     // Set the option variable to true if the corresponding value is found in
     // the registry. Set to false otherwise (default behavior).
     DWORD value = 0;
-    *mapping.variable = key.ReadValueDW(mapping.name, &value) == ERROR_SUCCESS;
-    DCHECK(!*mapping.variable || value == 1);
+    if (key.ReadValueDW(mapping.name, &value) == ERROR_SUCCESS) {
+      DCHECK_EQ(1U, value);
+      DCHECK(!*mapping.option);
+      *mapping.option = true;
+    }
   }
+}
+
+PreReadOptions GetPreReadOptions() {
+  return g_pre_read_options;
 }
 
 void UpdatePreReadOptions(const base::string16& product_registry_path) {

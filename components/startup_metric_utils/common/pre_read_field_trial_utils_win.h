@@ -19,19 +19,29 @@ namespace startup_metric_utils {
 using RegisterPreReadSyntheticFieldTrialCallback =
     const base::Callback<bool(const std::string&, const std::string&)>;
 
-// Get DLL pre-reading options. |product_registry_path| is the registry path
-// under which the registry key for this field trial resides. The |no_pre_read|
-// option is set if DLLs should not be pre-read. The |high_priority| option is
-// set if pre-reading should be done with a high thread priority. The
-// |only_if_cold| option is set if only cold DLLs should be pre-read. The
-// |prefetch_virtual_memory| option is set if the
-// ::PrefetchVirtualMemory function should be used to pre-read DLLs, if
-// available.
-void GetPreReadOptions(const base::string16& product_registry_path,
-                       bool* no_pre_read,
-                       bool* high_priority,
-                       bool* only_if_cold,
-                       bool* prefetch_virtual_memory);
+// The options controlled by the PreRead field trial.
+struct PreReadOptions {
+  // No explicit DLL pre-reading.
+  bool no_pre_read;
+
+  // Pre-read DLLs with a high thread priority.
+  bool high_priority;
+
+  // Pre-read DLLs only when they are cold.
+  bool only_if_cold;
+
+  // Pre-read DLLs using the ::PrefetchVirtualMemory function, if available.
+  bool prefetch_virtual_memory;
+};
+
+// Initializes DLL pre-reading options from the registry.
+// |product_registry_path| is the registry path under which the registry key for
+// this field trial resides.
+void InitializePreReadOptions(const base::string16& product_registry_path);
+
+// Returns the bitfield of the DLL pre-reading options to use for the current
+// process. InitializePreReadOptions() must have been called before this.
+PreReadOptions GetPreReadOptions();
 
 // Updates DLL pre-reading options in the registry with the latest info for the
 // next startup. |product_registry_path| is the registry path under which the
