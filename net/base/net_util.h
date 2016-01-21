@@ -5,15 +5,12 @@
 #ifndef NET_BASE_NET_UTIL_H_
 #define NET_BASE_NET_UTIL_H_
 
-#include <stddef.h>
 #include <stdint.h>
 
 #include <string>
 
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
-
-class GURL;
 
 namespace net {
 

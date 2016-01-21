@@ -16,7 +16,6 @@
 #include "net/base/ip_address_number.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
-#include "url/gurl.h"
 #include "url/url_canon_ip.h"
 
 #if defined(OS_WIN)

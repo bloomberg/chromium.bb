@@ -157,7 +157,6 @@
       'http/http_status_line_validator.h',
       'http/http_util.cc',
       'http/http_util.h',
-      'http/http_util_icu.cc',
       'http/http_vary_data.cc',
       'http/http_vary_data.h',
       'http/transport_security_state.cc',
