@@ -465,6 +465,8 @@
       'browser/ui/android/infobars/infobar_container_android.h',
       'browser/ui/android/infobars/save_password_infobar.cc',
       'browser/ui/android/infobars/save_password_infobar.h',
+      'browser/ui/android/infobars/simple_confirm_infobar_builder.cc',
+      'browser/ui/android/infobars/simple_confirm_infobar_builder.h',
       'browser/ui/android/infobars/translate_infobar.cc',
       'browser/ui/android/infobars/translate_infobar.h',
       'browser/ui/android/javascript_app_modal_dialog_android.cc',

@@ -133,7 +133,7 @@ public class AutofillSaveCardInfoBar extends ConfirmInfoBar {
     private AutofillSaveCardInfoBar(long nativeAutofillSaveCardInfoBar, int enumeratedIconId,
             Bitmap iconBitmap, String message, String linkText, String buttonOk,
             String buttonCancel) {
-        super(null, ResourceId.mapToDrawableId(enumeratedIconId), iconBitmap, message, linkText,
+        super(ResourceId.mapToDrawableId(enumeratedIconId), iconBitmap, message, linkText,
                 buttonOk, buttonCancel);
         mNativeAutofillSaveCardInfoBar = nativeAutofillSaveCardInfoBar;
     }

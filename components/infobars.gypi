@@ -48,4 +48,18 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'infobar_delegate_java',
+          'type': 'none',
+          'variables': {
+            'source_file': 'infobars/core/infobar_delegate.h',
+          },
+          'includes': [ '../build/android/java_cpp_enum.gypi' ],
+        },
+      ],
+    }],
+  ],
 }

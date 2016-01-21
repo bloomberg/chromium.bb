@@ -1926,6 +1926,7 @@
       'android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java',
       'android/java/src/org/chromium/chrome/browser/infobar/PermissionUpdateInfoBarDelegate.java',
       'android/java/src/org/chromium/chrome/browser/infobar/SavePasswordInfoBar.java',
+      'android/java/src/org/chromium/chrome/browser/infobar/SimpleConfirmInfoBarBuilder.java',
       'android/java/src/org/chromium/chrome/browser/infobar/AutoSigninFirstRunInfoBar.java',
       'android/java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java',
       'android/java/src/org/chromium/chrome/browser/metrics/LaunchMetrics.java',

@@ -14,7 +14,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.SwipableOverlayView;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -176,22 +175,12 @@ public class InfoBarContainer extends SwipableOverlayView {
         addToParentView();
     }
 
-    @Override
-    protected TabObserver createTabObserver() {
-        return new SwipableOverlayViewTabObserver() {
-            @Override
-            public void onPageLoadStarted(Tab tab, String url) {
-                onPageStarted();
-            }
-        };
-    }
-
     /**
      * Adds an InfoBar to the view hierarchy.
      * @param infoBar InfoBar to add to the View hierarchy.
      */
     @CalledByNative
-    public void addInfoBar(InfoBar infoBar) {
+    private void addInfoBar(InfoBar infoBar) {
         assert !mDestroyed;
         if (infoBar == null) {
             return;
@@ -228,10 +217,11 @@ public class InfoBarContainer extends SwipableOverlayView {
     }
 
     /**
-     * Removes an InfoBar from the view hierarchy.
+     * Called by {@link InfoBar} to remove itself from the view hierarchy.
+     *
      * @param infoBar InfoBar to remove from the View hierarchy.
      */
-    public void removeInfoBar(InfoBar infoBar) {
+    void removeInfoBar(InfoBar infoBar) {
         assert !mDestroyed;
 
         if (!mInfoBars.remove(infoBar)) {
@@ -253,21 +243,6 @@ public class InfoBarContainer extends SwipableOverlayView {
      */
     public boolean hasBeenDestroyed() {
         return mDestroyed;
-    }
-
-    // Called by the tab when it has started loading a new page.
-    public void onPageStarted() {
-        ArrayList<InfoBar> barsToRemove = new ArrayList<>();
-
-        for (InfoBar infoBar : mInfoBars) {
-            if (infoBar.shouldExpire()) {
-                barsToRemove.add(infoBar);
-            }
-        }
-
-        for (InfoBar infoBar : barsToRemove) {
-            infoBar.dismissJavaOnlyInfoBar();
-        }
     }
 
     public void destroy() {

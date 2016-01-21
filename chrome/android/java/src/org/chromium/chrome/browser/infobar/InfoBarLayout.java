@@ -210,7 +210,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      */
     public void setButtons(String primaryText, String secondaryText) {
         if (TextUtils.isEmpty(primaryText)) {
-            assert secondaryText == null;
+            assert TextUtils.isEmpty(secondaryText);
             return;
         }
 
@@ -484,7 +484,7 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
         if (mMessageMainText != null) fullString.append(mMessageMainText);
 
         // Concatenate the text to display for the link and make it clickable.
-        if (mMessageLinkText != null) {
+        if (!TextUtils.isEmpty(mMessageLinkText)) {
             if (fullString.length() > 0) fullString.append(" ");
             int spanStart = fullString.length();
 

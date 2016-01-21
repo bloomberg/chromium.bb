@@ -4,6 +4,11 @@
 
 import("//build/config/ui.gni")
 
+if (is_android) {
+  import("//build/config/android/config.gni")
+  import("//build/config/android/rules.gni")
+}
+
 static_library("core") {
   sources = [
     "confirm_infobar_delegate.cc",
@@ -35,5 +40,14 @@ static_library("core") {
 
   if (use_aura || (!is_ios && !is_android)) {
     deps += [ "//ui/native_theme" ]
+  }
+}
+
+if (is_android) {
+  # GYP: //components/infobars.gypi:infobar_delegate_java
+  java_cpp_enum("infobar_enums_java") {
+    sources = [
+      "infobar_delegate.h",
+    ]
   }
 }

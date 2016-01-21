@@ -44,7 +44,7 @@ public class DownloadOverwriteInfoBar extends InfoBar {
      * @param dirFullPath The full dir path. ex) sdcards/Downloads
      */
     private DownloadOverwriteInfoBar(String fileName, String dirName, String dirFullPath) {
-        super(null, R.drawable.infobar_downloading, null, null);
+        super(R.drawable.infobar_downloading, null, null);
         mFileName = fileName;
         mDirName = dirName;
         mDirFullPath = dirFullPath;

@@ -38,9 +38,6 @@ public class ConfirmInfoBar extends InfoBar {
     /** Text shown on the link, e.g. "Learn more". */
     private final String mLinkText;
 
-    /** Notified when one of the buttons is clicked. */
-    private final InfoBarListeners.Confirm mConfirmListener;
-
     private WindowAndroid mWindowAndroid;
 
     /**
@@ -50,14 +47,12 @@ public class ConfirmInfoBar extends InfoBar {
      */
     private SparseArray<String> mContentSettingsToPermissionsMap;
 
-    public ConfirmInfoBar(InfoBarListeners.Confirm confirmListener, int iconDrawableId,
-            Bitmap iconBitmap, String message, String linkText, String primaryButtonText,
-            String secondaryButtonText) {
-        super(confirmListener, iconDrawableId, iconBitmap, message);
+    protected ConfirmInfoBar(int iconDrawableId, Bitmap iconBitmap, String message,
+            String linkText, String primaryButtonText, String secondaryButtonText) {
+        super(iconDrawableId, iconBitmap, message);
         mPrimaryButtonText = primaryButtonText;
         mSecondaryButtonText = secondaryButtonText;
         mLinkText = linkText;
-        mConfirmListener = confirmListener;
     }
 
     /**
@@ -215,10 +210,6 @@ public class ConfirmInfoBar extends InfoBar {
     }
 
     private void onButtonClickedInternal(boolean isPrimaryButton) {
-        if (mConfirmListener != null) {
-            mConfirmListener.onConfirmInfoBarButtonClicked(this, isPrimaryButton);
-        }
-
         int action = isPrimaryButton ? ActionType.OK : ActionType.CANCEL;
         onButtonClicked(action);
     }
@@ -244,7 +235,7 @@ public class ConfirmInfoBar extends InfoBar {
         int drawableId = ResourceId.mapToDrawableId(enumeratedIconId);
 
         ConfirmInfoBar infoBar = new ConfirmInfoBar(
-                null, drawableId, iconBitmap, message, linkText, buttonOk, buttonCancel);
+                drawableId, iconBitmap, message, linkText, buttonOk, buttonCancel);
         infoBar.setContentSettings(windowAndroid, contentSettings);
 
         return infoBar;

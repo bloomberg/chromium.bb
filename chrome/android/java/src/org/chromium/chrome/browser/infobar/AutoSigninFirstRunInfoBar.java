@@ -31,7 +31,7 @@ public class AutoSigninFirstRunInfoBar extends ConfirmInfoBar {
 
     private AutoSigninFirstRunInfoBar(String message, String primaryButtonText, String explanation,
             int explanationLinkStart, int explanationLinkEnd) {
-        super(null, R.drawable.account_management_no_picture, null, message, null,
+        super(R.drawable.account_management_no_picture, null, message, null,
                 primaryButtonText, null);
         mExplanation = explanation;
         mExplanationLinkStart = explanationLinkStart;

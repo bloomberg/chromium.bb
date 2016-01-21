@@ -55,7 +55,7 @@ public class TranslateInfoBar extends InfoBar implements SubPanelListener {
     private TranslateInfoBar(int infoBarType, String sourceLanguageCode, String targetLanguageCode,
             boolean autoTranslatePair, boolean shouldShowNeverBar, boolean triggeredFromMenu,
             String[] languages, String[] codes) {
-        super(null, R.drawable.infobar_translate, null, null);
+        super(R.drawable.infobar_translate, null, null);
 
         assert languages.length == codes.length;
         ArrayList<TranslateOptions.TranslateLanguagePair> languageList =

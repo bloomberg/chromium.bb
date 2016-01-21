@@ -36,7 +36,7 @@ public class SavePasswordInfoBar extends ConfirmInfoBar {
     private SavePasswordInfoBar(int iconDrawbleId, String message, int titleLinkStart,
             int titleLinkEnd, String primaryButtonText, String secondaryButtonText,
             String firstRunExperienceMessage) {
-        super(null, iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
+        super(iconDrawbleId, null, message, null, primaryButtonText, secondaryButtonText);
         mTitleLinkRangeStart = titleLinkStart;
         mTitleLinkRangeEnd = titleLinkEnd;
         mTitle = message;

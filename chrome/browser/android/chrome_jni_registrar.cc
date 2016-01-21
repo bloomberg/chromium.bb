@@ -141,6 +141,7 @@
 #include "chrome/browser/ui/android/infobars/infobar_android.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/infobars/save_password_infobar.h"
+#include "chrome/browser/ui/android/infobars/simple_confirm_infobar_builder.h"
 #include "chrome/browser/ui/android/infobars/translate_infobar.h"
 #include "chrome/browser/ui/android/javascript_app_modal_dialog_android.h"
 #include "chrome/browser/ui/android/omnibox/omnibox_url_emphasizer.h"
@@ -281,6 +282,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"InterestsService", InterestsService::Register},
     {"InvalidationServiceFactory",
      invalidation::InvalidationServiceFactoryAndroid::Register},
+    {"SimpleConfirmInfoBarBuilder", RegisterSimpleConfirmInfoBarBuilder},
     {"ShortcutHelper", ShortcutHelper::RegisterShortcutHelper},
     {"IntentHelper", RegisterIntentHelper},
     {"JavaExceptionReporter", RegisterJavaExceptionReporterJni},

@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,43 +6,58 @@ package org.chromium.chrome.browser.infobar;
 
 import android.graphics.Rect;
 import android.graphics.Region;
-import android.test.FlakyTest;
 import android.test.suitebuilder.annotation.MediumTest;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.widget.TextView;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.preferences.NetworkPredictionOptions;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.InfoBarTestAnimationListener;
 import org.chromium.chrome.test.util.InfoBarUtil;
 import org.chromium.chrome.test.util.TestHttpServerClient;
+import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Tests for InfoBars.
- *
- * TODO(newt): rename this to InfoBarContainerTest.
+ * Tests for the InfoBarContainer.
  */
-public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
-    static class MutableBoolean {
-        public boolean mValue = false;
+public class InfoBarContainerTest extends ChromeActivityTestCaseBase<ChromeActivity> {
+    private static final String MESSAGE_TEXT = "Ding dong. Woof. Translate french? Bears!";
+
+    private static final class TestListener implements SimpleConfirmInfoBarBuilder.Listener {
+        public final CallbackHelper dismissedCallback = new CallbackHelper();
+        public final CallbackHelper primaryButtonCallback = new CallbackHelper();
+        public final CallbackHelper secondaryButtonCallback = new CallbackHelper();
+
+        @Override
+        public void onInfoBarDismissed() {
+            dismissedCallback.notifyCalled();
+        }
+
+        @Override
+        public void onInfoBarButtonClicked(boolean isPrimary) {
+            if (isPrimary) {
+                primaryButtonCallback.notifyCalled();
+            } else {
+                secondaryButtonCallback.notifyCalled();
+            }
+        }
     }
 
     private InfoBarTestAnimationListener mListener;
 
-    public InfoBarTest2() {
+    public InfoBarContainerTest() {
         super(ChromeActivity.class);
     }
 
@@ -58,42 +73,47 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     // Adds an infobar to the currrent tab. Blocks until the infobar has been added.
-    protected void addInfoBarToCurrentTab(final InfoBar infoBar) throws InterruptedException {
-        getInstrumentation().runOnMainSync(new Runnable() {
+    private TestListener addInfoBarToCurrentTab(final boolean expires) throws InterruptedException {
+        List<InfoBar> infoBars = getInfoBars();
+        int previousCount = infoBars.size();
+
+        final TestListener testListener = new TestListener();
+        ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().addInfoBar(infoBar);
+                SimpleConfirmInfoBarBuilder.create(getActivity().getActivityTab(),
+                        testListener, InfoBarIdentifier.TEST_INFOBAR, 0,
+                        MESSAGE_TEXT, null, null, expires);
             }
         });
         assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
-        getInstrumentation().waitForIdleSync();
+
+        // Verify it's really there.
+        assertEquals(previousCount + 1, infoBars.size());
+        TextView message =
+                (TextView) infoBars.get(previousCount).getView().findViewById(R.id.infobar_message);
+        assertEquals(MESSAGE_TEXT, message.getText().toString());
+
+        return testListener;
     }
 
-    // Removes an infobar from the currrent tab. Blocks until the infobar has been removed.
-    protected void removeInfoBarFromCurrentTab(final InfoBar infoBar) throws InterruptedException {
+    /**
+     * Dismisses the infobar by directly telling the infobar its close button was clicked.
+     * Blocks until it's been removed.
+     */
+    private void dismissInfoBar(final InfoBar infoBar, TestListener listener)
+            throws Exception {
+        assertEquals(0, listener.dismissedCallback.getCallCount());
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().removeInfoBar(infoBar);
+                infoBar.onCloseButtonClicked();
             }
         });
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        getInstrumentation().waitForIdleSync();
-    }
-
-    // Dismisses the passed infobar. Blocks until the bar has been removed.
-    protected void dismissInfoBar(final InfoBar infoBar) throws InterruptedException {
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                infoBar.dismissJavaOnlyInfoBar();
-            }
-        });
-        assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
+        listener.dismissedCallback.waitForCallback(0, 1);
+        assertEquals(0, listener.primaryButtonCallback.getCallCount());
+        assertEquals(0, listener.secondaryButtonCallback.getCallCount());
         getInstrumentation().waitForIdleSync();
     }
 
@@ -102,51 +122,31 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser"})
-    public void testInfoBarExpiration() throws InterruptedException {
+    public void testInfoBarExpiration() throws Exception {
         // First add an infobar that expires.
-        final MutableBoolean dismissed = new MutableBoolean();
-        MessageInfoBar expiringInfoBar = new MessageInfoBar("Hello!");
-        expiringInfoBar.setDismissedListener(new InfoBarListeners.Dismiss() {
-            @Override
-            public void onInfoBarDismissed(InfoBar infoBar) {
-                dismissed.mValue = true;
-            }
-        });
-        expiringInfoBar.setExpireOnNavigation(true);
-        addInfoBarToCurrentTab(expiringInfoBar);
-
-        // Verify it's really there.
-        List<InfoBar> infoBars = getInfoBars();
-        assertEquals(1, infoBars.size());
-        assertSame(expiringInfoBar, infoBars.get(0));
+        TestListener infobarListener = addInfoBarToCurrentTab(true);
 
         // Now navigate, it should expire.
         loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/google.html"));
         assertTrue("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        assertTrue("InfoBar did not expire on navigation.", dismissed.mValue);
         assertTrue(getInfoBars().isEmpty());
+        assertEquals(0, infobarListener.dismissedCallback.getCallCount());
+        assertEquals(0, infobarListener.primaryButtonCallback.getCallCount());
+        assertEquals(0, infobarListener.secondaryButtonCallback.getCallCount());
 
         // Now test a non-expiring infobar.
-        MessageInfoBar persistentInfoBar = new MessageInfoBar("Hello!");
-        persistentInfoBar.setDismissedListener(new InfoBarListeners.Dismiss() {
-            @Override
-            public void onInfoBarDismissed(InfoBar infoBar) {
-                dismissed.mValue = true;
-            }
-        });
-        dismissed.mValue = false;
-        persistentInfoBar.setExpireOnNavigation(false);
-        addInfoBarToCurrentTab(persistentInfoBar);
+        TestListener persistentListener = addInfoBarToCurrentTab(false);
 
         // Navigate, it should still be there.
-        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/google.html"));
-        assertFalse("InfoBar did expire on navigation.", dismissed.mValue);
-        infoBars = getInfoBars();
+        loadUrl(TestHttpServerClient.getUrl("chrome/test/data/android/about.html"));
+        List<InfoBar> infoBars = getInfoBars();
         assertEquals(1, infoBars.size());
-        assertSame(persistentInfoBar, infoBars.get(0));
+        TextView message =
+                (TextView) infoBars.get(0).getView().findViewById(R.id.infobar_message);
+        assertEquals(MESSAGE_TEXT, message.getText().toString());
 
         // Close the infobar.
-        dismissInfoBar(persistentInfoBar);
+        dismissInfoBar(infoBars.get(0), persistentListener);
     }
 
     // Define function to pass parameter to Runnable to be used in testInfoBarExpirationNoPrerender.
@@ -169,7 +169,7 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser"})
-    public void testInfoBarExpirationNoPrerender() throws InterruptedException, ExecutionException {
+    public void testInfoBarExpirationNoPrerender() throws Exception {
         // Save prediction preference.
         NetworkPredictionOptions networkPredictionOption =
                 ThreadUtils.runOnUiThreadBlocking(new Callable<NetworkPredictionOptions>() {
@@ -189,89 +189,17 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
     }
 
     /**
-     * Tests that adding and then immediately removing an infobar works as expected (and does not
-     * assert).
-     */
-    @MediumTest
-    @Feature({"Browser"})
-    public void testQuickAddOneAndRemove() throws InterruptedException {
-        final InfoBar infoBar = new MessageInfoBar("Hello");
-        addInfoBarToCurrentTab(infoBar);
-        removeInfoBarFromCurrentTab(infoBar);
-        assertTrue(getInfoBars().isEmpty());
-    }
-
-    /**
      * Tests that adding and then immediately dismissing an infobar works as expected (and does not
      * assert).
      */
     @MediumTest
     @Feature({"Browser"})
-    public void testQuickAddOneAndDismiss() throws InterruptedException {
-        final InfoBar infoBar = new MessageInfoBar("Hello");
-        addInfoBarToCurrentTab(infoBar);
-        dismissInfoBar(infoBar);
+    public void testQuickAddOneAndDismiss() throws Exception {
+        final TestListener infobarListener = addInfoBarToCurrentTab(false);
+        assertEquals(1, getInfoBars().size());
+        final InfoBar infoBar = getInfoBars().get(0);
+        dismissInfoBar(infoBar, infobarListener);
         assertTrue(getInfoBars().isEmpty());
-    }
-
-    /**
-     * Tests that adding 2 infobars and then immediately removing the last one works as expected.
-     * This scenario is special as the 2nd infobar does not even get added to the view hierarchy.
-     */
-    @MediumTest
-    @Feature({"Browser"})
-    public void testAddTwoAndRemoveOneQuick() throws InterruptedException {
-        final InfoBar infoBar1 = new MessageInfoBar("One");
-        final InfoBar infoBar2 = new MessageInfoBar("Two");
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().addInfoBar(infoBar1);
-                tab.getInfoBarContainer().addInfoBar(infoBar2);
-                tab.getInfoBarContainer().removeInfoBar(infoBar2);
-            }
-        });
-
-        // We should get an infobar added event for the first infobar.
-        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
-
-        // But no infobar removed event as the 2nd infobar was removed before it got added.
-        assertFalse("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        List<InfoBar> infoBars = getInfoBars();
-        assertEquals(1, infoBars.size());
-        assertSame(infoBar1, infoBars.get(0));
-    }
-
-    /**
-     * Tests that adding 2 infobars and then immediately dismissing the last one works as expected
-     * This scenario is special as the 2nd infobar does not even get added to the view hierarchy.
-     */
-    @MediumTest
-    @Feature({"Browser"})
-    public void testAddTwoAndDismissOneQuick() throws InterruptedException {
-        final InfoBar infoBar1 = new MessageInfoBar("One");
-        final InfoBar infoBar2 = new MessageInfoBar("Two");
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().addInfoBar(infoBar1);
-                tab.getInfoBarContainer().addInfoBar(infoBar2);
-                infoBar2.dismissJavaOnlyInfoBar();
-            }
-        });
-
-        // We should get an infobar added event for the first infobar.
-        assertTrue("InfoBar not added.", mListener.addInfoBarAnimationFinished());
-
-        // But no infobar removed event as the 2nd infobar was removed before it got added.
-        assertFalse("InfoBar not removed.", mListener.removeInfoBarAnimationFinished());
-        List<InfoBar> infoBars = getInfoBars();
-        assertEquals(1, infoBars.size());
-        assertSame(infoBar1, infoBars.get(0));
     }
 
     /**
@@ -280,48 +208,46 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser"})
-    public void testCloseTabOnAdd() throws InterruptedException {
+    public void testCloseTabOnAdd() throws Exception {
         loadUrl(TestHttpServerClient.getUrl(
                 "chrome/test/data/android/google.html"));
 
-        final InfoBar infoBar = new MessageInfoBar("Hello");
-        addInfoBarToCurrentTab(infoBar);
-        getInstrumentation().runOnMainSync(new Runnable() {
+        final TestListener infobarListener = addInfoBarToCurrentTab(false);
+        assertEquals(1, getInfoBars().size());
+        final InfoBar infoBar = getInfoBars().get(0);
+
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().removeInfoBar(infoBar);
-                getActivity().getTabModelSelector().closeTab(tab);
+                assertEquals(0, infobarListener.dismissedCallback.getCallCount());
+                infoBar.onCloseButtonClicked();
+                getActivity().getTabModelSelector().closeTab(getActivity().getActivityTab());
             }
         });
+
+        infobarListener.dismissedCallback.waitForCallback(0, 1);
+        assertEquals(0, infobarListener.primaryButtonCallback.getCallCount());
+        assertEquals(0, infobarListener.secondaryButtonCallback.getCallCount());
     }
 
     /**
      * Tests that the x button in the infobar does close the infobar and that the event is not
      * propagated to the ContentView.
-     * @MediumTest
-     * @Feature({"Browser"})
-     * Bug: http://crbug.com/172427
      */
-    @FlakyTest
-    public void testCloseButton() throws InterruptedException, TimeoutException {
+    @MediumTest
+    @Feature({"Browser"})
+    public void testCloseButton() throws Exception {
         loadUrl(TestHttpServerClient.getUrl(
                 "chrome/test/data/android/click_listener.html"));
-        final InfoBar infoBar = new MessageInfoBar("Hello");
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                Tab tab = getActivity().getActivityTab();
-                assertTrue("Failed to find tab.", tab != null);
-                tab.getInfoBarContainer().addInfoBar(infoBar);
-            }
-        });
-        assertTrue("InfoBar not added", mListener.addInfoBarAnimationFinished());
+        TestListener infobarListener = addInfoBarToCurrentTab(false);
 
         // Now press the close button.
-        assertTrue("Close button wasn't found", InfoBarUtil.clickCloseButton(infoBar));
+        assertEquals(0, infobarListener.dismissedCallback.getCallCount());
+        assertTrue("Close button wasn't found", InfoBarUtil.clickCloseButton(getInfoBars().get(0)));
         assertTrue("Infobar not removed.", mListener.removeInfoBarAnimationFinished());
+        infobarListener.dismissedCallback.waitForCallback(0, 1);
+        assertEquals(0, infobarListener.primaryButtonCallback.getCallCount());
+        assertEquals(0, infobarListener.secondaryButtonCallback.getCallCount());
 
         // The page should not have received the click.
         assertTrue("The page recieved the click.",
@@ -334,7 +260,7 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
      */
     @MediumTest
     @Feature({"Browser"})
-    public void testAddAndDismissSurfaceFlingerOverlays() throws InterruptedException {
+    public void testAddAndDismissSurfaceFlingerOverlays() throws Exception {
         final ViewGroup decorView = (ViewGroup)  getActivity().getWindow().getDecorView();
         final InfoBarContainer infoBarContainer =
                 getActivity().getActivityTab().getInfoBarContainer();
@@ -355,8 +281,9 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
         });
 
         // First add an infobar.
-        final InfoBar infoBar = new MessageInfoBar("Hello");
-        addInfoBarToCurrentTab(infoBar);
+        TestListener infobarListener = addInfoBarToCurrentTab(false);
+        assertEquals(1, getInfoBars().size());
+        final InfoBar infoBar = getInfoBars().get(0);
 
         // A layout must occur to recalculate the transparent region.
         CriteriaHelper.pollForUIThreadCriteria(
@@ -394,7 +321,7 @@ public class InfoBarTest2 extends ChromeActivityTestCaseBase<ChromeActivity> {
 
         // Now remove the infobar.
         layoutCount.set(0);
-        dismissInfoBar(infoBar);
+        dismissInfoBar(infoBar, infobarListener);
 
         // A layout must occur to recalculate the transparent region.
         CriteriaHelper.pollForUIThreadCriteria(

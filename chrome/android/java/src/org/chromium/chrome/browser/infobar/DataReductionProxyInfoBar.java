@@ -32,7 +32,7 @@ public class DataReductionProxyInfoBar extends ConfirmInfoBar {
     }
 
     DataReductionProxyInfoBar(int iconDrawableId) {
-        super(null, iconDrawableId, null, sTitle, sLinkText, null, null);
+        super(iconDrawableId, null, sTitle, sLinkText, null, null);
     }
 
     @Override
