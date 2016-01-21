@@ -55,6 +55,27 @@ const WillBeHeapVector<RefPtrWillBeMember<Node>> HTMLSlotElement::getAssignedNod
     return m_assignedNodes;
 }
 
+const WillBeHeapVector<RefPtrWillBeMember<Node>>& HTMLSlotElement::getDistributedNodes()
+{
+    ASSERT(!needsDistributionRecalc());
+    if (isInShadowTree())
+        return m_distributedNodes;
+
+    // A slot is unlikely to be used outside of a shadow tree.
+    // We do not need to optimize this case in most cases.
+    // TODO(hayato): If this path causes a performance issue, we should move
+    // ShadowRootRaraDate::m_descendantSlots into TreeScopreRareData-ish and
+    // update the distribution code so it considers a document tree too.
+    clearDistribution();
+    for (Node& child : NodeTraversal::childrenOf(*this)) {
+        if (isHTMLSlotElement(child))
+            m_distributedNodes.appendVector(toHTMLSlotElement(child).getDistributedNodes());
+        else
+            m_distributedNodes.append(&child);
+    }
+    return m_distributedNodes;
+}
+
 void HTMLSlotElement::appendAssignedNode(Node& node)
 {
     m_assignedNodes.append(&node);

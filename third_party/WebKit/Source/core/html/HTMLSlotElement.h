@@ -44,8 +44,7 @@ public:
     DECLARE_NODE_FACTORY(HTMLSlotElement);
 
     const WillBeHeapVector<RefPtrWillBeMember<Node>>& getAssignedNodes() const { ASSERT(!needsDistributionRecalc()); return m_assignedNodes; }
-    const WillBeHeapVector<RefPtrWillBeMember<Node>>& getDistributedNodes() const { ASSERT(!needsDistributionRecalc()); return m_distributedNodes; }
-
+    const WillBeHeapVector<RefPtrWillBeMember<Node>>& getDistributedNodes();
     const WillBeHeapVector<RefPtrWillBeMember<Node>> getAssignedNodesForBinding(const AssignedNodesOptions&);
 
     Node* firstDistributedNode() const { return m_distributedNodes.isEmpty() ? nullptr : m_distributedNodes.first().get(); }
