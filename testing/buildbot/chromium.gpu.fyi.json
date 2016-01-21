@@ -259,16 +259,25 @@
           "--browser=debug",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -645,16 +654,25 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "linux",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1042,16 +1060,25 @@
           "--browser=debug",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1460,16 +1487,25 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "mac",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1871,16 +1907,25 @@
           "--browser=debug",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "win",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2338,16 +2383,25 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=\"--enable-logging=stderr --js-flags=--expose-gc\"",
-          "--upload-refimg-to-cloud-storage",
           "--refimg-cloud-storage-bucket",
           "chromium-gpu-archive/reference-images",
           "--os-type",
-          "linux"
+          "win",
+          "--build-revision",
+          "${got_revision}",
+          "--test-machine-name",
+          "${buildername}"
         ],
         "isolate_name": "telemetry_gpu_test",
         "name": "pixel_test",
+        "non_precommit_args": [
+          "--upload-refimg-to-cloud-storage"
+        ],
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "precommit_args": [
+          "--download-refimg-from-cloud-storage"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
