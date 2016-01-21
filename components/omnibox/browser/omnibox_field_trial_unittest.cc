@@ -31,7 +31,6 @@ class OmniboxFieldTrialTest : public testing::Test {
     field_trial_list_.reset(new base::FieldTrialList(
         new metrics::SHA1EntropyProvider("foo")));
     variations::testing::ClearAllVariationParams();
-    OmniboxFieldTrial::ActivateDynamicTrials();
   }
 
   // Creates and activates a field trial.
@@ -137,12 +136,6 @@ void OmniboxFieldTrialTest::VerifySuggestPollingStrategy(
 // group names.
 TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
   EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
-
-  {
-    SCOPED_TRACE("Outside the bundled field trial.");
-    CreateTestTrial("AutocompleteDynamicTrial_0", "DisabledProviders_123");
-    EXPECT_EQ(0, OmniboxFieldTrial::GetDisabledProviderTypes());
-  }
 
   {
     SCOPED_TRACE("Valid field trial, missing param.");

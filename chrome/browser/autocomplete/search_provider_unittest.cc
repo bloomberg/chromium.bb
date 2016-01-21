@@ -549,10 +549,8 @@ void SearchProviderTest::ResetFieldTrialList() {
   field_trial_list_.reset(new base::FieldTrialList(
       new metrics::SHA1EntropyProvider("foo")));
   variations::testing::ClearAllVariationParams();
-  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
-      "AutocompleteDynamicTrial_0", "DefaultGroup");
-  trial->group();
 }
+
 base::FieldTrial* SearchProviderTest::CreateFieldTrial(
     const char* field_trial_rule,
     bool enabled) {
@@ -2550,6 +2548,10 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
 
 // A basic test that verifies the field trial triggered parsing logic.
 TEST_F(SearchProviderTest, FieldTrialTriggeredParsing) {
+  base::FieldTrial* trial = base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "DefaultGroup");
+  trial->group();
+
   QueryForInputAndWaitForFetcherResponses(
       ASCIIToUTF16("foo"), false,
       "[\"foo\",[\"foo bar\"],[\"\"],[],"

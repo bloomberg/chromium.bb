@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/omnibox/browser/omnibox_field_trial.h"
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
 #include "chrome/browser/chrome_browser_field_trials_mobile.h"
@@ -44,6 +43,4 @@ void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
   // The following trials are used from renderer process.
   // Mark here so they will be sync-ed.
   base::FieldTrialList::FindValue("DisplayList2dCanvas");
-  // Activate the autocomplete dynamic field trials.
-  OmniboxFieldTrial::ActivateDynamicTrials();
 }

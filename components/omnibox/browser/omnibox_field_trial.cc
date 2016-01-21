@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/metrics/proto/omnibox_event.pb.h"
@@ -31,20 +30,6 @@ typedef HUPScoringParams::ScoreBuckets ScoreBuckets;
 
 // Field trial names.
 const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
-
-// The autocomplete dynamic field trial name prefix.  Each field trial is
-// configured dynamically and is retrieved automatically by Chrome during
-// the startup.
-const char kAutocompleteDynamicFieldTrialPrefix[] = "AutocompleteDynamicTrial_";
-// The maximum number of the autocomplete dynamic field trials (aka layers).
-const int kMaxAutocompleteDynamicFieldTrials = 5;
-
-
-// Concatenates the autocomplete dynamic field trial prefix with a field trial
-// ID to form a complete autocomplete field trial name.
-std::string DynamicFieldTrialName(int id) {
-  return base::StringPrintf("%s%d", kAutocompleteDynamicFieldTrialPrefix, id);
-}
 
 void InitializeBucketsFromString(const std::string& bucket_string,
                                  ScoreBuckets* score_buckets) {
@@ -123,13 +108,6 @@ double HUPScoringParams::ScoreBuckets::HalfLifeTimeDecay(
   return pow(2.0, -half_life_intervals);
 }
 
-void OmniboxFieldTrial::ActivateDynamicTrials() {
-  // Initialize all autocomplete dynamic field trials.  This method may be
-  // called multiple times.
-  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i)
-    base::FieldTrialList::FindValue(DynamicFieldTrialName(i));
-}
-
 int OmniboxFieldTrial::GetDisabledProviderTypes() {
   const std::string& types_string = variations::GetVariationParamValue(
       kBundledExperimentFieldTrialName,
@@ -144,11 +122,6 @@ int OmniboxFieldTrial::GetDisabledProviderTypes() {
 void OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(
     std::vector<uint32_t>* field_trial_hashes) {
   field_trial_hashes->clear();
-  for (int i = 0; i < kMaxAutocompleteDynamicFieldTrials; ++i) {
-    const std::string& trial_name = DynamicFieldTrialName(i);
-    if (base::FieldTrialList::TrialExists(trial_name))
-      field_trial_hashes->push_back(metrics::HashName(trial_name));
-  }
   if (base::FieldTrialList::TrialExists(kBundledExperimentFieldTrialName)) {
     field_trial_hashes->push_back(
         metrics::HashName(kBundledExperimentFieldTrialName));
