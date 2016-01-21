@@ -98,6 +98,15 @@ class BASE_EXPORT ProcessMemoryDump {
   MemoryAllocatorDump* CreateSharedGlobalAllocatorDump(
       const MemoryAllocatorDumpGuid& guid);
 
+  // Creates a shared MemoryAllocatorDump as CreateSharedGlobalAllocatorDump,
+  // but with a WEAK flag. A weak dump will be discarded unless a non-weak dump
+  // is created using CreateSharedGlobalAllocatorDump by at least one process.
+  // The WEAK flag does not apply if a non-weak dump with the same GUID already
+  // exists or is created later. All owners and children of the discarded dump
+  // will also be discarded transitively.
+  MemoryAllocatorDump* CreateWeakSharedGlobalAllocatorDump(
+      const MemoryAllocatorDumpGuid& guid);
+
   // Looks up a shared MemoryAllocatorDump given its guid.
   MemoryAllocatorDump* GetSharedGlobalAllocatorDump(
       const MemoryAllocatorDumpGuid& guid) const;

@@ -26,6 +26,13 @@ class TracedValue;
 // Data model for user-land memory allocator dumps.
 class BASE_EXPORT MemoryAllocatorDump {
  public:
+  enum Flags {
+    DEFAULT = 0,
+
+    // A dump marked weak will be discarded by TraceViewer.
+    WEAK = 1 << 0,
+  };
+
   // MemoryAllocatorDump is owned by ProcessMemoryDump.
   MemoryAllocatorDump(const std::string& absolute_name,
                       ProcessMemoryDump* process_memory_dump,
@@ -68,6 +75,11 @@ class BASE_EXPORT MemoryAllocatorDump {
     return process_memory_dump_;
   }
 
+  // Use enum Flags to set values.
+  void set_flags(int flags) { flags_ |= flags; }
+  void clear_flags(int flags) { flags_ &= ~flags; }
+  int flags() { return flags_; }
+
   // |guid| is an optional global dump identifier, unique across all processes
   // within the scope of a global dump. It is only required when using the
   // graph APIs (see TODO_method_name) to express retention / suballocation or
@@ -83,6 +95,7 @@ class BASE_EXPORT MemoryAllocatorDump {
   ProcessMemoryDump* const process_memory_dump_;  // Not owned (PMD owns this).
   scoped_refptr<TracedValue> attributes_;
   MemoryAllocatorDumpGuid guid_;
+  int flags_;  // See enum Flags.
 
   // A local buffer for Sprintf conversion on fastpath. Avoids allocating
   // temporary strings on each AddScalar() call.

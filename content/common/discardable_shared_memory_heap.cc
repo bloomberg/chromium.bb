@@ -418,12 +418,14 @@ void DiscardableSharedMemoryHeap::OnMemoryDump(
   // to avoid double-counting segments when both browser and child process emit
   // them. In the special case of single-process-mode, this will be the only
   // dumper active and the single ownership edge will become a no-op in the UI.
+  // The global dump is created as a weak dump so that the segment is removed if
+  // the browser does not dump it (segment was purged).
   const uint64_t tracing_process_id =
       base::trace_event::MemoryDumpManager::GetInstance()
           ->GetTracingProcessId();
   base::trace_event::MemoryAllocatorDumpGuid shared_segment_guid =
       GetSegmentGUIDForTracing(tracing_process_id, segment_id);
-  pmd->CreateSharedGlobalAllocatorDump(shared_segment_guid);
+  pmd->CreateWeakSharedGlobalAllocatorDump(shared_segment_guid);
 
   // The size is added to the global dump so that it gets propagated to both the
   // dumps associated.

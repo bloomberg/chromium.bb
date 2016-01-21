@@ -30,8 +30,10 @@ TEST(ProcessMemoryDumpTest, Clear) {
   pmd1->AddOwnershipEdge(MemoryAllocatorDumpGuid(42),
                          MemoryAllocatorDumpGuid(4242));
 
-  MemoryAllocatorDumpGuid shared_mad_guid(1);
-  pmd1->CreateSharedGlobalAllocatorDump(shared_mad_guid);
+  MemoryAllocatorDumpGuid shared_mad_guid1(1);
+  MemoryAllocatorDumpGuid shared_mad_guid2(2);
+  pmd1->CreateSharedGlobalAllocatorDump(shared_mad_guid1);
+  pmd1->CreateSharedGlobalAllocatorDump(shared_mad_guid2);
 
   pmd1->Clear();
   ASSERT_TRUE(pmd1->allocator_dumps().empty());
@@ -41,7 +43,8 @@ TEST(ProcessMemoryDumpTest, Clear) {
   ASSERT_FALSE(pmd1->has_process_totals());
   ASSERT_FALSE(pmd1->has_process_mmaps());
   ASSERT_TRUE(pmd1->process_mmaps()->vm_regions().empty());
-  ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid));
+  ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid1));
+  ASSERT_EQ(nullptr, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
 
   // Check that calling AsValueInto() doesn't cause a crash.
   scoped_refptr<TracedValue> traced_value(new TracedValue());
@@ -50,12 +53,17 @@ TEST(ProcessMemoryDumpTest, Clear) {
   // Check that the pmd can be reused and behaves as expected.
   auto mad1 = pmd1->CreateAllocatorDump("mad1");
   auto mad3 = pmd1->CreateAllocatorDump("mad3");
-  auto shared_mad = pmd1->CreateSharedGlobalAllocatorDump(shared_mad_guid);
-  ASSERT_EQ(3u, pmd1->allocator_dumps().size());
+  auto shared_mad1 = pmd1->CreateSharedGlobalAllocatorDump(shared_mad_guid1);
+  auto shared_mad2 =
+      pmd1->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid2);
+  ASSERT_EQ(4u, pmd1->allocator_dumps().size());
   ASSERT_EQ(mad1, pmd1->GetAllocatorDump("mad1"));
   ASSERT_EQ(nullptr, pmd1->GetAllocatorDump("mad2"));
   ASSERT_EQ(mad3, pmd1->GetAllocatorDump("mad3"));
-  ASSERT_EQ(shared_mad, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid));
+  ASSERT_EQ(shared_mad1, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid1));
+  ASSERT_EQ(MemoryAllocatorDump::Flags::DEFAULT, shared_mad1->flags());
+  ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
+  ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad2->flags());
 
   traced_value = new TracedValue();
   pmd1->AsValueInto(traced_value.get());
@@ -76,8 +84,11 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   auto mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
   pmd1->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
 
-  MemoryAllocatorDumpGuid shared_mad_guid(1);
-  auto shared_mad = pmd2->CreateSharedGlobalAllocatorDump(shared_mad_guid);
+  MemoryAllocatorDumpGuid shared_mad_guid1(1);
+  MemoryAllocatorDumpGuid shared_mad_guid2(2);
+  auto shared_mad1 = pmd2->CreateSharedGlobalAllocatorDump(shared_mad_guid1);
+  auto shared_mad2 =
+      pmd2->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid2);
 
   pmd1->TakeAllDumpsFrom(pmd2.get());
 
@@ -98,13 +109,15 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   pmd2.reset();
 
   // Now check that |pmd1| has been effectively merged.
-  ASSERT_EQ(5u, pmd1->allocator_dumps().size());
+  ASSERT_EQ(6u, pmd1->allocator_dumps().size());
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad1"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd2/mad1"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
   ASSERT_EQ(2u, pmd1->allocator_dumps_edges().size());
-  ASSERT_EQ(shared_mad, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid));
+  ASSERT_EQ(shared_mad1, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid1));
+  ASSERT_EQ(shared_mad2, pmd1->GetSharedGlobalAllocatorDump(shared_mad_guid2));
+  ASSERT_TRUE(MemoryAllocatorDump::Flags::WEAK & shared_mad2->flags());
 
   // Check that calling AsValueInto() doesn't cause a crash.
   traced_value = new TracedValue();
@@ -155,6 +168,30 @@ TEST(ProcessMemoryDumpTest, Suballocations) {
   pmd->AsValueInto(traced_value.get());
 
   pmd.reset();
+}
+
+TEST(ProcessMemoryDumpTest, GlobalAllocatorDumpTest) {
+  scoped_ptr<ProcessMemoryDump> pmd(new ProcessMemoryDump(nullptr));
+  MemoryAllocatorDumpGuid shared_mad_guid(1);
+  auto shared_mad1 = pmd->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid);
+  ASSERT_EQ(shared_mad_guid, shared_mad1->guid());
+  ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad1->flags());
+
+  auto shared_mad2 = pmd->GetSharedGlobalAllocatorDump(shared_mad_guid);
+  ASSERT_EQ(shared_mad1, shared_mad2);
+  ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad1->flags());
+
+  auto shared_mad3 = pmd->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid);
+  ASSERT_EQ(shared_mad1, shared_mad3);
+  ASSERT_EQ(MemoryAllocatorDump::Flags::WEAK, shared_mad1->flags());
+
+  auto shared_mad4 = pmd->CreateSharedGlobalAllocatorDump(shared_mad_guid);
+  ASSERT_EQ(shared_mad1, shared_mad4);
+  ASSERT_EQ(MemoryAllocatorDump::Flags::DEFAULT, shared_mad1->flags());
+
+  auto shared_mad5 = pmd->CreateWeakSharedGlobalAllocatorDump(shared_mad_guid);
+  ASSERT_EQ(shared_mad1, shared_mad5);
+  ASSERT_EQ(MemoryAllocatorDump::Flags::DEFAULT, shared_mad1->flags());
 }
 
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)

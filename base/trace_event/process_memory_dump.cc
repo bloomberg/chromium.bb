@@ -135,10 +135,24 @@ MemoryAllocatorDump* ProcessMemoryDump::CreateSharedGlobalAllocatorDump(
     const MemoryAllocatorDumpGuid& guid) {
   // A shared allocator dump can be shared within a process and the guid could
   // have been created already.
-  MemoryAllocatorDump* allocator_dump = GetSharedGlobalAllocatorDump(guid);
-  return allocator_dump ? allocator_dump
-                        : CreateAllocatorDump(
-                              GetSharedGlobalAllocatorDumpName(guid), guid);
+  MemoryAllocatorDump* mad = GetSharedGlobalAllocatorDump(guid);
+  if (mad) {
+    // The weak flag is cleared because this method should create a non-weak
+    // dump.
+    mad->clear_flags(MemoryAllocatorDump::Flags::WEAK);
+    return mad;
+  }
+  return CreateAllocatorDump(GetSharedGlobalAllocatorDumpName(guid), guid);
+}
+
+MemoryAllocatorDump* ProcessMemoryDump::CreateWeakSharedGlobalAllocatorDump(
+    const MemoryAllocatorDumpGuid& guid) {
+  MemoryAllocatorDump* mad = GetSharedGlobalAllocatorDump(guid);
+  if (mad)
+    return mad;
+  mad = CreateAllocatorDump(GetSharedGlobalAllocatorDumpName(guid), guid);
+  mad->set_flags(MemoryAllocatorDump::Flags::WEAK);
+  return mad;
 }
 
 MemoryAllocatorDump* ProcessMemoryDump::GetSharedGlobalAllocatorDump(
