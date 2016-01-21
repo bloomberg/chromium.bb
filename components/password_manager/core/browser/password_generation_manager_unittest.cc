@@ -212,17 +212,18 @@ TEST_F(PasswordGenerationManagerTest, DetectFormsEligibleForGeneration) {
   // PASSWORD = 75
   // ACCOUNT_CREATION_PASSWORD = 76
   // NEW_PASSWORD = 88
-  const char* const kServerResponse =
-      "<autofillqueryresponse>"
-      "<field autofilltype=\"9\" />"
-      "<field autofilltype=\"75\" />"
-      "<field autofilltype=\"9\" />"
-      "<field autofilltype=\"76\" />"
-      "<field autofilltype=\"75\" />"
-      "<field autofilltype=\"88\" />"
-      "<field autofilltype=\"88\" />"
-      "</autofillqueryresponse>";
-  autofill::FormStructure::ParseQueryResponse(kServerResponse, forms, NULL);
+  autofill::AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(9);
+  response.add_field()->set_autofill_type(75);
+  response.add_field()->set_autofill_type(9);
+  response.add_field()->set_autofill_type(76);
+  response.add_field()->set_autofill_type(75);
+  response.add_field()->set_autofill_type(88);
+  response.add_field()->set_autofill_type(88);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+  autofill::FormStructure::ParseQueryResponse(response_string, forms, NULL);
 
   DetectFormsEligibleForGeneration(forms);
   EXPECT_EQ(2u, GetTestDriver()->GetFoundEligibleForGenerationForms().size());

@@ -2922,28 +2922,27 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions) {
   form_structure2->DetermineHeuristicTypes();
   autofill_manager_->AddSeenForm(form_structure2);
 
-  std::string xml = "<autofillqueryresponse>"
-                    "<field autofilltype=\"3\" />"  // First test form.
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"3\" />"
-                    "<field autofilltype=\"2\" />"
-                    "<field autofilltype=\"61\"/>"
-                    "<field autofilltype=\"5\" />"  // Second form.
-                    "<field autofilltype=\"4\" />"
-                    "<field autofilltype=\"35\"/>"
-                    "</autofillqueryresponse>";
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(3);
+  for (int i = 0; i < 7; ++i) {
+    response.add_field()->set_autofill_type(0);
+  }
+  response.add_field()->set_autofill_type(3);
+  response.add_field()->set_autofill_type(2);
+  response.add_field()->set_autofill_type(61);
+  response.add_field()->set_autofill_type(5);
+  response.add_field()->set_autofill_type(4);
+  response.add_field()->set_autofill_type(35);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
   std::vector<std::string> signatures;
   signatures.push_back(form_structure->FormSignature());
   signatures.push_back(form_structure2->FormSignature());
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(xml, signatures);
+  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
   // Verify that FormStructure::ParseQueryResponse was called (here and below).
   histogram_tester.ExpectBucketCount("Autofill.ServerQueryResponse",
                                      AutofillMetrics::QUERY_RESPONSE_RECEIVED,
@@ -2976,19 +2975,18 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   form_structure->DetermineHeuristicTypes();
   autofill_manager_->AddSeenForm(form_structure);
 
-  std::string xml = "<autofillqueryresponse>"
-                    "<field autofilltype=\"3\" />"  // This is tested below.
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"0\" />"
-                    "<field autofilltype=\"3\" />"
-                    "<field autofilltype=\"2\" />"
-                    "<field autofilltype=\"61\"/>"
-                    "</autofillqueryresponse>";
+  AutofillQueryResponseContents response;
+  response.add_field()->set_autofill_type(3);
+  for (int i = 0; i < 7; ++i) {
+    response.add_field()->set_autofill_type(0);
+  }
+  response.add_field()->set_autofill_type(3);
+  response.add_field()->set_autofill_type(2);
+  response.add_field()->set_autofill_type(61);
+
+  std::string response_string;
+  ASSERT_TRUE(response.SerializeToString(&response_string));
+
   std::vector<std::string> signatures;
   signatures.push_back(form_structure->FormSignature());
 
@@ -2996,7 +2994,7 @@ TEST_F(AutofillManagerTest, OnLoadedServerPredictions_ResetManager) {
   autofill_manager_->Reset();
 
   base::HistogramTester histogram_tester;
-  autofill_manager_->OnLoadedServerPredictions(xml, signatures);
+  autofill_manager_->OnLoadedServerPredictions(response_string, signatures);
 
   // Verify that FormStructure::ParseQueryResponse was NOT called.
   histogram_tester.ExpectTotalCount("Autofill.ServerQueryResponse", 0);

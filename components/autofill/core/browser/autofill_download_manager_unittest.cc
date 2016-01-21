@@ -651,14 +651,17 @@ TEST_F(AutofillDownloadManagerTest, CacheQueryTest) {
 
 TEST_F(AutofillDownloadManagerTest, QueryRequestIsGzipped) {
   // Expected query (uncompressed for visual verification).
-  const char* kExpectedQueryXml =
-      "<?xml version=\"1.0\"?>\n"
-      "<autofillquery clientversion=\"6.1.1715.1442/en (GGLL)\">"
-      "<form signature=\"14546501144368603154\">"
-      "<field signature=\"239111655\"/>"
-      "<field signature=\"3763331450\"/>"
-      "<field signature=\"3494530716\"/>"
-      "</form></autofillquery>\n";
+  AutofillQueryContents query;
+  query.set_client_version("6.1.1715.1442/en (GGLL)");
+  AutofillQueryContents::Form* query_form = query.add_form();
+  query_form->set_signature(14546501144368603154U);
+
+  query_form->add_field()->set_signature(239111655U);
+  query_form->add_field()->set_signature(3763331450U);
+  query_form->add_field()->set_signature(3494530716U);
+
+  std::string expected_query_string;
+  ASSERT_TRUE(query.SerializeToString(&expected_query_string));
 
   // Create and register factory.
   net::TestURLFetcherFactory factory;
@@ -693,7 +696,7 @@ TEST_F(AutofillDownloadManagerTest, QueryRequestIsGzipped) {
   // Request payload is gzipped.
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(Compress(kExpectedQueryXml), fetcher->upload_data());
+  EXPECT_EQ(Compress(expected_query_string), fetcher->upload_data());
 
   // Proper content-encoding header is defined.
   net::HttpRequestHeaders headers;
@@ -702,20 +705,26 @@ TEST_F(AutofillDownloadManagerTest, QueryRequestIsGzipped) {
   EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
   EXPECT_EQ("gzip", header);
 
+  // TODO(http://crbug.com/580102) The >100% compression ratio is a known
+  // problem.
   // Expect that the compression is logged.
   // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
   // watch for the VLOG which indicates compression.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 72, 1);
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Query", 133,
+                               1);
 }
 
 TEST_F(AutofillDownloadManagerTest, UploadRequestIsGzipped) {
   // Expected upload (uncompressed for visual verification).
-  const char* kExpectedUploadXml =
-      "<?xml version=\"1.0\"?>\n"
-      "<autofillupload submission=\"true\""
-      " clientversion=\"6.1.1715.1442/en (GGLL)\""
-      " formsignature=\"14546501144368603154\" autofillused=\"true\""
-      " datapresent=\"\"/>\n";
+  AutofillUploadContents upload;
+  upload.set_submission(true);
+  upload.set_client_version("6.1.1715.1442/en (GGLL)");
+  upload.set_form_signature(14546501144368603154U);
+  upload.set_autofill_used(true);
+  upload.set_data_present("");
+
+  std::string expected_upload_string;
+  ASSERT_TRUE(upload.SerializeToString(&expected_upload_string));
 
   // Create and register factory.
   net::TestURLFetcherFactory factory;
@@ -749,7 +758,7 @@ TEST_F(AutofillDownloadManagerTest, UploadRequestIsGzipped) {
   // Request payload is gzipped.
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   ASSERT_TRUE(fetcher);
-  EXPECT_EQ(Compress(kExpectedUploadXml), fetcher->upload_data());
+  EXPECT_EQ(Compress(expected_upload_string), fetcher->upload_data());
 
   // Proper content-encoding header is defined.
   net::HttpRequestHeaders headers;
@@ -758,10 +767,12 @@ TEST_F(AutofillDownloadManagerTest, UploadRequestIsGzipped) {
   EXPECT_TRUE(headers.GetHeader("content-encoding", &header));
   EXPECT_EQ("gzip", header);
 
+  // TODO(http://crbug.com/580102) The >100% compression ratio is a known
+  // problem.
   // Expect that the compression is logged.
   // NOTE: To get the expected value, run tests with --vmodule=autofill*=1 and
   // watch for the VLOG which indicates compression.
-  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 90,
+  histogram.ExpectUniqueSample("Autofill.PayloadCompressionRatio.Upload", 150,
                                1);
 }
 

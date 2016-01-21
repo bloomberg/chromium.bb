@@ -268,7 +268,7 @@ class AutofillManager : public AutofillDownloadManager::Observer,
  private:
   // AutofillDownloadManager::Observer:
   void OnLoadedServerPredictions(
-      std::string response_xml,
+      std::string response,
       const std::vector<std::string>& form_signatures) override;
 
   // CardUnmaskDelegate:

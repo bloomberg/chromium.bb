@@ -16,8 +16,8 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
-#include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/form_structure.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/variations/net/variations_http_headers.h"
@@ -122,15 +122,19 @@ bool AutofillDownloadManager::StartQueryRequest(
   if (CountActiveFieldsInForms(forms) > kMaxFieldsPerQueryRequest)
     return false;
 
-  std::string form_xml;
+  AutofillQueryContents query;
   FormRequestData request_data;
   if (!FormStructure::EncodeQueryRequest(forms, &request_data.form_signatures,
-                                         &form_xml)) {
+                                         &query)) {
     return false;
   }
 
+  std::string payload;
+  if (!query.SerializeToString(&payload))
+    return false;
+
   request_data.request_type = AutofillDownloadManager::REQUEST_QUERY;
-  request_data.payload = form_xml;
+  request_data.payload = payload;
   AutofillMetrics::LogServerQueryMetric(AutofillMetrics::QUERY_SENT);
 
   std::string query_data;
@@ -152,10 +156,14 @@ bool AutofillDownloadManager::StartUploadRequest(
     const ServerFieldTypeSet& available_field_types,
     const std::string& login_form_signature,
     bool observed_submission) {
-  std::string form_xml;
+  AutofillUploadContents upload;
   if (!form.EncodeUploadRequest(available_field_types, form_was_autofilled,
                                 login_form_signature, observed_submission,
-                                &form_xml))
+                                &upload))
+    return false;
+
+  std::string payload;
+  if (!upload.SerializeToString(&payload))
     return false;
 
   if (form.upload_required() == UPLOAD_NOT_REQUIRED) {
@@ -167,7 +175,7 @@ bool AutofillDownloadManager::StartUploadRequest(
   FormRequestData request_data;
   request_data.form_signatures.push_back(form.FormSignature());
   request_data.request_type = AutofillDownloadManager::REQUEST_UPLOAD;
-  request_data.payload = form_xml;
+  request_data.payload = payload;
 
   return StartRequest(request_data);
 }
@@ -179,6 +187,7 @@ bool AutofillDownloadManager::StartRequest(
   DCHECK(request_context);
   GURL request_url = GetRequestUrl(request_data.request_type);
 
+  // TODO(crbug.com/580102): Remove the compression step.
   std::string compressed_data;
   if (!compression::GzipCompress(request_data.payload, &compressed_data)) {
     NOTREACHED();
@@ -200,7 +209,7 @@ bool AutofillDownloadManager::StartRequest(
   url_fetchers_[fetcher] = request_data;
   fetcher->SetAutomaticallyRetryOn5xx(false);
   fetcher->SetRequestContext(request_context);
-  fetcher->SetUploadData("text/xml", compressed_data);
+  fetcher->SetUploadData("text/proto", compressed_data);
   fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
                         net::LOAD_DO_NOT_SEND_COOKIES);
   // Add Chrome experiment state and GZIP encoding to the request headers.
@@ -213,8 +222,7 @@ bool AutofillDownloadManager::StartRequest(
 
   VLOG(1) << "Sending AutofillDownloadManager "
           << RequestTypeToString(request_data.request_type)
-          << " request (compression " << compression_ratio
-          << "): " << request_data.payload;
+          << " request (compressed to " << compression_ratio << "%)";
 
   return true;
 }
@@ -305,7 +313,7 @@ void AutofillDownloadManager::OnURLFetchComplete(
     std::string response_body;
     source->GetResponseAsString(&response_body);
     VLOG(1) << "AutofillDownloadManager: " << request_type
-             << " request has succeeded with response body: " << response_body;
+            << " request has succeeded.";
     if (it->second.request_type == AutofillDownloadManager::REQUEST_QUERY) {
       CacheQueryRequest(it->second.form_signatures, response_body);
       observer_->OnLoadedServerPredictions(std::move(response_body),

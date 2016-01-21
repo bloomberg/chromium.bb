@@ -20,6 +20,7 @@
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/proto/server.pb.h"
 #include "url/gurl.h"
 
 class XmlWriter;
@@ -58,37 +59,27 @@ class FormStructure {
   // types.
   void DetermineHeuristicTypes();
 
-  // Encodes the XML upload request from this FormStructure.
+  // Encodes the proto |upload| request from this FormStructure.
   // In some cases, a |login_form_signature| is included as part of the upload.
   // This field is empty when sending upload requests for non-login forms.
   bool EncodeUploadRequest(const ServerFieldTypeSet& available_field_types,
                            bool form_was_autofilled,
                            const std::string& login_form_signature,
                            bool observed_submission,
-                           std::string* encoded_xml) const;
+                           autofill::AutofillUploadContents* upload) const;
 
-  // Encodes a XML block contains autofill field type from this FormStructure.
-  // This XML will be written VLOG only, never be sent to server. It will
-  // help make FieldAssignments and feed back to autofill server as
-  // experiment data.
-  bool EncodeFieldAssignments(const ServerFieldTypeSet& available_field_types,
-                              std::string* encoded_xml) const;
-
-  // Encodes the XML query request for the set of |forms| that are valid (see
-  // implementation for details on which forms are not included in the query).
-  // The form signatures used in the Query request are output in
-  // |encoded_signatures|. All valid fields are encoded in |encoded_xml|. For
-  // example, there are three valid forms, with 2, 4, and 3 fields. The returned
-  // XML would have type info for 9 fields, first two of which would be for the
-  // first form, next 4 for the second, and the rest is for the third.
+  // Encodes the proto |query| request for the set of |forms| that are valid
+  // (see implementation for details on which forms are not included in the
+  // query). The form signatures used in the Query request are output in
+  // |encoded_signatures|. All valid fields are encoded in |query|.
   static bool EncodeQueryRequest(const std::vector<FormStructure*>& forms,
                                  std::vector<std::string>* encoded_signatures,
-                                 std::string* encoded_xml);
+                                 autofill::AutofillQueryContents* query);
 
   // Parses the field types from the server query response. |forms| must be the
   // same as the one passed to EncodeQueryRequest when constructing the query.
   // |rappor_service| may be null.
-  static void ParseQueryResponse(std::string response_xml,
+  static void ParseQueryResponse(std::string response,
                                  const std::vector<FormStructure*>& forms,
                                  rappor::RapporService* rappor_service);
 
@@ -225,23 +216,20 @@ class FormStructure {
   friend class FormStructureTest;
   FRIEND_TEST_ALL_PREFIXES(AutofillDownloadTest, QueryAndUploadTest);
 
-  // 64-bit hash of the string - used in FormSignature and unit-tests.
-  static std::string Hash64Bit(const std::string& str);
+  // Encodes information about this form and its fields into |query_form|.
+  void EncodeFormForQuery(
+      autofill::AutofillQueryContents::Form* query_form) const;
 
-  enum EncodeRequestType {
-    QUERY,
-    UPLOAD,
-    FIELD_ASSIGNMENTS,
-  };
+  // Encodes information about this form and its fields into |upload|.
+  void EncodeFormForUpload(autofill::AutofillUploadContents* upload) const;
+
+  // 64-bit hash of the string - used in FormSignature and unit-tests.
+  static uint64_t Hash64Bit(const std::string& str);
+
+  uint64_t FormSignature64Bit() const;
 
   // Returns true if the form has no fields, or too many.
   bool IsMalformed() const;
-
-  // Takes |xml_writer| and writes description for |fields_|, according to
-  // |request_type|. Returns false on failure, including when there are no
-  // fields, and true on success.
-  bool EncodeFormRequest(EncodeRequestType request_type,
-                         XmlWriter* xml_writer) const;
 
   // Classifies each field in |fields_| into a logical section.
   // Sections are identified by the heuristic that a logical section should not
