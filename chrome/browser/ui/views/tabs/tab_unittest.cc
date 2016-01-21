@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -86,27 +85,10 @@ class FakeTabController : public TabController {
   DISALLOW_COPY_AND_ASSIGN(FakeTabController);
 };
 
-class TabTest : public views::ViewsTestBase,
-                public ::testing::WithParamInterface<bool> {
+class TabTest : public views::ViewsTestBase {
  public:
   TabTest() {}
-  virtual ~TabTest() {}
-
-  bool testing_for_rtl_locale() const { return GetParam(); }
-
-  void SetUp() override {
-    if (testing_for_rtl_locale()) {
-      original_locale_ = base::i18n::GetConfiguredLocale();
-      base::i18n::SetICUDefaultLocale("he");
-    }
-    views::ViewsTestBase::SetUp();
-  }
-
-  void TearDown() override {
-    views::ViewsTestBase::TearDown();
-    if (testing_for_rtl_locale())
-      base::i18n::SetICUDefaultLocale(original_locale_);
-  }
+  ~TabTest() override {}
 
   static views::ImageButton* GetCloseButton(const Tab& tab) {
     return tab.close_button_;
@@ -264,12 +246,7 @@ class TabTest : public views::ViewsTestBase,
   std::string original_locale_;
 };
 
-TEST_P(TabTest, HitTestTopPixel) {
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, HitTestTopPixel) {
   Widget widget;
   InitWidget(&widget);
 
@@ -299,12 +276,7 @@ TEST_P(TabTest, HitTestTopPixel) {
   EXPECT_FALSE(tab.HitTestPoint(gfx::Point(tab.width() - 1, 0)));
 }
 
-TEST_P(TabTest, LayoutAndVisibilityOfElements) {
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, LayoutAndVisibilityOfElements) {
   static const TabMediaState kMediaStatesToTest[] = {
     TAB_MEDIA_STATE_NONE, TAB_MEDIA_STATE_CAPTURING,
     TAB_MEDIA_STATE_AUDIO_PLAYING, TAB_MEDIA_STATE_AUDIO_MUTING
@@ -364,12 +336,7 @@ TEST_P(TabTest, LayoutAndVisibilityOfElements) {
 // Regression test for http://crbug.com/420313: Confirms that any child Views of
 // Tab do not attempt to provide their own tooltip behavior/text. It also tests
 // that Tab provides the expected tooltip text (according to tab_utils).
-TEST_P(TabTest, TooltipProvidedByTab) {
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, TooltipProvidedByTab) {
   Widget widget;
   InitWidget(&widget);
 
@@ -422,12 +389,7 @@ TEST_P(TabTest, TooltipProvidedByTab) {
 
 // Regression test for http://crbug.com/226253. Calling Layout() more than once
 // shouldn't change the insets of the close button.
-TEST_P(TabTest, CloseButtonLayout) {
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, CloseButtonLayout) {
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
   tab.SetBounds(0, 0, 100, 50);
@@ -446,12 +408,7 @@ TEST_P(TabTest, CloseButtonLayout) {
 
 // Tests expected changes to the ThrobberView state when the WebContents loading
 // state changes or the animation timer (usually in BrowserView) triggers.
-TEST_P(TabTest, LayeredThrobber) {
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, LayeredThrobber) {
   Widget widget;
   InitWidget(&widget);
 
@@ -505,13 +462,7 @@ TEST_P(TabTest, LayeredThrobber) {
   EXPECT_FALSE(throbber->visible());
 }
 
-TEST_P(TabTest, TitleHiddenWhenSmall) {
-  // TODO(sky): figure out if needed.
-  if (testing_for_rtl_locale() && !base::i18n::IsRTL()) {
-    LOG(WARNING) << "Testing of RTL locale not supported on current platform.";
-    return;
-  }
-
+TEST_F(TabTest, TitleHiddenWhenSmall) {
   FakeTabController tab_controller;
   Tab tab(&tab_controller);
   tab.SetBounds(0, 0, 100, 50);
@@ -519,11 +470,3 @@ TEST_P(TabTest, TitleHiddenWhenSmall) {
   tab.SetBounds(0, 0, 0, 50);
   EXPECT_EQ(0, GetTitleWidth(tab));
 }
-
-// Test in both a LTR and a RTL locale.  Note: The fact that the UI code is
-// configured for an RTL locale does *not* change how the coordinates are
-// examined in the tests above because views::View and friends are supposed to
-// auto-mirror the widgets when painting.  Thus, what we're testing here is that
-// there's no code in Tab that will erroneously subvert this automatic
-// coordinate translation.  http://crbug.com/384179
-INSTANTIATE_TEST_CASE_P(, TabTest, ::testing::Values(false, true));
