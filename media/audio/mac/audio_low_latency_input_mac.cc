@@ -586,7 +586,8 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
     OSSTATUS_LOG(ERROR, result) << "AudioUnitRender() failed ";
-    if (result == kAudioUnitErr_TooManyFramesToProcess) {
+    if (result == kAudioUnitErr_TooManyFramesToProcess ||
+        result == kAudioUnitErr_CannotDoInCurrentContext) {
       DCHECK(!audio_input->last_success_time_.is_null());
       // We delay stopping the stream for kAudioUnitErr_TooManyFramesToProcess
       // since it has been observed that some USB headsets can cause this error
@@ -595,19 +596,19 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
       // Instead, we measure time since last valid audio frame and call
       // HandleError() only if a too long error sequence is detected. We do
       // this to avoid ending up in a non recoverable bad core audio state.
+      // Also including kAudioUnitErr_CannotDoInCurrentContext since long
+      // sequences can be produced in combination with e.g. sample-rate changes
+      // for input devices.
       base::TimeDelta time_since_last_success =
           base::TimeTicks::Now() - audio_input->last_success_time_;
       if ((time_since_last_success >
            base::TimeDelta::FromSeconds(kMaxErrorTimeoutInSeconds))) {
-        LOG(ERROR) << "Too long sequence of TooManyFramesToProcess errors!";
+        const char* err = (result == kAudioUnitErr_TooManyFramesToProcess)
+                              ? "kAudioUnitErr_TooManyFramesToProcess"
+                              : "kAudioUnitErr_CannotDoInCurrentContext";
+        LOG(ERROR) << "Too long sequence of " << err << " errors!";
         audio_input->HandleError(result);
       }
-    } else if (result == kAudioUnitErr_CannotDoInCurrentContext) {
-      // Returned when an audio unit is in a state where it can't perform the
-      // requested action now - but it could later.
-      // TODO(henrika): figure out why we see this error message; do nothing
-      // for now. Hoping that we will get back on track soon.
-      LOG(ERROR) << "kAudioUnitErr_CannotDoInCurrentContext";
     } else {
       // We have also seen kAudioUnitErr_NoConnection in some cases. Bailing
       // out for this error for now.
