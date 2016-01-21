@@ -86,6 +86,14 @@ message EffectNodeData {
   optional int64 clip_id = 6;
 }
 
+message ScrollNodeData {
+  optional bool scrollable = 1;
+  optional bool should_scroll_on_main_thread = 2;
+  optional int32 scroll_blocks_on = 3;
+  optional bool contains_non_fast_scrollable_region = 4;
+  optional int64 transform_id = 5;
+}
+
 // This defines the proto used for all types of struct TreeNode.
 message TreeNode {
   // The following fields are the base TreeNode properties. This list
@@ -100,6 +108,7 @@ message TreeNode {
   optional TranformNodeData transform_node_data = 1000;
   optional ClipNodeData clip_node_data = 1001;
   optional EffectNodeData effect_node_data = 1002;
+  optional ScrollNodeData scroll_node_data = 1003;
 }
 
 // This defines the proto used for all property trees. PropertyType denotes the
@@ -109,6 +118,7 @@ message PropertyTree {
     Transform = 1;
     Clip = 2;
     Effect = 3;
+    Scroll = 4;
   }
 
   // The following fields are the base PropertyTree properties. This list
@@ -142,8 +152,9 @@ message PropertyTrees {
   optional PropertyTree transform_tree = 1;
   optional PropertyTree effect_tree = 2;
   optional PropertyTree clip_tree = 3;
+  optional PropertyTree scroll_tree = 4;
 
-  optional bool needs_rebuild = 4;
-  optional bool non_root_surfaces_enabled = 5;
-  optional int64 sequence_number = 6;
+  optional bool needs_rebuild = 5;
+  optional bool non_root_surfaces_enabled = 6;
+  optional int64 sequence_number = 7;
 }

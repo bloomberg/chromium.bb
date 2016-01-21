@@ -226,6 +226,55 @@ TEST(PropertyTreeSerializationTest, EffectTreeSerialization) {
   EXPECT_EQ(original, result);
 }
 
+TEST(PropertyTreeSerializationTest, ScrollNodeDataSerialization) {
+  ScrollNodeData original;
+  original.scrollable = true;
+  original.should_scroll_on_main_thread = false;
+  original.scroll_blocks_on = SCROLL_BLOCKS_ON_WHEEL_EVENT;
+  original.contains_non_fast_scrollable_region = false;
+  original.transform_id = 2;
+
+  proto::TreeNode proto;
+  original.ToProtobuf(&proto);
+  ScrollNodeData result;
+  result.FromProtobuf(proto);
+
+  EXPECT_EQ(original, result);
+}
+
+TEST(PropertyTreeSerializationTest, ScrollNodeSerialization) {
+  ScrollNode original;
+  original.id = 3;
+  original.parent_id = 2;
+  original.owner_id = 4;
+
+  proto::TreeNode proto;
+  original.ToProtobuf(&proto);
+  ScrollNode result;
+  result.FromProtobuf(proto);
+
+  EXPECT_EQ(original, result);
+}
+
+TEST(PropertyTreeSerializationTest, ScrollTreeSerialization) {
+  ScrollTree original;
+  ScrollNode& root = *original.Node(0);
+  root.data.transform_id = 2;
+  ScrollNode second;
+  second.data.transform_id = 4;
+  second.data.scrollable = true;
+  ScrollNode third;
+  third.data.transform_id = 5;
+  third.data.contains_non_fast_scrollable_region = true;
+
+  proto::PropertyTree proto;
+  original.ToProtobuf(&proto);
+  ScrollTree result;
+  result.FromProtobuf(proto);
+
+  EXPECT_EQ(original, result);
+}
+
 TEST(PropertyTreeSerializationTest, PropertyTrees) {
   PropertyTrees original;
   original.transform_tree.Insert(TransformNode(), 0);
@@ -234,6 +283,8 @@ TEST(PropertyTreeSerializationTest, PropertyTrees) {
   original.clip_tree.Insert(ClipNode(), 1);
   original.effect_tree.Insert(EffectNode(), 0);
   original.effect_tree.Insert(EffectNode(), 1);
+  original.scroll_tree.Insert(ScrollNode(), 0);
+  original.scroll_tree.Insert(ScrollNode(), 1);
   original.needs_rebuild = false;
   original.non_root_surfaces_enabled = false;
   original.sequence_number = 3;

@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "cc/base/cc_export.h"
+#include "cc/layers/scroll_blocks_on.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/transform.h"
@@ -21,6 +22,7 @@ class ClipNodeData;
 class EffectNodeData;
 class PropertyTree;
 class PropertyTrees;
+class ScrollNodeData;
 class TranformNodeData;
 class TransformTreeData;
 class TreeNode;
@@ -254,6 +256,24 @@ struct CC_EXPORT EffectNodeData {
 
 typedef TreeNode<EffectNodeData> EffectNode;
 
+struct CC_EXPORT ScrollNodeData {
+  ScrollNodeData();
+
+  bool scrollable;
+  bool should_scroll_on_main_thread;
+  ScrollBlocksOn scroll_blocks_on;
+  bool contains_non_fast_scrollable_region;
+
+  int transform_id;
+
+  bool operator==(const ScrollNodeData& other) const;
+
+  void ToProtobuf(proto::TreeNode* proto) const;
+  void FromProtobuf(const proto::TreeNode& proto);
+};
+
+typedef TreeNode<ScrollNodeData> ScrollNode;
+
 template <typename T>
 class CC_EXPORT PropertyTree {
  public:
@@ -486,9 +506,18 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
 };
 
+class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
+ public:
+  bool operator==(const ScrollTree& other) const;
+
+  void ToProtobuf(proto::PropertyTree* proto) const;
+  void FromProtobuf(const proto::PropertyTree& proto);
+};
+
 class CC_EXPORT PropertyTrees final {
  public:
   PropertyTrees();
+  ~PropertyTrees();
 
   bool operator==(const PropertyTrees& other) const;
 
@@ -498,6 +527,7 @@ class CC_EXPORT PropertyTrees final {
   TransformTree transform_tree;
   EffectTree effect_tree;
   ClipTree clip_tree;
+  ScrollTree scroll_tree;
   bool needs_rebuild;
   bool non_root_surfaces_enabled;
   int sequence_number;

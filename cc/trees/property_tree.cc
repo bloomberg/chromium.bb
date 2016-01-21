@@ -43,6 +43,7 @@ void TreeNode<T>::FromProtobuf(const proto::TreeNode& proto) {
 template struct TreeNode<TransformNodeData>;
 template struct TreeNode<ClipNodeData>;
 template struct TreeNode<EffectNodeData>;
+template struct TreeNode<ScrollNodeData>;
 
 template <typename T>
 PropertyTree<T>::PropertyTree()
@@ -118,6 +119,7 @@ void PropertyTree<T>::FromProtobuf(const proto::PropertyTree& proto) {
 template class PropertyTree<TransformNode>;
 template class PropertyTree<ClipNode>;
 template class PropertyTree<EffectNode>;
+template class PropertyTree<ScrollNode>;
 
 TransformNodeData::TransformNodeData()
     : target_id(-1),
@@ -446,6 +448,45 @@ void EffectNodeData::FromProtobuf(const proto::TreeNode& proto) {
   num_copy_requests_in_subtree = data.num_copy_requests_in_subtree();
   transform_id = data.transform_id();
   clip_id = data.clip_id();
+}
+
+ScrollNodeData::ScrollNodeData()
+    : scrollable(false),
+      should_scroll_on_main_thread(false),
+      scroll_blocks_on(ScrollBlocksOn::SCROLL_BLOCKS_ON_NONE),
+      contains_non_fast_scrollable_region(false),
+      transform_id(0) {}
+
+bool ScrollNodeData::operator==(const ScrollNodeData& other) const {
+  return scrollable == other.scrollable &&
+         should_scroll_on_main_thread == other.should_scroll_on_main_thread &&
+         scroll_blocks_on == other.scroll_blocks_on &&
+         contains_non_fast_scrollable_region ==
+             other.contains_non_fast_scrollable_region &&
+         transform_id == other.transform_id;
+}
+
+void ScrollNodeData::ToProtobuf(proto::TreeNode* proto) const {
+  DCHECK(!proto->has_scroll_node_data());
+  proto::ScrollNodeData* data = proto->mutable_scroll_node_data();
+  data->set_scrollable(scrollable);
+  data->set_should_scroll_on_main_thread(should_scroll_on_main_thread);
+  data->set_scroll_blocks_on(scroll_blocks_on);
+  data->set_contains_non_fast_scrollable_region(
+      contains_non_fast_scrollable_region);
+  data->set_transform_id(transform_id);
+}
+
+void ScrollNodeData::FromProtobuf(const proto::TreeNode& proto) {
+  DCHECK(proto.has_scroll_node_data());
+  const proto::ScrollNodeData& data = proto.scroll_node_data();
+
+  scrollable = data.scrollable();
+  should_scroll_on_main_thread = data.should_scroll_on_main_thread();
+  scroll_blocks_on = (ScrollBlocksOn)data.scroll_blocks_on();
+  contains_non_fast_scrollable_region =
+      data.contains_non_fast_scrollable_region();
+  transform_id = data.transform_id();
 }
 
 void TransformTree::clear() {
@@ -1109,14 +1150,35 @@ void EffectTree::FromProtobuf(const proto::PropertyTree& proto) {
   PropertyTree::FromProtobuf(proto);
 }
 
+bool ScrollTree::operator==(const ScrollTree& other) const {
+  return PropertyTree::operator==(other);
+}
+
+void ScrollTree::ToProtobuf(proto::PropertyTree* proto) const {
+  DCHECK(!proto->has_property_type());
+  proto->set_property_type(proto::PropertyTree::Scroll);
+
+  PropertyTree::ToProtobuf(proto);
+}
+
+void ScrollTree::FromProtobuf(const proto::PropertyTree& proto) {
+  DCHECK(proto.has_property_type());
+  DCHECK_EQ(proto.property_type(), proto::PropertyTree::Scroll);
+
+  PropertyTree::FromProtobuf(proto);
+}
+
 PropertyTrees::PropertyTrees()
     : needs_rebuild(true),
       non_root_surfaces_enabled(true),
       sequence_number(0) {}
 
+PropertyTrees::~PropertyTrees() {}
+
 bool PropertyTrees::operator==(const PropertyTrees& other) const {
   return transform_tree == other.transform_tree &&
          effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
+         scroll_tree == other.scroll_tree &&
          needs_rebuild == other.needs_rebuild &&
          non_root_surfaces_enabled == other.non_root_surfaces_enabled &&
          sequence_number == other.sequence_number;
@@ -1128,6 +1190,7 @@ void PropertyTrees::ToProtobuf(proto::PropertyTrees* proto) const {
   transform_tree.ToProtobuf(proto->mutable_transform_tree());
   effect_tree.ToProtobuf(proto->mutable_effect_tree());
   clip_tree.ToProtobuf(proto->mutable_clip_tree());
+  scroll_tree.ToProtobuf(proto->mutable_scroll_tree());
   proto->set_needs_rebuild(needs_rebuild);
   proto->set_non_root_surfaces_enabled(non_root_surfaces_enabled);
 
@@ -1141,6 +1204,7 @@ void PropertyTrees::FromProtobuf(const proto::PropertyTrees& proto) {
   transform_tree.FromProtobuf(proto.transform_tree());
   effect_tree.FromProtobuf(proto.effect_tree());
   clip_tree.FromProtobuf(proto.clip_tree());
+  scroll_tree.FromProtobuf(proto.scroll_tree());
 
   needs_rebuild = proto.needs_rebuild();
   non_root_surfaces_enabled = proto.non_root_surfaces_enabled();
