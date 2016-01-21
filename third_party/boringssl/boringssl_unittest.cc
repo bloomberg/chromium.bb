@@ -323,3 +323,7 @@ TEST(BoringSSL, V3NameTest) {
 TEST(BoringSSL, X25519) {
   TestSimple("x25519_test");
 }
+
+TEST(BoringSSL, X509) {
+  TestSimple("x509_test");
+}

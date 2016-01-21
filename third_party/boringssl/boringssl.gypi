@@ -29,6 +29,7 @@
       'src/ssl/ssl_buffer.c',
       'src/ssl/ssl_cert.c',
       'src/ssl/ssl_cipher.c',
+      'src/ssl/ssl_ecdh.c',
       'src/ssl/ssl_file.c',
       'src/ssl/ssl_lib.c',
       'src/ssl/ssl_rsa.c',
@@ -134,6 +135,7 @@
       'src/crypto/cpu-intel.c',
       'src/crypto/crypto.c',
       'src/crypto/curve25519/curve25519.c',
+      'src/crypto/curve25519/x25519-x86_64.c',
       'src/crypto/des/des.c',
       'src/crypto/dh/check.c',
       'src/crypto/dh/dh.c',
@@ -324,7 +326,7 @@
       'linux-arm/crypto/sha/sha512-armv4.S',
       'src/crypto/chacha/chacha_vec_arm.S',
       'src/crypto/cpu-arm-asm.S',
-      'src/crypto/curve25519/asm/x25519-arm.S',
+      'src/crypto/curve25519/asm/x25519-asm-arm.S',
       'src/crypto/poly1305/poly1305_arm_asm.S',
     ],
     'boringssl_linux_x86_sources': [
@@ -359,6 +361,7 @@
       'linux-x86_64/crypto/sha/sha1-x86_64.S',
       'linux-x86_64/crypto/sha/sha256-x86_64.S',
       'linux-x86_64/crypto/sha/sha512-x86_64.S',
+      'src/crypto/curve25519/asm/x25519-asm-x86_64.S',
     ],
     'boringssl_mac_x86_sources': [
       'mac-x86/crypto/aes/aes-586.S',

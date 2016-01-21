@@ -17,6 +17,7 @@
       'defines': [
         'BORINGSSL_IMPLEMENTATION',
         'BORINGSSL_NO_STATIC_INITIALIZER',
+        'OPENSSL_SMALL',
       ],
       'dependencies': [ 'boringssl_asm' ],
       # TODO(davidben): Fix size_t truncations in BoringSSL.
@@ -33,9 +34,6 @@
         'src/include',
       ],
       'direct_dependent_settings': {
-        'defines': [
-          'OPENSSL_SMALL',
-        ],
         'include_dirs': [
           'src/include',
         ],

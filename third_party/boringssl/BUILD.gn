@@ -7,10 +7,9 @@ import("//build/config/sanitizers/sanitizers.gni")
 
 # Config for us and everybody else depending on BoringSSL.
 config("openssl_config") {
-  defines = [ "OPENSSL_SMALL" ]
   include_dirs = [ "src/include" ]
   if (is_component_build) {
-    defines += [ "BORINGSSL_SHARED_LIBRARY" ]
+    defines = [ "BORINGSSL_SHARED_LIBRARY" ]
   }
 }
 

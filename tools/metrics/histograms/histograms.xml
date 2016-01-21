@@ -61108,6 +61108,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <int value="23" label="P-256"/>
   <int value="24" label="P-384"/>
   <int value="25" label="P-521"/>
+  <int value="29" label="X25519"/>
 </enum>
 
 <enum name="EGLDisplayType" type="int">
