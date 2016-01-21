@@ -337,7 +337,7 @@ public class NotificationTransportControl
                         new RemoteVideoInfo(null, 0, RemoteVideoInfo.PlayerState.STOPPED, 0, null));
             }
 
-            sInstance.setMediaRouteController(mrc);
+            sInstance.setRouteController(mrc);
             return sInstance;
         }
     }
@@ -454,7 +454,9 @@ public class NotificationTransportControl
 
     @Override
     public void setRouteController(MediaRouteController controller) {
-        setMediaRouteController(controller);
+        if (mMediaRouteController != null)  mMediaRouteController.removeUiListener(this);
+        mMediaRouteController = controller;
+        if (controller != null) controller.addUiListener(this);
     }
 
     @Override
@@ -512,17 +514,6 @@ public class NotificationTransportControl
         float maxWidth = res.getDimension(R.dimen.remote_notification_logo_max_width);
         float maxHeight = res.getDimension(R.dimen.remote_notification_logo_max_height);
         return scaleBitmap(bitmap, (int) maxWidth, (int) maxHeight);
-    }
-
-    /**
-     * Sets the MediaRouteController the notification should be using to get the data from.
-     *
-     * @param mrc the MediaRouteController object to use.
-     */
-    private void setMediaRouteController(@Nullable MediaRouteController mrc) {
-        if (mMediaRouteController != null)  mMediaRouteController.removeUiListener(this);
-        mMediaRouteController = mrc;
-        if (mrc != null) mrc.addUiListener(this);
     }
 
 }
