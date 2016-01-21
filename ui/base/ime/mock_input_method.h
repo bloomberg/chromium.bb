@@ -16,7 +16,6 @@
 
 namespace ui {
 
-class InputMethodLogCollector;
 class KeyEvent;
 class TextInputClient;
 
@@ -53,7 +52,6 @@ class UI_BASE_IME_EXPORT MockInputMethod
   void ShowImeIfNeeded() override;
   void AddObserver(InputMethodObserver* observer) override;
   void RemoveObserver(InputMethodObserver* observer) override;
-  InputMethodLogCollector* GetLogCollector() override;
 
  private:
   TextInputClient* text_input_client_;

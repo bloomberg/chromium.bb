@@ -5,7 +5,6 @@
 #include "ui/base/ime/mock_input_method.h"
 
 #include "ui/base/ime/input_method_delegate.h"
-#include "ui/base/ime/input_method_log_collector.h"
 #include "ui/events/event.h"
 
 namespace ui {
@@ -115,10 +114,6 @@ void MockInputMethod::AddObserver(InputMethodObserver* observer) {
 
 void MockInputMethod::RemoveObserver(InputMethodObserver* observer) {
   observer_list_.RemoveObserver(observer);
-}
-
-InputMethodLogCollector* MockInputMethod::GetLogCollector() {
-  return nullptr;
 }
 
 }  // namespace ui

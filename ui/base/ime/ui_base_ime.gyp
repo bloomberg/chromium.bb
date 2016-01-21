@@ -89,8 +89,6 @@
         'input_method_factory.h',
         'input_method_initializer.cc',
         'input_method_initializer.h',
-        'input_method_log_collector.cc',
-        'input_method_log_collector.h',
         'input_method_mac.h',
         'input_method_mac.mm',
         'input_method_minimal.cc',
