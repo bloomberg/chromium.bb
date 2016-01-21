@@ -156,6 +156,10 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         return mEditorInfo;
     }
 
+    public InputConnection getInputConnection() {
+        return mInputConnection;
+    }
+
     public Range getSelection() {
         return mSelection;
     }

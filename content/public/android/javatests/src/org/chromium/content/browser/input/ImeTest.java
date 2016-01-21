@@ -201,9 +201,16 @@ public class ImeTest extends ContentShellTestBase {
         // hideSoftKeyboard(), restartInput()
         waitForKeyboardStates(0, 1, 1, new Integer[] {});
 
+        // When input connection is null, we still need to set flags to prevent InputMethodService
+        // from entering fullscreen mode and from opening custom UI.
+        assertNull(mInputMethodManagerWrapper.getInputConnection());
+        assertEquals(EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI,
+                mInputMethodManagerWrapper.getEditorInfo().imeOptions);
+
         // showSoftInput(), restartInput()
         focusElement("input_number1");
         waitForKeyboardStates(1, 1, 2, new Integer[] {TextInputType.NUMBER});
+        assertNotNull(mInputMethodManagerWrapper.getInputConnection());
 
         focusElement("input_number2");
         // Hide should never be called here. Otherwise we will see a flicker. Restarted to

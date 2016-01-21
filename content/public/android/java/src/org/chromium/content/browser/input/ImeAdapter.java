@@ -143,6 +143,10 @@ public class ImeAdapter {
         if (mTextInputType == TextInputType.NONE) {
             mInputConnection = null;
             Log.d(TAG, "onCreateInputConnection returns null.");
+            // InputMethodService evaluates fullscreen mode even when the new input connection is
+            // null. This makes sure IME doesn't enter fullscreen mode or open custom UI.
+            outAttrs.imeOptions =
+                    EditorInfo.IME_FLAG_NO_FULLSCREEN | EditorInfo.IME_FLAG_NO_EXTRACT_UI;
             return null;
         }
 
