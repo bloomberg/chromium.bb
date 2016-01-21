@@ -17,10 +17,7 @@
 #include "native_client/src/public/nacl_app.h"
 #include "native_client/src/public/nacl_desc.h"
 #include "native_client/src/shared/platform/nacl_check.h"
-#include "native_client/src/shared/platform/nacl_threads.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_custom.h"
-#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 #include "native_client/src/trusted/service_runtime/nacl_all_modules.h"
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
@@ -61,20 +58,6 @@ NaClHandle OpenFileHandleReadExec(const char *filename) {
 #endif
 }
 
-// This launcher class does not actually launch a process, but we
-// reuse SelLdrLauncherBase in order to use its helper methods.
-class DummyLauncher : public nacl::SelLdrLauncherBase {
- public:
-  explicit DummyLauncher(NaClHandle channel) {
-    channel_ = channel;
-  }
-
-  virtual bool Start(const char *url) {
-    UNREFERENCED_PARAMETER(url);
-    return true;
-  }
-};
-
 struct TestValidationQuery {
   bool known_to_validate;
 };
@@ -108,21 +91,6 @@ static void TestDestroyQuery(void *query) {
 static int TestCachingIsInexpensive(const struct NaClValidationMetadata *m) {
   UNREFERENCED_PARAMETER(m);
   return 1;
-}
-
-struct ThreadArgs {
-  NaClHandle channel;
-};
-
-void WINAPI DummyRendererThread(void *thread_arg) {
-  struct ThreadArgs *args = (struct ThreadArgs *) thread_arg;
-
-  DummyLauncher launcher(args->channel);
-  NaClSrpcChannel trusted_channel;
-  NaClSrpcChannel untrusted_channel;
-  CHECK(launcher.SetupCommand(&trusted_channel));
-  CHECK(launcher.StartModule(&trusted_channel));
-  CHECK(launcher.SetupAppChannel(&untrusted_channel));
 }
 
 void ExampleDescDestroy(void *handle) {
@@ -197,7 +165,6 @@ int main(int argc, char **argv) {
   NaClChromeMainInit();
   struct NaClChromeMainArgs *args = NaClChromeMainArgsCreate();
   struct NaClApp *nap = NaClAppCreate();
-  struct ThreadArgs thread_args;
 
   NaClHandleBootstrapArgs(&argc, &argv);
   int last_option_index = NaClHandleArguments(argc, argv);
@@ -226,11 +193,6 @@ int main(int argc, char **argv) {
 
   NaClFileNameForValgrind(nexe_filename);
 
-  NaClHandle socketpair[2];
-  CHECK(NaClSocketPair(socketpair) == 0);
-  args->imc_bootstrap_handle = socketpair[0];
-  thread_args.channel = socketpair[1];
-
   // Check that NaClDescMakeCustomDesc() works when called in this context.
   NaClAppSetDesc(nap, NACL_CHROME_DESC_BASE, MakeExampleDesc());
 
@@ -249,10 +211,6 @@ int main(int argc, char **argv) {
   NaClHandle nexe_handle = OpenFileHandleReadExec(nexe_filename);
   args->nexe_desc = NaClDescCreateWithFilePathMetadata(nexe_handle,
                                                        "dummy_pathname");
-
-  NaClThread thread;
-  CHECK(NaClThreadCtor(&thread, DummyRendererThread, &thread_args,
-                       NACL_KERN_STACK_SIZE));
 
   int status = 1;
   NaClChromeMainStart(nap, args, &status);

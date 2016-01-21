@@ -14,7 +14,6 @@
       'target_name': 'sel_main_chrome_test',
       'type': 'executable',
       'dependencies': [
-        '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:sel_ldr_launcher',
         '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome',
       ],
       'sources': [
@@ -34,7 +33,6 @@
             'win_target': 'x64',
           },
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:sel_ldr_launcher64',
             '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:sel_main_chrome64',
           ],
           'sources': [
