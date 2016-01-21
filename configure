@@ -34,10 +34,7 @@ Advanced options:
   ${toggle_codec_srcs}            in/exclude codec library source code
   ${toggle_debug_libs}            in/exclude debug version of libraries
   ${toggle_static_msvcrt}         use static MSVCRT (VS builds only)
-  ${toggle_vpx_highbitdepth}      use VP9 high bit depth (10/12) profiles
-  ${toggle_better_hw_compatibility}
-                                  enable encoder to produce streams with better
-                                  hardware decoder compatibility
+  ${toggle_vpx_highbitdepth}      use high bit depth (10/12) profiles
   ${toggle_vp10}                  VP10 codec support
   ${toggle_internal_stats}        output of encoder internal stats for debug, if supported (encoders)
   ${toggle_multithread}           multithreaded encoding and decoding
@@ -299,10 +296,8 @@ CONFIG_LIST="
     encode_perf_tests
     multi_res_encoding
     temporal_denoising
-    vp9_temporal_denoising
     coefficient_range_checking
     vpx_highbitdepth
-    better_hw_compatibility
     experimental
     size_limit
     ${EXPERIMENT_LIST}
@@ -356,9 +351,7 @@ CMDLINE_SELECT="
     encode_perf_tests
     multi_res_encoding
     temporal_denoising
-    vp9_temporal_denoising
     coefficient_range_checking
-    better_hw_compatibility
     vpx_highbitdepth
     experimental
 "
