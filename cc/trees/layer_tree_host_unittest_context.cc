@@ -937,9 +937,9 @@ class LayerTreeHostContextTestDontUseLostResources
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Rect(0, 0, 10, 10),
                  gfx::Transform());
-    uint32_t mailbox_sync_point;
+    gpu::SyncToken mailbox_sync_token;
     AddOneOfEveryQuadType(pass.get(), child_resource_provider_.get(),
-                          RenderPassId(2, 1), &mailbox_sync_point);
+                          RenderPassId(2, 1), &mailbox_sync_token);
 
     frame_data->render_pass_list.push_back(std::move(pass_for_quad));
     frame_data->render_pass_list.push_back(std::move(pass));

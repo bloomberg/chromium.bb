@@ -57,6 +57,10 @@ gpu::Mailbox MailboxFromChar(char value) {
   return mailbox;
 }
 
+gpu::SyncToken SyncTokenFromUInt(uint32_t value) {
+  return gpu::SyncToken(gpu::CommandBufferNamespace::GPU_IO, 0, 0x123, value);
+}
+
 class MockLayerTreeHost : public LayerTreeHost {
  public:
   static scoped_ptr<MockLayerTreeHost> Create(
@@ -141,8 +145,8 @@ struct CommonMailboxObjects {
   explicit CommonMailboxObjects(SharedBitmapManager* manager)
       : mailbox_name1_(MailboxFromChar('1')),
         mailbox_name2_(MailboxFromChar('2')),
-        sync_token1_(1),
-        sync_token2_(2) {
+        sync_token1_(gpu::CommandBufferNamespace::GPU_IO, 123, 0x234, 1),
+        sync_token2_(gpu::CommandBufferNamespace::GPU_IO, 123, 0x234, 2) {
     release_mailbox1_ = base::Bind(&MockMailboxCallback::Release,
                                    base::Unretained(&mock_callback_),
                                    mailbox_name1_);
@@ -327,9 +331,9 @@ TEST_F(TextureLayerTest, SetTextureMailboxWithoutReleaseCallback) {
   ASSERT_TRUE(test_layer.get());
 
   // These use the same gpu::Mailbox, but different sync points.
-  TextureMailbox mailbox1(MailboxFromChar('a'), gpu::SyncToken(1),
+  TextureMailbox mailbox1(MailboxFromChar('a'), SyncTokenFromUInt(1),
                           GL_TEXTURE_2D);
-  TextureMailbox mailbox2(MailboxFromChar('a'), gpu::SyncToken(2),
+  TextureMailbox mailbox2(MailboxFromChar('a'), SyncTokenFromUInt(2),
                           GL_TEXTURE_2D);
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AnyNumber());
@@ -433,8 +437,10 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
 
   // The compositors both destroy their impl trees before the main thread layer
   // is destroyed.
-  compositor1->Run(gpu::SyncToken(100), false, main_thread_task_runner_.get());
-  compositor2->Run(gpu::SyncToken(200), false, main_thread_task_runner_.get());
+  compositor1->Run(SyncTokenFromUInt(100), false,
+                   main_thread_task_runner_.get());
+  compositor2->Run(SyncTokenFromUInt(200), false,
+                   main_thread_task_runner_.get());
 
   Wait(main_thread_);
 
@@ -444,7 +450,7 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_BothReleaseThenMain) {
   // The main thread ref is the last one, so the mailbox is released back to the
   // embedder, with the last sync point provided by the impl trees.
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(200), false))
+              Release(test_data_.mailbox_name1_, SyncTokenFromUInt(200), false))
       .Times(1);
 
   main_thread_.message_loop()->task_runner()->PostTask(
@@ -483,7 +489,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
   // One compositor destroys their impl tree.
-  compositor1->Run(gpu::SyncToken(100), false, main_thread_task_runner_.get());
+  compositor1->Run(SyncTokenFromUInt(100), false,
+                   main_thread_task_runner_.get());
 
   // Then the main thread reference is destroyed.
   main_thread_.message_loop()->task_runner()->PostTask(
@@ -498,10 +505,11 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleaseBetween) {
   // The second impl reference is destroyed last, causing the mailbox to be
   // released back to the embedder with the last sync point from the impl tree.
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(200), true))
+              Release(test_data_.mailbox_name1_, SyncTokenFromUInt(200), true))
       .Times(1);
 
-  compositor2->Run(gpu::SyncToken(200), true, main_thread_task_runner_.get());
+  compositor2->Run(SyncTokenFromUInt(200), true,
+                   main_thread_task_runner_.get());
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 }
@@ -540,7 +548,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
                             base::Unretained(this)));
 
   // One compositor destroys their impl tree.
-  compositor2->Run(gpu::SyncToken(200), false, main_thread_task_runner_.get());
+  compositor2->Run(SyncTokenFromUInt(200), false,
+                   main_thread_task_runner_.get());
 
   Wait(main_thread_);
 
@@ -550,10 +559,11 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_MainReleasedFirst) {
   // The second impl reference is destroyed last, causing the mailbox to be
   // released back to the embedder with the last sync point from the impl tree.
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(100), true))
+              Release(test_data_.mailbox_name1_, SyncTokenFromUInt(100), true))
       .Times(1);
 
-  compositor1->Run(gpu::SyncToken(100), true, main_thread_task_runner_.get());
+  compositor1->Run(SyncTokenFromUInt(100), true,
+                   main_thread_task_runner_.get());
   Wait(main_thread_);
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 }
@@ -592,7 +602,7 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
                             base::Unretained(this)));
 
   EXPECT_CALL(test_data_.mock_callback_,
-              Release(test_data_.mailbox_name1_, gpu::SyncToken(200), true))
+              Release(test_data_.mailbox_name1_, SyncTokenFromUInt(200), true))
       .Times(1);
 
   bool manual_reset = false;
@@ -612,7 +622,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
   // Before the main thread capturing starts, one compositor destroys their
   // impl reference. Since capturing did not start, this gets post-tasked to
   // the main thread.
-  compositor1->Run(gpu::SyncToken(100), false, main_thread_task_runner_.get());
+  compositor1->Run(SyncTokenFromUInt(100), false,
+                   main_thread_task_runner_.get());
 
   // Start capturing on the main thread.
   begin_capture.Signal();
@@ -623,7 +634,8 @@ TEST_F(TextureLayerMailboxHolderTest, TwoCompositors_SecondImplRefShortcut) {
   // released before compositor1, whose reference will be released later when
   // the post-task is serviced. But since it was destroyed _on the impl thread_
   // last, its sync point values should be used.
-  compositor2->Run(gpu::SyncToken(200), true, main_thread_task_runner_.get());
+  compositor2->Run(SyncTokenFromUInt(200), true,
+                   main_thread_task_runner_.get());
 
   stop_capture.Signal();
   Wait(main_thread_);

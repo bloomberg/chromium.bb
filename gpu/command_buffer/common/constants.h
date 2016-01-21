@@ -78,7 +78,6 @@ enum CommandBufferNamespace : int8_t {
   IN_PROCESS,
   MOJO,
   MOJO_LOCAL,
-  OLD_SYNC_POINTS,
 
   NUM_COMMAND_BUFFER_NAMESPACES
 };

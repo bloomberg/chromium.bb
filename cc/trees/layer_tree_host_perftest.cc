@@ -272,7 +272,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
  public:
   BrowserCompositorInvalidateLayerTreePerfTest()
       : LayerTreeHostPerfTestJsonReader(),
-        next_sync_point_(1),
+        next_fence_sync_(1),
         clean_up_started_(false) {}
 
   void BuildTree() override {
@@ -291,14 +291,17 @@ class BrowserCompositorInvalidateLayerTreePerfTest
       return;
     gpu::Mailbox gpu_mailbox;
     std::ostringstream name_stream;
-    name_stream << "name" << next_sync_point_;
+    name_stream << "name" << next_fence_sync_;
     gpu_mailbox.SetName(
         reinterpret_cast<const int8_t*>(name_stream.str().c_str()));
     scoped_ptr<SingleReleaseCallback> callback = SingleReleaseCallback::Create(
         base::Bind(&EmptyReleaseCallback));
-    TextureMailbox mailbox(gpu_mailbox, gpu::SyncToken(next_sync_point_),
-                           GL_TEXTURE_2D);
-    next_sync_point_++;
+
+    gpu::SyncToken next_sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 1,
+                                   next_fence_sync_);
+    next_sync_token.SetVerifyFlush();
+    TextureMailbox mailbox(gpu_mailbox, next_sync_token, GL_TEXTURE_2D);
+    next_fence_sync_++;
 
     tab_contents_->SetTextureMailbox(mailbox, std::move(callback));
   }
@@ -327,7 +330,7 @@ class BrowserCompositorInvalidateLayerTreePerfTest
 
  private:
   scoped_refptr<TextureLayer> tab_contents_;
-  unsigned next_sync_point_;
+  uint64_t next_fence_sync_;
   bool clean_up_started_;
 };
 

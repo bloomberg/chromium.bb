@@ -901,9 +901,9 @@ TEST_F(GLRendererTest, ActiveTextureState) {
   RenderPass* root_pass =
       AddRenderPass(&render_passes_in_draw_order_, RenderPassId(1, 1),
                     gfx::Rect(100, 100), gfx::Transform());
-  unsigned mailbox_sync_point;
+  gpu::SyncToken mailbox_sync_token;
   AddOneOfEveryQuadType(root_pass, resource_provider.get(), RenderPassId(0, 0),
-                        &mailbox_sync_point);
+                        &mailbox_sync_token);
 
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
 
@@ -915,7 +915,6 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
     // The sync points for all quads are waited on first. This sync point is
     // for a texture quad drawn later in the frame.
-    gpu::SyncToken mailbox_sync_token(mailbox_sync_point);
     EXPECT_CALL(*context, waitSyncToken(MatchesSyncToken(mailbox_sync_token)))
         .Times(1);
 
@@ -2186,7 +2185,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
                     viewport_rect, gfx::Transform());
   root_pass->has_transparent_background = false;
 
-  gpu::SyncToken sync_token(29);
+  gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO, 0, 0x123, 29);
   TextureMailbox mailbox =
       TextureMailbox(gpu::Mailbox::Generate(), sync_token, GL_TEXTURE_2D,
                      gfx::Size(256, 256), true);

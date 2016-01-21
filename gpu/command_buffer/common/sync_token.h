@@ -30,17 +30,6 @@ struct GPU_EXPORT SyncToken {
         command_buffer_id_(0),
         release_count_(0) {}
 
-  // TODO(dyen): This is an intermediate conversion constructor while we
-  // are converting from the old sync point system. Remove once conversion
-  // is finished.
-  explicit SyncToken(uint32_t sync_point)
-      : verified_flush_(sync_point ? true : false),
-        namespace_id_(sync_point ? gpu::CommandBufferNamespace::OLD_SYNC_POINTS
-                                 : gpu::CommandBufferNamespace::INVALID),
-        extra_data_field_(0),
-        command_buffer_id_(0),
-        release_count_(sync_point) {}
-
   SyncToken(CommandBufferNamespace namespace_id,
             int32_t extra_data_field,
             uint64_t command_buffer_id,
