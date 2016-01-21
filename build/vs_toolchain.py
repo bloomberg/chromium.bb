@@ -272,7 +272,7 @@ def _GetDesiredVsToolchainHashes():
   to build with."""
   if GetVisualStudioVersion() == '2015':
     # Update 1 with Debuggers, UCRT installers and ucrtbased.dll
-    return ['524956ec6e64e68fead3773e3ce318537657b404']
+    return ['5a85cf1ce842f7cc96b9d17039a445a9dc9cf0dd']
   else:
     # Default to VS2013.
     return ['9ff97c632ae1fee0c98bcd53e71770eb3a0d8deb']
