@@ -32,4 +32,25 @@ TEST_F(KioskModeInfoManifestTest, MultipleSecondaryApps) {
       std::equal(parsed_ids.begin(), parsed_ids.end(), expected_ids));
 }
 
+TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersionOptional) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("kiosk_required_platform_version_not_present.json"));
+  KioskModeInfo* info = KioskModeInfo::Get(extension.get());
+  EXPECT_TRUE(info->required_platform_version.empty());
+}
+
+TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersion) {
+  scoped_refptr<Extension> extension(
+      LoadAndExpectSuccess("kiosk_required_platform_version.json"));
+  KioskModeInfo* info = KioskModeInfo::Get(extension.get());
+  EXPECT_EQ("1234.0.0", info->required_platform_version);
+}
+
+TEST_F(KioskModeInfoManifestTest, RequiredPlatformVersionInvalid) {
+  LoadAndExpectError("kiosk_required_platform_version_empty.json",
+                     manifest_errors::kInvalidKioskRequiredPlatformVersion);
+  LoadAndExpectError("kiosk_required_platform_version_invalid.json",
+                     manifest_errors::kInvalidKioskRequiredPlatformVersion);
+}
+
 }  // namespace extensions

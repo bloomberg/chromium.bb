@@ -24,7 +24,8 @@ struct KioskModeInfo : public Extension::ManifestData {
   };
 
   KioskModeInfo(KioskStatus kiosk_status,
-                const std::vector<std::string>& secondary_app_ids);
+                const std::vector<std::string>& secondary_app_ids,
+                const std::string& required_platform_version);
   ~KioskModeInfo() override;
 
   // Gets the KioskModeInfo for |extension|, or NULL if none was
@@ -44,6 +45,8 @@ struct KioskModeInfo : public Extension::ManifestData {
 
   // The IDs of the kiosk secondary apps.
   const std::vector<std::string> secondary_app_ids;
+
+  const std::string required_platform_version;
 };
 
 // Parses the "kiosk_enabled" and "kiosk_only" manifest keys.
