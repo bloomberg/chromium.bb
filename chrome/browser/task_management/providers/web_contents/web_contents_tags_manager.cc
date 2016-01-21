@@ -4,8 +4,6 @@
 
 #include "chrome/browser/task_management/providers/web_contents/web_contents_tags_manager.h"
 
-#include <algorithm>
-
 #include "base/memory/singleton.h"
 #include "chrome/browser/task_management/providers/web_contents/web_contents_task_provider.h"
 

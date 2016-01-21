@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 

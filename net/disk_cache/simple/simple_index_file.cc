@@ -423,7 +423,10 @@ void SimpleIndexFile::Deserialize(const char* data, int data_len,
     return;
   }
 
-  entries->reserve(index_metadata.GetNumberOfEntries() + kExtraSizeForMerge);
+#if !defined(OS_WIN)
+  // TODO(gavinp): Consider using std::unordered_map.
+  entries->resize(index_metadata.GetNumberOfEntries() + kExtraSizeForMerge);
+#endif
   while (entries->size() < index_metadata.GetNumberOfEntries()) {
     uint64_t hash_key;
     EntryMetadata entry_metadata;

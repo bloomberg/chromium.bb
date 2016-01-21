@@ -15,7 +15,6 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -44,7 +43,15 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<media::MultiBufferGlobalBlockId> {
   std::size_t operator()(const media::MultiBufferGlobalBlockId& key) const {
-    return base::HashInts(reinterpret_cast<uintptr_t>(key.first), key.second);
+// It would be nice if we could use intptr_t instead of int64_t here, but
+// on some platforms, int64_t is declared as "long" which doesn't match
+// any of the HashPair() functions. This leads to a compile error since
+// the compiler can't decide which HashPair() function to call.
+#if defined(ARCH_CPU_64_BITS)
+    return base::HashPair(reinterpret_cast<int64_t>(key.first), key.second);
+#else
+    return base::HashPair(reinterpret_cast<int32_t>(key.first), key.second);
+#endif
   }
 };
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/devtools/devtools_file_watcher.h"
 
-#include <algorithm>
 #include <map>
 #include <set>
 

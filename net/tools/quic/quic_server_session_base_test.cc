@@ -26,6 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using __gnu_cxx::vector;
 using net::test::CryptoTestUtils;
 using net::test::MockConnection;
 using net::test::MockConnectionHelper;

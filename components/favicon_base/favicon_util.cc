@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <cmath>
 
 #include "build/build_config.h"

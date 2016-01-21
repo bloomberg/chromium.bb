@@ -6,8 +6,6 @@
 
 #include <nss.h>
 #include <ssl.h>
-
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"

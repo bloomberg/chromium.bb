@@ -15,7 +15,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/containers/scoped_ptr_hash_map.h"
-#include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database_index_interface.h"

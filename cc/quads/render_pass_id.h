@@ -9,6 +9,7 @@
 
 #include <tuple>
 
+#include "base/containers/hash_tables.h"
 #include "cc/base/cc_export.h"
 
 namespace cc {

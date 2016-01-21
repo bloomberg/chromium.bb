@@ -12,7 +12,6 @@
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
-#include "base/hash.h"
 #include "base/macros.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "content/common/content_export.h"
@@ -32,7 +31,7 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<content::GpuMemoryBufferConfigurationKey> {
   size_t operator()(const content::GpuMemoryBufferConfigurationKey& key) const {
-    return base::HashInts(static_cast<int>(key.first),
+    return base::HashPair(static_cast<int>(key.first),
                           static_cast<int>(key.second));
   }
 };

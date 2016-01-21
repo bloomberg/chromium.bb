@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include <sstream>
-#include <unordered_set>
 
 #include "base/strings/string16.h"
 
@@ -11,6 +10,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+
+#if defined(WCHAR_T_IS_UTF32)
 
 // We define a custom operator<< for string16 so we can use it with logging.
 // This tests that conversion.
@@ -52,15 +53,6 @@ TEST(String16Test, OutputStream) {
   }
 }
 
-TEST(String16Test, Hash) {
-  string16 str1 = ASCIIToUTF16("hello");
-  string16 str2 = ASCIIToUTF16("world");
-
-  std::unordered_set<string16> set;
-
-  set.insert(str1);
-  EXPECT_EQ(1u, set.count(str1));
-  EXPECT_EQ(0u, set.count(str2));
-}
+#endif
 
 }  // namespace base

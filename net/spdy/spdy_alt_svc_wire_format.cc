@@ -4,7 +4,6 @@
 
 #include "net/spdy/spdy_alt_svc_wire_format.h"
 
-#include <algorithm>
 #include <limits>
 #include <string>
 

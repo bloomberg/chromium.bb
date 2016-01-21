@@ -8,8 +8,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "base/containers/hash_tables.h"
-#include "base/hash.h"
 #include "base/trace_event/memory_allocator_dump.h"
 #include "ui/gfx/gfx_export.h"
 
@@ -60,7 +58,7 @@ template <typename Second>
 struct hash<std::pair<gfx::GenericSharedMemoryId, Second>> {
   size_t operator()(
       const std::pair<gfx::GenericSharedMemoryId, Second>& pair) const {
-    return base::HashInts(pair.first.id, pair.second);
+    return base::HashPair(pair.first.id, pair.second);
   }
 };
 

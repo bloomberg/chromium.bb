@@ -11,7 +11,6 @@
 #include <tuple>
 
 #include "base/containers/hash_tables.h"
-#include "base/hash.h"
 
 namespace cc {
 
@@ -47,7 +46,7 @@ namespace BASE_HASH_NAMESPACE {
 template <>
 struct hash<cc::SurfaceSequence> {
   size_t operator()(cc::SurfaceSequence key) const {
-    return base::HashInts(key.id_namespace, key.sequence);
+    return base::HashPair(key.id_namespace, key.sequence);
   }
 };
 }  // namespace BASE_HASH_NAMESPACE

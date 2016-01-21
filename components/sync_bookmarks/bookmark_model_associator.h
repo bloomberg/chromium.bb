@@ -15,11 +15,9 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string16.h"
 #include "base/threading/thread_checker.h"
 #include "components/sync_driver/data_type_error_handler.h"
 #include "components/sync_driver/model_associator.h"

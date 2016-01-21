@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/containers/hash_tables.h"
-#include "base/hash.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
 #include "base/numerics/safe_math.h"
@@ -80,16 +79,16 @@ struct hash<cc::ImageDecodeControllerKey> {
     // TODO(vmpstr): This is a mess. Maybe it's faster to just search the vector
     // always (forwards or backwards to account for LRU).
     uint64_t src_rect_hash =
-        base::HashInts(static_cast<uint64_t>(base::HashInts(
+        base::HashPair(static_cast<uint64_t>(base::HashPair(
                            key.src_rect().x(), key.src_rect().y())),
-                       static_cast<uint64_t>(base::HashInts(
+                       static_cast<uint64_t>(base::HashPair(
                            key.src_rect().width(), key.src_rect().height())));
 
     uint64_t target_size_hash =
-        base::HashInts(key.target_size().width(), key.target_size().height());
+        base::HashPair(key.target_size().width(), key.target_size().height());
 
-    return base::HashInts(base::HashInts(src_rect_hash, target_size_hash),
-                          base::HashInts(key.image_id(), key.filter_quality()));
+    return base::HashPair(base::HashPair(src_rect_hash, target_size_hash),
+                          base::HashPair(key.image_id(), key.filter_quality()));
   }
 };
 }  // namespace BASE_HASH_NAMESPACE

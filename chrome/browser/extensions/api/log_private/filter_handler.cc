@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
