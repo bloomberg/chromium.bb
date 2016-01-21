@@ -350,25 +350,36 @@ void MostVisitedSites::OnObtainedThumbnail(
       env, j_callback->obj(), j_bitmap.obj(), is_local_thumbnail);
 }
 
-void MostVisitedSites::BlacklistUrl(JNIEnv* env,
-                                    const JavaParamRef<jobject>& obj,
-                                    const JavaParamRef<jstring>& j_url) {
+void MostVisitedSites::AddOrRemoveBlacklistedUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_url,
+    jboolean add_url) {
   GURL url(ConvertJavaStringToUTF8(env, j_url));
 
   // Always blacklist in the local TopSites.
   scoped_refptr<TopSites> top_sites = TopSitesFactory::GetForProfile(profile_);
-  if (top_sites)
-    top_sites->AddBlacklistedURL(url);
+  if (top_sites) {
+    if (add_url) {
+      top_sites->AddBlacklistedURL(url);
+    } else {
+      top_sites->RemoveBlacklistedURL(url);
+    }
+  }
 
   // Only blacklist in the server-side suggestions service if it's active.
   if (mv_source_ == SUGGESTIONS_SERVICE) {
     SuggestionsService* suggestions_service =
         SuggestionsServiceFactory::GetForProfile(profile_);
     DCHECK(suggestions_service);
-    suggestions_service->BlacklistURL(
-        url, base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
-                        weak_ptr_factory_.GetWeakPtr()),
-        base::Closure());
+    suggestions::SuggestionsService::ResponseCallback callback(
+        base::Bind(&MostVisitedSites::OnSuggestionsProfileAvailable,
+                   weak_ptr_factory_.GetWeakPtr()));
+    if (add_url) {
+      suggestions_service->BlacklistURL(url, callback, base::Closure());
+    } else {
+      suggestions_service->UndoBlacklistURL(url, callback, base::Closure());
+    }
   }
 }
 
