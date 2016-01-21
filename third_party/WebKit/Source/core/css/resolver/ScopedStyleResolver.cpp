@@ -208,7 +208,7 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
 {
     bool isDocumentScope = treeScope().rootNode().isDocumentNode();
     if (authorRules.deepCombinatorOrShadowPseudoRules().isEmpty()
-        && (isDocumentScope || (authorRules.shadowDistributedRules().isEmpty() && authorRules.shadowSlottedRules().isEmpty())))
+        && (isDocumentScope || (authorRules.contentPseudoElementRules().isEmpty() && authorRules.slottedPseudoElementRules().isEmpty())))
         return;
 
     if (!authorRules.deepCombinatorOrShadowPseudoRules().isEmpty())
@@ -218,8 +218,8 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     addRules(ruleSetForScope.get(), authorRules.deepCombinatorOrShadowPseudoRules());
 
     if (!isDocumentScope) {
-        addRules(ruleSetForScope.get(), authorRules.shadowDistributedRules());
-        addRules(ruleSetForScope.get(), authorRules.shadowSlottedRules());
+        addRules(ruleSetForScope.get(), authorRules.contentPseudoElementRules());
+        addRules(ruleSetForScope.get(), authorRules.slottedPseudoElementRules());
     }
 
     if (!m_treeBoundaryCrossingRuleSet) {
