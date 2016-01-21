@@ -26,6 +26,7 @@ chrome.settingsPrivate.PrefType = {
   STRING: 'STRING',
   URL: 'URL',
   LIST: 'LIST',
+  DICTIONARY: 'DICTIONARY',
 };
 
 /**

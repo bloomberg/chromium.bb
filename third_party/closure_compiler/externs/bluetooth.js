@@ -82,7 +82,7 @@ chrome.bluetooth.Device;
 /**
  * Get information about the Bluetooth adapter.
  * @param {function(!chrome.bluetooth.AdapterState):void} callback Called with
- *     an AdapterState object describing the adapter              state.
+ *     an AdapterState object describing the adapter state.
  * @see https://developer.chrome.com/extensions/bluetooth#method-getAdapterState
  */
 chrome.bluetooth.getAdapterState = function(callback) {};
