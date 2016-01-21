@@ -434,19 +434,13 @@ ContentCaptureSubscription::ContentCaptureSubscription(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   RenderWidgetHostView* const view = source.GetView();
-// TODO(isheriff): Cursor resources currently only available on linux. Remove
-// this once we add the necessary resources for windows.
-// https://crbug.com/554280 https://crbug.com/549182
-#if defined(USE_AURA) && defined(OS_LINUX)
-  if (view) {
-    cursor_renderer_.reset(
-        new content::CursorRendererAura(view->GetNativeView()));
-  }
-#endif
-// TODO(isheriff): Needs implementation on non-aura platforms.
+// TODO(isheriff): Implement on a mac.
+// https://crbug.com/549182
 // https://crbug.com/567735
 #if defined(USE_AURA)
   if (view) {
+    cursor_renderer_.reset(
+        new content::CursorRendererAura(view->GetNativeView()));
     window_activity_tracker_.reset(
         new content::WindowActivityTrackerAura(view->GetNativeView()));
   }
