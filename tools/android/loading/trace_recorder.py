@@ -30,20 +30,34 @@ import request_track
 import tracing
 
 
+def MonitorUrl(connection, url, clear_cache=False):
+  """Monitor a URL via a trace recorder.
+
+  Args:
+    connection: A device_monitor.DevToolsConnection instance.
+    url: url to navigate to as string.
+    clear_cache: boolean indicating if cache should be cleared before loading.
+
+  Returns:
+    loading_trace.LoadingTrace.
+  """
+  logging.warning('Logging %scached %s' % ('un' if clear_cache else '', url))
+  page = page_track.PageTrack(connection)
+  request = request_track.RequestTrack(connection)
+  trace = tracing.TracingTrack(connection)
+  connection.SetUpMonitoring()
+  if clear_cache:
+    connection.ClearCache()
+  connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
+  connection.StartMonitoring()
+  metadata = {'date': datetime.datetime.utcnow().isoformat(),
+              'seconds_since_epoch': time.time()}
+  return loading_trace.LoadingTrace(url, metadata, page, request, trace)
+
 def RecordAndDumpTrace(device, url, output_filename):
   with file(output_filename, 'w') as output,\
         device_setup.DeviceConnection(device) as connection:
-    page = page_track.PageTrack(connection)
-    request = request_track.RequestTrack(connection)
-    tracing_track = tracing.TracingTrack(connection)
-    connection.SetUpMonitoring()
-    connection.SendAndIgnoreResponse('Network.clearBrowserCache', {})
-    connection.SendAndIgnoreResponse('Page.navigate', {'url': url})
-    connection.StartMonitoring()
-    metadata = {'date': datetime.datetime.utcnow().isoformat(),
-                'seconds_since_epoch': time.time()}
-    trace = loading_trace.LoadingTrace(url, metadata, page, request,
-                                       tracing_track)
+    trace = MonitorUrl(connection, url)
     json.dump(trace.ToJsonDict(), output)
 
 

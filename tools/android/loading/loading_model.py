@@ -21,6 +21,7 @@ import urlparse
 import sys
 
 import dag
+import loading_trace
 import request_dependencies_lens
 
 class ResourceGraph(object):
@@ -30,11 +31,13 @@ class ResourceGraph(object):
     cache_all: if true, assume zero loading time for all resources.
   """
   def __init__(self, trace):
-    """Create from a LoadingTrace.
+    """Create from a LoadingTrace (or json of a trace).
 
     Args:
-      trace: (LoadingTrace) Loading trace.
+      trace: (LoadingTrace/JSON) Loading trace or JSON of a trace.
     """
+    if type(trace) == dict:
+      trace = loading_trace.LoadingTrace.FromJsonDict(trace)
     self._BuildDag(trace)
     self._global_start = min([n.StartTime() for n in self._node_info])
     # Sort before splitting children so that we can correctly dectect if a
@@ -290,9 +293,27 @@ class ResourceGraph(object):
   ## Internal items
   ##
 
-  _CONTENT_TYPE_TO_COLOR = {'html': 'red', 'css': 'green', 'script': 'blue',
-                            'json': 'purple', 'gif_image': 'grey',
-                            'image': 'orange', 'other': 'white'}
+  _CONTENT_KIND_TO_COLOR = {
+      'application':     'blue',      # Scripts.
+      'font':            'grey70',
+      'image':           'orange',    # This probably catches gifs?
+      'video':           'hotpink1',
+      }
+
+  _CONTENT_TYPE_TO_COLOR = {
+      'html':            'red',
+      'css':             'green',
+      'script':          'blue',
+      'javascript':      'blue',
+      'json':            'purple',
+      'gif':             'grey',
+      'image':           'orange',
+      'jpeg':            'orange',
+      'png':             'orange',
+      'plain':           'brown3',
+      'octet-stream':    'brown3',
+      'other':           'white',
+      }
 
   # This resource type may induce a timing dependency. See _SplitChildrenByTime
   # for details.
@@ -323,8 +344,9 @@ class ResourceGraph(object):
       self._edge_annotations = {}
       # All fields in timing are millis relative to request_time, which is epoch
       # seconds.
-      self._node_cost = max([t for f, t in request.timing._asdict().iteritems()
-                             if f != 'request_time'])
+      self._node_cost = max(
+          [0] + [t for f, t in request.timing._asdict().iteritems()
+                 if f != 'request_time'])
 
     def __str__(self):
       return self.ShortName()
@@ -363,19 +385,20 @@ class ResourceGraph(object):
       """
       parsed = urlparse.urlparse(self._request.url)
       path = parsed.path
+      hostname = parsed.hostname if parsed.hostname else '?.?.?'
       if path != '' and path != '/':
         last_path = parsed.path.split('/')[-1]
         if len(last_path) < 10:
           if len(path) < 10:
-            return parsed.hostname + '/' + path
+            return hostname + '/' + path
           else:
-            return parsed.hostname + '/..' + parsed.path[-10:]
+            return hostname + '/..' + parsed.path[-10:]
         elif len(last_path) > 10:
-          return parsed.hostname + '/..' + last_path[:5]
+          return hostname + '/..' + last_path[:5]
         else:
-          return parsed.hostname + '/..' + last_path
+          return hostname + '/..' + last_path
       else:
-        return parsed.hostname
+        return hostname
 
     def Url(self):
       return self._request.url
@@ -463,7 +486,7 @@ class ResourceGraph(object):
 
     dependencies = request_dependencies_lens.RequestDependencyLens(
         trace).GetRequestDependencies()
-    for child_rq, parent_rq, reason in dependencies:
+    for parent_rq, child_rq, reason in dependencies:
       parent = self._node_info[index_by_request[parent_rq]]
       child = self._node_info[index_by_request[child_rq]]
       edge_cost = child.StartTime() - parent.EndTime()
@@ -549,6 +572,17 @@ class ResourceGraph(object):
         current.ReparentTo(parent, children_by_end_time[end_mark])
         children_by_end_time[end_mark].AddEdgeAnnotation(current, 'timing')
 
+  def _ContentTypeToColor(self, content_type):
+    if not content_type:
+      type_str = 'other'
+    elif '/' in content_type:
+      kind, type_str = content_type.split('/')
+      if kind in self._CONTENT_KIND_TO_COLOR:
+        return self._CONTENT_KIND_TO_COLOR[kind]
+    else:
+      type_str = content_type
+    return self._CONTENT_TYPE_TO_COLOR[type_str]
+
   def _GraphvizNode(self, index, highlight):
     """Returns a graphviz node description for a given node.
 
@@ -563,7 +597,7 @@ class ResourceGraph(object):
       is oval if its max-age is less than 300s (or if it's not cacheable).
     """
     node_info = self._node_info[index]
-    color = self._CONTENT_TYPE_TO_COLOR[node_info.ContentType()]
+    color = self._ContentTypeToColor(node_info.ContentType())
     max_age = node_info.Request().MaxAge()
     shape = 'polygon' if max_age > 300 else 'oval'
     styles = ['filled']

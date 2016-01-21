@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import contextlib
+import logging
 import os
 import sys
 import time
@@ -11,6 +12,7 @@ _SRC_DIR = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..'))
 
 sys.path.append(os.path.join(_SRC_DIR, 'third_party', 'catapult', 'devil'))
+from devil.android import device_utils
 from devil.android.sdk import intent
 
 sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
@@ -22,6 +24,25 @@ import devtools_monitor
 DEVTOOLS_PORT = 9222
 DEVTOOLS_HOSTNAME = 'localhost'
 DEFAULT_CHROME_PACKAGE = 'chrome'
+
+
+class DeviceSetupException(Exception):
+  def __init__(self, msg):
+    super(DeviceSetupException, self).__init__(msg)
+    logging.error(msg)
+
+
+def GetFirstDevice():
+  """Returns the first connected device.
+
+  Raises:
+    DeviceSetupException if there is no such device.
+  """
+  devices = device_utils.DeviceUtils.HealthyDevices()
+  if not devices:
+    raise DeviceSetupException('No devices found')
+  return devices[0]
+
 
 @contextlib.contextmanager
 def FlagReplacer(device, command_line_path, new_flags):

@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
 import os
 import os.path
 import sys
 
-import log_parser
 import loading_model
+import loading_trace
 
 
 def SitesFromDir(directory):
@@ -52,8 +53,9 @@ def WarmGraph(datadir, site):
   Returns:
     A loading model object.
   """
-  return loading_model.ResourceGraph(log_parser.FilterRequests(
-      log_parser.ParseJsonFile(os.path.join(datadir, site + '.json'))))
+  with file(os.path.join(datadir, site + '.json')) as f:
+    return loading_model.ResourceGraph(loading_trace.LoadingTrace.FromJsonDict(
+        json.load(f)))
 
 
 def ColdGraph(datadir, site):
@@ -68,5 +70,6 @@ def ColdGraph(datadir, site):
   Returns:
     A loading model object.
   """
-  return loading_model.ResourceGraph(log_parser.FilterRequests(
-      log_parser.ParseJsonFile(os.path.join(datadir, site + '.json.cold'))))
+  with file(os.path.join(datadir, site + '.json.cold')) as f:
+    return loading_model.ResourceGraph(loading_trace.LoadingTrace.FromJsonDict(
+        json.load(f)))

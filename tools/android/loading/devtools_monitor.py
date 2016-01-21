@@ -168,6 +168,15 @@ class DevToolsConnection(object):
       raise DevToolsConnectionException(
           'Unexpected response for %s: %s' % (method, result))
 
+  def ClearCache(self):
+    """Clears buffer cache.
+
+    Will assert that the browser supports cache clearing.
+    """
+    res = self.SyncRequest('Network.canClearBrowserCache')
+    assert res['result'], 'Cache clearing is not supported by this browser.'
+    self.SyncRequest('Network.clearBrowserCache')
+
   def SetUpMonitoring(self):
     for domain in self._domains_to_enable:
       self._ws.RegisterDomain(domain, self._OnDataReceived)

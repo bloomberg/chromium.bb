@@ -9,7 +9,9 @@ When executed, parses a JSON dump of DevTools messages.
 
 import collections
 import copy
+import json
 import logging
+import re
 
 import devtools_monitor
 
@@ -25,6 +27,17 @@ _TIMING_NAMES_MAPPING = {
 
 Timing = collections.namedtuple('Timing', _TIMING_NAMES_MAPPING.values())
 
+def TimingAsList(timing):
+  """Transform Timing to a list, eg as is used in JSON output.
+
+  Args:
+    timing: a Timing.
+
+  Returns:
+    A list identical to what the eventual JSON output will be (eg,
+    Request.ToJsonDict).
+  """
+  return json.loads(json.dumps(timing))
 
 class Request(object):
   """Represents a single request.
@@ -102,8 +115,12 @@ class Request(object):
     result = Request()
     for (k, v) in data_dict.items():
       setattr(result, k, v)
+    if not result.response_headers:
+      result.response_headers = {}
     if result.timing:
       result.timing = Timing(*result.timing)
+    else:
+      result.timing = TimingFromDict({'requestTime': result.timestamp})
     return result
 
   def GetContentType(self):
@@ -137,7 +154,10 @@ class Request(object):
         or len(cache_control) == 0):
       return -1
     if 'max-age' in cache_control:
-      return int(cache_control['max-age'])
+      age_match = re.match(r'\s*(\d+)+', cache_control['max-age'])
+      if not age_match:
+        return -1
+      return int(age_match.group(1))
     return -1
 
   def __eq__(self, o):

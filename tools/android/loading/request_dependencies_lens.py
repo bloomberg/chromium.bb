@@ -126,7 +126,8 @@ class RequestDependencyLens(object):
     """
     candidates = self._requests_by_url.get(url, [])
     candidates = [r for r in candidates if (
-        r.timestamp + max(0, r.timing.receive_headers_end) <= before_timestamp)]
+        r.timestamp + max(
+            0, r.timing.receive_headers_end / 1000) <= before_timestamp)]
     candidates.sort(key=operator.attrgetter('timestamp'))
     return candidates
 
@@ -157,7 +158,8 @@ class RequestDependencyLens(object):
       parent_frame_id = self._frame_to_parent[request.frame_id]
       same_parent_matches = [
           r for r in matches
-          if self._frame_to_parent[r.frame_id] == parent_frame_id]
+          if r.frame_id in self._frame_to_parent and
+          self._frame_to_parent[r.frame_id] == parent_frame_id]
       if not same_parent_matches:
         logging.warning('All matches are from non-sibling frames.')
         return matches[-1]

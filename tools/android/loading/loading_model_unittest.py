@@ -25,7 +25,7 @@ class SimpleLens(object):
       url_to_rq[rq.url] = rq
     for rq in self._trace.request_track.GetEvents():
       if rq.initiator in url_to_rq:
-        deps.append((rq, url_to_rq[rq.initiator], ''))
+        deps.append(( url_to_rq[rq.initiator], rq, ''))
     return deps
 
 
@@ -45,6 +45,11 @@ class LoadingModelTestCase(unittest.TestCase):
 
   def MakeParserRequest(self, url, source_url, start_time, end_time,
                         magic_content_type=False):
+    timing = request_track.TimingAsList(request_track.TimingFromDict({
+        # connectEnd should be ignored.
+        'connectEnd': (end_time - start_time) / 2,
+        'receiveHeadersEnd': end_time - start_time,
+        'requestTime': start_time / 1000.0}))
     rq = request_track.Request.FromJsonDict({
         'request_id': self._next_request_id,
         'url': 'http://' + str(url),
@@ -52,11 +57,7 @@ class LoadingModelTestCase(unittest.TestCase):
         'response_headers': {'Content-Type':
                              'null' if not magic_content_type
                              else 'magic-debug-content' },
-        'timing': request_track.TimingFromDict({
-            # connectEnd should be ignored.
-            'connectEnd': (end_time - start_time) / 2,
-            'receiveHeadersEnd': end_time - start_time,
-            'requestTime': start_time / 1000.0})
+        'timing': timing
         })
     self._next_request_id += 1
     return rq
@@ -70,6 +71,22 @@ class LoadingModelTestCase(unittest.TestCase):
 
   def SuccessorIndicies(self, node):
     return [c.Index() for c in node.SortedSuccessors()]
+
+  def test_DictConstruction(self):
+    graph = loading_model.ResourceGraph(
+        {'request_track': {
+            'events': [self.MakeParserRequest(0, 'null', 100, 101).ToJsonDict(),
+                       self.MakeParserRequest(1, 0, 102, 103).ToJsonDict(),
+                       self.MakeParserRequest(2, 0, 102, 103).ToJsonDict(),
+                       self.MakeParserRequest(3, 2, 104, 105).ToJsonDict()]},
+         'url': 'foo.com',
+         'tracing_track': {'events': []},
+         'page_track': {'events': []},
+         'metadata': {}})
+    self.assertEqual(self.SuccessorIndicies(graph._nodes[0]), [1, 2])
+    self.assertEqual(self.SuccessorIndicies(graph._nodes[1]), [])
+    self.assertEqual(self.SuccessorIndicies(graph._nodes[2]), [3])
+    self.assertEqual(self.SuccessorIndicies(graph._nodes[3]), [])
 
   def test_Costing(self):
     requests = [self.MakeParserRequest(0, 'null', 100, 110),

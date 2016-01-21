@@ -24,29 +24,19 @@ sys.path.append(os.path.join(_SRC_DIR, 'build', 'android'))
 import devil_chromium
 from pylib import constants
 
-import log_parser
-import log_requests
+import device_setup
 import loading_model
+import loading_trace
+import trace_recorder
 
 
-# TODO(mattcary): logging.info isn't that useful; we need something finer
-# grained. For now we just do logging.warning.
+# TODO(mattcary): logging.info isn't that useful, as the whole (tools) world
+# uses logging info; we need to introduce logging modules to get finer-grained
+# output. For now we just do logging.warning.
 
 
 # TODO(mattcary): probably we want this piped in through a flag.
 CHROME = constants.PACKAGE_INFO['chrome']
-
-
-def _SetupAndGetDevice():
-  """Gets an android device, set up the way we like it.
-
-  Returns:
-    An instance of DeviceUtils for the first device found.
-  """
-  device = device_utils.DeviceUtils.HealthyDevices()[0]
-  device.EnableRoot()
-  device.KillAll(CHROME.package, quiet=True)
-  return device
 
 
 def _LoadPage(device, url):
@@ -99,16 +89,11 @@ def _GetPrefetchHtml(graph, name=None):
 <body>%s</body>
 </html>
   """ % title)
-
   return '\n'.join(output)
 
 
 def _LogRequests(url, clear_cache=True, local=False):
   """Log requests for a web page.
-
-  TODO(mattcary): loading.log_requests probably needs to be refactored as we're
-  using private methods, also there's ugliness like _ResponseDataToJson return a
-  json.dumps that we immediately json.loads.
 
   Args:
     url: url to log as string.
@@ -116,14 +101,12 @@ def _LogRequests(url, clear_cache=True, local=False):
     local: log from local (desktop) chrome session.
 
   Returns:
-    JSON of logged information (ie, a dict that describes JSON).
+    JSON dict of logged information (ie, a dict that describes JSON).
   """
-  device = _SetupAndGetDevice() if not local else None
-  request_logger = log_requests.AndroidRequestsLogger(device)
-  logging.warning('Logging %scached %s' % ('un' if clear_cache else '', url))
-  response_data = request_logger.LogPageLoad(
-      url, clear_cache, 'chrome')
-  return json.loads(log_requests._ResponseDataToJson(response_data))
+  device = device_setup.GetFirstDevice() if not local else None
+  with device_setup.DeviceConnection(device) as connection:
+    trace = trace_recorder.MonitorUrl(connection, url, clear_cache=clear_cache)
+    return trace.ToJsonDict()
 
 
 def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds):
@@ -136,13 +119,14 @@ def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds):
   if prefetch:
     assert not local
     logging.warning('Generating prefetch')
-    prefetch_html = _GetPrefetchHtml(_ProcessJson(cold_data), name=url)
+    prefetch_html = _GetPrefetchHtml(
+        loading_model.ResourceGraph(cold_data), name=url)
     tmp = tempfile.NamedTemporaryFile()
     tmp.write(prefetch_html)
     tmp.flush()
     # We hope that the tmpfile name is unique enough for the device.
     target = os.path.join('/sdcard/Download', os.path.basename(tmp.name))
-    device = _SetupAndGetDevice()
+    device = device_setup.GetFirstDevice()
     device.adb.Push(tmp.name, target)
     logging.warning('Pushed prefetch %s to device at %s' % (tmp.name, target))
     _LoadPage(device, 'file://' + target)
@@ -164,14 +148,9 @@ def _FullFetch(url, json_output, prefetch, local, prefetch_delay_seconds):
 # TODO(mattcary): it would be nice to refactor so the --noads flag gets dealt
 # with here.
 def _ProcessRequests(filename):
-  requests = log_parser.FilterRequests(log_parser.ParseJsonFile(filename))
-  return loading_model.ResourceGraph(requests)
-
-
-def _ProcessJson(json_data):
-  assert json_data
-  return loading_model.ResourceGraph(log_parser.FilterRequests(
-      [log_parser.RequestData.FromDict(r) for r in json_data]))
+  with open(filename) as f:
+    return loading_model.ResourceGraph(
+        loading_trace.LoadingTrace.FromJsonDict(json.load(f)))
 
 
 def InvalidCommand(cmd):
@@ -255,7 +234,7 @@ def DoPrefetchSetup(arg_str):
     html.write(_GetPrefetchHtml(
         graph, name=os.path.basename(args.request_json)))
   if args.upload:
-    device = _SetupAndGetDevice()
+    device = device_setup.GetFirstDevice()
     destination = os.path.join('/sdcard/Download',
                                os.path.basename(args.target_html))
     device.adb.Push(args.target_html, destination)
@@ -302,20 +281,6 @@ def DoFetch(arg_str):
              local=False)
 
 
-def DoTracing(arg_str):
-  parser = argparse.ArgumentParser(
-      usage='tracing URL JSON_OUTPUT')
-  parser.add_argument('url')
-  parser.add_argument('json_output')
-  args = parser.parse_args(arg_str)
-  device = _SetupAndGetDevice()
-  request_logger = log_requests.AndroidRequestsLogger(device)
-  tracing = request_logger.LogTracing(args.url)
-  with open(args.json_output, 'w') as f:
-    _WriteJson(f, tracing)
-  logging.warning('Wrote ' + args.json_output)
-
-
 def DoLongPole(arg_str):
   parser = argparse.ArgumentParser(usage='longpole [--noads] REQUEST_JSON')
   parser.add_argument('request_json')
@@ -346,7 +311,6 @@ COMMAND_MAP = {
     'compare': DoCompare,
     'prefetch_setup': DoPrefetchSetup,
     'log_requests': DoLogRequests,
-    'tracing': DoTracing,
     'longpole': DoLongPole,
     'nodecost': DoNodeCost,
     'fetch': DoFetch,
