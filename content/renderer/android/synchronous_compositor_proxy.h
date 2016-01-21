@@ -89,10 +89,8 @@ class SynchronousCompositorProxy
   void BeginFrame(const SyncCompositorCommonBrowserParams& common_params,
                   const cc::BeginFrameArgs& args,
                   SyncCompositorCommonRendererParams* common_renderer_params);
-  void OnComputeScroll(
-      const SyncCompositorCommonBrowserParams& common_params,
-      base::TimeTicks animation_time,
-      SyncCompositorCommonRendererParams* common_renderer_params);
+  void OnComputeScroll(const SyncCompositorCommonBrowserParams& common_params,
+                       base::TimeTicks animation_time);
   void DemandDrawHw(const SyncCompositorCommonBrowserParams& common_params,
                     const SyncCompositorDemandDrawHwParams& params,
                     IPC::Message* reply_message);

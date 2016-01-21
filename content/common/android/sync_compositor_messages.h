@@ -149,10 +149,9 @@ IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_BeginFrame,
                            cc::BeginFrameArgs,
                            content::SyncCompositorCommonRendererParams)
 
-IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_ComputeScroll,
-                           content::SyncCompositorCommonBrowserParams,
-                           base::TimeTicks,
-                           content::SyncCompositorCommonRendererParams)
+IPC_MESSAGE_ROUTED2(SyncCompositorMsg_ComputeScroll,
+                    content::SyncCompositorCommonBrowserParams,
+                    base::TimeTicks);
 
 IPC_SYNC_MESSAGE_ROUTED2_2(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorCommonBrowserParams,

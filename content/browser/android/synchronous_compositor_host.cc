@@ -278,12 +278,8 @@ void SynchronousCompositorHost::OnComputeScroll(
   SyncCompositorCommonBrowserParams common_browser_params;
   PopulateCommonParams(&common_browser_params);
   SyncCompositorCommonRendererParams common_renderer_params;
-  if (!sender_->Send(new SyncCompositorMsg_ComputeScroll(
-          routing_id_, common_browser_params, animation_time,
-          &common_renderer_params))) {
-    return;
-  }
-  ProcessCommonParams(common_renderer_params);
+  sender_->Send(new SyncCompositorMsg_ComputeScroll(
+      routing_id_, common_browser_params, animation_time));
 }
 
 InputEventAckState SynchronousCompositorHost::HandleInputEvent(

@@ -357,17 +357,12 @@ void SynchronousCompositorProxy::SwapBuffers(cc::CompositorFrame* frame) {
 
 void SynchronousCompositorProxy::OnComputeScroll(
     const SyncCompositorCommonBrowserParams& common_params,
-    base::TimeTicks animation_time,
-    SyncCompositorCommonRendererParams* common_renderer_params) {
-  DCHECK(!inside_receive_);
-  base::AutoReset<bool> scoped_inside_receive(&inside_receive_, true);
-
+    base::TimeTicks animation_time) {
   ProcessCommonParams(common_params);
   if (need_animate_scroll_) {
     need_animate_scroll_ = false;
     input_handler_proxy_->SynchronouslyAnimate(animation_time);
   }
-  PopulateCommonParams(common_renderer_params);
 }
 
 void SynchronousCompositorProxy::DidOverscroll(
