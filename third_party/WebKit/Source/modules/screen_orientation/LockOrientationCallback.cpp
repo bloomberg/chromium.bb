@@ -33,15 +33,15 @@ void LockOrientationCallback::onError(WebLockOrientationError error)
     switch (error) {
     case WebLockOrientationErrorNotAvailable:
         code = NotSupportedError;
-        msg = "lockOrientation() is not available on this device.";
+        msg = "screen.orientation.lock() is not available on this device.";
         break;
     case WebLockOrientationErrorFullScreenRequired:
         code = SecurityError;
-        msg = "The page needs to be fullscreen in order to call lockOrientation().";
+        msg = "The page needs to be fullscreen in order to call screen.orientation.lock().";
         break;
     case WebLockOrientationErrorCanceled:
         code = AbortError;
-        msg = "A call to lockOrientation() or unlockOrientation() canceled this call.";
+        msg = "A call to screen.orientation.lock() or screen.orientation.unlock() canceled this call.";
         break;
     }
 
