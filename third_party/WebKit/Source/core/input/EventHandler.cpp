@@ -3053,9 +3053,11 @@ WebInputEventResult EventHandler::sendContextMenuEventForGesture(const GestureEv
 
     if (m_frame->settings() && m_frame->settings()->showContextMenuOnMouseUp())
         eventType = PlatformEvent::MouseReleased;
-    else
-        modifiers |= PlatformEvent::RightButtonDown;
 
+    // Always set right button down as we are sending mousedown event regardless
+    modifiers |= PlatformEvent::RightButtonDown;
+
+    // TODO(crbug.com/579564): Maybe we should not send mouse down at all
     PlatformMouseEvent mouseEvent(targetedEvent.event().position(), targetedEvent.event().globalPosition(), RightButton, eventType, 1,
         static_cast<PlatformEvent::Modifiers>(modifiers),
         PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
