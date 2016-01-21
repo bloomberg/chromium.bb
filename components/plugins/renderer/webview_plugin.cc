@@ -283,11 +283,6 @@ void WebViewPlugin::didInvalidateRect(const WebRect& rect) {
     container_->invalidateRect(rect);
 }
 
-void WebViewPlugin::didUpdateLayoutSize(const WebSize&) {
-  if (container_)
-    container_->setNeedsLayout();
-}
-
 void WebViewPlugin::didChangeCursor(const WebCursorInfo& cursor) {
   current_cursor_ = cursor;
 }

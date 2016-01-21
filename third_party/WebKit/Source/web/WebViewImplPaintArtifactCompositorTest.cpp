@@ -27,9 +27,9 @@ public:
     MOCK_METHOD0(clearRootLayer, void());
 };
 
-class TestWebViewClient : public WebViewClient {
+class TestWebViewClientWithLayerTreeView : public FrameTestHelpers::TestWebViewClient {
 public:
-    TestWebViewClient(WebLayerTreeView* layerTreeView)
+    TestWebViewClientWithLayerTreeView(WebLayerTreeView* layerTreeView)
         : m_layerTreeView(layerTreeView) { }
 
     // WebViewClient
@@ -62,7 +62,7 @@ protected:
 private:
     RuntimeEnabledFeatures::Backup m_featuresBackup;
     MockWebLayerTreeView m_webLayerTreeView;
-    TestWebViewClient m_webViewClient;
+    TestWebViewClientWithLayerTreeView m_webViewClient;
     FrameTestHelpers::WebViewHelper m_helper;
 };
 

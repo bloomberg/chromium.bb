@@ -3338,6 +3338,13 @@ void WebViewImpl::refreshPageScaleFactorAfterLayout()
     setPageScaleFactor(newPageScaleFactor);
 
     updateLayerTreeViewport();
+
+    // Changes to page-scale during layout may require an additional frame.
+    // We can't update the lifecycle here because we may be in the middle of layout in the
+    // caller of this method.
+    // TODO(chrishtr): clean all this up. All layout should happen in one lifecycle run (crbug.com/578239).
+    if (mainFrameImpl()->frameView()->needsLayout())
+        scheduleAnimation();
 }
 
 void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription& description)
@@ -3401,12 +3408,13 @@ void WebViewImpl::updatePageDefinedViewportConstraints(const ViewportDescription
             mainFrameImpl()->frameView()->setNeedsLayout();
     }
 
-    updateMainFrameLayoutSize();
 
     if (LocalFrame* frame = page()->deprecatedLocalMainFrame()) {
         if (TextAutosizer* textAutosizer = frame->document()->textAutosizer())
             textAutosizer->updatePageInfoInAllFrames();
     }
+
+    updateMainFrameLayoutSize();
 }
 
 void WebViewImpl::updateMainFrameLayoutSize()
@@ -3427,12 +3435,6 @@ void WebViewImpl::updateMainFrameLayoutSize()
         layoutSize.height = 0;
 
     view->setLayoutSize(layoutSize);
-
-    // Resizing marks the frame as needsLayout. Inform clients so that they
-    // will perform the layout. Widgets held by WebPluginContainerImpl do not otherwise
-    // see this resize layout invalidation.
-    if (client())
-        client()->didUpdateLayoutSize(layoutSize);
 }
 
 IntSize WebViewImpl::contentsSize() const
@@ -3467,7 +3469,6 @@ void WebViewImpl::disableViewport()
 {
     settings()->setViewportEnabled(false);
     pageScaleConstraintsSet().clearPageDefinedConstraints();
-    updateMainFrameLayoutSize();
 }
 
 float WebViewImpl::defaultMinimumPageScaleFactor() const

@@ -182,7 +182,7 @@ TestWebFrameClient* defaultWebFrameClient()
     return &client;
 }
 
-WebViewClient* defaultWebViewClient()
+TestWebViewClient* defaultWebViewClient()
 {
     DEFINE_STATIC_LOCAL(TestWebViewClient,  client, ());
     return &client;
@@ -241,7 +241,7 @@ WebViewHelper::~WebViewHelper()
     reset();
 }
 
-WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
 {
     reset();
 
@@ -272,10 +272,12 @@ WebViewImpl* WebViewHelper::initialize(bool enableJavascript, TestWebFrameClient
     // Eliminate this once WebView is no longer a WebWidget.
     m_webViewWidget = blink::WebFrameWidget::create(webViewClient, m_webView, frame);
 
+    m_testWebViewClient = webViewClient;
+
     return m_webView;
 }
 
-WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, WebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
+WebViewImpl* WebViewHelper::initializeAndLoad(const std::string& url, bool enableJavascript, TestWebFrameClient* webFrameClient, TestWebViewClient* webViewClient, void (*updateSettingsFunc)(WebSettings*))
 {
     initialize(enableJavascript, webFrameClient, webViewClient, updateSettingsFunc);
 
@@ -296,6 +298,14 @@ void WebViewHelper::reset()
         m_webView->close();
         m_webView = nullptr;
     }
+}
+
+void WebViewHelper::resize(WebSize size)
+{
+    m_testWebViewClient->clearAnimationScheduled();
+    webViewImpl()->resize(size);
+    EXPECT_FALSE(m_testWebViewClient->animationScheduled());
+    m_testWebViewClient->clearAnimationScheduled();
 }
 
 TestWebFrameClient::TestWebFrameClient() : m_loadsInProgress(0)

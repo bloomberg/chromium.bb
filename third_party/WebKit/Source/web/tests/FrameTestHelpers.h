@@ -102,6 +102,22 @@ private:
     bool m_originalOverlayScrollbarsEnabled;
 };
 
+class TestWebViewClient : public WebViewClient {
+public:
+    TestWebViewClient() : m_animationScheduled(false) { }
+    virtual ~TestWebViewClient() { }
+    void initializeLayerTreeView() override;
+    WebLayerTreeView* layerTreeView() override { return m_layerTreeView.get(); }
+
+    void scheduleAnimation() override { m_animationScheduled = true; }
+    bool animationScheduled() { return m_animationScheduled; }
+    void clearAnimationScheduled() { m_animationScheduled = false; }
+
+private:
+    OwnPtr<WebLayerTreeView> m_layerTreeView;
+    bool m_animationScheduled;
+};
+
 // Convenience class for handling the lifetime of a WebView and its associated mainframe in tests.
 class WebViewHelper {
     WTF_MAKE_NONCOPYABLE(WebViewHelper);
@@ -112,11 +128,13 @@ public:
     // Creates and initializes the WebView. Implicitly calls reset() first. IF a
     // WebFrameClient or a WebViewClient are passed in, they must outlive the
     // WebViewHelper.
-    WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initialize(bool enableJavascript = false, TestWebFrameClient* = 0, TestWebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
 
     // Same as initialize() but also performs the initial load of the url. Only
     // returns once the load is complete.
-    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, TestWebFrameClient* = 0, WebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+    WebViewImpl* initializeAndLoad(const std::string& url, bool enableJavascript = false, TestWebFrameClient* = 0, TestWebViewClient* = 0, void (*updateSettingsFunc)(WebSettings*) = 0);
+
+    void resize(WebSize);
 
     void reset();
 
@@ -128,6 +146,7 @@ private:
     WebFrameWidget* m_webViewWidget;
     SettingOverrider* m_settingOverrider;
     UseMockScrollbarSettings m_mockScrollbarSettings;
+    TestWebViewClient* m_testWebViewClient;
 };
 
 // Minimal implementation of WebFrameClient needed for unit tests that load frames. Tests that load
@@ -166,16 +185,6 @@ public:
 
 private:
     RawPtrWillBePersistent<WebRemoteFrameImpl> const m_frame;
-};
-
-class TestWebViewClient : public WebViewClient {
-public:
-    virtual ~TestWebViewClient() { }
-    void initializeLayerTreeView() override;
-    WebLayerTreeView* layerTreeView() override { return m_layerTreeView.get(); }
-
-private:
-    OwnPtr<WebLayerTreeView> m_layerTreeView;
 };
 
 } // namespace FrameTestHelpers

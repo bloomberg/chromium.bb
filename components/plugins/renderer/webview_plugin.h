@@ -129,7 +129,6 @@ class WebViewPlugin : public blink::WebPlugin,
 
   // WebWidgetClient methods:
   void didInvalidateRect(const blink::WebRect&) override;
-  void didUpdateLayoutSize(const blink::WebSize&) override;
   void didChangeCursor(const blink::WebCursorInfo& cursor) override;
   void scheduleAnimation() override;
 

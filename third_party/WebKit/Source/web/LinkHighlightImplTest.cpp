@@ -118,7 +118,7 @@ public:
     FakeWebFrameClient m_fakeWebFrameClient;
 };
 
-WebViewClient* compositingWebViewClient()
+FakeCompositingWebViewClient* compositingWebViewClient()
 {
     DEFINE_STATIC_LOCAL(FakeCompositingWebViewClient, client, ());
     return &client;
