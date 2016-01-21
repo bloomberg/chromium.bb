@@ -13,7 +13,6 @@
 #include "components/nacl/renderer/plugin/plugin_error.h"
 #include "components/nacl/renderer/plugin/pnacl_translate_thread.h"
 #include "components/nacl/renderer/plugin/service_runtime.h"
-#include "components/nacl/renderer/plugin/temporary_file.h"
 #include "ppapi/c/pp_bool.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -128,13 +127,11 @@ PnaclCoordinator::~PnaclCoordinator() {
   // since the thread may be accessing those fields.
   // It will also be accessing obj_files_.
   translate_thread_.reset(NULL);
-  for (size_t i = 0; i < obj_files_.size(); i++)
-    delete obj_files_[i];
 }
 
 PP_FileHandle PnaclCoordinator::TakeTranslatedFileHandle() {
-  DCHECK(temp_nexe_file_ != NULL);
-  return temp_nexe_file_->TakeFileHandle();
+  DCHECK(temp_nexe_file_.IsValid());
+  return temp_nexe_file_.TakePlatformFile();
 }
 
 void PnaclCoordinator::ReportNonPpapiError(PP_NaClError err_code,
@@ -187,10 +184,10 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
                                       pexe_bytes_compiled_,
                                       expected_pexe_size_);
   }
-  int64_t nexe_size = temp_nexe_file_->GetLength();
-  // The nexe is written to the temp_nexe_file_.  We must Reset() the file
+  int64_t nexe_size = temp_nexe_file_.GetLength();
+  // The nexe is written to the temp_nexe_file_.  We must reset the file
   // pointer to be able to read it again from the beginning.
-  temp_nexe_file_->Reset();
+  temp_nexe_file_.Seek(base::File::FROM_BEGIN, 0);
 
   // Report to the browser that translation finished. The browser will take
   // care of storing the nexe in the cache.
@@ -204,7 +201,7 @@ void PnaclCoordinator::TranslateFinished(int32_t pp_error) {
 }
 
 void PnaclCoordinator::NexeReadDidOpen() {
-  if (!temp_nexe_file_->IsValid()) {
+  if (!temp_nexe_file_.IsValid()) {
     ReportNonPpapiError(PP_NACL_ERROR_PNACL_CACHE_FETCH_OTHER,
                         "Failed to open translated nexe.");
     return;
@@ -240,8 +237,7 @@ void PnaclCoordinator::BitcodeStreamCacheHit(PP_FileHandle handle) {
     BitcodeStreamDidFinish(PP_ERROR_FAILED);
     return;
   }
-  temp_nexe_file_.reset(new TempFile(plugin_, handle));
-  // Open it for reading as the cached nexe file.
+  temp_nexe_file_ = base::File(handle);
   NexeReadDidOpen();
 }
 
@@ -277,22 +273,20 @@ void PnaclCoordinator::BitcodeStreamCacheMiss(int64_t expected_pexe_size,
   expected_pexe_size_ = expected_pexe_size;
 
   for (int i = 0; i < split_module_count_; i++) {
-    PP_FileHandle obj_handle =
-        plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance());
-    scoped_ptr<TempFile> temp_file(new TempFile(plugin_, obj_handle));
-    if (!temp_file->IsValid()) {
+    base::File temp_file(
+        plugin_->nacl_interface()->CreateTemporaryFile(plugin_->pp_instance()));
+    if (!temp_file.IsValid()) {
       ReportNonPpapiError(PP_NACL_ERROR_PNACL_CREATE_TEMP,
                           "Failed to open scratch object file.");
       return;
-    } else {
-      obj_files_.push_back(temp_file.release());
     }
+    obj_files_.push_back(std::move(temp_file));
   }
 
-  temp_nexe_file_.reset(new TempFile(plugin_, nexe_handle));
+  temp_nexe_file_ = base::File(nexe_handle);
   // Open the nexe file for connecting ld and sel_ldr.
   // Start translation when done with this last step of setup!
-  if (!temp_nexe_file_->IsValid()) {
+  if (!temp_nexe_file_.IsValid()) {
     ReportNonPpapiError(
         PP_NACL_ERROR_PNACL_CREATE_TEMP,
         std::string(
@@ -419,7 +413,7 @@ void PnaclCoordinator::RunCompile(int32_t pp_error,
   CHECK(translate_thread_ != NULL);
   translate_thread_->SetupState(
       report_translate_finished, &compiler_subprocess_, &ld_subprocess_,
-      &obj_files_, num_threads_, temp_nexe_file_.get(),
+      &obj_files_, num_threads_, &temp_nexe_file_,
       &error_info_, &pnacl_options_, architecture_attributes_, this);
   translate_thread_->RunCompile(compile_finished);
 }

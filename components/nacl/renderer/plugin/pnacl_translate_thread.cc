@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "components/nacl/renderer/plugin/plugin.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
-#include "components/nacl/renderer/plugin/temporary_file.h"
 #include "components/nacl/renderer/plugin/utility.h"
 #include "content/public/common/sandbox_init.h"
 #include "native_client/src/shared/platform/nacl_sync_raii.h"
@@ -83,9 +82,9 @@ void PnaclTranslateThread::SetupState(
     const pp::CompletionCallback& finish_callback,
     NaClSubprocess* compiler_subprocess,
     NaClSubprocess* ld_subprocess,
-    const std::vector<TempFile*>* obj_files,
+    std::vector<base::File>* obj_files,
     int num_threads,
-    TempFile* nexe_file,
+    base::File* nexe_file,
     ErrorInfo* error_info,
     PP_PNaClOptions* pnacl_options,
     const std::string& architecture_attributes,
@@ -196,12 +195,13 @@ void PnaclTranslateThread::EndStream() {
 }
 
 ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
-    TempFile* file, int32_t open_flags, base::ProcessId peer_pid) {
+    base::File* file, int32_t open_flags, base::ProcessId peer_pid) {
   IPC::PlatformFileForTransit file_for_transit;
 
+  DCHECK(file->IsValid());
 #if defined(OS_WIN)
   if (!content::BrokerDuplicateHandle(
-          file->GetFileHandle(),
+          file->GetPlatformFile(),
           peer_pid,
           &file_for_transit,
           0,  // desired_access is 0 since we're using DUPLICATE_SAME_ACCESS.
@@ -209,7 +209,7 @@ ppapi::proxy::SerializedHandle PnaclTranslateThread::GetHandleForSubprocess(
     return ppapi::proxy::SerializedHandle();
   }
 #else
-  file_for_transit = base::FileDescriptor(dup(file->GetFileHandle()), true);
+  file_for_transit = base::FileDescriptor(dup(file->GetPlatformFile()), true);
 #endif
 
   // Using 0 disables any use of quota enforcement for this file handle.
@@ -236,9 +236,9 @@ void PnaclTranslateThread::DoCompile() {
   }
 
   std::vector<ppapi::proxy::SerializedHandle> compiler_output_files;
-  for (TempFile* obj_file : *obj_files_) {
+  for (base::File& obj_file : *obj_files_) {
     compiler_output_files.push_back(
-        GetHandleForSubprocess(obj_file, PP_FILEOPENFLAG_WRITE,
+        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_WRITE,
                                compiler_channel_peer_pid_));
   }
 
@@ -365,10 +365,10 @@ void PnaclTranslateThread::DoLink() {
   }
 
   // Reset object files for reading first.  We do this before duplicating
-  // handles/FDs to prevent any handle/FD leaks in case any of the Reset()
+  // handles/FDs to prevent any handle/FD leaks in case any of the Seek()
   // calls fail.
-  for (TempFile* obj_file : *obj_files_) {
-    if (!obj_file->Reset()) {
+  for (base::File& obj_file : *obj_files_) {
+    if (obj_file.Seek(base::File::FROM_BEGIN, 0) != 0) {
       TranslateFailed(PP_NACL_ERROR_PNACL_LD_SETUP,
                       "Link process could not reset object file");
       return;
@@ -379,9 +379,9 @@ void PnaclTranslateThread::DoLink() {
       GetHandleForSubprocess(nexe_file_, PP_FILEOPENFLAG_WRITE,
                              ld_channel_peer_pid_);
   std::vector<ppapi::proxy::SerializedHandle> ld_input_files;
-  for (TempFile* obj_file : *obj_files_) {
+  for (base::File& obj_file : *obj_files_) {
     ld_input_files.push_back(
-        GetHandleForSubprocess(obj_file, PP_FILEOPENFLAG_READ,
+        GetHandleForSubprocess(&obj_file, PP_FILEOPENFLAG_READ,
                                ld_channel_peer_pid_));
   }
 

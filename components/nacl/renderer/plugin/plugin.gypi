@@ -14,7 +14,6 @@
       'pnacl_translate_thread.cc',
       'ppapi_entrypoints.cc',
       'service_runtime.cc',
-      'temporary_file.cc',
       'utility.cc',
     ],
   },

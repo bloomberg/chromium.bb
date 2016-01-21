@@ -10,6 +10,7 @@
 
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/nacl_subprocess.h"
@@ -25,7 +26,6 @@ namespace plugin {
 class Plugin;
 class PnaclCoordinator;
 class PnaclTranslateThread;
-class TempFile;
 
 // A class invoked by Plugin to handle PNaCl client-side translation.
 // Usage:
@@ -154,14 +154,14 @@ class PnaclCoordinator {
   std::string architecture_attributes_;
 
   // Object file, produced by the translator and consumed by the linker.
-  std::vector<TempFile*> obj_files_;
+  std::vector<base::File> obj_files_;
   // Number of split modules for llc.
   int split_module_count_;
   // Number of threads for llc / subzero.
   int num_threads_;
 
   // Translated nexe file, produced by the linker.
-  scoped_ptr<TempFile> temp_nexe_file_;
+  base::File temp_nexe_file_;
 
   // Used to report information when errors (PPAPI or otherwise) are reported.
   ErrorInfo error_info_;

@@ -10,6 +10,7 @@
 #include <deque>
 #include <vector>
 
+#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/nacl/renderer/plugin/plugin_error.h"
@@ -24,7 +25,6 @@ namespace plugin {
 
 class NaClSubprocess;
 class PnaclCoordinator;
-class TempFile;
 
 class PnaclTranslateThread {
  public:
@@ -37,9 +37,9 @@ class PnaclTranslateThread {
   void SetupState(const pp::CompletionCallback& finish_callback,
                   NaClSubprocess* compiler_subprocess,
                   NaClSubprocess* ld_subprocess,
-                  const std::vector<TempFile*>* obj_files,
+                  std::vector<base::File>* obj_files,
                   int num_threads,
-                  TempFile* nexe_file,
+                  base::File* nexe_file,
                   ErrorInfo* error_info,
                   PP_PNaClOptions* pnacl_options,
                   const std::string& architecture_attributes,
@@ -79,7 +79,7 @@ class PnaclTranslateThread {
 
  private:
   ppapi::proxy::SerializedHandle GetHandleForSubprocess(
-      TempFile* file, int32_t open_flags, base::ProcessId peer_pid);
+      base::File* file, int32_t open_flags, base::ProcessId peer_pid);
 
   // Helper thread entry point for compilation. Takes a pointer to
   // PnaclTranslateThread and calls DoCompile().
@@ -138,9 +138,9 @@ class PnaclTranslateThread {
   int64_t compile_time_;
 
   // Data about the translation files, owned by the coordinator
-  const std::vector<TempFile*>* obj_files_;
+  std::vector<base::File>* obj_files_;
   int num_threads_;
-  TempFile* nexe_file_;
+  base::File* nexe_file_;
   ErrorInfo* coordinator_error_info_;
   PP_PNaClOptions* pnacl_options_;
   std::string architecture_attributes_;
