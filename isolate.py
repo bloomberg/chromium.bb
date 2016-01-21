@@ -902,7 +902,10 @@ def CMDbatcharchive(parser, args):
   work_units = []
   for gen_json_path in args:
     # Validate JSON format of a *.isolated.gen.json file.
-    data = tools.read_json(gen_json_path)
+    try:
+      data = tools.read_json(gen_json_path)
+    except IOError as e:
+      parser.error('Failed to open %s: %s' % (gen_json_path, e))
     if data.get('version') != ISOLATED_GEN_JSON_VERSION:
       parser.error('Invalid version in %s' % gen_json_path)
     cwd = data.get('dir')
