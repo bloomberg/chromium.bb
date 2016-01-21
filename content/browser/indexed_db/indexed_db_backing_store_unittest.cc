@@ -22,6 +22,7 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/leveldb/leveldb_factory.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/test/mock_special_storage_policy.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
@@ -235,12 +236,12 @@ class IndexedDBBackingStoreTest : public testing::Test {
     const GURL origin("http://localhost:81");
     task_runner_ = new base::TestSimpleTaskRunner();
     special_storage_policy_ = new MockSpecialStoragePolicy();
+    quota_manager_proxy_ = new MockQuotaManagerProxy(nullptr, nullptr);
     special_storage_policy_->SetAllUnlimited(true);
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    idb_context_ = new IndexedDBContextImpl(temp_dir_.path(),
-                                            special_storage_policy_.get(),
-                                            NULL,
-                                            task_runner_.get());
+    idb_context_ = new IndexedDBContextImpl(
+        temp_dir_.path(), special_storage_policy_.get(),
+        quota_manager_proxy_.get(), task_runner_.get());
     idb_factory_ = new TestIDBFactory(idb_context_.get());
     backing_store_ =
         idb_factory_->OpenBackingStoreForTest(origin, &url_request_context_);
@@ -266,6 +267,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
     m_key1 = IndexedDBKey(99, blink::WebIDBKeyTypeNumber);
     m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
     m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
+  }
+
+  void TearDown() override {
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
   // This just checks the data that survive getting stored and recalled, e.g.
@@ -345,6 +350,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
   scoped_refptr<TestIDBFactory> idb_factory_;
   net::TestURLRequestContext url_request_context_;

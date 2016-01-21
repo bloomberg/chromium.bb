@@ -16,6 +16,7 @@
 #include "content/browser/indexed_db/indexed_db_factory_impl.h"
 #include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "content/browser/quota/mock_quota_manager_proxy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_special_storage_policy.h"
@@ -37,9 +38,13 @@ class IndexedDBTest : public testing::Test {
         kSessionOnlyOrigin("http://session-only/"),
         task_runner_(new base::TestSimpleTaskRunner),
         special_storage_policy_(new MockSpecialStoragePolicy),
+        quota_manager_proxy_(new MockQuotaManagerProxy(nullptr, nullptr)),
         file_thread_(BrowserThread::FILE_USER_BLOCKING, &message_loop_),
         io_thread_(BrowserThread::IO, &message_loop_) {
     special_storage_policy_->AddSessionOnly(kSessionOnlyOrigin);
+  }
+  ~IndexedDBTest() override {
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
  protected:
@@ -48,6 +53,7 @@ class IndexedDBTest : public testing::Test {
   base::MessageLoopForIO message_loop_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
 
  private:
   BrowserThreadImpl file_thread_;
@@ -69,7 +75,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
                                  special_storage_policy_.get(),
-                                 NULL,
+                                 quota_manager_proxy_.get(),
                                  task_runner_.get());
 
     normal_path = idb_context->GetFilePathForTesting(
@@ -80,6 +86,7 @@ TEST_F(IndexedDBTest, ClearSessionOnlyDatabases) {
     ASSERT_TRUE(base::CreateDirectory(session_only_path));
     FlushIndexedDBTaskRunner();
     message_loop_.RunUntilIdle();
+    quota_manager_proxy_->SimulateQuotaManagerDestroyed();
   }
 
   FlushIndexedDBTaskRunner();
@@ -103,7 +110,7 @@ TEST_F(IndexedDBTest, SetForceKeepSessionState) {
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
                                  special_storage_policy_.get(),
-                                 NULL,
+                                 quota_manager_proxy_.get(),
                                  task_runner_.get());
 
     // Save session state. This should bypass the destruction-time deletion.
@@ -174,7 +181,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
     scoped_refptr<IndexedDBContextImpl> idb_context =
         new IndexedDBContextImpl(temp_dir.path(),
                                  special_storage_policy_.get(),
-                                 NULL,
+                                 quota_manager_proxy_.get(),
                                  task_runner_.get());
 
     scoped_refptr<ForceCloseDBCallbacks> open_callbacks =
@@ -233,7 +240,8 @@ TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   const GURL kTestOrigin("http://test/");
 
   scoped_refptr<IndexedDBContextImpl> idb_context = new IndexedDBContextImpl(
-      temp_dir.path(), special_storage_policy_.get(), NULL, task_runner_.get());
+      temp_dir.path(), special_storage_policy_.get(),
+      quota_manager_proxy_.get(), task_runner_.get());
 
   base::FilePath test_path = idb_context->GetFilePathForTesting(
       storage::GetIdentifierFromOrigin(kTestOrigin));
@@ -258,8 +266,9 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  scoped_refptr<IndexedDBContextImpl> context = new IndexedDBContextImpl(
-      temp_dir.path(), special_storage_policy_.get(), NULL, task_runner_.get());
+  scoped_refptr<IndexedDBContextImpl> context =
+      new IndexedDBContextImpl(temp_dir.path(), special_storage_policy_.get(),
+                               quota_manager_proxy_.get(), task_runner_.get());
 
   scoped_refptr<IndexedDBFactoryImpl> factory =
       static_cast<IndexedDBFactoryImpl*>(context->GetIDBFactory());

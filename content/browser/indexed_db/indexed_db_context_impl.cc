@@ -116,9 +116,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);
-  if (quota_manager_proxy) {
-    quota_manager_proxy->RegisterClient(new IndexedDBQuotaClient(this));
-  }
+  quota_manager_proxy->RegisterClient(new IndexedDBQuotaClient(this));
 }
 
 IndexedDBFactory* IndexedDBContextImpl::GetIDBFactory() {
@@ -429,12 +427,9 @@ void IndexedDBContextImpl::SetTaskRunnerForTesting(
 void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
                                             IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (quota_manager_proxy()) {
-    quota_manager_proxy()->NotifyStorageAccessed(
-        storage::QuotaClient::kIndexedDatabase,
-        origin_url,
-        storage::kStorageTypeTemporary);
-  }
+  quota_manager_proxy()->NotifyStorageAccessed(
+      storage::QuotaClient::kIndexedDatabase, origin_url,
+      storage::kStorageTypeTemporary);
   if (AddToOriginSet(origin_url)) {
     // A newly created db, notify the quota system.
     QueryDiskAndUpdateQuotaUsage(origin_url);
@@ -447,12 +442,9 @@ void IndexedDBContextImpl::ConnectionOpened(const GURL& origin_url,
 void IndexedDBContextImpl::ConnectionClosed(const GURL& origin_url,
                                             IndexedDBConnection* connection) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  if (quota_manager_proxy()) {
-    quota_manager_proxy()->NotifyStorageAccessed(
-        storage::QuotaClient::kIndexedDatabase,
-        origin_url,
-        storage::kStorageTypeTemporary);
-  }
+  quota_manager_proxy()->NotifyStorageAccessed(
+      storage::QuotaClient::kIndexedDatabase, origin_url,
+      storage::kStorageTypeTemporary);
   if (factory_.get() && factory_->GetConnectionCount(origin_url) == 0)
     QueryDiskAndUpdateQuotaUsage(origin_url);
 }
@@ -542,14 +534,9 @@ void IndexedDBContextImpl::QueryDiskAndUpdateQuotaUsage(
   int64_t difference = current_disk_usage - former_disk_usage;
   if (difference) {
     origin_size_map_[origin_url] = current_disk_usage;
-    // quota_manager_proxy() is NULL in unit tests.
-    if (quota_manager_proxy()) {
-      quota_manager_proxy()->NotifyStorageModified(
-          storage::QuotaClient::kIndexedDatabase,
-          origin_url,
-          storage::kStorageTypeTemporary,
-          difference);
-    }
+    quota_manager_proxy()->NotifyStorageModified(
+        storage::QuotaClient::kIndexedDatabase, origin_url,
+        storage::kStorageTypeTemporary, difference);
   }
 }
 
@@ -557,7 +544,7 @@ void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
                                             storage::QuotaStatusCode status,
                                             int64_t usage,
                                             int64_t quota) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   DCHECK(status == storage::kQuotaStatusOk ||
          status == storage::kQuotaErrorAbort)
       << "status was " << status;
@@ -565,42 +552,13 @@ void IndexedDBContextImpl::GotUsageAndQuota(const GURL& origin_url,
     // We seem to no longer care to wait around for the answer.
     return;
   }
-  TaskRunner()->PostTask(FROM_HERE,
-                         base::Bind(&IndexedDBContextImpl::GotUpdatedQuota,
-                                    this,
-                                    origin_url,
-                                    usage,
-                                    quota));
-}
-
-void IndexedDBContextImpl::GotUpdatedQuota(const GURL& origin_url,
-                                           int64_t usage,
-                                           int64_t quota) {
-  DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
   space_available_map_[origin_url] = quota - usage;
 }
 
 void IndexedDBContextImpl::QueryAvailableQuota(const GURL& origin_url) {
   DCHECK(TaskRunner()->RunsTasksOnCurrentThread());
-  // No-op in unit tests.
-  if (!quota_manager_proxy())
-    return;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&IndexedDBContextImpl::QueryAvailableQuotaOnIOThread, this,
-                 origin_url));
-}
-
-void IndexedDBContextImpl::QueryAvailableQuotaOnIOThread(
-    const GURL& origin_url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!quota_manager_proxy() || !quota_manager_proxy()->quota_manager())
-    return;
-
-  // crbug.com/349708
-  TRACE_EVENT0("io", "IndexedDBContextImpl::QueryAvailableQuota");
-
-  quota_manager_proxy()->quota_manager()->GetUsageAndQuota(
+  quota_manager_proxy()->GetUsageAndQuota(
+      TaskRunner(),
       origin_url,
       storage::kStorageTypeTemporary,
       base::Bind(&IndexedDBContextImpl::GotUsageAndQuota, this, origin_url));

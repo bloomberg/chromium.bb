@@ -138,9 +138,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
                         storage::QuotaStatusCode,
                         int64_t usage,
                         int64_t quota);
-  void GotUpdatedQuota(const GURL& origin_url, int64_t usage, int64_t quota);
   void QueryAvailableQuota(const GURL& origin_url);
-  void QueryAvailableQuotaOnIOThread(const GURL& origin_url);
   base::Time GetOriginLastModified(const GURL& origin_url);
 
   std::set<GURL>* GetOriginSet();
