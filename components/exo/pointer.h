@@ -29,6 +29,7 @@ class Pointer : public ui::EventHandler, public SurfaceObserver {
 
   // Overridden from ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnScrollEvent(ui::ScrollEvent* event) override;
 
   // Overridden from SurfaceObserver:
   void OnSurfaceDestroying(Surface* surface) override;

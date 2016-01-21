@@ -12,6 +12,7 @@
 #include "components/exo/test/exo_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/khronos/GLES2/gl2.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 
 namespace exo {
@@ -159,6 +160,37 @@ TEST_F(PointerTest, OnPointerWheel) {
 
   EXPECT_CALL(delegate, OnPointerWheel(testing::_, gfx::Vector2d(1, 1)));
   generator.MoveMouseWheel(1, 1);
+
+  EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
+  pointer.reset();
+}
+
+TEST_F(PointerTest, OnPointerScroll) {
+  scoped_ptr<Surface> surface(new Surface);
+  scoped_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
+  shell_surface->Init();
+  gfx::Size buffer_size(10, 10);
+  scoped_ptr<Buffer> buffer(new Buffer(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size), GL_TEXTURE_2D));
+  surface->Attach(buffer.get());
+  surface->Commit();
+
+  MockPointerDelegate delegate;
+  scoped_ptr<Pointer> pointer(new Pointer(&delegate));
+  ui::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow());
+  gfx::Point location = surface->GetBoundsInScreen().origin();
+
+  EXPECT_CALL(delegate, CanAcceptPointerEventsForSurface(surface.get()))
+      .WillRepeatedly(testing::Return(true));
+  EXPECT_CALL(delegate, OnPointerEnter(surface.get(), gfx::Point(), 0));
+  generator.MoveMouseTo(location);
+
+  EXPECT_CALL(delegate, OnPointerWheel(testing::_, gfx::Vector2d(1, 1)));
+  ui::ScrollEvent scroll_event(ui::ET_SCROLL, location, ui::EventTimeForNow(),
+                               0 /* flags */, 1 /* x_offset */,
+                               1 /* y_offset */, 1 /* x_offset_ordinal */,
+                               1 /* y_offset_ordinal */, 1 /* finger_count */);
+  generator.Dispatch(&scroll_event);
 
   EXPECT_CALL(delegate, OnPointerDestroying(pointer.get()));
   pointer.reset();

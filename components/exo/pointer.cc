@@ -71,6 +71,14 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
         location_ = event->location();
       }
       break;
+    case ui::ET_SCROLL:
+      if (focus_) {
+        ui::ScrollEvent* scroll_event = static_cast<ui::ScrollEvent*>(event);
+        delegate_->OnPointerWheel(
+            event->time_stamp(),
+            gfx::Vector2d(scroll_event->x_offset(), scroll_event->y_offset()));
+      }
+      break;
     case ui::ET_MOUSEWHEEL:
       if (focus_) {
         delegate_->OnPointerWheel(
@@ -86,6 +94,10 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       NOTREACHED();
       break;
   }
+}
+
+void Pointer::OnScrollEvent(ui::ScrollEvent* event) {
+  OnMouseEvent(event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
