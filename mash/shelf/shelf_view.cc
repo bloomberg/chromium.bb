@@ -18,11 +18,8 @@ namespace shelf {
 ShelfView::ShelfView(mojo::ApplicationImpl* app) : binding_(this) {
   app->ConnectToService("mojo:desktop_wm", &user_window_controller_);
 
-  mash::wm::mojom::UserWindowObserverPtr observer;
-  mojo::InterfaceRequest<mash::wm::mojom::UserWindowObserver> request =
-      mojo::GetProxy(&observer);
-  user_window_controller_->AddUserWindowObserver(std::move(observer));
-  binding_.Bind(std::move(request));
+  user_window_controller_->AddUserWindowObserver(
+      binding_.CreateInterfacePtrAndBind());
 
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));

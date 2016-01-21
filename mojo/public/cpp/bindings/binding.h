@@ -111,6 +111,14 @@ class Binding {
   // implementation unbound.
   ~Binding() {}
 
+  // Returns an InterfacePtr bound to one end of a pipe whose other end is
+  // bound to |this|.
+  InterfacePtr<Interface> CreateInterfacePtrAndBind() {
+    InterfacePtr<Interface> interface_ptr;
+    Bind(&interface_ptr);
+    return interface_ptr;
+  }
+
   // Completes a binding that was constructed with only an interface
   // implementation. Takes ownership of |handle| and binds it to the previously
   // specified implementation. See class comment for definition of |waiter|.

@@ -29,9 +29,7 @@ class TestAcceleratorHandler : public AcceleratorHandler {
       : binding_(this),
         registrar_(std::move(registrar)),
         add_accelerator_result_(false) {
-    AcceleratorHandlerPtr handler;
-    binding_.Bind(GetProxy(&handler));
-    registrar_->SetHandler(std::move(handler));
+    registrar_->SetHandler(binding_.CreateInterfacePtrAndBind());
   }
   ~TestAcceleratorHandler() override {}
 

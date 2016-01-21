@@ -84,14 +84,12 @@ void BrowserDriverApplicationDelegate::AddAccelerators() {
 
   if (binding_.is_bound())
     binding_.Unbind();
-  mus::mojom::AcceleratorHandlerPtr handler;
-  binding_.Bind(GetProxy(&handler));
   // If the window manager restarts, the handler pipe will close and we'll need
   // to re-add our accelerators when the window manager comes back up.
   binding_.set_connection_error_handler(
       base::Bind(&BrowserDriverApplicationDelegate::AddAccelerators,
                  base::Unretained(this)));
-  registrar->SetHandler(std::move(handler));
+  registrar->SetHandler(binding_.CreateInterfacePtrAndBind());
 
   for (const AcceleratorSpec& spec : g_spec) {
     registrar->AddAccelerator(
