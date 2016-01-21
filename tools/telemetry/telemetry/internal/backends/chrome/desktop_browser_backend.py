@@ -47,12 +47,7 @@ def GetSymbolBinary(executable, os_name):
                                     'Chromium Framework.framework',
                                     'Chromium Framework')
       if os.path.isfile(framework_file):
-        # Sometimes dyld returns symbols for a different file. Emulate what it
-        # does here by using the same mechanism to find the binary file.
-        import fcntl
-        F_GETPATH = 50
-        with open(framework_file, 'rb') as f:
-          return fcntl.fcntl(f.fileno(), F_GETPATH, b'\0' * 1024).rstrip(b'\0')
+        return framework_file
 
   return executable
 
