@@ -1410,6 +1410,7 @@
         ['chromeos==1', {
           'sources': [
             'arc/arc_bridge_service_unittest.cc',
+            'arc/ime/arc_ime_bridge_unittest.cc',
             'pairing/message_buffer_unittest.cc',
             'timers/alarm_timer_unittest.cc',
             'wifi_sync/wifi_config_delegate_chromeos_unittest.cc',

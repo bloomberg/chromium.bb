@@ -7,11 +7,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "components/arc/arc_bridge_service.h"
-#include "components/arc/common/ime.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/text_input_type.h"
-#include "ui/gfx/geometry/rect.h"
 
 namespace gfx {
 class Rect;
@@ -23,11 +19,12 @@ struct CompositionText;
 
 namespace arc {
 
-// This class encapsulates the detail of IME related IPC between
+// This interface class encapsulates the detail of IME related IPC between
 // Chromium and the ARC container.
-class ArcImeIpcHost : public ImeHost,
-                      public ArcBridgeService::Observer {
+class ArcImeIpcHost {
  public:
+  virtual ~ArcImeIpcHost() {}
+
   // Received IPCs are deserialized and passed to this delegate.
   class Delegate {
    public:
@@ -35,26 +32,16 @@ class ArcImeIpcHost : public ImeHost,
     virtual void OnCursorRectChanged(const gfx::Rect& rect) = 0;
   };
 
-  ArcImeIpcHost(Delegate* delegate, ArcBridgeService* bridge_service);
-  ~ArcImeIpcHost() override;
-
-  // arc::ArcBridgeService::Observer:
-  void OnImeInstanceReady() override;
-
   // Serializes and sends IME related requests through IPCs.
-  void SendSetCompositionText(const ui::CompositionText& composition);
-  void SendConfirmCompositionText();
-  void SendInsertText(const base::string16& text);
+  virtual void SendSetCompositionText(
+      const ui::CompositionText& composition) = 0;
+  virtual void SendConfirmCompositionText() = 0;
+  virtual void SendInsertText(const base::string16& text) = 0;
 
-  // arc::ImeHost:
-  void OnTextInputTypeChanged(arc::TextInputType type) override;
-  void OnCursorRectChanged(arc::CursorRectPtr rect) override;
+ protected:
+  ArcImeIpcHost() {}
 
  private:
-  mojo::Binding<ImeHost> binding_;
-  Delegate* const delegate_;
-  ArcBridgeService* const bridge_service_;
-
   DISALLOW_COPY_AND_ASSIGN(ArcImeIpcHost);
 };
 

@@ -6,6 +6,7 @@
 #define COMPONENTS_ARC_IME_ARC_IME_BRIDGE_H_
 
 #include "base/macros.h"
+#include "base/memory/scoped_ptr.h"
 #include "components/arc/ime/arc_ime_ipc_host.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
@@ -38,6 +39,9 @@ class ArcImeBridge : public ArcImeIpcHost::Delegate,
  public:
   explicit ArcImeBridge(ArcBridgeService* arc_bridge_service);
   ~ArcImeBridge() override;
+
+  // Injects the custom IPC host object for testing purpose only.
+  void SetIpcHostForTesting(scoped_ptr<ArcImeIpcHost> test_ipc_host);
 
   // Overridden from aura::EnvObserver:
   void OnWindowInitialized(aura::Window* new_window) override;
@@ -89,9 +93,10 @@ class ArcImeBridge : public ArcImeIpcHost::Delegate,
  private:
   ui::InputMethod* GetInputMethod();
 
-  ArcImeIpcHost ipc_host_;
+  scoped_ptr<ArcImeIpcHost> ipc_host_;
   ui::TextInputType ime_type_;
   gfx::Rect cursor_rect_;
+  bool has_composition_text_;
 
   aura::WindowTracker observing_root_windows_;
   aura::WindowTracker arc_windows_;

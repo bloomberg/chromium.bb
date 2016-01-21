@@ -5,6 +5,7 @@
 #include "components/arc/ime/arc_ime_bridge.h"
 
 #include "base/logging.h"
+#include "components/arc/ime/arc_ime_ipc_host_impl.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -31,8 +32,9 @@ bool IsArcWindow(const aura::Window* window) {
 // ArcImeBridge main implementation:
 
 ArcImeBridge::ArcImeBridge(ArcBridgeService* arc_bridge_service)
-    : ipc_host_(this, arc_bridge_service),
-      ime_type_(ui::TEXT_INPUT_TYPE_NONE) {
+    : ipc_host_(new ArcImeIpcHostImpl(this, arc_bridge_service)),
+      ime_type_(ui::TEXT_INPUT_TYPE_NONE),
+      has_composition_text_(false) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->AddObserver(this);
@@ -50,6 +52,11 @@ ArcImeBridge::~ArcImeBridge() {
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->RemoveObserver(this);
+}
+
+void ArcImeBridge::SetIpcHostForTesting(
+    scoped_ptr<ArcImeIpcHost> test_ipc_host) {
+  ipc_host_ = std::move(test_ipc_host);
 }
 
 ui::InputMethod* ArcImeBridge::GetInputMethod() {
@@ -125,19 +132,25 @@ void ArcImeBridge::OnCursorRectChanged(const gfx::Rect& rect) {
 
 void ArcImeBridge::SetCompositionText(
     const ui::CompositionText& composition) {
-  ipc_host_.SendSetCompositionText(composition);
+  has_composition_text_ = !composition.text.empty();
+  ipc_host_->SendSetCompositionText(composition);
 }
 
 void ArcImeBridge::ConfirmCompositionText() {
-  ipc_host_.SendConfirmCompositionText();
+  has_composition_text_ = false;
+  ipc_host_->SendConfirmCompositionText();
 }
 
 void ArcImeBridge::ClearCompositionText() {
-  ipc_host_.SendInsertText(base::string16());
+  if (has_composition_text_) {
+    has_composition_text_ = false;
+    ipc_host_->SendInsertText(base::string16());
+  }
 }
 
 void ArcImeBridge::InsertText(const base::string16& text) {
-  ipc_host_.SendInsertText(text);
+  has_composition_text_ = false;
+  ipc_host_->SendInsertText(text);
 }
 
 void ArcImeBridge::InsertChar(const ui::KeyEvent& event) {
@@ -148,8 +161,10 @@ void ArcImeBridge::InsertChar(const ui::KeyEvent& event) {
   const bool is_control_char = (0x00 <= ch && ch <= 0x1f) ||
                                (0x7f <= ch && ch <= 0x9f);
 
-  if (!is_control_char && !ui::IsSystemKeyModifier(event.flags()))
-    ipc_host_.SendInsertText(base::string16(1, event.GetText()));
+  if (!is_control_char && !ui::IsSystemKeyModifier(event.flags())) {
+    has_composition_text_ = false;
+    ipc_host_->SendInsertText(base::string16(1, event.GetText()));
+  }
 }
 
 ui::TextInputType ArcImeBridge::GetTextInputType() const {
@@ -178,7 +193,7 @@ bool ArcImeBridge::GetCompositionCharacterBounds(
 }
 
 bool ArcImeBridge::HasCompositionText() const {
-  return true;
+  return has_composition_text_;
 }
 
 bool ArcImeBridge::GetTextRange(gfx::Range* range) const {

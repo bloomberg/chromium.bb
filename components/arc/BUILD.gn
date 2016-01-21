@@ -19,8 +19,9 @@ static_library("arc") {
     "clipboard/arc_clipboard_bridge.h",
     "ime/arc_ime_bridge.cc",
     "ime/arc_ime_bridge.h",
-    "ime/arc_ime_ipc_host.cc",
     "ime/arc_ime_ipc_host.h",
+    "ime/arc_ime_ipc_host_impl.cc",
+    "ime/arc_ime_ipc_host_impl.h",
     "input/arc_input_bridge.h",
     "input/arc_input_bridge_impl.cc",
     "input/arc_input_bridge_impl.h",
@@ -97,6 +98,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "arc_bridge_service_unittest.cc",
+    "ime/arc_ime_bridge_unittest.cc",
   ]
 
   deps = [
@@ -110,6 +112,7 @@ source_set("unit_tests") {
     "//mojo/public/cpp/system:system",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/base/ime",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
   ]
