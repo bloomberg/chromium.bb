@@ -40,11 +40,11 @@ static_assert(sizeof(kAuthentication) == 12,
 blink::WebPushPermissionStatus ToWebPushPermissionStatus(
     PermissionStatus status) {
   switch (status) {
-    case PERMISSION_STATUS_GRANTED:
+    case PermissionStatus::GRANTED:
       return blink::WebPushPermissionStatusGranted;
-    case PERMISSION_STATUS_DENIED:
+    case PermissionStatus::DENIED:
       return blink::WebPushPermissionStatusDenied;
-    case PERMISSION_STATUS_ASK:
+    case PermissionStatus::ASK:
       return blink::WebPushPermissionStatusPrompt;
   }
 

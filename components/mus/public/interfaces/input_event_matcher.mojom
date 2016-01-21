@@ -25,7 +25,9 @@ struct EventTypeMatcher {
 };
 
 struct EventFlagsMatcher {
-  EventFlags flags;
+  // A bitfield of kEventFlag* and kMouseEventFlag* values in
+  // input_event_constants.mojom.
+  int32 flags;
 };
 
 // If a specific matcher is missing, then an Event will match this EventMatcher
@@ -33,12 +35,12 @@ struct EventFlagsMatcher {
 // types will match this EventMatcher. Similarly, if |key_matcher| is missing,
 // then all key-events will match.
 // An example matcher to match the Ctrl+A accelerator would be:
-// - |type_matcher.type| = mojo::EVENT_TYPE_KEY_PRESSED
-// - |flags_matcher.flags| = mojo::EVENT_FLAGS_CONTROL_DOWN
-// - |key_matcher.keyboard_code| = mojo::KEYBOARD_CODE_A
+// - |type_matcher.type| = mus::mojom::EventType::KEY_PRESSED
+// - |flags_matcher.flags| = mus::mojom::kEventVlagControlDown
+// - |key_matcher.keyboard_code| = mus::mojom::KeyboardCode::A
 //
 // A matcher to match any key-press event would be:
-// - |type_matcher.type| = mojo::EVENT_TYPE_KEY_PRESSED
+// - |type_matcher.type| = mus::mojom::EventType::KEY_PRESSED
 struct EventMatcher {
   EventTypeMatcher? type_matcher;
   EventFlagsMatcher? flags_matcher;

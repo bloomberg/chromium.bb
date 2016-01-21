@@ -20,14 +20,14 @@ using Type = media::MediaPermission::Type;
 content::PermissionName MediaPermissionTypeToPermissionName(Type type) {
   switch (type) {
     case Type::PROTECTED_MEDIA_IDENTIFIER:
-      return content::PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER;
+      return content::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
     case Type::AUDIO_CAPTURE:
-      return content::PERMISSION_NAME_AUDIO_CAPTURE;
+      return content::PermissionName::AUDIO_CAPTURE;
     case Type::VIDEO_CAPTURE:
-      return content::PERMISSION_NAME_VIDEO_CAPTURE;
+      return content::PermissionName::VIDEO_CAPTURE;
   }
   NOTREACHED();
-  return content::PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER;
+  return content::PermissionName::PROTECTED_MEDIA_IDENTIFIER;
 }
 
 }  // namespace
@@ -93,7 +93,7 @@ void MediaPermissionDispatcherImpl::OnPermissionStatus(
     uint32_t request_id,
     PermissionStatus status) {
   DCHECK(thread_checker().CalledOnValidThread());
-  DeliverResult(request_id, status == PERMISSION_STATUS_GRANTED);
+  DeliverResult(request_id, status == PermissionStatus::GRANTED);
 }
 
 }  // namespace content

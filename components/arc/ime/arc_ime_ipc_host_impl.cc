@@ -24,27 +24,27 @@ ui::TextInputType ConvertTextInputType(arc::TextInputType ipc_type) {
   // That's why we need a lengthy switch statement instead of static_cast
   // guarded by a static assert on the two enums to be in sync.
   switch (ipc_type) {
-  case arc::TEXT_INPUT_TYPE_NONE:
+  case arc::TextInputType::NONE:
     return ui::TEXT_INPUT_TYPE_NONE;
-  case arc::TEXT_INPUT_TYPE_TEXT:
+  case arc::TextInputType::TEXT:
     return ui::TEXT_INPUT_TYPE_TEXT;
-  case arc::TEXT_INPUT_TYPE_PASSWORD:
+  case arc::TextInputType::PASSWORD:
     return ui::TEXT_INPUT_TYPE_PASSWORD;
-  case arc::TEXT_INPUT_TYPE_SEARCH:
+  case arc::TextInputType::SEARCH:
     return ui::TEXT_INPUT_TYPE_SEARCH;
-  case arc::TEXT_INPUT_TYPE_EMAIL:
+  case arc::TextInputType::EMAIL:
     return ui::TEXT_INPUT_TYPE_EMAIL;
-  case arc::TEXT_INPUT_TYPE_NUMBER:
+  case arc::TextInputType::NUMBER:
     return ui::TEXT_INPUT_TYPE_NUMBER;
-  case arc::TEXT_INPUT_TYPE_TELEPHONE:
+  case arc::TextInputType::TELEPHONE:
     return ui::TEXT_INPUT_TYPE_TELEPHONE;
-  case arc::TEXT_INPUT_TYPE_URL:
+  case arc::TextInputType::URL:
     return ui::TEXT_INPUT_TYPE_URL;
-  case arc::TEXT_INPUT_TYPE_DATE:
+  case arc::TextInputType::DATE:
     return ui::TEXT_INPUT_TYPE_DATE;
-  case arc::TEXT_INPUT_TYPE_TIME:
+  case arc::TextInputType::TIME:
     return ui::TEXT_INPUT_TYPE_TIME;
-  case arc::TEXT_INPUT_TYPE_DATETIME:
+  case arc::TextInputType::DATETIME:
     return ui::TEXT_INPUT_TYPE_DATE_TIME_LOCAL;
   default:
     return ui::TEXT_INPUT_TYPE_TEXT;

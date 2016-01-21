@@ -35,12 +35,12 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
   // Transient windows should be opened centered within their parent.
 
   switch (show_state) {
-    case mus::mojom::SHOW_STATE_MAXIMIZED:
-    case mus::mojom::SHOW_STATE_IMMERSIVE:
-    case mus::mojom::SHOW_STATE_PRESENTATION:
+    case mus::mojom::ShowState::MAXIMIZED:
+    case mus::mojom::ShowState::IMMERSIVE:
+    case mus::mojom::ShowState::PRESENTATION:
       FitToContainer(window);
       break;
-    case mus::mojom::SHOW_STATE_RESTORED: {
+    case mus::mojom::ShowState::RESTORED: {
       if (!user_set_bounds.IsEmpty()) {
         // If the bounds are unchanged, this will do nothing.
         window->SetBounds(user_set_bounds);
@@ -48,7 +48,7 @@ void WindowLayout::LayoutWindow(mus::Window* window) {
         CenterWindow(window, preferred_size);
       }
     }
-    case mus::mojom::SHOW_STATE_MINIMIZED:
+    case mus::mojom::ShowState::MINIMIZED:
       break;
     default:
       NOTREACHED();
@@ -64,7 +64,7 @@ void WindowLayout::OnWindowSharedPropertyChanged(
   // TODO(sky): this feels like the wrong place for this logic. Find a better
   // place.
   if (name == mus::mojom::WindowManager::kShowState_Property &&
-      GetWindowShowState(window) == mus::mojom::SHOW_STATE_MAXIMIZED) {
+      GetWindowShowState(window) == mus::mojom::ShowState::MAXIMIZED) {
     SetRestoreBounds(window, window->bounds());
   }
   LayoutManager::OnWindowSharedPropertyChanged(window, name, old_data,

@@ -26,8 +26,8 @@ TEST(InputEventLibTest, MouseEventConversion) {
 
   mus::mojom::EventPtr mojo_event(mus::mojom::Event::From(*mouseev));
 
-  EXPECT_EQ(mus::mojom::EVENT_TYPE_POINTER_DOWN, mojo_event->action);
-  EXPECT_EQ(mus::mojom::POINTER_KIND_MOUSE, mojo_event->pointer_data->kind);
+  EXPECT_EQ(mus::mojom::EventType::POINTER_DOWN, mojo_event->action);
+  EXPECT_EQ(mus::mojom::PointerKind::MOUSE, mojo_event->pointer_data->kind);
 
   scoped_ptr<blink::WebInputEvent> webevent =
       mojo_event.To<scoped_ptr<blink::WebInputEvent>>();
@@ -52,7 +52,7 @@ TEST(InputEventLibTest, MouseWheelEventConversionNonPrecise) {
 
   mus::mojom::EventPtr mojo_event(mus::mojom::Event::From(*original_wheel));
 
-  EXPECT_EQ(mus::mojom::EVENT_TYPE_WHEEL, mojo_event->action);
+  EXPECT_EQ(mus::mojom::EventType::WHEEL, mojo_event->action);
 
   // Exercise the blink converter.
   scoped_ptr<blink::WebInputEvent> webevent =

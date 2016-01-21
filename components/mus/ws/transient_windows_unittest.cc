@@ -153,39 +153,39 @@ TEST_F(TransientWindowsTest, TransientChildrenGroupAbove) {
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  w11->Reorder(w2.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w2.get(), mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 21 211 212 213 22 1 11", ChildWindowIDsAsString(parent.get()));
 
-  w21->Reorder(w1.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w1.get(), mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  w21->Reorder(w22, mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w22, mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w213, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 211 212 213", ChildWindowIDsAsString(parent.get()));
 
-  w11->Reorder(w21, mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w21, mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 211 212 213 1 11", ChildWindowIDsAsString(parent.get()));
 
-  w213->Reorder(w21, mojom::ORDER_DIRECTION_ABOVE);
+  w213->Reorder(w21, mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // No change when stacking a transient parent above its transient child.
-  w21->Reorder(w211, mojom::ORDER_DIRECTION_ABOVE);
+  w21->Reorder(w211, mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // This tests that the order in children_ array rather than in
   // transient_children_ array is used when reinserting transient children.
   // If transient_children_ array was used '22' would be following '21'.
-  w2->Reorder(w1.get(), mojom::ORDER_DIRECTION_ABOVE);
+  w2->Reorder(w1.get(), mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w212, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 213 211 212", ChildWindowIDsAsString(parent.get()));
 
-  w11->Reorder(w213, mojom::ORDER_DIRECTION_ABOVE);
+  w11->Reorder(w213, mojom::OrderDirection::ABOVE);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 }
@@ -241,36 +241,36 @@ TEST_F(TransientWindowsTest, TransienChildGroupBelow) {
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  w21->Reorder(w1.get(), mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w1.get(), mojom::OrderDirection::BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 21 211 212 213 22 1 11", ChildWindowIDsAsString(parent.get()));
 
-  w11->Reorder(w2.get(), mojom::ORDER_DIRECTION_BELOW);
+  w11->Reorder(w2.get(), mojom::OrderDirection::BELOW);
   EXPECT_EQ(w22, parent->children().back());
   EXPECT_EQ("1 11 2 21 211 212 213 22", ChildWindowIDsAsString(parent.get()));
 
-  w22->Reorder(w21, mojom::ORDER_DIRECTION_BELOW);
+  w22->Reorder(w21, mojom::OrderDirection::BELOW);
   EXPECT_EQ(w213, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 211 212 213", ChildWindowIDsAsString(parent.get()));
 
-  w21->Reorder(w11, mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w11, mojom::OrderDirection::BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 211 212 213 1 11", ChildWindowIDsAsString(parent.get()));
 
-  w213->Reorder(w211, mojom::ORDER_DIRECTION_BELOW);
+  w213->Reorder(w211, mojom::OrderDirection::BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
   // No change when stacking a transient parent below its transient child.
-  w21->Reorder(w211, mojom::ORDER_DIRECTION_BELOW);
+  w21->Reorder(w211, mojom::OrderDirection::BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 
-  w1->Reorder(w2.get(), mojom::ORDER_DIRECTION_BELOW);
+  w1->Reorder(w2.get(), mojom::OrderDirection::BELOW);
   EXPECT_EQ(w212, parent->children().back());
   EXPECT_EQ("1 11 2 22 21 213 211 212", ChildWindowIDsAsString(parent.get()));
 
-  w213->Reorder(w11, mojom::ORDER_DIRECTION_BELOW);
+  w213->Reorder(w11, mojom::OrderDirection::BELOW);
   EXPECT_EQ(w11, parent->children().back());
   EXPECT_EQ("2 22 21 213 211 212 1 11", ChildWindowIDsAsString(parent.get()));
 }

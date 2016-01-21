@@ -34,11 +34,9 @@ void MidiDispatcher::requestSysexPermission(
       requests_.Add(new WebMIDIPermissionRequest(request));
 
   permission_service_->RequestPermission(
-      PERMISSION_NAME_MIDI_SYSEX,
-      request.securityOrigin().toString().utf8(),
+      PermissionName::MIDI_SYSEX, request.securityOrigin().toString().utf8(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
-      base::Bind(&MidiDispatcher::OnSysExPermissionSet,
-                 base::Unretained(this),
+      base::Bind(&MidiDispatcher::OnSysExPermissionSet, base::Unretained(this),
                  permission_request_id));
 }
 
@@ -59,7 +57,7 @@ void MidiDispatcher::OnSysExPermissionSet(int request_id,
   WebMIDIPermissionRequest* request = requests_.Lookup(request_id);
   if (!request)
     return;
-  request->setIsAllowed(status == PERMISSION_STATUS_GRANTED);
+  request->setIsAllowed(status == PermissionStatus::GRANTED);
   requests_.Remove(request_id);
 }
 

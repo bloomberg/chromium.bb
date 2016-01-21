@@ -70,15 +70,15 @@ void BackgroundSyncClientImpl::SyncDidGetRegistration(
   callback = it->second;
   sync_callbacks_.erase(it);
 
-  if (error != BACKGROUND_SYNC_ERROR_NONE) {
-    callback.Run(SERVICE_WORKER_EVENT_STATUS_ABORTED);
+  if (error != BackgroundSyncError::NONE) {
+    callback.Run(ServiceWorkerEventStatus::ABORTED);
     return;
   }
 
   ServiceWorkerContextClient* client =
       ServiceWorkerContextClient::ThreadSpecificInstance();
   if (!client) {
-    callback.Run(SERVICE_WORKER_EVENT_STATUS_ABORTED);
+    callback.Run(ServiceWorkerEventStatus::ABORTED);
     return;
   }
 

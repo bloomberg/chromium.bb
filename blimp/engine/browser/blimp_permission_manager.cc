@@ -23,7 +23,7 @@ int BlimpPermissionManager::RequestPermission(
     const GURL& origin,
     bool user_gesture,
     const base::Callback<void(content::PermissionStatus)>& callback) {
-  callback.Run(content::PermissionStatus::PERMISSION_STATUS_DENIED);
+  callback.Run(content::PermissionStatus::DENIED);
   return kNoPendingOperation;
 }
 
@@ -35,7 +35,7 @@ int BlimpPermissionManager::RequestPermissions(
     const base::Callback<void(const std::vector<content::PermissionStatus>&)>&
         callback) {
   callback.Run(std::vector<content::PermissionStatus>(
-      permission.size(), content::PermissionStatus::PERMISSION_STATUS_DENIED));
+      permission.size(), content::PermissionStatus::DENIED));
   return kNoPendingOperation;
 }
 
@@ -49,7 +49,7 @@ content::PermissionStatus BlimpPermissionManager::GetPermissionStatus(
     content::PermissionType permission,
     const GURL& requesting_origin,
     const GURL& embedding_origin) {
-  return content::PermissionStatus::PERMISSION_STATUS_DENIED;
+  return content::PermissionStatus::DENIED;
 }
 
 void BlimpPermissionManager::RegisterPermissionUsage(

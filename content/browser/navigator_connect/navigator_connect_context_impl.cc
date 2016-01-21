@@ -226,7 +226,7 @@ void NavigatorConnectContextImpl::OnConnectResult(
   if (!worker->FinishRequest(request_id))
     return;
 
-  if (result != SERVICE_PORT_CONNECT_RESULT_ACCEPT) {
+  if (result != ServicePortConnectResult::ACCEPT) {
     OnConnectError(callback, client_port_id, service_port_id,
                    SERVICE_WORKER_ERROR_FAILED);
     return;

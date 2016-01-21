@@ -11,8 +11,9 @@
 
 namespace mus {
 
-mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code,
-                                        mojom::EventFlags flags);
+// |flags| is a bitfield of kEventFlag* and kMouseEventFlag* values in
+// input_event_constants.mojom.
+mojom::EventMatcherPtr CreateKeyMatcher(mojom::KeyboardCode code, int flags);
 
 }  // namespace mus
 

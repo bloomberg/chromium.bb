@@ -670,7 +670,7 @@ void BrowserCdmManager::CheckPermissionStatusOnUIThread(
       PermissionType::PROTECTED_MEDIA_IDENTIFIER, security_origin,
       web_contents->GetLastCommittedURL().GetOrigin());
 
-  bool allowed = (permission_status == PERMISSION_STATUS_GRANTED);
+  bool allowed = (permission_status == PermissionStatus::GRANTED);
   if (!task_runner_->RunsTasksOnCurrentThread()) {
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(permission_status_cb, allowed));

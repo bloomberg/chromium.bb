@@ -49,14 +49,14 @@ void BackgroundSyncRegistration::RunFinishedCallbacks() {
 
 bool BackgroundSyncRegistration::HasCompleted() const {
   switch (sync_state_) {
-    case BACKGROUND_SYNC_STATE_PENDING:
-    case BACKGROUND_SYNC_STATE_FIRING:
-    case BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING:
-    case BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING:
+    case BackgroundSyncState::PENDING:
+    case BackgroundSyncState::FIRING:
+    case BackgroundSyncState::REREGISTERED_WHILE_FIRING:
+    case BackgroundSyncState::UNREGISTERED_WHILE_FIRING:
       return false;
-    case BACKGROUND_SYNC_STATE_FAILED:
-    case BACKGROUND_SYNC_STATE_SUCCESS:
-    case BACKGROUND_SYNC_STATE_UNREGISTERED:
+    case BackgroundSyncState::FAILED:
+    case BackgroundSyncState::SUCCESS:
+    case BackgroundSyncState::UNREGISTERED:
       return true;
   }
   NOTREACHED();
@@ -65,14 +65,14 @@ bool BackgroundSyncRegistration::HasCompleted() const {
 
 bool BackgroundSyncRegistration::IsFiring() const {
   switch (sync_state_) {
-    case BACKGROUND_SYNC_STATE_FIRING:
-    case BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING:
-    case BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING:
+    case BackgroundSyncState::FIRING:
+    case BackgroundSyncState::REREGISTERED_WHILE_FIRING:
+    case BackgroundSyncState::UNREGISTERED_WHILE_FIRING:
       return true;
-    case BACKGROUND_SYNC_STATE_PENDING:
-    case BACKGROUND_SYNC_STATE_FAILED:
-    case BACKGROUND_SYNC_STATE_SUCCESS:
-    case BACKGROUND_SYNC_STATE_UNREGISTERED:
+    case BackgroundSyncState::PENDING:
+    case BackgroundSyncState::FAILED:
+    case BackgroundSyncState::SUCCESS:
+    case BackgroundSyncState::UNREGISTERED:
       return false;
   }
   NOTREACHED();
@@ -84,8 +84,8 @@ void BackgroundSyncRegistration::SetUnregisteredState() {
 
   bool is_firing = IsFiring();
 
-  sync_state_ = is_firing ? BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING
-                          : BACKGROUND_SYNC_STATE_UNREGISTERED;
+  sync_state_ = is_firing ? BackgroundSyncState::UNREGISTERED_WHILE_FIRING
+                          : BackgroundSyncState::UNREGISTERED;
 
   if (!is_firing) {
     // If the registration is currently firing then wait to run

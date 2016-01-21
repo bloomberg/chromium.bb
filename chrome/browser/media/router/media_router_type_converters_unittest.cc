@@ -22,8 +22,7 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
   mojo_sink->name = "Sink 1";
   mojo_sink->description = "description";
   mojo_sink->domain = "domain";
-  mojo_sink->icon_type =
-      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
+  mojo_sink->icon_type = media_router::interfaces::MediaSink::IconType::CAST;
 
   MediaSink media_sink = mojo::TypeConverter<
       media_router::MediaSink,
@@ -43,34 +42,34 @@ TEST(MediaRouterTypeConvertersTest, ConvertMediaSink) {
 TEST(MediaRouterTypeConvertersTest, ConvertMediaSinkIconType) {
   // Convert from Mojo to Media Router.
   EXPECT_EQ(media_router::MediaSink::CAST,
-      mojo::SinkIconTypeFromMojo(
-          media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST));
+            mojo::SinkIconTypeFromMojo(
+                media_router::interfaces::MediaSink::IconType::CAST));
   EXPECT_EQ(media_router::MediaSink::CAST_AUDIO,
+            mojo::SinkIconTypeFromMojo(
+                media_router::interfaces::MediaSink::IconType::CAST_AUDIO));
+  EXPECT_EQ(
+      media_router::MediaSink::CAST_AUDIO_GROUP,
       mojo::SinkIconTypeFromMojo(
-          media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO));
-  EXPECT_EQ(media_router::MediaSink::CAST_AUDIO_GROUP,
-      mojo::SinkIconTypeFromMojo(
-          media_router::interfaces::MediaSink::
-              IconType::ICON_TYPE_CAST_AUDIO_GROUP));
+          media_router::interfaces::MediaSink::IconType::CAST_AUDIO_GROUP));
   EXPECT_EQ(media_router::MediaSink::GENERIC,
-      mojo::SinkIconTypeFromMojo(
-          media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC));
+            mojo::SinkIconTypeFromMojo(
+                media_router::interfaces::MediaSink::IconType::GENERIC));
   EXPECT_EQ(media_router::MediaSink::HANGOUT,
-      mojo::SinkIconTypeFromMojo(
-          media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT));
+            mojo::SinkIconTypeFromMojo(
+                media_router::interfaces::MediaSink::IconType::HANGOUT));
 
   // Convert from Media Router to Mojo.
-  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST,
-      mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST));
-  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST_AUDIO,
-      mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO));
-  EXPECT_EQ(media_router::interfaces::MediaSink::
-      IconType::ICON_TYPE_CAST_AUDIO_GROUP,
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::CAST,
+            mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::CAST_AUDIO,
+            mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO));
+  EXPECT_EQ(
+      media_router::interfaces::MediaSink::IconType::CAST_AUDIO_GROUP,
       mojo::SinkIconTypeToMojo(media_router::MediaSink::CAST_AUDIO_GROUP));
-  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_GENERIC,
-      mojo::SinkIconTypeToMojo(media_router::MediaSink::GENERIC));
-  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::ICON_TYPE_HANGOUT,
-      mojo::SinkIconTypeToMojo(media_router::MediaSink::HANGOUT));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::GENERIC,
+            mojo::SinkIconTypeToMojo(media_router::MediaSink::GENERIC));
+  EXPECT_EQ(media_router::interfaces::MediaSink::IconType::HANGOUT,
+            mojo::SinkIconTypeToMojo(media_router::MediaSink::HANGOUT));
 }
 
 TEST(MediaRouterTypeConvertersTest, ConvertMediaRoute) {
@@ -121,13 +120,11 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssue) {
   mojoIssue->title = "title";
   mojoIssue->message = "msg";
   mojoIssue->route_id = "routeId";
-  mojoIssue->default_action =
-      interfaces::Issue::ActionType::ACTION_TYPE_LEARN_MORE;
+  mojoIssue->default_action = interfaces::Issue::ActionType::LEARN_MORE;
   mojoIssue->secondary_actions =
       mojo::Array<interfaces::Issue::ActionType>::New(1);
-  mojoIssue->secondary_actions[0] =
-      interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
-  mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
+  mojoIssue->secondary_actions[0] = interfaces::Issue::ActionType::DISMISS;
+  mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = true;
   mojoIssue->help_url = "help_url";
 
@@ -165,9 +162,8 @@ TEST(MediaRouterTypeConvertersTest, ConvertIssueWithoutOptionalFields) {
   interfaces::IssuePtr mojoIssue;
   mojoIssue = interfaces::Issue::New();
   mojoIssue->title = "title";
-  mojoIssue->default_action =
-      interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
-  mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
+  mojoIssue->default_action = interfaces::Issue::ActionType::DISMISS;
+  mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = true;
 
   Issue expected_issue("title", "", IssueAction(IssueAction::TYPE_DISMISS),

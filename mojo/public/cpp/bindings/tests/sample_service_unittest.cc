@@ -42,11 +42,11 @@ FooPtr MakeFoo() {
   bar->alpha = 20;
   bar->beta = 40;
   bar->gamma = 60;
-  bar->type = Bar::TYPE_VERTICAL;
+  bar->type = Bar::Type::VERTICAL;
 
   mojo::Array<BarPtr> extra_bars(3);
   for (size_t i = 0; i < extra_bars.size(); ++i) {
-    Bar::Type type = i % 2 == 0 ? Bar::TYPE_VERTICAL : Bar::TYPE_HORIZONTAL;
+    Bar::Type type = i % 2 == 0 ? Bar::Type::VERTICAL : Bar::Type::HORIZONTAL;
     BarPtr bar(Bar::New());
     uint8_t base = static_cast<uint8_t>(i * 100);
     bar->alpha = base;
@@ -123,12 +123,12 @@ void CheckFoo(const Foo& foo) {
   EXPECT_EQ(20, foo.bar->alpha);
   EXPECT_EQ(40, foo.bar->beta);
   EXPECT_EQ(60, foo.bar->gamma);
-  EXPECT_EQ(Bar::TYPE_VERTICAL, foo.bar->type);
+  EXPECT_EQ(Bar::Type::VERTICAL, foo.bar->type);
 
   EXPECT_EQ(3u, foo.extra_bars.size());
   for (size_t i = 0; i < foo.extra_bars.size(); i++) {
     uint8_t base = static_cast<uint8_t>(i * 100);
-    Bar::Type type = i % 2 == 0 ? Bar::TYPE_VERTICAL : Bar::TYPE_HORIZONTAL;
+    Bar::Type type = i % 2 == 0 ? Bar::Type::VERTICAL : Bar::Type::HORIZONTAL;
     EXPECT_EQ(base, foo.extra_bars[i]->alpha) << i;
     EXPECT_EQ(base + 20, foo.extra_bars[i]->beta) << i;
     EXPECT_EQ(base + 40, foo.extra_bars[i]->gamma) << i;
@@ -267,14 +267,14 @@ class ServiceImpl : public Service {
     EXPECT_FALSE(foo.is_null());
     if (!foo.is_null())
       CheckFoo(*foo);
-    EXPECT_EQ(BAZ_OPTIONS_EXTRA, baz);
+    EXPECT_EQ(BazOptions::EXTRA, baz);
 
     if (g_dump_message_as_text) {
       // Also dump the Foo structure and all of its members.
       std::cout << "Frobinate:" << std::endl;
       int depth = 1;
       Print(depth, "foo", foo);
-      Print(depth, "baz", baz);
+      Print(depth, "baz", static_cast<int32_t>(baz));
       Print(depth, "port", port.get());
     }
     callback.Run(5);
@@ -332,7 +332,7 @@ TEST_F(BindingsSampleTest, Basic) {
   CheckFoo(*foo);
 
   PortPtr port;
-  service->Frobinate(std::move(foo), Service::BAZ_OPTIONS_EXTRA,
+  service->Frobinate(std::move(foo), Service::BazOptions::EXTRA,
                      std::move(port), Service::FrobinateCallback());
 
   delete service;
@@ -360,11 +360,11 @@ TEST_F(BindingsSampleTest, DefaultValues) {
   EXPECT_DOUBLE_EQ(1.23E-20, defaults->a17);
   EXPECT_TRUE(defaults->a18.is_null());
   EXPECT_TRUE(defaults->a19.is_null());
-  EXPECT_EQ(Bar::TYPE_BOTH, defaults->a20);
+  EXPECT_EQ(Bar::Type::BOTH, defaults->a20);
   EXPECT_TRUE(defaults->a21.is_null());
   ASSERT_FALSE(defaults->a22.is_null());
-  EXPECT_EQ(imported::SHAPE_RECTANGLE, defaults->a22->shape);
-  EXPECT_EQ(imported::COLOR_BLACK, defaults->a22->color);
+  EXPECT_EQ(imported::Shape::RECTANGLE, defaults->a22->shape);
+  EXPECT_EQ(imported::Color::BLACK, defaults->a22->color);
   EXPECT_EQ(0xFFFFFFFFFFFFFFFFULL, defaults->a23);
   EXPECT_EQ(0x123456789, defaults->a24);
   EXPECT_EQ(-0x123456789, defaults->a25);

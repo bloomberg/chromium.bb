@@ -156,7 +156,7 @@ class HttpConnectionImpl::WebSocketImpl : public WebSocket {
   }
 
   void Send(bool fin, MessageType type, uint32_t num_bytes) override {
-    if (!fin || type != MESSAGE_TYPE_TEXT) {
+    if (!fin || type != MessageType::TEXT) {
       NOTIMPLEMENTED();
       Close();
     }
@@ -196,7 +196,7 @@ class HttpConnectionImpl::WebSocketImpl : public WebSocket {
       return;
 
     if (buffer)
-      client_->DidReceiveData(true, MESSAGE_TYPE_TEXT, num_bytes);
+      client_->DidReceiveData(true, MessageType::TEXT, num_bytes);
   }
 
   // Checks whether Close() has been called.

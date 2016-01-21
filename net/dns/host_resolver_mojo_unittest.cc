@@ -192,7 +192,7 @@ TEST_F(HostResolverMojoTest, Basic) {
   interfaces::HostResolverRequestInfo& request = *mock_resolver_->requests()[0];
   EXPECT_EQ("example.com", request.host.To<std::string>());
   EXPECT_EQ(12345, request.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_UNSPECIFIED, request.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::UNSPECIFIED, request.address_family);
   EXPECT_FALSE(request.is_my_ip_address);
 }
 
@@ -272,13 +272,13 @@ TEST_F(HostResolverMojoTest, Multiple) {
       *mock_resolver_->requests()[0];
   EXPECT_EQ("example.com", request1.host.To<std::string>());
   EXPECT_EQ(12345, request1.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_IPV4, request1.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::IPV4, request1.address_family);
   EXPECT_TRUE(request1.is_my_ip_address);
   interfaces::HostResolverRequestInfo& request2 =
       *mock_resolver_->requests()[1];
   EXPECT_EQ("example.org", request2.host.To<std::string>());
   EXPECT_EQ(80, request2.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_IPV6, request2.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::IPV6, request2.address_family);
   EXPECT_FALSE(request2.is_my_ip_address);
 }
 
@@ -296,7 +296,7 @@ TEST_F(HostResolverMojoTest, Error) {
   interfaces::HostResolverRequestInfo& request = *mock_resolver_->requests()[0];
   EXPECT_EQ("example.com", request.host.To<std::string>());
   EXPECT_EQ(8080, request.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_IPV4, request.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::IPV4, request.address_family);
   EXPECT_FALSE(request.is_my_ip_address);
 }
 
@@ -328,7 +328,7 @@ TEST_F(HostResolverMojoTest, Cancel) {
   interfaces::HostResolverRequestInfo& request = *mock_resolver_->requests()[0];
   EXPECT_EQ("example.com", request.host.To<std::string>());
   EXPECT_EQ(80, request.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_IPV6, request.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::IPV6, request.address_family);
   EXPECT_FALSE(request.is_my_ip_address);
 }
 
@@ -344,7 +344,7 @@ TEST_F(HostResolverMojoTest, ImplDropsClientConnection) {
   interfaces::HostResolverRequestInfo& request = *mock_resolver_->requests()[0];
   EXPECT_EQ("example.com", request.host.To<std::string>());
   EXPECT_EQ(1, request.port);
-  EXPECT_EQ(interfaces::ADDRESS_FAMILY_UNSPECIFIED, request.address_family);
+  EXPECT_EQ(interfaces::AddressFamily::UNSPECIFIED, request.address_family);
   EXPECT_FALSE(request.is_my_ip_address);
 }
 

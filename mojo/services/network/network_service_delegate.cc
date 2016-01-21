@@ -101,7 +101,7 @@ void NetworkServiceDelegate::Initialize(ApplicationImpl* app) {
   filesystem::FileSystemClientPtr client;
   binding_.Bind(GetProxy(&client));
 
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   filesystem::DirectoryPtr directory;
   files_->OpenFileSystem("origin", GetProxy(&directory), std::move(client),
                          Capture(&error));

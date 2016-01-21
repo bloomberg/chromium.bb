@@ -176,7 +176,7 @@ void WebClipboardImpl::writePlainText(const blink::WebString& plain_text) {
   Map<String, Array<uint8_t>> data;
   data[Clipboard::MIME_TYPE_TEXT] = Array<uint8_t>::From(plain_text);
 
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, std::move(data));
+  clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE, std::move(data));
 }
 
 void WebClipboardImpl::writeHTML(const blink::WebString& html_text,
@@ -191,19 +191,19 @@ void WebClipboardImpl::writeHTML(const blink::WebString& html_text,
   if (writeSmartPaste)
     data[kMimeTypeWebkitSmartPaste] = Array<uint8_t>::From(blink::WebString());
 
-  clipboard_->WriteClipboardData(Clipboard::TYPE_COPY_PASTE, std::move(data));
+  clipboard_->WriteClipboardData(Clipboard::Type::COPY_PASTE, std::move(data));
 }
 
 Clipboard::Type WebClipboardImpl::ConvertBufferType(Buffer buffer) {
   switch (buffer) {
     case BufferStandard:
-      return Clipboard::TYPE_COPY_PASTE;
+      return Clipboard::Type::COPY_PASTE;
     case BufferSelection:
-      return Clipboard::TYPE_SELECTION;
+      return Clipboard::Type::SELECTION;
   }
 
   NOTREACHED();
-  return Clipboard::TYPE_COPY_PASTE;
+  return Clipboard::Type::COPY_PASTE;
 }
 
 }  // namespace html_viewer

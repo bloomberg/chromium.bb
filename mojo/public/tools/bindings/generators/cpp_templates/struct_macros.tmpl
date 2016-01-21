@@ -110,6 +110,8 @@
 {%-     else %}
   {{output}}->{{name}} = mojo::internal::AssociatedInterfaceRequestHelper::PassHandle(&{{input_field}}).release();
 {%-     endif %}
+{%-   elif kind|is_enum_kind %}
+  {{output}}->{{name}} = static_cast<int32_t>({{input_field}});
 {%-   else %}
   {{output}}->{{name}} = {{input_field}};
 {%-   endif %}

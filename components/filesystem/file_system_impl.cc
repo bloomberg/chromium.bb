@@ -90,9 +90,9 @@ void FileSystemImpl::OpenFileSystem(const mojo::String& file_system,
     DirectoryImpl* dir_impl =
         new DirectoryImpl(std::move(directory), path, std::move(temp_dir));
     app_->RegisterDirectoryToClient(dir_impl, std::move(client));
-    callback.Run(FILE_ERROR_OK);
+    callback.Run(FileError::OK);
   } else {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
   }
 }
 

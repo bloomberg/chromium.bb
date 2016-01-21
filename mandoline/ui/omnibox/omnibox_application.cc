@@ -144,7 +144,7 @@ void OmniboxImpl::OnEmbed(mus::Window* root) {
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.native_widget = new views::NativeWidgetMus(
-      widget, app_->shell(), root, mus::mojom::SURFACE_TYPE_DEFAULT);
+      widget, app_->shell(), root, mus::mojom::SurfaceType::DEFAULT);
   params.delegate = widget_delegate;
   params.bounds = root->bounds();
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;

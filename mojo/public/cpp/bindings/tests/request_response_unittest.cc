@@ -165,12 +165,12 @@ TEST_F(RequestResponseTest, EchoEnum) {
 
   sample::Enum value;
   base::RunLoop run_loop;
-  provider->EchoEnum(sample::ENUM_VALUE,
+  provider->EchoEnum(sample::Enum::VALUE,
                      EnumRecorder(&value, run_loop.QuitClosure()));
 
   run_loop.Run();
 
-  EXPECT_EQ(sample::ENUM_VALUE, value);
+  EXPECT_EQ(sample::Enum::VALUE, value);
 }
 
 }  // namespace

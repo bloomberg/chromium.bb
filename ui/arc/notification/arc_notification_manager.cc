@@ -76,7 +76,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
 
   arc_bridge_->notifications_instance()->SendNotificationEventToAndroid(
-      key, ARC_NOTIFICATION_EVENT_CLOSED);
+      key, ArcNotificationEvent::CLOSED);
 }
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
@@ -88,7 +88,7 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
   }
 
   arc_bridge_->notifications_instance()->SendNotificationEventToAndroid(
-      key, ARC_NOTIFICATION_EVENT_BODY_CLICKED);
+      key, ArcNotificationEvent::BODY_CLICKED);
 }
 
 }  // namespace arc

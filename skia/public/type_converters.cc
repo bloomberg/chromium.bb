@@ -17,21 +17,21 @@ namespace {
 
 SkColorType MojoColorTypeToSk(skia::ColorType type) {
   switch (type) {
-    case skia::COLOR_TYPE_UNKNOWN:
+    case skia::ColorType::UNKNOWN:
       return kUnknown_SkColorType;
-    case skia::COLOR_TYPE_ALPHA_8:
+    case skia::ColorType::ALPHA_8:
       return kAlpha_8_SkColorType;
-    case skia::COLOR_TYPE_RGB_565:
+    case skia::ColorType::RGB_565:
       return kRGB_565_SkColorType;
-    case skia::COLOR_TYPE_ARGB_4444:
+    case skia::ColorType::ARGB_4444:
       return kARGB_4444_SkColorType;
-    case skia::COLOR_TYPE_RGBA_8888:
+    case skia::ColorType::RGBA_8888:
       return kRGBA_8888_SkColorType;
-    case skia::COLOR_TYPE_BGRA_8888:
+    case skia::ColorType::BGRA_8888:
       return kBGRA_8888_SkColorType;
-    case skia::COLOR_TYPE_INDEX_8:
+    case skia::ColorType::INDEX_8:
       return kIndex_8_SkColorType;
-    case skia::COLOR_TYPE_GRAY_8:
+    case skia::ColorType::GRAY_8:
       return kGray_8_SkColorType;
     default:
       NOTREACHED();
@@ -41,13 +41,13 @@ SkColorType MojoColorTypeToSk(skia::ColorType type) {
 
 SkAlphaType MojoAlphaTypeToSk(skia::AlphaType type) {
   switch (type) {
-    case skia::ALPHA_TYPE_UNKNOWN:
+    case skia::AlphaType::UNKNOWN:
       return kUnknown_SkAlphaType;
-    case skia::ALPHA_TYPE_OPAQUE:
+    case skia::AlphaType::ALPHA_TYPE_OPAQUE:
       return kOpaque_SkAlphaType;
-    case skia::ALPHA_TYPE_PREMUL:
+    case skia::AlphaType::PREMUL:
       return kPremul_SkAlphaType;
-    case skia::ALPHA_TYPE_UNPREMUL:
+    case skia::AlphaType::UNPREMUL:
       return kUnpremul_SkAlphaType;
     default:
       NOTREACHED();
@@ -58,41 +58,41 @@ SkAlphaType MojoAlphaTypeToSk(skia::AlphaType type) {
 skia::ColorType SkColorTypeToMojo(SkColorType type) {
   switch (type) {
     case kUnknown_SkColorType:
-      return skia::COLOR_TYPE_UNKNOWN;
+      return skia::ColorType::UNKNOWN;
     case kAlpha_8_SkColorType:
-      return skia::COLOR_TYPE_ALPHA_8;
+      return skia::ColorType::ALPHA_8;
     case kRGB_565_SkColorType:
-      return skia::COLOR_TYPE_RGB_565;
+      return skia::ColorType::RGB_565;
     case kARGB_4444_SkColorType:
-      return skia::COLOR_TYPE_ARGB_4444;
+      return skia::ColorType::ARGB_4444;
     case kRGBA_8888_SkColorType:
-      return skia::COLOR_TYPE_RGBA_8888;
+      return skia::ColorType::RGBA_8888;
     case kBGRA_8888_SkColorType:
-      return skia::COLOR_TYPE_BGRA_8888;
+      return skia::ColorType::BGRA_8888;
     case kIndex_8_SkColorType:
-      return skia::COLOR_TYPE_INDEX_8;
+      return skia::ColorType::INDEX_8;
     case kGray_8_SkColorType:
-      return skia::COLOR_TYPE_GRAY_8;
+      return skia::ColorType::GRAY_8;
     default:
       NOTREACHED();
   }
-  return skia::COLOR_TYPE_UNKNOWN;
+  return skia::ColorType::UNKNOWN;
 }
 
 skia::AlphaType SkAlphaTypeToMojo(SkAlphaType type) {
   switch (type) {
     case kUnknown_SkAlphaType:
-      return skia::ALPHA_TYPE_UNKNOWN;
+      return skia::AlphaType::UNKNOWN;
     case kOpaque_SkAlphaType:
-      return skia::ALPHA_TYPE_OPAQUE;
+      return skia::AlphaType::ALPHA_TYPE_OPAQUE;
     case kPremul_SkAlphaType:
-      return skia::ALPHA_TYPE_PREMUL;
+      return skia::AlphaType::PREMUL;
     case kUnpremul_SkAlphaType:
-      return skia::ALPHA_TYPE_UNPREMUL;
+      return skia::AlphaType::UNPREMUL;
     default:
       NOTREACHED();
   }
-  return skia::ALPHA_TYPE_UNKNOWN;
+  return skia::AlphaType::UNKNOWN;
 }
 
 }  // namespace

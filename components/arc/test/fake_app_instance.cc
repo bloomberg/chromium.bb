@@ -57,31 +57,31 @@ bool FakeAppInstance::GenerateAndSendIcon(const AppInfo& app,
   CHECK(png_data_as_string != nullptr);
   std::string icon_file_name;
   switch (scale_factor) {
-    case SCALE_FACTOR_SCALE_FACTOR_100P:
+    case ScaleFactor::SCALE_FACTOR_100P:
       icon_file_name = "icon_100p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_125P:
+    case ScaleFactor::SCALE_FACTOR_125P:
       icon_file_name = "icon_125p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_133P:
+    case ScaleFactor::SCALE_FACTOR_133P:
       icon_file_name = "icon_133p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_140P:
+    case ScaleFactor::SCALE_FACTOR_140P:
       icon_file_name = "icon_140p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_150P:
+    case ScaleFactor::SCALE_FACTOR_150P:
       icon_file_name = "icon_150p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_180P:
+    case ScaleFactor::SCALE_FACTOR_180P:
       icon_file_name = "icon_180p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_200P:
+    case ScaleFactor::SCALE_FACTOR_200P:
       icon_file_name = "icon_200p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_250P:
+    case ScaleFactor::SCALE_FACTOR_250P:
       icon_file_name = "icon_250p.png";
       break;
-    case SCALE_FACTOR_SCALE_FACTOR_300P:
+    case ScaleFactor::SCALE_FACTOR_300P:
       icon_file_name = "icon_300p.png";
       break;
     default:

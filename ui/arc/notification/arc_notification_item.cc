@@ -104,15 +104,15 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
   message_center::NotificationType type;
 
   switch (data.type) {
-    case ARC_NOTIFICATION_TYPE_BASIC:
+    case ArcNotificationType::BASIC:
       type = message_center::NOTIFICATION_TYPE_SIMPLE;
       break;
-    case ARC_NOTIFICATION_TYPE_IMAGE:
+    case ArcNotificationType::IMAGE:
       // TODO(yoshiki): Implement this types.
       type = message_center::NOTIFICATION_TYPE_SIMPLE;
       LOG(ERROR) << "Unsupported notification type: image";
       break;
-    case ARC_NOTIFICATION_TYPE_PROGRESS:
+    case ArcNotificationType::PROGRESS:
       type = message_center::NOTIFICATION_TYPE_PROGRESS;
       rich_data.timestamp = base::Time::UnixEpoch() +
                             base::TimeDelta::FromMilliseconds(data.time);
@@ -122,7 +122,7 @@ void ArcNotificationItem::UpdateWithArcNotificationData(
                                data.progress_max * 100))));
       break;
   }
-  DCHECK(0 <= data.type && data.type <= ARC_NOTIFICATION_TYPE_MAX)
+  DCHECK(ArcNotificationType_IsValidValue(data.type))
       << "Unsupported notification type: " << data.type;
 
   // The identifier of the notifier, which is used to distinguish the notifiers

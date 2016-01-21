@@ -16,9 +16,9 @@ TypeConverter<blink::WebUSBDevice::TransferDirection,
               device::usb::TransferDirection>::
     Convert(const device::usb::TransferDirection& direction) {
   switch (direction) {
-    case device::usb::TRANSFER_DIRECTION_IN:
+    case device::usb::TransferDirection::INBOUND:
       return blink::WebUSBDevice::TransferDirection::In;
-    case device::usb::TRANSFER_DIRECTION_OUT:
+    case device::usb::TransferDirection::OUTBOUND:
       return blink::WebUSBDevice::TransferDirection::Out;
     default:
       NOTREACHED();
@@ -33,12 +33,12 @@ TypeConverter<device::usb::TransferDirection,
     Convert(const blink::WebUSBDevice::TransferDirection& direction) {
   switch (direction) {
     case blink::WebUSBDevice::TransferDirection::In:
-      return device::usb::TRANSFER_DIRECTION_IN;
+      return device::usb::TransferDirection::INBOUND;
     case blink::WebUSBDevice::TransferDirection::Out:
-      return device::usb::TRANSFER_DIRECTION_OUT;
+      return device::usb::TransferDirection::OUTBOUND;
     default:
       NOTREACHED();
-      return device::usb::TRANSFER_DIRECTION_IN;
+      return device::usb::TransferDirection::INBOUND;
   }
 }
 
@@ -49,14 +49,14 @@ TypeConverter<device::usb::ControlTransferType,
     Convert(const blink::WebUSBDevice::RequestType& direction) {
   switch (direction) {
     case blink::WebUSBDevice::RequestType::Standard:
-      return device::usb::CONTROL_TRANSFER_TYPE_STANDARD;
+      return device::usb::ControlTransferType::STANDARD;
     case blink::WebUSBDevice::RequestType::Class:
-      return device::usb::CONTROL_TRANSFER_TYPE_CLASS;
+      return device::usb::ControlTransferType::CLASS;
     case blink::WebUSBDevice::RequestType::Vendor:
-      return device::usb::CONTROL_TRANSFER_TYPE_VENDOR;
+      return device::usb::ControlTransferType::VENDOR;
     default:
       NOTREACHED();
-      return device::usb::CONTROL_TRANSFER_TYPE_STANDARD;
+      return device::usb::ControlTransferType::STANDARD;
   }
 }
 
@@ -67,16 +67,16 @@ TypeConverter<device::usb::ControlTransferRecipient,
     Convert(const blink::WebUSBDevice::RequestRecipient& direction) {
   switch (direction) {
     case blink::WebUSBDevice::RequestRecipient::Device:
-      return device::usb::CONTROL_TRANSFER_RECIPIENT_DEVICE;
+      return device::usb::ControlTransferRecipient::DEVICE;
     case blink::WebUSBDevice::RequestRecipient::Interface:
-      return device::usb::CONTROL_TRANSFER_RECIPIENT_INTERFACE;
+      return device::usb::ControlTransferRecipient::INTERFACE;
     case blink::WebUSBDevice::RequestRecipient::Endpoint:
-      return device::usb::CONTROL_TRANSFER_RECIPIENT_ENDPOINT;
+      return device::usb::ControlTransferRecipient::ENDPOINT;
     case blink::WebUSBDevice::RequestRecipient::Other:
-      return device::usb::CONTROL_TRANSFER_RECIPIENT_OTHER;
+      return device::usb::ControlTransferRecipient::OTHER;
     default:
       NOTREACHED();
-      return device::usb::CONTROL_TRANSFER_RECIPIENT_DEVICE;
+      return device::usb::ControlTransferRecipient::DEVICE;
   }
 }
 
@@ -103,11 +103,11 @@ blink::WebUSBDeviceInfo::Endpoint::Type TypeConverter<
     device::usb::EndpointType>::Convert(const device::usb::EndpointType&
                                             endpoint_type) {
   switch (endpoint_type) {
-    case device::usb::ENDPOINT_TYPE_BULK:
+    case device::usb::EndpointType::BULK:
       return blink::WebUSBDeviceInfo::Endpoint::Type::Bulk;
-    case device::usb::ENDPOINT_TYPE_INTERRUPT:
+    case device::usb::EndpointType::INTERRUPT:
       return blink::WebUSBDeviceInfo::Endpoint::Type::Interrupt;
-    case device::usb::ENDPOINT_TYPE_ISOCHRONOUS:
+    case device::usb::EndpointType::ISOCHRONOUS:
       return blink::WebUSBDeviceInfo::Endpoint::Type::Isochronous;
     default:
       NOTREACHED();

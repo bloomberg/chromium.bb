@@ -47,7 +47,7 @@ void CompositorMusConnection::AttachSurfaceOnCompositorThread(
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   window_surface_binding_ = std::move(surface_binding);
   if (root_) {
-    root_->AttachSurface(mus::mojom::SURFACE_TYPE_DEFAULT,
+    root_->AttachSurface(mus::mojom::SurfaceType::DEFAULT,
                          std::move(window_surface_binding_));
   }
 }
@@ -101,7 +101,7 @@ void CompositorMusConnection::OnEmbed(mus::Window* root) {
   root_ = root;
   root_->set_input_event_handler(this);
   if (window_surface_binding_) {
-    root->AttachSurface(mus::mojom::SURFACE_TYPE_DEFAULT,
+    root->AttachSurface(mus::mojom::SurfaceType::DEFAULT,
                         std::move(window_surface_binding_));
   }
 }

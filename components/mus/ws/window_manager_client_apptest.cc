@@ -229,7 +229,7 @@ class WindowServerTest : public WindowServerTestBase {
   // a response is received, or a timeout. On success the new WindowServer is
   // returned.
   EmbedResult Embed(Window* window) {
-    return Embed(window, mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT);
+    return Embed(window, mus::mojom::WindowTree::kAccessPolicyDefault);
   }
 
   EmbedResult Embed(Window* window, uint32_t access_policy_bitmask) {
@@ -995,7 +995,7 @@ TEST_F(WindowServerTest, EmbedRootSeesHierarchyChanged) {
   GetFirstWMRoot()->AddChild(embed_window);
 
   WindowTreeConnection* vm2 =
-      Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT)
+      Embed(embed_window, mus::mojom::WindowTree::kAccessPolicyEmbedRoot)
           .connection;
   Window* vm2_v1 = vm2->NewWindow();
   GetFirstRoot(vm2)->AddChild(vm2_v1);
@@ -1014,7 +1014,7 @@ TEST_F(WindowServerTest, EmbedFromEmbedRoot) {
 
   // Give the connection embedded at |embed_window| embed root powers.
   const EmbedResult result1 =
-      Embed(embed_window, mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT);
+      Embed(embed_window, mus::mojom::WindowTree::kAccessPolicyEmbedRoot);
   WindowTreeConnection* vm2 = result1.connection;
   EXPECT_EQ(result1.connection_id, vm2->GetConnectionId());
   Window* vm2_v1 = vm2->NewWindow();

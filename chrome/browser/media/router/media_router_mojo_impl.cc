@@ -41,7 +41,7 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
   DCHECK(!input.is_null());
   scoped_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
-    case interfaces::RouteMessage::Type::TYPE_TEXT: {
+    case interfaces::RouteMessage::Type::TEXT: {
       DCHECK(!input->message.is_null());
       DCHECK(input->data.is_null());
       output.reset(new content::PresentationSessionMessage(
@@ -49,7 +49,7 @@ ConvertToPresentationSessionMessage(interfaces::RouteMessagePtr input) {
       input->message.Swap(&output->message);
       return output;
     }
-    case interfaces::RouteMessage::Type::TYPE_BINARY: {
+    case interfaces::RouteMessage::Type::BINARY: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
       output.reset(new content::PresentationSessionMessage(
@@ -105,7 +105,7 @@ MediaRouterMojoImpl::MediaRouterMojoImpl(
     : event_page_tracker_(event_page_tracker),
       instance_id_(base::GenerateGUID()),
       has_local_display_route_(false),
-      availability_(interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE),
+      availability_(interfaces::MediaRouter::SinkAvailability::UNAVAILABLE),
       wakeup_attempt_count_(0),
       current_wake_reason_(MediaRouteProviderWakeReason::TOTAL_COUNT),
       weak_factory_(this) {
@@ -430,7 +430,7 @@ bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
   // If sink availability is UNAVAILABLE, then there is no need to call MRPM.
   // |observer| can be immediately notified with an empty list.
   sinks_query->observers.AddObserver(observer);
-  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
     observer->OnSinksReceived(std::vector<MediaSink>());
   } else {
     // Need to call MRPM to start observing sinks if the query is new.
@@ -465,7 +465,7 @@ void MediaRouterMojoImpl::UnregisterMediaSinksObserver(
     // UNAVAILABLE.
     // Otherwise, the MRPM would have discarded the queries already.
     if (availability_ !=
-        interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+        interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
       SetWakeReason(MediaRouteProviderWakeReason::STOP_OBSERVING_MEDIA_SINKS);
       // The |sinks_queries_| entry will be removed in the immediate or deferred
       // |DoStopObservingMediaSinks| call.
@@ -739,7 +739,7 @@ void MediaRouterMojoImpl::OnSinkAvailabilityUpdated(
     return;
 
   availability_ = availability;
-  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE) {
+  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE) {
     // Sinks are no longer available. MRPM has already removed all sink queries.
     for (auto& source_and_query : sinks_queries_) {
       auto* query = source_and_query.second;
@@ -777,7 +777,7 @@ void MediaRouterMojoImpl::DoStartObservingMediaSinks(
     const MediaSource::Id& source_id) {
   DVLOG_WITH_INSTANCE(1) << "DoStartObservingMediaSinks: " << source_id;
   // No need to call MRPM if there are no sinks available.
-  if (availability_ == interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE)
+  if (availability_ == interfaces::MediaRouter::SinkAvailability::UNAVAILABLE)
     return;
 
   // No need to call MRPM if all observers have been removed in the meantime.

@@ -22,7 +22,7 @@ namespace {
 bool IsValidWindowForEvents(ServerWindow* window) {
   ServerWindowSurfaceManager* surface_manager = window->surface_manager();
   return surface_manager &&
-         surface_manager->HasSurfaceOfType(mojom::SURFACE_TYPE_DEFAULT);
+         surface_manager->HasSurfaceOfType(mojom::SurfaceType::DEFAULT);
 }
 
 ServerWindow* FindDeepestVisibleWindowNonSurface(ServerWindow* window,
@@ -114,9 +114,9 @@ gfx::Transform GetTransformToWindow(cc::SurfaceId display_surface_id,
   if (!display_surface_id.is_null()) {
     gfx::Transform transform;
     if (HitTestSurfaceOfType(display_surface_id, window,
-                             mus::mojom::SURFACE_TYPE_DEFAULT, &transform) ||
+                             mus::mojom::SurfaceType::DEFAULT, &transform) ||
         HitTestSurfaceOfType(display_surface_id, window,
-                             mus::mojom::SURFACE_TYPE_UNDERLAY, &transform)) {
+                             mus::mojom::SurfaceType::UNDERLAY, &transform)) {
       return transform;
     }
   }

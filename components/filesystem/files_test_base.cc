@@ -31,11 +31,11 @@ void FilesTestBase::GetTemporaryRoot(DirectoryPtr* directory) {
   filesystem::FileSystemClientPtr client;
   binding_.Bind(GetProxy(&client));
 
-  FileError error = FILE_ERROR_FAILED;
+  FileError error = FileError::FAILED;
   files()->OpenFileSystem("temp", GetProxy(directory), std::move(client),
                           mojo::Capture(&error));
   ASSERT_TRUE(files().WaitForIncomingResponse());
-  ASSERT_EQ(FILE_ERROR_OK, error);
+  ASSERT_EQ(FileError::OK, error);
 }
 
 }  // namespace filesystem

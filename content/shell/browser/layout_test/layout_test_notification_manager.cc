@@ -26,11 +26,11 @@ void OnEventDispatchComplete(PersistentNotificationStatus status) {}
 blink::WebNotificationPermission ToWebNotificationPermission(
     PermissionStatus status) {
   switch (status) {
-    case PERMISSION_STATUS_GRANTED:
+    case PermissionStatus::GRANTED:
       return blink::WebNotificationPermissionAllowed;
-    case PERMISSION_STATUS_DENIED:
+    case PermissionStatus::DENIED:
       return blink::WebNotificationPermissionDenied;
-    case PERMISSION_STATUS_ASK:
+    case PermissionStatus::ASK:
       return blink::WebNotificationPermissionDefault;
   }
 

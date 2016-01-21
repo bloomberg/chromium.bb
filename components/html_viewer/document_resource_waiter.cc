@@ -24,7 +24,7 @@ DocumentResourceWaiter::DocumentResourceWaiter(GlobalState* global_state,
       root_(nullptr),
       change_id_(0u),
       window_id_(0u),
-      window_connect_type_(web_view::mojom::WINDOW_CONNECT_TYPE_USE_NEW),
+      window_connect_type_(web_view::mojom::WindowConnectType::USE_NEW),
       frame_client_binding_(this),
       is_ready_(false),
       waiting_for_change_id_(false),
@@ -100,7 +100,7 @@ void DocumentResourceWaiter::UpdateIsReady() {
   bool is_ready =
       (!frame_data_.is_null() &&
        ((window_connect_type_ ==
-         web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING) ||
+         web_view::mojom::WindowConnectType::USE_EXISTING) ||
         (root_ && root_->viewport_metrics().device_pixel_ratio != 0.0f)));
   if (is_ready) {
     HTMLFrameTreeManager* frame_tree =

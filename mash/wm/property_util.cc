@@ -27,7 +27,7 @@ mus::mojom::ShowState GetWindowShowState(const mus::Window* window) {
         window->GetSharedProperty<int32_t>(
             mus::mojom::WindowManager::kShowState_Property));
   }
-  return mus::mojom::SHOW_STATE_RESTORED;
+  return mus::mojom::ShowState::RESTORED;
 }
 
 void SetWindowUserSetBounds(mus::Window* window, const gfx::Rect& bounds) {
@@ -68,17 +68,16 @@ mojom::Container GetRequestedContainer(const mus::Window* window) {
     return static_cast<mojom::Container>(
         window->GetSharedProperty<int32_t>(mojom::kWindowContainer_Property));
   }
-  return mojom::CONTAINER_USER_WINDOWS;
+  return mojom::Container::USER_WINDOWS;
 }
 
-mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window) {
+int32_t GetResizeBehavior(const mus::Window* window) {
   if (window->HasSharedProperty(
           mus::mojom::WindowManager::kResizeBehavior_Property)) {
-    return static_cast<mus::mojom::ResizeBehavior>(
-        window->GetSharedProperty<int32_t>(
-            mus::mojom::WindowManager::kResizeBehavior_Property));
+    return window->GetSharedProperty<int32_t>(
+        mus::mojom::WindowManager::kResizeBehavior_Property);
   }
-  return mus::mojom::RESIZE_BEHAVIOR_NONE;
+  return mus::mojom::kResizeBehaviorNone;
 }
 
 void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds) {
@@ -116,7 +115,7 @@ mus::mojom::WindowType GetWindowType(
         mojo::TypeConverter<int32_t, const std::vector<uint8_t>>::Convert(
             iter->second));
   }
-  return mus::mojom::WINDOW_TYPE_POPUP;
+  return mus::mojom::WindowType::POPUP;
 }
 
 }  // namespace wm

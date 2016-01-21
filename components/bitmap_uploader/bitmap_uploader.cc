@@ -52,7 +52,7 @@ BitmapUploader::~BitmapUploader() {
 }
 
 void BitmapUploader::Init(mojo::Shell* shell) {
-  surface_ = window_->RequestSurface(mus::mojom::SURFACE_TYPE_DEFAULT);
+  surface_ = window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT);
   surface_->BindToThread();
 
   mojo::ServiceProviderPtr gpu_service_provider;
@@ -142,7 +142,7 @@ void BitmapUploader::Upload() {
         mus::mojom::TransferableResource::New();
     resource->id = next_resource_id_++;
     resource_to_texture_id_map_[resource->id] = texture_id;
-    resource->format = mus::mojom::RESOURCE_FORMAT_RGBA_8888;
+    resource->format = mus::mojom::ResourceFormat::RGBA_8888;
     resource->filter = GL_LINEAR;
     resource->size = bitmap_size.Clone();
     mus::mojom::MailboxHolderPtr mailbox_holder =
@@ -159,7 +159,7 @@ void BitmapUploader::Upload() {
     resource->is_overlay_candidate = false;
 
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
-    quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
+    quad->material = mus::mojom::Material::TEXTURE_CONTENT;
 
     mojo::RectPtr rect = mojo::Rect::New();
     if (width_ <= bounds.width() && height_ <= bounds.height()) {
@@ -205,7 +205,7 @@ void BitmapUploader::Upload() {
 
   if (color_ != g_transparent_color) {
     mus::mojom::QuadPtr quad = mus::mojom::Quad::New();
-    quad->material = mus::mojom::MATERIAL_SOLID_COLOR;
+    quad->material = mus::mojom::Material::SOLID_COLOR;
     quad->rect = mojo::Rect::From(bounds);
     quad->opaque_rect = mojo::Rect::New();
     quad->visible_rect = mojo::Rect::From(bounds);

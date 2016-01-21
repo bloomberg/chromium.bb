@@ -26,9 +26,9 @@ SerialIoHandler::SerialIoHandler(
     : file_thread_task_runner_(file_thread_task_runner),
       ui_thread_task_runner_(ui_thread_task_runner) {
   options_.bitrate = 9600;
-  options_.data_bits = serial::DATA_BITS_EIGHT;
-  options_.parity_bit = serial::PARITY_BIT_NO;
-  options_.stop_bits = serial::STOP_BITS_ONE;
+  options_.data_bits = serial::DataBits::EIGHT;
+  options_.parity_bit = serial::ParityBit::NO;
+  options_.stop_bits = serial::StopBits::ONE;
   options_.cts_flow_control = false;
   options_.has_cts_flow_control = true;
 }
@@ -100,13 +100,13 @@ void SerialIoHandler::MergeConnectionOptions(
   if (options.bitrate) {
     options_.bitrate = options.bitrate;
   }
-  if (options.data_bits != serial::DATA_BITS_NONE) {
+  if (options.data_bits != serial::DataBits::NONE) {
     options_.data_bits = options.data_bits;
   }
-  if (options.parity_bit != serial::PARITY_BIT_NONE) {
+  if (options.parity_bit != serial::ParityBit::NONE) {
     options_.parity_bit = options.parity_bit;
   }
-  if (options.stop_bits != serial::STOP_BITS_NONE) {
+  if (options.stop_bits != serial::StopBits::NONE) {
     options_.stop_bits = options.stop_bits;
   }
   if (options.has_cts_flow_control) {
@@ -200,10 +200,10 @@ void SerialIoHandler::ReadCompleted(int bytes_read,
   DCHECK(IsReadPending());
   scoped_ptr<WritableBuffer> pending_read_buffer =
       std::move(pending_read_buffer_);
-  if (error == serial::RECEIVE_ERROR_NONE) {
+  if (error == serial::ReceiveError::NONE) {
     pending_read_buffer->Done(bytes_read);
   } else {
-    pending_read_buffer->DoneWithError(bytes_read, error);
+    pending_read_buffer->DoneWithError(bytes_read, static_cast<int32_t>(error));
   }
   Release();
 }
@@ -214,10 +214,11 @@ void SerialIoHandler::WriteCompleted(int bytes_written,
   DCHECK(IsWritePending());
   scoped_ptr<ReadOnlyBuffer> pending_write_buffer =
       std::move(pending_write_buffer_);
-  if (error == serial::SEND_ERROR_NONE) {
+  if (error == serial::SendError::NONE) {
     pending_write_buffer->Done(bytes_written);
   } else {
-    pending_write_buffer->DoneWithError(bytes_written, error);
+    pending_write_buffer->DoneWithError(bytes_written,
+                                        static_cast<int32_t>(error));
   }
   Release();
 }

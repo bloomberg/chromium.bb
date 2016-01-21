@@ -124,8 +124,8 @@ void ServicePortServiceImpl::ClosePort(int32_t port_id) {
 void ServicePortServiceImpl::OnConnectResult(const ConnectCallback& callback,
                                              int message_port_id,
                                              bool success) {
-  callback.Run(success ? SERVICE_PORT_CONNECT_RESULT_ACCEPT
-                       : SERVICE_PORT_CONNECT_RESULT_REJECT,
+  callback.Run(success ? ServicePortConnectResult::ACCEPT
+                       : ServicePortConnectResult::REJECT,
                message_port_id);
 }
 

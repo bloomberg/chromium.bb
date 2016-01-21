@@ -15,12 +15,12 @@ net::IPEndPoint TypeConverter<net::IPEndPoint, NetAddressPtr>::Convert(
     return net::IPEndPoint();
 
   switch (obj->family) {
-    case NET_ADDRESS_FAMILY_IPV4:
+    case NetAddressFamily::IPV4:
       if (!obj->ipv4)
         break;
       return net::IPEndPoint(obj->ipv4->addr.storage(), obj->ipv4->port);
 
-    case NET_ADDRESS_FAMILY_IPV6:
+    case NetAddressFamily::IPV6:
       if (!obj->ipv6)
         break;
       return net::IPEndPoint(obj->ipv6->addr.storage(), obj->ipv6->port);
@@ -39,14 +39,14 @@ NetAddressPtr TypeConverter<NetAddressPtr, net::IPEndPoint>::Convert(
 
   switch (obj.GetFamily()) {
     case net::ADDRESS_FAMILY_IPV4:
-      net_address->family = NET_ADDRESS_FAMILY_IPV4;
+      net_address->family = NetAddressFamily::IPV4;
       net_address->ipv4 = NetAddressIPv4::New();
       net_address->ipv4->port = static_cast<uint16_t>(obj.port());
       net_address->ipv4->addr = Array<uint8_t>::From(obj.address());
       break;
-    case NET_ADDRESS_FAMILY_IPV6:
+    case net::ADDRESS_FAMILY_IPV6:
       net_address->ipv6 = NetAddressIPv6::New();
-      net_address->family = NET_ADDRESS_FAMILY_IPV6;
+      net_address->family = NetAddressFamily::IPV6;
       net_address->ipv6->port = static_cast<uint16_t>(obj.port());
       net_address->ipv6->addr = Array<uint8_t>::From(obj.address());
       break;

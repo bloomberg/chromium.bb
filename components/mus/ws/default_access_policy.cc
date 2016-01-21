@@ -79,7 +79,7 @@ bool DefaultAccessPolicy::CanDescendIntoWindowForWindowTree(
 
 bool DefaultAccessPolicy::CanEmbed(const ServerWindow* window,
                                    uint32_t policy_bitmask) const {
-  if (policy_bitmask != mojom::WindowTree::ACCESS_POLICY_DEFAULT)
+  if (policy_bitmask != mojom::WindowTree::kAccessPolicyDefault)
     return false;
   return WasCreatedByThisConnection(window) ||
          (delegate_->IsWindowKnownForAccessPolicy(window) &&
@@ -96,7 +96,7 @@ bool DefaultAccessPolicy::CanChangeWindowVisibility(
 bool DefaultAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     mojom::SurfaceType surface_type) const {
-  if (surface_type == mojom::SURFACE_TYPE_UNDERLAY)
+  if (surface_type == mojom::SurfaceType::UNDERLAY)
     return WasCreatedByThisConnection(window);
 
   // Once a window embeds another app, the embedder app is no longer able to

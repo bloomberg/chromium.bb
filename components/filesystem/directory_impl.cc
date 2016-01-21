@@ -37,13 +37,13 @@ void DirectoryImpl::Read(const ReadCallback& callback) {
        name = directory_enumerator.Next()) {
     base::FileEnumerator::FileInfo info = directory_enumerator.GetInfo();
     DirectoryEntryPtr entry = DirectoryEntry::New();
-    entry->type = info.IsDirectory()
-                  ? FS_FILE_TYPE_DIRECTORY : FS_FILE_TYPE_REGULAR_FILE;
+    entry->type =
+        info.IsDirectory() ? FsFileType::DIRECTORY : FsFileType::REGULAR_FILE;
     entry->name = info.GetName().AsUTF8Unsafe();
     entries.push_back(std::move(entry));
   }
 
-  callback.Run(FILE_ERROR_OK, std::move(entries));
+  callback.Run(FileError::OK, std::move(entries));
 }
 
 // TODO(erg): Consider adding an implementation of Stat()/Touch() to the
@@ -56,7 +56,8 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
                              uint32_t open_flags,
                              const OpenFileCallback& callback) {
   base::FilePath path;
-  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
     callback.Run(error);
     return;
   }
@@ -69,13 +70,13 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
 
   base::File base_file(path, open_flags);
   if (!base_file.IsValid()) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
   base::File::Info info;
   if (!base_file.GetInfo(&info)) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
@@ -83,14 +84,14 @@ void DirectoryImpl::OpenFile(const mojo::String& raw_path,
     // We must not return directories as files. In the file abstraction, we can
     // fetch raw file descriptors over mojo pipes, and passing a file
     // descriptor to a directory is a sandbox escape on Windows.
-    callback.Run(FILE_ERROR_NOT_A_FILE);
+    callback.Run(FileError::NOT_A_FILE);
     return;
   }
 
   if (file.is_pending()) {
     new FileImpl(std::move(file), std::move(base_file));
   }
-  callback.Run(FILE_ERROR_OK);
+  callback.Run(FileError::OK);
 }
 
 void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
@@ -98,21 +99,22 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
                                   uint32_t open_flags,
                                   const OpenDirectoryCallback& callback) {
   base::FilePath path;
-  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
     callback.Run(error);
     return;
   }
 
   if (!base::DirectoryExists(path)) {
     if (base::PathExists(path)) {
-      callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
+      callback.Run(FileError::NOT_A_DIRECTORY);
       return;
     }
 
     if (!(open_flags & kFlagOpenAlways || open_flags & kFlagCreate)) {
       // The directory doesn't exist, and we weren't passed parameters to
       // create it.
-      callback.Run(FILE_ERROR_NOT_FOUND);
+      callback.Run(FileError::NOT_FOUND);
       return;
     }
 
@@ -126,88 +128,91 @@ void DirectoryImpl::OpenDirectory(const mojo::String& raw_path,
   if (directory.is_pending())
     new DirectoryImpl(std::move(directory), path,
                       scoped_ptr<base::ScopedTempDir>());
-  callback.Run(FILE_ERROR_OK);
+  callback.Run(FileError::OK);
 }
 
 void DirectoryImpl::Rename(const mojo::String& raw_old_path,
                            const mojo::String& raw_new_path,
                            const RenameCallback& callback) {
   base::FilePath old_path;
-  if (FileError error =
-          ValidatePath(raw_old_path, directory_path_, &old_path)) {
+  FileError error = ValidatePath(raw_old_path, directory_path_, &old_path);
+  if (error != FileError::OK) {
     callback.Run(error);
     return;
   }
 
   base::FilePath new_path;
-  if (FileError error =
-          ValidatePath(raw_new_path, directory_path_, &new_path)) {
+  error = ValidatePath(raw_new_path, directory_path_, &new_path);
+  if (error != FileError::OK) {
     callback.Run(error);
     return;
   }
 
   if (!base::Move(old_path, new_path)) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
-  callback.Run(FILE_ERROR_OK);
+  callback.Run(FileError::OK);
 }
 
 void DirectoryImpl::Delete(const mojo::String& raw_path,
                            uint32_t delete_flags,
                            const DeleteCallback& callback) {
   base::FilePath path;
-  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
     callback.Run(error);
     return;
   }
 
   bool recursive = delete_flags & kDeleteFlagRecursive;
   if (!base::DeleteFile(path, recursive)) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
-  callback.Run(FILE_ERROR_OK);
+  callback.Run(FileError::OK);
 }
 
 void DirectoryImpl::Exists(const mojo::String& raw_path,
                            const ExistsCallback& callback) {
   base::FilePath path;
-  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
     callback.Run(error, false);
     return;
   }
 
   bool exists = base::PathExists(path);
-  callback.Run(FILE_ERROR_OK, exists);
+  callback.Run(FileError::OK, exists);
 }
 
 void DirectoryImpl::IsWritable(const mojo::String& raw_path,
                                const IsWritableCallback& callback) {
   base::FilePath path;
-  if (FileError error = ValidatePath(raw_path, directory_path_, &path)) {
+  FileError error = ValidatePath(raw_path, directory_path_, &path);
+  if (error != FileError::OK) {
     callback.Run(error, false);
     return;
   }
 
-  callback.Run(FILE_ERROR_OK, base::PathIsWritable(path));
+  callback.Run(FileError::OK, base::PathIsWritable(path));
 }
 
 void DirectoryImpl::Flush(const FlushCallback& callback) {
   base::File file(directory_path_, base::File::FLAG_READ);
   if (!file.IsValid()) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
   if (!file.Flush()) {
-    callback.Run(FILE_ERROR_FAILED);
+    callback.Run(FileError::FAILED);
     return;
   }
 
-  callback.Run(FILE_ERROR_OK);
+  callback.Run(FileError::OK);
 }
 
 }  // namespace filesystem

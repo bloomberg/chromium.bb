@@ -97,18 +97,18 @@ void MojoDemuxerStreamAdapter::OnBufferReady(
   DCHECK_NE(type_, DemuxerStream::UNKNOWN);
   DCHECK(stream_pipe_.is_valid());
 
-  if (status == interfaces::DemuxerStream::STATUS_CONFIG_CHANGED) {
+  if (status == interfaces::DemuxerStream::Status::CONFIG_CHANGED) {
     UpdateConfig(std::move(audio_config), std::move(video_config));
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kConfigChanged, nullptr);
     return;
   }
 
-  if (status == interfaces::DemuxerStream::STATUS_ABORTED) {
+  if (status == interfaces::DemuxerStream::Status::ABORTED) {
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
     return;
   }
 
-  DCHECK_EQ(status, interfaces::DemuxerStream::STATUS_OK);
+  DCHECK_EQ(status, interfaces::DemuxerStream::Status::OK);
   scoped_refptr<DecoderBuffer> media_buffer(
       buffer.To<scoped_refptr<DecoderBuffer>>());
 

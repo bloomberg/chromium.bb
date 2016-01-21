@@ -28,8 +28,8 @@ class LastRequestResultCache {
                  const GURL& requesting_origin,
                  const GURL& embedding_origin,
                  PermissionStatus status) {
-    DCHECK(status == content::PERMISSION_STATUS_GRANTED ||
-           status == content::PERMISSION_STATUS_DENIED);
+    DCHECK(status == content::PermissionStatus::GRANTED ||
+           status == content::PermissionStatus::DENIED);
 
     // TODO(ddorwin): We should be denying empty origins at a higher level.
     if (requesting_origin.is_empty() || embedding_origin.is_empty()) {
@@ -66,7 +66,7 @@ class LastRequestResultCache {
                              const GURL& embedding_origin) const {
     // TODO(ddorwin): We should be denying empty origins at a higher level.
     if (requesting_origin.is_empty() || embedding_origin.is_empty()) {
-      return content::PERMISSION_STATUS_ASK;
+      return content::PermissionStatus::ASK;
     }
 
     DCHECK(requesting_origin.is_valid())
@@ -76,14 +76,14 @@ class LastRequestResultCache {
 
     if (permission != PermissionType::PROTECTED_MEDIA_IDENTIFIER) {
       NOTREACHED() << "Results are only cached for PROTECTED_MEDIA_IDENTIFIER";
-      return content::PERMISSION_STATUS_ASK;
+      return content::PermissionStatus::ASK;
     }
 
     std::string key = GetCacheKey(requesting_origin, embedding_origin);
     StatusMap::const_iterator it = pmi_result_cache_.find(key);
     if (it == pmi_result_cache_.end()) {
       DLOG(WARNING) << "GetResult() called for uncached origins: " << key;
-      return content::PERMISSION_STATUS_ASK;
+      return content::PermissionStatus::ASK;
     }
 
     DCHECK(!key.empty());
@@ -179,7 +179,7 @@ int AwPermissionManager::RequestPermission(
   if (!delegate) {
     DVLOG(0) << "Dropping permission request for "
              << static_cast<int>(permission);
-    callback.Run(content::PERMISSION_STATUS_DENIED);
+    callback.Run(content::PermissionStatus::DENIED);
     return kNoPendingOperation;
   }
 
@@ -245,14 +245,14 @@ int AwPermissionManager::RequestPermission(
     case PermissionType::DURABLE_STORAGE:
       NOTIMPLEMENTED() << "RequestPermission is not implemented for "
                        << static_cast<int>(permission);
-      callback.Run(content::PERMISSION_STATUS_DENIED);
+      callback.Run(content::PermissionStatus::DENIED);
       break;
     case PermissionType::MIDI:
-      callback.Run(content::PERMISSION_STATUS_GRANTED);
+      callback.Run(content::PermissionStatus::GRANTED);
       break;
     case PermissionType::NUM:
       NOTREACHED() << "PermissionType::NUM was not expected here.";
-      callback.Run(content::PERMISSION_STATUS_DENIED);
+      callback.Run(content::PermissionStatus::DENIED);
       break;
   }
   return request_id;
@@ -287,8 +287,8 @@ void AwPermissionManager::OnRequestResponse(
     int request_id,
     const base::Callback<void(PermissionStatus)>& callback,
     bool allowed) {
-  PermissionStatus status = allowed ? content::PERMISSION_STATUS_GRANTED
-                                    : content::PERMISSION_STATUS_DENIED;
+  PermissionStatus status = allowed ? content::PermissionStatus::GRANTED
+                                    : content::PermissionStatus::DENIED;
   if (manager.get()) {
     PendingRequest* pending_request =
         manager->pending_requests_.Lookup(request_id);
@@ -391,10 +391,10 @@ PermissionStatus AwPermissionManager::GetPermissionStatus(
     return result_cache_->GetResult(permission, requesting_origin,
                                     embedding_origin);
   } else if (permission == PermissionType::MIDI) {
-    return content::PERMISSION_STATUS_GRANTED;
+    return content::PermissionStatus::GRANTED;
   }
 
-  return content::PERMISSION_STATUS_DENIED;
+  return content::PermissionStatus::DENIED;
 }
 
 void AwPermissionManager::RegisterPermissionUsage(

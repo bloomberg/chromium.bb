@@ -100,10 +100,9 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
   DVLOG(2) << "HTMLFrameTreeManager::CreateFrameAndAttachToTree "
            << " frame_tree=" << frame_tree << " use_existing="
            << (window_connect_type ==
-               web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING)
+               web_view::mojom::WindowConnectType::USE_EXISTING)
            << " frame_id=" << window_id;
-  if (window_connect_type ==
-          web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING &&
+  if (window_connect_type == web_view::mojom::WindowConnectType::USE_EXISTING &&
       !frame_tree) {
     DVLOG(1) << "was told to use existing window but do not have frame tree";
     return nullptr;
@@ -114,7 +113,7 @@ HTMLFrame* HTMLFrameTreeManager::CreateFrameAndAttachToTree(
     frame_tree->Init(delegate, window, frame_data, change_id);
     (*instances_)[frame_data[0]->frame_id] = frame_tree;
   } else if (window_connect_type ==
-             web_view::mojom::WINDOW_CONNECT_TYPE_USE_EXISTING) {
+             web_view::mojom::WindowConnectType::USE_EXISTING) {
     HTMLFrame* existing_frame = frame_tree->root_->FindFrame(window_id);
     if (!existing_frame) {
       DVLOG(1) << "was told to use existing window but could not find window";

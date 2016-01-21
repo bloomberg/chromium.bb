@@ -63,7 +63,7 @@ void WindowTreeHostConnectionImpl::OnDisplayInitialized() {
   connection_manager()->AddHost(this);
   set_window_tree(connection_manager()->EmbedAtWindow(
       window_tree_host()->root_window(),
-      mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, std::move(client_)));
+      mojom::WindowTree::kAccessPolicyEmbedRoot, std::move(client_)));
 }
 
 }  // namespace ws

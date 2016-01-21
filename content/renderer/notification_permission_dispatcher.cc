@@ -37,7 +37,7 @@ void NotificationPermissionDispatcher::RequestPermission(
   // base::Unretained is safe here because the Mojo channel, with associated
   // callbacks, will be deleted before the "this" instance is deleted.
   permission_service_->RequestPermission(
-      PERMISSION_NAME_NOTIFICATIONS, origin.toString().utf8(),
+      PermissionName::NOTIFICATIONS, origin.toString().utf8(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&NotificationPermissionDispatcher::OnPermissionRequestComplete,
                  base::Unretained(this),
@@ -52,13 +52,13 @@ void NotificationPermissionDispatcher::OnPermissionRequestComplete(
   blink::WebNotificationPermission permission =
       blink::WebNotificationPermissionDefault;
   switch (status) {
-    case PERMISSION_STATUS_GRANTED:
+    case PermissionStatus::GRANTED:
       permission = blink::WebNotificationPermissionAllowed;
       break;
-    case PERMISSION_STATUS_DENIED:
+    case PermissionStatus::DENIED:
       permission = blink::WebNotificationPermissionDenied;
       break;
-    case PERMISSION_STATUS_ASK:
+    case PermissionStatus::ASK:
       permission = blink::WebNotificationPermissionDefault;
       break;
   }

@@ -120,7 +120,7 @@ TEST_F(SurfaceLibQuadTest, ColorQuad) {
 
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*color_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::MATERIAL_SOLID_COLOR, mus_quad->material);
+  EXPECT_EQ(mus::mojom::Material::SOLID_COLOR, mus_quad->material);
   EXPECT_TRUE(Rect::From(rect).Equals(mus_quad->rect));
   EXPECT_TRUE(Rect::From(opaque_rect).Equals(mus_quad->opaque_rect));
   EXPECT_TRUE(Rect::From(visible_rect).Equals(mus_quad->visible_rect));
@@ -140,7 +140,7 @@ TEST_F(SurfaceLibQuadTest, SurfaceQuad) {
 
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*surface_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::MATERIAL_SURFACE_CONTENT, mus_quad->material);
+  EXPECT_EQ(mus::mojom::Material::SURFACE_CONTENT, mus_quad->material);
   ASSERT_TRUE(mus_quad->surface_quad_state);
   SurfaceQuadStatePtr& mus_surface_state = mus_quad->surface_quad_state;
   EXPECT_TRUE(SurfaceId::From(arbitrary_id).Equals(mus_surface_state->surface));
@@ -164,7 +164,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
 
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*texture_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::MATERIAL_TEXTURE_CONTENT, mus_quad->material);
+  EXPECT_EQ(mus::mojom::Material::TEXTURE_CONTENT, mus_quad->material);
   ASSERT_TRUE(mus_quad->texture_quad_state);
   TextureQuadStatePtr& mus_texture_state = mus_quad->texture_quad_state;
   EXPECT_EQ(resource_id, mus_texture_state->resource_id);
@@ -182,7 +182,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuad) {
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
   QuadPtr mus_texture_quad = Quad::New();
-  mus_texture_quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
+  mus_texture_quad->material = mus::mojom::Material::TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->background_color = Color::New();
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
@@ -201,7 +201,7 @@ TEST_F(SurfaceLibQuadTest, TextureQuadEmptyVertexOpacity) {
 
 TEST_F(SurfaceLibQuadTest, TextureQuadEmptyBackgroundColor) {
   QuadPtr mus_texture_quad = Quad::New();
-  mus_texture_quad->material = mus::mojom::MATERIAL_TEXTURE_CONTENT;
+  mus_texture_quad->material = mus::mojom::Material::TEXTURE_CONTENT;
   TextureQuadStatePtr mus_texture_state = TextureQuadState::New();
   mus_texture_state->vertex_opacity = mojo::Array<float>::New(4);
   mus_texture_quad->texture_quad_state = std::move(mus_texture_state);
@@ -498,7 +498,7 @@ TEST_F(SurfaceLibQuadTest, DebugBorderQuad) {
 
   QuadPtr mus_quad = Quad::From<cc::DrawQuad>(*debug_border_quad);
   ASSERT_FALSE(mus_quad.is_null());
-  EXPECT_EQ(mus::mojom::MATERIAL_DEBUG_BORDER, mus_quad->material);
+  EXPECT_EQ(mus::mojom::Material::DEBUG_BORDER, mus_quad->material);
   EXPECT_TRUE(Rect::From(rect).Equals(mus_quad->rect));
   EXPECT_TRUE(Rect::From(opaque_rect).Equals(mus_quad->opaque_rect));
   EXPECT_TRUE(Rect::From(visible_rect).Equals(mus_quad->visible_rect));

@@ -23,46 +23,46 @@ namespace {
 PermissionName GetPermissionName(blink::WebPermissionType type) {
   switch (type) {
     case blink::WebPermissionTypeGeolocation:
-      return PERMISSION_NAME_GEOLOCATION;
+      return PermissionName::GEOLOCATION;
     case blink::WebPermissionTypeNotifications:
-      return PERMISSION_NAME_NOTIFICATIONS;
+      return PermissionName::NOTIFICATIONS;
     case blink::WebPermissionTypePushNotifications:
-      return PERMISSION_NAME_PUSH_NOTIFICATIONS;
+      return PermissionName::PUSH_NOTIFICATIONS;
     case blink::WebPermissionTypeMidiSysEx:
-      return PERMISSION_NAME_MIDI_SYSEX;
+      return PermissionName::MIDI_SYSEX;
     case blink::WebPermissionTypeDurableStorage:
-        return PERMISSION_NAME_DURABLE_STORAGE;
+      return PermissionName::DURABLE_STORAGE;
     case blink::WebPermissionTypeMidi:
-      return PERMISSION_NAME_MIDI;
+      return PermissionName::MIDI;
     default:
       // The default statement is only there to prevent compilation failures if
       // WebPermissionType enum gets extended.
       NOTREACHED();
-      return PERMISSION_NAME_GEOLOCATION;
+      return PermissionName::GEOLOCATION;
   }
 }
 
 PermissionStatus GetPermissionStatus(blink::WebPermissionStatus status) {
   switch (status) {
     case blink::WebPermissionStatusGranted:
-      return PERMISSION_STATUS_GRANTED;
+      return PermissionStatus::GRANTED;
     case blink::WebPermissionStatusDenied:
-      return PERMISSION_STATUS_DENIED;
+      return PermissionStatus::DENIED;
     case blink::WebPermissionStatusPrompt:
-      return PERMISSION_STATUS_ASK;
+      return PermissionStatus::ASK;
   }
 
   NOTREACHED();
-  return PERMISSION_STATUS_DENIED;
+  return PermissionStatus::DENIED;
 }
 
 blink::WebPermissionStatus GetWebPermissionStatus(PermissionStatus status) {
   switch (status) {
-    case PERMISSION_STATUS_GRANTED:
+    case PermissionStatus::GRANTED:
       return blink::WebPermissionStatusGranted;
-    case PERMISSION_STATUS_DENIED:
+    case PermissionStatus::DENIED:
       return blink::WebPermissionStatusDenied;
-    case PERMISSION_STATUS_ASK:
+    case PermissionStatus::ASK:
       return blink::WebPermissionStatusPrompt;
   }
 
@@ -130,16 +130,14 @@ void PermissionDispatcher::startListening(
 
   RegisterObserver(observer);
 
-  GetNextPermissionChange(type,
-                          origin.string().utf8(),
-                          observer,
+  GetNextPermissionChange(type, origin.string().utf8(), observer,
                           // We initialize with an arbitrary value because the
                           // mojo service wants a value. Worst case, the
                           // observer will get notified about a non-change which
                           // should be a no-op. After the first notification,
                           // GetNextPermissionChange will be called with the
                           // latest known value.
-                          PERMISSION_STATUS_ASK);
+                          PermissionStatus::ASK);
 }
 
 void PermissionDispatcher::stopListening(WebPermissionObserver* observer) {
@@ -184,17 +182,14 @@ void PermissionDispatcher::StartListeningForWorker(
     int worker_thread_id,
     const base::Callback<void(blink::WebPermissionStatus)>& callback) {
   GetPermissionServicePtr()->GetNextPermissionChange(
-      GetPermissionName(type),
-      origin,
+      GetPermissionName(type), origin,
       // We initialize with an arbitrary value because the mojo service wants a
       // value. Worst case, the observer will get notified about a non-change
       // which should be a no-op. After the first notification,
       // GetNextPermissionChange will be called with the latest known value.
-      PERMISSION_STATUS_ASK,
+      PermissionStatus::ASK,
       base::Bind(&PermissionDispatcher::OnPermissionChangedForWorker,
-                 base::Unretained(this),
-                 worker_thread_id,
-                 callback));
+                 base::Unretained(this), worker_thread_id, callback));
 }
 
 void PermissionDispatcher::GetNextPermissionChangeForWorker(

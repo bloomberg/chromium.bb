@@ -199,28 +199,28 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
 #endif
   }
 
-  DCHECK(options().data_bits != serial::DATA_BITS_NONE);
+  DCHECK(options().data_bits != serial::DataBits::NONE);
   config.c_cflag &= ~CSIZE;
   switch (options().data_bits) {
-    case serial::DATA_BITS_SEVEN:
+    case serial::DataBits::SEVEN:
       config.c_cflag |= CS7;
       break;
-    case serial::DATA_BITS_EIGHT:
+    case serial::DataBits::EIGHT:
     default:
       config.c_cflag |= CS8;
       break;
   }
 
-  DCHECK(options().parity_bit != serial::PARITY_BIT_NONE);
+  DCHECK(options().parity_bit != serial::ParityBit::NONE);
   switch (options().parity_bit) {
-    case serial::PARITY_BIT_EVEN:
+    case serial::ParityBit::EVEN:
       config.c_cflag |= PARENB;
       config.c_cflag &= ~PARODD;
       break;
-    case serial::PARITY_BIT_ODD:
+    case serial::ParityBit::ODD:
       config.c_cflag |= (PARODD | PARENB);
       break;
-    case serial::PARITY_BIT_NO:
+    case serial::ParityBit::NO:
     default:
       config.c_cflag &= ~(PARODD | PARENB);
       break;
@@ -239,12 +239,12 @@ bool SerialIoHandlerPosix::ConfigurePortImpl() {
     parity_check_enabled_ = false;
   }
 
-  DCHECK(options().stop_bits != serial::STOP_BITS_NONE);
+  DCHECK(options().stop_bits != serial::StopBits::NONE);
   switch (options().stop_bits) {
-    case serial::STOP_BITS_TWO:
+    case serial::StopBits::TWO:
       config.c_cflag |= CSTOPB;
       break;
-    case serial::STOP_BITS_ONE:
+    case serial::StopBits::ONE:
     default:
       config.c_cflag &= ~CSTOPB;
       break;
@@ -300,12 +300,12 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
                                        pending_read_buffer_len()));
     if (bytes_read < 0) {
       if (errno == ENXIO) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_DEVICE_LOST);
+        ReadCompleted(0, serial::ReceiveError::DEVICE_LOST);
       } else {
-        ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
       }
     } else if (bytes_read == 0) {
-      ReadCompleted(0, serial::RECEIVE_ERROR_DEVICE_LOST);
+      ReadCompleted(0, serial::ReceiveError::DEVICE_LOST);
     } else {
       bool break_detected = false;
       bool parity_error_detected = false;
@@ -314,11 +314,11 @@ void SerialIoHandlerPosix::OnFileCanReadWithoutBlocking(int fd) {
                             bytes_read, break_detected, parity_error_detected);
 
       if (break_detected) {
-        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_BREAK);
+        ReadCompleted(new_bytes_read, serial::ReceiveError::BREAK);
       } else if (parity_error_detected) {
-        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_PARITY_ERROR);
+        ReadCompleted(new_bytes_read, serial::ReceiveError::PARITY_ERROR);
       } else {
-        ReadCompleted(new_bytes_read, serial::RECEIVE_ERROR_NONE);
+        ReadCompleted(new_bytes_read, serial::ReceiveError::NONE);
       }
     }
   } else {
@@ -338,9 +338,9 @@ void SerialIoHandlerPosix::OnFileCanWriteWithoutBlocking(int fd) {
                                            pending_write_buffer(),
                                            pending_write_buffer_len()));
     if (bytes_written < 0) {
-      WriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
+      WriteCompleted(0, serial::SendError::SYSTEM_ERROR);
     } else {
-      WriteCompleted(bytes_written, serial::SEND_ERROR_NONE);
+      WriteCompleted(bytes_written, serial::SendError::NONE);
     }
   } else {
     // Stop watching the fd if we get notifications with no pending
@@ -463,20 +463,20 @@ serial::ConnectionInfoPtr SerialIoHandlerPosix::GetPortInfo() const {
 #endif
 
   if ((config.c_cflag & CSIZE) == CS7) {
-    info->data_bits = serial::DATA_BITS_SEVEN;
+    info->data_bits = serial::DataBits::SEVEN;
   } else if ((config.c_cflag & CSIZE) == CS8) {
-    info->data_bits = serial::DATA_BITS_EIGHT;
+    info->data_bits = serial::DataBits::EIGHT;
   } else {
-    info->data_bits = serial::DATA_BITS_NONE;
+    info->data_bits = serial::DataBits::NONE;
   }
   if (config.c_cflag & PARENB) {
-    info->parity_bit = (config.c_cflag & PARODD) ? serial::PARITY_BIT_ODD
-                                                 : serial::PARITY_BIT_EVEN;
+    info->parity_bit = (config.c_cflag & PARODD) ? serial::ParityBit::ODD
+                                                 : serial::ParityBit::EVEN;
   } else {
-    info->parity_bit = serial::PARITY_BIT_NO;
+    info->parity_bit = serial::ParityBit::NO;
   }
   info->stop_bits =
-      (config.c_cflag & CSTOPB) ? serial::STOP_BITS_TWO : serial::STOP_BITS_ONE;
+      (config.c_cflag & CSTOPB) ? serial::StopBits::TWO : serial::StopBits::ONE;
   info->cts_flow_control = (config.c_cflag & CRTSCTS) != 0;
   return info;
 }

@@ -528,7 +528,7 @@ void BackgroundSyncManager::RegisterImpl(
 
     if (existing_registration->IsFiring()) {
       existing_registration->set_sync_state(
-          BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING);
+          BackgroundSyncState::REREGISTERED_WHILE_FIRING);
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -965,7 +965,7 @@ void BackgroundSyncManager::NotifyWhenFinished(
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                              BACKGROUND_SYNC_STATE_FAILED));
+                              BackgroundSyncState::FAILED));
     return;
   }
 
@@ -987,7 +987,7 @@ void BackgroundSyncManager::NotifyWhenFinishedImpl(
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                              BACKGROUND_SYNC_STATE_FAILED));
+                              BackgroundSyncState::FAILED));
     return;
   }
 
@@ -1087,7 +1087,7 @@ bool BackgroundSyncManager::IsRegistrationReadyToFire(
   if (registration.options()->periodicity == SYNC_PERIODIC)
     return false;
 
-  if (registration.sync_state() != BACKGROUND_SYNC_STATE_PENDING)
+  if (registration.sync_state() != BackgroundSyncState::PENDING)
     return false;
 
   if (clock_->Now() < registration.delay_until())
@@ -1107,7 +1107,7 @@ void BackgroundSyncManager::RunInBackgroundIfNecessary() {
          sw_id_and_registrations.second.registration_map) {
       const BackgroundSyncRegistration& registration =
           *key_and_registration.second->value();
-      if (registration.sync_state() == BACKGROUND_SYNC_STATE_PENDING) {
+      if (registration.sync_state() == BackgroundSyncState::PENDING) {
         if (registration.options()->periodicity == SYNC_ONE_SHOT) {
           if (clock_->Now() >= registration.delay_until()) {
             soonest_wakeup_delta = base::TimeDelta();
@@ -1185,7 +1185,7 @@ void BackgroundSyncManager::FireReadyEventsImpl(const base::Closure& callback) {
         // The state change is not saved to persistent storage because
         // if the sync event is killed mid-sync then it should return to
         // SYNC_STATE_PENDING.
-        registration->set_sync_state(BACKGROUND_SYNC_STATE_FIRING);
+        registration->set_sync_state(BackgroundSyncState::FIRING);
       }
     }
   }
@@ -1261,8 +1261,8 @@ void BackgroundSyncManager::FireReadyEventsDidFindRegistration(
   BackgroundSyncEventLastChance last_chance =
       registration->value()->num_attempts() ==
               parameters_->max_sync_attempts - 1
-          ? BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_LAST_CHANCE
-          : BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_NOT_LAST_CHANCE;
+          ? BackgroundSyncEventLastChance::IS_LAST_CHANCE
+          : BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE;
 
   HasMainFrameProviderHost(
       service_worker_registration->pattern().GetOrigin(),
@@ -1338,31 +1338,31 @@ void BackgroundSyncManager::EventCompleteImpl(
 
   if (registration->options()->periodicity == SYNC_ONE_SHOT) {
     if (registration->sync_state() ==
-        BACKGROUND_SYNC_STATE_REREGISTERED_WHILE_FIRING) {
-      registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
+        BackgroundSyncState::REREGISTERED_WHILE_FIRING) {
+      registration->set_sync_state(BackgroundSyncState::PENDING);
       registration->set_num_attempts(0);
     } else if (status_code != SERVICE_WORKER_OK) {  // Sync failed
       bool can_retry =
           registration->num_attempts() < parameters_->max_sync_attempts;
       if (registration->sync_state() ==
-          BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING) {
+          BackgroundSyncState::UNREGISTERED_WHILE_FIRING) {
         registration->set_sync_state(can_retry
-                                         ? BACKGROUND_SYNC_STATE_UNREGISTERED
-                                         : BACKGROUND_SYNC_STATE_FAILED);
+                                         ? BackgroundSyncState::UNREGISTERED
+                                         : BackgroundSyncState::FAILED);
         registration->RunFinishedCallbacks();
       } else if (can_retry) {
-        registration->set_sync_state(BACKGROUND_SYNC_STATE_PENDING);
+        registration->set_sync_state(BackgroundSyncState::PENDING);
         registration->set_delay_until(
             clock_->Now() +
             parameters_->initial_retry_delay *
                 pow(parameters_->retry_delay_factor,
                     registration->num_attempts() - 1));
       } else {
-        registration->set_sync_state(BACKGROUND_SYNC_STATE_FAILED);
+        registration->set_sync_state(BackgroundSyncState::FAILED);
         registration->RunFinishedCallbacks();
       }
     } else {  // Sync succeeded
-      registration->set_sync_state(BACKGROUND_SYNC_STATE_SUCCESS);
+      registration->set_sync_state(BackgroundSyncState::SUCCESS);
       registration->RunFinishedCallbacks();
     }
 

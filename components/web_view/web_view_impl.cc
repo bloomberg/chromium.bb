@@ -255,12 +255,11 @@ void WebViewImpl::OnNavigate(mojo::URLRequestPtr request) {
 }
 
 void WebViewImpl::OnDidNavigate() {
-  client_->BackForwardChanged(navigation_controller_.CanGoBack()
-                                  ? ButtonState::BUTTON_STATE_ENABLED
-                                  : ButtonState::BUTTON_STATE_DISABLED,
-                              navigation_controller_.CanGoForward()
-                                  ? ButtonState::BUTTON_STATE_ENABLED
-                                  : ButtonState::BUTTON_STATE_DISABLED);
+  client_->BackForwardChanged(
+      navigation_controller_.CanGoBack() ? ButtonState::ENABLED
+                                         : ButtonState::DISABLED,
+      navigation_controller_.CanGoForward() ? ButtonState::ENABLED
+                                            : ButtonState::DISABLED);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

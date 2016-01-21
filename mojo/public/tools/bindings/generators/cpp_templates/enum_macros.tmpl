@@ -4,12 +4,12 @@
   which case associated functions need to be static.
 ---#}
 {%- macro enum_decl(enum, is_static=false) %}
-enum {{enum.name}} : int32_t {
+enum class {{enum.name}} : int32_t {
 {%- for field in enum.fields %}
 {%-    if field.value %}
-  {{enum.name|to_all_caps}}_{{field.name}} = {{field.value|expression_to_text}},
+  {{field.name}} = {{field.value|expression_to_text}},
 {%-    else %}
-  {{enum.name|to_all_caps}}_{{field.name}},
+  {{field.name}},
 {%-    endif %}
 {%- endfor %}
 };
@@ -25,6 +25,27 @@ enum {{enum.name}} : int32_t {
 {%- macro is_valid_enum_decl(enum, is_static=false) %}
 {% if is_static %}static {% endif -%}
 bool {{enum.name}}_IsValidValue({{enum.name}} value);
+{%- endmacro %}
+
+{%- macro enum_stream_operator(enum) %}
+inline std::ostream& operator<<(std::ostream& os, {{enum|get_name_for_kind}} value) {
+  switch(value) {
+{%- for _, values in enum.fields|groupby('numeric_value') %}
+    case {{enum|get_name_for_kind}}::{{values[0].name}}:
+      return os << "{{enum|get_name_for_kind}}::
+{%-   if values|length > 1 -%}
+      {{'{'}}
+{%-   endif -%}
+      {{values|map(attribute='name')|join(', ')}}
+{%-   if values|length > 1 -%}
+      {{'}'}}
+{%-   endif -%}
+      ";
+{%- endfor %}
+    default:
+      return os << "Unknown {{enum|get_name_for_kind}} value: " << static_cast<int32_t>(value);
+  }
+}
 {%- endmacro %}
 
 {%- macro is_valid_enum_def(enum, class_name = '') %}

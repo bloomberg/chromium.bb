@@ -35,8 +35,8 @@ SerialConnection::SerialConnection(
 SerialConnection::~SerialConnection() {
   receiver_->ShutDown();
   sender_->ShutDown();
-  io_handler_->CancelRead(serial::RECEIVE_ERROR_DISCONNECTED);
-  io_handler_->CancelWrite(serial::SEND_ERROR_DISCONNECTED);
+  io_handler_->CancelRead(serial::ReceiveError::DISCONNECTED);
+  io_handler_->CancelWrite(serial::SendError::DISCONNECTED);
 }
 
 void SerialConnection::GetInfo(
@@ -47,7 +47,7 @@ void SerialConnection::GetInfo(
 void SerialConnection::SetOptions(serial::ConnectionOptionsPtr options,
                                   const mojo::Callback<void(bool)>& callback) {
   callback.Run(io_handler_->ConfigurePort(*options));
-  io_handler_->CancelRead(device::serial::RECEIVE_ERROR_NONE);
+  io_handler_->CancelRead(device::serial::ReceiveError::NONE);
 }
 
 void SerialConnection::SetControlSignals(

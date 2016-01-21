@@ -11,7 +11,7 @@
 namespace mojo {
 
 #define TEXT_INPUT_TYPE_ASSERT(NAME, Name)                               \
-  static_assert(static_cast<int32_t>(TEXT_INPUT_TYPE_##NAME) ==          \
+  static_assert(static_cast<int32_t>(TextInputType::NAME) ==             \
                     static_cast<int32_t>(blink::WebTextInputType##Name), \
                 "text_input_type should match")
 TEXT_INPUT_TYPE_ASSERT(NONE, None);
@@ -31,7 +31,7 @@ TEXT_INPUT_TYPE_ASSERT(WEEK, Week);
 TEXT_INPUT_TYPE_ASSERT(TEXT_AREA, TextArea);
 
 #define TEXT_INPUT_FLAG_ASSERT(NAME, Name)                               \
-  static_assert(static_cast<int32_t>(TEXT_INPUT_FLAG_##NAME) ==          \
+  static_assert(static_cast<int32_t>(TextInputFlag::NAME) ==             \
                     static_cast<int32_t>(blink::WebTextInputFlag##Name), \
                 "text_input_flag should match")
 TEXT_INPUT_FLAG_ASSERT(NONE, None);

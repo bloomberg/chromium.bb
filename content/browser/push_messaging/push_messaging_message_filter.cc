@@ -457,7 +457,7 @@ void PushMessagingMessageFilter::Core::DidRequestPermissionInIncognito(
     PermissionStatus status) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notification permission should always be denied in incognito.
-  DCHECK_EQ(PERMISSION_STATUS_DENIED, status);
+  DCHECK_EQ(PermissionStatus::DENIED, status);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&PushMessagingMessageFilter::SendSubscriptionError, io_parent_,

@@ -39,8 +39,8 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
   bool IsFiring() const;
 
   // If the registration is currently firing, sets its state to
-  // BACKGROUND_SYNC_STATE_UNREGISTERED_WHILE_FIRING. If it is firing, it sets
-  // the state to BACKGROUND_SYNC_STATE_UNREGISTERED and calls
+  // BackgroundSyncState::UNREGISTERED_WHILE_FIRING. If it is firing, it sets
+  // the state to BackgroundSyncState::UNREGISTERED and calls
   // RunFinishedCallbacks.
   void SetUnregisteredState();
 
@@ -64,7 +64,7 @@ class CONTENT_EXPORT BackgroundSyncRegistration {
 
   BackgroundSyncRegistrationOptions options_;
   RegistrationId id_ = kInvalidRegistrationId;
-  BackgroundSyncState sync_state_ = BACKGROUND_SYNC_STATE_PENDING;
+  BackgroundSyncState sync_state_ = BackgroundSyncState::PENDING;
   int num_attempts_ = 0;
   base::Time delay_until_;
 

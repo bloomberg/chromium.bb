@@ -33,7 +33,7 @@ bool EventsCanBeCoalesced(const mojom::Event& one, const mojom::Event& two) {
   if (one.action != two.action || one.flags != two.flags)
     return false;
   // TODO(sad): wheel events can also be merged.
-  if (one.action != mojom::EVENT_TYPE_POINTER_MOVE)
+  if (one.action != mojom::EventType::POINTER_MOVE)
     return false;
   DCHECK(one.pointer_data);
   DCHECK(two.pointer_data);
@@ -45,7 +45,7 @@ bool EventsCanBeCoalesced(const mojom::Event& one, const mojom::Event& two) {
 }
 
 mojom::EventPtr CoalesceEvents(mojom::EventPtr first, mojom::EventPtr second) {
-  DCHECK_EQ(first->action, mojom::EVENT_TYPE_POINTER_MOVE)
+  DCHECK_EQ(first->action, mojom::EventType::POINTER_MOVE)
       << " Non-move events cannot be merged yet.";
   // For mouse moves, the new event just replaces the old event.
   return second;
@@ -328,7 +328,7 @@ void WindowTreeHostImpl::DispatchInputEventToWindowImpl(ServerWindow* target,
                                                         bool in_nonclient_area,
                                                         mojom::EventPtr event) {
   if (event->pointer_data &&
-      event->pointer_data->kind == mojom::PointerKind::POINTER_KIND_MOUSE) {
+      event->pointer_data->kind == mojom::PointerKind::MOUSE) {
     DCHECK(event_dispatcher_.mouse_cursor_source_window());
     UpdateNativeCursor(
         event_dispatcher_.mouse_cursor_source_window()->cursor());

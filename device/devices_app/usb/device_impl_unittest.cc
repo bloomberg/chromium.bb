@@ -379,7 +379,7 @@ TEST_F(USBDeviceImplTest, Open) {
 
   base::RunLoop loop;
   device->Open(
-      base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK, loop.QuitClosure()));
+      base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK, loop.QuitClosure()));
   loop.Run();
 
   EXPECT_CALL(mock_handle(), Close());
@@ -394,7 +394,7 @@ TEST_F(USBDeviceImplTest, Close) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -430,7 +430,7 @@ TEST_F(USBDeviceImplTest, SetInvalidConfiguration) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -456,7 +456,7 @@ TEST_F(USBDeviceImplTest, SetValidConfiguration) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -485,7 +485,7 @@ TEST_F(USBDeviceImplTest, Reset) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -520,7 +520,7 @@ TEST_F(USBDeviceImplTest, ClaimAndReleaseInterface) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -588,7 +588,7 @@ TEST_F(USBDeviceImplTest, SetInterfaceAlternateSetting) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -626,7 +626,7 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -656,15 +656,15 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   {
     auto params = ControlTransferParams::New();
-    params->type = CONTROL_TRANSFER_TYPE_STANDARD;
-    params->recipient = CONTROL_TRANSFER_RECIPIENT_DEVICE;
+    params->type = ControlTransferType::STANDARD;
+    params->recipient = ControlTransferRecipient::DEVICE;
     params->request = 5;
     params->value = 6;
     params->index = 7;
     base::RunLoop loop;
     device->ControlTransferIn(
         std::move(params), static_cast<uint32_t>(fake_data.size()), 0,
-        base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
+        base::Bind(&ExpectTransferInAndThen, TransferStatus::COMPLETED,
                    fake_data, loop.QuitClosure()));
     loop.Run();
   }
@@ -678,15 +678,15 @@ TEST_F(USBDeviceImplTest, ControlTransfer) {
 
   {
     auto params = ControlTransferParams::New();
-    params->type = CONTROL_TRANSFER_TYPE_STANDARD;
-    params->recipient = CONTROL_TRANSFER_RECIPIENT_INTERFACE;
+    params->type = ControlTransferType::STANDARD;
+    params->recipient = ControlTransferRecipient::INTERFACE;
     params->request = 5;
     params->value = 6;
     params->index = 7;
     base::RunLoop loop;
     device->ControlTransferOut(
         std::move(params), mojo::Array<uint8_t>::From(fake_data), 0,
-        base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
+        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
@@ -701,7 +701,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -725,7 +725,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferOut(
         1, mojo::Array<uint8_t>::From(fake_outbound_data), 0,
-        base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
+        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
@@ -737,7 +737,7 @@ TEST_F(USBDeviceImplTest, GenericTransfer) {
     base::RunLoop loop;
     device->GenericTransferIn(
         1, static_cast<uint32_t>(fake_inbound_data.size()), 0,
-        base::Bind(&ExpectTransferInAndThen, TRANSFER_STATUS_COMPLETED,
+        base::Bind(&ExpectTransferInAndThen, TransferStatus::COMPLETED,
                    fake_inbound_data, loop.QuitClosure()));
     loop.Run();
   }
@@ -752,7 +752,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
 
   {
     base::RunLoop loop;
-    device->Open(base::Bind(&ExpectOpenAndThen, OPEN_DEVICE_ERROR_OK,
+    device->Open(base::Bind(&ExpectOpenAndThen, OpenDeviceError::OK,
                             loop.QuitClosure()));
     loop.Run();
   }
@@ -787,7 +787,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
     }
     device->IsochronousTransferOut(
         1, std::move(packets), 0,
-        base::Bind(&ExpectTransferStatusAndThen, TRANSFER_STATUS_COMPLETED,
+        base::Bind(&ExpectTransferStatusAndThen, TransferStatus::COMPLETED,
                    loop.QuitClosure()));
     loop.Run();
   }
@@ -805,7 +805,7 @@ TEST_F(USBDeviceImplTest, IsochronousTransfer) {
                 inbound_packet_data.begin() + i * 8 + 8, packets[i].begin());
     }
     device->IsochronousTransferIn(
-        1, 4, 8, 0, base::Bind(&ExpectPacketsAndThen, TRANSFER_STATUS_COMPLETED,
+        1, 4, 8, 0, base::Bind(&ExpectPacketsAndThen, TransferStatus::COMPLETED,
                                packets, loop.QuitClosure()));
     loop.Run();
   }

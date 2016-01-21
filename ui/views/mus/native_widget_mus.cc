@@ -155,16 +155,15 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
 };
 
-mus::mojom::ResizeBehavior ResizeBehaviorFromDelegate(
-    WidgetDelegate* delegate) {
-  int32_t behavior = mus::mojom::RESIZE_BEHAVIOR_NONE;
+int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
+  int32_t behavior = mus::mojom::kResizeBehaviorNone;
   if (delegate->CanResize())
-    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_RESIZE;
+    behavior |= mus::mojom::kResizeBehaviorCanResize;
   if (delegate->CanMaximize())
-    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_MAXIMIZE;
+    behavior |= mus::mojom::kResizeBehaviorCanMaximize;
   if (delegate->CanMinimize())
-    behavior |= mus::mojom::RESIZE_BEHAVIOR_CAN_MINIMIZE;
-  return static_cast<mus::mojom::ResizeBehavior>(behavior);
+    behavior |= mus::mojom::kResizeBehaviorCanMinimize;
+  return behavior;
 }
 
 }  // namespace
@@ -255,7 +254,8 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
 
   (*properties)[mus::mojom::WindowManager::kWindowType_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-          mojo::ConvertTo<mus::mojom::WindowType>(init_params.type));
+          static_cast<int32_t>(
+              mojo::ConvertTo<mus::mojom::WindowType>(init_params.type)));
   (*properties)[mus::mojom::WindowManager::kResizeBehavior_Property] =
       mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
           ResizeBehaviorFromDelegate(init_params.delegate));

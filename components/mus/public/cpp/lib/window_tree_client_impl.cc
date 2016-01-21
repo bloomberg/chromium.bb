@@ -424,7 +424,7 @@ void WindowTreeClientImpl::OnEmbedImpl(mojom::WindowTree* window_tree,
   tree_ = window_tree;
   connection_id_ = connection_id;
   is_embed_root_ =
-      (access_policy & mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+      (access_policy & mojom::WindowTree::kAccessPolicyEmbedRoot) != 0;
 
   DCHECK(roots_.empty());
   Window* root = AddWindowToConnection(this, nullptr, root_data);

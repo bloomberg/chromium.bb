@@ -11,7 +11,7 @@
 namespace mojo {
 
 #define TEXT_INPUT_TYPE_ASSERT(NAME)                                  \
-  static_assert(static_cast<int32_t>(TEXT_INPUT_TYPE_##NAME) ==       \
+  static_assert(static_cast<int32_t>(TextInputType::NAME) ==          \
                     static_cast<int32_t>(ui::TEXT_INPUT_TYPE_##NAME), \
                 "TEXT_INPUT_TYPE must match")
 TEXT_INPUT_TYPE_ASSERT(NONE);
@@ -31,7 +31,7 @@ TEXT_INPUT_TYPE_ASSERT(WEEK);
 TEXT_INPUT_TYPE_ASSERT(TEXT_AREA);
 
 #define TEXT_INPUT_FLAG_ASSERT(NAME)                                  \
-  static_assert(static_cast<int32_t>(TEXT_INPUT_FLAG_##NAME) ==       \
+  static_assert(static_cast<int32_t>(TextInputFlag::NAME) ==          \
                     static_cast<int32_t>(ui::TEXT_INPUT_FLAG_##NAME), \
                 "TEXT_INPUT_FLAG must match")
 TEXT_INPUT_FLAG_ASSERT(NONE);

@@ -43,7 +43,8 @@ class FakeAppInstance : public AppInstance {
     IconRequest(const std::string& package,
                 const std::string& activity,
                 ScaleFactor scale_factor)
-        : Request(package, activity), scale_factor_(scale_factor) {}
+        : Request(package, activity),
+          scale_factor_(static_cast<int>(scale_factor)) {}
     ~IconRequest() {}
 
     int scale_factor() const { return scale_factor_; }

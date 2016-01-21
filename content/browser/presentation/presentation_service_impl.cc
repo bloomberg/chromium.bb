@@ -47,8 +47,7 @@ presentation::SessionMessagePtr ToMojoSessionMessage(
   if (input->is_binary()) {
     // binary data
     DCHECK(input->data);
-    output->type = presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+    output->type = presentation::PresentationMessageType::ARRAY_BUFFER;
     if (pass_ownership) {
       output->data.Swap(input->data.get());
     } else {
@@ -56,8 +55,7 @@ presentation::SessionMessagePtr ToMojoSessionMessage(
     }
   } else {
     // string message
-    output->type =
-        presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
+    output->type = presentation::PresentationMessageType::TEXT;
     if (pass_ownership) {
       output->message.Swap(&input->message);
     } else {
@@ -72,7 +70,7 @@ scoped_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
   DCHECK(!input.is_null());
   scoped_ptr<content::PresentationSessionMessage> output;
   switch (input->type) {
-    case presentation::PRESENTATION_MESSAGE_TYPE_TEXT: {
+    case presentation::PresentationMessageType::TEXT: {
       DCHECK(!input->message.is_null());
       DCHECK(input->data.is_null());
       // Return null PresentationSessionMessage if size exceeds.
@@ -84,7 +82,7 @@ scoped_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
       input->message.Swap(&output->message);
       return output;
     }
-    case presentation::PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER: {
+    case presentation::PresentationMessageType::ARRAY_BUFFER: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
       if (input->data.size() > content::kMaxPresentationSessionMessageSize)
@@ -96,7 +94,7 @@ scoped_ptr<PresentationSessionMessage> GetPresentationSessionMessage(
       input->data.Swap(output->data.get());
       return output;
     }
-    case presentation::PRESENTATION_MESSAGE_TYPE_BLOB: {
+    case presentation::PresentationMessageType::BLOB: {
       DCHECK(!input->data.is_null());
       DCHECK(input->message.is_null());
       if (input->data.size() > content::kMaxPresentationSessionMessageSize)

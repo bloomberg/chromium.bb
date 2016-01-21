@@ -27,13 +27,13 @@ namespace {
 blink::WebPresentationError::ErrorType GetWebPresentationErrorTypeFromMojo(
     presentation::PresentationErrorType mojoErrorType) {
   switch (mojoErrorType) {
-    case presentation::PRESENTATION_ERROR_TYPE_NO_AVAILABLE_SCREENS:
+    case presentation::PresentationErrorType::NO_AVAILABLE_SCREENS:
       return blink::WebPresentationError::ErrorTypeNoAvailableScreens;
-    case presentation::PRESENTATION_ERROR_TYPE_SESSION_REQUEST_CANCELLED:
+    case presentation::PresentationErrorType::SESSION_REQUEST_CANCELLED:
       return blink::WebPresentationError::ErrorTypeSessionRequestCancelled;
-    case presentation::PRESENTATION_ERROR_TYPE_NO_PRESENTATION_FOUND:
+    case presentation::PresentationErrorType::NO_PRESENTATION_FOUND:
       return blink::WebPresentationError::ErrorTypeNoPresentationFound;
-    case presentation::PRESENTATION_ERROR_TYPE_UNKNOWN:
+    case presentation::PresentationErrorType::UNKNOWN:
     default:
       return blink::WebPresentationError::ErrorTypeUnknown;
   }
@@ -43,11 +43,11 @@ blink::WebPresentationConnectionState GetWebPresentationConnectionStateFromMojo(
     presentation::PresentationConnectionState mojoSessionState) {
   switch (mojoSessionState) {
     // TODO(imcheng): Add Connecting state to Blink (crbug.com/575351).
-    case presentation::PRESENTATION_CONNECTION_STATE_CONNECTED:
+    case presentation::PresentationConnectionState::CONNECTED:
       return blink::WebPresentationConnectionState::Connected;
-    case presentation::PRESENTATION_CONNECTION_STATE_CLOSED:
+    case presentation::PresentationConnectionState::CLOSED:
       return blink::WebPresentationConnectionState::Closed;
-    case presentation::PRESENTATION_CONNECTION_STATE_TERMINATED:
+    case presentation::PresentationConnectionState::TERMINATED:
       return blink::WebPresentationConnectionState::Terminated;
     default:
       NOTREACHED();
@@ -146,11 +146,9 @@ void PresentationDispatcher::sendArrayBuffer(
     return;
   }
 
-  message_request_queue_.push(make_scoped_ptr(
-      CreateSendBinaryMessageRequest(presentationUrl, presentationId,
-                                     presentation::PresentationMessageType::
-                                         PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER,
-                                     data, length)));
+  message_request_queue_.push(make_scoped_ptr(CreateSendBinaryMessageRequest(
+      presentationUrl, presentationId,
+      presentation::PresentationMessageType::ARRAY_BUFFER, data, length)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -170,8 +168,7 @@ void PresentationDispatcher::sendBlobData(
 
   message_request_queue_.push(make_scoped_ptr(CreateSendBinaryMessageRequest(
       presentationUrl, presentationId,
-      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB,
-      data, length)));
+      presentation::PresentationMessageType::BLOB, data, length)));
   // Start processing request if only one in the queue.
   if (message_request_queue_.size() == 1)
     DoSendMessage(message_request_queue_.front().get());
@@ -397,17 +394,14 @@ void PresentationDispatcher::OnSessionMessagesReceived(
     scoped_ptr<PresentationConnectionClient> session_client(
         new PresentationConnectionClient(session_info->url, session_info->id));
     switch (messages[i]->type) {
-      case presentation::PresentationMessageType::
-          PRESENTATION_MESSAGE_TYPE_TEXT: {
+      case presentation::PresentationMessageType::TEXT: {
         controller_->didReceiveSessionTextMessage(
             session_client.release(),
             blink::WebString::fromUTF8(messages[i]->message));
         break;
       }
-      case presentation::PresentationMessageType::
-          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER:
-      case presentation::PresentationMessageType::
-          PRESENTATION_MESSAGE_TYPE_BLOB: {
+      case presentation::PresentationMessageType::ARRAY_BUFFER:
+      case presentation::PresentationMessageType::BLOB: {
         controller_->didReceiveSessionBinaryMessage(
             session_client.release(), &(messages[i]->data.front()),
             messages[i]->data.size());
@@ -470,8 +464,7 @@ PresentationDispatcher::CreateSendTextMessageRequest(
 
   presentation::SessionMessagePtr session_message =
       presentation::SessionMessage::New();
-  session_message->type =
-      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
+  session_message->type = presentation::PresentationMessageType::TEXT;
   session_message->message = message.utf8();
   return new SendMessageRequest(std::move(session_info),
                                 std::move(session_message));

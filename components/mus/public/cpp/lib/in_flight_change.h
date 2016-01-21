@@ -19,7 +19,7 @@
 namespace mus {
 
 namespace mojom {
-enum Cursor : int32_t;
+enum class Cursor : int32_t;
 }
 
 class Window;

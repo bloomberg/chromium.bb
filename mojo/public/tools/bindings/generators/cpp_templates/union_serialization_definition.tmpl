@@ -78,6 +78,8 @@ void SerializeUnion_({{union.name}}Ptr input, mojo::internal::Buffer* buf,
             std::move(*input_acc.data()->{{field.name}}), {{field.name}});
 {%-   elif field.kind|is_associated_kind %}
         // TODO(yzshen): add seralization logic for associated kinds.
+{%    elif field.kind|is_enum_kind %}
+        result->data.f_{{field.name}} = static_cast<int32_t>(input_acc.data()->{{field.name}});
 {%    else %}
         result->data.f_{{field.name}} = input_acc.data()->{{field.name}};
 {%-   endif %}

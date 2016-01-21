@@ -76,7 +76,7 @@ namespace mojo {
 
 #define ASSERT_ENUM_VALUES_EQUAL(value)                                     \
   static_assert(cc::DrawQuad::value == static_cast<cc::DrawQuad::Material>( \
-                                           mus::mojom::MATERIAL_##value),   \
+                                           mus::mojom::Material::value),    \
                 #value " enum value must match")
 
 ASSERT_ENUM_VALUES_EQUAL(DEBUG_BORDER);
@@ -92,7 +92,7 @@ ASSERT_ENUM_VALUES_EQUAL(YUV_VIDEO_CONTENT);
 
 static_assert(cc::YUVVideoDrawQuad::REC_601 ==
                   static_cast<cc::YUVVideoDrawQuad::ColorSpace>(
-                      mus::mojom::YUV_COLOR_SPACE_REC_601),
+                      mus::mojom::YUVColorSpace::REC_601),
               "REC_601 enum value must match");
 // TODO(jamesr): Add REC_709 and JPEG to the YUVColorSpace enum upstream in
 // mojo.
@@ -119,7 +119,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
                      cc::RenderPass* render_pass,
                      CustomSurfaceConverter* custom_converter) {
   switch (input->material) {
-    case mus::mojom::MATERIAL_DEBUG_BORDER: {
+    case mus::mojom::Material::DEBUG_BORDER: {
       cc::DebugBorderDrawQuad* debug_border_quad =
           render_pass->CreateAndAppendDrawQuad<cc::DebugBorderDrawQuad>();
       debug_border_quad->SetAll(
@@ -132,7 +132,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->debug_border_quad_state->width);
       break;
     }
-    case mus::mojom::MATERIAL_RENDER_PASS: {
+    case mus::mojom::Material::RENDER_PASS: {
       cc::RenderPassDrawQuad* render_pass_quad =
           render_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
       RenderPassQuadState* render_pass_quad_state =
@@ -156,7 +156,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           cc::FilterOperations());  // TODO(jamesr): background_filters
       break;
     }
-    case mus::mojom::MATERIAL_SOLID_COLOR: {
+    case mus::mojom::Material::SOLID_COLOR: {
       if (input->solid_color_quad_state.is_null())
         return false;
       cc::SolidColorDrawQuad* color_quad =
@@ -171,7 +171,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->solid_color_quad_state->force_anti_aliasing_off);
       break;
     }
-    case mus::mojom::MATERIAL_SURFACE_CONTENT: {
+    case mus::mojom::Material::SURFACE_CONTENT: {
       if (input->surface_quad_state.is_null())
         return false;
 
@@ -190,7 +190,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           input->surface_quad_state->surface.To<cc::SurfaceId>());
       break;
     }
-    case mus::mojom::MATERIAL_TEXTURE_CONTENT: {
+    case mus::mojom::Material::TEXTURE_CONTENT: {
       TextureQuadStatePtr& texture_quad_state =
           input->texture_quad_state;
       if (texture_quad_state.is_null() ||
@@ -211,7 +211,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
           texture_quad_state->y_flipped, texture_quad_state->nearest_neighbor);
       break;
     }
-    case mus::mojom::MATERIAL_TILED_CONTENT: {
+    case mus::mojom::Material::TILED_CONTENT: {
       TileQuadStatePtr& tile_state = input->tile_quad_state;
       if (tile_state.is_null())
         return false;
@@ -229,7 +229,7 @@ bool ConvertDrawQuad(const QuadPtr& input,
                         tile_state->nearest_neighbor);
       break;
     }
-    case mus::mojom::MATERIAL_YUV_VIDEO_CONTENT: {
+    case mus::mojom::Material::YUV_VIDEO_CONTENT: {
       YUVVideoQuadStatePtr& yuv_state = input->yuv_video_quad_state;
       if (yuv_state.is_null())
         return false;

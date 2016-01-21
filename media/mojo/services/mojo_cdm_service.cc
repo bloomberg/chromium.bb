@@ -194,7 +194,7 @@ void MojoCdmService::OnCdmCreated(const InitializeCallback& callback,
   if (!cdm || !context_) {
     cdm_promise_result->success = false;
     cdm_promise_result->exception =
-        interfaces::CDM_EXCEPTION_NOT_SUPPORTED_ERROR;
+        interfaces::CdmException::NOT_SUPPORTED_ERROR;
     cdm_promise_result->system_code = 0;
     cdm_promise_result->error_message = error_message;
     callback.Run(std::move(cdm_promise_result), 0, nullptr);

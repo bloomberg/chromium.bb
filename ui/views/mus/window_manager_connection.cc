@@ -28,13 +28,13 @@ namespace mojo {
 gfx::Display::Rotation GFXRotationFromMojomRotation(
     mus::mojom::Rotation input) {
   switch (input) {
-    case mus::mojom::ROTATION_VALUE_0:
+    case mus::mojom::Rotation::VALUE_0:
       return gfx::Display::ROTATE_0;
-    case mus::mojom::ROTATION_VALUE_90:
+    case mus::mojom::Rotation::VALUE_90:
       return gfx::Display::ROTATE_90;
-    case mus::mojom::ROTATION_VALUE_180:
+    case mus::mojom::Rotation::VALUE_180:
       return gfx::Display::ROTATE_180;
-    case mus::mojom::ROTATION_VALUE_270:
+    case mus::mojom::Rotation::VALUE_270:
       return gfx::Display::ROTATE_270;
   }
   return gfx::Display::ROTATE_0;
@@ -157,7 +157,7 @@ NativeWidget* WindowManagerConnection::CreateNativeWidget(
   std::map<std::string, std::vector<uint8_t>> properties;
   NativeWidgetMus::ConfigurePropertiesForNewWindow(init_params, &properties);
   return new NativeWidgetMus(delegate, app_->shell(), NewWindow(properties),
-                             mus::mojom::SURFACE_TYPE_DEFAULT);
+                             mus::mojom::SurfaceType::DEFAULT);
 }
 
 }  // namespace views

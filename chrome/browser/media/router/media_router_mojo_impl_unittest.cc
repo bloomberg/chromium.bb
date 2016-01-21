@@ -83,11 +83,10 @@ interfaces::IssuePtr CreateMojoIssue(const std::string& title) {
   mojoIssue->title = title;
   mojoIssue->message = "msg";
   mojoIssue->route_id = "";
-  mojoIssue->default_action =
-      interfaces::Issue::ActionType::ACTION_TYPE_DISMISS;
+  mojoIssue->default_action = interfaces::Issue::ActionType::DISMISS;
   mojoIssue->secondary_actions =
       mojo::Array<interfaces::Issue::ActionType>::New(0);
-  mojoIssue->severity = interfaces::Issue::Severity::SEVERITY_WARNING;
+  mojoIssue->severity = interfaces::Issue::Severity::WARNING;
   mojoIssue->is_blocking = false;
   mojoIssue->help_url = "";
   return mojoIssue;
@@ -467,7 +466,7 @@ TEST_F(MediaRouterMojoImplTest, HandleIssue) {
 
 TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::AVAILABLE);
   MediaSource media_source(kSource);
 
   // These should only be called once even if there is more than one observer
@@ -499,12 +498,12 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   mojo_sinks[0]->sink_id = kSinkId;
   mojo_sinks[0]->name = kSinkName;
   mojo_sinks[0]->icon_type =
-      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
+      media_router::interfaces::MediaSink::IconType::CAST;
   mojo_sinks[1] = interfaces::MediaSink::New();
   mojo_sinks[1]->sink_id = kSinkId2;
   mojo_sinks[1]->name = kSinkName;
   mojo_sinks[1]->icon_type =
-      media_router::interfaces::MediaSink::IconType::ICON_TYPE_CAST;
+      media_router::interfaces::MediaSink::IconType::CAST;
 
   base::RunLoop run_loop;
   EXPECT_CALL(*sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
@@ -543,7 +542,7 @@ TEST_F(MediaRouterMojoImplTest,
        RegisterMediaSinksObserverWithAvailabilityChange) {
   // When availability is UNAVAILABLE, no calls should be made to MRPM.
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::UNAVAILABLE);
   MediaSource media_source(kSource);
   scoped_ptr<MockMediaSinksObserver> sinks_observer(
       new MockMediaSinksObserver(router(), media_source));
@@ -566,7 +565,7 @@ TEST_F(MediaRouterMojoImplTest,
   // When availability transitions AVAILABLE, existing sink queries should be
   // sent to MRPM.
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::AVAILABLE);
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaSinks(mojo::String(kSource)))
       .Times(1);
@@ -578,7 +577,7 @@ TEST_F(MediaRouterMojoImplTest,
 
   // No change in availability status; no calls should be made to MRPM.
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::AVAILABLE);
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaSinks(mojo::String(kSource)))
       .Times(0);
@@ -591,7 +590,7 @@ TEST_F(MediaRouterMojoImplTest,
   // When availability is UNAVAILABLE, queries are already removed from MRPM.
   // Unregistering observer won't result in call to MRPM to remove query.
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_UNAVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::UNAVAILABLE);
   EXPECT_CALL(mock_media_route_provider_,
               StopObservingMediaSinks(mojo::String(kSource)))
       .Times(0);
@@ -602,7 +601,7 @@ TEST_F(MediaRouterMojoImplTest,
   // When availability is AVAILABLE, call is made to MRPM to remove query when
   // observer is unregistered.
   router()->OnSinkAvailabilityUpdated(
-      interfaces::MediaRouter::SINK_AVAILABILITY_AVAILABLE);
+      interfaces::MediaRouter::SinkAvailability::AVAILABLE);
   EXPECT_CALL(mock_media_route_provider_,
               StopObservingMediaSinks(mojo::String(kSource2)));
   sinks_observer2.reset();
@@ -746,10 +745,10 @@ TEST_F(MediaRouterMojoImplTest, SendRouteBinaryMessage) {
 TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   mojo::Array<interfaces::RouteMessagePtr> mojo_messages(2);
   mojo_messages[0] = interfaces::RouteMessage::New();
-  mojo_messages[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages[0]->type = interfaces::RouteMessage::Type::TEXT;
   mojo_messages[0]->message = "text";
   mojo_messages[1] = interfaces::RouteMessage::New();
-  mojo_messages[1]->type = interfaces::RouteMessage::Type::TYPE_BINARY;
+  mojo_messages[1]->type = interfaces::RouteMessage::Type::BINARY;
   mojo_messages[1]->data.push_back(1);
 
   ScopedVector<content::PresentationSessionMessage> expected_messages;
@@ -806,7 +805,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
   // call ListenForRouteMessages again when it sees there are no more observers.
   mojo::Array<interfaces::RouteMessagePtr> mojo_messages_2(1);
   mojo_messages_2[0] = interfaces::RouteMessage::New();
-  mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TEXT;
   mojo_messages_2[0]->message = "foo";
   observer.reset();
   mojo_callback_2.Run(std::move(mojo_messages_2), false);
@@ -820,10 +819,10 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesSingleObserver) {
 TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   mojo::Array<interfaces::RouteMessagePtr> mojo_messages(2);
   mojo_messages[0] = interfaces::RouteMessage::New();
-  mojo_messages[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages[0]->type = interfaces::RouteMessage::Type::TEXT;
   mojo_messages[0]->message = "text";
   mojo_messages[1] = interfaces::RouteMessage::New();
-  mojo_messages[1]->type = interfaces::RouteMessage::Type::TYPE_BINARY;
+  mojo_messages[1]->type = interfaces::RouteMessage::Type::BINARY;
   mojo_messages[1]->data.push_back(1);
 
   ScopedVector<content::PresentationSessionMessage> expected_messages;
@@ -886,7 +885,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationSessionMessagesMultipleObservers) {
   // call ListenForRouteMessages again when it sees there are no more observers.
   mojo::Array<interfaces::RouteMessagePtr> mojo_messages_2(1);
   mojo_messages_2[0] = interfaces::RouteMessage::New();
-  mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TYPE_TEXT;
+  mojo_messages_2[0]->type = interfaces::RouteMessage::Type::TEXT;
   mojo_messages_2[0]->message = "foo";
   observer1.reset();
   observer2.reset();
@@ -947,8 +946,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
                   run_loop.Quit();
                 }));
   media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id,
-      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
+      route_id, PresentationConnectionState::CLOSED);
   run_loop.Run();
 
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&callback));
@@ -961,8 +959,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
                   run_loop2.Quit();
                 }));
   media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id,
-      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
+      route_id, PresentationConnectionState::CLOSED);
   run_loop2.Run();
 
   // Callback has been removed, so we don't expect it to be called anymore.
@@ -972,8 +969,7 @@ TEST_F(MediaRouterMojoImplTest, PresentationConnectionStateChangedCallback) {
   EXPECT_CALL(callback, Run(content::PRESENTATION_CONNECTION_STATE_CLOSED))
       .Times(0);
   media_router_proxy_->OnPresentationConnectionStateChanged(
-      route_id,
-      PresentationConnectionState::PRESENTATION_CONNECTION_STATE_CLOSED);
+      route_id, PresentationConnectionState::CLOSED);
   ProcessEventLoop();
 }
 

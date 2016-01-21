@@ -79,7 +79,7 @@ bool WindowManagerAccessPolicy::CanChangeWindowVisibility(
 bool WindowManagerAccessPolicy::CanSetWindowSurface(
     const ServerWindow* window,
     mus::mojom::SurfaceType surface_type) const {
-  if (surface_type == mojom::SURFACE_TYPE_UNDERLAY)
+  if (surface_type == mojom::SurfaceType::UNDERLAY)
     return window->id().connection_id == connection_id_;
 
   if (delegate_->IsWindowRootOfAnotherConnectionForAccessPolicy(window))

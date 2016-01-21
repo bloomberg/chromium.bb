@@ -8,7 +8,7 @@ import "ui/mojo/geometry/geometry.mojom";
 
 enum WindowManagerErrorCode {
   SUCCESS,
-  ERROR_ACCESS_DENIED
+  ACCESS_DENIED
 };
 
 enum ShowState {
@@ -26,12 +26,10 @@ enum Rotation {
   VALUE_270,
 };
 
-enum ResizeBehavior {
-  NONE = 0,
-  CAN_RESIZE = 1,
-  CAN_MAXIMIZE = 2,
-  CAN_MINIMIZE = 4,
-};
+const int32 kResizeBehaviorNone = 0;
+const int32 kResizeBehaviorCanResize = 1;
+const int32 kResizeBehaviorCanMaximize = 2;
+const int32 kResizeBehaviorCanMinimize = 4;
 
 struct Display {
   int64 id;

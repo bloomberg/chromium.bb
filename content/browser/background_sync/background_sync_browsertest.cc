@@ -72,7 +72,7 @@ void OneShotPendingDidGetSyncRegistration(
     scoped_ptr<BackgroundSyncRegistrationHandle> registration_handle) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   callback.Run(registration_handle->sync_state() ==
-               BACKGROUND_SYNC_STATE_PENDING);
+               BackgroundSyncState::PENDING);
 }
 
 void OneShotPendingDidGetSWRegistration(

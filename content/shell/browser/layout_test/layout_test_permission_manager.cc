@@ -129,7 +129,7 @@ PermissionStatus LayoutTestPermissionManager::GetPermissionStatus(
   auto it = permissions_.find(
       PermissionDescription(permission, requesting_origin, embedding_origin));
   if (it == permissions_.end())
-    return PERMISSION_STATUS_DENIED;
+    return PermissionStatus::DENIED;
   return it->second;
 }
 

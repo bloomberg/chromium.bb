@@ -18,23 +18,23 @@ namespace {
 
 PermissionType PermissionNameToPermissionType(PermissionName name) {
   switch(name) {
-    case PERMISSION_NAME_GEOLOCATION:
+    case PermissionName::GEOLOCATION:
       return PermissionType::GEOLOCATION;
-    case PERMISSION_NAME_NOTIFICATIONS:
+    case PermissionName::NOTIFICATIONS:
       return PermissionType::NOTIFICATIONS;
-    case PERMISSION_NAME_PUSH_NOTIFICATIONS:
+    case PermissionName::PUSH_NOTIFICATIONS:
       return PermissionType::PUSH_MESSAGING;
-    case PERMISSION_NAME_MIDI:
+    case PermissionName::MIDI:
       return PermissionType::MIDI;
-    case PERMISSION_NAME_MIDI_SYSEX:
+    case PermissionName::MIDI_SYSEX:
       return PermissionType::MIDI_SYSEX;
-    case PERMISSION_NAME_PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionName::PROTECTED_MEDIA_IDENTIFIER:
       return PermissionType::PROTECTED_MEDIA_IDENTIFIER;
-    case PERMISSION_NAME_DURABLE_STORAGE:
+    case PermissionName::DURABLE_STORAGE:
       return PermissionType::DURABLE_STORAGE;
-    case PERMISSION_NAME_AUDIO_CAPTURE:
+    case PermissionName::AUDIO_CAPTURE:
       return PermissionType::AUDIO_CAPTURE;
-    case PERMISSION_NAME_VIDEO_CAPTURE:
+    case PermissionName::VIDEO_CAPTURE:
       return PermissionType::VIDEO_CAPTURE;
   }
 
@@ -67,7 +67,7 @@ PermissionServiceImpl::PendingRequest::~PendingRequest() {
   mojo::Array<PermissionStatus> result =
       mojo::Array<PermissionStatus>::New(request_count);
   for (int i = 0; i < request_count; ++i)
-    result[i] = PERMISSION_STATUS_DENIED;
+    result[i] = PermissionStatus::DENIED;
   callback.Run(std::move(result));
 }
 
@@ -83,7 +83,7 @@ PermissionServiceImpl::PendingSubscription::PendingSubscription(
 
 PermissionServiceImpl::PendingSubscription::~PendingSubscription() {
   if (!callback.is_null())
-    callback.Run(PERMISSION_STATUS_ASK);
+    callback.Run(PermissionStatus::ASK);
 }
 
 PermissionServiceImpl::PermissionServiceImpl(
@@ -263,7 +263,7 @@ void PermissionServiceImpl::RevokePermission(
 
   // Resetting the permission should only be possible if the permission is
   // already granted.
-  if (status != PERMISSION_STATUS_GRANTED) {
+  if (status != PermissionStatus::GRANTED) {
     callback.Run(status);
     return;
   }
@@ -325,7 +325,7 @@ PermissionStatus PermissionServiceImpl::GetPermissionStatusFromType(
   BrowserContext* browser_context = context_->GetBrowserContext();
   DCHECK(browser_context);
   if (!browser_context->GetPermissionManager())
-    return PERMISSION_STATUS_DENIED;
+    return PermissionStatus::DENIED;
 
   // If the embedding_origin is empty we'll use |origin| instead.
   GURL embedding_origin = context_->GetEmbeddingOrigin();

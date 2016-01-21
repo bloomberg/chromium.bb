@@ -187,35 +187,29 @@ TEST_F(WebViewTest, CanGoBackAndForward) {
   // the stack.
   EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_forward_button_state());
 
   ASSERT_NO_FATAL_FAILURE(NavigateTo(kTestTwoFile));
 
   EXPECT_EQ(kTestTwoTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED, last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::ENABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_forward_button_state());
 
   web_view()->GoBack();
   StartNestedRunLoopUntil(LOADING_DONE);
 
   EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::ENABLED, last_forward_button_state());
 
   web_view()->GoForward();
   StartNestedRunLoopUntil(LOADING_DONE);
   EXPECT_EQ(GetTestFileURL(kTestTwoFile).spec(), navigation_url());
   EXPECT_EQ(kTestTwoTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED, last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::ENABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_forward_button_state());
 }
 
 TEST_F(WebViewTest, NavigationClearsForward) {
@@ -229,19 +223,16 @@ TEST_F(WebViewTest, NavigationClearsForward) {
 
   EXPECT_EQ(GetTestFileURL(kTestOneFile).spec(), navigation_url());
   EXPECT_EQ(kTestOneTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::ENABLED, last_forward_button_state());
 
   // Now navigate to a third file. This should clear the forward stack.
   ASSERT_NO_FATAL_FAILURE(NavigateTo(kTestThreeFile));
 
   EXPECT_EQ(GetTestFileURL(kTestThreeFile).spec(), navigation_url());
   EXPECT_EQ(kTestThreeTitle, last_title());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_ENABLED, last_back_button_state());
-  EXPECT_EQ(mojom::ButtonState::BUTTON_STATE_DISABLED,
-            last_forward_button_state());
+  EXPECT_EQ(mojom::ButtonState::ENABLED, last_back_button_state());
+  EXPECT_EQ(mojom::ButtonState::DISABLED, last_forward_button_state());
 }
 
 TEST_F(WebViewTest, Find) {

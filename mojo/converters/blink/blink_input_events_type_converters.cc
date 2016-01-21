@@ -22,43 +22,42 @@ double EventTimeToWebEventTime(const mus::mojom::EventPtr& event) {
 int EventFlagsToWebEventModifiers(int flags) {
   int modifiers = 0;
 
-  if (flags & mus::mojom::EVENT_FLAGS_SHIFT_DOWN)
+  if (flags & mus::mojom::kEventFlagShiftDown)
     modifiers |= blink::WebInputEvent::ShiftKey;
-  if (flags & mus::mojom::EVENT_FLAGS_CONTROL_DOWN)
+  if (flags & mus::mojom::kEventFlagControlDown)
     modifiers |= blink::WebInputEvent::ControlKey;
-  if (flags & mus::mojom::EVENT_FLAGS_ALT_DOWN)
+  if (flags & mus::mojom::kEventFlagAltDown)
     modifiers |= blink::WebInputEvent::AltKey;
   // TODO(beng): MetaKey/META_MASK
-  if (flags & mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON)
+  if (flags & mus::mojom::kEventFlagLeftMouseButton)
     modifiers |= blink::WebInputEvent::LeftButtonDown;
-  if (flags & mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON)
+  if (flags & mus::mojom::kEventFlagMiddleMouseButton)
     modifiers |= blink::WebInputEvent::MiddleButtonDown;
-  if (flags & mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
+  if (flags & mus::mojom::kEventFlagRightMouseButton)
     modifiers |= blink::WebInputEvent::RightButtonDown;
-  if (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_ON)
+  if (flags & mus::mojom::kEventFlagCapsLockOn)
     modifiers |= blink::WebInputEvent::CapsLockOn;
   return modifiers;
 }
 
 int EventFlagsToWebInputEventModifiers(int flags) {
-  return (flags & mus::mojom::EVENT_FLAGS_SHIFT_DOWN
+  return (flags & mus::mojom::kEventFlagShiftDown
               ? blink::WebInputEvent::ShiftKey
               : 0) |
-         (flags & mus::mojom::EVENT_FLAGS_CONTROL_DOWN
+         (flags & mus::mojom::kEventFlagControlDown
               ? blink::WebInputEvent::ControlKey
               : 0) |
-         (flags & mus::mojom::EVENT_FLAGS_ALT_DOWN
-              ? blink::WebInputEvent::AltKey
-              : 0) |
-         (flags & mus::mojom::EVENT_FLAGS_CAPS_LOCK_ON
+         (flags & mus::mojom::kEventFlagCapsLockOn
               ? blink::WebInputEvent::CapsLockOn
-              : 0);
+              : 0) |
+         (flags & mus::mojom::kEventFlagAltDown ? blink::WebInputEvent::AltKey
+                                                : 0);
 }
 
 int GetClickCount(int flags) {
-  if (flags & mus::mojom::MOUSE_EVENT_FLAGS_IS_TRIPLE_CLICK)
+  if (flags & mus::mojom::kMouseEventFlagIsTripleClick)
     return 3;
-  else if (flags & mus::mojom::MOUSE_EVENT_FLAGS_IS_DOUBLE_CLICK)
+  else if (flags & mus::mojom::kMouseEventFlagIsDoubleClick)
     return 2;
 
   return 1;
@@ -83,24 +82,24 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseEventFrom(
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
   web_event->button = blink::WebMouseEvent::ButtonNone;
-  if (event->flags & mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON)
+  if (event->flags & mus::mojom::kEventFlagLeftMouseButton)
     web_event->button = blink::WebMouseEvent::ButtonLeft;
-  if (event->flags & mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON)
+  if (event->flags & mus::mojom::kEventFlagMiddleMouseButton)
     web_event->button = blink::WebMouseEvent::ButtonMiddle;
-  if (event->flags & mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON)
+  if (event->flags & mus::mojom::kEventFlagRightMouseButton)
     web_event->button = blink::WebMouseEvent::ButtonRight;
 
   switch (event->action) {
-    case mus::mojom::EVENT_TYPE_POINTER_DOWN:
+    case mus::mojom::EventType::POINTER_DOWN:
       web_event->type = blink::WebInputEvent::MouseDown;
       break;
-    case mus::mojom::EVENT_TYPE_POINTER_UP:
+    case mus::mojom::EventType::POINTER_UP:
       web_event->type = blink::WebInputEvent::MouseUp;
       break;
-    case mus::mojom::EVENT_TYPE_POINTER_MOVE:
+    case mus::mojom::EventType::POINTER_MOVE:
       web_event->type = blink::WebInputEvent::MouseMove;
       break;
-    case mus::mojom::EVENT_TYPE_MOUSE_EXIT:
+    case mus::mojom::EventType::MOUSE_EXIT:
       web_event->type = blink::WebInputEvent::MouseLeave;
       break;
     default:
@@ -121,12 +120,12 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   web_event->timeStampSeconds = EventTimeToWebEventTime(event);
 
   switch (event->action) {
-    case mus::mojom::EVENT_TYPE_KEY_PRESSED:
+    case mus::mojom::EventType::KEY_PRESSED:
       web_event->type = event->key_data->is_char
                             ? blink::WebInputEvent::Char
                             : blink::WebInputEvent::RawKeyDown;
       break;
-    case mus::mojom::EVENT_TYPE_KEY_RELEASED:
+    case mus::mojom::EventType::KEY_RELEASED:
       web_event->type = blink::WebInputEvent::KeyUp;
       break;
     default:
@@ -136,7 +135,8 @@ scoped_ptr<blink::WebInputEvent> BuildWebKeyboardEvent(
   if (web_event->modifiers & blink::WebInputEvent::AltKey)
     web_event->isSystemKey = true;
 
-  web_event->windowsKeyCode = event->key_data->windows_key_code;
+  web_event->windowsKeyCode =
+      static_cast<int>(event->key_data->windows_key_code);
   web_event->nativeKeyCode = event->key_data->native_key_code;
   web_event->text[0] = event->key_data->text;
   web_event->unmodifiedText[0] = event->key_data->unmodified_text;
@@ -171,22 +171,22 @@ scoped_ptr<blink::WebInputEvent> BuildWebMouseWheelEventFrom(
   // wheel events so the other modes are not yet tested. Verify that
   // the implementation is correct.
   switch (wheel_data.mode) {
-    case mus::mojom::WHEEL_MODE_PIXEL:
+    case mus::mojom::WheelMode::PIXEL:
       web_event->hasPreciseScrollingDeltas = true;
       web_event->scrollByPage = false;
       web_event->canScroll = true;
       break;
-    case mus::mojom::WHEEL_MODE_LINE:
+    case mus::mojom::WheelMode::LINE:
       web_event->hasPreciseScrollingDeltas = false;
       web_event->scrollByPage = false;
       web_event->canScroll = true;
       break;
-    case mus::mojom::WHEEL_MODE_PAGE:
+    case mus::mojom::WheelMode::PAGE:
       web_event->hasPreciseScrollingDeltas = false;
       web_event->scrollByPage = true;
       web_event->canScroll = true;
       break;
-    case mus::mojom::WHEEL_MODE_SCALING:
+    case mus::mojom::WheelMode::SCALING:
       web_event->hasPreciseScrollingDeltas = false;
       web_event->scrollByPage = false;
       web_event->canScroll = false;
@@ -203,22 +203,22 @@ scoped_ptr<blink::WebInputEvent>
 TypeConverter<scoped_ptr<blink::WebInputEvent>, mus::mojom::EventPtr>::Convert(
     const mus::mojom::EventPtr& event) {
   switch (event->action) {
-    case mus::mojom::EVENT_TYPE_POINTER_DOWN:
-    case mus::mojom::EVENT_TYPE_POINTER_UP:
-    case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
-    case mus::mojom::EVENT_TYPE_POINTER_MOVE:
-    case mus::mojom::EVENT_TYPE_MOUSE_EXIT:
+    case mus::mojom::EventType::POINTER_DOWN:
+    case mus::mojom::EventType::POINTER_UP:
+    case mus::mojom::EventType::POINTER_CANCEL:
+    case mus::mojom::EventType::POINTER_MOVE:
+    case mus::mojom::EventType::MOUSE_EXIT:
       if (event->pointer_data &&
-          event->pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE) {
+          event->pointer_data->kind == mus::mojom::PointerKind::MOUSE) {
         return BuildWebMouseEventFrom(event);
       }
       return nullptr;
-    case mus::mojom::EVENT_TYPE_WHEEL:
+    case mus::mojom::EventType::WHEEL:
       return BuildWebMouseWheelEventFrom(event);
-    case mus::mojom::EVENT_TYPE_KEY_PRESSED:
-    case mus::mojom::EVENT_TYPE_KEY_RELEASED:
+    case mus::mojom::EventType::KEY_PRESSED:
+    case mus::mojom::EventType::KEY_RELEASED:
       return BuildWebKeyboardEvent(event);
-    case mus::mojom::EVENT_TYPE_UNKNOWN:
+    case mus::mojom::EventType::UNKNOWN:
       return nullptr;
   }
   return nullptr;

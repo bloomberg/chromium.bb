@@ -13,8 +13,8 @@ enum OpenDeviceError {
 };
 
 enum TransferDirection {
-  IN,
-  OUT,
+  INBOUND,
+  OUTBOUND,
 };
 
 enum ControlTransferType {
@@ -113,7 +113,7 @@ enum TransferStatus {
   COMPLETED,
 
   // The transfer failed due to a non-specific error.
-  ERROR,
+  TRANSFER_ERROR,
 
   // The transfer was not allowed.
   PERMISSION_DENIED,

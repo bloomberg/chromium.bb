@@ -93,7 +93,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
       : NativeWidgetMus(delegate,
                         shell,
                         window,
-                        mus::mojom::SURFACE_TYPE_UNDERLAY) {}
+                        mus::mojom::SurfaceType::UNDERLAY) {}
   ~WmNativeWidgetMus() override {
   }
 
@@ -221,20 +221,20 @@ views::View* NonClientFrameController::GetContentsView() {
 
 bool NonClientFrameController::CanResize() const {
   return window_ &&
-         (GetResizeBehavior(window_) &
-          mus::mojom::RESIZE_BEHAVIOR_CAN_RESIZE) != 0;
+         (GetResizeBehavior(window_) & mus::mojom::kResizeBehaviorCanResize) !=
+             0;
 }
 
 bool NonClientFrameController::CanMaximize() const {
   return window_ &&
          (GetResizeBehavior(window_) &
-          mus::mojom::RESIZE_BEHAVIOR_CAN_MAXIMIZE) != 0;
+          mus::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool NonClientFrameController::CanMinimize() const {
   return window_ &&
          (GetResizeBehavior(window_) &
-          mus::mojom::RESIZE_BEHAVIOR_CAN_MINIMIZE) != 0;
+          mus::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 views::ClientView* NonClientFrameController::CreateClientView(

@@ -88,13 +88,13 @@ TEST_F(AcceleratorRegistrarTest, AcceleratorRegistrarBasic) {
   ConnectToRegistrar(&registrar_first);
   TestAcceleratorHandler handler_first(std::move(registrar_first));
   EXPECT_TRUE(handler_first.AttemptToInstallAccelerator(
-      1, mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
-                               mus::mojom::EVENT_FLAGS_SHIFT_DOWN)));
+      1, mus::CreateKeyMatcher(mus::mojom::KeyboardCode::T,
+                               mus::mojom::kEventFlagShiftDown)));
   // Attempting to add an accelerator with the same accelerator id from the same
   // registrar should fail.
   EXPECT_FALSE(handler_first.AttemptToInstallAccelerator(
-      1, mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                               mus::mojom::EVENT_FLAGS_SHIFT_DOWN)));
+      1, mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
+                               mus::mojom::kEventFlagShiftDown)));
 
   // Attempting to add an accelerator with the same id from a different
   // registrar should be OK.
@@ -102,16 +102,16 @@ TEST_F(AcceleratorRegistrarTest, AcceleratorRegistrarBasic) {
   ConnectToRegistrar(&registrar_second);
   TestAcceleratorHandler handler_second(std::move(registrar_second));
   EXPECT_TRUE(handler_second.AttemptToInstallAccelerator(
-      1, mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                               mus::mojom::EVENT_FLAGS_SHIFT_DOWN)));
+      1, mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
+                               mus::mojom::kEventFlagShiftDown)));
 
   // But attempting to add an accelerator with the same matcher should fail.
   EXPECT_FALSE(handler_first.AttemptToInstallAccelerator(
-      3, mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                               mus::mojom::EVENT_FLAGS_SHIFT_DOWN)));
+      3, mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
+                               mus::mojom::kEventFlagShiftDown)));
   EXPECT_FALSE(handler_second.AttemptToInstallAccelerator(
-      3, mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                               mus::mojom::EVENT_FLAGS_SHIFT_DOWN)));
+      3, mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
+                               mus::mojom::kEventFlagShiftDown)));
 }
 
 }  // namespace wm

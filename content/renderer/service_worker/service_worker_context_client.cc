@@ -539,9 +539,9 @@ void ServiceWorkerContextClient::didHandleSyncEvent(
   if (!callback)
     return;
   if (result == blink::WebServiceWorkerEventResultCompleted) {
-    callback->Run(SERVICE_WORKER_EVENT_STATUS_COMPLETED);
+    callback->Run(ServiceWorkerEventStatus::COMPLETED);
   } else {
-    callback->Run(SERVICE_WORKER_EVENT_STATUS_REJECTED);
+    callback->Run(ServiceWorkerEventStatus::REJECTED);
   }
   context_->sync_event_callbacks.Remove(request_id);
 }

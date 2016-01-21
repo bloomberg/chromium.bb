@@ -16,7 +16,8 @@ interface Decryptor {
     SUCCESS,  // Successfully completed. Decrypted buffer ready.
     NO_KEY,  // No key is available to decrypt.
     NEED_MORE_DATA,  // Decoder needs more data to produce an output.
-    ERROR  // Key is available but an error occurred during decryption.
+    // Key is available but an error occurred during decryption.
+    DECRYPTION_ERROR
   };
 
   // Pass the two data pipes used to transfer DecoderBuffer contents to and

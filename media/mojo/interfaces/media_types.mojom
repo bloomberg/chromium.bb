@@ -38,8 +38,6 @@ enum AudioCodec {
 
 // See media/base/channel_layout.h for descriptions.
 // Kept in sync with media::ChannelLayout via static_asserts.
-// TODO(tim): The bindings generators will always prepend the enum name, should
-// mojom therefore allow enum values starting with numbers?
 enum ChannelLayout {
   k_NONE = 0,
   k_UNSUPPORTED = 1,

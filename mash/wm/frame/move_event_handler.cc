@@ -20,21 +20,21 @@ namespace {
 mus::mojom::Cursor CursorForWindowComponent(int window_component) {
   switch (window_component) {
     case HTBOTTOM:
-      return mus::mojom::Cursor::CURSOR_SOUTH_RESIZE;
+      return mus::mojom::Cursor::SOUTH_RESIZE;
     case HTBOTTOMLEFT:
-      return mus::mojom::Cursor::CURSOR_SOUTH_WEST_RESIZE;
+      return mus::mojom::Cursor::SOUTH_WEST_RESIZE;
     case HTBOTTOMRIGHT:
-      return mus::mojom::Cursor::CURSOR_SOUTH_EAST_RESIZE;
+      return mus::mojom::Cursor::SOUTH_EAST_RESIZE;
     case HTLEFT:
-      return mus::mojom::Cursor::CURSOR_WEST_RESIZE;
+      return mus::mojom::Cursor::WEST_RESIZE;
     case HTRIGHT:
-      return mus::mojom::Cursor::CURSOR_EAST_RESIZE;
+      return mus::mojom::Cursor::EAST_RESIZE;
     case HTTOP:
-      return mus::mojom::Cursor::CURSOR_NORTH_RESIZE;
+      return mus::mojom::Cursor::NORTH_RESIZE;
     case HTTOPLEFT:
-      return mus::mojom::Cursor::CURSOR_NORTH_WEST_RESIZE;
+      return mus::mojom::Cursor::NORTH_WEST_RESIZE;
     case HTTOPRIGHT:
-      return mus::mojom::Cursor::CURSOR_NORTH_EAST_RESIZE;
+      return mus::mojom::Cursor::NORTH_EAST_RESIZE;
     default:
       return mus::mojom::Cursor::CURSOR_NULL;
   }

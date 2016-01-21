@@ -97,14 +97,14 @@ void MojoDemuxerStreamImpl::OnBufferReady(
                    << stream_->type();
     }
 
-    callback.Run(interfaces::DemuxerStream::STATUS_CONFIG_CHANGED,
+    callback.Run(interfaces::DemuxerStream::Status::CONFIG_CHANGED,
                  interfaces::DecoderBufferPtr(), std::move(audio_config),
                  std::move(video_config));
     return;
   }
 
   if (status == media::DemuxerStream::kAborted) {
-    callback.Run(interfaces::DemuxerStream::STATUS_ABORTED,
+    callback.Run(interfaces::DemuxerStream::Status::ABORTED,
                  interfaces::DecoderBufferPtr(), std::move(audio_config),
                  std::move(video_config));
     return;

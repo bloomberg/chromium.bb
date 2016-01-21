@@ -67,7 +67,7 @@ int MojoVFSClose(sqlite3_file* file) {
   DVLOG(1) << "MojoVFSClose(*)";
   TRACE_EVENT0("sql", "MojoVFSClose");
   using filesystem::FilePtr;
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   // Must call File::Close explicitly instead of just deleting the file, since
   // otherwise we wouldn't have an object to wait on.
   GetFSFile(file)->Close(mojo::Capture(&error));
@@ -82,13 +82,13 @@ int MojoVFSRead(sqlite3_file* sql_file,
                 sqlite3_int64 offset) {
   DVLOG(1) << "MojoVFSRead (" << size << " @ " << offset << ")";
   TRACE_EVENT0("sql", "MojoVFSRead");
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   mojo::Array<uint8_t> mojo_data;
-  GetFSFile(sql_file)->Read(size, offset, filesystem::WHENCE_FROM_BEGIN,
+  GetFSFile(sql_file)->Read(size, offset, filesystem::Whence::FROM_BEGIN,
                             Capture(&error, &mojo_data));
   GetFSFile(sql_file).WaitForIncomingResponse();
 
-  if (error != filesystem::FILE_ERROR_OK) {
+  if (error != filesystem::FileError::OK) {
     // TODO(erg): Better implementation here.
     NOTIMPLEMENTED();
     return SQLITE_IOERR_READ;
@@ -115,13 +115,13 @@ int MojoVFSWrite(sqlite3_file* sql_file,
   mojo::Array<uint8_t> mojo_data(size);
   memcpy(&mojo_data.front(), buffer, size);
 
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   uint32_t num_bytes_written = 0;
   GetFSFile(sql_file)->Write(std::move(mojo_data), offset,
-                             filesystem::WHENCE_FROM_BEGIN,
+                             filesystem::Whence::FROM_BEGIN,
                              Capture(&error, &num_bytes_written));
   GetFSFile(sql_file).WaitForIncomingResponse();
-  if (error != filesystem::FILE_ERROR_OK) {
+  if (error != filesystem::FileError::OK) {
     // TODO(erg): Better implementation here.
     NOTIMPLEMENTED();
     return SQLITE_IOERR_WRITE;
@@ -137,10 +137,10 @@ int MojoVFSWrite(sqlite3_file* sql_file,
 int MojoVFSTruncate(sqlite3_file* sql_file, sqlite_int64 size) {
   DVLOG(1) << "MojoVFSTruncate(*, " << size << ")";
   TRACE_EVENT0("sql", "MojoVFSTruncate");
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   GetFSFile(sql_file)->Truncate(size, Capture(&error));
   GetFSFile(sql_file).WaitForIncomingResponse();
-  if (error != filesystem::FILE_ERROR_OK) {
+  if (error != filesystem::FileError::OK) {
     // TODO(erg): Better implementation here.
     NOTIMPLEMENTED();
     return SQLITE_IOERR_TRUNCATE;
@@ -152,10 +152,10 @@ int MojoVFSTruncate(sqlite3_file* sql_file, sqlite_int64 size) {
 int MojoVFSSync(sqlite3_file* sql_file, int flags) {
   DVLOG(1) << "MojoVFSSync(*, " << flags << ")";
   TRACE_EVENT0("sql", "MojoVFSSync");
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   GetFSFile(sql_file)->Flush(Capture(&error));
   GetFSFile(sql_file).WaitForIncomingResponse();
-  if (error != filesystem::FILE_ERROR_OK) {
+  if (error != filesystem::FileError::OK) {
     // TODO(erg): Better implementation here.
     NOTIMPLEMENTED();
     return SQLITE_IOERR_FSYNC;
@@ -168,12 +168,12 @@ int MojoVFSFileSize(sqlite3_file* sql_file, sqlite_int64* size) {
   DVLOG(1) << "MojoVFSFileSize(*)";
   TRACE_EVENT0("sql", "MojoVFSFileSize");
 
-  filesystem::FileError err = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError err = filesystem::FileError::FAILED;
   filesystem::FileInformationPtr file_info;
   GetFSFile(sql_file)->Stat(Capture(&err, &file_info));
   GetFSFile(sql_file).WaitForIncomingResponse();
 
-  if (err != filesystem::FILE_ERROR_OK) {
+  if (err != filesystem::FileError::OK) {
     // TODO(erg): Better implementation here.
     NOTIMPLEMENTED();
     return SQLITE_IOERR_FSTAT;
@@ -283,11 +283,11 @@ int MojoVFSOpen(sqlite3_vfs* mojo_vfs,
 
   // Grab the incoming file
   filesystem::FilePtr file_ptr;
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   GetRootDirectory(mojo_vfs)->OpenFile(mojo_name, GetProxy(&file_ptr),
                                        open_flags, Capture(&error));
   GetRootDirectory(mojo_vfs).WaitForIncomingResponse();
-  if (error != filesystem::FILE_ERROR_OK) {
+  if (error != filesystem::FileError::OK) {
     // TODO(erg): Translate more of the mojo error codes into sqlite error
     // codes.
     return SQLITE_CANTOPEN;
@@ -313,16 +313,16 @@ int MojoVFSDelete(sqlite3_vfs* mojo_vfs, const char* filename, int sync_dir) {
   // TODO(erg): The default windows sqlite VFS has retry code to work around
   // antivirus software keeping files open. We'll probably have to do something
   // like that in the far future if we ever support Windows.
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
   GetRootDirectory(mojo_vfs)->Delete(filename, 0, Capture(&error));
   GetRootDirectory(mojo_vfs).WaitForIncomingResponse();
 
-  if (error == filesystem::FILE_ERROR_OK && sync_dir) {
+  if (error == filesystem::FileError::OK && sync_dir) {
     GetRootDirectory(mojo_vfs)->Flush(Capture(&error));
     GetRootDirectory(mojo_vfs).WaitForIncomingResponse();
   }
 
-  return error == filesystem::FILE_ERROR_OK ? SQLITE_OK : SQLITE_IOERR_DELETE;
+  return error == filesystem::FileError::OK ? SQLITE_OK : SQLITE_IOERR_DELETE;
 }
 
 int MojoVFSAccess(sqlite3_vfs* mojo_vfs,
@@ -333,7 +333,7 @@ int MojoVFSAccess(sqlite3_vfs* mojo_vfs,
   TRACE_EVENT2("sql", "MojoVFSAccess",
                "name", filename,
                "flags", flags);
-  filesystem::FileError error = filesystem::FILE_ERROR_FAILED;
+  filesystem::FileError error = filesystem::FileError::FAILED;
 
   if (flags == SQLITE_ACCESS_READWRITE || flags == SQLITE_ACCESS_READ) {
     bool is_writable = false;

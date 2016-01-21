@@ -79,8 +79,7 @@ WindowTreeImpl::WindowTreeImpl(ConnectionManager* connection_manager,
     is_embed_root_ = true;
   } else {
     access_policy_.reset(new DefaultAccessPolicy(id_, this));
-    is_embed_root_ =
-        (policy_bitmask & WindowTree::ACCESS_POLICY_EMBED_ROOT) != 0;
+    is_embed_root_ = (policy_bitmask & WindowTree::kAccessPolicyEmbedRoot) != 0;
   }
 }
 
@@ -105,8 +104,8 @@ void WindowTreeImpl::Init(mojom::WindowTreeClient* client,
 
   client->OnEmbed(id_, WindowToWindowData(to_send.front()), std::move(tree),
                   focused_window_transport_id,
-                  is_embed_root_ ? WindowTree::ACCESS_POLICY_EMBED_ROOT
-                                 : WindowTree::ACCESS_POLICY_DEFAULT);
+                  is_embed_root_ ? WindowTree::kAccessPolicyEmbedRoot
+                                 : WindowTree::kAccessPolicyDefault);
 }
 
 const ServerWindow* WindowTreeImpl::GetWindow(const WindowId& id) const {
@@ -151,7 +150,7 @@ void WindowTreeImpl::NotifyChangeCompleted(
     uint32_t change_id,
     mojom::WindowManagerErrorCode error_code) {
   client_->OnChangeCompleted(
-      change_id, error_code == mojom::WINDOW_MANAGER_ERROR_CODE_SUCCESS);
+      change_id, error_code == mojom::WindowManagerErrorCode::SUCCESS);
 }
 
 bool WindowTreeImpl::NewWindow(
@@ -577,8 +576,8 @@ bool WindowTreeImpl::CanReorderWindow(const ServerWindow* window,
   const size_t target_i =
       std::find(children.begin(), children.end(), relative_window) -
       children.begin();
-  if ((direction == mojom::ORDER_DIRECTION_ABOVE && child_i == target_i + 1) ||
-      (direction == mojom::ORDER_DIRECTION_BELOW && child_i + 1 == target_i)) {
+  if ((direction == mojom::OrderDirection::ABOVE && child_i == target_i + 1) ||
+      (direction == mojom::OrderDirection::BELOW && child_i + 1 == target_i)) {
     return false;
   }
 

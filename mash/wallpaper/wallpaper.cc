@@ -58,11 +58,11 @@ class WallpaperApplicationDelegate : public mojo::ApplicationDelegate {
     std::map<std::string, std::vector<uint8_t>> properties;
     properties[mash::wm::mojom::kWindowContainer_Property] =
         mojo::TypeConverter<const std::vector<uint8_t>, int32_t>::Convert(
-            mash::wm::mojom::CONTAINER_USER_BACKGROUND);
+            static_cast<int32_t>(mash::wm::mojom::Container::USER_BACKGROUND));
     mus::Window* window =
         views::WindowManagerConnection::Get()->NewWindow(properties);
     params.native_widget = new views::NativeWidgetMus(
-        widget, app->shell(), window, mus::mojom::SURFACE_TYPE_DEFAULT);
+        widget, app->shell(), window, mus::mojom::SurfaceType::DEFAULT);
     widget->Init(params);
     widget->Show();
   }

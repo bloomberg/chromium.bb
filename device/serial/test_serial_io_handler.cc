@@ -45,7 +45,7 @@ void TestSerialIoHandler::ReadImpl() {
       std::min(buffer_.size(), static_cast<size_t>(pending_read_buffer_len()));
   memcpy(pending_read_buffer(), buffer_.c_str(), num_bytes);
   buffer_ = buffer_.substr(num_bytes);
-  ReadCompleted(static_cast<uint32_t>(num_bytes), serial::RECEIVE_ERROR_NONE);
+  ReadCompleted(static_cast<uint32_t>(num_bytes), serial::ReceiveError::NONE);
 }
 
 void TestSerialIoHandler::CancelReadImpl() {
@@ -60,7 +60,7 @@ void TestSerialIoHandler::WriteImpl() {
     return;
   }
   buffer_ += std::string(pending_write_buffer(), pending_write_buffer_len());
-  WriteCompleted(pending_write_buffer_len(), serial::SEND_ERROR_NONE);
+  WriteCompleted(pending_write_buffer_len(), serial::SendError::NONE);
   if (pending_read_buffer())
     ReadImpl();
 }

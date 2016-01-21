@@ -24,20 +24,18 @@ enum class Accelerator : uint32_t {
 struct AcceleratorSpec {
   Accelerator id;
   mus::mojom::KeyboardCode keyboard_code;
-  mus::mojom::EventFlags event_flags;
+  // A bitfield of kEventFlag* and kMouseEventFlag* values in
+  // input_event_constants.mojom.
+  int event_flags;
 };
 
 AcceleratorSpec g_spec[] = {
-  { Accelerator::NewWindow,
-    mus::mojom::KEYBOARD_CODE_N,
-    mus::mojom::EVENT_FLAGS_CONTROL_DOWN },
-  { Accelerator::NewTab,
-    mus::mojom::KEYBOARD_CODE_T,
-    mus::mojom::EVENT_FLAGS_CONTROL_DOWN },
-  { Accelerator::NewIncognitoWindow,
-    mus::mojom::KEYBOARD_CODE_N,
-    static_cast<mus::mojom::EventFlags>(mus::mojom::EVENT_FLAGS_CONTROL_DOWN |
-        mus::mojom::EVENT_FLAGS_SHIFT_DOWN) },
+    {Accelerator::NewWindow, mus::mojom::KeyboardCode::N,
+     mus::mojom::kEventFlagControlDown},
+    {Accelerator::NewTab, mus::mojom::KeyboardCode::T,
+     mus::mojom::kEventFlagControlDown},
+    {Accelerator::NewIncognitoWindow, mus::mojom::KeyboardCode::N,
+     mus::mojom::kEventFlagControlDown | mus::mojom::kEventFlagShiftDown},
 };
 
 void AssertTrue(bool success) {

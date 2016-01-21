@@ -109,7 +109,7 @@ void ServicePortProvider::OnConnectResult(
     scoped_ptr<blink::WebServicePortConnectCallbacks> callbacks,
     ServicePortConnectResult result,
     int32_t port_id) {
-  if (result == SERVICE_PORT_CONNECT_RESULT_ACCEPT) {
+  if (result == ServicePortConnectResult::ACCEPT) {
     callbacks->onSuccess(port_id);
   } else {
     callbacks->onError();

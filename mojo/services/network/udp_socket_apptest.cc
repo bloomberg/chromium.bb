@@ -26,7 +26,7 @@ namespace {
 
 NetAddressPtr GetLocalHostWithAnyPort() {
   NetAddressPtr addr(NetAddress::New());
-  addr->family = NET_ADDRESS_FAMILY_IPV4;
+  addr->family = NetAddressFamily::IPV4;
   addr->ipv4 = NetAddressIPv4::New();
   addr->ipv4->port = 0;
   addr->ipv4->addr.resize(4);

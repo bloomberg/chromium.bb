@@ -53,11 +53,11 @@ void ArcPowerBridge::OnAcquireDisplayWakeLock(
 
   int wake_lock_id = -1;
   switch (type) {
-    case DISPLAY_WAKE_LOCK_TYPE_BRIGHT:
+    case DisplayWakeLockType::BRIGHT:
       wake_lock_id = controller->AddScreenWakeLock(
           chromeos::PowerPolicyController::REASON_OTHER, "ARC");
       break;
-    case DISPLAY_WAKE_LOCK_TYPE_DIM:
+    case DisplayWakeLockType::DIM:
       wake_lock_id = controller->AddDimWakeLock(
           chromeos::PowerPolicyController::REASON_OTHER, "ARC");
       break;

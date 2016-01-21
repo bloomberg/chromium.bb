@@ -15,11 +15,11 @@ TypeConverter<content::ServiceWorkerStatusCode,
               content::ServiceWorkerEventStatus>::
     Convert(content::ServiceWorkerEventStatus status) {
   content::ServiceWorkerStatusCode status_code;
-  if (status == content::SERVICE_WORKER_EVENT_STATUS_COMPLETED) {
+  if (status == content::ServiceWorkerEventStatus::COMPLETED) {
     status_code = content::SERVICE_WORKER_OK;
-  } else if (status == content::SERVICE_WORKER_EVENT_STATUS_REJECTED) {
+  } else if (status == content::ServiceWorkerEventStatus::REJECTED) {
     status_code = content::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED;
-  } else if (status == content::SERVICE_WORKER_EVENT_STATUS_ABORTED) {
+  } else if (status == content::ServiceWorkerEventStatus::ABORTED) {
     status_code = content::SERVICE_WORKER_ERROR_ABORT;
   } else {
     // We received an unexpected value back. This can theoretically happen as

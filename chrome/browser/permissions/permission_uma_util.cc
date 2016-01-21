@@ -233,9 +233,10 @@ void RecordPermissionRequest(PermissionType permission,
     base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
         "Permissions.Requested.CrossOrigin_" +
             PermissionUtil::GetPermissionString(permission),
-        1, content::PERMISSION_STATUS_LAST, content::PERMISSION_STATUS_LAST + 1,
+        1, static_cast<int>(content::PermissionStatus::LAST),
+        static_cast<int>(content::PermissionStatus::LAST) + 1,
         base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(embedding_permission_status);
+    histogram->Add(static_cast<int>(embedding_permission_status));
   } else {
     UMA_HISTOGRAM_ENUMERATION(
         "Permissions.Requested.SameOrigin",

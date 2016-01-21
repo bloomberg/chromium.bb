@@ -92,7 +92,7 @@ mus::Window* WindowManagerImpl::NewTopLevelWindow(
   DCHECK(root);
 
   const bool provide_non_client_frame =
-      GetWindowType(*properties) == mus::mojom::WINDOW_TYPE_WINDOW;
+      GetWindowType(*properties) == mus::mojom::WindowType::WINDOW;
   if (provide_non_client_frame)
     (*properties)[mus::mojom::kWaitForUnderlay_Property].clear();
 

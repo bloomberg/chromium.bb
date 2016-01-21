@@ -198,7 +198,7 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
  private:
   // sample::IntegerAccessor implementation.
   void GetInteger(const GetIntegerCallback& callback) override {
-    callback.Run(integer_, sample::ENUM_VALUE);
+    callback.Run(integer_, sample::Enum::VALUE);
   }
   void SetInteger(int64_t data, sample::Enum type) override {
     integer_ = data;
@@ -421,9 +421,9 @@ TEST_F(InterfacePtrTest, ReentrantWaitForIncomingMethodCall) {
   base::RunLoop run_loop, run_loop2;
   auto called_cb = [&run_loop](int32_t result) { run_loop.Quit(); };
   auto called_cb2 = [&run_loop2](int32_t result) { run_loop2.Quit(); };
-  proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                    called_cb);
-  proxy->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  proxy->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                    called_cb2);
 
   run_loop.Run();
@@ -462,7 +462,7 @@ TEST_F(InterfacePtrTest, RequireVersion) {
   EXPECT_EQ(1u, ptr.version());
   base::RunLoop run_loop;
   impl.set_closure(run_loop.QuitClosure());
-  ptr->SetInteger(123, sample::ENUM_VALUE);
+  ptr->SetInteger(123, sample::Enum::VALUE);
   run_loop.Run();
   EXPECT_FALSE(ptr.encountered_error());
   EXPECT_EQ(123, impl.integer());
@@ -471,7 +471,7 @@ TEST_F(InterfacePtrTest, RequireVersion) {
   EXPECT_EQ(3u, ptr.version());
   base::RunLoop run_loop2;
   impl.set_closure(run_loop2.QuitClosure());
-  ptr->SetInteger(456, sample::ENUM_VALUE);
+  ptr->SetInteger(456, sample::Enum::VALUE);
   run_loop2.Run();
   EXPECT_FALSE(ptr.encountered_error());
   EXPECT_EQ(456, impl.integer());
@@ -482,7 +482,7 @@ TEST_F(InterfacePtrTest, RequireVersion) {
   EXPECT_EQ(4u, ptr.version());
   base::RunLoop run_loop3;
   ptr.set_connection_error_handler(run_loop3.QuitClosure());
-  ptr->SetInteger(789, sample::ENUM_VALUE);
+  ptr->SetInteger(789, sample::Enum::VALUE);
   run_loop3.Run();
   EXPECT_TRUE(ptr.encountered_error());
   // The call to SetInteger() after RequireVersion(4u) is ignored.

@@ -36,7 +36,6 @@
 using mojo::Array;
 using mojo::InterfaceRequest;
 using mojo::String;
-using mus::mojom::ERROR_CODE_NONE;
 using mus::mojom::Event;
 using mus::mojom::EventPtr;
 using mus::mojom::LocationData;
@@ -284,7 +283,7 @@ class TestWindowTreeHostConnection : public WindowTreeHostConnection {
     connection_manager()->AddHost(this);
     set_window_tree(connection_manager()->EmbedAtWindow(
         window_tree_host()->root_window(),
-        mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
+        mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
         mus::mojom::WindowTreeClientPtr()));
   }
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeHostConnection);
@@ -411,7 +410,9 @@ class WindowTreeTest : public testing::Test {
   }
 
   TestWindowTreeClient* wm_client() { return wm_client_; }
-  int32_t cursor_id() { return cursor_id_; }
+  mus::mojom::Cursor cursor_id() {
+    return static_cast<mus::mojom::Cursor>(cursor_id_);
+  }
 
   TestWindowTreeHostConnection* host_connection() { return host_connection_; }
 
@@ -494,7 +495,7 @@ void WindowTreeTest::SetupEventTargeting(
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
   wm_connection()->Embed(embed_window_id, std::move(client),
-                         mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+                         mojom::WindowTree::kAccessPolicyDefault,
                          &connection_id);
   WindowTreeImpl* connection1 = connection_manager()->GetConnectionWithRoot(
       GetWindowById(embed_window_id));
@@ -542,7 +543,7 @@ TEST_F(WindowTreeTest, FocusOnPointer) {
   wm_client()->Bind(std::move(client_request));
   ConnectionSpecificId connection_id = 0;
   wm_connection()->Embed(embed_window_id, std::move(client),
-                         mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+                         mojom::WindowTree::kAccessPolicyDefault,
                          &connection_id);
   WindowTreeImpl* connection1 = connection_manager()->GetConnectionWithRoot(
       GetWindowById(embed_window_id));
@@ -644,11 +645,11 @@ TEST_F(WindowTreeTest, CursorChangesWhenMouseOverWindowAndWindowSetsCursor) {
   // dispatched. This is only to place the mouse cursor over that window though.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
 
-  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::IBEAM);
 
   // Because the cursor is over the window when SetCursor was called, we should
   // have immediately changed the cursor.
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 }
 
 TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
@@ -661,11 +662,11 @@ TEST_F(WindowTreeTest, CursorChangesWhenEnteringWindowWithDifferentCursor) {
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 }
 
 TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
@@ -678,7 +679,7 @@ TEST_F(WindowTreeTest, TouchesDontChangeCursor) {
   // Let's create a pointer event outside the window and then move the pointer
   // inside.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   // With a touch event, we shouldn't update the cursor.
@@ -696,20 +697,20 @@ TEST_F(WindowTreeTest, DragOutsideWindow) {
   // Start with the cursor outside the window. Setting the cursor shouldn't
   // change the cursor.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   // Move the pointer to the inside of the window
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(21, 22));
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 
   // Start the drag.
   DispatchEventAndAckImmediately(CreateMouseDownEvent(21, 22));
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 
   // Move the cursor (mouse is still down) outside the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(5, 5));
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 
   // Release the cursor. We should now adapt the cursor of the window
   // underneath the pointer.
@@ -726,13 +727,13 @@ TEST_F(WindowTreeTest, ChangingWindowBoundsChangesCursor) {
 
   // Put the cursor just outside the bounds of the window.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(41, 41));
-  window->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
+  window->SetPredefinedCursor(mojom::Cursor::IBEAM);
   EXPECT_EQ(mojom::Cursor::CURSOR_NULL, cursor_id());
 
   // Expand the bounds of the window so they now include where the cursor now
   // is.
   window->SetBounds(gfx::Rect(20, 20, 25, 25));
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 
   // Contract the bounds again.
   window->SetBounds(gfx::Rect(20, 20, 20, 20));
@@ -761,16 +762,16 @@ TEST_F(WindowTreeTest, WindowReorderingChangesCursor) {
   EnableHitTest(window2);
 
   // Give each window a different cursor.
-  window1->SetPredefinedCursor(mojom::Cursor::CURSOR_IBEAM);
-  window2->SetPredefinedCursor(mojom::Cursor::CURSOR_HAND);
+  window1->SetPredefinedCursor(mojom::Cursor::IBEAM);
+  window2->SetPredefinedCursor(mojom::Cursor::HAND);
 
   // We expect window2 to be over window1 now.
   DispatchEventAndAckImmediately(CreateMouseMoveEvent(22, 22));
-  EXPECT_EQ(mojom::Cursor::CURSOR_HAND, cursor_id());
+  EXPECT_EQ(mojom::Cursor::HAND, cursor_id());
 
   // But when we put window2 at the bottom, we should adapt window1's cursor.
   window2->parent()->StackChildAtBottom(window2);
-  EXPECT_EQ(mojom::Cursor::CURSOR_IBEAM, cursor_id());
+  EXPECT_EQ(mojom::Cursor::IBEAM, cursor_id());
 }
 
 TEST_F(WindowTreeTest, EventAck) {

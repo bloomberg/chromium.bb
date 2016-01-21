@@ -101,7 +101,7 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
   };
   {
     Binding<sample::Service> binding(&impl, std::move(request));
-    ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+    ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                    called_cb);
     run_loop2.Run();
     EXPECT_TRUE(called);
@@ -114,7 +114,7 @@ TEST_F(BindingTest, DestroyClosesMessagePipe) {
 
   // And calls should fail.
   called = false;
-  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  called_cb);
   loop().RunUntilIdle();
   EXPECT_FALSE(called);
@@ -210,7 +210,7 @@ TEST_F(BindingTest, Unbind) {
     called = true;
     run_loop.Quit();
   };
-  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  called_cb);
   run_loop.Run();
   EXPECT_TRUE(called);
@@ -219,7 +219,7 @@ TEST_F(BindingTest, Unbind) {
   auto request = binding.Unbind();
   EXPECT_FALSE(binding.is_bound());
   // All calls should fail when not bound...
-  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  called_cb);
   loop().RunUntilIdle();
   EXPECT_FALSE(called);
@@ -233,7 +233,7 @@ TEST_F(BindingTest, Unbind) {
     called = true;
     run_loop2.Quit();
   };
-  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  called_cb2);
   run_loop2.Run();
   EXPECT_TRUE(called);
@@ -247,7 +247,7 @@ class IntegerAccessorImpl : public sample::IntegerAccessor {
  private:
   // sample::IntegerAccessor implementation.
   void GetInteger(const GetIntegerCallback& callback) override {
-    callback.Run(1, sample::ENUM_VALUE);
+    callback.Run(1, sample::Enum::VALUE);
   }
   void SetInteger(int64_t data, sample::Enum type) override {}
 
@@ -273,7 +273,7 @@ TEST_F(BindingTest, PauseResume) {
   ServiceImpl impl;
   Binding<sample::Service> binding(&impl, std::move(request));
   binding.PauseIncomingMethodCallProcessing();
-  ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+  ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                  called_cb);
   EXPECT_FALSE(called);
   loop().RunUntilIdle();
@@ -337,7 +337,7 @@ TEST_F(StrongBindingTest, DestroyClosesMessagePipe) {
   };
   {
     StrongBinding<sample::Service> binding(&impl, std::move(request));
-    ptr->Frobinate(nullptr, sample::Service::BAZ_OPTIONS_REGULAR, nullptr,
+    ptr->Frobinate(nullptr, sample::Service::BazOptions::REGULAR, nullptr,
                    called_cb);
     run_loop2.Run();
     EXPECT_TRUE(called);

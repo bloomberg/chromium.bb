@@ -26,7 +26,6 @@ using mojo::Callback;
 using mojo::InterfaceRequest;
 using mojo::RectPtr;
 using mojo::String;
-using mus::mojom::ERROR_CODE_NONE;
 using mus::mojom::ErrorCode;
 using mus::mojom::EventPtr;
 using mus::mojom::ViewportMetricsPtr;
@@ -75,7 +74,7 @@ bool EmbedUrl(mojo::ApplicationImpl* app,
     mojom::WindowTreeClientPtr client;
     app->ConnectToService(url.get(), &client);
     ws->Embed(root_id, std::move(client),
-              mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+              mojom::WindowTree::kAccessPolicyDefault,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -87,7 +86,7 @@ bool Embed(WindowTree* ws, Id root_id, mojom::WindowTreeClientPtr client) {
   base::RunLoop run_loop;
   {
     ws->Embed(root_id, std::move(client),
-              mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+              mojom::WindowTree::kAccessPolicyDefault,
               base::Bind(&EmbedCallbackImpl, &run_loop, &result));
   }
   run_loop.Run();
@@ -495,8 +494,7 @@ class WindowTreeAppTest : public mojo::test::ApplicationTestBase,
       Id root_id,
       int* connection_id) {
     return EstablishConnectionViaEmbedWithPolicyBitmask(
-        owner, root_id, mojom::WindowTree::ACCESS_POLICY_DEFAULT,
-        connection_id);
+        owner, root_id, mojom::WindowTree::kAccessPolicyDefault, connection_id);
   }
 
   scoped_ptr<TestWindowTreeClientImpl>
@@ -943,7 +941,7 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
   {
     changes1()->clear();
     ASSERT_TRUE(ws_client2()->ReorderWindow(window_2_2, window_2_3,
-                                            mojom::ORDER_DIRECTION_ABOVE));
+                                            mojom::OrderDirection::ABOVE));
 
     ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window_2_2) + " relative=" +
@@ -954,7 +952,7 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
   {
     changes1()->clear();
     ASSERT_TRUE(ws_client2()->ReorderWindow(window_2_2, window_2_3,
-                                            mojom::ORDER_DIRECTION_BELOW));
+                                            mojom::OrderDirection::BELOW));
 
     ws_client1_->WaitForChangeCount(1);
     EXPECT_EQ("Reordered window=" + IdToString(window_2_2) + " relative=" +
@@ -964,24 +962,24 @@ TEST_F(WindowTreeAppTest, ReorderWindow) {
 
   // view2 is already below view3.
   EXPECT_FALSE(ws_client2()->ReorderWindow(window_2_2, window_2_3,
-                                           mojom::ORDER_DIRECTION_BELOW));
+                                           mojom::OrderDirection::BELOW));
 
   // view4 & 5 are unknown to connection2_.
   EXPECT_FALSE(ws_client2()->ReorderWindow(window_1_4, window_1_5,
-                                           mojom::ORDER_DIRECTION_ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // view6 & view3 have different parents.
   EXPECT_FALSE(ws_client1()->ReorderWindow(window_2_3, window_2_6,
-                                           mojom::ORDER_DIRECTION_ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // Non-existent window-ids
   EXPECT_FALSE(ws_client1()->ReorderWindow(BuildWindowId(connection_id_1(), 27),
                                            BuildWindowId(connection_id_1(), 28),
-                                           mojom::ORDER_DIRECTION_ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 
   // view7 & view8 are un-parented.
   EXPECT_FALSE(ws_client1()->ReorderWindow(window_2_7, window_2_8,
-                                           mojom::ORDER_DIRECTION_ABOVE));
+                                           mojom::OrderDirection::ABOVE));
 }
 
 // Verifies DeleteWindow works.
@@ -1420,8 +1418,8 @@ TEST_F(WindowTreeAppTest, SetCursor) {
   Id window_1_1 = BuildWindowId(connection_id_1(), 1);
   changes2()->clear();
 
-  ASSERT_TRUE(ws_client1()->SetPredefinedCursor(window_1_1,
-                                                mojom::Cursor::CURSOR_IBEAM));
+  ASSERT_TRUE(
+      ws_client1()->SetPredefinedCursor(window_1_1, mojom::Cursor::IBEAM));
   ws_client2_->WaitForChangeCount(1u);
 
   EXPECT_EQ("CursorChanged id=" + IdToString(window_1_1) + " cursor_id=4",
@@ -1711,7 +1709,7 @@ TEST_F(WindowTreeAppTest, CantEmbedFromConnectionRoot) {
       ws_client1()->AddWindow(BuildWindowId(connection_id_1(), 1), window_1_2));
   ASSERT_TRUE(ws_client3_.get() == nullptr);
   ws_client3_ = EstablishConnectionViaEmbedWithPolicyBitmask(
-      ws1(), window_1_2, mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT, nullptr);
+      ws1(), window_1_2, mojom::WindowTree::kAccessPolicyEmbedRoot, nullptr);
   ASSERT_TRUE(ws_client3_.get() != nullptr);
   ws_client3_->set_root_window(root_window_id());
 

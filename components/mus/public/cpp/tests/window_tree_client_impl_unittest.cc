@@ -83,7 +83,7 @@ class WindowTreeSetup {
  public:
   WindowTreeSetup() : tree_client_(&window_tree_delegate_, nullptr, nullptr) {
     WindowTreeClientImplPrivate(&tree_client_)
-        .Init(&window_tree_, mojom::WindowTree::ACCESS_POLICY_DEFAULT);
+        .Init(&window_tree_, mojom::WindowTree::kAccessPolicyDefault);
     window_tree_.GetAndClearChangeId(nullptr);
   }
 

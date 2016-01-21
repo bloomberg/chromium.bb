@@ -95,7 +95,7 @@ void OnControlTransferInPermissionCheckComplete(
         base::Bind(&OnTransferIn, base::Passed(&callback)));
   } else {
     mojo::Array<uint8_t> data;
-    callback->Run(TRANSFER_STATUS_PERMISSION_DENIED, std::move(data));
+    callback->Run(TransferStatus::PERMISSION_DENIED, std::move(data));
   }
 }
 
@@ -124,7 +124,7 @@ void OnControlTransferOutPermissionCheckComplete(
         params->request, params->value, params->index, buffer, data.size(),
         timeout, base::Bind(&OnTransferOut, base::Passed(&callback)));
   } else {
-    callback->Run(TRANSFER_STATUS_PERMISSION_DENIED);
+    callback->Run(TransferStatus::PERMISSION_DENIED);
   }
 }
 
@@ -189,15 +189,15 @@ void DeviceImpl::HasControlTransferPermission(
   DCHECK(device_handle_);
   const UsbConfigDescriptor* config = device_->GetActiveConfiguration();
 
-  if (recipient == CONTROL_TRANSFER_RECIPIENT_INTERFACE ||
-      recipient == CONTROL_TRANSFER_RECIPIENT_ENDPOINT) {
+  if (recipient == ControlTransferRecipient::INTERFACE ||
+      recipient == ControlTransferRecipient::ENDPOINT) {
     if (!config) {
       callback.Run(false);
       return;
     }
 
     uint8_t interface_number = index & 0xff;
-    if (recipient == CONTROL_TRANSFER_RECIPIENT_ENDPOINT) {
+    if (recipient == ControlTransferRecipient::ENDPOINT) {
       if (!device_handle_->FindInterfaceByEndpoint(index & 0xff,
                                                    &interface_number)) {
         callback.Run(false);
@@ -220,7 +220,7 @@ void DeviceImpl::HasControlTransferPermission(
 void DeviceImpl::OnOpen(const OpenCallback& callback,
                         scoped_refptr<UsbDeviceHandle> handle) {
   device_handle_ = handle;
-  callback.Run(handle ? OPEN_DEVICE_ERROR_OK : OPEN_DEVICE_ERROR_ACCESS_DENIED);
+  callback.Run(handle ? OpenDeviceError::OK : OpenDeviceError::ACCESS_DENIED);
 }
 
 void DeviceImpl::GetDeviceInfo(const GetDeviceInfoCallback& callback) {
@@ -325,7 +325,7 @@ void DeviceImpl::ControlTransferIn(ControlTransferParamsPtr params,
                                    uint32_t timeout,
                                    const ControlTransferInCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR, mojo::Array<uint8_t>());
+    callback.Run(TransferStatus::TRANSFER_ERROR, mojo::Array<uint8_t>());
     return;
   }
 
@@ -345,7 +345,7 @@ void DeviceImpl::ControlTransferOut(
     uint32_t timeout,
     const ControlTransferOutCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR);
+    callback.Run(TransferStatus::TRANSFER_ERROR);
     return;
   }
 
@@ -364,7 +364,7 @@ void DeviceImpl::GenericTransferIn(uint8_t endpoint_number,
                                    uint32_t timeout,
                                    const GenericTransferInCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR, mojo::Array<uint8_t>());
+    callback.Run(TransferStatus::TRANSFER_ERROR, mojo::Array<uint8_t>());
     return;
   }
 
@@ -382,7 +382,7 @@ void DeviceImpl::GenericTransferOut(
     uint32_t timeout,
     const GenericTransferOutCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR);
+    callback.Run(TransferStatus::TRANSFER_ERROR);
     return;
   }
 
@@ -403,7 +403,8 @@ void DeviceImpl::IsochronousTransferIn(
     uint32_t timeout,
     const IsochronousTransferInCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR, mojo::Array<mojo::Array<uint8_t>>());
+    callback.Run(TransferStatus::TRANSFER_ERROR,
+                 mojo::Array<mojo::Array<uint8_t>>());
     return;
   }
 
@@ -425,7 +426,7 @@ void DeviceImpl::IsochronousTransferOut(
     uint32_t timeout,
     const IsochronousTransferOutCallback& callback) {
   if (!device_handle_) {
-    callback.Run(TRANSFER_STATUS_ERROR);
+    callback.Run(TransferStatus::TRANSFER_ERROR);
     return;
   }
 

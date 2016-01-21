@@ -19,10 +19,10 @@ namespace {
 // Serial configuration parameters for the BattOr.
 const uint32_t kBattOrBitrate = 2000000;
 const device::serial::DataBits kBattOrDataBits =
-    device::serial::DATA_BITS_EIGHT;
+    device::serial::DataBits::EIGHT;
 const device::serial::ParityBit kBattOrParityBit =
-    device::serial::PARITY_BIT_NONE;
-const device::serial::StopBits kBattOrStopBit = device::serial::STOP_BITS_ONE;
+    device::serial::ParityBit::NONE;
+const device::serial::StopBits kBattOrStopBit = device::serial::StopBits::ONE;
 const bool kBattOrCtsFlowControl = true;
 const bool kBattOrHasCtsFlowControl = true;
 // The maximum BattOr message is 50kB long.
@@ -161,7 +161,7 @@ void BattOrConnectionImpl::BeginReadBytes(size_t max_bytes_to_read) {
 
 void BattOrConnectionImpl::OnBytesRead(int bytes_read,
                                        device::serial::ReceiveError error) {
-  if (bytes_read == 0 || error != device::serial::RECEIVE_ERROR_NONE) {
+  if (bytes_read == 0 || error != device::serial::ReceiveError::NONE) {
     // If we didn't have a message before, and we weren't able to read any
     // additional bytes, then there's no valid message available.
     EndReadBytes(false, BATTOR_MESSAGE_TYPE_CONTROL, nullptr);
@@ -255,7 +255,7 @@ bool BattOrConnectionImpl::ParseMessage(BattOrMessageType* type,
 
 void BattOrConnectionImpl::OnBytesSent(int bytes_sent,
                                        device::serial::SendError error) {
-  bool success = (error == device::serial::SEND_ERROR_NONE) &&
+  bool success = (error == device::serial::SendError::NONE) &&
                  (pending_write_length_ == static_cast<size_t>(bytes_sent));
   listener_->OnBytesSent(success);
 }

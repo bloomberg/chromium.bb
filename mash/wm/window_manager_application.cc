@@ -64,8 +64,8 @@ bool WindowManagerApplication::WindowIsContainer(
 void WindowManagerApplication::AddAccelerators() {
   window_tree_host_->AddAccelerator(
       kWindowSwitchCmd,
-      mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_TAB,
-                            mus::mojom::EVENT_FLAGS_CONTROL_DOWN),
+      mus::CreateKeyMatcher(mus::mojom::KeyboardCode::TAB,
+                            mus::mojom::kEventFlagControlDown),
       base::Bind(&AssertTrue));
 }
 
@@ -120,13 +120,13 @@ void WindowManagerApplication::OnEmbed(mus::Window* root) {
   root_->AddObserver(this);
   CreateContainers();
   background_layout_.reset(new BackgroundLayout(
-      GetWindowForContainer(mojom::CONTAINER_USER_BACKGROUND)));
+      GetWindowForContainer(mojom::Container::USER_BACKGROUND)));
   shelf_layout_.reset(
-      new ShelfLayout(GetWindowForContainer(mojom::CONTAINER_USER_SHELF)));
+      new ShelfLayout(GetWindowForContainer(mojom::Container::USER_SHELF)));
 
-  mus::Window* window = GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
+  mus::Window* window = GetWindowForContainer(mojom::Container::USER_WINDOWS);
   window_layout_.reset(
-      new WindowLayout(GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS)));
+      new WindowLayout(GetWindowForContainer(mojom::Container::USER_WINDOWS)));
   window_tree_host_->AddActivationParent(window->id());
   window_tree_host_->SetTitle("Mash");
 
@@ -213,8 +213,9 @@ void WindowManagerApplication::OnWindowDestroyed(mus::Window* window) {
 
 void WindowManagerApplication::CreateContainers() {
   for (uint16_t container =
-           static_cast<uint16_t>(mojom::CONTAINER_ALL_USER_BACKGROUND);
-       container < static_cast<uint16_t>(mojom::CONTAINER_COUNT); ++container) {
+           static_cast<uint16_t>(mojom::Container::ALL_USER_BACKGROUND);
+       container < static_cast<uint16_t>(mojom::Container::COUNT);
+       ++container) {
     mus::Window* window = root_->connection()->NewWindow();
     DCHECK_EQ(mus::LoWord(window->id()), container)
         << "Containers must be created before other windows!";

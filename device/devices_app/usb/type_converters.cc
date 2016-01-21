@@ -41,9 +41,9 @@ device::usb::TransferDirection
 TypeConverter<device::usb::TransferDirection, device::UsbEndpointDirection>::
     Convert(const device::UsbEndpointDirection& direction) {
   if (direction == device::USB_DIRECTION_INBOUND)
-    return device::usb::TRANSFER_DIRECTION_IN;
+    return device::usb::TransferDirection::INBOUND;
   DCHECK(direction == device::USB_DIRECTION_OUTBOUND);
-  return device::usb::TRANSFER_DIRECTION_OUT;
+  return device::usb::TransferDirection::OUTBOUND;
 }
 
 // static
@@ -52,24 +52,24 @@ TypeConverter<device::usb::TransferStatus, device::UsbTransferStatus>::Convert(
     const device::UsbTransferStatus& status) {
   switch (status) {
     case device::USB_TRANSFER_COMPLETED:
-      return device::usb::TRANSFER_STATUS_COMPLETED;
+      return device::usb::TransferStatus::COMPLETED;
     case device::USB_TRANSFER_ERROR:
-      return device::usb::TRANSFER_STATUS_ERROR;
+      return device::usb::TransferStatus::TRANSFER_ERROR;
     case device::USB_TRANSFER_TIMEOUT:
-      return device::usb::TRANSFER_STATUS_TIMEOUT;
+      return device::usb::TransferStatus::TIMEOUT;
     case device::USB_TRANSFER_CANCELLED:
-      return device::usb::TRANSFER_STATUS_CANCELLED;
+      return device::usb::TransferStatus::CANCELLED;
     case device::USB_TRANSFER_STALLED:
-      return device::usb::TRANSFER_STATUS_STALLED;
+      return device::usb::TransferStatus::STALLED;
     case device::USB_TRANSFER_DISCONNECT:
-      return device::usb::TRANSFER_STATUS_DISCONNECT;
+      return device::usb::TransferStatus::DISCONNECT;
     case device::USB_TRANSFER_OVERFLOW:
-      return device::usb::TRANSFER_STATUS_BABBLE;
+      return device::usb::TransferStatus::BABBLE;
     case device::USB_TRANSFER_LENGTH_SHORT:
-      return device::usb::TRANSFER_STATUS_SHORT_PACKET;
+      return device::usb::TransferStatus::SHORT_PACKET;
     default:
       NOTREACHED();
-      return device::usb::TRANSFER_STATUS_ERROR;
+      return device::usb::TransferStatus::TRANSFER_ERROR;
   }
 }
 
@@ -79,13 +79,13 @@ TypeConverter<device::UsbDeviceHandle::TransferRequestType,
               device::usb::ControlTransferType>::
     Convert(const device::usb::ControlTransferType& type) {
   switch (type) {
-    case device::usb::CONTROL_TRANSFER_TYPE_STANDARD:
+    case device::usb::ControlTransferType::STANDARD:
       return device::UsbDeviceHandle::STANDARD;
-    case device::usb::CONTROL_TRANSFER_TYPE_CLASS:
+    case device::usb::ControlTransferType::CLASS:
       return device::UsbDeviceHandle::CLASS;
-    case device::usb::CONTROL_TRANSFER_TYPE_VENDOR:
+    case device::usb::ControlTransferType::VENDOR:
       return device::UsbDeviceHandle::VENDOR;
-    case device::usb::CONTROL_TRANSFER_TYPE_RESERVED:
+    case device::usb::ControlTransferType::RESERVED:
       return device::UsbDeviceHandle::RESERVED;
     default:
       NOTREACHED();
@@ -99,13 +99,13 @@ TypeConverter<device::UsbDeviceHandle::TransferRecipient,
               device::usb::ControlTransferRecipient>::
     Convert(const device::usb::ControlTransferRecipient& recipient) {
   switch (recipient) {
-    case device::usb::CONTROL_TRANSFER_RECIPIENT_DEVICE:
+    case device::usb::ControlTransferRecipient::DEVICE:
       return device::UsbDeviceHandle::DEVICE;
-    case device::usb::CONTROL_TRANSFER_RECIPIENT_INTERFACE:
+    case device::usb::ControlTransferRecipient::INTERFACE:
       return device::UsbDeviceHandle::INTERFACE;
-    case device::usb::CONTROL_TRANSFER_RECIPIENT_ENDPOINT:
+    case device::usb::ControlTransferRecipient::ENDPOINT:
       return device::UsbDeviceHandle::ENDPOINT;
-    case device::usb::CONTROL_TRANSFER_RECIPIENT_OTHER:
+    case device::usb::ControlTransferRecipient::OTHER:
       return device::UsbDeviceHandle::OTHER;
     default:
       NOTREACHED();
@@ -119,17 +119,17 @@ TypeConverter<device::usb::EndpointType, device::UsbTransferType>::Convert(
     const device::UsbTransferType& type) {
   switch (type) {
     case device::USB_TRANSFER_ISOCHRONOUS:
-      return device::usb::ENDPOINT_TYPE_ISOCHRONOUS;
+      return device::usb::EndpointType::ISOCHRONOUS;
     case device::USB_TRANSFER_BULK:
-      return device::usb::ENDPOINT_TYPE_BULK;
+      return device::usb::EndpointType::BULK;
     case device::USB_TRANSFER_INTERRUPT:
-      return device::usb::ENDPOINT_TYPE_INTERRUPT;
+      return device::usb::EndpointType::INTERRUPT;
     // Note that we do not expose control transfer in the public interface
     // because control endpoints are implied rather than explicitly enumerated
     // there.
     default:
       NOTREACHED();
-      return device::usb::ENDPOINT_TYPE_BULK;
+      return device::usb::EndpointType::BULK;
   }
 }
 

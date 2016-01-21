@@ -44,7 +44,7 @@ const int kMaxExpectedResponseLength = 2048;
 
 NetAddressPtr GetLocalHostWithAnyPort() {
   NetAddressPtr addr(NetAddress::New());
-  addr->family = NET_ADDRESS_FAMILY_IPV4;
+  addr->family = NetAddressFamily::IPV4;
   addr->ipv4 = NetAddressIPv4::New();
   addr->ipv4->port = 0;
   addr->ipv4->addr.resize(4);
@@ -379,7 +379,7 @@ class WebSocketClientImpl : public WebSocketClient {
   void OnFinishedWritingSendStream(uint32_t num_bytes, const char* buffer) {
     EXPECT_TRUE(buffer);
 
-    web_socket_->Send(true, WebSocket::MESSAGE_TYPE_TEXT, num_bytes);
+    web_socket_->Send(true, WebSocket::MessageType::TEXT, num_bytes);
   }
 
   void OnFinishedReadingReceiveStream(uint32_t num_bytes, const char* data) {

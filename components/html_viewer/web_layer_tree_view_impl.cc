@@ -76,7 +76,7 @@ void WebLayerTreeViewImpl::Initialize(mus::mojom::GpuPtr gpu_service,
         new mus::ContextProvider(cb.PassInterface().PassHandle()));
     output_surface_.reset(new mus::OutputSurface(
         context_provider,
-        window_->RequestSurface(mus::mojom::SURFACE_TYPE_DEFAULT)));
+        window_->RequestSurface(mus::mojom::SurfaceType::DEFAULT)));
   }
   layer_tree_host_->SetVisible(window_->visible());
 }

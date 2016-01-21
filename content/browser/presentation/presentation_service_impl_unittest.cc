@@ -308,12 +308,11 @@ class PresentationServiceImplTest : public RenderViewHostImplTestHarness {
                                    bool pass_ownership) {
     mojo::Array<presentation::SessionMessagePtr> expected_msgs(2);
     expected_msgs[0] = presentation::SessionMessage::New();
-    expected_msgs[0]->type =
-        presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_TEXT;
+    expected_msgs[0]->type = presentation::PresentationMessageType::TEXT;
     expected_msgs[0]->message = text_msg;
     expected_msgs[1] = presentation::SessionMessage::New();
-    expected_msgs[1]->type = presentation::PresentationMessageType::
-        PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+    expected_msgs[1]->type =
+        presentation::PresentationMessageType::ARRAY_BUFFER;
     expected_msgs[1]->data = mojo::Array<uint8_t>::From(binary_data);
 
     presentation::PresentationSessionInfoPtr session(
@@ -477,9 +476,9 @@ TEST_F(PresentationServiceImplTest, ListenForConnectionStateChange) {
   EXPECT_CALL(mock_client_,
               OnConnectionStateChanged(
                   Equals(presentation_connection),
-                  presentation::PRESENTATION_CONNECTION_STATE_CLOSED))
+                  presentation::PresentationConnectionState::CLOSED))
       .WillOnce(InvokeWithoutArgs(&run_loop, &base::RunLoop::Quit));
-  state_changed_cb.Run(content::PRESENTATION_CONNECTION_STATE_CLOSED);
+  state_changed_cb.Run(PRESENTATION_CONNECTION_STATE_CLOSED);
   run_loop.Run();
 }
 
@@ -636,8 +635,7 @@ TEST_F(PresentationServiceImplTest, SendStringMessage) {
   session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->type = presentation::PresentationMessageType::
-                          PRESENTATION_MESSAGE_TYPE_TEXT;
+  message_request->type = presentation::PresentationMessageType::TEXT;
   message_request->message = message;
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
@@ -675,8 +673,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBuffer) {
   session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->type = presentation::PresentationMessageType::
-                          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+  message_request->type = presentation::PresentationMessageType::ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
@@ -720,8 +717,7 @@ TEST_F(PresentationServiceImplTest, SendArrayBufferWithExceedingLimit) {
   session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->type = presentation::PresentationMessageType::
-                          PRESENTATION_MESSAGE_TYPE_ARRAY_BUFFER;
+  message_request->type = presentation::PresentationMessageType::ARRAY_BUFFER;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),
@@ -752,8 +748,7 @@ TEST_F(PresentationServiceImplTest, SendBlobData) {
   session->id = kPresentationId;
   presentation::SessionMessagePtr message_request(
       presentation::SessionMessage::New());
-  message_request->type =
-      presentation::PresentationMessageType::PRESENTATION_MESSAGE_TYPE_BLOB;
+  message_request->type = presentation::PresentationMessageType::BLOB;
   message_request->data = mojo::Array<uint8_t>::From(data);
   service_ptr_->SendSessionMessage(
       std::move(session), std::move(message_request),

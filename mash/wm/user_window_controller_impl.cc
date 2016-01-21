@@ -80,7 +80,7 @@ void UserWindowControllerImpl::Initialize(WindowManagerApplication* state) {
 }
 
 mus::Window* UserWindowControllerImpl::GetUserWindowContainer() const {
-  return state_->GetWindowForContainer(mojom::CONTAINER_USER_WINDOWS);
+  return state_->GetWindowForContainer(mojom::Container::USER_WINDOWS);
 }
 
 void UserWindowControllerImpl::OnTreeChanging(const TreeChangeParams& params) {

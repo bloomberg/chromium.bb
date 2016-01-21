@@ -26,7 +26,7 @@ TEST(PresentationTypeConvertersTest, PresentationError) {
   presentation::PresentationErrorPtr error_mojo(
       presentation::PresentationError::From(error));
   EXPECT_FALSE(error_mojo.is_null());
-  EXPECT_EQ(presentation::PRESENTATION_ERROR_TYPE_NO_AVAILABLE_SCREENS,
+  EXPECT_EQ(presentation::PresentationErrorType::NO_AVAILABLE_SCREENS,
             error_mojo->error_type);
   EXPECT_EQ(message, error_mojo->message);
 }

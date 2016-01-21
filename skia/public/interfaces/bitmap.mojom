@@ -20,7 +20,7 @@ enum ColorType {
 // Mirror of SkAlphaType.
 enum AlphaType {
   UNKNOWN,
-  OPAQUE,
+  ALPHA_TYPE_OPAQUE,
   PREMUL,
   UNPREMUL,
 };

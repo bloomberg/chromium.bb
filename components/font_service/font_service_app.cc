@@ -12,17 +12,17 @@
 #include "mojo/shell/public/cpp/application_connection.h"
 
 static_assert(static_cast<uint32_t>(SkTypeface::kNormal) ==
-                  static_cast<uint32_t>(font_service::TYPEFACE_STYLE_NORMAL),
+                  static_cast<uint32_t>(font_service::TypefaceStyle::NORMAL),
               "Skia and font service flags must match");
 static_assert(static_cast<uint32_t>(SkTypeface::kBold) ==
-                  static_cast<uint32_t>(font_service::TYPEFACE_STYLE_BOLD),
+                  static_cast<uint32_t>(font_service::TypefaceStyle::BOLD),
               "Skia and font service flags must match");
 static_assert(static_cast<uint32_t>(SkTypeface::kItalic) ==
-                  static_cast<uint32_t>(font_service::TYPEFACE_STYLE_ITALIC),
+                  static_cast<uint32_t>(font_service::TypefaceStyle::ITALIC),
               "Skia and font service flags must match");
 static_assert(
     static_cast<uint32_t>(SkTypeface::kBoldItalic) ==
-        static_cast<uint32_t>(font_service::TYPEFACE_STYLE_BOLD_ITALIC),
+        static_cast<uint32_t>(font_service::TypefaceStyle::BOLD_ITALIC),
     "Skia and font service flags must match");
 
 namespace {
@@ -86,7 +86,7 @@ void FontServiceApp::MatchFamilyName(const mojo::String& family_name,
       &result_identity, &result_family, &result_style);
 
   if (!r) {
-    callback.Run(nullptr, "", TYPEFACE_STYLE_NORMAL);
+    callback.Run(nullptr, "", TypefaceStyle::NORMAL);
     return;
   }
 

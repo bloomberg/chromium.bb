@@ -204,34 +204,34 @@ TEST(EventDispatcherTest, AcceleratorBasic) {
   EventDispatcher dispatcher(&event_dispatcher_delegate);
   uint32_t accelerator_1 = 1;
   mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
-      mus::mojom::KEYBOARD_CODE_W, mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
+      mus::mojom::KeyboardCode::W, mus::mojom::kEventFlagControlDown);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_1, std::move(matcher)));
 
   uint32_t accelerator_2 = 2;
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_N,
-                                  mus::mojom::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::N,
+                                  mus::mojom::kEventFlagNone);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Attempting to add a new accelerator with the same id should fail.
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
-                                  mus::mojom::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::T,
+                                  mus::mojom::kEventFlagNone);
   EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Adding the accelerator with the same id should succeed once the existing
   // accelerator is removed.
   dispatcher.RemoveAccelerator(accelerator_2);
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
-                                  mus::mojom::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::T,
+                                  mus::mojom::kEventFlagNone);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_2, std::move(matcher)));
 
   // Attempting to add an accelerator with the same matcher should fail.
   uint32_t accelerator_3 = 3;
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
-                                  mus::mojom::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::T,
+                                  mus::mojom::kEventFlagNone);
   EXPECT_FALSE(dispatcher.AddAccelerator(accelerator_3, std::move(matcher)));
 
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_T,
-                                  mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::T,
+                                  mus::mojom::kEventFlagControlDown);
   EXPECT_TRUE(dispatcher.AddAccelerator(accelerator_3, std::move(matcher)));
 }
 
@@ -243,7 +243,7 @@ TEST(EventDispatcherTest, EventMatching) {
   dispatcher.set_root(&root);
 
   mojom::EventMatcherPtr matcher = mus::CreateKeyMatcher(
-      mus::mojom::KEYBOARD_CODE_W, mus::mojom::EVENT_FLAGS_CONTROL_DOWN);
+      mus::mojom::KeyboardCode::W, mus::mojom::kEventFlagControlDown);
   uint32_t accelerator_1 = 1;
   dispatcher.AddAccelerator(accelerator_1, std::move(matcher));
 
@@ -265,8 +265,8 @@ TEST(EventDispatcherTest, EventMatching) {
   EXPECT_EQ(0u, event_dispatcher_delegate.GetAndClearLastAccelerator());
 
   uint32_t accelerator_2 = 2;
-  matcher = mus::CreateKeyMatcher(mus::mojom::KEYBOARD_CODE_W,
-                                  mus::mojom::EVENT_FLAGS_NONE);
+  matcher = mus::CreateKeyMatcher(mus::mojom::KeyboardCode::W,
+                                  mus::mojom::kEventFlagNone);
   dispatcher.AddAccelerator(accelerator_2, std::move(matcher));
   dispatcher.ProcessEvent(mojom::Event::From(key));
   EXPECT_EQ(accelerator_2,
@@ -458,13 +458,13 @@ TEST(EventDispatcherTest, ClientAreaGoesToOwner) {
   EXPECT_TRUE(event_dispatcher_delegate.has_queued_events());
   ASSERT_EQ(&child, details->window);
   EXPECT_TRUE(details->in_nonclient_area);
-  EXPECT_EQ(mojom::EVENT_TYPE_MOUSE_EXIT, details->event->action);
+  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
 
   details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
   EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
   ASSERT_EQ(&child, details->window);
   EXPECT_FALSE(details->in_nonclient_area);
-  EXPECT_EQ(mojom::EVENT_TYPE_POINTER_DOWN, details->event->action);
+  EXPECT_EQ(mojom::EventType::POINTER_DOWN, details->event->action);
 }
 
 TEST(EventDispatcherTest, AdditionalClientArea) {
@@ -716,14 +716,14 @@ TEST(EventDispatcherTest, MouseInExtendedHitTestRegion) {
       mojom::Event::From(static_cast<const ui::Event&>(ui_event)));
   details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
   EXPECT_EQ(&root, details->window);
-  EXPECT_EQ(mojom::EVENT_TYPE_MOUSE_EXIT, details->event->action);
+  EXPECT_EQ(mojom::EventType::MOUSE_EXIT, details->event->action);
   details = event_dispatcher_delegate.GetAndAdvanceDispatchedEventDetails();
   ASSERT_TRUE(details);
 
   EXPECT_FALSE(event_dispatcher_delegate.has_queued_events());
   EXPECT_TRUE(details->in_nonclient_area);
   ASSERT_EQ(&child, details->window);
-  EXPECT_EQ(mojom::EVENT_TYPE_POINTER_DOWN, details->event->action);
+  EXPECT_EQ(mojom::EventType::POINTER_DOWN, details->event->action);
   scoped_ptr<ui::Event> dispatched_event(
       details->event.To<scoped_ptr<ui::Event>>());
   ASSERT_TRUE(dispatched_event.get());

@@ -80,7 +80,7 @@ class ServerWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
-  int32_t cursor() const { return cursor_id_; }
+  int32_t cursor() const { return static_cast<int32_t>(cursor_id_); }
 
   const ServerWindow* parent() const { return parent_; }
   ServerWindow* parent() { return parent_; }

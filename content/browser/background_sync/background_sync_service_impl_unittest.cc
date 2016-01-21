@@ -89,7 +89,7 @@ void ErrorAndRegistrationListCallback(
     mojo::Array<content::SyncRegistrationPtr> registrations) {
   *called = true;
   *out_error = error;
-  if (error == BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE)
+  if (error == BackgroundSyncError::NONE)
     *out_array_size = registrations.size();
 }
 
@@ -222,17 +222,15 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   void GetRegistrationOneShot(
       const mojo::String& tag,
       const BackgroundSyncService::RegisterCallback& callback) {
-    service_impl_->GetRegistration(
-        BackgroundSyncPeriodicity::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT, tag,
-        sw_registration_id_, callback);
+    service_impl_->GetRegistration(BackgroundSyncPeriodicity::ONE_SHOT, tag,
+                                   sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 
   void GetRegistrationsOneShot(
       const BackgroundSyncService::GetRegistrationsCallback& callback) {
-    service_impl_->GetRegistrations(
-        BackgroundSyncPeriodicity::BACKGROUND_SYNC_PERIODICITY_ONE_SHOT,
-        sw_registration_id_, callback);
+    service_impl_->GetRegistrations(BackgroundSyncPeriodicity::ONE_SHOT,
+                                    sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 
@@ -267,7 +265,7 @@ TEST_F(BackgroundSyncServiceImplTest, Register) {
       default_sync_registration_.Clone(),
       base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
   EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
+  EXPECT_EQ(BackgroundSyncError::NONE, error);
   EXPECT_EQ("", reg->tag);
 }
 
@@ -279,8 +277,7 @@ TEST_F(BackgroundSyncServiceImplTest, Unregister) {
       default_sync_registration_->handle_id,
       base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
   EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_ALLOWED,
-            unregister_error);
+  EXPECT_EQ(BackgroundSyncError::NOT_ALLOWED, unregister_error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, UnregisterWithRegisteredSync) {
@@ -293,12 +290,12 @@ TEST_F(BackgroundSyncServiceImplTest, UnregisterWithRegisteredSync) {
                   base::Bind(&ErrorAndRegistrationCallback, &register_called,
                              &register_error, &reg));
   EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, register_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
   UnregisterOneShot(
       reg->handle_id,
       base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
   EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, unregister_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, unregister_error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistration) {
@@ -308,7 +305,7 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistration) {
   GetRegistrationOneShot(
       "", base::Bind(&ErrorAndRegistrationCallback, &called, &error, &reg));
   EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(BackgroundSyncError::NOT_FOUND, error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistrationWithRegisteredSync) {
@@ -322,14 +319,13 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrationWithRegisteredSync) {
                   base::Bind(&ErrorAndRegistrationCallback, &register_called,
                              &register_error, &register_reg));
   EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, register_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
   GetRegistrationOneShot(
       register_reg->tag,
       base::Bind(&ErrorAndRegistrationCallback, &getregistration_called,
                  &getregistration_error, &getregistration_reg));
   EXPECT_TRUE(getregistration_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE,
-            getregistration_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, getregistration_error);
 }
 
 TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {
@@ -339,7 +335,7 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrations) {
   GetRegistrationsOneShot(base::Bind(&ErrorAndRegistrationListCallback, &called,
                                      &error, &array_size));
   EXPECT_TRUE(called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, error);
+  EXPECT_EQ(BackgroundSyncError::NONE, error);
   EXPECT_EQ(0UL, array_size);
 }
 
@@ -354,13 +350,12 @@ TEST_F(BackgroundSyncServiceImplTest, GetRegistrationsWithRegisteredSync) {
                   base::Bind(&ErrorAndRegistrationCallback, &register_called,
                              &register_error, &register_reg));
   EXPECT_TRUE(register_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE, register_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
   GetRegistrationsOneShot(base::Bind(&ErrorAndRegistrationListCallback,
                                      &getregistrations_called,
                                      &getregistrations_error, &array_size));
   EXPECT_TRUE(getregistrations_called);
-  EXPECT_EQ(BackgroundSyncError::BACKGROUND_SYNC_ERROR_NONE,
-            getregistrations_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, getregistrations_error);
   EXPECT_EQ(1UL, array_size);
 }
 
@@ -373,7 +368,7 @@ TEST_F(BackgroundSyncServiceImplTest, NotifyWhenFinished) {
                   base::Bind(&ErrorAndRegistrationCallback, &register_called,
                              &register_error, &reg));
   EXPECT_TRUE(register_called);
-  EXPECT_EQ(BACKGROUND_SYNC_ERROR_NONE, register_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, register_error);
 
   // Unregister it.
   bool unregister_called = false;
@@ -382,19 +377,19 @@ TEST_F(BackgroundSyncServiceImplTest, NotifyWhenFinished) {
       reg->handle_id,
       base::Bind(&ErrorCallback, &unregister_called, &unregister_error));
   EXPECT_TRUE(unregister_called);
-  EXPECT_EQ(BACKGROUND_SYNC_ERROR_NONE, unregister_error);
+  EXPECT_EQ(BackgroundSyncError::NONE, unregister_error);
 
   // Call NotifyWhenDone and verify that it calls back with unregistered.
   bool notify_done_called = false;
-  BackgroundSyncError notify_done_error = BACKGROUND_SYNC_ERROR_NONE;
-  BackgroundSyncState notify_done_sync_state = BACKGROUND_SYNC_STATE_SUCCESS;
+  BackgroundSyncError notify_done_error = BackgroundSyncError::NONE;
+  BackgroundSyncState notify_done_sync_state = BackgroundSyncState::SUCCESS;
 
   NotifyWhenDone(reg->handle_id,
                  base::Bind(&ErrorAndStateCallback, &notify_done_called,
                             &notify_done_error, &notify_done_sync_state));
   EXPECT_TRUE(notify_done_called);
-  EXPECT_EQ(BACKGROUND_SYNC_ERROR_NONE, notify_done_error);
-  EXPECT_EQ(BACKGROUND_SYNC_STATE_UNREGISTERED, notify_done_sync_state);
+  EXPECT_EQ(BackgroundSyncError::NONE, notify_done_error);
+  EXPECT_EQ(BackgroundSyncState::UNREGISTERED, notify_done_sync_state);
 }
 
 }  // namespace content

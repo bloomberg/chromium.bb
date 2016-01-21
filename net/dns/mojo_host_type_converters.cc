@@ -15,11 +15,11 @@ namespace {
 
 AddressFamily AddressFamilyFromMojo(interfaces::AddressFamily address_family) {
   switch (address_family) {
-    case interfaces::ADDRESS_FAMILY_UNSPECIFIED:
+    case interfaces::AddressFamily::UNSPECIFIED:
       return ADDRESS_FAMILY_UNSPECIFIED;
-    case interfaces::ADDRESS_FAMILY_IPV4:
+    case interfaces::AddressFamily::IPV4:
       return ADDRESS_FAMILY_IPV4;
-    case interfaces::ADDRESS_FAMILY_IPV6:
+    case interfaces::AddressFamily::IPV6:
       return ADDRESS_FAMILY_IPV6;
   }
   NOTREACHED();
@@ -29,14 +29,14 @@ AddressFamily AddressFamilyFromMojo(interfaces::AddressFamily address_family) {
 interfaces::AddressFamily AddressFamilyToMojo(AddressFamily address_family) {
   switch (address_family) {
     case ADDRESS_FAMILY_UNSPECIFIED:
-      return interfaces::ADDRESS_FAMILY_UNSPECIFIED;
+      return interfaces::AddressFamily::UNSPECIFIED;
     case ADDRESS_FAMILY_IPV4:
-      return interfaces::ADDRESS_FAMILY_IPV4;
+      return interfaces::AddressFamily::IPV4;
     case ADDRESS_FAMILY_IPV6:
-      return interfaces::ADDRESS_FAMILY_IPV6;
+      return interfaces::AddressFamily::IPV6;
   }
   NOTREACHED();
-  return interfaces::ADDRESS_FAMILY_UNSPECIFIED;
+  return interfaces::AddressFamily::UNSPECIFIED;
 }
 
 }  // namespace

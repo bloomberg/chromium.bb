@@ -87,8 +87,8 @@ TEST(UnionTest, PlainOldDataGetterSetter) {
   EXPECT_TRUE(pod->is_f_bool());
   EXPECT_EQ(pod->which(), PodUnion::Tag::F_BOOL);
 
-  pod->set_f_enum(AN_ENUM_SECOND);
-  EXPECT_EQ(AN_ENUM_SECOND, pod->get_f_enum());
+  pod->set_f_enum(AnEnum::SECOND);
+  EXPECT_EQ(AnEnum::SECOND, pod->get_f_enum());
   EXPECT_TRUE(pod->is_f_enum());
   EXPECT_EQ(pod->which(), PodUnion::Tag::F_ENUM);
 }
@@ -139,7 +139,7 @@ TEST(UnionTest, PodSerialization) {
 
 TEST(UnionTest, EnumSerialization) {
   PodUnionPtr pod1(PodUnion::New());
-  pod1->set_f_enum(AN_ENUM_SECOND);
+  pod1->set_f_enum(AnEnum::SECOND);
 
   size_t size = GetSerializedSize_(pod1, false);
   EXPECT_EQ(16U, size);
@@ -151,7 +151,7 @@ TEST(UnionTest, EnumSerialization) {
   PodUnionPtr pod2;
   Deserialize_(data, &pod2, nullptr);
 
-  EXPECT_EQ(AN_ENUM_SECOND, pod2->get_f_enum());
+  EXPECT_EQ(AnEnum::SECOND, pod2->get_f_enum());
   EXPECT_TRUE(pod2->is_f_enum());
   EXPECT_EQ(pod2->which(), PodUnion::Tag::F_ENUM);
 }

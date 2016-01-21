@@ -68,11 +68,11 @@ void RecordDeliveryStatus(content::PushDeliveryStatus status) {
 blink::WebPushPermissionStatus ToPushPermission(
     content::PermissionStatus permission_status) {
   switch (permission_status) {
-    case content::PERMISSION_STATUS_GRANTED:
+    case content::PermissionStatus::GRANTED:
       return blink::WebPushPermissionStatusGranted;
-    case content::PERMISSION_STATUS_DENIED:
+    case content::PermissionStatus::DENIED:
       return blink::WebPushPermissionStatusDenied;
-    case content::PERMISSION_STATUS_ASK:
+    case content::PermissionStatus::ASK:
       return blink::WebPushPermissionStatusPrompt;
     default:
       NOTREACHED();
@@ -523,7 +523,7 @@ void PushMessagingServiceImpl::DidRequestPermission(
     const std::string& sender_id,
     const content::PushMessagingService::RegisterCallback& register_callback,
     content::PermissionStatus permission_status) {
-  if (permission_status != content::PERMISSION_STATUS_GRANTED) {
+  if (permission_status != content::PermissionStatus::GRANTED) {
     SubscribeEndWithError(register_callback,
                           content::PUSH_REGISTRATION_STATUS_PERMISSION_DENIED);
     return;

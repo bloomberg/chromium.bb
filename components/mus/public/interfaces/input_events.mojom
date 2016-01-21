@@ -104,8 +104,11 @@ struct BrushData {
 struct Event {
   // TODO(sky): rename to type.
   EventType action;
+  // A bitfield of kEventFlag* and kMouseEventFlag* values in
+  // input_event_constants.mojom.
+  //
   // TODO(sky): parts of this should move to PointerData.
-  EventFlags flags;
+  int32 flags;
   // Time in microseconds from when the platform was started.
   // This value accurately orders events w.r.t. to each other but
   // does not position them at an absolute time.

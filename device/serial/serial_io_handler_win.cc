@@ -49,9 +49,9 @@ int BitrateToSpeedConstant(int bitrate) {
 
 int DataBitsEnumToConstant(serial::DataBits data_bits) {
   switch (data_bits) {
-    case serial::DATA_BITS_SEVEN:
+    case serial::DataBits::SEVEN:
       return 7;
-    case serial::DATA_BITS_EIGHT:
+    case serial::DataBits::EIGHT:
     default:
       return 8;
   }
@@ -59,11 +59,11 @@ int DataBitsEnumToConstant(serial::DataBits data_bits) {
 
 int ParityBitEnumToConstant(serial::ParityBit parity_bit) {
   switch (parity_bit) {
-    case serial::PARITY_BIT_EVEN:
+    case serial::ParityBit::EVEN:
       return EVENPARITY;
-    case serial::PARITY_BIT_ODD:
+    case serial::ParityBit::ODD:
       return ODDPARITY;
-    case serial::PARITY_BIT_NO:
+    case serial::ParityBit::NO:
     default:
       return NOPARITY;
   }
@@ -71,9 +71,9 @@ int ParityBitEnumToConstant(serial::ParityBit parity_bit) {
 
 int StopBitsEnumToConstant(serial::StopBits stop_bits) {
   switch (stop_bits) {
-    case serial::STOP_BITS_TWO:
+    case serial::StopBits::TWO:
       return TWOSTOPBITS;
-    case serial::STOP_BITS_ONE:
+    case serial::StopBits::ONE:
     default:
       return ONESTOPBIT;
   }
@@ -110,32 +110,32 @@ int SpeedConstantToBitrate(int speed) {
 serial::DataBits DataBitsConstantToEnum(int data_bits) {
   switch (data_bits) {
     case 7:
-      return serial::DATA_BITS_SEVEN;
+      return serial::DataBits::SEVEN;
     case 8:
     default:
-      return serial::DATA_BITS_EIGHT;
+      return serial::DataBits::EIGHT;
   }
 }
 
 serial::ParityBit ParityBitConstantToEnum(int parity_bit) {
   switch (parity_bit) {
     case EVENPARITY:
-      return serial::PARITY_BIT_EVEN;
+      return serial::ParityBit::EVEN;
     case ODDPARITY:
-      return serial::PARITY_BIT_ODD;
+      return serial::ParityBit::ODD;
     case NOPARITY:
     default:
-      return serial::PARITY_BIT_NO;
+      return serial::ParityBit::NO;
   }
 }
 
 serial::StopBits StopBitsConstantToEnum(int stop_bits) {
   switch (stop_bits) {
     case TWOSTOPBITS:
-      return serial::STOP_BITS_TWO;
+      return serial::StopBits::TWO;
     case ONESTOPBIT:
     default:
-      return serial::STOP_BITS_ONE;
+      return serial::StopBits::ONE;
   }
 }
 
@@ -227,7 +227,7 @@ void SerialIoHandlerWin::OnDeviceRemoved(const std::string& device_path) {
   }
 
   if (port() == com_port)
-    CancelRead(serial::RECEIVE_ERROR_DEVICE_LOST);
+    CancelRead(serial::ReceiveError::DEVICE_LOST);
 }
 
 bool SerialIoHandlerWin::PostOpen() {
@@ -285,7 +285,7 @@ void SerialIoHandlerWin::ReadImpl() {
       file().GetPlatformFile(), &event_mask_, &comm_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Failed to receive serial event";
-    QueueReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+    QueueReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
   }
   is_comm_pending_ = true;
 }
@@ -302,7 +302,7 @@ void SerialIoHandlerWin::WriteImpl() {
                         &write_context_->overlapped);
   if (!ok && GetLastError() != ERROR_IO_PENDING) {
     VPLOG(1) << "Write failed";
-    QueueWriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
+    QueueWriteCompleted(0, serial::SendError::SYSTEM_ERROR);
   }
 }
 
@@ -339,13 +339,13 @@ bool SerialIoHandlerWin::ConfigurePortImpl() {
   DCHECK(options().bitrate);
   config.BaudRate = BitrateToSpeedConstant(options().bitrate);
 
-  DCHECK(options().data_bits != serial::DATA_BITS_NONE);
+  DCHECK(options().data_bits != serial::DataBits::NONE);
   config.ByteSize = DataBitsEnumToConstant(options().data_bits);
 
-  DCHECK(options().parity_bit != serial::PARITY_BIT_NONE);
+  DCHECK(options().parity_bit != serial::ParityBit::NONE);
   config.Parity = ParityBitEnumToConstant(options().parity_bit);
 
-  DCHECK(options().stop_bits != serial::STOP_BITS_NONE);
+  DCHECK(options().stop_bits != serial::StopBits::NONE);
   config.StopBits = StopBitsEnumToConstant(options().stop_bits);
 
   DCHECK(options().has_cts_flow_control);
@@ -388,17 +388,17 @@ void SerialIoHandlerWin::OnIOCompleted(
     if (!ClearCommError(file().GetPlatformFile(), &errors, &status) ||
         errors != 0) {
       if (errors & CE_BREAK) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_BREAK);
+        ReadCompleted(0, serial::ReceiveError::BREAK);
       } else if (errors & CE_FRAME) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_FRAME_ERROR);
+        ReadCompleted(0, serial::ReceiveError::FRAME_ERROR);
       } else if (errors & CE_OVERRUN) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_OVERRUN);
+        ReadCompleted(0, serial::ReceiveError::OVERRUN);
       } else if (errors & CE_RXOVER) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_BUFFER_OVERFLOW);
+        ReadCompleted(0, serial::ReceiveError::BUFFER_OVERFLOW);
       } else if (errors & CE_RXPARITY) {
-        ReadCompleted(0, serial::RECEIVE_ERROR_PARITY_ERROR);
+        ReadCompleted(0, serial::ReceiveError::PARITY_ERROR);
       } else {
-        ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
       }
       return;
     }
@@ -406,7 +406,7 @@ void SerialIoHandlerWin::OnIOCompleted(
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+      ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
     } else if (pending_read_buffer()) {
       BOOL ok = ::ReadFile(file().GetPlatformFile(),
                            pending_read_buffer(),
@@ -415,26 +415,26 @@ void SerialIoHandlerWin::OnIOCompleted(
                            &read_context_->overlapped);
       if (!ok && GetLastError() != ERROR_IO_PENDING) {
         VPLOG(1) << "Read failed";
-        ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+        ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
       }
     }
   } else if (context == read_context_.get()) {
     if (read_canceled()) {
       ReadCompleted(bytes_transferred, read_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      ReadCompleted(0, serial::RECEIVE_ERROR_SYSTEM_ERROR);
+      ReadCompleted(0, serial::ReceiveError::SYSTEM_ERROR);
     } else {
       ReadCompleted(bytes_transferred,
                     error == ERROR_SUCCESS
-                        ? serial::RECEIVE_ERROR_NONE
-                        : serial::RECEIVE_ERROR_SYSTEM_ERROR);
+                        ? serial::ReceiveError::NONE
+                        : serial::ReceiveError::SYSTEM_ERROR);
     }
   } else if (context == write_context_.get()) {
     DCHECK(pending_write_buffer());
     if (write_canceled()) {
       WriteCompleted(0, write_cancel_reason());
     } else if (error != ERROR_SUCCESS && error != ERROR_OPERATION_ABORTED) {
-      WriteCompleted(0, serial::SEND_ERROR_SYSTEM_ERROR);
+      WriteCompleted(0, serial::SendError::SYSTEM_ERROR);
       if (error == ERROR_GEN_FAILURE && IsReadPending()) {
         // For devices using drivers such as FTDI, CP2xxx, when device is
         // disconnected, the context is comm_context_ and the error is
@@ -445,12 +445,12 @@ void SerialIoHandlerWin::OnIOCompleted(
         // signal, also need to generate a read error signal
         // serial::OnReceiveError which will notify the app about the
         // disconnection.
-        CancelRead(serial::RECEIVE_ERROR_SYSTEM_ERROR);
+        CancelRead(serial::ReceiveError::SYSTEM_ERROR);
       }
     } else {
-      WriteCompleted(bytes_transferred,
-                     error == ERROR_SUCCESS ? serial::SEND_ERROR_NONE
-                                            : serial::SEND_ERROR_SYSTEM_ERROR);
+      WriteCompleted(bytes_transferred, error == ERROR_SUCCESS
+                                            ? serial::SendError::NONE
+                                            : serial::SendError::SYSTEM_ERROR);
     }
   } else {
     NOTREACHED() << "Invalid IOContext";

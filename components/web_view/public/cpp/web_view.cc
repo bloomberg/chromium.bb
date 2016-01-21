@@ -36,7 +36,7 @@ void WebView::Init(mojo::ApplicationImpl* app, mus::Window* window) {
   mus::mojom::WindowTreeClientPtr window_tree_client;
   web_view_->GetWindowTreeClient(GetProxy(&window_tree_client));
   window->Embed(std::move(window_tree_client),
-                mus::mojom::WindowTree::ACCESS_POLICY_EMBED_ROOT,
+                mus::mojom::WindowTree::kAccessPolicyEmbedRoot,
                 base::Bind(&OnEmbed));
 }
 

@@ -25,13 +25,13 @@ class WebConnectCallbacksImpl
   ~WebConnectCallbacksImpl() override {}
 
   void onSuccess(const blink::WebServicePort& port) override {
-    callback_.Run(SERVICE_PORT_CONNECT_RESULT_ACCEPT,
+    callback_.Run(ServicePortConnectResult::ACCEPT,
                   mojo::String::From<base::string16>(port.name),
                   mojo::String::From<base::string16>(port.data));
   }
 
   void onError() override {
-    callback_.Run(SERVICE_PORT_CONNECT_RESULT_REJECT, mojo::String(""),
+    callback_.Run(ServicePortConnectResult::REJECT, mojo::String(""),
                   mojo::String(""));
   }
 
@@ -67,7 +67,7 @@ void ServicePortDispatcherImpl::Connect(const mojo::String& target_url,
                                         int32_t port_id,
                                         const ConnectCallback& callback) {
   if (!proxy_) {
-    callback.Run(SERVICE_PORT_CONNECT_RESULT_REJECT, mojo::String(""),
+    callback.Run(ServicePortConnectResult::REJECT, mojo::String(""),
                  mojo::String(""));
     return;
   }

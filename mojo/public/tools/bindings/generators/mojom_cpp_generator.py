@@ -334,8 +334,7 @@ def TranslateConstants(token, kind):
     if token.parent_kind:
       name.append(token.parent_kind.name)
     if isinstance(token, mojom.EnumValue):
-      name.append(
-          "%s_%s" % (generator.CamelCaseToAllCaps(token.enum.name), token.name))
+      name.extend([token.enum.name, token.name])
     else:
       name.append(token.name)
     return "::".join(name)
@@ -463,7 +462,6 @@ class Generator(generator.Generator):
     "passes_associated_kinds": mojom.PassesAssociatedKinds,
     "struct_size": lambda ps: ps.GetTotalSize() + _HEADER_SIZE,
     "stylize_method": generator.StudlyCapsToCamel,
-    "to_all_caps": generator.CamelCaseToAllCaps,
     "under_to_camel": generator.UnderToCamel,
   }
 

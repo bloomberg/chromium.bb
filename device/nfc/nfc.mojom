@@ -21,7 +21,7 @@ enum NFCRecordType {
   TEXT,
   URL,
   JSON,
-  OPAQUE
+  OPAQUE_RECORD
 };
 
 enum NFCPushTarget {

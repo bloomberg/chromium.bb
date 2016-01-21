@@ -37,7 +37,9 @@ gfx::Size GetWindowPreferredSize(const mus::Window* window);
 
 mojom::Container GetRequestedContainer(const mus::Window* window);
 
-mus::mojom::ResizeBehavior GetResizeBehavior(const mus::Window* window);
+// Returns a bitfield of kResizeBehavior* values from
+// window_manager_constants.mojom.
+int32_t GetResizeBehavior(const mus::Window* window);
 
 void SetRestoreBounds(mus::Window* window, const gfx::Rect& bounds);
 gfx::Rect GetRestoreBounds(const mus::Window* window);

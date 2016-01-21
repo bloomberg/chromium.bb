@@ -25,8 +25,8 @@ bool ServerWindowSurfaceManager::ShouldDraw() {
     return true;
 
   waiting_for_initial_frames_ =
-      !IsSurfaceReadyAndNonEmpty(mojom::SURFACE_TYPE_DEFAULT) ||
-      !IsSurfaceReadyAndNonEmpty(mojom::SURFACE_TYPE_UNDERLAY);
+      !IsSurfaceReadyAndNonEmpty(mojom::SurfaceType::DEFAULT) ||
+      !IsSurfaceReadyAndNonEmpty(mojom::SurfaceType::UNDERLAY);
   return !waiting_for_initial_frames_;
 }
 
@@ -39,11 +39,11 @@ void ServerWindowSurfaceManager::CreateSurface(
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetDefaultSurface() {
-  return GetSurfaceByType(mojom::SURFACE_TYPE_DEFAULT);
+  return GetSurfaceByType(mojom::SurfaceType::DEFAULT);
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetUnderlaySurface() {
-  return GetSurfaceByType(mojom::SURFACE_TYPE_UNDERLAY);
+  return GetSurfaceByType(mojom::SurfaceType::UNDERLAY);
 }
 
 ServerWindowSurface* ServerWindowSurfaceManager::GetSurfaceByType(

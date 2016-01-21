@@ -30,8 +30,8 @@ void SetPropertiesFromEvent(const mus::mojom::Event& event,
   }
 
   if (event.pointer_data && event.pointer_data->brush_data &&
-      (event.pointer_data->kind == mus::mojom::POINTER_KIND_TOUCH ||
-       event.pointer_data->kind == mus::mojom::POINTER_KIND_PEN)) {
+      (event.pointer_data->kind == mus::mojom::PointerKind::TOUCH ||
+       event.pointer_data->kind == mus::mojom::PointerKind::PEN)) {
     properties->pressure = event.pointer_data->brush_data->pressure;
 
     // TODO(rjkroege): vary orientation for width, height.
@@ -39,9 +39,9 @@ void SetPropertiesFromEvent(const mus::mojom::Event& event,
                                       event.pointer_data->brush_data->height,
                                       0.0);
   } else {
-    if (event.flags & mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON ||
-        event.flags & mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON ||
-        event.flags & mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON) {
+    if (event.flags & mus::mojom::kEventFlagLeftMouseButton ||
+        event.flags & mus::mojom::kEventFlagMiddleMouseButton ||
+        event.flags & mus::mojom::kEventFlagMiddleMouseButton) {
       properties->pressure = 0.5;
     } else {
       properties->pressure = 0.0;
@@ -97,7 +97,7 @@ bool TouchHandler::UpdateMotionEvent(const mus::mojom::Event& event) {
   }
 
   switch (event.action) {
-    case mus::mojom::EVENT_TYPE_POINTER_DOWN:
+    case mus::mojom::EventType::POINTER_DOWN:
       if (!current_motion_event_.get()) {
         current_motion_event_.reset(new ui::MotionEventGeneric(
             ui::MotionEvent::ACTION_DOWN, timestamp, properties));
@@ -115,7 +115,7 @@ bool TouchHandler::UpdateMotionEvent(const mus::mojom::Event& event) {
       }
       return true;
 
-    case mus::mojom::EVENT_TYPE_POINTER_UP: {
+    case mus::mojom::EventType::POINTER_UP: {
       if (!current_motion_event_.get()) {
         DVLOG(1) << "pointer up with no event, id=" << properties.id;
         return false;
@@ -135,7 +135,7 @@ bool TouchHandler::UpdateMotionEvent(const mus::mojom::Event& event) {
       return true;
     }
 
-    case mus::mojom::EVENT_TYPE_POINTER_MOVE: {
+    case mus::mojom::EventType::POINTER_MOVE: {
       if (!current_motion_event_.get()) {
         DVLOG(1) << "pointer move with no event, id=" << properties.id;
         return false;
@@ -152,7 +152,7 @@ bool TouchHandler::UpdateMotionEvent(const mus::mojom::Event& event) {
       return true;
     }
 
-    case mus::mojom::EVENT_TYPE_POINTER_CANCEL: {
+    case mus::mojom::EventType::POINTER_CANCEL: {
       if (!current_motion_event_.get()) {
         DVLOG(1) << "canel with no event, id=" << properties.id;
         return false;
@@ -190,7 +190,7 @@ void TouchHandler::SendMotionEventToGestureProvider() {
 
 void TouchHandler::PostProcessMotionEvent(const mus::mojom::Event& event) {
   switch (event.action) {
-    case mus::mojom::EVENT_TYPE_POINTER_UP: {
+    case mus::mojom::EventType::POINTER_UP: {
       if (event.pointer_data) {
         const int index = current_motion_event_->FindPointerIndexOfId(
             event.pointer_data->pointer_id);
@@ -201,7 +201,7 @@ void TouchHandler::PostProcessMotionEvent(const mus::mojom::Event& event) {
       break;
     }
 
-    case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
+    case mus::mojom::EventType::POINTER_CANCEL:
       current_motion_event_.reset();
       break;
 

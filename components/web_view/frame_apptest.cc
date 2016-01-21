@@ -316,7 +316,7 @@ class FrameTest : public mojo::test::ApplicationTestBase,
     request->url = mojo::String::From(application_impl()->url());
     request->originating_time_ticks = navigation_start_time.ToInternalValue();
     window_and_frame->server_frame()->RequestNavigate(
-        mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME,
+        mojom::NavigationTargetType::EXISTING_FRAME,
         window_and_frame->window()->id(), std::move(request));
     return WaitForViewAndFrame();
   }

@@ -116,9 +116,9 @@ void MojoDecryptor::OnKeyAdded() {
 void MojoDecryptor::OnBufferDecrypted(const DecryptCB& decrypt_cb,
                                       interfaces::Decryptor::Status status,
                                       interfaces::DecoderBufferPtr buffer) {
-  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
+  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
 
   if (buffer.is_null()) {
     decrypt_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
@@ -133,9 +133,9 @@ void MojoDecryptor::OnAudioDecoded(
     const AudioDecodeCB& audio_decode_cb,
     interfaces::Decryptor::Status status,
     mojo::Array<interfaces::AudioBufferPtr> audio_buffers) {
-  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
+  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
 
   Decryptor::AudioFrames audio_frames;
   for (size_t i = 0; i < audio_buffers.size(); ++i)
@@ -147,9 +147,9 @@ void MojoDecryptor::OnAudioDecoded(
 void MojoDecryptor::OnVideoDecoded(const VideoDecodeCB& video_decode_cb,
                                    interfaces::Decryptor::Status status,
                                    interfaces::VideoFramePtr video_frame) {
-  DVLOG_IF(1, status != interfaces::Decryptor::STATUS_SUCCESS)
+  DVLOG_IF(1, status != interfaces::Decryptor::Status::SUCCESS)
       << __FUNCTION__ << "(" << status << ")";
-  DVLOG_IF(3, status == interfaces::Decryptor::STATUS_SUCCESS) << __FUNCTION__;
+  DVLOG_IF(3, status == interfaces::Decryptor::Status::SUCCESS) << __FUNCTION__;
   if (video_frame.is_null()) {
     video_decode_cb.Run(static_cast<Decryptor::Status>(status), nullptr);
     return;

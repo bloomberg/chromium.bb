@@ -16,7 +16,7 @@ ServerWindowSurfaceManagerTestApi::ServerWindowSurfaceManagerTestApi(
 ServerWindowSurfaceManagerTestApi::~ServerWindowSurfaceManagerTestApi() {}
 
 void ServerWindowSurfaceManagerTestApi::CreateEmptyDefaultSurface() {
-  manager_->type_to_surface_map_[mojom::SURFACE_TYPE_DEFAULT] = nullptr;
+  manager_->type_to_surface_map_[mojom::SurfaceType::DEFAULT] = nullptr;
 }
 
 void EnableHitTest(ServerWindow* window) {

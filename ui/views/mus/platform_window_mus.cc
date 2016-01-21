@@ -23,8 +23,8 @@ PlatformWindowMus::PlatformWindowMus(ui::PlatformWindowDelegate* delegate,
                                      mus::Window* mus_window)
     : delegate_(delegate),
       mus_window_(mus_window),
-      show_state_(mus::mojom::SHOW_STATE_RESTORED),
-      last_cursor_(mus::mojom::CURSOR_NULL),
+      show_state_(mus::mojom::ShowState::RESTORED),
+      last_cursor_(mus::mojom::Cursor::CURSOR_NULL),
       has_capture_(false),
       mus_window_destroyed_(false) {
   DCHECK(delegate_);
@@ -111,15 +111,15 @@ void PlatformWindowMus::ToggleFullscreen() {
 }
 
 void PlatformWindowMus::Maximize() {
-  SetShowState(mus::mojom::SHOW_STATE_MAXIMIZED);
+  SetShowState(mus::mojom::ShowState::MAXIMIZED);
 }
 
 void PlatformWindowMus::Minimize() {
-  SetShowState(mus::mojom::SHOW_STATE_MINIMIZED);
+  SetShowState(mus::mojom::ShowState::MINIMIZED);
 }
 
 void PlatformWindowMus::Restore() {
-  SetShowState(mus::mojom::SHOW_STATE_RESTORED);
+  SetShowState(mus::mojom::ShowState::RESTORED);
 }
 
 void PlatformWindowMus::SetCursor(ui::PlatformCursor cursor) {
@@ -140,7 +140,8 @@ ui::PlatformImeController* PlatformWindowMus::GetPlatformImeController() {
 
 void PlatformWindowMus::SetShowState(mus::mojom::ShowState show_state) {
   mus_window_->SetSharedProperty<int32_t>(
-      mus::mojom::WindowManager::kShowState_Property, show_state);
+      mus::mojom::WindowManager::kShowState_Property,
+      static_cast<int32_t>(show_state));
 }
 
 void PlatformWindowMus::OnWindowDestroyed(mus::Window* window) {
@@ -193,17 +194,17 @@ void PlatformWindowMus::OnWindowSharedPropertyChanged(
   show_state_ = show_state;
   ui::PlatformWindowState state = ui::PLATFORM_WINDOW_STATE_UNKNOWN;
   switch (show_state_) {
-    case mus::mojom::SHOW_STATE_MINIMIZED:
+    case mus::mojom::ShowState::MINIMIZED:
       state = ui::PLATFORM_WINDOW_STATE_MINIMIZED;
       break;
-    case mus::mojom::SHOW_STATE_MAXIMIZED:
+    case mus::mojom::ShowState::MAXIMIZED:
       state = ui::PLATFORM_WINDOW_STATE_MAXIMIZED;
       break;
-    case mus::mojom::SHOW_STATE_RESTORED:
+    case mus::mojom::ShowState::RESTORED:
       state = ui::PLATFORM_WINDOW_STATE_NORMAL;
       break;
-    case mus::mojom::SHOW_STATE_IMMERSIVE:
-    case mus::mojom::SHOW_STATE_PRESENTATION:
+    case mus::mojom::ShowState::IMMERSIVE:
+    case mus::mojom::ShowState::PRESENTATION:
       // This may not be sufficient.
       state = ui::PLATFORM_WINDOW_STATE_FULLSCREEN;
       break;

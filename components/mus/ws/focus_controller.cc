@@ -184,7 +184,7 @@ bool FocusController::CanBeActivated(ServerWindow* window) const {
     if (props.count(mojom::WindowManager::kShowState_Property)) {
       is_minimized =
           props.find(mojom::WindowManager::kShowState_Property)->second[0] ==
-          mus::mojom::SHOW_STATE_MINIMIZED;
+          static_cast<int>(mus::mojom::ShowState::MINIMIZED);
     }
     if (!is_minimized)
       return false;

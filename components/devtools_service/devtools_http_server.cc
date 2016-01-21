@@ -251,7 +251,7 @@ class WebSocketRelayer : public DevToolsAgentHost::Delegate,
     pending_send_count_--;
 
     if (web_socket_ && buffer)
-      web_socket_->Send(true, mojo::WebSocket::MESSAGE_TYPE_TEXT, num_bytes);
+      web_socket_->Send(true, mojo::WebSocket::MessageType::TEXT, num_bytes);
 
     if (ShouldSelfDestruct())
       delete this;
@@ -341,7 +341,7 @@ DevToolsHttpServer::DevToolsHttpServer(DevToolsService* service,
                                             &network_service);
 
   mojo::NetAddressPtr local_address(mojo::NetAddress::New());
-  local_address->family = mojo::NET_ADDRESS_FAMILY_IPV4;
+  local_address->family = mojo::NetAddressFamily::IPV4;
   local_address->ipv4 = mojo::NetAddressIPv4::New();
   local_address->ipv4->port = remote_debugging_port;
   local_address->ipv4->addr.resize(4);

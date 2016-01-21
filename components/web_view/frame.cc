@@ -201,7 +201,7 @@ void Frame::InitClient(ClientType client_type,
     embed_weak_ptr_factory_.InvalidateWeakPtrs();
     window_->Embed(
         std::move(window_tree_client),
-        mus::mojom::WindowTree::ACCESS_POLICY_DEFAULT,
+        mus::mojom::WindowTree::kAccessPolicyDefault,
         base::Bind(&Frame::OnEmbedAck, embed_weak_ptr_factory_.GetWeakPtr()));
   }
 
@@ -213,7 +213,7 @@ void Frame::InitClient(ClientType client_type,
     frame_binding_.reset(
         new mojo::Binding<mojom::Frame>(this, std::move(frame_request)));
     frame_client_->OnConnect(
-        nullptr, tree_->change_id(), id_, mojom::WINDOW_CONNECT_TYPE_USE_NEW,
+        nullptr, tree_->change_id(), id_, mojom::WindowConnectType::USE_NEW,
         mojo::Array<mojom::FrameDataPtr>(),
         navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
@@ -233,8 +233,8 @@ void Frame::InitClient(ClientType client_type,
     frame_client_->OnConnect(
         std::move(frame_ptr), tree_->change_id(), id_,
         client_type == ClientType::EXISTING_FRAME_SAME_APP
-            ? mojom::WINDOW_CONNECT_TYPE_USE_EXISTING
-            : mojom::WINDOW_CONNECT_TYPE_USE_NEW,
+            ? mojom::WindowConnectType::USE_EXISTING
+            : mojom::WindowConnectType::USE_NEW,
         std::move(array), navigation_start_time.ToInternalValue(),
         base::Bind(&OnConnectAck, base::Passed(&data_and_binding)));
     tree_->delegate_->DidStartNavigation(this);
@@ -563,7 +563,7 @@ void Frame::OnCreatedFrame(
 void Frame::RequestNavigate(mojom::NavigationTargetType target_type,
                             uint32_t target_frame_id,
                             mojo::URLRequestPtr request) {
-  if (target_type == mojom::NAVIGATION_TARGET_TYPE_EXISTING_FRAME) {
+  if (target_type == mojom::NavigationTargetType::EXISTING_FRAME) {
     // |target_frame| is allowed to come from another connection.
     Frame* target_frame = tree_->root()->FindFrame(target_frame_id);
     if (!target_frame) {

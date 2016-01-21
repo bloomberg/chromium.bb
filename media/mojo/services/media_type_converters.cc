@@ -25,12 +25,12 @@
 
 namespace mojo {
 
-#define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value) \
-  static_assert(media::media_prefix##value ==                        \
-                    static_cast<media::media_enum>(                  \
-                        media::interfaces::mojo_prefix##value),      \
-                "Mismatched enum: " #media_prefix #value             \
-                " != " #mojo_prefix #value)
+#define ASSERT_ENUM_EQ(media_enum, media_prefix, mojo_prefix, value)        \
+  static_assert(media::media_prefix##value ==                               \
+                    static_cast<media::media_enum>(                         \
+                        media::interfaces::media_enum::mojo_prefix##value), \
+                "Mismatched enum: " #media_prefix #value " != " #media_enum \
+                "::" #mojo_prefix #value)
 
 #define ASSERT_ENUM_EQ_RAW(media_enum, media_enum_value, mojo_enum_value)     \
   static_assert(                                                              \
@@ -39,220 +39,188 @@ namespace mojo {
       "Mismatched enum: " #media_enum_value " != " #mojo_enum_value)
 
 // BufferingState.
-ASSERT_ENUM_EQ(BufferingState, BUFFERING_, BUFFERING_STATE_, HAVE_NOTHING);
-ASSERT_ENUM_EQ(BufferingState, BUFFERING_, BUFFERING_STATE_, HAVE_ENOUGH);
+ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_NOTHING);
+ASSERT_ENUM_EQ(BufferingState, BUFFERING_, , HAVE_ENOUGH);
 
 // AudioCodec.
-ASSERT_ENUM_EQ_RAW(AudioCodec, kUnknownAudioCodec, AUDIO_CODEC_UNKNOWN);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, AAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, MP3);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, Vorbis);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, FLAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, AMR_NB);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_MULAW);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, GSM_MS);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_S16BE);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_S24BE);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, Opus);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, EAC3);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, PCM_ALAW);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, ALAC);
-ASSERT_ENUM_EQ(AudioCodec, kCodec, AUDIO_CODEC_, AC3);
-ASSERT_ENUM_EQ_RAW(AudioCodec, kAudioCodecMax, AUDIO_CODEC_MAX);
+ASSERT_ENUM_EQ_RAW(AudioCodec, kUnknownAudioCodec, AudioCodec::UNKNOWN);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , AAC);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , MP3);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , Vorbis);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , FLAC);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , AMR_NB);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_MULAW);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , GSM_MS);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_S16BE);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_S24BE);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , Opus);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , EAC3);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , PCM_ALAW);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , ALAC);
+ASSERT_ENUM_EQ(AudioCodec, kCodec, , AC3);
+ASSERT_ENUM_EQ_RAW(AudioCodec, kAudioCodecMax, AudioCodec::MAX);
 
 // ChannelLayout.
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _NONE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _UNSUPPORTED);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _MONO);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _STEREO);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _2_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _SURROUND);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _4_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _2_2);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _QUAD);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _5_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _5_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _5_0_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _5_1_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _7_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _7_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _7_1_WIDE);
-ASSERT_ENUM_EQ(ChannelLayout,
-               CHANNEL_LAYOUT,
-               CHANNEL_LAYOUT_k,
-               _STEREO_DOWNMIX);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _2POINT1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _3_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _4_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _6_0);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _6_0_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _HEXAGONAL);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _6_1);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _6_1_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _6_1_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _7_0_FRONT);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _7_1_WIDE_BACK);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _OCTAGONAL);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _DISCRETE);
-ASSERT_ENUM_EQ(ChannelLayout,
-               CHANNEL_LAYOUT,
-               CHANNEL_LAYOUT_k,
-               _STEREO_AND_KEYBOARD_MIC);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _4_1_QUAD_SIDE);
-ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, CHANNEL_LAYOUT_k, _MAX);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _NONE);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _UNSUPPORTED);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _MONO);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _SURROUND);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_0);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2_2);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _QUAD);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_0);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_0_BACK);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _5_1_BACK);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_0);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1_WIDE);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO_DOWNMIX);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _2POINT1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _3_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_0);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_0_FRONT);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _HEXAGONAL);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1_BACK);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _6_1_FRONT);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_0_FRONT);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _7_1_WIDE_BACK);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _OCTAGONAL);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _DISCRETE);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _STEREO_AND_KEYBOARD_MIC);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _4_1_QUAD_SIDE);
+ASSERT_ENUM_EQ(ChannelLayout, CHANNEL_LAYOUT, k, _MAX);
 
 // SampleFormat.
-ASSERT_ENUM_EQ_RAW(SampleFormat, kUnknownSampleFormat, SAMPLE_FORMAT_UNKNOWN);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, U8);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, S16);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, S32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, F32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, PlanarS16);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, PlanarF32);
-ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, SAMPLE_FORMAT_, Max);
+ASSERT_ENUM_EQ_RAW(SampleFormat, kUnknownSampleFormat, SampleFormat::UNKNOWN);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , U8);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , S16);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , S32);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , F32);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , PlanarS16);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , PlanarF32);
+ASSERT_ENUM_EQ(SampleFormat, kSampleFormat, , Max);
 
 // DemuxerStream Type.  Note: Mojo DemuxerStream's don't have the TEXT type.
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
                    DemuxerStream::UNKNOWN,
-                   DemuxerStream::TYPE_UNKNOWN);
+                   DemuxerStream::Type::UNKNOWN);
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
                    DemuxerStream::AUDIO,
-                   DemuxerStream::TYPE_AUDIO);
+                   DemuxerStream::Type::AUDIO);
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
                    DemuxerStream::VIDEO,
-                   DemuxerStream::TYPE_VIDEO);
-ASSERT_ENUM_EQ_RAW(DemuxerStream::Type,
-                   DemuxerStream::NUM_TYPES,
-                   DemuxerStream::TYPE_LAST_TYPE + 2);
+                   DemuxerStream::Type::VIDEO);
+static_assert(media::DemuxerStream::NUM_TYPES ==
+                  static_cast<media::DemuxerStream::Type>(
+                      static_cast<int>(
+                          media::interfaces::DemuxerStream::Type::LAST_TYPE) +
+                      2),
+              "Mismatched enum: media::DemuxerStream::NUM_TYPES != "
+              "media::interfaces::DemuxerStream::Type::LAST_TYPE + 2");
 
 // DemuxerStream Status.
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
                    DemuxerStream::kOk,
-                   DemuxerStream::STATUS_OK);
+                   DemuxerStream::Status::OK);
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
                    DemuxerStream::kAborted,
-                   DemuxerStream::STATUS_ABORTED);
+                   DemuxerStream::Status::ABORTED);
 ASSERT_ENUM_EQ_RAW(DemuxerStream::Status,
                    DemuxerStream::kConfigChanged,
-                   DemuxerStream::STATUS_CONFIG_CHANGED);
+                   DemuxerStream::Status::CONFIG_CHANGED);
 
 // VideoFormat.
 ASSERT_ENUM_EQ_RAW(VideoPixelFormat,
                    PIXEL_FORMAT_UNKNOWN,
-                   VIDEO_FORMAT_UNKNOWN);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_I420, VIDEO_FORMAT_I420);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12, VIDEO_FORMAT_YV12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV16, VIDEO_FORMAT_YV16);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12A, VIDEO_FORMAT_YV12A);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV24, VIDEO_FORMAT_YV24);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV12, VIDEO_FORMAT_NV12);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV21, VIDEO_FORMAT_NV21);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_UYVY, VIDEO_FORMAT_UYVY);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YUY2, VIDEO_FORMAT_YUY2);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_ARGB, VIDEO_FORMAT_ARGB);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_XRGB, VIDEO_FORMAT_XRGB);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB24, VIDEO_FORMAT_RGB24);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB32, VIDEO_FORMAT_RGB32);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MJPEG, VIDEO_FORMAT_MJPEG);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MT21, VIDEO_FORMAT_MT21);
-ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VIDEO_FORMAT_FORMAT_MAX);
+                   VideoFormat::UNKNOWN);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_I420, VideoFormat::I420);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12, VideoFormat::YV12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV16, VideoFormat::YV16);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV12A, VideoFormat::YV12A);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YV24, VideoFormat::YV24);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV12, VideoFormat::NV12);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_NV21, VideoFormat::NV21);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_UYVY, VideoFormat::UYVY);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_YUY2, VideoFormat::YUY2);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_ARGB, VideoFormat::ARGB);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_XRGB, VideoFormat::XRGB);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB24, VideoFormat::RGB24);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_RGB32, VideoFormat::RGB32);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MJPEG, VideoFormat::MJPEG);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MT21, VideoFormat::MT21);
+ASSERT_ENUM_EQ_RAW(VideoPixelFormat, PIXEL_FORMAT_MAX, VideoFormat::FORMAT_MAX);
 
 // ColorSpace.
 ASSERT_ENUM_EQ_RAW(ColorSpace,
                    COLOR_SPACE_UNSPECIFIED,
-                   COLOR_SPACE_UNSPECIFIED);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_JPEG, COLOR_SPACE_JPEG);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_HD_REC709, COLOR_SPACE_HD_REC709);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_SD_REC601, COLOR_SPACE_SD_REC601);
-ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_MAX, COLOR_SPACE_MAX);
+                   ColorSpace::UNSPECIFIED);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_JPEG, ColorSpace::JPEG);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_HD_REC709, ColorSpace::HD_REC709);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_SD_REC601, ColorSpace::SD_REC601);
+ASSERT_ENUM_EQ_RAW(ColorSpace, COLOR_SPACE_MAX, ColorSpace::MAX);
 
 // VideoCodec
-ASSERT_ENUM_EQ_RAW(VideoCodec, kUnknownVideoCodec, VIDEO_CODEC_UNKNOWN);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, H264);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, HEVC);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, VC1);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, MPEG2);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, MPEG4);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, Theora);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, VP8);
-ASSERT_ENUM_EQ(VideoCodec, kCodec, VIDEO_CODEC_, VP9);
-ASSERT_ENUM_EQ_RAW(VideoCodec, kVideoCodecMax, VIDEO_CODEC_Max);
+ASSERT_ENUM_EQ_RAW(VideoCodec, kUnknownVideoCodec, VideoCodec::UNKNOWN);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , H264);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , HEVC);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , VC1);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , MPEG2);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , MPEG4);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , Theora);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , VP8);
+ASSERT_ENUM_EQ(VideoCodec, kCodec, , VP9);
+ASSERT_ENUM_EQ_RAW(VideoCodec, kVideoCodecMax, VideoCodec::Max);
 
 // VideoCodecProfile
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               VIDEO_CODEC_PROFILE_UNKNOWN);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               VIDEO_CODEC_PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_BASELINE);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_MAIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_EXTENDED);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_HIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_HIGH10PROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_HIGH422PROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_HIGH444PREDICTIVEPROFILE);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_SCALABLEBASELINE);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_SCALABLEHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_STEREOHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               H264PROFILE_MULTIVIEWHIGH);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, H264PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP8PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP8PROFILE_ANY);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP8PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP9PROFILE_MIN);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP9PROFILE_ANY);
-ASSERT_ENUM_EQ(VideoCodecProfile, , VIDEO_CODEC_PROFILE_, VP9PROFILE_MAX);
-ASSERT_ENUM_EQ(VideoCodecProfile,
-               ,
-               VIDEO_CODEC_PROFILE_,
-               VIDEO_CODEC_PROFILE_MAX);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_UNKNOWN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_MIN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MIN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_BASELINE);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MAIN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_EXTENDED);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH10PROFILE);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH422PROFILE);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_HIGH444PREDICTIVEPROFILE);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_SCALABLEBASELINE);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_SCALABLEHIGH);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_STEREOHIGH);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MULTIVIEWHIGH);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , H264PROFILE_MAX);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_MIN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_ANY);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP8PROFILE_MAX);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_MIN);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_ANY);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VP9PROFILE_MAX);
+ASSERT_ENUM_EQ(VideoCodecProfile, , , VIDEO_CODEC_PROFILE_MAX);
 
 // Decryptor Status
 ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::kSuccess,
-                   Decryptor::STATUS_SUCCESS);
+                   Decryptor::Status::SUCCESS);
 ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::kNoKey,
-                   Decryptor::STATUS_NO_KEY);
+                   Decryptor::Status::NO_KEY);
 ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::kNeedMoreData,
-                   Decryptor::STATUS_NEED_MORE_DATA);
+                   Decryptor::Status::NEED_MORE_DATA);
 ASSERT_ENUM_EQ_RAW(Decryptor::Status,
                    Decryptor::kError,
-                   Decryptor::STATUS_ERROR);
+                   Decryptor::Status::DECRYPTION_ERROR);
 
 // CdmException
-#define ASSERT_CDM_EXCEPTION(value)                                \
-  static_assert(media::MediaKeys::value ==                         \
-                    static_cast<media::MediaKeys::Exception>(      \
-                        media::interfaces::CDM_EXCEPTION_##value), \
-                "Mismatched CDM Exception")
+#define ASSERT_CDM_EXCEPTION(value)                                           \
+  static_assert(                                                              \
+      media::MediaKeys::value == static_cast<media::MediaKeys::Exception>(    \
+                                     media::interfaces::CdmException::value), \
+      "Mismatched CDM Exception")
 ASSERT_CDM_EXCEPTION(NOT_SUPPORTED_ERROR);
 ASSERT_CDM_EXCEPTION(INVALID_STATE_ERROR);
 ASSERT_CDM_EXCEPTION(INVALID_ACCESS_ERROR);
@@ -262,12 +230,12 @@ ASSERT_CDM_EXCEPTION(CLIENT_ERROR);
 ASSERT_CDM_EXCEPTION(OUTPUT_ERROR);
 
 // CDM Session Type
-#define ASSERT_CDM_SESSION_TYPE(value)                               \
-  static_assert(media::MediaKeys::value ==                           \
-                    static_cast<media::MediaKeys::SessionType>(      \
-                        media::interfaces::ContentDecryptionModule:: \
-                            SESSION_TYPE_##value),                   \
-                "Mismatched CDM Session Type")
+#define ASSERT_CDM_SESSION_TYPE(value)                                         \
+  static_assert(                                                               \
+      media::MediaKeys::value ==                                               \
+          static_cast<media::MediaKeys::SessionType>(                          \
+              media::interfaces::ContentDecryptionModule::SessionType::value), \
+      "Mismatched CDM Session Type")
 ASSERT_CDM_SESSION_TYPE(TEMPORARY_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_LICENSE_SESSION);
 ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
@@ -277,7 +245,7 @@ ASSERT_CDM_SESSION_TYPE(PERSISTENT_RELEASE_MESSAGE_SESSION);
   static_assert(media::EmeInitDataType::value ==                     \
                     static_cast<media::EmeInitDataType>(             \
                         media::interfaces::ContentDecryptionModule:: \
-                            INIT_DATA_TYPE_##value),                 \
+                            InitDataType::value),                    \
                 "Mismatched CDM Init Data Type")
 ASSERT_CDM_INIT_DATA_TYPE(UNKNOWN);
 ASSERT_CDM_INIT_DATA_TYPE(WEBM);
@@ -288,7 +256,7 @@ ASSERT_CDM_INIT_DATA_TYPE(KEYIDS);
 #define ASSERT_CDM_KEY_STATUS(value)                                  \
   static_assert(media::CdmKeyInformation::value ==                    \
                     static_cast<media::CdmKeyInformation::KeyStatus>( \
-                        media::interfaces::CDM_KEY_STATUS_##value),   \
+                        media::interfaces::CdmKeyStatus::value),      \
                 "Mismatched CDM Key Status")
 ASSERT_CDM_KEY_STATUS(USABLE);
 ASSERT_CDM_KEY_STATUS(INTERNAL_ERROR);
@@ -298,10 +266,10 @@ ASSERT_CDM_KEY_STATUS(OUTPUT_DOWNSCALED);
 ASSERT_CDM_KEY_STATUS(KEY_STATUS_PENDING);
 
 // CDM Message Type
-#define ASSERT_CDM_MESSAGE_TYPE(value)                                \
-  static_assert(media::MediaKeys::value ==                            \
-                    static_cast<media::MediaKeys::MessageType>(       \
-                        media::interfaces::CDM_MESSAGE_TYPE_##value), \
+#define ASSERT_CDM_MESSAGE_TYPE(value)                             \
+  static_assert(media::MediaKeys::value ==                         \
+                    static_cast<media::MediaKeys::MessageType>(    \
+                        media::interfaces::CdmMessageType::value), \
                 "Mismatched CDM Message Type")
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_REQUEST);
 ASSERT_CDM_MESSAGE_TYPE(LICENSE_RENEWAL);

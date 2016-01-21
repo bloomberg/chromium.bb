@@ -30,7 +30,7 @@ ServerWindow::ServerWindow(ServerWindowDelegate* delegate,
       stacking_target_(nullptr),
       transient_parent_(nullptr),
       visible_(false),
-      cursor_id_(mojom::CURSOR_NULL),
+      cursor_id_(mojom::Cursor::CURSOR_NULL),
       opacity_(1),
       can_focus_(true),
       properties_(properties),
@@ -87,7 +87,7 @@ void ServerWindow::Add(ServerWindow* child) {
   if (child->parent() == this) {
     if (children_.size() == 1)
       return;  // Already in the right position.
-    child->Reorder(children_.back(), mojom::ORDER_DIRECTION_ABOVE);
+    child->Reorder(children_.back(), mojom::OrderDirection::ABOVE);
     return;
   }
 
@@ -138,14 +138,14 @@ void ServerWindow::StackChildAtBottom(ServerWindow* child) {
   // There's nothing to do if the child is already at the bottom.
   if (children_.size() <= 1 || child == children_.front())
     return;
-  child->Reorder(children_.front(), mojom::ORDER_DIRECTION_BELOW);
+  child->Reorder(children_.front(), mojom::OrderDirection::BELOW);
 }
 
 void ServerWindow::StackChildAtTop(ServerWindow* child) {
   // There's nothing to do if the child is already at the top.
   if (children_.size() <= 1 || child == children_.back())
     return;
-  child->Reorder(children_.back(), mojom::ORDER_DIRECTION_ABOVE);
+  child->Reorder(children_.back(), mojom::OrderDirection::ABOVE);
 }
 
 void ServerWindow::SetBounds(const gfx::Rect& bounds) {
@@ -408,10 +408,10 @@ void ServerWindow::ReorderImpl(ServerWindow* window,
                                              window));
   Windows::iterator i = std::find(window->parent_->children_.begin(),
                                   window->parent_->children_.end(), relative);
-  if (direction == mojom::ORDER_DIRECTION_ABOVE) {
+  if (direction == mojom::OrderDirection::ABOVE) {
     DCHECK(i != window->parent_->children_.end());
     window->parent_->children_.insert(++i, window);
-  } else if (direction == mojom::ORDER_DIRECTION_BELOW) {
+  } else if (direction == mojom::OrderDirection::BELOW) {
     DCHECK(i != window->parent_->children_.end());
     window->parent_->children_.insert(i, window);
   }

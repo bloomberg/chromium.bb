@@ -43,14 +43,14 @@ struct TypeConverter<WebSocket::MessageType, WebSocketHandle::MessageType> {
     typedef WebSocket::MessageType MessageType;
     static_assert(
         static_cast<MessageType>(WebSocketHandle::MessageTypeContinuation) ==
-            WebSocket::MESSAGE_TYPE_CONTINUATION,
+            WebSocket::MessageType::CONTINUATION,
         "WebSocket and WebSocketHandle enum values must match");
     static_assert(static_cast<MessageType>(WebSocketHandle::MessageTypeText) ==
-                      WebSocket::MESSAGE_TYPE_TEXT,
+                      WebSocket::MessageType::TEXT,
                   "WebSocket and WebSocketHandle enum values must match");
     static_assert(
         static_cast<MessageType>(WebSocketHandle::MessageTypeBinary) ==
-            WebSocket::MESSAGE_TYPE_BINARY,
+            WebSocket::MessageType::BINARY,
         "WebSocket and WebSocketHandle enum values must match");
     return static_cast<WebSocket::MessageType>(type);
   }
@@ -59,9 +59,9 @@ struct TypeConverter<WebSocket::MessageType, WebSocketHandle::MessageType> {
 template<>
 struct TypeConverter<WebSocketHandle::MessageType, WebSocket::MessageType> {
   static WebSocketHandle::MessageType Convert(WebSocket::MessageType type) {
-    DCHECK(type == WebSocket::MESSAGE_TYPE_CONTINUATION ||
-           type == WebSocket::MESSAGE_TYPE_TEXT ||
-           type == WebSocket::MESSAGE_TYPE_BINARY);
+    DCHECK(type == WebSocket::MessageType::CONTINUATION ||
+           type == WebSocket::MessageType::TEXT ||
+           type == WebSocket::MessageType::BINARY);
     return static_cast<WebSocketHandle::MessageType>(type);
   }
 };

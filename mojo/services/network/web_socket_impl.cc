@@ -30,19 +30,19 @@ struct TypeConverter<net::WebSocketFrameHeader::OpCode,
                      WebSocket::MessageType> {
   static net::WebSocketFrameHeader::OpCode Convert(
       WebSocket::MessageType type) {
-    DCHECK(type == WebSocket::MESSAGE_TYPE_CONTINUATION ||
-           type == WebSocket::MESSAGE_TYPE_TEXT ||
-           type == WebSocket::MESSAGE_TYPE_BINARY);
+    DCHECK(type == WebSocket::MessageType::CONTINUATION ||
+           type == WebSocket::MessageType::TEXT ||
+           type == WebSocket::MessageType::BINARY);
     typedef net::WebSocketFrameHeader::OpCode OpCode;
     // These compile asserts verify that the same underlying values are used for
     // both types, so we can simply cast between them.
-    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_CONTINUATION) ==
+    static_assert(static_cast<OpCode>(WebSocket::MessageType::CONTINUATION) ==
                       net::WebSocketFrameHeader::kOpCodeContinuation,
                   "enum values must match for opcode continuation");
-    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_TEXT) ==
+    static_assert(static_cast<OpCode>(WebSocket::MessageType::TEXT) ==
                       net::WebSocketFrameHeader::kOpCodeText,
                   "enum values must match for opcode text");
-    static_assert(static_cast<OpCode>(WebSocket::MESSAGE_TYPE_BINARY) ==
+    static_assert(static_cast<OpCode>(WebSocket::MessageType::BINARY) ==
                       net::WebSocketFrameHeader::kOpCodeBinary,
                   "enum values must match for opcode binary");
     return static_cast<OpCode>(type);

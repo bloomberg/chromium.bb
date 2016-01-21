@@ -23,11 +23,10 @@ gfx::Point EventScreenLocationToPoint(const mus::mojom::Event& event) {
                   event.pointer_data->location->screen_y));
 }
 
-mus::mojom::EventFlags MouseOnlyEventFlags(mus::mojom::EventFlags flags) {
-  return static_cast<mus::mojom::EventFlags>(
-      flags & (mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON |
-               mus::mojom::EVENT_FLAGS_MIDDLE_MOUSE_BUTTON |
-               mus::mojom::EVENT_FLAGS_RIGHT_MOUSE_BUTTON));
+int MouseOnlyEventFlags(int flags) {
+  return flags & (mus::mojom::kEventFlagLeftMouseButton |
+                  mus::mojom::kEventFlagMiddleMouseButton |
+                  mus::mojom::kEventFlagRightMouseButton);
 }
 
 }  // namespace
@@ -41,11 +40,11 @@ MoveLoop::~MoveLoop() {
 scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
                                       int ht_location,
                                       const mus::mojom::Event& event) {
-  DCHECK_EQ(event.action, mus::mojom::EVENT_TYPE_POINTER_DOWN);
+  DCHECK_EQ(event.action, mus::mojom::EventType::POINTER_DOWN);
   // Start a move on left mouse, or any other type of pointer.
-  if (event.pointer_data->kind == mus::mojom::POINTER_KIND_MOUSE &&
+  if (event.pointer_data->kind == mus::mojom::PointerKind::MOUSE &&
       MouseOnlyEventFlags(event.flags) !=
-          mus::mojom::EVENT_FLAGS_LEFT_MOUSE_BUTTON) {
+          mus::mojom::kEventFlagLeftMouseButton) {
     return nullptr;
   }
 
@@ -60,7 +59,7 @@ scoped_ptr<MoveLoop> MoveLoop::Create(mus::Window* target,
 
 MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
   switch (event.action) {
-    case mus::mojom::EVENT_TYPE_POINTER_CANCEL:
+    case mus::mojom::EventType::POINTER_CANCEL:
       if (event.pointer_data->pointer_id == pointer_id_) {
         if (target_)
           Revert();
@@ -68,12 +67,12 @@ MoveLoop::MoveResult MoveLoop::Move(const mus::mojom::Event& event) {
       }
       return MoveResult::CONTINUE;
 
-    case mus::mojom::EVENT_TYPE_POINTER_MOVE:
+    case mus::mojom::EventType::POINTER_MOVE:
       if (target_ && event.pointer_data->pointer_id == pointer_id_)
         MoveImpl(event);
       return MoveResult::CONTINUE;
 
-    case mus::mojom::EVENT_TYPE_POINTER_UP:
+    case mus::mojom::EventType::POINTER_UP:
       if (event.pointer_data->pointer_id == pointer_id_) {
         // TODO(sky): need to support changed_flags.
         if (target_)

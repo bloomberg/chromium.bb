@@ -14,11 +14,11 @@ struct MojoGeoposition {
   // These values follow the W3C geolocation specification and can be returned
   // to JavaScript without the need for a conversion.
   enum ErrorCode {
-    ERROR_CODE_NONE = 0,  // Chrome addition.
-    ERROR_CODE_PERMISSION_DENIED = 1,
-    ERROR_CODE_POSITION_UNAVAILABLE = 2,
-    ERROR_CODE_TIMEOUT = 3,
-    ERROR_CODE_LAST = ERROR_CODE_TIMEOUT
+    NONE = 0,  // Chrome addition.
+    PERMISSION_DENIED = 1,
+    POSITION_UNAVAILABLE = 2,
+    TIMEOUT = 3,
+    LAST = TIMEOUT
   };
 
   // Whether this geoposition is valid.

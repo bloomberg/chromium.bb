@@ -81,12 +81,11 @@ void GeolocationDispatcher::requestPermission(
   int permission_request_id = pending_permissions_->add(permissionRequest);
 
   permission_service_->RequestPermission(
-      PERMISSION_NAME_GEOLOCATION,
+      PermissionName::GEOLOCATION,
       permissionRequest.securityOrigin().toString().utf8(),
       blink::WebUserGestureIndicator::isProcessingUserGesture(),
       base::Bind(&GeolocationDispatcher::OnPermissionSet,
-                 base::Unretained(this),
-                 permission_request_id));
+                 base::Unretained(this), permission_request_id));
 }
 
 void GeolocationDispatcher::cancelPermissionRequest(
@@ -103,7 +102,7 @@ void GeolocationDispatcher::OnPermissionSet(
   if (!pending_permissions_->remove(permission_request_id, permissionRequest))
     return;
 
-  permissionRequest.setIsAllowed(status == PERMISSION_STATUS_GRANTED);
+  permissionRequest.setIsAllowed(status == PermissionStatus::GRANTED);
 }
 
 void GeolocationDispatcher::QueryNextPosition() {
@@ -134,10 +133,10 @@ void GeolocationDispatcher::OnPositionUpdate(MojoGeopositionPtr geoposition) {
   } else {
     WebGeolocationError::Error code;
     switch (geoposition->error_code) {
-      case Geoposition::ERROR_CODE_PERMISSION_DENIED:
+      case MojoGeoposition::ErrorCode::PERMISSION_DENIED:
         code = WebGeolocationError::ErrorPermissionDenied;
         break;
-      case Geoposition::ERROR_CODE_POSITION_UNAVAILABLE:
+      case MojoGeoposition::ErrorCode::POSITION_UNAVAILABLE:
         code = WebGeolocationError::ErrorPositionUnavailable;
         break;
       default:

@@ -16,6 +16,7 @@
 #define {{header_guard}}
 
 #include <stdint.h>
+#include <ostream>
 
 #include "mojo/public/cpp/bindings/array.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -49,8 +50,10 @@ namespace {{variant}} {
 
 {#--- Enums #}
 {% from "enum_macros.tmpl" import enum_decl -%}
+{% from "enum_macros.tmpl" import enum_stream_operator -%}
 {%  for enum in enums %}
   {{enum_decl(enum)}}
+  {{enum_stream_operator(enum)}}
 {%- endfor %}
 
 {#--- Constants #}
@@ -157,6 +160,18 @@ typedef mojo::StructPtr<{{union.name}}> {{union.name}}Ptr;
 {%      include "union_serialization_declaration.tmpl" %}
 {%-   endfor %}
 {%- endif %}
+
+{%  for struct in structs %}
+{%    for enum in struct.enums %}
+{{enum_stream_operator(enum)}}
+{%-   endfor %}
+{%- endfor %}
+
+{%  for interface in interfaces %}
+{%    for enum in interface.enums %}
+{{enum_stream_operator(enum)}}
+{%-   endfor %}
+{%- endfor %}
 
 {%- if variant %}
 }  // namespace {{variant}}

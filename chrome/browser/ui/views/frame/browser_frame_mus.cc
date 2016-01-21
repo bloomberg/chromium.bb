@@ -38,7 +38,7 @@ BrowserFrameMus::BrowserFrameMus(BrowserFrame* browser_frame,
           browser_frame,
           views::WindowManagerConnection::Get()->app()->shell(),
           CreateMusWindow(browser_view),
-          mus::mojom::SURFACE_TYPE_DEFAULT),
+          mus::mojom::SurfaceType::DEFAULT),
       browser_view_(browser_view) {}
 
 BrowserFrameMus::~BrowserFrameMus() {}

@@ -68,18 +68,16 @@ enum SurfaceType {
 // change id in anyway, it is up to the client to assign a value and use it.
 // Generally the change id is an ever increasing integer.
 interface WindowTree {
-  enum AccessPolicy {
-    DEFAULT = 0,
+  const int32 kAccessPolicyDefault = 0;
 
-    // An embed root has the following abilities:
-    // . The app sees all the descendants of the window the app is ebmedded at,
-    //   even those from separate connections.
-    // . The app is able to Embed() in all the descendants of the window the app
-    //   is embedded at, even those from separate connections.
-    // Only connections originating from the WindowTreeHostFactory can grant
-    // this policy.
-    EMBED_ROOT = 1,
-  };
+  // An embed root has the following abilities:
+  // . The app sees all the descendants of the window the app is ebmedded at,
+  //   even those from separate connections.
+  // . The app is able to Embed() in all the descendants of the window the app
+  //   is embedded at, even those from separate connections.
+  // Only connections originating from the WindowTreeHostFactory can grant
+  // this policy.
+  const int32 kAccessPolicyEmbedRoot = 1;
 
   // Creates a new window with the specified id. It is up to the client to
   // ensure the id is unique to the connection (the id need not be globally
@@ -195,7 +193,7 @@ interface WindowTree {
   // longer has privileges to access or see any of the children of the window.
   // If the window had existing children the children are removed. The one
   // exception is the root connection and any connections with the policy
-  // ACCESS_POLICY_EMBED_ROOT.
+  // kAccessPolicyEmbedRoot.
   //
   // A window may only have one embedding in it at a time. Subsequent calls to
   // Embed() for the same window result in the currently embedded

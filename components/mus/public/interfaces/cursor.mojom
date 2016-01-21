@@ -9,7 +9,7 @@ module mus.mojom;
 enum Cursor {
   // NULL is kept for compatibility with chrome declarations. In chrome code, it
   // is treated exactly like POINTER, the default pointer.
-  NULL = 0,
+  CURSOR_NULL = 0,
   POINTER,
   CROSS,
   HAND,

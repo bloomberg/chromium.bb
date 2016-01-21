@@ -9,7 +9,7 @@ struct UserWindow {
   string window_title;
 };
 
-// An observer of user windows within mojom::CONTAINER_USER_WINDOWS.
+// An observer of user windows within mojom::Container::USER_WINDOWS.
 // TODO(msw): Observe focus changes, title/icon changes, etc.
 interface UserWindowObserver {
   // Called when the observer is first added to supply the initial state.

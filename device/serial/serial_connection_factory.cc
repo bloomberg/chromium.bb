@@ -18,12 +18,12 @@ namespace {
 void FillDefaultConnectionOptions(serial::ConnectionOptions* options) {
   if (!options->bitrate)
     options->bitrate = 9600;
-  if (options->data_bits == serial::DATA_BITS_NONE)
-    options->data_bits = serial::DATA_BITS_EIGHT;
-  if (options->stop_bits == serial::STOP_BITS_NONE)
-    options->stop_bits = serial::STOP_BITS_ONE;
-  if (options->parity_bit == serial::PARITY_BIT_NONE)
-    options->parity_bit = serial::PARITY_BIT_NO;
+  if (options->data_bits == serial::DataBits::NONE)
+    options->data_bits = serial::DataBits::EIGHT;
+  if (options->stop_bits == serial::StopBits::NONE)
+    options->stop_bits = serial::StopBits::ONE;
+  if (options->parity_bit == serial::ParityBit::NONE)
+    options->parity_bit = serial::ParityBit::NO;
   if (!options->has_cts_flow_control) {
     options->has_cts_flow_control = true;
     options->cts_flow_control = false;

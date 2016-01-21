@@ -22,7 +22,7 @@ struct Size {
 
 struct Thing {
   imported.Shape shape = RECTANGLE;
-  int32 color = Color.BLACK;
+  imported.Color color = Color.BLACK;
   Point location;
   Size size;
 };

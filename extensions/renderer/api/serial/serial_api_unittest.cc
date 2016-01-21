@@ -189,60 +189,51 @@ class ConfigurePortTestIoHandler : public TestIoHandlerBase {
         // Each JavaScript call to chrome.serial.update only modifies a single
         // property of the connection however this function can only check the
         // final value of all options. The modified option is marked with "set".
-        GenerateConnectionOptions(9600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_NO,
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(9600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::NO,
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,  // set
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_NO,
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(
+            57600,  // set
+            device::serial::DataBits::EIGHT, device::serial::ParityBit::NO,
+            device::serial::StopBits::ONE, OPTIONAL_VALUE_FALSE),
+        GenerateConnectionOptions(57600,
+                                  device::serial::DataBits::SEVEN,  // set
+                                  device::serial::ParityBit::NO,
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
         GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_SEVEN,  // set
-                                  device::serial::PARITY_BIT_NO,
-                                  device::serial::STOP_BITS_ONE,
+                                  device::serial::DataBits::EIGHT,  // set
+                                  device::serial::ParityBit::NO,
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,  // set
-                                  device::serial::PARITY_BIT_NO,
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::NO,  // set
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_NO,  // set
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::ODD,  // set
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_ODD,  // set
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::EVEN,  // set
+                                  device::serial::StopBits::ONE,
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_EVEN,  // set
-                                  device::serial::STOP_BITS_ONE,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::EVEN,
+                                  device::serial::StopBits::ONE,  // set
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_EVEN,
-                                  device::serial::STOP_BITS_ONE,  // set
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::EVEN,
+                                  device::serial::StopBits::TWO,  // set
                                   OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_EVEN,
-                                  device::serial::STOP_BITS_TWO,  // set
-                                  OPTIONAL_VALUE_FALSE),
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_EVEN,
-                                  device::serial::STOP_BITS_TWO,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::EVEN,
+                                  device::serial::StopBits::TWO,
                                   OPTIONAL_VALUE_FALSE),  // set
-        GenerateConnectionOptions(57600,
-                                  device::serial::DATA_BITS_EIGHT,
-                                  device::serial::PARITY_BIT_EVEN,
-                                  device::serial::STOP_BITS_TWO,
+        GenerateConnectionOptions(57600, device::serial::DataBits::EIGHT,
+                                  device::serial::ParityBit::EVEN,
+                                  device::serial::StopBits::TWO,
                                   OPTIONAL_VALUE_TRUE),  // set
     };
 
@@ -346,7 +337,7 @@ class FixedDataReceiveTestIoHandler : public TestIoHandlerBase {
       return;
     memcpy(pending_read_buffer(), data_.c_str(), data_.size());
     QueueReadCompleted(static_cast<uint32_t>(data_.size()),
-                       device::serial::RECEIVE_ERROR_NONE);
+                       device::serial::ReceiveError::NONE);
   }
 
  private:
@@ -378,13 +369,13 @@ class SendDataWithErrorIoHandler : public TestIoHandlerBase {
   void WriteImpl() override {
     if (sent_error_) {
       WriteCompleted(pending_write_buffer_len(),
-                     device::serial::SEND_ERROR_NONE);
+                     device::serial::SendError::NONE);
       return;
     }
     sent_error_ = true;
     // We expect the JS test code to send a 4 byte buffer.
     ASSERT_LT(2u, pending_write_buffer_len());
-    WriteCompleted(2, device::serial::SEND_ERROR_SYSTEM_ERROR);
+    WriteCompleted(2, device::serial::SendError::SYSTEM_ERROR);
   }
 
  private:
@@ -580,7 +571,7 @@ TEST_F(SerialApiTest, PausedReceive) {
 
 TEST_F(SerialApiTest, PausedReceiveError) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::DEVICE_LOST);
   RunTest("serial_unittest.js", "testPausedReceiveError");
 }
 
@@ -598,61 +589,61 @@ TEST_F(SerialApiTest, DisableReceiveTimeout) {
 
 TEST_F(SerialApiTest, ReceiveErrorDisconnected) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DISCONNECTED);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::DISCONNECTED);
   RunTest("serial_unittest.js", "testReceiveErrorDisconnected");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorDeviceLost) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::DEVICE_LOST);
   RunTest("serial_unittest.js", "testReceiveErrorDeviceLost");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorBreak) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_BREAK);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::BREAK);
   RunTest("serial_unittest.js", "testReceiveErrorBreak");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorFrameError) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_FRAME_ERROR);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::FRAME_ERROR);
   RunTest("serial_unittest.js", "testReceiveErrorFrameError");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorOverrun) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_OVERRUN);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::OVERRUN);
   RunTest("serial_unittest.js", "testReceiveErrorOverrun");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorBufferOverflow) {
   io_handler_ = new ReceiveErrorTestIoHandler(
-      device::serial::RECEIVE_ERROR_BUFFER_OVERFLOW);
+      device::serial::ReceiveError::BUFFER_OVERFLOW);
   RunTest("serial_unittest.js", "testReceiveErrorBufferOverflow");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorParityError) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_PARITY_ERROR);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::PARITY_ERROR);
   RunTest("serial_unittest.js", "testReceiveErrorParityError");
 }
 
 TEST_F(SerialApiTest, ReceiveErrorSystemError) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_SYSTEM_ERROR);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::SYSTEM_ERROR);
   RunTest("serial_unittest.js", "testReceiveErrorSystemError");
 }
 
 TEST_F(SerialApiTest, SendErrorDisconnected) {
   io_handler_ =
-      new SendErrorTestIoHandler(device::serial::SEND_ERROR_DISCONNECTED);
+      new SendErrorTestIoHandler(device::serial::SendError::DISCONNECTED);
   RunTest("serial_unittest.js", "testSendErrorDisconnected");
 }
 
 TEST_F(SerialApiTest, SendErrorSystemError) {
   io_handler_ =
-      new SendErrorTestIoHandler(device::serial::SEND_ERROR_SYSTEM_ERROR);
+      new SendErrorTestIoHandler(device::serial::SendError::SYSTEM_ERROR);
   RunTest("serial_unittest.js", "testSendErrorSystemError");
 }
 
@@ -701,7 +692,7 @@ TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEcho) {
 
 TEST_F(SerialApiTest, DISABLED_StashAndRestoreDuringEchoError) {
   io_handler_ =
-      new ReceiveErrorTestIoHandler(device::serial::RECEIVE_ERROR_DEVICE_LOST);
+      new ReceiveErrorTestIoHandler(device::serial::ReceiveError::DEVICE_LOST);
   ASSERT_NO_FATAL_FAILURE(
       RunTest("serial_unittest.js", "testRestoreAndReceiveErrorSetUp"));
   scoped_ptr<ModuleSystemTestEnvironment> new_env(CreateEnvironment());

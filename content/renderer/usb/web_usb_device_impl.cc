@@ -66,10 +66,10 @@ void OnOpenDevice(
     device::usb::OpenDeviceError error) {
   auto scoped_callbacks = callbacks.PassCallbacks();
   switch(error) {
-    case device::usb::OPEN_DEVICE_ERROR_OK:
+    case device::usb::OpenDeviceError::OK:
       scoped_callbacks->onSuccess();
       break;
-    case device::usb::OPEN_DEVICE_ERROR_ACCESS_DENIED:
+    case device::usb::OpenDeviceError::ACCESS_DENIED:
       scoped_callbacks->onError(blink::WebUSBError(
           blink::WebUSBError::Error::Security,
           base::ASCIIToUTF16(kDeviceNoAccess)));
@@ -117,7 +117,7 @@ void OnTransferIn(
     device::usb::TransferStatus status,
     mojo::Array<uint8_t> data) {
   auto scoped_callbacks = callbacks.PassCallbacks();
-  if (status != device::usb::TRANSFER_STATUS_COMPLETED) {
+  if (status != device::usb::TransferStatus::COMPLETED) {
     RejectWithTransferError(std::move(scoped_callbacks));
     return;
   }
@@ -134,13 +134,13 @@ void OnTransferOut(
   auto scoped_callbacks = callbacks.PassCallbacks();
   scoped_ptr<blink::WebUSBTransferInfo> info(new blink::WebUSBTransferInfo());
   switch (status) {
-    case device::usb::TRANSFER_STATUS_COMPLETED:
+    case device::usb::TransferStatus::COMPLETED:
       info->status = blink::WebUSBTransferInfo::Status::Ok;
       break;
-    case device::usb::TRANSFER_STATUS_STALLED:
+    case device::usb::TransferStatus::STALLED:
       info->status = blink::WebUSBTransferInfo::Status::Stall;
       break;
-    case device::usb::TRANSFER_STATUS_BABBLE:
+    case device::usb::TransferStatus::BABBLE:
       info->status = blink::WebUSBTransferInfo::Status::Babble;
       break;
     default:

@@ -142,7 +142,7 @@ class PDFView : public mus::WindowTreeDelegate,
                           mus::mojom::EventPtr event,
                           scoped_ptr<base::Closure>* ack_callback) override {
     if (event->key_data &&
-        (event->action != mus::mojom::EVENT_TYPE_KEY_PRESSED ||
+        (event->action != mus::mojom::EventType::KEY_PRESSED ||
          event->key_data->is_char)) {
       return;
     }
@@ -150,7 +150,7 @@ class PDFView : public mus::WindowTreeDelegate,
     // TODO(rjkroege): Make panning and scrolling more performant and
     // responsive to gesture events.
     if ((event->key_data &&
-         event->key_data->windows_key_code == mus::mojom::KEYBOARD_CODE_DOWN) ||
+         event->key_data->windows_key_code == mus::mojom::KeyboardCode::DOWN) ||
         (event->pointer_data && event->pointer_data->wheel_data &&
          event->pointer_data->wheel_data->delta_y < 0)) {
       if (current_page_ < (page_count_ - 1)) {
@@ -159,7 +159,7 @@ class PDFView : public mus::WindowTreeDelegate,
       }
     } else if ((event->key_data &&
                 event->key_data->windows_key_code ==
-                    mus::mojom::KEYBOARD_CODE_UP) ||
+                    mus::mojom::KeyboardCode::UP) ||
                (event->pointer_data && event->pointer_data->wheel_data &&
                 event->pointer_data->wheel_data->delta_y > 0)) {
       if (current_page_ > 0) {

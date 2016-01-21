@@ -13,36 +13,35 @@ namespace mojo {
                     static_cast<int>(blink::blink_name),    \
                 "mojo and blink enums must match")
 
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_PERIODIC,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::PERIODIC,
                              WebSyncRegistration::PeriodicityPeriodic);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_ONE_SHOT,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::ONE_SHOT,
                              WebSyncRegistration::PeriodicityOneShot);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::MAX,
                              WebSyncRegistration::PeriodicityOneShot);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_PERIODICITY_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPeriodicity::MAX,
                              WebSyncRegistration::PeriodicityLast);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_ANY,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ANY,
                              WebSyncRegistration::NetworkStateAny);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_AVOID_CELLULAR,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::AVOID_CELLULAR,
                              WebSyncRegistration::NetworkStateAvoidCellular);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_ONLINE,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::ONLINE,
                              WebSyncRegistration::NetworkStateOnline);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              WebSyncRegistration::NetworkStateOnline);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_NETWORK_STATE_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncNetworkState::MAX,
                              WebSyncRegistration::NetworkStateLast);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_POWER_STATE_AUTO,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AUTO,
                              WebSyncRegistration::PowerStateAuto);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_POWER_STATE_AVOID_DRAINING,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::AVOID_DRAINING,
                              WebSyncRegistration::PowerStateAvoidDraining);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_POWER_STATE_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::MAX,
                              WebSyncRegistration::PowerStateAvoidDraining);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_POWER_STATE_MAX,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncPowerState::MAX,
                              WebSyncRegistration::PowerStateLast);
-COMPILE_ASSERT_MATCHING_ENUM(
-    BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_NOT_LAST_CHANCE,
-    WebServiceWorkerContextProxy::IsNotLastChance);
-COMPILE_ASSERT_MATCHING_ENUM(BACKGROUND_SYNC_EVENT_LAST_CHANCE_IS_LAST_CHANCE,
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_NOT_LAST_CHANCE,
+                             WebServiceWorkerContextProxy::IsNotLastChance);
+COMPILE_ASSERT_MATCHING_ENUM(BackgroundSyncEventLastChance::IS_LAST_CHANCE,
                              WebServiceWorkerContextProxy::IsLastChance);
 
 // static

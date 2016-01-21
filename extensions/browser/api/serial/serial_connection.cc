@@ -23,15 +23,15 @@ const int kDefaultBufferSize = 4096;
 api::serial::SendError ConvertSendErrorFromMojo(
     device::serial::SendError input) {
   switch (input) {
-    case device::serial::SEND_ERROR_NONE:
+    case device::serial::SendError::NONE:
       return api::serial::SEND_ERROR_NONE;
-    case device::serial::SEND_ERROR_DISCONNECTED:
+    case device::serial::SendError::DISCONNECTED:
       return api::serial::SEND_ERROR_DISCONNECTED;
-    case device::serial::SEND_ERROR_PENDING:
+    case device::serial::SendError::PENDING:
       return api::serial::SEND_ERROR_PENDING;
-    case device::serial::SEND_ERROR_TIMEOUT:
+    case device::serial::SendError::TIMEOUT:
       return api::serial::SEND_ERROR_TIMEOUT;
-    case device::serial::SEND_ERROR_SYSTEM_ERROR:
+    case device::serial::SendError::SYSTEM_ERROR:
       return api::serial::SEND_ERROR_SYSTEM_ERROR;
   }
   return api::serial::SEND_ERROR_NONE;
@@ -40,25 +40,25 @@ api::serial::SendError ConvertSendErrorFromMojo(
 api::serial::ReceiveError ConvertReceiveErrorFromMojo(
     device::serial::ReceiveError input) {
   switch (input) {
-    case device::serial::RECEIVE_ERROR_NONE:
+    case device::serial::ReceiveError::NONE:
       return api::serial::RECEIVE_ERROR_NONE;
-    case device::serial::RECEIVE_ERROR_DISCONNECTED:
+    case device::serial::ReceiveError::DISCONNECTED:
       return api::serial::RECEIVE_ERROR_DISCONNECTED;
-    case device::serial::RECEIVE_ERROR_TIMEOUT:
+    case device::serial::ReceiveError::TIMEOUT:
       return api::serial::RECEIVE_ERROR_TIMEOUT;
-    case device::serial::RECEIVE_ERROR_DEVICE_LOST:
+    case device::serial::ReceiveError::DEVICE_LOST:
       return api::serial::RECEIVE_ERROR_DEVICE_LOST;
-    case device::serial::RECEIVE_ERROR_BREAK:
+    case device::serial::ReceiveError::BREAK:
       return api::serial::RECEIVE_ERROR_BREAK;
-    case device::serial::RECEIVE_ERROR_FRAME_ERROR:
+    case device::serial::ReceiveError::FRAME_ERROR:
       return api::serial::RECEIVE_ERROR_FRAME_ERROR;
-    case device::serial::RECEIVE_ERROR_OVERRUN:
+    case device::serial::ReceiveError::OVERRUN:
       return api::serial::RECEIVE_ERROR_OVERRUN;
-    case device::serial::RECEIVE_ERROR_BUFFER_OVERFLOW:
+    case device::serial::ReceiveError::BUFFER_OVERFLOW:
       return api::serial::RECEIVE_ERROR_BUFFER_OVERFLOW;
-    case device::serial::RECEIVE_ERROR_PARITY_ERROR:
+    case device::serial::ReceiveError::PARITY_ERROR:
       return api::serial::RECEIVE_ERROR_PARITY_ERROR;
-    case device::serial::RECEIVE_ERROR_SYSTEM_ERROR:
+    case device::serial::ReceiveError::SYSTEM_ERROR:
       return api::serial::RECEIVE_ERROR_SYSTEM_ERROR;
   }
   return api::serial::RECEIVE_ERROR_NONE;
@@ -66,11 +66,11 @@ api::serial::ReceiveError ConvertReceiveErrorFromMojo(
 
 api::serial::DataBits ConvertDataBitsFromMojo(device::serial::DataBits input) {
   switch (input) {
-    case device::serial::DATA_BITS_NONE:
+    case device::serial::DataBits::NONE:
       return api::serial::DATA_BITS_NONE;
-    case device::serial::DATA_BITS_SEVEN:
+    case device::serial::DataBits::SEVEN:
       return api::serial::DATA_BITS_SEVEN;
-    case device::serial::DATA_BITS_EIGHT:
+    case device::serial::DataBits::EIGHT:
       return api::serial::DATA_BITS_EIGHT;
   }
   return api::serial::DATA_BITS_NONE;
@@ -79,25 +79,25 @@ api::serial::DataBits ConvertDataBitsFromMojo(device::serial::DataBits input) {
 device::serial::DataBits ConvertDataBitsToMojo(api::serial::DataBits input) {
   switch (input) {
     case api::serial::DATA_BITS_NONE:
-      return device::serial::DATA_BITS_NONE;
+      return device::serial::DataBits::NONE;
     case api::serial::DATA_BITS_SEVEN:
-      return device::serial::DATA_BITS_SEVEN;
+      return device::serial::DataBits::SEVEN;
     case api::serial::DATA_BITS_EIGHT:
-      return device::serial::DATA_BITS_EIGHT;
+      return device::serial::DataBits::EIGHT;
   }
-  return device::serial::DATA_BITS_NONE;
+  return device::serial::DataBits::NONE;
 }
 
 api::serial::ParityBit ConvertParityBitFromMojo(
     device::serial::ParityBit input) {
   switch (input) {
-    case device::serial::PARITY_BIT_NONE:
+    case device::serial::ParityBit::NONE:
       return api::serial::PARITY_BIT_NONE;
-    case device::serial::PARITY_BIT_ODD:
+    case device::serial::ParityBit::ODD:
       return api::serial::PARITY_BIT_ODD;
-    case device::serial::PARITY_BIT_NO:
+    case device::serial::ParityBit::NO:
       return api::serial::PARITY_BIT_NO;
-    case device::serial::PARITY_BIT_EVEN:
+    case device::serial::ParityBit::EVEN:
       return api::serial::PARITY_BIT_EVEN;
   }
   return api::serial::PARITY_BIT_NONE;
@@ -106,24 +106,24 @@ api::serial::ParityBit ConvertParityBitFromMojo(
 device::serial::ParityBit ConvertParityBitToMojo(api::serial::ParityBit input) {
   switch (input) {
     case api::serial::PARITY_BIT_NONE:
-      return device::serial::PARITY_BIT_NONE;
+      return device::serial::ParityBit::NONE;
     case api::serial::PARITY_BIT_NO:
-      return device::serial::PARITY_BIT_NO;
+      return device::serial::ParityBit::NO;
     case api::serial::PARITY_BIT_ODD:
-      return device::serial::PARITY_BIT_ODD;
+      return device::serial::ParityBit::ODD;
     case api::serial::PARITY_BIT_EVEN:
-      return device::serial::PARITY_BIT_EVEN;
+      return device::serial::ParityBit::EVEN;
   }
-  return device::serial::PARITY_BIT_NONE;
+  return device::serial::ParityBit::NONE;
 }
 
 api::serial::StopBits ConvertStopBitsFromMojo(device::serial::StopBits input) {
   switch (input) {
-    case device::serial::STOP_BITS_NONE:
+    case device::serial::StopBits::NONE:
       return api::serial::STOP_BITS_NONE;
-    case device::serial::STOP_BITS_ONE:
+    case device::serial::StopBits::ONE:
       return api::serial::STOP_BITS_ONE;
-    case device::serial::STOP_BITS_TWO:
+    case device::serial::StopBits::TWO:
       return api::serial::STOP_BITS_TWO;
   }
   return api::serial::STOP_BITS_NONE;
@@ -132,13 +132,13 @@ api::serial::StopBits ConvertStopBitsFromMojo(device::serial::StopBits input) {
 device::serial::StopBits ConvertStopBitsToMojo(api::serial::StopBits input) {
   switch (input) {
     case api::serial::STOP_BITS_NONE:
-      return device::serial::STOP_BITS_NONE;
+      return device::serial::StopBits::NONE;
     case api::serial::STOP_BITS_ONE:
-      return device::serial::STOP_BITS_ONE;
+      return device::serial::StopBits::ONE;
     case api::serial::STOP_BITS_TWO:
-      return device::serial::STOP_BITS_TWO;
+      return device::serial::StopBits::TWO;
   }
-  return device::serial::STOP_BITS_NONE;
+  return device::serial::StopBits::NONE;
 }
 
 }  // namespace
@@ -172,8 +172,8 @@ SerialConnection::SerialConnection(const std::string& port,
 }
 
 SerialConnection::~SerialConnection() {
-  io_handler_->CancelRead(device::serial::RECEIVE_ERROR_DISCONNECTED);
-  io_handler_->CancelWrite(device::serial::SEND_ERROR_DISCONNECTED);
+  io_handler_->CancelRead(device::serial::ReceiveError::DISCONNECTED);
+  io_handler_->CancelWrite(device::serial::SendError::DISCONNECTED);
 }
 
 bool SerialConnection::IsPersistent() const {
@@ -195,7 +195,7 @@ void SerialConnection::set_send_timeout(int send_timeout) {
 void SerialConnection::set_paused(bool paused) {
   paused_ = paused;
   if (paused) {
-    io_handler_->CancelRead(device::serial::RECEIVE_ERROR_NONE);
+    io_handler_->CancelRead(device::serial::ReceiveError::NONE);
   }
 }
 
@@ -266,7 +266,7 @@ bool SerialConnection::Configure(
     set_send_timeout(*options.send_timeout);
   bool success = io_handler_->ConfigurePort(
       *device::serial::ConnectionOptions::From(options));
-  io_handler_->CancelRead(device::serial::RECEIVE_ERROR_NONE);
+  io_handler_->CancelRead(device::serial::ReceiveError::NONE);
   return success;
 }
 
@@ -329,12 +329,12 @@ bool SerialConnection::ClearBreak() {
 
 void SerialConnection::OnReceiveTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  io_handler_->CancelRead(device::serial::RECEIVE_ERROR_TIMEOUT);
+  io_handler_->CancelRead(device::serial::ReceiveError::TIMEOUT);
 }
 
 void SerialConnection::OnSendTimeout() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  io_handler_->CancelWrite(device::serial::SEND_ERROR_TIMEOUT);
+  io_handler_->CancelWrite(device::serial::SendError::TIMEOUT);
 }
 
 void SerialConnection::OnAsyncReadComplete(int bytes_read,
