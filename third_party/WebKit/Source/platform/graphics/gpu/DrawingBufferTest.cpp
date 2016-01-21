@@ -59,9 +59,9 @@ WGC3Denum imageTextureTarget()
 }
 
 // The target to use when preparing a mailbox texture.
-WGC3Denum drawingBufferTextureTarget()
+WGC3Denum drawingBufferTextureTarget(bool allowImageChromium)
 {
-    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled())
+    if (RuntimeEnabledFeatures::webGLImageChromiumEnabled() && allowImageChromium)
         return imageTextureTarget();
     return GL_TEXTURE_2D;
 }
@@ -77,6 +77,7 @@ public:
         , m_currentMailboxByte(0)
         , m_mostRecentlyWaitedSyncToken(0)
         , m_currentImageId(1)
+        , m_allowImageChromium(true)
     {
     }
 
@@ -107,7 +108,7 @@ public:
 
     void produceTextureDirectCHROMIUM(WebGLId texture, WGC3Denum target, const WGC3Dbyte* mailbox) override
     {
-        ASSERT_EQ(target, drawingBufferTextureTarget());
+        ASSERT_EQ(target, drawingBufferTextureTarget(m_allowImageChromium));
         ASSERT_TRUE(m_textureSizes.contains(texture));
         m_mostRecentlyProducedSize = m_textureSizes.get(texture);
     }
@@ -136,6 +137,8 @@ public:
 
     WGC3Duint createGpuMemoryBufferImageCHROMIUM(WGC3Dsizei width, WGC3Dsizei height, WGC3Denum internalformat, WGC3Denum usage) override
     {
+        if (!m_allowImageChromium)
+            return false;
         m_imageSizes.set(m_currentImageId, IntSize(width, height));
         return m_currentImageId++;
     }
@@ -180,6 +183,11 @@ public:
         return m_currentImageId;
     }
 
+    void setAllowImageChromium(bool allow)
+    {
+        m_allowImageChromium = allow;
+    }
+
 private:
     WebGLId m_boundTexture;
     WGC3Denum m_boundTextureTarget;
@@ -190,6 +198,7 @@ private:
     WGC3Duint m_currentImageId;
     HashMap<WGC3Duint, IntSize> m_imageSizes;
     HashMap<WGC3Duint, WebGLId> m_imageToTextureMap;
+    bool m_allowImageChromium;
 };
 
 static const int initialWidth = 100;
@@ -456,7 +465,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly)
 
 class DrawingBufferImageChromiumTest : public DrawingBufferTest {
 protected:
-    virtual void SetUp()
+    void SetUp() override
     {
         OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
         m_context = context.get();
@@ -468,7 +477,7 @@ protected:
         testing::Mock::VerifyAndClearExpectations(webContext());
     }
 
-    virtual void TearDown()
+    void TearDown() override
     {
         RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
     }
@@ -686,6 +695,38 @@ TEST_F(DrawingBufferTest, verifySetIsHiddenProperlyAffectsMailboxes)
     memcpy(&waitSyncToken, mailbox.syncToken, sizeof(waitSyncToken));
     EXPECT_EQ(waitSyncToken, webContext()->mostRecentlyWaitedSyncToken());
 
+    m_drawingBuffer->beginDestruction();
+}
+
+class DrawingBufferImageChromiumFallbackTest : public DrawingBufferTest {
+protected:
+    void SetUp() override
+    {
+        OwnPtr<WebGraphicsContext3DForTests> context = adoptPtr(new WebGraphicsContext3DForTests);
+        context->setAllowImageChromium(false);
+        m_context = context.get();
+        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(true);
+        m_drawingBuffer = DrawingBufferForTests::create(context.release(),
+            IntSize(initialWidth, initialHeight), DrawingBuffer::Preserve);
+    }
+
+    void TearDown() override
+    {
+        RuntimeEnabledFeatures::setWebGLImageChromiumEnabled(false);
+    }
+};
+
+TEST_F(DrawingBufferImageChromiumFallbackTest, verifyImageChromiumFallback)
+{
+    WebExternalTextureMailbox mailbox;
+
+    IntSize initialSize(initialWidth, initialHeight);
+    m_drawingBuffer->markContentsChanged();
+    EXPECT_TRUE(m_drawingBuffer->prepareMailbox(&mailbox, 0));
+    EXPECT_EQ(initialSize, webContext()->mostRecentlyProducedSize());
+    EXPECT_FALSE(mailbox.allowOverlay);
+
+    m_drawingBuffer->mailboxReleased(mailbox, false);
     m_drawingBuffer->beginDestruction();
 }
 
