@@ -86,8 +86,7 @@ size_t ReadProcStatusAndGetFieldAsSizeT(pid_t pid, const std::string& field) {
       return value;
     }
   }
-  // This can be reached if the process dies when proc is read -- in that case,
-  // the kernel can return missing fields.
+  NOTREACHED();
   return 0;
 }
 

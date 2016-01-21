@@ -10,8 +10,6 @@ component("tracing") {
     "child_trace_message_filter.h",
     "graphics_memory_dump_provider_android.cc",
     "graphics_memory_dump_provider_android.h",
-    "process_metrics_memory_dump_provider.cc",
-    "process_metrics_memory_dump_provider.h",
     "tracing_export.h",
     "tracing_messages.cc",
     "tracing_messages.h",
@@ -23,10 +21,6 @@ component("tracing") {
     "//base",
     "//ipc",
   ]
-
-  if (is_nacl) {
-    sources -= [ "process_metrics_memory_dump_provider.cc" ]
-  }
 }
 
 component("startup_tracing") {
@@ -52,7 +46,6 @@ source_set("unit_tests") {
 
   sources = [
     "graphics_memory_dump_provider_android_unittest.cc",
-    "process_metrics_memory_dump_provider_unittest.cc",
   ]
 
   deps = [
