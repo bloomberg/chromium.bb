@@ -694,6 +694,8 @@
       'browser/ui/app_list/search/launcher_search/launcher_search_provider.h',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.cc',
       'browser/ui/app_list/search/launcher_search/launcher_search_result.h',
+      'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.cc',
+      'browser/ui/views/apps/chrome_native_app_window_views_aura_ash.h',
       # On chromeos, file manager extension handles the file open/save dialog.
       'browser/ui/views/select_file_dialog_extension.cc',
       'browser/ui/views/select_file_dialog_extension.h',
@@ -1323,6 +1325,7 @@
       'browser/ui/views/app_list/linux/app_list_linux.h',
       'browser/ui/views/app_list/linux/app_list_service_linux.cc',
       'browser/ui/views/app_list/linux/app_list_service_linux.h',
+      'browser/ui/views/apps/chrome_app_window_client_views_linux.cc',
       'browser/ui/views/first_run_dialog.cc',
       'browser/ui/views/first_run_dialog.h',
       'browser/ui/views/frame/browser_desktop_window_tree_host.h',
@@ -1352,7 +1355,6 @@
     'chrome_browser_ui_linux_sources': [
       'browser/ui/certificate_dialogs.cc',
       'browser/ui/certificate_dialogs.h',
-      'browser/ui/views/apps/chrome_app_window_client_views.cc',
       'browser/ui/webui/certificate_viewer_ui.cc',
       'browser/ui/webui/certificate_viewer_ui.h',
       'browser/ui/webui/certificate_viewer_webui.cc',
@@ -2119,6 +2121,7 @@
       'browser/ui/views/apps/app_window_desktop_window_tree_host_win.h',
       'browser/ui/views/apps/app_window_easy_resize_window_targeter.cc',
       'browser/ui/views/apps/app_window_easy_resize_window_targeter.h',
+      'browser/ui/views/apps/chrome_app_window_client_views_chromeos.cc',
       'browser/ui/views/apps/chrome_app_window_client_views_win.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura.cc',
       'browser/ui/views/apps/chrome_native_app_window_views_aura.h',
