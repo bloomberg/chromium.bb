@@ -16,8 +16,6 @@ namespace blink {
 
 class SVGElement;
 
-// TODO(haraken): Drop Finalized once we ship Oilpan and the OwnPtrWillBeMember
-// is gone.
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     WTF_MAKE_NONCOPYABLE(SampledEffect);
 public:
