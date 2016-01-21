@@ -7,6 +7,7 @@
     {
       'target_name': 'components_strings',
       'type': 'none',
+      'hard_dependency': 1,
       'variables': {
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/components/strings',
       },

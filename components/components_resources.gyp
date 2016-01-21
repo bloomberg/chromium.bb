@@ -45,6 +45,7 @@
       # GN version: //components/resources:about_credits
       'target_name': 'about_credits',
       'type': 'none',
+      'hard_dependency': 1,
       'actions': [
         {
           'variables': {
@@ -61,7 +62,6 @@
           'outputs': [
             '<(about_credits_file)',
           ],
-          'hard_dependency': 1,
           'action': ['python',
                      '<(generator_path)',
                      'credits',
