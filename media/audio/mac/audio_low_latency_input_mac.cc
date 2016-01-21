@@ -585,10 +585,8 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
                                     audio_input->audio_buffer_list());
   if (result) {
     UMA_HISTOGRAM_SPARSE_SLOWLY("Media.AudioInputCbErrorMac", result);
-    OSSTATUS_DLOG(ERROR, result) << "AudioUnitRender() failed ";
-    if (result != kAudioUnitErr_TooManyFramesToProcess) {
-      audio_input->HandleError(result);
-    } else {
+    OSSTATUS_LOG(ERROR, result) << "AudioUnitRender() failed ";
+    if (result == kAudioUnitErr_TooManyFramesToProcess) {
       DCHECK(!audio_input->last_success_time_.is_null());
       // We delay stopping the stream for kAudioUnitErr_TooManyFramesToProcess
       // since it has been observed that some USB headsets can cause this error
@@ -601,9 +599,19 @@ OSStatus AUAudioInputStream::InputProc(void* user_data,
           base::TimeTicks::Now() - audio_input->last_success_time_;
       if ((time_since_last_success >
            base::TimeDelta::FromSeconds(kMaxErrorTimeoutInSeconds))) {
-        DLOG(ERROR) << "Too long sequence of TooManyFramesToProcess errors!";
+        LOG(ERROR) << "Too long sequence of TooManyFramesToProcess errors!";
         audio_input->HandleError(result);
       }
+    } else if (result == kAudioUnitErr_CannotDoInCurrentContext) {
+      // Returned when an audio unit is in a state where it can't perform the
+      // requested action now - but it could later.
+      // TODO(henrika): figure out why we see this error message; do nothing
+      // for now. Hoping that we will get back on track soon.
+      LOG(ERROR) << "kAudioUnitErr_CannotDoInCurrentContext";
+    } else {
+      // We have also seen kAudioUnitErr_NoConnection in some cases. Bailing
+      // out for this error for now.
+      audio_input->HandleError(result);
     }
     return result;
   }
