@@ -270,6 +270,8 @@ void TracingControllerImpl::OnStartAgentTracingDone(
 
   if (!callback.is_null())
     callback.Run();
+
+  start_tracing_done_callback_.Reset();
 }
 
 bool TracingControllerImpl::StopTracing(
