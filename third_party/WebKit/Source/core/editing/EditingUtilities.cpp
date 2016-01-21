@@ -221,7 +221,7 @@ ContainerNode* highestEditableRoot(const Position& position, EditableType editab
     if (position.isNull())
         return 0;
 
-    ContainerNode* highestRoot = editableRootElementForPosition(position, editableType);
+    ContainerNode* highestRoot = rootEditableElementOf(position, editableType);
     if (!highestRoot)
         return 0;
 
@@ -271,7 +271,7 @@ bool isEditablePosition(const PositionInComposedTree& p, EditableType editableTy
 bool isAtUnsplittableElement(const Position& pos)
 {
     Node* node = pos.anchorNode();
-    return (node == editableRootElementForPosition(pos) || node == enclosingNodeOfType(pos, &isTableCell));
+    return (node == rootEditableElementOf(pos) || node == enclosingNodeOfType(pos, &isTableCell));
 }
 
 
@@ -287,7 +287,7 @@ bool isRichlyEditablePosition(const Position& p, EditableType editableType)
     return node->layoutObjectIsRichlyEditable(editableType);
 }
 
-Element* editableRootElementForPosition(const Position& p, EditableType editableType)
+Element* rootEditableElementOf(const Position& p, EditableType editableType)
 {
     Node* node = p.computeContainerNode();
     if (!node)
@@ -299,9 +299,9 @@ Element* editableRootElementForPosition(const Position& p, EditableType editable
     return node->rootEditableElement(editableType);
 }
 
-Element* editableRootElementForPosition(const PositionInComposedTree& p, EditableType editableType)
+Element* rootEditableElementOf(const PositionInComposedTree& p, EditableType editableType)
 {
-    return editableRootElementForPosition(toPositionInDOMTree(p), editableType);
+    return rootEditableElementOf(toPositionInDOMTree(p), editableType);
 }
 
 // TODO(yosin) This does not handle [table, 0] correctly.
@@ -322,7 +322,7 @@ Element* unsplittableElementForPosition(const Position& p)
     if (enclosingCell)
         return enclosingCell;
 
-    return editableRootElementForPosition(p);
+    return rootEditableElementOf(p);
 }
 
 template <typename Strategy>

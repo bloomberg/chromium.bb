@@ -859,7 +859,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
             if (p.isNull() && shadowAncestor)
                 p = PositionTemplate<Strategy>::afterNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.computeContainerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
-                Element* root = editableRootElementForPosition(p);
+                Element* root = rootEditableElementOf(p);
                 shadowAncestor = root ? root->shadowHost() : nullptr;
                 p = isAtomicNode(p.computeContainerNode()) ? PositionTemplate<Strategy>::inParentBeforeNode(*p.computeContainerNode()) : previousVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
@@ -888,7 +888,7 @@ void VisibleSelectionTemplate<Strategy>::adjustSelectionToAvoidCrossingEditingBo
             if (p.isNull() && shadowAncestor)
                 p = PositionTemplate<Strategy>::beforeNode(shadowAncestor);
             while (p.isNotNull() && !(lowestEditableAncestor(p.computeContainerNode()) == baseEditableAncestor && !isEditablePosition(p))) {
-                Element* root = editableRootElementForPosition(p);
+                Element* root = rootEditableElementOf(p);
                 shadowAncestor = root ? root->shadowHost() : nullptr;
                 p = isAtomicNode(p.computeContainerNode()) ? PositionTemplate<Strategy>::inParentAfterNode(*p.computeContainerNode()) : nextVisuallyDistinctCandidate(p);
                 if (p.isNull() && shadowAncestor)
@@ -962,7 +962,7 @@ bool VisibleSelectionTemplate<Strategy>::isContentRichlyEditable() const
 template <typename Strategy>
 Element* VisibleSelectionTemplate<Strategy>::rootEditableElement() const
 {
-    return editableRootElementForPosition(start());
+    return rootEditableElementOf(start());
 }
 
 template <typename Strategy>

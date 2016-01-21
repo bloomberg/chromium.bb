@@ -488,7 +488,7 @@ PassRefPtrWillBeRawPtr<DocumentFragment> createFragmentFromText(const EphemeralR
     bool useClonesOfEnclosingBlock = block
         && !isHTMLBodyElement(*block)
         && !isHTMLHtmlElement(*block)
-        && block != editableRootElementForPosition(context.startPosition());
+        && block != rootEditableElementOf(context.startPosition());
     bool useLineBreak = enclosingTextFormControl(context.startPosition());
 
     Vector<String> list;

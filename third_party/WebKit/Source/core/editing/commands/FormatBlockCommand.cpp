@@ -69,7 +69,7 @@ void FormatBlockCommand::formatSelection(const VisiblePosition& startOfSelection
 void FormatBlockCommand::formatRange(const Position& start, const Position& end, const Position& endOfSelection, RefPtrWillBeRawPtr<HTMLElement>& blockElement)
 {
     Element* refElement = enclosingBlockFlowElement(createVisiblePosition(end));
-    Element* root = editableRootElementForPosition(start);
+    Element* root = rootEditableElementOf(start);
     // Root is null for elements with contenteditable=false.
     if (!root || !refElement)
         return;
