@@ -249,7 +249,7 @@ void WebMediaPlayerCast::OnConnectedToRemoteDevice(
   is_remote_ = true;
   initializing_ = true;
   paused_ = false;
-  if (delegate_ && is_remote_)
+  if (delegate_)
     delegate_->DidPlay(webmediaplayer_);
   client_->playbackStateChanged();
 
@@ -273,13 +273,11 @@ void WebMediaPlayerCast::play() {
   player_manager_->Start(player_id_);
   remote_time_at_ = base::TimeTicks::Now();
   paused_ = false;
-  if (delegate_ && is_remote_)
+  if (delegate_)
     delegate_->DidPlay(webmediaplayer_);
 }
 
 void WebMediaPlayerCast::pause() {
-  if (paused_)
-    return;
   player_manager_->Pause(player_id_, true);
 }
 
@@ -292,7 +290,7 @@ void WebMediaPlayerCast::OnDisconnectedFromRemoteDevice() {
   DVLOG(1) << __FUNCTION__;
   if (!paused_) {
     paused_ = true;
-    if (delegate_ && is_remote_)
+    if (delegate_)
       delegate_->DidPause(webmediaplayer_);
   }
   is_remote_ = false;
@@ -310,13 +308,10 @@ void WebMediaPlayerCast::OnDidExitFullscreen() {
 void WebMediaPlayerCast::OnMediaPlayerPlay() {
   DVLOG(1) << __FUNCTION__ << " is_remote_ = " << is_remote_;
   initializing_ = false;
-  if (paused_) {
+  if (is_remote_ && paused_) {
     paused_ = false;
-    if (delegate_ && paused_ && is_remote_)
+    if (paused_)
       delegate_->DidPlay(webmediaplayer_);
-    if (!is_remote_)
-      webmediaplayer_->play();
-
     remote_time_at_ = base::TimeTicks::Now();
     client_->playbackStateChanged();
   }
@@ -327,12 +322,10 @@ void WebMediaPlayerCast::OnMediaPlayerPlay() {
 
 void WebMediaPlayerCast::OnMediaPlayerPause() {
   DVLOG(1) << __FUNCTION__ << " is_remote_ = " << is_remote_;
-  if (!paused_) {
+  if (is_remote_ && !paused_) {
     paused_ = true;
-    if (delegate_ && is_remote_)
+    if (delegate_)
       delegate_->DidPause(webmediaplayer_);
-    if (!is_remote_)
-      webmediaplayer_->pause();
     client_->playbackStateChanged();
   }
 }
