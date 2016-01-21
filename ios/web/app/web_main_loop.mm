@@ -24,6 +24,7 @@
 #include "ios/web/public/app/web_main_parts.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/web_thread_impl.h"
+#include "ios/web/webui/url_data_manager_ios.h"
 #include "net/base/network_change_notifier.h"
 
 namespace web {
@@ -251,6 +252,8 @@ void WebMainLoop::ShutdownThreadsAndCleanUp() {
   // it here (which will block until required operations are complete) gives
   // more head start for those operations to finish.
   WebThreadImpl::ShutdownThreadPool();
+
+  URLDataManagerIOS::DeleteDataSources();
 
   if (parts_) {
     parts_->PostDestroyThreads();
