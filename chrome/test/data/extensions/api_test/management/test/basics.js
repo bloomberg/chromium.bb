@@ -45,7 +45,7 @@ function checkHostPermission(item, perm) {
 var tests = [
   function simple() {
     chrome.management.getAll(callback(function(items) {
-      chrome.test.assertEq(11, items.length);
+      chrome.test.assertEq(12, items.length);
 
       checkItemInList(items, "Extension Management API Test", true,
                       "extension");
@@ -72,6 +72,8 @@ var tests = [
           { "installType": "sideload" });
       checkItemInList(items, "admin_extension", true, "extension",
           { "installType": "admin" });
+      checkItemInList(items, "version_name", true, "extension",
+          { "versionName": "0.1 beta" });
 
       // Check that we got the icons correctly
       var extension = getItemNamed(items, "enabled_extension");

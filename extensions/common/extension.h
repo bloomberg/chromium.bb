@@ -290,6 +290,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   Manifest::Location location() const;
   const ExtensionId& id() const;
   const base::Version* version() const { return version_.get(); }
+  const std::string& version_name() const { return version_name_; }
   const std::string VersionString() const;
   const std::string GetVersionForDisplay() const;
   const std::string& name() const { return name_; }

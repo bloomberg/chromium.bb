@@ -65,6 +65,11 @@
             "description": "The <a href='manifest/version'>version</a> of this extension, app, or theme.",
             "type": "string"
           },
+          "versionName": {
+            "description": "The <a href='manifest/version#version_name'>version name</a> of this extension, app, or theme if the manifest specified one.",
+            "type": "string",
+            "optional": true
+          },
           "mayDisable": {
             "description": "Whether this extension can be disabled or uninstalled by the user.",
             "type": "boolean"

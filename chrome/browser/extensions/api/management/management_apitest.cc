@@ -111,6 +111,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, Basics) {
                         Manifest::EXTERNAL_PREF);
   InstallNamedExtension(basedir, "admin_extension",
                         Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  InstallNamedExtension(basedir, "version_name", Manifest::INTERNAL);
 
   ASSERT_TRUE(RunExtensionSubtest("management/test", "basics.html"));
 }

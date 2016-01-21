@@ -107,6 +107,8 @@ scoped_ptr<management::ExtensionInfo> CreateExtensionInfo(
   info->enabled = registry->enabled_extensions().Contains(info->id);
   info->offline_enabled = OfflineEnabledInfo::IsOfflineEnabled(&extension);
   info->version = extension.VersionString();
+  if (!extension.version_name().empty())
+    info->version_name.reset(new std::string(extension.version_name()));
   info->description = extension.description();
   info->options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
   info->homepage_url.reset(
