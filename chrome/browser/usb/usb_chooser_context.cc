@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -23,6 +24,24 @@ const char kGuidKey[] = "ephemeral-guid";
 const char kProductIdKey[] = "product-id";
 const char kSerialNumberKey[] = "serial-number";
 const char kVendorIdKey[] = "vendor-id";
+
+// Reasons a permission may be closed. These are used in histograms so do not
+// remove/reorder entries. Only add at the end just before
+// WEBUSB_PERMISSION_REVOKED_MAX. Also remember to update the enum listing in
+// tools/metrics/histograms/histograms.xml.
+enum WebUsbPermissionRevoked {
+  // Permission to access a USB device was revoked by the user.
+  WEBUSB_PERMISSION_REVOKED = 0,
+  // Permission to access an ephemeral USB device was revoked by the user.
+  WEBUSB_PERMISSION_REVOKED_EPHEMERAL,
+  // Maximum value for the enum.
+  WEBUSB_PERMISSION_REVOKED_MAX
+};
+
+void RecordPermissionRevocation(WebUsbPermissionRevoked kind) {
+  UMA_HISTOGRAM_ENUMERATION("WebUsb.PermissionRevoked", kind,
+                            WEBUSB_PERMISSION_REVOKED_MAX);
+}
 
 bool CanStorePersistentEntry(const scoped_refptr<const UsbDevice>& device) {
   return !device->serial_number().empty();
@@ -116,9 +135,11 @@ void UsbChooserContext::RevokeObjectPermission(
   std::string guid;
   if (object.GetString(kGuidKey, &guid)) {
     RevokeDevicePermission(requesting_origin, embedding_origin, guid);
+    RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED_EPHEMERAL);
   } else {
     ChooserContextBase::RevokeObjectPermission(requesting_origin,
                                                embedding_origin, object);
+    RecordPermissionRevocation(WEBUSB_PERMISSION_REVOKED);
   }
 }
 

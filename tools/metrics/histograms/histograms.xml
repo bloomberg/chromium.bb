@@ -56187,6 +56187,32 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>URLs for which Chrome creates WebUIControllers.</summary>
 </histogram>
 
+<histogram name="WebUsb.ChooserClosed" enum="WebUsbChooserClosed">
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <summary>
+    Records the reason why the WebUSB device chooser was closed.
+  </summary>
+</histogram>
+
+<histogram name="WebUsb.NotificationClosed" enum="WebUsbNotificationClosed">
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <summary>
+    Records the reason why the &quot;WebUSB device detected&quot; notification
+    was dismissed.
+  </summary>
+</histogram>
+
+<histogram name="WebUsb.PermissionRevoked" enum="WebUsbPermissionRevoked">
+  <owner>reillyg@chromium.org</owner>
+  <owner>juncai@chromium.org</owner>
+  <summary>
+    Records when the user revokes permission for an origin to connect to a USB
+    device using the WebUSB API.
+  </summary>
+</histogram>
+
 <histogram name="Win8.PageLoad" enum="Win8PageLoadType">
   <owner>zturner@chromium.org</owner>
   <summary>
@@ -80977,6 +81003,24 @@ To add a new entry, add it with any value and run test to compute valid value.
   <int value="1961263039" label="chrome://profiler/"/>
   <int value="1975618905" label="chrome://app-list/"/>
   <int value="2114840772" label="chrome://drive-internals/"/>
+</enum>
+
+<enum name="WebUsbChooserClosed" type="int">
+  <int value="0" label="User cancelled"/>
+  <int value="1" label="User cancelled, no devices available"/>
+  <int value="2" label="Permission granted"/>
+  <int value="3" label="Ephemeral permission granted"/>
+</enum>
+
+<enum name="WebUsbNotificationClosed" type="int">
+  <int value="0" label="Closed by system"/>
+  <int value="1" label="Closed by user"/>
+  <int value="2" label="Clicked"/>
+</enum>
+
+<enum name="WebUsbPermissionRevoked" type="int">
+  <int value="0" label="Revoked permission"/>
+  <int value="1" label="Revoked ephemeral permission"/>
 </enum>
 
 <enum name="WiFiApMode" type="int">

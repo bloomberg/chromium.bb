@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -30,6 +31,27 @@ namespace {
 
 const char kWebUsbDetectorNotificationID[] = "webusb.detector";
 
+// Reasons the notification may be closed. These are used in histograms so do
+// not remove/reorder entries. Only add at the end just before
+// WEBUSB_NOTIFICATION_CLOSED_MAX. Also remember to update the enum listing in
+// tools/metrics/histograms/histograms.xml.
+enum WebUsbNotificationClosed {
+  // The notification was dismissed but not by the user (either automatically
+  // or because the device was unplugged).
+  WEBUSB_NOTIFICATION_CLOSED,
+  // The user closed the notification.
+  WEBUSB_NOTIFICATION_CLOSED_BY_USER,
+  // The user clicked on the notification.
+  WEBUSB_NOTIFICATION_CLOSED_CLICKED,
+  // Maximum value for the enum.
+  WEBUSB_NOTIFICATION_CLOSED_MAX
+};
+
+void RecordNotificationClosure(WebUsbNotificationClosed disposition) {
+  UMA_HISTOGRAM_ENUMERATION("WebUsb.NotificationClosed", disposition,
+                            WEBUSB_NOTIFICATION_CLOSED_MAX);
+}
+
 Browser* GetBrowser() {
   chrome::ScopedTabbedBrowserDisplayer browser_displayer(
       ProfileManager::GetActiveUserProfile(), chrome::GetActiveDesktop());
@@ -51,9 +73,19 @@ class WebUsbNotificationDelegate : public message_center::NotificationDelegate {
       : landing_page_(landing_page), notification_id_(notification_id) {}
 
   void Click() override {
+    clicked_ = true;
     OpenURL(landing_page_);
     message_center::MessageCenter::Get()->RemoveNotification(
         notification_id_, false /* by_user */);
+  }
+
+  void Close(bool by_user) override {
+    if (clicked_)
+      RecordNotificationClosure(WEBUSB_NOTIFICATION_CLOSED_CLICKED);
+    else if (by_user)
+      RecordNotificationClosure(WEBUSB_NOTIFICATION_CLOSED_BY_USER);
+    else
+      RecordNotificationClosure(WEBUSB_NOTIFICATION_CLOSED);
   }
 
  private:
@@ -61,6 +93,7 @@ class WebUsbNotificationDelegate : public message_center::NotificationDelegate {
 
   GURL landing_page_;
   std::string notification_id_;
+  bool clicked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WebUsbNotificationDelegate);
 };

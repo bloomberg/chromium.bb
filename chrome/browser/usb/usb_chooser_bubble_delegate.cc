@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
@@ -22,6 +23,30 @@
 #include "url/gurl.h"
 
 namespace {
+
+// Reasons the chooser may be closed. These are used in histograms so do not
+// remove/reorder entries. Only add at the end just before
+// WEBUSB_CHOOSER_CLOSED_MAX. Also remember to update the enum listing in
+// tools/metrics/histograms/histograms.xml.
+enum WebUsbChooserClosed {
+  // The user cancelled the permission prompt without selecting a device.
+  WEBUSB_CHOOSER_CLOSED_CANCELLED = 0,
+  // The user probably cancelled the permission prompt without selecting a
+  // device because there were no devices to select.
+  WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES,
+  // The user granted permission to access a device.
+  WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED,
+  // The user granted permission to access a device but that permission will be
+  // revoked when the device is disconnected.
+  WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED,
+  // Maximum value for the enum.
+  WEBUSB_CHOOSER_CLOSED_MAX
+};
+
+void RecordChooserClosure(WebUsbChooserClosed disposition) {
+  UMA_HISTOGRAM_ENUMERATION("WebUsb.ChooserClosed", disposition,
+                            WEBUSB_CHOOSER_CLOSED_MAX);
+}
 
 // Check if the origin is in the description set.
 bool FindOriginInDescriptorSet(const device::WebUsbDescriptorSet* set,
@@ -105,11 +130,19 @@ void UsbChooserBubbleDelegate::Select(size_t index) {
   callback_.Run(std::move(device_info_ptr));
   callback_.reset();  // Reset |callback_| so that it is only run once.
 
+  RecordChooserClosure(devices_[index].first->serial_number().empty()
+                           ? WEBUSB_CHOOSER_CLOSED_EPHEMERAL_PERMISSION_GRANTED
+                           : WEBUSB_CHOOSER_CLOSED_PERMISSION_GRANTED);
+
   if (bubble_controller_)
     bubble_controller_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
 }
 
 void UsbChooserBubbleDelegate::Cancel() {
+  RecordChooserClosure(devices_.size() == 0
+                           ? WEBUSB_CHOOSER_CLOSED_CANCELLED_NO_DEVICES
+                           : WEBUSB_CHOOSER_CLOSED_CANCELLED);
+
   if (bubble_controller_)
     bubble_controller_->CloseBubble(BUBBLE_CLOSE_CANCELED);
 }
