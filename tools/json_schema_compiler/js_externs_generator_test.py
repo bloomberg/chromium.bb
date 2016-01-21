@@ -279,7 +279,7 @@ chrome.fakeJson.CrazyEnum = {
  * @see https://developer.chrome.com/extensions/fakeJson#method-funcWithInlineObj
  */
 chrome.fakeJson.funcWithInlineObj = function(inlineObj, callback) {};""" %
-                 (datetime.now().year, sys.argv[0]))
+    (datetime.now().year, sys.argv[0]))
 
 
 class JsExternGeneratorTest(unittest.TestCase):

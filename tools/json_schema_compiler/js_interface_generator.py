@@ -38,15 +38,16 @@ class _Generator(object):
     (c.Append(self._GetHeader(sys.argv[0], self._namespace.name))
       .Append())
 
-    c.Cblock(self._GenerateInterfaceObject())
+    self._AppendInterfaceObject(c)
+    c.Append()
 
     c.Sblock('%s.prototype = {' % self._interface)
 
     for function in self._namespace.functions.values():
-      c.Cblock(self._GenerateFunction(function))
+      self._AppendFunction(c, function)
 
     for event in self._namespace.events.values():
-      c.Cblock(self._GenerateEvent(event))
+      self._AppendEvent(c, event)
 
     c.TrimTrailingNewlines()
 
@@ -63,40 +64,34 @@ class _Generator(object):
              namespace) + '\n' +
             ASSERT);
 
-  def _GenerateInterfaceObject(self):
-    """Generates the code creating the interface object.
+  def _AppendInterfaceObject(self, c):
+    """Appends the code creating the interface object.
        For example:
        /** @interface */
        function SettingsPrivate() {}
     """
-    c = Code()
     (c.Append('/** @interface */')
       .Append('function %s() {}' % self._interface))
-    return c
 
-  def _GenerateFunction(self, function):
-    """Generates the inteface for a function, including a JSDoc comment.
+  def _AppendFunction(self, c, function):
+    """Appends the inteface for a function, including a JSDoc comment.
     """
-    c = Code()
     if function.deprecated:
-      return c
+      return
 
-    (c.Concat(self._js_util.GenerateFunctionJsDoc(self._namespace.name,
-                                                  function))
-      .Append('%s: assertNotReached,' % (function.name)))
+    self._js_util.AppendFunctionJsDoc(c, self._namespace.name, function)
+    c.Append('%s: assertNotReached,' % (function.name))
+    c.Append()
 
-    return c
-
-  def _GenerateEvent(self, event):
-    """Generates the interface for an event.
+  def _AppendEvent(self, c, event):
+    """Appends the interface for an event.
     """
-    c = Code()
     c.Sblock(line='/**', line_prefix=' * ')
     if (event.description):
       c.Comment(event.description, comment_prefix='')
     c.Append('@type {!ChromeEvent}')
-    c.Append(self._js_util.GenerateSeeLink(self._namespace.name, 'event',
-                                           event.name))
+    c.Append(self._js_util.GetSeeLink(self._namespace.name, 'event',
+                                      event.name))
     c.Eblock(' */')
     c.Append('%s: new ChromeEvent(),' % (event.name))
-    return c
+    c.Append()

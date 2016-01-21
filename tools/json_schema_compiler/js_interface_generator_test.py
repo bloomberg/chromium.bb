@@ -19,7 +19,7 @@ fake_idl = """
 
 // A totally fake API.
 namespace fakeApi {
-  enum Grk {
+  enum Greek {
     ALPHA,
     BETA,
     GAMMA,
@@ -34,21 +34,21 @@ namespace fakeApi {
     DOMString str;
     long num;
     boolean b;
-    Grk letter;
-    Grk? optionalLetter;
+    Greek letter;
+    Greek? optionalLetter;
     long[] arr;
     Bar[]? optionalObjArr;
-    Grk[] enumArr;
+    Greek[] enumArr;
     any[] anythingGoes;
     Bar obj;
     long? maybe;
-    (DOMString or Grk or long[]) choice;
+    (DOMString or Greek or long[]) choice;
     object plainObj;
   };
 
   callback VoidCallback = void();
 
-  callback BazGrkCallback = void(Baz baz, Grk greek);
+  callback BazGreekCallback = void(Baz baz, Greek greek);
 
   interface Functions {
     // Does something exciting! And what's more, this is a multiline function
@@ -59,7 +59,7 @@ namespace fakeApi {
     // |callback| : The callback which will most assuredly in all cases be
     // called; that is, of course, iff such a callback was provided and is
     // not at all null.
-    static void bazGrk(optional BazGrkCallback callback);
+    static void bazGreek(optional BazGreekCallback callback);
 
     [deprecated="Use a new method."] static DOMString returnString();
   };
@@ -97,12 +97,13 @@ FakeApi.prototype = {
   doSomething: assertNotReached,
 
   /**
-   * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Grk):void=} callback
-   *     The callback which will most assuredly in all cases be called; that is,
-   *     of course, iff such a callback was provided and is not at all null.
-   * @see https://developer.chrome.com/extensions/fakeApi#method-bazGrk
+   * @param {function(!chrome.fakeApi.Baz, !chrome.fakeApi.Greek):void=}
+   *     callback The callback which will most assuredly in all cases be called;
+   *     that is, of course, iff such a callback was provided and is not at all
+   *     null.
+   * @see https://developer.chrome.com/extensions/fakeApi#method-bazGreek
    */
-  bazGrk: assertNotReached,
+  bazGreek: assertNotReached,
 
   /**
    * Fired when we realize it's a trap!

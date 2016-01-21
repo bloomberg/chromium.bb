@@ -39,16 +39,16 @@ class _Generator(object):
     (c.Append(self._GetHeader(sys.argv[0], self._namespace.name))
       .Append())
 
-    c.Cblock(self._GenerateNamespaceObject())
+    self._AppendNamespaceObject(c)
 
     for js_type in self._namespace.types.values():
-      c.Cblock(self._GenerateType(js_type))
+      self._AppendType(c, js_type)
 
     for function in self._namespace.functions.values():
-      c.Cblock(self._GenerateFunction(function))
+      self._AppendFunction(c, function)
 
     for event in self._namespace.events.values():
-      c.Cblock(self._GenerateEvent(event))
+      self._AppendEvent(c, event)
 
     c.TrimTrailingNewlines()
 
@@ -62,26 +62,22 @@ class _Generator(object):
             ('/** @fileoverview Externs generated from namespace: %s */' %
              namespace))
 
-
-  def _GenerateType(self, js_type):
-    """Given a Type object, returns the Code for this type's definition.
+  def _AppendType(self, c, js_type):
+    """Given a Type object, generates the Code for this type's definition.
     """
-    c = Code()
     if js_type.property_type is PropertyType.ENUM:
-      c.Concat(self._GenerateEnumJsDoc(js_type))
+      self._AppendEnumJsDoc(c, js_type)
     else:
-      c.Concat(self._GenerateTypeJsDoc(js_type))
+      self._AppendTypeJsDoc(c, js_type)
+    c.Append()
 
-    return c
-
-  def _GenerateEnumJsDoc(self, js_type):
-    """ Given an Enum Type object, returns the Code for the enum's definition.
+  def _AppendEnumJsDoc(self, c, js_type):
+    """ Given an Enum Type object, generates the Code for the enum's definition.
     """
-    c = Code()
     (c.Sblock(line='/**', line_prefix=' * ')
       .Append('@enum {string}')
-      .Append(self._js_util.GenerateSeeLink(self._namespace.name, 'type',
-                                            js_type.simple_name))
+      .Append(self._js_util.GetSeeLink(self._namespace.name, 'type',
+                                       js_type.simple_name))
       .Eblock(' */'))
     c.Append('chrome.%s.%s = {' % (self._namespace.name, js_type.name))
 
@@ -101,7 +97,6 @@ class _Generator(object):
         ["  %s: '%s'," % (get_property_name(v.name), v.name)
             for v in js_type.enum_values]))
     c.Append('};')
-    return c
 
   def _IsTypeConstructor(self, js_type):
     """Returns true if the given type should be a @constructor. If this returns
@@ -110,12 +105,9 @@ class _Generator(object):
     return any(prop.type_.property_type is PropertyType.FUNCTION
                for prop in js_type.properties.values())
 
-  def _GenerateTypeJsDoc(self, js_type):
-    """Generates the documentation for a type as a Code.
-
-    Returns an empty code object if the object has no documentation.
+  def _AppendTypeJsDoc(self, c, js_type):
+    """Appends the documentation for a type as a Code.
     """
-    c = Code()
     c.Sblock(line='/**', line_prefix=' * ')
 
     if js_type.description:
@@ -126,10 +118,10 @@ class _Generator(object):
     if is_constructor:
       c.Comment('@constructor', comment_prefix = ' * ', wrap_indent=4)
     else:
-      c.Concat(self._GenerateTypedef(js_type.properties))
+      self._AppendTypedef(c, js_type.properties)
 
-    c.Append(self._js_util.GenerateSeeLink(self._namespace.name, 'type',
-                                           js_type.simple_name))
+    c.Append(self._js_util.GetSeeLink(self._namespace.name, 'type',
+                                      js_type.simple_name))
     c.Eblock(' */')
 
     var = 'chrome.%s.%s' % (js_type.namespace.name, js_type.simple_name)
@@ -137,23 +129,18 @@ class _Generator(object):
     var += ';'
     c.Append(var)
 
-    return c
-
-  def _GenerateTypedef(self, properties):
-    """Given an OrderedDict of properties, returns a Code containing a @typedef.
+  def _AppendTypedef(self, c, properties):
+    """Given an OrderedDict of properties, Appends code containing a @typedef.
     """
-    if not properties: return Code()
+    if not properties: return
 
-    c = Code()
     c.Append('@typedef {')
-    c.Concat(self._js_util.GenerateObjectDefinition(self._namespace.name,
-                                                    properties),
-             new_line=False)
+    self._js_util.AppendObjectDefinition(c, self._namespace.name, properties,
+                                         new_line=False)
     c.Append('}', new_line=False)
-    return c
 
-  def _GenerateFunction(self, function):
-    """Generates the code representing a function, including its documentation.
+  def _AppendFunction(self, c, function):
+    """Appends the code representing a function, including its documentation.
        For example:
 
        /**
@@ -161,36 +148,31 @@ class _Generator(object):
         */
        chrome.window.setTitle = function(title) {};
     """
-    c = Code()
-    params = self._GenerateFunctionParams(function)
-    (c.Concat(self._js_util.GenerateFunctionJsDoc(self._namespace.name,
-                                                  function))
-      .Append('chrome.%s.%s = function(%s) {};' % (self._namespace.name,
-                                                   function.name,
-                                                   params))
-    )
-    return c
+    self._js_util.AppendFunctionJsDoc(c, self._namespace.name, function)
+    params = self._GetFunctionParams(function)
+    c.Append('chrome.%s.%s = function(%s) {};' % (self._namespace.name,
+                                                  function.name, params))
+    c.Append()
 
-  def _GenerateEvent(self, event):
-    """Generates the code representing an event.
+  def _AppendEvent(self, c, event):
+    """Appends the code representing an event.
        For example:
 
        /** @type {!ChromeEvent} */
        chrome.bookmarks.onChildrenReordered;
     """
-    c = Code()
     c.Sblock(line='/**', line_prefix=' * ')
     if (event.description):
       c.Comment(event.description, comment_prefix='')
     c.Append('@type {!ChromeEvent}')
-    c.Append(self._js_util.GenerateSeeLink(self._namespace.name, 'event',
-                                           event.name))
+    c.Append(self._js_util.GetSeeLink(self._namespace.name, 'event',
+                                      event.name))
     c.Eblock(' */')
     c.Append('chrome.%s.%s;' % (self._namespace.name, event.name))
-    return c
+    c.Append()
 
-  def _GenerateNamespaceObject(self):
-    """Generates the code creating namespace object.
+  def _AppendNamespaceObject(self, c):
+    """Appends the code creating namespace object.
        For example:
 
        /**
@@ -198,14 +180,15 @@ class _Generator(object):
         */
        chrome.bookmarks = {};
     """
-    c = Code()
-    (c.Append("""/**
+    c.Append("""/**
  * @const
  */""")
-      .Append('chrome.%s = {};' % self._namespace.name))
-    return c
+    c.Append('chrome.%s = {};' % self._namespace.name)
+    c.Append()
 
-  def _GenerateFunctionParams(self, function):
+  def _GetFunctionParams(self, function):
+    """Returns the function params string for function.
+    """
     params = function.params[:]
     if function.callback:
       params.append(function.callback)

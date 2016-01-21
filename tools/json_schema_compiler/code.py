@@ -131,7 +131,7 @@ class Code(object):
       else:
         line = comment[0:max_len]
         comment = comment[max_len:]
-      return line, comment
+      return line, comment.lstrip()
 
     # First line has the full maximum length.
     if not new_line and self._code:
@@ -174,7 +174,7 @@ class Code(object):
     return self
 
   def TrimTrailingNewlines(self):
-    """Trims any trailing newlines.
+    """Removes any trailing empty Line objects.
     """
     while self._code:
       if self._code[-1].value != '':

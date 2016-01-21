@@ -30,14 +30,14 @@ class JsUtil(object):
     """
     return (INFO % tool)
 
-  def GenerateObjectDefinition(self, namespace_name, properties):
+  def AppendObjectDefinition(self, c, namespace_name, properties,
+                               new_line=True):
     """Given an OrderedDict of properties, returns a Code containing the
        description of an object.
     """
-    if not properties: return Code()
+    if not properties: return
 
-    c = Code()
-    c.Sblock('{')
+    c.Sblock('{', new_line=new_line)
     first = True
     for field, prop in properties.items():
       # Avoid trailing comma.
@@ -48,23 +48,19 @@ class JsUtil(object):
       first = False
       js_type = self._TypeToJsType(namespace_name, prop.type_)
       if prop.optional:
-        js_type = (Code().
-                       Append('(').
-                       Concat(js_type, new_line=False).
-                       Append('|undefined)', new_line=False))
+        js_type = (Code().Append('(')
+                         .Concat(js_type, new_line=False)
+                         .Append('|undefined)', new_line=False))
       c.Append('%s: ' % field, strip_right=False)
       c.Concat(js_type, new_line=False)
 
     c.Eblock('}')
 
-    return c
-
-  def GenerateFunctionJsDoc(self, namespace_name, function):
-    """Generates the documentation for a function as a Code.
+  def AppendFunctionJsDoc(self, c, namespace_name, function):
+    """Appends the documentation for a function as a Code.
 
     Returns an empty code object if the object has no documentation.
     """
-    c = Code()
     c.Sblock(line='/**', line_prefix=' * ')
 
     if function.description:
@@ -75,13 +71,15 @@ class JsUtil(object):
       c.Concat(js_type, new_line=False)
       if optional:
         c.Append('=', new_line=False)
-      c.Append('} %s' % name, new_line=False)
+      c.Append('}', new_line=False)
+      c.Comment(' %s' % name, comment_prefix='', wrap_indent=4, new_line=False)
       if description:
         c.Comment(' %s' % description, comment_prefix='',
                   wrap_indent=4, new_line=False)
 
     for param in function.params:
-      append_field(c, 'param', self._TypeToJsType(namespace_name, param.type_),
+      append_field(c, 'param',
+                   self._TypeToJsType(namespace_name, param.type_),
                    param.name, param.optional, param.description)
 
     if function.callback:
@@ -99,10 +97,9 @@ class JsUtil(object):
     if function.deprecated:
       c.Append('@deprecated %s' % function.deprecated)
 
-    c.Append(self.GenerateSeeLink(namespace_name, 'method', function.name))
+    c.Append(self.GetSeeLink(namespace_name, 'method', function.name))
 
     c.Eblock(' */')
-    return c
 
   def _FunctionToJsFunction(self, namespace_name, function):
     """Converts a model.Function to a JS type (i.e., function([params])...)"""
@@ -128,8 +125,9 @@ class JsUtil(object):
       return Code().Append('number')
     if js_type.property_type is PropertyType.OBJECT:
       if js_type.properties:
-        return self.GenerateObjectDefinition(namespace_name,
-                                             js_type.properties)
+        c = Code()
+        self.AppendObjectDefinition(c, namespace_name, js_type.properties)
+        return c
       return Code().Append('Object')
     if js_type.property_type is PropertyType.ARRAY:
       return (Code().Append('!Array<').
@@ -156,8 +154,8 @@ class JsUtil(object):
       return Code().Append(js_type.property_type.name)
     return Code().Append('?') # TODO(tbreisacher): Make this more specific.
 
-  def GenerateSeeLink(self, namespace_name, object_type, object_name):
-    """Generates a @see link for a given API 'object' (type, method, or event).
+  def GetSeeLink(self, namespace_name, object_type, object_name):
+    """Returns a @see link for a given API 'object' (type, method, or event).
     """
 
     # NOTE(devlin): This is kind of a hack. Some APIs will be hosted on
