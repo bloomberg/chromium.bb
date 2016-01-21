@@ -24,7 +24,6 @@ MenuConfig::MenuConfig()
       icon_to_label_padding(10),
       check_width(kMenuCheckSize),
       check_height(kMenuCheckSize),
-      radio_width(16),
       arrow_width(kSubmenuArrowSize),
       separator_height(11),
       separator_upper_height(3),

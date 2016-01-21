@@ -32,26 +32,6 @@ void MenuConfig::Init() {
     font_list = gfx::FontList(gfx::Font(new_font.get()));
   }
   NativeTheme::ExtraParams extra;
-  extra.menu_check.is_radio = false;
-  extra.menu_check.is_selected = false;
-  gfx::Size check_size = NativeThemeWin::instance()->GetPartSize(
-      NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
-  if (!check_size.IsEmpty()) {
-    check_width = check_size.width();
-    check_height = check_size.height();
-  } else {
-    check_width = GetSystemMetrics(SM_CXMENUCHECK);
-    check_height = GetSystemMetrics(SM_CYMENUCHECK);
-  }
-
-  extra.menu_check.is_radio = true;
-  gfx::Size radio_size = NativeThemeWin::instance()->GetPartSize(
-      NativeTheme::kMenuCheck, NativeTheme::kNormal, extra);
-  if (!radio_size.IsEmpty())
-    radio_width = radio_size.width();
-  else
-    radio_width = GetSystemMetrics(SM_CXMENUCHECK);
-
   gfx::Size arrow_size = NativeThemeWin::instance()->GetPartSize(
       NativeTheme::kMenuPopupArrow, NativeTheme::kNormal, extra);
   if (!arrow_size.IsEmpty()) {

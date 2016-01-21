@@ -61,10 +61,6 @@ struct VIEWS_EXPORT MenuConfig {
   int check_width;
   int check_height;
 
-  // The horizontal space reserved for radio button. The actual width of the
-  // image may be different.
-  int radio_width;
-
   // The horizontal space reserved for submenu arrow. The actual width of the
   // image may be different.
   int arrow_width;
