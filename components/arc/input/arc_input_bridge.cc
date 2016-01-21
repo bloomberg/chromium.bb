@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/arc/input/arc_input_bridge_impl.h"
+#include "components/arc/input/arc_input_bridge.h"
 
 #include <linux/input.h>
 #include <fcntl.h>
@@ -76,26 +76,24 @@ const int kXkbKeycodeOffset = 8;
 
 namespace arc {
 
-ArcInputBridgeImpl::ArcInputBridgeImpl(ArcBridgeService* arc_bridge_service)
-    : arc_bridge_service_(arc_bridge_service),
+ArcInputBridge::ArcInputBridge(ArcBridgeService* bridge_service)
+    : ArcService(bridge_service),
       offset_x_acc_(0.5f),
       offset_y_acc_(0.5f),
       current_slot_(-1),
       current_slot_tracking_ids_(kMaxSlots, kEmptySlot),
       origin_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_factory_(this) {
-  arc_bridge_service->AddObserver(this);
-  if (arc_bridge_service->input_instance())
-    OnInputInstanceReady();
+  arc_bridge_service()->AddObserver(this);
 
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
     env->AddObserver(this);
 }
 
-ArcInputBridgeImpl::~ArcInputBridgeImpl() {
+ArcInputBridge::~ArcInputBridge() {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
-  arc_bridge_service_->RemoveObserver(this);
+  arc_bridge_service()->RemoveObserver(this);
 
   aura::Env* env = aura::Env::GetInstanceDontCreate();
   if (env)
@@ -106,7 +104,7 @@ ArcInputBridgeImpl::~ArcInputBridgeImpl() {
   }
 }
 
-void ArcInputBridgeImpl::OnInputInstanceReady() {
+void ArcInputBridge::OnInputInstanceReady() {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   keyboard_fd_ = CreateBridgeInputDevice("ChromeOS Keyboard", "keyboard");
@@ -118,7 +116,7 @@ void ArcInputBridgeImpl::OnInputInstanceReady() {
 // Translates and sends a ui::Event to the appropriate bridge device of the
 // ARC instance. If the devices have not yet been initialized, the event
 // will be ignored.
-void ArcInputBridgeImpl::OnEvent(ui::Event* event) {
+void ArcInputBridge::OnEvent(ui::Event* event) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
   if (event->IsKeyEvent()) {
     SendKeyEvent(static_cast<ui::KeyEvent*>(event));
@@ -130,14 +128,14 @@ void ArcInputBridgeImpl::OnEvent(ui::Event* event) {
 }
 
 // Attaches the input bridge to the window if it is marked as an ARC window.
-void ArcInputBridgeImpl::OnWindowInitialized(aura::Window* new_window) {
+void ArcInputBridge::OnWindowInitialized(aura::Window* new_window) {
   if (new_window->name() == "ExoSurface") {
     arc_windows_.Add(new_window);
     new_window->AddPreTargetHandler(this);
   }
 }
 
-void ArcInputBridgeImpl::SendKeyEvent(ui::KeyEvent* event) {
+void ArcInputBridge::SendKeyEvent(ui::KeyEvent* event) {
   if (keyboard_fd_.get() < 0) {
     VLOG(2) << "No keyboard bridge device available.";
     return;
@@ -162,7 +160,7 @@ void ArcInputBridgeImpl::SendKeyEvent(ui::KeyEvent* event) {
   SendSynReport(keyboard_fd_, time_stamp);
 }
 
-void ArcInputBridgeImpl::SendTouchEvent(ui::TouchEvent* event) {
+void ArcInputBridge::SendTouchEvent(ui::TouchEvent* event) {
   if (touchscreen_fd_.get() < 0) {
     VLOG(2) << "No touchscreen bridge device available.";
     return;
@@ -211,7 +209,7 @@ void ArcInputBridgeImpl::SendTouchEvent(ui::TouchEvent* event) {
   SendSynReport(touchscreen_fd_, time_stamp);
 }
 
-void ArcInputBridgeImpl::SendMouseEvent(ui::MouseEvent* event) {
+void ArcInputBridge::SendMouseEvent(ui::MouseEvent* event) {
   if (mouse_fd_.get() < 0) {
     VLOG(2) << "No mouse bridge device available.";
     return;
@@ -263,11 +261,11 @@ void ArcInputBridgeImpl::SendMouseEvent(ui::MouseEvent* event) {
   SendSynReport(mouse_fd_, time_stamp);
 }
 
-void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
-                                         base::TimeDelta time_stamp,
-                                         uint16_t type,
-                                         uint16_t code,
-                                         int value) {
+void ArcInputBridge::SendKernelEvent(const base::ScopedFD& fd,
+                                     base::TimeDelta time_stamp,
+                                     uint16_t type,
+                                     uint16_t code,
+                                     int value) {
   DCHECK(fd.is_valid());
 
   struct input_event32 event;
@@ -285,14 +283,14 @@ void ArcInputBridgeImpl::SendKernelEvent(const base::ScopedFD& fd,
   DCHECK_EQ(num_written, sizeof(struct input_event32));
 }
 
-void ArcInputBridgeImpl::SendSynReport(const base::ScopedFD& fd,
-                                       base::TimeDelta time) {
+void ArcInputBridge::SendSynReport(const base::ScopedFD& fd,
+                                   base::TimeDelta time) {
   DCHECK(origin_task_runner_->RunsTasksOnCurrentThread());
 
   SendKernelEvent(fd, time, EV_SYN, SYN_REPORT, 0);
 }
 
-int ArcInputBridgeImpl::AcquireTouchSlot(ui::TouchEvent* event) {
+int ArcInputBridge::AcquireTouchSlot(ui::TouchEvent* event) {
   int slot_id;
   if (event->type() == ui::ET_TOUCH_PRESSED) {
     slot_id = FindTouchSlot(kEmptySlot);
@@ -311,7 +309,7 @@ int ArcInputBridgeImpl::AcquireTouchSlot(ui::TouchEvent* event) {
   return slot_id;
 }
 
-int ArcInputBridgeImpl::FindTouchSlot(int tracking_id) {
+int ArcInputBridge::FindTouchSlot(int tracking_id) {
   for (int i = 0; i < kMaxSlots; ++i) {
     if (current_slot_tracking_ids_[i] == tracking_id) {
       return i;
@@ -320,7 +318,7 @@ int ArcInputBridgeImpl::FindTouchSlot(int tracking_id) {
   return -1;
 }
 
-uint16_t ArcInputBridgeImpl::DomCodeToEvdevCode(ui::DomCode dom_code) {
+uint16_t ArcInputBridge::DomCodeToEvdevCode(ui::DomCode dom_code) {
   int native_code = ui::KeycodeConverter::DomCodeToNativeKeycode(dom_code);
   if (native_code == ui::KeycodeConverter::InvalidNativeKeycode())
     return KEY_RESERVED;
@@ -328,14 +326,9 @@ uint16_t ArcInputBridgeImpl::DomCodeToEvdevCode(ui::DomCode dom_code) {
   return native_code - kXkbKeycodeOffset;
 }
 
-base::ScopedFD ArcInputBridgeImpl::CreateBridgeInputDevice(
+base::ScopedFD ArcInputBridge::CreateBridgeInputDevice(
     const std::string& name,
     const std::string& device_type) {
-  if (!arc_bridge_service_) {
-    VLOG(1) << "ArcBridgeService disappeared.";
-    return base::ScopedFD();
-  }
-
   // Create file descriptor pair for communication
   int fd[2];
   int res = HANDLE_EINTR(pipe(fd));
@@ -347,7 +340,7 @@ base::ScopedFD ArcInputBridgeImpl::CreateBridgeInputDevice(
   base::ScopedFD write_fd(fd[1]);
 
   // The read end is sent to the instance, ownership of fd transfers.
-  InputInstance* input_instance = arc_bridge_service_->input_instance();
+  InputInstance* input_instance = arc_bridge_service()->input_instance();
   if (!input_instance) {
     VLOG(1) << "ArcBridgeService InputInstance disappeared.";
     return base::ScopedFD();
@@ -377,11 +370,6 @@ base::ScopedFD ArcInputBridgeImpl::CreateBridgeInputDevice(
     return base::ScopedFD();
   }
   return write_fd;
-}
-
-scoped_ptr<ArcInputBridge> ArcInputBridge::Create(
-    ArcBridgeService* arc_bridge_service) {
-  return make_scoped_ptr(new ArcInputBridgeImpl(arc_bridge_service));
 }
 
 }  // namespace arc

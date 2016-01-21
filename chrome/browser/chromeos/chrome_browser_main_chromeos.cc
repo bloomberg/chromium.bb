@@ -33,9 +33,9 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_mode_idle_app_name_notification.h"
-#include "chrome/browser/chromeos/arc/arc_auth_service_impl.h"
-#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge_impl.h"
-#include "chrome/browser/chromeos/arc/arc_settings_bridge_impl.h"
+#include "chrome/browser/chromeos/arc/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge.h"
+#include "chrome/browser/chromeos/arc/arc_settings_bridge.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/chrome_display_power_service_provider_delegate.h"
@@ -117,7 +117,6 @@
 #include "chromeos/tpm/tpm_token_loader.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/settings/arc_settings_bridge.h"
 #include "components/arc/video/arc_video_bridge.h"
 #include "components/arc/video/video_host_delegate.h"
 #include "components/browser_sync/common/browser_sync_switches.h"
@@ -399,12 +398,17 @@ void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
 
   wake_on_wifi_manager_.reset(new WakeOnWifiManager());
 
-  arc_service_manager_.reset(new arc::ArcServiceManager(
-      make_scoped_ptr(new arc::ArcAuthServiceImpl()),
-      make_scoped_ptr(new arc::ArcIntentHelperBridgeImpl()),
-      make_scoped_ptr(new arc::ArcSettingsBridgeImpl()),
-      make_scoped_ptr(
-          new arc::ArcVideoBridge(content::CreateArcVideoHostDelegate()))));
+  arc_service_manager_.reset(new arc::ArcServiceManager());
+  arc_service_manager_->AddService(make_scoped_ptr(
+      new arc::ArcAuthService(arc_service_manager_->arc_bridge_service())));
+  arc_service_manager_->AddService(
+      make_scoped_ptr(new arc::ArcIntentHelperBridge(
+          arc_service_manager_->arc_bridge_service())));
+  arc_service_manager_->AddService(make_scoped_ptr(
+      new arc::ArcSettingsBridge(arc_service_manager_->arc_bridge_service())));
+  arc_service_manager_->AddService(make_scoped_ptr(
+      new arc::ArcVideoBridge(arc_service_manager_->arc_bridge_service(),
+                              content::CreateArcVideoHostDelegate())));
   arc_service_manager_->arc_bridge_service()->DetectAvailability();
 
   chromeos::ResourceReporter::GetInstance()->StartMonitoring();

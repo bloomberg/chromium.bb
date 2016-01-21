@@ -9,27 +9,21 @@
 
 namespace arc {
 
-ArcNotificationManager::ArcNotificationManager(ArcBridgeService* arc_bridge,
+ArcNotificationManager::ArcNotificationManager(ArcBridgeService* bridge_service,
                                                const AccountId& main_profile_id)
-    : arc_bridge_(arc_bridge),
+    : ArcService(bridge_service),
       main_profile_id_(main_profile_id),
       binding_(this) {
-  // This must be initialized after ArcBridgeService.
-  DCHECK(arc_bridge_);
-  DCHECK_EQ(arc_bridge_, ArcBridgeService::Get());
-  arc_bridge_->AddObserver(this);
+  arc_bridge_service()->AddObserver(this);
 }
 
 ArcNotificationManager::~ArcNotificationManager() {
-  // This should be free'd before ArcBridgeService.
-  DCHECK(ArcBridgeService::Get());
-  DCHECK_EQ(arc_bridge_, ArcBridgeService::Get());
-  arc_bridge_->RemoveObserver(this);
+  arc_bridge_service()->RemoveObserver(this);
 }
 
 void ArcNotificationManager::OnNotificationsInstanceReady() {
   NotificationsInstance* notifications_instance =
-      arc_bridge_->notifications_instance();
+      arc_bridge_service()->notifications_instance();
   if (!notifications_instance) {
     VLOG(2) << "Request to refresh app list when bridge service is not ready.";
     return;
@@ -75,8 +69,9 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
 
   scoped_ptr<ArcNotificationItem> item(items_.take_and_erase(it));
 
-  arc_bridge_->notifications_instance()->SendNotificationEventToAndroid(
-      key, ArcNotificationEvent::CLOSED);
+  arc_bridge_service()
+      ->notifications_instance()
+      ->SendNotificationEventToAndroid(key, ArcNotificationEvent::CLOSED);
 }
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
@@ -87,8 +82,9 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
     return;
   }
 
-  arc_bridge_->notifications_instance()->SendNotificationEventToAndroid(
-      key, ArcNotificationEvent::BODY_CLICKED);
+  arc_bridge_service()
+      ->notifications_instance()
+      ->SendNotificationEventToAndroid(key, ArcNotificationEvent::BODY_CLICKED);
 }
 
 }  // namespace arc

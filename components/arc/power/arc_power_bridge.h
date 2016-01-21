@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_POWER_ARC_POWER_SERVICE_H_
-#define COMPONENTS_ARC_POWER_ARC_POWER_SERVICE_H_
+#ifndef COMPONENTS_ARC_POWER_ARC_POWER_BRIDGE_H_
+#define COMPONENTS_ARC_POWER_ARC_POWER_BRIDGE_H_
 
 #include <map>
 
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
 // ARC Power Client sets power management policy based on requests from
 // ARC instances.
-class ArcPowerBridge : public ArcBridgeService::Observer,
+class ArcPowerBridge : public ArcService,
+                       public ArcBridgeService::Observer,
                        public PowerHost {
  public:
-  explicit ArcPowerBridge(ArcBridgeService* arc_bridge_service);
+  explicit ArcPowerBridge(ArcBridgeService* bridge_service);
   ~ArcPowerBridge() override;
 
   // ArcBridgeService::Observer overrides.
@@ -32,8 +34,6 @@ class ArcPowerBridge : public ArcBridgeService::Observer,
  private:
   void ReleaseAllDisplayWakeLocks();
 
-  ArcBridgeService* arc_bridge_service_;  // weak
-
   mojo::Binding<PowerHost> binding_;
 
   // Stores a mapping of type -> wake lock ID for all wake locks
@@ -45,4 +45,4 @@ class ArcPowerBridge : public ArcBridgeService::Observer,
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_POWER_ARC_POWER_SERVICE_H_
+#endif  // COMPONENTS_ARC_POWER_ARC_POWER_BRIDGE_H_

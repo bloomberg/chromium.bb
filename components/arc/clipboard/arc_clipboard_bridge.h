@@ -9,11 +9,13 @@
 
 #include "base/macros.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
 
-class ArcClipboardBridge : public ArcBridgeService::Observer,
+class ArcClipboardBridge : public ArcService,
+                           public ArcBridgeService::Observer,
                            public ClipboardHost {
  public:
   explicit ArcClipboardBridge(ArcBridgeService* bridge_service);
@@ -28,8 +30,6 @@ class ArcClipboardBridge : public ArcBridgeService::Observer,
 
  private:
   bool CalledOnValidThread();
-
-  ArcBridgeService* bridge_service_;
 
   mojo::Binding<ClipboardHost> binding_;
 

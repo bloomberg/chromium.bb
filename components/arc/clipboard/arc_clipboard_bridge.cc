@@ -28,17 +28,18 @@ static mojo::String ConvertString16ToMojoString(const base::string16& input) {
 namespace arc {
 
 ArcClipboardBridge::ArcClipboardBridge(ArcBridgeService* bridge_service)
-    : bridge_service_(bridge_service), binding_(this) {
-  bridge_service_->AddObserver(this);
+    : ArcService(bridge_service), binding_(this) {
+  arc_bridge_service()->AddObserver(this);
 }
 
 ArcClipboardBridge::~ArcClipboardBridge() {
   DCHECK(CalledOnValidThread());
-  bridge_service_->RemoveObserver(this);
+  arc_bridge_service()->RemoveObserver(this);
 }
 
 void ArcClipboardBridge::OnClipboardInstanceReady() {
-  ClipboardInstance* clipboard_instance = bridge_service_->clipboard_instance();
+  ClipboardInstance* clipboard_instance =
+      arc_bridge_service()->clipboard_instance();
   if (!clipboard_instance) {
     LOG(ERROR) << "OnClipboardInstanceReady called, "
                << "but no clipboard instance found";
@@ -63,7 +64,8 @@ void ArcClipboardBridge::GetTextContent() {
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
   clipboard->ReadText(ui::CLIPBOARD_TYPE_COPY_PASTE, &text);
 
-  ClipboardInstance* clipboard_instance = bridge_service_->clipboard_instance();
+  ClipboardInstance* clipboard_instance =
+      arc_bridge_service()->clipboard_instance();
   clipboard_instance->OnGetTextContent(ConvertString16ToMojoString(text));
 }
 

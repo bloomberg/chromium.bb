@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
+#include "components/arc/arc_service.h"
 #include "components/arc/ime/arc_ime_ipc_host.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/env_observer.h"
@@ -31,13 +32,14 @@ class ArcBridgeService;
 
 // This class implements ui::TextInputClient and makes ARC windows behave
 // as a text input target in Chrome OS environment.
-class ArcImeBridge : public ArcImeIpcHost::Delegate,
+class ArcImeBridge : public ArcService,
+                     public ArcImeIpcHost::Delegate,
                      public aura::EnvObserver,
                      public aura::WindowObserver,
                      public aura::client::FocusChangeObserver,
                      public ui::TextInputClient {
  public:
-  explicit ArcImeBridge(ArcBridgeService* arc_bridge_service);
+  explicit ArcImeBridge(ArcBridgeService* bridge_service);
   ~ArcImeBridge() override;
 
   // Injects the custom IPC host object for testing purpose only.

@@ -49,6 +49,30 @@ bool ArcBridgeService::GetEnabled(const base::CommandLine* command_line) {
 void ArcBridgeService::AddObserver(Observer* observer) {
   DCHECK(CalledOnValidThread());
   observer_list_.AddObserver(observer);
+
+  // If any of the instances were ready before the call to AddObserver(), the
+  // |observer| won't get any readiness events. For such cases, we have to call
+  // them explicitly now to avoid a race.
+  if (app_instance())
+    observer->OnAppInstanceReady();
+  if (auth_instance())
+    observer->OnAuthInstanceReady();
+  if (clipboard_instance())
+    observer->OnClipboardInstanceReady();
+  if (ime_instance())
+    observer->OnImeInstanceReady();
+  if (input_instance())
+    observer->OnInputInstanceReady();
+  if (notifications_instance())
+    observer->OnNotificationsInstanceReady();
+  if (power_instance())
+    observer->OnPowerInstanceReady();
+  if (process_instance())
+    observer->OnProcessInstanceReady();
+  if (settings_instance())
+    observer->OnSettingsInstanceReady();
+  if (video_instance())
+    observer->OnVideoInstanceReady();
 }
 
 void ArcBridgeService::RemoveObserver(Observer* observer) {

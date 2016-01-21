@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_ARC_ARC_SERVICE_MANAGER_H_
 #define COMPONENTS_ARC_ARC_SERVICE_MANAGER_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -12,30 +14,22 @@
 
 namespace arc {
 
-class ArcAuthService;
 class ArcBridgeService;
-class ArcClipboardBridge;
-class ArcImeBridge;
-class ArcInputBridge;
-class ArcIntentHelperBridge;
-class ArcNotificationManager;
-class ArcPowerBridge;
-class ArcSettingsBridge;
-class ArcVideoBridge;
+class ArcService;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
 class ArcServiceManager {
  public:
-  ArcServiceManager(scoped_ptr<ArcAuthService> auth_service,
-                    scoped_ptr<ArcIntentHelperBridge> intent_helper_bridge,
-                    scoped_ptr<ArcSettingsBridge> settings_bridge,
-                    scoped_ptr<ArcVideoBridge> video_bridge);
+  ArcServiceManager();
   virtual ~ArcServiceManager();
 
   // |arc_bridge_service| can only be accessed on the thread that this
   // class was created on.
   ArcBridgeService* arc_bridge_service();
+
+  // Adds a service to the managed services list.
+  void AddService(scoped_ptr<ArcService> service);
 
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
@@ -47,17 +41,7 @@ class ArcServiceManager {
  private:
   base::ThreadChecker thread_checker_;
   scoped_ptr<ArcBridgeService> arc_bridge_service_;
-
-  // Individual services
-  scoped_ptr<ArcAuthService> arc_auth_service_;
-  scoped_ptr<ArcClipboardBridge> arc_clipboard_bridge_;
-  scoped_ptr<ArcImeBridge> arc_ime_bridge_;
-  scoped_ptr<ArcInputBridge> arc_input_bridge_;
-  scoped_ptr<ArcIntentHelperBridge> arc_intent_helper_bridge_;
-  scoped_ptr<ArcNotificationManager> arc_notification_manager_;
-  scoped_ptr<ArcSettingsBridge> arc_settings_bridge_;
-  scoped_ptr<ArcPowerBridge> arc_power_bridge_;
-  scoped_ptr<ArcVideoBridge> arc_video_bridge_;
+  std::vector<scoped_ptr<ArcService>> services_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };

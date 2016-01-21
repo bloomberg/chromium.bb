@@ -10,14 +10,10 @@
 #include "base/thread_task_runner_handle.h"
 #include "components/arc/arc_bridge_bootstrap.h"
 #include "components/arc/arc_bridge_service_impl.h"
-#include "components/arc/auth/arc_auth_service.h"
 #include "components/arc/clipboard/arc_clipboard_bridge.h"
 #include "components/arc/ime/arc_ime_bridge.h"
 #include "components/arc/input/arc_input_bridge.h"
-#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/power/arc_power_bridge.h"
-#include "components/arc/settings/arc_settings_bridge.h"
-#include "components/arc/video/arc_video_bridge.h"
 #include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
@@ -29,28 +25,16 @@ ArcServiceManager* g_arc_service_manager = nullptr;
 
 }  // namespace
 
-ArcServiceManager::ArcServiceManager(
-    scoped_ptr<ArcAuthService> auth_service,
-    scoped_ptr<ArcIntentHelperBridge> intent_helper_bridge,
-    scoped_ptr<ArcSettingsBridge> settings_bridge,
-    scoped_ptr<ArcVideoBridge> video_bridge)
+ArcServiceManager::ArcServiceManager()
     : arc_bridge_service_(
-          new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())),
-      arc_auth_service_(std::move(auth_service)),
-      arc_clipboard_bridge_(new ArcClipboardBridge(arc_bridge_service_.get())),
-      arc_ime_bridge_(new ArcImeBridge(arc_bridge_service_.get())),
-      arc_input_bridge_(ArcInputBridge::Create(arc_bridge_service_.get())),
-      arc_intent_helper_bridge_(std::move(intent_helper_bridge)),
-      arc_settings_bridge_(std::move(settings_bridge)),
-      arc_power_bridge_(new ArcPowerBridge(arc_bridge_service_.get())),
-      arc_video_bridge_(std::move(video_bridge)) {
+          new ArcBridgeServiceImpl(ArcBridgeBootstrap::Create())) {
   DCHECK(!g_arc_service_manager);
   g_arc_service_manager = this;
 
-  arc_settings_bridge_->StartObservingBridgeServiceChanges();
-  arc_auth_service_->StartObservingBridgeServiceChanges();
-  arc_intent_helper_bridge_->StartObservingBridgeServiceChanges();
-  arc_video_bridge_->StartObservingBridgeServiceChanges();
+  AddService(make_scoped_ptr(new ArcClipboardBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcImeBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcInputBridge(arc_bridge_service())));
+  AddService(make_scoped_ptr(new ArcPowerBridge(arc_bridge_service())));
 }
 
 ArcServiceManager::~ArcServiceManager() {
@@ -71,12 +55,18 @@ ArcBridgeService* ArcServiceManager::arc_bridge_service() {
   return arc_bridge_service_.get();
 }
 
+void ArcServiceManager::AddService(scoped_ptr<ArcService> service) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  services_.emplace_back(std::move(service));
+}
+
 void ArcServiceManager::OnPrimaryUserProfilePrepared(
     const AccountId& account_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  arc_notification_manager_.reset(
-      new ArcNotificationManager(arc_bridge_service(), account_id));
+  AddService(make_scoped_ptr(
+      new ArcNotificationManager(arc_bridge_service(), account_id)));
 }
 
 }  // namespace arc

@@ -31,8 +31,9 @@ bool IsArcWindow(const aura::Window* window) {
 ////////////////////////////////////////////////////////////////////////////////
 // ArcImeBridge main implementation:
 
-ArcImeBridge::ArcImeBridge(ArcBridgeService* arc_bridge_service)
-    : ipc_host_(new ArcImeIpcHostImpl(this, arc_bridge_service)),
+ArcImeBridge::ArcImeBridge(ArcBridgeService* bridge_service)
+    : ArcService(bridge_service),
+      ipc_host_(new ArcImeIpcHostImpl(this, bridge_service)),
       ime_type_(ui::TEXT_INPUT_TYPE_NONE),
       has_composition_text_(false) {
   aura::Env* env = aura::Env::GetInstanceDontCreate();

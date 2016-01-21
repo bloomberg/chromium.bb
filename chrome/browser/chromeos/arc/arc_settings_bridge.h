@@ -1,8 +1,8 @@
 // Copyright (c) 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_IMPL_H_
-#define CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_IMPL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_
+#define CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_
 
 #include <string>
 
@@ -12,7 +12,7 @@
 #include "base/values.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/settings/arc_settings_bridge.h"
+#include "components/arc/arc_service.h"
 
 namespace arc {
 
@@ -40,18 +40,12 @@ double ConvertFontSizeChromeToAndroid(int default_size,
 
 // Listens to changes for select Chrome settings (prefs) that Android cares
 // about and sends the new values to Android to keep the state in sync.
-class ArcSettingsBridgeImpl
-    : public ArcSettingsBridge,
-      public ArcBridgeService::Observer,
-      public chromeos::system::TimezoneSettings::Observer {
+class ArcSettingsBridge : public ArcService,
+                          public ArcBridgeService::Observer,
+                          public chromeos::system::TimezoneSettings::Observer {
  public:
-  ArcSettingsBridgeImpl() = default;
-
-  ~ArcSettingsBridgeImpl() override;
-
-  // Starts listening to state changes of the ArcBridgeService.
-  // This must be called before the bridge service starts bootstrapping.
-  void StartObservingBridgeServiceChanges() override;
+  explicit ArcSettingsBridge(ArcBridgeService* bridge_service);
+  ~ArcSettingsBridge() override;
 
   // Called when a Chrome pref we have registered an observer for has changed.
   // Obtains the new pref value and sends it to Android.
@@ -91,9 +85,9 @@ class ArcSettingsBridgeImpl
   // Manages pref observation registration.
   PrefChangeRegistrar registrar_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcSettingsBridgeImpl);
+  DISALLOW_COPY_AND_ASSIGN(ArcSettingsBridge);
 };
 
 }  // namespace arc
 
-#endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_IMPL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_ARC_ARC_SETTINGS_BRIDGE_H_

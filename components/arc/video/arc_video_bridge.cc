@@ -9,25 +9,16 @@
 namespace arc {
 
 ArcVideoBridge::ArcVideoBridge(
+    ArcBridgeService* bridge_service,
     scoped_ptr<VideoHostDelegate> video_host_delegate)
-    : video_host_delegate_(std::move(video_host_delegate)),
-      binding_(video_host_delegate_.get()) {}
-
-ArcVideoBridge::~ArcVideoBridge() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  DCHECK(bridge_service);
-  bridge_service->RemoveObserver(this);
+    : ArcService(bridge_service),
+      video_host_delegate_(std::move(video_host_delegate)),
+      binding_(video_host_delegate_.get()) {
+  arc_bridge_service()->AddObserver(this);
 }
 
-void ArcVideoBridge::StartObservingBridgeServiceChanges() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  DCHECK(bridge_service);
-  bridge_service->AddObserver(this);
-
-  // If VideoInstance was ready before we AddObserver(), we won't get
-  // OnVideoInstanceReady events. For such case, we have to call it explicitly.
-  if (bridge_service->video_instance())
-    OnVideoInstanceReady();
+ArcVideoBridge::~ArcVideoBridge() {
+  arc_bridge_service()->RemoveObserver(this);
 }
 
 void ArcVideoBridge::OnStateChanged(arc::ArcBridgeService::State state) {
@@ -41,12 +32,9 @@ void ArcVideoBridge::OnStateChanged(arc::ArcBridgeService::State state) {
 }
 
 void ArcVideoBridge::OnVideoInstanceReady() {
-  arc::ArcBridgeService* bridge_service = arc::ArcBridgeService::Get();
-  DCHECK(bridge_service);
-
   arc::VideoHostPtr host;
   binding_.Bind(mojo::GetProxy(&host));
-  bridge_service->video_instance()->Init(std::move(host));
+  arc_bridge_service()->video_instance()->Init(std::move(host));
 }
 
 }  // namespace arc

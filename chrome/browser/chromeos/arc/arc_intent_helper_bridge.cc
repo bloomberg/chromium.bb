@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge_impl.h"
+#include "chrome/browser/chromeos/arc/arc_intent_helper_bridge.h"
 
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
@@ -14,28 +14,22 @@
 
 namespace arc {
 
-ArcIntentHelperBridgeImpl::ArcIntentHelperBridgeImpl() : binding_(this) {}
-
-ArcIntentHelperBridgeImpl::~ArcIntentHelperBridgeImpl() {
-  ArcBridgeService* bridge_service = ArcBridgeService::Get();
-  DCHECK(bridge_service);
-  bridge_service->RemoveObserver(this);
+ArcIntentHelperBridge::ArcIntentHelperBridge(ArcBridgeService* bridge_service)
+    : ArcService(bridge_service), binding_(this) {
+  arc_bridge_service()->AddObserver(this);
 }
 
-void ArcIntentHelperBridgeImpl::StartObservingBridgeServiceChanges() {
-  ArcBridgeService* bridge_service = ArcBridgeService::Get();
-  DCHECK(bridge_service);
-  bridge_service->AddObserver(this);
+ArcIntentHelperBridge::~ArcIntentHelperBridge() {
+  arc_bridge_service()->RemoveObserver(this);
 }
 
-void ArcIntentHelperBridgeImpl::OnIntentHelperInstanceReady() {
+void ArcIntentHelperBridge::OnIntentHelperInstanceReady() {
   IntentHelperHostPtr host;
   binding_.Bind(mojo::GetProxy(&host));
-  ArcBridgeService* bridge_service = ArcBridgeService::Get();
-  bridge_service->intent_helper_instance()->Init(std::move(host));
+  arc_bridge_service()->intent_helper_instance()->Init(std::move(host));
 }
 
-void ArcIntentHelperBridgeImpl::OnOpenUrl(const mojo::String& url) {
+void ArcIntentHelperBridge::OnOpenUrl(const mojo::String& url) {
   GURL gurl(url.get());
   if (!gurl.is_valid())
     return;

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H
-#define COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H
+#ifndef COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H_
+#define COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H_
 
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/arc/arc_service.h"
 #include "components/arc/video/video_host_delegate.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -17,13 +18,11 @@ class VideoHostDelegate;
 
 // ArcVideoBridge bridges ArcBridgeService and VideoHostDelegate. It observes
 // ArcBridgeService events and pass VideoHost proxy to VideoInstance.
-class ArcVideoBridge : public ArcBridgeService::Observer {
+class ArcVideoBridge : public ArcService, public ArcBridgeService::Observer {
  public:
-  explicit ArcVideoBridge(scoped_ptr<VideoHostDelegate> video_host_delegate);
+  ArcVideoBridge(ArcBridgeService* bridge_service,
+                 scoped_ptr<VideoHostDelegate> video_host_delegate);
   ~ArcVideoBridge() override;
-
-  // Starts listening to state changes of the ArcBridgeService.
-  void StartObservingBridgeServiceChanges();
 
   // arc::ArcBridgeService::Observer implementation.
   void OnStateChanged(arc::ArcBridgeService::State state) override;
@@ -38,4 +37,4 @@ class ArcVideoBridge : public ArcBridgeService::Observer {
 
 }  // namespace arc
 
-#endif  // COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H
+#endif  // COMPONENTS_ARC_VIDEO_ARC_VIDEO_BRIDGE_H_

@@ -13,15 +13,13 @@
 
 namespace arc {
 
-ArcPowerBridge::ArcPowerBridge(ArcBridgeService* arc_bridge_service)
-    : arc_bridge_service_(arc_bridge_service), binding_(this) {
-  arc_bridge_service->AddObserver(this);
-  if (arc_bridge_service->power_instance())
-    OnPowerInstanceReady();
+ArcPowerBridge::ArcPowerBridge(ArcBridgeService* bridge_service)
+    : ArcService(bridge_service), binding_(this) {
+  arc_bridge_service()->AddObserver(this);
 }
 
 ArcPowerBridge::~ArcPowerBridge() {
-  arc_bridge_service_->RemoveObserver(this);
+  arc_bridge_service()->RemoveObserver(this);
   ReleaseAllDisplayWakeLocks();
 }
 
@@ -31,7 +29,7 @@ void ArcPowerBridge::OnStateChanged(ArcBridgeService::State state) {
 }
 
 void ArcPowerBridge::OnPowerInstanceReady() {
-  PowerInstance* power_instance = arc_bridge_service_->power_instance();
+  PowerInstance* power_instance = arc_bridge_service()->power_instance();
   if (!power_instance) {
     LOG(ERROR) << "OnPowerInstanceReady called, but no power instance found";
     return;
