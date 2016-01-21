@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -39,12 +40,17 @@ struct SelectedFileInfo;
 // This class handles file-selection requests coming from WebUI elements
 // (via the extensions::ExtensionHost class). It implements both the
 // initialisation and listener functions for file-selection dialogs.
-class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
+//
+// Since FileSelectHelper has-a NotificationRegistrar, it needs to live on and
+// be destroyed on the UI thread. References to FileSelectHelper may be passed
+// on to other threads.
+class FileSelectHelper : public base::RefCountedThreadSafe<
+                             FileSelectHelper,
+                             content::BrowserThread::DeleteOnUIThread>,
                          public ui::SelectFileDialog::Listener,
                          public content::WebContentsObserver,
                          public content::NotificationObserver {
  public:
-
   // Show the file chooser dialog.
   static void RunFileChooser(content::WebContents* tab,
                              const content::FileChooserParams& params);
@@ -56,6 +62,10 @@ class FileSelectHelper : public base::RefCountedThreadSafe<FileSelectHelper>,
 
  private:
   friend class base::RefCountedThreadSafe<FileSelectHelper>;
+  friend class base::DeleteHelper<FileSelectHelper>;
+  friend struct content::BrowserThread::DeleteOnThread<
+      content::BrowserThread::UI>;
+
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, IsAcceptTypeValid);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, ZipPackage);
   FRIEND_TEST_ALL_PREFIXES(FileSelectHelperTest, GetSanitizedFileName);
