@@ -715,7 +715,10 @@ class CBuildBotTest(GenerateChromeosConfigTestBase):
       if config.build_type == constants.PFQ_TYPE:
         expected = 20 * 60
       elif config.build_type == constants.CANARY_TYPE:
-        expected = (7 * 60 + 50) * 60
+        if not chromeos_config.IS_RELEASE_BRANCH:
+          expected = (7 * 60 + 50) * 60
+        else:
+          expected = 12 * 60 * 60
       else:
         expected = 4 * 60 * 60
 
