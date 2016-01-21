@@ -256,7 +256,7 @@ public:
     bool isSiblingSelector() const;
     bool isAttributeSelector() const { return m_match >= FirstAttributeSelectorMatch; }
     bool isHostPseudoClass() const { return m_pseudoType == PseudoHost || m_pseudoType == PseudoHostContext; }
-    bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent; }
+    bool isInsertionPointCrossing() const { return m_pseudoType == PseudoHostContext || m_pseudoType == PseudoContent || m_pseudoType == PseudoSlotted; }
 
     Relation relation() const { return static_cast<Relation>(m_relation); }
     void setRelation(Relation relation)

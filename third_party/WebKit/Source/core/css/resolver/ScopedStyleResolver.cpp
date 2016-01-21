@@ -207,7 +207,8 @@ static void addRules(RuleSet* ruleSet, const WillBeHeapVector<MinimalRuleData>& 
 void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRules, CSSStyleSheet* parentStyleSheet, unsigned sheetIndex)
 {
     bool isDocumentScope = treeScope().rootNode().isDocumentNode();
-    if (authorRules.deepCombinatorOrShadowPseudoRules().isEmpty() && (isDocumentScope || authorRules.shadowDistributedRules().isEmpty()))
+    if (authorRules.deepCombinatorOrShadowPseudoRules().isEmpty()
+        && (isDocumentScope || (authorRules.shadowDistributedRules().isEmpty() && authorRules.shadowSlottedRules().isEmpty())))
         return;
 
     if (!authorRules.deepCombinatorOrShadowPseudoRules().isEmpty())
@@ -216,8 +217,10 @@ void ScopedStyleResolver::addTreeBoundaryCrossingRules(const RuleSet& authorRule
     OwnPtrWillBeRawPtr<RuleSet> ruleSetForScope = RuleSet::create();
     addRules(ruleSetForScope.get(), authorRules.deepCombinatorOrShadowPseudoRules());
 
-    if (!isDocumentScope)
+    if (!isDocumentScope) {
         addRules(ruleSetForScope.get(), authorRules.shadowDistributedRules());
+        addRules(ruleSetForScope.get(), authorRules.shadowSlottedRules());
+    }
 
     if (!m_treeBoundaryCrossingRuleSet) {
         m_treeBoundaryCrossingRuleSet = adoptPtrWillBeNoop(new CSSStyleSheetRuleSubSet());

@@ -152,6 +152,7 @@ bool supportsInvalidation(CSSSelector::PseudoType type)
     case CSSSelector::PseudoShadow:
     case CSSSelector::PseudoSpatialNavigationFocus:
     case CSSSelector::PseudoListBox:
+    case CSSSelector::PseudoSlotted:
         return true;
     case CSSSelector::PseudoUnknown:
     case CSSSelector::PseudoLeftPage:
@@ -173,7 +174,8 @@ bool supportsInvalidationWithSelectorList(CSSSelector::PseudoType pseudo)
         || pseudo == CSSSelector::PseudoCue
         || pseudo == CSSSelector::PseudoHost
         || pseudo == CSSSelector::PseudoHostContext
-        || pseudo == CSSSelector::PseudoNot;
+        || pseudo == CSSSelector::PseudoNot
+        || pseudo == CSSSelector::PseudoSlotted;
 }
 
 #endif // ENABLE(ASSERT)
@@ -515,7 +517,7 @@ void RuleFeatureSet::addFeaturesToInvalidationSets(const CSSSelector* selector, 
         if (current->relation() == CSSSelector::SubSelector)
             continue;
 
-        if (current->relationIsAffectedByPseudoContent()) {
+        if (current->relationIsAffectedByPseudoContent() || current->relation() == CSSSelector::ShadowSlot) {
             descendantFeatures.insertionPointCrossing = true;
             descendantFeatures.contentPseudoCrossing = true;
         }

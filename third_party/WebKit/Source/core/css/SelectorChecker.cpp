@@ -47,6 +47,7 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/HTMLSlotElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/track/vtt/VTTElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -111,6 +112,20 @@ static Element* parentElement(const SelectorChecker::SelectorCheckingContext& co
     if (context.scope && (context.scope == context.element->containingShadowRoot() || context.scope->treeScope() == context.element->treeScope()))
         return context.element->parentOrShadowHostElement();
     return context.element->parentElement();
+}
+
+static const HTMLSlotElement* findSlotElementInScope(const SelectorChecker::SelectorCheckingContext& context)
+{
+    if (!context.scope)
+        return nullptr;
+
+    const HTMLSlotElement* slot = context.element->assignedSlot();
+    while (slot) {
+        if (slot->treeScope() == context.scope->treeScope())
+            return slot;
+        slot = slot->assignedSlot();
+    }
+    return nullptr;
 }
 
 static bool scopeContainsLastMatchedElement(const SelectorChecker::SelectorCheckingContext& context)
@@ -451,9 +466,16 @@ SelectorChecker::Match SelectorChecker::matchForRelation(const SelectorCheckingC
             }
             return SelectorFailsCompletely;
         }
+
     case CSSSelector::ShadowSlot:
-        // TODO(kochi): Add this in later CL.
-        return SelectorFailsCompletely;
+        {
+            const HTMLSlotElement* slot = findSlotElementInScope(context);
+            if (!slot)
+                return SelectorFailsCompletely;
+
+            nextContext.element = const_cast<HTMLSlotElement*>(slot);
+            return matchSelector(nextContext, result);
+        }
 
     case CSSSelector::SubSelector:
         ASSERT_NOT_REACHED();
@@ -1033,6 +1055,19 @@ bool SelectorChecker::checkPseudoElement(const SelectorCheckingContext& context,
             if (ShadowRoot* root = element.containingShadowRoot())
                 return root->type() == ShadowRootType::UserAgent && element.shadowPseudoId() == selector.value();
             return false;
+        }
+    case CSSSelector::PseudoSlotted:
+        {
+            SelectorCheckingContext subContext(context);
+            subContext.isSubSelector = true;
+            subContext.scope = nullptr;
+            subContext.treatShadowHostAsNormalScope = false;
+
+            // ::slotted() only allows one compound selector.
+            ASSERT(selector.selectorList()->first());
+            ASSERT(!CSSSelectorList::next(*selector.selectorList()->first()));
+            subContext.selector = selector.selectorList()->first();
+            return match(subContext);
         }
     case CSSSelector::PseudoContent:
         return element.isInShadowTree() && element.isInsertionPoint();

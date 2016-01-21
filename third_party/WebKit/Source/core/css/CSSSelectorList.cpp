@@ -185,7 +185,7 @@ bool CSSSelectorList::selectorUsesDeepCombinatorOrShadowPseudo(size_t index) con
 bool CSSSelectorList::selectorNeedsUpdatedDistribution(size_t index) const
 {
     return forEachTagSelector([](const CSSSelector& selector) -> bool {
-        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoHostContext;
+        return selector.relationIsAffectedByPseudoContent() || selector.pseudoType() == CSSSelector::PseudoSlotted || selector.pseudoType() == CSSSelector::PseudoHostContext;
     }, selectorAt(index));
 }
 
