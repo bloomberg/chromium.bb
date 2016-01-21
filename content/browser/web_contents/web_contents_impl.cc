@@ -413,13 +413,12 @@ WebContentsImpl::~WebContentsImpl() {
 
   rwh_input_event_router_.reset();
 
-  // Delete all RFH pending shutdown, which will lead the corresponding RVH to
-  // shutdown and be deleted as well.
-  for (FrameTreeNode* node : frame_tree_.Nodes())
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    // Delete all RFHs pending shutdown, which will lead the corresponding RVHs
+    // to be shutdown and be deleted as well.
     node->render_manager()->ClearRFHsPendingShutdown();
-
-  for (FrameTreeNode* node : frame_tree_.Nodes())
     node->render_manager()->ClearWebUIInstances();
+  }
 
   for (RenderWidgetHostImpl* widget : created_widgets_)
     widget->DetachDelegate();
